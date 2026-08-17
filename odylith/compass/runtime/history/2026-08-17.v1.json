@@ -1,7 +1,7 @@
 {
   "version": "v1",
-  "generated_utc": "2026-08-17T16:53:36Z",
-  "now_local_iso": "2026-08-17T09:53:36-07:00",
+  "generated_utc": "2026-08-17T17:08:19Z",
+  "now_local_iso": "2026-08-17T10:08:19-07:00",
   "time_context": {
     "timezone": "America/Los_Angeles",
     "label": "San Francisco"
@@ -22,8 +22,8 @@
   },
   "kpis": {
     "24h": {
-      "commits": 9,
-      "local_changes": 16,
+      "commits": 10,
+      "local_changes": 9,
       "touched_workstreams": 1,
       "active_workstreams": 27,
       "critical_risks": 3,
@@ -31,8 +31,8 @@
       "active_touched_workstreams": 1
     },
     "48h": {
-      "commits": 17,
-      "local_changes": 16,
+      "commits": 18,
+      "local_changes": 9,
       "touched_workstreams": 3,
       "active_workstreams": 27,
       "critical_risks": 4,
@@ -941,12 +941,12 @@
       "schema_version": "v25",
       "status": "unavailable",
       "source": "unavailable",
-      "fingerprint": "7cb03abbf59159e787d8ab8448b384741482ff79ad140c7f9831bbd832b37d6c",
-      "substrate_fingerprint": "7cb03abbf59159e787d8ab8448b384741482ff79ad140c7f9831bbd832b37d6c",
+      "fingerprint": "309115284ae55b3ce4aece7cd8d0cbbfa6af43c20a5c2965b263f7836d94e159",
+      "substrate_fingerprint": "309115284ae55b3ce4aece7cd8d0cbbfa6af43c20a5c2965b263f7836d94e159",
       "bundle_fingerprint": "",
       "provider_decision": "provider_deferred",
       "last_successful_narration_fingerprint": "",
-      "generated_utc": "2026-08-17T16:53:36Z",
+      "generated_utc": "2026-08-17T17:08:19Z",
       "sections": [],
       "diagnostics": {
         "reason": "provider_deferred",
@@ -1114,7 +1114,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1127,7 +1127,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1140,7 +1140,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1153,7 +1153,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1166,7 +1166,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1179,7 +1179,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1192,7 +1192,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1205,7 +1205,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1218,7 +1218,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1231,7 +1231,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1244,7 +1244,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1257,7 +1257,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1270,7 +1270,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1283,7 +1283,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1296,7 +1296,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1309,7 +1309,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1322,7 +1322,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1335,7 +1335,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1348,7 +1348,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1361,7 +1361,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1374,7 +1374,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1387,7 +1387,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1400,7 +1400,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1413,7 +1413,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1426,7 +1426,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1439,7 +1439,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1580,7 +1580,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1593,7 +1593,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1606,7 +1606,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1619,7 +1619,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1632,7 +1632,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1645,7 +1645,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1658,7 +1658,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1671,7 +1671,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1684,7 +1684,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1697,7 +1697,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1710,7 +1710,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1723,7 +1723,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1736,7 +1736,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1749,7 +1749,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1762,7 +1762,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1775,7 +1775,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1788,7 +1788,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1801,7 +1801,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1814,7 +1814,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1827,7 +1827,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1840,7 +1840,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1853,7 +1853,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1866,7 +1866,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1879,7 +1879,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1892,7 +1892,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1905,7 +1905,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1918,7 +1918,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1931,7 +1931,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1944,7 +1944,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1957,7 +1957,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1970,7 +1970,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1983,7 +1983,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1996,7 +1996,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2009,7 +2009,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2022,7 +2022,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2035,7 +2035,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2048,7 +2048,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2061,7 +2061,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2074,7 +2074,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2087,7 +2087,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2100,7 +2100,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2113,7 +2113,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2126,7 +2126,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2139,7 +2139,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2152,7 +2152,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2165,7 +2165,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2178,7 +2178,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2191,7 +2191,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2204,7 +2204,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2217,7 +2217,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2230,7 +2230,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2243,7 +2243,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2256,7 +2256,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2269,7 +2269,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2282,7 +2282,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2295,7 +2295,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2308,7 +2308,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2321,7 +2321,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2334,7 +2334,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2347,7 +2347,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2360,7 +2360,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2373,7 +2373,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2386,7 +2386,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2399,7 +2399,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2412,7 +2412,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2425,7 +2425,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2438,7 +2438,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2451,7 +2451,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2464,7 +2464,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2477,7 +2477,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2490,7 +2490,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2503,7 +2503,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2516,7 +2516,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2529,7 +2529,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2542,7 +2542,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2555,7 +2555,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2568,7 +2568,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2581,7 +2581,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2594,7 +2594,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2607,7 +2607,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2620,7 +2620,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2633,7 +2633,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2646,7 +2646,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2659,7 +2659,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2672,7 +2672,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2685,7 +2685,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2698,7 +2698,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2711,7 +2711,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2724,7 +2724,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2737,7 +2737,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2750,7 +2750,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2763,7 +2763,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2776,7 +2776,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2789,7 +2789,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2802,7 +2802,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2815,7 +2815,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2828,7 +2828,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2841,7 +2841,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2854,7 +2854,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2867,7 +2867,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2880,7 +2880,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2893,7 +2893,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2906,7 +2906,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2919,7 +2919,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2932,7 +2932,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2945,7 +2945,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2958,7 +2958,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2971,7 +2971,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2984,7 +2984,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2997,7 +2997,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3010,7 +3010,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3023,7 +3023,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3036,7 +3036,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3049,7 +3049,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3062,7 +3062,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3075,7 +3075,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3088,7 +3088,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3101,7 +3101,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3116,7 +3116,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3129,7 +3129,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3142,7 +3142,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3155,7 +3155,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3168,7 +3168,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3181,7 +3181,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3194,7 +3194,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3207,7 +3207,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3220,7 +3220,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3233,7 +3233,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3246,7 +3246,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3259,7 +3259,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3272,7 +3272,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3285,7 +3285,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3298,7 +3298,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3311,7 +3311,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3324,7 +3324,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3337,7 +3337,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3350,7 +3350,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3363,7 +3363,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3376,7 +3376,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3389,7 +3389,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3402,7 +3402,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3415,7 +3415,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3428,7 +3428,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3446,7 +3446,7 @@
         "bundle_fingerprint": "",
         "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "sections": [],
         "diagnostics": {
           "reason": "skipped_not_worth_calling",
@@ -3592,7 +3592,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3605,7 +3605,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3618,7 +3618,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3631,7 +3631,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3772,7 +3772,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3785,7 +3785,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3798,7 +3798,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3811,7 +3811,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3824,7 +3824,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3837,7 +3837,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3850,7 +3850,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3863,7 +3863,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3876,7 +3876,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3889,7 +3889,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3902,7 +3902,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3915,7 +3915,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3928,7 +3928,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3941,7 +3941,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3954,7 +3954,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3967,7 +3967,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3980,7 +3980,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3993,7 +3993,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4006,7 +4006,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4019,7 +4019,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4032,7 +4032,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4045,7 +4045,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4058,7 +4058,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4071,7 +4071,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4084,7 +4084,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4097,7 +4097,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4110,7 +4110,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4123,7 +4123,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4136,7 +4136,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4149,7 +4149,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4162,7 +4162,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4175,7 +4175,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4188,7 +4188,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4201,7 +4201,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4214,7 +4214,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4227,7 +4227,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4240,7 +4240,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4253,7 +4253,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4266,7 +4266,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4279,7 +4279,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4292,7 +4292,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4305,7 +4305,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4318,7 +4318,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4331,7 +4331,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4344,7 +4344,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4357,7 +4357,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4370,7 +4370,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4383,7 +4383,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4396,7 +4396,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4409,7 +4409,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4422,7 +4422,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4435,7 +4435,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4448,7 +4448,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4461,7 +4461,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4474,7 +4474,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4487,7 +4487,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4500,7 +4500,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4513,7 +4513,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4526,7 +4526,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4539,7 +4539,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4552,7 +4552,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4565,7 +4565,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4578,7 +4578,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4591,7 +4591,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4604,7 +4604,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4617,7 +4617,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4630,7 +4630,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4643,7 +4643,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4656,7 +4656,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4669,7 +4669,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4682,7 +4682,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4695,7 +4695,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4708,7 +4708,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4721,7 +4721,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4734,7 +4734,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4747,7 +4747,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4760,7 +4760,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4773,7 +4773,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4786,7 +4786,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4799,7 +4799,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4812,7 +4812,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4825,7 +4825,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4838,7 +4838,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4851,7 +4851,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4864,7 +4864,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4877,7 +4877,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4890,7 +4890,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4903,7 +4903,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4916,7 +4916,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4929,7 +4929,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4942,7 +4942,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4955,7 +4955,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4968,7 +4968,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4981,7 +4981,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4994,7 +4994,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5007,7 +5007,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5020,7 +5020,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5033,7 +5033,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5046,7 +5046,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5059,7 +5059,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5072,7 +5072,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5085,7 +5085,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5098,7 +5098,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5111,7 +5111,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5124,7 +5124,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5137,7 +5137,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5150,7 +5150,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5163,7 +5163,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5176,7 +5176,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5189,7 +5189,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5202,7 +5202,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5215,7 +5215,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5228,7 +5228,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-08-17T16:53:36Z",
+        "generated_utc": "2026-08-17T17:08:19Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5241,9 +5241,9 @@
   },
   "standup_runtime": {
     "24h": {
-      "global_reuse_fingerprint": "f60f21b430df30747c61bcc01e09b23016ce890026d7511287d48f5698887b65",
+      "global_reuse_fingerprint": "789f9f27a2dcbc62b52b4e2253b96bdf4a12b6f32e6a83e67ad394c90f5dd772",
       "scoped_reuse_fingerprints": {
-        "B-144": "c93d758beae64566951681ec145cbac5fb2c18c4fade346b3f2e24062c899fb0"
+        "B-144": "91c9a9c750cb3e87483db15d9d01576d584a4d6658aa7bce8e7d73a4576a9e20"
       },
       "verified_scope_ids": [
         "B-144"
@@ -8187,11 +8187,11 @@
       }
     },
     "48h": {
-      "global_reuse_fingerprint": "b948e6fb0962c77c7564031bdc09047d2a329942b4839520a2f9b41cf6e60ee4",
+      "global_reuse_fingerprint": "ba1f8309f1f3fc9f6c3e32528ac9cb5c4ba56fb1789f8f36b1dac90ee15381ca",
       "scoped_reuse_fingerprints": {
-        "B-142": "c5f6274490dfe9be1ffde31ccbaa50f32742203630c2dde940a93e51dda8ffa9",
-        "B-144": "3034394fe9e96db44490073b9437dea154683e1b4b9835484d2ed7ef690bf42f",
-        "B-005": "afcd177c50ef9a15d4976654a05b2979881c2ca9da4c340c8548a3355235cdbd"
+        "B-142": "2ff1ecfdfc00961a7761ce9e3e40e92d94deee18b96e570d1cd2d6de7e7afb86",
+        "B-144": "c9f95425907725badd55e9d62209ec369f467ef4770ea94ca29f22e03142acdc",
+        "B-005": "28d62d3199de8573379ebe0dd70f441457d7b488f1fae2a0e8cceb4c618a949a"
       },
       "verified_scope_ids": [
         "B-005",
@@ -19324,7 +19324,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+          "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -21114,19 +21114,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
+          "commit_count": 9,
           "local_change_count": 2,
           "file_touch_count": 477
         },
         "48h": {
-          "commit_count": 11,
+          "commit_count": 12,
           "local_change_count": 2,
           "file_touch_count": 525
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-08-17T09:28:34-07:00",
+        "last_activity_iso": "2026-08-17T09:58:23-07:00",
         "age_days": 129,
         "eta_days": null,
         "eta_confidence": "low"
@@ -21369,7 +21369,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+          "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -23693,7 +23693,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 591,
+          "meaningful_change_count": 588,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -23848,19 +23848,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
+          "commit_count": 9,
           "local_change_count": 2,
           "file_touch_count": 477
         },
         "48h": {
-          "commit_count": 13,
+          "commit_count": 14,
           "local_change_count": 2,
           "file_touch_count": 675
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-08-17T09:28:34-07:00",
+        "last_activity_iso": "2026-08-17T09:58:23-07:00",
         "age_days": 52,
         "eta_days": 8,
         "eta_confidence": "high"
@@ -23939,7 +23939,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 592,
+          "meaningful_change_count": 589,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -24059,19 +24059,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 9,
-          "local_change_count": 5,
+          "commit_count": 10,
+          "local_change_count": 4,
           "file_touch_count": 486
         },
         "48h": {
-          "commit_count": 14,
-          "local_change_count": 5,
+          "commit_count": 15,
+          "local_change_count": 4,
           "file_touch_count": 515
         }
       },
       "timeline": {
         "start_date": "2026-08-16",
-        "last_activity_iso": "2026-08-17T09:52:54-07:00",
+        "last_activity_iso": "2026-08-17T10:07:35-07:00",
         "age_days": 1,
         "eta_days": null,
         "eta_confidence": "low"
@@ -24977,19 +24977,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
+          "commit_count": 9,
           "local_change_count": 2,
           "file_touch_count": 477
         },
         "48h": {
-          "commit_count": 13,
+          "commit_count": 14,
           "local_change_count": 2,
           "file_touch_count": 525
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-08-17T09:28:34-07:00",
+        "last_activity_iso": "2026-08-17T09:58:23-07:00",
         "age_days": 142,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -33034,7 +33034,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+          "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -33210,19 +33210,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
+          "commit_count": 9,
           "local_change_count": 2,
           "file_touch_count": 477
         },
         "48h": {
-          "commit_count": 11,
+          "commit_count": 12,
           "local_change_count": 2,
           "file_touch_count": 519
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-08-17T09:28:34-07:00",
+        "last_activity_iso": "2026-08-17T09:58:23-07:00",
         "age_days": 131,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -34018,19 +34018,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
+          "commit_count": 9,
           "local_change_count": 2,
           "file_touch_count": 477
         },
         "48h": {
-          "commit_count": 11,
+          "commit_count": 12,
           "local_change_count": 2,
           "file_touch_count": 525
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-08-17T09:28:34-07:00",
+        "last_activity_iso": "2026-08-17T09:58:23-07:00",
         "age_days": 130,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -38451,7 +38451,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+          "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -42898,7 +42898,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+          "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -43123,7 +43123,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+          "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -43348,7 +43348,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+          "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -43573,7 +43573,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+          "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -43985,7 +43985,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+          "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -48498,7 +48498,7 @@
           "docs"
         ],
         "deployment_truth": {
-          "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+          "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -48705,7 +48705,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 584,
+          "meaningful_change_count": 581,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -48980,19 +48980,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 9,
-            "local_change_count": 5,
+            "commit_count": 10,
+            "local_change_count": 4,
             "file_touch_count": 486
           },
           "48h": {
-            "commit_count": 14,
-            "local_change_count": 5,
+            "commit_count": 15,
+            "local_change_count": 4,
             "file_touch_count": 515
           }
         },
         "timeline": {
           "start_date": "2026-08-16",
-          "last_activity_iso": "2026-08-17T09:52:54-07:00",
+          "last_activity_iso": "2026-08-17T10:07:35-07:00",
           "age_days": 1,
           "eta_days": null,
           "eta_confidence": "low"
@@ -49199,19 +49199,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
+            "commit_count": 9,
             "local_change_count": 2,
             "file_touch_count": 477
           },
           "48h": {
-            "commit_count": 13,
+            "commit_count": 14,
             "local_change_count": 2,
             "file_touch_count": 675
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-08-17T09:28:34-07:00",
+          "last_activity_iso": "2026-08-17T09:58:23-07:00",
           "age_days": 52,
           "eta_days": 8,
           "eta_confidence": "high"
@@ -49290,7 +49290,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 592,
+            "meaningful_change_count": 589,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -49524,7 +49524,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 591,
+            "meaningful_change_count": 588,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -49663,19 +49663,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
+            "commit_count": 9,
             "local_change_count": 2,
             "file_touch_count": 477
           },
           "48h": {
-            "commit_count": 11,
+            "commit_count": 12,
             "local_change_count": 2,
             "file_touch_count": 525
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-08-17T09:28:34-07:00",
+          "last_activity_iso": "2026-08-17T09:58:23-07:00",
           "age_days": 129,
           "eta_days": null,
           "eta_confidence": "low"
@@ -49834,19 +49834,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
+            "commit_count": 9,
             "local_change_count": 2,
             "file_touch_count": 477
           },
           "48h": {
-            "commit_count": 13,
+            "commit_count": 14,
             "local_change_count": 2,
             "file_touch_count": 525
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-08-17T09:28:34-07:00",
+          "last_activity_iso": "2026-08-17T09:58:23-07:00",
           "age_days": 142,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -50006,19 +50006,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
+            "commit_count": 9,
             "local_change_count": 2,
             "file_touch_count": 477
           },
           "48h": {
-            "commit_count": 11,
+            "commit_count": 12,
             "local_change_count": 2,
             "file_touch_count": 519
           }
         },
         "timeline": {
           "start_date": "2026-04-08",
-          "last_activity_iso": "2026-08-17T09:28:34-07:00",
+          "last_activity_iso": "2026-08-17T09:58:23-07:00",
           "age_days": 131,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -50180,19 +50180,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
+            "commit_count": 9,
             "local_change_count": 2,
             "file_touch_count": 477
           },
           "48h": {
-            "commit_count": 11,
+            "commit_count": 12,
             "local_change_count": 2,
             "file_touch_count": 525
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-08-17T09:28:34-07:00",
+          "last_activity_iso": "2026-08-17T09:58:23-07:00",
           "age_days": 130,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -50417,7 +50417,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+            "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -52770,7 +52770,7 @@
           ],
           "linked_bug_id": "CB-077",
           "deployment_truth": {
-            "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+            "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -55054,7 +55054,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+            "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -58986,7 +58986,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+            "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -73172,7 +73172,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+            "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -73397,7 +73397,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+            "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -73622,7 +73622,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+            "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -73847,7 +73847,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+            "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -74072,7 +74072,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+            "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -78398,7 +78398,7 @@
             "docs"
           ],
           "deployment_truth": {
-            "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+            "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -78605,7 +78605,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 584,
+            "meaningful_change_count": 581,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -78879,19 +78879,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 9,
-            "local_change_count": 5,
+            "commit_count": 10,
+            "local_change_count": 4,
             "file_touch_count": 486
           },
           "48h": {
-            "commit_count": 14,
-            "local_change_count": 5,
+            "commit_count": 15,
+            "local_change_count": 4,
             "file_touch_count": 515
           }
         },
         "timeline": {
           "start_date": "2026-08-16",
-          "last_activity_iso": "2026-08-17T09:52:54-07:00",
+          "last_activity_iso": "2026-08-17T10:07:35-07:00",
           "age_days": 1,
           "eta_days": null,
           "eta_confidence": "low"
@@ -79098,19 +79098,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
+            "commit_count": 9,
             "local_change_count": 2,
             "file_touch_count": 477
           },
           "48h": {
-            "commit_count": 13,
+            "commit_count": 14,
             "local_change_count": 2,
             "file_touch_count": 675
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-08-17T09:28:34-07:00",
+          "last_activity_iso": "2026-08-17T09:58:23-07:00",
           "age_days": 52,
           "eta_days": 8,
           "eta_confidence": "high"
@@ -79189,7 +79189,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 592,
+            "meaningful_change_count": 589,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -79423,7 +79423,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 591,
+            "meaningful_change_count": 588,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -79534,19 +79534,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
+            "commit_count": 9,
             "local_change_count": 2,
             "file_touch_count": 477
           },
           "48h": {
-            "commit_count": 13,
+            "commit_count": 14,
             "local_change_count": 2,
             "file_touch_count": 525
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-08-17T09:28:34-07:00",
+          "last_activity_iso": "2026-08-17T09:58:23-07:00",
           "age_days": 142,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -79734,19 +79734,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
+            "commit_count": 9,
             "local_change_count": 2,
             "file_touch_count": 477
           },
           "48h": {
-            "commit_count": 11,
+            "commit_count": 12,
             "local_change_count": 2,
             "file_touch_count": 525
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-08-17T09:28:34-07:00",
+          "last_activity_iso": "2026-08-17T09:58:23-07:00",
           "age_days": 129,
           "eta_days": null,
           "eta_confidence": "low"
@@ -79905,19 +79905,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
+            "commit_count": 9,
             "local_change_count": 2,
             "file_touch_count": 477
           },
           "48h": {
-            "commit_count": 11,
+            "commit_count": 12,
             "local_change_count": 2,
             "file_touch_count": 519
           }
         },
         "timeline": {
           "start_date": "2026-04-08",
-          "last_activity_iso": "2026-08-17T09:28:34-07:00",
+          "last_activity_iso": "2026-08-17T09:58:23-07:00",
           "age_days": 131,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -80079,19 +80079,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
+            "commit_count": 9,
             "local_change_count": 2,
             "file_touch_count": 477
           },
           "48h": {
-            "commit_count": 11,
+            "commit_count": 12,
             "local_change_count": 2,
             "file_touch_count": 525
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-08-17T09:28:34-07:00",
+          "last_activity_iso": "2026-08-17T09:58:23-07:00",
           "age_days": 130,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -80316,7 +80316,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+            "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -82669,7 +82669,7 @@
           ],
           "linked_bug_id": "CB-077",
           "deployment_truth": {
-            "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+            "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -84953,7 +84953,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+            "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -88885,7 +88885,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+            "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -103071,7 +103071,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+            "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -103296,7 +103296,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+            "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -103521,7 +103521,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+            "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -103746,7 +103746,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+            "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -103971,7 +103971,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+            "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -108297,7 +108297,7 @@
             "docs"
           ],
           "deployment_truth": {
-            "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+            "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -108504,7 +108504,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 584,
+            "meaningful_change_count": 581,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -108779,19 +108779,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 9,
-          "local_change_count": 5,
+          "commit_count": 10,
+          "local_change_count": 4,
           "file_touch_count": 486
         },
         "48h": {
-          "commit_count": 14,
-          "local_change_count": 5,
+          "commit_count": 15,
+          "local_change_count": 4,
           "file_touch_count": 515
         }
       },
       "timeline": {
         "start_date": "2026-08-16",
-        "last_activity_iso": "2026-08-17T09:52:54-07:00",
+        "last_activity_iso": "2026-08-17T10:07:35-07:00",
         "age_days": 1,
         "eta_days": null,
         "eta_confidence": "low"
@@ -108998,19 +108998,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
+          "commit_count": 9,
           "local_change_count": 2,
           "file_touch_count": 477
         },
         "48h": {
-          "commit_count": 13,
+          "commit_count": 14,
           "local_change_count": 2,
           "file_touch_count": 675
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-08-17T09:28:34-07:00",
+        "last_activity_iso": "2026-08-17T09:58:23-07:00",
         "age_days": 52,
         "eta_days": 8,
         "eta_confidence": "high"
@@ -109089,7 +109089,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 592,
+          "meaningful_change_count": 589,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -109323,7 +109323,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 591,
+          "meaningful_change_count": 588,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -109434,19 +109434,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
+          "commit_count": 9,
           "local_change_count": 2,
           "file_touch_count": 477
         },
         "48h": {
-          "commit_count": 13,
+          "commit_count": 14,
           "local_change_count": 2,
           "file_touch_count": 525
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-08-17T09:28:34-07:00",
+        "last_activity_iso": "2026-08-17T09:58:23-07:00",
         "age_days": 142,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -109634,19 +109634,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
+          "commit_count": 9,
           "local_change_count": 2,
           "file_touch_count": 477
         },
         "48h": {
-          "commit_count": 11,
+          "commit_count": 12,
           "local_change_count": 2,
           "file_touch_count": 525
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-08-17T09:28:34-07:00",
+        "last_activity_iso": "2026-08-17T09:58:23-07:00",
         "age_days": 129,
         "eta_days": null,
         "eta_confidence": "low"
@@ -109805,19 +109805,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
+          "commit_count": 9,
           "local_change_count": 2,
           "file_touch_count": 477
         },
         "48h": {
-          "commit_count": 11,
+          "commit_count": 12,
           "local_change_count": 2,
           "file_touch_count": 519
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-08-17T09:28:34-07:00",
+        "last_activity_iso": "2026-08-17T09:58:23-07:00",
         "age_days": 131,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -109979,19 +109979,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
+          "commit_count": 9,
           "local_change_count": 2,
           "file_touch_count": 477
         },
         "48h": {
-          "commit_count": 11,
+          "commit_count": 12,
           "local_change_count": 2,
           "file_touch_count": 525
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-08-17T09:28:34-07:00",
+        "last_activity_iso": "2026-08-17T09:58:23-07:00",
         "age_days": 130,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -110216,7 +110216,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+          "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -112569,7 +112569,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+          "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -114853,7 +114853,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+          "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -118785,7 +118785,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+          "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -132971,7 +132971,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+          "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -133196,7 +133196,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+          "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -133421,7 +133421,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+          "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -133646,7 +133646,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+          "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -133871,7 +133871,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+          "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -138197,7 +138197,7 @@
           "docs"
         ],
         "deployment_truth": {
-          "local_head": "8e55bc0533f3f332a2c16fd875378797d716dc67",
+          "local_head": "31e3fa665819e58388341a92d22d688bb4cea54b",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -138404,7 +138404,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 584,
+          "meaningful_change_count": 581,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -147413,7 +147413,7 @@
     {
       "id": "local:M:odylith/runtime/delivery_intelligence.v4.json",
       "kind": "local_change",
-      "ts_iso": "2026-08-17T09:53:36-07:00",
+      "ts_iso": "2026-08-17T10:08:18-07:00",
       "summary": "Modified odylith/runtime/delivery_intelligence.v4.json",
       "author": "local",
       "sha": "",
@@ -147439,7 +147439,7 @@
     {
       "id": "local:M:odylith/atlas/source/catalog/diagrams.v1.json",
       "kind": "local_change",
-      "ts_iso": "2026-08-17T09:53:27-07:00",
+      "ts_iso": "2026-08-17T10:08:10-07:00",
       "summary": "Modified odylith/atlas/source/catalog/diagrams.v1.json",
       "author": "local",
       "sha": "",
@@ -147465,7 +147465,7 @@
     {
       "id": "local:M:odylith/radar/traceability-graph.v1.json",
       "kind": "local_change",
-      "ts_iso": "2026-08-17T09:53:27-07:00",
+      "ts_iso": "2026-08-17T10:08:10-07:00",
       "summary": "Modified odylith/radar/traceability-graph.v1.json",
       "author": "local",
       "sha": "",
@@ -147491,7 +147491,7 @@
     {
       "id": "plan:update:27:odylith/technical-plans/in-progress/2026-08/2026-08-16-greenfield-semantic-compiler-result-and-projection-owners.md",
       "kind": "plan_update",
-      "ts_iso": "2026-08-17T09:52:54-07:00",
+      "ts_iso": "2026-08-17T10:07:35-07:00",
       "summary": "Plan updated: greenfield semantic compiler result and projection owners (B-144) is In progress; checklist baseline is being finalized.",
       "author": "plan",
       "sha": "",
@@ -147519,7 +147519,7 @@
     {
       "id": "local:M:odylith/technical-plans/in-progress/2026-08/2026-08-16-greenfield-semantic-compiler-result-and-projection-owners.md",
       "kind": "local_change",
-      "ts_iso": "2026-08-17T09:52:54-07:00",
+      "ts_iso": "2026-08-17T10:07:35-07:00",
       "summary": "Modified odylith/technical-plans/in-progress/2026-08/2026-08-16-greenfield-semantic-compiler-result-and-projection-owners.md",
       "author": "local",
       "sha": "",
@@ -147547,7 +147547,7 @@
     {
       "id": "local:M:odylith/casebook/bugs/2026-08-16-equivalent-greenfield-briefs-diverge-across-canonical-intent-axes.md",
       "kind": "local_change",
-      "ts_iso": "2026-08-17T09:52:54-07:00",
+      "ts_iso": "2026-08-17T10:07:35-07:00",
       "summary": "Modified odylith/casebook/bugs/2026-08-16-equivalent-greenfield-briefs-diverge-across-canonical-intent-axes.md",
       "author": "local",
       "sha": "",
@@ -147573,7 +147573,7 @@
     {
       "id": "bug:watch:3:P1",
       "kind": "bug_watch",
-      "ts_iso": "2026-08-17T09:52:54-07:00",
+      "ts_iso": "2026-08-17T10:07:35-07:00",
       "summary": "Critical bug remains open (P1): Equivalent greenfield briefs diverge across canonical intent axes.",
       "author": "bugs",
       "sha": "",
@@ -147597,15 +147597,15 @@
       "deployment_truth": {}
     },
     {
-      "id": "local:M:tests/unit/runtime/test_greenfield_semantic_graph_v3_contract.py",
+      "id": "local:M:tests/unit/install/test_greenfield_semantic_development_cohort.py",
       "kind": "local_change",
-      "ts_iso": "2026-08-17T09:50:55-07:00",
-      "summary": "Modified tests/unit/runtime/test_greenfield_semantic_graph_v3_contract.py",
+      "ts_iso": "2026-08-17T10:05:21-07:00",
+      "summary": "Modified tests/unit/install/test_greenfield_semantic_development_cohort.py",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "tests/unit/runtime/test_greenfield_semantic_graph_v3_contract.py"
+        "tests/unit/install/test_greenfield_semantic_development_cohort.py"
       ],
       "source": "local",
       "session_id": "",
@@ -147623,93 +147623,15 @@
       "deployment_truth": {}
     },
     {
-      "id": "local:M:tests/unit/runtime/test_greenfield_graph_authority_severance.py",
+      "id": "local:M:tests/unit/install/test_greenfield_semantic_host_execution.py",
       "kind": "local_change",
-      "ts_iso": "2026-08-17T09:50:55-07:00",
-      "summary": "Modified tests/unit/runtime/test_greenfield_graph_authority_severance.py",
+      "ts_iso": "2026-08-17T10:04:58-07:00",
+      "summary": "Modified tests/unit/install/test_greenfield_semantic_host_execution.py",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "tests/unit/runtime/test_greenfield_graph_authority_severance.py"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
-      "id": "local:M:tests/unit/runtime/test_greenfield_transaction_provenance.py",
-      "kind": "local_change",
-      "ts_iso": "2026-08-17T09:50:55-07:00",
-      "summary": "Modified tests/unit/runtime/test_greenfield_transaction_provenance.py",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "tests/unit/runtime/test_greenfield_transaction_provenance.py"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
-      "id": "local:M:tests/unit/runtime/test_greenfield_postconfirm_fingerprint_boundary.py",
-      "kind": "local_change",
-      "ts_iso": "2026-08-17T09:50:55-07:00",
-      "summary": "Modified tests/unit/runtime/test_greenfield_postconfirm_fingerprint_boundary.py",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "tests/unit/runtime/test_greenfield_postconfirm_fingerprint_boundary.py"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
-      "id": "local:M:tests/unit/install/test_greenfield_commit_recovery_proof.py",
-      "kind": "local_change",
-      "ts_iso": "2026-08-17T09:50:55-07:00",
-      "summary": "Modified tests/unit/install/test_greenfield_commit_recovery_proof.py",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "tests/unit/install/test_greenfield_commit_recovery_proof.py"
+        "tests/unit/install/test_greenfield_semantic_host_execution.py"
       ],
       "source": "local",
       "session_id": "",
@@ -147729,7 +147651,7 @@
     {
       "id": "local:M:tests/unit/runtime/test_greenfield_semantic_materiality_contract.py",
       "kind": "local_change",
-      "ts_iso": "2026-08-17T09:50:23-07:00",
+      "ts_iso": "2026-08-17T10:04:30-07:00",
       "summary": "Modified tests/unit/runtime/test_greenfield_semantic_materiality_contract.py",
       "author": "local",
       "sha": "",
@@ -147753,87 +147675,9 @@
       "deployment_truth": {}
     },
     {
-      "id": "local:M:src/odylith/runtime/domain_intelligence/greenfield_sealed_product_intent_authority.py",
-      "kind": "local_change",
-      "ts_iso": "2026-08-17T09:49:49-07:00",
-      "summary": "Modified src/odylith/runtime/domain_intelligence/greenfield_sealed_product_intent_authority.py",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "src/odylith/runtime/domain_intelligence/greenfield_sealed_product_intent_authority.py"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
-      "id": "local:M:src/odylith/runtime/domain_intelligence/greenfield_create_contract.py",
-      "kind": "local_change",
-      "ts_iso": "2026-08-17T09:49:49-07:00",
-      "summary": "Modified src/odylith/runtime/domain_intelligence/greenfield_create_contract.py",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "src/odylith/runtime/domain_intelligence/greenfield_create_contract.py"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
-      "id": "local:M:src/odylith/runtime/domain_intelligence/greenfield_semantic_authoring_contract.py",
-      "kind": "local_change",
-      "ts_iso": "2026-08-17T09:49:49-07:00",
-      "summary": "Modified src/odylith/runtime/domain_intelligence/greenfield_semantic_authoring_contract.py",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_authoring_contract.py"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
       "id": "local:M:src/odylith/runtime/domain_intelligence/greenfield_semantic_materiality_contract.py",
       "kind": "local_change",
-      "ts_iso": "2026-08-17T09:49:38-07:00",
+      "ts_iso": "2026-08-17T10:03:28-07:00",
       "summary": "Modified src/odylith/runtime/domain_intelligence/greenfield_semantic_materiality_contract.py",
       "author": "local",
       "sha": "",
@@ -147859,17 +147703,15 @@
       "deployment_truth": {}
     },
     {
-      "id": "local:M:src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_schema.py",
+      "id": "local:M:src/odylith/runtime/domain_intelligence/greenfield_semantic_source_citations.py",
       "kind": "local_change",
-      "ts_iso": "2026-08-17T09:49:38-07:00",
-      "summary": "Modified src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_schema.py",
+      "ts_iso": "2026-08-17T10:02:57-07:00",
+      "summary": "Modified src/odylith/runtime/domain_intelligence/greenfield_semantic_source_citations.py",
       "author": "local",
       "sha": "",
-      "workstreams": [
-        "B-144"
-      ],
+      "workstreams": [],
       "files": [
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_schema.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_source_citations.py"
       ],
       "source": "local",
       "session_id": "",
@@ -147887,17 +147729,69 @@
       "deployment_truth": {}
     },
     {
-      "id": "local:M:src/odylith/runtime/domain_intelligence/greenfield_semantic_source_citations.py",
-      "kind": "local_change",
-      "ts_iso": "2026-08-17T09:49:38-07:00",
-      "summary": "Modified src/odylith/runtime/domain_intelligence/greenfield_semantic_source_citations.py",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_source_citations.py"
+      "id": "commit:31e3fa665819e58388341a92d22d688bb4cea54b",
+      "kind": "commit",
+      "ts_iso": "2026-08-17T09:58:23-07:00",
+      "summary": "Bind graph authors to exact citation catalog",
+      "author": "freedom-research",
+      "sha": "31e3fa665819e58388341a92d22d688bb4cea54b",
+      "workstreams": [
+        "B-005",
+        "B-063",
+        "B-069",
+        "B-083",
+        "B-142",
+        "B-144"
       ],
-      "source": "local",
+      "files": [
+        "odylith/atlas/source/catalog/diagrams.v1.json",
+        "odylith/casebook/bugs/2026-08-16-equivalent-greenfield-briefs-diverge-across-canonical-intent-axes.md",
+        "odylith/casebook/casebook-detail-shard-003.v1.js",
+        "odylith/casebook/casebook-detail-shard-011.v1.js",
+        "odylith/casebook/casebook-payload.v1.js",
+        "odylith/casebook/casebook.html",
+        "odylith/compass/compass-payload.v1.js",
+        "odylith/compass/compass-source-truth.v1.json",
+        "odylith/compass/compass.html",
+        "odylith/compass/runtime/current.v1.js",
+        "odylith/compass/runtime/current.v1.json",
+        "odylith/compass/runtime/history/2026-08-17.v1.json",
+        "odylith/compass/runtime/history/embedded.v1.js",
+        "odylith/compass/runtime/history/index.v1.json",
+        "odylith/index.html",
+        "odylith/radar/backlog-detail-shard-001.v1.js",
+        "odylith/radar/backlog-detail-shard-002.v1.js",
+        "odylith/radar/backlog-detail-shard-003.v1.js",
+        "odylith/radar/backlog-document-shard-004.v1.js",
+        "odylith/radar/backlog-payload.v1.js",
+        "odylith/radar/radar.html",
+        "odylith/radar/traceability-graph.v1.json",
+        "odylith/registry/registry-detail-shard-001.v1.js",
+        "odylith/registry/registry-payload.v1.js",
+        "odylith/registry/registry.html",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/runtime/delivery_intelligence.v4.json",
+        "odylith/technical-plans/in-progress/2026-08/2026-08-16-greenfield-semantic-compiler-result-and-projection-owners.md",
+        "odylith/tooling-payload.v1.js",
+        "src/odylith/bundle/assets/odylith/casebook/casebook.html",
+        "src/odylith/bundle/assets/odylith/compass/compass.html",
+        "src/odylith/bundle/assets/odylith/index.html",
+        "src/odylith/bundle/assets/odylith/radar/radar.html",
+        "src/odylith/bundle/assets/odylith/registry/registry.html",
+        "src/odylith/runtime/domain_intelligence/greenfield_create_contract.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_sealed_product_intent_authority.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_authoring_contract.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_schema.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_materiality_contract.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_source_citations.py",
+        "tests/unit/install/test_greenfield_commit_recovery_proof.py",
+        "tests/unit/runtime/test_greenfield_graph_authority_severance.py",
+        "tests/unit/runtime/test_greenfield_postconfirm_fingerprint_boundary.py",
+        "tests/unit/runtime/test_greenfield_semantic_graph_v3_contract.py",
+        "tests/unit/runtime/test_greenfield_semantic_materiality_contract.py",
+        "tests/unit/runtime/test_greenfield_transaction_provenance.py"
+      ],
+      "source": "git",
       "session_id": "",
       "transaction_id": "",
       "transaction_seq": null,
@@ -149687,15 +149581,15 @@
   ],
   "timeline_transactions": [
     {
-      "id": "txn:global:auto-global-0034:0034",
-      "transaction_id": "txn:global:auto-global-0034:0034",
+      "id": "txn:global:auto-global-0036:0036",
+      "transaction_id": "txn:global:auto-global-0036:0036",
       "session_id": "",
-      "start_ts_iso": "2026-08-17T09:49:38-07:00",
-      "end_ts_iso": "2026-08-17T09:53:36-07:00",
-      "headline": "Updated product code and 7 other areas for B-144",
+      "start_ts_iso": "2026-08-17T10:07:35-07:00",
+      "end_ts_iso": "2026-08-17T10:08:18-07:00",
+      "headline": "Updated Radar dashboard and 4 other areas for B-144",
       "context": "",
-      "event_count": 19,
-      "files_count": 17,
+      "event_count": 7,
+      "files_count": 5,
       "workstreams": [
         "B-144"
       ],
@@ -149704,19 +149598,7 @@
         "odylith/casebook/bugs/2026-08-16-equivalent-greenfield-briefs-diverge-across-canonical-intent-axes.md",
         "odylith/radar/traceability-graph.v1.json",
         "odylith/runtime/delivery_intelligence.v4.json",
-        "odylith/technical-plans/in-progress/2026-08/2026-08-16-greenfield-semantic-compiler-result-and-projection-owners.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_create_contract.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_sealed_product_intent_authority.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_authoring_contract.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_schema.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_materiality_contract.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_source_citations.py",
-        "tests/unit/install/test_greenfield_commit_recovery_proof.py",
-        "tests/unit/runtime/test_greenfield_graph_authority_severance.py",
-        "tests/unit/runtime/test_greenfield_postconfirm_fingerprint_boundary.py",
-        "tests/unit/runtime/test_greenfield_semantic_graph_v3_contract.py",
-        "tests/unit/runtime/test_greenfield_semantic_materiality_contract.py",
-        "tests/unit/runtime/test_greenfield_transaction_provenance.py"
+        "odylith/technical-plans/in-progress/2026-08/2026-08-16-greenfield-semantic-compiler-result-and-projection-owners.md"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -149724,7 +149606,7 @@
         {
           "id": "local:M:odylith/runtime/delivery_intelligence.v4.json",
           "kind": "local_change",
-          "ts_iso": "2026-08-17T09:53:36-07:00",
+          "ts_iso": "2026-08-17T10:08:18-07:00",
           "summary": "Modified odylith/runtime/delivery_intelligence.v4.json",
           "author": "local",
           "sha": "",
@@ -149750,7 +149632,7 @@
         {
           "id": "local:M:odylith/atlas/source/catalog/diagrams.v1.json",
           "kind": "local_change",
-          "ts_iso": "2026-08-17T09:53:27-07:00",
+          "ts_iso": "2026-08-17T10:08:10-07:00",
           "summary": "Modified odylith/atlas/source/catalog/diagrams.v1.json",
           "author": "local",
           "sha": "",
@@ -149776,7 +149658,7 @@
         {
           "id": "local:M:odylith/radar/traceability-graph.v1.json",
           "kind": "local_change",
-          "ts_iso": "2026-08-17T09:53:27-07:00",
+          "ts_iso": "2026-08-17T10:08:10-07:00",
           "summary": "Modified odylith/radar/traceability-graph.v1.json",
           "author": "local",
           "sha": "",
@@ -149802,7 +149684,7 @@
         {
           "id": "plan:update:27:odylith/technical-plans/in-progress/2026-08/2026-08-16-greenfield-semantic-compiler-result-and-projection-owners.md",
           "kind": "plan_update",
-          "ts_iso": "2026-08-17T09:52:54-07:00",
+          "ts_iso": "2026-08-17T10:07:35-07:00",
           "summary": "Plan updated: greenfield semantic compiler result and projection owners (B-144) is In progress; checklist baseline is being finalized.",
           "author": "plan",
           "sha": "",
@@ -149830,7 +149712,7 @@
         {
           "id": "local:M:odylith/technical-plans/in-progress/2026-08/2026-08-16-greenfield-semantic-compiler-result-and-projection-owners.md",
           "kind": "local_change",
-          "ts_iso": "2026-08-17T09:52:54-07:00",
+          "ts_iso": "2026-08-17T10:07:35-07:00",
           "summary": "Modified odylith/technical-plans/in-progress/2026-08/2026-08-16-greenfield-semantic-compiler-result-and-projection-owners.md",
           "author": "local",
           "sha": "",
@@ -149858,7 +149740,7 @@
         {
           "id": "local:M:odylith/casebook/bugs/2026-08-16-equivalent-greenfield-briefs-diverge-across-canonical-intent-axes.md",
           "kind": "local_change",
-          "ts_iso": "2026-08-17T09:52:54-07:00",
+          "ts_iso": "2026-08-17T10:07:35-07:00",
           "summary": "Modified odylith/casebook/bugs/2026-08-16-equivalent-greenfield-briefs-diverge-across-canonical-intent-axes.md",
           "author": "local",
           "sha": "",
@@ -149884,7 +149766,7 @@
         {
           "id": "bug:watch:3:P1",
           "kind": "bug_watch",
-          "ts_iso": "2026-08-17T09:52:54-07:00",
+          "ts_iso": "2026-08-17T10:07:35-07:00",
           "summary": "Critical bug remains open (P1): Equivalent greenfield briefs diverge across canonical intent axes.",
           "author": "bugs",
           "sha": "",
@@ -149906,17 +149788,42 @@
           "proof_status": "",
           "work_category": "",
           "deployment_truth": {}
-        },
+        }
+      ]
+    },
+    {
+      "id": "txn:global:auto-global-0035:0035",
+      "transaction_id": "txn:global:auto-global-0035:0035",
+      "session_id": "",
+      "start_ts_iso": "2026-08-17T10:02:57-07:00",
+      "end_ts_iso": "2026-08-17T10:05:21-07:00",
+      "headline": "Updated unit tests and 2 other areas for B-144",
+      "context": "",
+      "event_count": 5,
+      "files_count": 5,
+      "workstreams": [
+        "B-144"
+      ],
+      "files": [
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_materiality_contract.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_source_citations.py",
+        "tests/unit/install/test_greenfield_semantic_development_cohort.py",
+        "tests/unit/install/test_greenfield_semantic_host_execution.py",
+        "tests/unit/runtime/test_greenfield_semantic_materiality_contract.py"
+      ],
+      "explicit_open": false,
+      "explicit_closed": false,
+      "events": [
         {
-          "id": "local:M:tests/unit/runtime/test_greenfield_semantic_graph_v3_contract.py",
+          "id": "local:M:tests/unit/install/test_greenfield_semantic_development_cohort.py",
           "kind": "local_change",
-          "ts_iso": "2026-08-17T09:50:55-07:00",
-          "summary": "Modified tests/unit/runtime/test_greenfield_semantic_graph_v3_contract.py",
+          "ts_iso": "2026-08-17T10:05:21-07:00",
+          "summary": "Modified tests/unit/install/test_greenfield_semantic_development_cohort.py",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "tests/unit/runtime/test_greenfield_semantic_graph_v3_contract.py"
+            "tests/unit/install/test_greenfield_semantic_development_cohort.py"
           ],
           "source": "local",
           "session_id": "",
@@ -149934,93 +149841,15 @@
           "deployment_truth": {}
         },
         {
-          "id": "local:M:tests/unit/runtime/test_greenfield_graph_authority_severance.py",
+          "id": "local:M:tests/unit/install/test_greenfield_semantic_host_execution.py",
           "kind": "local_change",
-          "ts_iso": "2026-08-17T09:50:55-07:00",
-          "summary": "Modified tests/unit/runtime/test_greenfield_graph_authority_severance.py",
+          "ts_iso": "2026-08-17T10:04:58-07:00",
+          "summary": "Modified tests/unit/install/test_greenfield_semantic_host_execution.py",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "tests/unit/runtime/test_greenfield_graph_authority_severance.py"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        },
-        {
-          "id": "local:M:tests/unit/runtime/test_greenfield_transaction_provenance.py",
-          "kind": "local_change",
-          "ts_iso": "2026-08-17T09:50:55-07:00",
-          "summary": "Modified tests/unit/runtime/test_greenfield_transaction_provenance.py",
-          "author": "local",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "tests/unit/runtime/test_greenfield_transaction_provenance.py"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        },
-        {
-          "id": "local:M:tests/unit/runtime/test_greenfield_postconfirm_fingerprint_boundary.py",
-          "kind": "local_change",
-          "ts_iso": "2026-08-17T09:50:55-07:00",
-          "summary": "Modified tests/unit/runtime/test_greenfield_postconfirm_fingerprint_boundary.py",
-          "author": "local",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "tests/unit/runtime/test_greenfield_postconfirm_fingerprint_boundary.py"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        },
-        {
-          "id": "local:M:tests/unit/install/test_greenfield_commit_recovery_proof.py",
-          "kind": "local_change",
-          "ts_iso": "2026-08-17T09:50:55-07:00",
-          "summary": "Modified tests/unit/install/test_greenfield_commit_recovery_proof.py",
-          "author": "local",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "tests/unit/install/test_greenfield_commit_recovery_proof.py"
+            "tests/unit/install/test_greenfield_semantic_host_execution.py"
           ],
           "source": "local",
           "session_id": "",
@@ -150040,7 +149869,7 @@
         {
           "id": "local:M:tests/unit/runtime/test_greenfield_semantic_materiality_contract.py",
           "kind": "local_change",
-          "ts_iso": "2026-08-17T09:50:23-07:00",
+          "ts_iso": "2026-08-17T10:04:30-07:00",
           "summary": "Modified tests/unit/runtime/test_greenfield_semantic_materiality_contract.py",
           "author": "local",
           "sha": "",
@@ -150064,87 +149893,9 @@
           "deployment_truth": {}
         },
         {
-          "id": "local:M:src/odylith/runtime/domain_intelligence/greenfield_sealed_product_intent_authority.py",
-          "kind": "local_change",
-          "ts_iso": "2026-08-17T09:49:49-07:00",
-          "summary": "Modified src/odylith/runtime/domain_intelligence/greenfield_sealed_product_intent_authority.py",
-          "author": "local",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "src/odylith/runtime/domain_intelligence/greenfield_sealed_product_intent_authority.py"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        },
-        {
-          "id": "local:M:src/odylith/runtime/domain_intelligence/greenfield_create_contract.py",
-          "kind": "local_change",
-          "ts_iso": "2026-08-17T09:49:49-07:00",
-          "summary": "Modified src/odylith/runtime/domain_intelligence/greenfield_create_contract.py",
-          "author": "local",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "src/odylith/runtime/domain_intelligence/greenfield_create_contract.py"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        },
-        {
-          "id": "local:M:src/odylith/runtime/domain_intelligence/greenfield_semantic_authoring_contract.py",
-          "kind": "local_change",
-          "ts_iso": "2026-08-17T09:49:49-07:00",
-          "summary": "Modified src/odylith/runtime/domain_intelligence/greenfield_semantic_authoring_contract.py",
-          "author": "local",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "src/odylith/runtime/domain_intelligence/greenfield_semantic_authoring_contract.py"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        },
-        {
           "id": "local:M:src/odylith/runtime/domain_intelligence/greenfield_semantic_materiality_contract.py",
           "kind": "local_change",
-          "ts_iso": "2026-08-17T09:49:38-07:00",
+          "ts_iso": "2026-08-17T10:03:28-07:00",
           "summary": "Modified src/odylith/runtime/domain_intelligence/greenfield_semantic_materiality_contract.py",
           "author": "local",
           "sha": "",
@@ -150170,17 +149921,15 @@
           "deployment_truth": {}
         },
         {
-          "id": "local:M:src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_schema.py",
+          "id": "local:M:src/odylith/runtime/domain_intelligence/greenfield_semantic_source_citations.py",
           "kind": "local_change",
-          "ts_iso": "2026-08-17T09:49:38-07:00",
-          "summary": "Modified src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_schema.py",
+          "ts_iso": "2026-08-17T10:02:57-07:00",
+          "summary": "Modified src/odylith/runtime/domain_intelligence/greenfield_semantic_source_citations.py",
           "author": "local",
           "sha": "",
-          "workstreams": [
-            "B-144"
-          ],
+          "workstreams": [],
           "files": [
-            "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_schema.py"
+            "src/odylith/runtime/domain_intelligence/greenfield_semantic_source_citations.py"
           ],
           "source": "local",
           "session_id": "",
@@ -150196,19 +149945,142 @@
           "proof_status": "",
           "work_category": "",
           "deployment_truth": {}
-        },
+        }
+      ]
+    },
+    {
+      "id": "txn:global:auto-global-0034:0034",
+      "transaction_id": "txn:global:auto-global-0034:0034",
+      "session_id": "",
+      "start_ts_iso": "2026-08-17T09:58:23-07:00",
+      "end_ts_iso": "2026-08-17T09:58:23-07:00",
+      "headline": "Bind graph authors to exact citation catalog",
+      "context": "",
+      "event_count": 1,
+      "files_count": 46,
+      "workstreams": [
+        "B-005",
+        "B-063",
+        "B-069",
+        "B-083",
+        "B-142",
+        "B-144"
+      ],
+      "files": [
+        "odylith/atlas/source/catalog/diagrams.v1.json",
+        "odylith/casebook/bugs/2026-08-16-equivalent-greenfield-briefs-diverge-across-canonical-intent-axes.md",
+        "odylith/casebook/casebook-detail-shard-003.v1.js",
+        "odylith/casebook/casebook-detail-shard-011.v1.js",
+        "odylith/casebook/casebook-payload.v1.js",
+        "odylith/casebook/casebook.html",
+        "odylith/compass/compass-payload.v1.js",
+        "odylith/compass/compass-source-truth.v1.json",
+        "odylith/compass/compass.html",
+        "odylith/compass/runtime/current.v1.js",
+        "odylith/compass/runtime/current.v1.json",
+        "odylith/compass/runtime/history/2026-08-17.v1.json",
+        "odylith/compass/runtime/history/embedded.v1.js",
+        "odylith/compass/runtime/history/index.v1.json",
+        "odylith/index.html",
+        "odylith/radar/backlog-detail-shard-001.v1.js",
+        "odylith/radar/backlog-detail-shard-002.v1.js",
+        "odylith/radar/backlog-detail-shard-003.v1.js",
+        "odylith/radar/backlog-document-shard-004.v1.js",
+        "odylith/radar/backlog-payload.v1.js",
+        "odylith/radar/radar.html",
+        "odylith/radar/traceability-graph.v1.json",
+        "odylith/registry/registry-detail-shard-001.v1.js",
+        "odylith/registry/registry-payload.v1.js",
+        "odylith/registry/registry.html",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/runtime/delivery_intelligence.v4.json",
+        "odylith/technical-plans/in-progress/2026-08/2026-08-16-greenfield-semantic-compiler-result-and-projection-owners.md",
+        "odylith/tooling-payload.v1.js",
+        "src/odylith/bundle/assets/odylith/casebook/casebook.html",
+        "src/odylith/bundle/assets/odylith/compass/compass.html",
+        "src/odylith/bundle/assets/odylith/index.html",
+        "src/odylith/bundle/assets/odylith/radar/radar.html",
+        "src/odylith/bundle/assets/odylith/registry/registry.html",
+        "src/odylith/runtime/domain_intelligence/greenfield_create_contract.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_sealed_product_intent_authority.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_authoring_contract.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_schema.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_materiality_contract.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_source_citations.py",
+        "tests/unit/install/test_greenfield_commit_recovery_proof.py",
+        "tests/unit/runtime/test_greenfield_graph_authority_severance.py",
+        "tests/unit/runtime/test_greenfield_postconfirm_fingerprint_boundary.py",
+        "tests/unit/runtime/test_greenfield_semantic_graph_v3_contract.py",
+        "tests/unit/runtime/test_greenfield_semantic_materiality_contract.py",
+        "tests/unit/runtime/test_greenfield_transaction_provenance.py"
+      ],
+      "explicit_open": false,
+      "explicit_closed": false,
+      "events": [
         {
-          "id": "local:M:src/odylith/runtime/domain_intelligence/greenfield_semantic_source_citations.py",
-          "kind": "local_change",
-          "ts_iso": "2026-08-17T09:49:38-07:00",
-          "summary": "Modified src/odylith/runtime/domain_intelligence/greenfield_semantic_source_citations.py",
-          "author": "local",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "src/odylith/runtime/domain_intelligence/greenfield_semantic_source_citations.py"
+          "id": "commit:31e3fa665819e58388341a92d22d688bb4cea54b",
+          "kind": "commit",
+          "ts_iso": "2026-08-17T09:58:23-07:00",
+          "summary": "Bind graph authors to exact citation catalog",
+          "author": "freedom-research",
+          "sha": "31e3fa665819e58388341a92d22d688bb4cea54b",
+          "workstreams": [
+            "B-005",
+            "B-063",
+            "B-069",
+            "B-083",
+            "B-142",
+            "B-144"
           ],
-          "source": "local",
+          "files": [
+            "odylith/atlas/source/catalog/diagrams.v1.json",
+            "odylith/casebook/bugs/2026-08-16-equivalent-greenfield-briefs-diverge-across-canonical-intent-axes.md",
+            "odylith/casebook/casebook-detail-shard-003.v1.js",
+            "odylith/casebook/casebook-detail-shard-011.v1.js",
+            "odylith/casebook/casebook-payload.v1.js",
+            "odylith/casebook/casebook.html",
+            "odylith/compass/compass-payload.v1.js",
+            "odylith/compass/compass-source-truth.v1.json",
+            "odylith/compass/compass.html",
+            "odylith/compass/runtime/current.v1.js",
+            "odylith/compass/runtime/current.v1.json",
+            "odylith/compass/runtime/history/2026-08-17.v1.json",
+            "odylith/compass/runtime/history/embedded.v1.js",
+            "odylith/compass/runtime/history/index.v1.json",
+            "odylith/index.html",
+            "odylith/radar/backlog-detail-shard-001.v1.js",
+            "odylith/radar/backlog-detail-shard-002.v1.js",
+            "odylith/radar/backlog-detail-shard-003.v1.js",
+            "odylith/radar/backlog-document-shard-004.v1.js",
+            "odylith/radar/backlog-payload.v1.js",
+            "odylith/radar/radar.html",
+            "odylith/radar/traceability-graph.v1.json",
+            "odylith/registry/registry-detail-shard-001.v1.js",
+            "odylith/registry/registry-payload.v1.js",
+            "odylith/registry/registry.html",
+            "odylith/registry/source/components/release/CURRENT_SPEC.md",
+            "odylith/runtime/delivery_intelligence.v4.json",
+            "odylith/technical-plans/in-progress/2026-08/2026-08-16-greenfield-semantic-compiler-result-and-projection-owners.md",
+            "odylith/tooling-payload.v1.js",
+            "src/odylith/bundle/assets/odylith/casebook/casebook.html",
+            "src/odylith/bundle/assets/odylith/compass/compass.html",
+            "src/odylith/bundle/assets/odylith/index.html",
+            "src/odylith/bundle/assets/odylith/radar/radar.html",
+            "src/odylith/bundle/assets/odylith/registry/registry.html",
+            "src/odylith/runtime/domain_intelligence/greenfield_create_contract.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_sealed_product_intent_authority.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_semantic_authoring_contract.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_schema.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_semantic_materiality_contract.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_semantic_source_citations.py",
+            "tests/unit/install/test_greenfield_commit_recovery_proof.py",
+            "tests/unit/runtime/test_greenfield_graph_authority_severance.py",
+            "tests/unit/runtime/test_greenfield_postconfirm_fingerprint_boundary.py",
+            "tests/unit/runtime/test_greenfield_semantic_graph_v3_contract.py",
+            "tests/unit/runtime/test_greenfield_semantic_materiality_contract.py",
+            "tests/unit/runtime/test_greenfield_transaction_provenance.py"
+          ],
+          "source": "git",
           "session_id": "",
           "transaction_id": "",
           "transaction_seq": null,
@@ -153720,152 +153592,106 @@
       "transaction_id": "txn:global:auto-global-0034:0034",
       "session_id": "",
       "context": "",
-      "headline": "Updated product code and 7 other areas for B-144",
-      "last_event_iso": "2026-08-17T09:53:36-07:00",
-      "start_ts_iso": "2026-08-17T09:49:38-07:00",
+      "headline": "Bind graph authors to exact citation catalog",
+      "last_event_iso": "2026-08-17T09:58:23-07:00",
+      "start_ts_iso": "2026-08-17T09:58:23-07:00",
       "workstreams": [
+        "B-005",
+        "B-063",
+        "B-069",
+        "B-083",
+        "B-142",
         "B-144"
       ],
-      "event_count": 19,
-      "files_count": 17,
+      "event_count": 1,
+      "files_count": 46,
       "kind_counts": {
-        "local_change": 17,
-        "plan_update": 1,
-        "bug_watch": 1
+        "commit": 1
       },
       "source_counts": {
-        "local": 17,
-        "plan_index": 1,
-        "bugs_index": 1
+        "git": 1
       },
-      "activity_signal_count": 18,
-      "risk_signal_count": 1,
+      "activity_signal_count": 1,
+      "risk_signal_count": 0,
       "top_files": [
-        "odylith/runtime/delivery_intelligence.v4.json",
-        "odylith/technical-plans/in-progress/2026-08/2026-08-16-greenfield-semantic-compiler-result-and-projection-owners.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_create_contract.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_sealed_product_intent_authority.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_authoring_contract.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_schema.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_materiality_contract.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_source_citations.py"
+        "odylith/compass/compass-payload.v1.js",
+        "odylith/compass/compass-source-truth.v1.json",
+        "odylith/radar/backlog-detail-shard-001.v1.js",
+        "odylith/radar/backlog-detail-shard-002.v1.js",
+        "odylith/radar/backlog-detail-shard-003.v1.js",
+        "odylith/radar/backlog-document-shard-004.v1.js",
+        "odylith/registry/registry-detail-shard-001.v1.js",
+        "odylith/registry/registry-payload.v1.js"
       ],
-      "source_files_count": 14,
-      "generated_files_count": 3,
+      "source_files_count": 30,
+      "generated_files_count": 16,
       "generated_only_batch": false,
-      "latest_event_kind": "local_change",
-      "latest_event_summary": "Modified odylith/runtime/delivery_intelligence.v4.json",
+      "latest_event_kind": "commit",
+      "latest_event_summary": "Bind graph authors to exact citation catalog",
       "has_implementation_signal": true,
       "focus_reason": "recent_activity_signal",
       "selection_mode": "active_implementation",
       "has_live_implementation": true,
       "has_recent_implementation": true,
-      "latest_implementation_iso": "2026-08-17T09:53:36-07:00"
+      "latest_implementation_iso": "2026-08-17T10:08:18-07:00"
     },
     "by_workstream": {
-      "B-144": {
+      "B-005": {
         "is_active": true,
         "transaction_id": "txn:global:auto-global-0034:0034",
         "session_id": "",
         "context": "",
-        "headline": "Updated product code and 7 other areas for B-144",
-        "last_event_iso": "2026-08-17T09:53:36-07:00",
-        "start_ts_iso": "2026-08-17T09:49:38-07:00",
+        "headline": "Bind graph authors to exact citation catalog",
+        "last_event_iso": "2026-08-17T09:58:23-07:00",
+        "start_ts_iso": "2026-08-17T09:58:23-07:00",
         "workstreams": [
+          "B-005",
+          "B-063",
+          "B-069",
+          "B-083",
+          "B-142",
           "B-144"
         ],
-        "event_count": 19,
-        "files_count": 17,
+        "event_count": 1,
+        "files_count": 46,
         "kind_counts": {
-          "local_change": 17,
-          "plan_update": 1,
-          "bug_watch": 1
+          "commit": 1
         },
         "source_counts": {
-          "local": 17,
-          "plan_index": 1,
-          "bugs_index": 1
+          "git": 1
         },
-        "activity_signal_count": 18,
-        "risk_signal_count": 1,
+        "activity_signal_count": 1,
+        "risk_signal_count": 0,
         "top_files": [
-          "odylith/runtime/delivery_intelligence.v4.json",
-          "odylith/technical-plans/in-progress/2026-08/2026-08-16-greenfield-semantic-compiler-result-and-projection-owners.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_create_contract.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_sealed_product_intent_authority.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_semantic_authoring_contract.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_schema.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_semantic_materiality_contract.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_semantic_source_citations.py"
+          "odylith/compass/compass-payload.v1.js",
+          "odylith/compass/compass-source-truth.v1.json",
+          "odylith/radar/backlog-detail-shard-001.v1.js",
+          "odylith/radar/backlog-detail-shard-002.v1.js",
+          "odylith/radar/backlog-detail-shard-003.v1.js",
+          "odylith/radar/backlog-document-shard-004.v1.js",
+          "odylith/registry/registry-detail-shard-001.v1.js",
+          "odylith/registry/registry-payload.v1.js"
         ],
-        "source_files_count": 14,
-        "generated_files_count": 3,
+        "source_files_count": 30,
+        "generated_files_count": 16,
         "generated_only_batch": false,
-        "latest_event_kind": "local_change",
-        "latest_event_summary": "Modified odylith/runtime/delivery_intelligence.v4.json",
+        "latest_event_kind": "commit",
+        "latest_event_summary": "Bind graph authors to exact citation catalog",
         "has_implementation_signal": true,
         "focus_reason": "recent_activity_signal",
         "selection_mode": "active_implementation",
         "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-08-17T09:53:36-07:00"
-      },
-      "B-005": {
-        "is_active": false,
-        "transaction_id": "txn:global:auto-global-0033:0033",
-        "session_id": "",
-        "context": "",
-        "headline": "made semantic state transitions atomic",
-        "last_event_iso": "2026-08-17T09:28:34-07:00",
-        "start_ts_iso": "2026-08-17T09:28:34-07:00",
-        "workstreams": [
-          "B-005",
-          "B-063",
-          "B-069",
-          "B-083",
-          "B-142",
-          "B-144"
-        ],
-        "event_count": 1,
-        "files_count": 55,
-        "kind_counts": {
-          "commit": 1
-        },
-        "source_counts": {
-          "git": 1
-        },
-        "activity_signal_count": 1,
-        "risk_signal_count": 0,
-        "top_files": [
-          "Makefile",
-          "odylith/compass/compass-payload.v1.js",
-          "odylith/compass/compass-source-truth.v1.json",
-          "odylith/radar/backlog-detail-shard-001.v1.js",
-          "odylith/radar/backlog-detail-shard-002.v1.js",
-          "odylith/radar/backlog-detail-shard-003.v1.js",
-          "odylith/radar/backlog-document-shard-004.v1.js",
-          "odylith/radar/source/INDEX.md"
-        ],
-        "source_files_count": 39,
-        "generated_files_count": 16,
-        "generated_only_batch": false,
-        "latest_event_kind": "commit",
-        "latest_event_summary": "Make semantic state transitions atomic",
-        "has_implementation_signal": true,
-        "focus_reason": "recent_implementation_fallback",
-        "selection_mode": "recent_implementation_fallback",
-        "has_live_implementation": false,
-        "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-08-17T09:28:34-07:00"
+        "latest_implementation_iso": "2026-08-17T09:58:23-07:00"
       },
       "B-063": {
-        "is_active": false,
-        "transaction_id": "txn:global:auto-global-0033:0033",
+        "is_active": true,
+        "transaction_id": "txn:global:auto-global-0034:0034",
         "session_id": "",
         "context": "",
-        "headline": "made semantic state transitions atomic",
-        "last_event_iso": "2026-08-17T09:28:34-07:00",
-        "start_ts_iso": "2026-08-17T09:28:34-07:00",
+        "headline": "Bind graph authors to exact citation catalog",
+        "last_event_iso": "2026-08-17T09:58:23-07:00",
+        "start_ts_iso": "2026-08-17T09:58:23-07:00",
         "workstreams": [
           "B-005",
           "B-063",
@@ -153875,7 +153701,7 @@
           "B-144"
         ],
         "event_count": 1,
-        "files_count": 55,
+        "files_count": 46,
         "kind_counts": {
           "commit": 1
         },
@@ -153885,35 +153711,35 @@
         "activity_signal_count": 1,
         "risk_signal_count": 0,
         "top_files": [
-          "Makefile",
           "odylith/compass/compass-payload.v1.js",
           "odylith/compass/compass-source-truth.v1.json",
           "odylith/radar/backlog-detail-shard-001.v1.js",
           "odylith/radar/backlog-detail-shard-002.v1.js",
           "odylith/radar/backlog-detail-shard-003.v1.js",
           "odylith/radar/backlog-document-shard-004.v1.js",
-          "odylith/radar/source/INDEX.md"
+          "odylith/registry/registry-detail-shard-001.v1.js",
+          "odylith/registry/registry-payload.v1.js"
         ],
-        "source_files_count": 39,
+        "source_files_count": 30,
         "generated_files_count": 16,
         "generated_only_batch": false,
         "latest_event_kind": "commit",
-        "latest_event_summary": "Make semantic state transitions atomic",
+        "latest_event_summary": "Bind graph authors to exact citation catalog",
         "has_implementation_signal": true,
-        "focus_reason": "recent_implementation_fallback",
-        "selection_mode": "recent_implementation_fallback",
-        "has_live_implementation": false,
+        "focus_reason": "recent_activity_signal",
+        "selection_mode": "active_implementation",
+        "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-08-17T09:28:34-07:00"
+        "latest_implementation_iso": "2026-08-17T09:58:23-07:00"
       },
       "B-069": {
-        "is_active": false,
-        "transaction_id": "txn:global:auto-global-0033:0033",
+        "is_active": true,
+        "transaction_id": "txn:global:auto-global-0034:0034",
         "session_id": "",
         "context": "",
-        "headline": "made semantic state transitions atomic",
-        "last_event_iso": "2026-08-17T09:28:34-07:00",
-        "start_ts_iso": "2026-08-17T09:28:34-07:00",
+        "headline": "Bind graph authors to exact citation catalog",
+        "last_event_iso": "2026-08-17T09:58:23-07:00",
+        "start_ts_iso": "2026-08-17T09:58:23-07:00",
         "workstreams": [
           "B-005",
           "B-063",
@@ -153923,7 +153749,7 @@
           "B-144"
         ],
         "event_count": 1,
-        "files_count": 55,
+        "files_count": 46,
         "kind_counts": {
           "commit": 1
         },
@@ -153933,35 +153759,35 @@
         "activity_signal_count": 1,
         "risk_signal_count": 0,
         "top_files": [
-          "Makefile",
           "odylith/compass/compass-payload.v1.js",
           "odylith/compass/compass-source-truth.v1.json",
           "odylith/radar/backlog-detail-shard-001.v1.js",
           "odylith/radar/backlog-detail-shard-002.v1.js",
           "odylith/radar/backlog-detail-shard-003.v1.js",
           "odylith/radar/backlog-document-shard-004.v1.js",
-          "odylith/radar/source/INDEX.md"
+          "odylith/registry/registry-detail-shard-001.v1.js",
+          "odylith/registry/registry-payload.v1.js"
         ],
-        "source_files_count": 39,
+        "source_files_count": 30,
         "generated_files_count": 16,
         "generated_only_batch": false,
         "latest_event_kind": "commit",
-        "latest_event_summary": "Make semantic state transitions atomic",
+        "latest_event_summary": "Bind graph authors to exact citation catalog",
         "has_implementation_signal": true,
-        "focus_reason": "recent_implementation_fallback",
-        "selection_mode": "recent_implementation_fallback",
-        "has_live_implementation": false,
+        "focus_reason": "recent_activity_signal",
+        "selection_mode": "active_implementation",
+        "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-08-17T09:28:34-07:00"
+        "latest_implementation_iso": "2026-08-17T09:58:23-07:00"
       },
       "B-083": {
-        "is_active": false,
-        "transaction_id": "txn:global:auto-global-0033:0033",
+        "is_active": true,
+        "transaction_id": "txn:global:auto-global-0034:0034",
         "session_id": "",
         "context": "",
-        "headline": "made semantic state transitions atomic",
-        "last_event_iso": "2026-08-17T09:28:34-07:00",
-        "start_ts_iso": "2026-08-17T09:28:34-07:00",
+        "headline": "Bind graph authors to exact citation catalog",
+        "last_event_iso": "2026-08-17T09:58:23-07:00",
+        "start_ts_iso": "2026-08-17T09:58:23-07:00",
         "workstreams": [
           "B-005",
           "B-063",
@@ -153971,7 +153797,7 @@
           "B-144"
         ],
         "event_count": 1,
-        "files_count": 55,
+        "files_count": 46,
         "kind_counts": {
           "commit": 1
         },
@@ -153981,35 +153807,35 @@
         "activity_signal_count": 1,
         "risk_signal_count": 0,
         "top_files": [
-          "Makefile",
           "odylith/compass/compass-payload.v1.js",
           "odylith/compass/compass-source-truth.v1.json",
           "odylith/radar/backlog-detail-shard-001.v1.js",
           "odylith/radar/backlog-detail-shard-002.v1.js",
           "odylith/radar/backlog-detail-shard-003.v1.js",
           "odylith/radar/backlog-document-shard-004.v1.js",
-          "odylith/radar/source/INDEX.md"
+          "odylith/registry/registry-detail-shard-001.v1.js",
+          "odylith/registry/registry-payload.v1.js"
         ],
-        "source_files_count": 39,
+        "source_files_count": 30,
         "generated_files_count": 16,
         "generated_only_batch": false,
         "latest_event_kind": "commit",
-        "latest_event_summary": "Make semantic state transitions atomic",
+        "latest_event_summary": "Bind graph authors to exact citation catalog",
         "has_implementation_signal": true,
-        "focus_reason": "recent_implementation_fallback",
-        "selection_mode": "recent_implementation_fallback",
-        "has_live_implementation": false,
+        "focus_reason": "recent_activity_signal",
+        "selection_mode": "active_implementation",
+        "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-08-17T09:28:34-07:00"
+        "latest_implementation_iso": "2026-08-17T09:58:23-07:00"
       },
       "B-142": {
-        "is_active": false,
-        "transaction_id": "txn:global:auto-global-0033:0033",
+        "is_active": true,
+        "transaction_id": "txn:global:auto-global-0034:0034",
         "session_id": "",
         "context": "",
-        "headline": "made semantic state transitions atomic",
-        "last_event_iso": "2026-08-17T09:28:34-07:00",
-        "start_ts_iso": "2026-08-17T09:28:34-07:00",
+        "headline": "Bind graph authors to exact citation catalog",
+        "last_event_iso": "2026-08-17T09:58:23-07:00",
+        "start_ts_iso": "2026-08-17T09:58:23-07:00",
         "workstreams": [
           "B-005",
           "B-063",
@@ -154019,7 +153845,7 @@
           "B-144"
         ],
         "event_count": 1,
-        "files_count": 55,
+        "files_count": 46,
         "kind_counts": {
           "commit": 1
         },
@@ -154029,26 +153855,74 @@
         "activity_signal_count": 1,
         "risk_signal_count": 0,
         "top_files": [
-          "Makefile",
           "odylith/compass/compass-payload.v1.js",
           "odylith/compass/compass-source-truth.v1.json",
           "odylith/radar/backlog-detail-shard-001.v1.js",
           "odylith/radar/backlog-detail-shard-002.v1.js",
           "odylith/radar/backlog-detail-shard-003.v1.js",
           "odylith/radar/backlog-document-shard-004.v1.js",
-          "odylith/radar/source/INDEX.md"
+          "odylith/registry/registry-detail-shard-001.v1.js",
+          "odylith/registry/registry-payload.v1.js"
         ],
-        "source_files_count": 39,
+        "source_files_count": 30,
         "generated_files_count": 16,
         "generated_only_batch": false,
         "latest_event_kind": "commit",
-        "latest_event_summary": "Make semantic state transitions atomic",
+        "latest_event_summary": "Bind graph authors to exact citation catalog",
         "has_implementation_signal": true,
-        "focus_reason": "recent_implementation_fallback",
-        "selection_mode": "recent_implementation_fallback",
-        "has_live_implementation": false,
+        "focus_reason": "recent_activity_signal",
+        "selection_mode": "active_implementation",
+        "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-08-17T09:28:34-07:00"
+        "latest_implementation_iso": "2026-08-17T09:58:23-07:00"
+      },
+      "B-144": {
+        "is_active": true,
+        "transaction_id": "txn:global:auto-global-0034:0034",
+        "session_id": "",
+        "context": "",
+        "headline": "Bind graph authors to exact citation catalog",
+        "last_event_iso": "2026-08-17T09:58:23-07:00",
+        "start_ts_iso": "2026-08-17T09:58:23-07:00",
+        "workstreams": [
+          "B-005",
+          "B-063",
+          "B-069",
+          "B-083",
+          "B-142",
+          "B-144"
+        ],
+        "event_count": 1,
+        "files_count": 46,
+        "kind_counts": {
+          "commit": 1
+        },
+        "source_counts": {
+          "git": 1
+        },
+        "activity_signal_count": 1,
+        "risk_signal_count": 0,
+        "top_files": [
+          "odylith/compass/compass-payload.v1.js",
+          "odylith/compass/compass-source-truth.v1.json",
+          "odylith/radar/backlog-detail-shard-001.v1.js",
+          "odylith/radar/backlog-detail-shard-002.v1.js",
+          "odylith/radar/backlog-detail-shard-003.v1.js",
+          "odylith/radar/backlog-document-shard-004.v1.js",
+          "odylith/registry/registry-detail-shard-001.v1.js",
+          "odylith/registry/registry-payload.v1.js"
+        ],
+        "source_files_count": 30,
+        "generated_files_count": 16,
+        "generated_only_batch": false,
+        "latest_event_kind": "commit",
+        "latest_event_summary": "Bind graph authors to exact citation catalog",
+        "has_implementation_signal": true,
+        "focus_reason": "recent_activity_signal",
+        "selection_mode": "active_implementation",
+        "has_live_implementation": true,
+        "has_recent_implementation": true,
+        "latest_implementation_iso": "2026-08-17T10:08:18-07:00"
       },
       "B-001": {
         "is_active": false,
@@ -157330,7 +157204,7 @@
   "runtime_contract": {
     "version": "v1",
     "standup_brief_schema_version": "v25",
-    "input_fingerprint": "f8155504acbc83c705ca5dba894a0b8cac45489b6c150c1b0de269834e19bbb6",
+    "input_fingerprint": "5f4ade8321b4b88344e689b54f080e183cb3e2f9d0766dd3a55e54c265a48113",
     "retention_days": 15,
     "active_window_minutes": 15,
     "max_review_age_days": 21,
@@ -157338,7 +157212,7 @@
     "refresh_profile": "shell-safe",
     "surface_contract_version": "v1",
     "surface": "compass",
-    "projection_fingerprint": "77946937129ab7700e98180344a5d017120ef5bbe5fe46852a62512844aae69e",
+    "projection_fingerprint": "f2dd7878bf690acc32fe9dff923e0e1570e04c2155fb11dbbfc0943def253bce",
     "projection_scope": "reasoning",
     "generation": 10,
     "cache_hit": false,
@@ -157365,7 +157239,7 @@
           "workstreams"
         ]
       },
-      "projection_fingerprint": "77946937129ab7700e98180344a5d017120ef5bbe5fe46852a62512844aae69e",
+      "projection_fingerprint": "f2dd7878bf690acc32fe9dff923e0e1570e04c2155fb11dbbfc0943def253bce",
       "projection_scope": "reasoning",
       "repo_root": "/private/tmp/odylith-release-f78169eac",
       "sync_generation": 0,
@@ -157377,7 +157251,7 @@
         "backend_dependencies_available": false,
         "storage": "compiler_projection_snapshot"
       },
-      "projection_fingerprint": "77946937129ab7700e98180344a5d017120ef5bbe5fe46852a62512844aae69e",
+      "projection_fingerprint": "f2dd7878bf690acc32fe9dff923e0e1570e04c2155fb11dbbfc0943def253bce",
       "projection_scope": "reasoning",
       "repo_root": "/private/tmp/odylith-release-f78169eac",
       "sync_generation": 0,
@@ -157390,7 +157264,7 @@
       "applied_profile": "shell-safe",
       "runtime_mode": "standalone",
       "reason": "",
-      "attempted_utc": "2026-08-17T16:53:36Z",
+      "attempted_utc": "2026-08-17T17:08:19Z",
       "fallback_used": false
     }
   }

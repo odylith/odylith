@@ -123,8 +123,13 @@ def test_phase_inputs_are_exact_and_annotation_blind(tmp_path: Path) -> None:
     }
     assert set(critic_input) == common
     assert set(author_input) == common | {
-        "materiality_assessment", "materiality_assessment_sha256",
+        "materiality_assessment", "materiality_assessment_sha256", "citation_catalog",
     }
+    assert author_input["citation_catalog"]
+    assert all(
+        row["ref_id"].startswith("source_ref_")
+        for row in author_input["citation_catalog"]
+    )
     assert critic_input["evidence"] == {
         "operator_prompt": context["prompt"],
         "operator_edit": "",

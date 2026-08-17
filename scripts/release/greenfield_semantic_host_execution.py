@@ -35,6 +35,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract imp
     require_semantic_intent_ir,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
+    bind_semantic_intent_source_ref_selections,
     require_materiality_intent_alignment,
     semantic_intent_output_schema_for_materiality,
     semantic_materiality_assessment_schema,
@@ -89,7 +90,7 @@ def author_development_case(
         author_input.get("materiality_assessment"), "validated materiality assessment"
     )
     author_evidence = _mapping(author_input.get("evidence"), "author evidence")
-    author_output, author_usage, author_wall_ms = _run_stage(
+    raw_author_output, author_usage, author_wall_ms = _run_stage(
         stage="author",
         phase_input=author_input,
         output_schema=_author_output_schema(
@@ -100,8 +101,18 @@ def author_development_case(
         host_profile=host_profile,
         timeout_seconds=timeout_seconds,
     )
-    semantic_intent = _mapping(author_output.get("semantic_intent"), "Semantic Intent")
-    self_challenge = _rows(author_output.get("self_challenge"), "author self challenge")
+    semantic_intent = bind_semantic_intent_source_ref_selections(
+        _mapping(raw_author_output.get("semantic_intent"), "Semantic Intent"),
+        assessment=validated_assessment,
+        evidence_sources={key: str(value) for key, value in author_evidence.items()},
+    )
+    self_challenge = _rows(
+        raw_author_output.get("self_challenge"), "author self challenge"
+    )
+    author_output = {
+        "semantic_intent": semantic_intent,
+        "self_challenge": self_challenge,
+    }
     evidence_sources = _mapping(author_input.get("evidence"), "author evidence")
     verified_intent = require_semantic_intent_ir(
         semantic_intent,

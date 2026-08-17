@@ -29,6 +29,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contrac
     SEMANTIC_REASONING_CAPABILITY_PROFILE,
     require_semantic_materiality_assessment,
     semantic_materiality_assessment_sha256,
+    semantic_materiality_source_ref_catalog,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_host_profiles import (
     host_execution_profile,
@@ -40,8 +41,8 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_host_profiles impor
 DEVELOPMENT_EVIDENCE_PLAN_VERSION = "odylith.greenfield.development-evidence-plan.v3"
 AUTHOR_SEGMENT_VERSION = "odylith.greenfield.development-author-segment.v3"
 CRITIC_INPUT_VERSION = "odylith.greenfield.development-materiality-critic-input.v3"
-AUTHOR_INPUT_VERSION = "odylith.greenfield.development-graph-author-input.v3"
-MECHANISM_EVIDENCE_VERSION = "odylith.greenfield.semantic-development-mechanism-evidence.v3"
+AUTHOR_INPUT_VERSION = "odylith.greenfield.development-graph-author-input.v4"
+MECHANISM_EVIDENCE_VERSION = "odylith.greenfield.semantic-development-mechanism-evidence.v4"
 MECHANISM_ID = "prompt_only_materiality_gate_then_independent_graph_author"
 DETERMINISTIC_LAW_REPORT_VERSION = "odylith.greenfield.deterministic-law-report.v3"
 REQUIRED_DETERMINISTIC_LAW_IDS = (
@@ -85,6 +86,7 @@ def development_mechanism_contract() -> dict[str, Any]:
         "model_calls_per_case": 2,
         "restarts_per_case": 0,
         "validation_error_repairs_per_stage": 0,
+        "citation_transport": "provider_locked_handle_to_exact_critic_validated_source_ref",
         "token_measurement_bases": list(TOKEN_MEASUREMENT_BASES),
         "mandatory_challenges": list(SEMANTIC_INTENT_MANDATORY_CHALLENGES),
         "critic_access": _expected_access("critic"),
@@ -327,7 +329,7 @@ def semantic_graph_author_input_for_case(
         evidence_sha256=semantic_evidence_sha256(evidence_sources),
         authoring_contract_sha256=semantic_intent_authoring_contract_sha256(),
     )
-    return _phase_input(
+    value = _phase_input(
         version=AUTHOR_INPUT_VERSION,
         assignment=assignment,
         run_assignment=assignment["author_assignment"],
@@ -335,6 +337,11 @@ def semantic_graph_author_input_for_case(
         plan=plan,
         materiality_assessment=assessment,
     )
+    value["citation_catalog"] = semantic_materiality_source_ref_catalog(
+        assessment,
+        evidence_sources=evidence_sources,
+    )
+    return value
 
 
 def run_evidence_sha256(value: Mapping[str, Any]) -> str:

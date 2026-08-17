@@ -170,6 +170,25 @@
   `121/121`; the failed assignment will not be retried, and a fresh assignment
   under a new revision is required.
 
+- Provider-Transport Follow-up (2026-08-17): The first fresh assignment under
+  the catalog contract failed before graph reasoning because one accepted
+  critic citation contained a newline. The strict structured-output provider
+  rejects newline-bearing string literals inside `enum`, even though the
+  underlying citation is valid exact source evidence. No segment was written
+  and the assignment will not be retried. Sanitizing, splitting, or pattern
+  matching the quote would change custody and is rejected.
+
+- Provider-Transport Resolution (2026-08-17): The author input now carries a
+  deterministic catalog of opaque `source_ref_<sha256>` handles and their
+  exact validated citations. Structured output contains only provider-safe
+  handles; the host adapter decodes them to the original full citation before
+  graph validation and evidence hashing. The transform is a typed transport
+  decode with no prose interpretation, retry, fuzzy match, or semantic repair.
+  Development graph-author input v4 and mechanism-evidence v4 bind the
+  transport contract. Focused materiality/host/evidence plus graph/authority/
+  transaction/recovery proof is `141/141`; a new revision-bound assignment is
+  required before development evidence resumes.
+
 - Rollback/Forward Fix: Forward fix pre-confirm compiler only; post-confirm commit-only runtime remains unchanged.
 
 - Verification: Exact paired canonical-fact tests for handoff, marker, packet, digest, accent, and dry-run groups; relevant workflow, canonical, semantic, component, transaction-boundary suites; retained-result issue adjudication before a full installed rerun.

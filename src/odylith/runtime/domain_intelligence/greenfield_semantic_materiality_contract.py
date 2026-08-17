@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from copy import deepcopy
 import hashlib
 import hmac
 import json
@@ -15,7 +16,9 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_intent_schema impor
     semantic_intent_output_schema,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations import (
+    bind_semantic_source_ref_selections,
     require_semantic_source_refs,
+    semantic_source_ref_catalog,
     semantic_source_ref_schema,
     semantic_source_ref_selection_schema,
 )
@@ -191,6 +194,63 @@ def _materiality_source_ref_catalog(
     if not rows:
         raise ValueError("Semantic materiality assessment lacks an author citation catalog")
     return rows
+
+
+def semantic_materiality_source_ref_catalog(
+    assessment: Mapping[str, Any],
+    *,
+    evidence_sources: Mapping[str, str],
+) -> list[dict[str, Any]]:
+    """Expose the exact citation handles available to one graph author."""
+
+    catalog = semantic_source_ref_catalog(
+        _materiality_source_ref_catalog(
+            assessment,
+            evidence_sources=evidence_sources,
+        ),
+        evidence_sources=evidence_sources,
+    )
+    return [{"ref_id": ref_id, **row} for ref_id, row in catalog.items()]
+
+
+def bind_semantic_intent_source_ref_selections(
+    value: Mapping[str, Any],
+    *,
+    assessment: Mapping[str, Any],
+    evidence_sources: Mapping[str, str],
+) -> dict[str, Any]:
+    """Decode author citation handles without changing semantic content."""
+
+    catalog_rows = semantic_materiality_source_ref_catalog(
+        assessment,
+        evidence_sources=evidence_sources,
+    )
+    catalog = {
+        row["ref_id"]: {
+            "source_id": row["source_id"],
+            "quote": row["quote"],
+            "occurrence": row["occurrence"],
+        }
+        for row in catalog_rows
+    }
+    result = deepcopy(dict(value))
+    clarification = _mapping(result.get("clarification"), "Semantic Intent clarification")
+    clarification["source_refs"] = bind_semantic_source_ref_selections(
+        clarification.get("source_refs"),
+        catalog=catalog,
+    )
+    result["clarification"] = dict(clarification)
+    for key in ("facts", "relations", "narratives"):
+        bound_rows: list[dict[str, Any]] = []
+        for raw in _sequence(result.get(key), 256, f"Semantic Intent {key}"):
+            row = dict(_mapping(raw, f"Semantic Intent {key} row"))
+            row["source_refs"] = bind_semantic_source_ref_selections(
+                row.get("source_refs"),
+                catalog=catalog,
+            )
+            bound_rows.append(row)
+        result[key] = bound_rows
+    return result
 
 
 def _materiality_clarification_schema(
@@ -670,6 +730,7 @@ __all__ = [
     "SEMANTIC_NONMATERIAL_ASSUMPTION_FIELDS",
     "SEMANTIC_MATERIALITY_STATUSES",
     "SEMANTIC_REASONING_CAPABILITY_PROFILE",
+    "bind_semantic_intent_source_ref_selections",
     "require_materiality_intent_alignment",
     "require_semantic_materiality_assessment",
     "require_semantic_reasoning_runs",
@@ -677,5 +738,6 @@ __all__ = [
     "semantic_intent_output_schema_for_materiality",
     "semantic_materiality_assessment_schema",
     "semantic_materiality_assessment_sha256",
+    "semantic_materiality_source_ref_catalog",
     "semantic_materiality_critic_schema",
 ]

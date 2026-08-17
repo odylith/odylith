@@ -226,6 +226,14 @@ this plan as active until the size and ownership targets are met.
   compiler identity v9 fail closed on the superseded contract; focused proof is
   `121/121`. The failed case remains failed evidence and will receive only a
   fresh assignment after this revision is committed.
+- The first fresh catalog-bound assignment then exposed a strict provider
+  limitation: newline-bearing exact quotes cannot appear inside response-schema
+  enums. Citation selection now uses deterministic opaque handles in the
+  author transport. The author input includes the handle-to-exact-citation
+  catalog, the provider emits only handles, and the host adapter decodes them
+  before canonical graph validation and output hashing. This is a typed
+  transport boundary, not semantic normalization. Development author input v4
+  and mechanism evidence v4 pin the rule; focused proof is `141/141`.
 
 ## Stop Conditions
 

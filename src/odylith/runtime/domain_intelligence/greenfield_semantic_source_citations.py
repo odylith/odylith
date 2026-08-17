@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 import hashlib
+import json
 from typing import Any
 
 
@@ -53,32 +54,71 @@ def semantic_source_ref_selection_schema(
     *,
     evidence_sources: Mapping[str, str],
 ) -> dict[str, Any]:
-    """Constrain a model to exact citations already accepted from evidence."""
+    """Constrain a model to provider-safe handles for accepted citations."""
+
+    catalog = semantic_source_ref_catalog(
+        value,
+        evidence_sources=evidence_sources,
+    )
+    return {
+        "anyOf": [
+            {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["ref_id"],
+                "properties": {
+                    "ref_id": {"type": "string", "enum": [ref_id]},
+                },
+            }
+            for ref_id in catalog
+        ]
+    }
+
+
+def semantic_source_ref_catalog(
+    value: Any,
+    *,
+    evidence_sources: Mapping[str, str],
+) -> dict[str, dict[str, Any]]:
+    """Return deterministic handles for exact accepted citations."""
 
     rows = require_semantic_source_refs(
         value,
         evidence_sources=evidence_sources,
         maximum=80,
     )
-    unique: dict[tuple[str, str, int], dict[str, Any]] = {}
+    catalog: dict[str, dict[str, Any]] = {}
     for row in rows:
-        key = (row["source_id"], row["quote"], row["occurrence"])
-        unique[key] = row
-    return {
-        "anyOf": [
-            {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["source_id", "quote", "occurrence"],
-                "properties": {
-                    "source_id": {"type": "string", "enum": [row["source_id"]]},
-                    "quote": {"type": "string", "enum": [row["quote"]]},
-                    "occurrence": {"type": "integer", "enum": [row["occurrence"]]},
-                },
-            }
-            for row in unique.values()
-        ]
-    }
+        encoded = json.dumps(
+            row,
+            ensure_ascii=True,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("ascii")
+        ref_id = f"source_ref_{hashlib.sha256(encoded).hexdigest()}"
+        catalog[ref_id] = row
+    return catalog
+
+
+def bind_semantic_source_ref_selections(
+    value: Any,
+    *,
+    catalog: Mapping[str, Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    """Decode provider-safe handles into canonical exact citations."""
+
+    rows = _sequence(value, 8)
+    if not rows:
+        return []
+    result: list[dict[str, Any]] = []
+    for raw in rows:
+        if not isinstance(raw, Mapping) or set(raw) != {"ref_id"}:
+            raise ValueError("Semantic Intent source ref selection is malformed")
+        ref_id = raw.get("ref_id")
+        if not isinstance(ref_id, str) or ref_id not in catalog:
+            raise ValueError("Semantic Intent source ref selection is outside its catalog")
+        result.append(dict(catalog[ref_id]))
+    return result
 
 
 def resolve_semantic_source_ref(
@@ -169,9 +209,11 @@ def _nth_occurrence(source: str, quote: str, occurrence: int) -> int:
 
 __all__ = [
     "SEMANTIC_SOURCE_IDS",
+    "bind_semantic_source_ref_selections",
     "require_semantic_source_refs",
     "resolve_semantic_source_ref",
     "resolved_semantic_source_refs",
     "semantic_source_ref_schema",
+    "semantic_source_ref_catalog",
     "semantic_source_ref_selection_schema",
 ]

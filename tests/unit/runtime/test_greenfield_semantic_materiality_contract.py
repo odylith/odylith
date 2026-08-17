@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 import copy
+import json
 from pathlib import Path
 
 import pytest
@@ -31,8 +32,10 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contrac
     SEMANTIC_NONMATERIAL_ASSUMPTION_FIELDS,
     SEMANTIC_REASONING_CAPABILITY_PROFILE,
     semantic_intent_output_schema_for_materiality,
+    bind_semantic_intent_source_ref_selections,
     semantic_materiality_assessment_schema,
     semantic_materiality_assessment_sha256,
+    semantic_materiality_source_ref_catalog,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations import (
     semantic_source_ref_schema,
@@ -205,14 +208,20 @@ def test_graph_author_schema_locks_the_validated_materiality_decision() -> None:
     assert locked["fields"]["items"]["enum"] == ["visible_result"]
     assert locked["source_refs"]["minItems"] == 1
     assert locked["source_refs"]["maxItems"] == 1
-    assert locked["source_refs"]["items"]["anyOf"][0]["properties"]["quote"][
+    clarification_catalog = semantic_materiality_source_ref_catalog(
+        clarification,
+        evidence_sources=evidence_sources,
+    )
+    assert locked["source_refs"]["items"]["anyOf"][0]["properties"]["ref_id"][
         "enum"
-    ] == ["A shift coordinator claims one ready card and receives a claim receipt."]
+    ] == [clarification_catalog[0]["ref_id"]]
 
-    expected_quotes = {
-        ref["quote"]
-        for field in complete["fields"]
-        for ref in field["source_refs"]
+    expected_ids = {
+        row["ref_id"]
+        for row in semantic_materiality_source_ref_catalog(
+            complete,
+            evidence_sources=evidence_sources,
+        )
     }
     fact_variants = complete_schema["properties"]["facts"]["items"]["anyOf"]
     relation = complete_schema["properties"]["relations"]["items"]
@@ -220,9 +229,9 @@ def test_graph_author_schema_locks_the_validated_materiality_decision() -> None:
     for owner in (*fact_variants, relation, narrative):
         selections = owner["properties"]["source_refs"]["items"]["anyOf"]
         assert {
-            selection["properties"]["quote"]["enum"][0]
+            selection["properties"]["ref_id"]["enum"][0]
             for selection in selections
-        } == expected_quotes
+        } == expected_ids
 
 
 def test_graph_author_schema_cannot_retype_a_non_catalog_source_quote() -> None:
@@ -241,9 +250,43 @@ def test_graph_author_schema_cannot_retype_a_non_catalog_source_quote() -> None:
     ]["items"]
 
     assert len(relation_ref["anyOf"]) == 1
-    assert relation_ref["anyOf"][0]["properties"]["quote"]["enum"] == [
-        retained["quote"]
-    ]
+    ref_id = relation_ref["anyOf"][0]["properties"]["ref_id"]["enum"][0]
+    assert ref_id.startswith("source_ref_")
+    raw_intent = {
+        "version": SEMANTIC_INTENT_IR_VERSION,
+        "status": "complete",
+        "clarification": {"question": "", "fields": [], "source_refs": []},
+        "facts": [{"source_refs": [{"ref_id": ref_id}]}],
+        "relations": [],
+        "narratives": [],
+    }
+    bound = bind_semantic_intent_source_ref_selections(
+        raw_intent,
+        assessment=assessment,
+        evidence_sources=evidence_sources,
+    )
+    assert bound["facts"][0]["source_refs"] == [retained]
+
+
+def test_graph_author_citation_handles_are_safe_for_multiline_source_quotes() -> None:
+    evidence = "First source line.\nSecond source line."
+    assessment = copy.deepcopy(semantic_intent_packet()["materiality_assessment"])
+    assessment["clarification"] = {
+        "field": "",
+        "question": "",
+        "source_refs": [],
+        "alternatives": [],
+    }
+    for field in assessment["fields"]:
+        field["source_refs"] = [semantic_ref(evidence)]
+    schema = semantic_intent_output_schema_for_materiality(
+        assessment,
+        evidence_sources={"operator_prompt": evidence, "operator_edit": ""},
+    )
+
+    encoded = json.dumps(schema, sort_keys=True)
+    assert evidence not in encoded
+    assert "source_ref_" in encoded
 
 
 def test_provider_schema_encodes_materiality_status_invariants() -> None:

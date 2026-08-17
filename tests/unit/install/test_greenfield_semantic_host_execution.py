@@ -23,6 +23,9 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract 
     SEMANTIC_INTENT_MANDATORY_CHALLENGES,
     semantic_intent_authoring_contract_sha256,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
+    semantic_materiality_source_ref_catalog,
+)
 
 
 def test_host_execution_builds_one_exact_two_stage_segment(
@@ -154,13 +157,45 @@ def _context(tmp_path: Path) -> dict[str, Any]:
     binary = tmp_path / "codex"
     binary.write_text("#!/bin/sh\necho 'codex-cli test-v1'\n", encoding="utf-8")
     binary.chmod(0o700)
+    semantic_intent = _intent_with_citation_handles(
+        deepcopy(fixture["packet"]["semantic_intent"]),
+        assessment=assessment,
+        prompt=fixture["prompt"],
+    )
     return {
         "assessment": assessment,
         "binary": binary,
         "corpus": corpus,
         "plan": plan,
-        "semantic_intent": deepcopy(fixture["packet"]["semantic_intent"]),
+        "semantic_intent": semantic_intent,
     }
+
+
+def _intent_with_citation_handles(
+    semantic_intent: dict[str, Any],
+    *,
+    assessment: dict[str, Any],
+    prompt: str,
+) -> dict[str, Any]:
+    catalog = semantic_materiality_source_ref_catalog(
+        assessment,
+        evidence_sources={"operator_prompt": prompt, "operator_edit": ""},
+    )
+    ids = {
+        (row["source_id"], row["quote"], row["occurrence"]): row["ref_id"]
+        for row in catalog
+    }
+    for owner in (
+        semantic_intent["clarification"],
+        *semantic_intent["facts"],
+        *semantic_intent["relations"],
+        *semantic_intent["narratives"],
+    ):
+        owner["source_refs"] = [
+            {"ref_id": ids[(row["source_id"], row["quote"], row["occurrence"])]}
+            for row in owner["source_refs"]
+        ]
+    return semantic_intent
 
 
 def _jsonl_binary(path: Path, *, item_type: str) -> Path:
