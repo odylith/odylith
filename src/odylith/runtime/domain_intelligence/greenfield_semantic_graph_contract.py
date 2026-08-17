@@ -53,6 +53,18 @@ SINGULAR_NARRATIVE_FIELDS = frozenset(
     {"product_story", "problem", "customer", "opportunity", "product_view", "proof_boundary"}
 )
 LIST_NARRATIVE_FIELDS = frozenset({"success_metric", "evidence_requirement"})
+INTERNAL_SYSTEM_COMPONENT_KINDS = (
+    "adapter",
+    "interface",
+    "library",
+    "service",
+    "worker",
+)
+INTERNAL_SYSTEM_RELEASE_SCOPES = (
+    "first_path_required",
+    "supporting",
+    "deferred",
+)
 FACT_REQUIRED_ATTRIBUTES = {
     "identity": ("source_title",),
     "actor": ("responsibility",),
@@ -67,6 +79,10 @@ FACT_REQUIRED_ATTRIBUTES = {
         "risk",
         "release_scope",
     ),
+}
+FACT_OWNER_KINDS = {
+    kind: ("actor", "product", "system") if kind == "workflow_step" else ("none",)
+    for kind in SEMANTIC_FACT_KINDS
 }
 FACT_SEMANTIC_ROLES = {
     "identity": "the source-backed product identity, excluding discarded or superseded labels",
@@ -148,10 +164,18 @@ def semantic_intent_authoring_contract() -> dict[str, Any]:
             kind: {
                 "semantic_role": FACT_SEMANTIC_ROLES[kind],
                 "required_attributes": list(FACT_REQUIRED_ATTRIBUTES.get(kind, ())),
+                **(
+                    {
+                        "attribute_value_contracts": {
+                            "component_kind": list(INTERNAL_SYSTEM_COMPONENT_KINDS),
+                            "release_scope": list(INTERNAL_SYSTEM_RELEASE_SCOPES),
+                        }
+                    }
+                    if kind == "internal_system"
+                    else {}
+                ),
                 "owner_kinds": (
-                    ["actor", "product", "system"]
-                    if kind == "workflow_step"
-                    else ["none"]
+                    list(FACT_OWNER_KINDS[kind])
                 ),
                 **COMPLETE_FACT_COUNTS.get(kind, {}),
             }

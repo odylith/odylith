@@ -12,7 +12,12 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract impo
     COMPLETE_FACT_COUNTS as _COMPLETE_FACT_COUNTS,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract import (
+    FACT_OWNER_KINDS as _FACT_OWNER_KINDS,
     FACT_REQUIRED_ATTRIBUTES as _FACT_REQUIRED_ATTRIBUTES,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract import (
+    INTERNAL_SYSTEM_COMPONENT_KINDS,
+    INTERNAL_SYSTEM_RELEASE_SCOPES,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract import (
     LIST_NARRATIVE_FIELDS as _LIST_NARRATIVE_FIELDS,
@@ -134,18 +139,14 @@ def semantic_intent_output_schema() -> dict[str, Any]:
                         "attributes": {
                             "type": "array",
                             "maxItems": 12,
-                            "items": {
-                                "type": "object",
-                                "additionalProperties": False,
-                                "required": ["name", "value"],
-                                "properties": {
-                                    "name": {"type": "string", "enum": sorted(_ATTRIBUTE_NAMES)},
-                                    "value": {"type": "string", "minLength": 1, "maxLength": 800},
-                                },
-                            },
+                            "items": _semantic_attribute_schema(),
                         },
                         "source_refs": source_refs,
                     },
+                    "allOf": [
+                        _semantic_fact_kind_schema(kind)
+                        for kind in SEMANTIC_FACT_KINDS
+                    ],
                 },
             },
             "relations": {
@@ -193,6 +194,61 @@ def semantic_intent_output_schema() -> dict[str, Any]:
                     },
                 },
             },
+        },
+    }
+
+
+def _semantic_attribute_schema() -> dict[str, Any]:
+    value_contracts = {
+        "component_kind": INTERNAL_SYSTEM_COMPONENT_KINDS,
+        "release_scope": INTERNAL_SYSTEM_RELEASE_SCOPES,
+    }
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["name", "value"],
+        "properties": {
+            "name": {"type": "string", "enum": sorted(_ATTRIBUTE_NAMES)},
+            "value": {"type": "string", "minLength": 1, "maxLength": 800},
+        },
+        "allOf": [
+            {
+                "if": {"properties": {"name": {"const": name}}},
+                "then": {"properties": {"value": {"enum": list(values)}}},
+            }
+            for name, values in value_contracts.items()
+        ],
+    }
+
+
+def _semantic_fact_kind_schema(kind: str) -> dict[str, Any]:
+    attribute_rules: dict[str, Any] = {
+        "allOf": [
+            {
+                "contains": {
+                    "properties": {"name": {"const": name}},
+                    "required": ["name"],
+                },
+                "minContains": 1,
+                "maxContains": 1,
+            }
+            for name in _FACT_REQUIRED_ATTRIBUTES.get(kind, ())
+        ]
+    }
+    if kind != "state_object":
+        attribute_rules["not"] = {
+            "contains": {
+                "properties": {"name": {"enum": ["from_state", "to_state"]}},
+                "required": ["name"],
+            }
+        }
+    return {
+        "if": {"properties": {"kind": {"const": kind}}, "required": ["kind"]},
+        "then": {
+            "properties": {
+                "owner_kind": {"enum": list(_FACT_OWNER_KINDS[kind])},
+                "attributes": attribute_rules,
+            }
         },
     }
 
@@ -441,9 +497,9 @@ def _require_kind_contract(*, kind: str, owner_kind: str, attributes: Mapping[st
     if kind != "workflow_step" and owner_kind != "none":
         raise ValueError("non-workflow Semantic Intent fact carries an owner kind")
     if kind == "internal_system":
-        if attributes["component_kind"] not in {"adapter", "interface", "library", "service", "worker"}:
+        if attributes["component_kind"] not in INTERNAL_SYSTEM_COMPONENT_KINDS:
             raise ValueError("Semantic Intent internal system has an invalid component kind")
-        if attributes["release_scope"] not in {"first_path_required", "supporting", "deferred"}:
+        if attributes["release_scope"] not in INTERNAL_SYSTEM_RELEASE_SCOPES:
             raise ValueError("Semantic Intent internal system has an invalid release scope")
     before = attributes.get("from_state", "")
     after = attributes.get("to_state", "")

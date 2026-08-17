@@ -12,6 +12,12 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract imp
     SEMANTIC_INTENT_PACKET_VERSION,
     require_semantic_intent_ir,
     semantic_intent_authoring_contract,
+    semantic_intent_output_schema,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract import (
+    FACT_REQUIRED_ATTRIBUTES,
+    INTERNAL_SYSTEM_COMPONENT_KINDS,
+    INTERNAL_SYSTEM_RELEASE_SCOPES,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract import (
     SEMANTIC_INTENT_MANDATORY_CHALLENGES,
@@ -186,6 +192,59 @@ def test_graph_v2_versions_and_authoring_cardinality_are_explicit() -> None:
         "non_goal",
         "component_boundary",
     ]
+
+
+def test_graph_author_schema_and_runtime_share_internal_system_value_contracts() -> None:
+    request = semantic_intent_authoring_request(prompt=SEMANTIC_PROMPT)
+    contract = semantic_intent_authoring_contract()
+    attribute_schema = semantic_intent_output_schema()["properties"]["facts"][
+        "items"
+    ]["properties"]["attributes"]["items"]
+    conditional_values = {
+        row["if"]["properties"]["name"]["const"]: row["then"]["properties"][
+            "value"
+        ]["enum"]
+        for row in attribute_schema["allOf"]
+    }
+
+    assert conditional_values == {
+        "component_kind": list(INTERNAL_SYSTEM_COMPONENT_KINDS),
+        "release_scope": list(INTERNAL_SYSTEM_RELEASE_SCOPES),
+    }
+    assert contract["fact_contracts"]["internal_system"][
+        "attribute_value_contracts"
+    ] == conditional_values
+    fact_rules = {
+        row["if"]["properties"]["kind"]["const"]: row["then"]["properties"]
+        for row in semantic_intent_output_schema()["properties"]["facts"]["items"][
+            "allOf"
+        ]
+    }
+    for kind, required_names in FACT_REQUIRED_ATTRIBUTES.items():
+        assert {
+            rule["contains"]["properties"]["name"]["const"]
+            for rule in fact_rules[kind]["attributes"]["allOf"]
+        } == set(required_names)
+    assert fact_rules["workflow_step"]["owner_kind"]["enum"] == [
+        "actor",
+        "product",
+        "system",
+    ]
+    assert fact_rules["internal_system"]["owner_kind"]["enum"] == ["none"]
+
+    packet = semantic_intent_packet()
+    internal_system = next(
+        row
+        for row in packet["semantic_intent"]["facts"]
+        if row["kind"] == "internal_system"
+    )
+    next(
+        row
+        for row in internal_system["attributes"]
+        if row["name"] == "component_kind"
+    )["value"] = "workflow_controller"
+    with pytest.raises(ValueError, match="invalid component kind"):
+        require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
     assert any(
         "preserve every settled source-cited" in requirement
         for requirement in request["authoring_protocol"]["outcome_requirements"]
