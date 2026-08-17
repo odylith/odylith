@@ -15,12 +15,8 @@ SCRIPTS_ROOT = REPO_ROOT / "scripts" / "release"
 if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
-from greenfield_semantic_development_evidence import AUTHOR_SEGMENT_VERSION
-from greenfield_semantic_development_evidence import DETERMINISTIC_LAW_REPORT_VERSION
-from greenfield_semantic_development_evidence import DEVELOPMENT_EVIDENCE_PLAN_VERSION
 from greenfield_semantic_development_evidence import MECHANISM_EVIDENCE_VERSION
 from greenfield_semantic_development_evidence import MECHANISM_ID
-from greenfield_semantic_development_evidence import REQUIRED_DETERMINISTIC_LAW_IDS
 from greenfield_semantic_development_evidence import canonical_sha256
 from greenfield_semantic_development_evidence import development_mechanism_contract_sha256
 from greenfield_semantic_development_evidence import materiality_critic_input_for_case
@@ -42,15 +38,15 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract 
     SEMANTIC_INTENT_MANDATORY_CHALLENGES,
     semantic_intent_authoring_contract_sha256,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
-    SEMANTIC_INTENT_PACKET_VERSION,
-)
 from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
     SEMANTIC_REASONING_CAPABILITY_PROFILE,
     semantic_materiality_assessment_sha256,
 )
 from tests.unit.runtime.greenfield_semantic_intent_fixtures import (
     semantic_clarification_packet,
+)
+from tests.unit.install.greenfield_semantic_release_test_fixtures import (
+    deterministic_law_report_fixture as _law_report,
 )
 
 
@@ -612,26 +608,6 @@ def _run_receipt(
         ]
     receipt["run_sha256"] = run_evidence_sha256(receipt)
     return receipt
-
-
-def _law_report(revision: str) -> dict:
-    return {
-        "version": DETERMINISTIC_LAW_REPORT_VERSION,
-        "implementation_revision": revision,
-        "contracts": {
-            "authoring_contract_sha256": semantic_intent_authoring_contract_sha256(),
-            "semantic_intent_packet_version": SEMANTIC_INTENT_PACKET_VERSION,
-            "development_evidence_plan_version": DEVELOPMENT_EVIDENCE_PLAN_VERSION,
-            "development_author_segment_version": AUTHOR_SEGMENT_VERSION,
-            "mechanism_evidence_version": MECHANISM_EVIDENCE_VERSION,
-            "candidate_bundle_version": CANDIDATE_BUNDLE_VERSION,
-        },
-        "required_law_ids": list(REQUIRED_DETERMINISTIC_LAW_IDS),
-        "results": [
-            {"law_id": law_id, "status": "passed", "evidence_sha256": "d" * 64}
-            for law_id in REQUIRED_DETERMINISTIC_LAW_IDS
-        ],
-    }
 
 
 def _commit_annotation(case_id: str, prompt: str) -> dict:

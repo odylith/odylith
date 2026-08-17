@@ -11,6 +11,7 @@ import time
 from typing import Any
 
 from greenfield_semantic_development_evidence import AUTHOR_SEGMENT_VERSION
+from greenfield_semantic_development_evidence import DEVELOPMENT_EVIDENCE_PLAN_VERSION
 from greenfield_semantic_development_evidence import MECHANISM_EVIDENCE_VERSION
 from greenfield_semantic_development_evidence import MECHANISM_ID
 from greenfield_semantic_development_evidence import build_materiality_critic_input
@@ -22,12 +23,12 @@ from greenfield_semantic_development_evidence import exclusive_json
 from greenfield_semantic_development_evidence import json_mapping
 from greenfield_semantic_development_evidence import mapped_rows
 from greenfield_semantic_development_evidence import mapping
-from greenfield_semantic_development_evidence import require_deterministic_law_report
 from greenfield_semantic_development_evidence import require_development_evidence_plan
 from greenfield_semantic_development_evidence import require_run_evidence
 from greenfield_semantic_development_evidence import safe_json_file
 from greenfield_semantic_development_evidence import text
 from greenfield_semantic_development_evidence import unique_index
+from greenfield_semantic_deterministic_law_contract import require_deterministic_law_report
 from greenfield_semantic_release_evaluation import CANDIDATE_BUNDLE_VERSION
 from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract import (
     semantic_intent_authoring_contract_sha256,
@@ -82,6 +83,9 @@ def compile_development_candidate_bundle(
         json_mapping(law_file, "deterministic law report"),
         implementation_revision=revision,
         candidate_bundle_version=CANDIDATE_BUNDLE_VERSION,
+        development_evidence_plan_version=DEVELOPMENT_EVIDENCE_PLAN_VERSION,
+        development_author_segment_version=AUTHOR_SEGMENT_VERSION,
+        mechanism_evidence_version=MECHANISM_EVIDENCE_VERSION,
     )
     law_report_sha256 = canonical_sha256(law_report)
     authored = _author_segment_index(

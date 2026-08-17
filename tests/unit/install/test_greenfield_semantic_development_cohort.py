@@ -18,11 +18,8 @@ if str(SCRIPTS_ROOT) not in sys.path:
 
 from greenfield_semantic_development_cohort import compile_development_candidate_bundle
 from greenfield_semantic_development_evidence import AUTHOR_SEGMENT_VERSION
-from greenfield_semantic_development_evidence import DETERMINISTIC_LAW_REPORT_VERSION
-from greenfield_semantic_development_evidence import DEVELOPMENT_EVIDENCE_PLAN_VERSION
 from greenfield_semantic_development_evidence import MECHANISM_EVIDENCE_VERSION
 from greenfield_semantic_development_evidence import MECHANISM_ID
-from greenfield_semantic_development_evidence import REQUIRED_DETERMINISTIC_LAW_IDS
 from greenfield_semantic_development_evidence import build_materiality_critic_input
 from greenfield_semantic_development_evidence import build_semantic_graph_author_input
 from greenfield_semantic_development_evidence import canonical_sha256
@@ -48,6 +45,9 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contrac
 )
 from tests.unit.runtime.greenfield_semantic_intent_fixtures import (
     semantic_clarification_packet,
+)
+from tests.unit.install.greenfield_semantic_release_test_fixtures import (
+    deterministic_law_report_fixture as _law_report,
 )
 
 
@@ -448,26 +448,6 @@ def _run_receipt(
         row["self_challenge"] = self_challenge
     row["run_sha256"] = run_evidence_sha256(row)
     return row
-
-
-def _law_report(revision: str) -> dict[str, Any]:
-    return {
-        "version": DETERMINISTIC_LAW_REPORT_VERSION,
-        "implementation_revision": revision,
-        "contracts": {
-            "authoring_contract_sha256": semantic_intent_authoring_contract_sha256(),
-            "semantic_intent_packet_version": SEMANTIC_INTENT_PACKET_VERSION,
-            "development_evidence_plan_version": DEVELOPMENT_EVIDENCE_PLAN_VERSION,
-            "development_author_segment_version": AUTHOR_SEGMENT_VERSION,
-            "mechanism_evidence_version": MECHANISM_EVIDENCE_VERSION,
-            "candidate_bundle_version": CANDIDATE_BUNDLE_VERSION,
-        },
-        "required_law_ids": list(REQUIRED_DETERMINISTIC_LAW_IDS),
-        "results": [
-            {"law_id": law_id, "status": "passed", "evidence_sha256": "c" * 64}
-            for law_id in REQUIRED_DETERMINISTIC_LAW_IDS
-        ],
-    }
 
 
 def _compile(context: dict[str, Any], *, output: Path) -> dict[str, Any]:

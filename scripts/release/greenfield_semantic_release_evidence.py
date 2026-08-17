@@ -6,15 +6,17 @@ from collections.abc import Mapping
 import hashlib
 from typing import Any
 
+from greenfield_semantic_development_evidence import AUTHOR_SEGMENT_VERSION
+from greenfield_semantic_development_evidence import DEVELOPMENT_EVIDENCE_PLAN_VERSION
 from greenfield_semantic_development_evidence import MECHANISM_EVIDENCE_VERSION
 from greenfield_semantic_development_evidence import MECHANISM_ID
 from greenfield_semantic_development_evidence import canonical_sha256
 from greenfield_semantic_development_evidence import development_mechanism_contract_sha256
 from greenfield_semantic_development_evidence import materiality_critic_input_for_case
-from greenfield_semantic_development_evidence import require_deterministic_law_report
 from greenfield_semantic_development_evidence import require_development_evidence_plan
 from greenfield_semantic_development_evidence import require_run_evidence
 from greenfield_semantic_development_evidence import semantic_graph_author_input_for_case
+from greenfield_semantic_deterministic_law_contract import require_deterministic_law_report
 from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract import (
     semantic_intent_authoring_contract_sha256,
 )
@@ -253,6 +255,9 @@ def require_candidate_bundle(
             deterministic_law_report,
             implementation_revision=revision,
             candidate_bundle_version=CANDIDATE_BUNDLE_VERSION,
+            development_evidence_plan_version=DEVELOPMENT_EVIDENCE_PLAN_VERSION,
+            development_author_segment_version=AUTHOR_SEGMENT_VERSION,
+            mechanism_evidence_version=MECHANISM_EVIDENCE_VERSION,
         )
     except RuntimeError as error:
         raise ValueError(str(error)) from error

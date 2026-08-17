@@ -43,7 +43,7 @@ CRITIC_INPUT_VERSION = "odylith.greenfield.development-materiality-critic-input.
 AUTHOR_INPUT_VERSION = "odylith.greenfield.development-graph-author-input.v3"
 MECHANISM_EVIDENCE_VERSION = "odylith.greenfield.semantic-development-mechanism-evidence.v3"
 MECHANISM_ID = "prompt_only_materiality_gate_then_independent_graph_author"
-DETERMINISTIC_LAW_REPORT_VERSION = "odylith.greenfield.deterministic-law-report.v2"
+DETERMINISTIC_LAW_REPORT_VERSION = "odylith.greenfield.deterministic-law-report.v3"
 REQUIRED_DETERMINISTIC_LAW_IDS = (
     "no_post_confirm_semantic_or_model_work",
     "exact_sealed_byte_publication",
@@ -335,58 +335,6 @@ def semantic_graph_author_input_for_case(
         plan=plan,
         materiality_assessment=assessment,
     )
-
-
-def require_deterministic_law_report(
-    value: Any,
-    *,
-    implementation_revision: str,
-    candidate_bundle_version: str,
-) -> dict[str, Any]:
-    """Validate fresh, revision-bound proof for every deterministic release law."""
-
-    report = mapping(value, "deterministic law report")
-    exact_keys(
-        report,
-        {"version", "implementation_revision", "contracts", "required_law_ids", "results"},
-        "deterministic law report",
-    )
-    if report.get("version") != DETERMINISTIC_LAW_REPORT_VERSION:
-        raise RuntimeError("deterministic law report uses an unsupported version")
-    if report.get("implementation_revision") != implementation_revision:
-        raise RuntimeError("deterministic law report is stale for the implementation revision")
-    contracts = mapping(report.get("contracts"), "deterministic law contracts")
-    expected_contracts = {
-        "authoring_contract_sha256": semantic_intent_authoring_contract_sha256(),
-        "semantic_intent_packet_version": SEMANTIC_INTENT_PACKET_VERSION,
-        "development_evidence_plan_version": DEVELOPMENT_EVIDENCE_PLAN_VERSION,
-        "development_author_segment_version": AUTHOR_SEGMENT_VERSION,
-        "mechanism_evidence_version": MECHANISM_EVIDENCE_VERSION,
-        "candidate_bundle_version": candidate_bundle_version,
-    }
-    exact_keys(contracts, set(expected_contracts), "deterministic law contracts")
-    if contracts != expected_contracts:
-        raise RuntimeError("deterministic law report is stale for the release contracts")
-    if report.get("required_law_ids") != list(REQUIRED_DETERMINISTIC_LAW_IDS):
-        raise RuntimeError("deterministic law report changes the required law set")
-    rows = mapped_rows(report.get("results"), "deterministic law results")
-    if len(rows) != len(REQUIRED_DETERMINISTIC_LAW_IDS):
-        raise RuntimeError("deterministic law report lacks exact law coverage")
-    normalized: list[dict[str, Any]] = []
-    for law_id, raw in zip(REQUIRED_DETERMINISTIC_LAW_IDS, rows, strict=True):
-        row = mapping(raw, f"deterministic law {law_id}")
-        exact_keys(row, {"law_id", "status", "evidence_sha256"}, f"deterministic law {law_id}")
-        if row.get("law_id") != law_id or row.get("status") != "passed":
-            raise RuntimeError(f"deterministic law did not pass: {law_id}")
-        require_sha256(row.get("evidence_sha256"), f"deterministic law {law_id} evidence")
-        normalized.append(dict(row))
-    return {
-        "version": DETERMINISTIC_LAW_REPORT_VERSION,
-        "implementation_revision": implementation_revision,
-        "contracts": expected_contracts,
-        "required_law_ids": list(REQUIRED_DETERMINISTIC_LAW_IDS),
-        "results": normalized,
-    }
 
 
 def run_evidence_sha256(value: Mapping[str, Any]) -> str:
@@ -781,7 +729,6 @@ __all__ = [
     "mapping",
     "prepare_development_evidence_plan",
     "materiality_critic_input_for_case",
-    "require_deterministic_law_report",
     "require_development_evidence_plan",
     "require_run_evidence",
     "require_sha256",
