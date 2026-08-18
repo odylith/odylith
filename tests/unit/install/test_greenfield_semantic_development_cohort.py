@@ -33,9 +33,6 @@ from greenfield_semantic_host_execution_contract import HOST_RUNTIME_RECEIPT_VER
 from odylith.runtime.domain_intelligence.greenfield_semantic_host_profiles import (
     host_execution_profile,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_graph_extension import (
-    SEMANTIC_GRAPH_EXTENSION_VERSION,
-)
 from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract import (
     SEMANTIC_INTENT_MANDATORY_CHALLENGES,
     semantic_intent_authoring_contract_sha256,
@@ -49,6 +46,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contrac
 )
 from tests.unit.runtime.greenfield_semantic_intent_fixtures import (
     semantic_clarification_packet,
+    semantic_graph_extension_from_intent,
 )
 from tests.unit.install.greenfield_semantic_release_test_fixtures import (
     deterministic_law_report_fixture as _law_report,
@@ -448,22 +446,7 @@ def _context(
 
 
 def _extension_from_intent(semantic_intent: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "version": SEMANTIC_GRAPH_EXTENSION_VERSION,
-        "status": semantic_intent["status"],
-        "clarification": deepcopy(semantic_intent["clarification"]),
-        "facts": [
-            deepcopy(row)
-            for row in semantic_intent["facts"]
-            if row["custody"] == "bounded_interpretation"
-        ],
-        "relations": [
-            deepcopy(row)
-            for row in semantic_intent["relations"]
-            if row["custody"] == "bounded_interpretation"
-        ],
-        "narratives": deepcopy(semantic_intent["narratives"]),
-    }
+    return semantic_graph_extension_from_intent(semantic_intent)
 
 
 def _run_receipt(
@@ -533,7 +516,7 @@ def _compile(context: dict[str, Any], *, output: Path) -> dict[str, Any]:
 
 def _smoke_packet() -> dict[str, Any]:
     fixture = json.loads(
-        (SCRIPTS_ROOT / "fixtures" / "greenfield-semantic-smoke.v11.json").read_text(
+        (SCRIPTS_ROOT / "fixtures" / "greenfield-semantic-smoke.v12.json").read_text(
             encoding="utf-8"
         )
     )
@@ -542,7 +525,7 @@ def _smoke_packet() -> dict[str, Any]:
 
 def _smoke_prompt() -> str:
     fixture = json.loads(
-        (SCRIPTS_ROOT / "fixtures" / "greenfield-semantic-smoke.v11.json").read_text(
+        (SCRIPTS_ROOT / "fixtures" / "greenfield-semantic-smoke.v12.json").read_text(
             encoding="utf-8"
         )
     )

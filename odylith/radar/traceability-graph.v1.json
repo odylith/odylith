@@ -9,8 +9,8 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "bbd1227a31be9fdd02eeaa52e04bc1c0cf1c70ad395247c34f46548d0976a80f",
-    "file_count": 316,
+    "digest": "616b9ae8f24e2b26ab89fd115052307f97711d86a2fb0e114f571ab72698afd3",
+    "file_count": 317,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
       "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
@@ -158,6 +158,7 @@
       "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md",
       "odylith/radar/source/ideas/2026-07/2026-07-16-decompose-greenfield-semantic-compiler-into-result-and-projection-owners.md",
       "odylith/radar/source/ideas/2026-07/2026-07-20-assess-v0-1-15-guidance-and-browser-surface-migration.md",
+      "odylith/radar/source/ideas/2026-08/2026-08-18-assess-node-owned-greenfield-extension-migration-for-v0-1-15.md",
       "odylith/radar/source/programs/B-072.execution-waves.v1.json",
       "odylith/radar/source/programs/B-096.execution-waves.v1.json",
       "odylith/radar/source/programs/B-099.execution-waves.v1.json",
@@ -8792,6 +8793,46 @@
         "code_reference_count": 0
       },
       "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-146",
+      "title": "Assess node-owned Greenfield extension migration for v0.1.15",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-142"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-045"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-08/2026-08-18-assess-node-owned-greenfield-extension-migration-for-v0-1-15.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
     }
   ],
   "releases": [
@@ -10888,6 +10929,14 @@
       "file": "odylith/radar/source/ideas/2026-07/2026-07-20-assess-v0-1-15-guidance-and-browser-surface-migration.md"
     },
     {
+      "id": "B-146",
+      "type": "workstream",
+      "label": "Assess node-owned Greenfield extension migration for v0.1.15",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "file": "odylith/radar/source/ideas/2026-08/2026-08-18-assess-node-owned-greenfield-extension-migration-for-v0-1-15.md"
+    },
+    {
       "id": "component:atlas",
       "type": "component",
       "label": "Atlas",
@@ -11753,7 +11802,8 @@
         "B-142",
         "B-143",
         "B-144",
-        "B-145"
+        "B-145",
+        "B-146"
       ],
       "diagrams": [
         "D-001",
@@ -13805,12 +13855,14 @@
       "owner": "product",
       "file": "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd",
       "related_workstreams": [
-        "B-144"
+        "B-144",
+        "B-146"
       ],
       "component_names": [
         "Materiality critic",
         "Graph author",
         "Provider schema",
+        "Graph assembly",
         "Deterministic verifier"
       ],
       "related_component_ids": []
@@ -20732,6 +20784,11 @@
     },
     {
       "source": "B-142",
+      "target": "B-146",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-142",
       "target": "component:atlas",
       "edge_type": "component_linkage"
     },
@@ -20864,6 +20921,16 @@
       "source": "B-145",
       "target": "plan:odylith/technical-plans/done/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md",
       "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-146",
+      "target": "component:odylith",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-146",
+      "target": "diagram:D-045",
+      "edge_type": "diagram_linkage"
     },
     {
       "source": "component:atlas",
@@ -24901,6 +24968,13 @@
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
+    },
+    "B-146": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     }
   },
   "warning_items": [
@@ -24995,10 +25069,10 @@
       "info": 0
     },
     "connectivity": {
-      "spine_node_count": 262,
-      "structural_edge_count": 1714,
+      "spine_node_count": 263,
+      "structural_edge_count": 1717,
       "connected_component_count": 3,
-      "largest_component_size": 260,
+      "largest_component_size": 261,
       "isolated_node_count": 2,
       "isolated_nodes": [
         "release:release-0-1-11",
@@ -25008,18 +25082,18 @@
     "findings": []
   },
   "summary": {
-    "workstream_count": 145,
+    "workstream_count": 146,
     "release_count": 5,
     "component_count": 30,
     "active_release_assignment_count": 21,
     "execution_program_count": 5,
     "execution_wave_count": 30,
-    "node_count": 355,
-    "edge_count": 1820,
+    "node_count": 356,
+    "edge_count": 1823,
     "warning_count": 7,
     "warning_item_count": 7,
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-08-18 15:51:53Z"
+  "generated_utc": "2026-08-18 17:31:13Z"
 }

@@ -10,6 +10,9 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract imp
     SEMANTIC_INTENT_PACKET_VERSION,
     semantic_evidence_sha256,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_graph_extension_contract import (
+    SEMANTIC_GRAPH_EXTENSION_VERSION,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract import (
     semantic_intent_authoring_contract_sha256,
 )
@@ -45,6 +48,67 @@ DEPENDENCY_EVIDENCE = "Read the local duty roster."
 NON_GOAL_EVIDENCE = "Never reassign a card automatically."
 CRITIC_RUN_ID = "fixture-materiality-critic-run"
 AUTHOR_RUN_ID = "fixture-semantic-author-run"
+
+
+def semantic_graph_extension_from_intent(
+    semantic_intent: dict[str, Any],
+) -> dict[str, Any]:
+    """Project bounded fixture rows into the node-owned authoring contract."""
+
+    bounded_facts = [
+        deepcopy(row)
+        for row in semantic_intent["facts"]
+        if row["custody"] == "bounded_interpretation"
+    ]
+    nodes = [
+        {
+            "fact": row,
+            "depends_on": [],
+            "implements": [],
+            "constrained_by": [],
+            "excludes": [],
+            "incoming_changes": [],
+        }
+        for row in bounded_facts
+    ]
+    nodes_by_id = {node["fact"]["fact_id"]: node for node in nodes}
+    for relation in semantic_intent["relations"]:
+        if relation["custody"] != "bounded_interpretation":
+            continue
+        kind = relation["kind"]
+        if kind == "changes" and relation["object_id"] in nodes_by_id:
+            nodes_by_id[relation["object_id"]]["incoming_changes"].append(
+                {
+                    "relation_id": relation["relation_id"],
+                    "subject_id": relation["subject_id"],
+                    "order": relation["order"],
+                    "source_refs": deepcopy(relation["source_refs"]),
+                }
+            )
+            continue
+        owner = nodes_by_id.get(relation["subject_id"])
+        if owner is None or kind not in {
+            "depends_on",
+            "implements",
+            "constrained_by",
+            "excludes",
+        }:
+            raise AssertionError("fixture relation cannot enter the bounded node contract")
+        owner[kind].append(
+            {
+                "relation_id": relation["relation_id"],
+                "object_id": relation["object_id"],
+                "order": relation["order"],
+                "source_refs": deepcopy(relation["source_refs"]),
+            }
+        )
+    return {
+        "version": SEMANTIC_GRAPH_EXTENSION_VERSION,
+        "status": semantic_intent["status"],
+        "clarification": deepcopy(semantic_intent["clarification"]),
+        "nodes": nodes,
+        "narratives": deepcopy(semantic_intent["narratives"]),
+    }
 
 
 def semantic_materiality_assessment() -> dict[str, Any]:

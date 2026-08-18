@@ -9,6 +9,9 @@ from typing import Any
 from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract import (
     semantic_intent_authoring_contract,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_graph_extension_contract import (
+    semantic_graph_extension_contract,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
     SEMANTIC_INTENT_IR_VERSION,
     SEMANTIC_INTENT_PACKET_VERSION,
@@ -28,7 +31,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_candidate_ad
 
 
 SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION = (
-    "odylith.greenfield.semantic-intent-authoring-request.v15"
+    "odylith.greenfield.semantic-intent-authoring-request.v16"
 )
 SEMANTIC_INTENT_MANDATORY_CHALLENGES = (
     "unsupported_addition",
@@ -67,7 +70,7 @@ def semantic_intent_authoring_protocol() -> dict[str, Any]:
                 "the critic-validated exact-byte citation catalog, decision, clarification, "
                 "and source-candidate rows are provider-locked before graph authoring; the author "
                 "must adjudicate every workflow candidate without rewriting it, then may add only "
-                "explicitly bounded architecture and presentation around selected source claims"
+                "node-owned bounded architecture edges and presentation around selected source claims"
             ),
         },
         "materiality_field_semantics": {
@@ -274,6 +277,7 @@ def semantic_intent_authoring_contract_payload() -> dict[str, Any]:
         "source_candidate_adjudication_contract": (
             semantic_source_candidate_adjudication_contract()
         ),
+        "semantic_graph_extension_contract": semantic_graph_extension_contract(),
         "semantic_intent_author_schema": semantic_intent_author_schema(),
         "semantic_contract": semantic_intent_authoring_contract(),
         "authoring_protocol": semantic_intent_authoring_protocol(),

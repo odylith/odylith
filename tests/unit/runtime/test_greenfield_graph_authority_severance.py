@@ -110,6 +110,7 @@ _GRAPH_COMPILE_GREENFIELD_MODULES = {
     "greenfield_semantic_delivery",
     "greenfield_semantic_diagrams",
     "greenfield_semantic_graph_contract",
+    "greenfield_semantic_graph_extension_contract",
     "greenfield_semantic_host_profiles",
     "greenfield_semantic_identifiers",
     "greenfield_semantic_intent_contract",
@@ -378,7 +379,7 @@ def test_public_graph_proposal_loads_only_the_explicit_graph_transaction_closure
             if len(transaction_paths) != 1:
                 raise SystemExit("public graph proposal did not stage exactly one transaction")
             transaction = json.loads(transaction_paths[0].read_text(encoding="utf-8"))
-            if transaction["intent_authority"].get("version") != "odylith.product-intent-authority.v17":
+            if transaction["intent_authority"].get("version") != "odylith.product-intent-authority.v18":
                 raise SystemExit("graph transaction changed its v15 authority")
             if transaction["compiler_provenance"].get("phase") != "pre_confirm_compile":
                 raise SystemExit("graph transaction lost its pre-confirm compiler attestation")

@@ -27,13 +27,16 @@ after confirmation.
 - **Kind**: library
 - **Status**: active
 - **Evidence tier**: manifest
-- **Workstreams**: B-141, B-142, B-144
+- **Workstreams**: B-141, B-142, B-144, B-146
 - **Diagrams**: D-043, D-045, D-046, D-047
 
 ## Requirements Trace
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-08-18 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142, B-146
+  - Evidence: `odylith/casebook/bugs/2026-08-18-greenfield-graph-extension-exposes-boundary-subjects-rejected-by-bounded-assembl.md`, `src/odylith/runtime/domain_intelligence/greenfield_semantic_graph_extension.py`, `src/odylith/runtime/domain_intelligence/greenfield_semantic_graph_extension_contract.py`
 - **2026-08-18 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-144
   - Evidence: `sha256:6946e4e1a52e61b2fe646dc5ecdbd60ed76a3483ccbdd7c76285969e9ceb4ee2`, `src/odylith/runtime/domain_intelligence/greenfield_semantic_source_candidate_adjudication.py`, `src/odylith/runtime/domain_intelligence/greenfield_semantic_source_claims.py`
@@ -49,12 +52,22 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-08-14 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
-- **2026-08-10 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_component_owned_state.py`, `tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-08-18: Made bounded Semantic Intent extension edges node-owned. (Plan: [B-144](odylith/radar/radar.html?view=plan&workstream=B-144); Bug: `CB-348`; Diagram: D-045)
+  The provider-facing extension contract no longer accepts a free-form global
+  relation list. Each bounded internal-system node declares only typed target
+  groups for its outgoing architecture edges, and each bounded state node may
+  declare typed incoming changes. Deterministic assembly projects every edge's
+  subject, kind, and custody, rejects invalid node/edge combinations, and has no
+  legacy relation-list fallback. This removes the language mismatch that let a
+  provider-valid graph fail deterministic assembly. The protocol advanced to
+  Semantic Intent v12, authority v18, and compiler identity v17. Focused proof
+  passed 154 tests; frozen-tree validation passed 4,405 with one skip after the
+  exact consumer migration assessment was registered under B-145; B-146 keeps
+  the fresh cohort obligation visible.
 
 - 2026-08-17: Replaced the live Greenfield prose-interpreter and repair regime with a source-cited graph authority. (Plan: [B-144](odylith/radar/radar.html?view=plan&workstream=B-144); Bug: `CB-328`; Diagram: D-043)
   The public mechanism now separates a prompt-only materiality critic from an

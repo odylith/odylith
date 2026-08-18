@@ -24,26 +24,27 @@ Last updated (UTC): 2026-08-18
 | 17 | B-137 | v0.1.15+ Agentic Policy Packs and Compliance Guardrails | P0 | 100 | 5 | 5 | 5 | L | High | queued | [v0-1-15-agentic-policy-packs-and-compliance-guardrails](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-agentic-policy-packs-and-compliance-guardrails.md) |
 | 18 | B-138 | v0.1.15+ Agentic Memory Integrity and Security Hardening | P0 | 100 | 5 | 5 | 5 | L | High | queued | [v0-1-15-agentic-memory-integrity-and-security-hardening](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-agentic-memory-integrity-and-security-hardening.md) |
 | 19 | B-143 | Decompose greenfield project intelligence surface | P1 | 100 | 4 | 5 | 3 | M | High | queued | [decompose-greenfield-project-intelligence-surface](odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md) |
-| 20 | B-036 | Product Canon Tab for Feature Narrative | P1 | 99 | 5 | 4 | 3 | L | High | queued | [odylith-product-canon-tab-for-feature-narrative](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-product-canon-tab-for-feature-narrative.md) |
-| 21 | B-034 | Constitution Tab for Non-Negotiable Product Truth | P0 | 98 | 4 | 5 | 3 | L | High | queued | [odylith-constitution-tab-for-non-negotiable-product-truth](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-constitution-tab-for-non-negotiable-product-truth.md) |
-| 22 | B-037 | Live Benchmarks Drawer and Dynamic Metric Readout | P1 | 98 | 4 | 5 | 3 | L | High | queued | [odylith-live-benchmarks-drawer-and-dynamic-metric-readout](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-live-benchmarks-drawer-and-dynamic-metric-readout.md) |
-| 23 | B-043 | Bootstrapped Consumer Governance Lane for SWE-bench Verified | P1 | 92 | 4 | 5 | 5 | L | VeryHigh | queued | [odylith-bootstrapped-consumer-governance-lane-for-swe-bench-verified](odylith/radar/source/ideas/2026-04/2026-04-02-odylith-bootstrapped-consumer-governance-lane-for-swe-bench-verified.md) |
-| 24 | B-035 | Decisions Tab and Architecture Decision Ledger | P1 | 89 | 4 | 4 | 3 | L | High | queued | [odylith-decisions-tab-and-architecture-decision-ledger](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-decisions-tab-and-architecture-decision-ledger.md) |
-| 25 | B-118 | v0.1.14 Governed Harness: Agent SDK Control Plane And Deep Benchmark Proof | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-agent-sdk-control-plane-and-deep-benchmark-proof](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-agent-sdk-control-plane-and-deep-benchmark-proof.md) |
-| 26 | B-119 | v0.1.14 Governed Harness: Deep Benchmark Coverage Matrix And Baseline Proof | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-deep-benchmark-coverage-matrix-and-baseline-proof](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-deep-benchmark-coverage-matrix-and-baseline-proof.md) |
-| 27 | B-120 | v0.1.14 Governed Harness: Governed Harness Manifest Contract | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-governed-harness-manifest-contract](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-governed-harness-manifest-contract.md) |
-| 28 | B-121 | v0.1.14 Governed Harness: Admissibility Guardrails And Approval Policy | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-admissibility-guardrails-and-approval-policy](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-admissibility-guardrails-and-approval-policy.md) |
-| 29 | B-122 | v0.1.14 Governed Harness: Harness Receipts, Tracing, And Resumable Proof | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-harness-receipts-tracing-and-resumable-proof](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-harness-receipts-tracing-and-resumable-proof.md) |
-| 30 | B-123 | v0.1.14 Governed Harness: OpenAI Agents SDK Adapter And Generic Harness Contract | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-openai-agents-sdk-adapter-and-generic-harness-contract](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-openai-agents-sdk-adapter-and-generic-harness-contract.md) |
-| 31 | B-124 | v0.1.14 Governed Harness: Cross-Host Harness Ablations And Deep Benchmark Execution | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-cross-host-harness-ablations-and-deep-benchmark-execution](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-cross-host-harness-ablations-and-deep-benchmark-execution.md) |
-| 32 | B-125 | v0.1.14 Governed Harness: Release Publication, Docs, And Benchmark Closure | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-release-publication-docs-and-benchmark-closure](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-release-publication-docs-and-benchmark-closure.md) |
-| 33 | B-128 | v0.1.15+ Agentic Context Governance Program | P0 | 74 | 5 | 5 | 5 | XL | VeryHigh | queued | [v0-1-15-agentic-context-governance-program](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-agentic-context-governance-program.md) |
-| 34 | B-131 | v0.1.15+ Repo Context Graph v1 | P0 | 74 | 5 | 5 | 5 | XL | VeryHigh | queued | [v0-1-15-repo-context-graph-v1](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-repo-context-graph-v1.md) |
-| 35 | B-134 | v0.1.15+ Execution Policy Adapters and Universal Action Gate | P0 | 74 | 5 | 5 | 5 | XL | VeryHigh | queued | [v0-1-15-execution-policy-adapters-and-universal-action-gate](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-execution-policy-adapters-and-universal-action-gate.md) |
-| 36 | B-139 | v0.1.15+ Context Continuity Benchmark and Audit Proof Surface | P0 | 74 | 5 | 5 | 5 | XL | VeryHigh | queued | [v0-1-15-context-continuity-benchmark-and-audit-proof-surface](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-context-continuity-benchmark-and-audit-proof-surface.md) |
-| 37 | B-002 | Multi-Developer Repo Collaboration Architecture | P0 | 70 | 5 | 5 | 4 | XL | VeryHigh | queued | [odylith-multi-developer-repo-collaboration-architecture](odylith/radar/source/ideas/2026-03/2026-03-27-odylith-multi-developer-repo-collaboration-architecture.md) |
-| 38 | B-136 | v0.1.15+ Enterprise Outcome Connectors and Hosted Augmentation | P1 | 68 | 5 | 4 | 5 | XL | VeryHigh | queued | [v0-1-15-enterprise-outcome-connectors-and-hosted-augmentation](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-enterprise-outcome-connectors-and-hosted-augmentation.md) |
-| 39 | B-006 | Dark Theme and Adaptive Surface Tokens | P1 | 67 | 4 | 4 | 4 | XL | High | queued | [odylith-dark-theme-and-adaptive-surface-tokens](odylith/radar/source/ideas/2026-03/2026-03-27-odylith-dark-theme-and-adaptive-surface-tokens.md) |
+| 20 | B-146 | Assess node-owned Greenfield extension migration for v0.1.15 | P1 | 100 | 3 | 4 | 3 | XS | Low | queued | [assess-node-owned-greenfield-extension-migration-for-v0-1-15](odylith/radar/source/ideas/2026-08/2026-08-18-assess-node-owned-greenfield-extension-migration-for-v0-1-15.md) |
+| 21 | B-036 | Product Canon Tab for Feature Narrative | P1 | 99 | 5 | 4 | 3 | L | High | queued | [odylith-product-canon-tab-for-feature-narrative](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-product-canon-tab-for-feature-narrative.md) |
+| 22 | B-034 | Constitution Tab for Non-Negotiable Product Truth | P0 | 98 | 4 | 5 | 3 | L | High | queued | [odylith-constitution-tab-for-non-negotiable-product-truth](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-constitution-tab-for-non-negotiable-product-truth.md) |
+| 23 | B-037 | Live Benchmarks Drawer and Dynamic Metric Readout | P1 | 98 | 4 | 5 | 3 | L | High | queued | [odylith-live-benchmarks-drawer-and-dynamic-metric-readout](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-live-benchmarks-drawer-and-dynamic-metric-readout.md) |
+| 24 | B-043 | Bootstrapped Consumer Governance Lane for SWE-bench Verified | P1 | 92 | 4 | 5 | 5 | L | VeryHigh | queued | [odylith-bootstrapped-consumer-governance-lane-for-swe-bench-verified](odylith/radar/source/ideas/2026-04/2026-04-02-odylith-bootstrapped-consumer-governance-lane-for-swe-bench-verified.md) |
+| 25 | B-035 | Decisions Tab and Architecture Decision Ledger | P1 | 89 | 4 | 4 | 3 | L | High | queued | [odylith-decisions-tab-and-architecture-decision-ledger](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-decisions-tab-and-architecture-decision-ledger.md) |
+| 26 | B-118 | v0.1.14 Governed Harness: Agent SDK Control Plane And Deep Benchmark Proof | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-agent-sdk-control-plane-and-deep-benchmark-proof](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-agent-sdk-control-plane-and-deep-benchmark-proof.md) |
+| 27 | B-119 | v0.1.14 Governed Harness: Deep Benchmark Coverage Matrix And Baseline Proof | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-deep-benchmark-coverage-matrix-and-baseline-proof](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-deep-benchmark-coverage-matrix-and-baseline-proof.md) |
+| 28 | B-120 | v0.1.14 Governed Harness: Governed Harness Manifest Contract | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-governed-harness-manifest-contract](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-governed-harness-manifest-contract.md) |
+| 29 | B-121 | v0.1.14 Governed Harness: Admissibility Guardrails And Approval Policy | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-admissibility-guardrails-and-approval-policy](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-admissibility-guardrails-and-approval-policy.md) |
+| 30 | B-122 | v0.1.14 Governed Harness: Harness Receipts, Tracing, And Resumable Proof | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-harness-receipts-tracing-and-resumable-proof](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-harness-receipts-tracing-and-resumable-proof.md) |
+| 31 | B-123 | v0.1.14 Governed Harness: OpenAI Agents SDK Adapter And Generic Harness Contract | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-openai-agents-sdk-adapter-and-generic-harness-contract](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-openai-agents-sdk-adapter-and-generic-harness-contract.md) |
+| 32 | B-124 | v0.1.14 Governed Harness: Cross-Host Harness Ablations And Deep Benchmark Execution | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-cross-host-harness-ablations-and-deep-benchmark-execution](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-cross-host-harness-ablations-and-deep-benchmark-execution.md) |
+| 33 | B-125 | v0.1.14 Governed Harness: Release Publication, Docs, And Benchmark Closure | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-release-publication-docs-and-benchmark-closure](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-release-publication-docs-and-benchmark-closure.md) |
+| 34 | B-128 | v0.1.15+ Agentic Context Governance Program | P0 | 74 | 5 | 5 | 5 | XL | VeryHigh | queued | [v0-1-15-agentic-context-governance-program](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-agentic-context-governance-program.md) |
+| 35 | B-131 | v0.1.15+ Repo Context Graph v1 | P0 | 74 | 5 | 5 | 5 | XL | VeryHigh | queued | [v0-1-15-repo-context-graph-v1](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-repo-context-graph-v1.md) |
+| 36 | B-134 | v0.1.15+ Execution Policy Adapters and Universal Action Gate | P0 | 74 | 5 | 5 | 5 | XL | VeryHigh | queued | [v0-1-15-execution-policy-adapters-and-universal-action-gate](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-execution-policy-adapters-and-universal-action-gate.md) |
+| 37 | B-139 | v0.1.15+ Context Continuity Benchmark and Audit Proof Surface | P0 | 74 | 5 | 5 | 5 | XL | VeryHigh | queued | [v0-1-15-context-continuity-benchmark-and-audit-proof-surface](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-context-continuity-benchmark-and-audit-proof-surface.md) |
+| 38 | B-002 | Multi-Developer Repo Collaboration Architecture | P0 | 70 | 5 | 5 | 4 | XL | VeryHigh | queued | [odylith-multi-developer-repo-collaboration-architecture](odylith/radar/source/ideas/2026-03/2026-03-27-odylith-multi-developer-repo-collaboration-architecture.md) |
+| 39 | B-136 | v0.1.15+ Enterprise Outcome Connectors and Hosted Augmentation | P1 | 68 | 5 | 4 | 5 | XL | VeryHigh | queued | [v0-1-15-enterprise-outcome-connectors-and-hosted-augmentation](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-enterprise-outcome-connectors-and-hosted-augmentation.md) |
+| 40 | B-006 | Dark Theme and Adaptive Surface Tokens | P1 | 67 | 4 | 4 | 4 | XL | High | queued | [odylith-dark-theme-and-adaptive-surface-tokens](odylith/radar/source/ideas/2026-03/2026-03-27-odylith-dark-theme-and-adaptive-surface-tokens.md) |
 
 ## In Planning/Implementation (Linked to `odylith/technical-plans/in-progress` or an active parent wave)
 
@@ -630,140 +631,147 @@ Last updated (UTC): 2026-08-18
 - deferred for now: later automation, integrations, and release expansion wait until the first proof path is accepted.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-036 (rank 20)
+### B-146 (rank 20)
+- why now: Assess node-owned Greenfield extension migration for v0.1.15 is the next bounded project move from the current backlog posture.
+- expected outcome: a reviewer can see the user path, owner, risk, and proof before implementation widens.
+- tradeoff: keep the first pass narrow until owner, evidence, and validation are explicit.
+- deferred for now: later automation, integrations, and release expansion wait until the first proof path is accepted.
+- ranking basis: score-based rank; no manual priority override.
+
+### B-036 (rank 21)
 - why now: Odylith's capability surface is now ahead of its own self-explanation, which means users still have to infer too much of the product story from onboarding fragments and technical artifacts.
 - expected outcome: Makes the feature story legible in product language, gives onboarding and release explanation one durable narrative source, and improves first-contact comprehension without dumbing the product down.
 - tradeoff: This is a large explanation slice because it has to establish a reusable Canon contract, shell presentation, and grounded proof hooks together or the narrative will drift into fluff.
 - deferred for now: marketing-site expansion, broader brand redesign, and hosted storytelling surfaces stay deferred because the immediate need is a durable in-product feature narrative first.
 - ranking basis: no manual priority override; this stays high in the queue because clearer self-explanation now unlocks more value from the capabilities Odylith already has.
 
-### B-034 (rank 21)
+### B-034 (rank 22)
 - why now: Odylith's non-negotiable product rules are real, but they are still scattered across AGENTS, specs, and workstreams instead of surfacing as one visible contract inside the product.
 - expected outcome: Makes the core truth harder to miss, reduces accidental boundary breaches, and gives operators plus agents one first-class place to understand what Odylith will not trade away.
 - tradeoff: This is a large governance-surface slice because it has to define a durable constitution source model, shell presentation, and traceability to canonical truth without creating another duplicate ledger.
 - deferred for now: policy-enforcement automation and broader inline guardrail surfacing stay deferred because the immediate need is one explicit Constitution surface first.
 - ranking basis: no manual priority override; this remains in the upper queue because the product's trust model is stronger when non-negotiable truth is visible before implementation choices get made.
 
-### B-037 (rank 22)
+### B-037 (rank 23)
 - why now: Benchmark proof now shapes product credibility, but the current metrics are still too buried in reports and release workflow to feel like a living part of the product.
 - expected outcome: Makes current benchmark posture visible at a glance, keeps proof movement easier to inspect, and turns benchmark truth into a first-class shell readout instead of a hidden artifact.
 - tradeoff: This is a large proof-visibility slice because it has to normalize benchmark truth, support dynamic freshness, and present enough context to stay trustworthy without replacing the full report.
 - deferred for now: full analytics dashboards and broader benchmark storytelling remain deferred because the immediate need is a compact live drawer for the current metrics first.
 - ranking basis: no manual priority override; this stays in the upper queue because benchmark trust is now part of the product surface, not just part of the release lane.
 
-### B-043 (rank 23)
+### B-043 (rank 24)
 - why now: Once Odylith can run the official external contract, the next missing causal proof is whether generated local governance truth compounds with the same model on the same repo without smuggling hidden-answer information.
 - expected outcome: Creates a clean same-truth external lane where both `odylith_on` and `odylith_off` can read the same generated repo-local truth, making it possible to separate governance value from orchestration value on external benchmarks.
 - tradeoff: This is a large product-and-benchmark slice because it needs a mechanically auditable bootstrap pipeline, generated-truth provenance, snapshot freezing, and fairness controls strong enough to survive skeptical review.
 - deferred for now: Broader enterprise bootstrap packs and human-authored benchmark overlays stay deferred because the immediate requirement is one narrow benchmark-safe bootstrap contract built only from allowed inputs.
 - ranking basis: no manual priority override; this follows the zero-governance lane because Odylith should first prove it can help on plain repos, then prove what additional value governed truth adds on the same external tasks.
 
-### B-035 (rank 24)
+### B-035 (rank 25)
 - why now: Odylith records plans, specs, and diagrams well, but it still lacks one durable surface for the architectural decisions that explain why those artifacts look the way they do.
 - expected outcome: Makes ADR-quality reasoning easier to find, reduces repetitive re-debate, and gives contributors a stable path from a design choice to the artifacts it shaped.
 - tradeoff: This is a large governance-and-IA slice because it needs a real decision-record contract, search-friendly rendering, and traceability to Atlas, Registry, and backlog truth together.
 - deferred for now: heavyweight governance workflow and broader enterprise review mechanics stay deferred because the immediate need is a usable Decisions ledger first.
 - ranking basis: no manual priority override; this should stay in the upper queue because Odylith benefits from remembering its architectural reasoning on purpose instead of rediscovering it from history.
 
-### B-118 (rank 25)
+### B-118 (rank 26)
 - why now: created as a new queued workstream for v0.1.14 Governed Harness: Agent SDK Control Plane And Deep Benchmark Proof.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-119 (rank 26)
+### B-119 (rank 27)
 - why now: created as a new queued workstream for v0.1.14 Governed Harness: Deep Benchmark Coverage Matrix And Baseline Proof.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-120 (rank 27)
+### B-120 (rank 28)
 - why now: created as a new queued workstream for v0.1.14 Governed Harness: Governed Harness Manifest Contract.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-121 (rank 28)
+### B-121 (rank 29)
 - why now: created as a new queued workstream for v0.1.14 Governed Harness: Admissibility Guardrails And Approval Policy.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-122 (rank 29)
+### B-122 (rank 30)
 - why now: created as a new queued workstream for v0.1.14 Governed Harness: Harness Receipts, Tracing, And Resumable Proof.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-123 (rank 30)
+### B-123 (rank 31)
 - why now: created as a new queued workstream for v0.1.14 Governed Harness: OpenAI Agents SDK Adapter And Generic Harness Contract.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-124 (rank 31)
+### B-124 (rank 32)
 - why now: created as a new queued workstream for v0.1.14 Governed Harness: Cross-Host Harness Ablations And Deep Benchmark Execution.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-125 (rank 32)
+### B-125 (rank 33)
 - why now: created as a new queued workstream for v0.1.14 Governed Harness: Release Publication, Docs, And Benchmark Closure.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-128 (rank 33)
+### B-128 (rank 34)
 - why now: created as a new queued workstream for v0.1.15+ Agentic Context Governance Program.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-131 (rank 34)
+### B-131 (rank 35)
 - why now: created as a new queued workstream for v0.1.15+ Repo Context Graph v1.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-134 (rank 35)
+### B-134 (rank 36)
 - why now: created as a new queued workstream for v0.1.15+ Execution Policy Adapters and Universal Action Gate.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-139 (rank 36)
+### B-139 (rank 37)
 - why now: created as a new queued workstream for v0.1.15+ Context Continuity Benchmark and Audit Proof Surface.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-002 (rank 37)
+### B-002 (rank 38)
 - why now: Odylith now has product-owned governance roots and needs a coherent multi-developer collaboration architecture before comments, authorship, and repo/workspace identity spread through the product as ad hoc fields.
 - expected outcome: Makes shared human/agent development auditable, keeps local-first repo truth authoritative, and gives Dashboard, Compass, Registry, Radar, Atlas, Casebook, and Context Engine one collaboration model.
 - tradeoff: This is a large systems slice because it touches scope identity, actor identity, comment durability, workspace runtime isolation, and optional hosted augmentation all at once.
 - deferred for now: Hosted collaboration features, enterprise tenancy, and broad rollout to additional repos stay deferred until the tracked local-first contract and resolved-summary memory rules are stable in the product repo first.
 - ranking basis: no manual priority override; this remains important, but the newly queued benchmark and product-truth surfaces are moving first.
 
-### B-136 (rank 38)
+### B-136 (rank 39)
 - why now: created as a new queued workstream for v0.1.15+ Enterprise Outcome Connectors and Hosted Augmentation.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-006 (rank 39)
+### B-006 (rank 40)
 - why now: Odylith now has a real shell and multiple governed surfaces, but they still skew light-only and rely on spread-out light palette literals that make long sessions and after-hours use noticeably worse.
 - expected outcome: Improves operator comfort, raises public product polish, and creates a reusable appearance contract so future surfaces inherit theme support instead of reintroducing styling debt.
 - tradeoff: This is a medium-large UX systems slice because theme state has to propagate across the shell and iframe surfaces while charts, badges, tables, diagrams, and other contrast-sensitive regions stay legible.

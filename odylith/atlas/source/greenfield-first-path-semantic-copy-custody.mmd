@@ -17,7 +17,8 @@ flowchart LR
     subgraph author_lane["Independent graph author"]
       direction TB
       author_input["Evidence plus sealed assessment<br/>fresh isolated context"]
-      structured_output["Provider-constrained Semantic Intent<br/>facts, relations, narratives,<br/>citations and mandatory self-challenges"]
+      structured_output["Provider-constrained bounded extension<br/>node facts plus node-owned typed targets<br/>no authored edge subject, kind or custody"]
+      graph_assembly["Deterministic graph assembly<br/>locked source facts plus projected edges<br/>one canonical Semantic Intent"]
       deterministic_checks["Deterministic validation<br/>exact citation bytes, graph endpoints,<br/>ownership, polarity, cardinality,<br/>materiality alignment and stable hashes"]
       authority["Verified Product Intent authority<br/>model output is admitted only after every law passes"]
     end
@@ -32,7 +33,7 @@ flowchart LR
     evidence --> author_input
     contract --> author_input
     nonces --> author_input
-    author_input --> structured_output --> deterministic_checks
+    author_input --> structured_output --> graph_assembly --> deterministic_checks
     deterministic_checks -- "invalid" --> clarification
     deterministic_checks -- "valid" --> authority
 
@@ -41,7 +42,7 @@ flowchart LR
     classDef author fill:#F0FDF4,stroke:#4ADE80,color:#132033,stroke-width:1.2px;
     class evidence,contract,nonces assignment;
     class critic_input,assessment,decision,clarification critic;
-    class author_input,structured_output,deterministic_checks,authority author;
+    class author_input,structured_output,graph_assembly,deterministic_checks,authority author;
 
     style assignment fill:#FBFDFF,stroke:#60A5FA,stroke-width:1px,color:#293D52
     style critic_lane fill:#FFFBF5,stroke:#FB923C,stroke-width:1px,color:#293D52

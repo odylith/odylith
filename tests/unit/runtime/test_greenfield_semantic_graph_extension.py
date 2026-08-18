@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_candidate_ad
 )
 from tests.unit.runtime.greenfield_semantic_intent_fixtures import (
     SEMANTIC_PROMPT,
+    semantic_graph_extension_from_intent,
     semantic_intent_packet,
 )
 
@@ -28,22 +29,7 @@ SOURCE = Path(
 def _extension(packet: dict[str, object]) -> dict[str, object]:
     graph = packet["semantic_intent"]
     assert isinstance(graph, dict)
-    return {
-        "version": SEMANTIC_GRAPH_EXTENSION_VERSION,
-        "status": graph["status"],
-        "clarification": copy.deepcopy(graph["clarification"]),
-        "facts": [
-            copy.deepcopy(row)
-            for row in graph["facts"]
-            if row["custody"] == "bounded_interpretation"
-        ],
-        "relations": [
-            copy.deepcopy(row)
-            for row in graph["relations"]
-            if row["custody"] == "bounded_interpretation"
-        ],
-        "narratives": copy.deepcopy(graph["narratives"]),
-    }
+    return semantic_graph_extension_from_intent(graph)
 
 
 def _source_claims(packet: dict[str, object]) -> dict[str, object]:
@@ -67,8 +53,8 @@ def test_graph_extension_assembles_the_exact_intent_without_source_row_repetitio
 
     assert assembled == graph
     assert all(
-        row["custody"] == "bounded_interpretation"
-        for row in _extension(packet)["facts"]
+        row["fact"]["custody"] == "bounded_interpretation"
+        for row in _extension(packet)["nodes"]
     )
     assert all(
         row["fact"]["custody"] == "source_fact"
@@ -87,26 +73,45 @@ def test_provider_schema_cannot_express_source_semantics_in_the_extension() -> N
     assert schema["properties"]["version"]["enum"] == [
         SEMANTIC_GRAPH_EXTENSION_VERSION
     ]
-    variants = schema["properties"]["facts"]["items"]["anyOf"]
+    assert "relations" not in schema["properties"]
+    variants = schema["properties"]["nodes"]["items"]["anyOf"]
     assert {
-        variant["properties"]["kind"]["enum"][0]
+        variant["properties"]["fact"]["properties"]["kind"]["enum"][0]
         for variant in variants
     }.isdisjoint({"actor", "workflow_step", "visible_output"})
     assert all(
-        variant["properties"]["custody"]["enum"] == ["bounded_interpretation"]
+        variant["properties"]["fact"]["properties"]["custody"]["enum"]
+        == ["bounded_interpretation"]
         for variant in variants
     )
-    relation = schema["properties"]["relations"]["items"]["properties"]
-    assert relation["custody"]["enum"] == ["bounded_interpretation"]
-    assert set(relation["kind"]["enum"]).isdisjoint({"owned_by", "produces"})
+    internal_system = next(
+        variant
+        for variant in variants
+        if variant["properties"]["fact"]["properties"]["kind"]["enum"]
+        == ["internal_system"]
+    )
+    for kind in ("depends_on", "implements", "constrained_by", "excludes"):
+        edge = internal_system["properties"][kind]["items"]
+        assert "subject_id" not in edge["properties"]
+        assert "kind" not in edge["properties"]
+        assert "custody" not in edge["properties"]
 
 
 def test_extension_rejects_source_rows_and_relations_between_locked_source_facts() -> None:
     packet = semantic_intent_packet()
     assessment = packet["materiality_assessment"]
     source_fact = _extension(packet)
-    source_fact["facts"].append(
-        copy.deepcopy(assessment["source_candidates"]["facts"][0]["fact"])
+    source_fact["nodes"].append(
+        {
+            "fact": copy.deepcopy(
+                assessment["source_candidates"]["facts"][0]["fact"]
+            ),
+            "depends_on": [],
+            "implements": [],
+            "constrained_by": [],
+            "excludes": [],
+            "incoming_changes": [],
+        }
     )
     with pytest.raises(ValueError, match="non-bounded fact authority"):
         assemble_semantic_intent_from_extension(
@@ -116,13 +121,16 @@ def test_extension_rejects_source_rows_and_relations_between_locked_source_facts
         )
 
     source_relation = _extension(packet)
-    relation = copy.deepcopy(
-        assessment["source_candidates"]["relations"][4]["relation"]
+    internal_node = next(
+        row
+        for row in source_relation["nodes"]
+        if row["fact"]["kind"] == "internal_system" and row["implements"]
     )
-    relation["relation_id"] = "bounded.but-source-semantic"
-    relation["custody"] = "bounded_interpretation"
-    source_relation["relations"].append(relation)
-    with pytest.raises(ValueError, match="boundary relation lacks a bounded subject"):
+    internal_node["implements"][0]["subject_id"] = "source.workflow"
+    with pytest.raises(
+        ValueError,
+        match="Semantic implements edge has unsupported or missing fields",
+    ):
         assemble_semantic_intent_from_extension(
             source_relation,
             assessment=assessment,

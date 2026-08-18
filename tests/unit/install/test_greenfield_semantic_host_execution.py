@@ -19,15 +19,15 @@ from greenfield_semantic_development_evidence import prepare_development_evidenc
 from odylith.runtime.domain_intelligence.greenfield_semantic_host_profiles import (
     host_execution_profile,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_graph_extension import (
-    SEMANTIC_GRAPH_EXTENSION_VERSION,
-)
 from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract import (
     SEMANTIC_INTENT_MANDATORY_CHALLENGES,
     semantic_intent_authoring_contract_sha256,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
     semantic_materiality_source_ref_catalog,
+)
+from tests.unit.runtime.greenfield_semantic_intent_fixtures import (
+    semantic_graph_extension_from_intent,
 )
 
 
@@ -140,7 +140,7 @@ def test_codex_jsonl_accepts_reasoning_and_rejects_tool_events(tmp_path: Path) -
 
 def _context(tmp_path: Path) -> dict[str, Any]:
     fixture = json.loads(
-        (SCRIPTS_ROOT / "fixtures" / "greenfield-semantic-smoke.v11.json").read_text(
+        (SCRIPTS_ROOT / "fixtures" / "greenfield-semantic-smoke.v12.json").read_text(
             encoding="utf-8"
         )
     )
@@ -181,22 +181,7 @@ def _context(tmp_path: Path) -> dict[str, Any]:
 
 
 def _extension_from_intent(semantic_intent: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "version": SEMANTIC_GRAPH_EXTENSION_VERSION,
-        "status": semantic_intent["status"],
-        "clarification": deepcopy(semantic_intent["clarification"]),
-        "facts": [
-            deepcopy(row)
-            for row in semantic_intent["facts"]
-            if row["custody"] == "bounded_interpretation"
-        ],
-        "relations": [
-            deepcopy(row)
-            for row in semantic_intent["relations"]
-            if row["custody"] == "bounded_interpretation"
-        ],
-        "narratives": deepcopy(semantic_intent["narratives"]),
-    }
+    return semantic_graph_extension_from_intent(semantic_intent)
 
 
 def _intent_with_citation_handles(
@@ -213,12 +198,18 @@ def _intent_with_citation_handles(
         (row["source_id"], row["quote"], row["occurrence"]): row["ref_id"]
         for row in catalog
     }
-    for owner in (
-        semantic_intent["clarification"],
-        *semantic_intent["facts"],
-        *semantic_intent["relations"],
-        *semantic_intent["narratives"],
-    ):
+    owners = [semantic_intent["clarification"], *semantic_intent["narratives"]]
+    for node in semantic_intent["nodes"]:
+        owners.append(node["fact"])
+        for kind in (
+            "depends_on",
+            "implements",
+            "constrained_by",
+            "excludes",
+            "incoming_changes",
+        ):
+            owners.extend(node[kind])
+    for owner in owners:
         owner["source_refs"] = [
             {"ref_id": ids[(row["source_id"], row["quote"], row["occurrence"])]}
             for row in owner["source_refs"]

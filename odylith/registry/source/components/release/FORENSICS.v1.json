@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 603,
-    "mapped_workstream_evidence_count": 497,
+    "explicit_event_count": 604,
+    "mapped_workstream_evidence_count": 498,
     "recent_path_match_count": 0,
     "spec_history_event_count": 67,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 603
+    "timeline_event_count": 604
   },
   "name": "Release",
   "path_prefixes": [
@@ -47,6 +47,44 @@
   ],
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-18-greenfield-graph-extension-exposes-boundary-subjects-rejected-by-bounded-assembl.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_graph_extension.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_graph_extension_contract.py"
+      ],
+      "confidence": "high",
+      "event_index": 1167,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-08-18T10:15:02-07:00",
+      "workstreams": [
+        "B-142",
+        "B-146"
+      ]
+    },
     {
       "artifact_count": 2,
       "artifacts": [

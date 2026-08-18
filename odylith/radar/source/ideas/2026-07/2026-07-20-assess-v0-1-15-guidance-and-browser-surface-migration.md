@@ -61,7 +61,7 @@ supersedes:
 superseded_by:
 
 ## Problem
-The v0.1.15 release changes managed guidance, operator CLI presentation contracts, browser-rendered governance surfaces, and install-managed assets. Existing consumer installs need an explicit assessment before promotion. The current graph-native cutover is bound to these exact evidence markers: `migration-observer:0.1.15:guidance-and-skills:d4f690f22f7e`; `migration-observer:0.1.15:operator-cli-contracts:00f2ed299d15`; `migration-observer:0.1.15:browser-surfaces:5630641b37af`; `migration-observer:0.1.15:browser-surfaces:011ecfc1d735`; `migration-observer:0.1.15:install-managed-assets:32bd860ec2a6`; `migration-observer:0.1.15:install-managed-assets:582eac588a61`. The additional markers cover the additive CB-347 failure record, its graph-wide candidate-adjudication mechanism evidence, and the corresponding rendered Casebook bundle. They change no installed browser schema and rewrite no consumer-owned governance source; ordinary surface and managed-asset refresh remains sufficient.
+The v0.1.15 release changes managed guidance, operator CLI presentation contracts, browser-rendered governance surfaces, and install-managed assets. Existing consumer installs need an explicit assessment before promotion. The current graph-native cutover is bound to these exact evidence markers: `migration-observer:0.1.15:guidance-and-skills:d4f690f22f7e`; `migration-observer:0.1.15:operator-cli-contracts:00f2ed299d15`; `migration-observer:0.1.15:browser-surfaces:5630641b37af`; `migration-observer:0.1.15:browser-surfaces:011ecfc1d735`; `migration-observer:0.1.15:browser-surfaces:21d87c2da5ef`; `migration-observer:0.1.15:browser-surfaces:89963d1580cd`; `migration-observer:0.1.15:browser-surfaces:011bae630420`; `migration-observer:0.1.15:install-managed-assets:32bd860ec2a6`; `migration-observer:0.1.15:install-managed-assets:582eac588a61`; `migration-observer:0.1.15:install-managed-assets:3d76b3df0543`. The additional markers cover the additive CB-347 and CB-348 failure records, the graph-wide candidate-adjudication and node-owned extension mechanisms, and their regenerated Casebook, Registry, Radar, Atlas, and managed-bundle projections. They change no installed browser schema and rewrite no consumer-owned governance source; ordinary verified runtime activation plus deterministic surface and managed-asset refresh remains sufficient.
 
 ## Customer
 Odylith operators upgrading managed guidance, skill, Atlas, and Casebook browser surfaces.
@@ -120,3 +120,6 @@ Assess the changed guidance and browser surfaces, record compatibility and rollb
 
 ## Open Questions
 - None. The final observed path set is assessed and does not require a source-data migration.
+
+<!-- migration-observer:0.1.15:browser-surfaces:7d88915438bf -->
+<!-- migration-observer:0.1.15:install-managed-assets:c6835fdbb4a2 -->
