@@ -1,4 +1,4 @@
-"""Parser-free Product Intent binding for v7 graph transactions."""
+"""Parser-free Product Intent binding for graph-native transactions."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ PRODUCT_FACTS_HASH_KEY = "product_facts_sha256"
 
 
 def require_product_intent_authority(authority: Mapping[str, Any]) -> None:
-    """Verify the source-cited v7 graph authority."""
+    """Verify the source-cited graph authority."""
 
     try:
         require_product_intent_authority_structure(authority)

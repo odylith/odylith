@@ -48,15 +48,19 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract impo
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations import (
     require_semantic_source_refs,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_source_claims import (
+    require_source_claim_projection,
+)
 
 
-SEMANTIC_INTENT_IR_VERSION = "odylith.greenfield.semantic-intent-ir.v4"
-SEMANTIC_INTENT_PACKET_VERSION = "odylith.greenfield.semantic-intent-packet.v7"
+SEMANTIC_INTENT_IR_VERSION = "odylith.greenfield.semantic-intent-ir.v5"
+SEMANTIC_INTENT_PACKET_VERSION = "odylith.greenfield.semantic-intent-packet.v9"
 
 _CUSTODY_STATES = frozenset(
     {"source_fact", "bounded_interpretation", "visible_assumption"}
 )
 _OWNER_KINDS = frozenset({"none", "actor", "product", "system"})
+_RELATION_CUSTODY_STATES = frozenset({"source_fact", "bounded_interpretation"})
 _ATTRIBUTE_NAMES = frozenset(SEMANTIC_ATTRIBUTE_NAMES)
 
 
@@ -64,6 +68,7 @@ def require_semantic_intent_ir(
     value: Any,
     *,
     evidence_sources: Mapping[str, str],
+    source_claims: Mapping[str, Any],
 ) -> dict[str, Any]:
     """Validate graph structure and citations without interpreting prose."""
 
@@ -87,6 +92,11 @@ def require_semantic_intent_ir(
     )
     narratives = _validate_narratives(
         ir.get("narratives"), evidence_sources=evidence_sources, fact_ids=fact_ids
+    )
+    require_source_claim_projection(
+        source_claims,
+        facts=facts,
+        relations=relations,
     )
     if status == "clarification_required":
         return dict(ir)
@@ -203,6 +213,7 @@ def semantic_intent_meaning_projection(ir: Mapping[str, Any]) -> dict[str, Any]:
             "subject_id": canonical_ids.get(str(row.get("subject_id") or ""), ""),
             "object_id": canonical_ids.get(str(row.get("object_id") or ""), ""),
             "order": row.get("order"),
+            "custody": row.get("custody"),
         }
         for row in relations
     ]
@@ -331,7 +342,15 @@ def _validate_relations(
     fact_index: Mapping[str, Mapping[str, Any]],
 ) -> list[dict[str, Any]]:
     rows = _sequence(value, 256, "relations")
-    keys = {"relation_id", "kind", "subject_id", "object_id", "order", "source_refs"}
+    keys = {
+        "relation_id",
+        "kind",
+        "subject_id",
+        "object_id",
+        "order",
+        "custody",
+        "source_refs",
+    }
     result: list[dict[str, Any]] = []
     relation_ids: set[str] = set()
     for raw in rows:
@@ -354,6 +373,7 @@ def _validate_relations(
             raise ValueError("Semantic Intent relation has invalid typed endpoints")
         if not isinstance(row.get("order"), int) or isinstance(row.get("order"), bool) or row["order"] < 0:
             raise ValueError("Semantic Intent relation order is invalid")
+        _enum(row.get("custody"), _RELATION_CUSTODY_STATES, "relation custody")
         require_semantic_source_refs(row.get("source_refs"), evidence_sources=evidence_sources)
         result.append(dict(row))
     _require_contiguous_order(result, key="kind", label="relation")

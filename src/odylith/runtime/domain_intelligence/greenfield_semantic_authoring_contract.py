@@ -21,10 +21,14 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contrac
     semantic_materiality_assessment_schema,
     semantic_materiality_critic_schema,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_source_candidate_adjudication import (
+    semantic_source_candidate_adjudication_contract,
+    semantic_source_candidate_adjudication_schema,
+)
 
 
 SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION = (
-    "odylith.greenfield.semantic-intent-authoring-request.v11"
+    "odylith.greenfield.semantic-intent-authoring-request.v13"
 )
 SEMANTIC_INTENT_MANDATORY_CHALLENGES = (
     "unsupported_addition",
@@ -53,12 +57,17 @@ def semantic_intent_authoring_protocol() -> dict[str, Any]:
             "order": "before_graph_authoring",
             "evidence_scope": "prompt_only",
             "critic_context": "independent",
+            "source_candidate_authority": (
+                "the critic locks every source-owned fact and relation candidate before the "
+                "graph author receives the assessment; candidates are not final source claims"
+            ),
             "decision": "authorize_graph_or_request_one_focused_clarification",
             "candidate_access": "forbidden",
             "graph_author_binding": (
-                "validated decision, clarification field, question, and citations are "
-                "provider-locked before graph authoring; every graph citation is selected "
-                "from the critic-validated exact-byte citation catalog"
+                "the critic-validated exact-byte citation catalog, decision, clarification, "
+                "and source-candidate rows are provider-locked before graph authoring; the author "
+                "must adjudicate every workflow candidate without rewriting it, then may add only "
+                "explicitly bounded architecture and presentation around selected source claims"
             ),
         },
         "materiality_field_semantics": {
@@ -169,6 +178,10 @@ def semantic_intent_authoring_protocol() -> dict[str, Any]:
         },
         "outcome_requirements": [
             "produce one complete source-cited typed graph",
+            (
+                "select every locked workflow candidate exactly once and preserve every retained "
+                "source candidate byte-for-byte in the authored graph"
+            ),
             "preserve supported meaning without adding unsupported product semantics",
             "emit clarification_required for unresolved material disagreement",
             (
@@ -240,6 +253,7 @@ def semantic_intent_authoring_protocol() -> dict[str, Any]:
             "validation_error_driven_packet_repair",
             "silent_candidate_merge",
             "post_candidate_materiality_assessment",
+            "candidate_authored_source_fact_or_relation",
         ],
     }
 
@@ -254,6 +268,12 @@ def semantic_intent_authoring_contract_payload() -> dict[str, Any]:
         "semantic_intent_schema": semantic_intent_output_schema(),
         "materiality_assessment_schema": semantic_materiality_assessment_schema(),
         "materiality_critic_schema": semantic_materiality_critic_schema(),
+        "source_candidate_adjudication_schema": (
+            semantic_source_candidate_adjudication_schema()
+        ),
+        "source_candidate_adjudication_contract": (
+            semantic_source_candidate_adjudication_contract()
+        ),
         "semantic_intent_author_schema": semantic_intent_author_schema(),
         "semantic_contract": semantic_intent_authoring_contract(),
         "authoring_protocol": semantic_intent_authoring_protocol(),

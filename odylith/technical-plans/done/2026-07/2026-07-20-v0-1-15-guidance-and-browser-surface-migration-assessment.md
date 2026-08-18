@@ -1,16 +1,18 @@
 Status: Done
 Created: 2026-07-20
-Updated: 2026-08-03
+Updated: 2026-08-18
 Backlog: B-145
 
 # v0.1.15 Guidance And Browser Surface Migration Assessment
 
 ## Goal
-Determine whether the v0.1.15 guidance, browser-surface, and install-managed
-asset changes require a consumer source migration before release promotion.
+Determine whether the v0.1.15 guidance, operator CLI presentation,
+browser-surface, and install-managed asset changes require a consumer source
+migration before release promotion.
 
 ## Assessed Scope
 - Managed Codex and Claude guidance and skills.
+- Operator CLI and component-authoring presentation contracts.
 - Generated Atlas, Casebook, Compass, Radar, Registry, and Project surfaces.
 - Install, upgrade, reinstall, doctor, and dashboard-refresh behavior.
 - Consumer-owned governance source preservation and rollback posture.
@@ -34,6 +36,9 @@ upgrade.
 
 ## Evidence
 - The release migration observer fingerprints are recorded in B-145.
+- The current assessment binds guidance `d4f690f22f7e`, operator CLI
+  `00f2ed299d15`, browser `5630641b37af`, and install-managed asset
+  `32bd860ec2a6` fingerprints.
 - `D-023` describes the managed runtime release and install flow.
 - `D-042` describes migration planning, application, ledger, and release-gate
   ownership.

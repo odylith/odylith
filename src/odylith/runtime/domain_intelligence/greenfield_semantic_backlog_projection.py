@@ -7,8 +7,8 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_semantic_component_projection import (
     SEMANTIC_SYSTEM_POLICY_CUSTODY,
+    semantic_delivery_risks,
     semantic_evidence_tier,
-    semantic_safety_risks,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_projection_plan import (
     SemanticProjectionPlan,
@@ -83,12 +83,8 @@ def _product_row(
         first_slice=proof_boundary,
         component_focus=workstream.component_ids,
         diagrams=_diagram_slugs(workstream, plan.diagram_slugs),
-        dependencies=(
-            "Depends on the sealed Semantic Intent graph and its typed component contracts.",
-        ),
-        interfaces=(
-            "Coordinates the accepted first path and its exact component handoffs.",
-        ),
+        dependencies=_component_values(plan.components, "dependencies"),
+        interfaces=_component_values(plan.components, "interfaces"),
         domain_risk="The first path can drift if delivery no longer matches the sealed graph.",
         semantic_fact_refs=_component_fact_refs(plan.components),
         semantic_fact_custody=_component_fact_custody(plan.components),
@@ -142,14 +138,9 @@ def _component_row(
         first_slice=responsibility,
         component_focus=workstream.component_ids,
         diagrams=_diagram_slugs(workstream, diagram_slugs),
-        dependencies=dependencies or [
-            "Depends only on source-cited workflow facts."
-        ],
+        dependencies=dependencies,
         interfaces=interfaces,
-        domain_risk=str(
-            component.get("component_contract", {}).get("unique_failure")
-            or "Component failure can hide the accepted first-path result."
-        ),
+        domain_risk=str(component.get("component_contract", {}).get("unique_failure") or ""),
         semantic_fact_refs=_component_fact_refs((component,)),
         semantic_fact_custody=_component_fact_custody((component,)),
         custody_state=str(component["custody_state"]),
@@ -192,14 +183,16 @@ def _row(
             f"Validation evidence must demonstrate this accepted slice: {first_slice}",
             *success_metrics,
         ],
-        "risks": semantic_safety_risks(title, domain_risk=domain_risk),
+        "risks": semantic_delivery_risks(domain_risk=domain_risk),
         "rationale_lines": [
             f"- why now: {opportunity}",
             f"- expected outcome: {first_slice}",
             f"- tradeoff: keep {title} bounded to its typed facts and proof edges.",
-            f"- deferred for now: capabilities outside {title}'s source-cited graph remain outside this release.",
-            f"- ranking basis: {title} follows the sealed workflow order and implementation dependencies.",
         ],
+        "why_now": opportunity,
+        "ranking_basis": (
+            f"{title} follows the sealed workflow order and typed implementation dependencies."
+        ),
         "semantic_fact_refs": list(semantic_fact_refs),
         "semantic_fact_custody": [dict(row) for row in semantic_fact_custody],
         "custody_state": custody_state,
@@ -233,6 +226,19 @@ def _component_fact_refs(components: Sequence[Mapping[str, Any]]) -> list[str]:
             if token and token not in refs:
                 refs.append(token)
     return refs
+
+
+def _component_values(
+    components: Sequence[Mapping[str, Any]],
+    key: str,
+) -> list[str]:
+    values: list[str] = []
+    for component in components:
+        for raw in component.get(key, ()) or ():
+            value = str(raw or "").strip()
+            if value and value not in values:
+                values.append(value)
+    return values
 
 
 def _component_fact_custody(

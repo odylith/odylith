@@ -14,6 +14,10 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract impo
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_schema import (
     semantic_intent_output_schema,
+    semantic_source_candidates_schema,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_source_claims import (
+    require_semantic_source_candidates,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations import (
     bind_semantic_source_ref_selections,
@@ -25,7 +29,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations im
 
 
 SEMANTIC_MATERIALITY_ASSESSMENT_VERSION = (
-    "odylith.greenfield.semantic-materiality-assessment.v5"
+    "odylith.greenfield.semantic-materiality-assessment.v7"
 )
 SEMANTIC_REASONING_CAPABILITY_PROFILE = "frontier_semantic_reasoning"
 SEMANTIC_MATERIALITY_ASSESSMENT_BASIS = "prompt_only_pre_graph"
@@ -59,6 +63,7 @@ def semantic_materiality_assessment_schema() -> dict[str, Any]:
             "decision",
             "clarification",
             "fields",
+            "source_candidates",
         ],
         "properties": {
             "version": {
@@ -86,6 +91,9 @@ def semantic_materiality_assessment_schema() -> dict[str, Any]:
                 "maxItems": len(SEMANTIC_CLARIFICATION_FIELDS),
                 "items": _materiality_field_schema(source_ref),
             },
+            "source_candidates": semantic_source_candidates_schema(
+                source_ref_schema=source_ref,
+            ),
         },
     }
 
@@ -432,6 +440,7 @@ def require_semantic_materiality_assessment(
             "decision",
             "clarification",
             "fields",
+            "source_candidates",
         },
         "Semantic materiality assessment",
     )
@@ -460,6 +469,12 @@ def require_semantic_materiality_assessment(
         evidence_sources=evidence_sources,
         omitted_field=omitted_field,
     )
+    field_index = {row["field"]: row for row in fields}
+    source_candidates = require_semantic_source_candidates(
+        assessment.get("source_candidates"),
+        evidence_sources=evidence_sources,
+        settled_fields=field_index,
+    )
     if decision == "authorize_graph":
         if clarification != {
             "field": "", "question": "", "source_refs": [], "alternatives": [],
@@ -475,6 +490,7 @@ def require_semantic_materiality_assessment(
         "decision": decision,
         "clarification": clarification,
         "fields": fields,
+        "source_candidates": source_candidates,
     }
 
 

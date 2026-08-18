@@ -67,17 +67,20 @@ def test_customer_bootstrap_guidance_carries_live_proof_claim_gate() -> None:
     assert "Hook `systemMessage` or `additionalContext` generation is not proof of chat-visible UX" in guidance
     assert "reports `Activation: ready` and a chat-visibility line is confirmed" in guidance
     assert "Treat recorded-only and waiting-for-chat states as partial proof" in guidance
-    assert (
-        "fully quality-gated staged ProductCreateTransaction before it presents the only command rail"
-        in guidance
-    )
-    assert "CONFIRM commits the shown hash-bound package" in guidance
+    assert "use the active host model for semantic reasoning and Odylith for deterministic verification" in guidance
+    assert "author its source-cited typed packet with the simplest evidence-supported reasoning mechanism" in guidance
+    assert "independently challenge every material claim" in guidance
+    assert "The outcome and proof laws are fixed; the authoring mechanism remains provisional." in guidance
+    assert "A citation proves custody, not entailment." in guidance
+    assert "The confirmation Markdown is a human view, never product truth." in guidance
+    assert "CONFIRM commits the exact reviewed, hash-bound ProductCreateTransaction" in guidance
+    assert "EDIT treats corrections as new evidence" in guidance
     assert "does not parse or generate product content after CONFIRM" in guidance
     assert "only verifies the sealed receipt" in guidance
-    assert "Markdown is a view, never product truth" in guidance
     assert ".odylith/runtime/greenfield/pending/<hash>/product-create-transaction.v1.json" in guidance
     assert "confirmed-intent.json" not in guidance
     assert "greenfield compile-transaction" not in guidance
+    assert "compiles typed evidence" not in guidance
     assert "ProductCreateTransaction" in guidance
     assert "--transaction-file" in guidance
     assert "--transaction-hash" in guidance

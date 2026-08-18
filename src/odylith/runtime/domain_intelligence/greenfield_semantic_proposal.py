@@ -42,9 +42,12 @@ from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_author
     PRODUCT_INTENT_AUTHORITY_KEY,
     require_product_intent_authority_structure,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_source_candidate_adjudication import (
+    selected_semantic_source_claims,
+)
 
 
-_PI_VERSION = "odylith.greenfield.project_intelligence.v1"
+_PI_VERSION = "odylith.greenfield.project_intelligence.v2"
 
 
 def build_verified_semantic_proposal(
@@ -61,9 +64,16 @@ def build_verified_semantic_proposal(
     evidence_sources = authority.get("evidence_sources")
     if not isinstance(evidence_sources, Mapping):
         raise ValueError("verified semantic proposal lacks evidence sources")
+    assessment = authority.get("semantic_materiality_assessment")
+    if not isinstance(assessment, Mapping):
+        raise ValueError("verified semantic proposal lacks locked source claims")
     graph = require_semantic_intent_ir(
         authority.get("semantic_intent"),
         evidence_sources=evidence_sources,
+        source_claims=selected_semantic_source_claims(
+            assessment,
+            authority.get("semantic_source_candidate_adjudication"),
+        ),
     )
     product_facts = semantic_intent_product_facts(graph)
     release = str(release_selector or "").strip() or DEFAULT_GREENFIELD_RELEASE_SELECTOR
@@ -121,7 +131,7 @@ def build_verified_semantic_proposal(
             "write_guardrail": "No product records are written until confirmed create receives --confirm.",
             "next_best_action": f"Review the source-cited {title} transaction for release {release}.",
         },
-        "assumptions": _assumptions(graph, title=title),
+        "assumptions": _assumptions(graph),
         "open_questions": _open_questions(graph),
         "risks": _risks(components),
         "security_compliance": semantic_security_compliance(
@@ -131,6 +141,7 @@ def build_verified_semantic_proposal(
         "validation_strategy": semantic_validation_strategy(
             plan=projection_plan,
             success_metrics=_strings(product_facts.get("success_metrics")),
+            proof_boundary=str(product_facts["proof_boundary"]),
         ),
         "project_brief": _project_brief(
             product_facts=product_facts,
@@ -364,39 +375,71 @@ def _project_brief(
     system_labels = [str(row["label"]) for row in components]
     external = _fact_labels(graph, "external_system")
     constraints = _strings(product_facts.get("operational_constraints"))
-    evidence = _strings(product_facts.get("evidence_requirements"))
     non_goals = _strings(product_facts.get("non_goals"))
     step_phrases = [_attributes(row)["action_phrase"] for row in _facts(graph, "workflow_step")]
     state_summary = _sentence_list(plan.state_labels)
     output_summary = _sentence_list(plan.visible_output_labels)
     blueprint = [
-        _brief_section("Product story", str(product_facts["product_story"]), "Keeps the user, problem, and useful outcome explicit."),
-        _brief_section("First path", _sentence_list(step_phrases), "Keeps implementation tied to the ordered accepted workflow."),
-        *(
-            [_brief_section("State and ownership", f"State objects: {state_summary}; owned systems: {_sentence_list(system_labels)}", "Prevents state and component responsibility from drifting.")]
-            if plan.state_labels
-            else [_brief_section("Ownership", f"Owned systems: {_sentence_list(system_labels)}", "Prevents component responsibility from drifting.")]
+        _brief_section(
+            "Consumer outcome",
+            f"{product_facts['product_story']} {product_facts['problem']}",
+            "States who benefits and what becomes useful.",
         ),
-        _brief_section("Proof obligations", str(product_facts["proof_boundary"]), "Makes release readiness depend on evidence rather than prose."),
-        _brief_section("Evidence anchors", _sentence_list(evidence, fallback=output_summary), "Preserves source-cited evidence through delivery and review."),
-        _brief_section("Operational constraints", _sentence_list(constraints, fallback="No additional operating constraints were asserted."), "Keeps operating limits separate from workflow actions."),
-        _brief_section("Actors and systems", f"Actors: {_sentence_list(actor_labels, fallback='none')}. External systems: {_sentence_list(external, fallback='none')}", "Separates people, product responsibilities, and dependencies."),
-        _brief_section("Deferred scope", _sentence_list(non_goals, fallback="No additional scope was deferred."), "Prevents the first release from claiming excluded behavior."),
+        _brief_section(
+            "Ordered first path",
+            _sentence_list(step_phrases),
+            "Preserves the accepted workflow order.",
+        ),
+        _brief_section(
+            "Ownership and boundaries",
+            (
+                f"Actors: {_sentence_list(actor_labels, fallback='none')}. "
+                f"Components: {_sentence_list(system_labels)}. "
+                f"External systems: {_sentence_list(external, fallback='none')}."
+            ),
+            "Keeps people, product responsibilities, and dependencies distinct.",
+        ),
+        _brief_section(
+            "State and visible outputs" if plan.state_labels else "Visible outputs",
+            (
+                f"State objects: {state_summary}. Visible outputs: {output_summary}."
+                if plan.state_labels
+                else f"Visible outputs: {output_summary}."
+            ),
+            "Names the product evidence without adding an undeclared state model.",
+        ),
+        _brief_section(
+            "Release proof and limits",
+            (
+                f"Proof: {product_facts['proof_boundary']} "
+                f"Constraints: {_sentence_list(_fragments(constraints), fallback='none asserted')}. "
+                f"Excluded: {_sentence_list(_fragments(non_goals), fallback='none asserted')}."
+            ),
+            "Keeps promotion evidence and excluded scope reviewable together.",
+        ),
     ]
     choices = ["accept graph", "revise source evidence", "defer from release"]
     options = [
-        _decision("D1", "Actors", f"Confirm accepted actors: {_sentence_list(actor_labels, fallback='none')}.", "Changes action ownership.", choices),
+        *(
+            [_decision("D1", "Actors", f"Confirm accepted actors: {_sentence_list(actor_labels)}.", "Changes action ownership.", choices)]
+            if actor_labels
+            else []
+        ),
         *(
             [_decision("D2", "State objects", f"Confirm the accepted state objects: {state_summary}.", "Changes transition proof.", choices)]
             if plan.state_labels
             else []
         ),
         _decision("D3", "Visible outputs", f"Confirm every visible output: {output_summary}.", "Changes the consumer outcomes.", choices),
-        _decision("D4", "External systems", f"Confirm dependency boundaries: {_sentence_list(external, fallback='none')}.", "Changes access and failure proof.", choices),
+        *(
+            [_decision("D4", "External systems", f"Confirm dependency boundaries: {_sentence_list(external)}.", "Changes access and failure proof.", choices)]
+            if external
+            else []
+        ),
         _decision("D5", "Release boundary", f"Keep release {release} bounded to: {product_facts['proof_boundary']}", "Changes validation and promotion scope.", choices),
     ]
     return {
-        "schema_version": "odylith.greenfield.project_brief.v1",
+        "schema_version": "odylith.greenfield.project_brief.v2",
         "custody_state": SEMANTIC_SYSTEM_POLICY_CUSTODY,
         "evidence_tier": semantic_evidence_tier(SEMANTIC_SYSTEM_POLICY_CUSTODY),
         "semantic_fact_custody": semantic_fact_custody_rows(graph["facts"]),
@@ -409,27 +452,7 @@ def _project_brief(
         "project_outcome": str(product_facts["proof_boundary"]),
         "blueprint_sections": blueprint,
         "customization_options": options,
-        "customization_prompts": [
-            (
-                "Revise the cited graph when an actor, action, state object, or output is wrong."
-                if plan.state_labels
-                else "Revise the cited graph when an actor, action, or output is wrong."
-            ),
-            "Add source evidence before introducing a live external-system dependency.",
-            "Tighten the release proof while preserving the accepted consumer outcome.",
-        ],
-        "pre_coding_checkpoints": [
-            _checkpoint("Semantic graph accepted", "Does every material fact cite exact operator evidence?", "Done when graph validation reports no missing or contradictory fact."),
-            _checkpoint("Ownership accepted", "Does every human action have one explicit owner?", "Done when workflow ownership matches the sealed relation graph."),
-            *(
-                [_checkpoint("State and outputs accepted", f"Are {state_summary} and every output ({output_summary}) distinct and complete?", "Done when every state object and visible output is named.")]
-                if plan.state_labels
-                else [_checkpoint("Outputs accepted", f"Is every output ({output_summary}) distinct and complete?", "Done when every visible output is named.")]
-            ),
-            _checkpoint("Release proof accepted", f"Does release {release} block on missing evidence?", "Done when success, failure, and boundary proof are executable."),
-        ],
         "coding_readiness_gates": [
-            f"The accepted product story remains: {product_facts['product_story']}",
             f"The implementation preserves {_sentence_list(step_phrases)} in graph order.",
             f"The component boundaries remain {_sentence_list(system_labels)}.",
             (
@@ -440,14 +463,6 @@ def _project_brief(
             f"Excluded scope remains excluded: {_sentence_list(_fragments(non_goals), fallback='no additional non-goals')}.",
         ],
         "operational_constraints": constraints,
-        "host_independent_paths": [
-            {
-                "path": "Review the creation-ready transaction",
-                "command": "odylith greenfield propose --repo-root . --prompt <request> --semantic-intent-file <semantic-intent.json>",
-                "works_in": "shell, Codex, Claude Code",
-                "use_when": "Use after host reasoning has authored one source-cited Semantic Intent packet.",
-            }
-        ],
     }
 
 
@@ -461,24 +476,39 @@ def _project_intelligence(
     title = str(product_facts["title"])
     path = str(product_facts["first_path"])
     proof = str(product_facts["proof_boundary"])
-    path_clause = path.rstrip(" .!?")
-    proof_clause = proof.rstrip(" .!?")
-    actors = _sentence_list(
-        _strings(product_facts.get("human_actors")),
-        fallback="no human actor",
-    )
+    actor_rows = _strings(product_facts.get("human_actors"))
+    actors = _sentence_list(actor_rows, fallback="none")
     systems = _sentence_list(str(row["label"]) for row in components)
-    external = _sentence_list(_strings(product_facts.get("external_systems")), fallback="no live external system")
-    non_goals = _sentence_list(_strings(product_facts.get("non_goals")), fallback="no additional excluded scope")
+    external_rows = _strings(product_facts.get("external_systems"))
+    non_goal_rows = _strings(product_facts.get("non_goals"))
+    constraint_rows = _strings(product_facts.get("operational_constraints"))
+    assumption_rows = _strings(product_facts.get("assumptions"))
+    evidence_rows = _ordered_unique(
+        (
+            *_strings(product_facts.get("evidence_requirements")),
+            *(proof_row for component in components for proof_row in component["validation"]),
+        )
+    )
+    risk_rows = _ordered_unique(
+        component["component_contract"]["unique_failure"] for component in components
+    )
     state_summary = _sentence_list(plan.state_labels)
     output_summary = _sentence_list(plan.visible_output_labels)
     rows = {
-        "intent": [str(product_facts["product_story"]), str(product_facts["problem"]), str(product_facts["product_view"])],
-        "scope": [f"In scope: {path}", f"Release boundary: {proof}"],
+        "intent": [
+            str(product_facts["product_story"]),
+            str(product_facts["problem"]),
+            str(product_facts["product_view"]),
+        ],
+        "scope": [
+            f"In scope: {path}",
+            f"Release boundary: {proof}",
+            *(f"Excluded: {row}" for row in non_goal_rows),
+        ],
         "ontology": [
-            f"Product identity is explicitly named {title}.",
+            f"Product: {title}.",
             *([f"The accepted state objects are {state_summary}."] if plan.state_labels else []),
-            f"The human-visible product outputs are {output_summary}.",
+            f"Visible outputs: {output_summary}.",
         ],
         **(
             {
@@ -490,70 +520,57 @@ def _project_intelligence(
             if plan.state_labels
             else {}
         ),
-        "operators": [f"Accepted actor responsibilities: {actors}", f"Ordered workflow: {path}", "Product-owned actions remain distinct from human-owned actions."],
-        "constraints": [f"Operational constraints: {_sentence_list(_strings(product_facts.get('operational_constraints')), fallback='none asserted')}", f"Excluded behavior: {non_goals}"],
-        "source_of_truth_map": [f"The sealed Semantic Intent graph owns product meaning for {title}.", f"Typed component contracts own implementation boundaries: {systems}."],
-        "evidence": [
-            f"Release proof is bounded by: {proof}",
-            (
-                "Each component carries distinct typed success, blocked-path, and state reconstruction evidence."
-                if plan.state_labels
-                else "Each component carries distinct typed success and blocked-path evidence."
-            ),
+        "operators": [
+            *(f"Accepted actor: {row}" for row in actor_rows),
+            f"Ordered workflow: {path}",
         ],
+        "constraints": [
+            *(f"Operational constraint: {row}" for row in constraint_rows),
+            *(f"Excluded behavior: {row}" for row in non_goal_rows),
+        ],
+        "source_of_truth_map": [
+            f"The sealed Semantic Intent graph owns product meaning for {title}.",
+            f"Typed component contracts own implementation boundaries: {systems}.",
+        ],
+        "evidence": [f"Release proof: {proof}", *evidence_rows],
         "decisions": [
             f"Implement the workflow in sealed order: {path}",
             (
-                f"Promote release {release} only after every output ({output_summary}) is visible and {state_summary} is reconstructed."
+                f"Promote release {release} only after {output_summary} is visible and {state_summary} is reconstructed."
                 if plan.state_labels
-                else f"Promote release {release} only after every output ({output_summary}) is visible."
+                else f"Promote release {release} only after {output_summary} is visible."
             ),
         ],
-        "assumptions": [f"Any explicit assumptions remain visible: {_sentence_list(_strings(product_facts.get('assumptions')), fallback='none supplied')}", f"External dependencies remain bounded to {external.rstrip(' .')}."],
-        "topology": [f"Product-owned systems: {systems}", f"External dependencies: {external}", f"The visible outputs are {output_summary}."],
+        "assumptions": list(assumption_rows),
+        "topology": [
+            f"Product systems: {systems}.",
+            *(f"External system: {row}" for row in external_rows),
+        ],
         "invariants": [
             "Rendered governance cannot change graph facts or relation ownership.",
-            (
-                f"Every release claim remains linked to the accepted state objects ({state_summary}), outputs ({output_summary}), and source citations."
-                if plan.state_labels
-                else f"Every release claim remains linked to outputs ({output_summary}) and source citations."
-            ),
+            f"Every release claim remains linked to {output_summary} and source citations.",
         ],
-        "risks": [
-            f"Meaning drift can assign an action from {path_clause} to the wrong owner or component.",
-            (
-                f"Release trust fails if outputs ({output_summary}) and state objects ({state_summary}) lose their typed evidence links."
-                if plan.state_labels
-                else f"Release trust fails if every output ({output_summary}) loses its typed evidence link."
-            ),
-        ],
+        "risks": list(risk_rows),
         "validation_obligations": [
             f"Validate the complete success path: {path}",
-            f"Validate blocked behavior against {proof_clause}.",
+            f"Validate the release boundary: {proof}",
             *(
                 [f"Reconstruct every state object from exact typed facts: {state_summary}."]
                 if plan.state_labels
                 else []
             ),
-            "Validate every component with its distinct typed success and blocked-path obligations.",
+            *_strings(product_facts.get("success_metrics")),
         ],
-        "artifacts": [
-            f"Component specifications preserve the boundaries for {systems}.",
-            "Workstreams and architecture diagrams cite the same sealed semantic facts.",
+        "owners": [
+            f"Human action owners: {actors}.",
+            "Relationless system and output behavior remains product-owned.",
         ],
-        "owners": [f"Human action owners are limited to {actors}.", "The product owns relationless system and output behavior."],
-        "execution_memory": ["Future work starts from the sealed graph, not rendered prose.", "A source-backed correction rebuilds the transaction before confirmation."],
-        "metrics": ["Semantic projection drift count remains zero.", "Every component and workstream carries exact semantic fact references."],
-        "change_model": ["Source evidence changes require a new Semantic Intent packet and authority hash.", "Projection changes cannot alter sealed product facts."],
-        "invalidation_rules": ["Missing citations invalidate graph authority.", "Graph-projection disagreement blocks the transaction before confirmation."],
-        "conflict_model": ["Source-cited corrections outrank rendered proposal copy.", "Conflicting graph relations require clarification rather than repair."],
-        "transfer_priors": ["Prefer one typed relation over downstream prose inference.", "Delete a projector when a simpler graph-native alternative proves better."],
     }
     return {
         "schema_version": _PI_VERSION,
         "custody_state": SEMANTIC_SYSTEM_POLICY_CUSTODY,
         "evidence_tier": semantic_evidence_tier(SEMANTIC_SYSTEM_POLICY_CUSTODY),
-        "purpose": f"Preserve why {title} exists, who benefits, what it changes, and how every output ({output_summary}) proves the result without widening the source-cited scope.",
+        "purpose": f"Preserve why {title} exists and how {output_summary} proves its consumer outcome.",
         "coding_posture": (
             f"Coding starts only after the sealed workflow, accepted state objects ({state_summary}), visible outputs ({output_summary}), component boundaries, and release evidence agree end to end."
             if plan.state_labels
@@ -569,7 +586,6 @@ def _project_intelligence(
         "customization_flow": [
             "Correct source evidence when a fact is wrong.",
             "Regenerate the Semantic Intent graph from the corrected evidence.",
-            "Compare semantic and human-quality evidence before retaining a mechanism.",
             "Confirm only the exact hash-bound transaction that passed all gates.",
         ],
         **rows,
@@ -631,9 +647,9 @@ def _bind_artifacts(proposal: dict[str, Any], *, project_slug: str, title: str) 
             }
 
 
-def _assumptions(graph: Mapping[str, Any], *, title: str) -> list[dict[str, str]]:
+def _assumptions(graph: Mapping[str, Any]) -> list[dict[str, str]]:
     rows = _facts(graph, "assumption")
-    result = [
+    return [
         {
             "id": f"ASM-{index:03d}",
             "tier": semantic_evidence_tier(str(row["custody"])),
@@ -643,33 +659,6 @@ def _assumptions(graph: Mapping[str, Any], *, title: str) -> list[dict[str, str]
         }
         for index, row in enumerate(rows, 1)
     ]
-    policy_rows = [
-        (
-            (
-                f"Implementation for {title} remains limited to the sealed actors, workflow, state objects, visible outputs, and component boundaries."
-                if _facts(graph, "state_object")
-                else f"Implementation for {title} remains limited to the sealed actors, workflow, visible outputs, and component boundaries."
-            ),
-            "A source-cited correction changes the accepted graph.",
-        ),
-        (
-            f"Live integrations for {title} remain simulated or deferred until source-backed contracts exist.",
-            "The product owner supplies the live integration and its proof boundary.",
-        ),
-    ]
-    for statement, confirm_when in policy_rows:
-        if len(result) >= 2:
-            break
-        result.append(
-            {
-                "id": f"ASM-{len(result) + 1:03d}",
-                "tier": "odylith_assumption",
-                "custody_state": SEMANTIC_SYSTEM_POLICY_CUSTODY,
-                "statement": statement,
-                "confirm_when": confirm_when,
-            }
-        )
-    return result
 
 
 def _open_questions(graph: Mapping[str, Any]) -> list[dict[str, str]]:
@@ -704,10 +693,6 @@ def _decision(
         "choices": list(choices),
         "impact": impact,
     }
-
-
-def _checkpoint(name: str, question: str, done_when: str) -> dict[str, str]:
-    return {"checkpoint": name, "operator_question": question, "done_when": done_when}
 
 
 def _facts(graph: Mapping[str, Any], kind: str) -> list[Mapping[str, Any]]:

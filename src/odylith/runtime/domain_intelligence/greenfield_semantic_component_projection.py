@@ -12,6 +12,9 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract imp
 from odylith.runtime.domain_intelligence.greenfield_semantic_identifiers import (
     semantic_artifact_identifier,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_source_candidate_adjudication import (
+    selected_semantic_source_claims,
+)
 
 
 SEMANTIC_SYSTEM_POLICY_CUSTODY = "system_policy"
@@ -60,9 +63,16 @@ def semantic_component_rows_from_authority(
     evidence_sources = authority.get("evidence_sources")
     if not isinstance(evidence_sources, Mapping):
         raise ValueError("ProductCreateTransaction authority lacks Semantic Intent custody")
+    assessment = authority.get("semantic_materiality_assessment")
+    if not isinstance(assessment, Mapping):
+        raise ValueError("ProductCreateTransaction authority lacks locked source claims")
     semantic_intent = require_semantic_intent_ir(
         authority.get("semantic_intent"),
         evidence_sources=evidence_sources,
+        source_claims=selected_semantic_source_claims(
+            assessment,
+            authority.get("semantic_source_candidate_adjudication"),
+        ),
     )
     return semantic_component_rows(semantic_intent, project_slug=project_slug)
 
@@ -172,11 +182,7 @@ def semantic_component_rows(
         consumers = _sentence_list(downstream_labels, fallback="Release review")
         proof = attributes["proof"]
         proof_obligations = [proof]
-        if has_result:
-            proof_obligations.append(
-                f"Blocked-path proof for {label}: reject invalid {accepted_inputs} before producing {produced}."
-            )
-        else:
+        if not has_result:
             if not boundary_interfaces:
                 raise ValueError(
                     f"resultless semantic component `{label}` lacks a typed supporting boundary"
@@ -225,7 +231,7 @@ def semantic_component_rows(
                 "dependencies": [f"Depends on {value}." for value in dependency_labels],
                 "interfaces": interfaces,
                 "validation": proof_obligations,
-                "risks": semantic_safety_risks(label, domain_risk=attributes["risk"]),
+                "risks": semantic_delivery_risks(domain_risk=attributes["risk"]),
                 "status": "planned",
                 "qualification": "candidate",
                 "custody_state": str(system["custody"]),
@@ -266,14 +272,13 @@ def _require_release_implementation_coverage(
         )
 
 
-def semantic_safety_risks(subject: str, *, domain_risk: str) -> list[str]:
-    """Attach fixed release-safety invariants without inferring domain meaning."""
+def semantic_delivery_risks(*, domain_risk: str) -> list[str]:
+    """Return only the component risk accepted in the semantic graph."""
 
-    return [
-        f"Delivery risk: {domain_risk}",
-        f"Security posture: {subject} must enforce authorization, access control, credential isolation, and safe failure handling.",
-        f"Policy and privacy posture: {subject} must preserve applicable policy, privacy, accessibility, retention, and safety evidence.",
-    ]
+    risk = str(domain_risk or "").strip()
+    if not risk:
+        raise ValueError("semantic component lacks its typed delivery risk")
+    return [risk]
 
 
 def _relation_targets(
@@ -422,5 +427,5 @@ __all__ = [
     "semantic_component_rows_from_authority",
     "semantic_evidence_tier",
     "semantic_fact_custody_rows",
-    "semantic_safety_risks",
+    "semantic_delivery_risks",
 ]

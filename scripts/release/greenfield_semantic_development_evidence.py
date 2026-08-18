@@ -38,12 +38,12 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_host_profiles impor
 )
 
 
-DEVELOPMENT_EVIDENCE_PLAN_VERSION = "odylith.greenfield.development-evidence-plan.v3"
-AUTHOR_SEGMENT_VERSION = "odylith.greenfield.development-author-segment.v3"
-CRITIC_INPUT_VERSION = "odylith.greenfield.development-materiality-critic-input.v3"
-AUTHOR_INPUT_VERSION = "odylith.greenfield.development-graph-author-input.v4"
-MECHANISM_EVIDENCE_VERSION = "odylith.greenfield.semantic-development-mechanism-evidence.v4"
-MECHANISM_ID = "prompt_only_materiality_gate_then_independent_graph_author"
+DEVELOPMENT_EVIDENCE_PLAN_VERSION = "odylith.greenfield.development-evidence-plan.v5"
+AUTHOR_SEGMENT_VERSION = "odylith.greenfield.development-author-segment.v5"
+CRITIC_INPUT_VERSION = "odylith.greenfield.development-materiality-critic-input.v5"
+AUTHOR_INPUT_VERSION = "odylith.greenfield.development-graph-author-input.v7"
+MECHANISM_EVIDENCE_VERSION = "odylith.greenfield.semantic-development-mechanism-evidence.v7"
+MECHANISM_ID = "prompt_only_source_candidate_lock_then_author_adjudication_and_bounded_extension"
 DETERMINISTIC_LAW_REPORT_VERSION = "odylith.greenfield.deterministic-law-report.v3"
 REQUIRED_DETERMINISTIC_LAW_IDS = (
     "no_post_confirm_semantic_or_model_work",
@@ -87,6 +87,18 @@ def development_mechanism_contract() -> dict[str, Any]:
         "restarts_per_case": 0,
         "validation_error_repairs_per_stage": 0,
         "citation_transport": "provider_locked_handle_to_exact_critic_validated_source_ref",
+        "source_authority": "critic_locked_fact_and_relation_candidates",
+        "source_candidate_adjudication": (
+            "the existing author selects every workflow candidate by typed material effect "
+            "or folds it into one locked output or state candidate"
+        ),
+        "author_addition_custody": "bounded_interpretation_only",
+        "author_output": (
+            "source_candidate_adjudication_plus_bounded_graph_extension_without_source_row_repetition"
+        ),
+        "graph_assembly": (
+            "deterministic_candidate_selection_plus_bounded_extension"
+        ),
         "token_measurement_bases": list(TOKEN_MEASUREMENT_BASES),
         "mandatory_challenges": list(SEMANTIC_INTENT_MANDATORY_CHALLENGES),
         "critic_access": _expected_access("critic"),

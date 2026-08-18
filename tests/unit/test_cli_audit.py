@@ -206,6 +206,28 @@ _HANDLER_CASES = [
         and list(getattr(args, "forwarded", [])) == ["--json"],
     },
     {
+        "path": ("greenfield", "semantic-intent-schema"),
+        "argv": lambda root: ["greenfield", "semantic-intent-schema", f"--repo-root={root}"],
+        "handler": "_cmd_greenfield",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "greenfield_command", "") == "semantic-intent-schema"
+        and list(getattr(args, "forwarded", [])) == [],
+    },
+    {
+        "path": ("greenfield", "semantic-intent-request"),
+        "argv": lambda root: [
+            "greenfield",
+            "semantic-intent-request",
+            f"--repo-root={root}",
+            "--prompt",
+            "Build a lab notebook",
+        ],
+        "handler": "_cmd_greenfield",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "greenfield_command", "") == "semantic-intent-request"
+        and list(getattr(args, "forwarded", [])) == ["--prompt", "Build a lab notebook"],
+    },
+    {
         "path": ("greenfield", "propose"),
         "argv": lambda root: ["greenfield", "propose", f"--repo-root={root}", "--prompt", "Build a lab notebook"],
         "handler": "_cmd_greenfield",

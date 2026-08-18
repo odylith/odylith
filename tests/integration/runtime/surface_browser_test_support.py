@@ -14,6 +14,8 @@ from urllib.parse import parse_qs, urlparse
 
 import pytest
 
+from odylith.runtime.surfaces import tooling_dashboard_version_state
+
 playwright_sync = pytest.importorskip("playwright.sync_api")
 
 
@@ -37,6 +39,15 @@ _EXTERNAL_MERMAID_CDN_REQUEST_RE = re.compile(
     r"^GET https://cdn\.jsdelivr\.net/npm/mermaid@11/dist/mermaid\.min\.js(?:\s+.*)?$"
 )
 _SHELL_QUERY_PARAM_TIMEOUT_MS = 60000
+
+
+def _ensure_repo_browser_runtime() -> None:
+    """Materialize ignored shell runtime inputs for detached-worktree tests."""
+    json_path = tooling_dashboard_version_state.version_state_path(repo_root=_REPO_ROOT)
+    js_path = tooling_dashboard_version_state.version_state_js_path(repo_root=_REPO_ROOT)
+    if json_path.is_file() and js_path.is_file():
+        return
+    tooling_dashboard_version_state.persist_version_state(repo_root=_REPO_ROOT)
 
 
 @contextlib.contextmanager
@@ -77,6 +88,7 @@ def _browser() -> Iterator[tuple[object, object]]:
 
 @pytest.fixture()
 def browser_context() -> Iterator[tuple[str, object]]:
+    _ensure_repo_browser_runtime()
     with _static_server(root=_REPO_ROOT) as base_url:
         for _pw, browser in _browser():
             context = browser.new_context(viewport={"width": 1440, "height": 1100})
@@ -88,6 +100,7 @@ def browser_context() -> Iterator[tuple[str, object]]:
 
 @pytest.fixture()
 def compact_browser_context() -> Iterator[tuple[str, object]]:
+    _ensure_repo_browser_runtime()
     with _static_server(root=_REPO_ROOT) as base_url:
         for _pw, browser in _browser():
             context = browser.new_context(viewport={"width": 430, "height": 932})

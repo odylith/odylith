@@ -83,8 +83,7 @@ def _clean_sequence(values: Sequence[str] | str) -> tuple[str, ...]:
     return tuple(str(item).strip() for item in values if str(item).strip())
 
 
-def _registry_focus_phrase(*, label: str, responsibility: str) -> str:
-    del responsibility
+def _registry_focus_phrase(*, label: str) -> str:
     label_text = component_spec_rendering.sentence_fragment(label)
     words = label_text.strip(" .").split()
     if words and words[-1].casefold() in _COMPONENT_KIND_SUFFIXES:
@@ -93,11 +92,17 @@ def _registry_focus_phrase(*, label: str, responsibility: str) -> str:
 
 
 def _public_what_it_is(*, label: str, kind: str, responsibility: str) -> str:
-    focus = _registry_focus_phrase(label=label, responsibility=responsibility)
-    return (
-        f"{label} defines the planned {kind} ownership boundary for {focus}. "
+    focus = _registry_focus_phrase(label=label)
+    responsibility_text = component_spec_rendering.sentence_fragment(responsibility).strip()
+    if responsibility_text and responsibility_text[-1] not in ".!?":
+        responsibility_text += "."
+    sentences = [f"{label} defines the planned {kind} ownership boundary for {focus}."]
+    if responsibility_text:
+        sentences.append(f"Authored responsibility: {responsibility_text}")
+    sentences.append(
         "It keeps local result, blocked cases, recovery path, release proof, and review evidence together."
     )
+    return " ".join(sentences)
 
 
 def _build_registry_entry(

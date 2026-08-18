@@ -1,4 +1,4 @@
-"""Public v7 Greenfield orchestration for one source-cited semantic packet."""
+"""Public Greenfield orchestration for one source-cited semantic packet."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ def build_verified_semantic_proposal_for_repo(
     authority: Mapping[str, Any],
     release_selector: str = "",
 ) -> dict[str, Any]:
-    """Build a v7 proposal without loading the legacy proposal interpreter."""
+    """Build a graph-native proposal without loading a legacy interpreter."""
 
     root = Path(repo_root).expanduser().resolve()
     return build_verified_semantic_proposal(

@@ -15,6 +15,9 @@ from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_author
     PRODUCT_INTENT_AUTHORITY_KEY,
     require_product_intent_authority_structure,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_source_candidate_adjudication import (
+    selected_semantic_source_claims,
+)
 
 
 def semantic_projection_issues(proposal: Mapping[str, Any]) -> tuple[str, ...]:
@@ -28,9 +31,16 @@ def semantic_projection_issues(proposal: Mapping[str, Any]) -> tuple[str, ...]:
         evidence_sources = authority.get("evidence_sources")
         if not isinstance(evidence_sources, Mapping):
             return ("Semantic Intent authority lacks evidence sources",)
+        assessment = authority.get("semantic_materiality_assessment")
+        if not isinstance(assessment, Mapping):
+            return ("Semantic Intent authority lacks locked source claims",)
         require_semantic_intent_ir(
             authority.get("semantic_intent"),
             evidence_sources=evidence_sources,
+            source_claims=selected_semantic_source_claims(
+                assessment,
+                authority.get("semantic_source_candidate_adjudication"),
+            ),
         )
         observed_source = proposal.get("observed_source")
         if not isinstance(observed_source, Mapping):
@@ -48,7 +58,7 @@ def semantic_projection_issues(proposal: Mapping[str, Any]) -> tuple[str, ...]:
 
 
 def semantic_projection_report(proposal: Mapping[str, Any]) -> dict[str, Any]:
-    """Return the pre-confirm semantic evidence report for a v7 proposal."""
+    """Return the pre-confirm semantic evidence report for a graph-native proposal."""
 
     issues = semantic_projection_issues(proposal)
     return {

@@ -36,12 +36,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 544,
-    "mapped_workstream_evidence_count": 498,
+    "explicit_event_count": 546,
+    "mapped_workstream_evidence_count": 500,
     "recent_path_match_count": 0,
     "spec_history_event_count": 16,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 544
+    "timeline_event_count": 546
   },
   "name": "Atlas",
   "path_prefixes": [
@@ -51,6 +51,72 @@
   ],
   "spec_ref": "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/technical-plans/in-progress/2026-08/2026-08-16-greenfield-semantic-compiler-result-and-projection-owners.md"
+      ],
+      "confidence": "high",
+      "event_index": 1164,
+      "explicit_components": [
+        "atlas",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "odylith",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "odylith",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-08-18T06:03:21-07:00",
+      "workstreams": [
+        "B-144"
+      ]
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_projection_plan.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_proposal.py"
+      ],
+      "confidence": "high",
+      "event_index": 1161,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-08-17T22:49:29-07:00",
+      "workstreams": [
+        "B-142",
+        "B-144"
+      ]
+    },
     {
       "artifact_count": 3,
       "artifacts": [

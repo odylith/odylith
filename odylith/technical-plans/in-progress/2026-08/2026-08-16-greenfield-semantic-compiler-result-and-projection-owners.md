@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-08-16
 
-Updated: 2026-08-17
+Updated: 2026-08-18
 
 Backlog: B-144
 
@@ -245,6 +245,112 @@ this plan as active until the size and ownership targets are met.
   projection/release proof is `33/33`; the wider release-contract gate is
   `251/251`. The prior 24 segments remain failed evidence under the superseded
   contract and cannot be reused as release evidence.
+
+## Mechanism Checkpoint — 2026-08-18
+
+- Independent adjudication of the fresh 24-case development cohort is a
+  release **NO-GO**: three P0s, fifty-one P1s, `3/24` passing cases, package
+  utility `0.0`, equivalent-source convergence `0.625`, and twenty-one
+  unsupported relations. Deterministic-law failures remain zero. This proves
+  that structural validity and passing transaction laws are necessary but do
+  not establish semantic fidelity or consumer utility.
+- Three bounded alternatives were compared on the same disclosed evidence.
+  Whole-graph challenge caught some unsupported additions but alternated
+  between missed P0s and false blockers. Typed challenge improved recall but
+  still overblocked valid graph relations. Atomic per-claim adjudication also
+  missed the gfhi-009 exclusivity strengthening while rejecting valid derived
+  presentation. Reviewer prompt tuning and author self-challenge are therefore
+  retired as semantic authorities; they may not be surrounded by more lexical
+  rules or retries.
+- The next falsifiable hypothesis is **source-claim-first candidate
+  adjudication**. One independent frontier pass must lock atomic source claims,
+  polarity, exact citations, and material ambiguity before architecture or
+  narrative generation. Product graph facts and relations must bind those
+  claim identifiers; explicitly bounded architecture remains separate from
+  source truth. A candidate author cannot certify its own unsupported semantic
+  additions, and deterministic validation cannot promote a citation into an
+  entailment decision.
+- Before that authority cut, the graph-native projection was simplified without
+  changing sealed meaning: First Path now shows ordered workflow, exact human
+  owners, state changes, and outputs; implementation/dependency topology stays
+  in its own views; workflow order is persisted as a view-only edge rather than
+  a semantic relation. Invented product-owner, generic authorization/privacy,
+  blocked-path, and dependency boilerplate were deleted. Project brief bytes
+  fell about 31% and project-intelligence bytes about 28% on the canonical
+  fixture. Current graph-native runtime proof is `75/75`.
+
+## Source-Custody Replacement Checkpoint — 2026-08-18
+
+- The source-claim-first hypothesis materially improved custody. One prompt-only
+  critic now locks exact source facts, source relations, polarity, and byte-exact
+  citations. A separate author may emit only bounded implementation facts and
+  relations; deterministic assembly combines those rows with the immutable
+  source claims. The author no longer repeats or rewrites source truth.
+- Fresh disclosed pilots confirm the boundary works on three distinct families.
+  `gfhi-002` and `gfhi-011` produced valid, fully compiled transactions; `gfhi-005`
+  asked the one material visible-result question instead of inventing an output.
+  The exact runs took `185,796–225,750 ms` and approximately `80,620–85,782`
+  tokens. This is development evidence only: deterministic-law evidence is not
+  yet rebound to the replacement cohort, and the protected holdout remains
+  untouched.
+- The replacement is not yet a release mechanism. The disclosed equivalent pair
+  `gfhi-001`/`gfhi-002` preserves the same actor, state, output, dependency, and
+  prohibition, but diverges at three versus two workflow steps and three versus
+  two components. A surface form that says the actor sees the already-declared
+  receipt becomes an extra workflow action in only one graph. CB-335 records this
+  release-blocking semantic-depth drift.
+- A third independent challenger is not the answer. A blinded source-claim
+  challenger missed the workflow/output duplication and raised a false P0 for a
+  discarded label. That alternative is retired rather than added as another
+  model/reviewer cascade.
+- The next bounded comparison moves authority one level earlier: a critic locks
+  source evidence units with typed semantic roles and endpoints, and deterministic
+  code assembles source graph rows from that role contract. The falsifiable
+  prediction is that equivalent visible-result phrasing no longer creates a
+  second workflow action, while genuine observe/receive work remains material,
+  `gfhi-005` still clarifies, and `gfhi-011` retains its specific dependency and
+  constraint boundaries. No regex, token scoring, phrase vocabulary, or fixture
+  exception may participate.
+- If that evidence-role contract wins the bounded comparison, delete direct
+  graph-shaped source-claim authoring rather than preserve dual authorities. If
+  it does not improve equivalent-source convergence without custody loss, reject
+  it and compare a different mechanism; do not tune it against case wording.
+- CB-334 records the failed author-self-challenge/relation-contract mechanism.
+  Evidence is preserved under the release evidence root; the final holdout
+  remains unopened. The source-claim hypothesis earns adoption only if fresh
+  development evidence improves semantic fidelity, package utility, and
+  equivalent-source convergence without exceeding the explicit latency and
+  complexity envelope; otherwise it is removed.
+
+## Candidate-Adjudication Development Checkpoint — 2026-08-18
+
+- The next bounded comparison retained the typed source-candidate boundary and
+  removed direct source-graph authoring. The critic now locks source candidates;
+  the same single author call must adjudicate every workflow candidate as one
+  material action with a typed effect or fold it into an already locked state
+  or visible result. The author may add only bounded implementation rows and
+  cannot rewrite source facts or relations. Deterministic selection, reindexing,
+  and graph assembly remain the sole post-author transport owners.
+- The active mechanism id is
+  `prompt_only_source_candidate_lock_then_author_adjudication_and_bounded_extension`.
+  Its current contracts are semantic source claims v2, materiality assessment
+  v7, authoring request v13, packet v9, Product Intent authority v15, and
+  compiler identity v14. The public graph path contains no semantic regex,
+  fuzzy, or token-similarity interpreter and does not revive a validator retry,
+  rescue prompt, or third semantic authority.
+- The settled detached-source development gate is green on one frozen tree:
+  `make dev-validate` passed all `4402` tests across `23` shards, Python
+  compilation, platform custody, Registry, Radar, plan traceability and risk,
+  guidance portability, version truth, `47/47` fresh Atlas diagrams, current
+  delivery intelligence, and migration assessment. Two escaped test-harness
+  dependencies were recorded as CB-345 and CB-346 and corrected without
+  changing product semantics.
+- This checkpoint establishes development-code readiness, not release
+  readiness. The next required evidence is a clean revision-bound deterministic
+  law report and a fresh two-stage 24-case development cohort with independent
+  evaluation. The protected holdout remains unopened until that evidence has
+  zero P0/P1 findings and meets the consumer-utility, equivalence, latency, and
+  cost contracts.
 
 ## Stop Conditions
 

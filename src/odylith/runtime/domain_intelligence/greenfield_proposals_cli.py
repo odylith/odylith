@@ -67,8 +67,6 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     )
     propose.add_argument(
         "--semantic-intent-file",
-        "--intent-file",
-        "--confirmed-intent-file",
         default="",
         dest="intent_file",
         help="Source-cited Semantic Intent packet authored by the active host model.",
@@ -94,8 +92,6 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     compile_transaction.add_argument("--edit-evidence", default="", help=argparse.SUPPRESS)
     compile_transaction.add_argument(
         "--semantic-intent-file",
-        "--intent-file",
-        "--confirmed-intent-file",
         default="",
         dest="intent_file",
         help="Source-cited Semantic Intent packet authored by the active host model.",

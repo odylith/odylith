@@ -1,4 +1,4 @@
-"""Parser-free v11 Semantic Intent authority and sealed-byte checks."""
+"""Parser-free v15 Semantic Intent authority and sealed-byte checks."""
 
 from __future__ import annotations
 
@@ -33,10 +33,13 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contrac
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations import (
     resolved_semantic_source_refs,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_source_candidate_adjudication import (
+    select_semantic_source_claims,
+)
 
 
 PRODUCT_INTENT_AUTHORITY_KEY = "product_intent_authority"
-PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v13"
+PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v15"
 _SEMANTIC_AUTHORITY_FIELDS = frozenset(
     {
         "version",
@@ -55,6 +58,7 @@ _SEMANTIC_AUTHORITY_FIELDS = frozenset(
         "semantic_intent_authoring_contract_sha256",
         "semantic_materiality_assessment",
         "semantic_materiality_assessment_sha256",
+        "semantic_source_candidate_adjudication",
         "semantic_materiality_critic_run",
         "semantic_intent_author_run",
         "evidence_sources",
@@ -160,9 +164,15 @@ def _require_semantic_intent_authority(authority: Mapping[str, Any]) -> None:
         or authority.get("semantic_intent_author_run") != author_run
     ):
         raise ValueError("ProductCreateTransaction sealed semantic run evidence is noncanonical")
+    source_candidates = assessment["source_candidates"]
+    source_candidate_adjudication, source_claims = select_semantic_source_claims(
+        source_candidates,
+        authority.get("semantic_source_candidate_adjudication"),
+    )
     semantic_intent = require_semantic_intent_ir(
         authority.get("semantic_intent"),
         evidence_sources=evidence_sources,
+        source_claims=source_claims,
     )
     if semantic_intent.get("status") != "complete":
         raise ValueError("ProductCreateTransaction sealed Semantic Intent is clarification-bound")

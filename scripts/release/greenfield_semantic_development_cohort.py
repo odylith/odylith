@@ -213,16 +213,39 @@ def _compile_case(
     author_stage = mapping(segment_row.get("author_stage"), f"{case_id} author stage")
     exact_keys(
         author_stage,
-        _run_fields("author") | {"semantic_intent"},
+        _run_fields("author")
+        | {
+            "source_candidate_adjudication",
+            "semantic_extension",
+            "semantic_intent",
+        },
         f"{case_id} author stage",
+    )
+    source_candidate_adjudication = mapping(
+        author_stage.get("source_candidate_adjudication"),
+        f"{case_id} source candidate adjudication",
+    )
+    semantic_extension = mapping(
+        author_stage.get("semantic_extension"),
+        f"{case_id} Semantic graph extension",
     )
     semantic_intent = mapping(author_stage.get("semantic_intent"), f"{case_id} Semantic Intent")
     author_output = {
-        "semantic_intent": semantic_intent,
+        "source_candidate_adjudication": source_candidate_adjudication,
+        "semantic_extension": semantic_extension,
         "self_challenge": author_stage.get("self_challenge"),
     }
     author_evidence = require_run_evidence(
-        {key: value for key, value in author_stage.items() if key != "semantic_intent"},
+        {
+            key: value
+            for key, value in author_stage.items()
+            if key
+            not in {
+                "source_candidate_adjudication",
+                "semantic_extension",
+                "semantic_intent",
+            }
+        },
         stage="author",
         assignment=assignment["author_assignment"],
         expected_input_sha256=canonical_sha256(author_input),
@@ -240,6 +263,7 @@ def _compile_case(
         "authoring_contract_sha256": semantic_intent_authoring_contract_sha256(),
         "materiality_assessment": assessment,
         "materiality_assessment_sha256": materiality_sha256,
+        "source_candidate_adjudication": source_candidate_adjudication,
         "critic_run": {
             "capability_profile": critic_evidence["capability_profile"],
             "critic_run_id": critic_evidence["run_id"],

@@ -1436,7 +1436,12 @@ def test_release_preflight_uses_isolated_temp_dist_dir() -> None:
     assert '--dist-dir "$dist_dir" --allow-local' in shared
     assert 'ODYLITH_RELEASE_PREFLIGHT_DIST_DIR="$dist_dir"' in shared
     assert 'glob.glob(os.path.join(dist_dir, "*.whl"))' in shared
-    assert 'scripts/release/local_release_smoke.py --version "$resolved_version" --dist-dir "$dist_dir"' in shared
+    assert 'TEMP_PARENT="${ODYLITH_GREENFIELD_PROOF_TEMP_PARENT:-$(dirname "$dist_dir")}" \\' in shared
+    assert (
+        '"$odylith_host_repo_root/bin/greenfield-graph-release-proof" '
+        '"$resolved_version" "$dist_dir"'
+    ) in shared
+    assert 'scripts/release/local_release_smoke.py --version "$resolved_version"' not in shared
 
 def test_release_candidate_benchmark_override_is_version_scoped() -> None:
     helper = (REPO_ROOT / "bin" / "_odylith.sh").read_text(encoding="utf-8")

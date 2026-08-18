@@ -11,7 +11,8 @@ def test_bundle_root_contains_installed_agents_entrypoint() -> None:
         "ProductCreateTransaction without semantic regexes or repair retries"
     ) in agents_text
     assert "renders the sole visible confirmation view" in agents_text
-    assert "**CONFIRM** commits the exact hash" in agents_text
+    assert "**CONFIRM** commits the exact reviewed hash-bound package" in agents_text
+    assert "**EDIT** treats corrections as new evidence" in agents_text
     assert "greenfield create --repo-root . --transaction-file" in agents_text
     assert (
         "It does not parse evidence, call a model, generate artifacts, or repair prose "

@@ -20,6 +20,10 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract imp
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations import (
     semantic_source_ref_schema,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_source_claims import (
+    SEMANTIC_SOURCE_CANDIDATES_VERSION,
+    SEMANTIC_SOURCE_CLAIMS_VERSION,
+)
 
 
 _SYSTEM_ATTRIBUTE_NAMES = frozenset({"component_kind", "release_scope"})
@@ -74,6 +78,93 @@ def semantic_intent_output_schema(
     }
 
 
+def semantic_source_claims_schema(
+    *, source_ref_schema: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Return the deterministically selected source-claim graph schema."""
+
+    return _semantic_source_rows_schema(
+        version=SEMANTIC_SOURCE_CLAIMS_VERSION,
+        source_ref_schema=source_ref_schema,
+    )
+
+
+def semantic_source_candidates_schema(
+    *, source_ref_schema: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Return the critic-owned source-candidate graph schema."""
+
+    return _semantic_source_rows_schema(
+        version=SEMANTIC_SOURCE_CANDIDATES_VERSION,
+        source_ref_schema=source_ref_schema,
+    )
+
+
+def _semantic_source_rows_schema(
+    *,
+    version: str,
+    source_ref_schema: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Return the shared typed row shape for candidates or selected claims."""
+
+    source_ref = source_ref_schema or semantic_source_ref_schema()
+    source_refs = _source_refs(source_ref, minimum=1)
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["version", "facts", "relations"],
+        "properties": {
+            "version": {
+                "type": "string",
+                "enum": [version],
+            },
+            "facts": {
+                "type": "array",
+                "maxItems": 128,
+                "items": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["field", "fact"],
+                    "properties": {
+                        "field": _clarification_field(),
+                        "fact": {
+                            "anyOf": [
+                                _fact_schema(
+                                    kind=kind,
+                                    source_refs=source_refs,
+                                    custodies=("source_fact",),
+                                )
+                                for kind in SEMANTIC_FACT_KINDS
+                            ]
+                        },
+                    },
+                },
+            },
+            "relations": {
+                "type": "array",
+                "maxItems": 256,
+                "items": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["fields", "relation"],
+                    "properties": {
+                        "fields": {
+                            "type": "array",
+                            "minItems": 1,
+                            "maxItems": 9,
+                            "items": _clarification_field(),
+                        },
+                        "relation": _relation_schema(
+                            source_refs,
+                            custodies=("source_fact",),
+                        ),
+                    },
+                },
+            },
+        },
+    }
+
+
 def _clarification_schema(source_ref: dict[str, Any]) -> dict[str, Any]:
     return {
         "anyOf": [
@@ -114,7 +205,16 @@ def _clarification_field() -> dict[str, Any]:
     return {"type": "string", "enum": list(SEMANTIC_CLARIFICATION_FIELDS)}
 
 
-def _fact_schema(*, kind: str, source_refs: dict[str, Any]) -> dict[str, Any]:
+def _fact_schema(
+    *,
+    kind: str,
+    source_refs: dict[str, Any],
+    custodies: tuple[str, ...] = (
+        "source_fact",
+        "bounded_interpretation",
+        "visible_assumption",
+    ),
+) -> dict[str, Any]:
     required = [
         "fact_id",
         "kind",
@@ -141,7 +241,7 @@ def _fact_schema(*, kind: str, source_refs: dict[str, Any]) -> dict[str, Any]:
             "owner_kind": {"type": "string", "enum": list(FACT_OWNER_KINDS[kind])},
             "custody": {
                 "type": "string",
-                "enum": ["source_fact", "bounded_interpretation", "visible_assumption"],
+                "enum": list(custodies),
             },
             "attributes": {
                 "type": "array",
@@ -212,7 +312,11 @@ def _attribute_schema(
     }
 
 
-def _relation_schema(source_refs: dict[str, Any]) -> dict[str, Any]:
+def _relation_schema(
+    source_refs: dict[str, Any],
+    *,
+    custodies: tuple[str, ...] = ("source_fact", "bounded_interpretation"),
+) -> dict[str, Any]:
     return {
         "type": "object",
         "additionalProperties": False,
@@ -222,6 +326,7 @@ def _relation_schema(source_refs: dict[str, Any]) -> dict[str, Any]:
             "subject_id",
             "object_id",
             "order",
+            "custody",
             "source_refs",
         ],
         "properties": {
@@ -230,6 +335,7 @@ def _relation_schema(source_refs: dict[str, Any]) -> dict[str, Any]:
             "subject_id": {"type": "string", "minLength": 1, "maxLength": 100},
             "object_id": {"type": "string", "minLength": 1, "maxLength": 100},
             "order": {"type": "integer", "minimum": 0},
+            "custody": {"type": "string", "enum": list(custodies)},
             "source_refs": source_refs,
         },
     }
@@ -268,4 +374,8 @@ def _source_refs(
     return schema
 
 
-__all__ = ["semantic_intent_output_schema"]
+__all__ = [
+    "semantic_intent_output_schema",
+    "semantic_source_candidates_schema",
+    "semantic_source_claims_schema",
+]

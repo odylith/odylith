@@ -33,6 +33,9 @@ from greenfield_semantic_host_execution_contract import HOST_RUNTIME_RECEIPT_VER
 from odylith.runtime.domain_intelligence.greenfield_semantic_host_profiles import (
     host_execution_profile,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_graph_extension import (
+    SEMANTIC_GRAPH_EXTENSION_VERSION,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract import (
     SEMANTIC_INTENT_MANDATORY_CHALLENGES,
     semantic_intent_authoring_contract_sha256,
@@ -289,12 +292,24 @@ def test_development_cohort_rejects_missing_challenge_and_run_hash_drift(
     author_stage["self_challenge"].pop()
     author_stage["output_sha256"] = canonical_sha256(
         {
-            "semantic_intent": author_stage["semantic_intent"],
+            "source_candidate_adjudication": author_stage[
+                "source_candidate_adjudication"
+            ],
+            "semantic_extension": author_stage["semantic_extension"],
             "self_challenge": author_stage["self_challenge"],
         }
     )
     author_stage["run_sha256"] = run_evidence_sha256(
-        {key: value for key, value in author_stage.items() if key != "semantic_intent"}
+        {
+            key: value
+            for key, value in author_stage.items()
+            if key
+            not in {
+                "source_candidate_adjudication",
+                "semantic_extension",
+                "semantic_intent",
+            }
+        }
     )
     missing["segment_path"] = _write(tmp_path / "missing-challenge.json", segment)
     with pytest.raises(RuntimeError, match="mandatory self-challenge coverage"):
@@ -367,6 +382,10 @@ def _context(
     assessment = deepcopy(fixture["materiality_assessment"])
     assessment["authoring_contract_sha256"] = semantic_intent_authoring_contract_sha256()
     semantic_intent = deepcopy(fixture["semantic_intent"])
+    semantic_extension = _extension_from_intent(semantic_intent)
+    source_candidate_adjudication = deepcopy(
+        fixture["source_candidate_adjudication"]
+    )
     assignment = plan["cases"][0]
     critic_input = build_materiality_critic_input(
         corpus_path=corpus,
@@ -391,9 +410,14 @@ def _context(
         assignment["author_assignment"],
         stage="author",
         input_value=author_input,
-        output_value=semantic_intent,
+        output_value={
+            "source_candidate_adjudication": source_candidate_adjudication,
+            "semantic_extension": semantic_extension,
+        },
         materiality_sha256=materiality_sha,
     )
+    author["source_candidate_adjudication"] = source_candidate_adjudication
+    author["semantic_extension"] = semantic_extension
     author["semantic_intent"] = semantic_intent
     segment = {
         "version": AUTHOR_SEGMENT_VERSION,
@@ -423,6 +447,25 @@ def _context(
     }
 
 
+def _extension_from_intent(semantic_intent: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "version": SEMANTIC_GRAPH_EXTENSION_VERSION,
+        "status": semantic_intent["status"],
+        "clarification": deepcopy(semantic_intent["clarification"]),
+        "facts": [
+            deepcopy(row)
+            for row in semantic_intent["facts"]
+            if row["custody"] == "bounded_interpretation"
+        ],
+        "relations": [
+            deepcopy(row)
+            for row in semantic_intent["relations"]
+            if row["custody"] == "bounded_interpretation"
+        ],
+        "narratives": deepcopy(semantic_intent["narratives"]),
+    }
+
+
 def _run_receipt(
     assignment: dict[str, Any],
     *,
@@ -436,7 +479,7 @@ def _run_receipt(
         for challenge in SEMANTIC_INTENT_MANDATORY_CHALLENGES
     ]
     exact_output = (
-        {"semantic_intent": output_value, "self_challenge": self_challenge}
+        {**output_value, "self_challenge": self_challenge}
         if stage == "author"
         else output_value
     )
@@ -490,7 +533,7 @@ def _compile(context: dict[str, Any], *, output: Path) -> dict[str, Any]:
 
 def _smoke_packet() -> dict[str, Any]:
     fixture = json.loads(
-        (SCRIPTS_ROOT / "fixtures" / "greenfield-semantic-smoke.v7.json").read_text(
+        (SCRIPTS_ROOT / "fixtures" / "greenfield-semantic-smoke.v9.json").read_text(
             encoding="utf-8"
         )
     )
@@ -499,7 +542,7 @@ def _smoke_packet() -> dict[str, Any]:
 
 def _smoke_prompt() -> str:
     fixture = json.loads(
-        (SCRIPTS_ROOT / "fixtures" / "greenfield-semantic-smoke.v7.json").read_text(
+        (SCRIPTS_ROOT / "fixtures" / "greenfield-semantic-smoke.v9.json").read_text(
             encoding="utf-8"
         )
     )

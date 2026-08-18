@@ -147,6 +147,7 @@ def require_persisted_semantic_projection_plan(
         raise ValueError("verified semantic proposal uses an unsupported projection plan")
     nodes = mapping_rows(plan.get("nodes"))
     edges = mapping_rows(plan.get("edges"))
+    view_edges = mapping_rows(plan.get("view_edges"))
     components = mapping_rows(plan.get("components"))
     workstreams = mapping_rows(plan.get("workstreams"))
     diagrams = mapping_rows(plan.get("diagrams"))
@@ -155,6 +156,11 @@ def require_persisted_semantic_projection_plan(
         raise ValueError("persisted semantic projection plan lacks typed axes")
     node_by_id = _unique_rows(nodes, key="fact_id", label="projection node")
     edge_by_id = _unique_rows(edges, key="relation_id", label="projection edge")
+    view_edge_by_id = _unique_rows(
+        view_edges,
+        key="edge_id",
+        label="projection view edge",
+    )
     component_by_id = _unique_rows(
         components,
         key="component_id",
@@ -192,6 +198,18 @@ def require_persisted_semantic_projection_plan(
             raise ValueError("persisted semantic diagram references an unknown fact")
         if any(value not in edge_by_id for value in _strings(diagram.get("relation_ids"))):
             raise ValueError("persisted semantic diagram references an unknown relation")
+        if any(
+            value not in view_edge_by_id
+            for value in _strings(diagram.get("view_edge_ids"))
+        ):
+            raise ValueError("persisted semantic diagram references an unknown view edge")
+    for edge in view_edges:
+        if (
+            _required_text(edge, "kind") != "workflow_sequence"
+            or _required_text(edge, "subject_id") not in node_by_id
+            or _required_text(edge, "object_id") not in node_by_id
+        ):
+            raise ValueError("persisted semantic projection carries an invalid view edge")
     return plan
 
 
@@ -285,6 +303,8 @@ def semantic_projection_diagram_rows(
         if (
             _strings(row.get("semantic_fact_ids")) != _strings(binding.get("fact_ids"))
             or _strings(row.get("semantic_relation_ids")) != _strings(binding.get("relation_ids"))
+            or _strings(row.get("projection_view_edge_ids"))
+            != _strings(binding.get("view_edge_ids"))
         ):
             raise ValueError(f"verified semantic diagram `{slug}` drifted from its plan")
         rows.append(row)

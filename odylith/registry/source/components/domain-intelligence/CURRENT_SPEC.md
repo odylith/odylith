@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-08-17
+Last updated: 2026-08-18
 
 
 ## Overview
@@ -34,6 +34,12 @@ after confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-08-18 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-144
+  - Evidence: `sha256:6946e4e1a52e61b2fe646dc5ecdbd60ed76a3483ccbdd7c76285969e9ceb4ee2`, `src/odylith/runtime/domain_intelligence/greenfield_semantic_source_candidate_adjudication.py`, `src/odylith/runtime/domain_intelligence/greenfield_semantic_source_claims.py`
+- **2026-08-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142, B-144
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_semantic_projection_plan.py`, `src/odylith/runtime/domain_intelligence/greenfield_semantic_proposal.py`
 - **2026-08-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-144
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_semantic_atlas_materialization.py`, `src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_packet.py`, `src/odylith/runtime/domain_intelligence/greenfield_semantic_package_validation.py`
@@ -46,12 +52,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-08-10 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_component_owned_state.py`, `tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py`
-- **2026-08-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_canonical_meaning.py`, `tests/integration/runtime/test_greenfield_component_contract_preconfirm.py`
-- **2026-08-08 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `src/odylith/runtime/common/prose_tail.py`, `src/odylith/runtime/domain_intelligence/greenfield_component_outputs.py`, `tests/unit/runtime/test_greenfield_code_hygiene.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

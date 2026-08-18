@@ -106,6 +106,19 @@ def test_release_membership_and_start_owner_follow_typed_scope_after_reorder() -
     assert "visible_output<br/>Claim receipt" in state_diagram["mermaid_source"]
 
 
+def test_project_brief_formats_typed_constraints_without_duplicate_punctuation() -> None:
+    proposal = _proposal(_release_scope_packet(), prompt=SEMANTIC_PROMPT)
+    limits = next(
+        row
+        for row in proposal["project_brief"]["blueprint_sections"]
+        if row["section"] == "Release proof and limits"
+    )["must_capture"]
+
+    assert ".." not in limits
+    assert "Constraints: Read the local duty roster." in limits
+    assert "Excluded: Never reassign a card automatically." in limits
+
+
 def test_release_rejects_deferred_ownership_of_required_path() -> None:
     packet = _release_scope_packet()
     receipt = _system(packet, "system.1")
@@ -162,15 +175,11 @@ def test_projected_records_preserve_graph_custody_and_classify_defaults() -> Non
         for diagram in proposal["diagrams"]
         for box in diagram["diagram_box_custody"]
     }
-    assert {
-        "source_fact",
-        "bounded_interpretation",
-        "visible_assumption",
-    } <= box_custody
-    assert "system_policy" not in box_custody
+    assert box_custody == {"source_fact", "bounded_interpretation"}
     assert proposal["assumptions"][0]["custody_state"] == "visible_assumption"
     assert proposal["assumptions"][0]["tier"] == "odylith_assumption"
-    assert proposal["assumptions"][1]["custody_state"] == "system_policy"
+    assert len(proposal["assumptions"]) == 1
+    assert "product owner" not in str(proposal).casefold()
     assert proposal["release_plan"]["custody_state"] == "system_policy"
 
     backlog_items = [

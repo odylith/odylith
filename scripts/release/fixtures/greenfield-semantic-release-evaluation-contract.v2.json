@@ -15,7 +15,7 @@
     "minimum_package_utility": 0.9,
     "minimum_worst_slice_success": 0.8
   },
-  "mechanism_id": "prompt_only_materiality_gate_then_independent_graph_author",
+  "mechanism_id": "prompt_only_source_candidate_lock_then_author_adjudication_and_bounded_extension",
   "minimum_independent_reviews": 2,
   "required_auxiliary_reports": {
     "host_parity": "odylith.greenfield.host-parity-report.v1",

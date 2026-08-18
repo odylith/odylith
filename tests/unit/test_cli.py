@@ -358,8 +358,10 @@ def test_greenfield_propose_help_forwards_backend_flags(capsys) -> None:
     assert "--format" in output
     assert "--edit" in output
     assert "--edit-evidence" in output
+    assert "--semantic-intent-file" in output
     assert "--confirm-intent" not in output
     assert "--intent-file" not in output
+    assert "--confirmed-intent-file" not in output
 
 
 def test_greenfield_apply_help_forwards_backend_flags(capsys) -> None:
@@ -393,7 +395,7 @@ def test_greenfield_create_help_forwards_commit_only_backend_flags(capsys) -> No
     assert "--repair-tier" not in output
 
 
-def test_greenfield_propose_command_is_provider_free(tmp_path: Path, capsys) -> None:
+def test_greenfield_propose_without_semantic_packet_fails_closed(tmp_path: Path, capsys) -> None:
     rc = cli.main(
         [
             "greenfield",
@@ -408,13 +410,15 @@ def test_greenfield_propose_command_is_provider_free(tmp_path: Path, capsys) -> 
     )
 
     payload = json.loads(capsys.readouterr().out)
-    assert rc == 0
+    assert rc == 2
     assert payload == {
-        "mode": "clarification_required",
-        "clarification": {
-            "question": "What is the first complete task the product should help a person finish, and what result should they see?",
-            "required_fields": ["first_path"],
-        },
+        "error": (
+            "Greenfield requires a source-cited Semantic Intent packet authored by the active host model. "
+            "Run `odylith greenfield semantic-intent-request --repo-root . --prompt <request>`, author the "
+            "packet at the returned destination, then use the returned next invocation. Plain prompt and EDIT "
+            "text remain evidence, never parser-derived product authority."
+        ),
+        "mode": "error",
     }
     assert not (tmp_path / ".odylith/runtime/greenfield").exists()
     assert "provider_calls" not in payload
@@ -424,62 +428,21 @@ def test_greenfield_propose_command_is_provider_free(tmp_path: Path, capsys) -> 
     assert "diagrams" not in payload
 
 
-def test_greenfield_propose_confirm_intent_json_is_provider_free(tmp_path: Path, capsys) -> None:
-    intent_file = tmp_path / ".odylith/runtime/greenfield/confirmed-intent.md"
-    intent_file.parent.mkdir(parents=True, exist_ok=True)
-    intent_file.write_text(
-        """Permit Review Workspace — Product Intent Confirmation
+@pytest.mark.parametrize("retired_flag", ("--intent-file", "--confirmed-intent-file"))
+def test_greenfield_propose_rejects_retired_prose_intent_aliases(retired_flag: str) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(
+            [
+                "greenfield",
+                "propose",
+                "--prompt",
+                "Build a permit review workspace",
+                retired_flag,
+                "confirmed-intent.md",
+            ]
+        )
 
-Product story
-A city permitting team uses the Permit Review Workspace to review building applications without losing the connection between submitted documents, zoning checks, applicant revisions, reviewer comments, and final decisions. The product gives coordinators and supervisors one place to see what changed, what still blocks approval, and why a permit decision is defensible.
-
-State object that changes through the first journey
-A Permit Review File tracks the active application, submitted documents, zoning check status, applicant revisions, reviewer comments, unresolved blockers, decision state, and evidence supporting each approval or rejection.
-
-First complete path the product should prove before broader scope
-A coordinator imports one application, a reviewer records a zoning check, the applicant submits one revision, and a supervisor reviews the decision package.
-
-Human actors
-- Coordinator — intakes applications, keeps review work moving, and routes blockers to the right reviewer.
-- Zoning reviewer — records zoning checks, code references, comments, and pass or block outcomes.
-- Applicant — submits revised documents that respond to reviewer comments and unresolved blockers.
-- Supervisor — reviews the decision package and approves, blocks, or rejects the permit.
-
-External systems
-- Document portal — supplies application documents.
-- Parcel data source — supplies zoning context.
-
-Internal product systems
-- Permit file registry — owns permit identity, applicant metadata, active submitted documents, unresolved blockers, and decision state.
-- Zoning check ledger — records zoning checks, reviewer comments, rule references, and pass or block outcomes.
-- Revision tracker — links applicant revisions to the documents, comments, and checks they are meant to address.
-- Decision package review — assembles source documents, reviewer evidence, unresolved blockers, supervisor decision, and final approval state.
-
-Proof boundary
-Release 0.0.1 succeeds when a supervisor can inspect one permit review file, see the active documents, zoning result, applicant revision, reviewer comments, unresolved blockers, and final decision state, and trace every decision back to source documents and reviewer evidence.
-""",
-        encoding="utf-8",
-    )
-    rc = cli.main(
-        [
-            "greenfield",
-            "propose",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            "Build a permit review workspace",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--confirm-intent",
-            "--format",
-            "json",
-        ]
-    )
-
-    payload = json.loads(capsys.readouterr().out)
-    assert rc == 2
-    assert payload["mode"] == "error"
-    assert "separate Product Intent confirmation flow is retired" in payload["error"]
+    assert excinfo.value.code == 2
 
 
 def test_component_register_help_forwards_backend_flags(capsys) -> None:

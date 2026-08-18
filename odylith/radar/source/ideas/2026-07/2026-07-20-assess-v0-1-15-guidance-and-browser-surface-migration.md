@@ -14,7 +14,7 @@ product_impact: 5
 
 market_value: 5
 
-impacted_parts: Release migration gate, guidance assets, browser-rendered Atlas and Casebook surfaces
+impacted_parts: Release migration gate, guidance assets, operator CLI contracts, browser-rendered governance surfaces, install-managed assets
 
 sizing: S
 
@@ -61,7 +61,7 @@ supersedes:
 superseded_by:
 
 ## Problem
-The v0.1.15 release changes managed guidance, browser-rendered governance surfaces, and install-managed assets. Existing consumer installs need an explicit assessment before promotion. Evidence markers: `migration-observer:0.1.15:guidance-and-skills:1dbd05321562`; `migration-observer:0.1.15:guidance-and-skills:5cf1c66e46da`; `migration-observer:0.1.15:browser-surfaces:e400b39b824e`; `migration-observer:0.1.15:browser-surfaces:835aaa4f49de`; `migration-observer:0.1.15:browser-surfaces:9a4db93486ab`; `migration-observer:0.1.15:browser-surfaces:e64341855d69`; `migration-observer:0.1.15:install-managed-assets:352b7f58e4df`; `migration-observer:0.1.15:install-managed-assets:fae6b20b969f`; `migration-observer:0.1.15:install-managed-assets:46796f8138f3`.
+The v0.1.15 release changes managed guidance, operator CLI presentation contracts, browser-rendered governance surfaces, and install-managed assets. Existing consumer installs need an explicit assessment before promotion. The current graph-native cutover is bound to these exact evidence markers: `migration-observer:0.1.15:guidance-and-skills:d4f690f22f7e`; `migration-observer:0.1.15:operator-cli-contracts:00f2ed299d15`; `migration-observer:0.1.15:browser-surfaces:5630641b37af`; `migration-observer:0.1.15:install-managed-assets:32bd860ec2a6`.
 
 ## Customer
 Odylith operators upgrading managed guidance, skill, Atlas, and Casebook browser surfaces.
@@ -74,6 +74,7 @@ Assess the final changed-path set, bind the exact fingerprints to this record, a
 
 ## Scope
 - Managed guidance and skill surfaces.
+- Operator CLI and component-authoring presentation contracts.
 - Browser-rendered Atlas, Casebook, Compass, Radar, and Registry surfaces.
 - Install-managed project and bundle assets.
 
@@ -89,11 +90,11 @@ Assess the final changed-path set, bind the exact fingerprints to this record, a
 - Release migration gate and the completed installed Greenfield release campaign.
 
 ## Success Metrics
-All three final observer markers resolve to this finished assessment; `odylith release migration-gate --repo-root . --target-version 0.1.15` passes; consumer-owned source remains unchanged while managed runtime, guidance, and generated assets refresh through normal recovery paths.
+All four final observer markers resolve to this finished assessment; `odylith release migration-gate --repo-root . --target-version 0.1.15` passes; consumer-owned source remains unchanged while managed runtime, guidance, operator presentation, and generated assets refresh through normal recovery paths.
 
 ## Validation
 - Recalculate the migration gate against the final dirty path set.
-- Confirm the installed Greenfield campaign completed 200 of 200 cases with no product-path failures.
+- Confirm the guidance, browser, component-authoring, install, and canonical validation slices covering the changed paths pass before release proof.
 - Run `git diff --check` before the release checkpoint.
 
 ## Rollout
@@ -109,7 +110,7 @@ Assess the changed guidance and browser surfaces, record compatibility and rollb
 - `odylith`
 
 ## Interface Changes
-- No new consumer command or source schema. Existing managed refresh paths remain the interface.
+- The graph-native Greenfield entrypoint uses the canonical `--semantic-intent-file` packet flag; component responsibility presentation preserves exact authored responsibility without prose inference. Existing managed refresh paths remain the installation interface.
 
 ## Migration/Compatibility
 - Existing consumer-owned governance source stays in place. Managed guidance, runtime, and generated browser assets refresh normally; rollback returns the managed runtime and assets without source-data migration.

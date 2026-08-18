@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import json
 from pathlib import Path
 from typing import Any
 
@@ -61,9 +62,12 @@ def test_actorless_stateless_one_system_two_output_plan_stays_single_slice() -> 
     assert backlog[0]["component_focus"] == ["signal-service"]
     assert len(diagrams) == 1
     assert diagrams[0]["semantic_relation_ids"] == [
-        row["relation_id"] for row in graph["relations"]
+        "relation.produces.0",
+        "relation.produces.1",
     ]
-    assert diagrams[0]["mermaid_source"].count(" -->|") == len(graph["relations"])
+    assert diagrams[0]["projection_view_edge_ids"] == []
+    assert diagrams[0]["mermaid_source"].count(" -->|") == 2
+    assert "-.->|then|" not in diagrams[0]["mermaid_source"]
     assert len(proposal["components"]) == 1
     assert len(proposal["backlog"]) == 1
     assert len(proposal["diagrams"]) == 1
@@ -79,12 +83,13 @@ def test_actorless_stateless_one_system_two_output_plan_stays_single_slice() -> 
     assert {"owned_state", "produced_outputs", "states_or_transitions"}.isdisjoint(
         contract
     )
-    assert len(proposal["components"][0]["validation"]) == 2
+    assert proposal["components"][0]["validation"] == [
+        "Prove that both accepted outputs are visible without durable state."
+    ]
     assert all(
         "replay" not in row.casefold()
         for row in proposal["components"][0]["validation"]
     )
-    assert "state" not in proposal["components"][0]["validation"][1].casefold()
     semantic_model = proposal["semantic_model"]
     assert semantic_model["schema_version"] == "odylith.greenfield.semantic_model.v4"
     first_path = semantic_model["first_path_contract"]
@@ -112,7 +117,9 @@ def test_actorless_stateless_one_system_two_output_plan_stays_single_slice() -> 
         "Signal summary",
     )
     assert authoring_contract["component_role"] == "result_implementing"
-    assert len(authoring_contract["local_proof"]) == 2
+    assert authoring_contract["local_proof"] == (
+        "Prove that both accepted outputs are visible without durable state.",
+    )
 
 
 def test_semantic_artifact_ids_transliterate_copy_without_changing_copy() -> None:
@@ -124,10 +131,10 @@ def test_semantic_artifact_ids_transliterate_copy_without_changing_copy() -> Non
 
 def test_diagram_boxes_disambiguate_equal_labels_by_typed_role() -> None:
     graph = _stateless_graph()
-    identity = next(row for row in graph["facts"] if row["fact_id"] == "identity.0")
-    system = next(row for row in graph["facts"] if row["fact_id"] == "system.0")
-    identity["label"] = "Signal View"
-    system["label"] = "Signal View"
+    workflow = next(row for row in graph["facts"] if row["fact_id"] == "step.0")
+    output = next(row for row in graph["facts"] if row["fact_id"] == "output.0")
+    workflow["label"] = "Signal View"
+    output["label"] = "Signal View"
     plan = build_semantic_projection_plan(graph, project_slug="signal-view")
 
     diagrams = semantic_diagrams(plan=plan, backlog=_backlog(plan))
@@ -137,8 +144,8 @@ def test_diagram_boxes_disambiguate_equal_labels_by_typed_role() -> None:
         for box in diagram["diagram_boxes"]
     ]
 
-    assert "Signal View — Product identity" in labels
-    assert "Signal View — Product responsibility" in labels
+    assert "Signal View — Workflow step" in labels
+    assert "Signal View — Visible output" in labels
     assert len({label.casefold() for label in labels}) == len(labels)
 
 
@@ -366,10 +373,17 @@ def test_two_state_two_output_two_system_plan_preserves_every_edge() -> None:
     ]
     assert len(diagrams) == 3
     first_path = diagrams[0]
-    assert set(first_path["semantic_relation_ids"]) == {
-        row["relation_id"] for row in graph["relations"]
-    }
-    assert first_path["mermaid_source"].count(" -->|") == len(graph["relations"])
+    assert first_path["semantic_relation_ids"] == [
+        "relation.produces.0",
+        "relation.produces.1",
+        "relation.changes.0",
+        "relation.changes.1",
+    ]
+    assert first_path["projection_view_edge_ids"] == ["workflow-sequence-0"]
+    assert first_path["mermaid_source"].count(" -->|") == 4
+    assert first_path["mermaid_source"].count(" -.->|then|") == 1
+    assert "system.0" not in first_path["semantic_fact_ids"]
+    assert "system.1" not in first_path["semantic_fact_ids"]
     contracts = [row["component_contract"] for row in plan.components]
     assert [row["workflow_fact_ids"] for row in contracts] == [
         ["step.0"],
@@ -424,8 +438,8 @@ def test_projection_depth_changes_only_the_affected_adaptive_surfaces() -> None:
     assert len(constrained.edges) == len(baseline.edges) + 1
     assert len(constrained.diagram_plans) == len(baseline.diagram_plans)
     assert len(constrained.workstream_plans) == len(baseline.workstream_plans)
-    assert len(constrained.diagram_plans[0].relation_ids) == (
-        len(baseline.diagram_plans[0].relation_ids) + 1
+    assert constrained.diagram_plans[0].relation_ids == (
+        baseline.diagram_plans[0].relation_ids
     )
 
     stateful_graph = copy.deepcopy(baseline_graph)
@@ -527,7 +541,7 @@ def test_verified_proposal_persists_and_consumes_one_projection_plan() -> None:
     )
 
     assert proposal["projection_plan"]["version"] == (
-        "odylith.greenfield.semantic-projection-plan.v2"
+        "odylith.greenfield.semantic-projection-plan.v3"
     )
     assert "apply_semantic_input" not in proposal
     assert proposal["semantic_model"]["first_path_contract"]["state_objects"] == [
@@ -542,9 +556,15 @@ def test_verified_proposal_persists_and_consumes_one_projection_plan() -> None:
         "Implement Claim Receipt Delivery",
     ]
     assert len(proposal["diagrams"]) == 4
-    assert {
-        edge["relation_id"] for edge in proposal["projection_plan"]["edges"]
-    } == set(proposal["diagrams"][0]["semantic_relation_ids"])
+    assert proposal["diagrams"][0]["semantic_relation_ids"] == [
+        "relation.owned_by.0",
+        "relation.owned_by.1",
+        "relation.produces.0",
+        "relation.changes.0",
+    ]
+    assert proposal["diagrams"][0]["projection_view_edge_ids"] == [
+        "workflow-sequence-0"
+    ]
     plan = build_semantic_projection_plan(
         packet["semantic_intent"],
         project_slug="claim-desk",
@@ -558,6 +578,46 @@ def test_verified_proposal_persists_and_consumes_one_projection_plan() -> None:
         key: proposal["release_plan"][key]
         for key in release_plan
     } == release_plan
+
+
+def test_verified_package_omits_fabricated_policy_and_repeated_review_copy() -> None:
+    packet = semantic_intent_packet()
+    verified = require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
+    proposal = build_verified_semantic_proposal(
+        authority=semantic_intent_authority(verified, prompt=SEMANTIC_PROMPT),
+        observed_source={},
+    )
+    rendered = json.dumps(proposal, sort_keys=True)
+
+    assert proposal["security_compliance"] == {
+        "release_boundary": "A shift coordinator can claim one ready card and receive a claim receipt.",
+        "operating_constraints": "Read the local duty roster.",
+        "excluded_scope": "Never reassign a card automatically.",
+    }
+    assert len(proposal["project_brief"]["blueprint_sections"]) == 5
+    assert {
+        "customization_prompts",
+        "pre_coding_checkpoints",
+        "host_independent_paths",
+    }.isdisjoint(proposal["project_brief"])
+    assert {
+        "artifacts",
+        "execution_memory",
+        "metrics",
+        "change_model",
+        "invalidation_rules",
+        "conflict_model",
+        "transfer_priors",
+    }.isdisjoint(proposal["project_intelligence"])
+    assert all(len(row["risks"]) == 1 for row in proposal["components"])
+    for retired in (
+        "Blocked-path proof",
+        "Security posture:",
+        "Policy and privacy posture:",
+        "Depends only on source-cited workflow facts",
+        "product owner",
+    ):
+        assert retired not in rendered
 
 
 def _backlog(plan: Any) -> list[dict[str, Any]]:
@@ -871,6 +931,8 @@ def _relation(
     subject_id: str,
     object_id: str,
     order: int,
+    *,
+    custody: str = "source_fact",
 ) -> dict[str, Any]:
     return {
         "relation_id": relation_id,
@@ -878,5 +940,6 @@ def _relation(
         "subject_id": subject_id,
         "object_id": object_id,
         "order": order,
+        "custody": custody,
         "source_refs": [],
     }

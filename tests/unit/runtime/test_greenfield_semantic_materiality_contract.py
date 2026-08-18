@@ -85,6 +85,30 @@ def test_missing_proper_name_is_a_nonmaterial_identity_assumption() -> None:
     identity = next(row for row in assessment["fields"] if row["field"] == "identity")
     identity["status"] = "nonmaterial_assumption"
     identity["source_refs"] = []
+    assessment["source_candidates"]["facts"] = [
+        row
+        for row in assessment["source_candidates"]["facts"]
+        if row["field"] != "identity"
+    ]
+    graph_identity = next(
+        row
+        for row in packet["semantic_intent"]["facts"]
+        if row["fact_id"] == "identity.0"
+    )
+    graph_identity["custody"] = "bounded_interpretation"
+    identity_relations = [
+        row
+        for row in packet["semantic_intent"]["relations"]
+        if row["subject_id"] == "identity.0"
+    ]
+    identity_relation_ids = {row["relation_id"] for row in identity_relations}
+    for row in identity_relations:
+        row["custody"] = "bounded_interpretation"
+    assessment["source_candidates"]["relations"] = [
+        row
+        for row in assessment["source_candidates"]["relations"]
+        if row["relation"]["relation_id"] not in identity_relation_ids
+    ]
     _rehash_assessment(packet)
 
     verified = require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
@@ -109,6 +133,16 @@ def test_identity_clarification_remains_available_for_material_boundary_choice()
         row
         for row in semantic_materiality_assessment()["fields"]
         if row["field"] != "identity"
+    ]
+    assessment["source_candidates"]["facts"] = [
+        row
+        for row in assessment["source_candidates"]["facts"]
+        if row["field"] != "identity"
+    ]
+    packet["semantic_intent"]["facts"] = [
+        row
+        for row in packet["semantic_intent"]["facts"]
+        if row["fact_id"] != "identity.0"
     ]
     packet["semantic_intent"]["clarification"] = {
         "question": question,
@@ -203,6 +237,22 @@ def test_prompt_only_gate_rejects_tamper_and_mechanism_drift(
         assessment["fields"] = [
             row for row in assessment["fields"] if row["field"] != "visible_result"
         ]
+        assessment["source_candidates"]["facts"] = [
+            row
+            for row in assessment["source_candidates"]["facts"]
+            if row["field"] != "visible_result"
+        ]
+        assessment["source_candidates"]["relations"] = [
+            row
+            for row in assessment["source_candidates"]["relations"]
+            if "visible_result" not in row["fields"]
+        ]
+        for row in packet["semantic_intent"]["facts"]:
+            if row["fact_id"] == "output.0":
+                row["custody"] = "bounded_interpretation"
+        for row in packet["semantic_intent"]["relations"]:
+            if row["kind"] == "produces":
+                row["custody"] = "bounded_interpretation"
         _rehash_assessment(packet)
 
     with pytest.raises(ValueError, match=message):
@@ -429,16 +479,19 @@ def test_authority_seals_assessment_hash_and_distinct_run_evidence() -> None:
         require_product_intent_authority_structure(tampered)
 
 
-def test_v11_request_requires_prompt_only_schema_constrained_independent_runs() -> None:
+def test_v13_request_requires_prompt_only_schema_constrained_independent_runs() -> None:
     request = semantic_intent_authoring_request(prompt=SEMANTIC_PROMPT)
     protocol = request["authoring_protocol"]
 
-    assert SEMANTIC_INTENT_IR_VERSION.endswith(".v4")
-    assert SEMANTIC_INTENT_PACKET_VERSION.endswith(".v7")
-    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v11")
-    assert SEMANTIC_MATERIALITY_ASSESSMENT_VERSION.endswith(".v5")
+    assert SEMANTIC_INTENT_IR_VERSION.endswith(".v5")
+    assert SEMANTIC_INTENT_PACKET_VERSION.endswith(".v9")
+    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v13")
+    assert SEMANTIC_MATERIALITY_ASSESSMENT_VERSION.endswith(".v7")
     assert request["materiality_gate"]["order"] == "before_graph_authoring"
     assert request["materiality_gate"]["candidate_access"] == "forbidden"
+    assert "locked before graph authoring" in request["materiality_gate"][
+        "source_candidates"
+    ]
     assert request["materiality_gate"]["structured_output"] == (
         "exact_schema_constrained_when_available"
     )
@@ -491,6 +544,12 @@ def test_v11_request_requires_prompt_only_schema_constrained_independent_runs() 
     assert "critic-validated exact-byte citation catalog" in protocol[
         "materiality_gate"
     ]["graph_author_binding"]
+    assert "every source-owned fact and relation candidate" in protocol["materiality_gate"][
+        "source_candidate_authority"
+    ]
+    assert "candidate_authored_source_fact_or_relation" in protocol[
+        "forbidden_mechanisms"
+    ]
     assert any(
         "internal transition" in rule
         for rule in protocol["materiality_decision_rules"]
@@ -512,6 +571,7 @@ def test_materiality_gate_has_no_prose_matching_or_parser_dependency() -> None:
     prohibited = {"re", "regex", "difflib", "rapidfuzz", "nltk", "spacy", "tokenize"}
     modules = (
         "greenfield_semantic_source_citations.py",
+        "greenfield_semantic_source_claims.py",
         "greenfield_semantic_materiality_contract.py",
         "greenfield_semantic_authoring_contract.py",
         "greenfield_semantic_intent_request.py",

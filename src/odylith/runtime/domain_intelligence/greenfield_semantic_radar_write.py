@@ -256,6 +256,8 @@ def _semantic_rows(proposal: Mapping[str, Any]) -> tuple[Mapping[str, Any], ...]
             "opportunity",
             "product_view",
             "recommended_first_slice",
+            "why_now",
+            "ranking_basis",
             "custody_state",
             "evidence_tier",
         ):
@@ -281,10 +283,6 @@ def _semantic_metadata(
     today: dt.date,
     policy: argparse.Namespace,
 ) -> dict[str, str]:
-    rationale = _strings(row.get("rationale_lines"))
-    ranking_prefix = "- ranking basis: "
-    if not rationale or not rationale[-1].startswith(ranking_prefix):
-        raise ValueError("verified semantic Radar row lacks an exact ranking basis")
     metadata = {
         "status": "queued",
         "idea_id": idea_id,
@@ -298,7 +296,7 @@ def _semantic_metadata(
         "sizing": str(row.get("sizing") or "M").strip(),
         "complexity": str(row.get("complexity") or "Medium").strip(),
         "ordering_score": "",
-        "ordering_rationale": rationale[-1][len(ranking_prefix):],
+        "ordering_rationale": _required_text(row, "ranking_basis"),
         "confidence": str(getattr(policy, "confidence", "medium") or "medium").strip(),
         "founder_override": "no",
         "promoted_to_plan": "",
@@ -333,11 +331,6 @@ def _semantic_sections(row: Mapping[str, Any]) -> dict[str, str]:
     components = _strings(row.get("component_focus"))
     validation = _strings(row.get("validation"))
     metrics = _strings(row.get("success_metrics"))
-    rationale = _strings(row.get("rationale_lines"))
-    why_now = next(
-        (line[len("- why now: "):] for line in rationale if line.startswith("- why now: ")),
-        first_slice,
-    )
     sections = {
         "Problem": _required_text(row, "problem"),
         "Customer": _required_text(row, "customer"),
@@ -350,7 +343,7 @@ def _semantic_sections(row: Mapping[str, Any]) -> dict[str, str]:
         "Success Metrics": _bullets(metrics),
         "Validation": _bullets(validation),
         "Rollout": f"Promote {title} only after its typed validation obligations pass.",
-        "Why Now": why_now,
+        "Why Now": _required_text(row, "why_now"),
         "Product View": _required_text(row, "product_view"),
         "Impacted Components": _bullets(components) or "- No component assigned.",
         "Interface Changes": _bullets(_strings(row.get("interfaces"))) or "- None.",

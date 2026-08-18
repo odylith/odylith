@@ -31,13 +31,18 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_intent_request impo
     SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION,
     semantic_intent_authoring_request,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_source_candidate_adjudication import (
+    selected_semantic_source_claims,
+)
 from tests.unit.runtime.greenfield_semantic_intent_fixtures import (
     PATH_EVIDENCE,
     SEMANTIC_PROMPT,
     STATE_EVIDENCE,
     semantic_fact,
+    semantic_clarification_packet,
     semantic_intent_packet,
     semantic_intent_with_authority,
+    rebind_fixture_source_candidates,
     semantic_ref,
     semantic_relation,
 )
@@ -92,10 +97,10 @@ def _actorless_stateless_multi_output_packet() -> dict[str, object]:
     graph["relations"].extend(
         [
             semantic_relation("produces", "step.0", "output.1", 1, PATH_EVIDENCE),
-            semantic_relation("implements", "system.0", "step.0", 0, PATH_EVIDENCE),
-            semantic_relation("implements", "system.0", "step.1", 1, PATH_EVIDENCE),
-            semantic_relation("implements", "system.0", "output.0", 2, PATH_EVIDENCE),
-            semantic_relation("implements", "system.0", "output.1", 3, PATH_EVIDENCE),
+            semantic_relation("implements", "system.0", "step.0", 0, PATH_EVIDENCE, custody="bounded_interpretation"),
+            semantic_relation("implements", "system.0", "step.1", 1, PATH_EVIDENCE, custody="bounded_interpretation"),
+            semantic_relation("implements", "system.0", "output.0", 2, PATH_EVIDENCE, custody="bounded_interpretation"),
+            semantic_relation("implements", "system.0", "output.1", 3, PATH_EVIDENCE, custody="bounded_interpretation"),
         ]
     )
     live_fact_ids = {row["fact_id"] for row in graph["facts"]}
@@ -105,7 +110,7 @@ def _actorless_stateless_multi_output_packet() -> dict[str, object]:
             for fact_id in narrative["fact_ids"]
             if fact_id in live_fact_ids
         ] or ["identity.0"]
-    return packet
+    return rebind_fixture_source_candidates(packet)
 
 
 def _multi_state_multi_output_packet() -> dict[str, object]:
@@ -138,21 +143,21 @@ def _multi_state_multi_output_packet() -> dict[str, object]:
         [
             semantic_relation("changes", "step.1", "state.1", 1, STATE_EVIDENCE),
             semantic_relation("produces", "step.0", "output.1", 1, PATH_EVIDENCE),
-            semantic_relation("implements", "system.0", "output.1", 4, PATH_EVIDENCE),
-            semantic_relation("implements", "system.0", "state.1", 5, STATE_EVIDENCE),
+            semantic_relation("implements", "system.0", "output.1", 4, PATH_EVIDENCE, custody="bounded_interpretation"),
+            semantic_relation("implements", "system.0", "state.1", 5, STATE_EVIDENCE, custody="bounded_interpretation"),
         ]
     )
-    return packet
+    return rebind_fixture_source_candidates(packet)
 
 
-def test_graph_v4_versions_and_authoring_cardinality_are_explicit() -> None:
+def test_graph_v5_versions_and_authoring_cardinality_are_explicit() -> None:
     request = semantic_intent_authoring_request(prompt=SEMANTIC_PROMPT)
     contract = semantic_intent_authoring_contract()
     authority = semantic_intent_with_authority()["product_intent_authority"]
 
-    assert SEMANTIC_INTENT_IR_VERSION.endswith(".v4")
-    assert SEMANTIC_INTENT_PACKET_VERSION.endswith(".v7")
-    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v11")
+    assert SEMANTIC_INTENT_IR_VERSION.endswith(".v5")
+    assert SEMANTIC_INTENT_PACKET_VERSION.endswith(".v9")
+    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v13")
     assert request["version"] == SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION
     assert request["packet_header"]["version"] == SEMANTIC_INTENT_PACKET_VERSION
     assert request["authoring_contract_sha256"] == authority[
@@ -368,6 +373,10 @@ def test_clarification_ir_preserves_and_validates_its_settled_partial_graph() ->
     verified = require_semantic_intent_ir(
         partial,
         evidence_sources={"operator_prompt": SEMANTIC_PROMPT, "operator_edit": ""},
+        source_claims=selected_semantic_source_claims(
+            semantic_clarification_packet()["materiality_assessment"],
+            semantic_clarification_packet()["source_candidate_adjudication"],
+        ),
     )
 
     assert [row["fact_id"] for row in verified["facts"]] == [
@@ -383,6 +392,10 @@ def test_clarification_ir_preserves_and_validates_its_settled_partial_graph() ->
         require_semantic_intent_ir(
             invalid_field,
             evidence_sources={"operator_prompt": SEMANTIC_PROMPT, "operator_edit": ""},
+            source_claims=selected_semantic_source_claims(
+                semantic_clarification_packet()["materiality_assessment"],
+                semantic_clarification_packet()["source_candidate_adjudication"],
+            ),
         )
 
     invalid_relation = copy.deepcopy(partial)
@@ -391,6 +404,10 @@ def test_clarification_ir_preserves_and_validates_its_settled_partial_graph() ->
         require_semantic_intent_ir(
             invalid_relation,
             evidence_sources={"operator_prompt": SEMANTIC_PROMPT, "operator_edit": ""},
+            source_claims=selected_semantic_source_claims(
+                semantic_clarification_packet()["materiality_assessment"],
+                semantic_clarification_packet()["source_candidate_adjudication"],
+            ),
         )
 
 
@@ -499,6 +516,7 @@ def test_graph_v4_rejects_orphaned_material_facts(
     graph["relations"] = [
         row for row in graph["relations"] if row["kind"] != relation_kind
     ]
+    rebind_fixture_source_candidates(packet)
 
     with pytest.raises(ValueError, match=message):
         require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
@@ -631,6 +649,7 @@ def test_graph_v4_rejects_more_than_sixteen_state_objects() -> None:
                 STATE_EVIDENCE,
             )
         )
+    rebind_fixture_source_candidates(packet)
 
     with pytest.raises(ValueError, match="exceeds state_object cardinality"):
         require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
@@ -644,6 +663,7 @@ def test_graph_v4_rejects_a_non_atomic_state_transition() -> None:
         if fact["fact_id"] == "state.0"
     )
     state["transition"] = {"from_state": "queued"}
+    rebind_fixture_source_candidates(packet)
 
     with pytest.raises(ValueError, match="state transition has an invalid structure"):
         require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
@@ -658,7 +678,8 @@ def test_graph_v4_rejects_transition_custody_on_a_non_state_fact() -> None:
     )
     actor["transition"] = None
 
-    with pytest.raises(ValueError, match="fact has an invalid structure"):
+    rebind_fixture_source_candidates(packet)
+    with pytest.raises(ValueError, match="source claim fact has unsupported or missing fields"):
         require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
 
 

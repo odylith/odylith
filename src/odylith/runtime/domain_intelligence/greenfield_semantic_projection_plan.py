@@ -13,7 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_component_projectio
 )
 
 
-SEMANTIC_PROJECTION_PLAN_VERSION = "odylith.greenfield.semantic-projection-plan.v2"
+SEMANTIC_PROJECTION_PLAN_VERSION = "odylith.greenfield.semantic-projection-plan.v3"
 _FACT_KIND_ORDER = (
     "identity",
     "actor",
@@ -69,6 +69,18 @@ class SemanticProjectionEdge:
     subject_id: str
     object_id: str
     order: int
+    custody_state: str
+
+
+@dataclass(frozen=True)
+class SemanticProjectionViewEdge:
+    """One system-policy edge used only to render an ordered projection view."""
+
+    edge_id: str
+    kind: str
+    subject_id: str
+    object_id: str
+    order: int
 
 
 @dataclass(frozen=True)
@@ -81,6 +93,7 @@ class SemanticDiagramPlan:
     summary: str
     fact_ids: tuple[str, ...]
     relation_ids: tuple[str, ...]
+    view_edge_ids: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -102,6 +115,7 @@ class SemanticProjectionPlan:
     identity_fact_id: str
     nodes: tuple[SemanticProjectionNode, ...]
     edges: tuple[SemanticProjectionEdge, ...]
+    view_edges: tuple[SemanticProjectionViewEdge, ...]
     components: tuple[Mapping[str, Any], ...]
     workflow_step_fact_ids: tuple[str, ...]
     state_fact_ids: tuple[str, ...]
@@ -147,6 +161,7 @@ def build_semantic_projection_plan(
     if not components:
         raise ValueError("verified semantic projection requires a release component")
     workflow_step_fact_ids = _fact_ids(nodes, "workflow_step")
+    view_edges = _workflow_sequence_edges(workflow_step_fact_ids)
     state_fact_ids = _fact_ids(nodes, "state_object")
     visible_output_fact_ids = _fact_ids(nodes, "visible_output")
     diagram_plans = _diagram_plans(
@@ -154,6 +169,7 @@ def build_semantic_projection_plan(
         project_slug=project_slug,
         nodes=nodes,
         edges=edges,
+        view_edges=view_edges,
         components=components,
         state_fact_ids=state_fact_ids,
         visible_output_fact_ids=visible_output_fact_ids,
@@ -182,6 +198,7 @@ def build_semantic_projection_plan(
         identity_fact_id=identities[0].fact_id,
         nodes=nodes,
         edges=edges,
+        view_edges=view_edges,
         components=components,
         workflow_step_fact_ids=workflow_step_fact_ids,
         state_fact_ids=state_fact_ids,
@@ -225,8 +242,19 @@ def semantic_projection_plan_mapping(
                 "subject_id": edge.subject_id,
                 "object_id": edge.object_id,
                 "order": edge.order,
+                "custody_state": edge.custody_state,
             }
             for edge in plan.edges
+        ],
+        "view_edges": [
+            {
+                "edge_id": edge.edge_id,
+                "kind": edge.kind,
+                "subject_id": edge.subject_id,
+                "object_id": edge.object_id,
+                "order": edge.order,
+            }
+            for edge in plan.view_edges
         ],
         "axes": {
             "workflow_step_fact_ids": list(plan.workflow_step_fact_ids),
@@ -264,6 +292,7 @@ def semantic_projection_plan_mapping(
                 "summary": diagram.summary,
                 "fact_ids": list(diagram.fact_ids),
                 "relation_ids": list(diagram.relation_ids),
+                "view_edge_ids": list(diagram.view_edge_ids),
             }
             for diagram in plan.diagram_plans
         ],
@@ -352,8 +381,8 @@ def semantic_release_plan(
             {
                 "name": f"{plan.title} release review accepted",
                 "exit_criteria": (
-                    "The product owner accepts the first path, non-goals, and "
-                    "proof evidence."
+                    "The sealed first path, operating boundaries, and proof "
+                    "evidence satisfy the release gate."
                 ),
             }
         ],
@@ -369,17 +398,14 @@ def semantic_security_compliance(
     plan: SemanticProjectionPlan,
     proof_boundary: str,
 ) -> dict[str, str]:
-    """Project security copy without inventing a state axis."""
+    """Expose only accepted operating boundaries and release evidence."""
 
-    outputs = _plain_list(plan.visible_output_labels)
+    constraints = _node_statements(plan, "operational_constraint")
+    exclusions = _node_statements(plan, "non_goal")
     return {
-        "domain": (
-            f"{plan.title} must preserve every state object ({_plain_list(plan.state_labels)}), workflow ownership, every visible output ({outputs}), and source evidence."
-            if plan.state_labels
-            else f"{plan.title} must preserve workflow ownership, every visible output ({outputs}), and source evidence."
-        ),
-        "security": "Authorization, access control, credential isolation, and audit evidence protect the accepted ownership graph.",
-        "policy": f"Privacy, retention, accessibility, safety, and operational review remain bounded by: {proof_boundary}",
+        "release_boundary": proof_boundary,
+        "operating_constraints": _plain_list(constraints, fallback="None asserted"),
+        "excluded_scope": _plain_list(exclusions, fallback="None asserted"),
     }
 
 
@@ -387,6 +413,7 @@ def semantic_validation_strategy(
     *,
     plan: SemanticProjectionPlan,
     success_metrics: Sequence[str],
+    proof_boundary: str,
 ) -> list[str]:
     """Project checks from the axes that the graph actually carries."""
 
@@ -398,9 +425,13 @@ def semantic_validation_strategy(
             else []
         ),
         f"Show every visible output ({_plain_list(plan.visible_output_labels)}) and tie each to its exact producing edge.",
-        "Block release when any proof obligation or excluded-scope boundary fails.",
+        f"Compare release evidence with the sealed proof boundary: {proof_boundary}",
         *success_metrics,
     ]
+
+
+def _node_statements(plan: SemanticProjectionPlan, kind: str) -> tuple[str, ...]:
+    return tuple(node.statement for node in plan.nodes if node.kind == kind)
 
 
 def _diagram_plans(
@@ -409,24 +440,40 @@ def _diagram_plans(
     project_slug: str,
     nodes: Sequence[SemanticProjectionNode],
     edges: Sequence[SemanticProjectionEdge],
+    view_edges: Sequence[SemanticProjectionViewEdge],
     components: Sequence[Mapping[str, Any]],
     state_fact_ids: tuple[str, ...],
     visible_output_fact_ids: tuple[str, ...],
 ) -> tuple[SemanticDiagramPlan, ...]:
+    workflow_ids = _fact_ids(nodes, "workflow_step")
+    actor_ids = _fact_ids(nodes, "actor")
+    first_path_ids = {
+        *workflow_ids,
+        *actor_ids,
+        *state_fact_ids,
+        *visible_output_fact_ids,
+    }
+    first_path_edges = tuple(
+        edge
+        for edge in edges
+        if edge.kind in {"owned_by", "changes", "produces"}
+        and edge.subject_id in first_path_ids
+        and edge.object_id in first_path_ids
+    )
     plans = [
         SemanticDiagramPlan(
             key="first_path",
             slug=f"{project_slug}-first-path",
             title="First Path",
             summary=(
-                f"Reviews every sealed {title} fact relation in the accepted "
-                "first-path topology."
+                f"Shows the ordered {title} workflow and the exact owners, "
+                "state changes, and visible outputs attached to it."
             ),
-            fact_ids=tuple(node.fact_id for node in nodes),
-            relation_ids=tuple(edge.relation_id for edge in edges),
+            fact_ids=tuple(node.fact_id for node in nodes if node.fact_id in first_path_ids),
+            relation_ids=tuple(edge.relation_id for edge in first_path_edges),
+            view_edge_ids=tuple(edge.edge_id for edge in view_edges),
         )
     ]
-    actor_ids = _fact_ids(nodes, "actor")
     external_ids = _fact_ids(nodes, "external_system")
     system_ids = tuple(str(component["semantic_fact_id"]) for component in components)
     if actor_ids or external_ids:
@@ -530,6 +577,24 @@ def _connected_diagram(
         summary=summary,
         fact_ids=tuple(node.fact_id for node in nodes if node.fact_id in selected_ids),
         relation_ids=tuple(edge.relation_id for edge in selected_edges),
+        view_edge_ids=(),
+    )
+
+
+def _workflow_sequence_edges(
+    workflow_fact_ids: Sequence[str],
+) -> tuple[SemanticProjectionViewEdge, ...]:
+    return tuple(
+        SemanticProjectionViewEdge(
+            edge_id=f"workflow-sequence-{index}",
+            kind="workflow_sequence",
+            subject_id=subject_id,
+            object_id=object_id,
+            order=index,
+        )
+        for index, (subject_id, object_id) in enumerate(
+            zip(workflow_fact_ids, workflow_fact_ids[1:], strict=False)
+        )
     )
 
 
@@ -593,6 +658,7 @@ def _edge(row: Mapping[str, Any]) -> SemanticProjectionEdge:
         subject_id=str(row["subject_id"]),
         object_id=str(row["object_id"]),
         order=int(row["order"]),
+        custody_state=str(row["custody"]),
     )
 
 
@@ -610,8 +676,8 @@ def _fact_ids(
     return tuple(node.fact_id for node in nodes if node.kind == kind)
 
 
-def _plain_list(values: Sequence[str]) -> str:
-    return ", ".join(values)
+def _plain_list(values: Sequence[str], *, fallback: str = "") -> str:
+    return ", ".join(values) or fallback
 
 
 __all__ = [
@@ -620,6 +686,7 @@ __all__ = [
     "SemanticProjectionEdge",
     "SemanticProjectionNode",
     "SemanticProjectionPlan",
+    "SemanticProjectionViewEdge",
     "SemanticWorkstreamPlan",
     "build_semantic_projection_plan",
     "semantic_projection_plan_mapping",

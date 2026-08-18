@@ -19,6 +19,9 @@ from greenfield_semantic_development_evidence import prepare_development_evidenc
 from odylith.runtime.domain_intelligence.greenfield_semantic_host_profiles import (
     host_execution_profile,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_graph_extension import (
+    SEMANTIC_GRAPH_EXTENSION_VERSION,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract import (
     SEMANTIC_INTENT_MANDATORY_CHALLENGES,
     semantic_intent_authoring_contract_sha256,
@@ -42,7 +45,10 @@ def test_host_execution_builds_one_exact_two_stage_segment(
             context["assessment"]
             if stage == "critic"
             else {
-                "semantic_intent": context["semantic_intent"],
+                "source_candidate_adjudication": context[
+                    "source_candidate_adjudication"
+                ],
+                "semantic_extension": context["semantic_extension"],
                 "self_challenge": _self_challenge(),
             }
         )
@@ -134,7 +140,7 @@ def test_codex_jsonl_accepts_reasoning_and_rejects_tool_events(tmp_path: Path) -
 
 def _context(tmp_path: Path) -> dict[str, Any]:
     fixture = json.loads(
-        (SCRIPTS_ROOT / "fixtures" / "greenfield-semantic-smoke.v7.json").read_text(
+        (SCRIPTS_ROOT / "fixtures" / "greenfield-semantic-smoke.v9.json").read_text(
             encoding="utf-8"
         )
     )
@@ -157,8 +163,8 @@ def _context(tmp_path: Path) -> dict[str, Any]:
     binary = tmp_path / "codex"
     binary.write_text("#!/bin/sh\necho 'codex-cli test-v1'\n", encoding="utf-8")
     binary.chmod(0o700)
-    semantic_intent = _intent_with_citation_handles(
-        deepcopy(fixture["packet"]["semantic_intent"]),
+    semantic_extension = _intent_with_citation_handles(
+        _extension_from_intent(fixture["packet"]["semantic_intent"]),
         assessment=assessment,
         prompt=fixture["prompt"],
     )
@@ -167,7 +173,29 @@ def _context(tmp_path: Path) -> dict[str, Any]:
         "binary": binary,
         "corpus": corpus,
         "plan": plan,
-        "semantic_intent": semantic_intent,
+        "source_candidate_adjudication": deepcopy(
+            fixture["packet"]["source_candidate_adjudication"]
+        ),
+        "semantic_extension": semantic_extension,
+    }
+
+
+def _extension_from_intent(semantic_intent: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "version": SEMANTIC_GRAPH_EXTENSION_VERSION,
+        "status": semantic_intent["status"],
+        "clarification": deepcopy(semantic_intent["clarification"]),
+        "facts": [
+            deepcopy(row)
+            for row in semantic_intent["facts"]
+            if row["custody"] == "bounded_interpretation"
+        ],
+        "relations": [
+            deepcopy(row)
+            for row in semantic_intent["relations"]
+            if row["custody"] == "bounded_interpretation"
+        ],
+        "narratives": deepcopy(semantic_intent["narratives"]),
     }
 
 

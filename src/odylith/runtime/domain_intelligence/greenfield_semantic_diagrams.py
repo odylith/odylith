@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_projection_plan imp
     SemanticProjectionEdge,
     SemanticProjectionNode,
     SemanticProjectionPlan,
+    SemanticProjectionViewEdge,
 )
 
 
@@ -52,6 +53,7 @@ def semantic_diagrams(
 
     node_by_id = plan.node_by_id
     edge_by_id = {edge.relation_id: edge for edge in plan.edges}
+    view_edge_by_id = {edge.edge_id: edge for edge in plan.view_edges}
     component_ids = [str(row["component_id"]) for row in plan.components]
     component_rows = [
         {
@@ -67,6 +69,9 @@ def semantic_diagrams(
     for diagram in plan.diagram_plans:
         nodes = tuple(node_by_id[fact_id] for fact_id in diagram.fact_ids)
         edges = tuple(edge_by_id[relation_id] for relation_id in diagram.relation_ids)
+        view_edges = tuple(
+            view_edge_by_id[edge_id] for edge_id in diagram.view_edge_ids
+        )
         boxes = _diagram_boxes(nodes)
         diagrams.append(
             {
@@ -75,8 +80,8 @@ def semantic_diagrams(
                 "kind": "flowchart",
                 "summary": diagram.summary,
                 "read_guide": (
-                    "Follow labeled arrows between sealed typed facts; every arrow "
-                    "comes from an exact Semantic Intent relation."
+                    "Follow solid arrows for sealed Semantic Intent relations and "
+                    "dashed then-arrows for workflow order projected from typed steps."
                 ),
                 "owner": "repo",
                 "status": "draft",
@@ -95,6 +100,7 @@ def semantic_diagrams(
                 "projection_origin": "verified_semantic_intent_graph",
                 "semantic_fact_ids": list(diagram.fact_ids),
                 "semantic_relation_ids": list(diagram.relation_ids),
+                "projection_view_edge_ids": list(diagram.view_edge_ids),
                 "diagram_boxes": [
                     {
                         "label": box["label"],
@@ -113,7 +119,11 @@ def semantic_diagrams(
                     }
                     for index, box in enumerate(boxes)
                 ],
-                "mermaid_source": _mermaid(nodes=nodes, edges=edges),
+                "mermaid_source": _mermaid(
+                    nodes=nodes,
+                    edges=edges,
+                    view_edges=view_edges,
+                ),
             }
         )
     return diagrams
@@ -204,6 +214,7 @@ def _mermaid(
     *,
     nodes: Sequence[SemanticProjectionNode],
     edges: Sequence[SemanticProjectionEdge],
+    view_edges: Sequence[SemanticProjectionViewEdge],
 ) -> str:
     node_ids = {
         node.fact_id: f"N{index}"
@@ -218,6 +229,10 @@ def _mermaid(
         lines.append(
             f"  {node_ids[edge.subject_id]} -->|{_EDGE_LABELS[edge.kind]}| "
             f"{node_ids[edge.object_id]}"
+        )
+    for edge in view_edges:
+        lines.append(
+            f"  {node_ids[edge.subject_id]} -.->|then| {node_ids[edge.object_id]}"
         )
     people = [node_ids[node.fact_id] for node in nodes if node.kind == "actor"]
     return _styled(lines, people=people)

@@ -23,6 +23,12 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_intent_packet impor
     require_semantic_intent_packet,
     semantic_intent_authority,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_source_candidate_adjudication import (
+    SEMANTIC_SOURCE_CANDIDATE_ADJUDICATION_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_source_claims import (
+    SEMANTIC_SOURCE_CANDIDATES_VERSION,
+)
 
 
 SEMANTIC_PROMPT = (
@@ -59,6 +65,7 @@ def semantic_materiality_assessment() -> dict[str, Any]:
         "non_goal": [NON_GOAL_EVIDENCE],
         "component_boundary": [PATH_EVIDENCE, STATE_EVIDENCE],
     }
+    source_facts, source_relations = _claim_desk_source_graph()
     return {
         "version": SEMANTIC_MATERIALITY_ASSESSMENT_VERSION,
         "evidence_sha256": evidence_sha256,
@@ -80,10 +87,120 @@ def semantic_materiality_assessment() -> dict[str, Any]:
             }
             for field, quotes in evidence_by_field.items()
         ],
+        "source_candidates": _source_candidates(source_facts, source_relations),
     }
 
 
 def semantic_intent_packet() -> dict[str, Any]:
+    source_facts, source_relations = _claim_desk_source_graph()
+    facts = [
+        *source_facts,
+        semantic_fact(
+            "system.0", "internal_system", "Card Claim Service",
+            "Card Claim Service — owns ready-card selection and claimed-card state.",
+            0, PATH_EVIDENCE, custody="bounded_interpretation",
+            attributes={
+                "responsibility": "Own ready-card selection and the claimed-card transition.",
+                "component_kind": "service",
+                "boundary": "Own card-claim decisions and the ready-to-claimed state change.",
+                "outside_boundary": "Receipt delivery and automatic card reassignment.",
+                "proof": "Prove that one ready card becomes claimed with its source evidence intact.",
+                "risk": "A wrong or stale card could be claimed without reviewable evidence.",
+                "release_scope": "first_path_required",
+            },
+        ),
+        semantic_fact(
+            "system.1", "internal_system", "Claim Receipt Delivery",
+            "Claim Receipt Delivery — owns the visible claim receipt.",
+            1, PATH_EVIDENCE, custody="bounded_interpretation",
+            attributes={
+                "responsibility": "Deliver the claim receipt after a successful card claim.",
+                "component_kind": "service",
+                "boundary": "Own visible receipt delivery after a successful card claim.",
+                "outside_boundary": "Card selection and the decision to claim a card.",
+                "proof": "Prove that the visible receipt identifies the successfully claimed card.",
+                "risk": "A missing or mismatched receipt could conceal the accepted claim result.",
+                "release_scope": "first_path_required",
+            },
+        ),
+    ]
+    relations = [
+        *source_relations,
+        semantic_relation(
+            "depends_on", "system.0", "dependency.0", 1, DEPENDENCY_EVIDENCE,
+            custody="bounded_interpretation",
+        ),
+        semantic_relation(
+            "depends_on", "system.1", "system.0", 2, PATH_EVIDENCE,
+            custody="bounded_interpretation",
+        ),
+        semantic_relation(
+            "implements", "system.0", "step.0", 0, PATH_EVIDENCE,
+            custody="bounded_interpretation",
+        ),
+        semantic_relation(
+            "implements", "system.1", "step.1", 1, PATH_EVIDENCE,
+            custody="bounded_interpretation",
+        ),
+        semantic_relation(
+            "implements", "system.1", "output.0", 2, PATH_EVIDENCE,
+            custody="bounded_interpretation",
+        ),
+        semantic_relation(
+            "implements", "system.0", "state.0", 3, STATE_EVIDENCE,
+            custody="bounded_interpretation",
+        ),
+    ]
+    narratives = [
+        semantic_narrative("product_story", "Claim Desk helps a shift coordinator claim one ready card and receive a claim receipt.", ["identity.0", "actor.0", "state.0", "output.0"], PATH_EVIDENCE),
+        semantic_narrative("problem", "Shift coordinators need a reviewable card-claim path.", ["actor.0", "state.0"], PATH_EVIDENCE),
+        semantic_narrative("customer", "The first customer is a shift coordinator.", ["actor.0"], PATH_EVIDENCE),
+        semantic_narrative("opportunity", "Make one card claim visible without automatic reassignment.", ["state.0", "non-goal.0"], NON_GOAL_EVIDENCE),
+        semantic_narrative("product_view", "A claim desk for claiming one ready card and receiving a claim receipt.", ["identity.0", "step.0", "output.0"], PATH_EVIDENCE),
+        semantic_narrative("proof_boundary", "A shift coordinator can claim one ready card and receive a claim receipt.", ["step.0", "step.1", "output.0"], PATH_EVIDENCE),
+        semantic_narrative("success_metric", "A claimed card and its receipt are visible.", ["state.0", "output.0"], PATH_EVIDENCE),
+        semantic_narrative("success_metric", "The local duty roster is read, and automatic reassignment stays excluded.", ["dependency.0", "non-goal.0"], [DEPENDENCY_EVIDENCE, NON_GOAL_EVIDENCE], order=1),
+        semantic_narrative("evidence_requirement", "Retain the claimed-card transition and claim receipt.", ["state.0", "output.0"], PATH_EVIDENCE),
+    ]
+    evidence_sha256 = semantic_evidence_sha256(
+        {"operator_prompt": SEMANTIC_PROMPT, "operator_edit": ""}
+    )
+    contract_sha256 = semantic_intent_authoring_contract_sha256()
+    assessment = semantic_materiality_assessment()
+    source_candidate_adjudication = _source_candidate_adjudication(
+        assessment["source_candidates"]
+    )
+    return {
+        "version": SEMANTIC_INTENT_PACKET_VERSION,
+        "evidence_sha256": evidence_sha256,
+        "authoring_contract_sha256": contract_sha256,
+        "materiality_assessment": assessment,
+        "materiality_assessment_sha256": semantic_materiality_assessment_sha256(
+            assessment
+        ),
+        "source_candidate_adjudication": source_candidate_adjudication,
+        "critic_run": {
+            "capability_profile": SEMANTIC_REASONING_CAPABILITY_PROFILE,
+            "critic_run_id": CRITIC_RUN_ID,
+            "host_profile": "codex",
+            "independent_context": True,
+        },
+        "author_run": {
+            "capability_profile": SEMANTIC_REASONING_CAPABILITY_PROFILE,
+            "author_run_id": AUTHOR_RUN_ID,
+        },
+        "semantic_intent": {
+            "version": SEMANTIC_INTENT_IR_VERSION,
+            "status": "complete",
+            "clarification": {"question": "", "fields": [], "source_refs": []},
+            "facts": facts,
+            "relations": relations,
+            "narratives": narratives,
+        },
+    }
+
+
+def _claim_desk_source_graph() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     facts = [
         semantic_fact(
             "identity.0", "identity", "Claim Desk", "Claim Desk", 0, IDENTITY_EVIDENCE,
@@ -126,34 +243,6 @@ def semantic_intent_packet() -> dict[str, Any]:
             "non-goal.0", "non_goal", "No automatic reassignment",
             "Never reassign a card automatically.", 0, NON_GOAL_EVIDENCE,
         ),
-        semantic_fact(
-            "system.0", "internal_system", "Card Claim Service",
-            "Card Claim Service — owns ready-card selection and claimed-card state.",
-            0, PATH_EVIDENCE, custody="bounded_interpretation",
-            attributes={
-                "responsibility": "Own ready-card selection and the claimed-card transition.",
-                "component_kind": "service",
-                "boundary": "Own card-claim decisions and the ready-to-claimed state change.",
-                "outside_boundary": "Receipt delivery and automatic card reassignment.",
-                "proof": "Prove that one ready card becomes claimed with its source evidence intact.",
-                "risk": "A wrong or stale card could be claimed without reviewable evidence.",
-                "release_scope": "first_path_required",
-            },
-        ),
-        semantic_fact(
-            "system.1", "internal_system", "Claim Receipt Delivery",
-            "Claim Receipt Delivery — owns the visible claim receipt.",
-            1, PATH_EVIDENCE, custody="bounded_interpretation",
-            attributes={
-                "responsibility": "Deliver the claim receipt after a successful card claim.",
-                "component_kind": "service",
-                "boundary": "Own visible receipt delivery after a successful card claim.",
-                "outside_boundary": "Card selection and the decision to claim a card.",
-                "proof": "Prove that the visible receipt identifies the successfully claimed card.",
-                "risk": "A missing or mismatched receipt could conceal the accepted claim result.",
-                "release_scope": "first_path_required",
-            },
-        ),
     ]
     relations = [
         semantic_relation("owned_by", "step.0", "actor.0", 0, PATH_EVIDENCE),
@@ -161,57 +250,9 @@ def semantic_intent_packet() -> dict[str, Any]:
         semantic_relation("changes", "step.0", "state.0", 0, STATE_EVIDENCE),
         semantic_relation("produces", "step.1", "output.0", 0, PATH_EVIDENCE),
         semantic_relation("depends_on", "identity.0", "dependency.0", 0, DEPENDENCY_EVIDENCE),
-        semantic_relation("depends_on", "system.0", "dependency.0", 1, DEPENDENCY_EVIDENCE),
-        semantic_relation("depends_on", "system.1", "system.0", 2, PATH_EVIDENCE),
         semantic_relation("excludes", "identity.0", "non-goal.0", 0, NON_GOAL_EVIDENCE),
-        semantic_relation("implements", "system.0", "step.0", 0, PATH_EVIDENCE),
-        semantic_relation("implements", "system.1", "step.1", 1, PATH_EVIDENCE),
-        semantic_relation("implements", "system.1", "output.0", 2, PATH_EVIDENCE),
-        semantic_relation("implements", "system.0", "state.0", 3, STATE_EVIDENCE),
     ]
-    narratives = [
-        semantic_narrative("product_story", "Claim Desk helps a shift coordinator claim one ready card and receive a claim receipt.", ["identity.0", "actor.0", "state.0", "output.0"], PATH_EVIDENCE),
-        semantic_narrative("problem", "Shift coordinators need a reviewable card-claim path.", ["actor.0", "state.0"], PATH_EVIDENCE),
-        semantic_narrative("customer", "The first customer is a shift coordinator.", ["actor.0"], PATH_EVIDENCE),
-        semantic_narrative("opportunity", "Make one card claim visible without automatic reassignment.", ["state.0", "non-goal.0"], NON_GOAL_EVIDENCE),
-        semantic_narrative("product_view", "A claim desk for claiming one ready card and receiving a claim receipt.", ["identity.0", "step.0", "output.0"], PATH_EVIDENCE),
-        semantic_narrative("proof_boundary", "A shift coordinator can claim one ready card and receive a claim receipt.", ["step.0", "step.1", "output.0"], PATH_EVIDENCE),
-        semantic_narrative("success_metric", "A claimed card and its receipt are visible.", ["state.0", "output.0"], PATH_EVIDENCE),
-        semantic_narrative("success_metric", "The local duty roster is read, and automatic reassignment stays excluded.", ["dependency.0", "non-goal.0"], [DEPENDENCY_EVIDENCE, NON_GOAL_EVIDENCE], order=1),
-        semantic_narrative("evidence_requirement", "Retain the claimed-card transition and claim receipt.", ["state.0", "output.0"], PATH_EVIDENCE),
-    ]
-    evidence_sha256 = semantic_evidence_sha256(
-        {"operator_prompt": SEMANTIC_PROMPT, "operator_edit": ""}
-    )
-    contract_sha256 = semantic_intent_authoring_contract_sha256()
-    assessment = semantic_materiality_assessment()
-    return {
-        "version": SEMANTIC_INTENT_PACKET_VERSION,
-        "evidence_sha256": evidence_sha256,
-        "authoring_contract_sha256": contract_sha256,
-        "materiality_assessment": assessment,
-        "materiality_assessment_sha256": semantic_materiality_assessment_sha256(
-            assessment
-        ),
-        "critic_run": {
-            "capability_profile": SEMANTIC_REASONING_CAPABILITY_PROFILE,
-            "critic_run_id": CRITIC_RUN_ID,
-            "host_profile": "codex",
-            "independent_context": True,
-        },
-        "author_run": {
-            "capability_profile": SEMANTIC_REASONING_CAPABILITY_PROFILE,
-            "author_run_id": AUTHOR_RUN_ID,
-        },
-        "semantic_intent": {
-            "version": SEMANTIC_INTENT_IR_VERSION,
-            "status": "complete",
-            "clarification": {"question": "", "fields": [], "source_refs": []},
-            "facts": facts,
-            "relations": relations,
-            "narratives": narratives,
-        },
-    }
+    return facts, relations
 
 
 def semantic_clarification_packet() -> dict[str, Any]:
@@ -230,10 +271,6 @@ def semantic_clarification_packet() -> dict[str, Any]:
     assessment["fields"] = [
         row for row in assessment["fields"] if row["field"] != "visible_result"
     ]
-    packet["materiality_assessment_sha256"] = semantic_materiality_assessment_sha256(
-        assessment
-    )
-
     intent = packet["semantic_intent"]
     intent["status"] = "clarification_required"
     intent["clarification"] = {
@@ -252,6 +289,16 @@ def semantic_clarification_packet() -> dict[str, Any]:
         if row["kind"] == "owned_by" and row["subject_id"] == "step.0"
     ]
     intent["narratives"] = []
+    assessment["source_candidates"] = _source_candidates(
+        intent["facts"],
+        intent["relations"],
+    )
+    packet["source_candidate_adjudication"] = _source_candidate_adjudication(
+        assessment["source_candidates"]
+    )
+    packet["materiality_assessment_sha256"] = semantic_materiality_assessment_sha256(
+        assessment
+    )
     return packet
 
 
@@ -267,6 +314,24 @@ def semantic_intent_with_authority() -> dict[str, Any]:
             prompt=SEMANTIC_PROMPT,
         ),
     }
+
+
+def rebind_fixture_source_candidates(packet: dict[str, Any]) -> dict[str, Any]:
+    """Rebind a deliberately authored graph to critic-owned source candidates."""
+
+    assessment = packet["materiality_assessment"]
+    graph = packet["semantic_intent"]
+    assessment["source_candidates"] = _source_candidates(
+        graph["facts"],
+        graph["relations"],
+    )
+    packet["source_candidate_adjudication"] = _source_candidate_adjudication(
+        assessment["source_candidates"]
+    )
+    packet["materiality_assessment_sha256"] = semantic_materiality_assessment_sha256(
+        assessment
+    )
+    return packet
 
 
 def semantic_ref(quote: str) -> dict[str, Any]:
@@ -314,6 +379,8 @@ def semantic_relation(
     object_id: str,
     order: int,
     quote: str,
+    *,
+    custody: str = "source_fact",
 ) -> dict[str, Any]:
     return {
         "relation_id": f"relation.{kind}.{order}",
@@ -321,7 +388,87 @@ def semantic_relation(
         "subject_id": subject_id,
         "object_id": object_id,
         "order": order,
+        "custody": custody,
         "source_refs": [semantic_ref(quote)],
+    }
+
+
+def _source_candidates(
+    facts: list[dict[str, Any]],
+    relations: list[dict[str, Any]],
+) -> dict[str, Any]:
+    fact_fields = {
+        "identity": "identity",
+        "actor": "role",
+        "workflow_step": "first_path",
+        "state_object": "state_object",
+        "visible_output": "visible_result",
+        "external_system": "dependency",
+        "operational_constraint": "constraint",
+        "non_goal": "non_goal",
+        "internal_system": "component_boundary",
+        "component_responsibility": "component_boundary",
+    }
+    relation_fields = {
+        "owned_by": ["role", "first_path"],
+        "changes": ["first_path", "state_object"],
+        "produces": ["first_path", "visible_result"],
+        "depends_on": ["dependency"],
+        "constrained_by": ["constraint"],
+        "excludes": ["non_goal"],
+        "implements": ["component_boundary", "first_path"],
+    }
+    return {
+        "version": SEMANTIC_SOURCE_CANDIDATES_VERSION,
+        "facts": [
+            {"field": fact_fields[row["kind"]], "fact": deepcopy(row)}
+            for row in facts
+            if row["custody"] == "source_fact"
+        ],
+        "relations": [
+            {"fields": relation_fields[row["kind"]], "relation": deepcopy(row)}
+            for row in relations
+            if row["custody"] == "source_fact"
+        ],
+    }
+
+
+def _source_candidate_adjudication(
+    source_candidates: dict[str, Any],
+) -> dict[str, Any]:
+    """Retain fixture workflow candidates using only their typed relations."""
+
+    relation_kinds_by_subject: dict[str, set[str]] = {}
+    for wrapper in source_candidates["relations"]:
+        relation = wrapper["relation"]
+        relation_kinds_by_subject.setdefault(relation["subject_id"], set()).add(
+            relation["kind"]
+        )
+    decisions = []
+    for wrapper in source_candidates["facts"]:
+        fact = wrapper["fact"]
+        if fact["kind"] != "workflow_step":
+            continue
+        relation_kinds = relation_kinds_by_subject.get(fact["fact_id"], set())
+        material_effect = (
+            "mutates_domain_object"
+            if "changes" in relation_kinds
+            else "records_or_creates_domain_evidence"
+            if "produces" in relation_kinds
+            else "reads_or_inspects_dependency"
+            if "depends_on" in relation_kinds
+            else "configures_or_executes"
+        )
+        decisions.append(
+            {
+                "fact_id": fact["fact_id"],
+                "decision": "retain_material_action",
+                "material_effect": material_effect,
+            }
+        )
+    return {
+        "version": SEMANTIC_SOURCE_CANDIDATE_ADJUDICATION_VERSION,
+        "workflow_decisions": decisions,
     }
 
 
@@ -397,9 +544,18 @@ def stateless_semantic_intent_packet() -> tuple[dict[str, Any], str]:
     relations = [
         semantic_relation("produces", "step.0", "output.0", 0, prompt),
         semantic_relation("produces", "step.0", "output.1", 1, prompt),
-        semantic_relation("implements", "system.0", "step.0", 0, prompt),
-        semantic_relation("implements", "system.0", "output.0", 1, prompt),
-        semantic_relation("implements", "system.0", "output.1", 2, prompt),
+        semantic_relation(
+            "implements", "system.0", "step.0", 0, prompt,
+            custody="bounded_interpretation",
+        ),
+        semantic_relation(
+            "implements", "system.0", "output.0", 1, prompt,
+            custody="bounded_interpretation",
+        ),
+        semantic_relation(
+            "implements", "system.0", "output.1", 2, prompt,
+            custody="bounded_interpretation",
+        ),
         semantic_relation("excludes", "identity.0", "non-goal.0", 0, prompt),
     ]
     narratives = [
@@ -469,6 +625,10 @@ def stateless_semantic_intent_packet() -> tuple[dict[str, Any], str]:
         )
         row["source_refs"] = [semantic_ref(prompt)] if field in cited_fields else []
         row["alternatives"] = []
+    assessment["source_candidates"] = _source_candidates(facts, relations)
+    packet["source_candidate_adjudication"] = _source_candidate_adjudication(
+        assessment["source_candidates"]
+    )
     packet.update(
         {
             "evidence_sha256": evidence_sha256,

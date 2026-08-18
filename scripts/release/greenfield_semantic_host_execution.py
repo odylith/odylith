@@ -34,12 +34,19 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract 
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
     require_semantic_intent_ir,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_graph_extension import (
+    assemble_semantic_intent_from_extension,
+    bind_semantic_graph_extension_source_refs,
+    semantic_graph_extension_schema_for_materiality,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
-    bind_semantic_intent_source_ref_selections,
     require_materiality_intent_alignment,
-    semantic_intent_output_schema_for_materiality,
     semantic_materiality_assessment_schema,
     semantic_materiality_assessment_sha256,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_source_candidate_adjudication import (
+    select_semantic_source_claims,
+    semantic_source_candidate_adjudication_schema,
 )
 
 
@@ -101,8 +108,19 @@ def author_development_case(
         host_profile=host_profile,
         timeout_seconds=timeout_seconds,
     )
-    semantic_intent = bind_semantic_intent_source_ref_selections(
-        _mapping(raw_author_output.get("semantic_intent"), "Semantic Intent"),
+    source_candidates = _mapping(
+        validated_assessment.get("source_candidates"),
+        "validated source candidates",
+    )
+    source_candidate_adjudication, source_claims = select_semantic_source_claims(
+        source_candidates,
+        raw_author_output.get("source_candidate_adjudication"),
+    )
+    semantic_extension = bind_semantic_graph_extension_source_refs(
+        _mapping(
+            raw_author_output.get("semantic_extension"),
+            "Semantic graph extension",
+        ),
         assessment=validated_assessment,
         evidence_sources={key: str(value) for key, value in author_evidence.items()},
     )
@@ -110,13 +128,20 @@ def author_development_case(
         raw_author_output.get("self_challenge"), "author self challenge"
     )
     author_output = {
-        "semantic_intent": semantic_intent,
+        "source_candidate_adjudication": source_candidate_adjudication,
+        "semantic_extension": semantic_extension,
         "self_challenge": self_challenge,
     }
     evidence_sources = _mapping(author_input.get("evidence"), "author evidence")
+    semantic_intent = assemble_semantic_intent_from_extension(
+        semantic_extension,
+        assessment=validated_assessment,
+        source_claims=source_claims,
+    )
     verified_intent = require_semantic_intent_ir(
         semantic_intent,
         evidence_sources={key: str(value) for key, value in evidence_sources.items()},
+        source_claims=source_claims,
     )
     require_materiality_intent_alignment(assessment, verified_intent)
 
@@ -157,6 +182,8 @@ def author_development_case(
                 },
                 "author_stage": {
                     **author_receipt,
+                    "source_candidate_adjudication": source_candidate_adjudication,
+                    "semantic_extension": semantic_extension,
                     "semantic_intent": verified_intent,
                 },
             }
@@ -361,9 +388,21 @@ def _author_output_schema(
     return {
         "type": "object",
         "additionalProperties": False,
-        "required": ["semantic_intent", "self_challenge"],
+        "required": [
+            "source_candidate_adjudication",
+            "semantic_extension",
+            "self_challenge",
+        ],
         "properties": {
-            "semantic_intent": semantic_intent_output_schema_for_materiality(
+            "source_candidate_adjudication": (
+                semantic_source_candidate_adjudication_schema(
+                    _mapping(
+                        materiality_assessment.get("source_candidates"),
+                        "validated source candidates",
+                    )
+                )
+            ),
+            "semantic_extension": semantic_graph_extension_schema_for_materiality(
                 materiality_assessment,
                 evidence_sources=evidence_sources,
             ),
@@ -392,10 +431,17 @@ def _stage_prompt(*, stage: str, phase_input: Mapping[str, Any]) -> str:
     role = (
         "independent prompt-only materiality critic"
         if stage == "critic"
-        else "independent source-grounded semantic graph author"
+        else "independent bounded semantic graph-extension author"
+    )
+    authority_boundary = (
+        " The critic-owned source candidates are immutable; adjudicate every workflow "
+        "candidate exactly once, then author only bounded_interpretation additions and presentation."
+        if stage == "author"
+        else ""
     )
     return (
         f"Act as the {role}. Work only from CANONICAL_INPUT_JSON below. "
+        f"{authority_boundary} "
         "Do not use tools, inspect files, browse, read annotations, access prior candidates, "
         "or infer from validator feedback. Copy exact hashes and version strings from the input. "
         "Return only the required structured output. For self-challenges, report failed when the "

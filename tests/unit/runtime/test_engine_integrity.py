@@ -54,6 +54,11 @@ def test_engine_integrity_covers_operator_requested_engine_set() -> None:
         assert row["integration_backed"], row["area"]
         assert row["handoff_in"] or row["handoff_out"], row["area"]
     assert "odylith greenfield create" in areas["Domain Intelligence"]["commands"]
+    assert (
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_materiality_contract.py"
+        in areas["Tribunal"]["anchors"]
+    )
+    assert "src/odylith/runtime/domain_intelligence/proposal_tribunal.py" not in areas["Tribunal"]["anchors"]
     assert areas["Subagent Router"]["inventory_names"] == ["Subagent Router"]
     assert areas["Subagent Orchestrator"]["inventory_names"] == ["Subagent Orchestrator"]
     assert "odylith doctor" in areas["Security and Trust"]["commands"]

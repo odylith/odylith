@@ -47,8 +47,10 @@ placeholder products in response to a show-me request.
    The active host then authors and challenges the returned source-cited typed
    packet and runs its exact next invocation; Odylith does not parse product
    meaning from the prompt.
-   `propose` compiles typed evidence, repairs and quality-gates the full staged
-   ProductCreateTransaction, then renders the single visible confirmation view.
+   `propose` deterministically verifies the untrusted packet, exact citations,
+   typed endpoints, graph completeness, and the full staged
+   ProductCreateTransaction without semantic reinterpretation or repair, then
+   renders the single visible confirmation view.
    Show the preview directly in chat, including Product story, State object, First
    complete path, actors, systems, assumptions, ambiguities, proof boundary, and one
    clear `## Choose one command` block. **`CONFIRM <hash>`** commits the shown hash-bound

@@ -126,6 +126,8 @@ _GRAPH_COMPILE_GREENFIELD_MODULES = {
     "greenfield_semantic_traceability",
     "greenfield_semantic_workflow",
     "greenfield_semantic_source_citations",
+    "greenfield_semantic_source_candidate_adjudication",
+    "greenfield_semantic_source_claims",
     "greenfield_surface_refresh_proof",
     "greenfield_traceability_commit",
     "greenfield_traceability_contract",
@@ -163,7 +165,7 @@ def _authority() -> tuple[dict[str, object], dict[str, object]]:
     return authority, dict(verified.product_facts)
 
 
-def test_graph_authority_rejects_every_non_v8_or_non_v3_shape_without_fallback() -> None:
+def test_graph_authority_rejects_legacy_authority_and_graph_shapes_without_fallback() -> None:
     authority, _facts = _authority()
 
     old_authority = copy.deepcopy(authority)
@@ -376,8 +378,8 @@ def test_public_graph_proposal_loads_only_the_explicit_graph_transaction_closure
             if len(transaction_paths) != 1:
                 raise SystemExit("public graph proposal did not stage exactly one transaction")
             transaction = json.loads(transaction_paths[0].read_text(encoding="utf-8"))
-            if transaction["intent_authority"].get("version") != "odylith.product-intent-authority.v13":
-                raise SystemExit("graph transaction changed its v13 authority")
+            if transaction["intent_authority"].get("version") != "odylith.product-intent-authority.v15":
+                raise SystemExit("graph transaction changed its v15 authority")
             if transaction["compiler_provenance"].get("phase") != "pre_confirm_compile":
                 raise SystemExit("graph transaction lost its pre-confirm compiler attestation")
 

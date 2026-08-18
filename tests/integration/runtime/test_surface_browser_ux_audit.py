@@ -36,6 +36,15 @@ def _frame_anchor_actions(frame, selector: str) -> list[dict[str, str]]:  # noqa
 
 
 def _click_frame_anchor_by_href(frame, container_selector: str, anchor_selector: str, href: str) -> None:  # noqa: ANN001
+    escaped_href = href.replace("\\", "\\\\").replace('"', '\\"')
+    href_selector = ", ".join(
+        f'{selector.strip()}[href="{escaped_href}"]'
+        for selector in anchor_selector.split(",")
+    )
+    frame.locator(container_selector).locator(href_selector).first.wait_for(
+        state="attached",
+        timeout=15000,
+    )
     frame.locator(container_selector).evaluate(
         """(node, payload) => {
             const selector = String(payload.selector || "");

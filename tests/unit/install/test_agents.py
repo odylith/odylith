@@ -76,12 +76,14 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
         "odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md",
         "odylith/skills/odylith-code-hygiene-guard/SKILL.md",
         "Discipline hot paths must not call host models",
-            "Odylith treats input as evidence",
-            "builds typed facts",
-            "one hash-bound rail",
-            "Material uncertainty gets one focused question",
-            "Markdown is a view, never product truth",
-            "ProductCreateTransaction",
+        "active host model owns semantic reasoning",
+        "source-cited typed packet",
+        "simplest evidence-supported reasoning mechanism",
+        "independently challenge every material claim",
+        "authoring mechanism remains provisional",
+        "Confirmation Markdown is a human view, never product truth",
+        "exact reviewed, hash-bound ProductCreateTransaction",
+        "**EDIT** treats corrections as new evidence",
         "--transaction-file",
         "--transaction-hash",
         "rollback guard",
@@ -137,10 +139,11 @@ def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
     assert "rerender only the owned surface" in block
     assert "Claude direct-edit and Bash PostToolUse hooks stay silent on success" in block
     assert "Claude Stop is memory/logging only" in block
-    assert "Do not inspect source" in block
-    assert "hand-author/repair proposal JSON" in block
-    assert "parser/schema retries" in block
-    assert "narrate parser/schema retries, or request a second confirmation" in block
+    assert "host model owns semantic judgment" in block
+    assert "source-cited typed packet" in block
+    assert "independently challenge every material claim" in block
+    assert "Never add prompt-specific parsing rules or hand-author proposal JSON" in block
+    assert "no parsing, model call, generation, or repair occurs after CONFIRM" in block
     assert "Surface only the final transaction, created-record summary, or a material blocker" in block
     assert "Confirm/Edit/Reject" not in block
     assert "confirm to expand" not in block

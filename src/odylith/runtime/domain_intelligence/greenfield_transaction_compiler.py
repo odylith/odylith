@@ -33,7 +33,7 @@ def compile_sealed_greenfield_transaction(
     release_selector: str,
     verified_semantic_prewrite: PrewriteBuilder,
 ) -> ProductCreateTransaction:
-    """Validate one v7 graph authority and compile its exact staged write set."""
+    """Validate one current graph authority and compile its exact staged write set."""
 
     root = Path(repo_root).expanduser().resolve()
     authority_value = proposal.get(PRODUCT_INTENT_AUTHORITY_KEY)

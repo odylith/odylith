@@ -13,7 +13,7 @@ import tarfile
 import zipfile
 
 
-DEFAULT_FIXTURE_GLOB = "scripts/release/fixtures/greenfield-semantic-*.json"
+DEFAULT_FIXTURE_GLOB = "scripts/release/fixtures/greenfield-semantic-smoke.v*.json"
 TEXT_SUFFIXES = frozenset(
     {".css", ".html", ".js", ".json", ".md", ".mjs", ".py", ".sh", ".toml", ".txt", ".yaml", ".yml"}
 )

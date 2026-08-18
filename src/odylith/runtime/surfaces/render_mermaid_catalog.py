@@ -19,6 +19,7 @@ from typing import Any, Callable, Mapping, Sequence
 
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance.delivery import scope_signal_ladder
+from odylith.runtime.surfaces import atlas_catalog_entry_presentation
 from odylith.runtime.surfaces import atlas_detail_layout
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import dashboard_shell_links
@@ -49,43 +50,6 @@ _ATLAS_RENDER_GUARD_KEY = "atlas-render"
 
 def _display_text(value: Any) -> str:
     return display_text.strip_inline_markdown_emphasis(value)
-
-
-def _display_row(row: Mapping[str, Any], fields: Sequence[str]) -> dict[str, Any]:
-    cleaned = dict(row)
-    for field in fields:
-        if field in cleaned:
-            cleaned[field] = _display_text(cleaned.get(field, ""))
-    return cleaned
-
-
-def _display_rows(rows: Sequence[Mapping[str, Any]], fields: Sequence[str]) -> list[dict[str, Any]]:
-    return [_display_row(row, fields) for row in rows if isinstance(row, Mapping)]
-
-
-def _typed_semantic_diagram_boxes(
-    value: Any,
-    *,
-    context: str,
-    errors: list[str],
-) -> list[dict[str, str]]:
-    if not isinstance(value, list) or not value:
-        errors.append(f"{context}: verified semantic `diagram_boxes` must be a non-empty list")
-        return []
-    boxes: list[dict[str, str]] = []
-    for index, row in enumerate(value):
-        if not isinstance(row, Mapping) or set(row) != {"label", "role", "description"}:
-            errors.append(f"{context}: diagram_boxes[{index}] must contain label, role, and description")
-            continue
-        box = {
-            key: _display_text(row.get(key, ""))
-            for key in ("label", "role", "description")
-        }
-        if not all(box.values()):
-            errors.append(f"{context}: diagram_boxes[{index}] contains an empty field")
-            continue
-        boxes.append(box)
-    return boxes
 
 
 def _extract_svg_viewbox_dimensions(svg_path: Path) -> tuple[float, float] | None:
@@ -507,19 +471,11 @@ def _load_catalog(
         owner = _display_text(_assert_non_empty(name="owner", value=item.get("owner"), errors=errors, context=context))
         summary = _display_text(_assert_non_empty(name="summary", value=item.get("summary"), errors=errors, context=context))
         read_guide = _display_text(item.get("read_guide", ""))
-        semantic_projection = item.get("projection_origin") == "verified_semantic_intent_graph"
-        if semantic_projection:
-            catalog_diagram_boxes = _typed_semantic_diagram_boxes(
-                item.get("diagram_boxes"), context=context, errors=errors
-            )
-        else:
-            from odylith.runtime.surfaces import atlas_box_explanations
-
-            catalog_diagram_boxes = atlas_box_explanations.normalize_catalog_diagram_boxes(
-                raw_boxes=item.get("diagram_boxes", []),
-                context=context,
-                errors=errors,
-            )
+        presentation = atlas_catalog_entry_presentation.catalog_entry_presentation(
+            item,
+            context=context,
+            errors=errors,
+        )
         source_mmd = _assert_non_empty(name="source_mmd", value=item.get("source_mmd"), errors=errors, context=context)
         source_svg = _assert_non_empty(name="source_svg", value=item.get("source_svg"), errors=errors, context=context)
         source_png = str(item.get("source_png", "")).strip()
@@ -584,15 +540,11 @@ def _load_catalog(
                     errors.append(f"{context}: components[{comp_idx}] must be an object")
                     continue
                 comp_name = _display_text(comp.get("name", ""))
-                if semantic_projection:
-                    comp_desc = _display_text(comp.get("description", ""))
-                else:
-                    from odylith.runtime.surfaces import atlas_box_explanations
-
-                    comp_desc = atlas_box_explanations.clean_component_description(
-                        name=comp_name,
-                        description=_display_text(comp.get("description", "")),
-                    )
+                comp_desc = atlas_catalog_entry_presentation.component_description(
+                    presentation,
+                    name=comp_name,
+                    description=comp.get("description", ""),
+                )
                 if not comp_name or not comp_desc:
                     errors.append(
                         f"{context}: components[{comp_idx}] requires non-empty `name` and `description`"
@@ -716,36 +668,17 @@ def _load_catalog(
         except (OSError, UnicodeDecodeError) as exc:
             errors.append(f"{context}: source_mmd is unreadable: {source_mmd} ({exc.__class__.__name__})")
             source_text = ""
-        if semantic_projection:
-            diagram_boxes = _display_rows(
-                catalog_diagram_boxes,
-                ("label", "role", "description"),
-            )
-            rendered_summary = summary
-            rendered_read_guide = read_guide
-        else:
-            from odylith.runtime.surfaces import atlas_box_explanations
-            from odylith.runtime.surfaces import atlas_diagram_intelligence
-
-            diagram_boxes = list(
-                atlas_box_explanations.merge_diagram_box_explanations(
-                    source_text=source_text,
-                    catalog_boxes=catalog_diagram_boxes,
-                    component_rows=components,
-                    diagram_title=title,
-                    diagram_summary=summary,
-                )
-            )
-            diagram_boxes = _display_rows(diagram_boxes, ("label", "role", "description"))
-            diagram_narrative = atlas_diagram_intelligence.build_diagram_narrative(
+        diagram_boxes, rendered_summary, rendered_read_guide = (
+            atlas_catalog_entry_presentation.diagram_presentation(
+                presentation,
+                components=components,
                 title=title,
                 kind=kind,
                 summary=summary,
                 read_guide=read_guide,
                 source_text=source_text,
             )
-            rendered_summary = _display_text(diagram_narrative.summary)
-            rendered_read_guide = _display_text(diagram_narrative.read_guide)
+        )
 
         viewbox_dims = _extract_svg_viewbox_dimensions(svg_path)
         viewbox_width = float(viewbox_dims[0]) if viewbox_dims else 0.0

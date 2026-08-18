@@ -39,6 +39,10 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contrac
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations import (
     resolved_semantic_source_refs,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_source_candidate_adjudication import (
+    select_semantic_source_claims,
+    semantic_source_candidate_adjudication_schema,
+)
 
 
 MAX_SEMANTIC_INTENT_PACKET_BYTES = 1_000_000
@@ -53,6 +57,7 @@ class VerifiedSemanticIntentPacket:
     resolved_source_refs: tuple[Mapping[str, Any], ...]
     materiality_assessment: Mapping[str, Any]
     materiality_assessment_sha256: str
+    source_candidate_adjudication: Mapping[str, Any]
     critic_run: Mapping[str, Any]
     author_run: Mapping[str, Any]
     evidence_sha256: str
@@ -72,6 +77,7 @@ def semantic_intent_packet_schema() -> dict[str, Any]:
             "authoring_contract_sha256",
             "materiality_assessment",
             "materiality_assessment_sha256",
+            "source_candidate_adjudication",
             "critic_run",
             "author_run",
             "semantic_intent",
@@ -90,6 +96,9 @@ def semantic_intent_packet_schema() -> dict[str, Any]:
                 "minLength": 64,
                 "maxLength": 64,
             },
+            "source_candidate_adjudication": (
+                semantic_source_candidate_adjudication_schema()
+            ),
             "critic_run": semantic_materiality_critic_schema(),
             "author_run": semantic_intent_author_schema(),
             "semantic_intent": semantic_intent_output_schema(),
@@ -133,6 +142,7 @@ def require_semantic_intent_packet(
         "authoring_contract_sha256",
         "materiality_assessment",
         "materiality_assessment_sha256",
+        "source_candidate_adjudication",
         "critic_run",
         "author_run",
         "semantic_intent",
@@ -163,9 +173,15 @@ def require_semantic_intent_packet(
         value.get("critic_run"),
         value.get("author_run"),
     )
+    source_candidates = materiality_assessment["source_candidates"]
+    source_candidate_adjudication, source_claims = select_semantic_source_claims(
+        source_candidates,
+        value.get("source_candidate_adjudication"),
+    )
     semantic_intent = require_semantic_intent_ir(
         value.get("semantic_intent"),
         evidence_sources=evidence_sources,
+        source_claims=source_claims,
     )
     require_materiality_intent_alignment(materiality_assessment, semantic_intent)
     product_facts = (
@@ -184,6 +200,7 @@ def require_semantic_intent_packet(
         ),
         materiality_assessment=materiality_assessment,
         materiality_assessment_sha256=materiality_sha256,
+        source_candidate_adjudication=source_candidate_adjudication,
         critic_run=critic_run,
         author_run=author_run,
         evidence_sha256=evidence_sha256,
@@ -241,6 +258,9 @@ def semantic_intent_authority(
         "semantic_materiality_assessment": dict(verified.materiality_assessment),
         "semantic_materiality_assessment_sha256": (
             verified.materiality_assessment_sha256
+        ),
+        "semantic_source_candidate_adjudication": dict(
+            verified.source_candidate_adjudication
         ),
         "semantic_materiality_critic_run": dict(verified.critic_run),
         "semantic_intent_author_run": dict(verified.author_run),
