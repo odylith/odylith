@@ -54,7 +54,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_claims impor
 
 
 SEMANTIC_INTENT_IR_VERSION = "odylith.greenfield.semantic-intent-ir.v5"
-SEMANTIC_INTENT_PACKET_VERSION = "odylith.greenfield.semantic-intent-packet.v10"
+SEMANTIC_INTENT_PACKET_VERSION = "odylith.greenfield.semantic-intent-packet.v11"
 
 _CUSTODY_STATES = frozenset(
     {"source_fact", "bounded_interpretation", "visible_assumption"}

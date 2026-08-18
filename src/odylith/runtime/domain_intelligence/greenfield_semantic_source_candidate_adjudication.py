@@ -57,6 +57,10 @@ def semantic_source_candidate_adjudication_contract() -> dict[str, Any]:
             ),
         },
         "material_effects": list(SEMANTIC_MATERIAL_EFFECTS),
+        "required_coverage": (
+            "one stable source workflow anchor remains for every typed state change "
+            "and visible-output production relation"
+        ),
         "graph_assembly": "deterministic_selection_and_reindexing",
         "forbidden": [
             "new_source_fact",
@@ -335,7 +339,45 @@ def _fold_custody_error(
             continue
         if relation.get("object_id") != target_id:
             return "Semantic workflow fold would discard an independent material relation"
+    if fact_id in _required_coverage_anchor_ids(facts=facts, relations=relations):
+        return "Semantic workflow fold would remove required graph coverage"
     return None
+
+
+def _required_coverage_anchor_ids(
+    *,
+    facts: Mapping[str, Mapping[str, Any]],
+    relations: Sequence[Mapping[str, Any]],
+) -> set[str]:
+    """Reserve one stable source workflow owner for every required graph edge."""
+
+    anchors: set[str] = set()
+    for relation_kind, target_kind in (
+        ("changes", "state_object"),
+        ("produces", "visible_output"),
+    ):
+        for target_id in sorted(
+            fact_id for fact_id, fact in facts.items() if fact.get("kind") == target_kind
+        ):
+            candidates = {
+                str(relation.get("subject_id"))
+                for relation in relations
+                if relation.get("kind") == relation_kind
+                and relation.get("object_id") == target_id
+                and facts.get(str(relation.get("subject_id")), {}).get("kind")
+                == "workflow_step"
+            }
+            if candidates:
+                anchors.add(
+                    min(
+                        candidates,
+                        key=lambda fact_id: (
+                            int(facts[fact_id].get("order", 0)),
+                            fact_id,
+                        ),
+                    )
+                )
+    return anchors
 
 
 def _fact_index(source_candidates: Mapping[str, Any]) -> dict[str, Mapping[str, Any]]:

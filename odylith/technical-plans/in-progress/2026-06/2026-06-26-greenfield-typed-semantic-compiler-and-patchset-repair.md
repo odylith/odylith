@@ -4202,3 +4202,21 @@ above.
       deterministic-law report and development plan bound to that commit, then
       restart the independent cohort from case one. Old cohort segments are
       historical failed-plan evidence only and must not be reused.
+    - 2026-08-18 graph-wide fold-coverage reopen: the pairwise eligibility
+      correction cleared the exact `gfhi-003` blocker and reached `11/11`
+      clean cases, but `gfhi-012` then failed once before segment persistence
+      because folding the sole badge-display workflow removed the only typed
+      `produces` edge for its visible output. This falsifies per-pair
+      admissibility as a complete mechanism. The replacement remains in the
+      same typed owner but reasons over the whole candidate graph: one stable
+      source workflow anchor is reserved for every required `produces` and
+      `changes` target, while only non-anchor candidates may expose otherwise
+      admissible folds. The validator consumes that exact owner; no prompt
+      retry, regex, vocabulary rule, invented producer relation, or weakened
+      completeness gate was added. Sole-producer rejection and two-producer
+      non-anchor controls pass, and the wider protocol/transaction/host/
+      evaluator migration pack passed `159/161`; its two failures were stale
+      exact version assertions and both pass after correction. Protocol
+      identities advance again before fresh deterministic laws and a new
+      case-one cohort; all v10/v14/v16/v15 plans, packets, authorities,
+      compiler receipts, and segments are historical only.

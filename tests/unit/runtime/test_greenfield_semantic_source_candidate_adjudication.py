@@ -277,6 +277,99 @@ def test_provider_schema_removes_fold_choice_that_would_discard_material_relatio
     assert ("see", "receipt") not in result_pairs
 
 
+def test_provider_schema_reserves_the_only_typed_output_producer() -> None:
+    source = _claims()
+    mark_receipt = next(
+        row for row in source["relations"] if row["relation"]["relation_id"] == "mark-receipt"
+    )
+    mark_receipt["relation"] = _relation(
+        "see-receipt",
+        "produces",
+        "see",
+        "receipt",
+        0,
+        _RESULT_QUOTE,
+    )
+    schema = semantic_source_candidate_adjudication_schema(source)
+    variants = schema["properties"]["workflow_decisions"]["items"]["anyOf"]
+    result_pairs = {
+        (
+            row["properties"]["fact_id"]["enum"][0],
+            target_id,
+        )
+        for row in variants
+        if row["properties"]["decision"]["enum"] == ["fold_into_visible_result"]
+        for target_id in row["properties"]["target_fact_id"]["enum"]
+    }
+
+    assert ("see", "receipt") not in result_pairs
+    with pytest.raises(ValueError, match="remove required graph coverage"):
+        require_semantic_source_candidate_adjudication(
+            _decisions(), source_candidates=source
+        )
+
+
+def test_provider_schema_allows_only_non_anchor_of_two_output_producers_to_fold() -> None:
+    source = _claims()
+    source["relations"] = [
+        row
+        for row in source["relations"]
+        if row["relation"]["relation_id"] != "mark-receipt"
+    ]
+    source["facts"].append(
+        {
+            "field": "first_path",
+            "fact": _fact(
+                "display",
+                "workflow_step",
+                "Display a claim receipt",
+                3,
+                _RESULT_QUOTE,
+            ),
+        }
+    )
+    source["relations"].extend(
+        [
+            {
+                "fields": ["first_path", "visible_result"],
+                "relation": _relation(
+                    "see-receipt",
+                    "produces",
+                    "see",
+                    "receipt",
+                    1,
+                    _RESULT_QUOTE,
+                ),
+            },
+            {
+                "fields": ["first_path", "visible_result"],
+                "relation": _relation(
+                    "display-receipt",
+                    "produces",
+                    "display",
+                    "receipt",
+                    2,
+                    _RESULT_QUOTE,
+                ),
+            },
+        ]
+    )
+    schema = semantic_source_candidate_adjudication_schema(source)
+    variants = schema["properties"]["workflow_decisions"]["items"]["anyOf"]
+    result_pairs = {
+        (
+            row["properties"]["fact_id"]["enum"][0],
+            target_id,
+        )
+        for row in variants
+        if row["properties"]["decision"]["enum"] == ["fold_into_visible_result"]
+        for target_id in row["properties"]["target_fact_id"]["enum"]
+    }
+
+    assert ("see", "receipt") not in result_pairs
+    assert ("display", "receipt") in result_pairs
+
+
 def test_generic_packet_schema_allows_a_first_path_clarification_without_candidates() -> None:
     schema = semantic_source_candidate_adjudication_schema()
     assert schema["properties"]["workflow_decisions"]["minItems"] == 0

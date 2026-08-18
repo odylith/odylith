@@ -28,7 +28,7 @@ def test_compiler_identity_covers_only_the_commit_runtime_boundary() -> None:
     paths = set(_POSTCONFIRM_RUNTIME_SOURCE_FILES)
 
     assert PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION == (
-        "odylith.greenfield.compiler_identity.v15"
+        "odylith.greenfield.compiler_identity.v16"
     )
     assert build_product_create_transaction_compiler_identity()["version"] == (
         PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION
