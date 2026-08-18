@@ -227,6 +227,12 @@ def test_supporting_dependency_boundary_needs_no_invented_result_ownership() -> 
         for row in backlog
         if row["component_focus"] == ["signal-source-reader"]
     )
+    assert {
+        row["opportunity"] for row in backlog
+    } == {"Deliver only the accepted graph."}
+    assert supporting_workstream["recommended_first_slice"].endswith(
+        "Read the source without mutating it."
+    )
     supporting_descriptions = [
         component["description"]
         for diagram in diagrams

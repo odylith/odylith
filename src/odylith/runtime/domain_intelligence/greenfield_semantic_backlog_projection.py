@@ -54,6 +54,7 @@ def semantic_backlog_rows(
                 workstream=workstream,
                 component=components[component_id],
                 customer=customer,
+                opportunity=opportunity,
                 success_metrics=success_metrics,
                 diagram_slugs=plan.diagram_slugs,
             )
@@ -100,6 +101,7 @@ def _component_row(
     workstream: SemanticWorkstreamPlan,
     component: Mapping[str, Any],
     customer: str,
+    opportunity: str,
     success_metrics: Sequence[str],
     diagram_slugs: Mapping[str, str],
 ) -> dict[str, Any]:
@@ -134,7 +136,7 @@ def _component_row(
         title=workstream.title,
         problem=f"{label} must fulfill its sealed responsibility without absorbing adjacent component scope.",
         customer=customer,
-        opportunity=responsibility,
+        opportunity=opportunity,
         product_view=f"{label} owns this release responsibility: {responsibility}",
         success_metrics=component_metrics,
         first_slice=responsibility,

@@ -1,11 +1,12 @@
 # Bug Index
 
-Last updated (UTC): 2026-08-17
+Last updated (UTC): 2026-08-18
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-331 | 2026-08-18 | Greenfield component workstream conflates technical responsibility with product | P2 | domain-intelligence | Open | [2026-08-18-greenfield-component-workstream-conflates-technical-responsibility-with-product-.md](2026-08-18-greenfield-component-workstream-conflates-technical-responsibility-with-product-.md) |
 | CB-329 | 2026-08-17 | Greenfield treats a missing proper name as a material product ambiguity | P1 | domain-intelligence | Open | [2026-08-17-greenfield-treats-a-missing-proper-name-as-a-material-product-ambiguity.md](2026-08-17-greenfield-treats-a-missing-proper-name-as-a-material-product-ambiguity.md) |
 | CB-330 | 2026-08-17 | Greenfield release evidence was stored in ephemeral temporary storage | P1 | release | Open | [2026-08-17-greenfield-release-evidence-was-stored-in-ephemeral-temporary-storage.md](2026-08-17-greenfield-release-evidence-was-stored-in-ephemeral-temporary-storage.md) |
 | CB-326 | 2026-08-16 | Greenfield leakage baseline misses native supplemental source candidates | P1 | release | Open | [2026-08-16-greenfield-leakage-baseline-misses-native-supplemental-source-candidates.md](2026-08-16-greenfield-leakage-baseline-misses-native-supplemental-source-candidates.md) |
