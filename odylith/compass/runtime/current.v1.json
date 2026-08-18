@@ -219,13 +219,16 @@
         "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-030": [
-        "Brief is waiting on Codex CLI budget: Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff."
+        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-031": [
-        "Brief is waiting on Codex CLI budget: Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff."
+        "Completed in this window: The first-turn bootstrap and short-form grounding commands closed cleanly in this window.",
+        "Current execution: The lane is completed, and the remaining value is in making the short-form grounding path stay simple and dependable for the first command on the path.",
+        "Next planned: Capture the next verified checkpoint for B-031.",
+        "Risks to watch: No critical blockers are currently surfaced, so the main risk is losing clean proof of the next step rather than hitting a known failure."
       ],
       "B-032": [
-        "Brief is waiting on Codex CLI budget: Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff."
+        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-034": [
         "Nothing moved in this window: B-034 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -261,7 +264,7 @@
         "Nothing moved in this window: B-047 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-049": [
-        "Brief is waiting on Codex CLI budget: Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff."
+        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-050": [
         "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
@@ -710,16 +713,16 @@
         "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-051": [
-        "Brief is waiting on Codex CLI budget: Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff."
+        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-052": [
-        "Brief is waiting on Codex CLI budget: Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff."
+        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-053": [
-        "Brief is waiting on Codex CLI budget: Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff."
+        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-054": [
-        "Brief is waiting on Codex CLI budget: Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff."
+        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-055": [
         "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
@@ -2439,68 +2442,166 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "e061bfb21826551c6d851d0e77ae04410c15e1b1ddfe7ed9cafb4a1962eab3ac",
-        "substrate_fingerprint": "e061bfb21826551c6d851d0e77ae04410c15e1b1ddfe7ed9cafb4a1962eab3ac",
+        "fingerprint": "",
+        "substrate_fingerprint": "",
         "bundle_fingerprint": "",
-        "provider_decision": "credits_exhausted",
+        "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-18T14:14:14Z",
         "sections": [],
         "diagnostics": {
-          "reason": "credits_exhausted",
-          "title": "Brief is waiting on Codex CLI budget",
-          "message": "Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff.",
-          "provider": "codex-cli",
-          "provider_failure_code": "credits_exhausted",
-          "provider_failure_detail": "2026-08-18T14:14:17.251873Z WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back 2026-08 ... 47 PM. ERROR: You've hit your usage limit for GPT-5.3-Codex-Spark. Switch to another model now, or try again at Aug 20th, 2026 4:47 PM.",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+          "reason": "skipped_not_worth_calling",
+          "title": "Brief reused last validated narration",
+          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
+          "provider_decision": "skipped_not_worth_calling",
+          "skip_reason": "deferred_to_background"
         },
         "evidence_lookup": {}
       },
       "B-031": {
         "schema_version": "v25",
-        "status": "unavailable",
-        "source": "unavailable",
+        "status": "ready",
+        "source": "provider",
         "fingerprint": "a776b015daa9fd7ebeea8d992c40a72cb55314125cf0563d9d2539c06c7dcbe4",
-        "substrate_fingerprint": "a776b015daa9fd7ebeea8d992c40a72cb55314125cf0563d9d2539c06c7dcbe4",
-        "bundle_fingerprint": "",
-        "provider_decision": "credits_exhausted",
-        "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-18T14:14:14Z",
-        "sections": [],
-        "diagnostics": {
-          "reason": "credits_exhausted",
-          "title": "Brief is waiting on Codex CLI budget",
-          "message": "Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff.",
-          "provider": "codex-cli",
-          "provider_failure_code": "credits_exhausted",
-          "provider_failure_detail": "2026-08-18T14:14:17.251873Z WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back 2026-08 ... 47 PM. ERROR: You've hit your usage limit for GPT-5.3-Codex-Spark. Switch to another model now, or try again at Aug 20th, 2026 4:47 PM.",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+        "sections": [
+          {
+            "key": "completed",
+            "label": "Completed in this window",
+            "bullets": [
+              {
+                "text": "The first-turn bootstrap and short-form grounding commands closed cleanly in this window.",
+                "fact_ids": [
+                  "F-001"
+                ]
+              }
+            ]
+          },
+          {
+            "key": "current_execution",
+            "label": "Current execution",
+            "bullets": [
+              {
+                "text": "The lane is completed, and the remaining value is in making the short-form grounding path stay simple and dependable for the first command on the path.",
+                "fact_ids": [
+                  "F-004"
+                ]
+              }
+            ]
+          },
+          {
+            "key": "next_planned",
+            "label": "Next planned",
+            "bullets": [
+              {
+                "text": "Capture the next verified checkpoint for B-031.",
+                "fact_ids": [
+                  "F-007"
+                ]
+              }
+            ]
+          },
+          {
+            "key": "risks_to_watch",
+            "label": "Risks to watch",
+            "bullets": [
+              {
+                "text": "No critical blockers are currently surfaced, so the main risk is losing clean proof of the next step rather than hitting a known failure.",
+                "fact_ids": [
+                  "F-008"
+                ]
+              }
+            ]
+          }
+        ],
+        "evidence_lookup": {
+          "F-001": {
+            "text": "Closed cleanly in this window: odylith first turn bootstrap and short form grounding commands.",
+            "section_key": "completed",
+            "kind": "plan_completion",
+            "workstreams": [
+              "B-031"
+            ]
+          },
+          "F-002": {
+            "text": "Replace Greenfield prose inference with source candidate adjudication.",
+            "section_key": "completed",
+            "kind": "execution_highlight",
+            "workstreams": [
+              "B-031"
+            ]
+          },
+          "F-003": {
+            "text": "Workstream lineage split update across 14 workstreams.",
+            "section_key": "completed",
+            "kind": "execution_highlight",
+            "workstreams": [
+              "B-031"
+            ]
+          },
+          "F-004": {
+            "text": "Add first-class short-form top-level grounding commands backed by the existing Context Engine, starting with `odylith bootstrap` and related; First-Turn Bootstrap and Short-Form Grounding Commands (B-031) is completed.",
+            "section_key": "current_execution",
+            "kind": "direction",
+            "workstreams": [
+              "B-031"
+            ]
+          },
+          "F-005": {
+            "text": "Checklist is 55/55; execution checklist closure is complete for the scoped plan.",
+            "section_key": "current_execution",
+            "kind": "checklist",
+            "workstreams": [
+              "B-031"
+            ]
+          },
+          "F-006": {
+            "text": "ETA is projected at roughly 0 days (high confidence).",
+            "section_key": "current_execution",
+            "kind": "timeline",
+            "workstreams": [
+              "B-031"
+            ]
+          },
+          "F-007": {
+            "text": "Immediate forcing function is to capture the next verified checkpoint for First-Turn Bootstrap and Short-Form Grounding Commands (B-031).",
+            "section_key": "next_planned",
+            "kind": "fallback_next",
+            "workstreams": [
+              "B-031"
+            ]
+          },
+          "F-008": {
+            "text": "No critical blockers are currently surfaced.",
+            "section_key": "risks_to_watch",
+            "kind": "risk_posture",
+            "workstreams": [
+              "B-031"
+            ]
+          }
         },
-        "evidence_lookup": {}
+        "substrate_fingerprint": "a776b015daa9fd7ebeea8d992c40a72cb55314125cf0563d9d2539c06c7dcbe4",
+        "bundle_fingerprint": "445bb8d9533633436c44d3282c90fb4de0f5f878e0bafa85c271821854c2c3d2",
+        "provider_decision": "provider_called",
+        "last_successful_narration_fingerprint": "a776b015daa9fd7ebeea8d992c40a72cb55314125cf0563d9d2539c06c7dcbe4"
       },
       "B-032": {
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "94a168a57ffc5fb95826272aff4481d71c69a8ed4bac8a28e9b8d4fcd810a438",
-        "substrate_fingerprint": "94a168a57ffc5fb95826272aff4481d71c69a8ed4bac8a28e9b8d4fcd810a438",
+        "fingerprint": "",
+        "substrate_fingerprint": "",
         "bundle_fingerprint": "",
-        "provider_decision": "credits_exhausted",
+        "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-18T14:14:14Z",
         "sections": [],
         "diagnostics": {
-          "reason": "credits_exhausted",
-          "title": "Brief is waiting on Codex CLI budget",
-          "message": "Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff.",
-          "provider": "codex-cli",
-          "provider_failure_code": "credits_exhausted",
-          "provider_failure_detail": "2026-08-18T14:14:17.251873Z WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back 2026-08 ... 47 PM. ERROR: You've hit your usage limit for GPT-5.3-Codex-Spark. Switch to another model now, or try again at Aug 20th, 2026 4:47 PM.",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+          "reason": "skipped_not_worth_calling",
+          "title": "Brief reused last validated narration",
+          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
+          "provider_decision": "skipped_not_worth_calling",
+          "skip_reason": "deferred_to_background"
         },
         "evidence_lookup": {}
       },
@@ -2651,22 +2752,19 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "902bafcca514c1e9c1b95e62c149fbf0a05636f4dab1adf895d898d8ac140f39",
-        "substrate_fingerprint": "902bafcca514c1e9c1b95e62c149fbf0a05636f4dab1adf895d898d8ac140f39",
+        "fingerprint": "",
+        "substrate_fingerprint": "",
         "bundle_fingerprint": "",
-        "provider_decision": "credits_exhausted",
+        "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-18T14:14:14Z",
         "sections": [],
         "diagnostics": {
-          "reason": "credits_exhausted",
-          "title": "Brief is waiting on Codex CLI budget",
-          "message": "Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff.",
-          "provider": "codex-cli",
-          "provider_failure_code": "credits_exhausted",
-          "provider_failure_detail": "2026-08-18T14:14:17.251873Z WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back 2026-08 ... 47 PM. ERROR: You've hit your usage limit for GPT-5.3-Codex-Spark. Switch to another model now, or try again at Aug 20th, 2026 4:47 PM.",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+          "reason": "skipped_not_worth_calling",
+          "title": "Brief reused last validated narration",
+          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
+          "provider_decision": "skipped_not_worth_calling",
+          "skip_reason": "deferred_to_background"
         },
         "evidence_lookup": {}
       },
@@ -5693,22 +5791,19 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "26fa105a36393c0ccf9a73db13bedd3e7e6b7685408e5c7e7b31492c2798bf0b",
-        "substrate_fingerprint": "26fa105a36393c0ccf9a73db13bedd3e7e6b7685408e5c7e7b31492c2798bf0b",
+        "fingerprint": "",
+        "substrate_fingerprint": "",
         "bundle_fingerprint": "",
-        "provider_decision": "credits_exhausted",
+        "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-18T14:14:14Z",
         "sections": [],
         "diagnostics": {
-          "reason": "credits_exhausted",
-          "title": "Brief is waiting on Codex CLI budget",
-          "message": "Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff.",
-          "provider": "codex-cli",
-          "provider_failure_code": "credits_exhausted",
-          "provider_failure_detail": "2026-08-18T14:14:17.251873Z WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back 2026-08 ... 47 PM. ERROR: You've hit your usage limit for GPT-5.3-Codex-Spark. Switch to another model now, or try again at Aug 20th, 2026 4:47 PM.",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+          "reason": "skipped_not_worth_calling",
+          "title": "Brief reused last validated narration",
+          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
+          "provider_decision": "skipped_not_worth_calling",
+          "skip_reason": "deferred_to_background"
         },
         "evidence_lookup": {}
       },
@@ -5716,22 +5811,19 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "b3bc36c68246b95f48bff4c33f49482ea420f739d7cb924ff4b62ded007992b5",
-        "substrate_fingerprint": "b3bc36c68246b95f48bff4c33f49482ea420f739d7cb924ff4b62ded007992b5",
+        "fingerprint": "",
+        "substrate_fingerprint": "",
         "bundle_fingerprint": "",
-        "provider_decision": "credits_exhausted",
+        "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-18T14:14:14Z",
         "sections": [],
         "diagnostics": {
-          "reason": "credits_exhausted",
-          "title": "Brief is waiting on Codex CLI budget",
-          "message": "Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff.",
-          "provider": "codex-cli",
-          "provider_failure_code": "credits_exhausted",
-          "provider_failure_detail": "2026-08-18T14:14:17.251873Z WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back 2026-08 ... 47 PM. ERROR: You've hit your usage limit for GPT-5.3-Codex-Spark. Switch to another model now, or try again at Aug 20th, 2026 4:47 PM.",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+          "reason": "skipped_not_worth_calling",
+          "title": "Brief reused last validated narration",
+          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
+          "provider_decision": "skipped_not_worth_calling",
+          "skip_reason": "deferred_to_background"
         },
         "evidence_lookup": {}
       },
@@ -5739,22 +5831,19 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "273f64d8811933948f33efaefb29e3e73c7d3cbad6636323b5227125cf519bf6",
-        "substrate_fingerprint": "273f64d8811933948f33efaefb29e3e73c7d3cbad6636323b5227125cf519bf6",
+        "fingerprint": "",
+        "substrate_fingerprint": "",
         "bundle_fingerprint": "",
-        "provider_decision": "credits_exhausted",
+        "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-18T14:14:14Z",
         "sections": [],
         "diagnostics": {
-          "reason": "credits_exhausted",
-          "title": "Brief is waiting on Codex CLI budget",
-          "message": "Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff.",
-          "provider": "codex-cli",
-          "provider_failure_code": "credits_exhausted",
-          "provider_failure_detail": "2026-08-18T14:14:17.251873Z WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back 2026-08 ... 47 PM. ERROR: You've hit your usage limit for GPT-5.3-Codex-Spark. Switch to another model now, or try again at Aug 20th, 2026 4:47 PM.",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+          "reason": "skipped_not_worth_calling",
+          "title": "Brief reused last validated narration",
+          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
+          "provider_decision": "skipped_not_worth_calling",
+          "skip_reason": "deferred_to_background"
         },
         "evidence_lookup": {}
       },
@@ -5762,22 +5851,19 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "aebc80cb6dfcfe1e17261cf064405f6a2dec755621137bbfd5834ade459f8641",
-        "substrate_fingerprint": "aebc80cb6dfcfe1e17261cf064405f6a2dec755621137bbfd5834ade459f8641",
+        "fingerprint": "",
+        "substrate_fingerprint": "",
         "bundle_fingerprint": "",
-        "provider_decision": "credits_exhausted",
+        "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-18T14:14:14Z",
         "sections": [],
         "diagnostics": {
-          "reason": "credits_exhausted",
-          "title": "Brief is waiting on Codex CLI budget",
-          "message": "Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff.",
-          "provider": "codex-cli",
-          "provider_failure_code": "credits_exhausted",
-          "provider_failure_detail": "2026-08-18T14:14:17.251873Z WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back 2026-08 ... 47 PM. ERROR: You've hit your usage limit for GPT-5.3-Codex-Spark. Switch to another model now, or try again at Aug 20th, 2026 4:47 PM.",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+          "reason": "skipped_not_worth_calling",
+          "title": "Brief reused last validated narration",
+          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
+          "provider_decision": "skipped_not_worth_calling",
+          "skip_reason": "deferred_to_background"
         },
         "evidence_lookup": {}
       },
