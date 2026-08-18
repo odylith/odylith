@@ -61,7 +61,7 @@ supersedes:
 superseded_by:
 
 ## Problem
-The v0.1.15 release changes managed guidance, operator CLI presentation contracts, browser-rendered governance surfaces, and install-managed assets. Existing consumer installs need an explicit assessment before promotion. The current graph-native cutover is bound to these exact evidence markers: `migration-observer:0.1.15:guidance-and-skills:d4f690f22f7e`; `migration-observer:0.1.15:operator-cli-contracts:00f2ed299d15`; `migration-observer:0.1.15:browser-surfaces:5630641b37af`; `migration-observer:0.1.15:install-managed-assets:32bd860ec2a6`.
+The v0.1.15 release changes managed guidance, operator CLI presentation contracts, browser-rendered governance surfaces, and install-managed assets. Existing consumer installs need an explicit assessment before promotion. The current graph-native cutover is bound to these exact evidence markers: `migration-observer:0.1.15:guidance-and-skills:d4f690f22f7e`; `migration-observer:0.1.15:operator-cli-contracts:00f2ed299d15`; `migration-observer:0.1.15:browser-surfaces:5630641b37af`; `migration-observer:0.1.15:browser-surfaces:9522d10cbd25`; `migration-observer:0.1.15:install-managed-assets:32bd860ec2a6`; `migration-observer:0.1.15:install-managed-assets:959262f6cd6a`. The additional markers cover the additive CB-347 failure record, its candidate-adjudication mechanism evidence, and the corresponding rendered Casebook bundle. They change no installed browser schema and rewrite no consumer-owned governance source; ordinary surface and managed-asset refresh remains sufficient.
 
 ## Customer
 Odylith operators upgrading managed guidance, skill, Atlas, and Casebook browser surfaces.

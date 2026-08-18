@@ -238,6 +238,45 @@ def test_provider_schema_is_candidate_bound_and_has_no_text_rewrite_surface() ->
     assert "regex_or_token_role_inference" in contract["forbidden"]
 
 
+def test_provider_schema_exposes_only_fold_pairs_that_deterministic_custody_accepts() -> None:
+    schema = semantic_source_candidate_adjudication_schema(_claims())
+    variants = schema["properties"]["workflow_decisions"]["items"]["anyOf"]
+    result_pairs = {
+        (
+            row["properties"]["fact_id"]["enum"][0],
+            target_id,
+        )
+        for row in variants
+        if row["properties"]["decision"]["enum"] == ["fold_into_visible_result"]
+        for target_id in row["properties"]["target_fact_id"]["enum"]
+    }
+
+    assert result_pairs == {("see", "receipt")}
+
+
+def test_provider_schema_removes_fold_choice_that_would_discard_material_relation() -> None:
+    source = _claims()
+    source["relations"].append(
+        {
+            "fields": ["first_path", "state_object"],
+            "relation": _relation("see-state", "changes", "see", "state", 1, _RESULT_QUOTE),
+        }
+    )
+    schema = semantic_source_candidate_adjudication_schema(source)
+    variants = schema["properties"]["workflow_decisions"]["items"]["anyOf"]
+    result_pairs = {
+        (
+            row["properties"]["fact_id"]["enum"][0],
+            target_id,
+        )
+        for row in variants
+        if row["properties"]["decision"]["enum"] == ["fold_into_visible_result"]
+        for target_id in row["properties"]["target_fact_id"]["enum"]
+    }
+
+    assert ("see", "receipt") not in result_pairs
+
+
 def test_generic_packet_schema_allows_a_first_path_clarification_without_candidates() -> None:
     schema = semantic_source_candidate_adjudication_schema()
     assert schema["properties"]["workflow_decisions"]["minItems"] == 0

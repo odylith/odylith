@@ -1,4 +1,4 @@
-"""Parser-free v15 Semantic Intent authority and sealed-byte checks."""
+"""Parser-free v16 Semantic Intent authority and sealed-byte checks."""
 
 from __future__ import annotations
 
@@ -39,7 +39,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_candidate_ad
 
 
 PRODUCT_INTENT_AUTHORITY_KEY = "product_intent_authority"
-PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v15"
+PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v16"
 _SEMANTIC_AUTHORITY_FIELDS = frozenset(
     {
         "version",

@@ -4183,3 +4183,22 @@ above.
       re-evaluate retained evidence, rebuild the exact distribution, and rerun
       the full disclosed campaign from case one. The authorized replacement
       holdout remains sealed and unexecuted.
+    - 2026-08-18 candidate-adjudication mechanism correction: the first fresh
+      development cohort stopped at `gfhi-003` because the public author schema
+      exposed a Cartesian workflow-to-state/output fold choice that the
+      deterministic custody verifier could never accept. CB-347 records the
+      failed mechanism. The replacement moves fold eligibility into one typed
+      owner shared by provider schema construction and deterministic
+      validation; invalid folds are now unrepresentable, while independent
+      material relations remain separately custodied. No regex, vocabulary
+      table, prompt retry, or verifier weakening was added. Protocol identities
+      advanced to authoring request v14, packet v10, authority v16, and compiler
+      identity v15 so stale evidence cannot cross the mechanism boundary.
+      Focused migration proof passed `115/115`; the complete `4,404`-node test
+      inventory is behavior-green through the deterministic resumed frontier
+      and exact failure-node rechecks; compilation, license, migration,
+      governance, Registry, guidance-portability, version-truth, and all `47`
+      Atlas freshness gates pass. Next: commit these exact bytes, generate a new
+      deterministic-law report and development plan bound to that commit, then
+      restart the independent cohort from case one. Old cohort segments are
+      historical failed-plan evidence only and must not be reused.

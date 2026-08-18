@@ -55,15 +55,15 @@ def _semantic_case(module):  # noqa: ANN001
 def _semantic_authority(case, *, semantic_intent=None, evidence_sha256=None):  # noqa: ANN001
     packet = case.packet
     return {
-        "version": "odylith.product-intent-authority.v15",
+        "version": "odylith.product-intent-authority.v16",
         "origin": "verified_semantic_intent_packet",
         "source_format": "semantic_intent_packet",
         "product_facts_sha256": "c" * 64,
         "evidence_sha256": evidence_sha256 or packet["evidence_sha256"],
-        "semantic_intent_packet_version": "odylith.greenfield.semantic-intent-packet.v9",
+        "semantic_intent_packet_version": "odylith.greenfield.semantic-intent-packet.v10",
         "semantic_intent_ir_version": "odylith.greenfield.semantic-intent-ir.v5",
         "semantic_intent_authoring_request_version": (
-            "odylith.greenfield.semantic-intent-authoring-request.v13"
+            "odylith.greenfield.semantic-intent-authoring-request.v14"
         ),
         "semantic_intent_authoring_contract_sha256": packet[
             "authoring_contract_sha256"

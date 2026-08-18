@@ -1,11 +1,11 @@
 {
-  "case_id": "claim-desk-installed-smoke-v9",
+  "case_id": "claim-desk-installed-smoke-v10",
   "packet": {
     "author_run": {
       "author_run_id": "fixture-semantic-author-run",
       "capability_profile": "frontier_semantic_reasoning"
     },
-    "authoring_contract_sha256": "df04c15116753e34d6bea57226bf73500c0f6f57df5cd40794794745c45a32a5",
+    "authoring_contract_sha256": "c96a24188858d86423f049777c3e7c1ca7e132bea9b998538997151d83ec431e",
     "critic_run": {
       "capability_profile": "frontier_semantic_reasoning",
       "critic_run_id": "fixture-materiality-critic-run",
@@ -15,7 +15,7 @@
     "evidence_sha256": "1aab6c40c0a403aefb41b735b49a116bca24734cc06f16ae854a12d8badb3462",
     "materiality_assessment": {
       "assessment_basis": "prompt_only_pre_graph",
-      "authoring_contract_sha256": "df04c15116753e34d6bea57226bf73500c0f6f57df5cd40794794745c45a32a5",
+      "authoring_contract_sha256": "c96a24188858d86423f049777c3e7c1ca7e132bea9b998538997151d83ec431e",
       "clarification": {
         "alternatives": [],
         "field": "",
@@ -502,7 +502,7 @@
       },
       "version": "odylith.greenfield.semantic-materiality-assessment.v7"
     },
-    "materiality_assessment_sha256": "d26c9997316240892be77122586244b9a9d1f29191870c3cf2dbb239e61d6d3d",
+    "materiality_assessment_sha256": "7ea7c45e2815f8758b5128f21326a4abe1d82d4e24ae24c1dbafc3b3984499ac",
     "semantic_intent": {
       "clarification": {
         "fields": [],
@@ -1160,7 +1160,7 @@
         }
       ]
     },
-    "version": "odylith.greenfield.semantic-intent-packet.v9"
+    "version": "odylith.greenfield.semantic-intent-packet.v10"
   },
   "platform_custody_sentinels": [
     "Claim Desk",

@@ -344,7 +344,7 @@ _ANNOTATION_CATEGORIES = (
 def _evidence(tmp_path: Path) -> dict:
     tmp_path.mkdir(parents=True, exist_ok=True)
     fixture = json.loads(
-        (SCRIPTS_ROOT / "fixtures" / "greenfield-semantic-smoke.v9.json").read_text(
+        (SCRIPTS_ROOT / "fixtures" / "greenfield-semantic-smoke.v10.json").read_text(
             encoding="utf-8"
         )
     )

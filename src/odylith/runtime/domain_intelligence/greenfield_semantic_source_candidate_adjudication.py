@@ -75,6 +75,7 @@ def semantic_source_candidate_adjudication_schema(
     """Return a provider schema limited to existing workflow candidate ids."""
 
     facts = _fact_index(source_candidates) if source_candidates is not None else {}
+    relations = _relation_rows(source_candidates) if source_candidates is not None else []
     workflow_ids = sorted(
         fact_id for fact_id, fact in facts.items() if fact.get("kind") == "workflow_step"
     )
@@ -84,32 +85,75 @@ def semantic_source_candidate_adjudication_schema(
     state_ids = sorted(
         fact_id for fact_id, fact in facts.items() if fact.get("kind") == "state_object"
     )
-    variants: list[dict[str, Any]] = [
-        _decision_schema(
-            workflow_ids,
-            decision="retain_material_action",
-            extra_name="material_effect",
-            values=list(SEMANTIC_MATERIAL_EFFECTS),
+    variants: list[dict[str, Any]] = []
+    if source_candidates is None:
+        variants.append(
+            _decision_schema(
+                workflow_ids,
+                decision="retain_material_action",
+                extra_name="material_effect",
+                values=list(SEMANTIC_MATERIAL_EFFECTS),
+            )
         )
-    ]
-    if output_ids or source_candidates is None:
         variants.append(
             _decision_schema(
                 workflow_ids,
                 decision="fold_into_visible_result",
                 extra_name="target_fact_id",
-                values=output_ids or None,
+                values=None,
             )
         )
-    if state_ids or source_candidates is None:
         variants.append(
             _decision_schema(
                 workflow_ids,
                 decision="fold_into_state_object",
                 extra_name="target_fact_id",
-                values=state_ids or None,
+                values=None,
             )
         )
+    else:
+        for fact_id in workflow_ids:
+            variants.append(
+                _decision_schema(
+                    [fact_id],
+                    decision="retain_material_action",
+                    extra_name="material_effect",
+                    values=list(SEMANTIC_MATERIAL_EFFECTS),
+                )
+            )
+            for decision, target_ids in (
+                ("fold_into_visible_result", output_ids),
+                ("fold_into_state_object", state_ids),
+            ):
+                eligible = [
+                    target_id
+                    for target_id in target_ids
+                    if _fold_custody_error(
+                        fact_id=fact_id,
+                        target_id=target_id,
+                        facts=facts,
+                        relations=relations,
+                    )
+                    is None
+                ]
+                if eligible:
+                    variants.append(
+                        _decision_schema(
+                            [fact_id],
+                            decision=decision,
+                            extra_name="target_fact_id",
+                            values=eligible,
+                        )
+                    )
+        if not variants:
+            variants.append(
+                _decision_schema(
+                    workflow_ids,
+                    decision="retain_material_action",
+                    extra_name="material_effect",
+                    values=list(SEMANTIC_MATERIAL_EFFECTS),
+                )
+            )
     return {
         "type": "object",
         "additionalProperties": False,
@@ -265,15 +309,33 @@ def _require_fold_custody(
     facts: Mapping[str, Mapping[str, Any]],
     relations: Sequence[Mapping[str, Any]],
 ) -> None:
+    error = _fold_custody_error(
+        fact_id=fact_id,
+        target_id=target_id,
+        facts=facts,
+        relations=relations,
+    )
+    if error is not None:
+        raise ValueError(error)
+
+
+def _fold_custody_error(
+    *,
+    fact_id: str,
+    target_id: str,
+    facts: Mapping[str, Mapping[str, Any]],
+    relations: Sequence[Mapping[str, Any]],
+) -> str | None:
     candidate_refs = facts[fact_id].get("source_refs", ())
     target_refs = facts[target_id].get("source_refs", ())
     if not any(ref in target_refs for ref in candidate_refs):
-        raise ValueError("Semantic workflow fold lacks shared exact source custody")
+        return "Semantic workflow fold lacks shared exact source custody"
     for relation in relations:
         if relation.get("subject_id") != fact_id or relation.get("kind") not in _MATERIAL_RELATIONS:
             continue
         if relation.get("object_id") != target_id:
-            raise ValueError("Semantic workflow fold would discard an independent material relation")
+            return "Semantic workflow fold would discard an independent material relation"
+    return None
 
 
 def _fact_index(source_candidates: Mapping[str, Any]) -> dict[str, Mapping[str, Any]]:
