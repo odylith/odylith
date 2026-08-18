@@ -5,7 +5,7 @@
       "author_run_id": "fixture-semantic-author-run",
       "capability_profile": "frontier_semantic_reasoning"
     },
-    "authoring_contract_sha256": "44ca946ea2785117bddb094bfd6d819ba514c59c494fc72f91cf330ee2706820",
+    "authoring_contract_sha256": "6f5934d258b7b6cfbde9c795b137e29c5a66da6eea7e0ea2903bac6aa258a58d",
     "critic_run": {
       "capability_profile": "frontier_semantic_reasoning",
       "critic_run_id": "fixture-materiality-critic-run",
@@ -15,7 +15,7 @@
     "evidence_sha256": "1aab6c40c0a403aefb41b735b49a116bca24734cc06f16ae854a12d8badb3462",
     "materiality_assessment": {
       "assessment_basis": "prompt_only_pre_graph",
-      "authoring_contract_sha256": "44ca946ea2785117bddb094bfd6d819ba514c59c494fc72f91cf330ee2706820",
+      "authoring_contract_sha256": "6f5934d258b7b6cfbde9c795b137e29c5a66da6eea7e0ea2903bac6aa258a58d",
       "clarification": {
         "alternatives": [],
         "field": "",
@@ -139,9 +139,9 @@
           "status": "source_entailable"
         }
       ],
-      "version": "odylith.greenfield.semantic-materiality-assessment.v4"
+      "version": "odylith.greenfield.semantic-materiality-assessment.v5"
     },
-    "materiality_assessment_sha256": "851115086791b92f65c5191de542f44f6447cb0db6d2a7f6f1d861c166804c82",
+    "materiality_assessment_sha256": "97e39140062ebdaa0129de00885bbfb5cee3b547f858a2f676ace7d9e55b669d",
     "semantic_intent": {
       "clarification": {
         "fields": [],
@@ -772,7 +772,7 @@
       "status": "complete",
       "version": "odylith.greenfield.semantic-intent-ir.v4"
     },
-    "version": "odylith.greenfield.semantic-intent-packet.v6"
+    "version": "odylith.greenfield.semantic-intent-packet.v7"
   },
   "platform_custody_sentinels": [
     "Claim Desk",

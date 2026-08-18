@@ -54,15 +54,15 @@ def _semantic_case(module):  # noqa: ANN001
 def _semantic_authority(case, *, semantic_intent=None, evidence_sha256=None):  # noqa: ANN001
     packet = case.packet
     return {
-        "version": "odylith.product-intent-authority.v12",
+        "version": "odylith.product-intent-authority.v13",
         "origin": "verified_semantic_intent_packet",
         "source_format": "semantic_intent_packet",
         "product_facts_sha256": "c" * 64,
         "evidence_sha256": evidence_sha256 or packet["evidence_sha256"],
-        "semantic_intent_packet_version": "odylith.greenfield.semantic-intent-packet.v6",
+        "semantic_intent_packet_version": "odylith.greenfield.semantic-intent-packet.v7",
         "semantic_intent_ir_version": "odylith.greenfield.semantic-intent-ir.v4",
         "semantic_intent_authoring_request_version": (
-            "odylith.greenfield.semantic-intent-authoring-request.v10"
+            "odylith.greenfield.semantic-intent-authoring-request.v11"
         ),
         "semantic_intent_authoring_contract_sha256": packet[
             "authoring_contract_sha256"
@@ -517,7 +517,7 @@ def test_recovery_proof_payload_is_a_falsifiable_release_record() -> None:
     assert proof.to_dict() == {
         "status": "passed",
         "scope": "real_installed_additive_write_sigkill_recovery_conflict_same_hash_retry_and_fsync_rollback",
-        "recovery_case_scope": "semantic-intent-v6-release-fixture",
+        "recovery_case_scope": "semantic-intent-v7-release-fixture",
         "issues": [],
         "sigkill_returncode": -9,
         "recovery_returncode": 0,
@@ -742,7 +742,7 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
     assert "installed recovery phases did not retain the same sealed Product Intent facts hash" in mismatch.issues
     assert all(captured is case for captured in captured_cases)
     assert proof.recovery_case["id"] == case.case_id
-    assert proof.recovery_case["binding_scope"] == "semantic-intent-v6-release-fixture"
+    assert proof.recovery_case["binding_scope"] == "semantic-intent-v7-release-fixture"
 
 
 def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(tmp_path: Path, monkeypatch) -> None:

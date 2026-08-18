@@ -16,7 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_host_profiles impor
     supported_host_profiles,
 )
 
-GREENFIELD_OPERATING_ENVELOPE_VERSION = "odylith.greenfield-operating-envelope.v6"
+GREENFIELD_OPERATING_ENVELOPE_VERSION = "odylith.greenfield-operating-envelope.v7"
 GREENFIELD_OPERATING_PROFILE = "single-product-governance-onboarding"
 
 SUPPORTED_EVIDENCE_FORMATS = frozenset({"semantic_intent_packet"})

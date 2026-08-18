@@ -24,7 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contrac
 
 
 SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION = (
-    "odylith.greenfield.semantic-intent-authoring-request.v10"
+    "odylith.greenfield.semantic-intent-authoring-request.v11"
 )
 SEMANTIC_INTENT_MANDATORY_CHALLENGES = (
     "unsupported_addition",
@@ -70,7 +70,9 @@ def semantic_intent_authoring_protocol() -> dict[str, Any]:
             "role": (
                 "the target user or accountable human or organizational participant; an empty "
                 "actor graph is settled only when evidence entails product or system ownership "
-                "without a human-facing interaction"
+                "without a human-facing interaction; a source statement that directly names an "
+                "actor performing a first-path action settles that role unless the source also "
+                "supplies conflicting ownership evidence"
             ),
             "first_path": (
                 "the complete ordered usable path from its accepted input or selection through "
@@ -105,6 +107,16 @@ def semantic_intent_authoring_protocol() -> dict[str, Any]:
                 "clarify identity only when competing product interpretations materially change "
                 "the product boundary, first path, or visible result; otherwise author a concise "
                 "functional identity as bounded interpretation and keep the assumption visible"
+            ),
+            (
+                "treat an explicit actor performing a first-path action as settled role evidence; "
+                "do not replace that actor with a hypothetical automated product or system unless "
+                "the source provides contradictory ownership evidence"
+            ),
+            (
+                "require every clarification alternative to be independently supported by source "
+                "evidence and materially distinct; never create a question from an unsupported "
+                "alternative"
             ),
             (
                 "do not use an internal transition, destination, lane membership, or successful "

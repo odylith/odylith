@@ -429,14 +429,14 @@ def test_authority_seals_assessment_hash_and_distinct_run_evidence() -> None:
         require_product_intent_authority_structure(tampered)
 
 
-def test_v10_request_requires_prompt_only_schema_constrained_independent_runs() -> None:
+def test_v11_request_requires_prompt_only_schema_constrained_independent_runs() -> None:
     request = semantic_intent_authoring_request(prompt=SEMANTIC_PROMPT)
     protocol = request["authoring_protocol"]
 
     assert SEMANTIC_INTENT_IR_VERSION.endswith(".v4")
-    assert SEMANTIC_INTENT_PACKET_VERSION.endswith(".v6")
-    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v10")
-    assert SEMANTIC_MATERIALITY_ASSESSMENT_VERSION.endswith(".v4")
+    assert SEMANTIC_INTENT_PACKET_VERSION.endswith(".v7")
+    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v11")
+    assert SEMANTIC_MATERIALITY_ASSESSMENT_VERSION.endswith(".v5")
     assert request["materiality_gate"]["order"] == "before_graph_authoring"
     assert request["materiality_gate"]["candidate_access"] == "forbidden"
     assert request["materiality_gate"]["structured_output"] == (
@@ -468,6 +468,9 @@ def test_v10_request_requires_prompt_only_schema_constrained_independent_runs() 
     assert protocol["semantic_kind_disambiguation"]["runtime_detection"] == "forbidden"
     assert "consumer can observe" in protocol["materiality_field_semantics"]["visible_result"]
     assert "human-facing interaction" in protocol["materiality_field_semantics"]["role"]
+    assert "directly names an actor performing" in protocol[
+        "materiality_field_semantics"
+    ]["role"]
     assert "missing name is a nonmaterial" in protocol["materiality_field_semantics"]["identity"]
     assert any(
         "missing proper name alone is not a material question" in rule
@@ -475,6 +478,14 @@ def test_v10_request_requires_prompt_only_schema_constrained_independent_runs() 
     )
     assert any(
         "competing product interpretations materially change" in rule
+        for rule in protocol["materiality_decision_rules"]
+    )
+    assert any(
+        "explicit actor performing a first-path action" in rule
+        for rule in protocol["materiality_decision_rules"]
+    )
+    assert any(
+        "every clarification alternative to be independently supported" in rule
         for rule in protocol["materiality_decision_rules"]
     )
     assert "critic-validated exact-byte citation catalog" in protocol[

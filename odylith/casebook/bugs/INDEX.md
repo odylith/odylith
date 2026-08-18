@@ -6,6 +6,7 @@ Last updated (UTC): 2026-08-18
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-332 | 2026-08-18 | Greenfield critic invents an automated-product alternative against an explicit actor | P2 | domain-intelligence | Open | [2026-08-18-greenfield-critic-invents-an-automated-product-alternative-against-an-explicit-a.md](2026-08-18-greenfield-critic-invents-an-automated-product-alternative-against-an-explicit-a.md) |
 | CB-331 | 2026-08-18 | Greenfield component workstream conflates technical responsibility with product | P2 | domain-intelligence | Open | [2026-08-18-greenfield-component-workstream-conflates-technical-responsibility-with-product-.md](2026-08-18-greenfield-component-workstream-conflates-technical-responsibility-with-product-.md) |
 | CB-329 | 2026-08-17 | Greenfield treats a missing proper name as a material product ambiguity | P1 | domain-intelligence | Open | [2026-08-17-greenfield-treats-a-missing-proper-name-as-a-material-product-ambiguity.md](2026-08-17-greenfield-treats-a-missing-proper-name-as-a-material-product-ambiguity.md) |
 | CB-330 | 2026-08-17 | Greenfield release evidence was stored in ephemeral temporary storage | P1 | release | Open | [2026-08-17-greenfield-release-evidence-was-stored-in-ephemeral-temporary-storage.md](2026-08-17-greenfield-release-evidence-was-stored-in-ephemeral-temporary-storage.md) |
