@@ -16,6 +16,7 @@ SCRIPTS_ROOT = REPO_ROOT / "scripts" / "release"
 if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
+from greenfield_semantic_development_cohort import EVIDENCE_REPOSITORY_NAME
 from greenfield_semantic_development_cohort import compile_development_candidate_bundle
 from greenfield_semantic_development_evidence import AUTHOR_SEGMENT_VERSION
 from greenfield_semantic_development_evidence import MECHANISM_EVIDENCE_VERSION
@@ -71,7 +72,7 @@ def test_development_cohort_compiles_exact_two_stage_evidence(
     row = bundle["cases"][0]
     assert set(row) == {
         "case_id", "prompt_sha256", "outcome", "semantic_artifact",
-        "mechanism_evidence", "transaction_proof",
+        "mechanism_evidence", "review_package", "transaction_proof",
     }
     assert row["semantic_artifact"]["version"] == SEMANTIC_INTENT_PACKET_VERSION
     mechanism = row["mechanism_evidence"]
@@ -99,6 +100,27 @@ def test_development_cohort_compiles_exact_two_stage_evidence(
     assert row["outcome"] == outcome
     expected_proof = "passed" if outcome == "commit" else "not_applicable"
     assert row["transaction_proof"]["status"] == expected_proof
+    if outcome == "commit":
+        assert canonical_sha256(row["review_package"]) == row["transaction_proof"][
+            "package_sha256"
+        ]
+        assert row["review_package"]["observed_source"]["repo_name"] == (
+            EVIDENCE_REPOSITORY_NAME
+        )
+    else:
+        assert row["review_package"] is None
+
+
+def test_development_cohort_review_package_is_reproducible(tmp_path: Path) -> None:
+    context = _context(tmp_path, outcome="commit")
+
+    first = _compile(context, output=tmp_path / "first-candidates.json")["cases"][0]
+    second = _compile(context, output=tmp_path / "second-candidates.json")["cases"][0]
+
+    assert first["review_package"] == second["review_package"]
+    assert first["transaction_proof"]["package_sha256"] == second["transaction_proof"][
+        "package_sha256"
+    ]
 
 
 def test_phase_inputs_are_exact_and_annotation_blind(tmp_path: Path) -> None:

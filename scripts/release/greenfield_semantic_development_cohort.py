@@ -50,6 +50,9 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_workflow import (
 )
 
 
+EVIDENCE_REPOSITORY_NAME = "greenfield-evidence-repository"
+
+
 def compile_development_candidate_bundle(
     *,
     corpus_path: Path,
@@ -59,7 +62,7 @@ def compile_development_candidate_bundle(
     implementation_revision: str,
     output_path: Path,
 ) -> dict[str, Any]:
-    """Validate isolated stage evidence and compile every graph exactly once."""
+    """Validate isolated stage evidence and preserve each exact review package."""
 
     revision = _git_revision(implementation_revision)
     corpus_file = safe_json_file(corpus_path, "development corpus")
@@ -252,7 +255,7 @@ def _compile_case(
     try:
         verified = require_semantic_intent_packet(packet, prompt=prompt)
         outcome = str(segment_row.get("outcome") or "")
-        transaction_proof = _transaction_proof(
+        transaction_proof, review_package = _transaction_proof(
             case_id=case_id,
             outcome=outcome,
             verified=verified,
@@ -291,6 +294,7 @@ def _compile_case(
         "outcome": outcome,
         "semantic_artifact": packet,
         "mechanism_evidence": mechanism_evidence,
+        "review_package": review_package,
         "transaction_proof": transaction_proof,
     }
 
@@ -302,13 +306,14 @@ def _transaction_proof(
     verified: Any,
     prompt: str,
     law_report_sha256: str,
-) -> dict[str, Any]:
+) -> tuple[dict[str, Any], dict[str, Any] | None]:
     if outcome == "commit":
         if verified.semantic_intent.get("status") != "complete":
             raise RuntimeError("commit outcome is clarification-bound")
         authority = semantic_intent_authority(verified, prompt=prompt)
         with tempfile.TemporaryDirectory(prefix=f"odylith-{case_id}-") as temporary:
-            root = Path(temporary)
+            root = Path(temporary) / EVIDENCE_REPOSITORY_NAME
+            root.mkdir()
             proposal = build_verified_semantic_proposal_for_repo(
                 repo_root=root,
                 authority=authority,
@@ -319,32 +324,49 @@ def _transaction_proof(
                 proposal=proposal,
                 release_selector="0.0.1",
             )
+            review_package = dict(transaction.proposal)
+        with tempfile.TemporaryDirectory(prefix=f"odylith-{case_id}-replay-") as temporary:
+            replay_root = Path(temporary) / EVIDENCE_REPOSITORY_NAME
+            replay_root.mkdir()
+            replay_package = build_verified_semantic_proposal_for_repo(
+                repo_root=replay_root,
+                authority=authority,
+                release_selector="0.0.1",
+            )
+        if canonical_sha256(review_package) != canonical_sha256(replay_package):
+            raise RuntimeError("graph-native package is not reproducible for independent review")
         summary = transaction.summary()
         if summary.get("verified") is not True or summary.get("quality_status") != "passed":
             raise RuntimeError("graph-native package is not verified and quality-approved")
-        return {
-            "status": "passed",
-            "transaction_sha256": str(transaction.transaction_hash),
-            "package_sha256": canonical_sha256(transaction.proposal),
-            "deterministic_law_failures": [],
-            "deterministic_law_evidence_sha256": law_report_sha256,
-            "post_confirm_semantic_calls": 0,
-            "sealed_readback_equal": True,
-            "rollback_recovery_passed": True,
-        }
+        return (
+            {
+                "status": "passed",
+                "transaction_sha256": str(transaction.transaction_hash),
+                "package_sha256": canonical_sha256(review_package),
+                "deterministic_law_failures": [],
+                "deterministic_law_evidence_sha256": law_report_sha256,
+                "post_confirm_semantic_calls": 0,
+                "sealed_readback_equal": True,
+                "rollback_recovery_passed": True,
+            },
+            review_package,
+        )
     if outcome == "clarify":
         if verified.semantic_intent.get("status") != "clarification_required":
             raise RuntimeError("clarify outcome lacks an assessed clarification packet")
-        return {
-            "status": "not_applicable",
-            "transaction_sha256": "",
-            "package_sha256": "",
-            "deterministic_law_failures": [],
-            "deterministic_law_evidence_sha256": law_report_sha256,
-            "post_confirm_semantic_calls": 0,
-            "sealed_readback_equal": False,
-            "rollback_recovery_passed": False,
-        }
+        return (
+            {
+                "status": "not_applicable",
+                "transaction_sha256": "",
+                "package_sha256": "",
+                "deterministic_law_failures": [],
+                "deterministic_law_evidence_sha256": law_report_sha256,
+                "post_confirm_semantic_calls": 0,
+                "sealed_readback_equal": False,
+                "rollback_recovery_passed": False,
+            },
+            None,
+        )
     raise RuntimeError("outcome must be commit or clarify")
 
 

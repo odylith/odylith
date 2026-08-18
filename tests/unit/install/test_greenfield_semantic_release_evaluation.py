@@ -125,6 +125,26 @@ def test_release_evaluation_rejects_missing_resource_telemetry(tmp_path: Path) -
         _evaluate(evidence)
 
 
+def test_release_evaluation_rejects_missing_or_changed_review_package(
+    tmp_path: Path,
+) -> None:
+    evidence = _evidence(tmp_path)
+    evidence["candidates"]["cases"][0]["review_package"] = None
+    with pytest.raises(ValueError, match="review package"):
+        _evaluate(evidence)
+
+    evidence = _evidence(tmp_path / "changed")
+    evidence["candidates"]["cases"][0]["review_package"]["case_id"] = "other-case"
+    with pytest.raises(ValueError, match="does not match its transaction proof"):
+        _evaluate(evidence)
+
+    evidence = _evidence(tmp_path / "clarification")
+    clarify = next(row for row in evidence["candidates"]["cases"] if row["outcome"] == "clarify")
+    clarify["review_package"] = {"unexpected": "package"}
+    with pytest.raises(ValueError, match="clarification carries a review package"):
+        _evaluate(evidence)
+
+
 def test_release_evaluation_rejects_v1_contract_and_candidate_bundle(tmp_path: Path) -> None:
     evidence = _evidence(tmp_path)
     evidence["candidates"]["version"] = "odylith.greenfield.semantic-release-candidates.v1"
@@ -522,6 +542,10 @@ def _candidate(
         critic["token_usage"]["total_tokens"] + author["token_usage"]["total_tokens"]
     )
     outcome = "clarify" if semantic_intent["status"] == "clarification_required" else "commit"
+    review_package = None if outcome == "clarify" else {
+        "schema_version": "odylith.greenfield.test-review-package.v1",
+        "case_id": case_id,
+    }
     return {
         "case_id": case_id,
         "prompt_sha256": _prompt_sha(prompt),
@@ -545,10 +569,13 @@ def _candidate(
             "restart_count": 0,
             "total_tokens": total_tokens,
         },
+        "review_package": review_package,
         "transaction_proof": {
             "status": "not_applicable" if outcome == "clarify" else "passed",
             "transaction_sha256": "" if outcome == "clarify" else "a" * 64,
-            "package_sha256": "" if outcome == "clarify" else "b" * 64,
+            "package_sha256": (
+                "" if review_package is None else canonical_sha256(review_package)
+            ),
             "deterministic_law_failures": [],
             "deterministic_law_evidence_sha256": law_sha,
             "post_confirm_semantic_calls": 0,

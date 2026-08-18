@@ -32,7 +32,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contrac
 
 
 EVALUATION_CONTRACT_VERSION = "odylith.greenfield.semantic-release-evaluation-contract.v2"
-CANDIDATE_BUNDLE_VERSION = "odylith.greenfield.semantic-release-candidates.v2"
+CANDIDATE_BUNDLE_VERSION = "odylith.greenfield.semantic-release-candidates.v3"
 REPORT_VERSION = "odylith.greenfield.semantic-release-report.v2"
 
 FLOOR_NAMES = (
@@ -361,6 +361,7 @@ def _require_candidate_case(
             "outcome",
             "semantic_artifact",
             "mechanism_evidence",
+            "review_package",
             "transaction_proof",
         },
         f"candidate {case_id}",
@@ -476,11 +477,17 @@ def _require_candidate_case(
         ("clarify", "clarification_required"),
     }:
         raise ValueError(f"candidate {case_id} outcome disagrees with its assessed packet")
-    _require_transaction_proof(
+    transaction_proof = _require_transaction_proof(
         raw.get("transaction_proof"),
         outcome=str(outcome),
         case_id=case_id,
         law_report_sha256=law_report_sha256,
+    )
+    _require_review_package(
+        raw.get("review_package"),
+        outcome=str(outcome),
+        case_id=case_id,
+        package_sha256=str(transaction_proof["package_sha256"]),
     )
     compile_wall_ms = _positive_integer(
         evidence.get("compile_wall_ms"), f"candidate {case_id} compile_wall_ms"
@@ -544,7 +551,7 @@ def _require_transaction_proof(
     outcome: str,
     case_id: str,
     law_report_sha256: str,
-) -> None:
+) -> dict[str, Any]:
     row = _mapping(value, f"candidate {case_id} transaction_proof")
     _exact_keys(
         row,
@@ -583,6 +590,23 @@ def _require_transaction_proof(
         and row.get("rollback_recovery_passed") is False
     ):
         raise ValueError(f"candidate {case_id} clarification claims transaction proof")
+    return row
+
+
+def _require_review_package(
+    value: Any,
+    *,
+    outcome: str,
+    case_id: str,
+    package_sha256: str,
+) -> None:
+    if outcome == "clarify":
+        if value is not None:
+            raise ValueError(f"candidate {case_id} clarification carries a review package")
+        return
+    package = _mapping(value, f"candidate {case_id} review package")
+    if canonical_sha256(package) != package_sha256:
+        raise ValueError(f"candidate {case_id} review package does not match its transaction proof")
 
 
 def resource_ceiling_checks(
