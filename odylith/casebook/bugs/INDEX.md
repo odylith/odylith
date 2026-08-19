@@ -1,11 +1,12 @@
 # Bug Index
 
-Last updated (UTC): 2026-08-18
+Last updated (UTC): 2026-08-19
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-349 | 2026-08-19 | Greenfield release evidence certifies a stale mechanism and misapplies the 60 90 | P1 | release | Open | [2026-08-19-greenfield-release-evidence-certifies-a-stale-mechanism-and-misapplies-the-60-90.md](2026-08-19-greenfield-release-evidence-certifies-a-stale-mechanism-and-misapplies-the-60-90.md) |
 | CB-342 | 2026-08-18 | Semantic atlas cutover grows oversized catalog renderer past pinned hygiene ceil | P2 | atlas | Open | [2026-08-18-semantic-atlas-cutover-grows-oversized-catalog-renderer-past-pinned-hygiene-ceil.md](2026-08-18-semantic-atlas-cutover-grows-oversized-catalog-renderer-past-pinned-hygiene-ceil.md) |
 | CB-340 | 2026-08-18 | Release preflight unit guard still requires retired direct local smoke invocatio | P2 | release | Open | [2026-08-18-release-preflight-unit-guard-still-requires-retired-direct-local-smoke-invocatio.md](2026-08-18-release-preflight-unit-guard-still-requires-retired-direct-local-smoke-invocatio.md) |
 | CB-345 | 2026-08-18 | Registry action chip audit races asynchronous detail rendering | P1 | registry | Open | [2026-08-18-registry-action-chip-audit-races-asynchronous-detail-rendering.md](2026-08-18-registry-action-chip-audit-races-asynchronous-detail-rendering.md) |

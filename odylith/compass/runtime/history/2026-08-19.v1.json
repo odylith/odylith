@@ -42,16 +42,10 @@
   },
   "digest": {
     "24h": [
-      "Completed in this window: Greenfield active mechanism landed useful outcomes. It hit 22 strict-standard runs under 60 seconds and 2 typed rescues under 90 seconds, with zero restarts and no deep tier. The source fingerprint is sealed, so this is a real stop, not a loose note.",
-      "Current execution: Universal greenfield domain intelligence (B-142) is the main live lane. It is actively being implemented, and the current read puts it at about nine days with high confidence. | Some active lanes still do not have progress evidence captured. That makes the current picture uneven, even where movement is real.",
-      "Next planned: Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into alignment under Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021). That is the cleanest follow-on because the current lane only stays trustworthy if those surfaces agree. | Add more real maintainer coding work through the CLI contract under the same workstream. That should give the benchmark corpus more grounded evidence instead of only keeping the governance surfaces in sync.",
-      "Risks to watch: The stale release evidence is still open at P1 and it misapplies the 60/90 timing. This is the seam to watch; if it drifts further, the greenfield proof stops being dependable."
+      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
     ],
     "48h": [
-      "Completed in this window: Extension edges are node-owned now, and the required semantic coverage stayed in place. That closes off one drift path without loosening the contract behind it.",
-      "Current execution: Universal greenfield domain intelligence is in active implementation, and it is still the heaviest-moving lane. Some active lanes still do not have progress evidence captured, so the picture is moving but not fully settled. | The ETA sits around nine days with high confidence. That number is useful, but it should be read as live guidance, not a settled finish line, because the evidence is uneven across the active lanes.",
-      "Next planned: Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into alignment, and add more real maintainer coding work through the CLI contract so the corpus reflects actual operator flow again.",
-      "Risks to watch: Greenfield release evidence still certifies a stale mechanism and misapplies the 60/90 path, and it remains open at P1."
+      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
     ]
   },
   "digest_scoped": {
@@ -939,268 +933,51 @@
   "standup_brief": {
     "24h": {
       "schema_version": "v25",
-      "status": "ready",
-      "source": "provider",
+      "status": "unavailable",
+      "source": "unavailable",
       "fingerprint": "fc412af5a122d6e9130d83a610b929ab571720db49f15493c34ac1d948637765",
-      "generated_utc": "2026-08-19T23:41:18Z",
-      "sections": [
-        {
-          "key": "completed",
-          "label": "Completed in this window",
-          "bullets": [
-            {
-              "text": "Greenfield active mechanism landed useful outcomes. It hit 22 strict-standard runs under 60 seconds and 2 typed rescues under 90 seconds, with zero restarts and no deep tier. The source fingerprint is sealed, so this is a real stop, not a loose note.",
-              "fact_ids": [
-                "F-001",
-                "F-002"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "current_execution",
-          "label": "Current execution",
-          "bullets": [
-            {
-              "text": "Universal greenfield domain intelligence (B-142) is the main live lane. It is actively being implemented, and the current read puts it at about nine days with high confidence.",
-              "fact_ids": [
-                "F-004",
-                "F-005"
-              ]
-            },
-            {
-              "text": "Some active lanes still do not have progress evidence captured. That makes the current picture uneven, even where movement is real.",
-              "fact_ids": [
-                "F-006"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "next_planned",
-          "label": "Next planned",
-          "bullets": [
-            {
-              "text": "Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into alignment under Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021). That is the cleanest follow-on because the current lane only stays trustworthy if those surfaces agree.",
-              "fact_ids": [
-                "F-008"
-              ]
-            },
-            {
-              "text": "Add more real maintainer coding work through the CLI contract under the same workstream. That should give the benchmark corpus more grounded evidence instead of only keeping the governance surfaces in sync.",
-              "fact_ids": [
-                "F-009"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "risks_to_watch",
-          "label": "Risks to watch",
-          "bullets": [
-            {
-              "text": "The stale release evidence is still open at P1 and it misapplies the 60/90 timing. This is the seam to watch; if it drifts further, the greenfield proof stops being dependable.",
-              "fact_ids": [
-                "F-010"
-              ]
-            }
-          ]
-        }
-      ],
-      "evidence_lookup": {
-        "F-001": {
-          "text": "Greenfield active mechanism reached useful development outcomes: 22 strict-standard under 60 seconds and 2 typed rescues under 90 seconds, zero restarts, no deep tier.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-002": {
-          "text": "Greenfield active mechanism reached useful development outcomes: 22 strict-standard under 60 seconds and 2 typed rescues under 90 seconds, zero restarts, no deep tier; exact source fingerprint and sealed.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-003": {
-          "text": "Nothing fully closed across the portfolio in the last 24 hours.",
-          "section_key": "completed",
-          "kind": "window_summary"
-        },
-        "F-004": {
-          "text": "Universal greenfield domain intelligence (B-142) is in active implementation.",
-          "section_key": "current_execution",
-          "kind": "direction",
-          "workstreams": [
-            "B-142"
-          ]
-        },
-        "F-005": {
-          "text": "ETA is projected at roughly 9 days (high confidence).",
-          "section_key": "current_execution",
-          "kind": "timeline"
-        },
-        "F-006": {
-          "text": "Implementation is moving, but some active lanes still do not have progress evidence captured. Heaviest movement is in Universal greenfield domain intelligence (B-142).",
-          "section_key": "current_execution",
-          "kind": "portfolio_posture"
-        },
-        "F-007": {
-          "text": "Work stayed inside B-142.",
-          "section_key": "current_execution",
-          "kind": "window_coverage",
-          "workstreams": [
-            "B-142"
-          ]
-        },
-        "F-008": {
-          "text": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
-          "section_key": "next_planned",
-          "kind": "forcing_function"
-        },
-        "F-009": {
-          "text": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Add more real maintainer coding work through CLI contract.",
-          "section_key": "next_planned",
-          "kind": "follow_on"
-        },
-        "F-010": {
-          "text": "Greenfield release evidence certifies a stale mechanism and misapplies the 60 90. It is still open at P1.",
-          "section_key": "risks_to_watch",
-          "kind": "bug"
-        }
-      },
       "substrate_fingerprint": "fc412af5a122d6e9130d83a610b929ab571720db49f15493c34ac1d948637765",
-      "bundle_fingerprint": "b9e05994efbba69aca08cf60143181cba40c4b9ad480a2f614603cd3536eeeaa",
-      "provider_decision": "provider_called",
-      "last_successful_narration_fingerprint": "fc412af5a122d6e9130d83a610b929ab571720db49f15493c34ac1d948637765"
+      "bundle_fingerprint": "",
+      "provider_decision": "provider_deferred",
+      "last_successful_narration_fingerprint": "",
+      "generated_utc": "2026-08-19T23:41:18Z",
+      "sections": [],
+      "diagnostics": {
+        "reason": "provider_deferred",
+        "title": "Fresh brief still warming",
+        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+        "fallback_title": "Local runtime facts",
+        "fallback_digest": [
+          "Current: Universal greenfield domain intelligence (B-142) is in active implementation.",
+          "Next: Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
+          "Watch: Greenfield release evidence certifies a stale mechanism and misapplies the 60 90. It is still open at P1."
+        ]
+      },
+      "evidence_lookup": {}
     },
     "48h": {
       "schema_version": "v25",
-      "status": "ready",
-      "source": "provider",
+      "status": "unavailable",
+      "source": "unavailable",
       "fingerprint": "d5a8355fec8ce55a51b5aebbc973434fe88f72b03093d27337e85378e5fd873c",
-      "generated_utc": "2026-08-19T23:41:18Z",
-      "sections": [
-        {
-          "key": "completed",
-          "label": "Completed in this window",
-          "bullets": [
-            {
-              "text": "Extension edges are node-owned now, and the required semantic coverage stayed in place. That closes off one drift path without loosening the contract behind it.",
-              "fact_ids": [
-                "F-001",
-                "F-002"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "current_execution",
-          "label": "Current execution",
-          "bullets": [
-            {
-              "text": "Universal greenfield domain intelligence is in active implementation, and it is still the heaviest-moving lane. Some active lanes still do not have progress evidence captured, so the picture is moving but not fully settled.",
-              "fact_ids": [
-                "F-004",
-                "F-006"
-              ]
-            },
-            {
-              "text": "The ETA sits around nine days with high confidence. That number is useful, but it should be read as live guidance, not a settled finish line, because the evidence is uneven across the active lanes.",
-              "fact_ids": [
-                "F-005",
-                "F-006"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "next_planned",
-          "label": "Next planned",
-          "bullets": [
-            {
-              "text": "Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into alignment, and add more real maintainer coding work through the CLI contract so the corpus reflects actual operator flow again.",
-              "fact_ids": [
-                "F-008",
-                "F-009"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "risks_to_watch",
-          "label": "Risks to watch",
-          "bullets": [
-            {
-              "text": "Greenfield release evidence still certifies a stale mechanism and misapplies the 60/90 path, and it remains open at P1.",
-              "fact_ids": [
-                "F-010"
-              ]
-            }
-          ]
-        }
-      ],
-      "evidence_lookup": {
-        "F-001": {
-          "text": "Made extension edges node-owned.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-002": {
-          "text": "Preserve required semantic coverage.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-003": {
-          "text": "Nothing fully closed across the portfolio in the last 48 hours.",
-          "section_key": "completed",
-          "kind": "window_summary"
-        },
-        "F-004": {
-          "text": "Universal greenfield domain intelligence (B-142) is in active implementation.",
-          "section_key": "current_execution",
-          "kind": "direction",
-          "workstreams": [
-            "B-142"
-          ]
-        },
-        "F-005": {
-          "text": "ETA is projected at roughly 9 days (high confidence).",
-          "section_key": "current_execution",
-          "kind": "timeline"
-        },
-        "F-006": {
-          "text": "Implementation is moving, but some active lanes still do not have progress evidence captured. Heaviest movement is in Universal greenfield domain intelligence (B-142), Decompose Greenfield Semantic Compiler Into Result and Projection Owners (B-144).",
-          "section_key": "current_execution",
-          "kind": "portfolio_posture"
-        },
-        "F-007": {
-          "text": "Work moved across 4 workstreams: B-142, B-144, B-005, and B-146.",
-          "section_key": "current_execution",
-          "kind": "window_coverage",
-          "workstreams": [
-            "B-142",
-            "B-144",
-            "B-005",
-            "B-146"
-          ]
-        },
-        "F-008": {
-          "text": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
-          "section_key": "next_planned",
-          "kind": "forcing_function"
-        },
-        "F-009": {
-          "text": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Add more real maintainer coding work through CLI contract.",
-          "section_key": "next_planned",
-          "kind": "follow_on"
-        },
-        "F-010": {
-          "text": "Greenfield release evidence certifies a stale mechanism and misapplies the 60 90. It is still open at P1.",
-          "section_key": "risks_to_watch",
-          "kind": "bug"
-        }
-      },
       "substrate_fingerprint": "d5a8355fec8ce55a51b5aebbc973434fe88f72b03093d27337e85378e5fd873c",
-      "bundle_fingerprint": "f238b1e57897204e4de536a586db4d24beae028c2c24228d78ca899b9061f446",
-      "provider_decision": "provider_called",
-      "last_successful_narration_fingerprint": "d5a8355fec8ce55a51b5aebbc973434fe88f72b03093d27337e85378e5fd873c"
+      "bundle_fingerprint": "",
+      "provider_decision": "provider_deferred",
+      "last_successful_narration_fingerprint": "",
+      "generated_utc": "2026-08-19T23:41:18Z",
+      "sections": [],
+      "diagnostics": {
+        "reason": "provider_deferred",
+        "title": "Fresh brief still warming",
+        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+        "fallback_title": "Local runtime facts",
+        "fallback_digest": [
+          "Current: Universal greenfield domain intelligence (B-142) is in active implementation.",
+          "Next: Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
+          "Watch: Greenfield release evidence certifies a stale mechanism and misapplies the 60 90. It is still open at P1."
+        ]
+      },
+      "evidence_lookup": {}
     }
   },
   "standup_brief_scoped": {
