@@ -21,7 +21,6 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations im
     semantic_source_ref_schema,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_claims import (
-    SEMANTIC_SOURCE_CANDIDATES_VERSION,
     SEMANTIC_SOURCE_CLAIMS_VERSION,
 )
 
@@ -83,26 +82,11 @@ def semantic_source_claims_schema(
 ) -> dict[str, Any]:
     """Return the deterministically selected source-claim graph schema."""
 
-    return _semantic_source_rows_schema(
-        version=SEMANTIC_SOURCE_CLAIMS_VERSION,
-        source_ref_schema=source_ref_schema,
-    )
-
-
-def semantic_source_candidates_schema(
-    *, source_ref_schema: dict[str, Any] | None = None,
-) -> dict[str, Any]:
-    """Return the critic-owned source-candidate graph schema."""
-
-    return _semantic_source_rows_schema(
-        version=SEMANTIC_SOURCE_CANDIDATES_VERSION,
-        source_ref_schema=source_ref_schema,
-    )
+    return _semantic_source_rows_schema(source_ref_schema=source_ref_schema)
 
 
 def _semantic_source_rows_schema(
     *,
-    version: str,
     source_ref_schema: dict[str, Any] | None,
 ) -> dict[str, Any]:
     """Return the shared typed row shape for candidates or selected claims."""
@@ -116,7 +100,7 @@ def _semantic_source_rows_schema(
         "properties": {
             "version": {
                 "type": "string",
-                "enum": [version],
+                "enum": [SEMANTIC_SOURCE_CLAIMS_VERSION],
             },
             "facts": {
                 "type": "array",
@@ -376,6 +360,5 @@ def _source_refs(
 
 __all__ = [
     "semantic_intent_output_schema",
-    "semantic_source_candidates_schema",
     "semantic_source_claims_schema",
 ]

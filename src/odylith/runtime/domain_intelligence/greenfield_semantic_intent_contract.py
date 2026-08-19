@@ -54,7 +54,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_claims impor
 
 
 SEMANTIC_INTENT_IR_VERSION = "odylith.greenfield.semantic-intent-ir.v5"
-SEMANTIC_INTENT_PACKET_VERSION = "odylith.greenfield.semantic-intent-packet.v12"
+SEMANTIC_INTENT_PACKET_VERSION = "odylith.greenfield.semantic-intent-packet.v13"
 
 _CUSTODY_STATES = frozenset(
     {"source_fact", "bounded_interpretation", "visible_assumption"}
@@ -332,6 +332,8 @@ def semantic_state_transition(value: Mapping[str, Any]) -> dict[str, str] | None
     after = _text(row.get("to_state"), 800)
     if not before or not after:
         raise ValueError("Semantic Intent state transition is incomplete")
+    if before == after:
+        raise ValueError("Semantic Intent state transition does not change state")
     return {"from_state": before, "to_state": after}
 
 
@@ -436,6 +438,11 @@ def _require_complete_material_graph(
     actor_ids = {row["fact_id"] for row in by_kind["actor"]}
     output_ids = {row["fact_id"] for row in by_kind["visible_output"]}
     state_ids = {row["fact_id"] for row in by_kind["state_object"]}
+    transitioned_state_ids = {
+        row["fact_id"]
+        for row in by_kind["state_object"]
+        if semantic_state_transition(row) is not None
+    }
     implementation_target_ids = {
         row["fact_id"]
         for kind in ("workflow_step", "state_object", "visible_output")
@@ -472,9 +479,9 @@ def _require_complete_material_graph(
         for row in changes
         if row["subject_id"] in fact_index and row["object_id"] in state_ids
     }
-    if changed_state_ids != state_ids:
+    if changed_state_ids != transitioned_state_ids:
         raise ValueError(
-            "complete Semantic Intent IR lacks typed change coverage for every state object"
+            "complete Semantic Intent IR has invalid typed change coverage for state transitions"
         )
     if not first_path_system_ids:
         raise ValueError(

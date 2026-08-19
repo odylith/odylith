@@ -11,13 +11,11 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_graph_extension imp
     assemble_semantic_intent_from_extension,
     semantic_graph_extension_schema_for_materiality,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_source_candidate_adjudication import (
-    selected_semantic_source_claims,
-)
 from tests.unit.runtime.greenfield_semantic_intent_fixtures import (
     SEMANTIC_PROMPT,
     semantic_graph_extension_from_intent,
     semantic_intent_packet,
+    validated_fixture_source_claims,
 )
 
 
@@ -33,12 +31,7 @@ def _extension(packet: dict[str, object]) -> dict[str, object]:
 
 
 def _source_claims(packet: dict[str, object]) -> dict[str, object]:
-    assessment = packet["materiality_assessment"]
-    assert isinstance(assessment, dict)
-    return selected_semantic_source_claims(
-        assessment,
-        packet["source_candidate_adjudication"],
-    )
+    return validated_fixture_source_claims(packet)
 
 
 def test_graph_extension_assembles_the_exact_intent_without_source_row_repetition() -> None:
@@ -56,10 +49,7 @@ def test_graph_extension_assembles_the_exact_intent_without_source_row_repetitio
         row["fact"]["custody"] == "bounded_interpretation"
         for row in _extension(packet)["nodes"]
     )
-    assert all(
-        row["fact"]["custody"] == "source_fact"
-        for row in assessment["source_candidates"]["facts"]
-    )
+    assert all(row["fact"]["custody"] == "source_fact" for row in _source_claims(packet)["facts"])
 
 
 def test_provider_schema_cannot_express_source_semantics_in_the_extension() -> None:
@@ -103,9 +93,7 @@ def test_extension_rejects_source_rows_and_relations_between_locked_source_facts
     source_fact = _extension(packet)
     source_fact["nodes"].append(
         {
-            "fact": copy.deepcopy(
-                assessment["source_candidates"]["facts"][0]["fact"]
-            ),
+            "fact": copy.deepcopy(_source_claims(packet)["facts"][0]["fact"]),
             "depends_on": [],
             "implements": [],
             "constrained_by": [],

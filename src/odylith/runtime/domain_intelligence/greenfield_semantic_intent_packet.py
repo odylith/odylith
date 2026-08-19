@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
+    SEMANTIC_INTENT_IR_VERSION,
     SEMANTIC_INTENT_PACKET_VERSION,
     require_semantic_intent_ir,
     semantic_evidence_sha256,
@@ -39,9 +40,20 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contrac
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations import (
     resolved_semantic_source_refs,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_source_candidate_adjudication import (
-    select_semantic_source_claims,
-    semantic_source_candidate_adjudication_schema,
+from odylith.runtime.domain_intelligence.greenfield_semantic_atomic_source_custody import (
+    ATOMIC_SOURCE_ADJUDICATION_VERSION,
+    atomic_source_adjudication_schema,
+    select_atomic_source_claims,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_graph_author_output import (
+    require_semantic_graph_author_output,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_graph_extension import (
+    assemble_semantic_intent_from_extension,
+    bind_semantic_graph_extension_source_refs,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_source_claims import (
+    SEMANTIC_SOURCE_CLAIMS_VERSION,
 )
 
 
@@ -58,6 +70,7 @@ class VerifiedSemanticIntentPacket:
     materiality_assessment: Mapping[str, Any]
     materiality_assessment_sha256: str
     source_candidate_adjudication: Mapping[str, Any]
+    source_claims: Mapping[str, Any]
     critic_run: Mapping[str, Any]
     author_run: Mapping[str, Any]
     evidence_sha256: str
@@ -97,7 +110,7 @@ def semantic_intent_packet_schema() -> dict[str, Any]:
                 "maxLength": 64,
             },
             "source_candidate_adjudication": (
-                semantic_source_candidate_adjudication_schema()
+                atomic_source_adjudication_schema()
             ),
             "critic_run": semantic_materiality_critic_schema(),
             "author_run": semantic_intent_author_schema(),
@@ -174,9 +187,14 @@ def require_semantic_intent_packet(
         value.get("author_run"),
     )
     source_candidates = materiality_assessment["source_candidates"]
-    source_candidate_adjudication, source_claims = select_semantic_source_claims(
+    settled_fields = {
+        str(row["field"]): row for row in materiality_assessment["fields"]
+    }
+    source_candidate_adjudication, source_claims = select_atomic_source_claims(
         source_candidates,
         value.get("source_candidate_adjudication"),
+        evidence_sources=evidence_sources,
+        settled_fields=settled_fields,
     )
     semantic_intent = require_semantic_intent_ir(
         value.get("semantic_intent"),
@@ -201,12 +219,166 @@ def require_semantic_intent_packet(
         materiality_assessment=materiality_assessment,
         materiality_assessment_sha256=materiality_sha256,
         source_candidate_adjudication=source_candidate_adjudication,
+        source_claims=source_claims,
         critic_run=critic_run,
         author_run=author_run,
         evidence_sha256=evidence_sha256,
         semantic_intent_sha256=semantic_intent_sha256(semantic_intent),
         semantic_meaning_sha256=semantic_intent_meaning_sha256(semantic_intent),
     )
+
+
+def build_semantic_intent_packet(
+    materiality_assessment_value: Any,
+    graph_author_output_value: Any,
+    *,
+    prompt: str,
+    critic_run_id: str,
+    author_run_id: str,
+    critic_host_profile: str,
+    edit_evidence: str = "",
+) -> dict[str, Any]:
+    """Assemble and verify one production packet from the two typed host outputs."""
+
+    evidence_sources = {
+        "operator_prompt": str(prompt or ""),
+        "operator_edit": str(edit_evidence or ""),
+    }
+    evidence_sha256 = semantic_evidence_sha256(evidence_sources)
+    contract_sha256 = semantic_intent_authoring_contract_sha256()
+    assessment = require_semantic_materiality_assessment(
+        materiality_assessment_value,
+        evidence_sources=evidence_sources,
+        evidence_sha256=evidence_sha256,
+        authoring_contract_sha256=contract_sha256,
+    )
+    author_output = require_semantic_graph_author_output(graph_author_output_value)
+    settled_fields = {str(row["field"]): row for row in assessment["fields"]}
+    adjudication, source_claims = select_atomic_source_claims(
+        assessment["source_candidates"],
+        author_output["source_candidate_adjudication"],
+        evidence_sources=evidence_sources,
+        settled_fields=settled_fields,
+    )
+    extension = bind_semantic_graph_extension_source_refs(
+        author_output["semantic_extension"],
+        assessment=assessment,
+        evidence_sources=evidence_sources,
+    )
+    semantic_intent = assemble_semantic_intent_from_extension(
+        extension,
+        assessment=assessment,
+        source_claims=source_claims,
+    )
+    packet = {
+        "version": SEMANTIC_INTENT_PACKET_VERSION,
+        "evidence_sha256": evidence_sha256,
+        "authoring_contract_sha256": contract_sha256,
+        "materiality_assessment": assessment,
+        "materiality_assessment_sha256": semantic_materiality_assessment_sha256(
+            assessment
+        ),
+        "source_candidate_adjudication": adjudication,
+        "critic_run": {
+            "capability_profile": "frontier_semantic_reasoning",
+            "critic_run_id": str(critic_run_id),
+            "host_profile": str(critic_host_profile),
+            "independent_context": True,
+        },
+        "author_run": {
+            "capability_profile": "frontier_semantic_reasoning",
+            "author_run_id": str(author_run_id),
+        },
+        "semantic_intent": semantic_intent,
+    }
+    require_semantic_intent_packet(
+        packet,
+        prompt=prompt,
+        edit_evidence=edit_evidence,
+    )
+    return packet
+
+
+def build_semantic_clarification_packet(
+    materiality_assessment_value: Any,
+    *,
+    prompt: str,
+    critic_run_id: str,
+    author_run_id: str,
+    critic_host_profile: str,
+    edit_evidence: str = "",
+) -> dict[str, Any]:
+    """Seal one independently challenged material question without graph claims."""
+
+    evidence_sources = {
+        "operator_prompt": str(prompt or ""),
+        "operator_edit": str(edit_evidence or ""),
+    }
+    evidence_sha256 = semantic_evidence_sha256(evidence_sources)
+    contract_sha256 = semantic_intent_authoring_contract_sha256()
+    assessment = require_semantic_materiality_assessment(
+        materiality_assessment_value,
+        evidence_sources=evidence_sources,
+        evidence_sha256=evidence_sha256,
+        authoring_contract_sha256=contract_sha256,
+    )
+    if assessment["decision"] != "clarification_required":
+        raise ValueError("clarification packet requires one material question")
+    clarification = assessment["clarification"]
+    packet = {
+        "version": SEMANTIC_INTENT_PACKET_VERSION,
+        "evidence_sha256": evidence_sha256,
+        "authoring_contract_sha256": contract_sha256,
+        "materiality_assessment": assessment,
+        "materiality_assessment_sha256": semantic_materiality_assessment_sha256(
+            assessment
+        ),
+        "source_candidate_adjudication": {
+            "version": ATOMIC_SOURCE_ADJUDICATION_VERSION,
+            "candidate_decisions": [
+                {
+                    "candidate_id": row["candidate_id"],
+                    "decision": "reject_noise",
+                    "fact_ids": [],
+                    "relation_ids": [],
+                }
+                for row in assessment["source_candidates"]["candidates"]
+            ],
+            "source_claims": {
+                "version": SEMANTIC_SOURCE_CLAIMS_VERSION,
+                "facts": [],
+                "relations": [],
+            },
+        },
+        "critic_run": {
+            "capability_profile": "frontier_semantic_reasoning",
+            "critic_run_id": str(critic_run_id),
+            "host_profile": str(critic_host_profile),
+            "independent_context": True,
+        },
+        "author_run": {
+            "capability_profile": "frontier_semantic_reasoning",
+            "author_run_id": str(author_run_id),
+        },
+        "semantic_intent": {
+            "version": SEMANTIC_INTENT_IR_VERSION,
+            "status": "clarification_required",
+            "clarification": {
+                "question": clarification["question"],
+                "fields": [clarification["field"]],
+                "source_refs": list(clarification["source_refs"]),
+            },
+            "facts": [],
+            "relations": [],
+            "narratives": [],
+        },
+    }
+    require_semantic_intent_packet(
+        packet,
+        prompt=prompt,
+        edit_evidence=edit_evidence,
+    )
+    return packet
 
 
 def semantic_intent_authority(
@@ -274,10 +446,14 @@ def semantic_intent_authority(
     authority["authority_snapshot_sha256"] = product_intent_authority_snapshot_hash(authority)
     require_product_intent_authority_structure(authority)
     return authority
+
+
 __all__ = [
     "MAX_SEMANTIC_INTENT_PACKET_BYTES",
     "SEMANTIC_INTENT_PACKET_VERSION",
     "VerifiedSemanticIntentPacket",
+    "build_semantic_clarification_packet",
+    "build_semantic_intent_packet",
     "load_semantic_intent_packet",
     "require_semantic_intent_packet",
     "semantic_intent_authority",

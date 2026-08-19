@@ -15,14 +15,12 @@ SCRIPTS_ROOT = REPO_ROOT / "scripts" / "release"
 if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
-from greenfield_semantic_development_evidence import MECHANISM_EVIDENCE_VERSION
-from greenfield_semantic_development_evidence import MECHANISM_ID
-from greenfield_semantic_development_evidence import canonical_sha256
-from greenfield_semantic_development_evidence import development_mechanism_contract_sha256
-from greenfield_semantic_development_evidence import materiality_critic_input_for_case
-from greenfield_semantic_development_evidence import prepare_development_evidence_plan
-from greenfield_semantic_development_evidence import run_evidence_sha256
-from greenfield_semantic_development_evidence import semantic_graph_author_input_for_case
+from greenfield_semantic_release_support import (
+    canonical_sha256,
+    greenfield_runtime_source_fingerprint,
+)
+from greenfield_semantic_pipeline_evidence import prepare_active_evidence_plan
+from greenfield_semantic_pipeline_receipts import PIPELINE_VERSION
 from greenfield_semantic_release_evaluation import ADJUDICATION_VERSION
 from greenfield_semantic_release_evaluation import CANDIDATE_BUNDLE_VERSION
 from greenfield_semantic_release_evaluation import EVALUATION_CONTRACT_VERSION
@@ -33,20 +31,26 @@ from greenfield_semantic_release_evaluation import _floor_checks
 from greenfield_semantic_release_evaluation import _rate
 from greenfield_semantic_release_evaluation import evaluate_semantic_release
 from greenfield_semantic_release_evaluation import wilson_interval
-from greenfield_semantic_host_execution_contract import HOST_RUNTIME_RECEIPT_VERSION
 from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract import (
-    SEMANTIC_INTENT_MANDATORY_CHALLENGES,
     semantic_intent_authoring_contract_sha256,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_execution_contract import (
+    semantic_execution_evidence,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_host_profiles import (
+    standard_host_stage_profile,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
     SEMANTIC_REASONING_CAPABILITY_PROFILE,
-    semantic_materiality_assessment_sha256,
 )
 from tests.unit.runtime.greenfield_semantic_intent_fixtures import (
+    SEMANTIC_PROMPT,
     semantic_clarification_packet,
+    semantic_intent_packet,
 )
 from tests.unit.install.greenfield_semantic_release_test_fixtures import (
     deterministic_law_report_fixture as _law_report,
+    verified_transaction_receipt_fixture,
 )
 
 
@@ -64,7 +68,7 @@ def test_release_evaluation_requires_independent_exact_id_custody(tmp_path: Path
     assert report["metrics"]["equivalent_source_convergence"] == 1.0
     assert report["metrics"]["worst_slice"]["point_estimate"] == 1.0
     assert report["metrics"]["overall_confidence_interval_95"]["lower"] < 1.0
-    assert report["resource_metrics"]["cohort_totals"]["model_calls"] == 6
+    assert report["resource_metrics"]["cohort_totals"]["model_calls"] == 12
     assert set(report["auxiliary_report_bindings"]) == {
         "host_parity",
         "lower_capability_safety",
@@ -92,7 +96,7 @@ def test_release_evaluation_fails_an_adjudicated_unsupported_addition(tmp_path: 
 
 @pytest.mark.parametrize(
     "mutation",
-    ["host", "capability", "run_nonce", "input_hash", "self_challenge"],
+    ["mechanism", "host", "calls", "packet", "assignment"],
 )
 def test_release_evaluation_rejects_unbound_mechanism_claims(
     tmp_path: Path,
@@ -100,18 +104,16 @@ def test_release_evaluation_rejects_unbound_mechanism_claims(
 ) -> None:
     evidence = _evidence(tmp_path)
     mechanism = evidence["candidates"]["cases"][0]["mechanism_evidence"]
-    if mutation == "host":
-        mechanism["author"]["host_profile"] = "other-host"
-    elif mutation == "capability":
-        mechanism["author"]["capability_profile"] = "lower_capability"
-    elif mutation == "run_nonce":
-        mechanism["author"]["run_nonce"] = mechanism["critic"]["run_nonce"]
-    elif mutation == "input_hash":
-        mechanism["critic"]["input_sha256"] = "0" * 64
+    if mutation == "mechanism":
+        mechanism["mechanism_execution"]["mechanism_id"] = "retired-two-stage"
+    elif mutation == "host":
+        mechanism["graph_completion"]["host_profile"] = "other-host"
+    elif mutation == "calls":
+        mechanism["source_graph"]["model_call_count"] = 1
+    elif mutation == "packet":
+        mechanism["packet"] = {**mechanism["packet"], "evidence_sha256": "0" * 64}
     else:
-        mechanism["author"]["self_challenge"] = mechanism["author"][
-            "self_challenge"
-        ][:-1]
+        mechanism["evidence_assignment"]["case_nonce"] = "changed"
 
     with pytest.raises(ValueError, match="execution evidence is invalid"):
         _evaluate(evidence)
@@ -166,18 +168,7 @@ def test_release_evaluation_rejects_v1_contract_and_candidate_bundle(tmp_path: P
 def test_release_evaluation_enforces_resource_ceilings(tmp_path: Path) -> None:
     evidence = _evidence(tmp_path)
     mechanism = evidence["candidates"]["cases"][0]["mechanism_evidence"]
-    author = mechanism["author"]
-    author["token_usage"] = {
-        "input_tokens": 100_000,
-        "output_tokens": 1,
-        "total_tokens": 100_001,
-        "measurement_basis": "provider_usage_receipt",
-    }
-    author["run_sha256"] = run_evidence_sha256(author)
-    mechanism["total_tokens"] = (
-        mechanism["critic"]["token_usage"]["total_tokens"]
-        + author["token_usage"]["total_tokens"]
-    )
+    mechanism["total_tokens"] = 100_001
     _rebind_review_evidence(evidence)
 
     report = _evaluate(evidence)
@@ -267,7 +258,7 @@ def test_release_evaluator_has_no_prose_matching_or_nlp_dependency() -> None:
     assert wilson_interval(2, 2)["lower"] < 1.0
 
 
-def test_v2_contract_preserves_v1_bytes_and_release_floors() -> None:
+def test_v4_contract_preserves_v1_bytes_and_release_floors() -> None:
     v1_development = SCRIPTS_ROOT / "fixtures" / (
         "greenfield-semantic-development-evaluation-contract.v1.json"
     )
@@ -343,12 +334,8 @@ _ANNOTATION_CATEGORIES = (
 
 def _evidence(tmp_path: Path) -> dict:
     tmp_path.mkdir(parents=True, exist_ok=True)
-    fixture = json.loads(
-        (SCRIPTS_ROOT / "fixtures" / "greenfield-semantic-smoke.v12.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    prompt = fixture["prompt"]
+    prompt = SEMANTIC_PROMPT
+    packet = semantic_intent_packet()
     cases = [
         {
             "case_id": "dev-001",
@@ -384,7 +371,7 @@ def _evidence(tmp_path: Path) -> dict:
     }
     corpus_path = _write_json(tmp_path / "corpus.json", corpus)
     contract = _fixture_contract("release")
-    plan = prepare_development_evidence_plan(
+    plan = prepare_active_evidence_plan(
         corpus_path=corpus_path,
         host_profiles=contract["required_host_profiles"],
         output_path=tmp_path / "plan.json",
@@ -395,9 +382,7 @@ def _evidence(tmp_path: Path) -> dict:
     candidate_rows = [
         _candidate(
             case=case,
-            packet=(deepcopy(fixture["packet"]) if index < 2 else semantic_clarification_packet()),
-            corpus=corpus,
-            plan=plan,
+            packet=(deepcopy(packet) if index < 2 else semantic_clarification_packet()),
             assignment=plan["cases"][index],
             law_sha=law_sha,
         )
@@ -408,7 +393,7 @@ def _evidence(tmp_path: Path) -> dict:
         "corpus_sha256": plan["corpus_sha256"],
         "implementation_revision": revision,
         "authoring_contract_sha256": semantic_intent_authoring_contract_sha256(),
-        "development_evidence_plan_sha256": canonical_sha256(plan),
+        "active_evidence_plan_sha256": canonical_sha256(plan),
         "deterministic_law_report_sha256": law_sha,
         "cohort_nonce": plan["cohort_nonce"],
         "cases": candidate_rows,
@@ -441,7 +426,7 @@ def _evidence(tmp_path: Path) -> dict:
         "corpus": corpus,
         "corpus_sha256": plan["corpus_sha256"],
         "contract": contract,
-        "development_evidence_plan": plan,
+        "active_evidence_plan": plan,
         "deterministic_law_report": law_report,
         "candidates": candidates,
         "reviews": reviews,
@@ -485,94 +470,100 @@ def _rebind_review_evidence(evidence: dict) -> None:
 
 
 def _candidate(
-    *, case: dict, packet: dict, corpus: dict, plan: dict, assignment: dict, law_sha: str,
+    *, case: dict, packet: dict, assignment: dict, law_sha: str,
 ) -> dict:
     case_id = case["case_id"]
     prompt = case["prompt"]
     packet["critic_run"] = {
         "capability_profile": SEMANTIC_REASONING_CAPABILITY_PROFILE,
-        "critic_run_id": assignment["critic_assignment"]["run_id"],
-        "host_profile": assignment["critic_assignment"]["host_profile"],
+        "critic_run_id": f"{case_id}:materiality-critic",
+        "host_profile": assignment["host_profile"],
         "independent_context": True,
     }
     packet["author_run"] = {
         "capability_profile": SEMANTIC_REASONING_CAPABILITY_PROFILE,
-        "author_run_id": assignment["author_assignment"]["run_id"],
+        "author_run_id": f"{case_id}:terminal-author",
     }
-    assessment = packet["materiality_assessment"]
-    assessment["authoring_contract_sha256"] = semantic_intent_authoring_contract_sha256()
-    packet["authoring_contract_sha256"] = semantic_intent_authoring_contract_sha256()
-    packet["materiality_assessment_sha256"] = semantic_materiality_assessment_sha256(
-        assessment
-    )
     semantic_intent = packet["semantic_intent"]
-    critic_input = materiality_critic_input_for_case(
-        corpus=corpus, plan=plan, case_id=case_id,
-    )
-    author_input = semantic_graph_author_input_for_case(
-        corpus=corpus,
-        plan=plan,
-        case_id=case_id,
-        materiality_assessment=assessment,
-    )
-    critic = _run_receipt(
-        assignment["critic_assignment"],
-        input_sha=canonical_sha256(critic_input),
-        output_sha=canonical_sha256(assessment),
-        stage="critic",
-    )
-    author = _run_receipt(
-        assignment["author_assignment"],
-        input_sha=canonical_sha256(author_input),
-        output_sha=canonical_sha256(
-            {
-                "semantic_intent": semantic_intent,
-                "self_challenge": [
-                    {"challenge": challenge, "status": "passed"}
-                    for challenge in SEMANTIC_INTENT_MANDATORY_CHALLENGES
-                ],
-            }
-        ),
-        stage="author",
-        materiality_sha=packet["materiality_assessment_sha256"],
-    )
-    compile_wall_ms = 1
-    total_wall_ms = critic["wall_ms"] + author["wall_ms"] + compile_wall_ms
-    total_tokens = (
-        critic["token_usage"]["total_tokens"] + author["token_usage"]["total_tokens"]
-    )
     outcome = "clarify" if semantic_intent["status"] == "clarification_required" else "commit"
-    review_package = None if outcome == "clarify" else {
-        "schema_version": "odylith.greenfield.test-review-package.v1",
-        "case_id": case_id,
-    }
+    wall_ms = 50_000
+    host_profile = assignment["host_profile"]
+    host_contract = standard_host_stage_profile(host_profile)
+    transaction = (
+        None
+        if outcome == "clarify"
+        else verified_transaction_receipt_fixture(packet, prompt=prompt)
+    )
+    transaction_sha = "" if transaction is None else transaction["transaction_hash"]
+    execution = semantic_execution_evidence(
+        host_profile=host_profile,
+        tier="standard",
+        status="completed",
+        outcome=outcome,
+        wall_ms=wall_ms,
+        model_call_count=4,
+        restart_count=0,
+        implementation_fingerprint_sha256=greenfield_runtime_source_fingerprint(),
+    )
+    review_package = None if transaction is None else transaction["review_package"]
     return {
         "case_id": case_id,
         "prompt_sha256": _prompt_sha(prompt),
         "outcome": outcome,
         "semantic_artifact": packet,
         "mechanism_evidence": {
-            "version": MECHANISM_EVIDENCE_VERSION,
-            "mechanism_id": MECHANISM_ID,
-            "mechanism_contract_sha256": development_mechanism_contract_sha256(),
-            "cohort_nonce": plan["cohort_nonce"],
-            "cohort_assignment_sha256": plan["cohort_assignment_sha256"],
-            "case_nonce": assignment["case_nonce"],
-            "assignment_sha256": assignment["assignment_sha256"],
-            "evidence_plan_sha256": canonical_sha256(plan),
-            "authoring_contract_sha256": semantic_intent_authoring_contract_sha256(),
-            "critic": critic,
-            "author": author,
-            "compile_wall_ms": compile_wall_ms,
-            "total_wall_ms": total_wall_ms,
-            "model_call_count": 2,
+            "version": PIPELINE_VERSION,
+            "case_id": case_id,
+            "status": "completed",
+            "outcome": outcome,
+            "wall_ms": wall_ms,
+            "budget": {"tier": "standard"},
+            "materiality_critic": {
+                "stage": "materiality_critic",
+                "case_id": case_id,
+                "host_profile": host_profile,
+                "model": host_contract["critic_model"],
+                "reasoning_effort": host_contract["critic_reasoning_effort"],
+                "model_call_count": 1,
+                "validation_status": "passed",
+                "prompt_sha256": _prompt_sha(prompt),
+            },
+            "source_graph": {
+                "stage": "source_graph",
+                "case_id": case_id,
+                "host_profile": host_profile,
+                "model": host_contract["source_model"],
+                "reasoning_effort": host_contract["source_reasoning_effort"],
+                "model_call_count": 2,
+                "validation_status": "passed" if outcome == "commit" else "cancelled",
+                "authority_used": outcome == "commit",
+            },
+            "graph_completion": {
+                "stage": (
+                    "graph_completion" if outcome == "commit" else "clarification_author"
+                ),
+                "case_id": case_id,
+                "host_profile": host_profile,
+                "model": host_contract["completion_model"],
+                "reasoning_effort": host_contract["completion_reasoning_effort"],
+                "model_call_count": 1,
+                "validation_status": "passed",
+            },
+            "materiality_assessment": deepcopy(packet["materiality_assessment"]),
+            "packet": deepcopy(packet),
+            "transaction": deepcopy(transaction),
+            "failed_stage": "",
+            "failure": "",
+            "model_call_count": 4,
             "restart_count": 0,
-            "total_tokens": total_tokens,
+            "total_tokens": 200,
+            "mechanism_execution": execution,
+            "evidence_assignment": deepcopy(assignment),
         },
         "review_package": review_package,
         "transaction_proof": {
             "status": "not_applicable" if outcome == "clarify" else "passed",
-            "transaction_sha256": "" if outcome == "clarify" else "a" * 64,
+            "transaction_sha256": transaction_sha,
             "package_sha256": (
                 "" if review_package is None else canonical_sha256(review_package)
             ),
@@ -583,58 +574,6 @@ def _candidate(
             "rollback_recovery_passed": outcome == "commit",
         },
     }
-
-
-def _run_receipt(
-    assignment: dict,
-    *, input_sha: str, output_sha: str, stage: str, materiality_sha: str = "",
-) -> dict:
-    receipt = {
-        "run_nonce": assignment["run_nonce"],
-        "run_id": assignment["run_id"],
-        "run_assignment_sha256": assignment["run_assignment_sha256"],
-        "host_profile": assignment["host_profile"],
-        "capability_profile": assignment["capability_profile"],
-        "execution_profile": assignment["execution_profile"],
-        "host_runtime": {
-            "version": HOST_RUNTIME_RECEIPT_VERSION,
-            "host_profile": assignment["host_profile"],
-            "runtime_name": (
-                "codex-cli" if assignment["host_profile"] == "codex" else "claude-code"
-            ),
-            "runtime_version": "test-runtime-v1",
-            "runtime_binary_sha256": "e" * 64,
-        },
-        "independent_context": True,
-        "attempt_count": 1,
-        "validation_error_repair_count": 0,
-        "input_sha256": input_sha,
-        "output_sha256": output_sha,
-        "access_receipt": {
-            "prompt": True,
-            "authoring_contract": True,
-            "materiality_assessment": stage == "author",
-            "annotations": False,
-            "prior_candidates": False,
-            "semantic_reviews": False,
-            "validator_errors": False,
-        },
-        "wall_ms": 10,
-        "token_usage": {
-            "input_tokens": 40,
-            "output_tokens": 20,
-            "total_tokens": 60,
-            "measurement_basis": "provider_usage_receipt",
-        },
-    }
-    if stage == "author":
-        receipt["materiality_assessment_sha256"] = materiality_sha
-        receipt["self_challenge"] = [
-            {"challenge": challenge, "status": "passed"}
-            for challenge in SEMANTIC_INTENT_MANDATORY_CHALLENGES
-        ]
-    receipt["run_sha256"] = run_evidence_sha256(receipt)
-    return receipt
 
 
 def _commit_annotation(case_id: str, prompt: str) -> dict:
@@ -734,7 +673,7 @@ def _fixture_contract(lane: str) -> dict:
         (
             SCRIPTS_ROOT
             / "fixtures"
-            / f"greenfield-semantic-{lane}-evaluation-contract.v2.json"
+            / f"greenfield-semantic-{lane}-evaluation-contract.v4.json"
         ).read_text(encoding="utf-8")
     )
 

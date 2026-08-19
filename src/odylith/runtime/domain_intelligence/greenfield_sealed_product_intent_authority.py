@@ -33,13 +33,13 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contrac
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations import (
     resolved_semantic_source_refs,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_source_candidate_adjudication import (
-    select_semantic_source_claims,
+from odylith.runtime.domain_intelligence.greenfield_semantic_atomic_source_custody import (
+    select_atomic_source_claims,
 )
 
 
 PRODUCT_INTENT_AUTHORITY_KEY = "product_intent_authority"
-PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v18"
+PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v19"
 _SEMANTIC_AUTHORITY_FIELDS = frozenset(
     {
         "version",
@@ -165,10 +165,17 @@ def _require_semantic_intent_authority(authority: Mapping[str, Any]) -> None:
     ):
         raise ValueError("ProductCreateTransaction sealed semantic run evidence is noncanonical")
     source_candidates = assessment["source_candidates"]
-    source_candidate_adjudication, source_claims = select_semantic_source_claims(
+    settled_fields = {
+        str(row["field"]): row for row in assessment["fields"]
+    }
+    source_candidate_adjudication, source_claims = select_atomic_source_claims(
         source_candidates,
         authority.get("semantic_source_candidate_adjudication"),
+        evidence_sources={key: str(value) for key, value in evidence_sources.items()},
+        settled_fields=settled_fields,
     )
+    if authority.get("semantic_source_candidate_adjudication") != source_candidate_adjudication:
+        raise ValueError("ProductCreateTransaction sealed source adjudication is noncanonical")
     semantic_intent = require_semantic_intent_ir(
         authority.get("semantic_intent"),
         evidence_sources=evidence_sources,

@@ -15,8 +15,14 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_host_profiles impor
     semantic_authority_execution_profiles,
     supported_host_profiles,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_execution_contract import (
+    DEEP_COMPLETION_DEADLINE_SECONDS,
+    RESCUE_COMPLETION_DEADLINE_SECONDS,
+    STANDARD_COMPLETION_DEADLINE_SECONDS,
+    semantic_execution_contract,
+)
 
-GREENFIELD_OPERATING_ENVELOPE_VERSION = "odylith.greenfield-operating-envelope.v7"
+GREENFIELD_OPERATING_ENVELOPE_VERSION = "odylith.greenfield-operating-envelope.v9"
 GREENFIELD_OPERATING_PROFILE = "single-product-governance-onboarding"
 
 SUPPORTED_EVIDENCE_FORMATS = frozenset({"semantic_intent_packet"})
@@ -116,6 +122,8 @@ def greenfield_operating_envelope_receipt(
             "confirmation_hosts": list(SUPPORTED_CONFIRMATION_HOSTS),
             "other_hosts": "proposal_only_unless_deterministic_callback_proven",
         },
+        "completion_contract": _completion_contract(),
+        "latency_contract": _latency_contract(),
         "model_contract": _model_contract(),
     }
 
@@ -145,6 +153,12 @@ def require_supported_greenfield_operating_envelope(value: Mapping[str, Any]) ->
     host = value.get("host_contract")
     if not isinstance(host, Mapping) or host.get("confirmation_hosts") != list(SUPPORTED_CONFIRMATION_HOSTS):
         raise ValueError("Greenfield operating envelope host contract is unsupported")
+    completion = value.get("completion_contract")
+    if not isinstance(completion, Mapping) or dict(completion) != _completion_contract():
+        raise ValueError("Greenfield operating envelope completion contract is unsupported")
+    latency = value.get("latency_contract")
+    if not isinstance(latency, Mapping) or dict(latency) != _latency_contract():
+        raise ValueError("Greenfield operating envelope latency contract is unsupported")
     model = value.get("model_contract")
     if not isinstance(model, Mapping) or dict(model) != _model_contract():
         raise ValueError("Greenfield operating envelope model contract is unsupported")
@@ -181,6 +195,7 @@ def _model_contract() -> dict[str, Any]:
         "semantic_authority_execution_profiles": semantic_authority_execution_profiles(),
         "non_authority_safety_profiles": list(SUPPORTED_NON_AUTHORITY_SAFETY_PROFILES),
         "semantic_authority": "frontier_prompt_reasoning_then_typed_graph",
+        "semantic_execution": semantic_execution_contract(),
         "host_output_status": "candidate_hypothesis_only",
         "lower_capability_probe": {
             "profile": LOWER_CAPABILITY_SAFETY_PROFILE,
@@ -189,6 +204,47 @@ def _model_contract() -> dict[str, Any]:
             "allowed_outcomes": ["clarify", "fail_safe"],
             "proof_contract": "runner_bound_independently_reviewed_safety_report_v1",
         },
+    }
+
+
+def _latency_contract() -> dict[str, Any]:
+    tiers = semantic_execution_contract()["tiers"]
+    return {
+        "measurement": "consumer_request_to_preview_or_one_material_question",
+        "standard": {
+            "deadline_seconds": tiers["standard"]["deadline_ms"] // 1000,
+            "comparison": tiers["standard"]["comparison"],
+            "activation": "default",
+        },
+        "rescue": {
+            "deadline_seconds": tiers["rescue"]["deadline_ms"] // 1000,
+            "comparison": tiers["rescue"]["comparison"],
+            "activation": "typed_semantic_or_quality_failure_only",
+        },
+        "deep": {
+            "deadline_seconds": tiers["explicit_deep"]["deadline_ms"] // 1000,
+            "comparison": tiers["explicit_deep"]["comparison"],
+            "activation": "explicit_consumer_or_ci_opt_in_only",
+        },
+        "overrun_policy": "fail_closed_with_clear_timeout_outcome",
+        "unbounded_retry_allowed": False,
+    }
+
+
+def _completion_contract() -> dict[str, Any]:
+    return {
+        "scope": "every_request_within_the_declared_operating_envelope",
+        "terminal_consumer_outcomes": [
+            "sealed_reviewable_preview",
+            "one_material_question",
+            "actionable_unsupported_evidence_notice",
+            "explicit_environment_or_transaction_outcome",
+        ],
+        "quality_required_for_success": True,
+        "partial_package_is_success": False,
+        "generic_product_intent_failure_allowed": False,
+        "timeout_is_success": False,
+        "post_confirm_semantic_or_model_work_allowed": False,
     }
 
 
@@ -238,8 +294,11 @@ def _count(value: Any) -> int:
 
 
 __all__ = [
+    "DEEP_COMPLETION_DEADLINE_SECONDS",
     "GREENFIELD_OPERATING_ENVELOPE_VERSION",
     "GREENFIELD_OPERATING_PROFILE",
+    "RESCUE_COMPLETION_DEADLINE_SECONDS",
+    "STANDARD_COMPLETION_DEADLINE_SECONDS",
     "SUPPORTED_CONFIRMATION_HOSTS",
     "SUPPORTED_EVIDENCE_FORMATS",
     "SUPPORTED_EVIDENCE_LANGUAGES",

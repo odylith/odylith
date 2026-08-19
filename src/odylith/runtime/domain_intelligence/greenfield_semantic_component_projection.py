@@ -12,8 +12,8 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract imp
 from odylith.runtime.domain_intelligence.greenfield_semantic_identifiers import (
     semantic_artifact_identifier,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_source_candidate_adjudication import (
-    selected_semantic_source_claims,
+from odylith.runtime.domain_intelligence.greenfield_semantic_atomic_source_custody import (
+    validated_atomic_source_claims,
 )
 
 
@@ -63,16 +63,10 @@ def semantic_component_rows_from_authority(
     evidence_sources = authority.get("evidence_sources")
     if not isinstance(evidence_sources, Mapping):
         raise ValueError("ProductCreateTransaction authority lacks Semantic Intent custody")
-    assessment = authority.get("semantic_materiality_assessment")
-    if not isinstance(assessment, Mapping):
-        raise ValueError("ProductCreateTransaction authority lacks locked source claims")
     semantic_intent = require_semantic_intent_ir(
         authority.get("semantic_intent"),
         evidence_sources=evidence_sources,
-        source_claims=selected_semantic_source_claims(
-            assessment,
-            authority.get("semantic_source_candidate_adjudication"),
-        ),
+        source_claims=validated_atomic_source_claims(authority),
     )
     return semantic_component_rows(semantic_intent, project_slug=project_slug)
 

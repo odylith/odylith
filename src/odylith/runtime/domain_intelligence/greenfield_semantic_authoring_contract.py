@@ -24,14 +24,14 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contrac
     semantic_materiality_assessment_schema,
     semantic_materiality_critic_schema,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_source_candidate_adjudication import (
-    semantic_source_candidate_adjudication_contract,
-    semantic_source_candidate_adjudication_schema,
+from odylith.runtime.domain_intelligence.greenfield_semantic_atomic_source_custody import (
+    atomic_source_adjudication_schema,
+    atomic_source_custody_contract,
 )
 
 
 SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION = (
-    "odylith.greenfield.semantic-intent-authoring-request.v16"
+    "odylith.greenfield.semantic-intent-authoring-request.v17"
 )
 SEMANTIC_INTENT_MANDATORY_CHALLENGES = (
     "unsupported_addition",
@@ -61,16 +61,16 @@ def semantic_intent_authoring_protocol() -> dict[str, Any]:
             "evidence_scope": "prompt_only",
             "critic_context": "independent",
             "source_candidate_authority": (
-                "the critic locks every source-owned fact and relation candidate before the "
-                "graph author receives the assessment; candidates are not final source claims"
+                "the critic identifies exact evidence spans only; it may not assign semantic "
+                "kinds, canonical fields, ownership, relations, or product identity"
             ),
             "decision": "authorize_graph_or_request_one_focused_clarification",
-            "candidate_access": "forbidden",
+            "graph_candidate_access": "exact_evidence_spans_only",
             "graph_author_binding": (
                 "the critic-validated exact-byte citation catalog, decision, clarification, "
-                "and source-candidate rows are provider-locked before graph authoring; the author "
-                "must adjudicate every workflow candidate without rewriting it, then may add only "
-                "node-owned bounded architecture edges and presentation around selected source claims"
+                "and atomic evidence spans are provider-locked before graph authoring; one graph "
+                "author assigns all semantic kinds, fields, ownership, relations, identity, bounded "
+                "architecture edges, and presentation, then binds every source claim to those spans"
             ),
         },
         "materiality_field_semantics": {
@@ -182,8 +182,8 @@ def semantic_intent_authoring_protocol() -> dict[str, Any]:
         "outcome_requirements": [
             "produce one complete source-cited typed graph",
             (
-                "select every locked workflow candidate exactly once and preserve every retained "
-                "source candidate byte-for-byte in the authored graph"
+                "decide every locked evidence span exactly once and bind every source-owned fact "
+                "and relation to at least one retained exact span"
             ),
             "preserve supported meaning without adding unsupported product semantics",
             "emit clarification_required for unresolved material disagreement",
@@ -256,7 +256,7 @@ def semantic_intent_authoring_protocol() -> dict[str, Any]:
             "validation_error_driven_packet_repair",
             "silent_candidate_merge",
             "post_candidate_materiality_assessment",
-            "candidate_authored_source_fact_or_relation",
+            "critic_authored_semantic_kind_field_ownership_relation_or_identity",
         ],
     }
 
@@ -272,10 +272,10 @@ def semantic_intent_authoring_contract_payload() -> dict[str, Any]:
         "materiality_assessment_schema": semantic_materiality_assessment_schema(),
         "materiality_critic_schema": semantic_materiality_critic_schema(),
         "source_candidate_adjudication_schema": (
-            semantic_source_candidate_adjudication_schema()
+            atomic_source_adjudication_schema()
         ),
         "source_candidate_adjudication_contract": (
-            semantic_source_candidate_adjudication_contract()
+            atomic_source_custody_contract()
         ),
         "semantic_graph_extension_contract": semantic_graph_extension_contract(),
         "semantic_intent_author_schema": semantic_intent_author_schema(),

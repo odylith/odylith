@@ -34,9 +34,9 @@ from local_release_smoke import _serve_directory
 
 COMMAND_TIMEOUT_SECONDS = 300
 PROOF_SCOPE = "real_installed_additive_write_sigkill_recovery_conflict_same_hash_retry_and_fsync_rollback"
-RECOVERY_CASE_SCOPE = "semantic-intent-v8-release-fixture"
+RECOVERY_CASE_SCOPE = "semantic-intent-v13-release-fixture"
 _GOVERNED_ROOTS = ("odylith", "src/odylith/bundle/assets/odylith")
-_DEFAULT_SEMANTIC_FIXTURE = Path(__file__).resolve().parent / "fixtures" / "greenfield-semantic-smoke.v12.json"
+_DEFAULT_SEMANTIC_FIXTURE = Path(__file__).resolve().parent / "fixtures" / "greenfield-semantic-smoke.v13.json"
 
 
 @dataclass(frozen=True)
@@ -65,8 +65,8 @@ def load_semantic_recovery_case(
     packet = payload.get("packet")
     if not case_id or not prompt or not isinstance(packet, Mapping):
         raise RuntimeError("installed recovery semantic fixture is incomplete")
-    if packet.get("version") != "odylith.greenfield.semantic-intent-packet.v12":
-        raise RuntimeError("installed recovery semantic fixture must use Semantic Intent packet v8")
+    if packet.get("version") != "odylith.greenfield.semantic-intent-packet.v13":
+        raise RuntimeError("installed recovery semantic fixture must use Semantic Intent packet v13")
     semantic_intent = packet.get("semantic_intent")
     if not isinstance(semantic_intent, Mapping) or semantic_intent.get("status") != "complete":
         raise RuntimeError("installed recovery semantic fixture must contain a complete Semantic Intent graph")
@@ -773,14 +773,14 @@ def _require_case_evidence_bound_to_transaction(
     """Prove the sealed v16 authority contains the exact assessed graph packet."""
 
     expected = {
-        "version": "odylith.product-intent-authority.v18",
+        "version": "odylith.product-intent-authority.v19",
         "origin": "verified_semantic_intent_packet",
         "source_format": "semantic_intent_packet",
         "evidence_sha256": str(case.packet.get("evidence_sha256") or ""),
-        "semantic_intent_packet_version": "odylith.greenfield.semantic-intent-packet.v12",
+        "semantic_intent_packet_version": "odylith.greenfield.semantic-intent-packet.v13",
         "semantic_intent_ir_version": "odylith.greenfield.semantic-intent-ir.v5",
         "semantic_intent_authoring_request_version": (
-            "odylith.greenfield.semantic-intent-authoring-request.v16"
+            "odylith.greenfield.semantic-intent-authoring-request.v17"
         ),
         "semantic_intent_authoring_contract_sha256": str(
             case.packet.get("authoring_contract_sha256") or ""
@@ -794,7 +794,7 @@ def _require_case_evidence_bound_to_transaction(
     }
     if any(intent_authority.get(key) != value for key, value in expected.items()):
         raise RuntimeError(
-            "installed Greenfield transaction authority did not bind the v8 assessed Semantic Intent packet"
+            "installed Greenfield transaction authority did not bind the v13 assessed Semantic Intent packet"
         )
     if intent_authority.get("semantic_intent") != case.packet.get("semantic_intent"):
         raise RuntimeError("installed Greenfield transaction authority changed the Semantic Intent graph")

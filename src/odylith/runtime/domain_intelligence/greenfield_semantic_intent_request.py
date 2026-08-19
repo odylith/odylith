@@ -68,10 +68,10 @@ def semantic_intent_authoring_request(
             "evidence_sources": evidence_sources,
             "candidate_access": "forbidden",
             "source_candidates": (
-                "required; source-owned fact and relation candidates are locked before graph authoring"
+                "required; an independent critic locks exact evidence spans only and has no semantic authority"
             ),
             "workflow_candidate_adjudication": (
-                "required in the existing author run before deterministic source-claim assembly"
+                "one graph author must decide every span, author the complete source graph, and bind every source claim before deterministic verification"
             ),
             "assessment_schema": semantic_materiality_assessment_schema(),
             "critic_run_schema": semantic_materiality_critic_schema(),

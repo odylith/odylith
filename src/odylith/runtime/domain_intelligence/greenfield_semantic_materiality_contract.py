@@ -12,12 +12,12 @@ from typing import Any
 from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract import (
     SEMANTIC_CLARIFICATION_FIELDS,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_atomic_source_custody import (
+    atomic_source_candidates_schema,
+    require_atomic_source_candidates,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_schema import (
     semantic_intent_output_schema,
-    semantic_source_candidates_schema,
-)
-from odylith.runtime.domain_intelligence.greenfield_semantic_source_claims import (
-    require_semantic_source_candidates,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations import (
     bind_semantic_source_ref_selections,
@@ -29,7 +29,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations im
 
 
 SEMANTIC_MATERIALITY_ASSESSMENT_VERSION = (
-    "odylith.greenfield.semantic-materiality-assessment.v7"
+    "odylith.greenfield.semantic-materiality-assessment.v8"
 )
 SEMANTIC_REASONING_CAPABILITY_PROFILE = "frontier_semantic_reasoning"
 SEMANTIC_MATERIALITY_ASSESSMENT_BASIS = "prompt_only_pre_graph"
@@ -48,10 +48,12 @@ SEMANTIC_NONMATERIAL_ASSUMPTION_FIELDS = (
 )
 
 
-def semantic_materiality_assessment_schema() -> dict[str, Any]:
+def semantic_materiality_assessment_schema(
+    *, source_ref_schema: Mapping[str, Any] | None = None
+) -> dict[str, Any]:
     """Return the provider schema for the independent prompt-only gate."""
 
-    source_ref = semantic_source_ref_schema()
+    source_ref = dict(source_ref_schema or semantic_source_ref_schema())
     return {
         "type": "object",
         "additionalProperties": False,
@@ -91,8 +93,8 @@ def semantic_materiality_assessment_schema() -> dict[str, Any]:
                 "maxItems": len(SEMANTIC_CLARIFICATION_FIELDS),
                 "items": _materiality_field_schema(source_ref),
             },
-            "source_candidates": semantic_source_candidates_schema(
-                source_ref_schema=source_ref,
+            "source_candidates": atomic_source_candidates_schema(
+                source_ref_schema=source_ref
             ),
         },
     }
@@ -200,6 +202,11 @@ def _materiality_source_ref_catalog(
                 allow_empty=True,
             )
         )
+    candidates = require_atomic_source_candidates(
+        assessment.get("source_candidates"),
+        evidence_sources=evidence_sources,
+    )
+    rows.extend(candidate["source_ref"] for candidate in candidates["candidates"])
     if not rows:
         raise ValueError("Semantic materiality assessment lacks an author citation catalog")
     return rows
@@ -469,11 +476,9 @@ def require_semantic_materiality_assessment(
         evidence_sources=evidence_sources,
         omitted_field=omitted_field,
     )
-    field_index = {row["field"]: row for row in fields}
-    source_candidates = require_semantic_source_candidates(
+    source_candidates = require_atomic_source_candidates(
         assessment.get("source_candidates"),
         evidence_sources=evidence_sources,
-        settled_fields=field_index,
     )
     if decision == "authorize_graph":
         if clarification != {

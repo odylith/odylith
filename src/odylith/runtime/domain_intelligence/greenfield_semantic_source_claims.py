@@ -14,9 +14,6 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations im
 
 
 SEMANTIC_SOURCE_CLAIMS_VERSION = "odylith.greenfield.semantic-source-claims.v2"
-SEMANTIC_SOURCE_CANDIDATES_VERSION = (
-    "odylith.greenfield.semantic-source-candidates.v1"
-)
 _FACT_KEYS = {
     "fact_id",
     "kind",
@@ -49,44 +46,23 @@ def require_semantic_source_claims(
 
     return _require_semantic_source_graph(
         value,
-        expected_version=SEMANTIC_SOURCE_CLAIMS_VERSION,
         evidence_sources=evidence_sources,
         settled_fields=settled_fields,
-        label="claims",
-    )
-
-
-def require_semantic_source_candidates(
-    value: Any,
-    *,
-    evidence_sources: Mapping[str, str],
-    settled_fields: Mapping[str, Mapping[str, Any]],
-) -> dict[str, Any]:
-    """Validate critic-owned source candidates before author adjudication."""
-
-    return _require_semantic_source_graph(
-        value,
-        expected_version=SEMANTIC_SOURCE_CANDIDATES_VERSION,
-        evidence_sources=evidence_sources,
-        settled_fields=settled_fields,
-        label="candidates",
     )
 
 
 def _require_semantic_source_graph(
     value: Any,
     *,
-    expected_version: str,
     evidence_sources: Mapping[str, str],
     settled_fields: Mapping[str, Mapping[str, Any]],
-    label: str,
 ) -> dict[str, Any]:
     """Validate one exact source-row set without interpreting evidence prose."""
 
-    claims = _mapping(value, f"Semantic source {label}")
-    _exact_keys(claims, {"version", "facts", "relations"}, f"Semantic source {label}")
-    if claims.get("version") != expected_version:
-        raise ValueError(f"Semantic source {label} use an unsupported version")
+    claims = _mapping(value, "Semantic source claims")
+    _exact_keys(claims, {"version", "facts", "relations"}, "Semantic source claims")
+    if claims.get("version") != SEMANTIC_SOURCE_CLAIMS_VERSION:
+        raise ValueError("Semantic source claims use an unsupported version")
     facts = _claim_rows(
         claims.get("facts"),
         item_key="fact",
@@ -134,7 +110,7 @@ def _require_semantic_source_graph(
             {"fields": list(relation_fields), "relation": dict(relation)}
         )
     return {
-        "version": expected_version,
+        "version": SEMANTIC_SOURCE_CLAIMS_VERSION,
         "facts": normalized_facts,
         "relations": normalized_relations,
     }
@@ -236,9 +212,7 @@ def _exact_keys(value: Mapping[str, Any], keys: set[str], label: str) -> None:
 
 
 __all__ = [
-    "SEMANTIC_SOURCE_CANDIDATES_VERSION",
     "SEMANTIC_SOURCE_CLAIMS_VERSION",
-    "require_semantic_source_candidates",
     "require_semantic_source_claims",
     "require_source_claim_projection",
 ]

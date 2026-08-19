@@ -278,29 +278,6 @@ def build_prewrite_completion_package(
         )
         accepted_project_preview = dict(accepted_project_preview)
         accepted_project_preview["project_dashboard"] = project_dashboard_preview
-        transaction_seal = greenfield_prewrite_transaction_seal.seal_staged_greenfield_create(
-            greenfield_prewrite_transaction_seal.GreenfieldPrewriteSealRequest(
-                prewrite_root=prewrite_root,
-                target_root=root,
-                proposal=package_proposal,
-                validation_gate=validation_gate,
-                staged_backlog_result=staged_backlog_result,
-                target_backlog_result=backlog_result,
-                staged_component_registry_preview=staged_component_registry_preview,
-                rendered_component_specs=rendered_component_specs,
-                diagram_ids=diagram_ids,
-                rendered_atlas_sources=rendered_atlas_sources,
-                compiled_atlas_catalog_rows=atlas_catalog_rows,
-                accepted_project_preview=accepted_project_preview,
-                project_brief_record_text=project_brief_record_text,
-                compass_memory_preview=compass_memory_preview,
-                next_steps_preview=next_steps_preview,
-                prewrite_safety_preview=prewrite_safety_preview,
-                staged_release_bootstrap=staged_release_bootstrap,
-                staged_release_targeting=staged_release_targeting,
-                brand_asset_count=len(brand_asset_writes),
-            )
-        )
         package = GreenfieldCompletionPackage(
             proposal=package_proposal,
             release_selector=release_selector,
@@ -322,12 +299,12 @@ def build_prewrite_completion_package(
             baseline_writes=baseline_writes,
             brand_asset_writes=brand_asset_writes,
             prewrite_safety_preview=prewrite_safety_preview,
-            surface_refresh_preview=transaction_seal.surface_refresh_preview,
+            surface_refresh_preview={},
             release_target_result=preview_release_target,
             release_assignment_result=preview_release_assignment,
             release_workstream_ids=tuple(first_release_workstreams),
-            repository_write_set=transaction_seal.repository_write_set,
-            commit_result_preview=transaction_seal.commit_result_preview,
+            repository_write_set=None,
+            commit_result_preview=None,
         )
         final_seal = greenfield_prewrite_transaction_seal.seal_staged_greenfield_create(
             greenfield_prewrite_transaction_seal.GreenfieldPrewriteSealRequest(

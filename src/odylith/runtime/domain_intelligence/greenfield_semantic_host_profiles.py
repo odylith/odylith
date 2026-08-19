@@ -7,6 +7,9 @@ from typing import Any
 
 
 HOST_EXECUTION_PROFILE_VERSION = "odylith.greenfield.host-execution-profile.v1"
+STANDARD_HOST_STAGE_PROFILE_VERSION = (
+    "odylith.greenfield.standard-host-stage-profile.v2"
+)
 
 _EXECUTION_PROFILES = {
     "codex": {
@@ -30,6 +33,29 @@ _EXECUTION_PROFILES = {
         "structured_output_mode": "provider_json_schema",
         "tool_event_policy": "reject",
         "session_persistence": "disabled",
+    },
+}
+
+_STANDARD_STAGE_PROFILES = {
+    "codex": {
+        "version": STANDARD_HOST_STAGE_PROFILE_VERSION,
+        "host_profile": "codex",
+        "critic_model": "gpt-5.6-sol",
+        "critic_reasoning_effort": "low",
+        "source_model": "gpt-5.6-luna",
+        "source_reasoning_effort": "low",
+        "completion_model": "gpt-5.6-luna",
+        "completion_reasoning_effort": "low",
+    },
+    "claude": {
+        "version": STANDARD_HOST_STAGE_PROFILE_VERSION,
+        "host_profile": "claude",
+        "critic_model": "claude-opus-4-6",
+        "critic_reasoning_effort": "low",
+        "source_model": "claude-opus-4-6",
+        "source_reasoning_effort": "low",
+        "completion_model": "claude-opus-4-6",
+        "completion_reasoning_effort": "low",
     },
 }
 
@@ -75,11 +101,29 @@ def semantic_authority_execution_profiles() -> list[dict[str, str]]:
     return [host_execution_profile(host) for host in supported_host_profiles()]
 
 
+def standard_host_stage_profile(host_profile: str) -> dict[str, str]:
+    """Return the exact no-retry stage profile for the 60-second path."""
+
+    host = str(host_profile or "").strip()
+    if host not in _STANDARD_STAGE_PROFILES:
+        raise RuntimeError("unsupported Greenfield semantic host profile")
+    return dict(_STANDARD_STAGE_PROFILES[host])
+
+
+def standard_host_stage_profiles() -> list[dict[str, str]]:
+    """Publish standard-path profiles separately from deep-tier profiles."""
+
+    return [standard_host_stage_profile(host) for host in supported_host_profiles()]
+
+
 __all__ = [
     "HOST_EXECUTION_PROFILE_VERSION",
+    "STANDARD_HOST_STAGE_PROFILE_VERSION",
     "host_execution_profile",
     "require_host_execution_profile",
     "require_host_profiles",
     "semantic_authority_execution_profiles",
+    "standard_host_stage_profile",
+    "standard_host_stage_profiles",
     "supported_host_profiles",
 ]

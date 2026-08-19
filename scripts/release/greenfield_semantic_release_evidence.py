@@ -6,16 +6,11 @@ from collections.abc import Mapping
 import hashlib
 from typing import Any
 
-from greenfield_semantic_development_evidence import AUTHOR_SEGMENT_VERSION
-from greenfield_semantic_development_evidence import DEVELOPMENT_EVIDENCE_PLAN_VERSION
-from greenfield_semantic_development_evidence import MECHANISM_EVIDENCE_VERSION
-from greenfield_semantic_development_evidence import MECHANISM_ID
-from greenfield_semantic_development_evidence import canonical_sha256
-from greenfield_semantic_development_evidence import development_mechanism_contract_sha256
-from greenfield_semantic_development_evidence import materiality_critic_input_for_case
-from greenfield_semantic_development_evidence import require_development_evidence_plan
-from greenfield_semantic_development_evidence import require_run_evidence
-from greenfield_semantic_development_evidence import semantic_graph_author_input_for_case
+from greenfield_semantic_release_support import canonical_sha256
+from greenfield_semantic_pipeline_evidence import ACTIVE_EVIDENCE_PLAN_VERSION
+from greenfield_semantic_pipeline_evidence import require_active_evidence_plan
+from greenfield_semantic_pipeline_evidence import require_successful_pipeline_evidence
+from greenfield_semantic_pipeline_receipts import PIPELINE_VERSION
 from greenfield_semantic_deterministic_law_contract import require_deterministic_law_report
 from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract import (
     semantic_intent_authoring_contract_sha256,
@@ -26,14 +21,16 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_intent_packet impor
 from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
     SEMANTIC_REASONING_CAPABILITY_PROFILE,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
-    semantic_materiality_assessment_sha256,
+from odylith.runtime.domain_intelligence.greenfield_semantic_execution_contract import (
+    ACTIVE_SEMANTIC_MECHANISM_ID,
+    SEMANTIC_EXECUTION_EVIDENCE_VERSION,
+    semantic_execution_contract_sha256,
 )
 
 
-EVALUATION_CONTRACT_VERSION = "odylith.greenfield.semantic-release-evaluation-contract.v2"
-CANDIDATE_BUNDLE_VERSION = "odylith.greenfield.semantic-release-candidates.v3"
-REPORT_VERSION = "odylith.greenfield.semantic-release-report.v2"
+EVALUATION_CONTRACT_VERSION = "odylith.greenfield.semantic-release-evaluation-contract.v4"
+CANDIDATE_BUNDLE_VERSION = "odylith.greenfield.semantic-release-candidates.v4"
+REPORT_VERSION = "odylith.greenfield.semantic-release-report.v3"
 
 FLOOR_NAMES = (
     "maximum_p0_findings",
@@ -52,7 +49,11 @@ FLOOR_NAMES = (
     "maximum_deterministic_law_failures",
 )
 RESOURCE_CEILING_NAMES = (
-    "maximum_case_total_wall_ms",
+    "maximum_standard_case_total_wall_ms",
+    "maximum_rescue_case_total_wall_ms",
+    "maximum_explicit_deep_case_total_wall_ms",
+    "maximum_explicit_deep_cases",
+    "maximum_automatic_deep_cases",
     "maximum_case_total_tokens",
     "maximum_case_model_calls",
     "maximum_case_restarts",
@@ -78,13 +79,17 @@ FROZEN_FLOORS = {
     "maximum_deterministic_law_failures": 0.0,
 }
 FROZEN_RESOURCE_CEILINGS = {
-    "maximum_case_total_wall_ms": 600_000,
+    "maximum_standard_case_total_wall_ms": 60_000,
+    "maximum_rescue_case_total_wall_ms": 90_000,
+    "maximum_explicit_deep_case_total_wall_ms": 120_000,
+    "maximum_explicit_deep_cases": 0,
+    "maximum_automatic_deep_cases": 0,
     "maximum_case_total_tokens": 100_000,
-    "maximum_case_model_calls": 2,
+    "maximum_case_model_calls": 4,
     "maximum_case_restarts": 0,
-    "maximum_cohort_total_wall_ms": 14_400_000,
+    "maximum_cohort_total_wall_ms": 2_160_000,
     "maximum_cohort_total_tokens": 2_400_000,
-    "maximum_cohort_model_calls": 48,
+    "maximum_cohort_model_calls": 96,
     "maximum_cohort_restarts": 0,
 }
 REQUIRED_AUXILIARY_REPORTS = (
@@ -104,7 +109,7 @@ _ALLOWED_HOST_SETS = (
 
 
 def require_evaluation_contract(value: Mapping[str, Any]) -> dict[str, Any]:
-    """Validate the frozen v2 semantic and resource release contract."""
+    """Validate the frozen semantic, 60/90/120, and resource release contract."""
 
     row = _mapping(value, "evaluation contract")
     _exact_keys(
@@ -123,7 +128,7 @@ def require_evaluation_contract(value: Mapping[str, Any]) -> dict[str, Any]:
     )
     if row.get("version") != EVALUATION_CONTRACT_VERSION:
         raise ValueError("semantic release evaluation contract uses an unsupported version")
-    if row.get("mechanism_id") != MECHANISM_ID:
+    if row.get("mechanism_id") != ACTIVE_SEMANTIC_MECHANISM_ID:
         raise ValueError("semantic release evaluation contract uses an unsupported mechanism")
     floors = _mapping(row.get("floors"), "evaluation contract floors")
     _exact_keys(floors, set(FLOOR_NAMES), "evaluation contract floors")
@@ -141,7 +146,9 @@ def require_evaluation_contract(value: Mapping[str, Any]) -> dict[str, Any]:
     if normalized_ceilings != FROZEN_RESOURCE_CEILINGS:
         raise ValueError("semantic release evaluation contract changes a frozen resource ceiling")
     if (
-        normalized_ceilings["maximum_case_total_wall_ms"] == 0
+        normalized_ceilings["maximum_standard_case_total_wall_ms"] == 0
+        or normalized_ceilings["maximum_rescue_case_total_wall_ms"] == 0
+        or normalized_ceilings["maximum_explicit_deep_case_total_wall_ms"] == 0
         or normalized_ceilings["maximum_case_total_tokens"] == 0
         or normalized_ceilings["maximum_cohort_total_wall_ms"] == 0
         or normalized_ceilings["maximum_cohort_total_tokens"] == 0
@@ -166,7 +173,7 @@ def require_evaluation_contract(value: Mapping[str, Any]) -> dict[str, Any]:
         raise ValueError("evaluation requires exactly two independent reviewers")
     return {
         "version": EVALUATION_CONTRACT_VERSION,
-        "mechanism_id": MECHANISM_ID,
+        "mechanism_id": ACTIVE_SEMANTIC_MECHANISM_ID,
         "floors": normalized_floors,
         "resource_ceilings": normalized_ceilings,
         "required_model_profiles": profiles,
@@ -210,16 +217,16 @@ def require_candidate_bundle(
     corpus_sha256: str,
     case_index: Mapping[str, Mapping[str, Any]],
     contract: Mapping[str, Any],
-    evidence_plan: Mapping[str, Any],
+    active_evidence_plan: Mapping[str, Any],
     deterministic_law_report: Mapping[str, Any],
 ) -> tuple[
     dict[str, Mapping[str, Any]],
     dict[str, Mapping[str, Any]],
     str,
-    dict[str, Mapping[str, int]],
+    dict[str, Mapping[str, Any]],
     dict[str, Any],
 ]:
-    """Validate candidate truth against runner-owned assignments and execution receipts."""
+    """Validate candidate truth against active prompt-only assignments and receipts."""
 
     frozen_corpus_sha = _sha256(corpus_sha256, "frozen corpus sha256")
     bundle = _mapping(value, "candidate bundle")
@@ -230,7 +237,7 @@ def require_candidate_bundle(
             "corpus_sha256",
             "implementation_revision",
             "authoring_contract_sha256",
-            "development_evidence_plan_sha256",
+            "active_evidence_plan_sha256",
             "deterministic_law_report_sha256",
             "cohort_nonce",
             "cases",
@@ -246,8 +253,8 @@ def require_candidate_bundle(
     if bundle.get("authoring_contract_sha256") != authoring_sha:
         raise ValueError("candidate bundle uses a stale authoring contract")
     try:
-        plan = require_development_evidence_plan(
-            evidence_plan,
+        plan = require_active_evidence_plan(
+            active_evidence_plan,
             corpus=corpus,
             corpus_sha256=frozen_corpus_sha,
         )
@@ -255,24 +262,22 @@ def require_candidate_bundle(
             deterministic_law_report,
             implementation_revision=revision,
             candidate_bundle_version=CANDIDATE_BUNDLE_VERSION,
-            development_evidence_plan_version=DEVELOPMENT_EVIDENCE_PLAN_VERSION,
-            development_author_segment_version=AUTHOR_SEGMENT_VERSION,
-            mechanism_evidence_version=MECHANISM_EVIDENCE_VERSION,
+            development_evidence_plan_version=ACTIVE_EVIDENCE_PLAN_VERSION,
+            development_author_segment_version=PIPELINE_VERSION,
+            mechanism_evidence_version=SEMANTIC_EXECUTION_EVIDENCE_VERSION,
         )
     except RuntimeError as error:
         raise ValueError(str(error)) from error
     plan_sha = canonical_sha256(plan)
     law_sha = canonical_sha256(law_report)
-    if bundle.get("development_evidence_plan_sha256") != plan_sha:
-        raise ValueError("candidate bundle does not bind the development evidence plan")
+    if bundle.get("active_evidence_plan_sha256") != plan_sha:
+        raise ValueError("candidate bundle does not bind the active evidence plan")
     if bundle.get("deterministic_law_report_sha256") != law_sha:
         raise ValueError("candidate bundle does not bind the deterministic law report")
     if bundle.get("cohort_nonce") != plan["cohort_nonce"]:
         raise ValueError("candidate bundle does not bind the runner-owned cohort")
     if plan["required_host_profiles"] != list(contract["required_host_profiles"]):
         raise ValueError("evidence plan host assignments differ from the evaluation contract")
-    if plan["capability_profile"] != SEMANTIC_REASONING_CAPABILITY_PROFILE:
-        raise ValueError("evidence plan uses a non-authority capability profile")
     rows = _mapped_rows(bundle.get("cases"), "candidate cases")
     raw_candidates = _unique_index(rows, "case_id", "candidate cases")
     if set(raw_candidates) != set(case_index):
@@ -280,21 +285,14 @@ def require_candidate_bundle(
     assignments = _unique_index(plan["cases"], "case_id", "evidence plan assignments")
     candidates: dict[str, Mapping[str, Any]] = {}
     meta: dict[str, Mapping[str, Any]] = {}
-    resources: dict[str, Mapping[str, int]] = {}
-    observed_run_nonces: set[str] = set()
-    observed_run_ids: set[str] = set()
+    resources: dict[str, Mapping[str, Any]] = {}
     for case_id in sorted(raw_candidates):
         candidate, candidate_meta, telemetry = _require_candidate_case(
             raw_candidates[case_id],
             case_id=case_id,
             prompt=str(case_index[case_id]["prompt"]),
-            corpus=corpus,
-            plan=plan,
-            plan_sha256=plan_sha,
             assignment=assignments[case_id],
             law_report_sha256=law_sha,
-            run_nonces=observed_run_nonces,
-            run_ids=observed_run_ids,
         )
         candidates[case_id] = candidate
         meta[case_id] = candidate_meta
@@ -313,9 +311,9 @@ def require_candidate_bundle(
         canonical_sha256(bundle),
         resources,
         {
-            "development_evidence_plan_sha256": plan_sha,
+            "active_evidence_plan_sha256": plan_sha,
             "deterministic_law_report_sha256": law_sha,
-            "mechanism_contract_sha256": development_mechanism_contract_sha256(),
+            "mechanism_contract_sha256": semantic_execution_contract_sha256(),
             "cohort_assignment_sha256": str(plan["cohort_assignment_sha256"]),
             "cases": {
                 case_id: {
@@ -323,14 +321,8 @@ def require_candidate_bundle(
                     for name in (
                         "assignment_sha256",
                         "mechanism_evidence_sha256",
-                        "critic_run_assignment_sha256",
-                        "critic_run_sha256",
-                        "critic_input_sha256",
-                        "critic_output_sha256",
-                        "author_run_assignment_sha256",
-                        "author_run_sha256",
-                        "author_input_sha256",
-                        "author_output_sha256",
+                        "critic_run_id",
+                        "author_run_id",
                     )
                 }
                 for case_id in sorted(meta)
@@ -344,14 +336,9 @@ def _require_candidate_case(
     *,
     case_id: str,
     prompt: str,
-    corpus: Mapping[str, Any],
-    plan: Mapping[str, Any],
-    plan_sha256: str,
     assignment: Mapping[str, Any],
     law_report_sha256: str,
-    run_nonces: set[str],
-    run_ids: set[str],
-) -> tuple[dict[str, Any], dict[str, Any], dict[str, int]]:
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     raw = _mapping(value, f"candidate {case_id}")
     _exact_keys(
         raw,
@@ -374,102 +361,16 @@ def _require_candidate_case(
         verified = require_semantic_intent_packet(artifact, prompt=prompt)
     except (RuntimeError, ValueError) as error:
         raise ValueError(f"candidate {case_id} has an invalid assessed packet: {error}") from error
-    evidence = _mapping(raw.get("mechanism_evidence"), f"candidate {case_id} mechanism evidence")
-    _exact_keys(
-        evidence,
-        {
-            "version",
-            "mechanism_id",
-            "mechanism_contract_sha256",
-            "cohort_nonce",
-            "cohort_assignment_sha256",
-            "case_nonce",
-            "assignment_sha256",
-            "evidence_plan_sha256",
-            "authoring_contract_sha256",
-            "critic",
-            "author",
-            "compile_wall_ms",
-            "total_wall_ms",
-            "model_call_count",
-            "restart_count",
-            "total_tokens",
-        },
-        f"candidate {case_id} mechanism evidence",
-    )
-    expected_mechanism = {
-        "version": MECHANISM_EVIDENCE_VERSION,
-        "mechanism_id": MECHANISM_ID,
-        "mechanism_contract_sha256": development_mechanism_contract_sha256(),
-        "cohort_nonce": plan["cohort_nonce"],
-        "cohort_assignment_sha256": plan["cohort_assignment_sha256"],
-        "case_nonce": assignment["case_nonce"],
-        "assignment_sha256": assignment["assignment_sha256"],
-        "evidence_plan_sha256": plan_sha256,
-        "authoring_contract_sha256": semantic_intent_authoring_contract_sha256(),
-    }
-    for name, expected in expected_mechanism.items():
-        if evidence.get(name) != expected:
-            raise ValueError(f"candidate {case_id} mechanism evidence mismatch: {name}")
-    assessment = verified.materiality_assessment
-    materiality_sha = semantic_materiality_assessment_sha256(assessment)
     try:
-        critic_input = materiality_critic_input_for_case(
-            corpus=corpus,
-            plan=plan,
+        evidence, active_meta = require_successful_pipeline_evidence(
+            raw.get("mechanism_evidence"),
             case_id=case_id,
+            prompt=prompt,
+            semantic_artifact=artifact,
+            assignment=assignment,
         )
-        author_input = semantic_graph_author_input_for_case(
-            corpus=corpus,
-            plan=plan,
-            case_id=case_id,
-            materiality_assessment=assessment,
-        )
-        critic = require_run_evidence(
-            evidence.get("critic"),
-            stage="critic",
-            assignment=assignment["critic_assignment"],
-            expected_input_sha256=canonical_sha256(critic_input),
-            expected_output_sha256=canonical_sha256(assessment),
-        )
-        author_evidence = _mapping(
-            evidence.get("author"),
-            f"candidate {case_id} author evidence",
-        )
-        author = require_run_evidence(
-            author_evidence,
-            stage="author",
-            assignment=assignment["author_assignment"],
-            expected_input_sha256=canonical_sha256(author_input),
-            expected_output_sha256=canonical_sha256(
-                {
-                    "semantic_intent": verified.semantic_intent,
-                    "self_challenge": author_evidence.get("self_challenge"),
-                }
-            ),
-            materiality_assessment_sha256=materiality_sha,
-        )
-        if critic["host_runtime"] != author["host_runtime"]:
-            raise RuntimeError("critic and author host runtime receipts differ")
-    except RuntimeError as error:
+    except (RuntimeError, ValueError) as error:
         raise ValueError(f"candidate {case_id} execution evidence is invalid: {error}") from error
-    for stage, receipt in (("critic", critic), ("author", author)):
-        nonce = str(receipt["run_nonce"])
-        run_id = str(receipt["run_id"])
-        if nonce in run_nonces or run_id in run_ids:
-            raise ValueError(f"candidate {case_id} reuses a runner {stage} identity")
-        run_nonces.add(nonce)
-        run_ids.add(run_id)
-    if (
-        critic["host_profile"] != author["host_profile"]
-        or critic["capability_profile"] != author["capability_profile"]
-        or artifact["critic_run"]["critic_run_id"] != critic["run_id"]
-        or artifact["author_run"]["author_run_id"] != author["run_id"]
-        or artifact["critic_run"]["host_profile"] != critic["host_profile"]
-        or artifact["critic_run"]["capability_profile"] != critic["capability_profile"]
-        or artifact["author_run"]["capability_profile"] != author["capability_profile"]
-    ):
-        raise ValueError(f"candidate {case_id} packet and runner receipts disagree")
     outcome = raw.get("outcome")
     status = verified.semantic_intent.get("status")
     if (outcome, status) not in {
@@ -483,34 +384,25 @@ def _require_candidate_case(
         case_id=case_id,
         law_report_sha256=law_report_sha256,
     )
-    _require_review_package(
+    if outcome == "commit" and (
+        active_meta["transaction_sha256"]
+        != transaction_proof["transaction_sha256"]
+    ):
+        raise ValueError(
+            f"candidate {case_id} transaction proof changes the pipeline transaction"
+        )
+    review_package = _require_review_package(
         raw.get("review_package"),
         outcome=str(outcome),
         case_id=case_id,
         package_sha256=str(transaction_proof["package_sha256"]),
     )
-    compile_wall_ms = _positive_integer(
-        evidence.get("compile_wall_ms"), f"candidate {case_id} compile_wall_ms"
-    )
-    total_wall_ms = _positive_integer(
-        evidence.get("total_wall_ms"), f"candidate {case_id} total_wall_ms"
-    )
-    total_tokens = _positive_integer(
-        evidence.get("total_tokens"), f"candidate {case_id} total_tokens"
-    )
-    if total_wall_ms != critic["wall_ms"] + author["wall_ms"] + compile_wall_ms:
-        raise ValueError(f"candidate {case_id} wall telemetry does not add up")
-    expected_tokens = (
-        critic["token_usage"]["total_tokens"] + author["token_usage"]["total_tokens"]
-    )
-    if total_tokens != expected_tokens:
-        raise ValueError(f"candidate {case_id} token telemetry does not add up")
-    if evidence.get("model_call_count") != 2 or evidence.get("restart_count") != 0:
-        raise ValueError(f"candidate {case_id} call or restart telemetry violates the mechanism")
+    if outcome == "commit" and review_package != active_meta["review_package"]:
+        raise ValueError(f"candidate {case_id} changes the pipeline review package")
     normalized = {
         **raw,
-        "model_profile": author["capability_profile"],
-        "host_profile": author["host_profile"],
+        "model_profile": active_meta["model_profile"],
+        "host_profile": active_meta["host_profile"],
     }
     semantic_intent = verified.semantic_intent
     return (
@@ -521,26 +413,20 @@ def _require_candidate_case(
             "relation_ids": frozenset(
                 str(row["relation_id"]) for row in semantic_intent.get("relations", [])
             ),
-            "model_profile": author["capability_profile"],
-            "host_profile": author["host_profile"],
-            "author_run_id": author["run_id"],
-            "critic_run_id": critic["run_id"],
+            "model_profile": active_meta["model_profile"],
+            "host_profile": active_meta["host_profile"],
+            "author_run_id": active_meta["author_run_id"],
+            "critic_run_id": active_meta["critic_run_id"],
             "assignment_sha256": assignment["assignment_sha256"],
-            "mechanism_evidence_sha256": canonical_sha256(evidence),
-            "critic_run_assignment_sha256": critic["run_assignment_sha256"],
-            "critic_run_sha256": critic["run_sha256"],
-            "critic_input_sha256": critic["input_sha256"],
-            "critic_output_sha256": critic["output_sha256"],
-            "author_run_assignment_sha256": author["run_assignment_sha256"],
-            "author_run_sha256": author["run_sha256"],
-            "author_input_sha256": author["input_sha256"],
-            "author_output_sha256": author["output_sha256"],
+            "mechanism_evidence_sha256": active_meta["mechanism_evidence_sha256"],
         },
         {
-            "total_wall_ms": total_wall_ms,
-            "total_tokens": total_tokens,
-            "model_calls": 2,
+            "execution_tier": active_meta["execution_tier"],
+            "total_wall_ms": active_meta["total_wall_ms"],
+            "total_tokens": active_meta["total_tokens"],
+            "model_calls": active_meta["model_calls"],
             "restarts": 0,
+            "automatic_deep": False,
         },
     )
 
@@ -599,18 +485,19 @@ def _require_review_package(
     outcome: str,
     case_id: str,
     package_sha256: str,
-) -> None:
+) -> dict[str, Any] | None:
     if outcome == "clarify":
         if value is not None:
             raise ValueError(f"candidate {case_id} clarification carries a review package")
-        return
+        return None
     package = _mapping(value, f"candidate {case_id} review package")
     if canonical_sha256(package) != package_sha256:
         raise ValueError(f"candidate {case_id} review package does not match its transaction proof")
+    return package
 
 
 def resource_ceiling_checks(
-    per_case: Mapping[str, Mapping[str, int]],
+    per_case: Mapping[str, Mapping[str, Any]],
     *,
     ceilings: Mapping[str, int],
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
@@ -626,13 +513,49 @@ def resource_ceiling_checks(
         "restarts": 0,
     }
     case_bindings = (
-        ("total_wall_ms", "maximum_case_total_wall_ms"),
         ("total_tokens", "maximum_case_total_tokens"),
         ("model_calls", "maximum_case_model_calls"),
         ("restarts", "maximum_case_restarts"),
     )
+    tier_ceiling = {
+        "standard": "maximum_standard_case_total_wall_ms",
+        "rescue": "maximum_rescue_case_total_wall_ms",
+        "explicit_deep": "maximum_explicit_deep_case_total_wall_ms",
+    }
+    explicit_deep_cases = 0
+    automatic_deep_cases = 0
     for case_id in sorted(per_case):
         telemetry = per_case[case_id]
+        tier = _text(telemetry.get("execution_tier"), f"{case_id}.execution_tier")
+        if tier not in tier_ceiling:
+            raise ValueError(f"{case_id}.execution_tier is unsupported")
+        wall_ms = _nonnegative_integer(
+            telemetry.get("total_wall_ms"), f"{case_id}.total_wall_ms"
+        )
+        totals["total_wall_ms"] += wall_ms
+        wall_ceiling = tier_ceiling[tier]
+        wall_threshold = int(ceilings[wall_ceiling])
+        rows.append(
+            {
+                "scope": "case",
+                "case_id": case_id,
+                "metric": f"{tier}_total_wall_ms",
+                "ceiling": wall_ceiling,
+                "observed": wall_ms,
+                "threshold": wall_threshold,
+                "evidence_status": "proven",
+                "passed": (
+                    wall_ms < wall_threshold
+                    if tier == "standard"
+                    else wall_ms <= wall_threshold
+                ),
+            }
+        )
+        explicit_deep_cases += int(tier == "explicit_deep")
+        automatic_deep = telemetry.get("automatic_deep")
+        if not isinstance(automatic_deep, bool):
+            raise ValueError(f"{case_id}.automatic_deep must be boolean")
+        automatic_deep_cases += int(automatic_deep)
         for metric, ceiling_name in case_bindings:
             observed = _nonnegative_integer(telemetry.get(metric), f"{case_id}.{metric}")
             totals[metric] += observed
@@ -649,6 +572,30 @@ def resource_ceiling_checks(
                     "passed": observed <= threshold,
                 }
             )
+    for metric, ceiling_name, observed in (
+        (
+            "explicit_deep_cases",
+            "maximum_explicit_deep_cases",
+            explicit_deep_cases,
+        ),
+        (
+            "automatic_deep_cases",
+            "maximum_automatic_deep_cases",
+            automatic_deep_cases,
+        ),
+    ):
+        threshold = int(ceilings[ceiling_name])
+        rows.append(
+            {
+                "scope": "cohort",
+                "metric": metric,
+                "ceiling": ceiling_name,
+                "observed": observed,
+                "threshold": threshold,
+                "evidence_status": "proven",
+                "passed": observed <= threshold,
+            }
+        )
     cohort_bindings = (
         ("total_wall_ms", "maximum_cohort_total_wall_ms"),
         ("total_tokens", "maximum_cohort_total_tokens"),

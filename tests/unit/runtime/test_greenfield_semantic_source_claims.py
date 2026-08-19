@@ -9,15 +9,12 @@ import pytest
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_packet import (
     require_semantic_intent_packet,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
-    semantic_materiality_assessment_sha256,
-)
 from odylith.runtime.domain_intelligence.greenfield_semantic_projection_plan import (
     build_semantic_projection_plan,
     semantic_projection_plan_mapping,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_source_claims import (
-    require_semantic_source_candidates,
+from odylith.runtime.domain_intelligence.greenfield_semantic_atomic_source_custody import (
+    select_atomic_source_claims,
 )
 from tests.unit.runtime.greenfield_semantic_intent_fixtures import (
     SEMANTIC_PROMPT,
@@ -32,19 +29,16 @@ SOURCE = Path(
 )
 
 
-def _rehash_assessment(packet: dict[str, object]) -> None:
-    assessment = packet["materiality_assessment"]
-    assert isinstance(assessment, dict)
-    packet["materiality_assessment_sha256"] = semantic_materiality_assessment_sha256(
-        assessment
-    )
-
-
-def test_source_candidates_lock_only_prompt_owned_graph_rows() -> None:
+def test_atomic_spans_carry_no_semantic_authority_and_author_claims_lock_source_rows() -> None:
     packet = semantic_intent_packet()
     verified = require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
-    assessment = verified.materiality_assessment
-    claims = assessment["source_candidates"]
+    candidates = verified.materiality_assessment["source_candidates"]
+    claims = verified.source_claims
+
+    assert all(
+        set(row) == {"candidate_id", "source_ref"}
+        for row in candidates["candidates"]
+    )
 
     assert {row["fact"]["fact_id"] for row in claims["facts"]} == {
         "identity.0",
@@ -113,14 +107,12 @@ def test_graph_author_cannot_change_or_add_source_authority(
 
 def test_source_claim_citation_must_resolve_exactly_to_prompt_evidence() -> None:
     packet = copy.deepcopy(semantic_intent_packet())
-    assessment = packet["materiality_assessment"]
     actor_claim = next(
         row
-        for row in assessment["source_candidates"]["facts"]
+        for row in packet["source_candidate_adjudication"]["source_claims"]["facts"]
         if row["fact"]["fact_id"] == "actor.0"
     )
     actor_claim["fact"]["source_refs"][0]["quote"] = "An invented actor claim."
-    _rehash_assessment(packet)
 
     with pytest.raises(ValueError, match="does not match exact evidence bytes"):
         require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
@@ -136,8 +128,9 @@ def test_source_claim_cannot_reference_an_unsettled_field() -> None:
     }
 
     with pytest.raises(ValueError, match="unresolved field"):
-        require_semantic_source_candidates(
+        select_atomic_source_claims(
             assessment["source_candidates"],
+            packet["source_candidate_adjudication"],
             evidence_sources={"operator_prompt": SEMANTIC_PROMPT, "operator_edit": ""},
             settled_fields=settled,
         )
@@ -159,8 +152,7 @@ def test_relation_custody_survives_the_single_projection_plan() -> None:
     assert custody["relation.implements.0"] == "bounded_interpretation"
 
 
-def test_source_claim_owner_has_no_regex_fuzzy_or_model_authority() -> None:
-    tree = ast.parse(SOURCE.read_text(encoding="utf-8"))
+def test_source_claim_owners_have_no_regex_fuzzy_or_model_authority() -> None:
     banned_imports = {
         "re",
         "regex",
@@ -170,17 +162,21 @@ def test_source_claim_owner_has_no_regex_fuzzy_or_model_authority() -> None:
         "spacy",
         "tokenize",
     }
-    imports = {
-        alias.name.split(".")[0]
-        for node in ast.walk(tree)
-        if isinstance(node, (ast.Import, ast.ImportFrom))
-        for alias in node.names
-    }
-    calls = {
-        node.func.id
-        for node in ast.walk(tree)
-        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
-    }
-
-    assert imports.isdisjoint(banned_imports)
-    assert not {"search", "match", "fullmatch", "findall", "model_call"} & calls
+    for source in (
+        SOURCE,
+        SOURCE.with_name("greenfield_semantic_atomic_source_custody.py"),
+    ):
+        tree = ast.parse(source.read_text(encoding="utf-8"))
+        imports = {
+            alias.name.split(".")[0]
+            for node in ast.walk(tree)
+            if isinstance(node, (ast.Import, ast.ImportFrom))
+            for alias in node.names
+        }
+        calls = {
+            node.func.id
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+        }
+        assert imports.isdisjoint(banned_imports)
+        assert not {"search", "match", "fullmatch", "findall", "model_call"} & calls

@@ -26,6 +26,93 @@ def semantic_source_ref_schema() -> dict[str, Any]:
     }
 
 
+def semantic_evidence_block_catalog(
+    evidence_sources: Mapping[str, str],
+) -> dict[str, dict[str, Any]]:
+    """Address exact evidence blocks without assigning them semantic meaning."""
+
+    catalog: dict[str, dict[str, Any]] = {}
+    for source_id in SEMANTIC_SOURCE_IDS:
+        source = str(evidence_sources.get(source_id, ""))
+        if not source:
+            continue
+        blocks = _evidence_blocks(source)
+        occurrences: dict[str, int] = {}
+        for index, quote in enumerate(dict.fromkeys(blocks)):
+            occurrence = occurrences.get(quote, 0) + 1
+            occurrences[quote] = occurrence
+            catalog[f"{source_id}.block.{index}"] = {
+                "source_id": source_id,
+                "quote": quote,
+                "occurrence": occurrence,
+            }
+    if not catalog:
+        raise ValueError("Semantic evidence block catalog is empty")
+    return catalog
+
+
+def semantic_evidence_block_schema(
+    catalog: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Return the provider schema for one deterministic evidence-block handle."""
+
+    if not catalog:
+        raise ValueError("Semantic evidence block catalog is empty")
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["ref_id"],
+        "properties": {"ref_id": {"type": "string", "enum": list(catalog)}},
+    }
+
+
+def bind_semantic_evidence_blocks(
+    value: Any,
+    *,
+    catalog: Mapping[str, Mapping[str, Any]],
+) -> Any:
+    """Replace provider block handles with canonical exact-byte citations."""
+
+    if isinstance(value, Mapping):
+        if set(value) == {"ref_id"}:
+            ref_id = value.get("ref_id")
+            if not isinstance(ref_id, str) or ref_id not in catalog:
+                raise ValueError("Semantic evidence block handle is outside its catalog")
+            return dict(catalog[ref_id])
+        return {
+            key: bind_semantic_evidence_blocks(nested, catalog=catalog)
+            for key, nested in value.items()
+        }
+    if isinstance(value, Sequence) and not isinstance(
+        value, (str, bytes, bytearray)
+    ):
+        return [
+            bind_semantic_evidence_blocks(nested, catalog=catalog)
+            for nested in value
+        ]
+    return value
+
+
+def _evidence_blocks(source: str) -> list[str]:
+    blocks: list[str] = []
+    start = 0
+    for index, character in enumerate(source):
+        at_boundary = character == "\n" or (
+            character in ".?!"
+            and (index + 1 == len(source) or source[index + 1].isspace())
+        )
+        if not at_boundary:
+            continue
+        block = source[start:index + (0 if character == "\n" else 1)].strip()
+        if block:
+            blocks.append(block)
+        start = index + 1
+    tail = source[start:].strip()
+    if tail:
+        blocks.append(tail)
+    return [block for block in blocks if len(block) <= 4000]
+
+
 def require_semantic_source_refs(
     value: Any,
     *,
@@ -209,6 +296,7 @@ def _nth_occurrence(source: str, quote: str, occurrence: int) -> int:
 
 __all__ = [
     "SEMANTIC_SOURCE_IDS",
+    "bind_semantic_evidence_blocks",
     "bind_semantic_source_ref_selections",
     "require_semantic_source_refs",
     "resolve_semantic_source_ref",
@@ -216,4 +304,6 @@ __all__ = [
     "semantic_source_ref_schema",
     "semantic_source_ref_catalog",
     "semantic_source_ref_selection_schema",
+    "semantic_evidence_block_catalog",
+    "semantic_evidence_block_schema",
 ]

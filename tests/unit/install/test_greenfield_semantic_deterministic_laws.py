@@ -16,10 +16,7 @@ if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
 from greenfield_semantic_development_cohort import CANDIDATE_BUNDLE_VERSION  # noqa: E402
-from greenfield_semantic_development_evidence import (  # noqa: E402
-    AUTHOR_SEGMENT_VERSION,
-    DEVELOPMENT_EVIDENCE_PLAN_VERSION,
-    MECHANISM_EVIDENCE_VERSION,
+from greenfield_semantic_release_support import (  # noqa: E402
     REQUIRED_DETERMINISTIC_LAW_IDS,
     canonical_sha256,
 )
@@ -28,6 +25,11 @@ from greenfield_semantic_deterministic_law_contract import (  # noqa: E402
 )
 from greenfield_semantic_deterministic_laws import (  # noqa: E402
     produce_deterministic_law_report,
+)
+from greenfield_semantic_pipeline_evidence import ACTIVE_EVIDENCE_PLAN_VERSION  # noqa: E402
+from greenfield_semantic_pipeline_receipts import PIPELINE_VERSION  # noqa: E402
+from odylith.runtime.domain_intelligence.greenfield_semantic_execution_contract import (  # noqa: E402
+    SEMANTIC_EXECUTION_EVIDENCE_VERSION,
 )
 from tests.unit.install.greenfield_semantic_release_test_fixtures import (  # noqa: E402
     deterministic_law_report_fixture,
@@ -73,9 +75,9 @@ def test_real_law_owner_emits_one_revision_bound_report_after_every_pass(
         report,
         implementation_revision=REVISION,
         candidate_bundle_version=CANDIDATE_BUNDLE_VERSION,
-        development_evidence_plan_version=DEVELOPMENT_EVIDENCE_PLAN_VERSION,
-        development_author_segment_version=AUTHOR_SEGMENT_VERSION,
-        mechanism_evidence_version=MECHANISM_EVIDENCE_VERSION,
+        development_evidence_plan_version=ACTIVE_EVIDENCE_PLAN_VERSION,
+        development_author_segment_version=PIPELINE_VERSION,
+        mechanism_evidence_version=SEMANTIC_EXECUTION_EVIDENCE_VERSION,
     )
 
 
@@ -146,9 +148,9 @@ def test_law_contract_rejects_hash_rebound_to_the_wrong_test_owner() -> None:
             tampered,
             implementation_revision=REVISION,
             candidate_bundle_version=CANDIDATE_BUNDLE_VERSION,
-            development_evidence_plan_version=DEVELOPMENT_EVIDENCE_PLAN_VERSION,
-            development_author_segment_version=AUTHOR_SEGMENT_VERSION,
-            mechanism_evidence_version=MECHANISM_EVIDENCE_VERSION,
+            development_evidence_plan_version=ACTIVE_EVIDENCE_PLAN_VERSION,
+            development_author_segment_version=PIPELINE_VERSION,
+            mechanism_evidence_version=SEMANTIC_EXECUTION_EVIDENCE_VERSION,
         )
 
 

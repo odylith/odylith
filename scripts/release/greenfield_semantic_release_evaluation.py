@@ -17,7 +17,7 @@ from math import sqrt
 from pathlib import Path
 from typing import Any
 
-from greenfield_semantic_development_evidence import canonical_sha256
+from greenfield_semantic_release_support import canonical_sha256
 from greenfield_semantic_release_evidence import CANDIDATE_BUNDLE_VERSION
 from greenfield_semantic_release_evidence import EVALUATION_CONTRACT_VERSION
 from greenfield_semantic_release_evidence import FLOOR_NAMES
@@ -58,7 +58,7 @@ def evaluate_semantic_release(
     corpus: Mapping[str, Any],
     corpus_sha256: str,
     contract: Mapping[str, Any],
-    development_evidence_plan: Mapping[str, Any],
+    active_evidence_plan: Mapping[str, Any],
     deterministic_law_report: Mapping[str, Any],
     candidates: Mapping[str, Any],
     reviews: Sequence[Mapping[str, Any]],
@@ -76,7 +76,7 @@ def evaluate_semantic_release(
             corpus_sha256=corpus_sha256,
             case_index=case_index,
             contract=frozen,
-            evidence_plan=development_evidence_plan,
+            active_evidence_plan=active_evidence_plan,
             deterministic_law_report=deterministic_law_report,
         )
     )
@@ -678,7 +678,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--corpus", type=Path, required=True)
     parser.add_argument("--contract", type=Path, required=True)
-    parser.add_argument("--development-evidence-plan", type=Path, required=True)
+    parser.add_argument("--active-evidence-plan", type=Path, required=True)
     parser.add_argument("--deterministic-law-report", type=Path, required=True)
     parser.add_argument("--candidates", type=Path, required=True)
     parser.add_argument("--review", type=Path, action="append", required=True)
@@ -693,7 +693,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         corpus=corpus,
         corpus_sha256=hashlib.sha256(corpus_bytes).hexdigest(),
         contract=_load(args.contract),
-        development_evidence_plan=_load(args.development_evidence_plan),
+        active_evidence_plan=_load(args.active_evidence_plan),
         deterministic_law_report=_load(args.deterministic_law_report),
         candidates=_load(args.candidates),
         reviews=[_load(path) for path in args.review],

@@ -1,113 +1,81 @@
-"""Compile two-stage, blinded Greenfield development evidence."""
+"""Compile active Greenfield pipeline receipts into a release candidate bundle."""
 
 from __future__ import annotations
 
 import argparse
 from collections.abc import Mapping, Sequence
 import hashlib
+import json
 from pathlib import Path
-import tempfile
-import time
 from typing import Any
 
-from greenfield_semantic_development_evidence import AUTHOR_SEGMENT_VERSION
-from greenfield_semantic_development_evidence import DEVELOPMENT_EVIDENCE_PLAN_VERSION
-from greenfield_semantic_development_evidence import MECHANISM_EVIDENCE_VERSION
-from greenfield_semantic_development_evidence import MECHANISM_ID
-from greenfield_semantic_development_evidence import build_materiality_critic_input
-from greenfield_semantic_development_evidence import build_semantic_graph_author_input
-from greenfield_semantic_development_evidence import canonical_sha256
-from greenfield_semantic_development_evidence import development_mechanism_contract_sha256
-from greenfield_semantic_development_evidence import exact_keys
-from greenfield_semantic_development_evidence import exclusive_json
-from greenfield_semantic_development_evidence import json_mapping
-from greenfield_semantic_development_evidence import mapped_rows
-from greenfield_semantic_development_evidence import mapping
-from greenfield_semantic_development_evidence import require_development_evidence_plan
-from greenfield_semantic_development_evidence import require_run_evidence
-from greenfield_semantic_development_evidence import safe_json_file
-from greenfield_semantic_development_evidence import text
-from greenfield_semantic_development_evidence import unique_index
-from greenfield_semantic_deterministic_law_contract import require_deterministic_law_report
-from greenfield_semantic_release_evaluation import CANDIDATE_BUNDLE_VERSION
+from greenfield_semantic_release_support import canonical_sha256
+from greenfield_semantic_release_support import exclusive_json
+from greenfield_semantic_deterministic_law_contract import (
+    require_deterministic_law_report,
+)
+from greenfield_semantic_pipeline_evidence import ACTIVE_EVIDENCE_PLAN_VERSION
+from greenfield_semantic_pipeline_evidence import require_active_evidence_plan
+from greenfield_semantic_pipeline_evidence import require_successful_pipeline_evidence
+from greenfield_semantic_pipeline_receipts import BOUNDED_PIPELINE_VERSION
+from greenfield_semantic_pipeline_receipts import PIPELINE_VERSION
+from greenfield_semantic_release_evidence import CANDIDATE_BUNDLE_VERSION
 from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract import (
     semantic_intent_authoring_contract_sha256,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
-    SEMANTIC_INTENT_PACKET_VERSION,
-    semantic_evidence_sha256,
+from odylith.runtime.domain_intelligence.greenfield_semantic_execution_contract import (
+    SEMANTIC_EXECUTION_EVIDENCE_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_packet import (
     require_semantic_intent_packet,
-    semantic_intent_authority,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
-    semantic_materiality_assessment_sha256,
-)
-from odylith.runtime.domain_intelligence.greenfield_semantic_workflow import (
-    build_verified_semantic_proposal_for_repo,
-    compile_verified_semantic_transaction,
-)
-
-
-EVIDENCE_REPOSITORY_NAME = "greenfield-evidence-repository"
 
 
 def compile_development_candidate_bundle(
     *,
     corpus_path: Path,
-    evidence_plan_path: Path,
-    segment_paths: Sequence[Path],
+    active_evidence_plan_path: Path,
+    receipt_paths: Sequence[Path],
     deterministic_law_evidence_path: Path,
     implementation_revision: str,
     output_path: Path,
 ) -> dict[str, Any]:
-    """Validate isolated stage evidence and preserve each exact review package."""
+    """Bind each frozen assignment to one successful active-mechanism receipt."""
 
     revision = _git_revision(implementation_revision)
-    corpus_file = safe_json_file(corpus_path, "development corpus")
-    corpus = json_mapping(corpus_file, "development corpus")
+    corpus_file, corpus = _json_file(corpus_path, "development corpus")
     corpus_sha256 = _sha256_file(corpus_file)
-    cases = unique_index(
-        mapped_rows(corpus.get("cases"), "development corpus cases"),
-        "case_id",
-        "development corpus cases",
-    )
-    plan_file = safe_json_file(evidence_plan_path, "development evidence plan")
-    plan = require_development_evidence_plan(
-        json_mapping(plan_file, "development evidence plan"),
+    cases = _case_index(corpus)
+    _, raw_plan = _json_file(active_evidence_plan_path, "active evidence plan")
+    plan = require_active_evidence_plan(
+        raw_plan,
         corpus=corpus,
         corpus_sha256=corpus_sha256,
     )
     plan_sha256 = canonical_sha256(plan)
-    assignments = unique_index(plan["cases"], "case_id", "development evidence assignments")
-    law_file = safe_json_file(deterministic_law_evidence_path, "deterministic law report")
+    assignments = _unique_index(plan["cases"], "case_id", "active assignments")
+    _, raw_laws = _json_file(
+        deterministic_law_evidence_path, "deterministic law report"
+    )
     law_report = require_deterministic_law_report(
-        json_mapping(law_file, "deterministic law report"),
+        raw_laws,
         implementation_revision=revision,
         candidate_bundle_version=CANDIDATE_BUNDLE_VERSION,
-        development_evidence_plan_version=DEVELOPMENT_EVIDENCE_PLAN_VERSION,
-        development_author_segment_version=AUTHOR_SEGMENT_VERSION,
-        mechanism_evidence_version=MECHANISM_EVIDENCE_VERSION,
+        development_evidence_plan_version=ACTIVE_EVIDENCE_PLAN_VERSION,
+        development_author_segment_version=PIPELINE_VERSION,
+        mechanism_evidence_version=SEMANTIC_EXECUTION_EVIDENCE_VERSION,
     )
-    law_report_sha256 = canonical_sha256(law_report)
-    authored = _author_segment_index(
-        segment_paths,
-        plan=plan,
-        plan_sha256=plan_sha256,
-        expected_case_ids=set(cases),
-    )
+    law_sha256 = canonical_sha256(law_report)
+    receipts = _receipt_index(receipt_paths)
+    if set(receipts) != set(cases):
+        raise RuntimeError("active pipeline receipts must cover every case exactly once")
     compiled = [
         _compile_case(
             case_id=case_id,
-            prompt=text(cases[case_id].get("prompt"), f"{case_id} prompt", maximum=500_000),
+            prompt=_text(cases[case_id].get("prompt"), f"{case_id} prompt"),
             assignment=assignments[case_id],
-            segment_row=authored[case_id],
-            corpus_path=corpus_file,
-            plan_path=plan_file,
-            plan=plan,
-            plan_sha256=plan_sha256,
-            law_report_sha256=law_report_sha256,
+            receipt=receipts[case_id],
+            law_report_sha256=law_sha256,
         )
         for case_id in sorted(cases)
     ]
@@ -116,8 +84,8 @@ def compile_development_candidate_bundle(
         "corpus_sha256": corpus_sha256,
         "implementation_revision": revision,
         "authoring_contract_sha256": semantic_intent_authoring_contract_sha256(),
-        "development_evidence_plan_sha256": plan_sha256,
-        "deterministic_law_report_sha256": law_report_sha256,
+        "active_evidence_plan_sha256": plan_sha256,
+        "deterministic_law_report_sha256": law_sha256,
         "cohort_nonce": plan["cohort_nonce"],
         "cases": compiled,
     }
@@ -125,290 +93,134 @@ def compile_development_candidate_bundle(
     return bundle
 
 
-def _author_segment_index(
-    paths: Sequence[Path],
-    *,
-    plan: Mapping[str, Any],
-    plan_sha256: str,
-    expected_case_ids: set[str],
-) -> dict[str, Mapping[str, Any]]:
-    authored: dict[str, Mapping[str, Any]] = {}
-    for path in paths:
-        segment = json_mapping(
-            safe_json_file(path, "development author segment"),
-            "development author segment",
-        )
-        exact_keys(
-            segment,
-            {"version", "evidence_plan_sha256", "cohort_nonce", "cases"},
-            "development author segment",
-        )
-        if segment.get("version") != AUTHOR_SEGMENT_VERSION:
-            raise RuntimeError("development author segment uses an unsupported version")
-        if (
-            segment.get("evidence_plan_sha256") != plan_sha256
-            or segment.get("cohort_nonce") != plan["cohort_nonce"]
-        ):
-            raise RuntimeError("development author segment does not match its runner plan")
-        for row in mapped_rows(segment.get("cases"), "development author segment cases"):
-            exact_keys(
-                row,
-                {"case_id", "case_nonce", "outcome", "critic_stage", "author_stage"},
-                "development author segment case",
-            )
-            case_id = text(row.get("case_id"), "segment case id", maximum=200)
-            if case_id in authored:
-                raise RuntimeError(f"development case has multiple authoring records: {case_id}")
-            authored[case_id] = row
-    if set(authored) != expected_case_ids:
-        missing = sorted(expected_case_ids - set(authored))
-        extra = sorted(set(authored) - expected_case_ids)
-        raise RuntimeError(f"development author coverage mismatch; missing={missing}, extra={extra}")
-    return authored
-
-
 def _compile_case(
     *,
     case_id: str,
     prompt: str,
     assignment: Mapping[str, Any],
-    segment_row: Mapping[str, Any],
-    corpus_path: Path,
-    plan_path: Path,
-    plan: Mapping[str, Any],
-    plan_sha256: str,
+    receipt: Mapping[str, Any],
     law_report_sha256: str,
 ) -> dict[str, Any]:
-    if segment_row.get("case_nonce") != assignment["case_nonce"]:
-        raise RuntimeError(f"{case_id} segment does not match its runner-issued case nonce")
-    critic_input = build_materiality_critic_input(
-        corpus_path=corpus_path,
-        evidence_plan_path=plan_path,
-        case_id=case_id,
-    )
-    critic_stage = mapping(segment_row.get("critic_stage"), f"{case_id} critic stage")
-    exact_keys(
-        critic_stage,
-        _run_fields("critic") | {"materiality_assessment"},
-        f"{case_id} critic stage",
-    )
-    assessment = mapping(
-        critic_stage.get("materiality_assessment"),
-        f"{case_id} materiality assessment",
-    )
-    author_input = build_semantic_graph_author_input(
-        corpus_path=corpus_path,
-        evidence_plan_path=plan_path,
-        case_id=case_id,
-        materiality_assessment=assessment,
-    )
-    materiality_sha256 = semantic_materiality_assessment_sha256(assessment)
-    critic_evidence = require_run_evidence(
-        {key: value for key, value in critic_stage.items() if key != "materiality_assessment"},
-        stage="critic",
-        assignment=assignment["critic_assignment"],
-        expected_input_sha256=canonical_sha256(critic_input),
-        expected_output_sha256=canonical_sha256(assessment),
-    )
-    author_stage = mapping(segment_row.get("author_stage"), f"{case_id} author stage")
-    exact_keys(
-        author_stage,
-        _run_fields("author")
-        | {
-            "source_candidate_adjudication",
-            "semantic_extension",
-            "semantic_intent",
-        },
-        f"{case_id} author stage",
-    )
-    source_candidate_adjudication = mapping(
-        author_stage.get("source_candidate_adjudication"),
-        f"{case_id} source candidate adjudication",
-    )
-    semantic_extension = mapping(
-        author_stage.get("semantic_extension"),
-        f"{case_id} Semantic graph extension",
-    )
-    semantic_intent = mapping(author_stage.get("semantic_intent"), f"{case_id} Semantic Intent")
-    author_output = {
-        "source_candidate_adjudication": source_candidate_adjudication,
-        "semantic_extension": semantic_extension,
-        "self_challenge": author_stage.get("self_challenge"),
-    }
-    author_evidence = require_run_evidence(
-        {
-            key: value
-            for key, value in author_stage.items()
-            if key
-            not in {
-                "source_candidate_adjudication",
-                "semantic_extension",
-                "semantic_intent",
-            }
-        },
-        stage="author",
-        assignment=assignment["author_assignment"],
-        expected_input_sha256=canonical_sha256(author_input),
-        expected_output_sha256=canonical_sha256(author_output),
-        materiality_assessment_sha256=materiality_sha256,
-    )
-    if critic_evidence["host_runtime"] != author_evidence["host_runtime"]:
-        raise RuntimeError(f"{case_id} critic and author used different host runtimes")
-    started_ns = time.monotonic_ns()
-    packet = {
-        "version": SEMANTIC_INTENT_PACKET_VERSION,
-        "evidence_sha256": semantic_evidence_sha256(
-            {"operator_prompt": prompt, "operator_edit": ""}
-        ),
-        "authoring_contract_sha256": semantic_intent_authoring_contract_sha256(),
-        "materiality_assessment": assessment,
-        "materiality_assessment_sha256": materiality_sha256,
-        "source_candidate_adjudication": source_candidate_adjudication,
-        "critic_run": {
-            "capability_profile": critic_evidence["capability_profile"],
-            "critic_run_id": critic_evidence["run_id"],
-            "host_profile": critic_evidence["host_profile"],
-            "independent_context": True,
-        },
-        "author_run": {
-            "capability_profile": author_evidence["capability_profile"],
-            "author_run_id": author_evidence["run_id"],
-        },
-        "semantic_intent": semantic_intent,
-    }
+    attempt = _attempt(receipt)
+    packet = _mapping(attempt.get("packet"), f"{case_id} semantic packet")
     try:
         verified = require_semantic_intent_packet(packet, prompt=prompt)
-        outcome = str(segment_row.get("outcome") or "")
-        transaction_proof, review_package = _transaction_proof(
+        evidence, metadata = require_successful_pipeline_evidence(
+            receipt,
             case_id=case_id,
-            outcome=outcome,
-            verified=verified,
             prompt=prompt,
-            law_report_sha256=law_report_sha256,
+            semantic_artifact=packet,
+            assignment=assignment,
         )
     except (RuntimeError, ValueError) as error:
-        raise RuntimeError(f"{case_id} failed two-stage Semantic Intent compilation: {error}") from error
-    compile_wall_ms = max(1, (time.monotonic_ns() - started_ns + 999_999) // 1_000_000)
-    total_tokens = (
-        critic_evidence["token_usage"]["total_tokens"]
-        + author_evidence["token_usage"]["total_tokens"]
-    )
-    total_wall_ms = critic_evidence["wall_ms"] + author_evidence["wall_ms"] + compile_wall_ms
-    mechanism_evidence = {
-        "version": MECHANISM_EVIDENCE_VERSION,
-        "mechanism_id": MECHANISM_ID,
-        "mechanism_contract_sha256": development_mechanism_contract_sha256(),
-        "cohort_nonce": plan["cohort_nonce"],
-        "cohort_assignment_sha256": plan["cohort_assignment_sha256"],
-        "case_nonce": assignment["case_nonce"],
-        "assignment_sha256": assignment["assignment_sha256"],
-        "evidence_plan_sha256": plan_sha256,
-        "authoring_contract_sha256": semantic_intent_authoring_contract_sha256(),
-        "critic": critic_evidence,
-        "author": author_evidence,
-        "compile_wall_ms": compile_wall_ms,
-        "total_wall_ms": total_wall_ms,
-        "model_call_count": 2,
-        "restart_count": 0,
-        "total_tokens": total_tokens,
-    }
+        raise RuntimeError(f"{case_id} active pipeline evidence is invalid: {error}") from error
+    outcome = str(attempt["outcome"])
+    status = str(verified.semantic_intent.get("status"))
+    if (outcome, status) not in {
+        ("commit", "complete"),
+        ("clarify", "clarification_required"),
+    }:
+        raise RuntimeError(f"{case_id} active outcome disagrees with its semantic packet")
+    if outcome == "commit":
+        review_package = metadata["review_package"]
+        transaction_proof = {
+            "status": "passed",
+            "transaction_sha256": metadata["transaction_sha256"],
+            "package_sha256": metadata["review_package_sha256"],
+            "deterministic_law_failures": [],
+            "deterministic_law_evidence_sha256": law_report_sha256,
+            "post_confirm_semantic_calls": 0,
+            "sealed_readback_equal": True,
+            "rollback_recovery_passed": True,
+        }
+    else:
+        review_package = None
+        transaction_proof = {
+            "status": "not_applicable",
+            "transaction_sha256": "",
+            "package_sha256": "",
+            "deterministic_law_failures": [],
+            "deterministic_law_evidence_sha256": law_report_sha256,
+            "post_confirm_semantic_calls": 0,
+            "sealed_readback_equal": False,
+            "rollback_recovery_passed": False,
+        }
     return {
         "case_id": case_id,
         "prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
         "outcome": outcome,
         "semantic_artifact": packet,
-        "mechanism_evidence": mechanism_evidence,
+        "mechanism_evidence": evidence,
         "review_package": review_package,
         "transaction_proof": transaction_proof,
     }
 
 
-def _transaction_proof(
-    *,
-    case_id: str,
-    outcome: str,
-    verified: Any,
-    prompt: str,
-    law_report_sha256: str,
-) -> tuple[dict[str, Any], dict[str, Any] | None]:
-    if outcome == "commit":
-        if verified.semantic_intent.get("status") != "complete":
-            raise RuntimeError("commit outcome is clarification-bound")
-        authority = semantic_intent_authority(verified, prompt=prompt)
-        with tempfile.TemporaryDirectory(prefix=f"odylith-{case_id}-") as temporary:
-            root = Path(temporary) / EVIDENCE_REPOSITORY_NAME
-            root.mkdir()
-            proposal = build_verified_semantic_proposal_for_repo(
-                repo_root=root,
-                authority=authority,
-                release_selector="0.0.1",
-            )
-            transaction = compile_verified_semantic_transaction(
-                repo_root=root,
-                proposal=proposal,
-                release_selector="0.0.1",
-            )
-            review_package = dict(transaction.proposal)
-        with tempfile.TemporaryDirectory(prefix=f"odylith-{case_id}-replay-") as temporary:
-            replay_root = Path(temporary) / EVIDENCE_REPOSITORY_NAME
-            replay_root.mkdir()
-            replay_package = build_verified_semantic_proposal_for_repo(
-                repo_root=replay_root,
-                authority=authority,
-                release_selector="0.0.1",
-            )
-        if canonical_sha256(review_package) != canonical_sha256(replay_package):
-            raise RuntimeError("graph-native package is not reproducible for independent review")
-        summary = transaction.summary()
-        if summary.get("verified") is not True or summary.get("quality_status") != "passed":
-            raise RuntimeError("graph-native package is not verified and quality-approved")
-        return (
-            {
-                "status": "passed",
-                "transaction_sha256": str(transaction.transaction_hash),
-                "package_sha256": canonical_sha256(review_package),
-                "deterministic_law_failures": [],
-                "deterministic_law_evidence_sha256": law_report_sha256,
-                "post_confirm_semantic_calls": 0,
-                "sealed_readback_equal": True,
-                "rollback_recovery_passed": True,
-            },
-            review_package,
-        )
-    if outcome == "clarify":
-        if verified.semantic_intent.get("status") != "clarification_required":
-            raise RuntimeError("clarify outcome lacks an assessed clarification packet")
-        return (
-            {
-                "status": "not_applicable",
-                "transaction_sha256": "",
-                "package_sha256": "",
-                "deterministic_law_failures": [],
-                "deterministic_law_evidence_sha256": law_report_sha256,
-                "post_confirm_semantic_calls": 0,
-                "sealed_readback_equal": False,
-                "rollback_recovery_passed": False,
-            },
-            None,
-        )
-    raise RuntimeError("outcome must be commit or clarify")
-
-
-def _run_fields(stage: str) -> set[str]:
-    result = {
-        "run_nonce", "run_id", "run_assignment_sha256", "run_sha256",
-        "host_profile", "capability_profile", "execution_profile", "host_runtime",
-        "independent_context", "attempt_count",
-        "validation_error_repair_count", "input_sha256", "output_sha256",
-        "access_receipt", "wall_ms", "token_usage",
-    }
-    if stage == "author":
-        result.update({"materiality_assessment_sha256", "self_challenge"})
+def _receipt_index(paths: Sequence[Path]) -> dict[str, Mapping[str, Any]]:
+    result: dict[str, Mapping[str, Any]] = {}
+    for path in paths:
+        _, receipt = _json_file(path, "active pipeline receipt")
+        case_id = _text(receipt.get("case_id"), "receipt case id")
+        if case_id in result:
+            raise RuntimeError(f"active pipeline receipt is duplicated: {case_id}")
+        result[case_id] = receipt
     return result
 
 
+def _attempt(receipt: Mapping[str, Any]) -> dict[str, Any]:
+    version = receipt.get("version")
+    if version == PIPELINE_VERSION:
+        return dict(receipt)
+    if version == BOUNDED_PIPELINE_VERSION:
+        return _mapping(receipt.get("attempt"), "rescue pipeline attempt")
+    raise RuntimeError("active pipeline receipt uses an unsupported version")
+
+
+def _case_index(corpus: Mapping[str, Any]) -> dict[str, Mapping[str, Any]]:
+    rows = corpus.get("cases")
+    if not isinstance(rows, list) or any(not isinstance(row, Mapping) for row in rows):
+        raise RuntimeError("development corpus cases must be a JSON object array")
+    return _unique_index(rows, "case_id", "development corpus cases")
+
+
+def _unique_index(
+    rows: Sequence[Mapping[str, Any]], key: str, label: str
+) -> dict[str, Mapping[str, Any]]:
+    result: dict[str, Mapping[str, Any]] = {}
+    for row in rows:
+        value = _text(row.get(key), f"{label}.{key}")
+        if value in result:
+            raise RuntimeError(f"{label} contains duplicate {key}: {value}")
+        result[value] = dict(row)
+    return result
+
+
+def _json_file(path: Path, label: str) -> tuple[Path, dict[str, Any]]:
+    target = Path(path).expanduser().resolve()
+    if not target.is_file():
+        raise RuntimeError(f"{label} does not exist: {target}")
+    try:
+        value = json.loads(target.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise RuntimeError(f"{label} is not readable JSON") from error
+    return target, _mapping(value, label)
+
+
+def _mapping(value: Any, label: str) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        raise RuntimeError(f"{label} must be a JSON object")
+    return dict(value)
+
+
+def _text(value: Any, label: str) -> str:
+    text = str(value or "").strip()
+    if not text:
+        raise RuntimeError(f"{label} must be non-empty text")
+    return text
+
+
 def _git_revision(value: Any) -> str:
-    revision = text(value, "implementation revision", maximum=40)
+    revision = _text(value, "implementation revision")
     if len(revision) != 40 or any(character not in "0123456789abcdef" for character in revision):
         raise RuntimeError("implementation revision must be a full Git revision")
     return revision
@@ -425,16 +237,16 @@ def _sha256_file(path: Path) -> str:
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--corpus", type=Path, required=True)
-    parser.add_argument("--evidence-plan", type=Path, required=True)
-    parser.add_argument("--segment", type=Path, action="append", required=True)
+    parser.add_argument("--active-evidence-plan", type=Path, required=True)
+    parser.add_argument("--receipt", type=Path, action="append", required=True)
     parser.add_argument("--deterministic-law-evidence", type=Path, required=True)
     parser.add_argument("--implementation-revision", required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
     compile_development_candidate_bundle(
         corpus_path=args.corpus,
-        evidence_plan_path=args.evidence_plan,
-        segment_paths=args.segment,
+        active_evidence_plan_path=args.active_evidence_plan,
+        receipt_paths=args.receipt,
         deterministic_law_evidence_path=args.deterministic_law_evidence,
         implementation_revision=args.implementation_revision,
         output_path=args.output,
@@ -444,3 +256,6 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+__all__ = ["CANDIDATE_BUNDLE_VERSION", "compile_development_candidate_bundle"]

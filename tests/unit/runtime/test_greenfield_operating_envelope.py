@@ -5,15 +5,12 @@ from pathlib import Path
 import pytest
 
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
+    DEEP_COMPLETION_DEADLINE_SECONDS,
     GREENFIELD_OPERATING_ENVELOPE_VERSION,
-)
-from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     LOWER_CAPABILITY_SAFETY_PROFILE,
-)
-from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
+    RESCUE_COMPLETION_DEADLINE_SECONDS,
+    STANDARD_COMPLETION_DEADLINE_SECONDS,
     greenfield_operating_envelope_receipt,
-)
-from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     require_supported_greenfield_operating_envelope,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
@@ -44,6 +41,40 @@ def test_greenfield_operating_envelope_accepts_one_bounded_governance_product() 
     assert receipt["status"] == "supported"
     assert receipt["scope"]["write_boundary"] == "repo_local_governance_package"
     assert receipt["host_contract"]["confirmation_hosts"] == ["codex", "claude"]
+    assert receipt["completion_contract"] == {
+        "scope": "every_request_within_the_declared_operating_envelope",
+        "terminal_consumer_outcomes": [
+            "sealed_reviewable_preview",
+            "one_material_question",
+            "actionable_unsupported_evidence_notice",
+            "explicit_environment_or_transaction_outcome",
+        ],
+        "quality_required_for_success": True,
+        "partial_package_is_success": False,
+        "generic_product_intent_failure_allowed": False,
+        "timeout_is_success": False,
+        "post_confirm_semantic_or_model_work_allowed": False,
+    }
+    assert receipt["latency_contract"] == {
+        "measurement": "consumer_request_to_preview_or_one_material_question",
+        "standard": {
+            "deadline_seconds": STANDARD_COMPLETION_DEADLINE_SECONDS,
+            "comparison": "strictly_less_than",
+            "activation": "default",
+        },
+        "rescue": {
+            "deadline_seconds": RESCUE_COMPLETION_DEADLINE_SECONDS,
+            "comparison": "less_than_or_equal",
+            "activation": "typed_semantic_or_quality_failure_only",
+        },
+        "deep": {
+            "deadline_seconds": DEEP_COMPLETION_DEADLINE_SECONDS,
+            "comparison": "less_than_or_equal",
+            "activation": "explicit_consumer_or_ci_opt_in_only",
+        },
+        "overrun_policy": "fail_closed_with_clear_timeout_outcome",
+        "unbounded_retry_allowed": False,
+    }
     assert receipt["evidence_contract"]["languages"] == ["en"]
     assert receipt["evidence_contract"]["formats"] == ["semantic_intent_packet"]
     assert receipt["evidence_contract"]["semantic_intent_packet_versions"] == [
@@ -197,6 +228,65 @@ def test_greenfield_operating_envelope_rejects_mutated_packet_version_contract()
     ]
 
     with pytest.raises(ValueError, match="packet version is unsupported"):
+        require_supported_greenfield_operating_envelope(receipt)
+
+
+@pytest.mark.parametrize(
+    ("path", "replacement"),
+    [
+        (("scope",), "most_requests"),
+        (("terminal_consumer_outcomes",), ["sealed_reviewable_preview"]),
+        (("quality_required_for_success",), False),
+        (("partial_package_is_success",), True),
+        (("generic_product_intent_failure_allowed",), True),
+        (("timeout_is_success",), True),
+        (("post_confirm_semantic_or_model_work_allowed",), True),
+    ],
+)
+def test_greenfield_operating_envelope_rejects_completion_contract_drift(
+    path: tuple[str, ...],
+    replacement: object,
+) -> None:
+    receipt = greenfield_operating_envelope_receipt(
+        facts={"internal_systems": ["Intake"]},
+        source_format="semantic_intent_packet",
+        source_size_bytes=120,
+    )
+    target = receipt["completion_contract"]
+    for key in path[:-1]:
+        target = target[key]
+    target[path[-1]] = replacement
+
+    with pytest.raises(ValueError, match="completion contract is unsupported"):
+        require_supported_greenfield_operating_envelope(receipt)
+
+
+@pytest.mark.parametrize(
+    ("path", "replacement"),
+    [
+        (("standard", "deadline_seconds"), 61),
+        (("standard", "comparison"), "less_than_or_equal"),
+        (("rescue", "activation"), "automatic"),
+        (("deep", "activation"), "automatic"),
+        (("deep", "deadline_seconds"), 121),
+        (("unbounded_retry_allowed",), True),
+    ],
+)
+def test_greenfield_operating_envelope_rejects_latency_contract_drift(
+    path: tuple[str, ...],
+    replacement: object,
+) -> None:
+    receipt = greenfield_operating_envelope_receipt(
+        facts={"internal_systems": ["Intake"]},
+        source_format="semantic_intent_packet",
+        source_size_bytes=120,
+    )
+    target = receipt["latency_contract"]
+    for key in path[:-1]:
+        target = target[key]
+    target[path[-1]] = replacement
+
+    with pytest.raises(ValueError, match="latency contract is unsupported"):
         require_supported_greenfield_operating_envelope(receipt)
 
 

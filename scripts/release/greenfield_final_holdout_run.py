@@ -14,19 +14,21 @@ from typing import Any
 from greenfield_final_holdout_guard import claim_final_holdout_run
 from greenfield_final_holdout_guard import complete_final_holdout_run
 from greenfield_final_holdout_guard import read_final_holdout_run
-from greenfield_semantic_development_evidence import canonical_sha256
-from greenfield_semantic_development_evidence import development_mechanism_contract_sha256
-from greenfield_semantic_development_evidence import prepare_development_evidence_plan
-from greenfield_semantic_development_evidence import require_development_evidence_plan
+from greenfield_semantic_release_support import canonical_sha256
+from greenfield_semantic_pipeline_evidence import prepare_active_evidence_plan
+from greenfield_semantic_pipeline_evidence import require_active_evidence_plan
 from greenfield_semantic_release_evaluation import _contract as _require_evaluation_contract
 from greenfield_semantic_release_evaluation import evaluate_semantic_release
 from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract import (
     semantic_intent_authoring_contract_sha256,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_execution_contract import (
+    semantic_execution_contract_sha256,
+)
 
 
-FINAL_HOLDOUT_WORK_VERSION = "odylith.greenfield.final-holdout-work.v2"
-FINAL_HOLDOUT_FAILURE_VERSION = "odylith.greenfield.final-holdout-failure.v2"
+FINAL_HOLDOUT_WORK_VERSION = "odylith.greenfield.final-holdout-work.v3"
+FINAL_HOLDOUT_FAILURE_VERSION = "odylith.greenfield.final-holdout-failure.v3"
 
 
 def prepare_final_holdout_run(
@@ -78,15 +80,12 @@ def prepare_final_holdout_run(
         if len(case_ids) != len(set(case_ids)) or set(case_ids) != set(annotation_ids):
             raise RuntimeError("final holdout cases and annotations are not one-to-one")
         hosts = _strings(contract.get("required_host_profiles"), "required host profiles")
-        profiles = _strings(contract.get("required_model_profiles"), "required model profiles")
         with tempfile.TemporaryDirectory(prefix="odylith-final-holdout-plan-") as temporary:
-            plan = prepare_development_evidence_plan(
+            plan = prepare_active_evidence_plan(
                 corpus_path=_safe_file(holdout_path, "final holdout"),
                 host_profiles=hosts,
                 output_path=Path(temporary) / "evidence-plan.json",
             )
-        if profiles != [plan["capability_profile"]]:
-            raise RuntimeError("final holdout authority profile differs from its evidence plan")
         plan_sha256 = canonical_sha256(plan)
         plan_cases = {
             str(row["case_id"]): row
@@ -104,8 +103,7 @@ def prepare_final_holdout_run(
                     "prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
                     "case_nonce": assignment["case_nonce"],
                     "assignment_sha256": assignment["assignment_sha256"],
-                    "critic_assignment": assignment["critic_assignment"],
-                    "author_assignment": assignment["author_assignment"],
+                    "host_profile": assignment["host_profile"],
                 }
             )
         work = {
@@ -117,9 +115,9 @@ def prepare_final_holdout_run(
             "tracked_corpus_sha256": corpus_hash,
             "evaluation_contract_sha256": claimed["evaluation_contract_sha256"],
             "authoring_contract_sha256": claimed["authoring_contract_sha256"],
-            "mechanism_contract_sha256": development_mechanism_contract_sha256(),
-            "development_evidence_plan_sha256": plan_sha256,
-            "development_evidence_plan": plan,
+            "mechanism_contract_sha256": semantic_execution_contract_sha256(),
+            "active_evidence_plan_sha256": plan_sha256,
+            "active_evidence_plan": plan,
             "cases": assigned,
         }
         _exclusive_json(target, work)
@@ -183,8 +181,8 @@ def score_final_holdout_run(
                 "version", "status", "implementation_revision", "holdout_sha256",
                 "evaluation_manifest_sha256", "tracked_corpus_sha256",
                 "evaluation_contract_sha256", "authoring_contract_sha256",
-                "mechanism_contract_sha256", "development_evidence_plan_sha256",
-                "development_evidence_plan", "cases",
+                "mechanism_contract_sha256", "active_evidence_plan_sha256",
+                "active_evidence_plan", "cases",
             },
             "final holdout work",
         )
@@ -200,22 +198,22 @@ def score_final_holdout_run(
             or work.get("evaluation_manifest_sha256")
             != ledger.get("evaluation_manifest_sha256")
             or work.get("mechanism_contract_sha256")
-            != development_mechanism_contract_sha256()
+            != semantic_execution_contract_sha256()
         ):
             raise RuntimeError("final holdout work changed after preparation")
         evidence_plan = _mapping(
-            work.get("development_evidence_plan"),
-            "final holdout development evidence plan",
+            work.get("active_evidence_plan"),
+            "final holdout active evidence plan",
         )
         try:
-            normalized_plan = require_development_evidence_plan(
+            normalized_plan = require_active_evidence_plan(
                 evidence_plan,
                 corpus=corpus,
                 corpus_sha256=str(ledger["holdout_sha256"]),
             )
-        except RuntimeError as error:
+        except (RuntimeError, ValueError) as error:
             raise RuntimeError(f"final holdout evidence plan is invalid: {error}") from error
-        if work.get("development_evidence_plan_sha256") != canonical_sha256(normalized_plan):
+        if work.get("active_evidence_plan_sha256") != canonical_sha256(normalized_plan):
             raise RuntimeError("final holdout evidence plan changed after preparation")
         _require_work_case_bindings(work, corpus=corpus, plan=normalized_plan)
         candidates = _json_file(candidates_path, "candidate bundle")
@@ -225,7 +223,7 @@ def score_final_holdout_run(
             corpus=corpus,
             corpus_sha256=str(ledger["holdout_sha256"]),
             contract=contract,
-            development_evidence_plan=normalized_plan,
+            active_evidence_plan=normalized_plan,
             deterministic_law_report=_json_file(
                 deterministic_law_report_path,
                 "deterministic law report",
@@ -407,7 +405,7 @@ def _require_work_case_bindings(
     plan: Mapping[str, Any],
 ) -> None:
     source_rows = _mapped_rows(corpus.get("cases"), "final holdout cases")
-    assignment_rows = _mapped_rows(plan.get("cases"), "development evidence assignments")
+    assignment_rows = _mapped_rows(plan.get("cases"), "active evidence assignments")
     work_rows = _mapped_rows(work.get("cases"), "final holdout work cases")
     source_cases = {
         str(row["case_id"]): row
@@ -435,7 +433,7 @@ def _require_work_case_bindings(
             row,
             {
                 "case_id", "prompt", "prompt_sha256", "case_nonce", "assignment_sha256",
-                "critic_assignment", "author_assignment",
+                "host_profile",
             },
             f"final holdout work case {case_id}",
         )
@@ -447,8 +445,7 @@ def _require_work_case_bindings(
             "prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
             "case_nonce": assignment["case_nonce"],
             "assignment_sha256": assignment["assignment_sha256"],
-            "critic_assignment": assignment["critic_assignment"],
-            "author_assignment": assignment["author_assignment"],
+            "host_profile": assignment["host_profile"],
         }
         if row != expected:
             raise RuntimeError(f"final holdout work case changed after preparation: {case_id}")

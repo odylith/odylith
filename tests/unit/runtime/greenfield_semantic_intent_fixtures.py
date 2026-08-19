@@ -26,11 +26,13 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_intent_packet impor
     require_semantic_intent_packet,
     semantic_intent_authority,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_source_candidate_adjudication import (
-    SEMANTIC_SOURCE_CANDIDATE_ADJUDICATION_VERSION,
+from odylith.runtime.domain_intelligence.greenfield_semantic_atomic_source_custody import (
+    ATOMIC_SOURCE_ADJUDICATION_VERSION,
+    ATOMIC_SOURCE_CANDIDATES_VERSION,
+    select_atomic_source_claims,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_claims import (
-    SEMANTIC_SOURCE_CANDIDATES_VERSION,
+    SEMANTIC_SOURCE_CLAIMS_VERSION,
 )
 
 
@@ -232,7 +234,7 @@ def semantic_intent_packet() -> dict[str, Any]:
     contract_sha256 = semantic_intent_authoring_contract_sha256()
     assessment = semantic_materiality_assessment()
     source_candidate_adjudication = _source_candidate_adjudication(
-        assessment["source_candidates"]
+        assessment["source_candidates"], source_facts, source_relations
     )
     return {
         "version": SEMANTIC_INTENT_PACKET_VERSION,
@@ -358,7 +360,7 @@ def semantic_clarification_packet() -> dict[str, Any]:
         intent["relations"],
     )
     packet["source_candidate_adjudication"] = _source_candidate_adjudication(
-        assessment["source_candidates"]
+        assessment["source_candidates"], intent["facts"], intent["relations"]
     )
     packet["materiality_assessment_sha256"] = semantic_materiality_assessment_sha256(
         assessment
@@ -390,12 +392,34 @@ def rebind_fixture_source_candidates(packet: dict[str, Any]) -> dict[str, Any]:
         graph["relations"],
     )
     packet["source_candidate_adjudication"] = _source_candidate_adjudication(
-        assessment["source_candidates"]
+        assessment["source_candidates"], graph["facts"], graph["relations"]
     )
     packet["materiality_assessment_sha256"] = semantic_materiality_assessment_sha256(
         assessment
     )
     return packet
+
+
+def validated_fixture_source_claims(
+    packet: dict[str, Any],
+    *,
+    prompt: str = SEMANTIC_PROMPT,
+    edit_evidence: str = "",
+) -> dict[str, Any]:
+    """Return fixture claims through the production atomic custody boundary."""
+
+    assessment = packet["materiality_assessment"]
+    settled_fields = {row["field"]: row for row in assessment["fields"]}
+    _, source_claims = select_atomic_source_claims(
+        assessment["source_candidates"],
+        packet["source_candidate_adjudication"],
+        evidence_sources={
+            "operator_prompt": prompt,
+            "operator_edit": edit_evidence,
+        },
+        settled_fields=settled_fields,
+    )
+    return source_claims
 
 
 def semantic_ref(quote: str) -> dict[str, Any]:
@@ -461,6 +485,33 @@ def _source_candidates(
     facts: list[dict[str, Any]],
     relations: list[dict[str, Any]],
 ) -> dict[str, Any]:
+    refs: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, int]] = set()
+    for row in [*facts, *relations]:
+        if row["custody"] != "source_fact":
+            continue
+        for source_ref in row["source_refs"]:
+            key = (
+                str(source_ref["source_id"]),
+                str(source_ref["quote"]),
+                int(source_ref["occurrence"]),
+            )
+            if key not in seen:
+                seen.add(key)
+                refs.append(deepcopy(source_ref))
+    return {
+        "version": ATOMIC_SOURCE_CANDIDATES_VERSION,
+        "candidates": [
+            {"candidate_id": f"candidate.{index}", "source_ref": source_ref}
+            for index, source_ref in enumerate(refs)
+        ],
+    }
+
+
+def _source_claims(
+    facts: list[dict[str, Any]],
+    relations: list[dict[str, Any]],
+) -> dict[str, Any]:
     fact_fields = {
         "identity": "identity",
         "actor": "role",
@@ -483,7 +534,7 @@ def _source_candidates(
         "implements": ["component_boundary", "first_path"],
     }
     return {
-        "version": SEMANTIC_SOURCE_CANDIDATES_VERSION,
+        "version": SEMANTIC_SOURCE_CLAIMS_VERSION,
         "facts": [
             {"field": fact_fields[row["kind"]], "fact": deepcopy(row)}
             for row in facts
@@ -499,40 +550,34 @@ def _source_candidates(
 
 def _source_candidate_adjudication(
     source_candidates: dict[str, Any],
+    facts: list[dict[str, Any]],
+    relations: list[dict[str, Any]],
 ) -> dict[str, Any]:
-    """Retain fixture workflow candidates using only their typed relations."""
+    """Bind every fixture source row to its exact atomic evidence span."""
 
-    relation_kinds_by_subject: dict[str, set[str]] = {}
-    for wrapper in source_candidates["relations"]:
-        relation = wrapper["relation"]
-        relation_kinds_by_subject.setdefault(relation["subject_id"], set()).add(
-            relation["kind"]
-        )
+    source_facts = [row for row in facts if row["custody"] == "source_fact"]
+    source_relations = [row for row in relations if row["custody"] == "source_fact"]
     decisions = []
-    for wrapper in source_candidates["facts"]:
-        fact = wrapper["fact"]
-        if fact["kind"] != "workflow_step":
-            continue
-        relation_kinds = relation_kinds_by_subject.get(fact["fact_id"], set())
-        material_effect = (
-            "mutates_domain_object"
-            if "changes" in relation_kinds
-            else "records_or_creates_domain_evidence"
-            if "produces" in relation_kinds
-            else "reads_or_inspects_dependency"
-            if "depends_on" in relation_kinds
-            else "configures_or_executes"
-        )
-        decisions.append(
-            {
-                "fact_id": fact["fact_id"],
-                "decision": "retain_material_action",
-                "material_effect": material_effect,
-            }
-        )
+    for candidate in source_candidates["candidates"]:
+        source_ref = candidate["source_ref"]
+        fact_ids = [
+            row["fact_id"] for row in source_facts if source_ref in row["source_refs"]
+        ]
+        relation_ids = [
+            row["relation_id"]
+            for row in source_relations
+            if source_ref in row["source_refs"]
+        ]
+        decisions.append({
+            "candidate_id": candidate["candidate_id"],
+            "decision": "retain" if fact_ids or relation_ids else "reject_noise",
+            "fact_ids": fact_ids,
+            "relation_ids": relation_ids,
+        })
     return {
-        "version": SEMANTIC_SOURCE_CANDIDATE_ADJUDICATION_VERSION,
-        "workflow_decisions": decisions,
+        "version": ATOMIC_SOURCE_ADJUDICATION_VERSION,
+        "candidate_decisions": decisions,
+        "source_claims": _source_claims(facts, relations),
     }
 
 
@@ -691,7 +736,7 @@ def stateless_semantic_intent_packet() -> tuple[dict[str, Any], str]:
         row["alternatives"] = []
     assessment["source_candidates"] = _source_candidates(facts, relations)
     packet["source_candidate_adjudication"] = _source_candidate_adjudication(
-        assessment["source_candidates"]
+        assessment["source_candidates"], facts, relations
     )
     packet.update(
         {

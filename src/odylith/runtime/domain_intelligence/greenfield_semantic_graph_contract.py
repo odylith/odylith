@@ -63,6 +63,7 @@ SEMANTIC_ATTRIBUTE_NAMES = (
     "release_scope",
     "source_title",
     "access_mode",
+    "materiality_field",
 )
 SINGULAR_NARRATIVE_FIELDS = frozenset(
     {"product_story", "problem", "customer", "opportunity", "product_view", "proof_boundary"}
@@ -81,7 +82,6 @@ INTERNAL_SYSTEM_RELEASE_SCOPES = (
 )
 FACT_REQUIRED_ATTRIBUTES = {
     "identity": ("source_title",),
-    "actor": ("responsibility",),
     "workflow_step": ("action", "action_phrase"),
     "state_object": ("object",),
     "internal_system": (
@@ -231,7 +231,8 @@ def semantic_intent_authoring_contract() -> dict[str, Any]:
             "every_actor_owned_step_has_exactly_one_owned_by_relation": True,
             "product_and_system_steps_have_no_owned_by_relation": True,
             "every_visible_output_has_a_typed_produces_relation": True,
-            "every_state_object_has_a_typed_changes_relation": True,
+            "every_transitioned_state_object_has_a_typed_changes_relation": True,
+            "state_objects_without_a_transition_have_no_changes_relation": True,
             "minimum_first_path_required_internal_systems": 1,
             "implementation_coverage_release_scopes": ["first_path_required"],
             "resultless_first_path_systems_require_typed_supporting_topology": True,

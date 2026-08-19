@@ -31,24 +31,10 @@ def test_final_holdout_prepare_claims_then_assigns_frozen_profiles(tmp_path: Pat
     assert work["version"] == FINAL_HOLDOUT_WORK_VERSION
     assert work["status"] == "ready_for_blinded_authoring"
     assert [row["case_id"] for row in work["cases"]] == ["case-a", "case-b"]
-    assert [
-        row["critic_assignment"]["capability_profile"] for row in work["cases"]
-    ] == ["frontier_semantic_reasoning", "frontier_semantic_reasoning"]
-    assert [
-        row["critic_assignment"]["host_profile"] for row in work["cases"]
-    ] == ["codex", "claude"]
-    assert [
-        row["author_assignment"]["host_profile"] for row in work["cases"]
-    ] == ["codex", "claude"]
-    assert len(
-        {
-            assignment["run_nonce"]
-            for row in work["cases"]
-            for assignment in (row["critic_assignment"], row["author_assignment"])
-        }
-    ) == 4
-    assert work["development_evidence_plan_sha256"] == holdout_run.canonical_sha256(
-        work["development_evidence_plan"]
+    assert [row["host_profile"] for row in work["cases"]] == ["codex", "claude"]
+    assert len({row["case_nonce"] for row in work["cases"]}) == 2
+    assert work["active_evidence_plan_sha256"] == holdout_run.canonical_sha256(
+        work["active_evidence_plan"]
     )
     ledger = read_final_holdout_run(inputs["ledger_path"])
     assert ledger["status"] == "claimed"
@@ -104,9 +90,9 @@ def test_final_holdout_score_binds_the_prepared_contract_and_passes(
     assert observed["contract"] == json.loads(
         inputs["evaluation_contract_path"].read_text(encoding="utf-8")
     )
-    assert observed["development_evidence_plan"] == json.loads(
+    assert observed["active_evidence_plan"] == json.loads(
         inputs["work_path"].read_text(encoding="utf-8")
-    )["development_evidence_plan"]
+    )["active_evidence_plan"]
     assert set(observed["auxiliary_reports"]) == {
         "host_parity",
         "lower_capability_safety",
@@ -156,7 +142,7 @@ def test_final_holdout_score_rejects_work_assignment_drift_before_evaluator(
     inputs = _inputs(tmp_path)
     prepare_final_holdout_run(**inputs)
     work = json.loads(inputs["work_path"].read_text(encoding="utf-8"))
-    work["cases"][0]["critic_assignment"]["run_nonce"] = "replaced-runner-nonce"
+    work["cases"][0]["case_nonce"] = "replaced-runner-nonce"
     _write_json(inputs["work_path"], work)
     score_inputs = _score_inputs(tmp_path, inputs)
     called = False
@@ -267,7 +253,7 @@ def _inputs(tmp_path: Path) -> dict:
             (
                 SCRIPTS_ROOT
                 / "fixtures"
-                / "greenfield-semantic-release-evaluation-contract.v2.json"
+                / "greenfield-semantic-release-evaluation-contract.v4.json"
             ).read_text(encoding="utf-8")
         ),
     )

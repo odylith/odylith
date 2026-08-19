@@ -13,21 +13,23 @@ import time
 from typing import Any
 
 from greenfield_semantic_development_cohort import CANDIDATE_BUNDLE_VERSION
-from greenfield_semantic_development_evidence import AUTHOR_SEGMENT_VERSION
-from greenfield_semantic_development_evidence import DETERMINISTIC_LAW_REPORT_VERSION
-from greenfield_semantic_development_evidence import DEVELOPMENT_EVIDENCE_PLAN_VERSION
-from greenfield_semantic_development_evidence import MECHANISM_EVIDENCE_VERSION
-from greenfield_semantic_development_evidence import REQUIRED_DETERMINISTIC_LAW_IDS
-from greenfield_semantic_development_evidence import canonical_sha256
-from greenfield_semantic_development_evidence import exclusive_json
+from greenfield_semantic_release_support import DETERMINISTIC_LAW_REPORT_VERSION
+from greenfield_semantic_release_support import REQUIRED_DETERMINISTIC_LAW_IDS
+from greenfield_semantic_release_support import canonical_sha256
+from greenfield_semantic_release_support import exclusive_json
 from greenfield_semantic_deterministic_law_contract import DETERMINISTIC_LAW_EVIDENCE_VERSION
 from greenfield_semantic_deterministic_law_contract import deterministic_law_command
 from greenfield_semantic_deterministic_law_contract import require_deterministic_law_report
+from greenfield_semantic_pipeline_evidence import ACTIVE_EVIDENCE_PLAN_VERSION
+from greenfield_semantic_pipeline_receipts import PIPELINE_VERSION
 from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract import (
     semantic_intent_authoring_contract_sha256,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
     SEMANTIC_INTENT_PACKET_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_execution_contract import (
+    SEMANTIC_EXECUTION_EVIDENCE_VERSION,
 )
 
 
@@ -77,9 +79,9 @@ def produce_deterministic_law_report(
         "contracts": {
             "authoring_contract_sha256": semantic_intent_authoring_contract_sha256(),
             "semantic_intent_packet_version": SEMANTIC_INTENT_PACKET_VERSION,
-            "development_evidence_plan_version": DEVELOPMENT_EVIDENCE_PLAN_VERSION,
-            "development_author_segment_version": AUTHOR_SEGMENT_VERSION,
-            "mechanism_evidence_version": MECHANISM_EVIDENCE_VERSION,
+            "development_evidence_plan_version": ACTIVE_EVIDENCE_PLAN_VERSION,
+            "development_author_segment_version": PIPELINE_VERSION,
+            "mechanism_evidence_version": SEMANTIC_EXECUTION_EVIDENCE_VERSION,
             "candidate_bundle_version": CANDIDATE_BUNDLE_VERSION,
         },
         "required_law_ids": list(REQUIRED_DETERMINISTIC_LAW_IDS),
@@ -89,9 +91,9 @@ def produce_deterministic_law_report(
         report,
         implementation_revision=revision,
         candidate_bundle_version=CANDIDATE_BUNDLE_VERSION,
-        development_evidence_plan_version=DEVELOPMENT_EVIDENCE_PLAN_VERSION,
-        development_author_segment_version=AUTHOR_SEGMENT_VERSION,
-        mechanism_evidence_version=MECHANISM_EVIDENCE_VERSION,
+        development_evidence_plan_version=ACTIVE_EVIDENCE_PLAN_VERSION,
+        development_author_segment_version=PIPELINE_VERSION,
+        mechanism_evidence_version=SEMANTIC_EXECUTION_EVIDENCE_VERSION,
     )
     exclusive_json(Path(output_path).expanduser().resolve(), verified)
     return verified
