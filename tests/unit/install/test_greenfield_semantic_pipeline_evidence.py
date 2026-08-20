@@ -15,6 +15,7 @@ from greenfield_semantic_pipeline_evidence import (
 from greenfield_semantic_pipeline_receipts import (
     PIPELINE_VERSION,
     bounded_receipt,
+    select_source_hypothesis_run,
 )
 from greenfield_semantic_release_support import greenfield_runtime_source_fingerprint
 from odylith.runtime.domain_intelligence.greenfield_semantic_execution_contract import (
@@ -44,6 +45,26 @@ def test_active_standard_pipeline_evidence_binds_packet_host_calls_and_tier() ->
     assert metadata["execution_tier"] == "standard"
     assert metadata["model_calls"] == 3
     assert metadata["restarts"] == 0
+
+
+def test_active_evidence_accepts_the_exact_admitted_source_candidate() -> None:
+    packet = semantic_intent_packet()
+    receipt = _standard_receipt(packet)
+    receipt["source_hypothesis"] = select_source_hypothesis_run(
+        receipt["source_hypothesis"], selected_run_index=0
+    )
+
+    normalized, _ = require_successful_pipeline_evidence(
+        receipt,
+        case_id="case-1",
+        prompt=SEMANTIC_PROMPT,
+        semantic_artifact=packet,
+    )
+
+    assert normalized["source_hypothesis"]["selected_run_index"] == 0
+    assert [
+        row["status"] for row in normalized["source_hypothesis"]["hypothesis_runs"]
+    ] == ["selected", "comparison_passed"]
 
 
 @pytest.mark.parametrize(

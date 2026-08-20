@@ -17,6 +17,67 @@ PIPELINE_VERSION = "odylith.greenfield.production-standard-pipeline.v14"
 BOUNDED_PIPELINE_VERSION = "odylith.greenfield.production-bounded-pipeline.v14"
 
 
+def select_source_hypothesis_run(
+    value: Mapping[str, Any], *, selected_run_index: int,
+) -> dict[str, Any]:
+    """Bind the source receipt to the admitted run without changing its graph."""
+
+    if isinstance(selected_run_index, bool) or selected_run_index not in {0, 1}:
+        raise ValueError("selected source hypothesis index is invalid")
+    rows = value.get("hypothesis_runs")
+    if not isinstance(rows, list) or len(rows) != 2:
+        raise ValueError("source hypothesis selection requires two run receipts")
+    selected_rows: list[dict[str, Any]] = []
+    seen: set[int] = set()
+    for raw in rows:
+        if not isinstance(raw, Mapping):
+            raise ValueError("source hypothesis run receipt is malformed")
+        row = dict(raw)
+        run_index = row.get("run_index")
+        if isinstance(run_index, bool) or run_index not in {0, 1} or run_index in seen:
+            raise ValueError("source hypothesis run indices are not exact")
+        seen.add(run_index)
+        status = row.get("status")
+        if run_index == selected_run_index:
+            if status not in {"comparison_passed", "selected"}:
+                raise ValueError("selected source hypothesis was not admitted")
+            row["status"] = "selected"
+        elif status == "selected":
+            row["status"] = "comparison_passed"
+        elif status not in {"comparison_passed", "comparison_rejected"}:
+            raise ValueError("unselected source hypothesis status is invalid")
+        selected_rows.append(row)
+    receipt = dict(value)
+    receipt["hypothesis_runs"] = sorted(
+        selected_rows, key=lambda row: int(row["run_index"])
+    )
+    receipt["selected_run_index"] = selected_run_index
+    require_selected_source_hypothesis_run(receipt)
+    return receipt
+
+
+def require_selected_source_hypothesis_run(value: Mapping[str, Any]) -> int:
+    """Require one selected run whose status and receipt index agree exactly."""
+
+    rows = value.get("hypothesis_runs")
+    if not isinstance(rows, list):
+        raise ValueError("source hypothesis run receipts are missing")
+    selected = [
+        row.get("run_index")
+        for row in rows
+        if isinstance(row, Mapping) and row.get("status") == "selected"
+    ]
+    selected_run_index = value.get("selected_run_index")
+    if (
+        len(selected) != 1
+        or isinstance(selected_run_index, bool)
+        or selected_run_index not in {0, 1}
+        or selected != [selected_run_index]
+    ):
+        raise ValueError("selected source hypothesis status and index disagree")
+    return int(selected_run_index)
+
+
 def pipeline_receipt(
     *, case_id: str, status: str, outcome: str, wall_ms: int,
     host_profile: str,
@@ -118,5 +179,6 @@ def write_receipt(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
 
 __all__ = [
     "BOUNDED_PIPELINE_VERSION", "PIPELINE_VERSION", "bounded_receipt",
-    "pipeline_receipt", "write_receipt",
+    "pipeline_receipt", "require_selected_source_hypothesis_run",
+    "select_source_hypothesis_run", "write_receipt",
 ]

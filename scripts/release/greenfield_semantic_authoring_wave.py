@@ -11,6 +11,7 @@ from typing import Any
 
 from greenfield_semantic_materiality_screen_experiment import run_screen
 from greenfield_semantic_final_graph_author import run_final_graph_adjudication
+from greenfield_semantic_pipeline_receipts import select_source_hypothesis_run
 from greenfield_semantic_release_support import canonical_sha256, mapping
 from greenfield_semantic_standard_path_experiment import (
     CompletionStageIncomplete,
@@ -61,7 +62,6 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_hypothesis_c
     source_materiality_candidates,
     source_ref_identity,
 )
-
 @dataclass(frozen=True)
 class AuthoringWaveBudget:
     """Time and topology available to one zero-retry semantic wave."""
@@ -542,8 +542,8 @@ def _partitioned_author_receipt(
             {"materiality_decision": decision, "candidate": candidate}
         )
     )
-    selected_source = dict(source_receipt)
-    selected_source["selected_run_index"] = int(selected_row["run_index"])
+    selected_source = select_source_hypothesis_run(
+        source_receipt, selected_run_index=int(selected_row["run_index"]))
     selected_source["partitioned_candidate"] = admitted_candidate
     selected_source["source"] = mapping(
         admitted_candidate.get("source"), "selected partitioned source"

@@ -16,6 +16,7 @@ from greenfield_semantic_release_support import (
 from greenfield_semantic_pipeline_receipts import (
     BOUNDED_PIPELINE_VERSION,
     PIPELINE_VERSION,
+    require_selected_source_hypothesis_run,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_execution_contract import (
     require_semantic_execution_evidence,
@@ -495,16 +496,13 @@ def _require_heterogeneous_source_runs(source: Mapping[str, Any]) -> None:
             raise ValueError("heterogeneous source run indices are not exact")
         if mode != ("full_graph" if run_index == 0 else "source_only"):
             raise ValueError("source hypothesis mode changes its assigned run")
-        if (
-            (run_index == 0 and status == "comparison_passed")
-            or (run_index == 1 and status == "selected")
-        ):
+        if status in {"comparison_passed", "selected"}:
             expected = {
                 "run_index", "hypothesis_mode", "status", "wall_ms", "usage"
             }
             if _integer(row.get("wall_ms"), "hedged source run wall_ms") <= 0:
                 raise ValueError("completed source hypothesis has no elapsed time")
-        elif run_index == 0 and status == "comparison_rejected":
+        elif status == "comparison_rejected":
             expected = {
                 "run_index", "hypothesis_mode", "status", "validation_error",
                 "wall_ms", "usage",
@@ -517,9 +515,7 @@ def _require_heterogeneous_source_runs(source: Mapping[str, Any]) -> None:
         _exact_keys(row, expected, "heterogeneous source run")
         _mapping(row.get("usage"), "heterogeneous source run usage")
         indexed[run_index] = row
-    selected = [index for index, row in indexed.items() if row["status"] == "selected"]
-    if selected != [1] or source.get("selected_run_index") != 1:
-        raise ValueError("dedicated source authority does not own the selected run")
+    require_selected_source_hypothesis_run(source)
 
 
 def _require_completion_handoff_runs(source: Mapping[str, Any]) -> None:
