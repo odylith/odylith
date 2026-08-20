@@ -122,6 +122,19 @@ def test_actorless_stateless_one_system_two_output_plan_stays_single_slice() -> 
     )
 
 
+def test_component_interfaces_render_typed_step_labels_not_raw_source_copy() -> None:
+    graph = _stateless_graph()
+    raw_envelope = '{"product_intent":{"first_path":"present both outputs"}}'
+    workflow = next(row for row in graph["facts"] if row["kind"] == "workflow_step")
+    workflow["statement"] = raw_envelope
+
+    plan = build_semantic_projection_plan(graph, project_slug="signal-view")
+    interfaces = plan.components[0]["interfaces"]
+
+    assert raw_envelope not in " ".join(interfaces)
+    assert interfaces.count("Implements the “Present signal” workflow step.") == 1
+
+
 def test_semantic_artifact_ids_transliterate_copy_without_changing_copy() -> None:
     assert semantic_artifact_identifier("Café Résumé Board") == "cafe-resume-board"
     fallback = semantic_artifact_identifier("審査盤", fallback="project")

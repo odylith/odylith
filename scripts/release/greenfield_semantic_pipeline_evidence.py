@@ -198,8 +198,8 @@ def require_successful_pipeline_evidence(
             "wall_ms",
             "budget",
             "materiality_critic",
-            "source_graph",
-            "graph_completion",
+            "source_hypothesis",
+            "final_graph_adjudication",
             "materiality_assessment",
             "packet",
             "transaction",
@@ -239,26 +239,47 @@ def require_successful_pipeline_evidence(
         model_calls=1,
         statuses={"passed"},
     )
+    standard_tier = execution["tier"] == "standard"
     source = _stage(
-        attempt.get("source_graph"),
-        "source graph",
+        attempt.get("source_hypothesis"),
+        "source hypothesis",
         case_id=case_id,
-        stage="source_graph",
+        stage="source_hypothesis",
         host_profile=host_profile,
-        model=str(host_contract["source_model"]),
-        reasoning_effort=str(host_contract["source_reasoning_effort"]),
+        model=str(host_contract["source_hypothesis_model"]),
+        reasoning_effort=str(host_contract["source_hypothesis_reasoning_effort"]),
         model_calls=2,
-        statuses={"passed"} if outcome == "commit" else {"passed", "cancelled"},
+        statuses=(
+            {"passed", "reusable_source_pair", "reusable_source_handoff"}
+            if not standard_tier and outcome == "commit"
+            else {"passed"}
+            if outcome == "commit"
+            else {"passed", "reusable_source_pair", "reusable_source_handoff", "cancelled"}
+        ),
     )
+    if source.get("validation_status") == "passed":
+        _require_heterogeneous_source_runs(source)
+    elif source.get("validation_status") == "reusable_source_pair":
+        _require_completion_handoff_runs(source)
     author = _stage(
-        attempt.get("graph_completion"),
-        "terminal author",
+        attempt.get("final_graph_adjudication"),
+        "partitioned graph admission" if standard_tier else "rescue graph adjudicator",
         case_id=case_id,
-        stage=("graph_completion" if outcome == "commit" else "clarification_author"),
+        stage=("partitioned_graph_admission" if standard_tier else "final_graph_adjudication"),
         host_profile=host_profile,
-        model=str(host_contract["completion_model"]),
-        reasoning_effort=str(host_contract["completion_reasoning_effort"]),
-        model_calls=1,
+        model=str(
+            host_contract[
+                "source_hypothesis_model" if standard_tier else "final_adjudicator_model"
+            ]
+        ),
+        reasoning_effort=str(
+            host_contract[
+                "source_hypothesis_reasoning_effort"
+                if standard_tier
+                else "final_adjudicator_reasoning_effort"
+            ]
+        ),
+        model_calls=0 if standard_tier else 1,
         statuses={"passed"},
     )
     if critic.get("prompt_sha256") != prompt_sha:
@@ -266,11 +287,27 @@ def require_successful_pipeline_evidence(
     if (
         _integer(critic.get("model_call_count"), "critic calls") != 1
         or _integer(source.get("model_call_count"), "source calls") != 2
-        or _integer(author.get("model_call_count"), "author calls") != 1
+        or _integer(author.get("model_call_count"), "author calls")
+        != (0 if standard_tier else 1)
     ):
         raise ValueError(f"candidate {case_id} stages change the active call topology")
-    if source.get("authority_used") is not (outcome == "commit"):
-        raise ValueError(f"candidate {case_id} source authority disagrees with its outcome")
+    expected_source_status = "approved" if outcome == "commit" else "not_applicable"
+    if (
+        source.get("authority_used") is not False
+        or author.get("source_status") != expected_source_status
+    ):
+        raise ValueError(f"candidate {case_id} source authority is not partition-admission owned")
+    compiled_author_output = author.get("compiled_author_output")
+    if standard_tier and outcome == "commit" and not isinstance(
+        compiled_author_output, Mapping
+    ):
+        raise ValueError(
+            f"candidate {case_id} commit lacks its admitted compiled author output"
+        )
+    if standard_tier and outcome == "clarify" and compiled_author_output is not None:
+        raise ValueError(
+            f"candidate {case_id} clarification carries an unused compiled author output"
+        )
     packet = _mapping(attempt.get("packet"), f"candidate {case_id} pipeline packet")
     if packet != dict(semantic_artifact):
         raise ValueError(f"candidate {case_id} pipeline does not bind its semantic packet")
@@ -440,6 +477,132 @@ def _stage(
     ):
         raise ValueError(f"{label} does not match its active stage assignment")
     return row
+
+
+def _require_heterogeneous_source_runs(source: Mapping[str, Any]) -> None:
+    rows = source.get("hypothesis_runs")
+    if not isinstance(rows, list) or len(rows) != 2:
+        raise ValueError("source hypothesis lacks its two heterogeneous run receipts")
+    indexed: dict[int, dict[str, Any]] = {}
+    for value in rows:
+        row = _mapping(value, "heterogeneous source run")
+        run_index = _integer(
+            row.get("run_index"), "heterogeneous source run index"
+        )
+        status = _text(row.get("status"), "heterogeneous source run status")
+        mode = _text(row.get("hypothesis_mode"), "source hypothesis mode")
+        if run_index in indexed or run_index not in {0, 1}:
+            raise ValueError("heterogeneous source run indices are not exact")
+        if mode != ("full_graph" if run_index == 0 else "source_only"):
+            raise ValueError("source hypothesis mode changes its assigned run")
+        if (
+            (run_index == 0 and status == "comparison_passed")
+            or (run_index == 1 and status == "selected")
+        ):
+            expected = {
+                "run_index", "hypothesis_mode", "status", "wall_ms", "usage"
+            }
+            if _integer(row.get("wall_ms"), "hedged source run wall_ms") <= 0:
+                raise ValueError("completed source hypothesis has no elapsed time")
+        elif run_index == 0 and status == "comparison_rejected":
+            expected = {
+                "run_index", "hypothesis_mode", "status", "validation_error",
+                "wall_ms", "usage",
+            }
+            _text(row.get("validation_error"), "rejected source hypothesis error")
+            if _integer(row.get("wall_ms"), "rejected source hypothesis wall_ms") <= 0:
+                raise ValueError("rejected source hypothesis has no elapsed time")
+        else:
+            raise ValueError("heterogeneous source run status is unsupported")
+        _exact_keys(row, expected, "heterogeneous source run")
+        _mapping(row.get("usage"), "heterogeneous source run usage")
+        indexed[run_index] = row
+    selected = [index for index, row in indexed.items() if row["status"] == "selected"]
+    if selected != [1] or source.get("selected_run_index") != 1:
+        raise ValueError("dedicated source authority does not own the selected run")
+
+
+def _require_completion_handoff_runs(source: Mapping[str, Any]) -> None:
+    """Require exact completed source evidence preserved for bounded completion."""
+
+    dispute = source.get("source_pair_dispute")
+    rows = source.get("hypothesis_runs")
+    if not isinstance(rows, list) or len(rows) != 2:
+        raise ValueError("completion handoff lacks its two hypothesis receipts")
+    indexed = {
+        _integer(row.get("run_index"), "completion handoff run index"): _mapping(
+            row, "completion handoff run"
+        )
+        for row in rows
+        if isinstance(row, Mapping)
+    }
+    if set(indexed) != {0, 1}:
+        raise ValueError("completion handoff run indices are not exact")
+    single_source = source.get("validation_status") == "reusable_source_handoff"
+    materiality_dispute = dispute == "materiality"
+    full_statuses = {"failed"} if single_source else {
+        "comparison_passed", "comparison_rejected"
+    }
+    if indexed[0].get("hypothesis_mode") != "full_graph" or indexed[0].get(
+        "status"
+    ) not in full_statuses:
+        raise ValueError("completion handoff changes its full-graph run")
+    if (
+        indexed[1].get("hypothesis_mode") != "source_only"
+        or indexed[1].get("status") not in (
+            {"selected", "source_pair_disagreement"}
+            if materiality_dispute
+            else {"source_pair_disagreement"}
+        )
+    ):
+        raise ValueError("completion handoff changes its source authority run")
+    candidates = source.get("hypothesis_candidates")
+    expected_candidate_count = 1 if single_source else 2
+    if not isinstance(candidates, list) or len(candidates) != expected_candidate_count:
+        raise ValueError("completion handoff lacks its exact typed candidates")
+    candidate_modes = {
+        str(row.get("hypothesis_mode") or "")
+        for row in candidates
+        if isinstance(row, Mapping) and isinstance(row.get("candidate"), Mapping)
+    }
+    expected_modes = {"source_only"} if single_source else {
+        "full_graph", "source_only"
+    }
+    if candidate_modes != expected_modes:
+        raise ValueError("completion handoff changes its typed candidates")
+    adjudication = source.get("source_candidate_adjudication")
+    if dispute == "completion":
+        if source.get("selected_run_index") != 1:
+            raise ValueError("completion handoff changes its source authority run")
+        _mapping(adjudication, "completion handoff source adjudication")
+    elif dispute == "materiality":
+        observation = _mapping(
+            source.get("materiality_observation"),
+            "materiality handoff observation",
+        )
+        if (
+            observation.get("status") not in {
+                "critic_authorization_disputed",
+                "critic_clarification_disputed",
+                "source_axis_disagreement",
+            }
+            or observation.get("materiality_field") not in {
+                "identity", "role", "first_path", "state_object",
+                "visible_result", "dependency", "constraint", "non_goal",
+            }
+            or observation.get("source_hypothesis_count") != 2
+            or observation.get("source_axis_presence")
+            not in ([True, True], [False, False], [True, False], [False, True])
+            or adjudication is not None
+            or source.get("selected_run_index") != 1
+        ):
+            raise ValueError("materiality handoff changes its typed observation")
+    elif (
+        dispute != "source_authority"
+        or adjudication is not None
+        or source.get("selected_run_index") is not None
+    ):
+        raise ValueError("completion handoff changes its typed dispute")
 
 
 def _mapping(value: Any, label: str) -> dict[str, Any]:

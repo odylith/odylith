@@ -15,13 +15,13 @@
     "minimum_package_utility": 0.9,
     "minimum_worst_slice_success": 0.8
   },
-  "mechanism_id": "parallel_materiality_atomic_source_then_typed_graph_completion",
+  "mechanism_id": "independent_source_pair_with_bounded_typed_rescue",
   "minimum_independent_reviews": 2,
   "required_auxiliary_reports": {
     "host_parity": "odylith.greenfield.host-parity-report.v1",
     "lower_capability_safety": "odylith.greenfield.lower-capability-safety-evaluation.v1"
   },
-  "required_host_profiles": ["codex"],
+  "required_host_profiles": ["codex", "claude"],
   "required_model_profiles": ["frontier_semantic_reasoning"],
   "resource_ceilings": {
     "maximum_automatic_deep_cases": 0,
@@ -37,5 +37,5 @@
     "maximum_rescue_case_total_wall_ms": 90000,
     "maximum_standard_case_total_wall_ms": 60000
   },
-  "version": "odylith.greenfield.semantic-release-evaluation-contract.v4"
+  "version": "odylith.greenfield.semantic-release-evaluation-contract.v5"
 }

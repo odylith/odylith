@@ -13,8 +13,8 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_execution_contract 
 )
 
 
-PIPELINE_VERSION = "odylith.greenfield.production-standard-pipeline.v9"
-BOUNDED_PIPELINE_VERSION = "odylith.greenfield.production-bounded-pipeline.v9"
+PIPELINE_VERSION = "odylith.greenfield.production-standard-pipeline.v14"
+BOUNDED_PIPELINE_VERSION = "odylith.greenfield.production-bounded-pipeline.v14"
 
 
 def pipeline_receipt(
@@ -49,8 +49,8 @@ def pipeline_receipt(
         "wall_ms": wall_ms,
         "budget": dict(budget),
         "materiality_critic": critic,
-        "source_graph": source,
-        "graph_completion": author,
+        "source_hypothesis": source,
+        "final_graph_adjudication": author,
         "materiality_assessment": assessment,
         "packet": finalized.get("packet") if finalized else None,
         "transaction": transaction,

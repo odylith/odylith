@@ -9,7 +9,7 @@ import json
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_semantic_atomic_source_custody import (
-    ATOMIC_SOURCE_ADJUDICATION_VERSION,
+    build_atomic_source_adjudication,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract import (
     SEMANTIC_INTENT_MANDATORY_CHALLENGES,
@@ -35,34 +35,10 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_graph_extension_con
 from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
     semantic_materiality_source_ref_catalog,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_source_claims import (
-    SEMANTIC_SOURCE_CLAIMS_VERSION,
-)
 
 
 SEMANTIC_AUTHORING_GRAPH_VERSION = "odylith.greenfield.semantic-authoring-graph.v2"
 _CANDIDATE_DECISIONS = ("retain", "reject_overcapture", "reject_noise")
-_FACT_FIELD = {
-    "identity": "identity",
-    "actor": "role",
-    "workflow_step": "first_path",
-    "state_object": "state_object",
-    "visible_output": "visible_result",
-    "external_system": "dependency",
-    "internal_system": "component_boundary",
-    "component_responsibility": "component_boundary",
-    "operational_constraint": "constraint",
-    "non_goal": "non_goal",
-}
-_RELATION_FIELDS = {
-    "owned_by": ("role", "first_path"),
-    "produces": ("first_path", "visible_result"),
-    "changes": ("first_path", "state_object"),
-    "depends_on": ("dependency",),
-    "implements": ("component_boundary", "first_path"),
-    "constrained_by": ("constraint",),
-    "excludes": ("non_goal",),
-}
 _BOUNDARY_EDGES = ("depends_on", "implements", "constrained_by", "excludes")
 _FACT_COLLECTIONS = {
     "identities": "identity",
@@ -368,46 +344,37 @@ def compile_semantic_authoring_graph(
         candidate_refs=candidate_refs,
         used_candidates=used_candidates,
     )
-    rejected = {candidate_id for candidate_id, decision in decisions.items() if decision != "retain"}
+    rejected = {
+        candidate_id
+        for candidate_id, decision in decisions.items()
+        if decision != "retain"
+    }
     if rejected & used_candidates:
         raise ValueError("rejected atomic evidence still binds authored product meaning")
     source_facts = [(row, ids) for row, ids in facts if row["custody"] == "source_fact"]
     source_relations = [
         (row, ids) for row, ids in relations if row["custody"] == "source_fact"
     ]
-    source_claims = {
-        "version": SEMANTIC_SOURCE_CLAIMS_VERSION,
-        "facts": [
-            {"field": _fact_field(row), "fact": row}
-            for row, _ in source_facts
-        ],
-        "relations": [
-            {
-                "fields": _relation_fields(row, assessment=assessment),
-                "relation": row,
-            }
-            for row, _ in source_relations
-        ],
+    adjudication, _ = build_atomic_source_adjudication(
+        assessment["source_candidates"],
+        facts=source_facts,
+        relations=source_relations,
+        evidence_sources=evidence_sources,
+        settled_fields={
+            str(row["field"]): row for row in assessment["fields"]
+        },
+    )
+    decisions = {
+        str(row["candidate_id"]): str(row["decision"])
+        for row in adjudication["candidate_decisions"]
     }
-    adjudication = {
-        "version": ATOMIC_SOURCE_ADJUDICATION_VERSION,
-        "candidate_decisions": [
-            {
-                "candidate_id": candidate_id,
-                "decision": decision,
-                "fact_ids": [
-                    row["fact_id"] for row, ids in source_facts if candidate_id in ids
-                ],
-                "relation_ids": [
-                    row["relation_id"]
-                    for row, ids in source_relations
-                    if candidate_id in ids
-                ],
-            }
-            for candidate_id, decision in decisions.items()
-        ],
-        "source_claims": source_claims,
+    rejected = {
+        candidate_id
+        for candidate_id, decision in decisions.items()
+        if decision != "retain"
     }
+    if rejected & used_candidates:
+        raise ValueError("rejected atomic evidence still binds authored product meaning")
     handles = _candidate_handles(assessment, evidence_sources=evidence_sources)
     extension = _extension(
         status=str(graph.get("status") or ""),
@@ -581,23 +548,6 @@ def _candidate_decisions(
     if set(result) != set(candidates):
         raise ValueError("Semantic candidate decisions do not cover every span")
     return result
-
-
-def _fact_field(row: Mapping[str, Any]) -> str:
-    field = _FACT_FIELD.get(str(row.get("kind") or ""))
-    if not field:
-        raise ValueError("source fact kind has no canonical materiality field")
-    return field
-
-
-def _relation_fields(
-    row: Mapping[str, Any], *, assessment: Mapping[str, Any]
-) -> list[str]:
-    settled = {str(field["field"]) for field in assessment["fields"]}
-    fields = [field for field in _RELATION_FIELDS[str(row["kind"])] if field in settled]
-    if not fields:
-        raise ValueError("source relation has no settled materiality field")
-    return fields
 
 
 def _candidate_handles(

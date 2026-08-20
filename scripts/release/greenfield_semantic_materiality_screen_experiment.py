@@ -20,13 +20,13 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_parallel_materialit
     parallel_materiality_decision_schema,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations import (
-    bind_semantic_evidence_blocks,
     semantic_evidence_block_catalog,
-    semantic_evidence_block_schema,
+    resolved_semantic_source_refs,
+    semantic_source_ref_schema,
 )
 
 
-SCREEN_VERSION = "odylith.greenfield.materiality-screen.v1"
+SCREEN_VERSION = "odylith.greenfield.materiality-screen.v3"
 
 
 def run_screen(
@@ -50,12 +50,21 @@ def run_screen(
             "rows never choose among the clarification alternatives."
         ),
         "semantic_kind_disambiguation": authoring["semantic_kind_disambiguation"],
+        "policy_kind_authority": (
+            "Classify negative evidence by its relationship to the accepted path. A limit on the "
+            "accepted path's execution, access, or side effects belongs only to constraint. A separate "
+            "capability or outcome that the product must not provide belongs only to non_goal. Never "
+            "duplicate one statement across both kinds, and never decide by wording, grammar, tokens, "
+            "or a downstream graph proposal."
+        ),
         "outcome_requirements": authoring["outcome_requirements"],
         "forbidden_mechanisms": authoring["forbidden_mechanisms"],
         "evidence": (
-            "Use only the operator prompt. Select evidence-block handles for each settled field "
-            "and question; deterministic code binds their exact bytes. Ignore discarded or "
-            "superseded labels. Do not identify atomic spans."
+            "Use only the operator prompt. Cite the smallest exact source substring that contains "
+            "one complete semantic proposition; return source_id, the byte-exact quote, and its "
+            "one-based occurrence. Never reuse one compound citation across constraint and "
+            "non_goal. Deterministic code validates every citation against the source bytes. "
+            "Ignore discarded or superseded labels."
         ),
         "evidence_blocks": {
             ref_id: {"source_id": row["source_id"], "quote": row["quote"]}
@@ -70,14 +79,16 @@ def run_screen(
     )
     candidate, usage, wall_ms = run_structured_host(
         schema=parallel_materiality_decision_schema(
-            source_ref_schema=semantic_evidence_block_schema(evidence_catalog)
+            source_ref_schema=semantic_source_ref_schema()
         ), prompt=prompt, model=model,
         reasoning_effort=reasoning_effort, budget_seconds=model_budget_seconds,
         temporary_prefix="odylith-materiality-screen-",
         cancel_event=cancel_event,
         host_profile=host_profile,
     )
-    candidate = bind_semantic_evidence_blocks(candidate, catalog=evidence_catalog)
+    if not isinstance(candidate, dict):
+        raise ValueError("materiality screen output must be a JSON object")
+    resolved_semantic_source_refs(candidate, evidence_sources=evidence_sources)
     canonical_parallel_materiality_decision(candidate)
     receipt = {
         "version": SCREEN_VERSION,

@@ -3,16 +3,19 @@ flowchart LR
       direction TB
       prompt["Operator prompt or sealed EDIT evidence"]
       request["Semantic Intent request<br/>exact evidence hashes, operating envelope,<br/>pinned execution profile, one-attempt contract"]
-      critic["Isolated prompt-only materiality critic<br/>classifies every canonical field<br/>and identifies only material disagreement"]
-      materiality{"Material meaning settled?"}
+      critic["Isolated prompt-only materiality critic<br/>classifies every canonical field<br/>without candidates or validator feedback"]
+      full_author["Independent full-source graph author<br/>typed facts, relations, citations<br/>and mandatory self-challenges"]
+      source_author["Independent source-only graph author<br/>distinct evidence view<br/>and mandatory self-challenges"]
+      provider_schema["Provider structured-output boundaries<br/>typed graph candidates<br/>with exact source citations"]
       question["One focused clarification<br/>no authority or governed writes"]
-      author["Independent semantic graph author<br/>sees evidence plus the critic assessment<br/>but no prior candidate or validator feedback"]
-      provider_schema["Provider structured-output boundary<br/>typed facts, relations, narratives,<br/>exact citations, mandatory self-challenges"]
     end
 
     subgraph deterministic_lane["Deterministic graph authority"]
       direction TB
-      graph_verifier["Semantic Intent verifier<br/>exact citation bytes, type and endpoint laws,<br/>ownership, polarity, cardinality,<br/>materiality alignment and operating limits"]
+      graph_verifier["Candidate admission<br/>same citation, endpoint, ownership,<br/>polarity, completeness and package laws"]
+      comparison["Typed source comparison<br/>supported facts, omissions,<br/>material disagreement and utility"]
+      standard_choice{"Standard convergence?"}
+      selector["Selection-only rescue<br/>choose one admitted candidate unchanged<br/>or ask one material question"]
       graph_authority["Product Intent authority v8<br/>verified graph, materiality assessment,<br/>execution receipts and stable hashes"]
       projection_plan["One persisted projection plan<br/>release scope, components, workstreams,<br/>adaptive diagrams and artifact custody"]
       governed_package["Graph-native governed package<br/>Radar, Registry, Atlas, Project brief,<br/>delivery, memory and release evidence"]
@@ -38,12 +41,21 @@ flowchart LR
       release_gates["Clean install, browser and distribution proof<br/>then one untouched protected holdout run"]
     end
 
-    prompt --> request --> critic --> materiality
-    materiality -- "no" --> question
+    prompt --> request
+    request --> critic
+    request --> full_author
+    request --> source_author
     question -- "new EDIT evidence" --> request
-    materiality -- "yes" --> author --> provider_schema --> graph_verifier
-    graph_verifier -- "invalid" --> question
-    graph_verifier -- "valid" --> graph_authority --> projection_plan --> governed_package
+    full_author --> provider_schema
+    source_author --> provider_schema
+    provider_schema --> graph_verifier --> comparison
+    critic --> comparison --> standard_choice
+    standard_choice -- "materially unresolved" --> question
+    standard_choice -- "one safe candidate" --> graph_authority
+    standard_choice -- "reusable typed disagreement" --> selector
+    selector -- "clarify" --> question
+    selector -- "select existing graph" --> graph_authority
+    graph_authority --> projection_plan --> governed_package
     governed_package --> package_gate
     package_gate -- "invalid" --> question
     package_gate -- "valid" --> pending --> choice
@@ -61,8 +73,8 @@ flowchart LR
     classDef deterministic fill:#F8FAFC,stroke:#94A3B8,color:#132033,stroke-width:1.2px;
     classDef publication fill:#F0FDF4,stroke:#4ADE80,color:#132033,stroke-width:1.2px;
     classDef proof fill:#FFF7ED,stroke:#FB923C,color:#132033,stroke-width:1.2px;
-    class prompt,request,critic,materiality,question,author,provider_schema evidence;
-    class graph_verifier,graph_authority,projection_plan,governed_package,package_gate,pending,choice deterministic;
+    class prompt,request,critic,full_author,source_author,provider_schema,question evidence;
+    class graph_verifier,comparison,standard_choice,selector,graph_authority,projection_plan,governed_package,package_gate,pending,choice deterministic;
     class confirm,generation,readback,rollback publication;
     class dev_cohort,adjudication,host_parity,lower_safety,release_gates proof;
 

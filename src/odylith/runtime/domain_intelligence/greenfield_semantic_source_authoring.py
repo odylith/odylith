@@ -19,13 +19,13 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations im
 
 
 SEMANTIC_SOURCE_PARTITIONED_GRAPH_VERSION = (
-    "odylith.greenfield.semantic-source-partitioned-authoring-graph.v22"
+    "odylith.greenfield.semantic-source-partitioned-authoring-graph.v24"
 )
-SEMANTIC_SOURCE_PATH_GRAPH_VERSION = "odylith.greenfield.semantic-source-path-graph.v8"
+SEMANTIC_SOURCE_PATH_GRAPH_VERSION = "odylith.greenfield.semantic-source-path-graph.v9"
 SEMANTIC_SOURCE_BOUNDARY_GRAPH_VERSION = (
-    "odylith.greenfield.semantic-source-boundary-graph.v7"
+    "odylith.greenfield.semantic-source-boundary-graph.v9"
 )
-SEMANTIC_SOURCE_GRAPH_VERSION = "odylith.greenfield.semantic-source-authoring-graph.v17"
+SEMANTIC_SOURCE_GRAPH_VERSION = "odylith.greenfield.semantic-source-authoring-graph.v19"
 SOURCE_ACCESS_MODES = ("read", "write", "read_write", "invoke")
 SOURCE_PATH_COLLECTIONS = {
     "identities": "identity",
@@ -38,6 +38,7 @@ SOURCE_BOUNDARY_COLLECTIONS = {
     "external_systems": "external_system",
     "policies": "policy",
     "assumptions": "assumption",
+    "ambiguities": "ambiguity",
     "discarded_evidence": "discarded_evidence",
 }
 SOURCE_PATH_RELATION_KINDS: tuple[str, ...] = ()
@@ -201,11 +202,11 @@ def _partition_schema(
                         assumption_fields=assumption_fields,
                     ),
                     minimum=(
-                        1 if kind in {"identity", "workflow_step", "visible_output"}
+                        1 if kind in {"identity", "workflow_step"}
                         else 0
                     ),
                     maximum=(
-                        1 if kind == "identity" else
+                        1 if kind in {"identity", "ambiguity"} else
                         0 if kind == "assumption" and not assumption_fields else 128
                     ),
                 )
@@ -313,11 +314,18 @@ def _fact_schema(
             "type": "string",
             "enum": ["operating_invariant", "excluded_capability"],
         }
-    if kind == "assumption":
+    if kind in {"assumption", "ambiguity"}:
         required.append("materiality_field")
         properties["materiality_field"] = {
             "type": "string",
             "enum": list(assumption_fields or SEMANTIC_CLARIFICATION_FIELDS),
+        }
+    if kind == "ambiguity":
+        required.append("question")
+        properties["question"] = _string(600)
+        properties["source_refs"] = {
+            **dict(source_refs),
+            "minItems": 1,
         }
     return _object(required, properties)
 

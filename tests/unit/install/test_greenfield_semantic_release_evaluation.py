@@ -68,7 +68,7 @@ def test_release_evaluation_requires_independent_exact_id_custody(tmp_path: Path
     assert report["metrics"]["equivalent_source_convergence"] == 1.0
     assert report["metrics"]["worst_slice"]["point_estimate"] == 1.0
     assert report["metrics"]["overall_confidence_interval_95"]["lower"] < 1.0
-    assert report["resource_metrics"]["cohort_totals"]["model_calls"] == 12
+    assert report["resource_metrics"]["cohort_totals"]["model_calls"] == 9
     assert set(report["auxiliary_report_bindings"]) == {
         "host_parity",
         "lower_capability_safety",
@@ -107,9 +107,9 @@ def test_release_evaluation_rejects_unbound_mechanism_claims(
     if mutation == "mechanism":
         mechanism["mechanism_execution"]["mechanism_id"] = "retired-two-stage"
     elif mutation == "host":
-        mechanism["graph_completion"]["host_profile"] = "other-host"
+        mechanism["final_graph_adjudication"]["host_profile"] = "other-host"
     elif mutation == "calls":
-        mechanism["source_graph"]["model_call_count"] = 1
+        mechanism["source_hypothesis"]["model_call_count"] = 1
     elif mutation == "packet":
         mechanism["packet"] = {**mechanism["packet"], "evidence_sha256": "0" * 64}
     else:
@@ -501,7 +501,7 @@ def _candidate(
         status="completed",
         outcome=outcome,
         wall_ms=wall_ms,
-        model_call_count=4,
+        model_call_count=3,
         restart_count=0,
         implementation_fingerprint_sha256=greenfield_runtime_source_fingerprint(),
     )
@@ -518,43 +518,60 @@ def _candidate(
             "outcome": outcome,
             "wall_ms": wall_ms,
             "budget": {"tier": "standard"},
-            "materiality_critic": {
-                "stage": "materiality_critic",
+            "materiality_critic": _critic_receipt(
+                case_id=case_id,
+                prompt=prompt,
+                packet=packet,
+                host_profile=host_profile,
+                host_contract=host_contract,
+            ),
+            "source_hypothesis": {
+                "stage": "source_hypothesis",
                 "case_id": case_id,
                 "host_profile": host_profile,
-                "model": host_contract["critic_model"],
-                "reasoning_effort": host_contract["critic_reasoning_effort"],
-                "model_call_count": 1,
-                "validation_status": "passed",
-                "prompt_sha256": _prompt_sha(prompt),
-            },
-            "source_graph": {
-                "stage": "source_graph",
-                "case_id": case_id,
-                "host_profile": host_profile,
-                "model": host_contract["source_model"],
-                "reasoning_effort": host_contract["source_reasoning_effort"],
+                "model": host_contract["source_hypothesis_model"],
+                "reasoning_effort": host_contract["source_hypothesis_reasoning_effort"],
                 "model_call_count": 2,
-                "validation_status": "passed" if outcome == "commit" else "cancelled",
-                "authority_used": outcome == "commit",
+                "validation_status": "passed",
+                "authority_used": False,
+                "source": _empty_source_graph(),
+                "selected_run_index": 1,
+                "hypothesis_runs": [
+                    {
+                        "run_index": 0,
+                        "hypothesis_mode": "full_graph",
+                        "status": "comparison_passed",
+                        "wall_ms": 20_000,
+                        "usage": {},
+                    },
+                    {
+                        "run_index": 1,
+                        "hypothesis_mode": "source_only",
+                        "status": "selected",
+                        "wall_ms": 19_000,
+                        "usage": {},
+                    },
+                ],
             },
-            "graph_completion": {
-                "stage": (
-                    "graph_completion" if outcome == "commit" else "clarification_author"
-                ),
+            "final_graph_adjudication": {
+                "stage": "partitioned_graph_admission",
                 "case_id": case_id,
                 "host_profile": host_profile,
-                "model": host_contract["completion_model"],
-                "reasoning_effort": host_contract["completion_reasoning_effort"],
-                "model_call_count": 1,
+                "model": host_contract["source_hypothesis_model"],
+                "reasoning_effort": host_contract["source_hypothesis_reasoning_effort"],
+                "model_call_count": 0,
                 "validation_status": "passed",
+                "source_status": "approved" if outcome == "commit" else "not_applicable",
+                "compiled_author_output": (
+                    {"typed_graph": True} if outcome == "commit" else None
+                ),
             },
             "materiality_assessment": deepcopy(packet["materiality_assessment"]),
             "packet": deepcopy(packet),
             "transaction": deepcopy(transaction),
             "failed_stage": "",
             "failure": "",
-            "model_call_count": 4,
+            "model_call_count": 3,
             "restart_count": 0,
             "total_tokens": 200,
             "mechanism_execution": execution,
@@ -572,6 +589,63 @@ def _candidate(
             "post_confirm_semantic_calls": 0,
             "sealed_readback_equal": outcome == "commit",
             "rollback_recovery_passed": outcome == "commit",
+        },
+    }
+
+
+def _critic_receipt(
+    *, case_id: str, prompt: str, packet: dict,
+    host_profile: str, host_contract: dict,
+) -> dict:
+    decision = _parallel_materiality_decision(packet)
+    return {
+        "stage": "materiality_critic",
+        "case_id": case_id,
+        "host_profile": host_profile,
+        "model": host_contract["critic_model"],
+        "reasoning_effort": host_contract["critic_reasoning_effort"],
+        "model_call_count": 1,
+        "validation_status": "passed",
+        "prompt_sha256": _prompt_sha(prompt),
+        "decision": decision,
+    }
+
+
+def _parallel_materiality_decision(packet: dict) -> dict:
+    assessment = packet["materiality_assessment"]
+    fields = {
+        row["field"]: {
+            key: deepcopy(value) for key, value in row.items() if key != "field"
+        }
+        for row in assessment["fields"]
+    }
+    if assessment["decision"] == "clarification_required":
+        clarification = assessment["clarification"]
+        fields[clarification["field"]] = {
+            "status": "explicit",
+            "source_refs": deepcopy(clarification["source_refs"]),
+            "alternatives": [],
+        }
+    return {
+        "version": "odylith.greenfield.parallel-materiality-decision.v3",
+        "outcome": {
+            "decision": assessment["decision"],
+            "clarification": deepcopy(assessment["clarification"]),
+        },
+        "fields": fields,
+    }
+
+
+def _empty_source_graph() -> dict:
+    return {
+        "version": "odylith.greenfield.semantic-source-partitioned-authoring-graph.v24",
+        "path": {
+            "identities": [], "actors": [], "workflow_steps": [],
+            "state_objects": [], "visible_outputs": [], "relations": {},
+        },
+        "boundary": {
+            "external_systems": [], "policies": [], "relations": {},
+            "discarded_evidence": [], "assumptions": [],
         },
     }
 
@@ -673,7 +747,7 @@ def _fixture_contract(lane: str) -> dict:
         (
             SCRIPTS_ROOT
             / "fixtures"
-            / f"greenfield-semantic-{lane}-evaluation-contract.v4.json"
+            / f"greenfield-semantic-{lane}-evaluation-contract.v5.json"
         ).read_text(encoding="utf-8")
     )
 

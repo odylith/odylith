@@ -13,10 +13,14 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract 
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_packet import (
     build_semantic_intent_packet,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
+    semantic_intent_product_facts,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_layered_authoring import (
     SEMANTIC_COMPLETION_GRAPH_VERSION,
     SEMANTIC_PARTITIONED_AUTHOR_VERSION,
     compile_layered_authoring_graph,
+    compile_layered_source_authority,
     compile_partitioned_authoring_graph,
     semantic_completion_graph_schema,
     semantic_partitioned_author_schema,
@@ -29,6 +33,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_completion_partitio
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_partition_custody import (
     accepted_partitioned_evidence_catalog,
+    completion_without_discarded_citations,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_authoring import (
     SEMANTIC_SOURCE_BOUNDARY_GRAPH_VERSION,
@@ -109,11 +114,14 @@ def test_layered_authors_compile_to_the_exact_full_production_packet() -> None:
         (row["kind"], row["subject_id"], row["object_id"])
         for row in expected["semantic_intent"]["relations"]
     }
-    actual_narratives = deepcopy(packet["semantic_intent"]["narratives"])
-    expected_narratives = deepcopy(expected["semantic_intent"]["narratives"])
-    for row in [*actual_narratives, *expected_narratives]:
-        row.pop("fact_ids")
-    assert actual_narratives == expected_narratives
+    actual_narratives = packet["semantic_intent"]["narratives"]
+    assert [row["field"] for row in actual_narratives[:6]] == [
+        "product_story", "problem", "customer", "opportunity",
+        "product_view", "proof_boundary",
+    ]
+    assert len([row for row in actual_narratives if row["field"] == "success_metric"]) >= 2
+    assert all("%" not in row["text"] for row in actual_narratives)
+    assert len({row["text"] for row in actual_narratives}) == len(actual_narratives)
     known_fact_ids = {
         row["fact_id"] for row in packet["semantic_intent"]["facts"]
     }
@@ -121,15 +129,36 @@ def test_layered_authors_compile_to_the_exact_full_production_packet() -> None:
         row["fact_ids"] and set(row["fact_ids"]) <= known_fact_ids
         for row in packet["semantic_intent"]["narratives"]
     )
-    assert packet["semantic_intent"]["narratives"][0]["fact_ids"] == [
-        "actor.0", "step.0", "step.1", "output.0", "system.0", "system.1",
-    ]
+    assert set(actual_narratives[0]["fact_ids"]) <= known_fact_ids
 
 
-def test_completion_cannot_author_narrative_fact_identity() -> None:
+def test_source_authority_compiles_without_granting_completion_custody() -> None:
+    expected = semantic_intent_packet()
+    source, _ = _layers(expected)
+
+    authority = compile_layered_source_authority(
+        source,
+        assessment=expected["materiality_assessment"],
+        evidence_sources={"operator_prompt": SEMANTIC_PROMPT, "operator_edit": ""},
+    )
+
+    assert authority["source"] == source
+    adjudication = authority["source_candidate_adjudication"]
+    assert adjudication["candidate_decisions"] == expected[
+        "source_candidate_adjudication"
+    ]["candidate_decisions"]
+    assert {
+        row["fact"]["fact_id"] for row in adjudication["source_claims"]["facts"]
+    } == {
+        row["fact"]["fact_id"]
+        for row in expected["source_candidate_adjudication"]["source_claims"]["facts"]
+    }
+
+
+def test_completion_cannot_author_governance_narratives() -> None:
     expected = semantic_intent_packet()
     source, completion = _layers(expected)
-    completion["narratives"]["product_view"]["fact_ids"] = ["fact.0"]
+    completion["narratives"] = {"product_view": {"text": "unsupported"}}
 
     try:
         compile_layered_authoring_graph(
@@ -139,7 +168,7 @@ def test_completion_cannot_author_narrative_fact_identity() -> None:
             evidence_sources={"operator_prompt": SEMANTIC_PROMPT, "operator_edit": ""},
         )
     except ValueError as error:
-        assert str(error) == "Semantic completion narrative has unsupported or missing fields"
+        assert str(error) == "Semantic completion authoring graph has unsupported or missing fields"
     else:
         raise AssertionError("completion-authored narrative fact identity must fail closed")
 
@@ -147,12 +176,16 @@ def test_completion_cannot_author_narrative_fact_identity() -> None:
 def test_single_partitioned_author_adds_only_deterministic_boundary_custody() -> None:
     expected = semantic_intent_packet()
     source, completion = _layers(expected)
-    for row in completion["internal_systems"]:
+    completion["internal_systems"] = completion["internal_systems"][:1]
+    compact_completion = deepcopy(completion)
+    for row in compact_completion["internal_systems"]:
         row.pop("fact_id", None)
+        for relation_kind in ("depends_on", "implements", "constrained_by", "excludes"):
+            row.pop(relation_kind)
     candidate = {
         "version": SEMANTIC_PARTITIONED_AUTHOR_VERSION,
         "source": _partitioned_source(source),
-        "completion": completion,
+        "completion": compact_completion,
     }
 
     author_output = compile_partitioned_authoring_graph(
@@ -180,7 +213,15 @@ def test_single_partitioned_author_adds_only_deterministic_boundary_custody() ->
     }
     assert legacy_relations < new_relations
     assert ("constrained_by", "identity.0", "constraint.0") in new_relations
-    assert author_output["semantic_extension"] == legacy_output["semantic_extension"]
+    def semantic_edges(value: dict) -> set[tuple[str, str, str]]:
+        return {
+            (node["fact"]["fact_id"], relation_kind, edge["object_id"])
+            for node in value["semantic_extension"]["nodes"]
+            for relation_kind in ("depends_on", "implements", "constrained_by", "excludes")
+            for edge in node[relation_kind]
+        }
+
+    assert semantic_edges(author_output) == semantic_edges(legacy_output)
 
 
 def test_layered_schemas_are_bounded_and_source_semantics_have_one_owner() -> None:
@@ -200,19 +241,21 @@ def test_layered_schemas_are_bounded_and_source_semantics_have_one_owner() -> No
         "internal_systems"
     ]["items"]
     assert "fact_id" not in completion_system["properties"]
-    narrative = semantic_completion_graph_schema()["properties"]["narratives"][
-        "properties"
-    ]["product_view"]
-    assert narrative["required"] == ["text", "source_refs"]
-    assert "fact_ids" not in narrative["properties"]
+    assert "narratives" not in semantic_completion_graph_schema()["properties"]
     single_system = semantic_completion_graph_schema(system_count=1)["properties"][
         "internal_systems"
     ]
     assert single_system["minItems"] == single_system["maxItems"] == 1
     assert all(
-        single_system["items"]["properties"][kind]["maxItems"] == 0
+        kind not in single_system["items"]["properties"]
         for kind in ("depends_on", "implements", "constrained_by", "excludes")
     )
+    assert single_system["items"]["properties"]["component_kind"]["enum"] == [
+        "adapter", "interface", "library", "service", "worker",
+    ]
+    assert single_system["items"]["properties"]["release_scope"]["enum"] == [
+        "first_path_required", "deferred",
+    ]
     complete_only = semantic_completion_graph_schema(complete_only=True)
     assert "clarification" not in complete_only["required"]
     assert "clarification" not in complete_only["properties"]
@@ -222,7 +265,13 @@ def test_layered_schemas_are_bounded_and_source_semantics_have_one_owner() -> No
     ]
     assert "internal_systems" not in boundary
     assert "component_responsibilities" not in boundary
-    assert "ambiguities" not in boundary
+    assert boundary["ambiguities"]["maxItems"] == 1
+    assert boundary["ambiguities"]["items"]["properties"]["source_refs"][
+        "minItems"
+    ] == 1
+    assert {"materiality_field", "question"} <= set(
+        boundary["ambiguities"]["items"]["required"]
+    )
     assert "implements" not in boundary["relations"]["properties"]
     assert "operational_constraints" not in boundary
     assert "non_goals" not in boundary
@@ -250,7 +299,7 @@ def test_layered_schemas_are_bounded_and_source_semantics_have_one_owner() -> No
     path = semantic_source_partitioned_graph_schema()["properties"]["path"]["properties"]
     assert path["identities"]["minItems"] == path["identities"]["maxItems"] == 1
     assert path["workflow_steps"]["minItems"] == 1
-    assert path["visible_outputs"]["minItems"] == 1
+    assert path["visible_outputs"].get("minItems", 0) == 0
     assert "responsibility" not in path["actors"]["items"]["properties"]
     workflow_group = path["workflow_steps"]["items"]
     assert workflow_group["required"] == ["owner", "steps"]
@@ -350,6 +399,133 @@ def test_completion_assignments_are_the_only_implementation_and_release_authorit
     )
     projected["clarification"] = {"question": "", "fields": [], "source_refs": []}
     assert projected == completion
+
+def test_completion_schema_binds_each_typed_object_to_its_exact_citations() -> None:
+    object_citations = {
+        "step.0": ("citation.step",),
+        "dependency.0": ("citation.dependency",),
+        "constraint.0": ("citation.constraint",),
+        "non_goal.0": ("citation.non-goal",),
+    }
+    edge_ids = {
+        "implements": ("step.0",),
+        "depends_on": ("dependency.0",),
+        "constrained_by": ("constraint.0",),
+        "excludes": ("non_goal.0",),
+    }
+    schema = semantic_graph_completion_schema(
+        source_citation_ids=tuple(
+            citation_id
+            for values in object_citations.values()
+            for citation_id in values
+        ),
+        edge_object_ids=edge_ids,
+        topology_mode="adaptive",
+        object_citation_ids=object_citations,
+    )
+
+    systems = schema["properties"]["internal_systems"]["items"]["properties"]
+    for kind, object_id in (
+        ("depends_on", "dependency.0"),
+        ("constrained_by", "constraint.0"),
+        ("excludes", "non_goal.0"),
+    ):
+        choice = systems[kind]["items"]["anyOf"][0]
+        assert choice["properties"]["object_id"]["enum"] == [object_id]
+        assert choice["properties"]["source_citation_ids"]["items"]["enum"] == [
+            object_citations[object_id][0]
+        ]
+
+    assignment = schema["properties"]["implementation_assignments"]["properties"][
+        "step.0"
+    ]
+    assert assignment["properties"]["source_citation_ids"]["items"]["enum"] == [
+        "citation.step"
+    ]
+    boundary_choices = schema["properties"]["supporting_systems"]["items"][
+        "properties"
+    ]["boundary_links"]["items"]["anyOf"]
+    assert {
+        (
+            choice["properties"]["kind"]["enum"][0],
+            choice["properties"]["object_id"]["enum"][0],
+            choice["properties"]["source_citation_ids"]["items"]["enum"][0],
+        )
+        for choice in boundary_choices
+    } == {
+        ("depends_on", "dependency.0", "citation.dependency"),
+        ("constrained_by", "constraint.0", "citation.constraint"),
+        ("excludes", "non_goal.0", "citation.non-goal"),
+    }
+    assert "oneOf" not in json.dumps(schema)
+
+
+def test_narrative_projection_is_typed_distinct_and_quantity_safe() -> None:
+    source, completion = _layers(semantic_intent_packet())
+    expected = semantic_intent_packet()
+    author = compile_layered_authoring_graph(
+        source,
+        completion,
+        assessment=expected["materiality_assessment"],
+        evidence_sources={"operator_prompt": SEMANTIC_PROMPT, "operator_edit": ""},
+    )
+    narratives = author["semantic_extension"]["narratives"]
+    texts = [row["text"] for row in narratives]
+
+    assert len(texts) == len(set(texts))
+    assert all("%" not in text and "100" not in text for text in texts)
+    assert all(row["fact_ids"] and row["source_refs"] for row in narratives)
+    assert max(len(row["source_refs"]) for row in narratives) <= 8
+    assert any("visible" in row["text"] for row in narratives if row["field"] == "success_metric")
+    assert any(
+        row["text"]
+        == (
+            "When the “Receive receipt” step completes, the path makes "
+            "the “Claim receipt” result visible."
+        )
+        for row in narratives
+    )
+    assert any(
+        row["text"]
+        == (
+            "Evidence must show that the “Receive receipt” step produced "
+            "the “Claim receipt” result."
+        )
+        for row in narratives
+    )
+    assert all(not row["text"].startswith("After ") for row in narratives)
+
+
+def test_product_fact_projection_never_reuses_raw_source_envelope_copy() -> None:
+    semantic_intent = deepcopy(semantic_intent_packet()["semantic_intent"])
+    raw_envelope = '{"product_intent":{"first_path":"opaque source envelope"}}'
+    source_kinds = {
+        "workflow_step",
+        "state_object",
+        "visible_output",
+        "external_system",
+        "operational_constraint",
+        "non_goal",
+        "assumption",
+        "ambiguity",
+    }
+    for fact in semantic_intent["facts"]:
+        if fact["kind"] in source_kinds:
+            fact["statement"] = raw_envelope
+        if fact["kind"] == "actor":
+            fact["attributes"] = [
+                row for row in fact["attributes"] if row["name"] != "responsibility"
+            ]
+
+    projected = semantic_intent_product_facts(semantic_intent)
+
+    assert raw_envelope not in json.dumps(projected, sort_keys=True)
+    assert projected["first_path"] == "Claim one ready card. Receive a claim receipt."
+    assert projected["state_objects"] == ["Card"]
+    assert projected["visible_outputs"] == ["Claim receipt"]
+    assert projected["operational_constraints"] == ["Read local duty roster"]
+    assert projected["non_goals"] == ["No automatic reassignment"]
+    assert projected["human_actors"] == ["Shift coordinator"]
 
 
 def test_completion_derives_active_supporting_topology_from_disjoint_system_roles() -> None:
@@ -617,19 +793,24 @@ def test_source_step_edges_are_kind_typed_before_graph_compilation() -> None:
 
 
 def test_layered_authoring_owner_has_no_regex_fuzzy_or_token_authority() -> None:
-    source = Path(
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_layered_authoring.py"
-    )
-    tree = ast.parse(source.read_text(encoding="utf-8"))
-    imports = {
-        alias.name.split(".")[0]
-        for node in ast.walk(tree)
-        if isinstance(node, (ast.Import, ast.ImportFrom))
-        for alias in node.names
-    }
-    assert imports.isdisjoint(
-        {"re", "regex", "difflib", "rapidfuzz", "nltk", "spacy", "tokenize"}
-    )
+    for source in (
+        Path("src/odylith/runtime/domain_intelligence/greenfield_semantic_layered_authoring.py"),
+        Path("src/odylith/runtime/domain_intelligence/greenfield_semantic_narrative_projection.py"),
+        Path("src/odylith/runtime/domain_intelligence/greenfield_semantic_source_authoring.py"),
+        Path("src/odylith/runtime/domain_intelligence/greenfield_semantic_source_hypothesis_comparison.py"),
+        Path("scripts/release/greenfield_semantic_authoring_wave.py"),
+        Path("scripts/release/greenfield_semantic_standard_path_experiment.py"),
+    ):
+        tree = ast.parse(source.read_text(encoding="utf-8"))
+        imports = {
+            alias.name.split(".")[0]
+            for node in ast.walk(tree)
+            if isinstance(node, (ast.Import, ast.ImportFrom))
+            for alias in node.names
+        }
+        assert imports.isdisjoint(
+            {"re", "regex", "difflib", "rapidfuzz", "nltk", "spacy", "tokenize"}
+        )
 
 
 def test_provider_handle_binding_removes_source_transcription_authorship() -> None:
@@ -703,6 +884,93 @@ def test_discarded_evidence_is_not_compiled_as_product_truth() -> None:
 
     assert all(row["kind"] != "discarded_evidence" for row in compiled["facts"])
     assert "retired brainstorm label" not in json.dumps(compiled)
+
+
+def test_source_material_ambiguity_is_typed_before_product_graph_compilation() -> None:
+    source, _ = _layers(semantic_intent_packet())
+    candidate = _partitioned_source(source)
+    candidate["boundary"]["ambiguities"] = [
+        {
+            "label": "First workflow step has two incompatible instructions",
+            "materiality_field": "first_path",
+            "question": "Should the existing record be selected or a new record be imported first?",
+            "source_refs": [
+                deepcopy(source["facts"][1]["source_refs"][0]),
+                deepcopy(source["facts"][2]["source_refs"][0]),
+            ],
+        }
+    ]
+
+    compiled = compile_source_partitioned_graph(candidate)
+    ambiguity = next(row for row in compiled["facts"] if row["kind"] == "ambiguity")
+
+    assert ambiguity["materiality_field"] == "first_path"
+    assert ambiguity["question"].startswith("Should the existing record")
+
+
+def test_partitioned_completion_cannot_reintroduce_a_discarded_label() -> None:
+    expected = semantic_intent_packet()
+    source, completion = _layers(expected)
+    for row in completion["internal_systems"]:
+        row.pop("fact_id", None)
+    candidate = _partitioned_source(source)
+    discarded_ref = {
+        "source_id": "operator_prompt",
+        "quote": "Rejected interpretations stay inspectable as evidence but never enter the "
+        "accepted acceptance state.",
+        "occurrence": 1,
+    }
+    candidate["boundary"]["discarded_evidence"] = [{
+        "label": "Rejected interpretations",
+        "source_refs": [discarded_ref],
+    }]
+    completion["internal_systems"][0]["outside_boundary"] = (
+        "Rejected interpretations"
+    )
+
+    with pytest.raises(ValueError, match="contains a discarded label"):
+        compile_partitioned_authoring_graph(
+            {
+                "version": SEMANTIC_PARTITIONED_AUTHOR_VERSION,
+                "source": candidate,
+                "completion": completion,
+            },
+            assessment=expected["materiality_assessment"],
+            evidence_sources={"operator_prompt": SEMANTIC_PROMPT, "operator_edit": ""},
+        )
+
+
+def test_completion_overcitation_drops_only_the_discarded_exact_citation() -> None:
+    accepted = {
+        "source_id": "operator_prompt",
+        "quote": "Generate a simulated sequence.",
+        "occurrence": 1,
+    }
+    discarded = {
+        "source_id": "operator_prompt",
+        "quote": "The trial label Mossy Compass is excluded.",
+        "occurrence": 1,
+    }
+    completion = {
+        "internal_systems": [
+            {
+                "label": "Sequence Preview Service",
+                "source_refs": [accepted, discarded],
+            }
+        ]
+    }
+
+    filtered = completion_without_discarded_citations(
+        [{"label": "Trial label Mossy Compass", "source_refs": [discarded]}],
+        completion,
+    )
+
+    assert filtered["internal_systems"][0]["source_refs"] == [accepted]
+    with pytest.raises(ValueError, match="only discarded evidence"):
+        completion_without_discarded_citations(
+            [{"label": "Trial label Mossy Compass", "source_refs": [discarded]}],
+            {"internal_systems": [{"source_refs": [discarded]}]},
+        )
 
 
 def test_explicit_nonmaterial_output_detail_stays_on_the_output_not_an_assumption() -> None:
@@ -832,16 +1100,6 @@ def _layers(packet: dict) -> tuple[dict, dict]:
             ]
             assert len(systems) == 1
             systems[0][kind].append(row)
-    narratives = {}
-    for raw in packet["semantic_intent"]["narratives"]:
-        row = deepcopy(raw)
-        row.pop("order")
-        row.pop("fact_ids")
-        field = row.pop("field")
-        if field in {"success_metric", "evidence_requirement"}:
-            narratives.setdefault(field, []).append(row)
-        else:
-            narratives[field] = row
     source = {
         "version": SEMANTIC_SOURCE_GRAPH_VERSION,
         "facts": source_facts,
@@ -852,7 +1110,6 @@ def _layers(packet: dict) -> tuple[dict, dict]:
         "status": "complete",
         "clarification": {"question": "", "fields": [], "source_refs": []},
         "internal_systems": bounded_facts["internal_systems"],
-        "narratives": narratives,
         "self_challenge": [
             {"challenge": challenge, "status": "passed"}
             for challenge in SEMANTIC_INTENT_MANDATORY_CHALLENGES

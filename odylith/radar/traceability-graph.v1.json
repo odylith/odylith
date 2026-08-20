@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "616b9ae8f24e2b26ab89fd115052307f97711d86a2fb0e114f571ab72698afd3",
+    "digest": "1914e4a18436716ecc909aea38cf3c07dba0cc80583df61780af9461500a4f7e",
     "file_count": 317,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -13860,10 +13860,10 @@
       ],
       "component_names": [
         "Materiality critic",
-        "Graph author",
-        "Provider schema",
-        "Graph assembly",
-        "Deterministic verifier"
+        "Independent graph authors",
+        "Candidate admission",
+        "Typed source comparison",
+        "Selection-only rescue"
       ],
       "related_component_ids": []
     },
@@ -25095,5 +25095,5 @@
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-08-18 17:31:13Z"
+  "generated_utc": "2026-08-20 15:27:33Z"
 }

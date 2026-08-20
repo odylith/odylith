@@ -253,7 +253,7 @@ def _inputs(tmp_path: Path) -> dict:
             (
                 SCRIPTS_ROOT
                 / "fixtures"
-                / "greenfield-semantic-release-evaluation-contract.v4.json"
+                / "greenfield-semantic-release-evaluation-contract.v5.json"
             ).read_text(encoding="utf-8")
         ),
     )

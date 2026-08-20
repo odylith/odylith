@@ -64,6 +64,7 @@ SEMANTIC_ATTRIBUTE_NAMES = (
     "source_title",
     "access_mode",
     "materiality_field",
+    "question",
 )
 SINGULAR_NARRATIVE_FIELDS = frozenset(
     {"product_story", "problem", "customer", "opportunity", "product_view", "proof_boundary"}

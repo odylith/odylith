@@ -87,6 +87,7 @@ def require_semantic_intent_ir(
     fact_ids = set(fact_index)
     if len(fact_index) != len(facts):
         raise ValueError("Semantic Intent IR fact ids are not unique")
+    _require_unique_state_transitions(facts)
     relations = _validate_relations(
         ir.get("relations"), evidence_sources=evidence_sources, fact_index=fact_index
     )
@@ -118,9 +119,9 @@ def semantic_intent_product_facts(ir: Mapping[str, Any]) -> dict[str, Any]:
     projected: dict[str, Any] = {
         "title": identity["label"],
         "product_story": narratives["product_story"][0]["text"],
-        "state_objects": [row["statement"] for row in by_kind["state_object"]],
-        "visible_outputs": [row["statement"] for row in by_kind["visible_output"]],
-        "first_path": " ".join(_sentence(row["statement"]) for row in by_kind["workflow_step"]),
+        "state_objects": [row["label"] for row in by_kind["state_object"]],
+        "visible_outputs": [row["label"] for row in by_kind["visible_output"]],
+        "first_path": " ".join(_sentence(_attribute(row, "action_phrase")) for row in by_kind["workflow_step"]),
         "proof_boundary": narratives["proof_boundary"][0]["text"],
         "problem": narratives["problem"][0]["text"],
         "customer": narratives["customer"][0]["text"],
@@ -128,17 +129,14 @@ def semantic_intent_product_facts(ir: Mapping[str, Any]) -> dict[str, Any]:
         "product_view": narratives["product_view"][0]["text"],
         "success_metrics": [row["text"] for row in narratives["success_metric"]],
         "evidence_requirements": [row["text"] for row in narratives["evidence_requirement"]],
-        "human_actors": [
-            f"{row['label']}: {_attribute(row, 'responsibility')}"
-            for row in by_kind["actor"]
-        ],
-        "external_systems": [row["statement"] for row in by_kind["external_system"]],
+        "human_actors": [_actor_view(row) for row in by_kind["actor"]],
+        "external_systems": [row["label"] for row in by_kind["external_system"]],
         "internal_systems": [row["statement"] for row in by_kind["internal_system"]],
         "component_responsibilities": [row["statement"] for row in by_kind["component_responsibility"]],
-        "operational_constraints": [row["statement"] for row in by_kind["operational_constraint"]],
-        "non_goals": [row["statement"] for row in by_kind["non_goal"]],
-        "assumptions": [row["statement"] for row in by_kind["assumption"]],
-        "ambiguities": [row["statement"] for row in by_kind["ambiguity"]],
+        "operational_constraints": [row["label"] for row in by_kind["operational_constraint"]],
+        "non_goals": [row["label"] for row in by_kind["non_goal"]],
+        "assumptions": [row["label"] for row in by_kind["assumption"]],
+        "ambiguities": [row["label"] for row in by_kind["ambiguity"]],
     }
     source_title = _attribute(identity, "source_title")
     if source_title:
@@ -415,6 +413,10 @@ def _require_complete_material_graph(
     narratives: Sequence[Mapping[str, Any]],
 ) -> None:
     by_kind = _facts_by_kind(facts)
+    if by_kind["ambiguity"]:
+        raise ValueError(
+            "complete Semantic Intent IR carries unresolved material ambiguity"
+        )
     for kind, contract in _COMPLETE_FACT_COUNTS.items():
         if len(by_kind[kind]) < contract["minimum"]:
             raise ValueError(f"complete Semantic Intent IR lacks {kind}")
@@ -438,6 +440,9 @@ def _require_complete_material_graph(
     actor_ids = {row["fact_id"] for row in by_kind["actor"]}
     output_ids = {row["fact_id"] for row in by_kind["visible_output"]}
     state_ids = {row["fact_id"] for row in by_kind["state_object"]}
+    external_system_ids = {
+        row["fact_id"] for row in by_kind["external_system"]
+    }
     transitioned_state_ids = {
         row["fact_id"]
         for row in by_kind["state_object"]
@@ -504,6 +509,15 @@ def _require_complete_material_graph(
         and row["object_id"] in implementation_target_ids
     }
     depends_on = [row for row in relations if row["kind"] == "depends_on"]
+    assigned_external_system_ids = {
+        row["object_id"]
+        for row in depends_on
+        if row["object_id"] in external_system_ids
+    }
+    if assigned_external_system_ids != external_system_ids:
+        raise ValueError(
+            "complete Semantic Intent IR leaves an external dependency unassigned"
+        )
     boundary_relations = [
         row
         for row in relations
@@ -535,6 +549,26 @@ def _facts_by_kind(facts: Sequence[Mapping[str, Any]]) -> dict[str, list[Mapping
     for rows in result.values():
         rows.sort(key=lambda row: row["order"])
     return result
+
+
+def _require_unique_state_transitions(facts: Sequence[Mapping[str, Any]]) -> None:
+    signatures: set[tuple[str, str, str]] = set()
+    for fact in facts:
+        transition = (
+            semantic_state_transition(fact)
+            if fact["kind"] == "state_object"
+            else None
+        )
+        if transition is None:
+            continue
+        signature = (
+            _attribute(fact, "object"),
+            transition["from_state"],
+            transition["to_state"],
+        )
+        if signature in signatures:
+            raise ValueError("Semantic Intent repeats one typed state transition")
+        signatures.add(signature)
 
 
 def _narratives_by_field(rows: Sequence[Mapping[str, Any]]) -> dict[str, list[Mapping[str, Any]]]:
@@ -623,7 +657,14 @@ def _enum(value: Any, allowed: set[str] | frozenset[str], label: str) -> str:
 
 def _sentence(value: Any) -> str:
     text = _text(value, 1600).rstrip()
-    return text if text.endswith((".", "!", "?")) else f"{text}."
+    sentence = f"{text[:1].upper()}{text[1:]}"
+    return sentence if sentence.endswith((".", "!", "?")) else f"{sentence}."
+
+
+def _actor_view(row: Mapping[str, Any]) -> str:
+    label = str(row["label"])
+    responsibility = _attribute(row, "responsibility")
+    return f"{label}: {responsibility}" if responsibility else label
 
 
 def _json_bytes(value: Mapping[str, Any]) -> bytes:

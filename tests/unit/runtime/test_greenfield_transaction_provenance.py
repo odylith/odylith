@@ -478,7 +478,7 @@ def test_sealed_commit_loader_requires_exact_v14_authority_protocol(
 
 
 def test_create_contract_accepts_only_v14_intent_authority() -> None:
-    assert PRODUCT_CREATE_TRANSACTION_ACCEPTED_INTENT_AUTHORITY_VERSION == "odylith.product-intent-authority.v19"
+    assert PRODUCT_CREATE_TRANSACTION_ACCEPTED_INTENT_AUTHORITY_VERSION == "odylith.product-intent-authority.v20"
 
 
 @pytest.mark.parametrize("mutation", ("extra_field", "reformatted"))

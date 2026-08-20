@@ -18,18 +18,19 @@ from greenfield_semantic_release_support import (
     unique_index,
 )
 from greenfield_semantic_standard_pipeline_experiment import run_standard_pipeline
+from greenfield_semantic_rescue_pipeline import run_rescue_pipeline
 
 
-DEVELOPMENT_RUN_VERSION = "odylith.greenfield.standard-development-run.v1"
+DEVELOPMENT_RUN_VERSION = "odylith.greenfield.bounded-development-run.v2"
 
 
-def run_development_standard_cohort(
+def run_development_bounded_cohort(
     *,
     corpus_path: Path,
     active_evidence_plan_path: Path,
     output_directory: Path,
 ) -> dict[str, Any]:
-    """Run every frozen assignment once through the strict standard tier."""
+    """Run every frozen assignment through standard and one eligible continuation."""
 
     corpus_file = safe_json_file(corpus_path, "development corpus")
     corpus = json_mapping(corpus_file, "development corpus")
@@ -58,14 +59,26 @@ def run_development_standard_cohort(
     results: list[dict[str, Any]] = []
     for case_id in sorted(cases):
         assignment = dict(assignments[case_id])
-        receipt_file = f"{case_id}.standard.json"
-        receipt = run_standard_pipeline(
+        standard_file = f"{case_id}.standard.json"
+        standard = run_standard_pipeline(
             corpus_path=corpus_file,
             case_id=case_id,
-            output_path=destination / receipt_file,
+            output_path=destination / standard_file,
             host_profile=str(assignment["host_profile"]),
             _evidence_assignment=assignment,
         )
+        receipt = standard
+        receipt_file = standard_file
+        if standard.get("status") == "rescue_required":
+            receipt_file = f"{case_id}.rescue.json"
+            receipt = run_rescue_pipeline(
+                corpus_path=corpus_file,
+                case_id=case_id,
+                output_path=destination / receipt_file,
+                standard_failure_receipt=standard,
+                host_profile=str(assignment["host_profile"]),
+                evidence_assignment=assignment,
+            )
         results.append(_result(receipt, receipt_file=receipt_file))
 
     completed = all(row["status"] == "completed" for row in results)
@@ -75,10 +88,12 @@ def run_development_standard_cohort(
         "active_evidence_plan_sha256": canonical_sha256(plan),
         "case_count": len(results),
         "standard_success_count": sum(
-            row["status"] == "completed" for row in results
+            row["status"] == "completed" and row["tier"] == "standard"
+            for row in results
         ),
-        "typed_rescue_required_count": sum(
-            row["outcome"] == "typed_standard_failure" for row in results
+        "rescue_success_count": sum(
+            row["status"] == "completed" and row["tier"] == "rescue"
+            for row in results
         ),
         "environment_failure_count": sum(
             row["outcome"] == "environment_failure" for row in results
@@ -92,6 +107,7 @@ def run_development_standard_cohort(
         ),
         "model_call_count": sum(row["model_call_count"] for row in results),
         "restart_count": sum(row["restart_count"] for row in results),
+        "automatic_deep_count": 0,
         "total_wall_ms": sum(row["wall_ms"] for row in results),
         "cases": results,
     }
@@ -107,6 +123,7 @@ def _result(receipt: Mapping[str, Any], *, receipt_file: str) -> dict[str, Any]:
         "wall_ms": int(receipt.get("wall_ms") or 0),
         "model_call_count": int(receipt.get("model_call_count") or 0),
         "restart_count": int(receipt.get("restart_count") or 0),
+        "tier": str(receipt.get("tier") or "standard"),
         "receipt_file": receipt_file,
         "receipt_sha256": canonical_sha256(receipt),
     }
@@ -118,7 +135,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--active-evidence-plan", type=Path, required=True)
     parser.add_argument("--output-directory", type=Path, required=True)
     args = parser.parse_args(argv)
-    manifest = run_development_standard_cohort(
+    manifest = run_development_bounded_cohort(
         corpus_path=args.corpus,
         active_evidence_plan_path=args.active_evidence_plan,
         output_directory=args.output_directory,
@@ -130,4 +147,4 @@ if __name__ == "__main__":
     raise SystemExit(main())
 
 
-__all__ = ["DEVELOPMENT_RUN_VERSION", "run_development_standard_cohort"]
+__all__ = ["DEVELOPMENT_RUN_VERSION", "run_development_bounded_cohort"]

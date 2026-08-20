@@ -2687,6 +2687,23 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   Browser-state proof, rebuilt exact dist, installed replay, recovery laws, and
   a fresh untouched holdout remain mandatory.
 
+- 2026-08-20 mechanism-adaptive convergence checkpoint replaced bounded
+  completion re-authoring with selection-only typed rescue. The standard path
+  already produces two independent source-grounded candidate graphs plus a
+  prompt-only materiality assessment. Both candidates are now admitted through
+  the same deterministic graph and package laws before rescue. If standard
+  convergence cannot choose safely, one final host call may select one admitted
+  candidate unchanged or ask one material question; it cannot author, merge,
+  repair, or reinterpret a graph. Compact re-authoring and larger rescue
+  budgets were tested and removed after the same complex case timed out. A
+  fresh 24-case cohort on one frozen mechanism fingerprint produced every
+  expected useful outcome, with 17 commits, 7 focused clarifications, zero
+  environment or deadline failures, zero restarts, zero automatic deep runs,
+  and a 55.026-second maximum. The protected holdout remains untouched.
+  Independent semantic/package review, deterministic laws, Codex/Claude parity,
+  lower-capability safety, installed/browser proof, and the one-shot protected
+  holdout remain release blockers.
+
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.
   The active release contract is standard post-confirm under 60 seconds without

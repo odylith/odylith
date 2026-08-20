@@ -2,49 +2,74 @@ flowchart LR
     subgraph assignment["Runner-owned assignment"]
       direction TB
       evidence["Prompt or sealed EDIT evidence<br/>exact bytes and hashes"]
-      contract["Materiality and graph contracts<br/>canonical fields, graph laws,<br/>one attempt and pinned host profile"]
-      nonces["Independent run identities<br/>case, critic and author nonces"]
+      contract["Materiality, graph, and timing contracts<br/>60 / 90 / explicit 120<br/>zero retries and automatic deep"]
+      identities["Independent run identities<br/>critic, full-source author,<br/>source-only author, selector"]
     end
 
-    subgraph critic_lane["Prompt-only materiality critic"]
+    subgraph standard["Independent standard evidence"]
       direction TB
-      critic_input["Evidence plus public materiality schema<br/>no candidate, annotations or validator feedback"]
-      assessment["Nine-field materiality assessment<br/>explicit, source-entailable,<br/>non-material assumption or unresolved"]
-      decision{"Authorize graph?"}
-      clarification["One focused material question<br/>no authority is sealed"]
+      critic["Prompt-only materiality critic<br/>nine canonical fields<br/>no candidates or validator feedback"]
+      full["Full-source graph author<br/>typed facts, relations, citations,<br/>mandatory self-challenge"]
+      source_only["Source-only graph author<br/>independent evidence view<br/>typed facts, relations, citations"]
     end
 
-    subgraph author_lane["Independent graph author"]
+    subgraph admission["Deterministic candidate admission"]
       direction TB
-      author_input["Evidence plus sealed assessment<br/>fresh isolated context"]
-      structured_output["Provider-constrained bounded extension<br/>node facts plus node-owned typed targets<br/>no authored edge subject, kind or custody"]
-      graph_assembly["Deterministic graph assembly<br/>locked source facts plus projected edges<br/>one canonical Semantic Intent"]
-      deterministic_checks["Deterministic validation<br/>exact citation bytes, graph endpoints,<br/>ownership, polarity, cardinality,<br/>materiality alignment and stable hashes"]
-      authority["Verified Product Intent authority<br/>model output is admitted only after every law passes"]
+      full_check["Admit full-source candidate<br/>citation, endpoint, ownership,<br/>polarity, completeness, package laws"]
+      source_check["Admit source-only candidate<br/>same exact laws<br/>no candidate-specific fallback"]
+      compare["Typed source comparison<br/>supported facts, omissions,<br/>material disagreements, utility"]
+      standard_choice{"Standard convergence?"}
     end
 
-    evidence --> critic_input
-    contract --> critic_input
-    nonces --> critic_input
-    critic_input --> assessment --> decision
-    decision -- "no" --> clarification
+    subgraph rescue["Selection-only bounded rescue"]
+      direction TB
+      handoff["Reusable typed handoff<br/>only already-admitted candidates<br/>and exact disagreement evidence"]
+      selector["One final host decision<br/>select full, select source-only,<br/>or ask one material question"]
+      no_authorship["No graph authorship<br/>no merge, repair, regex,<br/>token, fuzzy, or prose parser"]
+    end
+
+    clarification["One focused material question<br/>no authority or governed writes"]
+    selected["One admitted candidate<br/>unchanged graph bytes"]
+    transaction["Verified ProductCreateTransaction<br/>complete governed package<br/>sealed before confirmation"]
+    authority["CONFIRM publishes exact sealed bytes<br/>no post-confirm model or repair"]
+
+    evidence --> critic
+    evidence --> full
+    evidence --> source_only
+    contract --> critic
+    contract --> full
+    contract --> source_only
+    identities --> critic
+    identities --> full
+    identities --> source_only
+    full --> full_check
+    source_only --> source_check
+    critic --> compare
+    full_check --> compare
+    source_check --> compare
+    compare --> standard_choice
+    standard_choice -- "one safe candidate" --> selected
+    standard_choice -- "materially unresolved" --> clarification
+    standard_choice -- "reusable typed disagreement" --> handoff
+    handoff --> selector --> no_authorship
+    selector -- "clarify" --> clarification
+    selector -- "select existing graph" --> selected
+    selected --> transaction --> authority
     clarification -- "new EDIT evidence" --> evidence
-    decision -- "yes" --> author_input
-    evidence --> author_input
-    contract --> author_input
-    nonces --> author_input
-    author_input --> structured_output --> graph_assembly --> deterministic_checks
-    deterministic_checks -- "invalid" --> clarification
-    deterministic_checks -- "valid" --> authority
 
     classDef assignment fill:#EFF6FF,stroke:#60A5FA,color:#132033,stroke-width:1.2px;
-    classDef critic fill:#FFF7ED,stroke:#FB923C,color:#132033,stroke-width:1.2px;
-    classDef author fill:#F0FDF4,stroke:#4ADE80,color:#132033,stroke-width:1.2px;
-    class evidence,contract,nonces assignment;
-    class critic_input,assessment,decision,clarification critic;
-    class author_input,structured_output,graph_assembly,deterministic_checks,authority author;
+    classDef standard fill:#F0FDF4,stroke:#4ADE80,color:#132033,stroke-width:1.2px;
+    classDef verify fill:#F8FAFC,stroke:#94A3B8,color:#132033,stroke-width:1.2px;
+    classDef rescue fill:#FFF7ED,stroke:#FB923C,color:#132033,stroke-width:1.2px;
+    classDef terminal fill:#F5F3FF,stroke:#8B5CF6,color:#132033,stroke-width:1.2px;
+    class evidence,contract,identities assignment;
+    class critic,full,source_only standard;
+    class full_check,source_check,compare,standard_choice verify;
+    class handoff,selector,no_authorship rescue;
+    class clarification,selected,transaction,authority terminal;
 
     style assignment fill:#FBFDFF,stroke:#60A5FA,stroke-width:1px,color:#293D52
-    style critic_lane fill:#FFFBF5,stroke:#FB923C,stroke-width:1px,color:#293D52
-    style author_lane fill:#F8FFF9,stroke:#4ADE80,stroke-width:1px,color:#293D52
+    style standard fill:#F8FFF9,stroke:#4ADE80,stroke-width:1px,color:#293D52
+    style admission fill:#FBFDFF,stroke:#94A3B8,stroke-width:1px,color:#293D52
+    style rescue fill:#FFFBF5,stroke:#FB923C,stroke-width:1px,color:#293D52
     linkStyle default stroke:#9FB2C8,stroke-width:1.25px

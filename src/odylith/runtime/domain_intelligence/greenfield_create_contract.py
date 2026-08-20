@@ -12,7 +12,7 @@ PRODUCT_CREATE_TRANSACTION_COMPILER = "odylith.greenfield.compile_transaction.v1
 PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION = "odylith.greenfield.compiler_identity.v18"
 PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY = "compiler_receipt_hash_verified_commit_only"
 PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION = "odylith.greenfield.compiler_receipt.v1"
-PRODUCT_CREATE_TRANSACTION_ACCEPTED_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v19"
+PRODUCT_CREATE_TRANSACTION_ACCEPTED_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v20"
 POST_CONFIRM_ALLOWED_OPERATIONS = (
     "verify_transaction_hash",
     "verify_compiler_receipt",

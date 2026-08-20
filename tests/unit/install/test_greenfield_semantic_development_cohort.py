@@ -204,45 +204,54 @@ def _receipt(*, packet: dict, assignment: dict, outcome: str) -> dict:
         "outcome": outcome,
         "wall_ms": wall_ms,
         "budget": {"tier": "standard"},
-        "materiality_critic": {
-            "stage": "materiality_critic",
+        "materiality_critic": _critic_run(packet),
+        "source_hypothesis": {
+            "stage": "source_hypothesis",
             "case_id": "claim-desk",
             "host_profile": "codex",
-            "model": "gpt-5.6-sol",
-            "reasoning_effort": "low",
-            "model_call_count": 1,
-            "validation_status": "passed",
-            "prompt_sha256": hashlib.sha256(
-                SEMANTIC_PROMPT.encode("utf-8")
-            ).hexdigest(),
-        },
-        "source_graph": {
-            "stage": "source_graph",
-            "case_id": "claim-desk",
-            "host_profile": "codex",
-            "model": "gpt-5.6-luna",
+            "model": "gpt-5.5",
             "reasoning_effort": "low",
             "model_call_count": 2,
-            "validation_status": "passed" if outcome == "commit" else "cancelled",
-            "authority_used": outcome == "commit",
+            "validation_status": "passed",
+            "authority_used": False,
+            "source": {},
+            "selected_run_index": 1,
+            "hypothesis_runs": [
+                {
+                    "run_index": 0,
+                    "hypothesis_mode": "full_graph",
+                    "status": "comparison_passed",
+                    "wall_ms": 20_000,
+                    "usage": {},
+                },
+                {
+                    "run_index": 1,
+                    "hypothesis_mode": "source_only",
+                    "status": "selected",
+                    "wall_ms": 19_000,
+                    "usage": {},
+                },
+            ],
         },
-        "graph_completion": {
-            "stage": (
-                "graph_completion" if outcome == "commit" else "clarification_author"
-            ),
+        "final_graph_adjudication": {
+            "stage": "partitioned_graph_admission",
             "case_id": "claim-desk",
             "host_profile": "codex",
-            "model": "gpt-5.6-luna",
+            "model": "gpt-5.5",
             "reasoning_effort": "low",
-            "model_call_count": 1,
+            "model_call_count": 0,
             "validation_status": "passed",
+            "source_status": "approved" if outcome == "commit" else "not_applicable",
+            "compiled_author_output": (
+                {"typed_graph": True} if outcome == "commit" else None
+            ),
         },
         "materiality_assessment": deepcopy(packet["materiality_assessment"]),
         "packet": deepcopy(packet),
         "transaction": transaction,
         "failed_stage": "",
         "failure": "",
-        "model_call_count": 4,
+        "model_call_count": 3,
         "restart_count": 0,
         "total_tokens": 200,
         "mechanism_execution": semantic_execution_evidence(
@@ -251,11 +260,52 @@ def _receipt(*, packet: dict, assignment: dict, outcome: str) -> dict:
             status="completed",
             outcome=outcome,
             wall_ms=wall_ms,
-            model_call_count=4,
+            model_call_count=3,
             restart_count=0,
             implementation_fingerprint_sha256=greenfield_runtime_source_fingerprint(),
         ),
         "evidence_assignment": deepcopy(assignment),
+    }
+
+
+def _critic_run(packet: dict) -> dict:
+    return {
+        "stage": "materiality_critic",
+        "case_id": "claim-desk",
+        "host_profile": "codex",
+        "model": "gpt-5.6-sol",
+        "reasoning_effort": "low",
+        "model_call_count": 1,
+        "validation_status": "passed",
+        "prompt_sha256": hashlib.sha256(
+            SEMANTIC_PROMPT.encode("utf-8")
+        ).hexdigest(),
+        "decision": _materiality_decision(packet),
+    }
+
+
+def _materiality_decision(packet: dict) -> dict:
+    assessment = packet["materiality_assessment"]
+    fields = {
+        row["field"]: {
+            key: deepcopy(value) for key, value in row.items() if key != "field"
+        }
+        for row in assessment["fields"]
+    }
+    if assessment["decision"] == "clarification_required":
+        clarification = assessment["clarification"]
+        fields[clarification["field"]] = {
+            "status": "explicit",
+            "source_refs": deepcopy(clarification["source_refs"]),
+            "alternatives": [],
+        }
+    return {
+        "version": "odylith.greenfield.parallel-materiality-decision.v3",
+        "outcome": {
+            "decision": assessment["decision"],
+            "clarification": deepcopy(assessment["clarification"]),
+        },
+        "fields": fields,
     }
 
 

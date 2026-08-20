@@ -1,109 +1,149 @@
-"""Author one source-only Greenfield graph under a bounded host turn."""
+"""Author and independently reconcile one whole Greenfield source graph."""
 
 from __future__ import annotations
 
 from collections.abc import Mapping
-from concurrent.futures import ThreadPoolExecutor
 from threading import Event
-import time
 from typing import Any
 
 from greenfield_semantic_standard_prompts import (
-    source_boundary_prompt,
-    source_path_prompt,
+    partitioned_graph_hypothesis_prompt,
+    unified_source_graph_prompt,
 )
 from greenfield_semantic_structured_host import run_structured_host
-from odylith.runtime.domain_intelligence.greenfield_semantic_atomic_source_custody import (
-    atomic_source_candidates_from_catalog,
+from odylith.runtime.domain_intelligence.greenfield_semantic_layered_authoring import (
+    SEMANTIC_PARTITIONED_AUTHOR_VERSION,
+    semantic_partitioned_author_schema,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_authoring import (
-    combine_source_authoring_partitions,
+    SEMANTIC_SOURCE_PARTITIONED_GRAPH_VERSION,
     compile_source_partitioned_graph,
-    semantic_source_boundary_graph_schema,
-    semantic_source_path_graph_schema,
+    semantic_source_partitioned_graph_schema,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations import (
-    bind_semantic_evidence_blocks,
-    semantic_evidence_block_schema,
+    resolved_semantic_source_refs,
+    semantic_source_ref_schema,
 )
 
 
-def run_source_graph_author(
-    *,
-    prompt_text: str,
-    evidence_catalog: Mapping[str, Mapping[str, Any]],
-    model: str,
-    reasoning_effort: str,
-    budget_seconds: int,
-    cancel_event: Event | None = None,
-    host_profile: str = "codex",
-) -> dict[str, Any]:
-    """Return source truth without materiality or implementation authority."""
+class StructuredSourceHypothesisRejected(ValueError):
+    """Carry one provider-valid source object rejected by typed semantic laws."""
 
-    path_prompt = source_path_prompt(
+    def __init__(
+        self, message: str, *, source: Mapping[str, Any], usage: Mapping[str, Any],
+        wall_ms: int, prompt_text: str,
+    ) -> None:
+        super().__init__(message)
+        self.source = dict(source)
+        self.usage = dict(usage)
+        self.wall_ms = wall_ms
+        self.prompt_text = prompt_text
+
+
+def run_partitioned_graph_hypothesis(
+    *, prompt_text: str, evidence_catalog: Mapping[str, Mapping[str, Any]],
+    model: str, reasoning_effort: str, budget_seconds: int,
+    cancel_event: Event | None = None, host_profile: str = "codex",
+) -> dict[str, Any]:
+    """Return one full typed hypothesis authored independently at time zero."""
+
+    prompt = partitioned_graph_hypothesis_prompt(
         prompt_text=prompt_text,
         evidence_catalog=evidence_catalog,
         model_budget_seconds=budget_seconds,
     )
-    boundary_prompt = source_boundary_prompt(
-        prompt_text=prompt_text,
-        evidence_catalog=evidence_catalog,
-        model_budget_seconds=budget_seconds,
+    candidate, usage, wall_ms = run_structured_host(
+        schema=semantic_partitioned_author_schema(
+            source_ref_schema=semantic_source_ref_schema(),
+            system_count=1,
+        ),
+        prompt=prompt,
+        model=model,
+        reasoning_effort=reasoning_effort,
+        budget_seconds=budget_seconds,
+        temporary_prefix="odylith-partitioned-graph-author-",
+        cancel_event=cancel_event,
+        host_profile=host_profile,
     )
-    source_ref_schema = semantic_evidence_block_schema(evidence_catalog)
-    stop_event = cancel_event or Event()
-    started_ns = time.monotonic_ns()
-    with ThreadPoolExecutor(max_workers=2) as executor:
-        path_future = executor.submit(
-            run_structured_host,
-            schema=semantic_source_path_graph_schema(
-                source_ref_schema=source_ref_schema
-            ),
-            prompt=path_prompt,
-            model=model,
-            reasoning_effort=reasoning_effort,
-            budget_seconds=budget_seconds,
-            temporary_prefix="odylith-source-path-author-",
-            cancel_event=stop_event,
-            host_profile=host_profile,
-        )
-        boundary_future = executor.submit(
-            run_structured_host,
-            schema=semantic_source_boundary_graph_schema(
-                source_ref_schema=source_ref_schema
-            ),
-            prompt=boundary_prompt,
-            model=model,
-            reasoning_effort=reasoning_effort,
-            budget_seconds=budget_seconds,
-            temporary_prefix="odylith-source-boundary-author-",
-            cancel_event=stop_event,
-            host_profile=host_profile,
-        )
-        try:
-            path, path_usage, path_wall_ms = path_future.result()
-            boundary, boundary_usage, boundary_wall_ms = boundary_future.result()
-        except Exception:
-            stop_event.set()
-            raise
-    path = bind_semantic_evidence_blocks(path, catalog=evidence_catalog)
-    boundary = bind_semantic_evidence_blocks(boundary, catalog=evidence_catalog)
-    if not isinstance(path, Mapping) or not isinstance(boundary, Mapping):
-        raise ValueError("source-author partition must be a mapping")
-    source = combine_source_authoring_partitions(path, boundary)
-    compile_source_partitioned_graph(source)
-    wall_ms = (time.monotonic_ns() - started_ns) // 1_000_000
+    if (
+        not isinstance(candidate, Mapping)
+        or candidate.get("version") != SEMANTIC_PARTITIONED_AUTHOR_VERSION
+    ):
+        raise ValueError("partitioned graph hypothesis uses an unsupported version")
+    evidence_sources = {"operator_prompt": prompt_text, "operator_edit": ""}
+    resolved_semantic_source_refs(candidate, evidence_sources=evidence_sources)
+    source = _bound_source(
+        candidate.get("source"), evidence_sources=evidence_sources
+    )
     return {
-        "candidates": atomic_source_candidates_from_catalog(evidence_catalog),
-        "source": dict(source),
-        "usage_rows": [dict(path_usage), dict(boundary_usage)],
+        "candidate": {**dict(candidate), "source": source},
+        "usage": dict(usage),
         "wall_ms": wall_ms,
-        "phase_wall_ms": {
-            "source_path": path_wall_ms,
-            "source_boundary": boundary_wall_ms,
-        },
-        "prompt_text": f"{path_prompt}\n{boundary_prompt}",
+        "prompt_text": prompt,
     }
 
 
-__all__ = ["run_source_graph_author"]
+def run_source_graph_hypothesis(
+    *, prompt_text: str, evidence_catalog: Mapping[str, Mapping[str, Any]],
+    model: str, reasoning_effort: str, budget_seconds: int,
+    cancel_event: Event | None = None, host_profile: str = "codex",
+) -> dict[str, Any]:
+    """Return one whole-source hypothesis with no final semantic authority."""
+
+    prompt = unified_source_graph_prompt(
+        prompt_text=prompt_text,
+        evidence_catalog=evidence_catalog,
+        model_budget_seconds=budget_seconds,
+    )
+    candidate, usage, wall_ms = run_structured_host(
+        schema=semantic_source_partitioned_graph_schema(
+            source_ref_schema=semantic_source_ref_schema()
+        ),
+        prompt=prompt,
+        model=model,
+        reasoning_effort=reasoning_effort,
+        budget_seconds=budget_seconds,
+        temporary_prefix="odylith-unified-source-author-",
+        cancel_event=cancel_event,
+        host_profile=host_profile,
+    )
+    evidence_sources = {"operator_prompt": prompt_text, "operator_edit": ""}
+    if not isinstance(candidate, Mapping):
+        raise ValueError("whole-source author did not return a source graph")
+    resolved_semantic_source_refs(candidate, evidence_sources=evidence_sources)
+    try:
+        source = _bound_source(candidate, evidence_sources=evidence_sources)
+    except ValueError as error:
+        raise StructuredSourceHypothesisRejected(
+            str(error),
+            source=candidate,
+            usage=usage,
+            wall_ms=wall_ms,
+            prompt_text=prompt,
+        ) from error
+    return {
+        "source": source,
+        "usage": dict(usage),
+        "wall_ms": wall_ms,
+        "prompt_text": prompt,
+    }
+
+
+def _bound_source(
+    value: Any, *, evidence_sources: Mapping[str, str],
+) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        raise ValueError("whole-source author did not return a source graph")
+    source = dict(value)
+    if source.get("version") != SEMANTIC_SOURCE_PARTITIONED_GRAPH_VERSION:
+        raise ValueError("whole-source graph uses an unsupported version")
+    resolved_semantic_source_refs(source, evidence_sources=evidence_sources)
+    compile_source_partitioned_graph(source)
+    return dict(source)
+
+
+__all__ = [
+    "StructuredSourceHypothesisRejected",
+    "run_partitioned_graph_hypothesis",
+    "run_source_graph_hypothesis",
+]

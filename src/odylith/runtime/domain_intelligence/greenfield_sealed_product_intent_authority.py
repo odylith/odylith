@@ -1,4 +1,4 @@
-"""Parser-free v16 Semantic Intent authority and sealed-byte checks."""
+"""Parser-free v20 Semantic Intent authority and sealed-byte checks."""
 
 from __future__ import annotations
 
@@ -39,7 +39,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_atomic_source_custo
 
 
 PRODUCT_INTENT_AUTHORITY_KEY = "product_intent_authority"
-PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v19"
+PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v20"
 _SEMANTIC_AUTHORITY_FIELDS = frozenset(
     {
         "version",
@@ -63,6 +63,7 @@ _SEMANTIC_AUTHORITY_FIELDS = frozenset(
         "semantic_intent_author_run",
         "evidence_sources",
         "evidence_sha256",
+        "accepted_evidence_sha256",
         "semantic_intent",
         "semantic_intent_sha256",
         "semantic_meaning_sha256",
@@ -138,11 +139,13 @@ def _require_semantic_intent_authority(authority: Mapping[str, Any]) -> None:
     edit = evidence_sources.get("operator_edit")
     if not isinstance(prompt, str) or not prompt or not isinstance(edit, str):
         raise ValueError("ProductCreateTransaction sealed Semantic Intent evidence is malformed")
+    if not _is_sha256(authority.get("evidence_sha256")):
+        raise ValueError("ProductCreateTransaction sealed Semantic Intent source hash is malformed")
     if not _matches_sha256(
-        authority.get("evidence_sha256"),
+        authority.get("accepted_evidence_sha256"),
         semantic_evidence_sha256(evidence_sources),
     ):
-        raise ValueError("ProductCreateTransaction sealed Semantic Intent evidence hash mismatch")
+        raise ValueError("ProductCreateTransaction sealed accepted Semantic Intent evidence hash mismatch")
     assessment = require_semantic_materiality_assessment(
         authority.get("semantic_materiality_assessment"),
         evidence_sources=evidence_sources,

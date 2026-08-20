@@ -332,7 +332,7 @@ def semantic_clarification_packet() -> dict[str, Any]:
         "field": "visible_result",
         "question": question,
         "source_refs": [semantic_ref(PATH_EVIDENCE)],
-        "alternatives": ["claim receipt", "claim audit view"],
+        "alternatives": [],
     }
     assessment["fields"] = [
         row for row in assessment["fields"] if row["field"] != "visible_result"

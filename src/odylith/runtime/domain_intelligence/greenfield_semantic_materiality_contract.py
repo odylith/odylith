@@ -29,7 +29,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations im
 
 
 SEMANTIC_MATERIALITY_ASSESSMENT_VERSION = (
-    "odylith.greenfield.semantic-materiality-assessment.v8"
+    "odylith.greenfield.semantic-materiality-assessment.v9"
 )
 SEMANTIC_REASONING_CAPABILITY_PROFILE = "frontier_semantic_reasoning"
 SEMANTIC_MATERIALITY_ASSESSMENT_BASIS = "prompt_only_pre_graph"
@@ -317,8 +317,8 @@ def _materiality_clarification_schema(
                     },
                     "alternatives": {
                         "type": "array",
-                        "minItems": 2,
-                        "maxItems": 8,
+                        "minItems": 0,
+                        "maxItems": 0,
                         "items": {"type": "string", "minLength": 1, "maxLength": 600},
                     },
                 },
@@ -663,9 +663,9 @@ def _materiality_clarification(
         row.get("alternatives"), 8, "materiality alternatives",
     )
     if field:
-        if not question or not source_refs or len(alternatives) < 2:
+        if not question or not source_refs or alternatives:
             raise ValueError(
-                "Semantic materiality clarification needs one question, citation, and two alternatives"
+                "Semantic materiality clarification needs one question and citation without inferred alternatives"
             )
     elif question or source_refs or alternatives:
         raise ValueError("Resolved materiality assessment carries clarification evidence")

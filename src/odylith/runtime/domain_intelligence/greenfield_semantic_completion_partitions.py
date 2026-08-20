@@ -1,4 +1,4 @@
-"""Disjoint implementation and narrative completion contracts."""
+"""Typed implementation completion over an immutable source graph."""
 
 from __future__ import annotations
 
@@ -21,6 +21,7 @@ def semantic_graph_completion_schema(
     *, source_citation_ids: Sequence[str],
     edge_object_ids: Mapping[str, Sequence[str]],
     topology_mode: str,
+    object_citation_ids: Mapping[str, Sequence[str]] | None = None,
 ) -> dict[str, Any]:
     """Return the one-call completion schema over an immutable source graph."""
 
@@ -50,6 +51,22 @@ def semantic_graph_completion_schema(
                 "type": "string",
                 "enum": values,
             }
+            if object_citation_ids is not None and edge_kind in {
+                "depends_on", "constrained_by", "excludes"
+            }:
+                edge["items"] = {
+                    "anyOf": [
+                        _typed_edge_schema(
+                            edge["items"],
+                            object_id=object_id,
+                            citation_ids=_object_citation_ids(
+                                object_id,
+                                object_citation_ids=object_citation_ids,
+                            ),
+                        )
+                        for object_id in values
+                    ]
+                }
         else:
             edge["maxItems"] = 0
     system["required"].remove("implements")
@@ -75,22 +92,38 @@ def semantic_graph_completion_schema(
     supporting_system["required"].extend(
         ["boundary_links", "supporting_consumers"]
     )
+    boundary_link = _object(
+        ["kind", "object_id", "source_citation_ids"],
+        {
+            "kind": {
+                "type": "string",
+                "enum": boundary_kinds or ["unavailable"],
+            },
+            "object_id": {
+                "type": "string",
+                "enum": boundary_ids or ["unavailable"],
+            },
+            "source_citation_ids": deepcopy(citation_schema),
+        },
+    )
+    if object_citation_ids is not None and boundary_ids:
+        boundary_link = {
+            "anyOf": [
+                _boundary_link_schema(
+                    kind=kind,
+                    object_id=object_id,
+                    citation_ids=_object_citation_ids(
+                        object_id,
+                        object_citation_ids=object_citation_ids,
+                    ),
+                )
+                for kind in boundary_kinds
+                for object_id in edge_object_ids[kind]
+            ]
+        }
     supporting_system["properties"]["boundary_links"] = {
         "type": "array",
-        "items": _object(
-            ["kind", "object_id", "source_citation_ids"],
-            {
-                "kind": {
-                    "type": "string",
-                    "enum": boundary_kinds or ["unavailable"],
-                },
-                "object_id": {
-                    "type": "string",
-                    "enum": boundary_ids or ["unavailable"],
-                },
-                "source_citation_ids": deepcopy(citation_schema),
-            },
-        ),
+        "items": boundary_link,
         "minItems": 1,
         "maxItems": 128,
     }
@@ -126,7 +159,16 @@ def semantic_graph_completion_schema(
                         "minItems": 1,
                         "maxItems": 128,
                     },
-                    "source_citation_ids": deepcopy(citation_schema),
+                    "source_citation_ids": (
+                        _citation_id_array(
+                            _object_citation_ids(
+                                target,
+                                object_citation_ids=object_citation_ids,
+                            )
+                        )
+                        if object_citation_ids is not None
+                        else deepcopy(citation_schema)
+                    ),
                 },
             )
             for target in targets
@@ -139,6 +181,46 @@ def semantic_graph_completion_schema(
     elif topology_mode != "adaptive":
         raise ValueError("Semantic completion topology mode is unsupported")
     return schema
+
+
+def _typed_edge_schema(
+    base: Mapping[str, Any], *, object_id: str, citation_ids: Sequence[str],
+) -> dict[str, Any]:
+    edge = deepcopy(dict(base))
+    edge["properties"]["object_id"] = {"type": "string", "enum": [object_id]}
+    edge["properties"]["source_citation_ids"] = _citation_id_array(citation_ids)
+    return edge
+
+
+def _boundary_link_schema(
+    *, kind: str, object_id: str, citation_ids: Sequence[str],
+) -> dict[str, Any]:
+    return _object(
+        ["kind", "object_id", "source_citation_ids"],
+        {
+            "kind": {"type": "string", "enum": [kind]},
+            "object_id": {"type": "string", "enum": [object_id]},
+            "source_citation_ids": _citation_id_array(citation_ids),
+        },
+    )
+
+
+def _citation_id_array(citation_ids: Sequence[str]) -> dict[str, Any]:
+    values = list(citation_ids)
+    if not values:
+        raise ValueError("Semantic completion object lacks an exact source citation")
+    return {
+        "type": "array",
+        "items": {"type": "string", "enum": values},
+        "minItems": 1,
+        "maxItems": min(8, len(values)),
+    }
+
+
+def _object_citation_ids(
+    object_id: str, *, object_citation_ids: Mapping[str, Sequence[str]],
+) -> tuple[str, ...]:
+    return tuple(dict.fromkeys(object_citation_ids.get(object_id, ())))
 
 
 def apply_semantic_implementation_assignments(
@@ -351,6 +433,61 @@ def semantic_architecture_edge_object_ids(
     return result
 
 
+def semantic_unassigned_source_dependency_ids(
+    source: Mapping[str, Any],
+) -> tuple[str, ...]:
+    """Return source dependencies whose consumer is not source-assigned."""
+
+    facts = source.get("facts")
+    relations = source.get("relations")
+    if not isinstance(facts, list) or any(not isinstance(row, Mapping) for row in facts):
+        raise ValueError("Semantic completion source facts are malformed")
+    if not isinstance(relations, list) or any(
+        not isinstance(row, Mapping) for row in relations
+    ):
+        raise ValueError("Semantic completion source relations are malformed")
+    dependency_ids = [
+        str(row["fact_id"])
+        for row in facts
+        if row.get("kind") == "external_system" and row.get("fact_id")
+    ]
+    source_assigned = {
+        str(row.get("object_id") or "")
+        for row in relations
+        if row.get("kind") == "depends_on"
+    }
+    return tuple(
+        dependency_id
+        for dependency_id in dependency_ids
+        if dependency_id not in source_assigned
+    )
+
+
+def require_semantic_dependency_architecture(
+    completion: Mapping[str, Any], *, dependency_ids: Sequence[str]
+) -> None:
+    """Require implementation ownership for source-unassigned dependencies."""
+
+    required = set(dependency_ids)
+    if not required:
+        return
+    systems = completion.get("internal_systems")
+    if not isinstance(systems, list) or any(
+        not isinstance(system, Mapping) for system in systems
+    ):
+        raise ValueError("Semantic completion systems are malformed")
+    assigned = {
+        str(edge.get("object_id") or "")
+        for system in systems
+        for edge in system.get("depends_on", ())
+        if isinstance(edge, Mapping)
+    }
+    if not required <= assigned:
+        raise ValueError(
+            "Semantic implementation architecture leaves a source dependency unassigned"
+        )
+
+
 def _replace_source_refs_with_citation_ids(
     value: Any, *, citation_schema: Mapping[str, Any]
 ) -> None:
@@ -488,7 +625,9 @@ def _exact_keys(value: Mapping[str, Any], keys: set[str], label: str) -> None:
 
 __all__ = [
     "apply_semantic_implementation_assignments",
+    "require_semantic_dependency_architecture",
     "semantic_architecture_edge_object_ids",
     "semantic_completion_citation_registry",
     "semantic_graph_completion_schema",
+    "semantic_unassigned_source_dependency_ids",
 ]

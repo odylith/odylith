@@ -6,6 +6,9 @@ from collections.abc import Mapping, Sequence
 from copy import deepcopy
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_semantic_atomic_source_custody import (
+    build_atomic_source_adjudication,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_graph import (
     SEMANTIC_AUTHORING_GRAPH_VERSION,
     compile_semantic_authoring_graph,
@@ -21,11 +24,8 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_schema im
 from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract import (
     INTERNAL_SYSTEM_COMPONENT_KINDS,
     INTERNAL_SYSTEM_RELEASE_SCOPES,
-    LIST_NARRATIVE_FIELDS,
     SEMANTIC_CLARIFICATION_FIELDS,
-    SEMANTIC_NARRATIVE_FIELDS,
     SEMANTIC_RELATION_KINDS,
-    SINGULAR_NARRATIVE_FIELDS,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_implementation_completion import (
     complete_single_release_system,
@@ -35,16 +35,22 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations im
     require_semantic_source_refs,
     semantic_source_ref_schema,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_narrative_projection import (
+    project_semantic_narratives,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_authoring import (
     SEMANTIC_SOURCE_GRAPH_VERSION,
     SOURCE_FACT_ID_PREFIXES,
     compile_source_partitioned_graph,
     semantic_source_partitioned_graph_schema,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_partition_custody import (
+    require_discarded_evidence_separation,
+)
 
 
-SEMANTIC_COMPLETION_GRAPH_VERSION = "odylith.greenfield.semantic-completion-authoring-graph.v6"
-SEMANTIC_PARTITIONED_AUTHOR_VERSION = "odylith.greenfield.semantic-partitioned-authoring-graph.v3"
+SEMANTIC_COMPLETION_GRAPH_VERSION = "odylith.greenfield.semantic-completion-authoring-graph.v8"
+SEMANTIC_PARTITIONED_AUTHOR_VERSION = "odylith.greenfield.semantic-partitioned-authoring-graph.v6"
 _FACT_COLLECTIONS = {
     "identities": "identity",
     "actors": "actor",
@@ -67,14 +73,6 @@ _SYSTEM_EDGE_KINDS = {
     "constrained_by",
     "excludes",
 }
-_SINGULAR_NARRATIVE_ORDER = tuple(
-    field for field in SEMANTIC_NARRATIVE_FIELDS if field in SINGULAR_NARRATIVE_FIELDS
-)
-_LIST_NARRATIVE_ORDER = tuple(
-    field for field in SEMANTIC_NARRATIVE_FIELDS if field in LIST_NARRATIVE_FIELDS
-)
-
-
 def semantic_completion_graph_schema(
     *,
     source_ref_schema: Mapping[str, Any] | None = None,
@@ -88,17 +86,15 @@ def semantic_completion_graph_schema(
     )
     internal_systems = _array(
         _compact_completion_fact_schema(
-            "internal_system", source_refs=source_refs
+            "internal_system",
+            source_refs=source_refs,
+            include_edges=system_count != 1,
         ),
         minimum=system_count or 1,
         maximum=system_count if system_count is not None else 128,
     )
-    if system_count == 1:
-        system = internal_systems["items"]
-        for relation_kind in _SYSTEM_EDGE_KINDS:
-            system["properties"][relation_kind]["maxItems"] = 0
     schema = _object(
-        ["version", "status", "clarification", "internal_systems", "narratives", "self_challenge"],
+        ["version", "status", "clarification", "internal_systems", "self_challenge"],
         {
             "version": {"type": "string", "enum": [SEMANTIC_COMPLETION_GRAPH_VERSION]},
             "status": {"type": "string", "enum": ["complete", "clarification_required"]},
@@ -116,7 +112,6 @@ def semantic_completion_graph_schema(
                 },
             ),
             "internal_systems": internal_systems,
-            "narratives": _narrative_schema(source_refs),
             "self_challenge": _array(
                 _object(
                     ["challenge", "status"],
@@ -141,7 +136,8 @@ def semantic_completion_graph_schema(
 
 
 def semantic_partitioned_author_schema(
-    *, source_ref_schema: Mapping[str, Any] | None = None
+    *, source_ref_schema: Mapping[str, Any] | None = None,
+    system_count: int | None = None,
 ) -> dict[str, Any]:
     """Return the single-turn source-plus-completion authoring contract."""
 
@@ -157,7 +153,8 @@ def semantic_partitioned_author_schema(
                 source_ref_schema=shared_ref
             ),
             "completion": semantic_completion_graph_schema(
-                source_ref_schema=shared_ref
+                source_ref_schema=shared_ref,
+                system_count=system_count,
             ),
         },
     )
@@ -181,6 +178,19 @@ def compile_partitioned_authoring_graph(
     )
     if author.get("version") != SEMANTIC_PARTITIONED_AUTHOR_VERSION:
         raise ValueError("Semantic partitioned authoring graph uses an unsupported version")
+    partitioned_source = _mapping(author.get("source"), "Semantic partitioned source")
+    boundary = _mapping(
+        partitioned_source.get("boundary"), "Semantic partitioned source boundary"
+    )
+    discarded = boundary.get("discarded_evidence")
+    product_boundary = {
+        key: value for key, value in boundary.items() if key != "discarded_evidence"
+    }
+    require_discarded_evidence_separation(
+        discarded,
+        {**partitioned_source, "boundary": product_boundary},
+        author.get("completion"),
+    )
     source = compile_source_partitioned_graph(author.get("source"))
     return compile_layered_authoring_graph(
         source,
@@ -212,7 +222,7 @@ def compile_layered_authoring_graph(
         completion,
         {
             "version", "status", "clarification", "internal_systems",
-            "narratives", "self_challenge",
+            "self_challenge",
         },
         "Semantic completion authoring graph",
     )
@@ -255,13 +265,7 @@ def compile_layered_authoring_graph(
             row["relation_id"] = f"relation.{name}.{order}"
             row["order"] = order
         full_relations[name].extend(rows)
-    narratives, narrative_used = _completion_narratives(
-        completion.get("narratives"),
-        candidates=candidates,
-        evidence_sources=evidence_sources,
-        facts=full_facts,
-    )
-    used.update(narrative_used)
+    narratives = project_semantic_narratives(full_facts, full_relations)
     clarification, clarification_used = _completion_clarification(
         completion.get("clarification"),
         candidates=candidates,
@@ -296,6 +300,78 @@ def compile_layered_authoring_graph(
         assessment=assessment,
         evidence_sources=evidence_sources,
     )
+
+
+def compile_layered_source_authority(
+    source_value: Any,
+    *,
+    assessment: Mapping[str, Any],
+    evidence_sources: Mapping[str, str],
+) -> dict[str, Any]:
+    """Validate source-only truth and atomic custody without completion authority."""
+
+    source = _mapping(source_value, "Semantic source authoring graph")
+    _exact_keys(
+        source,
+        {"version", "facts", "relations"},
+        "Semantic source authoring graph",
+    )
+    if source.get("version") != SEMANTIC_SOURCE_GRAPH_VERSION:
+        raise ValueError("Semantic source authoring graph uses an unsupported version")
+    candidates = {
+        str(row["candidate_id"]): dict(row["source_ref"])
+        for row in assessment["source_candidates"]["candidates"]
+    }
+    source_facts, _ = _source_facts(
+        source.get("facts"),
+        candidates=candidates,
+        evidence_sources=evidence_sources,
+    )
+    source_relations, _ = _source_relations(
+        source.get("relations"),
+        candidates=candidates,
+        evidence_sources=evidence_sources,
+    )
+    atomic_facts: list[tuple[dict[str, Any], list[str]]] = []
+    for collection, rows in source_facts.items():
+        kind = _FACT_COLLECTIONS[collection]
+        for raw in rows:
+            if raw["custody"] != "source_fact":
+                continue
+            row = deepcopy(raw)
+            candidate_ids = list(row.pop("candidate_ids"))
+            row["kind"] = kind
+            row.setdefault("owner_kind", "none")
+            row["source_refs"] = [
+                deepcopy(candidates[candidate_id])
+                for candidate_id in candidate_ids
+            ]
+            atomic_facts.append((row, candidate_ids))
+    atomic_relations: list[tuple[dict[str, Any], list[str]]] = []
+    for kind, rows in source_relations.items():
+        for raw in rows:
+            row = deepcopy(raw)
+            candidate_ids = list(row.pop("candidate_ids"))
+            row["kind"] = kind
+            row["source_refs"] = [
+                deepcopy(candidates[candidate_id])
+                for candidate_id in candidate_ids
+            ]
+            atomic_relations.append((row, candidate_ids))
+    adjudication, claims = build_atomic_source_adjudication(
+        assessment["source_candidates"],
+        facts=atomic_facts,
+        relations=atomic_relations,
+        evidence_sources=evidence_sources,
+        settled_fields={
+            str(row["field"]): row for row in assessment["fields"]
+        },
+    )
+    return {
+        "source": deepcopy(source),
+        "source_candidate_adjudication": adjudication,
+        "source_claims": claims,
+    }
 
 
 def _source_facts(
@@ -363,7 +439,7 @@ def _completion_facts(
         ):
             row = _mapping(raw, "Semantic completion fact")
             edges = (
-                {kind: row.pop(kind) for kind in _SYSTEM_EDGE_KINDS}
+                {kind: row.pop(kind, []) for kind in _SYSTEM_EDGE_KINDS}
                 if kind == "internal_system"
                 else {}
             )
@@ -424,94 +500,6 @@ def _completion_facts(
         targets=system_targets,
     )
     return result, relations, used
-
-
-def _completion_narratives(
-    value: Any,
-    *,
-    candidates: Mapping[str, Mapping[str, Any]],
-    evidence_sources: Mapping[str, str],
-    facts: Mapping[str, Sequence[Mapping[str, Any]]],
-) -> tuple[list[dict[str, Any]], set[str]]:
-    result: list[dict[str, Any]] = []
-    used: set[str] = set()
-    narratives = _mapping(value, "Semantic completion narratives")
-    for field in _SINGULAR_NARRATIVE_ORDER:
-        row, candidate_ids = _completion_narrative(
-            narratives.get(field),
-            candidates=candidates,
-            evidence_sources=evidence_sources,
-            facts=facts,
-        )
-        result.append({**row, "field": field, "order": 0, "candidate_ids": candidate_ids})
-        used.update(candidate_ids)
-    for field in _LIST_NARRATIVE_ORDER:
-        for order, raw in enumerate(
-            _rows(narratives.get(field), 32, f"Semantic completion {field}")
-        ):
-            row, candidate_ids = _completion_narrative(
-                raw,
-                candidates=candidates,
-                evidence_sources=evidence_sources,
-                facts=facts,
-            )
-            result.append(
-                {**row, "field": field, "order": order, "candidate_ids": candidate_ids}
-            )
-            used.update(candidate_ids)
-    return result, used
-
-
-def _completion_narrative(
-    value: Any,
-    *,
-    candidates: Mapping[str, Mapping[str, Any]],
-    evidence_sources: Mapping[str, str],
-    facts: Mapping[str, Sequence[Mapping[str, Any]]],
-) -> tuple[dict[str, Any], list[str]]:
-    row = _mapping(value, "Semantic completion narrative")
-    _exact_keys(
-        row,
-        {"text", "source_refs"},
-        "Semantic completion narrative",
-    )
-    refs = require_semantic_source_refs(
-        row.pop("source_refs", None), evidence_sources=evidence_sources
-    )
-    candidate_ids = _matching_candidates(
-        refs, candidates=candidates, evidence_sources=evidence_sources
-    )
-    candidate_set = set(candidate_ids)
-    fact_ids = [
-        str(fact["fact_id"])
-        for rows in facts.values()
-        for fact in rows
-        if candidate_set.intersection(fact["candidate_ids"])
-    ]
-    if not fact_ids or len(fact_ids) > 32:
-        raise ValueError(
-            "Semantic completion narrative does not bind a bounded set of typed facts"
-        )
-    row["fact_ids"] = fact_ids
-    return row, candidate_ids
-
-
-def _narrative_schema(source_refs: Mapping[str, Any]) -> dict[str, Any]:
-    row = _object(
-        ["text", "source_refs"],
-        {
-            "text": _string(1600),
-            "source_refs": source_refs,
-        },
-    )
-    return _object(
-        [*_SINGULAR_NARRATIVE_ORDER, *_LIST_NARRATIVE_ORDER],
-        {
-            **{field: row for field in _SINGULAR_NARRATIVE_ORDER},
-            "success_metric": _array(row, minimum=2, maximum=16),
-            "evidence_requirement": _array(row, minimum=1, maximum=16),
-        },
-    )
 
 
 def _completion_clarification(
@@ -609,7 +597,7 @@ def _span(
 
 
 def _compact_completion_fact_schema(
-    kind: str, *, source_refs: Mapping[str, Any]
+    kind: str, *, source_refs: Mapping[str, Any], include_edges: bool = True,
 ) -> dict[str, Any]:
     required = ["label", "statement", "source_refs"]
     properties: dict[str, Any] = {
@@ -635,6 +623,7 @@ def _compact_completion_fact_schema(
         properties["release_scope"] = {
             "type": "string", "enum": list(INTERNAL_SYSTEM_RELEASE_SCOPES)
         }
+    if kind == "internal_system" and include_edges:
         edge = _object(
             ["object_id", "source_refs"],
             {"object_id": _string(100), "source_refs": dict(source_refs)},
@@ -747,6 +736,7 @@ def _exact_keys(value: Mapping[str, Any], keys: set[str], label: str) -> None:
 
 __all__ = [
     "SEMANTIC_COMPLETION_GRAPH_VERSION", "SEMANTIC_PARTITIONED_AUTHOR_VERSION",
-    "compile_layered_authoring_graph", "compile_partitioned_authoring_graph",
+    "compile_layered_authoring_graph", "compile_layered_source_authority",
+    "compile_partitioned_authoring_graph",
     "semantic_completion_graph_schema", "semantic_partitioned_author_schema",
 ]

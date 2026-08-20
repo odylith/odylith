@@ -373,7 +373,7 @@ def _interfaces(
 ) -> list[str]:
     interfaces = [f"Accepts {accepted_inputs}.", f"Produces {result_summary}."]
     interfaces.extend(
-        f"Implements {str(step['statement']).rstrip('.')}."
+        f"Implements the “{str(step['label']).strip()}” workflow step."
         for step in steps
     )
     return interfaces

@@ -1,20 +1,24 @@
 # Domain Intelligence
-Last updated: 2026-08-18
+Last updated: 2026-08-20
 
 
 ## Overview
 
 Domain Intelligence owns the Greenfield evidence-to-transaction boundary. A
-pinned, isolated host first challenges material uncertainty and then authors a
-source-cited typed Semantic Intent graph in an independent context. That graph
-is an untrusted handoff: deterministic code verifies exact citations, fact and
-relation types, graph completeness, materiality alignment, operating limits,
-and transaction laws before any proposal can be shown. The verified graph
-projects the complete governed package, stores it at an immutable hash-addressed
-path, and publishes the accepted bytes as one transaction-addressed generation.
-Codex and Claude use the same exact `CONFIRM`, `EDIT`, and `REJECT` contract;
-no product interpretation, model call, retry repair, or artifact generation runs
-after confirmation.
+prompt-only critic challenges material uncertainty while two isolated host runs
+independently author source-cited typed Semantic Intent candidates from distinct
+evidence views. Each candidate is an untrusted handoff: deterministic code
+verifies exact citations, fact and relation types, graph completeness,
+materiality alignment, operating limits, and transaction laws. Standard
+convergence selects an admitted candidate or one focused clarification. If the
+two admitted candidates still require rescue, one final host call may select an
+existing candidate unchanged or ask the clarification; it cannot author, merge,
+repair, or reinterpret a graph. The selected graph projects the complete
+governed package, stores it at an immutable hash-addressed path, and publishes
+the accepted bytes as one transaction-addressed generation. Codex and Claude
+use the same exact `CONFIRM`, `EDIT`, and `REJECT` contract; no product
+interpretation, model call, retry repair, or artifact generation runs after
+confirmation.
 
 ## Boundary
 
@@ -55,6 +59,20 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-08-20: Replaced rescue graph re-authoring with selection-only typed candidate adjudication. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-349`; Diagram: D-045)
+  The standard path produces two independent source-grounded graph candidates
+  plus a prompt-only materiality assessment. Both candidates must pass the full
+  deterministic graph and package laws before any rescue call. The final call
+  can select one admitted candidate unchanged or request one material
+  clarification; it has no graph-authorship, merge, repair, or prose-parser
+  authority. Completion re-authoring, compact-presentation rescue, and expanded
+  rescue-budget variants were tested and removed after recurring latency
+  failure. The focused mechanism gate passes 134 tests. A fresh 24-case cohort
+  produced all expected useful outcomes below 60 seconds with zero restarts,
+  deadline failures, environment failures, or automatic deep runs. Independent
+  quality, host-parity, lower-capability, installed/browser, and protected
+  holdout gates remain open.
 
 - 2026-08-18: Made bounded Semantic Intent extension edges node-owned. (Plan: [B-144](odylith/radar/radar.html?view=plan&workstream=B-144); Bug: `CB-348`; Diagram: D-045)
   The provider-facing extension contract no longer accepts a free-form global

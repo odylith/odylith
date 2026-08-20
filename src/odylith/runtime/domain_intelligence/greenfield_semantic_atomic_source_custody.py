@@ -11,8 +11,10 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_intent_schema impor
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations import (
     require_semantic_source_refs,
     semantic_source_ref_schema,
+    semantic_source_refs_overlap,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_claims import (
+    SEMANTIC_SOURCE_CLAIMS_VERSION,
     require_semantic_source_claims,
 )
 
@@ -24,6 +26,27 @@ ATOMIC_SOURCE_ADJUDICATION_VERSION = (
     "odylith.greenfield.semantic-atomic-source-adjudication.v1"
 )
 _DECISIONS = frozenset({"retain", "reject_overcapture", "reject_noise"})
+_FACT_FIELDS = {
+    "identity": "identity",
+    "actor": "role",
+    "workflow_step": "first_path",
+    "state_object": "state_object",
+    "visible_output": "visible_result",
+    "external_system": "dependency",
+    "internal_system": "component_boundary",
+    "component_responsibility": "component_boundary",
+    "operational_constraint": "constraint",
+    "non_goal": "non_goal",
+}
+_RELATION_FIELDS = {
+    "owned_by": ("role", "first_path"),
+    "produces": ("first_path", "visible_result"),
+    "changes": ("first_path", "state_object"),
+    "depends_on": ("dependency",),
+    "implements": ("component_boundary", "first_path"),
+    "constrained_by": ("constraint",),
+    "excludes": ("non_goal",),
+}
 
 
 def atomic_source_custody_contract() -> dict[str, Any]:
@@ -100,6 +123,38 @@ def atomic_source_candidates_from_catalog(
             for index, source_ref in enumerate(catalog.values())
         ],
     }
+
+
+def atomic_source_candidates_without_discarded(
+    value: Any,
+    *,
+    discarded_source_refs: Sequence[Mapping[str, Any]],
+    evidence_sources: Mapping[str, str],
+) -> dict[str, Any]:
+    """Remove candidates overlapping exact discarded evidence spans."""
+
+    candidates = require_atomic_source_candidates(
+        value, evidence_sources=evidence_sources
+    )
+    discarded = require_semantic_source_refs(
+        discarded_source_refs,
+        evidence_sources=evidence_sources,
+        allow_empty=True,
+        maximum=128,
+    )
+    retained = [
+        row for row in candidates["candidates"]
+        if not any(
+            semantic_source_refs_overlap(
+                row["source_ref"], discarded_ref,
+                evidence_sources=evidence_sources,
+            )
+            for discarded_ref in discarded
+        )
+    ]
+    if not retained:
+        raise ValueError("discarded evidence removes every atomic source candidate")
+    return {"version": ATOMIC_SOURCE_CANDIDATES_VERSION, "candidates": retained}
 
 
 def atomic_source_adjudication_schema() -> dict[str, Any]:
@@ -287,6 +342,91 @@ def select_atomic_source_claims(
     )
 
 
+def build_atomic_source_adjudication(
+    candidates_value: Any,
+    *,
+    facts: Sequence[tuple[Mapping[str, Any], Sequence[str]]],
+    relations: Sequence[tuple[Mapping[str, Any], Sequence[str]]],
+    evidence_sources: Mapping[str, str],
+    settled_fields: Mapping[str, Mapping[str, Any]],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Build the sole source-candidate decision set from source-owned typed rows."""
+
+    candidates = require_atomic_source_candidates(
+        candidates_value,
+        evidence_sources=evidence_sources,
+    )
+    candidate_ids = {
+        str(row["candidate_id"]) for row in candidates["candidates"]
+    }
+    bound_fact_ids: dict[str, list[str]] = {
+        candidate_id: [] for candidate_id in candidate_ids
+    }
+    bound_relation_ids: dict[str, list[str]] = {
+        candidate_id: [] for candidate_id in candidate_ids
+    }
+    source_facts: list[dict[str, Any]] = []
+    source_relations: list[dict[str, Any]] = []
+    for raw, raw_candidate_ids in facts:
+        fact = dict(raw)
+        kind = str(fact.get("kind") or "")
+        field = _FACT_FIELDS.get(kind)
+        if field is None:
+            raise ValueError("source fact kind has no canonical materiality field")
+        fact_id = _identifier(fact.get("fact_id"), "source fact id")
+        ids = _bound_candidate_ids(raw_candidate_ids, candidate_ids)
+        for candidate_id in ids:
+            bound_fact_ids[candidate_id].append(fact_id)
+        source_facts.append({"field": field, "fact": fact})
+    settled = set(settled_fields)
+    for raw, raw_candidate_ids in relations:
+        relation = dict(raw)
+        kind = str(relation.get("kind") or "")
+        candidate_fields = _RELATION_FIELDS.get(kind)
+        if candidate_fields is None:
+            raise ValueError("source relation kind has no canonical materiality field")
+        fields = [field for field in candidate_fields if field in settled]
+        if not fields:
+            raise ValueError("source relation has no settled materiality field")
+        relation_id = _identifier(
+            relation.get("relation_id"), "source relation id"
+        )
+        ids = _bound_candidate_ids(raw_candidate_ids, candidate_ids)
+        for candidate_id in ids:
+            bound_relation_ids[candidate_id].append(relation_id)
+        source_relations.append({"fields": fields, "relation": relation})
+    adjudication = {
+        "version": ATOMIC_SOURCE_ADJUDICATION_VERSION,
+        "candidate_decisions": [
+            {
+                "candidate_id": candidate_id,
+                "decision": (
+                    "retain"
+                    if bound_fact_ids[candidate_id]
+                    or bound_relation_ids[candidate_id]
+                    else "reject_noise"
+                ),
+                "fact_ids": bound_fact_ids[candidate_id],
+                "relation_ids": bound_relation_ids[candidate_id],
+            }
+            for candidate_id in (
+                str(row["candidate_id"]) for row in candidates["candidates"]
+            )
+        ],
+        "source_claims": {
+            "version": SEMANTIC_SOURCE_CLAIMS_VERSION,
+            "facts": source_facts,
+            "relations": source_relations,
+        },
+    }
+    return select_atomic_source_claims(
+        candidates,
+        adjudication,
+        evidence_sources=evidence_sources,
+        settled_fields=settled_fields,
+    )
+
+
 def validated_atomic_source_claims(
     authority: Mapping[str, Any],
 ) -> dict[str, Any]:
@@ -319,6 +459,15 @@ def _id_array() -> dict[str, Any]:
         "maxItems": 128,
         "items": {"type": "string", "minLength": 1, "maxLength": 100},
     }
+
+
+def _bound_candidate_ids(
+    value: Sequence[str], allowed: set[str]
+) -> list[str]:
+    rows = [_identifier(item, "source candidate id") for item in value]
+    if not rows or len(rows) != len(set(rows)) or any(row not in allowed for row in rows):
+        raise ValueError("source candidate bindings are invalid")
+    return rows
 
 
 def _unique_ids(value: Any, label: str) -> list[str]:
@@ -369,6 +518,7 @@ __all__ = [
     "atomic_source_custody_contract",
     "atomic_source_adjudication_schema",
     "atomic_source_candidates_from_catalog",
+    "atomic_source_candidates_without_discarded",
     "atomic_source_candidates_schema",
     "require_atomic_source_candidates",
     "select_atomic_source_claims",

@@ -31,7 +31,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_atomic_source_custo
 
 
 SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION = (
-    "odylith.greenfield.semantic-intent-authoring-request.v17"
+    "odylith.greenfield.semantic-intent-authoring-request.v18"
 )
 SEMANTIC_INTENT_MANDATORY_CHALLENGES = (
     "unsupported_addition",
@@ -126,6 +126,12 @@ def semantic_intent_authoring_protocol() -> dict[str, Any]:
                 "the source provides contradictory ownership evidence"
             ),
             (
+                "when a named first-path actor operates on an input already described as selected, "
+                "reviewed, prepared, or otherwise ready, treat that input condition as an upstream "
+                "precondition rather than a missing first-path role; ask about role only when the "
+                "requested first-path action itself lacks an accountable participant"
+            ),
+            (
                 "require every clarification alternative to be independently supported by source "
                 "evidence and materially distinct; never create a question from an unsupported "
                 "alternative"
@@ -148,8 +154,8 @@ def semantic_intent_authoring_protocol() -> dict[str, Any]:
             ),
             (
                 "when clarification is required, clarification owns the omitted field, its exact "
-                "source references, and at least two material alternatives; fields contains only "
-                "the other eight settled canonical fields"
+                "source references, and one focused question without an inferred option list; "
+                "fields contains only the other eight settled canonical fields"
             ),
         ],
         "structured_output_contract": {

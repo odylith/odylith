@@ -155,7 +155,7 @@ def test_graph_v5_versions_and_authoring_cardinality_are_explicit() -> None:
 
     assert SEMANTIC_INTENT_IR_VERSION.endswith(".v5")
     assert SEMANTIC_INTENT_PACKET_VERSION.endswith(".v13")
-    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v17")
+    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v18")
     assert request["version"] == SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION
     assert request["packet_header"]["version"] == SEMANTIC_INTENT_PACKET_VERSION
     assert request["authoring_contract_sha256"] == authority[
@@ -433,8 +433,8 @@ def test_graph_v4_accepts_no_actors_no_state_one_system_and_multiple_outputs() -
     assert verified.product_facts["human_actors"] == []
     assert verified.product_facts["state_objects"] == []
     assert verified.product_facts["visible_outputs"] == [
-        "A claim receipt is visible.",
-        "A claim audit view is visible.",
+        "Claim receipt",
+        "Claim audit view",
     ]
     assert len(verified.product_facts["internal_systems"]) == 1
     assert not [row for row in facts if row["kind"] == "state_object"]
@@ -468,8 +468,8 @@ def test_graph_v4_projects_multiple_state_objects_and_outputs_without_collapse()
     )
 
     assert verified.product_facts["state_objects"] == [
-        "The card moves from ready to claimed.",
-        "The claim receipt moves from pending to visible.",
+        "Card",
+        "Claim receipt",
     ]
     assert [row["fact_id"] for row in states] == ["state.0", "state.1"]
     assert [
@@ -526,7 +526,7 @@ def test_graph_v4_preserves_a_stable_state_without_inventing_a_change() -> None:
 
     verified = require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
 
-    assert verified.product_facts["state_objects"] == ["The card remains claimed."]
+    assert verified.product_facts["state_objects"] == ["Card"]
 
     invalid = semantic_intent_packet()
     invalid_state = next(
@@ -697,6 +697,57 @@ def test_graph_v4_rejects_a_no_op_transition_instead_of_treating_it_as_stable() 
 
     with pytest.raises(ValueError, match="transition does not change state"):
         require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
+
+
+def test_graph_v5_rejects_duplicate_typed_state_transition_meaning() -> None:
+    packet = semantic_intent_packet()
+    graph = packet["semantic_intent"]
+    state = copy.deepcopy(
+        next(
+            fact
+            for fact in graph["facts"]
+            if fact["fact_id"] == "state.0"
+        )
+    )
+    state.update(
+        {
+            "fact_id": "state.1",
+            "label": "Claimed card result",
+            "statement": "The card becomes claimed.",
+            "order": 1,
+        }
+    )
+    graph["facts"].append(state)
+
+    with pytest.raises(ValueError, match="repeats one typed state transition"):
+        require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
+
+
+def test_complete_graph_rejects_an_unresolved_typed_ambiguity() -> None:
+    packet = semantic_intent_packet()
+    source_claims = validated_fixture_source_claims(packet)
+    ambiguity = semantic_fact(
+        "ambiguity.0",
+        "ambiguity",
+        "First operation is unresolved",
+        "The first operation has two incompatible source instructions.",
+        0,
+        [PATH_EVIDENCE, STATE_EVIDENCE],
+        attributes={
+            "materiality_field": "first_path",
+            "question": "Which operation should happen first?",
+        },
+    )
+    packet["semantic_intent"]["facts"].append(ambiguity)
+    source_claims["facts"].append(
+        {"field": "first_path", "fact": copy.deepcopy(ambiguity)}
+    )
+    with pytest.raises(ValueError, match="unresolved material ambiguity"):
+        require_semantic_intent_ir(
+            packet["semantic_intent"],
+            evidence_sources={"operator_prompt": SEMANTIC_PROMPT, "operator_edit": ""},
+            source_claims=source_claims,
+        )
 
 
 def test_graph_v4_rejects_transition_custody_on_a_non_state_fact() -> None:

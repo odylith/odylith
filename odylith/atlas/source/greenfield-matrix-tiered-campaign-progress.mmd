@@ -1,18 +1,21 @@
 flowchart TB
     subgraph frozen_inputs["Evidence frozen before authoring"]
       direction LR
-      revision["Committed implementation revision"]
+      revision["Frozen implementation fingerprint"]
       contracts["Authoring, materiality, graph,<br/>mechanism and evaluator contract hashes"]
       corpus["Blinded development corpus<br/>case hashes only"]
       plan["Runner-owned evidence plan<br/>host assignments, nonces,<br/>resource ceilings and deterministic laws"]
     end
 
-    subgraph per_case["Exactly one isolated two-stage run per case"]
+    subgraph per_case["Three-call standard plus bounded selection-only rescue"]
       direction LR
       critic["Prompt-only critic<br/>one attempt, no tools or prior candidate"]
-      author["Independent graph author<br/>one attempt, no validator feedback"]
+      full_author["Full-source graph author<br/>one attempt, no validator feedback"]
+      source_author["Source-only graph author<br/>independent evidence view"]
       receipts["Runtime receipts<br/>binary hash, model profile,<br/>tokens, wall time and access claims"]
-      packet["Complete packet v3<br/>assessment, graph, challenges and hashes"]
+      candidates["Two typed candidates<br/>each admitted through<br/>the same graph and package laws"]
+      selector["Optional fourth call<br/>select existing candidate<br/>or clarify; no graph authorship"]
+      packet["Complete packet<br/>assessment, selected graph,<br/>challenges and hashes"]
       transaction["Graph-native transaction proof<br/>or one material clarification"]
     end
 
@@ -36,7 +39,15 @@ flowchart TB
     revision --> plan
     contracts --> plan
     corpus --> plan
-    plan --> critic --> author --> receipts --> packet --> transaction
+    plan --> critic
+    plan --> full_author
+    plan --> source_author
+    critic --> receipts
+    full_author --> receipts
+    source_author --> receipts --> candidates
+    candidates --> selector
+    candidates --> packet
+    selector --> packet --> transaction
     transaction --> fidelity --> utility --> resources --> decision
     decision -- "no" --> revision
     decision -- "yes" --> parity --> lower --> install --> browser --> holdout
@@ -46,7 +57,7 @@ flowchart TB
     classDef proof fill:#FFF7ED,stroke:#FB923C,color:#132033,stroke-width:1.2px;
     classDef release fill:#F0FDF4,stroke:#4ADE80,color:#132033,stroke-width:1.2px;
     class revision,contracts,corpus,plan frozen;
-    class critic,author,receipts,packet,transaction run;
+    class critic,full_author,source_author,receipts,candidates,selector,packet,transaction run;
     class fidelity,utility,resources,decision proof;
     class parity,lower,install,browser,holdout release;
 

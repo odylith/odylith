@@ -117,7 +117,7 @@ def test_identity_clarification_remains_available_for_material_boundary_choice()
         "field": "identity",
         "question": question,
         "source_refs": source_refs,
-        "alternatives": ["a standalone claim desk", "a capability in an existing tool"],
+        "alternatives": [],
     }
     assessment["fields"] = [
         row
@@ -214,10 +214,10 @@ def test_prompt_only_gate_rejects_tamper_and_mechanism_drift(
     else:
         assessment["decision"] = "clarification_required"
         assessment["clarification"] = {
-            "field": "visible_result",
-            "question": "Which visible result is required?",
-            "source_refs": [semantic_ref(PATH_EVIDENCE)],
-            "alternatives": ["receipt", "audit view"],
+                "field": "visible_result",
+                "question": "Which visible result is required?",
+                "source_refs": [semantic_ref(PATH_EVIDENCE)],
+                "alternatives": [],
         }
         assessment["fields"] = [
             row for row in assessment["fields"] if row["field"] != "visible_result"
@@ -234,14 +234,14 @@ def test_prompt_only_gate_rejects_tamper_and_mechanism_drift(
         require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
 
 
-def test_materiality_clarification_requires_two_alternatives_only() -> None:
+def test_materiality_clarification_rejects_an_inferred_option_list() -> None:
     packet = semantic_clarification_packet()
     assessment = packet["materiality_assessment"]
     assert isinstance(assessment, dict)
-    assessment["clarification"]["alternatives"] = ["claim receipt"]
+    assessment["clarification"]["alternatives"] = ["claim receipt", "claim audit view"]
     _rehash_assessment(packet)
 
-    with pytest.raises(ValueError, match="citation, and two alternatives"):
+    with pytest.raises(ValueError, match="without inferred alternatives"):
         require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
 
 
@@ -407,7 +407,7 @@ def test_provider_schema_encodes_materiality_status_invariants() -> None:
     }
     assert clarification[1]["properties"]["question"]["minLength"] == 1
     assert clarification[1]["properties"]["source_refs"]["minItems"] == 1
-    assert clarification[1]["properties"]["alternatives"]["minItems"] == 2
+    assert clarification[1]["properties"]["alternatives"]["maxItems"] == 0
     assert schema["properties"]["fields"]["minItems"] == 8
     assert schema["properties"]["fields"]["maxItems"] == 9
     assert variants[0]["properties"]["status"]["enum"] == [
@@ -473,14 +473,14 @@ def test_authority_seals_assessment_hash_and_distinct_run_evidence() -> None:
         require_product_intent_authority_structure(tampered)
 
 
-def test_v17_request_requires_atomic_spans_and_one_semantic_authority() -> None:
+def test_v18_request_requires_atomic_spans_and_one_semantic_authority() -> None:
     request = semantic_intent_authoring_request(prompt=SEMANTIC_PROMPT)
     protocol = request["authoring_protocol"]
 
     assert SEMANTIC_INTENT_IR_VERSION.endswith(".v5")
     assert SEMANTIC_INTENT_PACKET_VERSION.endswith(".v13")
-    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v17")
-    assert SEMANTIC_MATERIALITY_ASSESSMENT_VERSION.endswith(".v8")
+    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v18")
+    assert SEMANTIC_MATERIALITY_ASSESSMENT_VERSION.endswith(".v9")
     assert request["materiality_gate"]["order"] == "before_graph_authoring"
     assert request["materiality_gate"]["candidate_access"] == "forbidden"
     assert "exact evidence spans only" in request["materiality_gate"][
@@ -529,6 +529,10 @@ def test_v17_request_requires_atomic_spans_and_one_semantic_authority() -> None:
     )
     assert any(
         "explicit actor performing a first-path action" in rule
+        for rule in protocol["materiality_decision_rules"]
+    )
+    assert any(
+        "upstream precondition" in rule
         for rule in protocol["materiality_decision_rules"]
     )
     assert any(

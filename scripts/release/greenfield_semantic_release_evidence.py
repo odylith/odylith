@@ -28,8 +28,8 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_execution_contract 
 )
 
 
-EVALUATION_CONTRACT_VERSION = "odylith.greenfield.semantic-release-evaluation-contract.v4"
-CANDIDATE_BUNDLE_VERSION = "odylith.greenfield.semantic-release-candidates.v4"
+EVALUATION_CONTRACT_VERSION = "odylith.greenfield.semantic-release-evaluation-contract.v5"
+CANDIDATE_BUNDLE_VERSION = "odylith.greenfield.semantic-release-candidates.v5"
 REPORT_VERSION = "odylith.greenfield.semantic-release-report.v3"
 
 FLOOR_NAMES = (

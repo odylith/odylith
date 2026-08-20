@@ -21,11 +21,12 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract impo
 from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
     SEMANTIC_MATERIALITY_ASSESSMENT_BASIS,
     SEMANTIC_MATERIALITY_ASSESSMENT_VERSION,
+    SEMANTIC_NONMATERIAL_ASSUMPTION_FIELDS,
     require_semantic_materiality_assessment,
-    semantic_materiality_assessment_schema,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations import (
     resolve_semantic_source_ref,
+    semantic_source_ref_schema,
 )
 
 
@@ -40,16 +41,18 @@ def parallel_materiality_decision_schema(
 ) -> dict[str, Any]:
     """Return the screen schema without atomic-span or graph authority."""
 
-    assessment = semantic_materiality_assessment_schema(
-        source_ref_schema=source_ref_schema
-    )
-    properties = assessment["properties"]
-    field_variants = properties["fields"]["items"]["anyOf"]
-    clarification_variants = properties["clarification"]["anyOf"]
+    source_ref = dict(source_ref_schema or semantic_source_ref_schema())
     field_names = tuple(SEMANTIC_CLARIFICATION_FIELDS)
     fields = {
         field: {
-            "anyOf": _field_decision_variants(field, variants=field_variants),
+            "anyOf": [
+                {"$ref": "#/$defs/resolved_field"},
+                *(
+                    [{"$ref": "#/$defs/nonmaterial_field"}]
+                    if field in SEMANTIC_NONMATERIAL_ASSUMPTION_FIELDS
+                    else []
+                ),
+            ],
         }
         for field in field_names
     }
@@ -66,11 +69,11 @@ def parallel_materiality_decision_schema(
                 "anyOf": [
                     _outcome_variant(
                         decision="authorize_graph",
-                        clarification=clarification_variants[0],
+                        clarification={"$ref": "#/$defs/no_clarification"},
                     ),
                     _outcome_variant(
                         decision="clarification_required",
-                        clarification=clarification_variants[1],
+                        clarification={"$ref": "#/$defs/clarification"},
                     ),
                 ]
             },
@@ -79,6 +82,75 @@ def parallel_materiality_decision_schema(
                 "additionalProperties": False,
                 "required": list(field_names),
                 "properties": fields,
+            },
+        },
+        "$defs": {
+            "source_ref": source_ref,
+            "resolved_field": _compact_field_schema(
+                statuses=("explicit", "source_entailable"),
+                source_ref_minimum=1,
+            ),
+            "nonmaterial_field": _compact_field_schema(
+                statuses=("nonmaterial_assumption",),
+                source_ref_minimum=0,
+                source_ref_maximum=0,
+            ),
+            "no_clarification": _compact_clarification_schema(
+                field_names=("",), source_ref_minimum=0, empty=True
+            ),
+            "clarification": _compact_clarification_schema(
+                field_names=field_names, source_ref_minimum=1, empty=False
+            ),
+        },
+    }
+
+
+def _compact_field_schema(
+    *, statuses: tuple[str, ...], source_ref_minimum: int,
+    source_ref_maximum: int = 8,
+) -> dict[str, Any]:
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["status", "source_refs", "alternatives"],
+        "properties": {
+            "status": {"type": "string", "enum": list(statuses)},
+            "source_refs": {
+                "type": "array",
+                "minItems": source_ref_minimum,
+                "maxItems": source_ref_maximum,
+                "items": {"$ref": "#/$defs/source_ref"},
+            },
+            "alternatives": {
+                "type": "array", "minItems": 0, "maxItems": 0,
+                "items": {"type": "string", "minLength": 1, "maxLength": 600},
+            },
+        },
+    }
+
+
+def _compact_clarification_schema(
+    *, field_names: tuple[str, ...], source_ref_minimum: int, empty: bool,
+) -> dict[str, Any]:
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["field", "question", "source_refs", "alternatives"],
+        "properties": {
+            "field": {"type": "string", "enum": list(field_names)},
+            "question": (
+                {"type": "string", "enum": [""]}
+                if empty
+                else {"type": "string", "minLength": 1, "maxLength": 600}
+            ),
+            "source_refs": {
+                "type": "array", "minItems": source_ref_minimum,
+                "maxItems": 0 if empty else 8,
+                "items": {"$ref": "#/$defs/source_ref"},
+            },
+            "alternatives": {
+                "type": "array", "minItems": 0, "maxItems": 0,
+                "items": {"type": "string", "minLength": 1, "maxLength": 600},
             },
         },
     }
@@ -175,6 +247,176 @@ def canonical_parallel_materiality_decision(value: Any) -> dict[str, Any]:
     }
 
 
+def align_source_policy_kinds_to_materiality(
+    source_value: Any, decision_value: Any
+) -> dict[str, Any]:
+    """Make final typed field custody authoritative for exact cited policy kinds."""
+
+    canonical_parallel_materiality_decision(decision_value)
+    if not isinstance(source_value, Mapping):
+        raise ValueError("source policy alignment requires one source graph")
+    source = deepcopy(dict(source_value))
+    fields = decision_value.get("fields")
+    if not isinstance(fields, Mapping):
+        raise ValueError("source policy alignment requires keyed materiality fields")
+    kind_refs: dict[str, set[tuple[str, str, int]]] = {}
+    for field, policy_kind in (
+        ("constraint", "operating_invariant"),
+        ("non_goal", "excluded_capability"),
+    ):
+        row = fields.get(field)
+        refs = row.get("source_refs") if isinstance(row, Mapping) else None
+        if not isinstance(refs, list):
+            raise ValueError("source policy alignment lacks materiality custody")
+        kind_refs[policy_kind] = {_source_ref_key(ref) for ref in refs}
+    boundary = source.get("boundary")
+    policies = boundary.get("policies") if isinstance(boundary, Mapping) else None
+    if not isinstance(policies, list) or any(
+        not isinstance(policy, Mapping) for policy in policies
+    ):
+        raise ValueError("source policy alignment requires typed policies")
+    aligned: list[dict[str, Any]] = []
+    for raw in policies:
+        policy = deepcopy(dict(raw))
+        refs = policy.get("source_refs")
+        if not isinstance(refs, list):
+            raise ValueError("source policy alignment lacks policy custody")
+        policy_refs = {_source_ref_key(ref) for ref in refs}
+        assignments = [
+            kind for kind, accepted in kind_refs.items() if policy_refs & accepted
+        ]
+        if len(assignments) > 1:
+            aligned.extend(
+                _split_policy_by_authoritative_citations(
+                    policy, refs=refs, kind_refs=kind_refs
+                )
+            )
+            continue
+        if assignments:
+            policy["policy_kind"] = assignments[0]
+        aligned.append(policy)
+    source["boundary"] = {**dict(boundary), "policies": aligned}
+    return source
+
+
+def materiality_policy_conflict_refs(value: Any) -> list[dict[str, Any]]:
+    """Return exact citations that one critic assigned to both policy kinds."""
+
+    canonical_parallel_materiality_decision(value)
+    fields = value.get("fields")
+    if not isinstance(fields, Mapping):
+        raise ValueError("source policy alignment requires keyed materiality fields")
+    rows = {
+        field: fields[field].get("source_refs")
+        for field in ("constraint", "non_goal")
+        if isinstance(fields.get(field), Mapping)
+    }
+    if any(not isinstance(refs, list) for refs in rows.values()):
+        raise ValueError("source policy alignment lacks materiality custody")
+    non_goal_keys = {_source_ref_key(ref) for ref in rows["non_goal"]}
+    return [
+        deepcopy(dict(ref))
+        for ref in rows["constraint"]
+        if _source_ref_key(ref) in non_goal_keys
+    ]
+
+
+def settle_independently_confirmed_policy_kinds(
+    value: Any,
+    *,
+    assignments: Mapping[tuple[str, str, int], str],
+) -> dict[str, Any]:
+    """Resolve a critic conflation only from matching independent source judgments."""
+
+    result = deepcopy(dict(value))
+    fields = result.get("fields")
+    if not isinstance(fields, Mapping):
+        raise ValueError("source policy alignment requires keyed materiality fields")
+    for ref in materiality_policy_conflict_refs(result):
+        key = _source_ref_key(ref)
+        kind = assignments.get(key)
+        if kind not in {"operating_invariant", "excluded_capability"}:
+            raise ValueError("independent source policy kind is unresolved")
+        losing_field = "non_goal" if kind == "operating_invariant" else "constraint"
+        row = deepcopy(dict(fields[losing_field]))
+        row["source_refs"] = [
+            item
+            for item in row.get("source_refs", [])
+            if _source_ref_key(item) != key
+        ]
+        if not row["source_refs"]:
+            row.update(
+                status="nonmaterial_assumption",
+                source_refs=[],
+                alternatives=[],
+            )
+        fields[losing_field] = row
+    result["fields"] = fields
+    canonical_parallel_materiality_decision(result)
+    return result
+
+
+def policy_kind_disagreement_clarification(
+    value: Any,
+    *,
+    source_refs: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Ask whether a cited restriction excludes a capability or constrains it."""
+
+    result = deepcopy(dict(value))
+    result["outcome"] = {
+        "decision": "clarification_required",
+        "clarification": {
+            "field": "non_goal",
+            "question": (
+                "Should the cited capability be entirely outside the product, or be "
+                "included but constrained to deliberate operation?"
+            ),
+            "source_refs": deepcopy(source_refs),
+            "alternatives": [],
+        },
+    }
+    canonical_parallel_materiality_decision(result)
+    return result
+
+
+def _split_policy_by_authoritative_citations(
+    policy: Mapping[str, Any],
+    *,
+    refs: list[Any],
+    kind_refs: Mapping[str, set[tuple[str, str, int]]],
+) -> list[dict[str, Any]]:
+    """Partition a conflated policy without interpreting its source text."""
+
+    result: list[dict[str, Any]] = []
+    for raw_ref in refs:
+        ref = deepcopy(raw_ref)
+        key = _source_ref_key(ref)
+        assignments = [kind for kind, accepted in kind_refs.items() if key in accepted]
+        if len(assignments) > 1:
+            raise ValueError("one source citation spans conflicting final semantic kinds")
+        row = deepcopy(dict(policy))
+        row["label"] = key[1]
+        row["source_refs"] = [ref]
+        if assignments:
+            row["policy_kind"] = assignments[0]
+        result.append(row)
+    return result
+
+
+def _source_ref_key(value: Any) -> tuple[str, str, int]:
+    if not isinstance(value, Mapping):
+        raise ValueError("source policy alignment citation is malformed")
+    occurrence = value.get("occurrence")
+    if isinstance(occurrence, bool) or not isinstance(occurrence, int):
+        raise ValueError("source policy alignment citation occurrence is malformed")
+    return (
+        str(value.get("source_id") or ""),
+        str(value.get("quote") or ""),
+        occurrence,
+    )
+
+
 def materiality_authorization_view(value: Any) -> dict[str, Any]:
     """Expose settlement authority without reusing evidence refs as ontology labels."""
 
@@ -209,7 +451,7 @@ def require_materiality_source_coverage(
     *,
     evidence_sources: Mapping[str, str],
 ) -> None:
-    """Require settled material axes to survive in the typed source graph."""
+    """Require every critic-settled material axis to exist as a typed fact."""
 
     canonical = canonical_parallel_materiality_decision(decision_value)
     authorization = materiality_authorization_view(canonical)
@@ -230,31 +472,6 @@ def require_materiality_source_coverage(
             raise ValueError(
                 f"Semantic source graph omits critic-settled `{field}` meaning"
             )
-    field_rows = {str(row["field"]): row for row in canonical["fields"]}
-    for field, kind in {
-        "first_path": "workflow_step",
-        "state_object": "state_object",
-        "visible_result": "visible_output",
-        "dependency": "external_system",
-    }.items():
-        field_row = field_rows.get(field, {})
-        if field_row.get("status") not in {"explicit", "source_entailable"}:
-            continue
-        field_spans = _citation_spans(
-            field_row.get("source_refs"), evidence_sources=evidence_sources
-        )
-        for fact in (row for row in facts if row.get("kind") == kind):
-            fact_spans = _citation_spans(
-                fact.get("source_refs"), evidence_sources=evidence_sources
-            )
-            if not any(
-                _spans_overlap(left, right)
-                for left in fact_spans
-                for right in field_spans
-            ):
-                raise ValueError(
-                    f"Semantic source `{kind}` fact is outside critic-settled `{field}` evidence"
-                )
 
 
 def admit_source_candidates_by_materiality(
@@ -282,10 +499,15 @@ def admit_source_candidates_by_materiality(
         )
         for field in ("first_path", "state_object", "visible_result", "dependency")
     }
+    workflow_spans = tuple(
+        span
+        for field in ("first_path", "state_object", "visible_result", "dependency")
+        for span in field_spans[field] or ()
+    )
     rejections: list[dict[str, Any]] = []
     step_remap = _admit_workflow_steps(
         path,
-        allowed_spans=field_spans["first_path"],
+        allowed_spans=workflow_spans,
         evidence_sources=evidence_sources,
         rejections=rejections,
     )
@@ -451,13 +673,33 @@ def _candidate_supported(
     if allowed_spans is None:
         return True
     candidate_spans = _citation_spans(
-        row.get("source_refs"), evidence_sources=evidence_sources
+        _nested_source_refs(row), evidence_sources=evidence_sources
     )
     return any(
         _spans_overlap(candidate, allowed)
         for candidate in candidate_spans
         for allowed in allowed_spans
     )
+
+
+def _nested_source_refs(value: Any) -> list[Mapping[str, Any]]:
+    """Return every typed citation carried by one candidate object."""
+
+    refs: list[Mapping[str, Any]] = []
+    if isinstance(value, Mapping):
+        for key, nested in value.items():
+            if key == "source_refs":
+                if not isinstance(nested, list) or any(
+                    not isinstance(row, Mapping) for row in nested
+                ):
+                    raise ValueError("Semantic source candidate citation is malformed")
+                refs.extend(nested)
+            else:
+                refs.extend(_nested_source_refs(nested))
+    elif isinstance(value, list):
+        for nested in value:
+            refs.extend(_nested_source_refs(nested))
+    return refs
 
 
 def _rejection(
@@ -549,32 +791,20 @@ def source_with_authorized_assumptions(
     return admitted
 
 
-def _field_decision_variants(
-    field: str, *, variants: list[Mapping[str, Any]],
-) -> list[dict[str, Any]]:
-    applicable: list[dict[str, Any]] = []
-    for raw in variants:
-        variant = deepcopy(raw)
-        if field not in variant["properties"]["field"]["enum"]:
-            continue
-        variant["required"].remove("field")
-        variant["properties"].pop("field")
-        applicable.append(variant)
-    if not applicable:
-        raise RuntimeError("materiality field has no decision contract")
-    return applicable
-
-
 __all__ = [
     "PARALLEL_MATERIALITY_DECISION_VERSION",
     "SEMANTIC_SOURCE_ADMISSION_VERSION",
     "admit_source_candidates_by_materiality",
+    "align_source_policy_kinds_to_materiality",
     "assemble_parallel_materiality_assessment",
     "authorized_source_assumption_fields",
     "canonical_parallel_materiality_decision",
+    "materiality_policy_conflict_refs",
     "materiality_authorization_view",
+    "policy_kind_disagreement_clarification",
     "require_materiality_source_coverage",
     "require_authorized_source_assumptions",
     "source_with_authorized_assumptions",
+    "settle_independently_confirmed_policy_kinds",
     "parallel_materiality_decision_schema",
 ]

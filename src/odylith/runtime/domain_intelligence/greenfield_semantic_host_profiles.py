@@ -8,7 +8,7 @@ from typing import Any
 
 HOST_EXECUTION_PROFILE_VERSION = "odylith.greenfield.host-execution-profile.v1"
 STANDARD_HOST_STAGE_PROFILE_VERSION = (
-    "odylith.greenfield.standard-host-stage-profile.v2"
+    "odylith.greenfield.standard-host-stage-profile.v13"
 )
 
 _EXECUTION_PROFILES = {
@@ -42,20 +42,20 @@ _STANDARD_STAGE_PROFILES = {
         "host_profile": "codex",
         "critic_model": "gpt-5.6-sol",
         "critic_reasoning_effort": "low",
-        "source_model": "gpt-5.6-luna",
-        "source_reasoning_effort": "low",
-        "completion_model": "gpt-5.6-luna",
-        "completion_reasoning_effort": "low",
+        "source_hypothesis_model": "gpt-5.5",
+        "source_hypothesis_reasoning_effort": "low",
+        "final_adjudicator_model": "gpt-5.6-sol",
+        "final_adjudicator_reasoning_effort": "low",
     },
     "claude": {
         "version": STANDARD_HOST_STAGE_PROFILE_VERSION,
         "host_profile": "claude",
         "critic_model": "claude-opus-4-6",
-        "critic_reasoning_effort": "low",
-        "source_model": "claude-opus-4-6",
-        "source_reasoning_effort": "low",
-        "completion_model": "claude-opus-4-6",
-        "completion_reasoning_effort": "low",
+        "critic_reasoning_effort": "medium",
+        "source_hypothesis_model": "claude-opus-4-6",
+        "source_hypothesis_reasoning_effort": "low",
+        "final_adjudicator_model": "claude-opus-4-6",
+        "final_adjudicator_reasoning_effort": "low",
     },
 }
 

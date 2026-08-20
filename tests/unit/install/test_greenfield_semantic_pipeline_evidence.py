@@ -42,13 +42,22 @@ def test_active_standard_pipeline_evidence_binds_packet_host_calls_and_tier() ->
 
     assert normalized == receipt
     assert metadata["execution_tier"] == "standard"
-    assert metadata["model_calls"] == 4
+    assert metadata["model_calls"] == 3
     assert metadata["restarts"] == 0
 
 
 @pytest.mark.parametrize(
     "mutation",
-    ["mechanism", "source_bytes", "host", "model", "stage", "calls", "packet"],
+    [
+        "mechanism",
+        "source_bytes",
+        "host",
+        "model",
+        "stage",
+        "calls",
+        "hedge",
+        "packet",
+    ],
 )
 def test_active_pipeline_evidence_rejects_custody_drift(mutation: str) -> None:
     packet = semantic_intent_packet()
@@ -58,13 +67,15 @@ def test_active_pipeline_evidence_rejects_custody_drift(mutation: str) -> None:
     elif mutation == "source_bytes":
         receipt["mechanism_execution"]["implementation_fingerprint_sha256"] = "0" * 64
     elif mutation == "host":
-        receipt["graph_completion"]["host_profile"] = "claude"
+        receipt["final_graph_adjudication"]["host_profile"] = "claude"
     elif mutation == "model":
-        receipt["graph_completion"]["model"] = "unassigned-model"
+        receipt["final_graph_adjudication"]["model"] = "unassigned-model"
     elif mutation == "stage":
-        receipt["graph_completion"]["stage"] = "materiality_critic"
+        receipt["final_graph_adjudication"]["stage"] = "materiality_critic"
     elif mutation == "calls":
-        receipt["source_graph"]["model_call_count"] = 1
+        receipt["source_hypothesis"]["model_call_count"] = 1
+    elif mutation == "hedge":
+        receipt["source_hypothesis"]["selected_run_index"] = 0
     else:
         receipt["packet"] = {**packet, "evidence_sha256": "0" * 64}
 
@@ -176,13 +187,14 @@ def _standard_receipt(
     assignment: dict | None = None,
 ) -> dict:
     wall_ms = 50_000 if tier == "standard" else 70_000
+    model_call_count = 3 if tier == "standard" else 4
     execution = semantic_execution_evidence(
         host_profile="codex",
         tier=tier,
         status="completed",
         outcome="commit",
         wall_ms=wall_ms,
-        model_call_count=4,
+        model_call_count=model_call_count,
         restart_count=0,
         implementation_fingerprint_sha256=greenfield_runtime_source_fingerprint(),
         prior_standard_failure_sha256=predecessor,
@@ -205,25 +217,52 @@ def _standard_receipt(
             "prompt_sha256": hashlib.sha256(
                 SEMANTIC_PROMPT.encode("utf-8")
             ).hexdigest(),
+            "decision": _materiality_decision(packet),
         },
-        "source_graph": {
-            "stage": "source_graph",
+        "source_hypothesis": {
+            "stage": "source_hypothesis",
             "case_id": "case-1",
             "host_profile": "codex",
-            "model": "gpt-5.6-luna",
+            "model": "gpt-5.5",
             "reasoning_effort": "low",
             "model_call_count": 2,
             "validation_status": "passed",
-            "authority_used": True,
+            "authority_used": False,
+            "source": _empty_source_graph(),
+            "selected_run_index": 1,
+            "hypothesis_runs": [
+                {
+                    "run_index": 0,
+                    "hypothesis_mode": "full_graph",
+                    "status": "comparison_passed",
+                    "wall_ms": 20_000,
+                    "usage": {},
+                },
+                {
+                    "run_index": 1,
+                    "hypothesis_mode": "source_only",
+                    "status": "selected",
+                    "wall_ms": 19_000,
+                    "usage": {},
+                },
+            ],
         },
-        "graph_completion": {
-            "stage": "graph_completion",
+        "final_graph_adjudication": {
+            "stage": (
+                "partitioned_graph_admission"
+                if tier == "standard"
+                else "final_graph_adjudication"
+            ),
             "case_id": "case-1",
             "host_profile": "codex",
-            "model": "gpt-5.6-luna",
+            "model": "gpt-5.5" if tier == "standard" else "gpt-5.6-sol",
             "reasoning_effort": "low",
-            "model_call_count": 1,
+            "model_call_count": 0 if tier == "standard" else 1,
             "validation_status": "passed",
+            "source_status": "approved",
+            "compiled_author_output": (
+                {"typed_graph": True} if tier == "standard" else None
+            ),
         },
         "materiality_assessment": deepcopy(packet["materiality_assessment"]),
         "packet": deepcopy(packet),
@@ -232,9 +271,55 @@ def _standard_receipt(
         ),
         "failed_stage": "",
         "failure": "",
-        "model_call_count": 4,
+        "model_call_count": model_call_count,
         "restart_count": 0,
         "total_tokens": 200,
         "mechanism_execution": execution,
         "evidence_assignment": deepcopy(assignment),
+    }
+
+
+def _empty_source_graph() -> dict:
+    return {
+        "version": "odylith.greenfield.semantic-source-partitioned-authoring-graph.v24",
+        "path": {
+            "identities": [],
+            "actors": [],
+            "workflow_steps": [],
+            "state_objects": [],
+            "visible_outputs": [],
+            "relations": {},
+        },
+        "boundary": {
+            "external_systems": [],
+            "policies": [],
+            "relations": {},
+            "discarded_evidence": [],
+            "assumptions": [],
+        },
+    }
+
+
+def _materiality_decision(packet: dict) -> dict:
+    assessment = packet["materiality_assessment"]
+    fields = {
+        row["field"]: {
+            key: deepcopy(value) for key, value in row.items() if key != "field"
+        }
+        for row in assessment["fields"]
+    }
+    if assessment["decision"] == "clarification_required":
+        clarification = assessment["clarification"]
+        fields[clarification["field"]] = {
+            "status": "explicit",
+            "source_refs": deepcopy(clarification["source_refs"]),
+            "alternatives": [],
+        }
+    return {
+        "version": "odylith.greenfield.parallel-materiality-decision.v3",
+        "outcome": {
+            "decision": assessment["decision"],
+            "clarification": deepcopy(assessment["clarification"]),
+        },
+        "fields": fields,
     }

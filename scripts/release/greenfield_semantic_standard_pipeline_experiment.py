@@ -4,37 +4,24 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Mapping, Sequence
-from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
 from pathlib import Path
 import tempfile
-from threading import Event
 import time
 from typing import Any
 
-from greenfield_semantic_clarification_author import (
-    ClarificationStageIncomplete,
-    run_clarification_author,
-)
-from greenfield_semantic_materiality_screen_experiment import run_screen
+from greenfield_semantic_authoring_wave import AuthoringWaveBudget, run_authoring_wave
 from greenfield_semantic_standard_path_experiment import (
-    CompletionStageIncomplete,
     case_prompt,
-    run_graph_completion_case,
-    run_source_graph_case,
-    source_graph,
 )
 from greenfield_semantic_pipeline_receipts import (
     PIPELINE_VERSION,
     pipeline_receipt as _receipt,
     write_receipt as _write_receipt,
 )
-from greenfield_semantic_structured_host import (
-    HostStageCancelled,
-    HostStageTimeout,
-    elapsed_ms,
-)
+from greenfield_semantic_release_support import mapping
+from greenfield_semantic_structured_host import elapsed_ms
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     STANDARD_COMPLETION_DEADLINE_SECONDS,
 )
@@ -42,26 +29,20 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_host_profiles impor
     standard_host_stage_profile,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_packet import (
+    build_semantic_clarification_packet,
     build_semantic_intent_packet,
     require_semantic_intent_packet,
     semantic_intent_authority,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_atomic_source_custody import (
     atomic_source_candidates_from_catalog,
-)
-from odylith.runtime.domain_intelligence.greenfield_semantic_layered_authoring import (
-    compile_partitioned_authoring_graph,
+    atomic_source_candidates_without_discarded,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_parallel_materiality import (
-    admit_source_candidates_by_materiality,
     assemble_parallel_materiality_assessment,
-    require_materiality_source_coverage,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations import (
     semantic_evidence_block_catalog,
-)
-from odylith.runtime.domain_intelligence.greenfield_semantic_source_authoring import (
-    compile_source_partitioned_graph,
 )
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
     product_create_transaction_to_dict,
@@ -72,30 +53,44 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_workflow import (
 )
 
 
-PARALLEL_FIRST_WAVE_SECONDS = 34
-SEMANTIC_AUTHORING_SHARED_SECONDS = 54
-DETERMINISTIC_RESERVE_SECONDS = 5
+PARALLEL_HYPOTHESIS_HOST_TIMEOUT_SECONDS = 48
+SEMANTIC_AUTHORING_SHARED_SECONDS = 48
+CLARIFICATION_AUTHORING_SHARED_SECONDS = 58
+DETERMINISTIC_RESERVE_SECONDS = 11
+CLARIFICATION_FINALIZE_RESERVE_SECONDS = 1
 MIN_STANDARD_AUTHOR_SECONDS = 20
 
 
 def standard_budget_contract() -> dict[str, Any]:
     """Return the non-negotiable standard allocation including transaction work."""
-    critical_path = SEMANTIC_AUTHORING_SHARED_SECONDS + DETERMINISTIC_RESERVE_SECONDS
+    commit_path = SEMANTIC_AUTHORING_SHARED_SECONDS + DETERMINISTIC_RESERVE_SECONDS
+    clarification_path = (
+        CLARIFICATION_AUTHORING_SHARED_SECONDS
+        + CLARIFICATION_FINALIZE_RESERVE_SECONDS
+    )
+    critical_path = max(commit_path, clarification_path)
     if critical_path >= STANDARD_COMPLETION_DEADLINE_SECONDS:
         raise RuntimeError("standard pipeline allocation does not finish before 60 seconds")
     return {
         "tier": "standard",
         "deadline_seconds": STANDARD_COMPLETION_DEADLINE_SECONDS,
         "comparison": "strictly_less_than",
-        "parallel_materiality_and_source_seconds": PARALLEL_FIRST_WAVE_SECONDS,
-        "semantic_authoring_shared_seconds": SEMANTIC_AUTHORING_SHARED_SECONDS,
-        "post_first_wave_completion_seconds": "remaining shared semantic budget",
+        "parallel_model_host_timeout_seconds": (
+            PARALLEL_HYPOTHESIS_HOST_TIMEOUT_SECONDS
+        ),
+        "all_model_calls_start_at_entry": True,
+        "standard_model_call_count": 3,
+        "commit_semantic_authoring_shared_seconds": SEMANTIC_AUTHORING_SHARED_SECONDS,
+        "clarification_semantic_authoring_shared_seconds": (
+            CLARIFICATION_AUTHORING_SHARED_SECONDS
+        ),
+        "candidate_admission": "paired_source_and_completion_end_to_end_packet",
         "packet_and_transaction_reserve_seconds": DETERMINISTIC_RESERVE_SECONDS,
+        "clarification_packet_reserve_seconds": CLARIFICATION_FINALIZE_RESERVE_SECONDS,
         "critical_path_seconds": critical_path,
         "retries": 0,
         "automatic_deep_tier": False,
-        "minimum_standard_author_seconds": MIN_STANDARD_AUTHOR_SECONDS,
-        "completion_topology": "single_system",
+        "topology_mode": "single_system",
     }
 
 
@@ -107,15 +102,16 @@ def run_standard_pipeline(
     host_profile: str = "codex",
     critic_model: str = "",
     critic_reasoning_effort: str = "",
-    source_model: str = "",
-    source_reasoning_effort: str = "",
-    author_model: str = "",
-    author_reasoning_effort: str = "",
-    _first_wave_budget: int = PARALLEL_FIRST_WAVE_SECONDS,
+    source_hypothesis_model: str = "",
+    source_hypothesis_reasoning_effort: str = "",
+    final_adjudicator_model: str = "",
+    final_adjudicator_reasoning_effort: str = "",
+    _first_wave_budget: int = PARALLEL_HYPOTHESIS_HOST_TIMEOUT_SECONDS,
     _semantic_budget: int = SEMANTIC_AUTHORING_SHARED_SECONDS,
+    _clarification_semantic_budget: int = CLARIFICATION_AUTHORING_SHARED_SECONDS,
     _deadline_seconds: int = STANDARD_COMPLETION_DEADLINE_SECONDS,
     _budget_contract: Mapping[str, Any] | None = None,
-    _completion_topology: str = "single_system",
+    _topology_mode: str = "single_system",
     _evidence_assignment: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Run one no-retry attempt and return a terminal or typed rescue handoff."""
@@ -123,39 +119,54 @@ def run_standard_pipeline(
     profile = standard_host_stage_profile(host_profile)
     critic_model = critic_model or profile["critic_model"]
     critic_reasoning_effort = critic_reasoning_effort or profile["critic_reasoning_effort"]
-    source_model = source_model or profile["source_model"]
-    source_reasoning_effort = source_reasoning_effort or profile["source_reasoning_effort"]
-    author_model = author_model or profile["completion_model"]
-    author_reasoning_effort = author_reasoning_effort or profile["completion_reasoning_effort"]
+    source_hypothesis_model = (
+        source_hypothesis_model or profile["source_hypothesis_model"]
+    )
+    source_hypothesis_reasoning_effort = (
+        source_hypothesis_reasoning_effort
+        or profile["source_hypothesis_reasoning_effort"]
+    )
+    final_adjudicator_model = (
+        final_adjudicator_model or profile["final_adjudicator_model"]
+    )
+    final_adjudicator_reasoning_effort = (
+        final_adjudicator_reasoning_effort
+        or profile["final_adjudicator_reasoning_effort"]
+    )
     started_ns = time.monotonic_ns()
     budget = dict(_budget_contract or standard_budget_contract())
     if _evidence_assignment is not None:
         budget["evidence_assignment"] = dict(_evidence_assignment)
     with tempfile.TemporaryDirectory(prefix="odylith-standard-pipeline-") as temporary:
         root = Path(temporary)
-        critic, source, author, failure = _authoring_wave(
+        critic, source, author, failure = run_authoring_wave(
             corpus_path=corpus_path,
             case_id=case_id,
             root=root,
             host_profile=host_profile,
             critic_model=critic_model,
             critic_reasoning_effort=critic_reasoning_effort,
-            source_model=source_model,
-            source_reasoning_effort=source_reasoning_effort,
-            author_model=author_model,
-            author_reasoning_effort=author_reasoning_effort,
-            first_wave_budget=_first_wave_budget,
-            semantic_budget=_semantic_budget,
-            completion_topology=_completion_topology,
+            source_hypothesis_model=source_hypothesis_model,
+            source_hypothesis_reasoning_effort=source_hypothesis_reasoning_effort,
+            final_adjudicator_model=final_adjudicator_model,
+            final_adjudicator_reasoning_effort=final_adjudicator_reasoning_effort,
+            budget=AuthoringWaveBudget(
+                first_wave_seconds=_first_wave_budget,
+                commit_semantic_seconds=_semantic_budget,
+                clarification_semantic_seconds=_clarification_semantic_budget,
+                topology_mode=_topology_mode,
+            ),
         )
         if failure is not None:
             failure_kind, failed_stage, message = failure
-            status = "rescue_required" if failure_kind == "typed" else "failed"
+            status = "rescue_required" if failure_kind == "handoff" else "failed"
             outcome = (
-                "typed_standard_failure"
-                if failure_kind == "typed"
+                "typed_standard_handoff"
+                if failure_kind == "handoff" and failed_stage == "graph_completion"
                 else "standard_deadline_exceeded"
-                if failure_kind == "deadline"
+                if failure_kind in {"handoff", "deadline"}
+                else "typed_standard_failure"
+                if failure_kind == "typed"
                 else "environment_failure"
             )
             return _write_receipt(
@@ -180,7 +191,7 @@ def run_standard_pipeline(
         assessment, assessment_error = _assessment_result(
             corpus_path=corpus_path,
             case_id=case_id,
-            critic=_required_mapping(critic, "semantic critic"),
+            source=mapping(author, "final graph adjudication"),
         )
         if assessment_error:
             return _terminal_failure(
@@ -199,65 +210,16 @@ def run_standard_pipeline(
                 failure=assessment_error,
             )
         if assessment["decision"] == "clarification_required":
-            author_budget = (
-                _remaining_finalize_seconds(started_ns, _deadline_seconds)
-                - DETERMINISTIC_RESERVE_SECONDS
+            prompt_text = case_prompt(corpus_path=corpus_path, case_id=case_id)
+            packet = build_semantic_clarification_packet(
+                assessment,
+                prompt=prompt_text,
+                critic_run_id=_critic_run_id(mapping(critic, "materiality critic")),
+                author_run_id=_materiality_run_id(
+                    mapping(author, "final graph adjudication")
+                ),
+                critic_host_profile=host_profile,
             )
-            if author_budget <= 0:
-                return _terminal_failure(
-                    output_path=output_path,
-                    case_id=case_id,
-                    status="failed",
-                    outcome="standard_deadline_exhausted",
-                    started_ns=started_ns,
-                    host_profile=host_profile,
-                    budget=budget,
-                    critic=critic,
-                    source=source,
-                    assessment=assessment,
-                    failed_stage="deadline",
-                    failure="standard path left no clarification-author budget",
-                )
-            try:
-                author = run_clarification_author(
-                    case_id=case_id,
-                    prompt_text=case_prompt(
-                        corpus_path=corpus_path, case_id=case_id
-                    ),
-                    assessment=assessment,
-                    critic_run_id=_critic_run_id(
-                        _required_mapping(critic, "semantic critic")
-                    ),
-                    host_profile=host_profile,
-                    model=author_model,
-                    reasoning_effort=author_reasoning_effort,
-                    model_budget_seconds=author_budget,
-                    output_path=root / "clarification-author.json",
-                )
-            except ClarificationStageIncomplete as error:
-                status = "rescue_required" if error.failure_kind == "typed" else "failed"
-                outcome = (
-                    "typed_standard_failure"
-                    if error.failure_kind == "typed"
-                    else "standard_deadline_exceeded"
-                    if error.failure_kind == "deadline"
-                    else "environment_failure"
-                )
-                return _terminal_failure(
-                    output_path=output_path,
-                    case_id=case_id,
-                    status=status,
-                    outcome=outcome,
-                    started_ns=started_ns,
-                    host_profile=host_profile,
-                    budget=budget,
-                    critic=critic,
-                    source=source,
-                    author=error.receipt,
-                    assessment=assessment,
-                    failed_stage="clarification_author",
-                    failure=str(error),
-                )
             return _write_receipt(
                 output_path,
                 _receipt(
@@ -271,7 +233,7 @@ def run_standard_pipeline(
                     source=source,
                     author=author,
                     assessment=assessment,
-                    finalized={"packet": author["packet"]},
+                    finalized={"packet": packet},
                     transaction=None,
                     failed_stage="",
                     failure="",
@@ -298,10 +260,8 @@ def run_standard_pipeline(
                 case_id=case_id,
                 prompt=case_prompt(corpus_path=corpus_path, case_id=case_id),
                 assessment=assessment,
-                author=_required_mapping(author, "partitioned author"),
-                critic_run_id=_critic_run_id(
-                    _required_mapping(critic, "semantic critic")
-                ),
+                author=mapping(author, "final graph adjudication"),
+                critic_run_id=_critic_run_id(mapping(critic, "materiality critic")),
                 semantic_host_profile=host_profile,
             )
         except ValueError as error:
@@ -410,252 +370,39 @@ def run_standard_pipeline(
     )
 
 
-def _authoring_wave(
-    *,
-    corpus_path: Path,
-    case_id: str,
-    root: Path,
-    host_profile: str,
-    critic_model: str,
-    critic_reasoning_effort: str,
-    source_model: str,
-    source_reasoning_effort: str,
-    author_model: str,
-    author_reasoning_effort: str,
-    first_wave_budget: int,
-    semantic_budget: int,
-    completion_topology: str,
-) -> tuple[
-    dict[str, Any] | None,
-    dict[str, Any] | None,
-    dict[str, Any] | None,
-    tuple[str, str, str] | None,
-]:
-    first_wave_started_ns = time.monotonic_ns()
-    cancel_source = Event()
-    with ThreadPoolExecutor(max_workers=2) as executor:
-        critic_future = executor.submit(
-            run_screen,
-            corpus_path=corpus_path,
-            case_id=case_id,
-            model=critic_model,
-            reasoning_effort=critic_reasoning_effort,
-            output_path=root / "critic.json",
-            model_budget_seconds=first_wave_budget,
-            host_profile=host_profile,
-        )
-        source_future = executor.submit(
-            run_source_graph_case,
-            corpus_path=corpus_path,
-            case_id=case_id,
-            model=source_model,
-            reasoning_effort=source_reasoning_effort,
-            output_path=root / "source.json",
-            model_budget_seconds=first_wave_budget,
-            cancel_event=cancel_source,
-            host_profile=host_profile,
-        )
-        try:
-            critic = critic_future.result()
-        except HostStageTimeout as error:
-            source_attempt = _cancel_and_settle(
-                cancel_source,
-                source_future,
-                case_id=case_id,
-                host_profile=host_profile,
-                model=source_model,
-                reasoning_effort=source_reasoning_effort,
-            )
-            return _failed_critic_receipt(error, host_profile), source_attempt, None, (
-                "deadline", "materiality_critic", str(error)
-            )
-        except ValueError as error:
-            source_attempt = _cancel_and_settle(
-                cancel_source,
-                source_future,
-                case_id=case_id,
-                host_profile=host_profile,
-                model=source_model,
-                reasoning_effort=source_reasoning_effort,
-            )
-            return _failed_critic_receipt(error, host_profile), source_attempt, None, (
-                "typed", "materiality_critic", str(error)
-            )
-        except RuntimeError as error:
-            source_attempt = _cancel_and_settle(
-                cancel_source,
-                source_future,
-                case_id=case_id,
-                host_profile=host_profile,
-                model=source_model,
-                reasoning_effort=source_reasoning_effort,
-            )
-            return _failed_critic_receipt(error, host_profile), source_attempt, None, (
-                "environment", "materiality_critic", str(error)
-            )
-        critic_decision = str(
-            critic.get("decision", {}).get("outcome", {}).get("decision") or ""
-        )
-        if critic_decision == "clarification_required":
-            source_attempt = _cancel_and_settle(
-                cancel_source,
-                source_future,
-                case_id=case_id,
-                host_profile=host_profile,
-                model=source_model,
-                reasoning_effort=source_reasoning_effort,
-            )
-            return critic, source_attempt, None, None
-        try:
-            source = {**source_future.result(), "authority_used": True}
-            evidence_sources = {
-                "operator_prompt": case_prompt(
-                    corpus_path=corpus_path, case_id=case_id
-                ),
-                "operator_edit": "",
-            }
-            admission = admit_source_candidates_by_materiality(
-                critic.get("decision"),
-                source_graph(source),
-                evidence_sources=evidence_sources,
-            )
-            admitted_source = _required_mapping(
-                admission.get("source"), "admitted source graph"
-            )
-            source["admission"] = {
-                key: value for key, value in admission.items() if key != "source"
-            }
-            require_materiality_source_coverage(
-                critic.get("decision"),
-                compile_source_partitioned_graph(admitted_source),
-                evidence_sources=evidence_sources,
-            )
-        except HostStageTimeout as error:
-            return critic, _failed_source_receipt(error, host_profile), None, (
-                "deadline", "source_graph", str(error)
-            )
-        except HostStageCancelled as error:
-            return critic, _failed_source_receipt(error, host_profile), None, (
-                "environment", "source_graph", str(error)
-            )
-        except ValueError as error:
-            return critic, _failed_source_receipt(error, host_profile), None, (
-                "typed", "source_graph", str(error)
-            )
-        except RuntimeError as error:
-            return critic, _failed_source_receipt(error, host_profile), None, (
-                "environment", "source_graph", str(error)
-            )
-    first_wave_seconds = (elapsed_ms(first_wave_started_ns) + 999) // 1000
-    author_budget = semantic_budget - first_wave_seconds
-    if author_budget < MIN_STANDARD_AUTHOR_SECONDS:
-        return critic, source, None, (
-            "typed", "graph_completion",
-            "validated parallel first wave requires the rescue completion tier",
-        )
-    try:
-        author = run_graph_completion_case(
-            corpus_path=corpus_path,
-            case_id=case_id,
-            model=author_model,
-            reasoning_effort=author_reasoning_effort,
-            output_path=root / "author.json",
-            model_budget_seconds=author_budget,
-            resume_source=admitted_source,
-            materiality_decision=_required_mapping(
-                critic.get("decision"), "materiality decision"
-            ),
-            completion_topology=completion_topology,
-            host_profile=host_profile,
-        )
-    except CompletionStageIncomplete as error:
-        return critic, source, dict(error.receipt), (
-            "typed", "graph_completion", str(error)
-        )
-    except HostStageTimeout as error:
-        return critic, source, None, ("deadline", "graph_completion", str(error))
-    except ValueError as error:
-        return critic, source, None, ("typed", "graph_completion", str(error))
-    except RuntimeError as error:
-        return critic, source, None, ("environment", "graph_completion", str(error))
-    return critic, source, author, None
-
-
 def _assessment_result(
-    *, corpus_path: Path, case_id: str, critic: Mapping[str, Any]
+    *, corpus_path: Path, case_id: str, source: Mapping[str, Any]
 ) -> tuple[dict[str, Any], str]:
     try:
         return _assemble_assessment(
-            corpus_path=corpus_path, case_id=case_id, critic=critic
+            corpus_path=corpus_path, case_id=case_id, source=source
         ), ""
     except ValueError as error:
         return {}, str(error)
 
 
 def _assemble_assessment(
-    *, corpus_path: Path, case_id: str, critic: Mapping[str, Any]
+    *, corpus_path: Path, case_id: str, source: Mapping[str, Any]
 ) -> dict[str, Any]:
     evidence_sources = {
         "operator_prompt": case_prompt(corpus_path=corpus_path, case_id=case_id),
         "operator_edit": "",
     }
-    return assemble_parallel_materiality_assessment(
-        critic.get("decision"),
+    discarded = source.get("discarded_source_refs")
+    if not isinstance(discarded, list):
+        raise ValueError("final graph discarded evidence is malformed")
+    candidates = atomic_source_candidates_without_discarded(
         atomic_source_candidates_from_catalog(
             semantic_evidence_block_catalog(evidence_sources)
         ),
+        discarded_source_refs=discarded,
         evidence_sources=evidence_sources,
     )
-
-
-def _cancel_and_settle(
-    cancel_event: Event,
-    future: Any,
-    *,
-    case_id: str,
-    host_profile: str,
-    model: str,
-    reasoning_effort: str,
-) -> dict[str, Any]:
-    cancel_event.set()
-    try:
-        return {**future.result(), "authority_used": False}
-    except (RuntimeError, ValueError) as error:
-        return {
-            "stage": "source_graph",
-            "case_id": case_id,
-            "host_profile": host_profile,
-            "model": model,
-            "reasoning_effort": reasoning_effort,
-            "authority_used": False,
-            "validation_status": "cancelled",
-            "validation_error": str(error),
-            "model_call_count": 2,
-            "usage": {},
-        }
-
-
-def _failed_source_receipt(error: Exception, host_profile: str) -> dict[str, Any]:
-    return {
-        "stage": "source_graph",
-        "host_profile": host_profile,
-        "authority_used": False,
-        "validation_status": "failed",
-        "validation_error": str(error),
-        "model_call_count": 2,
-        "usage": {},
-    }
-
-
-def _failed_critic_receipt(error: Exception, host_profile: str) -> dict[str, Any]:
-    return {
-        "stage": "materiality_critic",
-        "host_profile": host_profile,
-        "validation_status": "failed",
-        "validation_error": str(error),
-        "model_call_count": 1,
-        "usage": {},
-    }
+    return assemble_parallel_materiality_assessment(
+        source.get("materiality_decision"),
+        candidates,
+        evidence_sources=evidence_sources,
+    )
 
 
 def _finalize_author(
@@ -667,12 +414,9 @@ def _finalize_author(
     critic_run_id: str,
     semantic_host_profile: str,
 ) -> dict[str, Any]:
-    author_candidate = _required_mapping(author.get("candidate"), "author candidate")
-    evidence_sources = {"operator_prompt": prompt, "operator_edit": ""}
-    author_output = compile_partitioned_authoring_graph(
-        author_candidate,
-        assessment=assessment,
-        evidence_sources=evidence_sources,
+    author_candidate = mapping(author.get("candidate"), "author candidate")
+    author_output = mapping(
+        author.get("compiled_author_output"), "compiled partitioned author output"
     )
     candidate_sha256 = hashlib.sha256(
         json.dumps(
@@ -684,7 +428,7 @@ def _finalize_author(
         author_output,
         prompt=prompt,
         critic_run_id=critic_run_id,
-        author_run_id=f"standard:{case_id}:partitioned-author:{candidate_sha256}",
+        author_run_id=f"standard:{case_id}:partitioned-graph-author:{candidate_sha256}",
         critic_host_profile=semantic_host_profile,
     )
     return {
@@ -762,20 +506,23 @@ def _terminal_failure(
     )
 
 
+def _materiality_run_id(author: Mapping[str, Any]) -> str:
+    value = str(author.get("adjudicator_run_id") or "").strip()
+    if not value.startswith(
+        ("standard:partitioned-graph-author:", "standard:clarification-author:")
+    ):
+        raise RuntimeError("final graph lacks its adjudicator authority run")
+    return value
+
+
 def _critic_run_id(critic: Mapping[str, Any]) -> str:
+    decision = mapping(critic.get("decision"), "materiality critic decision")
     payload = json.dumps(
-        {"decision": critic.get("decision"), "candidates": critic.get("candidate")},
-        ensure_ascii=False,
-        separators=(",", ":"),
-        sort_keys=True,
+        decision, ensure_ascii=False, separators=(",", ":"), sort_keys=True
     )
-    return "standard:semantic-critic:" + hashlib.sha256(payload.encode()).hexdigest()
-
-
-def _required_mapping(value: Any, label: str) -> dict[str, Any]:
-    if not isinstance(value, Mapping):
-        raise RuntimeError(f"{label} is unavailable")
-    return dict(value)
+    return "standard:materiality-critic:" + hashlib.sha256(
+        payload.encode("utf-8")
+    ).hexdigest()
 
 
 def main(argv: Sequence[str] | None = None) -> int:

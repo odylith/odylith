@@ -4220,3 +4220,25 @@ above.
       identities advance again before fresh deterministic laws and a new
       case-one cohort; all v10/v14/v16/v15 plans, packets, authorities,
       compiler receipts, and segments are historical only.
+    - 2026-08-20 selection-only rescue checkpoint: repeated development pressure
+      falsified graph re-authoring inside the rescue tier. Compacting the
+      presentation schema and increasing the remaining rescue budget did not
+      make the complex six-actor case return a replacement graph in time, so
+      both experiments were removed. The replacement pre-admits the two
+      standard-path source candidates through the complete deterministic graph
+      contract, then permits one bounded host decision to select either
+      candidate unchanged or request one material clarification. Rescue has
+      zero graph-authorship authority and no merge, regex, token, fuzzy, repair,
+      or prose-recomposition fallback. Provider schemas use disjoint `anyOf`
+      branches where the host rejects nested `oneOf`, while deterministic
+      citation binding remains exact. The focused mechanism gate passes
+      `134/134`. A fresh 24-case cohort on implementation fingerprint
+      `81830ce83b180599e58715d8adfa7a76a1959ed8246f696ea17bf2925d5a49ca`
+      produced all expected outcomes below 60 seconds: 17 commits, 7 focused
+      clarifications, 14 standard completions, 10 selection-only rescues, zero
+      deadline or environment failures, zero restarts, zero automatic deep
+      runs, and a 55.026-second maximum. Freeze these bytes while independent
+      semantic/package review, deterministic laws, host parity,
+      lower-capability safety, installed/browser proof, and the protected
+      one-shot holdout run. Any product failure reopens mechanism comparison;
+      passing test counts alone do not bless the mechanism.

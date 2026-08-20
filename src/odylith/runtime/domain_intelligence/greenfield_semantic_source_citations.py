@@ -238,6 +238,23 @@ def resolve_semantic_source_ref(
     }
 
 
+def semantic_source_refs_overlap(
+    left: Mapping[str, Any],
+    right: Mapping[str, Any],
+    *,
+    evidence_sources: Mapping[str, str],
+) -> bool:
+    """Return whether two exact citations overlap in the same source bytes."""
+
+    first = resolve_semantic_source_ref(left, evidence_sources=evidence_sources)
+    second = resolve_semantic_source_ref(right, evidence_sources=evidence_sources)
+    return (
+        first["source_id"] == second["source_id"]
+        and int(first["char_start"]) < int(second["char_end"])
+        and int(second["char_start"]) < int(first["char_end"])
+    )
+
+
 def resolved_semantic_source_refs(
     value: Mapping[str, Any],
     *,
@@ -301,6 +318,7 @@ __all__ = [
     "require_semantic_source_refs",
     "resolve_semantic_source_ref",
     "resolved_semantic_source_refs",
+    "semantic_source_refs_overlap",
     "semantic_source_ref_schema",
     "semantic_source_ref_catalog",
     "semantic_source_ref_selection_schema",

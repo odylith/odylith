@@ -8,7 +8,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-08-18",
+      "last_reviewed_utc": "2026-08-20",
       "source_mmd": "odylith/atlas/source/odylith-product-governance-loop.mmd",
       "source_svg": "odylith/atlas/source/odylith-product-governance-loop.svg",
       "source_png": "odylith/atlas/source/odylith-product-governance-loop.png",
@@ -4156,7 +4156,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-08-18",
+      "last_reviewed_utc": "2026-08-20",
       "source_mmd": "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
       "source_svg": "odylith/atlas/source/domain-intelligence-greenfield-governance.svg",
       "source_png": "odylith/atlas/source/domain-intelligence-greenfield-governance.png",
@@ -4170,8 +4170,9 @@
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_workflow.py",
         "src/odylith/runtime/domain_intelligence/greenfield_transaction_compiler.py",
         "src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py",
-        "scripts/release/greenfield_semantic_host_execution.py",
-        "scripts/release/greenfield_semantic_development_evidence.py",
+        "scripts/release/greenfield_semantic_standard_pipeline_experiment.py",
+        "scripts/release/greenfield_semantic_source_pair_adjudicator.py",
+        "scripts/release/greenfield_semantic_pipeline_evidence.py",
         "scripts/release/greenfield_semantic_release_evidence.py",
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
       ],
@@ -4216,26 +4217,28 @@
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_workflow.py",
         "src/odylith/runtime/domain_intelligence/greenfield_transaction_compiler.py",
         "src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py",
-        "scripts/release/greenfield_semantic_host_execution.py",
-        "scripts/release/greenfield_semantic_development_evidence.py",
+        "scripts/release/greenfield_semantic_standard_pipeline_experiment.py",
+        "scripts/release/greenfield_semantic_source_pair_adjudicator.py",
+        "scripts/release/greenfield_semantic_pipeline_evidence.py",
         "scripts/release/greenfield_semantic_release_evidence.py"
       ],
       "reviewed_watch_fingerprints": {
-        "src/odylith/runtime/domain_intelligence/greenfield_operating_envelope.py": "908edbddca56909d25466ca54159d4dfefccfe3246cd73208e3857e21e7e7f42",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_materiality_contract.py": "b828c194a6899ca725522f009fc15455dc8893d7458566740923d07668c9cc56",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_schema.py": "cfd222bea05d40322165fb4e35b16d15831edaeb390295958a9a8f34f2e95ef9",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_contract.py": "3d2a139092b0dc37160e5e2b1c72bbbf727f1fdc200e7cfe42df9017cc243956",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_packet.py": "216862d2dddddf4f95df9d31d637c441839eabc85f8e6fe3b3b548c617422195",
+        "src/odylith/runtime/domain_intelligence/greenfield_operating_envelope.py": "f07ea870a5d9167def0a582289a27e22abfa0dda0522607a2fcc3c79bb09e472",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_materiality_contract.py": "57c6e44c734b9a875d598d09e12407c5c245f466eabaff957cff23947db9cd69",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_schema.py": "a4b21f7226ca18454056292db3554dc14a6866391beb2673a2fe21f6291166bf",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_contract.py": "4741d3e7df29583a965502c3bf089c3ee7be6f98b2cd3cb5bbc76718c444fd5f",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_packet.py": "a36afbf71555d2de831704fe07898a14905add4639d62dbb69b1582ca3839141",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_projection_plan.py": "7089cb1ddc8f272887cf31f48360a998cd0a6ab9ffa78a6801ba410dfc947fcc",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_workflow.py": "158960b3fd123906d3f22097b59eaac377aadbba10f4a75606792e72037490bd",
         "src/odylith/runtime/domain_intelligence/greenfield_transaction_compiler.py": "b3fe2bc9294a8826ec73f417d37d406ef157365c142b1f17e5a093c0ba16ac54",
         "src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py": "8d1516d22c734bc3e43fcf79d944ded3f114c2ca3529c5168cb6a4e934317c35",
-        "scripts/release/greenfield_semantic_host_execution.py": "9e51372f062deb66e00faf4dd4a923b11579b3d745cbe2c83da42bf63d6c24a6",
-        "scripts/release/greenfield_semantic_development_evidence.py": "515865c428d2254714f04f410e0fc34bcc24d36f44caaacf1a044a065188695c",
-        "scripts/release/greenfield_semantic_release_evidence.py": "315fd56c6dc3c56652baaf586e2a4aca0a0de05af6eed13165682334157f67bf",
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "7003e130f2096a9b6ba615120d14fb9642e5d60fda93ef0ad13eb48abbd609b4"
+        "scripts/release/greenfield_semantic_standard_pipeline_experiment.py": "834c6ec8e72b6c6513165afb99e18dac601cd0fbe484cebecc4b94aca2bee514",
+        "scripts/release/greenfield_semantic_source_pair_adjudicator.py": "c7b1490ceeae671559e64386afa6edfd48e5e79673e832d92e9b741ebca530ad",
+        "scripts/release/greenfield_semantic_pipeline_evidence.py": "6e4efa2b686d2844cedccd3e5e109aaa4372614bd6dffc8706957b2eebc888b3",
+        "scripts/release/greenfield_semantic_release_evidence.py": "75233bb6484b79c81d8851d15c76bb391d1160d11c48e12a648303ae45f998a6",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "b12c596ef3e70e9c256e55e3b0b42e1d9c63e935b76de0a66cb0f57f07b055ff"
       },
-      "render_source_fingerprint": "24355c4a3878c0aa084e81c6d5764ab8350967f32db11c43ae35e3208b0ca53f"
+      "render_source_fingerprint": "d6856b9ebe32c46460a3e3113ac93be1414004e35810cc7134468e534acf1ab0"
     },
     {
       "diagram_id": "D-044",
@@ -4324,7 +4327,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-08-18",
+      "last_reviewed_utc": "2026-08-20",
       "source_mmd": "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd",
       "source_svg": "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.svg",
       "source_png": "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.png",
@@ -4333,34 +4336,35 @@
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_schema.py",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_contract.py",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_packet.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_graph_extension.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_graph_extension_contract.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_completion_partitions.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_source_hypothesis_comparison.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_execution_contract.py",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_host_profiles.py",
-        "scripts/release/greenfield_semantic_host_execution.py",
-        "scripts/release/greenfield_semantic_host_execution_contract.py"
+        "scripts/release/greenfield_semantic_source_pair_adjudicator.py",
+        "scripts/release/greenfield_semantic_standard_pipeline_experiment.py"
       ],
-      "summary": "Shows prompt-only materiality assessment and independent graph authoring under pinned host profiles, with node-owned bounded edges, exact citations, and deterministic graph validation before Product Intent authority can exist.",
-      "read_guide": "Read from evidence and assignment through the isolated critic, materiality decision, independent author, node-owned bounded extension, deterministic edge projection, exact citation and graph checks, and either one clarification or a verified authority. No validator feedback or prior candidate reaches an author run.",
+      "summary": "Shows the prompt-only critic, two independent source-grounded graph candidates, deterministic candidate admission and comparison, and a selection-only rescue that may choose an existing candidate or ask one material question without authoring a replacement graph.",
+      "read_guide": "Read from runner-owned evidence through the independent critic and two graph authors. Each graph must pass the same deterministic admission laws. Standard convergence either selects one admitted graph or clarifies; only a reusable typed disagreement reaches the bounded selector, which cannot author, merge, repair, or reinterpret a graph. The selected graph is sealed before confirmation, and confirmation publishes exact bytes only.",
       "components": [
         {
           "name": "Materiality critic",
           "description": "Decides whether each canonical field is explicit, source-entailable, a non-material assumption, or materially unresolved."
         },
         {
-          "name": "Graph author",
-          "description": "Produces the typed Semantic Intent and mandatory self-challenges from evidence plus the sealed critic assessment."
+          "name": "Independent graph authors",
+          "description": "Produce full-source and source-only typed candidates in isolated runs with exact citations and mandatory self-challenges."
         },
         {
-          "name": "Provider schema",
-          "description": "Constrains the host response to bounded node facts and node-owned typed edge targets; edge subjects, kinds, and custody are never host-authored."
+          "name": "Candidate admission",
+          "description": "Applies identical deterministic citation, endpoint, ownership, polarity, completeness, and package laws to each candidate before comparison."
         },
         {
-          "name": "Graph assembly",
-          "description": "Combines locked source facts with deterministically projected bounded edges into one canonical Semantic Intent graph."
+          "name": "Typed source comparison",
+          "description": "Compares supported facts, omissions, material disagreements, and product utility without prose reparsing or fixture vocabulary."
         },
         {
-          "name": "Deterministic verifier",
-          "description": "Checks evidence bytes, graph structure, ownership, polarity, cardinality, and materiality alignment without interpreting prose."
+          "name": "Selection-only rescue",
+          "description": "Selects one already-admitted candidate unchanged or requests one material clarification; it owns no graph authorship, merge, or repair."
         }
       ],
       "related_backlog": [
@@ -4378,24 +4382,26 @@
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_schema.py",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_contract.py",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_packet.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_graph_extension.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_graph_extension_contract.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_completion_partitions.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_source_hypothesis_comparison.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_execution_contract.py",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_host_profiles.py",
-        "scripts/release/greenfield_semantic_host_execution.py",
-        "scripts/release/greenfield_semantic_host_execution_contract.py"
+        "scripts/release/greenfield_semantic_source_pair_adjudicator.py",
+        "scripts/release/greenfield_semantic_standard_pipeline_experiment.py"
       ],
       "reviewed_watch_fingerprints": {
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_materiality_contract.py": "b828c194a6899ca725522f009fc15455dc8893d7458566740923d07668c9cc56",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_schema.py": "cfd222bea05d40322165fb4e35b16d15831edaeb390295958a9a8f34f2e95ef9",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_contract.py": "3d2a139092b0dc37160e5e2b1c72bbbf727f1fdc200e7cfe42df9017cc243956",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_packet.py": "216862d2dddddf4f95df9d31d637c441839eabc85f8e6fe3b3b548c617422195",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_graph_extension.py": "ecaaf82f82182a64a2434536f53cada5bc020d107af5c70f5bb562f8c9a31c30",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_graph_extension_contract.py": "69db65b95e49c4975c9fbf921dfa97987dd786f4e6e5996fc965c71626fe6cb7",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_host_profiles.py": "d842921e6af65e6095d864e6d22de20f2a5b780fac5119c365ccf32ecd4fb0ba",
-        "scripts/release/greenfield_semantic_host_execution.py": "9e51372f062deb66e00faf4dd4a923b11579b3d745cbe2c83da42bf63d6c24a6",
-        "scripts/release/greenfield_semantic_host_execution_contract.py": "2a8bbdd6ca774acd6b69162014b74b105923ffd61f5b36fccc16b8667bdfdb9e"
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_materiality_contract.py": "57c6e44c734b9a875d598d09e12407c5c245f466eabaff957cff23947db9cd69",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_schema.py": "a4b21f7226ca18454056292db3554dc14a6866391beb2673a2fe21f6291166bf",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_contract.py": "4741d3e7df29583a965502c3bf089c3ee7be6f98b2cd3cb5bbc76718c444fd5f",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_packet.py": "a36afbf71555d2de831704fe07898a14905add4639d62dbb69b1582ca3839141",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_completion_partitions.py": "8d886764d77a3a60c8c0211f0719f0d12f5678c8d64741aa110b3989dae9e897",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_source_hypothesis_comparison.py": "976b2fa47649d296e0b71fa1b0fd9b102961a5a0139be95d351a268987db432b",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_execution_contract.py": "48e86b843fb4f26d1d25bf26e34461be476675487eff5cbb7054e016032ec7b6",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_host_profiles.py": "2cd19e0d2c7f500b53c46f249d3d5ca37e6d871d05cb3a6db708ad12f884fdf6",
+        "scripts/release/greenfield_semantic_source_pair_adjudicator.py": "c7b1490ceeae671559e64386afa6edfd48e5e79673e832d92e9b741ebca530ad",
+        "scripts/release/greenfield_semantic_standard_pipeline_experiment.py": "834c6ec8e72b6c6513165afb99e18dac601cd0fbe484cebecc4b94aca2bee514"
       },
-      "render_source_fingerprint": "d7251b24ec22c264a43b73d621ac8550bb5efd3005e915a9aae34644c7c6fce2"
+      "render_source_fingerprint": "77db859aa6c6c9b37cc6bfb21f84e9f6c075ec334a2451a170b7d772bd04a4b2"
     },
     {
       "diagram_id": "D-046",
@@ -4484,13 +4490,14 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "release",
-      "last_reviewed_utc": "2026-08-18",
+      "last_reviewed_utc": "2026-08-20",
       "source_mmd": "odylith/atlas/source/greenfield-matrix-tiered-campaign-progress.mmd",
       "source_svg": "odylith/atlas/source/greenfield-matrix-tiered-campaign-progress.svg",
       "source_png": "odylith/atlas/source/greenfield-matrix-tiered-campaign-progress.png",
       "change_watch_paths": [
-        "scripts/release/greenfield_semantic_host_execution.py",
-        "scripts/release/greenfield_semantic_development_evidence.py",
+        "scripts/release/greenfield_semantic_standard_pipeline_experiment.py",
+        "scripts/release/greenfield_semantic_source_pair_adjudicator.py",
+        "scripts/release/greenfield_semantic_pipeline_evidence.py",
         "scripts/release/greenfield_semantic_development_cohort.py",
         "scripts/release/greenfield_semantic_release_evidence.py",
         "scripts/release/greenfield_semantic_release_evaluation.py",
@@ -4529,8 +4536,9 @@
         "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "related_code": [
-        "scripts/release/greenfield_semantic_host_execution.py",
-        "scripts/release/greenfield_semantic_development_evidence.py",
+        "scripts/release/greenfield_semantic_standard_pipeline_experiment.py",
+        "scripts/release/greenfield_semantic_source_pair_adjudicator.py",
+        "scripts/release/greenfield_semantic_pipeline_evidence.py",
         "scripts/release/greenfield_semantic_development_cohort.py",
         "scripts/release/greenfield_semantic_release_evidence.py",
         "scripts/release/greenfield_semantic_release_evaluation.py",
@@ -4539,16 +4547,17 @@
         "scripts/release/greenfield_final_holdout_run.py"
       ],
       "reviewed_watch_fingerprints": {
-        "scripts/release/greenfield_semantic_host_execution.py": "9e51372f062deb66e00faf4dd4a923b11579b3d745cbe2c83da42bf63d6c24a6",
-        "scripts/release/greenfield_semantic_development_evidence.py": "515865c428d2254714f04f410e0fc34bcc24d36f44caaacf1a044a065188695c",
-        "scripts/release/greenfield_semantic_development_cohort.py": "680260def43b463cabb169d26498762bbf82a616da724a0b89fb1f780c22b485",
-        "scripts/release/greenfield_semantic_release_evidence.py": "315fd56c6dc3c56652baaf586e2a4aca0a0de05af6eed13165682334157f67bf",
-        "scripts/release/greenfield_semantic_release_evaluation.py": "df70d8ef7617368ef38facefe7bfc97f0532299291516e735d5786b94f94f803",
-        "scripts/release/greenfield_semantic_host_parity.py": "3951de2f462f65129b8c08ff41c5547e74f060304c3597cfed33d26b1cb16252",
+        "scripts/release/greenfield_semantic_standard_pipeline_experiment.py": "834c6ec8e72b6c6513165afb99e18dac601cd0fbe484cebecc4b94aca2bee514",
+        "scripts/release/greenfield_semantic_source_pair_adjudicator.py": "c7b1490ceeae671559e64386afa6edfd48e5e79673e832d92e9b741ebca530ad",
+        "scripts/release/greenfield_semantic_pipeline_evidence.py": "6e4efa2b686d2844cedccd3e5e109aaa4372614bd6dffc8706957b2eebc888b3",
+        "scripts/release/greenfield_semantic_development_cohort.py": "2e410bb40d9d1b2f25a3bf39c551df35d501ea39a063f502bc25f7b7f4df4447",
+        "scripts/release/greenfield_semantic_release_evidence.py": "75233bb6484b79c81d8851d15c76bb391d1160d11c48e12a648303ae45f998a6",
+        "scripts/release/greenfield_semantic_release_evaluation.py": "8f9d1d1a1a2fb5069ed5c7bddb7e8df88fe5c3dbfd89d5ac7d4f28792340324d",
+        "scripts/release/greenfield_semantic_host_parity.py": "594dfb2eafd4fa1c93dd45a174c68525f058c6b6b6f598a720089fc040be0057",
         "scripts/release/greenfield_semantic_lower_capability_probe.py": "8ec2cda37752771910fdfe9fdba2107683e896cef3b37cefd74685282711a7be",
-        "scripts/release/greenfield_final_holdout_run.py": "debede59a5200d0dae7c9014373cc248163388827031b8ec9910785aff142a80"
+        "scripts/release/greenfield_final_holdout_run.py": "2fc01efd0eda70279236e081182ffff6d278ca587fb3110a1fc63c86f5ce84b6"
       },
-      "render_source_fingerprint": "df351416564baffa1aaace7f242c9e0d01fa49af8e4ba5132eca02a7804835c2"
+      "render_source_fingerprint": "c4960e3f4bbe211c11f487e8748ac5ca322673e30f1e310bee6fccae7861313a"
     }
   ]
 }

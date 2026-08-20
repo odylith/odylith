@@ -24,15 +24,16 @@ def test_development_runner_binds_every_assignment_without_retry(
             "status": "completed",
             "outcome": "commit",
             "wall_ms": 59_999,
-            "model_call_count": 4,
+            "model_call_count": 3,
             "restart_count": 0,
+            "tier": "standard",
         }
         Path(kwargs["output_path"]).write_text(json.dumps(receipt), encoding="utf-8")
         return receipt
 
     monkeypatch.setattr(runner, "run_standard_pipeline", fake_standard_pipeline)
     output = tmp_path / "run"
-    manifest = runner.run_development_standard_cohort(
+    manifest = runner.run_development_bounded_cohort(
         corpus_path=corpus,
         active_evidence_plan_path=plan,
         output_directory=output,
@@ -40,7 +41,7 @@ def test_development_runner_binds_every_assignment_without_retry(
 
     assert manifest["status"] == "completed"
     assert manifest["standard_success_count"] == 2
-    assert manifest["model_call_count"] == 8
+    assert manifest["model_call_count"] == 6
     assert manifest["restart_count"] == 0
     assert [case for case, _, _ in calls] == ["case-001", "case-002"]
     assert all(host == assignment["host_profile"] for _, host, assignment in calls)
@@ -52,39 +53,57 @@ def test_development_runner_binds_every_assignment_without_retry(
     }
 
 
-def test_development_runner_records_typed_failure_without_rescue_or_retry(
+def test_development_runner_continues_only_a_reusable_handoff(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     corpus, plan = _inputs(tmp_path)
-    calls = 0
+    calls: list[str] = []
 
     def fake_standard_pipeline(**kwargs: object) -> dict:
-        nonlocal calls
-        calls += 1
         case_id = str(kwargs["case_id"])
-        outcome = "typed_standard_failure" if case_id == "case-001" else "commit"
+        calls.append(f"standard:{case_id}")
+        handoff = case_id == "case-001"
         receipt = {
             "case_id": case_id,
-            "status": "rescue_required" if outcome != "commit" else "completed",
-            "outcome": outcome,
+            "status": "rescue_required" if handoff else "completed",
+            "outcome": "standard_deadline_exceeded" if handoff else "commit",
             "wall_ms": 40_000,
-            "model_call_count": 4,
+            "model_call_count": 3,
             "restart_count": 0,
+            "tier": "standard",
         }
         Path(kwargs["output_path"]).write_text(json.dumps(receipt), encoding="utf-8")
         return receipt
 
     monkeypatch.setattr(runner, "run_standard_pipeline", fake_standard_pipeline)
-    manifest = runner.run_development_standard_cohort(
+
+    def fake_rescue_pipeline(**kwargs: object) -> dict:
+        case_id = str(kwargs["case_id"])
+        calls.append(f"rescue:{case_id}")
+        receipt = {
+            "case_id": case_id,
+            "status": "completed",
+            "outcome": "commit",
+            "wall_ms": 70_000,
+            "model_call_count": 4,
+            "restart_count": 0,
+            "tier": "rescue",
+        }
+        Path(kwargs["output_path"]).write_text(json.dumps(receipt), encoding="utf-8")
+        return receipt
+
+    monkeypatch.setattr(runner, "run_rescue_pipeline", fake_rescue_pipeline)
+    manifest = runner.run_development_bounded_cohort(
         corpus_path=corpus,
         active_evidence_plan_path=plan,
         output_directory=tmp_path / "run",
     )
 
-    assert manifest["status"] == "incomplete"
-    assert manifest["typed_rescue_required_count"] == 1
+    assert manifest["status"] == "completed"
+    assert manifest["rescue_success_count"] == 1
     assert manifest["standard_success_count"] == 1
-    assert calls == 2
+    assert manifest["automatic_deep_count"] == 0
+    assert calls == ["standard:case-001", "rescue:case-001", "standard:case-002"]
 
 
 def test_development_runner_refuses_to_overwrite_evidence_directory(
@@ -94,7 +113,7 @@ def test_development_runner_refuses_to_overwrite_evidence_directory(
     output = tmp_path / "run"
     output.mkdir()
     with pytest.raises(RuntimeError, match="already exists"):
-        runner.run_development_standard_cohort(
+        runner.run_development_bounded_cohort(
             corpus_path=corpus,
             active_evidence_plan_path=plan,
             output_directory=output,

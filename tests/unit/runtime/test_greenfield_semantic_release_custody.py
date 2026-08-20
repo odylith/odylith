@@ -31,6 +31,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_workflow import (
     compile_verified_semantic_transaction,
 )
 from tests.unit.runtime.greenfield_semantic_intent_fixtures import (
+    DEPENDENCY_EVIDENCE,
     PATH_EVIDENCE,
     SEMANTIC_PROMPT,
     semantic_fact,
@@ -115,8 +116,9 @@ def test_project_brief_formats_typed_constraints_without_duplicate_punctuation()
     )["must_capture"]
 
     assert ".." not in limits
-    assert "Constraints: Read the local duty roster." in limits
-    assert "Excluded: Never reassign a card automatically." in limits
+    assert "Constraints: Read local duty roster." in limits
+    assert DEPENDENCY_EVIDENCE not in limits
+    assert "Excluded: No automatic reassignment." in limits
 
 
 def test_release_rejects_deferred_ownership_of_required_path() -> None:
