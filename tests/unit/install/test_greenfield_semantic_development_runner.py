@@ -24,7 +24,7 @@ def test_development_runner_binds_every_assignment_without_retry(
             "status": "completed",
             "outcome": "commit",
             "wall_ms": 59_999,
-            "model_call_count": 3,
+            "model_call_count": 1,
             "restart_count": 0,
             "tier": "standard",
         }
@@ -41,7 +41,7 @@ def test_development_runner_binds_every_assignment_without_retry(
 
     assert manifest["status"] == "completed"
     assert manifest["standard_success_count"] == 2
-    assert manifest["model_call_count"] == 6
+    assert manifest["model_call_count"] == 2
     assert manifest["restart_count"] == 0
     assert [case for case, _, _ in calls] == ["case-001", "case-002"]
     assert all(host == assignment["host_profile"] for _, host, assignment in calls)
@@ -68,7 +68,7 @@ def test_development_runner_continues_only_a_reusable_handoff(
             "status": "rescue_required" if handoff else "completed",
             "outcome": "standard_deadline_exceeded" if handoff else "commit",
             "wall_ms": 40_000,
-            "model_call_count": 3,
+            "model_call_count": 1,
             "restart_count": 0,
             "tier": "standard",
         }
@@ -85,7 +85,7 @@ def test_development_runner_continues_only_a_reusable_handoff(
             "status": "completed",
             "outcome": "commit",
             "wall_ms": 70_000,
-            "model_call_count": 4,
+            "model_call_count": 1,
             "restart_count": 0,
             "tier": "rescue",
         }

@@ -27,12 +27,12 @@ from greenfield_semantic_release_evidence import require_candidate_bundle
 from greenfield_semantic_release_evidence import require_evaluation_contract
 from greenfield_semantic_release_evidence import resource_ceiling_checks
 
-REVIEW_VERSION = "odylith.greenfield.semantic-release-review.v1"
-ADJUDICATION_VERSION = "odylith.greenfield.semantic-release-adjudication.v1"
+REVIEW_VERSION = "odylith.greenfield.semantic-release-review.v4"
+ADJUDICATION_VERSION = "odylith.greenfield.semantic-release-adjudication.v4"
 
 ANNOTATION_CATEGORIES = (
-    "actors", "actions", "states", "outputs", "constraints", "dependencies",
-    "assumptions", "ambiguities", "non_goals", "material_questions",
+    "actors", "actions", "states", "outputs", "policy_boundaries", "dependencies",
+    "assumptions", "ambiguities", "material_questions",
 )
 DECISION_FIELDS = (
     "outcome_correct",
@@ -45,7 +45,6 @@ DECISION_FIELDS = (
     "package_reviewable",
     "surfaces_differentiated",
     "question_necessary",
-    "question_fields",
     "equivalent_source_consistent",
     "p0_findings",
     "p1_findings",
@@ -202,6 +201,17 @@ def _contract(value: Mapping[str, Any]) -> dict[str, Any]:
     return require_evaluation_contract(value)
 
 
+def _authoring_run_ids(
+    candidate_meta: Mapping[str, Mapping[str, Any]],
+) -> set[str]:
+    return {
+        str(meta[field])
+        for meta in candidate_meta.values()
+        for field in ("author_run_id",)
+        if str(meta.get(field) or "")
+    }
+
+
 def _reviews(
     values: Sequence[Mapping[str, Any]],
     *,
@@ -216,11 +226,7 @@ def _reviews(
     indexed_reviews: list[dict[str, dict[str, Any]]] = []
     hashes: list[str] = []
     reviewer_ids: list[str] = []
-    authoring_run_ids = {
-        str(meta[field])
-        for meta in candidate_meta.values()
-        for field in ("critic_run_id", "author_run_id")
-    }
+    authoring_run_ids = _authoring_run_ids(candidate_meta)
     for index, raw in enumerate(values):
         review = _mapping(raw, f"review[{index}]")
         _exact_keys(
@@ -275,11 +281,7 @@ def _adjudication(
     adjudicator = _text(row.get("adjudicator_id"), "adjudicator_id")
     if adjudicator in reviewer_ids:
         raise ValueError("semantic release adjudicator must be distinct from reviewers")
-    authoring_run_ids = {
-        str(meta[field])
-        for meta in candidate_meta.values()
-        for field in ("critic_run_id", "author_run_id")
-    }
+    authoring_run_ids = _authoring_run_ids(candidate_meta)
     if adjudicator in authoring_run_ids:
         raise ValueError("semantic release adjudicator must be independent from authoring runs")
     if row.get("candidate_bundle_sha256") != bundle_hash:
@@ -367,7 +369,6 @@ def _decision_index(
         if len(indexes) != len(set(indexes)):
             raise ValueError(f"{label}.{case_id} explicit system indexes are duplicated")
         decision["matched_explicit_system_indexes"] = sorted(indexes)
-        decision["question_fields"] = _unique_strings(raw.get("question_fields"), f"{label}.{case_id}.question_fields")
         decision["p0_findings"] = _unique_strings(raw.get("p0_findings"), f"{label}.{case_id}.p0_findings")
         decision["p1_findings"] = _unique_strings(raw.get("p1_findings"), f"{label}.{case_id}.p1_findings")
         normalized[case_id] = decision
@@ -398,16 +399,18 @@ def _metrics(
             item_id for item_id, item in source_rows.items()
             if item.get("materiality") == "material" and item.get("expected_custody") == "accepted_fact"
         }
-        constraint_ids = {
-            item_id for item_id, item in source_rows.items() if item.get("category") == "constraints"
+        policy_boundary_ids = {
+            item_id
+            for item_id, item in source_rows.items()
+            if item.get("category") == "policy_boundaries"
         }
         matched = set(decision["matched_annotation_ids"])
         totals["material_expected"] += len(material_ids)
         totals["material_matched"] += len(material_ids & matched)
         totals["accepted_expected"] += len(accepted_ids)
         totals["accepted_matched"] += len(accepted_ids & matched)
-        totals["constraint_expected"] += len(constraint_ids)
-        totals["constraint_matched"] += len(constraint_ids & matched)
+        totals["policy_boundary_expected"] += len(policy_boundary_ids)
+        totals["policy_boundary_matched"] += len(policy_boundary_ids & matched)
         totals["matched_claims"] += len(matched)
         totals["unsupported_facts"] += len(decision["unsupported_fact_ids"])
         totals["unsupported_relations"] += len(decision["unsupported_relation_ids"])
@@ -423,9 +426,16 @@ def _metrics(
         )
         is_commit = expected_outcome == "commit"
         is_clarify = expected_outcome == "clarify"
-        question_fields = set(decision["question_fields"])
-        expected_fields = set(annotation_row.get("expected_question_fields") or [])
-        question_success = is_clarify and decision["question_necessary"] and expected_fields <= question_fields
+        material_question_ids = {
+            str(row["id"])
+            for row in annotation_row.get("material_questions", ())
+            if isinstance(row, Mapping)
+        }
+        question_success = (
+            is_clarify
+            and decision["question_necessary"]
+            and material_question_ids <= matched
+        )
         if is_clarify:
             totals["question_expected"] += 1
             totals["question_matched"] += int(question_success)
@@ -486,7 +496,7 @@ def _metrics(
         "fact_precision": observed_claims,
         "material_semantic_recall": totals["material_expected"],
         "accepted_fact_custody": totals["accepted_expected"],
-        "constraint_recall": totals["constraint_expected"],
+        "policy_boundary_recall": totals["policy_boundary_expected"],
         "explicit_system_recall": totals["systems_expected"],
         "material_question_recall": totals["question_expected"],
         "unnecessary_question_rate": totals["unnecessary_question_denominator"],
@@ -501,7 +511,9 @@ def _metrics(
         "fact_precision": _rate(totals["matched_claims"], observed_claims),
         "material_semantic_recall": _rate(totals["material_matched"], totals["material_expected"]),
         "accepted_fact_custody": _rate(totals["accepted_matched"], totals["accepted_expected"]),
-        "constraint_recall": _rate(totals["constraint_matched"], totals["constraint_expected"]),
+        "policy_boundary_recall": _rate(
+            totals["policy_boundary_matched"], totals["policy_boundary_expected"]
+        ),
         "explicit_system_recall": _rate(totals["systems_matched"], totals["systems_expected"]),
         "material_question_recall": _rate(totals["question_matched"], totals["question_expected"]),
         "unnecessary_question_rate": _rate(
@@ -564,7 +576,7 @@ def _floor_checks(metrics: Mapping[str, Any], floors: Mapping[str, float]) -> li
         "maximum_p1_findings": ("p1_findings", "<="),
         "minimum_fact_precision": ("fact_precision", ">="),
         "minimum_accepted_fact_custody": ("accepted_fact_custody", ">="),
-        "minimum_constraint_recall": ("constraint_recall", ">="),
+        "minimum_policy_boundary_recall": ("policy_boundary_recall", ">="),
         "minimum_explicit_system_recall": ("explicit_system_recall", ">="),
         "minimum_material_question_recall": ("material_question_recall", ">="),
         "maximum_unnecessary_question_rate": ("unnecessary_question_rate", "<="),

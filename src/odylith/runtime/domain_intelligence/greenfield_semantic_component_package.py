@@ -12,6 +12,7 @@ from typing import Any
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
     semantic_state_transition,
+    semantic_state_transition_phrase,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_traceability import (
     require_persisted_semantic_projection_plan,
@@ -21,7 +22,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_traceability import
 )
 
 
-SEMANTIC_COMPONENT_VALIDATION_VERSION = "odylith.greenfield.semantic-component-validation.v1"
+SEMANTIC_COMPONENT_VALIDATION_VERSION = "odylith.greenfield.semantic-component-validation.v2"
 
 
 @dataclass(frozen=True)
@@ -166,10 +167,20 @@ def semantic_component_authoring_inputs(
                     "verification_commands": ("odylith registry validate",),
                 },
                 "component_contract": artifact_contract,
-                "semantic_fact_id": _required_text(component, "semantic_fact_id"),
-                "semantic_fact_custody": tuple(
+                "implementation_policy_id": _required_text(
+                    component, "implementation_policy_id"
+                ),
+                "covered_fact_ids": _required_strings(
+                    component, "covered_fact_ids"
+                ),
+                "projection_basis_fact_ids": _required_strings(
+                    component, "projection_basis_fact_ids"
+                ),
+                "projection_basis_custody": tuple(
                     dict(row)
-                    for row in mapping_rows(component.get("semantic_fact_custody"))
+                    for row in mapping_rows(
+                        component.get("projection_basis_custody")
+                    )
                 ),
             }
         )
@@ -322,8 +333,8 @@ def _write_semantic_component(
         component_id=component_id,
         label=label,
         path=path,
-        registry_path=registry_path,
-        spec_path=spec_path,
+        registry_path=registry_path.relative_to(root),
+        spec_path=spec_path.relative_to(root),
         validation_gate=dict(validation_gate),
     )
 
@@ -352,8 +363,9 @@ def _render_component_spec(row: Mapping[str, Any]) -> str:
         f"# {label}",
         "",
         (
-            "> Source-cited Registry contract "
-            f"for `{row['component_id']}` from Semantic Intent fact `{row['semantic_fact_id']}`."
+            "> Plan-local implementation policy "
+            f"`{row['implementation_policy_id']}` for `{row['component_id']}`, "
+            "grounded in the listed Semantic Intent facts."
         ),
         "",
         f"## {label} Purpose",
@@ -446,7 +458,10 @@ def _registry_entry(row: Mapping[str, Any]) -> dict[str, Any]:
         "owner": row["owner"],
         "status": row["status"],
         "what_it_is": f"{label} is the planned {row['kind']} boundary for: {responsibility}",
-        "why_tracked": "Tracked because its exact source-cited contract is part of the first release.",
+        "why_tracked": (
+            "Tracked because its plan-local contract is grounded in exact "
+            "Semantic Intent facts for the first release."
+        ),
         "spec_ref": f"odylith/registry/source/components/{component_id}/CURRENT_SPEC.md",
         "sources": list(row["sources"]),
         "subcomponents": [],
@@ -477,12 +492,12 @@ def _artifact_component_contract(
         _required_text(row, "fact_id"): row
         for row in mapping_rows(plan.get("nodes"))
     }
-    implemented = tuple(
+    covered = tuple(
         node_by_id[fact_id]
-        for fact_id in _strings(component_plan.get("implements"))
+        for fact_id in _strings(component_plan.get("covered_fact_ids"))
     )
-    state_nodes = tuple(row for row in implemented if row.get("kind") == "state_object")
-    output_nodes = tuple(row for row in implemented if row.get("kind") == "visible_output")
+    state_nodes = tuple(row for row in covered if row.get("kind") == "state_object")
+    output_nodes = tuple(row for row in covered if row.get("kind") == "visible_output")
     state_objects = tuple(_required_text(row, "label") for row in state_nodes)
     visible_outputs = tuple(_required_text(row, "label") for row in output_nodes)
     transitions = tuple(
@@ -490,10 +505,6 @@ def _artifact_component_contract(
         for row in state_nodes
         if (transition := _state_transition(row))
     )
-    system_node = node_by_id[_required_text(component_plan, "semantic_fact_id")]
-    attributes = _attributes(system_node)
-    if not attributes.get("proof", ""):
-        raise ValueError("persisted semantic component lacks typed proof")
     component_role = _required_text(component_plan, "component_role")
     if _required_text(proposal_contract, "component_role") != component_role:
         raise ValueError("persisted semantic component role binding drifted")
@@ -519,7 +530,7 @@ def _artifact_component_contract(
 def _validate_semantic_component_roles(
     plan: Mapping[str, Any],
 ) -> None:
-    """Require each persisted component to own one differentiated typed role."""
+    """Require one policy component to cover every delivery fact outside the graph."""
 
     nodes = mapping_rows(plan.get("nodes"))
     node_by_id = {
@@ -527,138 +538,53 @@ def _validate_semantic_component_roles(
         for row in nodes
     }
     components = mapping_rows(plan.get("components"))
-    component_by_fact_id = {
-        _required_text(row, "semantic_fact_id"): row
-        for row in components
+    if len(components) != 1:
+        raise ValueError(
+            "persisted semantic projection requires one plan-local component policy"
+        )
+    component = components[0]
+    component_id = _required_text(component, "component_id")
+    policy_id = _required_text(component, "implementation_policy_id")
+    if policy_id in node_by_id:
+        raise ValueError(
+            "persisted implementation policy must not masquerade as a semantic fact"
+        )
+    if _required_text(component, "release_scope") != "first_path_required":
+        raise ValueError(
+            f"persisted semantic component `{component_id}` has an invalid release scope"
+        )
+    if _required_text(component, "component_role") != "result_implementing":
+        raise ValueError(
+            f"persisted semantic component `{component_id}` has a mismatched policy role"
+        )
+    axes = plan.get("axes")
+    if not isinstance(axes, Mapping):
+        raise ValueError("persisted semantic projection plan lacks typed axes")
+    required = {
+        fact_id
+        for key in (
+            "workflow_step_fact_ids",
+            "state_fact_ids",
+            "visible_output_fact_ids",
+        )
+        for fact_id in _strings(axes.get(key))
     }
-    edges = mapping_rows(plan.get("edges"))
-    implemented_edges = {
-        (
-            _required_text(row, "subject_id"),
-            _required_text(row, "object_id"),
+    covered = set(_strings(component.get("covered_fact_ids")))
+    if covered != required:
+        raise ValueError(
+            f"persisted semantic component `{component_id}` coverage drifted"
         )
-        for row in edges
-        if row.get("kind") == "implements"
-    }
-    allowed_result_kinds = {"workflow_step", "state_object", "visible_output"}
-    signature_owner: dict[tuple[tuple[str, str], ...], str] = {}
-    for component in components:
-        component_id = _required_text(component, "component_id")
-        system_id = _required_text(component, "semantic_fact_id")
-        release_scope = _required_text(component, "release_scope")
-        if release_scope != "first_path_required":
-            raise ValueError(
-                f"persisted semantic component `{component_id}` has an invalid release scope"
-            )
-        component_role = _required_text(component, "component_role")
-        implemented = _strings(component.get("implements"))
-        if any(
-            node_by_id[fact_id].get("kind") not in allowed_result_kinds
-            for fact_id in implemented
-        ):
-            raise ValueError(
-                f"persisted semantic component `{component_id}` implements a non-result fact"
-            )
-        declared_edges = {(system_id, fact_id) for fact_id in implemented}
-        graph_edges = {
-            edge
-            for edge in implemented_edges
-            if edge[0] == system_id
-        }
-        if declared_edges != graph_edges:
-            raise ValueError(
-                f"persisted semantic component `{component_id}` implementation binding drifted"
-            )
-        expected_role = (
-            "result_implementing" if implemented else "boundary_supporting"
+    if set(_strings(component.get("projection_basis_fact_ids"))) != set(node_by_id):
+        raise ValueError(
+            f"persisted semantic component `{component_id}` basis drifted"
         )
-        if component_role != expected_role:
-            raise ValueError(
-                f"persisted semantic component `{component_id}` has a mismatched typed role"
-            )
-
-        incoming = tuple(
-            row
-            for row in edges
-            if row.get("kind") == "depends_on"
-            and row.get("object_id") == system_id
-            and _is_first_path_consumer(
-                str(row.get("subject_id") or ""),
-                node_by_id=node_by_id,
-                component_by_fact_id=component_by_fact_id,
-            )
-        )
-        outgoing = tuple(
-            row
-            for row in edges
-            if row.get("subject_id") == system_id
-            and row.get("kind") in {"depends_on", "constrained_by", "excludes"}
-            and row.get("object_id") != system_id
-        )
-        if component_role == "boundary_supporting":
-            if not incoming or not outgoing:
-                raise ValueError(
-                    f"persisted supporting semantic component `{component_id}` is orphaned"
-                )
-
-        signature_rows = [
-            *(("implements", fact_id) for fact_id in implemented),
-            *(
-                ("consumed_by", _required_text(row, "subject_id"))
-                for row in incoming
-            ),
-            *(
-                (
-                    _required_text(row, "kind"),
-                    _required_text(row, "object_id"),
-                )
-                for row in outgoing
-            ),
-        ]
-        signature = tuple(sorted(signature_rows))
-        if not signature:
-            raise ValueError(
-                f"persisted semantic component `{component_id}` has no typed delivery role"
-            )
-        prior = signature_owner.get(signature)
-        if prior is not None:
-            raise ValueError(
-                "persisted semantic components are not differentiated: "
-                f"`{prior}` and `{component_id}`"
-            )
-        signature_owner[signature] = component_id
-
-
-def _is_first_path_consumer(
-    fact_id: str,
-    *,
-    node_by_id: Mapping[str, Mapping[str, Any]],
-    component_by_fact_id: Mapping[str, Mapping[str, Any]],
-) -> bool:
-    node = node_by_id.get(fact_id)
-    if node is None:
-        return False
-    if node.get("kind") in {"identity", "workflow_step"}:
-        return True
-    component = component_by_fact_id.get(fact_id)
-    return bool(component and component.get("release_scope") == "first_path_required")
 
 
 def _state_transition(node: Mapping[str, Any]) -> str:
     transition = semantic_state_transition(node)
     if transition is None:
         return ""
-    return (
-        f"{_required_text(node, 'label')}: "
-        f"{transition['from_state']} to {transition['to_state']}"
-    )
-
-
-def _attributes(node: Mapping[str, Any]) -> dict[str, str]:
-    return {
-        _required_text(row, "name"): _required_text(row, "value")
-        for row in mapping_rows(node.get("attributes"))
-    }
+    return f"{_required_text(node, 'label')}: {semantic_state_transition_phrase(node)}"
 
 
 def _plain_list(values: Sequence[str]) -> str:

@@ -124,6 +124,7 @@ def test_verified_semantic_compile_bypasses_generic_radar_semantic_admission(
     transaction = compile_verified_semantic_transaction(
         repo_root=tmp_path,
         proposal=proposal,
+        intent_authority=_authority(),
         release_selector="0.0.1",
     )
 
@@ -134,15 +135,20 @@ def test_verified_semantic_compile_bypasses_generic_radar_semantic_admission(
 
 
 def _proposal(repo_root: Path) -> dict[str, Any]:
+    authority = _authority()
+    return build_verified_semantic_proposal_for_repo(
+        repo_root=repo_root,
+        authority=authority,
+        release_selector="0.0.1",
+    )
+
+
+def _authority() -> dict[str, Any]:
     verified = require_semantic_intent_packet(
         semantic_intent_packet(),
         prompt=SEMANTIC_PROMPT,
     )
-    return build_verified_semantic_proposal_for_repo(
-        repo_root=repo_root,
-        authority=semantic_intent_authority(verified, prompt=SEMANTIC_PROMPT),
-        release_selector="0.0.1",
-    )
+    return semantic_intent_authority(verified, prompt=SEMANTIC_PROMPT)
 
 
 def _compile(repo_root: Path, proposal: dict[str, Any]) -> dict[str, Any]:

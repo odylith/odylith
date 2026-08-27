@@ -85,10 +85,9 @@ def build_derivation_provenance(
     flags: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build the provenance block carried by runtime and sync artifacts."""
-    root = Path(repo_root).resolve()
     return {
         "version": PROVENANCE_VERSION,
-        "repo_root": str(root),
+        "repo_root": ".",
         "projection_scope": _normalize_scope(projection_scope),
         "projection_fingerprint": str(projection_fingerprint).strip(),
         "sync_generation": int(sync_generation),
@@ -185,7 +184,11 @@ def build_surface_runtime_contract(
         "backend_provenance": extract_provenance(backend_manifest),
     }
     if output_path is not None:
-        contract["output_path"] = str(Path(output_path).resolve())
+        resolved_output = Path(output_path).resolve()
+        try:
+            contract["output_path"] = resolved_output.relative_to(root).as_posix()
+        except ValueError as exc:
+            raise ValueError("surface runtime output path is outside the managed repository") from exc
     if extra:
         contract.update({str(key): _json_safe(value) for key, value in extra.items()})
     return contract

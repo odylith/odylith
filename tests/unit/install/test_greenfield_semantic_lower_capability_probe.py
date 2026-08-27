@@ -27,7 +27,7 @@ from greenfield_semantic_lower_capability_probe import lower_capability_run_sha2
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     LOWER_CAPABILITY_SAFETY_PROFILE,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
+from odylith.runtime.domain_intelligence.greenfield_semantic_host_profiles import (
     SEMANTIC_REASONING_CAPABILITY_PROFILE,
 )
 

@@ -9,7 +9,6 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract impo
     INTERNAL_SYSTEM_COMPONENT_KINDS,
     INTERNAL_SYSTEM_RELEASE_SCOPES,
     SEMANTIC_ATTRIBUTE_NAMES,
-    SEMANTIC_CLARIFICATION_FIELDS,
     SEMANTIC_FACT_KINDS,
     SEMANTIC_NARRATIVE_FIELDS,
     SEMANTIC_RELATION_KINDS,
@@ -20,18 +19,18 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract imp
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations import (
     semantic_source_ref_schema,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_source_claims import (
-    SEMANTIC_SOURCE_CLAIMS_VERSION,
-)
-
-
 _SYSTEM_ATTRIBUTE_NAMES = frozenset({"component_kind", "release_scope"})
 
 
 def semantic_intent_output_schema(
-    *, source_ref_schema: dict[str, Any] | None = None,
+    *,
+    source_ref_schema: dict[str, Any] | None = None,
+    clarification_source_ref_minimum: int = 1,
 ) -> dict[str, Any]:
     """Return the exact schema accepted by the structured-output provider lane."""
+
+    if clarification_source_ref_minimum not in {0, 1}:
+        raise ValueError("clarification source citation minimum is invalid")
 
     source_ref = source_ref_schema or semantic_source_ref_schema()
     source_refs = _source_refs(source_ref, minimum=1)
@@ -42,6 +41,7 @@ def semantic_intent_output_schema(
             "version",
             "status",
             "clarification",
+            "presentation",
             "facts",
             "relations",
             "narratives",
@@ -52,7 +52,11 @@ def semantic_intent_output_schema(
                 "type": "string",
                 "enum": ["complete", "clarification_required"],
             },
-            "clarification": _clarification_schema(source_ref),
+            "clarification": _clarification_schema(
+                source_ref,
+                source_ref_minimum=clarification_source_ref_minimum,
+            ),
+            "presentation": _presentation_schema(source_ref),
             "facts": {
                 "type": "array",
                 "maxItems": 128,
@@ -77,116 +81,61 @@ def semantic_intent_output_schema(
     }
 
 
-def semantic_source_claims_schema(
-    *, source_ref_schema: dict[str, Any] | None = None,
+def _clarification_schema(
+    source_ref: dict[str, Any], *, source_ref_minimum: int,
 ) -> dict[str, Any]:
-    """Return the deterministically selected source-claim graph schema."""
-
-    return _semantic_source_rows_schema(source_ref_schema=source_ref_schema)
-
-
-def _semantic_source_rows_schema(
-    *,
-    source_ref_schema: dict[str, Any] | None,
-) -> dict[str, Any]:
-    """Return the shared typed row shape for candidates or selected claims."""
-
-    source_ref = source_ref_schema or semantic_source_ref_schema()
-    source_refs = _source_refs(source_ref, minimum=1)
-    return {
-        "type": "object",
-        "additionalProperties": False,
-        "required": ["version", "facts", "relations"],
-        "properties": {
-            "version": {
-                "type": "string",
-                "enum": [SEMANTIC_SOURCE_CLAIMS_VERSION],
-            },
-            "facts": {
-                "type": "array",
-                "maxItems": 128,
-                "items": {
-                    "type": "object",
-                    "additionalProperties": False,
-                    "required": ["field", "fact"],
-                    "properties": {
-                        "field": _clarification_field(),
-                        "fact": {
-                            "anyOf": [
-                                _fact_schema(
-                                    kind=kind,
-                                    source_refs=source_refs,
-                                    custodies=("source_fact",),
-                                )
-                                for kind in SEMANTIC_FACT_KINDS
-                            ]
-                        },
-                    },
-                },
-            },
-            "relations": {
-                "type": "array",
-                "maxItems": 256,
-                "items": {
-                    "type": "object",
-                    "additionalProperties": False,
-                    "required": ["fields", "relation"],
-                    "properties": {
-                        "fields": {
-                            "type": "array",
-                            "minItems": 1,
-                            "maxItems": 9,
-                            "items": _clarification_field(),
-                        },
-                        "relation": _relation_schema(
-                            source_refs,
-                            custodies=("source_fact",),
-                        ),
-                    },
-                },
-            },
-        },
-    }
-
-
-def _clarification_schema(source_ref: dict[str, Any]) -> dict[str, Any]:
     return {
         "anyOf": [
             {
                 "type": "object",
                 "additionalProperties": False,
-                "required": ["question", "fields", "source_refs"],
+                "required": ["question", "source_refs"],
                 "properties": {
                     "question": {"type": "string", "enum": [""]},
-                    "fields": {
-                        "type": "array",
-                        "maxItems": 0,
-                        "items": _clarification_field(),
-                    },
                     "source_refs": _source_refs(source_ref, maximum=0),
                 },
             },
             {
                 "type": "object",
                 "additionalProperties": False,
-                "required": ["question", "fields", "source_refs"],
+                "required": ["question", "source_refs"],
                 "properties": {
                     "question": {"type": "string", "minLength": 1, "maxLength": 600},
-                    "fields": {
-                        "type": "array",
-                        "minItems": 1,
-                        "maxItems": 3,
-                        "items": _clarification_field(),
-                    },
-                    "source_refs": _source_refs(source_ref, minimum=1),
+                    "source_refs": _source_refs(
+                        source_ref, minimum=source_ref_minimum,
+                    ),
                 },
             },
         ]
     }
 
 
-def _clarification_field() -> dict[str, Any]:
-    return {"type": "string", "enum": list(SEMANTIC_CLARIFICATION_FIELDS)}
+def _presentation_schema(source_ref: dict[str, Any]) -> dict[str, Any]:
+    title = {"type": "string", "minLength": 1, "maxLength": 200}
+    return {
+        "anyOf": [
+            {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["title", "status", "source_refs"],
+                "properties": {
+                    "title": title,
+                    "status": {"type": "string", "enum": ["source_declared"]},
+                    "source_refs": _source_refs(source_ref, minimum=1),
+                },
+            },
+            {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["title", "status", "source_refs"],
+                "properties": {
+                    "title": title,
+                    "status": {"type": "string", "enum": ["working_assumption"]},
+                    "source_refs": _source_refs(source_ref, maximum=0),
+                },
+            },
+        ]
+    }
 
 
 def _fact_schema(
@@ -269,8 +218,8 @@ def _state_transition_schema() -> dict[str, Any]:
                 "additionalProperties": False,
                 "required": ["from_state", "to_state"],
                 "properties": {
-                    "from_state": dict(value),
-                    "to_state": dict(value),
+                    "from_state": {"anyOf": [dict(value), {"type": "null"}]},
+                    "to_state": {"anyOf": [dict(value), {"type": "null"}]},
                 },
             },
         ]
@@ -360,5 +309,4 @@ def _source_refs(
 
 __all__ = [
     "semantic_intent_output_schema",
-    "semantic_source_claims_schema",
 ]

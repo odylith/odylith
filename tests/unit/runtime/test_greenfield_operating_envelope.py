@@ -16,10 +16,8 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
     SEMANTIC_INTENT_PACKET_VERSION,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
-    SEMANTIC_REASONING_CAPABILITY_PROFILE,
-)
 from odylith.runtime.domain_intelligence.greenfield_semantic_host_profiles import (
+    SEMANTIC_REASONING_CAPABILITY_PROFILE,
     semantic_authority_execution_profiles,
 )
 
@@ -37,7 +35,9 @@ def test_greenfield_operating_envelope_accepts_one_bounded_governance_product() 
 
     require_supported_greenfield_operating_envelope(receipt)
 
-    assert receipt["version"] == GREENFIELD_OPERATING_ENVELOPE_VERSION
+    assert receipt["version"] == GREENFIELD_OPERATING_ENVELOPE_VERSION == (
+        "odylith.greenfield-operating-envelope.v20"
+    )
     assert receipt["status"] == "supported"
     assert receipt["scope"]["write_boundary"] == "repo_local_governance_package"
     assert receipt["host_contract"]["confirmation_hosts"] == ["codex", "claude"]
@@ -152,7 +152,7 @@ def test_greenfield_operating_envelope_measures_structural_complexity() -> None:
             "first_path": "An operator completes one path.",
             "external_systems": [f"System {index}" for index in range(8)],
             "ambiguities": [f"Ambiguity {index}" for index in range(3)],
-            "operational_constraints": ["No production authority", "Preserve consent", "Audit every change"],
+            "policy_boundaries": ["No production authority", "Preserve consent", "Audit every change"],
         },
         source_format="semantic_intent_packet",
         source_size_bytes=80 * 1024,

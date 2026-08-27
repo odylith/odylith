@@ -11,8 +11,8 @@ from odylith.runtime.domain_intelligence.greenfield_acceptance_contract import (
     PROJECT_BRIEF_SOURCE_PATH,
 )
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
-from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
-    PRODUCT_INTENT_AUTHORITY_KEY,
+from odylith.runtime.domain_intelligence.greenfield_semantic_backlog_projection import (
+    semantic_policy_boundary_summaries,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_component_projection import (
     SEMANTIC_SYSTEM_POLICY_CUSTODY,
@@ -68,13 +68,19 @@ def semantic_acceptance_event_preview(
             *(_portable(row.get("spec_path"), repo_root=repo_root) for row in component_items),
         )
     )
-    title = _identity_label(plan)
+    title = _presentation_title(plan)
+    presentation_kind = _presentation_kind(plan)
     release = _release_label(release_selector, release_id)
+    accepted_subject = (
+        f"under the working title {title}"
+        if presentation_kind == "working title (assumption)"
+        else title
+    )
     return {
         "version": "v1",
         "kind": "decision",
         "summary": (
-            f"Accepted graph-native project {title}: {len(workstreams)} workstreams, "
+            f"Accepted graph-native project {accepted_subject}: {len(workstreams)} workstreams, "
             f"{len(components)} components, {len(tuple(diagram_ids))} diagrams, release {release}."
         ),
         "ts_iso": str(accepted_at or "prewrite").strip(),
@@ -84,7 +90,7 @@ def semantic_acceptance_event_preview(
         "artifacts": list(artifacts),
         "components": list(components),
         "context": "source-cited Semantic Intent graph and exact artifact bindings",
-        "headline_hint": f"Greenfield proposal accepted for {title}",
+        "headline_hint": f"Greenfield proposal accepted for {presentation_kind} {title}",
         "custody_state": SEMANTIC_SYSTEM_POLICY_CUSTODY,
         "evidence_tier": semantic_evidence_tier(SEMANTIC_SYSTEM_POLICY_CUSTODY),
         "work_category": "governance",
@@ -124,15 +130,13 @@ def semantic_accepted_project_payload(
     )
     diagram_ids = _exact_diagram_ids(plan, diagram_ids)
     memory_proposal = _portable(copy.deepcopy(dict(proposal)), repo_root=repo_root)
-    if isinstance(memory_proposal, dict):
-        memory_proposal.pop(PRODUCT_INTENT_AUTHORITY_KEY, None)
     return {
         "schema_version": "odylith.accepted_project.v1",
         "origin": "greenfield",
         "custody_state": SEMANTIC_SYSTEM_POLICY_CUSTODY,
         "evidence_tier": semantic_evidence_tier(SEMANTIC_SYSTEM_POLICY_CUSTODY),
         "accepted_at": str(accepted_at or "").strip(),
-        "title": _identity_label(plan),
+        "title": _presentation_title(plan),
         "source": "greenfield_apply",
         "proposal": memory_proposal,
         "created": {
@@ -176,7 +180,7 @@ def semantic_project_brief_markdown(
         label="project brief Registry component",
     )
     _exact_diagram_ids(plan, diagram_ids)
-    title = _identity_label(plan)
+    title = _presentation_title(plan)
     node_by_id = _plan_nodes(plan)
     axes = _plan_axes(plan)
     workflow_nodes = tuple(
@@ -206,19 +210,19 @@ def semantic_project_brief_markdown(
         "",
         "## Accepted Product Topology",
         "",
-        f"Identity fact: `{plan['identity_fact_id']}` — {title}",
+        f"{_presentation_kind(plan).capitalize()}: {title}",
         "",
         "## Workflow Facts",
         "",
         *(
-            f"- `{row['fact_id']}` — {row['label']}: {row['statement']}"
+            f"- `{row['fact_id']}` — {_fact_copy(row)}"
             for row in workflow_nodes
         ),
         "",
         "## Visible Outputs",
         "",
         *(
-            f"- `{row['fact_id']}` — {row['label']}: {row['statement']}"
+            f"- `{row['fact_id']}` — {_fact_copy(row)}"
             for row in output_nodes
         ),
         "",
@@ -229,7 +233,7 @@ def semantic_project_brief_markdown(
                 "## State Objects",
                 "",
                 *(
-                    f"- `{row['fact_id']}` — {row['label']}: {row['statement']}"
+                    f"- `{row['fact_id']}` — {_fact_copy(row)}"
                     for row in state_nodes
                 ),
                 "",
@@ -303,15 +307,28 @@ def semantic_project_dashboard_payload(
         node_by_id[fact_id]
         for fact_id in _strings(axes.get("visible_output_fact_ids"))
     )
-    title = _identity_label(plan)
-    identity = node_by_id[_required_text(plan, "identity_fact_id")]
+    title = _presentation_title(plan)
+    presentation_kind = _presentation_kind(plan)
+    intent = _mapping(proposal.get("intent"))
+    product_story = _required_text(intent, "product_story")
     workflow_labels = tuple(_required_text(row, "label") for row in workflow_nodes)
     state_labels = tuple(_required_text(row, "label") for row in state_nodes)
     output_labels = tuple(_required_text(row, "label") for row in output_nodes)
     component_labels = tuple(_required_text(row, "label") for row in components)
     actors = [_dashboard_actor_node(row) for row in nodes if row.get("kind") == "actor"]
-    non_goals = tuple(
-        _required_text(row, "statement") for row in nodes if row.get("kind") == "non_goal"
+    policy_boundaries = semantic_policy_boundary_summaries(
+        tuple(
+            {
+                "modalities": tuple(
+                    value.strip()
+                    for value in _node_attributes(row).get("modalities", "").split(",")
+                    if value.strip()
+                ),
+                "statement": _required_text(row, "statement"),
+            }
+            for row in nodes
+            if row.get("kind") == "policy_boundary"
+        )
     )
     open_items = tuple(
         _required_text(row, "statement")
@@ -336,21 +353,21 @@ def semantic_project_dashboard_payload(
         {
             "label": "Workflow Facts",
             "semantic_slot": "workflow_facts",
-            "body": "; ".join(workflow_labels),
+            "body": _clause_list(workflow_labels),
             "custody_state": SEMANTIC_SYSTEM_POLICY_CUSTODY,
             "evidence_tier": policy_tier,
         },
         {
             "label": "Visible Outputs",
             "semantic_slot": "visible_outputs",
-            "body": "; ".join(output_labels),
+            "body": _clause_list(output_labels),
             "custody_state": SEMANTIC_SYSTEM_POLICY_CUSTODY,
             "evidence_tier": policy_tier,
         },
         {
             "label": "Component Boundaries",
             "semantic_slot": "component_boundaries",
-            "body": "; ".join(component_labels),
+            "body": _clause_list(component_labels),
             "custody_state": SEMANTIC_SYSTEM_POLICY_CUSTODY,
             "evidence_tier": policy_tier,
         },
@@ -361,28 +378,40 @@ def semantic_project_dashboard_payload(
             {
                 "label": "State Objects",
                 "semantic_slot": "state_objects",
-                "body": "; ".join(state_labels),
+                "body": _clause_list(state_labels),
                 "custody_state": SEMANTIC_SYSTEM_POLICY_CUSTODY,
                 "evidence_tier": policy_tier,
             },
         )
+    if policy_boundaries:
+        cards.append(
+            {
+                "label": "Policy Boundaries",
+                "semantic_slot": "policy_boundaries",
+                "body": _clause_list(policy_boundaries),
+                "custody_state": SEMANTIC_SYSTEM_POLICY_CUSTODY,
+                "evidence_tier": policy_tier,
+            }
+        )
     prompts = _semantic_handoff_prompts(source_launch=source_launch, title=title)
     known = [
-        _required_text(identity, "statement"),
+        product_story,
         *(_required_text(row, "statement") for row in workflow_nodes),
         *(_required_text(row, "statement") for row in state_nodes),
         *(_required_text(row, "statement") for row in output_nodes),
         *component_labels,
-        *non_goals,
+        *policy_boundaries,
     ]
     status_title = "Stateful delivery status" if state_labels else "Stateless delivery status"
     return {
         "schema_version": SEMANTIC_PROJECT_DASHBOARD_VERSION,
         "custody_state": SEMANTIC_SYSTEM_POLICY_CUSTODY,
         "evidence_tier": policy_tier,
-        "eyebrow": "Project type: source-cited greenfield governance",
+        "eyebrow": (
+            f"{presentation_kind.capitalize()} · source-cited greenfield governance"
+        ),
         "title": title,
-        "intro": _required_text(identity, "statement"),
+        "intro": product_story,
         "chips": ["verified semantic graph", "accepted greenfield project", "source cited"],
         "focus_label": "Accepted focus",
         "focus": str(source_launch.get("start_workstream_title") or workstreams[0]["title"]),
@@ -394,7 +423,7 @@ def semantic_project_dashboard_payload(
             "headline": title,
             "standfirst": "",
             "paragraphs": [
-                _required_text(identity, "statement"),
+                product_story,
                 *(_required_text(row, "statement") for row in workflow_nodes),
                 *(_required_text(row, "statement") for row in output_nodes),
             ],
@@ -435,7 +464,7 @@ def semantic_project_dashboard_payload(
         "jobs_title": "What is planned for the first release?",
         "jobs_note": "Work is bound to exact projection-plan components and diagrams.",
         "current": f"{title} is accepted product direction; implementation proof does not exist yet.",
-        "desired": "; ".join(output_labels),
+        "desired": _clause_list(output_labels),
         "question": "What should move next?",
         "recommendation": str(source_launch.get("project_first_prompt") or "").strip(),
         "options": [
@@ -500,15 +529,19 @@ def semantic_project_dashboard_payload(
 
 
 def _dashboard_actor_node(node: Mapping[str, Any]) -> tuple[str, str, str]:
-    attributes = {
-        _required_text(row, "name"): _required_text(row, "value")
-        for row in mapping_rows(node.get("attributes"))
-    }
+    attributes = _node_attributes(node)
     return (
         "",
         _required_text(node, "label"),
         attributes.get("responsibility", _required_text(node, "statement")),
     )
+
+
+def _node_attributes(node: Mapping[str, Any]) -> dict[str, str]:
+    return {
+        _required_text(row, "name"): _required_text(row, "value")
+        for row in mapping_rows(node.get("attributes"))
+    }
 
 
 def _semantic_handoff_prompts(
@@ -593,9 +626,24 @@ def _plan_axes(plan: Mapping[str, Any]) -> Mapping[str, Any]:
     return axes
 
 
-def _identity_label(plan: Mapping[str, Any]) -> str:
-    identity_id = _required_text(plan, "identity_fact_id")
-    return _required_text(_plan_nodes(plan)[identity_id], "label")
+def _presentation_title(plan: Mapping[str, Any]) -> str:
+    return _required_text(_presentation(plan), "title")
+
+
+def _presentation_kind(plan: Mapping[str, Any]) -> str:
+    status = _required_text(_presentation(plan), "status")
+    if status == "working_assumption":
+        return "working title (assumption)"
+    if status == "source_declared":
+        return "source-declared title"
+    raise ValueError("persisted semantic projection plan has an invalid presentation status")
+
+
+def _presentation(plan: Mapping[str, Any]) -> Mapping[str, Any]:
+    presentation = plan.get("presentation")
+    if not isinstance(presentation, Mapping):
+        raise ValueError("persisted semantic projection plan lacks presentation")
+    return presentation
 
 
 def _required_text(row: Mapping[str, Any], key: str) -> str:
@@ -603,6 +651,20 @@ def _required_text(row: Mapping[str, Any], key: str) -> str:
     if not value:
         raise ValueError(f"verified semantic memory lacks `{key}`")
     return value
+
+
+def _fact_copy(row: Mapping[str, Any]) -> str:
+    label = _required_text(row, "label")
+    statement = _required_text(row, "statement")
+    return label if label == statement else f"{label} — {statement}"
+
+
+def _clause_list(values: Sequence[Any]) -> str:
+    return "; ".join(
+        token
+        for value in values
+        if (token := str(value or "").strip().rstrip(" .!?"))
+    )
 
 
 def _durable_row(row: Mapping[str, Any], *, repo_root: Path | None) -> dict[str, Any]:

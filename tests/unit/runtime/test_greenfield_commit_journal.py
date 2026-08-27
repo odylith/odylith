@@ -187,25 +187,25 @@ with transaction:
     )
     journal.mark_projecting(result, generation_manifest_sha256=generation.manifest_sha256)
     if mode == \"first_write\":
-        original = greenfield_repository_write_set.atomic_write_bytes
+        original = greenfield_repository_write_set.transaction_atomic_write_bytes
         calls = 0
-        def kill_after_first(path, data, *, mode=None, temporary_directory=None):
+        def kill_after_first(repo_root, path, data, *, mode, temporary_directory=None):
             global calls
             calls += 1
-            result = original(path, data, mode=mode, temporary_directory=temporary_directory)
+            result = original(repo_root, path, data, mode=mode, temporary_directory=temporary_directory)
             if calls == 1:
                 os.kill(os.getpid(), signal.SIGKILL)
             return result
-        greenfield_repository_write_set.atomic_write_bytes = kill_after_first
+        greenfield_repository_write_set.transaction_atomic_write_bytes = kill_after_first
     if mode == "after_delete":
-        original = Path.unlink
+        original = greenfield_repository_write_set.greenfield_transaction_path_boundary.unlink_file
         deleted = root / "odylith/radar/source/delete-second.md"
-        def kill_after_delete(path, *, missing_ok=False):
-            result = original(path, missing_ok=missing_ok)
-            if path == deleted:
+        def kill_after_delete(repo_root, path):
+            result = original(repo_root, path)
+            if Path(repo_root) / path == deleted:
                 os.kill(os.getpid(), signal.SIGKILL)
             return result
-        Path.unlink = kill_after_delete
+        greenfield_repository_write_set.greenfield_transaction_path_boundary.unlink_file = kill_after_delete
     greenfield_repository_write_set.apply_compiled_greenfield_repository_write_set(
         repo_root=root,
         write_set=write_set,
@@ -370,10 +370,18 @@ def test_durable_recovery_ignores_snapshot_cleanup_error(
         close=False,
     )
 
-    def fail_cleanup(_path: Path) -> None:
-        raise OSError("snapshot cleanup failed")
+    original_remove_path = greenfield_commit_journal.greenfield_transaction_path_boundary.remove_path
 
-    monkeypatch.setattr(greenfield_commit_journal.shutil, "rmtree", fail_cleanup)
+    def fail_cleanup(repo_root: Path, path: Path | str, *, missing_ok: bool = False) -> None:
+        if str(path).endswith("/snapshot"):
+            raise OSError("snapshot cleanup failed")
+        original_remove_path(repo_root, path, missing_ok=missing_ok)
+
+    monkeypatch.setattr(
+        greenfield_commit_journal.greenfield_transaction_path_boundary,
+        "remove_path",
+        fail_cleanup,
+    )
     try:
         recovered = GreenfieldCommitJournal(
             repo_root=root,
@@ -532,7 +540,7 @@ def test_pending_v1_journal_moves_to_manual_recovery_without_blocking(tmp_path: 
         "snapshot_paths": list(greenfield_repository_write_set.greenfield_repository_write_paths(write_set)),
         "state": "prepared",
     }
-    record["record_hash"] = greenfield_commit_journal._record_hash(record)  # noqa: SLF001
+    record["record_hash"] = greenfield_commit_journal.greenfield_commit_journal_store.record_hash(record)
     (journal_root / "state.v1.json").write_text(json.dumps(record), encoding="utf-8")
 
     GreenfieldCommitJournal.recover_pending_journals(
@@ -814,19 +822,20 @@ def test_commit_stages_atomic_writes_outside_governed_roots(
     write_set = _write_set(root)
     staging_root = root / ".odylith/runtime/greenfield/create-journal" / ("a" * 64) / "staging"
     seen_staging_roots: list[Path | None] = []
-    real_write = greenfield_repository_write_set.atomic_write_bytes
+    real_write = greenfield_repository_write_set.transaction_atomic_write_bytes
 
     def capture_staging(
-        path: Path,
+        repo_root: Path,
+        path: str,
         data: bytes,
         *,
-        mode: int | None = None,
+        mode: int,
         temporary_directory: Path | None = None,
     ) -> Path:
         seen_staging_roots.append(temporary_directory)
-        return real_write(path, data, mode=mode, temporary_directory=temporary_directory)
+        return real_write(repo_root, path, data, mode=mode, temporary_directory=temporary_directory)
 
-    monkeypatch.setattr(greenfield_repository_write_set, "atomic_write_bytes", capture_staging)
+    monkeypatch.setattr(greenfield_repository_write_set, "transaction_atomic_write_bytes", capture_staging)
     greenfield_repository_write_set.apply_compiled_greenfield_repository_write_set(
         repo_root=root,
         write_set=write_set,

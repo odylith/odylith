@@ -16,6 +16,8 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract imp
 
 
 PRODUCT_FACTS_HASH_KEY = "product_facts_sha256"
+PRODUCT_INTENT_REVIEW_BINDING_KEY = "product_intent_binding"
+PRODUCT_INTENT_REVIEW_BINDING_VERSION = "odylith.greenfield.product-intent-binding.v1"
 
 
 def require_product_intent_authority(authority: Mapping[str, Any]) -> None:
@@ -41,6 +43,39 @@ def require_authoritative_intent_binding(
             "ProductCreateTransaction proposal facts do not match its sealed Product Intent authority; "
             "rebuild the transaction before showing CONFIRM"
         )
+
+
+def product_intent_review_binding(authority: Mapping[str, Any]) -> dict[str, str]:
+    """Return the digest-only authority binding safe for consumer review."""
+
+    require_product_intent_authority(authority)
+    return {
+        "version": PRODUCT_INTENT_REVIEW_BINDING_VERSION,
+        "authority_version": str(authority["version"]),
+        "authority_snapshot_sha256": str(authority["authority_snapshot_sha256"]),
+        "semantic_intent_sha256": str(authority["semantic_intent_sha256"]),
+        "semantic_meaning_sha256": str(authority["semantic_meaning_sha256"]),
+        "product_facts_sha256": str(authority["product_facts_sha256"]),
+    }
+
+
+def require_product_intent_review_binding(
+    proposal: Mapping[str, Any], authority: Mapping[str, Any]
+) -> None:
+    """Require the review package to bind, but never embed, sealed authority."""
+
+    if PRODUCT_INTENT_AUTHORITY_KEY in proposal:
+        raise ValueError("ProductCreateTransaction review package embeds private Product Intent authority")
+    expected = product_intent_review_binding(authority)
+    if proposal.get(PRODUCT_INTENT_REVIEW_BINDING_KEY) != expected:
+        raise ValueError(
+            "ProductCreateTransaction review binding does not match its sealed Product Intent authority; "
+            "rebuild the transaction before showing CONFIRM"
+        )
+    intent = proposal.get("intent")
+    if not isinstance(intent, Mapping):
+        raise ValueError("ProductCreateTransaction review package is missing typed Product Intent")
+    require_authoritative_intent_binding(intent, authority)
 
 
 def rebind_authoritative_product_facts(
@@ -70,7 +105,11 @@ def _semantic_product_facts(authority: Mapping[str, Any]) -> dict[str, Any]:
 __all__ = [
     "PRODUCT_FACTS_HASH_KEY",
     "PRODUCT_INTENT_AUTHORITY_KEY",
+    "PRODUCT_INTENT_REVIEW_BINDING_KEY",
+    "PRODUCT_INTENT_REVIEW_BINDING_VERSION",
+    "product_intent_review_binding",
     "rebind_authoritative_product_facts",
     "require_authoritative_intent_binding",
     "require_product_intent_authority",
+    "require_product_intent_review_binding",
 ]

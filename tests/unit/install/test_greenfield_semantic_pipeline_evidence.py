@@ -12,25 +12,21 @@ from greenfield_semantic_pipeline_evidence import (
     require_active_evidence_plan,
     require_successful_pipeline_evidence,
 )
-from greenfield_semantic_pipeline_receipts import (
-    PIPELINE_VERSION,
-    bounded_receipt,
-    select_source_hypothesis_run,
-)
+from greenfield_semantic_pipeline_receipts import bounded_receipt, pipeline_receipt
 from greenfield_semantic_release_support import greenfield_runtime_source_fingerprint
-from odylith.runtime.domain_intelligence.greenfield_semantic_execution_contract import (
-    semantic_execution_evidence,
+from odylith.runtime.domain_intelligence.greenfield_semantic_host_profiles import (
+    standard_author_profile,
+)
+from tests.unit.install.greenfield_semantic_release_test_fixtures import (
+    verified_transaction_receipt_fixture,
 )
 from tests.unit.runtime.greenfield_semantic_intent_fixtures import (
     SEMANTIC_PROMPT,
     semantic_intent_packet,
 )
-from tests.unit.install.greenfield_semantic_release_test_fixtures import (
-    verified_transaction_receipt_fixture,
-)
 
 
-def test_active_standard_pipeline_evidence_binds_packet_host_calls_and_tier() -> None:
+def test_active_standard_pipeline_evidence_binds_one_author_and_tier() -> None:
     packet = semantic_intent_packet()
     receipt = _standard_receipt(packet)
 
@@ -43,16 +39,14 @@ def test_active_standard_pipeline_evidence_binds_packet_host_calls_and_tier() ->
 
     assert normalized == receipt
     assert metadata["execution_tier"] == "standard"
-    assert metadata["model_calls"] == 3
+    assert metadata["model_calls"] == 1
     assert metadata["restarts"] == 0
+    assert metadata["author_run_id"] == packet["author_run"]["run_id"]
 
 
-def test_active_evidence_accepts_the_exact_admitted_source_candidate() -> None:
+def test_active_evidence_accepts_only_the_selected_unchanged_graph() -> None:
     packet = semantic_intent_packet()
     receipt = _standard_receipt(packet)
-    receipt["source_hypothesis"] = select_source_hypothesis_run(
-        receipt["source_hypothesis"], selected_run_index=0
-    )
 
     normalized, _ = require_successful_pipeline_evidence(
         receipt,
@@ -61,10 +55,10 @@ def test_active_evidence_accepts_the_exact_admitted_source_candidate() -> None:
         semantic_artifact=packet,
     )
 
-    assert normalized["source_hypothesis"]["selected_run_index"] == 0
-    assert [
-        row["status"] for row in normalized["source_hypothesis"]["hypothesis_runs"]
-    ] == ["selected", "comparison_passed"]
+    author = normalized["source_meaning_author"]
+    assert author["graph"] == packet["source_meaning_graph"]
+    assert author["graph_sha256"] == packet["source_meaning_sha256"]
+    assert author["author_run"] == packet["author_run"]
 
 
 @pytest.mark.parametrize(
@@ -76,27 +70,34 @@ def test_active_evidence_accepts_the_exact_admitted_source_candidate() -> None:
         "model",
         "stage",
         "calls",
-        "hedge",
+        "profile",
+        "graph",
+        "run",
         "packet",
     ],
 )
 def test_active_pipeline_evidence_rejects_custody_drift(mutation: str) -> None:
     packet = semantic_intent_packet()
     receipt = _standard_receipt(packet)
+    author = receipt["source_meaning_author"]
     if mutation == "mechanism":
         receipt["mechanism_execution"]["mechanism_id"] = "retired-two-stage"
     elif mutation == "source_bytes":
         receipt["mechanism_execution"]["implementation_fingerprint_sha256"] = "0" * 64
     elif mutation == "host":
-        receipt["final_graph_adjudication"]["host_profile"] = "claude"
+        author["author_run"]["host_profile"] = "claude"
     elif mutation == "model":
-        receipt["final_graph_adjudication"]["model"] = "unassigned-model"
+        author["author_run"]["model"] = "unassigned-model"
     elif mutation == "stage":
-        receipt["final_graph_adjudication"]["stage"] = "materiality_critic"
+        author["stage"] = "parallel_graph_authors"
     elif mutation == "calls":
-        receipt["source_hypothesis"]["model_call_count"] = 1
-    elif mutation == "hedge":
-        receipt["source_hypothesis"]["selected_run_index"] = 0
+        author["model_call_count"] = 2
+    elif mutation == "profile":
+        author["reasoning_effort"] = "medium"
+    elif mutation == "graph":
+        author["graph_sha256"] = "0" * 64
+    elif mutation == "run":
+        author["author_run"]["run_id"] += ":drift"
     else:
         receipt["packet"] = {**packet, "evidence_sha256": "0" * 64}
 
@@ -113,10 +114,7 @@ def test_rescue_pipeline_evidence_preserves_typed_predecessor_binding() -> None:
     packet = semantic_intent_packet()
     attempt = _standard_receipt(packet, tier="rescue", predecessor="a" * 64)
     wrapper = bounded_receipt(
-        case_id="case-1",
-        tier="rescue",
-        wall_ms=70_001,
-        attempt=attempt,
+        case_id="case-1", tier="rescue", wall_ms=70_001, attempt=attempt
     )
 
     _, metadata = require_successful_pipeline_evidence(
@@ -208,139 +206,47 @@ def _standard_receipt(
     assignment: dict | None = None,
 ) -> dict:
     wall_ms = 50_000 if tier == "standard" else 70_000
-    model_call_count = 3 if tier == "standard" else 4
-    execution = semantic_execution_evidence(
-        host_profile="codex",
-        tier=tier,
+    graph = deepcopy(packet["source_meaning_graph"])
+    graph_sha256 = packet["source_meaning_sha256"]
+    profile = standard_author_profile("codex", 0)
+    author_run = {
+        **deepcopy(packet["author_run"]),
+        "model": profile["model"],
+        "reasoning_effort": profile["reasoning_effort"],
+    }
+    normalized_packet = {**deepcopy(packet), "author_run": deepcopy(author_run)}
+    author = {
+        "stage": "source_meaning_author",
+        "case_id": "case-1",
+        "host_profile": "codex",
+        "model": author_run["model"],
+        "reasoning_effort": author_run["reasoning_effort"],
+        "status": "completed",
+        "failure_kind": "",
+        "failure": "",
+        "usage": {"input_tokens": 100, "output_tokens": 200},
+        "wall_ms": 12_000,
+        "model_call_count": 1,
+        "graph": graph,
+        "graph_sha256": graph_sha256,
+        "author_run": author_run,
+    }
+    return pipeline_receipt(
+        case_id="case-1",
         status="completed",
         outcome="commit",
         wall_ms=wall_ms,
-        model_call_count=model_call_count,
-        restart_count=0,
-        implementation_fingerprint_sha256=greenfield_runtime_source_fingerprint(),
-        prior_standard_failure_sha256=predecessor,
-    )
-    return {
-        "version": PIPELINE_VERSION,
-        "case_id": "case-1",
-        "status": "completed",
-        "outcome": "commit",
-        "wall_ms": wall_ms,
-        "budget": {"tier": tier},
-        "materiality_critic": {
-            "stage": "materiality_critic",
-            "case_id": "case-1",
-            "host_profile": "codex",
-            "model": "gpt-5.6-sol",
-            "reasoning_effort": "low",
-            "model_call_count": 1,
-            "validation_status": "passed",
-            "prompt_sha256": hashlib.sha256(
-                SEMANTIC_PROMPT.encode("utf-8")
-            ).hexdigest(),
-            "decision": _materiality_decision(packet),
+        host_profile="codex",
+        budget={
+            "tier": tier,
+            "prior_standard_failure_sha256": predecessor,
+            "evidence_assignment": deepcopy(assignment),
         },
-        "source_hypothesis": {
-            "stage": "source_hypothesis",
-            "case_id": "case-1",
-            "host_profile": "codex",
-            "model": "gpt-5.5",
-            "reasoning_effort": "low",
-            "model_call_count": 2,
-            "validation_status": "passed",
-            "authority_used": False,
-            "source": _empty_source_graph(),
-            "selected_run_index": 1,
-            "hypothesis_runs": [
-                {
-                    "run_index": 0,
-                    "hypothesis_mode": "full_graph",
-                    "status": "comparison_passed",
-                    "wall_ms": 20_000,
-                    "usage": {},
-                },
-                {
-                    "run_index": 1,
-                    "hypothesis_mode": "source_only",
-                    "status": "selected",
-                    "wall_ms": 19_000,
-                    "usage": {},
-                },
-            ],
-        },
-        "final_graph_adjudication": {
-            "stage": (
-                "partitioned_graph_admission"
-                if tier == "standard"
-                else "final_graph_adjudication"
-            ),
-            "case_id": "case-1",
-            "host_profile": "codex",
-            "model": "gpt-5.5" if tier == "standard" else "gpt-5.6-sol",
-            "reasoning_effort": "low",
-            "model_call_count": 0 if tier == "standard" else 1,
-            "validation_status": "passed",
-            "source_status": "approved",
-            "compiled_author_output": (
-                {"typed_graph": True} if tier == "standard" else None
-            ),
-        },
-        "materiality_assessment": deepcopy(packet["materiality_assessment"]),
-        "packet": deepcopy(packet),
-        "transaction": verified_transaction_receipt_fixture(
-            packet, prompt=SEMANTIC_PROMPT
+        author=author,
+        packet=normalized_packet,
+        transaction=verified_transaction_receipt_fixture(
+            normalized_packet, prompt=SEMANTIC_PROMPT
         ),
-        "failed_stage": "",
-        "failure": "",
-        "model_call_count": model_call_count,
-        "restart_count": 0,
-        "total_tokens": 200,
-        "mechanism_execution": execution,
-        "evidence_assignment": deepcopy(assignment),
-    }
-
-
-def _empty_source_graph() -> dict:
-    return {
-        "version": "odylith.greenfield.semantic-source-partitioned-authoring-graph.v24",
-        "path": {
-            "identities": [],
-            "actors": [],
-            "workflow_steps": [],
-            "state_objects": [],
-            "visible_outputs": [],
-            "relations": {},
-        },
-        "boundary": {
-            "external_systems": [],
-            "policies": [],
-            "relations": {},
-            "discarded_evidence": [],
-            "assumptions": [],
-        },
-    }
-
-
-def _materiality_decision(packet: dict) -> dict:
-    assessment = packet["materiality_assessment"]
-    fields = {
-        row["field"]: {
-            key: deepcopy(value) for key, value in row.items() if key != "field"
-        }
-        for row in assessment["fields"]
-    }
-    if assessment["decision"] == "clarification_required":
-        clarification = assessment["clarification"]
-        fields[clarification["field"]] = {
-            "status": "explicit",
-            "source_refs": deepcopy(clarification["source_refs"]),
-            "alternatives": [],
-        }
-    return {
-        "version": "odylith.greenfield.parallel-materiality-decision.v3",
-        "outcome": {
-            "decision": assessment["decision"],
-            "clarification": deepcopy(assessment["clarification"]),
-        },
-        "fields": fields,
-    }
+        failed_stage="",
+        failure="",
+    )

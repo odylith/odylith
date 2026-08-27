@@ -21,7 +21,7 @@ from greenfield_semantic_standard_pipeline_experiment import run_standard_pipeli
 from greenfield_semantic_rescue_pipeline import run_rescue_pipeline
 
 
-DEVELOPMENT_RUN_VERSION = "odylith.greenfield.bounded-development-run.v2"
+DEVELOPMENT_RUN_VERSION = "odylith.greenfield.bounded-development-run.v10"
 
 
 def run_development_bounded_cohort(

@@ -9,9 +9,6 @@ from typing import Any
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
     semantic_evidence_sha256,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract import (
-    semantic_intent_authoring_contract,
-)
 from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract import (
     SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION,
     semantic_intent_authoring_contract_sha256,
@@ -20,9 +17,9 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract 
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_packet import (
     semantic_intent_packet_schema,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
-    semantic_materiality_assessment_schema,
-    semantic_materiality_critic_schema,
+from odylith.runtime.domain_intelligence.greenfield_semantic_source_meaning import (
+    semantic_source_meaning_contract,
+    semantic_source_meaning_graph_schema,
 )
 
 
@@ -51,8 +48,7 @@ def semantic_intent_authoring_request(
     return {
         "version": SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION,
         "authoring_contract_sha256": authoring_contract_sha256,
-        "materiality_owner": "independent_frontier_host_model",
-        "semantic_owner": "distinct_frontier_host_model",
+        "semantic_owner": "holistic_source_meaning_author",
         "verification_owner": "odylith_deterministic_contract",
         "evidence_sources": evidence_sources,
         "evidence_sha256": evidence_sha256,
@@ -63,24 +59,22 @@ def semantic_intent_authoring_request(
             "evidence_sha256": evidence_sha256,
             "authoring_contract_sha256": authoring_contract_sha256,
         },
-        "materiality_gate": {
-            "order": "before_graph_authoring",
+        "source_meaning_authoring": {
             "evidence_sources": evidence_sources,
-            "candidate_access": "forbidden",
-            "source_candidates": (
-                "required; an independent critic locks exact evidence spans only and has no semantic authority"
-            ),
-            "workflow_candidate_adjudication": (
-                "one graph author must decide every span, author the complete source graph, and bind every source claim before deterministic verification"
-            ),
-            "assessment_schema": semantic_materiality_assessment_schema(),
-            "critic_run_schema": semantic_materiality_critic_schema(),
+            "schema": semantic_source_meaning_graph_schema(),
+            "contract": semantic_source_meaning_contract(),
+            "model_calls": 1,
+            "parallel_model_calls": 0,
+            "maximum_seconds": 54,
+            "retries": 0,
+            "critics": 0,
+            "selectors": 0,
+            "repairs": 0,
             "structured_output": "exact_schema_constrained_when_available",
-            "schema_failure_action": "block_or_start_fresh_independent_author_run",
         },
         "packet_schema": schema,
         "packet_structured_output": "exact_schema_constrained_when_available",
-        "semantic_contract": semantic_intent_authoring_contract(),
+        "semantic_contract": semantic_source_meaning_contract(),
         "authoring_protocol": semantic_intent_authoring_protocol(),
         "next_invocation": {
             "command": "odylith greenfield propose",
@@ -121,7 +115,10 @@ def semantic_intent_revision_request(
         repo_root=Path(repo_root),
         transaction_hash=transaction_hash,
     )
-    transaction = load_compiled_product_create_transaction_file(path)
+    transaction = load_compiled_product_create_transaction_file(
+        path,
+        repo_root=Path(repo_root),
+    )
     authority = transaction.intent_authority
     evidence = authority.get("evidence_sources") if isinstance(authority, Mapping) else None
     if not isinstance(evidence, Mapping):

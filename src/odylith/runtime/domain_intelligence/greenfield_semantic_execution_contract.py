@@ -15,22 +15,21 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_host_profiles impor
 
 
 SEMANTIC_EXECUTION_CONTRACT_VERSION = (
-    "odylith.greenfield.semantic-execution-contract.v22"
+    "odylith.greenfield.semantic-execution-contract.v60"
 )
 SEMANTIC_EXECUTION_EVIDENCE_VERSION = (
-    "odylith.greenfield.semantic-execution-evidence.v23"
+    "odylith.greenfield.semantic-execution-evidence.v62"
 )
 ACTIVE_SEMANTIC_MECHANISM_ID = (
-    "independent_source_pair_with_bounded_typed_rescue"
+    "holistic_tagged_entity_effect_source_meaning"
 )
 STANDARD_COMPLETION_DEADLINE_SECONDS = 60
 RESCUE_COMPLETION_DEADLINE_SECONDS = 90
 DEEP_COMPLETION_DEADLINE_SECONDS = 120
 
 _SUCCESS_CALL_COUNTS = {
-    "standard": {"commit": 3, "clarify": 3},
-    "rescue": {"commit": 4, "clarify": 4},
-    "explicit_deep": {"commit": 4, "clarify": 4},
+    tier: {"commit": (1,), "clarify": (1,)}
+    for tier in ("standard", "rescue", "explicit_deep")
 }
 _TIER_CONTRACTS = {
     "standard": {
@@ -42,7 +41,7 @@ _TIER_CONTRACTS = {
     "rescue": {
         "deadline_ms": RESCUE_COMPLETION_DEADLINE_SECONDS * 1000,
         "comparison": "less_than_or_equal",
-        "entry_reason": "reusable_standard_handoff",
+        "entry_reason": "deterministic_standard_continuation",
         "host_profile_contract": "standard_stage_profile",
     },
     "explicit_deep": {
@@ -61,47 +60,45 @@ def semantic_execution_contract() -> dict[str, Any]:
         "version": SEMANTIC_EXECUTION_CONTRACT_VERSION,
         "mechanism_id": ACTIVE_SEMANTIC_MECHANISM_ID,
         "topology": {
-            "first_wave": [
-                "independent_prompt_only_materiality_critic",
-                "one_full_graph_and_one_source_only_hypothesis",
-            ],
-            "first_wave_concurrency": "parallel",
-            "candidate_selection": (
-                "independent_source_admission_then_whole_existing_hypothesis"
+            "authoring_stages": ["one_holistic_source_meaning_author"],
+            "wave_order": "one_whole_graph_call",
+            "author_budget": "source_meaning_graph_at_most_54_seconds",
+            "critic_budget": "none",
+            "candidate_concurrency": "none",
+            "candidate_selection": "none",
+            "standard_commit_authority": "one_unchanged_source_meaning_graph",
+            "candidate_validation": (
+                "exact_typed_source_refs_canonical_actor_identity_tagged_entity_effects_"
+                "intermediate_creation_visible_production_relation_owned_recipient_evidence_"
+                "then_deterministic_graph_projection_and_packet"
             ),
-            "candidate_validation": "paired_source_and_completion_end_to_end_packet",
             "source_authority": (
-                "exact_pair_discard_and_ambiguity_settlement_then_independent_"
-                "source_admission"
+                "the_frontier_author_owns_one_complete_source_meaning_graph"
             ),
-            "completion_disagreement": (
-                "typed_source_handoff_then_one_frontier_existing_candidate_selection"
-            ),
-            "source_pair_failure": (
-                "fail_closed_without_fresh_graph_authorship"
-            ),
-            "hedge_degradation": (
-                "completed_source_authority_remains_reusable_when_full_graph_times_out"
-            ),
+            "critic_failure": "no_critic_stage_exists",
             "materiality_authority": (
-                "one_prompt_only_critic_challenged_by_two_typed_source_hypotheses_"
-                "with_two_source_agreement_required_to_settle_and_one_bounded_"
-                "frontier_adjudication_on_disagreement"
+                "each_source_meaning_author_may_ask_one_grounded_material_question"
             ),
-            "policy_alignment": (
-                "source_and_completion_admitted_before_final_selection"
+            "evidence_assignment": (
+                "source_meaning_graph_preserves_product_facts_and_omits_provenance_only_evidence"
             ),
+            "rescue_semantic_calls": 0,
             "rescue_graph_authorship": 0,
-            "discard_custody": "exact_overlapping_source_spans_removed_before_sealing",
-            "citation_custody": "host_authored_atomic_refs_exact_byte_validated",
+            "evidence_disposition_custody": (
+                "host_reasoning_omits_nonproduct_evidence_and_runtime_never_reinterprets_it"
+            ),
+            "citation_custody": (
+                "host_authored_fact_and_relation_refs_exact_byte_validated_with_typed_graph_structure"
+            ),
             "terminal_authority": (
-                "single_compiled_author_output_without_downstream_recompilation"
+                "one_unchanged_admitted_source_meaning_graph_with_deterministic_projection"
             ),
             "semantic_retries": 0,
             "post_confirm_semantic_calls": 0,
         },
         "successful_model_call_counts": {
-            tier: dict(counts) for tier, counts in _SUCCESS_CALL_COUNTS.items()
+            tier: {outcome: list(values) for outcome, values in counts.items()}
+            for tier, counts in _SUCCESS_CALL_COUNTS.items()
         },
         "tiers": {name: dict(row) for name, row in _TIER_CONTRACTS.items()},
         "automatic_deep_tier": False,
@@ -219,7 +216,7 @@ def require_semantic_execution_evidence(value: Any) -> dict[str, Any]:
         expected_calls = _SUCCESS_CALL_COUNTS[tier].get(outcome)
         if expected_calls is None:
             raise ValueError("completed semantic execution has no useful terminal outcome")
-        if calls != expected_calls:
+        if calls not in expected_calls:
             raise ValueError("completed semantic execution has the wrong model-call count")
         if not completion_within_tier(tier=tier, wall_ms=wall_ms):
             raise ValueError("completed semantic execution exceeds its execution tier")
@@ -227,7 +224,7 @@ def require_semantic_execution_evidence(value: Any) -> dict[str, Any]:
 
 
 def require_reusable_standard_handoff(value: Any, *, case_id: str) -> str:
-    """Return the canonical hash of one exact, reusable standard-path handoff."""
+    """Bind one exact standard result that needs deterministic continuation only."""
 
     row = _mapping(value, "standard failure receipt")
     if row.get("case_id") != case_id:
@@ -236,32 +233,37 @@ def require_reusable_standard_handoff(value: Any, *, case_id: str) -> str:
     if evidence["tier"] != "standard" or evidence["status"] != "rescue_required":
         raise ValueError("rescue requires one reusable standard-path handoff")
     handoff_contract = {
-        "standard_deadline_exceeded": (
-            "final_graph_adjudication", "passed"
-        ),
-        "typed_standard_handoff": (
-            "graph_completion", {"reusable_source_pair", "reusable_source_handoff"}
-        ),
+        "deterministic_finalize_required": "deadline",
+        "deterministic_settlement_required": "transaction_settlement",
     }
     if evidence["outcome"] not in handoff_contract:
         raise ValueError("rescue requires one reusable standard-path handoff")
-    expected_stage, expected_source_status = handoff_contract[evidence["outcome"]]
-    accepted_source_statuses = (
-        expected_source_status
-        if isinstance(expected_source_status, set)
-        else {expected_source_status}
-    )
+    expected_stage = handoff_contract[evidence["outcome"]]
     if row.get("failed_stage") != expected_stage:
         raise ValueError("rescue standard handoff stage is not reusable")
-    critic = _mapping(row.get("materiality_critic"), "deadline materiality critic")
-    source = _mapping(row.get("source_hypothesis"), "deadline source hypothesis")
+    author = _mapping(
+        row.get("source_meaning_author"), "deadline source-meaning author"
+    )
+    packet = _mapping(row.get("packet"), "deadline Semantic Intent packet")
+    graph_sha256 = str(author.get("graph_sha256") or "")
     if (
-        critic.get("validation_status") != "passed"
-        or source.get("validation_status") not in accepted_source_statuses
-        or source.get("authority_used") is not False
-        or evidence["model_call_count"] != 3
+        not isinstance(author.get("graph"), Mapping)
+        or not isinstance(author.get("author_run"), Mapping)
+        or packet.get("source_meaning_graph") != author.get("graph")
+        or packet.get("source_meaning_sha256") != graph_sha256
+        or packet.get("author_run") != author.get("author_run")
+        or evidence["model_call_count"] != 1
     ):
         raise ValueError("rescue deadline handoff lacks reusable typed authority")
+    transaction = row.get("transaction")
+    if (
+        evidence["outcome"] == "deterministic_finalize_required"
+        and transaction is not None
+    ) or (
+        evidence["outcome"] == "deterministic_settlement_required"
+        and not isinstance(transaction, Mapping)
+    ):
+        raise ValueError("rescue standard handoff carries the wrong transaction state")
     return _canonical_sha256(row)
 
 

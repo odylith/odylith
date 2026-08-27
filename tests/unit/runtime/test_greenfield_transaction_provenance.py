@@ -41,6 +41,9 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
     product_create_transaction_compiler_identity,
 )
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_hash
+from odylith.runtime.domain_intelligence.greenfield_product_intent_binding import (
+    PRODUCT_INTENT_REVIEW_BINDING_KEY,
+)
 from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
     PRODUCT_INTENT_AUTHORITY_KEY,
 )
@@ -67,6 +70,7 @@ def _semantic_transaction_template(repo_root: Path) -> Any:
     _SEMANTIC_TRANSACTION_TEMPLATE = greenfield_semantic_workflow.compile_verified_semantic_transaction(
         repo_root=repo_root,
         proposal=proposal,
+        intent_authority=authority,
         release_selector="0.0.1",
     )
     return _SEMANTIC_TRANSACTION_TEMPLATE
@@ -75,11 +79,9 @@ def _semantic_transaction_template(repo_root: Path) -> Any:
 def _transaction(repo_root: Path) -> Any:
     template = _semantic_transaction_template(repo_root)
     return build_product_create_transaction(
-        proposal=template.proposal,
         release_selector=template.release_selector,
         validation_gate=template.validation_gate,
         prewrite_package=template.prewrite_package,
-        backlog_result=template.backlog_result,
         intent_authority=template.intent_authority,
         quality_manifest=template.quality_manifest,
         repo_root=repo_root,
@@ -131,28 +133,31 @@ def test_product_create_transaction_provenance_carries_compiler_identity(tmp_pat
     assert (
         transaction.compiler_provenance["compiler_identity"]["version"]
         == PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION
-        == "odylith.greenfield.compiler_identity.v18"
+        == "odylith.greenfield.compiler_identity.v33"
     )
 
 
 @pytest.mark.parametrize("mutation", ("snapshot", "unhashed_extra"))
-def test_transaction_rejects_divergent_proposal_authority_bytes(tmp_path: Path, mutation: str) -> None:
+def test_transaction_rejects_divergent_review_binding_bytes(tmp_path: Path, mutation: str) -> None:
     transaction = _transaction(tmp_path)
-    proposal = dict(transaction.proposal)
-    proposal_authority = dict(proposal[PRODUCT_INTENT_AUTHORITY_KEY])
+    proposal = dict(transaction.prewrite_package.proposal)
+    review_binding = dict(proposal[PRODUCT_INTENT_REVIEW_BINDING_KEY])
     if mutation == "snapshot":
-        proposal_authority["authority_snapshot_sha256"] = "0" * 64
+        review_binding["authority_snapshot_sha256"] = "0" * 64
     else:
-        proposal_authority["unhashed_relation_claim"] = "must not be accepted"
-    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = proposal_authority
-    candidate = replace(transaction, proposal=proposal)
+        review_binding["unhashed_relation_claim"] = "must not be accepted"
+    proposal[PRODUCT_INTENT_REVIEW_BINDING_KEY] = review_binding
+    candidate = replace(
+        transaction,
+        prewrite_package=replace(transaction.prewrite_package, proposal=proposal),
+    )
     candidate = replace(candidate, transaction_hash=product_create_transaction_hash(candidate))
 
-    with pytest.raises(ValueError, match="proposal authority bytes do not match"):
+    with pytest.raises(ValueError, match="review binding does not match"):
         greenfield_create_transaction.require_product_create_transaction_hash_verified(candidate)
 
 
-def test_cli_preview_rejects_compiled_proposal_authority_byte_mismatch(
+def test_cli_preview_requires_compiled_review_binding_verification(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -161,15 +166,17 @@ def test_cli_preview_rejects_compiled_proposal_authority_byte_mismatch(
         "authority_snapshot_sha256": "a" * 64,
         "actor_action_relations": [],
     }
-    proposal_authority = {
-        **transaction_authority,
-        "actor_action_relations": [{"actor": "Reviewer", "action": "approves"}],
-    }
     candidate = {"title": "Permit Review", PRODUCT_INTENT_AUTHORITY_KEY: transaction_authority}
     transaction = SimpleNamespace(
-        proposal={"intent": {"title": "Permit Review"}, PRODUCT_INTENT_AUTHORITY_KEY: proposal_authority},
+        prewrite_package=SimpleNamespace(
+            proposal={"intent": {"title": "Permit Review"}, PRODUCT_INTENT_REVIEW_BINDING_KEY: {}}
+        ),
         intent_authority=transaction_authority,
     )
+
+    def reject_review_binding(*_args: object, **_kwargs: object) -> None:
+        raise ValueError("review binding mismatch")
+
     monkeypatch.setattr(
         greenfield_semantic_intent_packet,
         "load_semantic_intent_packet",
@@ -190,8 +197,13 @@ def test_cli_preview_rejects_compiled_proposal_authority_byte_mismatch(
         "compile_verified_semantic_transaction",
         lambda **_kwargs: transaction,
     )
+    monkeypatch.setattr(
+        greenfield_proposals_cli,
+        "require_product_intent_review_binding",
+        reject_review_binding,
+    )
 
-    with pytest.raises(RuntimeError, match="authority bytes do not match the visible typed preview"):
+    with pytest.raises(ValueError, match="review binding mismatch"):
         greenfield_proposals_cli._compile_prompt_evidence_transaction(  # noqa: SLF001
             repo_root=tmp_path,
             prompt="Build permit review",
@@ -297,6 +309,7 @@ def test_postconfirm_receipt_covers_executed_runtime(tmp_path: Path) -> None:
         source_root / "cli.py",
         source_root / "runtime/domain_intelligence/greenfield_create_cli.py",
         source_root / "runtime/domain_intelligence/greenfield_post_confirm_handoff.py",
+        source_root / "runtime/domain_intelligence/greenfield_commit_recovery.py",
         source_root / "runtime/common/environment.py",
         source_root / "runtime/domain_intelligence/greenfield_pending_transaction_store.py",
     }
@@ -346,6 +359,7 @@ def test_postconfirm_receipt_covers_canonical_create_adapter(tmp_path: Path, cap
         source_root / "__init__.py",
         source_root / "cli.py",
         source_root / "runtime/domain_intelligence/greenfield_pending_transaction_store.py",
+        source_root / "runtime/domain_intelligence/greenfield_commit_recovery.py",
     }
     assert expected - executed == expected_untraced
     assert executed == expected - expected_untraced
@@ -395,7 +409,6 @@ def test_commit_rejects_legacy_authority_before_write(
     greenfield_create_transaction.write_compiled_product_create_transaction_file(transaction_path, transaction)
     payload = json.loads(transaction_path.read_text(encoding="utf-8"))
     payload["intent_authority"]["version"] = authority_version
-    payload["proposal"][PRODUCT_INTENT_AUTHORITY_KEY]["version"] = authority_version
     payload["commit_summary"]["intent_authority_version"] = authority_version
     rewritten_hash = _rewrite_sealed_transaction(transaction_path, payload)
 
@@ -445,9 +458,7 @@ def test_pending_decoder_requires_v8_authority_rebuild(
         "ledger_version": ledger_version,
     }
     legacy_authority["authority_snapshot_sha256"] = product_intent_authority_snapshot_hash(legacy_authority)
-    proposal = dict(transaction.proposal)
-    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = legacy_authority
-    candidate = replace(transaction, proposal=proposal, intent_authority=legacy_authority)
+    candidate = replace(transaction, intent_authority=legacy_authority)
     candidate = replace(candidate, transaction_hash=product_create_transaction_hash(candidate))
 
     with pytest.raises(ValueError, match="unsupported version; rebuild"):
@@ -477,8 +488,8 @@ def test_sealed_commit_loader_requires_exact_v14_authority_protocol(
         load_sealed_product_create_commit(transaction_path)
 
 
-def test_create_contract_accepts_only_v14_intent_authority() -> None:
-    assert PRODUCT_CREATE_TRANSACTION_ACCEPTED_INTENT_AUTHORITY_VERSION == "odylith.product-intent-authority.v20"
+def test_create_contract_accepts_only_v16_intent_authority() -> None:
+    assert PRODUCT_CREATE_TRANSACTION_ACCEPTED_INTENT_AUTHORITY_VERSION == "odylith.product-intent-authority.v40"
 
 
 @pytest.mark.parametrize("mutation", ("extra_field", "reformatted"))
@@ -588,7 +599,6 @@ def test_commit_treats_product_quality_and_authority_as_opaque_after_hash_confir
     payload = json.loads(transaction_path.read_text(encoding="utf-8"))
     payload["quality_manifest"]["status"] = "failed"
     payload["intent_authority"]["authority_snapshot_sha256"] = "not-a-sha256"
-    payload["proposal"][PRODUCT_INTENT_AUTHORITY_KEY]["authority_snapshot_sha256"] = "not-a-sha256"
     rewritten_hash = _rewrite_sealed_transaction(transaction_path, payload)
 
     result = greenfield_create_commit.commit_greenfield_create_transaction(

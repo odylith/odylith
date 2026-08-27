@@ -189,6 +189,12 @@ def build_prewrite_completion_package(
                 allow_existing=True,
                 dry_run=True,
             )
+            preview_release_assignment = _portable_release_result(
+                preview_release_assignment,
+                source_root=prewrite_root,
+                target_root=root,
+                path_field="event_log_path",
+            )
             staged_release_targeting = greenfield_release_commit.materialize_compiled_release_assignment(
                 repo_root=prewrite_root,
                 release_assignment_result=preview_release_assignment,
@@ -389,7 +395,7 @@ def remap_prewrite_backlog_result(
     source_root: Path,
     target_root: Path,
 ) -> dict[str, Any]:
-    """Convert staged Radar render paths into target-repo paths before writes."""
+    """Convert staged Radar render paths into portable repository-relative paths."""
 
     staged_root = Path(source_root).expanduser().resolve()
     real_root = Path(target_root).expanduser().resolve()
@@ -476,7 +482,7 @@ def remap_prewrite_component_items(
     source_root: Path,
     target_root: Path,
 ) -> tuple[dict[str, Any], ...]:
-    """Convert staged Registry preview paths into target-repo paths before gates."""
+    """Convert staged Registry preview paths into portable repository-relative paths."""
 
     staged_root = Path(source_root).expanduser().resolve()
     real_root = Path(target_root).expanduser().resolve()
@@ -511,18 +517,12 @@ def ensure_release_target(
     """Create or preview the release selector needed by confirmed greenfield apply."""
 
     projection_plan = require_persisted_semantic_projection_plan(proposal)
-    identity_id = str(projection_plan.get("identity_fact_id") or "").strip()
-    identity = next(
-        (
-            row
-            for row in projection_plan.get("nodes", ())
-            if isinstance(row, Mapping) and row.get("fact_id") == identity_id
-        ),
-        {},
-    )
-    title = str(identity.get("label") or "").strip()
+    presentation = projection_plan.get("presentation")
+    title = str(
+        presentation.get("title") if isinstance(presentation, Mapping) else ""
+    ).strip()
     if not title:
-        raise ValueError("persisted semantic projection plan lacks an identity label")
+        raise ValueError("persisted semantic projection plan lacks a presentation title")
     release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
     from odylith.runtime.domain_intelligence.greenfield_release_contract import (
         semantic_release_label,
@@ -537,7 +537,7 @@ def ensure_release_target(
     release_aliases = [selector]
     if release_planning_contract.canonical_alias_token("current") not in aliases:
         release_aliases.append("current")
-    return release_planning_authoring.ensure_release_selector(
+    result = release_planning_authoring.ensure_release_selector(
         repo_root=repo_root,
         selector=selector,
         release_id=release_id_for_proposal(proposal, selector=selector),
@@ -548,6 +548,12 @@ def ensure_release_target(
         notes=f"Greenfield release plan for {title}; created only after proposal confirmation.",
         aliases=tuple(release_aliases),
         dry_run=dry_run,
+    )
+    return _portable_release_result(
+        result,
+        source_root=repo_root,
+        target_root=repo_root,
+        path_field="registry_path",
     )
 
 
@@ -680,8 +686,11 @@ def _remap_component_item(
     updated = dict(row)
     for key in ("registry_path", "spec_path"):
         if str(updated.get(key, "")).strip():
-            remapped = _remap_path_text(updated.get(key), source_root=source_root, target_root=target_root)
-            updated[key] = _target_relative_path_text(remapped, target_root=target_root)
+            updated[key] = _remap_path_text(
+                updated.get(key),
+                source_root=source_root,
+                target_root=target_root,
+            )
     return updated
 
 
@@ -719,25 +728,45 @@ def _remap_path_text(value: Any, *, source_root: Path, target_root: Path) -> str
         return ""
     path = Path(raw).expanduser()
     if not path.is_absolute():
-        return raw
-    try:
-        relative = path.resolve().relative_to(source_root)
-    except ValueError:
-        return str(path.resolve())
-    return str((target_root / relative).resolve())
+        if any(part in {"", ".", ".."} for part in path.parts):
+            raise ValueError("compiled Greenfield path is not repository-relative")
+        return path.as_posix()
+    resolved = path.resolve(strict=False)
+    for root in (source_root, target_root):
+        try:
+            return resolved.relative_to(root.resolve(strict=False)).as_posix()
+        except ValueError:
+            continue
+    raise ValueError("compiled Greenfield path is outside the staged and target repositories")
 
 
-def _target_relative_path_text(value: Any, *, target_root: Path) -> str:
-    """Keep compiled component links portable without accepting foreign roots."""
+def _portable_release_result(
+    value: Mapping[str, Any],
+    *,
+    source_root: Path,
+    target_root: Path,
+    path_field: str,
+) -> dict[str, Any]:
+    """Normalize only the release contract's two owned repository-path fields."""
 
-    raw = str(value or "").strip()
-    path = Path(raw).expanduser()
-    if not raw or not path.is_absolute():
-        return raw
-    try:
-        return str(path.resolve(strict=False).relative_to(target_root.resolve(strict=False)))
-    except ValueError:
-        return raw
+    result = dict(value)
+    if str(result.get(path_field) or "").strip():
+        result[path_field] = _remap_path_text(
+            result[path_field],
+            source_root=source_root,
+            target_root=target_root,
+        )
+    release = result.get("release")
+    if isinstance(release, Mapping):
+        portable_release = dict(release)
+        if str(portable_release.get("source_path") or "").strip():
+            portable_release["source_path"] = _remap_path_text(
+                portable_release["source_path"],
+                source_root=source_root,
+                target_root=target_root,
+            )
+        result["release"] = portable_release
+    return result
 
 
 __all__ = [

@@ -3,13 +3,20 @@
 from __future__ import annotations
 
 DEFAULT_REFRESH_PROFILE = "shell-safe"
+SEALED_PRECONFIRM_REFRESH_PROFILE = "sealed-preconfirm"
 DEFAULT_SCOPED_PROVIDER_MAX_WORKERS = 4
+_SUPPORTED_REFRESH_PROFILES = {
+    DEFAULT_REFRESH_PROFILE,
+    SEALED_PRECONFIRM_REFRESH_PROFILE,
+}
 
 
 def normalize_refresh_profile(value: str, *, default: str = DEFAULT_REFRESH_PROFILE) -> str:
-    del value
     fallback = str(default).strip().lower()
-    return DEFAULT_REFRESH_PROFILE if fallback != DEFAULT_REFRESH_PROFILE else fallback
+    if fallback not in _SUPPORTED_REFRESH_PROFILES:
+        fallback = DEFAULT_REFRESH_PROFILE
+    token = str(value).strip().lower()
+    return token if token in _SUPPORTED_REFRESH_PROFILES else fallback
 
 
 def allow_global_provider(refresh_profile: str) -> bool:

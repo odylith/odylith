@@ -5,44 +5,26 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
-    require_semantic_intent_ir,
+from odylith.runtime.domain_intelligence.greenfield_product_intent_binding import (
+    require_product_intent_review_binding,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_proposal import (
     build_verified_semantic_proposal,
 )
-from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
-    PRODUCT_INTENT_AUTHORITY_KEY,
-    require_product_intent_authority_structure,
-)
-from odylith.runtime.domain_intelligence.greenfield_semantic_atomic_source_custody import (
-    validated_atomic_source_claims,
-)
-
-
-def semantic_projection_issues(proposal: Mapping[str, Any]) -> tuple[str, ...]:
+def semantic_projection_issues(
+    proposal: Mapping[str, Any], *, intent_authority: Mapping[str, Any]
+) -> tuple[str, ...]:
     """Return exact disagreements with a fresh immutable graph projection."""
 
-    authority = proposal.get(PRODUCT_INTENT_AUTHORITY_KEY)
-    if not isinstance(authority, Mapping) or authority.get("origin") != "verified_semantic_intent_packet":
-        return ("proposal lacks verified Semantic Intent authority",)
     try:
-        require_product_intent_authority_structure(authority)
-        evidence_sources = authority.get("evidence_sources")
-        if not isinstance(evidence_sources, Mapping):
-            return ("Semantic Intent authority lacks evidence sources",)
-        require_semantic_intent_ir(
-            authority.get("semantic_intent"),
-            evidence_sources=evidence_sources,
-            source_claims=validated_atomic_source_claims(authority),
-        )
+        require_product_intent_review_binding(proposal, intent_authority)
         observed_source = proposal.get("observed_source")
         if not isinstance(observed_source, Mapping):
             return ("proposal lacks observed-source allocation facts",)
         plan = proposal.get("release_plan")
         release_selector = str(plan.get("selector") or "").strip() if isinstance(plan, Mapping) else ""
         expected = build_verified_semantic_proposal(
-            authority=authority,
+            authority=intent_authority,
             observed_source=observed_source,
             release_selector=release_selector,
         )
@@ -51,12 +33,14 @@ def semantic_projection_issues(proposal: Mapping[str, Any]) -> tuple[str, ...]:
     return _canonical_projection_differences(expected, proposal)
 
 
-def semantic_projection_report(proposal: Mapping[str, Any]) -> dict[str, Any]:
+def semantic_projection_report(
+    proposal: Mapping[str, Any], *, intent_authority: Mapping[str, Any]
+) -> dict[str, Any]:
     """Return the pre-confirm semantic evidence report for a graph-native proposal."""
 
-    issues = semantic_projection_issues(proposal)
+    issues = semantic_projection_issues(proposal, intent_authority=intent_authority)
     return {
-        "version": "odylith.greenfield.semantic-projection-report.v1",
+        "version": "odylith.greenfield.semantic-projection-report.v2",
         "status": "failed" if issues else "passed",
         "issues": list(issues),
         "quality_scores": {

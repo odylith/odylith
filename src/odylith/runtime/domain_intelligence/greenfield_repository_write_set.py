@@ -7,13 +7,10 @@ from collections.abc import Mapping, Sequence
 import hashlib
 import json
 from pathlib import Path
-import stat
 from typing import Any
 
-from odylith.install.fs import atomic_write_bytes
-from odylith.install.fs import fsync_directory
-from odylith.install.fs import fsync_file
 from odylith.runtime.domain_intelligence import greenfield_generation_state
+from odylith.runtime.domain_intelligence import greenfield_transaction_path_boundary
 from odylith.runtime.domain_intelligence.greenfield_create_contract import is_sha256_digest
 
 
@@ -191,13 +188,18 @@ def require_greenfield_repository_preconditions(*, repo_root: Path, write_set: o
     return payload
 
 
-def require_greenfield_repository_after_state(*, repo_root: Path, write_set: object) -> dict[str, Any]:
+def require_greenfield_repository_after_state(
+    *,
+    repo_root: Path,
+    write_set: object,
+    managed_prefix: str = "",
+) -> dict[str, Any]:
     """Verify that a prior sealed write still owns the entire managed boundary."""
 
     payload = require_compiled_greenfield_repository_write_set(write_set)
     root = Path(repo_root).expanduser().resolve()
     expected = _fingerprint_mapping(payload.get("after_fingerprints"), label="after")
-    actual = _managed_fingerprints(root)
+    actual = _managed_fingerprints(root, prefix=managed_prefix)
     changed = [path for path in GREENFIELD_REPOSITORY_WRITE_PATHS if actual[path] != expected[path]]
     if changed:
         raise ValueError(
@@ -222,31 +224,28 @@ def apply_compiled_greenfield_repository_write_set(
     after_files = _require_after_image(payload)
     deletes = _mapping_rows(payload.get("deletes"), label="deletes")
 
-    synced_directories: set[Path] = set()
     for row in directories:
-        target = _target_path(root=root, token=str(row["path"]), allow_missing=True)
-        target.mkdir(parents=True, exist_ok=True)
-        _fsync_directory_chain(root=root, target=target, synced=synced_directories)
+        token = str(row["path"])
+        _managed_target_path(root=root, token=token)
+        greenfield_transaction_path_boundary.ensure_directory(root, token)
     for row in writes:
-        target = _target_path(root=root, token=str(row["path"]), allow_missing=True)
-        atomic_write_bytes(
-            target,
+        token = str(row["path"])
+        _managed_target_path(root=root, token=token)
+        transaction_atomic_write_bytes(
+            root,
+            token,
             _decoded_after_image_bytes(after_files[str(row["path"])]),
             mode=int(row["mode"]),
             temporary_directory=temporary_directory,
         )
-        fsync_file(target)
-        fsync_directory(target.parent)
     for row in deletes:
-        target = _target_path(root=root, token=str(row["path"]), allow_missing=False)
-        target.unlink()
-        fsync_directory(target.parent)
+        token = str(row["path"])
+        _managed_target_path(root=root, token=token)
+        greenfield_transaction_path_boundary.unlink_file(root, token)
     for row in directory_deletes:
-        target = _target_path(root=root, token=str(row["path"]), allow_missing=True)
-        if not target.is_dir():
-            raise RuntimeError(f"compiled repository directory delete target is missing: {row['path']}")
-        target.rmdir()
-        fsync_directory(target.parent)
+        token = str(row["path"])
+        _managed_target_path(root=root, token=token)
+        greenfield_transaction_path_boundary.remove_directory(root, token)
 
     try:
         require_greenfield_repository_after_state(repo_root=root, write_set=payload)
@@ -269,6 +268,7 @@ def apply_compiled_greenfield_repository_write_set(
 
 def materialize_compiled_greenfield_after_image(
     *,
+    repo_root: Path,
     destination_root: Path,
     write_set: object,
     temporary_directory: Path | None = None,
@@ -276,30 +276,56 @@ def materialize_compiled_greenfield_after_image(
     """Materialize the complete pre-confirm after-image without reading live repo bytes."""
 
     payload = require_compiled_greenfield_repository_write_set(write_set)
-    root = Path(destination_root).expanduser().resolve()
-    if root.is_symlink() or (root.exists() and (not root.is_dir() or any(root.iterdir()))):
+    transaction_root = Path(repo_root).expanduser().resolve()
+    destination = Path(destination_root).expanduser()
+    if not destination.is_absolute():
+        destination = transaction_root / destination
+    destination_token = greenfield_transaction_path_boundary.relative_token(
+        transaction_root,
+        destination,
+    )
+    destination_kind = greenfield_transaction_path_boundary.path_kind(
+        transaction_root,
+        destination_token,
+    )
+    if destination_kind not in {"missing", "directory"}:
         raise ValueError("Greenfield generation destination must be a new empty directory")
-    root.mkdir(parents=True, exist_ok=True)
+    if destination_kind == "directory" and greenfield_transaction_path_boundary.scan_tree(
+        transaction_root,
+        destination_token,
+        require_present=True,
+    )[1:]:
+        raise ValueError("Greenfield generation destination must be a new empty directory")
+    root = greenfield_transaction_path_boundary.ensure_directory(
+        transaction_root,
+        destination_token,
+    )
+    if temporary_directory is not None:
+        greenfield_transaction_path_boundary.relative_token(transaction_root, temporary_directory)
     after_image = payload["after_image"]
     directories = _mapping_rows(after_image.get("directories"), label="after-image directories")
     files = _require_after_image(payload)
-    synced: set[Path] = set()
     for row in sorted(directories, key=lambda item: (len(Path(str(item["path"])).parts), str(item["path"]))):
-        target = _target_path(root=root, token=str(row["path"]), allow_missing=True)
-        target.mkdir(parents=True, exist_ok=True)
-        _fsync_directory_chain(root=root, target=target, synced=synced)
+        token = str(row["path"])
+        _managed_target_path(root=root, token=token)
+        greenfield_transaction_path_boundary.ensure_directory(
+            transaction_root,
+            f"{destination_token}/{token}",
+        )
     for path, row in files.items():
-        target = _target_path(root=root, token=path, allow_missing=True)
-        atomic_write_bytes(
-            target,
+        _managed_target_path(root=root, token=path)
+        transaction_atomic_write_bytes(
+            transaction_root,
+            root / path,
             _decoded_after_image_bytes(row),
             mode=int(row["mode"]),
             temporary_directory=temporary_directory,
         )
-        fsync_file(target)
-        fsync_directory(target.parent)
-    require_greenfield_repository_after_state(repo_root=root, write_set=payload)
-    fsync_directory(root)
+    require_greenfield_repository_after_state(
+        repo_root=transaction_root,
+        write_set=payload,
+        managed_prefix=destination_token,
+    )
     return {
         "version": str(after_image["version"]),
         "status": "passed",
@@ -308,19 +334,6 @@ def materialize_compiled_greenfield_after_image(
         "file_count": int(after_image["file_count"]),
         "byte_count": int(after_image["byte_count"]),
     }
-
-
-def _fsync_directory_chain(*, root: Path, target: Path, synced: set[Path]) -> None:
-    """Persist every parent entry created by a sealed directory write."""
-
-    current = target
-    while True:
-        if current not in synced:
-            fsync_directory(current)
-            synced.add(current)
-        if current == root:
-            return
-        current = current.parent
 
 
 def greenfield_repository_write_paths(write_set: object) -> tuple[str, ...]:
@@ -423,95 +436,99 @@ def _compile_after_image(
 def _managed_file_states(root: Path) -> dict[str, tuple[bytes, int]]:
     files: dict[str, tuple[bytes, int]] = {}
     for token in GREENFIELD_REPOSITORY_WRITE_PATHS:
-        target = root / token
-        _reject_symlink(target, root=root)
-        if target.is_file():
-            files[token] = (target.read_bytes(), stat.S_IMODE(target.stat().st_mode))
-            continue
-        if not target.is_dir():
-            continue
-        for candidate in sorted(target.rglob("*")):
-            _reject_symlink(candidate, root=root)
-            if candidate.is_file():
-                files[candidate.relative_to(root).as_posix()] = (
-                    candidate.read_bytes(),
-                    stat.S_IMODE(candidate.stat().st_mode),
-                )
+        for entry in _managed_entries(root, token):
+            if entry.kind == "file":
+                files[entry.path] = (entry.data, entry.mode)
     return files
 
 
 def _managed_directories(root: Path) -> set[str]:
     directories: set[str] = set()
     for token in GREENFIELD_REPOSITORY_WRITE_PATHS:
-        target = root / token
-        _reject_symlink(target, root=root)
-        if not target.is_dir():
-            continue
-        directories.add(token)
-        for candidate in sorted(target.rglob("*")):
-            _reject_symlink(candidate, root=root)
-            if candidate.is_dir():
-                directories.add(candidate.relative_to(root).as_posix())
+        for entry in _managed_entries(root, token):
+            if entry.kind == "directory":
+                directories.add(entry.path)
     return directories
 
 
-def _managed_fingerprints(root: Path) -> dict[str, str]:
-    return {token: _tree_fingerprint(root=root, token=token) for token in GREENFIELD_REPOSITORY_WRITE_PATHS}
+def _managed_fingerprints(root: Path, *, prefix: str = "") -> dict[str, str]:
+    return {
+        token: _tree_fingerprint(root=root, token=token, prefix=prefix)
+        for token in GREENFIELD_REPOSITORY_WRITE_PATHS
+    }
 
 
-def _tree_fingerprint(*, root: Path, token: str) -> str:
-    target = root / token
-    _reject_symlink(target, root=root)
+def _tree_fingerprint(*, root: Path, token: str, prefix: str = "") -> str:
     rows: list[dict[str, Any]] = []
-    if target.is_file():
-        rows.append(_file_fingerprint_row(root=root, path=target))
-    elif target.is_dir():
-        rows.append({"kind": "directory", "path": token})
-        for candidate in sorted(target.rglob("*")):
-            _reject_symlink(candidate, root=root)
-            if candidate.is_dir():
-                rows.append({"kind": "directory", "path": candidate.relative_to(root).as_posix()})
-            elif candidate.is_file():
-                rows.append(_file_fingerprint_row(root=root, path=candidate))
-    else:
+    entries = _managed_entries(root, token, prefix=prefix)
+    if not entries:
         rows.append({"kind": "missing", "path": token})
+    for entry in entries:
+        if entry.kind == "directory":
+            rows.append({"kind": "directory", "path": entry.path})
+        else:
+            rows.append(
+                {
+                    "kind": "file",
+                    "path": entry.path,
+                    "sha256": _sha256(entry.data),
+                    "mode": entry.mode,
+                }
+            )
     canonical = json.dumps(rows, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
-def _file_fingerprint_row(*, root: Path, path: Path) -> dict[str, Any]:
-    return {
-        "kind": "file",
-        "path": path.relative_to(root).as_posix(),
-        "sha256": _sha256(path.read_bytes()),
-        "mode": stat.S_IMODE(path.stat().st_mode),
-    }
+def _managed_entries(
+    root: Path,
+    token: str,
+    *,
+    prefix: str = "",
+) -> tuple[greenfield_transaction_path_boundary.GreenfieldRepositoryEntry, ...]:
+    try:
+        path = f"{prefix}/{token}" if prefix else token
+        entries = greenfield_transaction_path_boundary.scan_tree(root, path)
+        if not prefix:
+            return entries
+        return tuple(
+            greenfield_transaction_path_boundary.GreenfieldRepositoryEntry(
+                path=Path(entry.path).relative_to(prefix).as_posix(),
+                kind=entry.kind,
+                data=entry.data,
+                mode=entry.mode,
+            )
+            for entry in entries
+        )
+    except greenfield_transaction_path_boundary.GreenfieldTransactionPathError as exc:
+        raise ValueError(
+            f"greenfield repository write-set compilation refuses managed symlink: {token}"
+        ) from exc
 
 
-def _target_path(*, root: Path, token: str, allow_missing: bool) -> Path:
+def _managed_target_path(*, root: Path, token: str) -> Path:
     path = Path(token)
     if path.is_absolute() or ".." in path.parts or not _is_managed_path(token):
         raise RuntimeError(f"compiled repository write escapes the managed boundary: {token}")
-    target = root / path
-    current = root
-    for part in path.parts[:-1]:
-        current = current / part
-        if current.is_symlink():
-            raise RuntimeError(f"compiled repository write crosses a symlink: {token}")
-    if target.is_symlink():
-        raise RuntimeError(f"compiled repository write targets a symlink: {token}")
-    if not allow_missing and not target.is_file():
-        raise RuntimeError(f"compiled repository delete target is missing: {token}")
-    return target
+    return root / path
 
 
-def _reject_symlink(path: Path, *, root: Path) -> None:
-    if path.is_symlink():
-        try:
-            token = path.relative_to(root).as_posix()
-        except ValueError:
-            token = str(path)
-        raise ValueError(f"greenfield repository write-set compilation refuses managed symlink: {token}")
+def transaction_atomic_write_bytes(
+    repo_root: Path,
+    path: Path | str,
+    data: bytes,
+    *,
+    mode: int,
+    temporary_directory: Path | None,
+) -> Path:
+    """Single monkeypatchable sink for descriptor-relative sealed writes."""
+
+    return greenfield_transaction_path_boundary.atomic_write_bytes(
+        repo_root,
+        path,
+        data,
+        mode=mode,
+        temporary_directory=temporary_directory,
+    )
 
 
 def _validated_paths(rows: Sequence[Mapping[str, Any]], *, label: str) -> list[str]:

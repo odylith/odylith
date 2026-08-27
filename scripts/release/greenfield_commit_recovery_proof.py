@@ -30,13 +30,20 @@ from greenfield_commit_recovery_generation import (
 from local_release_smoke import _cleanup_smoke_temp_root
 from local_release_smoke import _local_release_env
 from local_release_smoke import _serve_directory
+from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
+    SEMANTIC_INTENT_PACKET_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_intent_packet import (
+    require_semantic_intent_packet,
+    semantic_intent_authority,
+)
 
 
 COMMAND_TIMEOUT_SECONDS = 300
 PROOF_SCOPE = "real_installed_additive_write_sigkill_recovery_conflict_same_hash_retry_and_fsync_rollback"
-RECOVERY_CASE_SCOPE = "semantic-intent-v13-release-fixture"
+RECOVERY_CASE_SCOPE = "current-semantic-intent-release-fixture"
 _GOVERNED_ROOTS = ("odylith", "src/odylith/bundle/assets/odylith")
-_DEFAULT_SEMANTIC_FIXTURE = Path(__file__).resolve().parent / "fixtures" / "greenfield-semantic-smoke.v13.json"
+_DEFAULT_SEMANTIC_FIXTURE = Path(__file__).resolve().parent / "fixtures" / "greenfield-semantic-smoke.v35.json"
 
 
 @dataclass(frozen=True)
@@ -65,11 +72,14 @@ def load_semantic_recovery_case(
     packet = payload.get("packet")
     if not case_id or not prompt or not isinstance(packet, Mapping):
         raise RuntimeError("installed recovery semantic fixture is incomplete")
-    if packet.get("version") != "odylith.greenfield.semantic-intent-packet.v13":
-        raise RuntimeError("installed recovery semantic fixture must use Semantic Intent packet v13")
-    semantic_intent = packet.get("semantic_intent")
-    if not isinstance(semantic_intent, Mapping) or semantic_intent.get("status") != "complete":
-        raise RuntimeError("installed recovery semantic fixture must contain a complete Semantic Intent graph")
+    if packet.get("version") != SEMANTIC_INTENT_PACKET_VERSION:
+        raise RuntimeError("installed recovery semantic fixture is not current")
+    try:
+        verified = require_semantic_intent_packet(packet, prompt=prompt)
+    except ValueError as error:
+        raise RuntimeError("installed recovery semantic fixture is invalid") from error
+    if verified.semantic_intent.get("status") != "complete":
+        raise RuntimeError("installed recovery semantic fixture must contain complete source meaning")
     return SemanticRecoveryCase(case_id=case_id, prompt=prompt, packet=dict(packet))
 
 
@@ -770,37 +780,17 @@ def _require_case_evidence_bound_to_transaction(
     case: SemanticRecoveryCase,
     intent_authority: Mapping[str, Any],
 ) -> None:
-    """Prove the sealed v16 authority contains the exact assessed graph packet."""
+    """Prove the sealed authority exactly matches the current source-meaning packet."""
 
-    expected = {
-        "version": "odylith.product-intent-authority.v20",
-        "origin": "verified_semantic_intent_packet",
-        "source_format": "semantic_intent_packet",
-        "evidence_sha256": str(case.packet.get("evidence_sha256") or ""),
-        "semantic_intent_packet_version": "odylith.greenfield.semantic-intent-packet.v13",
-        "semantic_intent_ir_version": "odylith.greenfield.semantic-intent-ir.v5",
-        "semantic_intent_authoring_request_version": (
-            "odylith.greenfield.semantic-intent-authoring-request.v18"
-        ),
-        "semantic_intent_authoring_contract_sha256": str(
-            case.packet.get("authoring_contract_sha256") or ""
-        ),
-        "semantic_materiality_assessment": case.packet.get("materiality_assessment"),
-        "semantic_materiality_assessment_sha256": str(
-            case.packet.get("materiality_assessment_sha256") or ""
-        ),
-        "semantic_materiality_critic_run": case.packet.get("critic_run"),
-        "semantic_intent_author_run": case.packet.get("author_run"),
-    }
-    if any(intent_authority.get(key) != value for key, value in expected.items()):
+    try:
+        verified = require_semantic_intent_packet(case.packet, prompt=case.prompt)
+        expected = semantic_intent_authority(verified, prompt=case.prompt)
+    except ValueError as error:
+        raise RuntimeError("installed recovery semantic fixture is invalid") from error
+    if dict(intent_authority) != expected:
         raise RuntimeError(
-            "installed Greenfield transaction authority did not bind the v13 assessed Semantic Intent packet"
+            "installed Greenfield transaction authority changed the source-meaning packet"
         )
-    if intent_authority.get("semantic_intent") != case.packet.get("semantic_intent"):
-        raise RuntimeError("installed Greenfield transaction authority changed the Semantic Intent graph")
-    evidence_sources = _mapping(intent_authority.get("evidence_sources"))
-    if evidence_sources != {"operator_prompt": case.prompt, "operator_edit": ""}:
-        raise RuntimeError("installed Greenfield transaction authority changed the operator evidence")
 
 
 def _run_faulted_create(*, repo_root: Path, env: Mapping[str, str], command: list[str], fault_script: str):

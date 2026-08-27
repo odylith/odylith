@@ -46,7 +46,7 @@ from odylith.runtime.domain_intelligence.greenfield_traceability_contract import
 )
 
 
-SEMANTIC_PACKAGE_VALIDATION_VERSION = "odylith.greenfield.semantic-package-validation.v1"
+SEMANTIC_PACKAGE_VALIDATION_VERSION = "odylith.greenfield.semantic-package-validation.v2"
 
 
 @dataclass(frozen=True)
@@ -82,11 +82,13 @@ class VerifiedSemanticValidation:
 
 
 def validate_verified_semantic_proposal(
-    proposal: Mapping[str, Any], *, release_selector: str
+    proposal: Mapping[str, Any], *, intent_authority: Mapping[str, Any], release_selector: str
 ) -> VerifiedSemanticValidation:
     """Validate exact graph projection before any staged artifact rendering."""
 
-    issues = list(semantic_projection_issues(proposal))
+    issues = list(
+        semantic_projection_issues(proposal, intent_authority=intent_authority)
+    )
     try:
         require_persisted_semantic_projection_plan(proposal)
         components = semantic_projection_component_rows(proposal)
@@ -121,12 +123,21 @@ def validate_verified_semantic_proposal(
 
 
 def validate_verified_semantic_package(
-    package: GreenfieldCompletionPackage, *, release_selector: str
+    package: GreenfieldCompletionPackage,
+    *,
+    intent_authority: Mapping[str, Any],
+    release_selector: str,
 ) -> VerifiedSemanticValidation:
     """Validate exact graph-to-artifact bindings and sealed write evidence."""
 
     proposal = package.proposal if isinstance(package.proposal, Mapping) else {}
-    issues = list(validate_verified_semantic_proposal(proposal, release_selector=release_selector).issues)
+    issues = list(
+        validate_verified_semantic_proposal(
+            proposal,
+            intent_authority=intent_authority,
+            release_selector=release_selector,
+        ).issues
+    )
     try:
         components = semantic_projection_component_rows(proposal)
         backlog = semantic_projection_workstream_rows(proposal)
@@ -201,17 +212,28 @@ def validate_verified_semantic_package(
 
 
 def require_verified_semantic_proposal(
-    proposal: Mapping[str, Any], *, release_selector: str
+    proposal: Mapping[str, Any], *, intent_authority: Mapping[str, Any], release_selector: str
 ) -> VerifiedSemanticValidation:
-    report = validate_verified_semantic_proposal(proposal, release_selector=release_selector)
+    report = validate_verified_semantic_proposal(
+        proposal,
+        intent_authority=intent_authority,
+        release_selector=release_selector,
+    )
     _raise_for_failed(report)
     return report
 
 
 def require_verified_semantic_package(
-    package: GreenfieldCompletionPackage, *, release_selector: str
+    package: GreenfieldCompletionPackage,
+    *,
+    intent_authority: Mapping[str, Any],
+    release_selector: str,
 ) -> VerifiedSemanticValidation:
-    report = validate_verified_semantic_package(package, release_selector=release_selector)
+    report = validate_verified_semantic_package(
+        package,
+        intent_authority=intent_authority,
+        release_selector=release_selector,
+    )
     _raise_for_failed(report)
     return report
 

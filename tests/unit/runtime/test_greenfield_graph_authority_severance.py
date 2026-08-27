@@ -103,7 +103,6 @@ _GRAPH_COMPILE_GREENFIELD_MODULES = {
     "greenfield_rows",
     "greenfield_sealed_product_intent_authority",
     "greenfield_semantic_atlas_materialization",
-    "greenfield_semantic_atomic_source_custody",
     "greenfield_semantic_authoring_contract",
     "greenfield_semantic_backlog_projection",
     "greenfield_semantic_component_package",
@@ -112,16 +111,14 @@ _GRAPH_COMPILE_GREENFIELD_MODULES = {
     "greenfield_semantic_diagrams",
     "greenfield_semantic_graph_contract",
     "greenfield_semantic_execution_contract",
-    "greenfield_semantic_graph_author_output",
-    "greenfield_semantic_graph_extension",
-    "greenfield_semantic_graph_extension_contract",
     "greenfield_semantic_host_profiles",
     "greenfield_semantic_identifiers",
     "greenfield_semantic_intent_contract",
     "greenfield_semantic_intent_schema",
-    "greenfield_semantic_materiality_contract",
+    "greenfield_semantic_ir_compiler",
     "greenfield_semantic_intent_packet",
     "greenfield_semantic_memory",
+    "greenfield_semantic_narrative_projection",
     "greenfield_semantic_package_validation",
     "greenfield_semantic_preconfirm",
     "greenfield_semantic_projection_plan",
@@ -131,11 +128,13 @@ _GRAPH_COMPILE_GREENFIELD_MODULES = {
     "greenfield_semantic_traceability",
     "greenfield_semantic_workflow",
     "greenfield_semantic_source_citations",
-    "greenfield_semantic_source_claims",
+    "greenfield_semantic_source_meaning",
+    "greenfield_semantic_source_meaning_contract",
     "greenfield_surface_refresh_proof",
     "greenfield_traceability_commit",
     "greenfield_traceability_contract",
     "greenfield_transaction_compiler",
+    "greenfield_transaction_path_boundary",
 }
 
 
@@ -222,12 +221,14 @@ def test_graph_compiler_surface_has_no_legacy_or_repair_callback() -> None:
     assert tuple(inspect.signature(compile_sealed_greenfield_transaction).parameters) == (
         "repo_root",
         "proposal",
+        "intent_authority",
         "release_selector",
         "verified_semantic_prewrite",
     )
     assert tuple(inspect.signature(compile_verified_semantic_transaction).parameters) == (
         "repo_root",
         "proposal",
+        "intent_authority",
         "release_selector",
     )
     assert tuple(inspect.signature(materialize_apply_diagrams).parameters) == (
@@ -382,8 +383,8 @@ def test_public_graph_proposal_loads_only_the_explicit_graph_transaction_closure
             if len(transaction_paths) != 1:
                 raise SystemExit("public graph proposal did not stage exactly one transaction")
             transaction = json.loads(transaction_paths[0].read_text(encoding="utf-8"))
-            if transaction["intent_authority"].get("version") != "odylith.product-intent-authority.v20":
-                raise SystemExit("graph transaction changed its v15 authority")
+            if transaction["intent_authority"].get("version") != "odylith.product-intent-authority.v40":
+                raise SystemExit("graph transaction changed its source-meaning authority")
             if transaction["compiler_provenance"].get("phase") != "pre_confirm_compile":
                 raise SystemExit("graph transaction lost its pre-confirm compiler attestation")
 

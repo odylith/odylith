@@ -54,6 +54,7 @@ from odylith.runtime.governance.sync_argument_contract import DEFAULT_SYNC_OVERL
 from odylith.runtime.governance.sync_argument_contract import configure_sync_parser
 from odylith.runtime.governance import sync_casebook_bug_index
 from odylith.runtime.surfaces import render_mermaid_catalog_refresh
+from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.surfaces import source_bundle_mirror
 
 
@@ -1326,6 +1327,7 @@ def _dashboard_surface_steps(
     surface: str,
     runtime_mode: str,
     atlas_sync: bool,
+    compass_refresh_profile: str = compass_refresh_contract.DEFAULT_REFRESH_PROFILE,
 ) -> list[ExecutionStep]:
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
     refresh_command = _owned_surface_refresh_command(surface=surface, atlas_sync=atlas_sync)
@@ -1375,6 +1377,7 @@ def _dashboard_surface_steps(
                 action=lambda: compass_dashboard_refresh_inputs.run_compass_dashboard_refresh(
                     repo_root=repo_root,
                     normalized_runtime_mode=normalized_runtime_mode,
+                    requested_profile=compass_refresh_profile,
                 ),
                 mutation_classes=("generated_surfaces",),
                 paths=_surface_render_outputs("compass"),
@@ -1506,6 +1509,7 @@ def _build_dashboard_refresh_steps(
     selected: Sequence[str],
     runtime_mode: str,
     atlas_sync: bool,
+    compass_refresh_profile: str = compass_refresh_contract.DEFAULT_REFRESH_PROFILE,
 ) -> list[ExecutionStep]:
     steps: list[ExecutionStep] = []
     for surface in selected:
@@ -1515,6 +1519,7 @@ def _build_dashboard_refresh_steps(
                 surface=surface,
                 runtime_mode=runtime_mode,
                 atlas_sync=atlas_sync,
+                compass_refresh_profile=compass_refresh_profile,
             )
         )
     return steps
@@ -1527,6 +1532,7 @@ def build_dashboard_refresh_plan(
     runtime_mode: str,
     atlas_sync: bool = False,
     force: bool = False,
+    compass_refresh_profile: str = compass_refresh_contract.DEFAULT_REFRESH_PROFILE,
 ) -> ExecutionPlan:
     selected = normalize_dashboard_surfaces(surfaces)
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
@@ -1545,6 +1551,7 @@ def build_dashboard_refresh_plan(
             selected=selected,
             runtime_mode=normalized_runtime_mode,
             atlas_sync=atlas_sync,
+            compass_refresh_profile=compass_refresh_profile,
         ),
         notes=notes,
         repo_root=repo_root,
@@ -1820,6 +1827,7 @@ def _run_surface_worker(
     atlas_sync: bool,
     force: bool = False,
     run_impl: Callable[..., int],
+    compass_refresh_profile: str = compass_refresh_contract.DEFAULT_REFRESH_PROFILE,
 ) -> tuple[str, dict[str, Any]]:
     """Execute one surface's step chain and capture its stdout.
 
@@ -1870,6 +1878,7 @@ def _run_surface_worker(
                 surface=surface,
                 runtime_mode=runtime_mode,
                 atlas_sync=atlas_sync,
+                compass_refresh_profile=compass_refresh_profile,
             )
             result = _execute_dashboard_refresh_surface(
                 repo_root=repo_root,
@@ -1899,6 +1908,7 @@ def _refresh_surfaces_parallel(
     atlas_sync: bool,
     force: bool,
     run_impl: Callable[..., int],
+    compass_refresh_profile: str = compass_refresh_contract.DEFAULT_REFRESH_PROFILE,
 ) -> list[dict[str, Any]]:
     """Refresh multiple dashboard surfaces concurrently.
 
@@ -1928,6 +1938,7 @@ def _refresh_surfaces_parallel(
                     atlas_sync=atlas_sync,
                     force=force,
                     run_impl=run_impl,
+                    compass_refresh_profile=compass_refresh_profile,
                 )
                 future_map[future] = surface
     finally:
@@ -1976,6 +1987,7 @@ def refresh_dashboard_surfaces(
     dry_run: bool = False,
     verbose: bool = False,
     force: bool = False,
+    compass_refresh_profile: str = compass_refresh_contract.DEFAULT_REFRESH_PROFILE,
 ) -> int:
     selected = normalize_dashboard_surfaces(surfaces)
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
@@ -1985,6 +1997,7 @@ def refresh_dashboard_surfaces(
         runtime_mode=normalized_runtime_mode,
         atlas_sync=atlas_sync,
         force=bool(force),
+        compass_refresh_profile=compass_refresh_profile,
     )
     _print_execution_plan("dashboard refresh", plan, dry_run=bool(dry_run), verbose=bool(verbose))
     if dry_run:
@@ -2023,6 +2036,7 @@ def refresh_dashboard_surfaces(
                             atlas_sync=atlas_sync,
                             force=bool(force),
                             run_impl=run_impl,
+                            compass_refresh_profile=compass_refresh_profile,
                         )
                     )
                     continue
@@ -2034,6 +2048,7 @@ def refresh_dashboard_surfaces(
                         atlas_sync=atlas_sync,
                         force=bool(force),
                         run_impl=run_impl,
+                        compass_refresh_profile=compass_refresh_profile,
                     )
                     if output:
                         sys.stdout.write(output)

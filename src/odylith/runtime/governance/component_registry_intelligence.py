@@ -794,6 +794,7 @@ def _parse_manifest(
     alias_to_component: dict[str, str] = {}
     by_component: dict[str, ComponentEntry] = {}
     pending_subcomponents: dict[str, list[str]] = {}
+    manifest_label = _normalize_path(repo_root, str(manifest_path)) or manifest_path.name
 
     if not manifest_path.is_file():
         errors.append(f"missing component manifest: {manifest_path}")
@@ -817,7 +818,7 @@ def _parse_manifest(
     known_workstream_ids = _known_workstream_ids(repo_root=repo_root)
 
     for idx, raw in enumerate(components):
-        context = f"{manifest_path}: components[{idx}]"
+        context = f"{manifest_label}: components[{idx}]"
         if not _is_manifest_component_object(raw):
             errors.append(f"{context} must be an object")
             continue
@@ -918,6 +919,7 @@ def _parse_manifest(
                     if str(plan_ref.get("resolved_path", "")).strip()
                     else None
                 )
+                resolved_path = (repo_root / resolved_path).resolve() if resolved_path is not None and not resolved_path.is_absolute() else resolved_path
                 repo_path = str(plan_ref.get("repo_path", "")).strip()
                 workstream_id = normalize_workstream_id(str(plan_ref.get("workstream_id", "")).strip())
                 if not repo_path:
@@ -1165,7 +1167,11 @@ def _extract_feature_history_plan_refs(*, spec_path: Path, summary: str) -> list
             {
                 "workstream_id": label,
                 "href": href,
-                "resolved_path": str(resolved) if resolved is not None else "",
+                "resolved_path": (
+                    resolved.relative_to(repo_root).as_posix()
+                    if resolved is not None and resolved.is_relative_to(repo_root)
+                    else ""
+                ),
                 "repo_path": repo_path,
                 "valid": bool(label and href_workstream and label == href_workstream),
             }

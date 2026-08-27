@@ -55,6 +55,7 @@ def compile_verified_semantic_transaction(
     *,
     repo_root: Path,
     proposal: Mapping[str, Any],
+    intent_authority: Mapping[str, Any],
     release_selector: str,
 ) -> Any:
     """Compile a graph-native transaction through one read-only pre-confirm pass."""
@@ -66,6 +67,7 @@ def compile_verified_semantic_transaction(
     return compile_sealed_greenfield_transaction(
         repo_root=repo_root,
         proposal=proposal,
+        intent_authority=intent_authority,
         release_selector=release_selector,
         verified_semantic_prewrite=_verified_prewrite,
     )
@@ -75,6 +77,7 @@ def _verified_prewrite(
     *,
     root: Path,
     proposal: Mapping[str, Any],
+    intent_authority: Mapping[str, Any],
     release_selector: str,
 ) -> tuple[Mapping[str, Any], Any, Any, dict[str, Any]]:
     from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
@@ -87,6 +90,7 @@ def _verified_prewrite(
 
     result = validate_verified_semantic_prewrite(
         proposal=proposal,
+        intent_authority=intent_authority,
         release_selector=release_selector,
         build_prewrite=lambda current, validation_report: greenfield_apply_prewrite.build_prewrite_completion_package(
             root=root,

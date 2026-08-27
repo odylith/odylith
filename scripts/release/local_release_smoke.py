@@ -24,7 +24,7 @@ from odylith.install.state import AUTHORITATIVE_RELEASE_REPO
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 _GREENFIELD_SEMANTIC_SMOKE_CASE = (
-    REPO_ROOT / "scripts/release/fixtures/greenfield-semantic-smoke.v13.json"
+    REPO_ROOT / "scripts/release/fixtures/greenfield-semantic-smoke.v35.json"
 )
 _TEMP_ROOT_CLEANUP_RETRY_COUNT = 5
 _TEMP_ROOT_CLEANUP_RETRY_DELAY_SECONDS = 0.2

@@ -45,6 +45,9 @@ def test_artifact_consumers_preserve_every_planned_state_and_output(
     )
     diagrams = semantic_diagrams(plan=plan, backlog=backlog)
     proposal = {
+        "intent": {
+            "product_story": "Review operators complete the accepted intake and decision flow."
+        },
         "projection_plan": semantic_projection_plan_mapping(plan),
         "components": list(plan.components),
         "backlog": backlog,
@@ -85,17 +88,21 @@ def test_artifact_consumers_preserve_every_planned_state_and_output(
             "accepted_at": "prewrite",
             "created": {"workstreams": reversed_created},
         },
-        source_launch={"start_workstream_title": backlog[1]["title"]},
+        source_launch={"start_workstream_title": backlog[0]["title"]},
     )
 
     contracts = {
         row["component_id"]: row["component_contract"]
         for row in authoring_inputs
     }
-    assert contracts["intake-service"]["state_objects"] == ("Intake record",)
-    assert contracts["intake-service"]["visible_outputs"] == ("Intake receipt",)
-    assert contracts["decision-service"]["state_objects"] == ("Decision record",)
-    assert contracts["decision-service"]["visible_outputs"] == ("Decision notice",)
+    assert contracts["review-flow-first-path"]["state_objects"] == (
+        "Intake record",
+        "Decision record",
+    )
+    assert contracts["review-flow-first-path"]["visible_outputs"] == (
+        "Intake receipt",
+        "Decision notice",
+    )
     assert all(
         {
             "owned_state",
@@ -132,13 +139,13 @@ def test_artifact_consumers_preserve_every_planned_state_and_output(
     assert cards["State Objects"] == "Intake record; Decision record"
     assert cards["Visible Outputs"] == "Intake receipt; Decision notice"
     assert dashboard["artifact_depth"] == {
-        "workstreams": 3,
-        "components": 2,
-        "diagrams": 3,
+        "workstreams": 1,
+        "components": 1,
+            "diagrams": 1,
         "state_objects": 2,
         "visible_outputs": 2,
     }
     assert [row.title for row in traceability.workstreams] == [
         row["title"] for row in backlog
     ]
-    assert len(traceability.workstreams) == len(plan.workstream_plans) == 3
+    assert len(traceability.workstreams) == len(plan.workstream_plans) == 1

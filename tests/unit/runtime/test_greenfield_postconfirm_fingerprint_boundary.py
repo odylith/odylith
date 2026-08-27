@@ -28,7 +28,7 @@ def test_compiler_identity_covers_only_the_commit_runtime_boundary() -> None:
     paths = set(_POSTCONFIRM_RUNTIME_SOURCE_FILES)
 
     assert PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION == (
-        "odylith.greenfield.compiler_identity.v18"
+        "odylith.greenfield.compiler_identity.v33"
     )
     assert build_product_create_transaction_compiler_identity()["version"] == (
         PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION
@@ -36,6 +36,9 @@ def test_compiler_identity_covers_only_the_commit_runtime_boundary() -> None:
     assert "cli.py" in paths
     assert "runtime/domain_intelligence/greenfield_create_cli.py" in paths
     assert "runtime/domain_intelligence/greenfield_commit_transaction.py" in paths
+    assert "runtime/domain_intelligence/greenfield_commit_journal_store.py" in paths
+    assert "runtime/domain_intelligence/greenfield_commit_recovery.py" in paths
+    assert "runtime/domain_intelligence/greenfield_transaction_path_boundary.py" in paths
     assert "runtime/domain_intelligence/greenfield_proposals_cli.py" not in paths
     assert "runtime/surfaces/greenfield_host_confirmation.py" not in paths
     assert "runtime/domain_intelligence/greenfield_transaction_compiler.py" not in paths

@@ -13,29 +13,35 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_component_projectio
 )
 
 
-SEMANTIC_PROJECTION_PLAN_VERSION = "odylith.greenfield.semantic-projection-plan.v3"
+SEMANTIC_PROJECTION_PLAN_VERSION = "odylith.greenfield.semantic-projection-plan.v16"
 _FACT_KIND_ORDER = (
-    "identity",
+    "audience",
     "actor",
+    "entity",
     "workflow_step",
     "state_object",
     "visible_output",
     "external_system",
     "internal_system",
     "component_responsibility",
-    "operational_constraint",
-    "non_goal",
+    "product_boundary",
+    "policy_boundary",
     "assumption",
-    "ambiguity",
 )
 _RELATION_KIND_ORDER = (
     "owned_by",
+    "input_entity",
+    "target_entity",
+    "creates",
     "produces",
+    "output_of",
+    "visible_to",
     "changes",
+    "maintains",
+    "state_of",
     "depends_on",
     "implements",
-    "constrained_by",
-    "excludes",
+    "applies_to",
 )
 _FACT_KIND_RANK = {kind: index for index, kind in enumerate(_FACT_KIND_ORDER)}
 _RELATION_KIND_RANK = {
@@ -110,9 +116,8 @@ class SemanticWorkstreamPlan:
 class SemanticProjectionPlan:
     """The sole topology decision shared by proposal, Radar, and Atlas."""
 
-    title: str
+    presentation: Mapping[str, Any]
     project_slug: str
-    identity_fact_id: str
     nodes: tuple[SemanticProjectionNode, ...]
     edges: tuple[SemanticProjectionEdge, ...]
     view_edges: tuple[SemanticProjectionViewEdge, ...]
@@ -123,6 +128,10 @@ class SemanticProjectionPlan:
     start_component_id: str
     diagram_plans: tuple[SemanticDiagramPlan, ...]
     workstream_plans: tuple[SemanticWorkstreamPlan, ...]
+
+    @property
+    def title(self) -> str:
+        return str(self.presentation["title"])
 
     @property
     def node_by_id(self) -> dict[str, SemanticProjectionNode]:
@@ -139,6 +148,17 @@ class SemanticProjectionPlan:
         return tuple(by_id[fact_id].label for fact_id in self.visible_output_fact_ids)
 
     @property
+    def human_action_owner_labels(self) -> tuple[str, ...]:
+        owned_actor_ids = {
+            edge.object_id for edge in self.edges if edge.kind == "owned_by"
+        }
+        return tuple(
+            node.label
+            for node in self.nodes
+            if node.kind == "actor" and node.fact_id in owned_actor_ids
+        )
+
+    @property
     def diagram_slugs(self) -> dict[str, str]:
         return {diagram.key: diagram.slug for diagram in self.diagram_plans}
 
@@ -152,9 +172,7 @@ def build_semantic_projection_plan(
 
     nodes = tuple(sorted((_node(row) for row in graph["facts"]), key=_node_key))
     edges = tuple(sorted((_edge(row) for row in graph["relations"]), key=_edge_key))
-    identities = tuple(node for node in nodes if node.kind == "identity")
-    if len(identities) != 1:
-        raise ValueError("verified semantic projection requires one identity fact")
+    presentation = dict(graph["presentation"])
     components = tuple(
         semantic_component_rows(graph, project_slug=project_slug)
     )
@@ -165,37 +183,27 @@ def build_semantic_projection_plan(
     state_fact_ids = _fact_ids(nodes, "state_object")
     visible_output_fact_ids = _fact_ids(nodes, "visible_output")
     diagram_plans = _diagram_plans(
-        title=identities[0].label,
+        title=str(presentation["title"]),
         project_slug=project_slug,
         nodes=nodes,
         edges=edges,
         view_edges=view_edges,
-        components=components,
         state_fact_ids=state_fact_ids,
         visible_output_fact_ids=visible_output_fact_ids,
     )
     workstream_plans = _workstream_plans(
-        title=identities[0].label,
+        title=str(presentation["title"]),
         components=components,
         diagrams=diagram_plans,
     )
-    start_component = next(
-        (
-            component
-            for workflow_id in workflow_step_fact_ids
-            for component in components
-            if workflow_id in component["semantic_implements"]
-        ),
-        None,
-    )
-    if start_component is None:
+    start_component = components[0]
+    if not set(workflow_step_fact_ids) <= set(start_component["covered_fact_ids"]):
         raise ValueError(
             "verified semantic projection lacks a component for its first workflow action"
         )
     return SemanticProjectionPlan(
-        title=identities[0].label,
+        presentation=presentation,
         project_slug=project_slug,
-        identity_fact_id=identities[0].fact_id,
         nodes=nodes,
         edges=edges,
         view_edges=view_edges,
@@ -217,7 +225,7 @@ def semantic_projection_plan_mapping(
     return {
         "version": SEMANTIC_PROJECTION_PLAN_VERSION,
         "project_slug": plan.project_slug,
-        "identity_fact_id": plan.identity_fact_id,
+        "presentation": dict(plan.presentation),
         "start_component_id": plan.start_component_id,
         "nodes": [
             {
@@ -260,18 +268,23 @@ def semantic_projection_plan_mapping(
             "workflow_step_fact_ids": list(plan.workflow_step_fact_ids),
             "state_fact_ids": list(plan.state_fact_ids),
             "visible_output_fact_ids": list(plan.visible_output_fact_ids),
-            "component_fact_ids": [
-                str(component["semantic_fact_id"])
+            "implementation_policy_ids": [
+                str(component["implementation_policy_id"])
                 for component in plan.components
             ],
         },
         "components": [
             {
                 "component_id": str(component["component_id"]),
-                "semantic_fact_id": str(component["semantic_fact_id"]),
+                "implementation_policy_id": str(
+                    component["implementation_policy_id"]
+                ),
                 "release_scope": str(component["release_scope"]),
                 "component_role": str(component["component_role"]),
-                "implements": list(component["semantic_implements"]),
+                "covered_fact_ids": list(component["covered_fact_ids"]),
+                "projection_basis_fact_ids": list(
+                    component["projection_basis_fact_ids"]
+                ),
             }
             for component in plan.components
         ],
@@ -318,12 +331,6 @@ def semantic_release_plan(
         raise ValueError(
             "verified semantic release requires a result-implementing component"
         )
-    deferred = [
-        node
-        for node in plan.nodes
-        if node.kind == "internal_system"
-        and node.attribute("release_scope") == "deferred"
-    ]
     start_owner = next(
         row
         for row in result_components
@@ -358,16 +365,15 @@ def semantic_release_plan(
         "project_workstream_title": workstream_titles[0],
         "start_workstream_title": start_title,
         "target_workstream_titles": workstream_titles,
-        "release_component_fact_ids": [
-            str(row["semantic_fact_id"]) for row in release_components
+        "release_component_policy_ids": [
+            str(row["implementation_policy_id"]) for row in release_components
         ],
-        "result_component_fact_ids": [
-            str(row["semantic_fact_id"]) for row in result_components
+        "result_component_policy_ids": [
+            str(row["implementation_policy_id"]) for row in result_components
         ],
-        "supporting_component_fact_ids": [
-            str(row["semantic_fact_id"]) for row in supporting
+        "supporting_component_policy_ids": [
+            str(row["implementation_policy_id"]) for row in supporting
         ],
-        "deferred_component_fact_ids": [node.fact_id for node in deferred],
         "promotion_criteria": [
             "Every sealed workflow action has behavior evidence.",
             *(
@@ -400,12 +406,10 @@ def semantic_security_compliance(
 ) -> dict[str, str]:
     """Expose only accepted operating boundaries and release evidence."""
 
-    constraints = _node_statements(plan, "operational_constraint")
-    exclusions = _node_statements(plan, "non_goal")
+    boundaries = _node_statements(plan, "policy_boundary")
     return {
         "release_boundary": proof_boundary,
-        "operating_constraints": _plain_list(constraints, fallback="None asserted"),
-        "excluded_scope": _plain_list(exclusions, fallback="None asserted"),
+        "policy_boundaries": _plain_list(boundaries, fallback="None asserted"),
     }
 
 
@@ -418,13 +422,17 @@ def semantic_validation_strategy(
     """Project checks from the axes that the graph actually carries."""
 
     return [
-        "Validate every workflow step in graph order and verify the owner declared by its relation.",
+        "Validate every workflow step in graph order and verify any declared owner relation.",
         *(
             [f"Reconstruct every state object ({_plain_list(plan.state_labels)}) from exact typed evidence and compare each accepted transition."]
             if plan.state_labels
             else []
         ),
-        f"Show every visible output ({_plain_list(plan.visible_output_labels)}) and tie each to its exact producing edge.",
+        (
+            f"Show every visible output ({_plain_list(plan.visible_output_labels)}) "
+            "from exact typed evidence; verify any declared producing edge without "
+            "inventing one."
+        ),
         f"Compare release evidence with the sealed proof boundary: {proof_boundary}",
         *success_metrics,
     ]
@@ -441,22 +449,37 @@ def _diagram_plans(
     nodes: Sequence[SemanticProjectionNode],
     edges: Sequence[SemanticProjectionEdge],
     view_edges: Sequence[SemanticProjectionViewEdge],
-    components: Sequence[Mapping[str, Any]],
     state_fact_ids: tuple[str, ...],
     visible_output_fact_ids: tuple[str, ...],
 ) -> tuple[SemanticDiagramPlan, ...]:
     workflow_ids = _fact_ids(nodes, "workflow_step")
+    audience_ids = _fact_ids(nodes, "audience")
     actor_ids = _fact_ids(nodes, "actor")
+    entity_ids = _fact_ids(nodes, "entity")
     first_path_ids = {
         *workflow_ids,
+        *audience_ids,
         *actor_ids,
+        *entity_ids,
         *state_fact_ids,
         *visible_output_fact_ids,
     }
     first_path_edges = tuple(
         edge
         for edge in edges
-        if edge.kind in {"owned_by", "changes", "produces"}
+        if edge.kind
+        in {
+            "owned_by",
+            "input_entity",
+            "target_entity",
+            "creates",
+            "changes",
+            "maintains",
+            "state_of",
+            "produces",
+            "output_of",
+            "visible_to",
+        }
         and edge.subject_id in first_path_ids
         and edge.object_id in first_path_ids
     )
@@ -475,7 +498,6 @@ def _diagram_plans(
         )
     ]
     external_ids = _fact_ids(nodes, "external_system")
-    system_ids = tuple(str(component["semantic_fact_id"]) for component in components)
     if actor_ids or external_ids:
         plans.append(
             _connected_diagram(
@@ -483,54 +505,14 @@ def _diagram_plans(
                 slug=f"{project_slug}-system-context",
                 title="System Context",
                 summary=(
-                    f"Reviews accepted {title} actors and external systems at "
+                    f"Reviews accepted {title} participants and external systems at "
                     "the product boundary."
                 ),
                 seed_ids=(
-                    *(node.fact_id for node in nodes if node.kind == "identity"),
                     *actor_ids,
-                    *system_ids,
                     *external_ids,
                 ),
-                relation_kinds=("owned_by", "depends_on"),
-                nodes=nodes,
-                edges=edges,
-            )
-        )
-    if state_fact_ids:
-        plans.append(
-            _connected_diagram(
-                key="state_evidence",
-                slug=f"{project_slug}-state-evidence",
-                title="State and Output Evidence",
-                summary=(
-                    f"Reviews every accepted {title} state object and visible output "
-                    "with its typed workflow and system edges."
-                ),
-                seed_ids=(*state_fact_ids, *visible_output_fact_ids),
-                relation_kinds=("changes", "produces", "implements"),
-                nodes=nodes,
-                edges=edges,
-            )
-        )
-    cross_boundary_dependency = any(
-        edge.kind == "depends_on"
-        and edge.subject_id in system_ids
-        and edge.object_id != edge.subject_id
-        for edge in edges
-    )
-    if len(components) > 1 or cross_boundary_dependency:
-        plans.append(
-            _connected_diagram(
-                key="component_boundaries",
-                slug=f"{project_slug}-component-boundaries",
-                title="Component Boundaries",
-                summary=(
-                    f"Reviews {title} implementation and dependency edges across "
-                    "release components and external systems."
-                ),
-                seed_ids=(*system_ids, *external_ids),
-                relation_kinds=("depends_on", "implements"),
+                relation_kinds=("owned_by", "visible_to", "depends_on"),
                 nodes=nodes,
                 edges=edges,
             )
@@ -612,26 +594,11 @@ def _workstream_plans(
         component_ids=component_ids,
         diagram_keys=diagram_keys,
     )
-    if len(components) == 1:
-        return (product,)
-    diagram_by_key = {diagram.key: diagram for diagram in diagrams}
-    children = []
-    for component in components:
-        component_fact_id = str(component["semantic_fact_id"])
-        component_diagrams = tuple(
-            key
-            for key in diagram_keys
-            if component_fact_id in diagram_by_key[key].fact_ids
+    if len(components) != 1:
+        raise ValueError(
+            "semantic projection requires one plan-local first-path component"
         )
-        children.append(
-            SemanticWorkstreamPlan(
-                kind="component",
-                title=f"Implement {component['label']}",
-                component_ids=(str(component["component_id"]),),
-                diagram_keys=component_diagrams,
-            )
-        )
-    return (product, *children)
+    return (product,)
 
 
 def _node(row: Mapping[str, Any]) -> SemanticProjectionNode:

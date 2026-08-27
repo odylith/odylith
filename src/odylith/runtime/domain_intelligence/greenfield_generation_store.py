@@ -7,14 +7,11 @@ from dataclasses import dataclass
 import hashlib
 import json
 from pathlib import Path
-import shutil
-import tempfile
 from typing import Any
 
-from odylith.install.fs import atomic_write_text
-from odylith.install.fs import fsync_directory
 from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.domain_intelligence import greenfield_transaction_path_boundary
 from odylith.runtime.domain_intelligence.greenfield_create_contract import is_sha256_digest
 
 
@@ -51,43 +48,48 @@ def materialize_immutable_greenfield_generation(
     root = Path(repo_root).expanduser().resolve()
     transaction = _require_digest(transaction_hash, label="transaction hash")
     payload = greenfield_repository_write_set.require_compiled_greenfield_repository_write_set(write_set)
-    parent = generation_root(root, transaction).parent
-    if parent.is_symlink() or (parent.exists() and not parent.is_dir()):
-        raise RuntimeError("Greenfield generation store is unsafe")
-    parent.mkdir(parents=True, exist_ok=True)
-    fsync_directory(parent.parent)
-    target = parent / transaction
-    if target.exists() or target.is_symlink():
+    parent_token = ".odylith/runtime/greenfield/generations"
+    greenfield_transaction_path_boundary.ensure_directory(root, parent_token)
+    target_token = f"{parent_token}/{transaction}"
+    if greenfield_transaction_path_boundary.path_kind(root, target_token) != "missing":
         return pin_greenfield_generation(
             repo_root=root,
             transaction_hash=transaction,
             expected_write_set=payload,
         )
-    temporary = Path(tempfile.mkdtemp(prefix=f".prepare-{transaction[:12]}-", dir=parent))
+    temporary_token = greenfield_transaction_path_boundary.make_temporary_directory(
+        root,
+        parent_token,
+        prefix=f".prepare-{transaction[:12]}-",
+    )
+    temporary = root / temporary_token
     try:
         repository = temporary / "repository"
         materialized = greenfield_repository_write_set.materialize_compiled_greenfield_after_image(
+            repo_root=root,
             destination_root=repository,
             write_set=payload,
             temporary_directory=temporary / ".writes",
         )
-        writes_tmp = temporary / ".writes"
-        if writes_tmp.exists():
-            shutil.rmtree(writes_tmp)
+        writes_tmp = f"{temporary_token}/.writes"
+        if greenfield_transaction_path_boundary.path_kind(root, writes_tmp) != "missing":
+            greenfield_transaction_path_boundary.remove_tree(root, writes_tmp)
         manifest = _generation_manifest(
             transaction_hash=transaction,
             write_set=payload,
             materialized=materialized,
         )
-        atomic_write_text(
-            temporary / "generation-manifest.v1.json",
-            _canonical_manifest_bytes(manifest).decode("utf-8"),
+        greenfield_transaction_path_boundary.atomic_write_bytes(
+            root,
+            f"{temporary_token}/generation-manifest.v1.json",
+            _canonical_manifest_bytes(manifest),
         )
-        fsync_directory(temporary)
-        temporary.replace(target)
-        fsync_directory(parent)
+        greenfield_transaction_path_boundary.rename_directory(root, temporary_token, target_token)
     except BaseException:
-        shutil.rmtree(temporary, ignore_errors=True)
+        try:
+            greenfield_transaction_path_boundary.remove_tree(root, temporary_token)
+        except (FileNotFoundError, greenfield_transaction_path_boundary.GreenfieldTransactionPathError):
+            pass
         raise
     return pin_greenfield_generation(
         repo_root=root,
@@ -141,15 +143,20 @@ def pin_greenfield_generation(
 ) -> PinnedGreenfieldGeneration:
     root = Path(repo_root).expanduser().resolve()
     transaction = _require_digest(transaction_hash, label="transaction hash")
-    target = generation_root(root, transaction)
-    manifest_path = target / "generation-manifest.v1.json"
-    repository = target / "repository"
-    if target.is_symlink() or not target.is_dir() or manifest_path.is_symlink() or not manifest_path.is_file():
+    target_token = f".odylith/runtime/greenfield/generations/{transaction}"
+    manifest_token = f"{target_token}/generation-manifest.v1.json"
+    repository_token = f"{target_token}/repository"
+    target = root / target_token
+    repository = root / repository_token
+    if (
+        greenfield_transaction_path_boundary.path_kind(root, target_token) != "directory"
+        or greenfield_transaction_path_boundary.path_kind(root, manifest_token) != "file"
+    ):
         raise RuntimeError("Greenfield immutable generation is missing or unsafe")
-    if repository.is_symlink() or not repository.is_dir():
+    if greenfield_transaction_path_boundary.path_kind(root, repository_token) != "directory":
         raise RuntimeError("Greenfield immutable generation repository is missing or unsafe")
     try:
-        raw = manifest_path.read_bytes()
+        raw = greenfield_transaction_path_boundary.read_bytes(root, manifest_token)
         payload = json.loads(raw.decode("utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise RuntimeError("Greenfield immutable generation manifest is unreadable") from exc
@@ -164,8 +171,9 @@ def pin_greenfield_generation(
         if str(write_set["write_set_hash"]) != str(manifest["write_set_hash"]):
             raise RuntimeError("Greenfield immutable generation does not match the sealed transaction")
         greenfield_repository_write_set.require_greenfield_repository_after_state(
-            repo_root=repository,
+            repo_root=root,
             write_set=write_set,
+            managed_prefix=repository_token,
         )
     return PinnedGreenfieldGeneration(
         transaction_hash=transaction,
@@ -183,12 +191,12 @@ def discard_unpublished_greenfield_generation(*, repo_root: Path, transaction_ha
     state = greenfield_generation_state.read_active_generation_state(root)
     if state is not None and str(state.get("transaction_hash") or "") == transaction:
         return
-    target = generation_root(root, transaction)
-    if target.is_symlink():
+    target = f".odylith/runtime/greenfield/generations/{transaction}"
+    kind = greenfield_transaction_path_boundary.path_kind(root, target)
+    if kind == "directory":
+        greenfield_transaction_path_boundary.remove_tree(root, target)
+    elif kind != "missing":
         raise RuntimeError("Greenfield immutable generation path is unsafe")
-    if target.is_dir():
-        shutil.rmtree(target)
-        fsync_directory(target.parent)
 
 
 def _generation_manifest(

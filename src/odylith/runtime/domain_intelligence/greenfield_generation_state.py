@@ -8,8 +8,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from odylith.install.fs import atomic_write_text
-from odylith.install.fs import fsync_directory
+from odylith.runtime.domain_intelligence import greenfield_transaction_path_boundary
 from odylith.runtime.domain_intelligence.greenfield_create_contract import is_sha256_digest
 
 
@@ -17,8 +16,11 @@ ACTIVE_GENERATION_STATE_VERSION = "odylith.greenfield.active-generation.v1"
 ACTIVE = "active"
 SUPERSEDED = "superseded"
 NONE = "none"
+_ACTIVE_STATE_TOKEN = ".odylith/runtime/greenfield/active-generation.v1.json"
+
+
 def active_generation_state_path(repo_root: Path) -> Path:
-    return Path(repo_root).expanduser().resolve() / ".odylith/runtime/greenfield/active-generation.v1.json"
+    return Path(repo_root).expanduser().resolve() / _ACTIVE_STATE_TOKEN
 
 
 def no_active_generation_identity() -> dict[str, str]:
@@ -57,13 +59,13 @@ def active_generation_is(
 
 
 def read_active_generation_state(repo_root: Path) -> dict[str, Any] | None:
-    path = active_generation_state_path(repo_root)
-    if not path.exists() and not path.is_symlink():
+    root = Path(repo_root).expanduser().resolve()
+    if greenfield_transaction_path_boundary.path_kind(root, _ACTIVE_STATE_TOKEN) == "missing":
         return None
-    if path.is_symlink() or not path.is_file():
+    if greenfield_transaction_path_boundary.path_kind(root, _ACTIVE_STATE_TOKEN) != "file":
         raise RuntimeError("Greenfield active-generation state is missing or unsafe")
     try:
-        raw = path.read_bytes()
+        raw = greenfield_transaction_path_boundary.read_bytes(root, _ACTIVE_STATE_TOKEN)
         payload = json.loads(raw.decode("utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise RuntimeError("Greenfield active-generation state is unreadable") from exc
@@ -101,11 +103,11 @@ def publish_active_generation_state(
         "generation_path": f".odylith/runtime/greenfield/generations/{transaction}",
     }
     state["record_hash"] = _record_hash(state)
-    path = active_generation_state_path(root)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fsync_directory(path.parent)
-    atomic_write_text(path, _canonical_state_bytes(state).decode("utf-8"))
-    fsync_directory(path.parent)
+    greenfield_transaction_path_boundary.atomic_write_bytes(
+        root,
+        _ACTIVE_STATE_TOKEN,
+        _canonical_state_bytes(state),
+    )
     return state
 
 
@@ -122,9 +124,11 @@ def supersede_active_generation(*, repo_root: Path, expected_transaction_hash: s
     updated = {**state, "status": SUPERSEDED}
     updated.pop("record_hash", None)
     updated["record_hash"] = _record_hash(updated)
-    path = active_generation_state_path(root)
-    atomic_write_text(path, _canonical_state_bytes(updated).decode("utf-8"))
-    fsync_directory(path.parent)
+    greenfield_transaction_path_boundary.atomic_write_bytes(
+        root,
+        _ACTIVE_STATE_TOKEN,
+        _canonical_state_bytes(updated),
+    )
     return updated
 
 

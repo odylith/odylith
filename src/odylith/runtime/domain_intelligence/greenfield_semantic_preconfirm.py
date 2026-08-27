@@ -37,6 +37,7 @@ class VerifiedSemanticPreconfirmResult:
 def validate_verified_semantic_prewrite(
     *,
     proposal: Mapping[str, Any],
+    intent_authority: Mapping[str, Any],
     release_selector: str,
     build_prewrite: Callable[[Mapping[str, Any], Any], Any],
 ) -> VerifiedSemanticPreconfirmResult:
@@ -45,14 +46,19 @@ def validate_verified_semantic_prewrite(
     started = time.perf_counter()
     proposal_report = require_verified_semantic_proposal(
         proposal,
+        intent_authority=intent_authority,
         release_selector=release_selector,
     )
     prewrite_build = build_prewrite(proposal, proposal_report)
     package_report = require_verified_semantic_package(
         prewrite_build.package,
+        intent_authority=intent_authority,
         release_selector=release_selector,
     )
-    semantic_compiler = semantic_projection_report(prewrite_build.package.proposal)
+    semantic_compiler = semantic_projection_report(
+        prewrite_build.package.proposal,
+        intent_authority=intent_authority,
+    )
     if semantic_compiler.get("status") != "passed":
         raise ValueError("verified Semantic Intent projection failed its pre-confirm quality evidence")
     elapsed = round(max(0.0, time.perf_counter() - started), 3)

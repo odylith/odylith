@@ -7,8 +7,9 @@ from typing import Any
 
 
 HOST_EXECUTION_PROFILE_VERSION = "odylith.greenfield.host-execution-profile.v1"
+SEMANTIC_REASONING_CAPABILITY_PROFILE = "frontier_semantic_reasoning"
 STANDARD_HOST_STAGE_PROFILE_VERSION = (
-    "odylith.greenfield.standard-host-stage-profile.v13"
+    "odylith.greenfield.standard-host-stage-profile.v47"
 )
 
 _EXECUTION_PROFILES = {
@@ -40,22 +41,24 @@ _STANDARD_STAGE_PROFILES = {
     "codex": {
         "version": STANDARD_HOST_STAGE_PROFILE_VERSION,
         "host_profile": "codex",
-        "critic_model": "gpt-5.6-sol",
-        "critic_reasoning_effort": "low",
-        "source_hypothesis_model": "gpt-5.5",
-        "source_hypothesis_reasoning_effort": "low",
-        "final_adjudicator_model": "gpt-5.6-sol",
-        "final_adjudicator_reasoning_effort": "low",
+        "authors": [
+            {
+                "role": "author",
+                "model": "gpt-5.6-sol",
+                "reasoning_effort": "low",
+            },
+        ],
     },
     "claude": {
         "version": STANDARD_HOST_STAGE_PROFILE_VERSION,
         "host_profile": "claude",
-        "critic_model": "claude-opus-4-6",
-        "critic_reasoning_effort": "medium",
-        "source_hypothesis_model": "claude-opus-4-6",
-        "source_hypothesis_reasoning_effort": "low",
-        "final_adjudicator_model": "claude-opus-4-6",
-        "final_adjudicator_reasoning_effort": "low",
+        "authors": [
+            {
+                "role": "author",
+                "model": "claude-opus-4-6",
+                "reasoning_effort": "high",
+            },
+        ],
     },
 }
 
@@ -101,16 +104,29 @@ def semantic_authority_execution_profiles() -> list[dict[str, str]]:
     return [host_execution_profile(host) for host in supported_host_profiles()]
 
 
-def standard_host_stage_profile(host_profile: str) -> dict[str, str]:
+def standard_host_stage_profile(host_profile: str) -> dict[str, Any]:
     """Return the exact no-retry stage profile for the 60-second path."""
 
     host = str(host_profile or "").strip()
     if host not in _STANDARD_STAGE_PROFILES:
         raise RuntimeError("unsupported Greenfield semantic host profile")
-    return dict(_STANDARD_STAGE_PROFILES[host])
+    profile = _STANDARD_STAGE_PROFILES[host]
+    return {
+        "version": profile["version"],
+        "host_profile": profile["host_profile"],
+        "authors": [dict(row) for row in profile["authors"]],
+    }
 
 
-def standard_host_stage_profiles() -> list[dict[str, str]]:
+def standard_author_profile(host_profile: str, run_index: int) -> dict[str, str]:
+    """Return the exact profile for the sole standard-path author."""
+
+    if isinstance(run_index, bool) or run_index != 0:
+        raise RuntimeError("standard Greenfield author run index is unsupported")
+    return dict(standard_host_stage_profile(host_profile)["authors"][run_index])
+
+
+def standard_host_stage_profiles() -> list[dict[str, Any]]:
     """Publish standard-path profiles separately from deep-tier profiles."""
 
     return [standard_host_stage_profile(host) for host in supported_host_profiles()]
@@ -118,11 +134,13 @@ def standard_host_stage_profiles() -> list[dict[str, str]]:
 
 __all__ = [
     "HOST_EXECUTION_PROFILE_VERSION",
+    "SEMANTIC_REASONING_CAPABILITY_PROFILE",
     "STANDARD_HOST_STAGE_PROFILE_VERSION",
     "host_execution_profile",
     "require_host_execution_profile",
     "require_host_profiles",
     "semantic_authority_execution_profiles",
+    "standard_author_profile",
     "standard_host_stage_profile",
     "standard_host_stage_profiles",
     "supported_host_profiles",

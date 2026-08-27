@@ -9,15 +9,9 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_delivery import (
     semantic_first_release_workstream_ids,
     semantic_next_steps,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
-    semantic_evidence_sha256,
-)
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_packet import (
     require_semantic_intent_packet,
     semantic_intent_authority,
-)
-from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
-    semantic_materiality_assessment_sha256,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_memory import (
     semantic_acceptance_event_preview,
@@ -32,46 +26,36 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_workflow import (
 )
 from tests.unit.runtime.greenfield_semantic_intent_fixtures import (
     DEPENDENCY_EVIDENCE,
-    PATH_EVIDENCE,
     SEMANTIC_PROMPT,
-    semantic_fact,
     semantic_intent_packet,
     stateless_semantic_intent_packet as _stateless_packet,
 )
 
 
-def test_release_membership_and_start_owner_follow_typed_scope_after_reorder() -> None:
+def test_release_membership_and_start_owner_follow_plan_local_policy() -> None:
     proposal = _proposal(_release_scope_packet(), prompt=SEMANTIC_PROMPT)
 
     assert [row["label"] for row in proposal["components"]] == [
-        "Claim Receipt Delivery",
-        "Card Claim Service",
+        "Claim Desk First Path",
     ]
     assert [row["release_scope"] for row in proposal["components"]] == [
-        "first_path_required",
         "first_path_required",
     ]
     assert [row["component_role"] for row in proposal["components"]] == [
         "result_implementing",
-        "result_implementing",
     ]
-    assert proposal["release_plan"]["release_component_fact_ids"] == [
-        "system.1",
-        "system.0",
+    assert proposal["release_plan"]["release_component_policy_ids"] == [
+        "implementation-policy.0",
     ]
-    assert proposal["release_plan"]["result_component_fact_ids"] == [
-        "system.1",
-        "system.0",
+    assert proposal["release_plan"]["result_component_policy_ids"] == [
+        "implementation-policy.0",
     ]
-    assert proposal["release_plan"]["supporting_component_fact_ids"] == []
-    assert proposal["release_plan"]["deferred_component_fact_ids"] == ["system.2"]
+    assert proposal["release_plan"]["supporting_component_policy_ids"] == []
     assert proposal["release_plan"]["target_workstream_titles"] == [
         "Deliver Claim Desk First Path",
-        "Implement Claim Receipt Delivery",
-        "Implement Card Claim Service",
     ]
     assert proposal["release_plan"]["start_workstream_title"] == (
-        "Implement Card Claim Service"
+        "Deliver Claim Desk First Path"
     )
 
     created = [
@@ -89,25 +73,25 @@ def test_release_membership_and_start_owner_follow_typed_scope_after_reorder() -
         release_selector="0.0.1",
     )
 
-    assert release_ids == ["B-001", "B-002", "B-003"]
+    assert release_ids == ["B-001"]
     assert handoff["project_workstream_id"] == "B-001"
-    assert handoff["start_workstream_id"] == "B-003"
-    assert handoff["start_workstream_title"] == "Implement Card Claim Service"
-    state_diagram = next(
+    assert handoff["start_workstream_id"] == "B-001"
+    assert handoff["start_workstream_title"] == "Deliver Claim Desk First Path"
+    first_path_diagram = next(
         row for row in proposal["diagrams"]
-        if row["slug"].endswith("state-evidence")
+        if row["slug"].endswith("first-path")
     )
-    state_plan = next(
+    first_path_plan = next(
         row for row in proposal["projection_plan"]["diagrams"]
-        if row["key"] == "state_evidence"
+        if row["key"] == "first_path"
     )
-    assert state_diagram["semantic_fact_ids"] == state_plan["fact_ids"]
-    assert state_diagram["semantic_relation_ids"] == state_plan["relation_ids"]
-    assert "state_object<br/>Card" in state_diagram["mermaid_source"]
-    assert "visible_output<br/>Claim receipt" in state_diagram["mermaid_source"]
+    assert first_path_diagram["semantic_fact_ids"] == first_path_plan["fact_ids"]
+    assert first_path_diagram["semantic_relation_ids"] == first_path_plan["relation_ids"]
+    assert "state_object<br/>Card" in first_path_diagram["mermaid_source"]
+    assert "visible_output<br/>Claim receipt" in first_path_diagram["mermaid_source"]
 
 
-def test_project_brief_formats_typed_constraints_without_duplicate_punctuation() -> None:
+def test_project_brief_formats_typed_policy_boundaries_without_duplicate_punctuation() -> None:
     proposal = _proposal(_release_scope_packet(), prompt=SEMANTIC_PROMPT)
     limits = next(
         row
@@ -116,57 +100,24 @@ def test_project_brief_formats_typed_constraints_without_duplicate_punctuation()
     )["must_capture"]
 
     assert ".." not in limits
-    assert "Constraints: Read local duty roster." in limits
-    assert DEPENDENCY_EVIDENCE not in limits
-    assert "Excluded: No automatic reassignment." in limits
-
-
-def test_release_rejects_deferred_ownership_of_required_path() -> None:
-    packet = _release_scope_packet()
-    receipt = _system(packet, "system.1")
-    _set_attribute(receipt, "release_scope", "deferred")
-
-    with pytest.raises(ValueError) as exc_info:
-        _proposal(packet, prompt=SEMANTIC_PROMPT)
-    assert str(exc_info.value) == (
-        "complete Semantic Intent IR lacks active typed implementation coverage"
+    assert (
+        "Policy boundaries: prohibited: Never reassign a card automatically."
+        in limits
     )
+    assert DEPENDENCY_EVIDENCE not in limits
+    assert "Excluded:" not in limits
 
 
 def test_projected_records_preserve_graph_custody_and_classify_defaults() -> None:
-    assumption = "Assume the coordinator is already authenticated."
-    prompt = f"{SEMANTIC_PROMPT} {assumption}"
     packet = _release_scope_packet()
-    evidence_sha256 = semantic_evidence_sha256(
-        {"operator_prompt": prompt, "operator_edit": ""}
-    )
-    packet["evidence_sha256"] = evidence_sha256
-    packet["materiality_assessment"]["evidence_sha256"] = evidence_sha256
-    packet["materiality_assessment_sha256"] = (
-        semantic_materiality_assessment_sha256(
-            packet["materiality_assessment"]
-        )
-    )
-    packet["semantic_intent"]["facts"].append(
-        semantic_fact(
-            "assumption.0",
-            "assumption",
-            "Authenticated coordinator",
-            assumption,
-            0,
-            assumption,
-            custody="visible_assumption",
-        )
-    )
-    proposal = _proposal(packet, prompt=prompt)
+    proposal = _proposal(packet, prompt=SEMANTIC_PROMPT)
 
     assert {
         (row["custody_state"], row["evidence_tier"])
         for row in proposal["components"]
-    } == {("bounded_interpretation", "odylith_assumption")}
+    } == {("system_policy", "odylith_assumption")}
     assert all(row["evidence_tier"] != "user_intent" for row in proposal["backlog"])
     assert proposal["backlog"][0]["custody_state"] == "system_policy"
-    assert proposal["backlog"][1]["custody_state"] == "bounded_interpretation"
     assert all(
         (row["custody_state"], row["evidence_tier"])
         == ("system_policy", "odylith_assumption")
@@ -177,10 +128,8 @@ def test_projected_records_preserve_graph_custody_and_classify_defaults() -> Non
         for diagram in proposal["diagrams"]
         for box in diagram["diagram_box_custody"]
     }
-    assert box_custody == {"source_fact", "bounded_interpretation"}
-    assert proposal["assumptions"][0]["custody_state"] == "visible_assumption"
-    assert proposal["assumptions"][0]["tier"] == "odylith_assumption"
-    assert len(proposal["assumptions"]) == 1
+    assert box_custody == {"source_fact"}
+    assert proposal["assumptions"] == []
     assert "product owner" not in str(proposal).casefold()
     assert proposal["release_plan"]["custody_state"] == "system_policy"
 
@@ -218,18 +167,31 @@ def test_projected_records_preserve_graph_custody_and_classify_defaults() -> Non
 
 def test_stateless_artifacts_use_one_plan_without_state_replay_or_wave_residue(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    from odylith.runtime.surfaces import compass_standup_brief_maintenance
+
+    def fail_background_spawn(**_kwargs: object) -> int:
+        raise AssertionError("sealed Greenfield pre-confirm spawned Compass narration")
+
+    monkeypatch.setattr(
+        compass_standup_brief_maintenance,
+        "maybe_spawn_background",
+        fail_background_spawn,
+    )
     packet, prompt = _stateless_packet()
     verified = require_semantic_intent_packet(packet, prompt=prompt)
+    authority = semantic_intent_authority(verified, prompt=prompt)
     proposal = build_verified_semantic_proposal_for_repo(
         repo_root=tmp_path,
-        authority=semantic_intent_authority(verified, prompt=prompt),
+        authority=authority,
         release_selector="0.0.1",
     )
 
     transaction = compile_verified_semantic_transaction(
         repo_root=tmp_path,
         proposal=proposal,
+        intent_authority=authority,
         release_selector="0.0.1",
     )
 
@@ -261,7 +223,7 @@ def test_stateless_artifacts_use_one_plan_without_state_replay_or_wave_residue(
         authoring_input["implementation_handoff"]
     )
 
-    spec = package.rendered_component_specs["Signal Service"]
+    spec = package.rendered_component_specs["Signal View First Path"]
     assert "Signal chart" in spec and "Signal summary" in spec
     assert "### State objects" not in spec
     assert "### State transitions" not in spec
@@ -280,6 +242,7 @@ def test_stateless_artifacts_use_one_plan_without_state_replay_or_wave_residue(
         "Workflow Facts",
         "Visible Outputs",
         "Component Boundaries",
+        "Policy Boundaries",
     ]
     assert cards[1]["body"] == "Signal chart; Signal summary"
     assert package.project_dashboard_preview["artifact_depth"] == {
@@ -304,32 +267,7 @@ def test_stateless_artifacts_use_one_plan_without_state_replay_or_wave_residue(
 
 
 def _release_scope_packet() -> dict[str, object]:
-    packet = copy.deepcopy(semantic_intent_packet())
-    claim = _system(packet, "system.0")
-    receipt = _system(packet, "system.1")
-    claim["order"] = 1
-    receipt["order"] = 0
-    packet["semantic_intent"]["facts"].append(
-        semantic_fact(
-            "system.2",
-            "internal_system",
-            "Deferred Analytics",
-            "Deferred Analytics remains outside the first release.",
-            2,
-            PATH_EVIDENCE,
-            custody="bounded_interpretation",
-            attributes={
-                "responsibility": "Analyze claim history after the first release.",
-                "component_kind": "worker",
-                "boundary": "Own post-release claim analytics.",
-                "outside_boundary": "Claim selection and receipt delivery.",
-                "proof": "Prove analytics only after source-backed scope is accepted.",
-                "risk": "Early analytics could widen the accepted release.",
-                "release_scope": "deferred",
-            },
-        )
-    )
-    return packet
+    return copy.deepcopy(semantic_intent_packet())
 
 
 def _proposal(packet: dict[str, object], *, prompt: str) -> dict[str, object]:
@@ -339,13 +277,3 @@ def _proposal(packet: dict[str, object], *, prompt: str) -> dict[str, object]:
         authority=authority,
         observed_source={"evidence_tier": "observed_source"},
     )
-
-
-def _system(packet: dict[str, object], fact_id: str) -> dict[str, object]:
-    facts = packet["semantic_intent"]["facts"]
-    return next(row for row in facts if row["fact_id"] == fact_id)
-
-
-def _set_attribute(fact: dict[str, object], name: str, value: str) -> None:
-    attribute = next(row for row in fact["attributes"] if row["name"] == name)
-    attribute["value"] = value

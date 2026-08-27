@@ -1,4 +1,4 @@
-"""Build traceability from exact v7 artifact bindings, never text overlap."""
+"""Build traceability from exact persisted plan bindings, never text overlap."""
 
 from __future__ import annotations
 
@@ -46,7 +46,7 @@ def build_semantic_traceability_plan(
             CreatedWorkstream(
                 idea_id=_required_text(created, "idea_id").upper(),
                 title=projected_title,
-                path=Path(_required_text(created, "idea_path")).expanduser().resolve(),
+                path=_portable_backlog_path(_required_text(created, "idea_path")),
                 row=projected,
             )
         )
@@ -135,6 +135,11 @@ def build_semantic_traceability_plan(
     )
 
 
+def _portable_backlog_path(value: str) -> Path:
+    path = Path(value).expanduser()
+    return path.resolve() if path.is_absolute() else path
+
+
 def require_persisted_semantic_projection_plan(
     proposal: Mapping[str, Any],
 ) -> Mapping[str, Any]:
@@ -154,6 +159,14 @@ def require_persisted_semantic_projection_plan(
     axes = plan.get("axes")
     if not isinstance(axes, Mapping):
         raise ValueError("persisted semantic projection plan lacks typed axes")
+    presentation = plan.get("presentation")
+    if not isinstance(presentation, Mapping) or set(presentation) != {
+        "title", "status", "source_refs"
+    }:
+        raise ValueError("persisted semantic projection plan lacks typed presentation")
+    _required_text(presentation, "title")
+    if presentation.get("status") not in {"source_declared", "working_assumption"}:
+        raise ValueError("persisted semantic projection presentation is invalid")
     node_by_id = _unique_rows(nodes, key="fact_id", label="projection node")
     edge_by_id = _unique_rows(edges, key="relation_id", label="projection edge")
     view_edge_by_id = _unique_rows(
@@ -178,16 +191,34 @@ def require_persisted_semantic_projection_plan(
         "workflow_step_fact_ids",
         "state_fact_ids",
         "visible_output_fact_ids",
-        "component_fact_ids",
     ):
         missing = [fact_id for fact_id in _strings(axes.get(key)) if fact_id not in node_by_id]
         if missing:
             raise ValueError(f"persisted semantic projection axis `{key}` references unknown facts")
+    policy_id_rows = tuple(
+        _required_text(component, "implementation_policy_id")
+        for component in components
+    )
+    policy_ids = set(policy_id_rows)
+    if len(policy_ids) != len(policy_id_rows):
+        raise ValueError("persisted semantic projection reuses an implementation policy")
+    if set(_strings(axes.get("implementation_policy_ids"))) != policy_ids:
+        raise ValueError(
+            "persisted semantic projection policy axis drifted from its components"
+        )
     for component in components:
-        if _required_text(component, "semantic_fact_id") not in node_by_id:
-            raise ValueError("persisted semantic component references an unknown fact")
-        if any(fact_id not in node_by_id for fact_id in _strings(component.get("implements"))):
-            raise ValueError("persisted semantic component implements an unknown fact")
+        if any(
+            fact_id not in node_by_id
+            for fact_id in _strings(component.get("covered_fact_ids"))
+        ):
+            raise ValueError("persisted semantic component covers an unknown fact")
+        if any(
+            fact_id not in node_by_id
+            for fact_id in _strings(component.get("projection_basis_fact_ids"))
+        ):
+            raise ValueError(
+                "persisted semantic component policy references an unknown fact"
+            )
     for workstream in workstreams:
         if any(value not in component_by_id for value in _strings(workstream.get("component_ids"))):
             raise ValueError("persisted semantic workstream references an unknown component")
@@ -226,6 +257,7 @@ def semantic_projection_component_rows(
     )
     rows: list[Mapping[str, Any]] = []
     planned = mapping_rows(plan.get("components"))
+    plan_nodes = mapping_rows(plan.get("nodes"))
     if len(projected) != len(planned):
         raise ValueError("verified semantic component depth differs from its projection plan")
     for binding in planned:
@@ -234,12 +266,58 @@ def semantic_projection_component_rows(
         if row is None:
             raise ValueError(f"verified semantic component `{component_id}` is missing")
         if (
-            row.get("semantic_fact_id") != binding.get("semantic_fact_id")
+            row.get("implementation_policy_id")
+            != binding.get("implementation_policy_id")
             or row.get("release_scope") != binding.get("release_scope")
             or row.get("component_role") != binding.get("component_role")
-            or _strings(row.get("semantic_implements")) != _strings(binding.get("implements"))
+            or _strings(row.get("covered_fact_ids"))
+            != _strings(binding.get("covered_fact_ids"))
+            or _strings(row.get("projection_basis_fact_ids"))
+            != _strings(binding.get("projection_basis_fact_ids"))
         ):
             raise ValueError(f"verified semantic component `{component_id}` drifted from its plan")
+        basis_ids = _strings(binding.get("projection_basis_fact_ids"))
+        basis_id_set = set(basis_ids)
+        expected_custody = tuple(
+            {
+                "fact_id": _required_text(node, "fact_id"),
+                "custody_state": _required_text(node, "custody_state"),
+            }
+            for node in sorted(
+                (
+                    node
+                    for node in plan_nodes
+                    if _required_text(node, "fact_id") in basis_id_set
+                ),
+                key=lambda node: (
+                    _required_text(node, "kind"),
+                    int(node.get("order") or 0),
+                    _required_text(node, "fact_id"),
+                ),
+            )
+        )
+        actual_custody = tuple(
+            {
+                "fact_id": _required_text(custody, "fact_id"),
+                "custody_state": _required_text(custody, "custody_state"),
+            }
+            for custody in mapping_rows(row.get("projection_basis_custody"))
+        )
+        if actual_custody != expected_custody:
+            raise ValueError(
+                f"verified semantic component `{component_id}` custody drifted from its plan"
+            )
+        contract = row.get("component_contract")
+        if not isinstance(contract, Mapping) or (
+            contract.get("implementation_policy_id")
+            != binding.get("implementation_policy_id")
+            or _strings(contract.get("covered_fact_ids"))
+            != _strings(binding.get("covered_fact_ids"))
+            or _strings(contract.get("projection_basis_fact_ids")) != basis_ids
+        ):
+            raise ValueError(
+                f"verified semantic component `{component_id}` contract drifted from its plan"
+            )
         rows.append(row)
     return tuple(rows)
 

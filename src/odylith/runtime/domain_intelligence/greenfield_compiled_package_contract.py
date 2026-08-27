@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+from typing import Any
+
 from odylith.runtime.domain_intelligence.greenfield_completion_types import (
     GreenfieldCompletionPackage,
 )
@@ -13,12 +16,14 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_package_validation 
 def require_complete_compiled_greenfield_package(
     prewrite_package: GreenfieldCompletionPackage,
     *,
+    intent_authority: Mapping[str, Any],
     release_selector: str,
 ) -> None:
     """Reject any package that is not an exact verified graph projection."""
 
     require_verified_semantic_package(
         prewrite_package,
+        intent_authority=intent_authority,
         release_selector=release_selector,
     )
 

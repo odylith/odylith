@@ -19,7 +19,7 @@ LOWER_CAPABILITY_REPORT_VERSION = "odylith.greenfield.lower-capability-safety-re
 LOWER_CAPABILITY_EVALUATION_VERSION = "odylith.greenfield.lower-capability-safety-evaluation.v1"
 LOWER_CAPABILITY_MATERIAL_FIELDS = (
     "identity", "role", "first_path", "state_object", "visible_result",
-    "dependency", "constraint", "non_goal", "component_boundary",
+    "dependency", "policy_boundary", "component_boundary",
 )
 LOWER_CAPABILITY_OUTCOMES = ("clarify", "fail_safe")
 _HEX_DIGITS = frozenset("0123456789abcdef")

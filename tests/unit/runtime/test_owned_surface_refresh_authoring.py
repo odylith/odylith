@@ -10,6 +10,7 @@ from odylith.runtime.governance import component_authoring
 from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import validate_component_registry_contract
 from odylith.runtime.surfaces import scaffold_mermaid_diagram
+from odylith.runtime.surfaces import compass_refresh_contract
 
 
 def _grounded_backlog_args() -> list[str]:
@@ -242,6 +243,7 @@ def test_owned_surface_refresh_batches_multiple_surfaces_once(tmp_path: Path, mo
             "surfaces": ("radar", "atlas"),
             "runtime_mode": "auto",
             "atlas_sync": True,
+            "compass_refresh_profile": "shell-safe",
         }
     ]
 
@@ -308,9 +310,40 @@ def test_owned_surface_refresh_supports_tooling_shell_project_surface(tmp_path: 
             "surfaces": ("tooling_shell",),
             "runtime_mode": "auto",
             "atlas_sync": False,
+            "compass_refresh_profile": "shell-safe",
         }
     ]
     assert owned_surface_refresh.dashboard_handoff(surface="project") == "odylith/index.html?tab=project"
+
+
+def test_owned_surface_refresh_forwards_sealed_preconfirm_profile(
+    tmp_path: Path, monkeypatch
+) -> None:
+    calls: list[dict[str, object]] = []
+    from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
+    from odylith.runtime.governance import sync_workstream_artifacts
+
+    monkeypatch.setattr(
+        odylith_context_engine_projection_search_runtime,
+        "clear_runtime_process_caches",
+        lambda **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "refresh_dashboard_surfaces",
+        lambda **kwargs: calls.append(dict(kwargs)) or 0,
+    )
+
+    rc = owned_surface_refresh.refresh_owned_surfaces(
+        repo_root=tmp_path,
+        surfaces=("compass",),
+        compass_refresh_profile=(
+            compass_refresh_contract.SEALED_PRECONFIRM_REFRESH_PROFILE
+        ),
+    )
+
+    assert rc == 0
+    assert calls[0]["compass_refresh_profile"] == "sealed-preconfirm"
 
 
 def test_backlog_create_refreshes_radar_surface(tmp_path: Path, monkeypatch, capsys) -> None:

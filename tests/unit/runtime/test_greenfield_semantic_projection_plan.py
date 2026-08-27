@@ -32,13 +32,15 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_proposal import (
     build_verified_semantic_proposal,
 )
 from tests.unit.runtime.greenfield_semantic_intent_fixtures import (
+    PATH_EVIDENCE,
     SEMANTIC_PROMPT,
     semantic_intent_packet,
+    semantic_relation,
     stateless_semantic_intent_packet as _stateless_packet,
 )
 
 
-def test_actorless_stateless_one_system_two_output_plan_stays_single_slice() -> None:
+def test_actorless_stateless_two_output_plan_stays_single_policy_slice() -> None:
     packet, prompt = _stateless_packet()
     verified = require_semantic_intent_packet(packet, prompt=prompt)
     authority = semantic_intent_authority(verified, prompt=prompt)
@@ -55,52 +57,50 @@ def test_actorless_stateless_one_system_two_output_plan_stays_single_slice() -> 
     assert plan.visible_output_fact_ids == ("output.0", "output.1")
     assert len(plan.components) == 1
     assert [(row.kind, row.component_ids) for row in plan.workstream_plans] == [
-        ("product", ("signal-service",)),
+        ("product", ("signal-view-first-path",)),
     ]
     assert [row.title for row in plan.diagram_plans] == ["First Path"]
     assert len(backlog) == 1
-    assert backlog[0]["component_focus"] == ["signal-service"]
+    assert backlog[0]["component_focus"] == ["signal-view-first-path"]
     assert len(diagrams) == 1
+    # Both outputs are nested under the source workflow step, so the projection
+    # retains their exact production and audience edges without adding topology.
     assert diagrams[0]["semantic_relation_ids"] == [
-        "relation.produces.0",
-        "relation.produces.1",
+        "produces.0",
+        "produces.1",
+        "output-of.0",
+        "output-of.1",
+        "visible-to.0",
+        "visible-to.1",
     ]
     assert diagrams[0]["projection_view_edge_ids"] == []
-    assert diagrams[0]["mermaid_source"].count(" -->|") == 2
+    assert diagrams[0]["mermaid_source"].count(" -->|") == 6
     assert "-.->|then|" not in diagrams[0]["mermaid_source"]
     assert len(proposal["components"]) == 1
     assert len(proposal["backlog"]) == 1
     assert len(proposal["diagrams"]) == 1
     contract = proposal["components"][0]["component_contract"]
     assert contract["schema_version"] == (
-        "odylith.greenfield.semantic-component-contract.v3"
+            "odylith.greenfield.semantic-component-contract.v9"
     )
     assert contract["component_role"] == "result_implementing"
     assert contract["workflow_fact_ids"] == ["step.0"]
-    assert contract["workflow_labels"] == ["Present signal"]
+    assert contract["workflow_labels"] == [
+        "present a signal chart and signal summary"
+    ]
     assert contract["state_objects"] == []
     assert contract["visible_outputs"] == ["Signal chart", "Signal summary"]
     assert {"owned_state", "produced_outputs", "states_or_transitions"}.isdisjoint(
         contract
     )
     assert proposal["components"][0]["validation"] == [
-        "Prove that both accepted outputs are visible without durable state."
+        "Prove every covered workflow step and declared effect from exact typed facts."
     ]
     assert all(
         "replay" not in row.casefold()
         for row in proposal["components"][0]["validation"]
     )
-    semantic_model = proposal["semantic_model"]
-    assert semantic_model["schema_version"] == "odylith.greenfield.semantic_model.v4"
-    first_path = semantic_model["first_path_contract"]
-    assert first_path["workflow_fact_ids"] == ["step.0"]
-    assert first_path["visible_outputs"] == ["Signal chart", "Signal summary"]
-    assert {"state_objects", "persistence", "recovery_path"}.isdisjoint(first_path)
-    assert all(
-        "state" not in row["required_evidence"].casefold()
-        and "replay" not in row["required_evidence"].casefold()
-        for row in semantic_model["proof_obligations"][:2]
-    )
+    assert "semantic_model" not in proposal
     authoring_contract = semantic_component_authoring_inputs(
         proposal=proposal,
         release_selector="0.0.1",
@@ -118,7 +118,7 @@ def test_actorless_stateless_one_system_two_output_plan_stays_single_slice() -> 
     )
     assert authoring_contract["component_role"] == "result_implementing"
     assert authoring_contract["local_proof"] == (
-        "Prove that both accepted outputs are visible without durable state.",
+        "Prove every covered workflow step and declared effect from exact typed facts.",
     )
 
 
@@ -132,7 +132,7 @@ def test_component_interfaces_render_typed_step_labels_not_raw_source_copy() -> 
     interfaces = plan.components[0]["interfaces"]
 
     assert raw_envelope not in " ".join(interfaces)
-    assert interfaces.count("Implements the “Present signal” workflow step.") == 1
+    assert interfaces.count("Covers the “Present signal” workflow step.") == 1
 
 
 def test_semantic_artifact_ids_transliterate_copy_without_changing_copy() -> None:
@@ -164,20 +164,37 @@ def test_diagram_boxes_disambiguate_equal_labels_by_typed_role() -> None:
 
 def test_state_object_without_endpoint_pair_stays_stateful_without_invented_transition() -> None:
     graph = _stateless_graph()
-    graph["facts"].append(
-        _fact(
-            "state.0",
-            "state_object",
-            "Signal record",
-            "The signal record is durable.",
-            0,
-            attributes={"object": "signal record"},
-        )
+    graph["facts"].extend(
+        [
+            _fact(
+                "entity.3",
+                "entity",
+                "Signal record",
+                "The signal record.",
+                3,
+                attributes={},
+            ),
+            _fact(
+                "state.0",
+                "state_object",
+                "Signal record",
+                "The signal record is durable.",
+                0,
+                attributes={"object": "Signal record", "entity_id": "entity.3"},
+            ),
+        ]
     )
     graph["relations"].extend(
         [
+            _relation(
+                "relation.target_entity.0",
+                "target_entity",
+                "step.0",
+                "entity.3",
+                0,
+            ),
             _relation("relation.changes.0", "changes", "step.0", "state.0", 0),
-            _relation("relation.implements.3", "implements", "system.0", "state.0", 3),
+            _relation("relation.state_of.0", "state_of", "state.0", "entity.3", 0),
         ]
     )
     plan = build_semantic_projection_plan(graph, project_slug="signal-view")
@@ -202,73 +219,20 @@ def test_state_object_without_endpoint_pair_stays_stateful_without_invented_tran
     assert contract["stateful"] is True
 
 
-def test_supporting_dependency_boundary_needs_no_invented_result_ownership() -> None:
+def test_dependency_and_policy_facts_do_not_create_synthetic_components() -> None:
     graph = _supporting_boundary_graph()
     plan, inputs = _component_inputs(graph)
-    supporting = next(
-        row for row in inputs if row["semantic_fact_id"] == "system.1"
-    )
 
-    assert plan.components[1]["release_scope"] == "first_path_required"
-    assert plan.components[1]["component_role"] == "boundary_supporting"
-    assert plan.components[1]["semantic_implements"] == []
-    assert plan.components[1]["result_summary"] == ""
-    assert plan.components[1]["interfaces"] == [
-        "Signal Service depends on Signal Source Reader",
-        "Signal Source Reader depends on Signal Source",
-        "Signal Source Reader is constrained by Read-only source",
-        "Signal Source Reader excludes Source mutation",
-    ]
-    assert supporting["component_contract"]["state_objects"] == ()
-    assert supporting["component_contract"]["visible_outputs"] == ()
-    assert supporting["component_contract"]["component_role"] == (
-        "boundary_supporting"
-    )
-    assert supporting["interfaces"] == (
-        "Signal Service depends on Signal Source Reader",
-        "Signal Source Reader depends on Signal Source",
-        "Signal Source Reader is constrained by Read-only source",
-        "Signal Source Reader excludes Source mutation",
-    )
-    visible_copy = " ".join(
-        (
-            *supporting["interfaces"],
-            *supporting["component_contract"]["local_proof"],
-        )
-    )
-    assert "reviewable first-path result" not in visible_copy.casefold()
-    assert "produces" not in visible_copy.casefold()
-    assert "blocked-path" not in visible_copy.casefold()
-
-    backlog = _backlog(plan)
-    diagrams = semantic_diagrams(plan=plan, backlog=backlog)
-    supporting_workstream = next(
-        row
-        for row in backlog
-        if row["component_focus"] == ["signal-source-reader"]
-    )
-    assert {
-        row["opportunity"] for row in backlog
-    } == {"Deliver only the accepted graph."}
-    assert supporting_workstream["recommended_first_slice"].endswith(
-        "Read the source without mutating it."
-    )
-    supporting_descriptions = [
-        component["description"]
-        for diagram in diagrams
-        for component in diagram["components"]
-        if component["semantic_fact_id"] == "system.1"
-    ]
-    cross_surface_copy = " ".join(
-        (
-            *supporting_workstream["interfaces"],
-            *supporting_workstream["validation"],
-            *supporting_descriptions,
-        )
-    ).casefold()
-    assert "reviewable first-path result" not in cross_surface_copy
-    assert "produces" not in cross_surface_copy
-    assert "blocked-path" not in cross_surface_copy
+    assert len(plan.components) == 1
+    assert len(plan.workstream_plans) == 1
+    assert len(inputs) == 1
+    component = plan.components[0]
+    assert component["implementation_policy_id"] == "implementation-policy.0"
+    assert component["component_role"] == "result_implementing"
+    assert component["custody_state"] == "system_policy"
+    assert component["dependencies"] == ["Depends on Signal Source."]
+    assert "external.0" in component["projection_basis_fact_ids"]
+    assert all(row.kind != "internal_system" for row in plan.nodes)
 
 
 def test_graph_lane_source_has_no_synthetic_result_fallback() -> None:
@@ -287,79 +251,7 @@ def test_graph_lane_source_has_no_synthetic_result_fallback() -> None:
     assert offenders == []
 
 
-def test_release_membership_does_not_fabricate_result_ownership() -> None:
-    graph = _supporting_boundary_graph()
-    plan, _ = _component_inputs(graph)
-    supporting = plan.components[1]
-
-    assert supporting["release_scope"] == "first_path_required"
-    assert supporting["component_role"] == "boundary_supporting"
-    assert supporting["semantic_implements"] == []
-
-
-def test_resultless_supporting_component_without_first_path_consumer_is_orphaned() -> None:
-    graph = _supporting_boundary_graph()
-    graph["relations"] = [
-        row
-        for row in graph["relations"]
-        if not (
-            row["kind"] == "depends_on"
-            and row["subject_id"] == "system.0"
-            and row["object_id"] == "system.1"
-        )
-    ]
-
-    with pytest.raises(ValueError, match="supporting.*is orphaned"):
-        _component_inputs(graph)
-
-
-def test_components_with_identical_typed_roles_are_rejected() -> None:
-    graph = _supporting_boundary_graph()
-    graph["facts"].append(
-        _supporting_system(
-            "system.2",
-            "Signal Source Reader Mirror",
-            2,
-        )
-    )
-    graph["relations"].extend(
-        [
-            _relation(
-                "relation.depends_on.2",
-                "depends_on",
-                "system.0",
-                "system.2",
-                2,
-            ),
-            _relation(
-                "relation.depends_on.3",
-                "depends_on",
-                "system.2",
-                "external.0",
-                3,
-            ),
-            _relation(
-                "relation.constrained_by.1",
-                "constrained_by",
-                "system.2",
-                "constraint.0",
-                1,
-            ),
-            _relation(
-                "relation.excludes.1",
-                "excludes",
-                "system.2",
-                "non-goal.0",
-                1,
-            ),
-        ]
-    )
-
-    with pytest.raises(ValueError, match="components are not differentiated"):
-        _component_inputs(graph)
-
-
-def test_two_state_two_output_two_system_plan_preserves_every_edge() -> None:
+def test_two_state_two_output_plan_stays_one_component_and_preserves_every_edge() -> None:
     graph = _two_state_graph()
     plan = build_semantic_projection_plan(graph, project_slug="review-flow")
     backlog = _backlog(plan)
@@ -367,53 +259,140 @@ def test_two_state_two_output_two_system_plan_preserves_every_edge() -> None:
 
     assert plan.state_fact_ids == ("state.0", "state.1")
     assert plan.visible_output_fact_ids == ("output.0", "output.1")
-    assert len(plan.components) == 2
-    assert [row.kind for row in plan.workstream_plans] == [
-        "product",
-        "component",
-        "component",
-    ]
-    assert len(backlog) == 3
-    assert [row["component_focus"] for row in backlog] == [
-        ["intake-service", "decision-service"],
-        ["intake-service"],
-        ["decision-service"],
-    ]
+    assert len(plan.components) == 1
+    assert [row.kind for row in plan.workstream_plans] == ["product"]
+    assert len(backlog) == 1
+    assert backlog[0]["component_focus"] == ["review-flow-first-path"]
     assert [row.key for row in plan.diagram_plans] == [
         "first_path",
-        "state_evidence",
-        "component_boundaries",
     ]
-    assert len(diagrams) == 3
+    assert len(diagrams) == 1
     first_path = diagrams[0]
     assert first_path["semantic_relation_ids"] == [
+        "relation.target_entity.0",
+        "relation.target_entity.1",
         "relation.produces.0",
         "relation.produces.1",
+        "relation.output_of.0",
+        "relation.output_of.1",
         "relation.changes.0",
         "relation.changes.1",
+        "relation.state_of.0",
+        "relation.state_of.1",
     ]
     assert first_path["projection_view_edge_ids"] == ["workflow-sequence-0"]
-    assert first_path["mermaid_source"].count(" -->|") == 4
+    assert first_path["mermaid_source"].count(" -->|") == 10
     assert first_path["mermaid_source"].count(" -.->|then|") == 1
-    assert "system.0" not in first_path["semantic_fact_ids"]
-    assert "system.1" not in first_path["semantic_fact_ids"]
-    contracts = [row["component_contract"] for row in plan.components]
-    assert [row["workflow_fact_ids"] for row in contracts] == [
-        ["step.0"],
-        ["step.1"],
+    contract = plan.components[0]["component_contract"]
+    assert contract["workflow_fact_ids"] == ["step.0", "step.1"]
+    assert contract["state_objects"] == ["Intake record", "Decision record"]
+    assert contract["visible_outputs"] == ["Intake receipt", "Decision notice"]
+    assert plan.components[0]["covered_fact_ids"] == [
+        "step.0",
+        "step.1",
+        "state.0",
+        "state.1",
+        "output.0",
+        "output.1",
     ]
-    assert [row["state_objects"] for row in contracts] == [
-        ["Intake record"],
-        ["Decision record"],
-    ]
-    assert [row["visible_outputs"] for row in contracts] == [
-        ["Intake receipt"],
-        ["Decision notice"],
-    ]
-    assert all(
-        {"owned_state", "produced_outputs", "states_or_transitions"}.isdisjoint(row)
-        for row in contracts
+
+
+def test_projection_plan_hard_cuts_synthetic_system_authority() -> None:
+    plan = build_semantic_projection_plan(
+        _two_state_graph(),
+        project_slug="review-flow",
     )
+    persisted = semantic_projection_plan_mapping(plan)
+    release = semantic_release_plan(plan=plan, release="0.0.1")
+
+    assert persisted["axes"]["implementation_policy_ids"] == [
+        "implementation-policy.0"
+    ]
+    assert "component_fact_ids" not in persisted["axes"]
+    assert persisted["components"] == [
+        {
+            "component_id": "review-flow-first-path",
+            "implementation_policy_id": "implementation-policy.0",
+            "release_scope": "first_path_required",
+            "component_role": "result_implementing",
+            "covered_fact_ids": [
+                "step.0",
+                "step.1",
+                "state.0",
+                "state.1",
+                "output.0",
+                "output.1",
+            ],
+            "projection_basis_fact_ids": [
+                node.fact_id for node in plan.nodes
+            ],
+        }
+    ]
+    assert all(node.kind != "internal_system" for node in plan.nodes)
+    assert all(edge.kind != "implements" for edge in plan.edges)
+    assert release["release_component_policy_ids"] == [
+        "implementation-policy.0"
+    ]
+    assert {
+        "release_component_fact_ids",
+        "result_component_fact_ids",
+        "supporting_component_fact_ids",
+        "deferred_component_fact_ids",
+    }.isdisjoint(release)
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        ("policy_as_fact", "must not masquerade"),
+        ("missing_coverage", "coverage drifted"),
+    ],
+)
+def test_component_package_rejects_policy_or_coverage_drift(
+    mutation: str,
+    message: str,
+) -> None:
+    plan = build_semantic_projection_plan(
+        _stateless_graph(),
+        project_slug="signal-view",
+    )
+    backlog = _backlog(plan)
+    diagrams = semantic_diagrams(plan=plan, backlog=backlog)
+    proposal = {
+        "projection_plan": semantic_projection_plan_mapping(plan),
+        "components": copy.deepcopy(list(plan.components)),
+        "backlog": backlog,
+        "diagrams": diagrams,
+        "risks": [],
+    }
+    component_plan = proposal["projection_plan"]["components"][0]
+    component = proposal["components"][0]
+    if mutation == "policy_as_fact":
+        component_plan["implementation_policy_id"] = "step.0"
+        component["implementation_policy_id"] = "step.0"
+        component["component_contract"]["implementation_policy_id"] = "step.0"
+        proposal["projection_plan"]["axes"]["implementation_policy_ids"] = [
+            "step.0"
+        ]
+    else:
+        component_plan["covered_fact_ids"] = ["step.0", "output.0"]
+        component["covered_fact_ids"] = ["step.0", "output.0"]
+        component["component_contract"]["covered_fact_ids"] = [
+            "step.0",
+            "output.0",
+        ]
+
+    with pytest.raises(ValueError, match=message):
+        semantic_component_authoring_inputs(
+            proposal=proposal,
+            release_selector="0.0.1",
+            backlog_result={
+                "created": [{"idea_id": "B-001", "title": backlog[0]["title"]}]
+            },
+            diagram_ids=tuple(
+                f"D-{index:03d}" for index in range(1, len(diagrams) + 1)
+            ),
+        )
 
 
 def test_projection_depth_changes_only_the_affected_adaptive_surfaces() -> None:
@@ -426,19 +405,24 @@ def test_projection_depth_changes_only_the_affected_adaptive_surfaces() -> None:
     constrained_graph = copy.deepcopy(baseline_graph)
     constrained_graph["facts"].append(
         _fact(
-            "constraint.0",
-            "operational_constraint",
+            "policy-boundary.0",
+            "policy_boundary",
             "Read-only input",
             "Input remains read-only.",
             0,
+            attributes={
+                "modality": "limited",
+                "behavior": "read",
+                "target": "input",
+            },
         )
     )
     constrained_graph["relations"].append(
         _relation(
-            "relation.constrained_by.0",
-            "constrained_by",
-            "identity.0",
-            "constraint.0",
+            "relation.applies_to.0",
+            "applies_to",
+            "policy-boundary.0",
+            "step.0",
             0,
         )
     )
@@ -456,19 +440,36 @@ def test_projection_depth_changes_only_the_affected_adaptive_surfaces() -> None:
     )
 
     stateful_graph = copy.deepcopy(baseline_graph)
-    stateful_graph["facts"].append(
-        _fact(
-            "state.0",
-            "state_object",
-            "Signal record",
-            "The signal record moves from absent to ready.",
-            0,
-            attributes={"object": "signal record"},
-            transition={"from_state": "absent", "to_state": "ready"},
-        )
+    stateful_graph["facts"].extend(
+        [
+            _fact(
+                "entity.3",
+                "entity",
+                "Signal record",
+                "The signal record.",
+                3,
+                attributes={},
+            ),
+            _fact(
+                "state.0",
+                "state_object",
+                "Signal record",
+                "The signal record moves from absent to ready.",
+                0,
+                attributes={"object": "Signal record", "entity_id": "entity.3"},
+                transition={"from_state": "absent", "to_state": "ready"},
+            ),
+        ]
     )
     stateful_graph["relations"].extend(
         [
+            _relation(
+                "relation.target_entity.0",
+                "target_entity",
+                "step.0",
+                "entity.3",
+                0,
+            ),
             _relation(
                 "relation.changes.0",
                 "changes",
@@ -477,11 +478,11 @@ def test_projection_depth_changes_only_the_affected_adaptive_surfaces() -> None:
                 0,
             ),
             _relation(
-                "relation.implements.3",
-                "implements",
-                "system.0",
+                "relation.state_of.0",
+                "state_of",
                 "state.0",
-                3,
+                "entity.3",
+                0,
             ),
         ]
     )
@@ -490,11 +491,10 @@ def test_projection_depth_changes_only_the_affected_adaptive_surfaces() -> None:
         project_slug="signal-view",
     )
 
-    assert len(stateful.nodes) == len(baseline.nodes) + 1
-    assert len(stateful.edges) == len(baseline.edges) + 2
+    assert len(stateful.nodes) == len(baseline.nodes) + 2
+    assert len(stateful.edges) == len(baseline.edges) + 3
     assert [row.key for row in stateful.diagram_plans] == [
         "first_path",
-        "state_evidence",
     ]
     assert len(stateful.workstream_plans) == len(baseline.workstream_plans)
 
@@ -513,7 +513,7 @@ def test_projection_depth_changes_only_the_affected_adaptive_surfaces() -> None:
         _relation(
             "relation.depends_on.0",
             "depends_on",
-            "identity.0",
+            "step.0",
             "external.0",
             0,
         )
@@ -528,19 +528,8 @@ def test_projection_depth_changes_only_the_affected_adaptive_surfaces() -> None:
     ]
     assert len(context.workstream_plans) == len(baseline.workstream_plans)
 
-    cross_boundary_graph = copy.deepcopy(context_graph)
-    cross_boundary_graph["relations"][-1]["subject_id"] = "system.0"
-    cross_boundary = build_semantic_projection_plan(
-        cross_boundary_graph,
-        project_slug="signal-view",
-    )
-    assert len(cross_boundary.nodes) == len(context.nodes)
-    assert len(cross_boundary.edges) == len(context.edges)
-    assert [row.key for row in cross_boundary.diagram_plans] == [
-        "first_path",
-        "context",
-        "component_boundaries",
-    ]
+    assert len(context.components) == 1
+    assert len(context.workstream_plans) == 1
 
 
 def test_verified_proposal_persists_and_consumes_one_projection_plan() -> None:
@@ -554,33 +543,31 @@ def test_verified_proposal_persists_and_consumes_one_projection_plan() -> None:
     )
 
     assert proposal["projection_plan"]["version"] == (
-        "odylith.greenfield.semantic-projection-plan.v3"
+            "odylith.greenfield.semantic-projection-plan.v16"
     )
     assert "apply_semantic_input" not in proposal
-    assert proposal["semantic_model"]["first_path_contract"]["state_objects"] == [
-        "Card"
-    ]
-    assert proposal["semantic_model"]["first_path_contract"]["visible_outputs"] == [
-        "Claim receipt"
-    ]
+    assert {
+        "semantic_model",
+        "project_intelligence",
+        "artifact_derivation",
+    }.isdisjoint(proposal)
     assert [row["title"] for row in proposal["backlog"]] == [
         "Deliver Claim Desk First Path",
-        "Implement Card Claim Service",
-        "Implement Claim Receipt Delivery",
     ]
-    assert len(proposal["diagrams"]) == 4
+    assert len(proposal["diagrams"]) == 2
     assert proposal["diagrams"][0]["semantic_relation_ids"] == [
-        "relation.owned_by.0",
-        "relation.owned_by.1",
-        "relation.produces.0",
-        "relation.changes.0",
+        "owned-by.0",
+        "target-entity.0",
+        "produces.0",
+        "output-of.0",
+        "visible-to.0",
+        "changes.0",
+        "state-of.0",
     ]
-    assert proposal["diagrams"][0]["projection_view_edge_ids"] == [
-        "workflow-sequence-0"
-    ]
+    assert proposal["diagrams"][0]["projection_view_edge_ids"] == []
     plan = build_semantic_projection_plan(
         packet["semantic_intent"],
-        project_slug="claim-desk",
+        project_slug="greenfield-project",
     )
     assert proposal["projection_plan"] == semantic_projection_plan_mapping(plan)
     release_plan = semantic_release_plan(
@@ -591,6 +578,41 @@ def test_verified_proposal_persists_and_consumes_one_projection_plan() -> None:
         key: proposal["release_plan"][key]
         for key in release_plan
     } == release_plan
+    assert plan.human_action_owner_labels == ("Shift coordinator",)
+
+
+def test_relationless_participant_never_becomes_a_human_action_owner() -> None:
+    graph = copy.deepcopy(semantic_intent_packet()["semantic_intent"])
+    extra_actor = copy.deepcopy(
+        next(row for row in graph["facts"] if row["fact_id"] == "actor.0")
+    )
+    extra_actor.update(fact_id="actor.1", label="Observer", order=1)
+    graph["facts"].append(extra_actor)
+
+    plan = build_semantic_projection_plan(graph, project_slug="claim-desk")
+
+    assert plan.human_action_owner_labels == ("Shift coordinator",)
+
+
+def test_output_recipient_relation_survives_every_relevant_diagram_view() -> None:
+    graph = copy.deepcopy(semantic_intent_packet()["semantic_intent"])
+    graph["relations"].append(
+        semantic_relation(
+            "visible_to", "output.0", "actor.0", 0, PATH_EVIDENCE
+        )
+    )
+
+    plan = build_semantic_projection_plan(graph, project_slug="claim-desk")
+    diagram_relations = {
+        diagram.key: set(diagram.relation_ids) for diagram in plan.diagram_plans
+    }
+
+    assert "relation.visible_to.0" in diagram_relations["first_path"]
+    assert "relation.visible_to.0" in diagram_relations["context"]
+    rendered = json.dumps(
+        semantic_diagrams(plan=plan, backlog=_backlog(plan)), sort_keys=True
+    )
+    assert "visible to" in rendered
 
 
 def test_verified_package_omits_fabricated_policy_and_repeated_review_copy() -> None:
@@ -603,9 +625,11 @@ def test_verified_package_omits_fabricated_policy_and_repeated_review_copy() -> 
     rendered = json.dumps(proposal, sort_keys=True)
 
     assert proposal["security_compliance"] == {
-        "release_boundary": "A shift coordinator can claim one ready card and receive a claim receipt.",
-        "operating_constraints": "Read the local duty roster.",
-        "excluded_scope": "Never reassign a card automatically.",
+        "release_boundary": (
+            "Release proof: “Claim receipt” visible and Card changing from ready "
+            "to claimed."
+        ),
+        "policy_boundaries": "prohibited: Never reassign a card automatically",
     }
     assert len(proposal["project_brief"]["blueprint_sections"]) == 5
     assert {
@@ -614,14 +638,16 @@ def test_verified_package_omits_fabricated_policy_and_repeated_review_copy() -> 
         "host_independent_paths",
     }.isdisjoint(proposal["project_brief"])
     assert {
-        "artifacts",
-        "execution_memory",
-        "metrics",
-        "change_model",
-        "invalidation_rules",
-        "conflict_model",
-        "transfer_priors",
-    }.isdisjoint(proposal["project_intelligence"])
+        "semantic_model",
+        "project_intelligence",
+        "artifact_derivation",
+    }.isdisjoint(proposal)
+    assert all(
+        "project_intelligence_binding" not in row
+        for key in ("backlog", "components", "diagrams")
+        for row in proposal[key]
+    )
+    assert "project_intelligence_binding" not in proposal["release_plan"]
     assert all(len(row["risks"]) == 1 for row in proposal["components"])
     for retired in (
         "Blocked-path proof",
@@ -687,20 +713,29 @@ def _supporting_boundary_graph() -> dict[str, Any]:
                 attributes={"access_mode": "read-only"},
             ),
             _fact(
-                "constraint.0",
-                "operational_constraint",
+                "policy-boundary.0",
+                "policy_boundary",
                 "Read-only source",
                 "The signal source stays read-only.",
                 0,
+                attributes={
+                    "modality": "limited",
+                    "behavior": "read",
+                    "target": "signal source",
+                },
             ),
             _fact(
-                "non-goal.0",
-                "non_goal",
+                "policy-boundary.1",
+                "policy_boundary",
                 "Source mutation",
                 "The product does not mutate the signal source.",
                 0,
+                attributes={
+                    "modality": "prohibited",
+                    "behavior": "mutate",
+                    "target": "signal source",
+                },
             ),
-            _supporting_system("system.1", "Signal Source Reader", 1),
         ]
     )
     graph["relations"].extend(
@@ -708,69 +743,54 @@ def _supporting_boundary_graph() -> dict[str, Any]:
             _relation(
                 "relation.depends_on.0",
                 "depends_on",
-                "system.0",
-                "system.1",
-                0,
-            ),
-            _relation(
-                "relation.depends_on.1",
-                "depends_on",
-                "system.1",
+                "step.0",
                 "external.0",
+                0,
+            ),
+            _relation(
+                "relation.applies_to.0",
+                "applies_to",
+                "policy-boundary.0",
+                "step.0",
+                0,
+            ),
+            _relation(
+                "relation.applies_to.1",
+                "applies_to",
+                "policy-boundary.1",
+                "step.0",
                 1,
-            ),
-            _relation(
-                "relation.constrained_by.0",
-                "constrained_by",
-                "system.1",
-                "constraint.0",
-                0,
-            ),
-            _relation(
-                "relation.excludes.0",
-                "excludes",
-                "system.1",
-                "non-goal.0",
-                0,
             ),
         ]
     )
     return graph
 
 
-def _supporting_system(
-    fact_id: str,
-    label: str,
-    order: int,
-) -> dict[str, Any]:
-    return _fact(
-        fact_id,
-        "internal_system",
-        label,
-        f"{label} owns the typed source boundary.",
-        order,
-        custody="bounded_interpretation",
-        attributes={
-            "responsibility": "Read the source without mutating it.",
-            "component_kind": "adapter",
-            "boundary": "Own read-only source access.",
-            "outside_boundary": "Signal presentation and source mutation.",
-            "proof": "Prove that source access remains read-only.",
-            "risk": "Source access could mutate upstream truth.",
-            "release_scope": "first_path_required",
-        },
-    )
-
-
 def _stateless_graph() -> dict[str, Any]:
     facts = [
         _fact(
-            "identity.0",
-            "identity",
-            "Signal View",
-            "Signal View presents two visible outputs without durable state.",
+            "entity.0",
+            "entity",
+            "Signal view",
+            "A signal view.",
             0,
-            attributes={"source_title": "signal view"},
+            attributes={},
+        ),
+        _fact(
+            "entity.1",
+            "entity",
+            "Signal chart",
+            "A signal chart.",
+            1,
+            attributes={},
+        ),
+        _fact(
+            "entity.2",
+            "entity",
+            "Signal summary",
+            "A signal summary.",
+            2,
+            attributes={},
         ),
         _fact(
             "step.0",
@@ -790,6 +810,9 @@ def _stateless_graph() -> dict[str, Any]:
             "Signal chart",
             "A signal chart is visible.",
             0,
+            attributes={
+                "entity_id": "entity.1",
+            },
         ),
         _fact(
             "output.1",
@@ -797,33 +820,62 @@ def _stateless_graph() -> dict[str, Any]:
             "Signal summary",
             "A signal summary is visible.",
             1,
-        ),
-        _system(
-            "system.0",
-            "Signal Service",
-            "Own signal presentation.",
-            0,
+            attributes={
+                "entity_id": "entity.2",
+            },
         ),
     ]
     relations = [
         _relation("relation.produces.0", "produces", "step.0", "output.0", 0),
         _relation("relation.produces.1", "produces", "step.0", "output.1", 1),
-        _relation("relation.implements.0", "implements", "system.0", "step.0", 0),
-        _relation("relation.implements.1", "implements", "system.0", "output.0", 1),
-        _relation("relation.implements.2", "implements", "system.0", "output.1", 2),
+        _relation("relation.output_of.0", "output_of", "output.0", "entity.1", 0),
+        _relation("relation.output_of.1", "output_of", "output.1", "entity.2", 1),
     ]
-    return {"facts": facts, "relations": relations, "narratives": []}
+    return {
+        "presentation": {
+            "title": "Signal View",
+            "status": "working_assumption",
+            "source_refs": [],
+        },
+        "facts": facts,
+        "relations": relations,
+        "narratives": [],
+    }
 
 
 def _two_state_graph() -> dict[str, Any]:
     facts = [
         _fact(
-            "identity.0",
-            "identity",
-            "Review Flow",
-            "Review Flow receives an intake and records a decision.",
+            "entity.0",
+            "entity",
+            "Intake record",
+            "The intake record.",
             0,
-            attributes={"source_title": "review flow"},
+            attributes={},
+        ),
+        _fact(
+            "entity.1",
+            "entity",
+            "Intake receipt",
+            "An intake receipt.",
+            1,
+            attributes={},
+        ),
+        _fact(
+            "entity.2",
+            "entity",
+            "Decision record",
+            "The decision record.",
+            2,
+            attributes={},
+        ),
+        _fact(
+            "entity.3",
+            "entity",
+            "Decision notice",
+            "A decision notice.",
+            3,
+            attributes={},
         ),
         _fact(
             "step.0",
@@ -849,7 +901,7 @@ def _two_state_graph() -> dict[str, Any]:
             "Intake record",
             "The intake record moves from absent to received.",
             0,
-            attributes={"object": "intake record"},
+            attributes={"object": "Intake record", "entity_id": "entity.0"},
             transition={"from_state": "absent", "to_state": "received"},
         ),
         _fact(
@@ -858,53 +910,52 @@ def _two_state_graph() -> dict[str, Any]:
             "Decision record",
             "The decision record moves from pending to approved.",
             1,
-            attributes={"object": "decision record"},
+            attributes={"object": "Decision record", "entity_id": "entity.2"},
             transition={"from_state": "pending", "to_state": "approved"},
         ),
-        _fact("output.0", "visible_output", "Intake receipt", "An intake receipt is visible.", 0),
-        _fact("output.1", "visible_output", "Decision notice", "A decision notice is visible.", 1),
-        _system("system.0", "Intake Service", "Own intake receipt and state.", 0),
-        _system("system.1", "Decision Service", "Own decision notice and state.", 1),
+        _fact(
+            "output.0",
+            "visible_output",
+            "Intake receipt",
+            "An intake receipt is visible.",
+            0,
+            attributes={
+                "entity_id": "entity.1",
+            },
+        ),
+        _fact(
+            "output.1",
+            "visible_output",
+            "Decision notice",
+            "A decision notice is visible.",
+            1,
+            attributes={
+                "entity_id": "entity.3",
+            },
+        ),
     ]
     relations = [
+        _relation("relation.target_entity.0", "target_entity", "step.0", "entity.0", 0),
+        _relation("relation.target_entity.1", "target_entity", "step.1", "entity.2", 1),
         _relation("relation.produces.0", "produces", "step.0", "output.0", 0),
         _relation("relation.produces.1", "produces", "step.1", "output.1", 1),
+        _relation("relation.output_of.0", "output_of", "output.0", "entity.1", 0),
+        _relation("relation.output_of.1", "output_of", "output.1", "entity.3", 1),
         _relation("relation.changes.0", "changes", "step.0", "state.0", 0),
         _relation("relation.changes.1", "changes", "step.1", "state.1", 1),
-        _relation("relation.depends_on.0", "depends_on", "system.1", "system.0", 0),
-        _relation("relation.implements.0", "implements", "system.0", "step.0", 0),
-        _relation("relation.implements.1", "implements", "system.0", "state.0", 1),
-        _relation("relation.implements.2", "implements", "system.0", "output.0", 2),
-        _relation("relation.implements.3", "implements", "system.1", "step.1", 3),
-        _relation("relation.implements.4", "implements", "system.1", "state.1", 4),
-        _relation("relation.implements.5", "implements", "system.1", "output.1", 5),
+        _relation("relation.state_of.0", "state_of", "state.0", "entity.0", 0),
+        _relation("relation.state_of.1", "state_of", "state.1", "entity.2", 1),
     ]
-    return {"facts": facts, "relations": relations, "narratives": []}
-
-
-def _system(
-    fact_id: str,
-    label: str,
-    responsibility: str,
-    order: int,
-) -> dict[str, Any]:
-    return _fact(
-        fact_id,
-        "internal_system",
-        label,
-        responsibility,
-        order,
-        custody="bounded_interpretation",
-        attributes={
-            "responsibility": responsibility,
-            "component_kind": "service",
-            "boundary": responsibility,
-            "outside_boundary": "Behavior outside the typed graph.",
-            "proof": f"Prove {responsibility}",
-            "risk": f"Failure can violate: {responsibility}",
-            "release_scope": "first_path_required",
+    return {
+        "presentation": {
+            "title": "Review Flow",
+            "status": "working_assumption",
+            "source_refs": [],
         },
-    )
+        "facts": facts,
+        "relations": relations,
+        "narratives": [],
+    }
 
 
 def _fact(

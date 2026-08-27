@@ -55,7 +55,7 @@ def test_engine_integrity_covers_operator_requested_engine_set() -> None:
         assert row["handoff_in"] or row["handoff_out"], row["area"]
     assert "odylith greenfield create" in areas["Domain Intelligence"]["commands"]
     assert (
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_materiality_contract.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_source_meaning.py"
         in areas["Tribunal"]["anchors"]
     )
     assert "src/odylith/runtime/domain_intelligence/proposal_tribunal.py" not in areas["Tribunal"]["anchors"]

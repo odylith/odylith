@@ -19,6 +19,7 @@ import tempfile
 
 from odylith.runtime.common.command_surface import display_command
 from odylith.runtime.surfaces import dashboard_shell_links
+from odylith.runtime.surfaces import compass_refresh_contract
 
 
 @dataclass(frozen=True)
@@ -67,6 +68,7 @@ def refresh_owned_surfaces(
     repo_root: Path,
     surfaces: tuple[str, ...] | list[str],
     atlas_sync: bool | None = None,
+    compass_refresh_profile: str = compass_refresh_contract.DEFAULT_REFRESH_PROFILE,
 ) -> int:
     from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
     from odylith.runtime.governance import sync_workstream_artifacts
@@ -83,6 +85,7 @@ def refresh_owned_surfaces(
             if atlas_sync is None
             else atlas_sync
         ),
+        compass_refresh_profile=compass_refresh_profile,
     )
 
 
@@ -102,12 +105,14 @@ def raise_for_failed_refreshes(
     operation_label: str,
     detail: str = "",
     atlas_sync: bool | None = None,
+    compass_refresh_profile: str = compass_refresh_contract.DEFAULT_REFRESH_PROFILE,
 ) -> None:
     policies = _policies_for_surfaces(surfaces)
     refresh_rc, refresh_output = _run_owned_surface_refresh_captured(
         repo_root=repo_root,
         policies=policies,
         atlas_sync=atlas_sync,
+        compass_refresh_profile=compass_refresh_profile,
     )
     if refresh_rc == 0:
         return
@@ -143,6 +148,7 @@ def _run_owned_surface_refresh_captured(
     repo_root: Path,
     policies: tuple[OwnedSurfaceRefreshPolicy, ...],
     atlas_sync: bool | None = None,
+    compass_refresh_profile: str = compass_refresh_contract.DEFAULT_REFRESH_PROFILE,
 ) -> tuple[int, str]:
     """Run refresh with Python and subprocess stdout/stderr hidden from operator chat."""
 
@@ -162,6 +168,7 @@ def _run_owned_surface_refresh_captured(
                         repo_root=repo_root,
                         surfaces=tuple(policy.surface for policy in policies),
                         atlas_sync=atlas_sync,
+                        compass_refresh_profile=compass_refresh_profile,
                     )
                     captured.flush()
             finally:
@@ -178,6 +185,7 @@ def _run_owned_surface_refresh_captured(
                 repo_root=repo_root,
                 surfaces=tuple(policy.surface for policy in policies),
                 atlas_sync=atlas_sync,
+                compass_refresh_profile=compass_refresh_profile,
             )
         return refresh_rc, captured_output.getvalue()
 

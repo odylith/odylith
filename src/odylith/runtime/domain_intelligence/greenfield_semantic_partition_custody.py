@@ -3,144 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from copy import deepcopy
 from typing import Any
-
-
-def require_discarded_evidence_separation(
-    discarded_value: Any,
-    *product_values: Any,
-) -> None:
-    """Keep exact discarded labels and citations outside all product truth."""
-
-    if not isinstance(discarded_value, Sequence) or isinstance(
-        discarded_value, (str, bytes, bytearray)
-    ):
-        raise ValueError("Semantic discarded evidence is malformed")
-    labels: set[str] = set()
-    refs: set[tuple[str, str, int]] = set()
-    for raw in discarded_value:
-        if not isinstance(raw, Mapping):
-            raise ValueError("Semantic discarded evidence is malformed")
-        label = raw.get("label")
-        source_refs = raw.get("source_refs")
-        if not isinstance(label, str) or not label or not isinstance(source_refs, list):
-            raise ValueError("Semantic discarded evidence is malformed")
-        labels.add(label)
-        refs.update(_source_ref_keys(source_refs))
-    for value in product_values:
-        if refs & _nested_source_ref_keys(value):
-            raise ValueError("Semantic product truth cites discarded evidence")
-        strings = tuple(_nested_strings(value))
-        if any(label in text for label in labels for text in strings):
-            raise ValueError("Semantic product truth contains a discarded label")
-
-
-def completion_without_discarded_citations(
-    discarded_value: Any,
-    completion_value: Any,
-) -> dict[str, Any]:
-    """Remove completion over-citation without weakening source-fact custody."""
-
-    discarded_refs = _discarded_source_ref_keys(discarded_value)
-
-    def filtered(value: Any) -> Any:
-        if isinstance(value, Mapping):
-            result: dict[str, Any] = {}
-            for key, nested in value.items():
-                if key != "source_refs":
-                    result[str(key)] = filtered(nested)
-                    continue
-                refs = list(nested) if isinstance(nested, list) else nested
-                keys = _source_ref_keys(refs)
-                kept = [
-                    deepcopy(ref)
-                    for ref in refs
-                    if _source_ref_keys([ref]).isdisjoint(discarded_refs)
-                ]
-                if keys and not kept:
-                    raise ValueError(
-                        "Semantic completion cites only discarded evidence"
-                    )
-                result[str(key)] = kept
-            return result
-        if isinstance(value, Sequence) and not isinstance(
-            value, (str, bytes, bytearray)
-        ):
-            return [filtered(nested) for nested in value]
-        return deepcopy(value)
-
-    completion = filtered(completion_value)
-    if not isinstance(completion, dict):
-        raise ValueError("Semantic completion is malformed")
-    require_discarded_evidence_separation(discarded_value, completion)
-    return completion
-
-
-def _discarded_source_ref_keys(value: Any) -> set[tuple[str, str, int]]:
-    if not isinstance(value, Sequence) or isinstance(
-        value, (str, bytes, bytearray)
-    ):
-        raise ValueError("Semantic discarded evidence is malformed")
-    refs: set[tuple[str, str, int]] = set()
-    for row in value:
-        if not isinstance(row, Mapping):
-            raise ValueError("Semantic discarded evidence is malformed")
-        refs.update(_source_ref_keys(row.get("source_refs")))
-    return refs
-
-
-def _source_ref_keys(value: Any) -> set[tuple[str, str, int]]:
-    if not isinstance(value, Sequence) or isinstance(
-        value, (str, bytes, bytearray)
-    ):
-        raise ValueError("Semantic discarded evidence citations are malformed")
-    result: set[tuple[str, str, int]] = set()
-    for raw in value:
-        if not isinstance(raw, Mapping) or set(raw) != {
-            "source_id", "quote", "occurrence",
-        }:
-            raise ValueError("Semantic discarded evidence citations are malformed")
-        source_id = raw.get("source_id")
-        quote = raw.get("quote")
-        occurrence = raw.get("occurrence")
-        if (
-            not isinstance(source_id, str) or not source_id
-            or not isinstance(quote, str) or not quote
-            or not isinstance(occurrence, int) or isinstance(occurrence, bool)
-        ):
-            raise ValueError("Semantic discarded evidence citations are malformed")
-        result.add((source_id, quote, occurrence))
-    return result
-
-
-def _nested_source_ref_keys(value: Any) -> set[tuple[str, str, int]]:
-    if isinstance(value, Mapping):
-        if set(value) == {"source_id", "quote", "occurrence"}:
-            return _source_ref_keys([value])
-        result: set[tuple[str, str, int]] = set()
-        for nested in value.values():
-            result.update(_nested_source_ref_keys(nested))
-        return result
-    if isinstance(value, Sequence) and not isinstance(
-        value, (str, bytes, bytearray)
-    ):
-        result: set[tuple[str, str, int]] = set()
-        for nested in value:
-            result.update(_nested_source_ref_keys(nested))
-        return result
-    return set()
-
-
-def _nested_strings(value: Any):
-    if isinstance(value, str):
-        yield value
-    elif isinstance(value, Mapping):
-        for nested in value.values():
-            yield from _nested_strings(nested)
-    elif isinstance(value, Sequence) and not isinstance(value, (bytes, bytearray)):
-        for nested in value:
-            yield from _nested_strings(nested)
 
 
 def accepted_partitioned_evidence_catalog(
@@ -173,11 +36,7 @@ def accepted_source_evidence_catalog(
         boundary = _mapping(source["boundary"], "Semantic source boundary")
         source = {
             "path": source["path"],
-            "boundary": {
-                key: nested
-                for key, nested in boundary.items()
-                if key != "discarded_evidence"
-            },
+            "boundary": dict(boundary),
         }
     source_ids = _reference_ids(source, catalog=catalog)
     if not source_ids:
@@ -230,6 +89,4 @@ def _mapping(value: Any, label: str) -> dict[str, Any]:
 __all__ = [
     "accepted_partitioned_evidence_catalog",
     "accepted_source_evidence_catalog",
-    "completion_without_discarded_citations",
-    "require_discarded_evidence_separation",
 ]

@@ -71,8 +71,8 @@ def materialize_compiled_release_target(
         **result,
         "created": existing is None,
         "dry_run": False,
-        "release": committed_release,
-        "registry_path": str(state.registry_path),
+        "release": _portable_release_row(root, committed_release),
+        "registry_path": _repo_relative_path(root, state.registry_path),
     }
 
 
@@ -122,8 +122,11 @@ def materialize_compiled_release_assignment(
         "dry_run": False,
         "events": new_events,
         "replayed_event_count": len(new_events),
-        "release": committed_release or result.get("release", {}),
-        "event_log_path": str(state.event_log_path),
+        "release": _portable_release_row(
+            root,
+            committed_release or _mapping(result.get("release")),
+        ),
+        "event_log_path": _repo_relative_path(root, state.event_log_path),
     }
 
 
@@ -209,6 +212,26 @@ def _text_list(value: Any) -> tuple[str, ...]:
     if not isinstance(value, (list, tuple)):
         return ()
     return tuple(str(item).strip() for item in value if str(item).strip())
+
+
+def _repo_relative_path(repo_root: Path, value: Path | str) -> str:
+    path = Path(value).expanduser()
+    if not path.is_absolute():
+        if any(part in {"", ".", ".."} for part in path.parts):
+            raise ValueError("compiled release path is not repository-relative")
+        return path.as_posix()
+    path = path.resolve(strict=False)
+    try:
+        return path.relative_to(repo_root.resolve(strict=False)).as_posix()
+    except ValueError as exc:
+        raise ValueError("compiled release path is outside the managed repository") from exc
+
+
+def _portable_release_row(repo_root: Path, value: Mapping[str, Any]) -> dict[str, Any]:
+    row = dict(value)
+    if str(row.get("source_path") or "").strip():
+        row["source_path"] = _repo_relative_path(repo_root, str(row["source_path"]))
+    return row
 
 
 __all__ = [

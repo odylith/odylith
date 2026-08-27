@@ -92,12 +92,12 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                 commands=("odylith bug capture", "odylith greenfield propose"),
                 anchors=(
                     "src/odylith/runtime/reasoning/tribunal_engine.py",
-                    "src/odylith/runtime/domain_intelligence/greenfield_semantic_materiality_contract.py",
+                    "src/odylith/runtime/domain_intelligence/greenfield_semantic_source_meaning.py",
                     "src/odylith/runtime/governance/artifact_tribunal.py",
                 ),
                 activation=(
                     "bug capture invokes the deterministic artifact Tribunal, while greenfield proposal "
-                    "requires an independent prompt-only materiality challenge before governed writes"
+                    "requires one typed source-meaning graph before governed writes"
                 ),
             ),
             InventoryItem(

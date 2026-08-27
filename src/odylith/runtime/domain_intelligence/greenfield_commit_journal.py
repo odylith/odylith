@@ -3,21 +3,19 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-import hashlib
 import json
-import shutil
-import stat
-import tempfile
 from pathlib import Path
 from typing import Any
 
-from odylith.install.fs import atomic_write_text
-from odylith.install.fs import fsync_directory
 from odylith.runtime.domain_intelligence import greenfield_create_lifecycle
+from odylith.runtime.domain_intelligence import greenfield_commit_recovery
+from odylith.runtime.domain_intelligence import greenfield_commit_journal_store
 from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.domain_intelligence import greenfield_transaction_path_boundary
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
+from odylith.runtime.domain_intelligence.greenfield_transaction import snapshot_missing_marker_token
 
 
 JOURNAL_VERSION = "odylith.greenfield.commit_journal.v3"
@@ -58,71 +56,97 @@ class GreenfieldCommitJournal:
         self.transaction_hash = _require_digest(transaction_hash, label="transaction hash")
         self.write_set_hash = _require_digest(str(self.write_set["write_set_hash"]), label="write-set hash")
         self.paths = greenfield_repository_write_set.greenfield_repository_recovery_paths(self.write_set)
-        self.root = (
-            self.repo_root / ".odylith" / "runtime" / "greenfield" / "create-journal" / self.transaction_hash
-        )
+        self.root_token = f".odylith/runtime/greenfield/create-journal/{self.transaction_hash}"
+        self.root = self.repo_root / self.root_token
+        self.snapshot_token = f"{self.root_token}/snapshot"
+        self.staging_token = f"{self.root_token}/staging"
         self.snapshot_root = self.root / "snapshot"
         self.staging_root = self.root / "staging"
         self.state_path = self.root / "state.v1.json"
 
     @property
     def recovery_path(self) -> str:
-        return str(self.root) if self.root.exists() else ""
+        return (
+            str(self.root)
+            if greenfield_transaction_path_boundary.path_kind(self.repo_root, self.root_token)
+            != "missing"
+            else ""
+        )
 
     @classmethod
     def recover_pending_journals(cls, *, repo_root: Path, excluding_transaction_hash: str) -> None:
         """Settle stranded transactions before another create checks preconditions."""
 
         root = Path(repo_root).expanduser().resolve()
-        journal_parent = root / ".odylith" / "runtime" / "greenfield" / "create-journal"
-        if not journal_parent.exists():
+        journal_parent_token = ".odylith/runtime/greenfield/create-journal"
+        journal_parent = root / journal_parent_token
+        if greenfield_transaction_path_boundary.path_kind(root, journal_parent_token) == "missing":
             return
-        if journal_parent.is_symlink() or not journal_parent.is_dir():
+        if greenfield_transaction_path_boundary.path_kind(root, journal_parent_token) != "directory":
             raise GreenfieldCommitJournalError(
                 "greenfield commit journal directory is not a safe directory",
                 failure_kind="post_confirm_commit_environment_or_io_failure",
                 recovery_path=str(journal_parent),
             )
         excluded = _require_digest(excluding_transaction_hash, label="transaction hash")
-        for entry in sorted(journal_parent.iterdir(), key=lambda item: item.name):
-            if entry.name == "manual-recovery":
-                if entry.is_symlink() or not entry.is_dir():
+        for entry in greenfield_transaction_path_boundary.list_directory(root, journal_parent_token):
+            entry_token = entry.path
+            entry_path = root / entry_token
+            name = Path(entry_token).name
+            if name == "manual-recovery":
+                if entry.kind != "directory":
                     raise GreenfieldCommitJournalError(
-                        "greenfield commit journal manual-recovery directory is not safe",
+                        "greenfield commit journal manual-recovery entry is unsafe",
                         failure_kind="post_confirm_commit_environment_or_io_failure",
-                        recovery_path=str(entry),
+                        recovery_path=str(entry_path),
                     )
                 continue
-            if entry.name.startswith(".prepare-") and entry.is_dir() and not entry.is_symlink():
-                shutil.rmtree(entry)
-                fsync_directory(journal_parent)
+            if name.startswith(".prepare-") and entry.kind == "directory":
+                greenfield_transaction_path_boundary.remove_tree(root, entry_token)
                 continue
-            if entry.is_symlink() or not entry.is_dir():
+            if entry.kind != "directory":
                 raise GreenfieldCommitJournalError(
                     "greenfield commit journal directory contains an unsafe entry",
                     failure_kind="post_confirm_commit_environment_or_io_failure",
-                    recovery_path=str(entry),
+                    recovery_path=str(entry_path),
                 )
-            if _is_empty_prewrite_orphan(entry):
-                shutil.rmtree(entry)
-                fsync_directory(journal_parent)
+            if greenfield_commit_journal_store.is_empty_prewrite_orphan(root, entry_token):
+                greenfield_transaction_path_boundary.remove_tree(root, entry_token)
                 continue
-            record = _read_journal_record(entry)
+            record = _read_journal_record(root, entry_token)
             if str(record.get("version", "")) in _LEGACY_JOURNAL_VERSIONS:
-                _quarantine_legacy_journal(entry, journal_parent=journal_parent)
+                try:
+                    greenfield_commit_journal_store.quarantine_legacy_journal(
+                        root,
+                        entry_token,
+                        journal_parent_token=journal_parent_token,
+                    )
+                except ValueError as exc:
+                    raise GreenfieldCommitJournalError(
+                        str(exc),
+                        failure_kind="post_confirm_commit_environment_or_io_failure",
+                        recovery_path=str(entry_path),
+                    ) from exc
                 continue
             if str(record.get("version", "")) != JOURNAL_VERSION:
                 raise GreenfieldCommitJournalError(
                     "greenfield commit journal version is unsupported",
                     failure_kind="post_confirm_commit_invariant_failure",
-                    recovery_path=str(entry),
+                    recovery_path=str(entry_path),
                 )
             transaction_hash = _require_digest(
                 str(record.get("transaction_hash", "")),
                 label="transaction hash",
             )
             if str(record["state"]) == "closed":
-                _discard_committed_journal_artifacts(entry)
+                try:
+                    greenfield_commit_journal_store.discard_committed_artifacts(root, entry_token)
+                except ValueError as exc:
+                    raise GreenfieldCommitJournalError(
+                        str(exc),
+                        failure_kind="post_confirm_commit_environment_or_io_failure",
+                        recovery_path=str(entry_path),
+                    ) from exc
                 continue
             if transaction_hash == excluded:
                 continue
@@ -136,21 +160,23 @@ class GreenfieldCommitJournal:
                 journal.recover_or_return_committed()
                 continue
             if str(record["state"]) in {"preparing", "prepared", "aborted"}:
-                shutil.rmtree(entry)
-                fsync_directory(journal_parent)
+                greenfield_transaction_path_boundary.remove_tree(root, entry_token)
                 continue
             raise GreenfieldCommitJournalError(
                 "greenfield commit journal state is invalid",
                 failure_kind="post_confirm_commit_invariant_failure",
-                recovery_path=str(entry),
+                recovery_path=str(entry_path),
             )
 
     def recover_or_return_committed(self) -> dict[str, Any] | None:
         """Recover one interrupted apply, or return a verified same-hash receipt."""
 
-        if not self.root.exists() and not self.root.is_symlink():
+        if greenfield_transaction_path_boundary.path_kind(self.repo_root, self.root_token) == "missing":
             return None
-        if _is_empty_prewrite_orphan(self.root):
+        if greenfield_commit_journal_store.is_empty_prewrite_orphan(
+            self.repo_root,
+            self.root_token,
+        ):
             self._discard_journal()
             return None
         record = self._read_record()
@@ -288,26 +314,40 @@ class GreenfieldCommitJournal:
         )
 
     def prepare(self) -> None:
-        if self.root.exists() or self.root.is_symlink():
+        if greenfield_transaction_path_boundary.path_kind(self.repo_root, self.root_token) != "missing":
             raise GreenfieldCommitJournalError(
                 "greenfield commit journal already exists before prepare",
                 failure_kind="post_confirm_commit_invariant_failure",
                 recovery_path=self.recovery_path,
             )
-        self.root.parent.mkdir(parents=True, exist_ok=True)
-        fsync_directory(self.root.parent)
-        temporary_root = Path(tempfile.mkdtemp(prefix=".prepare-", dir=self.root.parent))
+        parent_token = str(Path(self.root_token).parent)
+        greenfield_transaction_path_boundary.ensure_directory(self.repo_root, parent_token)
+        temporary_token = greenfield_transaction_path_boundary.make_temporary_directory(
+            self.repo_root,
+            parent_token,
+            prefix=".prepare-",
+        )
         try:
-            _write_journal_record(temporary_root, self._record_payload(state="preparing"))
-            temporary_root.replace(self.root)
-            fsync_directory(self.root.parent)
+            _write_journal_record(
+                self.repo_root,
+                temporary_token,
+                self._record_payload(state="preparing"),
+            )
+            greenfield_transaction_path_boundary.rename_directory(
+                self.repo_root,
+                temporary_token,
+                self.root_token,
+            )
         except BaseException:
-            shutil.rmtree(temporary_root, ignore_errors=True)
+            try:
+                greenfield_transaction_path_boundary.remove_tree(self.repo_root, temporary_token)
+            except (FileNotFoundError, greenfield_transaction_path_boundary.GreenfieldTransactionPathError):
+                pass
             raise
 
     def mark_prepared(self) -> None:
         self._require_state("preparing")
-        if not self.snapshot_root.is_dir():
+        if greenfield_transaction_path_boundary.path_kind(self.repo_root, self.snapshot_token) != "directory":
             raise GreenfieldCommitJournalError(
                 "greenfield commit journal cannot enter prepared state without a rollback snapshot",
                 failure_kind="post_confirm_commit_invariant_failure",
@@ -378,7 +418,10 @@ class GreenfieldCommitJournal:
         )
 
     def mark_aborted(self) -> None:
-        if not self.root.exists() or self._read_record().get("state") == "aborted":
+        if (
+            greenfield_transaction_path_boundary.path_kind(self.repo_root, self.root_token) == "missing"
+            or self._read_record().get("state") == "aborted"
+        ):
             return
         self._write_record(state="aborted")
         greenfield_generation_store.discard_unpublished_greenfield_generation(
@@ -391,7 +434,7 @@ class GreenfieldCommitJournal:
     def discard_recovered_abort(self) -> None:
         """Remove a settled same-hash abort before retrying its sealed commit."""
 
-        if not self.root.exists() and not self.root.is_symlink():
+        if greenfield_transaction_path_boundary.path_kind(self.repo_root, self.root_token) == "missing":
             return
         if str(self._read_record().get("state") or "") != "aborted":
             raise GreenfieldCommitJournalError(
@@ -409,7 +452,7 @@ class GreenfieldCommitJournal:
         self._discard_staging()
 
     def _restore_interrupted_snapshot(self) -> None:
-        if not self.snapshot_root.is_dir():
+        if greenfield_transaction_path_boundary.path_kind(self.repo_root, self.snapshot_token) != "directory":
             raise GreenfieldCommitJournalError(
                 "greenfield commit recovery cannot find the durable rollback snapshot",
                 failure_kind="post_confirm_commit_environment_or_io_failure",
@@ -448,9 +491,20 @@ class GreenfieldCommitJournal:
             created_directories = {str(row["path"]) for row in self.write_set["directories"]}
             deleted_directories = {str(row["path"]) for row in self.write_set["directory_deletes"]}
             for owner in self.paths:
-                before_files, before_directories = _snapshot_tree(self.snapshot_root, owner, required=True)
-                current_files, current_directories = _snapshot_tree(self.repo_root, owner, required=False)
-                if not _safe_interrupted_tree(
+                before_files, before_directories = greenfield_commit_recovery.snapshot_tree(
+                    self.repo_root,
+                    f"{self.snapshot_token}/{owner}",
+                    owner=owner,
+                    required=True,
+                    missing_marker=snapshot_missing_marker_token(self.snapshot_token, owner),
+                )
+                current_files, current_directories = greenfield_commit_recovery.snapshot_tree(
+                    self.repo_root,
+                    owner,
+                    owner=owner,
+                    required=False,
+                )
+                if not greenfield_commit_recovery.safe_interrupted_tree(
                     owner=owner,
                     before_files=before_files,
                     before_directories=before_directories,
@@ -467,34 +521,36 @@ class GreenfieldCommitJournal:
         return True
 
     def _prepare_staging_root(self) -> None:
-        if self.staging_root.exists() or self.staging_root.is_symlink():
+        if greenfield_transaction_path_boundary.path_kind(self.repo_root, self.staging_token) != "missing":
             raise GreenfieldCommitJournalError(
                 "greenfield commit journal staging directory already exists",
                 failure_kind="post_confirm_commit_invariant_failure",
                 recovery_path=self.recovery_path,
             )
-        self.staging_root.mkdir(parents=True, exist_ok=False)
-        fsync_directory(self.root)
+        greenfield_transaction_path_boundary.ensure_directory(self.repo_root, self.staging_token)
 
     def _discard_snapshot(self) -> None:
         try:
-            if self.snapshot_root.exists() or self.snapshot_root.is_symlink():
-                shutil.rmtree(self.snapshot_root)
-                fsync_directory(self.root)
-        except OSError:
+            greenfield_transaction_path_boundary.remove_path(
+                self.repo_root,
+                self.snapshot_token,
+                missing_ok=True,
+            )
+        except (OSError, ValueError):
             pass
 
     def _discard_staging(self) -> None:
         try:
-            if self.staging_root.exists() or self.staging_root.is_symlink():
-                shutil.rmtree(self.staging_root)
-                fsync_directory(self.root)
-        except OSError:
+            greenfield_transaction_path_boundary.remove_path(
+                self.repo_root,
+                self.staging_token,
+                missing_ok=True,
+            )
+        except (OSError, ValueError):
             pass
 
     def _discard_journal(self) -> None:
-        shutil.rmtree(self.root)
-        fsync_directory(self.root.parent)
+        greenfield_transaction_path_boundary.remove_tree(self.repo_root, self.root_token)
 
     def _require_state(self, expected: str) -> None:
         actual = str(self._read_record().get("state") or "")
@@ -506,7 +562,7 @@ class GreenfieldCommitJournal:
             )
 
     def _read_record(self) -> dict[str, Any]:
-        record = _read_journal_record(self.root)
+        record = _read_journal_record(self.repo_root, self.root_token)
         if str(record.get("transaction_hash", "")) != self.transaction_hash:
             raise GreenfieldCommitJournalError(
                 "greenfield commit journal transaction hash does not match the confirmed transaction",
@@ -566,7 +622,8 @@ class GreenfieldCommitJournal:
             history = list(greenfield_create_lifecycle.lifecycle_history_for_journal_state(str(current["state"])))
         lifecycle_history = greenfield_create_lifecycle.advance_lifecycle_for_journal_state(history, state)
         _write_journal_record(
-            self.root,
+            self.repo_root,
+            self.root_token,
             self._record_payload(
                 state=state,
                 commit_result=commit_result,
@@ -609,64 +666,46 @@ class GreenfieldCommitJournal:
                 generation_manifest_sha256,
                 label="generation manifest hash",
             )
-        record["record_hash"] = _record_hash(record)
+        record["record_hash"] = greenfield_commit_journal_store.record_hash(record)
         return record
 
 
-def _record_hash(record: Mapping[str, Any]) -> str:
-    canonical = json.dumps(dict(record), sort_keys=True, separators=(",", ":"), ensure_ascii=True)
-    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
-
-def _write_journal_record(root: Path, record: Mapping[str, Any]) -> None:
-    destination = Path(root)
+def _write_journal_record(repo_root: Path, journal_token: str, record: Mapping[str, Any]) -> None:
     try:
-        atomic_write_text(
-            destination / "state.v1.json",
-            json.dumps(dict(record), sort_keys=True, separators=(",", ":"), ensure_ascii=True) + "\n",
-        )
-        fsync_directory(destination)
-    except OSError as exc:
+        greenfield_commit_journal_store.write_record(repo_root, journal_token, record)
+    except (OSError, ValueError) as exc:
         raise GreenfieldCommitJournalError(
             "greenfield commit journal could not persist its transaction state",
             failure_kind="post_confirm_commit_environment_or_io_failure",
-            recovery_path=str(destination),
+            recovery_path=str(Path(repo_root) / journal_token),
         ) from exc
 
 
-def _is_empty_prewrite_orphan(root: Path) -> bool:
-    candidate = Path(root)
-    if candidate.is_symlink() or not candidate.is_dir() or (candidate / "state.v1.json").exists():
-        return False
+def _read_journal_record(repo_root: Path, journal_token: str) -> dict[str, Any]:
+    state_path = f"{journal_token}/state.v1.json"
     try:
-        return not any(candidate.iterdir())
-    except OSError:
-        return False
-
-
-def _read_journal_record(root: Path) -> dict[str, Any]:
-    state_path = Path(root) / "state.v1.json"
-    try:
-        payload = json.loads(state_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+        payload = json.loads(
+            greenfield_transaction_path_boundary.read_bytes(repo_root, state_path).decode("utf-8")
+        )
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
         raise GreenfieldCommitJournalError(
             "greenfield commit journal state cannot be read",
             failure_kind="post_confirm_commit_environment_or_io_failure",
-            recovery_path=str(root),
+            recovery_path=str(Path(repo_root) / journal_token),
         ) from exc
     if not isinstance(payload, Mapping):
         raise GreenfieldCommitJournalError(
             "greenfield commit journal state is malformed",
             failure_kind="post_confirm_commit_invariant_failure",
-            recovery_path=str(root),
+            recovery_path=str(Path(repo_root) / journal_token),
         )
     record = dict(payload)
     digest = str(record.pop("record_hash", "")).strip()
-    if digest != _record_hash(record):
+    if digest != greenfield_commit_journal_store.record_hash(record):
         raise GreenfieldCommitJournalError(
             "greenfield commit journal state hash mismatch",
             failure_kind="post_confirm_commit_invariant_failure",
-            recovery_path=str(root),
+            recovery_path=str(Path(repo_root) / journal_token),
         )
     if str(record.get("version", "")) in _LEGACY_JOURNAL_VERSIONS:
         return record
@@ -674,7 +713,7 @@ def _read_journal_record(root: Path) -> dict[str, Any]:
         raise GreenfieldCommitJournalError(
             "greenfield commit journal state is invalid",
             failure_kind="post_confirm_commit_invariant_failure",
-            recovery_path=str(root),
+            recovery_path=str(Path(repo_root) / journal_token),
         )
     lifecycle_version = str(record.get("lifecycle_version") or "")
     if lifecycle_version:
@@ -682,7 +721,7 @@ def _read_journal_record(root: Path) -> dict[str, Any]:
             raise GreenfieldCommitJournalError(
                 "greenfield commit journal lifecycle version is unsupported",
                 failure_kind="post_confirm_commit_invariant_failure",
-                recovery_path=str(root),
+                recovery_path=str(Path(repo_root) / journal_token),
             )
         try:
             history = greenfield_create_lifecycle.require_create_lifecycle_history(record.get("lifecycle_history"))
@@ -690,52 +729,15 @@ def _read_journal_record(root: Path) -> dict[str, Any]:
             raise GreenfieldCommitJournalError(
                 "greenfield commit journal lifecycle history is invalid",
                 failure_kind="post_confirm_commit_invariant_failure",
-                recovery_path=str(root),
+                recovery_path=str(Path(repo_root) / journal_token),
             ) from exc
         if str(record.get("lifecycle_state") or "") != history[-1]:
             raise GreenfieldCommitJournalError(
                 "greenfield commit journal lifecycle state does not match its history",
                 failure_kind="post_confirm_commit_invariant_failure",
-                recovery_path=str(root),
+                recovery_path=str(Path(repo_root) / journal_token),
             )
     return record
-
-
-def _quarantine_legacy_journal(entry: Path, *, journal_parent: Path) -> None:
-    manual_root = journal_parent / "manual-recovery"
-    if manual_root.exists() and (manual_root.is_symlink() or not manual_root.is_dir()):
-        raise GreenfieldCommitJournalError(
-            "greenfield commit journal manual-recovery directory is not safe",
-            failure_kind="post_confirm_commit_environment_or_io_failure",
-            recovery_path=str(manual_root),
-        )
-    manual_root.mkdir(parents=True, exist_ok=True)
-    destination = manual_root / entry.name
-    if destination.exists() or destination.is_symlink():
-        raise GreenfieldCommitJournalError(
-            "greenfield commit journal legacy recovery entry already exists",
-            failure_kind="post_confirm_commit_invariant_failure",
-            recovery_path=str(destination),
-        )
-    entry.replace(destination)
-    fsync_directory(manual_root)
-    fsync_directory(journal_parent)
-
-
-def _discard_committed_journal_artifacts(root: Path) -> None:
-    journal_root = Path(root)
-    for name in ("snapshot", "staging"):
-        target = journal_root / name
-        if not target.exists() and not target.is_symlink():
-            continue
-        if target.is_symlink() or not target.is_dir():
-            raise GreenfieldCommitJournalError(
-                "greenfield committed journal artifact is not a safe directory",
-                failure_kind="post_confirm_commit_environment_or_io_failure",
-                recovery_path=str(target),
-            )
-        shutil.rmtree(target)
-        fsync_directory(journal_root)
 
 
 def _require_digest(value: str, *, label: str) -> str:
@@ -759,86 +761,6 @@ def _json_mapping(value: Mapping[str, Any]) -> dict[str, Any]:
             failure_kind="post_confirm_commit_invariant_failure",
         )
     return payload
-
-
-def _snapshot_tree(
-    root: Path,
-    owner: str,
-    *,
-    required: bool,
-) -> tuple[dict[str, tuple[bytes, int]], set[str]]:
-    target_root = Path(root)
-    marker = target_root / ".missing" / hashlib.sha256(owner.encode("utf-8")).hexdigest()
-    target = target_root / owner
-    if marker.exists():
-        if not required or target.exists() or target.is_symlink():
-            raise ValueError("greenfield commit snapshot has an invalid missing-path marker")
-        return {}, set()
-    if target.is_symlink():
-        raise ValueError("greenfield commit recovery refuses a symlinked snapshot path")
-    if not target.exists():
-        if required:
-            raise ValueError("greenfield commit recovery snapshot is missing a protected path")
-        return {}, set()
-    if target.is_file():
-        return {owner: _file_state(target)}, set()
-    if not target.is_dir():
-        raise ValueError("greenfield commit recovery found an unsupported protected path")
-    files: dict[str, tuple[bytes, int]] = {}
-    directories = {owner}
-    for candidate in sorted(target.rglob("*")):
-        if candidate.is_symlink():
-            raise ValueError("greenfield commit recovery refuses a symlinked protected path")
-        token = candidate.relative_to(target_root).as_posix()
-        if candidate.is_file():
-            files[token] = _file_state(candidate)
-        elif candidate.is_dir():
-            directories.add(token)
-        else:
-            raise ValueError("greenfield commit recovery found an unsupported protected path")
-    return files, directories
-
-
-def _file_state(path: Path) -> tuple[bytes, int]:
-    return path.read_bytes(), stat.S_IMODE(path.stat().st_mode)
-
-
-def _safe_interrupted_tree(
-    *,
-    owner: str,
-    before_files: Mapping[str, tuple[bytes, int]],
-    before_directories: set[str],
-    current_files: Mapping[str, tuple[bytes, int]],
-    current_directories: set[str],
-    writes: Mapping[str, tuple[bytes, int]],
-    deletes: set[str],
-    created_directories: set[str],
-    deleted_directories: set[str],
-) -> bool:
-    owned = lambda token: token == owner or token.startswith(owner + "/")
-    expected_writes = {path: state for path, state in writes.items() if owned(path)}
-    expected_deletes = {path for path in deletes if owned(path)}
-    expected_created_directories = {path for path in created_directories if owned(path)}
-    expected_deleted_directories = {path for path in deleted_directories if owned(path)}
-    allowed_files = set(before_files) | set(expected_writes)
-    if set(current_files) - allowed_files:
-        return False
-    for path in allowed_files:
-        before = before_files.get(path)
-        current = current_files.get(path)
-        after = expected_writes.get(path)
-        if path in expected_deletes:
-            if current not in {before, None}:
-                return False
-        elif current not in {before, after}:
-            return False
-    allowed_directories = before_directories | expected_created_directories
-    if not current_directories <= allowed_directories:
-        return False
-    for path in before_directories - expected_deleted_directories:
-        if path not in current_directories:
-            return False
-    return True
 
 
 __all__ = ["GreenfieldCommitJournal", "GreenfieldCommitJournalError", "JOURNAL_VERSION"]

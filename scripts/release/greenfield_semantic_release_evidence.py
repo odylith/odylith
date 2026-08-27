@@ -18,7 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract 
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_packet import (
     require_semantic_intent_packet,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
+from odylith.runtime.domain_intelligence.greenfield_semantic_host_profiles import (
     SEMANTIC_REASONING_CAPABILITY_PROFILE,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_execution_contract import (
@@ -28,16 +28,16 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_execution_contract 
 )
 
 
-EVALUATION_CONTRACT_VERSION = "odylith.greenfield.semantic-release-evaluation-contract.v5"
-CANDIDATE_BUNDLE_VERSION = "odylith.greenfield.semantic-release-candidates.v5"
-REPORT_VERSION = "odylith.greenfield.semantic-release-report.v3"
+EVALUATION_CONTRACT_VERSION = "odylith.greenfield.semantic-release-evaluation-contract.v18"
+CANDIDATE_BUNDLE_VERSION = "odylith.greenfield.semantic-release-candidates.v8"
+REPORT_VERSION = "odylith.greenfield.semantic-release-report.v6"
 
 FLOOR_NAMES = (
     "maximum_p0_findings",
     "maximum_p1_findings",
     "minimum_fact_precision",
     "minimum_accepted_fact_custody",
-    "minimum_constraint_recall",
+    "minimum_policy_boundary_recall",
     "minimum_explicit_system_recall",
     "minimum_material_question_recall",
     "maximum_unnecessary_question_rate",
@@ -67,7 +67,7 @@ FROZEN_FLOORS = {
     "maximum_p1_findings": 0.0,
     "minimum_fact_precision": 1.0,
     "minimum_accepted_fact_custody": 1.0,
-    "minimum_constraint_recall": 1.0,
+    "minimum_policy_boundary_recall": 1.0,
     "minimum_explicit_system_recall": 1.0,
     "minimum_material_question_recall": 0.95,
     "maximum_unnecessary_question_rate": 0.05,
@@ -85,11 +85,11 @@ FROZEN_RESOURCE_CEILINGS = {
     "maximum_explicit_deep_cases": 0,
     "maximum_automatic_deep_cases": 0,
     "maximum_case_total_tokens": 100_000,
-    "maximum_case_model_calls": 4,
+    "maximum_case_model_calls": 1,
     "maximum_case_restarts": 0,
     "maximum_cohort_total_wall_ms": 2_160_000,
     "maximum_cohort_total_tokens": 2_400_000,
-    "maximum_cohort_model_calls": 96,
+    "maximum_cohort_model_calls": 24,
     "maximum_cohort_restarts": 0,
 }
 REQUIRED_AUXILIARY_REPORTS = (
@@ -321,7 +321,6 @@ def require_candidate_bundle(
                     for name in (
                         "assignment_sha256",
                         "mechanism_evidence_sha256",
-                        "critic_run_id",
                         "author_run_id",
                     )
                 }
@@ -416,7 +415,6 @@ def _require_candidate_case(
             "model_profile": active_meta["model_profile"],
             "host_profile": active_meta["host_profile"],
             "author_run_id": active_meta["author_run_id"],
-            "critic_run_id": active_meta["critic_run_id"],
             "assignment_sha256": assignment["assignment_sha256"],
             "mechanism_evidence_sha256": active_meta["mechanism_evidence_sha256"],
         },

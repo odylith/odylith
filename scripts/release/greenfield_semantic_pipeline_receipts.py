@@ -1,4 +1,4 @@
-"""Terminal receipt contracts for the bounded Greenfield production pipeline."""
+"""Terminal receipts for parallel whole-graph Greenfield production."""
 
 from __future__ import annotations
 
@@ -13,82 +13,28 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_execution_contract 
 )
 
 
-PIPELINE_VERSION = "odylith.greenfield.production-standard-pipeline.v14"
-BOUNDED_PIPELINE_VERSION = "odylith.greenfield.production-bounded-pipeline.v14"
-
-
-def select_source_hypothesis_run(
-    value: Mapping[str, Any], *, selected_run_index: int,
-) -> dict[str, Any]:
-    """Bind the source receipt to the admitted run without changing its graph."""
-
-    if isinstance(selected_run_index, bool) or selected_run_index not in {0, 1}:
-        raise ValueError("selected source hypothesis index is invalid")
-    rows = value.get("hypothesis_runs")
-    if not isinstance(rows, list) or len(rows) != 2:
-        raise ValueError("source hypothesis selection requires two run receipts")
-    selected_rows: list[dict[str, Any]] = []
-    seen: set[int] = set()
-    for raw in rows:
-        if not isinstance(raw, Mapping):
-            raise ValueError("source hypothesis run receipt is malformed")
-        row = dict(raw)
-        run_index = row.get("run_index")
-        if isinstance(run_index, bool) or run_index not in {0, 1} or run_index in seen:
-            raise ValueError("source hypothesis run indices are not exact")
-        seen.add(run_index)
-        status = row.get("status")
-        if run_index == selected_run_index:
-            if status not in {"comparison_passed", "selected"}:
-                raise ValueError("selected source hypothesis was not admitted")
-            row["status"] = "selected"
-        elif status == "selected":
-            row["status"] = "comparison_passed"
-        elif status not in {"comparison_passed", "comparison_rejected"}:
-            raise ValueError("unselected source hypothesis status is invalid")
-        selected_rows.append(row)
-    receipt = dict(value)
-    receipt["hypothesis_runs"] = sorted(
-        selected_rows, key=lambda row: int(row["run_index"])
-    )
-    receipt["selected_run_index"] = selected_run_index
-    require_selected_source_hypothesis_run(receipt)
-    return receipt
-
-
-def require_selected_source_hypothesis_run(value: Mapping[str, Any]) -> int:
-    """Require one selected run whose status and receipt index agree exactly."""
-
-    rows = value.get("hypothesis_runs")
-    if not isinstance(rows, list):
-        raise ValueError("source hypothesis run receipts are missing")
-    selected = [
-        row.get("run_index")
-        for row in rows
-        if isinstance(row, Mapping) and row.get("status") == "selected"
-    ]
-    selected_run_index = value.get("selected_run_index")
-    if (
-        len(selected) != 1
-        or isinstance(selected_run_index, bool)
-        or selected_run_index not in {0, 1}
-        or selected != [selected_run_index]
-    ):
-        raise ValueError("selected source hypothesis status and index disagree")
-    return int(selected_run_index)
+PIPELINE_VERSION = "odylith.greenfield.production-standard-pipeline.v48"
+BOUNDED_PIPELINE_VERSION = "odylith.greenfield.production-bounded-pipeline.v37"
 
 
 def pipeline_receipt(
-    *, case_id: str, status: str, outcome: str, wall_ms: int,
+    *,
+    case_id: str,
+    status: str,
+    outcome: str,
+    wall_ms: int,
     host_profile: str,
-    budget: Mapping[str, Any], critic: Mapping[str, Any] | None,
-    source: Mapping[str, Any] | None,
-    author: Mapping[str, Any] | None, assessment: Mapping[str, Any] | None,
-    finalized: Mapping[str, Any] | None, transaction: Mapping[str, Any] | None,
-    failed_stage: str, failure: str,
+    budget: Mapping[str, Any],
+    author: Mapping[str, Any] | None,
+    packet: Mapping[str, Any] | None,
+    transaction: Mapping[str, Any] | None,
+    failed_stage: str,
+    failure: str,
 ) -> dict[str, Any]:
-    model_call_count = _model_calls(critic) + _model_calls(source) + _model_calls(author)
-    total_tokens = _token_total(critic) + _token_total(source) + _token_total(author)
+    """Build one exact receipt without legacy critic/candidate residue."""
+
+    model_call_count = _model_calls(author)
+    total_tokens = _token_total(author)
     mechanism_execution = semantic_execution_evidence(
         host_profile=host_profile,
         tier=str(budget["tier"]),
@@ -105,16 +51,14 @@ def pipeline_receipt(
     return {
         "version": PIPELINE_VERSION,
         "case_id": case_id,
+        "tier": str(budget["tier"]),
         "status": status,
         "outcome": outcome,
         "wall_ms": wall_ms,
         "budget": dict(budget),
-        "materiality_critic": critic,
-        "source_hypothesis": source,
-        "final_graph_adjudication": author,
-        "materiality_assessment": assessment,
-        "packet": finalized.get("packet") if finalized else None,
-        "transaction": transaction,
+        "source_meaning_author": dict(author) if author is not None else None,
+        "packet": dict(packet) if packet is not None else None,
+        "transaction": dict(transaction) if transaction is not None else None,
         "failed_stage": failed_stage,
         "failure": failure,
         "model_call_count": model_call_count,
@@ -126,7 +70,7 @@ def pipeline_receipt(
 
 
 def bounded_receipt(
-    *, case_id: str, tier: str, wall_ms: int, attempt: Mapping[str, Any],
+    *, case_id: str, tier: str, wall_ms: int, attempt: Mapping[str, Any]
 ) -> dict[str, Any]:
     attempt_execution = dict(attempt["mechanism_execution"])
     mechanism_execution = semantic_execution_evidence(
@@ -173,12 +117,16 @@ def _model_calls(value: Mapping[str, Any] | None) -> int:
 
 def write_receipt(path: Path, receipt: dict[str, Any]) -> dict[str, Any]:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(receipt, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+    path.write_text(
+        json.dumps(receipt, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    )
     return receipt
 
 
 __all__ = [
-    "BOUNDED_PIPELINE_VERSION", "PIPELINE_VERSION", "bounded_receipt",
-    "pipeline_receipt", "require_selected_source_hypothesis_run",
-    "select_source_hypothesis_run", "write_receipt",
+    "BOUNDED_PIPELINE_VERSION",
+    "PIPELINE_VERSION",
+    "bounded_receipt",
+    "pipeline_receipt",
+    "write_receipt",
 ]

@@ -28,9 +28,6 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract impo
     SEMANTIC_ATTRIBUTE_NAMES,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract import (
-    SEMANTIC_CLARIFICATION_FIELDS,
-)
-from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract import (
     SEMANTIC_FACT_KINDS,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract import (
@@ -48,19 +45,12 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract impo
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations import (
     require_semantic_source_refs,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_source_claims import (
-    require_source_claim_projection,
-)
+SEMANTIC_INTENT_IR_VERSION = "odylith.greenfield.semantic-intent-ir.v23"
+SEMANTIC_INTENT_PACKET_VERSION = "odylith.greenfield.semantic-intent-packet.v35"
 
-
-SEMANTIC_INTENT_IR_VERSION = "odylith.greenfield.semantic-intent-ir.v5"
-SEMANTIC_INTENT_PACKET_VERSION = "odylith.greenfield.semantic-intent-packet.v13"
-
-_CUSTODY_STATES = frozenset(
-    {"source_fact", "bounded_interpretation", "visible_assumption"}
-)
+_CUSTODY_STATES = frozenset({"source_fact", "visible_assumption"})
 _OWNER_KINDS = frozenset({"none", "actor", "product", "system"})
-_RELATION_CUSTODY_STATES = frozenset({"source_fact", "bounded_interpretation"})
+_RELATION_CUSTODY_STATES = frozenset({"source_fact"})
 _ATTRIBUTE_NAMES = frozenset(SEMANTIC_ATTRIBUTE_NAMES)
 
 
@@ -68,19 +58,33 @@ def require_semantic_intent_ir(
     value: Any,
     *,
     evidence_sources: Mapping[str, str],
-    source_claims: Mapping[str, Any],
+    allow_empty_clarification_source_refs: bool = False,
 ) -> dict[str, Any]:
     """Validate graph structure and citations without interpreting prose."""
 
     ir = _mapping(value, "Semantic Intent IR")
-    _exact_keys(ir, {"version", "status", "clarification", "facts", "relations", "narratives"}, "Semantic Intent IR")
+    _exact_keys(
+        ir,
+        {
+            "version",
+            "status",
+            "presentation",
+            "clarification",
+            "facts",
+            "relations",
+            "narratives",
+        },
+        "Semantic Intent IR",
+    )
     if ir.get("version") != SEMANTIC_INTENT_IR_VERSION:
         raise ValueError("Semantic Intent IR uses an unsupported version")
     status = _enum(ir.get("status"), {"complete", "clarification_required"}, "status")
+    _validate_presentation(ir.get("presentation"), evidence_sources=evidence_sources)
     clarification = _validate_clarification(
         ir.get("clarification"),
         evidence_sources=evidence_sources,
         required=status == "clarification_required",
+        allow_empty_source_refs=allow_empty_clarification_source_refs,
     )
     facts = _validate_facts(ir.get("facts"), evidence_sources=evidence_sources)
     fact_index = {row["fact_id"]: row for row in facts}
@@ -94,16 +98,19 @@ def require_semantic_intent_ir(
     narratives = _validate_narratives(
         ir.get("narratives"), evidence_sources=evidence_sources, fact_ids=fact_ids
     )
-    require_source_claim_projection(
-        source_claims,
-        facts=facts,
-        relations=relations,
-    )
+    if status == "clarification_required" and (
+        facts or relations or narratives
+    ):
+        raise ValueError("clarification-bound Semantic Intent IR must not carry semantic graph rows")
     if status == "clarification_required":
         return dict(ir)
-    if clarification["question"] or clarification["fields"]:
+    if clarification["question"]:
         raise ValueError("complete Semantic Intent IR carries a clarification request")
-    _require_complete_material_graph(facts=facts, relations=relations, narratives=narratives)
+    _require_complete_material_graph(
+        facts=facts,
+        relations=relations,
+        narratives=narratives,
+    )
     return dict(ir)
 
 
@@ -114,10 +121,8 @@ def semantic_intent_product_facts(ir: Mapping[str, Any]) -> dict[str, Any]:
         raise ValueError("clarification-bound Semantic Intent IR has no product-fact projection")
     facts = list(ir["facts"])
     by_kind = _facts_by_kind(facts)
-    identity = by_kind["identity"][0]
     narratives = _narratives_by_field(ir["narratives"])
     projected: dict[str, Any] = {
-        "title": identity["label"],
         "product_story": narratives["product_story"][0]["text"],
         "state_objects": [row["label"] for row in by_kind["state_object"]],
         "visible_outputs": [row["label"] for row in by_kind["visible_output"]],
@@ -129,18 +134,36 @@ def semantic_intent_product_facts(ir: Mapping[str, Any]) -> dict[str, Any]:
         "product_view": narratives["product_view"][0]["text"],
         "success_metrics": [row["text"] for row in narratives["success_metric"]],
         "evidence_requirements": [row["text"] for row in narratives["evidence_requirement"]],
-        "human_actors": [_actor_view(row) for row in by_kind["actor"]],
+        "human_actors": _actor_views(
+            by_kind["actor"],
+            by_kind["workflow_step"],
+            ir["relations"],
+        ),
+        "entities": [
+            {
+                "entity_id": row["fact_id"],
+                "label": row["label"],
+            }
+            for row in by_kind["entity"]
+        ],
+        "audiences": [
+            {"kind": _attribute(row, "audience_kind"), "label": row["label"]}
+            for row in by_kind["audience"]
+        ],
         "external_systems": [row["label"] for row in by_kind["external_system"]],
         "internal_systems": [row["statement"] for row in by_kind["internal_system"]],
         "component_responsibilities": [row["statement"] for row in by_kind["component_responsibility"]],
-        "operational_constraints": [row["label"] for row in by_kind["operational_constraint"]],
-        "non_goals": [row["label"] for row in by_kind["non_goal"]],
+        "product_boundaries": [row["statement"] for row in by_kind["product_boundary"]],
+        "policy_boundaries": [
+            _policy_boundary_view(
+                row,
+                relations=ir["relations"],
+                fact_index={str(fact["fact_id"]): fact for fact in facts},
+            )
+            for row in by_kind["policy_boundary"]
+        ],
         "assumptions": [row["label"] for row in by_kind["assumption"]],
-        "ambiguities": [row["label"] for row in by_kind["ambiguity"]],
     }
-    source_title = _attribute(identity, "source_title")
-    if source_title:
-        projected["source_title"] = source_title
     return projected
 
 
@@ -183,10 +206,14 @@ def semantic_intent_meaning_sha256(ir: Mapping[str, Any]) -> str:
 
 
 def semantic_intent_meaning_projection(ir: Mapping[str, Any]) -> dict[str, Any]:
-    """Canonicalize graph meaning without source coordinates or local IDs."""
+    """Canonicalize source truth without presentation or implementation topology."""
 
     facts = sorted(
-        (row for row in ir.get("facts", ()) if isinstance(row, Mapping)),
+        (
+            row
+            for row in ir.get("facts", ())
+            if isinstance(row, Mapping) and row.get("custody") == "source_fact"
+        ),
         key=lambda row: (str(row.get("kind") or ""), int(row.get("order") or 0)),
     )
     canonical_ids = {
@@ -202,7 +229,14 @@ def semantic_intent_meaning_projection(ir: Mapping[str, Any]) -> dict[str, Any]:
         for row in facts
     ]
     relations = sorted(
-        (row for row in ir.get("relations", ()) if isinstance(row, Mapping)),
+        (
+            row
+            for row in ir.get("relations", ())
+            if isinstance(row, Mapping)
+            and row.get("custody") == "source_fact"
+            and str(row.get("subject_id") or "") in canonical_ids
+            and str(row.get("object_id") or "") in canonical_ids
+        ),
         key=lambda row: (str(row.get("kind") or ""), int(row.get("order") or 0)),
     )
     canonical_relations = [
@@ -215,29 +249,12 @@ def semantic_intent_meaning_projection(ir: Mapping[str, Any]) -> dict[str, Any]:
         }
         for row in relations
     ]
-    narratives = sorted(
-        (row for row in ir.get("narratives", ()) if isinstance(row, Mapping)),
-        key=lambda row: (str(row.get("field") or ""), int(row.get("order") or 0)),
-    )
-    canonical_narratives = [
-        {
-            "field": row.get("field"),
-            "order": row.get("order"),
-            "text": row.get("text"),
-            "fact_ids": sorted(
-                canonical_ids.get(str(fact_id or ""), "")
-                for fact_id in row.get("fact_ids", ())
-            ),
-        }
-        for row in narratives
-    ]
     return {
         "version": ir.get("version"),
         "status": ir.get("status"),
         "clarification": _without_source_refs(ir.get("clarification", {})),
         "facts": canonical_facts,
         "relations": canonical_relations,
-        "narratives": canonical_narratives,
     }
 
 
@@ -246,19 +263,42 @@ def _validate_clarification(
     *,
     evidence_sources: Mapping[str, str],
     required: bool,
+    allow_empty_source_refs: bool,
 ) -> dict[str, Any]:
     row = _mapping(value, "clarification")
-    _exact_keys(row, {"question", "fields", "source_refs"}, "clarification")
+    _exact_keys(row, {"question", "source_refs"}, "clarification")
     question = _text(row.get("question"), 600)
-    fields = _text_rows(row.get("fields"), 3, "clarification fields")
-    if any(field not in SEMANTIC_CLARIFICATION_FIELDS for field in fields):
-        raise ValueError("Semantic Intent clarification names a non-canonical field")
     require_semantic_source_refs(
-        row.get("source_refs"), evidence_sources=evidence_sources, allow_empty=not required
+        row.get("source_refs"),
+        evidence_sources=evidence_sources,
+        allow_empty=not required or allow_empty_source_refs,
     )
-    if required and (not question or not fields):
+    if required and not question:
         raise ValueError("Semantic Intent clarification lacks one focused material question")
-    return {"question": question, "fields": fields}
+    return {"question": question}
+
+
+def _validate_presentation(
+    value: Any, *, evidence_sources: Mapping[str, str]
+) -> dict[str, Any]:
+    row = _mapping(value, "presentation")
+    _exact_keys(row, {"title", "status", "source_refs"}, "presentation")
+    title = _text(row.get("title"), 200)
+    if not title:
+        raise ValueError("Semantic Intent presentation lacks a title")
+    status = _enum(
+        row.get("status"), {"source_declared", "working_assumption"}, "presentation status"
+    )
+    refs = require_semantic_source_refs(
+        row.get("source_refs"),
+        evidence_sources=evidence_sources,
+        allow_empty=True,
+    )
+    if status == "source_declared" and not refs:
+        raise ValueError("Source-declared Semantic Intent presentation lacks custody")
+    if status == "working_assumption" and refs:
+        raise ValueError("Working Semantic Intent presentation carries source custody")
+    return {"title": title, "status": status, "source_refs": refs}
 
 
 def _validate_facts(value: Any, *, evidence_sources: Mapping[str, str]) -> list[dict[str, Any]]:
@@ -279,7 +319,11 @@ def _validate_facts(value: Any, *, evidence_sources: Mapping[str, str]) -> list[
         if not isinstance(row.get("order"), int) or isinstance(row.get("order"), bool) or row["order"] < 0:
             raise ValueError("Semantic Intent fact order is invalid")
         owner_kind = _enum(row.get("owner_kind"), _OWNER_KINDS, "owner kind")
-        _enum(row.get("custody"), _CUSTODY_STATES, "custody")
+        custody = _enum(row.get("custody"), _CUSTODY_STATES, "custody")
+        if custody == "visible_assumption" and kind != "assumption":
+            raise ValueError(
+                "Semantic Intent visible assumptions are limited to declared gaps"
+            )
         attributes = _validate_attributes(row.get("attributes"), kind=kind)
         if kind == "state_object":
             semantic_state_transition(row)
@@ -318,7 +362,9 @@ def _require_kind_contract(*, kind: str, owner_kind: str, attributes: Mapping[st
             raise ValueError("Semantic Intent internal system has an invalid release scope")
 
 
-def semantic_state_transition(value: Mapping[str, Any]) -> dict[str, str] | None:
+def semantic_state_transition(
+    value: Mapping[str, Any],
+) -> dict[str, str | None] | None:
     """Return one atomic state transition or no transition."""
 
     transition = value.get("transition")
@@ -326,13 +372,30 @@ def semantic_state_transition(value: Mapping[str, Any]) -> dict[str, str] | None
         return None
     row = _mapping(transition, "state transition")
     _exact_keys(row, {"from_state", "to_state"}, "state transition")
-    before = _text(row.get("from_state"), 800)
-    after = _text(row.get("to_state"), 800)
-    if not before or not after:
-        raise ValueError("Semantic Intent state transition is incomplete")
-    if before == after:
+    before = (
+        None if row.get("from_state") is None else _text(row.get("from_state"), 800)
+    )
+    after = None if row.get("to_state") is None else _text(row.get("to_state"), 800)
+    if before is None and after is None:
+        raise ValueError("Semantic Intent state transition lacks a declared state")
+    if before is not None and before == after:
         raise ValueError("Semantic Intent state transition does not change state")
     return {"from_state": before, "to_state": after}
+
+
+def semantic_state_transition_phrase(value: Mapping[str, Any]) -> str:
+    """Render only the transition endpoints actually declared by source truth."""
+
+    transition = semantic_state_transition(value)
+    if transition is None:
+        return ""
+    before = transition["from_state"]
+    after = transition["to_state"]
+    if before is None:
+        return f"to {after}"
+    if after is None:
+        return f"from {before}"
+    return f"from {before} to {after}"
 
 
 def _validate_relations(
@@ -413,10 +476,6 @@ def _require_complete_material_graph(
     narratives: Sequence[Mapping[str, Any]],
 ) -> None:
     by_kind = _facts_by_kind(facts)
-    if by_kind["ambiguity"]:
-        raise ValueError(
-            "complete Semantic Intent IR carries unresolved material ambiguity"
-        )
     for kind, contract in _COMPLETE_FACT_COUNTS.items():
         if len(by_kind[kind]) < contract["minimum"]:
             raise ValueError(f"complete Semantic Intent IR lacks {kind}")
@@ -432,37 +491,29 @@ def _require_complete_material_graph(
         raise ValueError("complete Semantic Intent IR lacks proof metrics")
     if narrative_counts["success_metric"] < 2:
         raise ValueError("complete Semantic Intent IR needs at least two product success metrics")
-    fact_index = {row["fact_id"]: row for row in facts}
     owned_by = [row for row in relations if row["kind"] == "owned_by"]
+    entity_relations = [
+        row
+        for row in relations
+        if row["kind"] in {"input_entity", "target_entity"}
+    ]
+    creates = [row for row in relations if row["kind"] == "creates"]
     produces = [row for row in relations if row["kind"] == "produces"]
+    output_of = [row for row in relations if row["kind"] == "output_of"]
     changes = [row for row in relations if row["kind"] == "changes"]
-    implements = [row for row in relations if row["kind"] == "implements"]
+    maintains = [row for row in relations if row["kind"] == "maintains"]
+    state_of = [row for row in relations if row["kind"] == "state_of"]
     actor_ids = {row["fact_id"] for row in by_kind["actor"]}
+    entity_ids = {row["fact_id"] for row in by_kind["entity"]}
+    entity_by_id = {str(row["fact_id"]): row for row in by_kind["entity"]}
     output_ids = {row["fact_id"] for row in by_kind["visible_output"]}
     state_ids = {row["fact_id"] for row in by_kind["state_object"]}
-    external_system_ids = {
-        row["fact_id"] for row in by_kind["external_system"]
-    }
     transitioned_state_ids = {
         row["fact_id"]
         for row in by_kind["state_object"]
         if semantic_state_transition(row) is not None
     }
-    implementation_target_ids = {
-        row["fact_id"]
-        for kind in ("workflow_step", "state_object", "visible_output")
-        for row in by_kind[kind]
-    }
-    first_path_system_ids = {
-        row["fact_id"]
-        for row in by_kind["internal_system"]
-        if _attribute(row, "release_scope") == "first_path_required"
-    }
-    active_system_ids = {
-        row["fact_id"]
-        for row in by_kind["internal_system"]
-        if _attribute(row, "release_scope") == "first_path_required"
-    }
+    stable_state_ids = state_ids - transitioned_state_ids
     for step in by_kind["workflow_step"]:
         owners = [row for row in owned_by if row["subject_id"] == step["fact_id"]]
         if step["owner_kind"] == "actor":
@@ -470,76 +521,42 @@ def _require_complete_material_graph(
                 raise ValueError("actor-owned Semantic Intent workflow lacks one typed owner relation")
         elif owners:
             raise ValueError("product/system Semantic Intent workflow carries a human owner relation")
-    produced_output_ids = {
+        bound_entity_roles = [
+            (row["kind"], row["object_id"])
+            for row in entity_relations
+            if row["subject_id"] == step["fact_id"]
+        ]
+        if len(bound_entity_roles) != len(set(bound_entity_roles)):
+            raise ValueError("Semantic Intent workflow repeats one typed entity relation")
+    if any(row["object_id"] not in entity_ids for row in entity_relations):
+        raise ValueError("Semantic Intent workflow binding targets a non-entity fact")
+    referenced_entity_ids = {
         row["object_id"]
-        for row in produces
-        if row["subject_id"] in fact_index and row["object_id"] in output_ids
+        for row in (*entity_relations, *creates, *state_of, *output_of)
     }
-    if produced_output_ids != output_ids:
-        raise ValueError(
-            "complete Semantic Intent IR lacks typed producing coverage for every visible output"
-        )
-    changed_state_ids = {
-        row["object_id"]
-        for row in changes
-        if row["subject_id"] in fact_index and row["object_id"] in state_ids
-    }
-    if changed_state_ids != transitioned_state_ids:
-        raise ValueError(
-            "complete Semantic Intent IR has invalid typed change coverage for state transitions"
-        )
-    if not first_path_system_ids:
-        raise ValueError(
-            "complete Semantic Intent IR lacks a first_path_required internal system"
-        )
-    implemented_targets = {
-        row["object_id"]
-        for row in implements
-        if row["subject_id"] in active_system_ids
-        and row["object_id"] in implementation_target_ids
-    }
-    if implemented_targets != implementation_target_ids:
-        raise ValueError(
-            "complete Semantic Intent IR lacks active typed implementation coverage"
-        )
-    result_system_ids = {
-        row["subject_id"]
-        for row in implements
-        if row["subject_id"] in active_system_ids
-        and row["object_id"] in implementation_target_ids
-    }
-    depends_on = [row for row in relations if row["kind"] == "depends_on"]
-    assigned_external_system_ids = {
-        row["object_id"]
-        for row in depends_on
-        if row["object_id"] in external_system_ids
-    }
-    if assigned_external_system_ids != external_system_ids:
-        raise ValueError(
-            "complete Semantic Intent IR leaves an external dependency unassigned"
-        )
-    boundary_relations = [
-        row
-        for row in relations
-        if row["kind"] in {"depends_on", "constrained_by", "excludes"}
-    ]
-    for system_id in active_system_ids - result_system_ids:
-        consumed = any(
-            row["object_id"] == system_id
-            and (
-                row["subject_id"] in active_system_ids
-                or fact_index[row["subject_id"]]["kind"] in {"identity", "workflow_step"}
-            )
-            for row in depends_on
-        )
-        owns_boundary = any(
-            row["subject_id"] == system_id and row["object_id"] != system_id
-            for row in boundary_relations
-        )
-        if not consumed or not owns_boundary:
-            raise ValueError(
-                "resultless first-path Semantic Intent system lacks typed supporting topology"
-            )
+    if referenced_entity_ids != entity_ids:
+        raise ValueError("Semantic Intent carries an unbound canonical entity")
+    if any(row["object_id"] not in output_ids for row in produces):
+        raise ValueError("Semantic Intent produces relation targets a non-output fact")
+    if any(row["object_id"] not in transitioned_state_ids for row in changes):
+        raise ValueError("Semantic Intent changes relation targets an undeclared transition")
+    if any(row["object_id"] not in stable_state_ids for row in maintains):
+        raise ValueError("Semantic Intent maintains relation targets a transition")
+    state_effect_ids = [row["object_id"] for row in (*changes, *maintains)]
+    if set(state_effect_ids) != state_ids or len(state_effect_ids) != len(state_ids):
+        raise ValueError("Semantic Intent state lacks one node-owned workflow effect")
+    _require_entity_identity_edges(
+        facts=by_kind["state_object"],
+        relations=state_of,
+        entities=entity_by_id,
+        label="state",
+    )
+    _require_entity_identity_edges(
+        facts=by_kind["visible_output"],
+        relations=output_of,
+        entities=entity_by_id,
+        label="output",
+    )
 
 
 def _facts_by_kind(facts: Sequence[Mapping[str, Any]]) -> dict[str, list[Mapping[str, Any]]]:
@@ -551,8 +568,43 @@ def _facts_by_kind(facts: Sequence[Mapping[str, Any]]) -> dict[str, list[Mapping
     return result
 
 
+def _require_entity_identity_edges(
+    *,
+    facts: Sequence[Mapping[str, Any]],
+    relations: Sequence[Mapping[str, Any]],
+    entities: Mapping[str, Mapping[str, Any]],
+    label: str,
+) -> None:
+    """Require state and output identity to follow one typed entity edge."""
+
+    for fact in facts:
+        fact_id = str(fact["fact_id"])
+        targets = [
+            str(row["object_id"])
+            for row in relations
+            if row["subject_id"] == fact_id
+        ]
+        if len(targets) != 1 or targets[0] not in entities:
+            raise ValueError(
+                f"Semantic Intent {label} lacks one canonical entity identity"
+            )
+        if _attribute(fact, "entity_id") != targets[0]:
+            raise ValueError(
+                f"Semantic Intent {label} entity attribute disagrees with its typed edge"
+            )
+        entity = entities[targets[0]]
+        if _attribute(fact, "object") and _attribute(fact, "object") != entity["label"]:
+            raise ValueError(
+                f"Semantic Intent {label} display identity disagrees with its entity"
+            )
+        if label == "output" and fact["label"] != entity["label"]:
+            raise ValueError(
+                "Semantic Intent output label disagrees with its entity"
+            )
+
+
 def _require_unique_state_transitions(facts: Sequence[Mapping[str, Any]]) -> None:
-    signatures: set[tuple[str, str, str]] = set()
+    signatures: set[tuple[str, str | None, str | None]] = set()
     for fact in facts:
         transition = (
             semantic_state_transition(fact)
@@ -562,7 +614,7 @@ def _require_unique_state_transitions(facts: Sequence[Mapping[str, Any]]) -> Non
         if transition is None:
             continue
         signature = (
-            _attribute(fact, "object"),
+            _attribute(fact, "entity_id"),
             transition["from_state"],
             transition["to_state"],
         )
@@ -585,6 +637,37 @@ def _attribute(fact: Mapping[str, Any], name: str) -> str:
         (str(row["value"]).strip() for row in fact.get("attributes", ()) if row.get("name") == name),
         "",
     )
+
+
+def _policy_boundary_view(
+    fact: Mapping[str, Any],
+    *,
+    relations: Sequence[Mapping[str, Any]],
+    fact_index: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Project one neutral boundary and its exact typed scope."""
+
+    modalities = tuple(
+        value for value in _attribute(fact, "modalities").split(",") if value
+    )
+    targets = []
+    for relation in relations:
+        if relation.get("kind") != "applies_to" or relation.get("subject_id") != fact["fact_id"]:
+            continue
+        target = fact_index[str(relation["object_id"])]
+        targets.append(
+            {
+                "fact_id": str(target["fact_id"]),
+                "kind": str(target["kind"]),
+                "label": str(target["label"]),
+            }
+        )
+    return {
+        "label": str(fact["label"]),
+        "modalities": list(modalities),
+        "statement": _attribute(fact, "statement"),
+        "applies_to": targets,
+    }
 
 
 def _require_contiguous_order(rows: Sequence[Mapping[str, Any]], *, key: str, label: str) -> None:
@@ -661,10 +744,36 @@ def _sentence(value: Any) -> str:
     return sentence if sentence.endswith((".", "!", "?")) else f"{sentence}."
 
 
-def _actor_view(row: Mapping[str, Any]) -> str:
-    label = str(row["label"])
-    responsibility = _attribute(row, "responsibility")
-    return f"{label}: {responsibility}" if responsibility else label
+def _actor_views(
+    actors: Sequence[Mapping[str, Any]],
+    steps: Sequence[Mapping[str, Any]],
+    relations: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    """Project actor capability from typed ownership, never prejoined prose."""
+
+    steps_by_id = {str(row["fact_id"]): row for row in steps}
+    owned_step_ids: dict[str, list[str]] = {
+        str(row["fact_id"]): [] for row in actors
+    }
+    for relation in relations:
+        if relation.get("kind") != "owned_by":
+            continue
+        actor_id = str(relation["object_id"])
+        step_id = str(relation["subject_id"])
+        if actor_id in owned_step_ids and step_id in steps_by_id:
+            owned_step_ids[actor_id].append(step_id)
+    return [
+        {
+            "actor_fact_id": str(actor["fact_id"]),
+            "label": str(actor["label"]),
+            "owned_step_fact_ids": list(owned_step_ids[str(actor["fact_id"])]),
+            "owned_actions": [
+                str(steps_by_id[step_id]["label"])
+                for step_id in owned_step_ids[str(actor["fact_id"])]
+            ],
+        }
+        for actor in actors
+    ]
 
 
 def _json_bytes(value: Mapping[str, Any]) -> bytes:
@@ -687,4 +796,5 @@ __all__ = [
     "semantic_intent_product_facts_sha256",
     "semantic_intent_sha256",
     "semantic_state_transition",
+    "semantic_state_transition_phrase",
 ]

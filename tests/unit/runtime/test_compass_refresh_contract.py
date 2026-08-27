@@ -9,6 +9,14 @@ def test_normalize_refresh_profile_defaults_to_shell_safe() -> None:
     assert compass_refresh_contract.normalize_refresh_profile("shell-safe") == "shell-safe"
 
 
+def test_sealed_preconfirm_profile_is_explicit_and_provider_free() -> None:
+    profile = compass_refresh_contract.SEALED_PRECONFIRM_REFRESH_PROFILE
+
+    assert compass_refresh_contract.normalize_refresh_profile(profile) == profile
+    assert not compass_refresh_contract.allow_global_provider(profile)
+    assert not compass_refresh_contract.prefer_live_provider(profile)
+
+
 def test_refresh_contract_keeps_shell_safe_provider_off_the_foreground_path() -> None:
     assert not compass_refresh_contract.allow_global_provider("shell-safe")
     assert not compass_refresh_contract.prefer_live_provider("shell-safe")

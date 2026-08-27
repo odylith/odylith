@@ -1119,12 +1119,12 @@ def render_compass_artifacts(
     _emit_progress(
         progress_callback,
         stage="shell_bundle_written",
-        detail={"message": f"wrote the Compass shell bundle to {output_path}"},
+        detail={"message": f"wrote the Compass shell bundle to {output_path.relative_to(repo_root).as_posix()}"},
     )
     _emit_progress(
         progress_callback,
         stage="complete",
-        detail={"message": f"Compass refresh complete at {output_path}"},
+        detail={"message": f"Compass refresh complete at {output_path.relative_to(repo_root).as_posix()}"},
     )
     return runtime_payload, runtime_paths
 

@@ -8,9 +8,6 @@ from typing import Any
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
     SEMANTIC_INTENT_PACKET_VERSION,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
-    SEMANTIC_REASONING_CAPABILITY_PROFILE,
-)
 from odylith.runtime.domain_intelligence.greenfield_semantic_host_profiles import (
     semantic_authority_execution_profiles,
     supported_host_profiles,
@@ -22,14 +19,14 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_execution_contract 
     semantic_execution_contract,
 )
 
-GREENFIELD_OPERATING_ENVELOPE_VERSION = "odylith.greenfield-operating-envelope.v9"
+GREENFIELD_OPERATING_ENVELOPE_VERSION = "odylith.greenfield-operating-envelope.v20"
 GREENFIELD_OPERATING_PROFILE = "single-product-governance-onboarding"
 
 SUPPORTED_EVIDENCE_FORMATS = frozenset({"semantic_intent_packet"})
 SUPPORTED_SEMANTIC_INTENT_PACKET_VERSIONS = (SEMANTIC_INTENT_PACKET_VERSION,)
 SUPPORTED_EVIDENCE_LANGUAGES = ("en",)
 SUPPORTED_CONFIRMATION_HOSTS = supported_host_profiles()
-SUPPORTED_SEMANTIC_AUTHORITY_PROFILES = (SEMANTIC_REASONING_CAPABILITY_PROFILE,)
+SUPPORTED_SEMANTIC_AUTHORITY_PROFILES = ("frontier_semantic_reasoning",)
 LOWER_CAPABILITY_SAFETY_PROFILE = "lower-capability-safe-v1"
 SUPPORTED_NON_AUTHORITY_SAFETY_PROFILES = (LOWER_CAPABILITY_SAFETY_PROFILE,)
 
@@ -185,7 +182,7 @@ def _complexity_dimensions(
         "internal_systems": _count(facts.get("internal_systems")),
         "contradictions": _count(facts.get("contradictions")),
         "ambiguities": _count(facts.get("ambiguities")),
-        "safety_boundaries": _count(facts.get("operational_constraints")),
+        "safety_boundaries": _count(facts.get("policy_boundaries")),
     }
 
 
@@ -194,7 +191,7 @@ def _model_contract() -> dict[str, Any]:
         "semantic_authority_profiles": list(SUPPORTED_SEMANTIC_AUTHORITY_PROFILES),
         "semantic_authority_execution_profiles": semantic_authority_execution_profiles(),
         "non_authority_safety_profiles": list(SUPPORTED_NON_AUTHORITY_SAFETY_PROFILES),
-        "semantic_authority": "frontier_prompt_reasoning_then_typed_graph",
+        "semantic_authority": "holistic_tagged_entity_effect_source_meaning",
         "semantic_execution": semantic_execution_contract(),
         "host_output_status": "candidate_hypothesis_only",
         "lower_capability_probe": {

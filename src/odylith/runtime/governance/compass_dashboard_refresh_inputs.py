@@ -16,13 +16,16 @@ def run_compass_dashboard_refresh(
     *,
     repo_root: Path,
     normalized_runtime_mode: str,
+    requested_profile: str = compass_refresh_contract.DEFAULT_REFRESH_PROFILE,
 ) -> dict[str, Any]:
     prerequisite_result = ensure_compass_dashboard_inputs(repo_root=repo_root)
     if int(prerequisite_result.get("rc", 0) or 0) != 0:
         return prerequisite_result
     return compass_refresh_runtime.run_refresh(
         repo_root=repo_root,
-        requested_profile=compass_refresh_contract.DEFAULT_REFRESH_PROFILE,
+        requested_profile=compass_refresh_contract.normalize_refresh_profile(
+            requested_profile
+        ),
         requested_runtime_mode=normalized_runtime_mode,
         wait=True,
         status_only=False,

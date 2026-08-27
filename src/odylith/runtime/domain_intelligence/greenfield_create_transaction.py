@@ -18,6 +18,7 @@ from odylith.install.fs import atomic_write_text
 from odylith.runtime.common.value_coercion import mapping_copy
 from odylith.runtime.domain_intelligence import greenfield_compiled_package_contract
 from odylith.runtime.domain_intelligence import greenfield_traceability_contract
+from odylith.runtime.domain_intelligence import greenfield_transaction_path_boundary
 from odylith.runtime.domain_intelligence.greenfield_commit_transaction import (
     canonical_product_create_transaction_receipt_bytes,
 )
@@ -35,21 +36,20 @@ from odylith.runtime.domain_intelligence.greenfield_create_contract import (
     PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_create_contract import (
+    PRODUCT_CREATE_TRANSACTION_FIELDS,
+)
+from odylith.runtime.domain_intelligence.greenfield_create_contract import (
     PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_create_contract import PRODUCT_CREATE_TRANSACTION_VERSION
 from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_ALLOWED_OPERATIONS
 from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_FORBIDDEN_OPERATIONS
-from odylith.runtime.domain_intelligence.greenfield_create_contract import product_intent_authorities_match
 from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_ENGINE_VERSION
 from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_QUALITY_MANIFEST_VERSION
 from odylith.runtime.domain_intelligence.greenfield_completion_types import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_product_intent_binding import (
-    PRODUCT_INTENT_AUTHORITY_KEY,
-)
-from odylith.runtime.domain_intelligence.greenfield_product_intent_binding import (
-    require_authoritative_intent_binding,
     require_product_intent_authority,
+    require_product_intent_review_binding,
 )
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 
@@ -66,10 +66,8 @@ class ProductCreateTransaction:
 
     version: str
     release_selector: str
-    proposal: Mapping[str, Any]
     validation_gate: Mapping[str, Any]
     prewrite_package: GreenfieldCompletionPackage
-    backlog_result: Mapping[str, Any]
     intent_authority: Mapping[str, Any]
     quality_manifest: Mapping[str, Any]
     compiler_provenance: Mapping[str, Any]
@@ -118,33 +116,34 @@ def _product_create_transaction_commit_summary(transaction: ProductCreateTransac
 
 def build_product_create_transaction(
     *,
-    proposal: Mapping[str, Any],
     release_selector: str,
     validation_gate: Mapping[str, Any],
     prewrite_package: GreenfieldCompletionPackage,
-    backlog_result: Mapping[str, Any],
-    intent_authority: Mapping[str, Any] | None = None,
+    intent_authority: Mapping[str, Any],
     quality_manifest: Mapping[str, Any],
     repo_root: Path,
 ) -> ProductCreateTransaction:
     """Build a hash-bound transaction from an already validated prewrite package."""
 
-    authority = dict(intent_authority) if isinstance(intent_authority, Mapping) else _authority_from_proposal(proposal)
-    require_product_intent_authority(authority)
-    _require_proposal_intent_authority_binding(proposal, authority)
+    if not isinstance(intent_authority, Mapping):
+        raise ValueError("ProductCreateTransaction compiler requires explicit Product Intent authority")
+    authority = dict(intent_authority)
+    review_package = prewrite_package.proposal
+    if not isinstance(review_package, Mapping):
+        raise ValueError("ProductCreateTransaction prewrite package lacks its review package")
+    require_product_intent_review_binding(review_package, authority)
     release_text = str(release_selector or "").strip()
     greenfield_compiled_package_contract.require_complete_compiled_greenfield_package(
         prewrite_package,
+        intent_authority=authority,
         release_selector=release_text,
     )
     require_product_create_transaction_quality_approved(quality_manifest)
     transaction = ProductCreateTransaction(
         version=PRODUCT_CREATE_TRANSACTION_VERSION,
         release_selector=release_text,
-        proposal=proposal,
         validation_gate=validation_gate,
         prewrite_package=prewrite_package,
-        backlog_result=backlog_result,
         intent_authority=authority,
         quality_manifest=quality_manifest,
         compiler_provenance=build_product_create_transaction_provenance(
@@ -155,14 +154,6 @@ def build_product_create_transaction(
         _compiler_attestation=_PRODUCT_CREATE_TRANSACTION_COMPILER_ATTESTATION,
     )
     return replace(transaction, transaction_hash=product_create_transaction_hash(transaction))
-
-
-def _authority_from_proposal(proposal: Mapping[str, Any]) -> Mapping[str, Any]:
-    authority = proposal.get(PRODUCT_INTENT_AUTHORITY_KEY)
-    if isinstance(authority, Mapping):
-        return dict(authority)
-    raise ValueError("ProductCreateTransaction is missing confirmed Product Intent authority")
-
 
 def require_product_create_transaction_quality_approved(quality_manifest: Mapping[str, Any]) -> None:
     """Require every product-quality decision before a transaction can be confirmed."""
@@ -210,32 +201,15 @@ def require_product_create_transaction_verified(transaction: ProductCreateTransa
 def require_product_create_transaction_hash_verified(transaction: ProductCreateTransaction) -> None:
     """Verify serialized transaction integrity without granting compiler custody."""
 
-    require_product_intent_authority(transaction.intent_authority)
-    _require_proposal_intent_authority_binding(transaction.proposal, transaction.intent_authority)
+    require_product_intent_review_binding(
+        transaction.prewrite_package.proposal,
+        transaction.intent_authority,
+    )
     expected = product_create_transaction_hash(transaction)
     if transaction.transaction_hash != expected:
         raise ValueError(
             "ProductCreateTransaction hash mismatch; rebuild the transaction before committing governed records"
         )
-
-
-def _require_proposal_intent_authority_binding(
-    proposal: Mapping[str, Any],
-    authority: Mapping[str, Any],
-) -> None:
-    """Require one exact authority for the proposal and transaction."""
-
-    intent = proposal.get("intent") if isinstance(proposal, Mapping) else None
-    if not isinstance(intent, Mapping):
-        raise ValueError("ProductCreateTransaction proposal is missing typed Product Intent")
-    proposal_authority = proposal.get(PRODUCT_INTENT_AUTHORITY_KEY)
-    if not product_intent_authorities_match(proposal_authority, authority):
-        raise ValueError(
-            "ProductCreateTransaction proposal authority bytes do not match its sealed transaction authority; "
-            "rebuild the transaction before showing CONFIRM"
-        )
-    require_authoritative_intent_binding(intent, authority)
-
 
 def build_product_create_transaction_provenance(
     *,
@@ -312,13 +286,13 @@ def product_create_transaction_from_dict(payload: Mapping[str, Any]) -> ProductC
         raise ValueError(
             f"unsupported ProductCreateTransaction version {version!r}; expected {PRODUCT_CREATE_TRANSACTION_VERSION}"
         )
+    if set(payload) != set(PRODUCT_CREATE_TRANSACTION_FIELDS):
+        raise ValueError("ProductCreateTransaction v2 payload is malformed")
     transaction = ProductCreateTransaction(
         version=version,
         release_selector=str(payload.get("release_selector", "")).strip(),
-        proposal=mapping_copy(payload.get("proposal")),
         validation_gate=mapping_copy(payload.get("validation_gate")),
         prewrite_package=_completion_package_from_payload(mapping_copy(payload.get("prewrite_package"))),
-        backlog_result=_backlog_result_from_payload(mapping_copy(payload.get("backlog_result"))),
         intent_authority=mapping_copy(payload.get("intent_authority")),
         quality_manifest=mapping_copy(payload.get("quality_manifest")),
         compiler_provenance=mapping_copy(payload.get("compiler_provenance")),
@@ -336,28 +310,53 @@ def product_create_transaction_receipt_path(path: Path) -> Path:
 def write_compiled_product_create_transaction_file(
     path: Path,
     transaction: ProductCreateTransaction,
+    *,
+    repo_root: Path | None = None,
 ) -> Path:
     """Persist a compiled transaction and its detached local-integrity receipt."""
 
     require_product_create_transaction_verified(transaction)
     target = Path(path).expanduser()
+    receipt_path = product_create_transaction_receipt_path(target)
+    if repo_root is not None:
+        for candidate in (target, receipt_path):
+            kind = greenfield_transaction_path_boundary.path_kind(repo_root, candidate)
+            if kind not in {"missing", "file"}:
+                raise ValueError(
+                    "ProductCreateTransaction file and compiler receipt must be safe regular files"
+                )
     payload_text = json.dumps(product_create_transaction_to_dict(transaction), indent=2, sort_keys=True) + "\n"
-    atomic_write_text(target, payload_text, encoding="utf-8")
+    if repo_root is None:
+        atomic_write_text(target, payload_text, encoding="utf-8")
+    else:
+        greenfield_transaction_path_boundary.atomic_write_bytes(
+            repo_root,
+            target,
+            payload_text.encode("utf-8"),
+        )
     receipt = {
         "version": PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION,
         "transaction_hash": transaction.transaction_hash,
         "transaction_file_sha256": hashlib.sha256(payload_text.encode("utf-8")).hexdigest(),
         "post_confirm_runtime_identity": product_create_transaction_compiler_identity(),
     }
-    atomic_write_text(
-        product_create_transaction_receipt_path(target),
-        canonical_product_create_transaction_receipt_bytes(receipt).decode("utf-8"),
-        encoding="utf-8",
-    )
+    receipt_bytes = canonical_product_create_transaction_receipt_bytes(receipt)
+    if repo_root is None:
+        atomic_write_text(receipt_path, receipt_bytes.decode("utf-8"), encoding="utf-8")
+    else:
+        greenfield_transaction_path_boundary.atomic_write_bytes(
+            repo_root,
+            receipt_path,
+            receipt_bytes,
+        )
     return target
 
 
-def load_compiled_product_create_transaction_file(path: Path) -> ProductCreateTransaction:
+def load_compiled_product_create_transaction_file(
+    path: Path,
+    *,
+    repo_root: Path | None = None,
+) -> ProductCreateTransaction:
     """Load a transaction whose local receipt still matches its pre-confirm bytes.
 
     The receipt protects the normal trusted-workspace flow from stale or
@@ -367,11 +366,16 @@ def load_compiled_product_create_transaction_file(path: Path) -> ProductCreateTr
 
     target = Path(path).expanduser()
     receipt_path = product_create_transaction_receipt_path(target)
-    if target.is_symlink() or receipt_path.is_symlink():
-        raise ValueError("ProductCreateTransaction file and compiler receipt must not be symlinks")
     try:
-        payload_bytes = target.read_bytes()
-        receipt_payload = json.loads(receipt_path.read_text(encoding="utf-8"))
+        if repo_root is None:
+            if target.is_symlink() or receipt_path.is_symlink():
+                raise ValueError("ProductCreateTransaction file and compiler receipt must not be symlinks")
+            payload_bytes = target.read_bytes()
+            receipt_bytes = receipt_path.read_bytes()
+        else:
+            payload_bytes = greenfield_transaction_path_boundary.read_bytes(repo_root, target)
+            receipt_bytes = greenfield_transaction_path_boundary.read_bytes(repo_root, receipt_path)
+        receipt_payload = json.loads(receipt_bytes.decode("utf-8"))
     except FileNotFoundError as exc:
         raise ValueError(
             "ProductCreateTransaction is missing its pre-confirm compiler receipt; "
@@ -381,6 +385,10 @@ def load_compiled_product_create_transaction_file(path: Path) -> ProductCreateTr
         raise RuntimeError(
             "environment/IO failure while reading the pre-confirm ProductCreateTransaction; "
             "no governed records were written"
+        ) from exc
+    except greenfield_transaction_path_boundary.GreenfieldTransactionPathError as exc:
+        raise ValueError(
+            "ProductCreateTransaction path is outside the safe repository transaction boundary"
         ) from exc
     if not isinstance(receipt_payload, Mapping):
         raise ValueError("ProductCreateTransaction compiler receipt must be a JSON object")
@@ -411,10 +419,8 @@ def _transaction_hash_payload(transaction: ProductCreateTransaction) -> dict[str
     return {
         "version": transaction.version,
         "release_selector": transaction.release_selector,
-        "proposal": _json_ready(transaction.proposal),
         "validation_gate": _json_ready(transaction.validation_gate),
         "prewrite_package": _json_ready(transaction.prewrite_package),
-        "backlog_result": _json_ready(transaction.backlog_result),
         "intent_authority": _json_ready(transaction.intent_authority),
         "quality_manifest": _json_ready(transaction.quality_manifest),
         "compiler_provenance": _json_ready(transaction.compiler_provenance),

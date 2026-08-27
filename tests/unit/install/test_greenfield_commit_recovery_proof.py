@@ -11,6 +11,10 @@ from types import SimpleNamespace
 
 from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.domain_intelligence.greenfield_semantic_intent_packet import (
+    require_semantic_intent_packet,
+    semantic_intent_authority,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -53,30 +57,13 @@ def _semantic_case(module):  # noqa: ANN001
 
 
 def _semantic_authority(case, *, semantic_intent=None, evidence_sha256=None):  # noqa: ANN001
-    packet = case.packet
-    return {
-        "version": "odylith.product-intent-authority.v20",
-        "origin": "verified_semantic_intent_packet",
-        "source_format": "semantic_intent_packet",
-        "product_facts_sha256": "c" * 64,
-        "evidence_sha256": evidence_sha256 or packet["evidence_sha256"],
-        "semantic_intent_packet_version": "odylith.greenfield.semantic-intent-packet.v13",
-        "semantic_intent_ir_version": "odylith.greenfield.semantic-intent-ir.v5",
-        "semantic_intent_authoring_request_version": (
-            "odylith.greenfield.semantic-intent-authoring-request.v18"
-        ),
-        "semantic_intent_authoring_contract_sha256": packet[
-            "authoring_contract_sha256"
-        ],
-        "semantic_materiality_assessment": packet["materiality_assessment"],
-        "semantic_materiality_assessment_sha256": packet[
-            "materiality_assessment_sha256"
-        ],
-        "semantic_materiality_critic_run": packet["critic_run"],
-        "semantic_intent_author_run": packet["author_run"],
-        "semantic_intent": semantic_intent or packet["semantic_intent"],
-        "evidence_sources": {"operator_prompt": case.prompt, "operator_edit": ""},
-    }
+    verified = require_semantic_intent_packet(case.packet, prompt=case.prompt)
+    authority = semantic_intent_authority(verified, prompt=case.prompt)
+    if semantic_intent is not None:
+        authority["semantic_intent"] = semantic_intent
+    if evidence_sha256 is not None:
+        authority["evidence_sha256"] = evidence_sha256
+    return authority
 
 
 def _generation_observation(
@@ -368,6 +355,8 @@ def test_journal_receipt_identity_requires_a_bound_durable_receipt() -> None:
 def test_compile_transaction_uses_the_exact_prompt_and_semantic_packet(tmp_path: Path, monkeypatch) -> None:
     module = _module()
     case = _semantic_case(module)
+    authority = _semantic_authority(case)
+    product_facts_hash = authority["product_facts_sha256"]
     transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
     transaction_path = tmp_path / transaction_file
     transaction_path.parent.mkdir(parents=True)
@@ -375,7 +364,7 @@ def test_compile_transaction_uses_the_exact_prompt_and_semantic_packet(tmp_path:
         json.dumps(
             {
                 "transaction_hash": "a" * 64,
-                    "intent_authority": _semantic_authority(case),
+                    "intent_authority": authority,
                 "prewrite_package": {"repository_write_set": {"write_set_hash": "b" * 64}},
             }
         ),
@@ -392,7 +381,7 @@ def test_compile_transaction_uses_the_exact_prompt_and_semantic_packet(tmp_path:
                 {
                     "product_create_transaction": {
                         "transaction_hash": "a" * 64,
-                        "product_facts_sha256": "c" * 64,
+                        "product_facts_sha256": product_facts_hash,
                     },
                     "transaction_file": transaction_file,
                 }
@@ -406,7 +395,7 @@ def test_compile_transaction_uses_the_exact_prompt_and_semantic_packet(tmp_path:
         case=case,
     )
     assert compiled.transaction_hash == "a" * 64
-    assert compiled.product_facts_hash == "c" * 64
+    assert compiled.product_facts_hash == product_facts_hash
     command = captured["command"]
     assert command[command.index("--prompt") + 1] == case.prompt
     packet_path = Path(command[command.index("--semantic-intent-file") + 1])
@@ -417,6 +406,10 @@ def test_compile_transaction_uses_the_exact_prompt_and_semantic_packet(tmp_path:
 def test_compile_transaction_rejects_an_authority_that_changes_the_graph(tmp_path: Path, monkeypatch) -> None:
     module = _module()
     case = _semantic_case(module)
+    authority = _semantic_authority(
+        case,
+        semantic_intent={**case.packet["semantic_intent"], "status": "clarification_required"},
+    )
     transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
     transaction_path = tmp_path / transaction_file
     transaction_path.parent.mkdir(parents=True)
@@ -424,10 +417,7 @@ def test_compile_transaction_rejects_an_authority_that_changes_the_graph(tmp_pat
         json.dumps(
             {
                 "transaction_hash": "a" * 64,
-                    "intent_authority": _semantic_authority(
-                        case,
-                        semantic_intent={**case.packet["semantic_intent"], "status": "clarification_required"},
-                    ),
+                    "intent_authority": authority,
                 "prewrite_package": {"repository_write_set": {"write_set_hash": "b" * 64}},
             }
         ),
@@ -442,7 +432,7 @@ def test_compile_transaction_rejects_an_authority_that_changes_the_graph(tmp_pat
                 {
                     "product_create_transaction": {
                         "transaction_hash": "a" * 64,
-                        "product_facts_sha256": "c" * 64,
+                        "product_facts_sha256": authority["product_facts_sha256"],
                     },
                     "transaction_file": transaction_file,
                 }
@@ -453,7 +443,7 @@ def test_compile_transaction_rejects_an_authority_that_changes_the_graph(tmp_pat
     try:
         module._compile_transaction(repo_root=tmp_path, env={"PATH": "/usr/bin"}, case=case)  # noqa: SLF001
     except RuntimeError as exc:
-        assert "changed the Semantic Intent graph" in str(exc)
+        assert "changed the source-meaning packet" in str(exc)
     else:
         raise AssertionError("changed Semantic Intent graph should fail installed recovery compilation")
 
@@ -519,7 +509,7 @@ def test_recovery_proof_payload_is_a_falsifiable_release_record() -> None:
     assert proof.to_dict() == {
         "status": "passed",
         "scope": "real_installed_additive_write_sigkill_recovery_conflict_same_hash_retry_and_fsync_rollback",
-            "recovery_case_scope": "semantic-intent-v13-release-fixture",
+            "recovery_case_scope": "current-semantic-intent-release-fixture",
         "issues": [],
         "sigkill_returncode": -9,
         "recovery_returncode": 0,
@@ -744,7 +734,7 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
     assert "installed recovery phases did not retain the same sealed Product Intent facts hash" in mismatch.issues
     assert all(captured is case for captured in captured_cases)
     assert proof.recovery_case["id"] == case.case_id
-    assert proof.recovery_case["binding_scope"] == "semantic-intent-v13-release-fixture"
+    assert proof.recovery_case["binding_scope"] == "current-semantic-intent-release-fixture"
 
 
 def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(tmp_path: Path, monkeypatch) -> None:

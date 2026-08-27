@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import ast
-from copy import deepcopy
-import hashlib
 import json
 from pathlib import Path
 
@@ -13,21 +11,16 @@ from greenfield_semantic_development_cohort import (
 )
 from greenfield_semantic_release_support import (
     canonical_sha256,
-    greenfield_runtime_source_fingerprint,
 )
 from greenfield_semantic_pipeline_evidence import prepare_active_evidence_plan
-from greenfield_semantic_pipeline_receipts import PIPELINE_VERSION
 from greenfield_semantic_release_evidence import CANDIDATE_BUNDLE_VERSION
 from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract import (
     semantic_intent_authoring_contract_sha256,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_execution_contract import (
-    ACTIVE_SEMANTIC_MECHANISM_ID,
-    semantic_execution_evidence,
-)
+from odylith.runtime.domain_intelligence.greenfield_semantic_execution_contract import ACTIVE_SEMANTIC_MECHANISM_ID
 from tests.unit.install.greenfield_semantic_release_test_fixtures import (
     deterministic_law_report_fixture,
-    verified_transaction_receipt_fixture,
+    pipeline_receipt_fixture,
 )
 from tests.unit.runtime.greenfield_semantic_intent_fixtures import (
     SEMANTIC_PROMPT,
@@ -163,18 +156,11 @@ def _context(tmp_path: Path, *, outcome: str) -> dict:
         if outcome == "commit"
         else semantic_clarification_packet()
     )
-    packet["critic_run"] = {
-        **packet["critic_run"],
-        "critic_run_id": "claim-desk:critic",
-    }
-    packet["author_run"] = {
-        **packet["author_run"],
-        "author_run_id": "claim-desk:author",
-    }
-    receipt = _receipt(
-        packet=packet,
+    receipt = pipeline_receipt_fixture(
+        packet,
+        prompt=SEMANTIC_PROMPT,
+        case_id="claim-desk",
         assignment=plan["cases"][0],
-        outcome=outcome,
     )
     receipt_path = _write(tmp_path / "receipt.json", receipt)
     laws_path = _write(
@@ -187,125 +173,6 @@ def _context(tmp_path: Path, *, outcome: str) -> dict:
         "receipt": receipt,
         "receipt_path": receipt_path,
         "laws_path": laws_path,
-    }
-
-
-def _receipt(*, packet: dict, assignment: dict, outcome: str) -> dict:
-    wall_ms = 50_000
-    transaction = (
-        verified_transaction_receipt_fixture(packet, prompt=SEMANTIC_PROMPT)
-        if outcome == "commit"
-        else None
-    )
-    return {
-        "version": PIPELINE_VERSION,
-        "case_id": "claim-desk",
-        "status": "completed",
-        "outcome": outcome,
-        "wall_ms": wall_ms,
-        "budget": {"tier": "standard"},
-        "materiality_critic": _critic_run(packet),
-        "source_hypothesis": {
-            "stage": "source_hypothesis",
-            "case_id": "claim-desk",
-            "host_profile": "codex",
-            "model": "gpt-5.5",
-            "reasoning_effort": "low",
-            "model_call_count": 2,
-            "validation_status": "passed",
-            "authority_used": False,
-            "source": {},
-            "selected_run_index": 1,
-            "hypothesis_runs": [
-                {
-                    "run_index": 0,
-                    "hypothesis_mode": "full_graph",
-                    "status": "comparison_passed",
-                    "wall_ms": 20_000,
-                    "usage": {},
-                },
-                {
-                    "run_index": 1,
-                    "hypothesis_mode": "source_only",
-                    "status": "selected",
-                    "wall_ms": 19_000,
-                    "usage": {},
-                },
-            ],
-        },
-        "final_graph_adjudication": {
-            "stage": "partitioned_graph_admission",
-            "case_id": "claim-desk",
-            "host_profile": "codex",
-            "model": "gpt-5.5",
-            "reasoning_effort": "low",
-            "model_call_count": 0,
-            "validation_status": "passed",
-            "source_status": "approved" if outcome == "commit" else "not_applicable",
-            "compiled_author_output": (
-                {"typed_graph": True} if outcome == "commit" else None
-            ),
-        },
-        "materiality_assessment": deepcopy(packet["materiality_assessment"]),
-        "packet": deepcopy(packet),
-        "transaction": transaction,
-        "failed_stage": "",
-        "failure": "",
-        "model_call_count": 3,
-        "restart_count": 0,
-        "total_tokens": 200,
-        "mechanism_execution": semantic_execution_evidence(
-            host_profile="codex",
-            tier="standard",
-            status="completed",
-            outcome=outcome,
-            wall_ms=wall_ms,
-            model_call_count=3,
-            restart_count=0,
-            implementation_fingerprint_sha256=greenfield_runtime_source_fingerprint(),
-        ),
-        "evidence_assignment": deepcopy(assignment),
-    }
-
-
-def _critic_run(packet: dict) -> dict:
-    return {
-        "stage": "materiality_critic",
-        "case_id": "claim-desk",
-        "host_profile": "codex",
-        "model": "gpt-5.6-sol",
-        "reasoning_effort": "low",
-        "model_call_count": 1,
-        "validation_status": "passed",
-        "prompt_sha256": hashlib.sha256(
-            SEMANTIC_PROMPT.encode("utf-8")
-        ).hexdigest(),
-        "decision": _materiality_decision(packet),
-    }
-
-
-def _materiality_decision(packet: dict) -> dict:
-    assessment = packet["materiality_assessment"]
-    fields = {
-        row["field"]: {
-            key: deepcopy(value) for key, value in row.items() if key != "field"
-        }
-        for row in assessment["fields"]
-    }
-    if assessment["decision"] == "clarification_required":
-        clarification = assessment["clarification"]
-        fields[clarification["field"]] = {
-            "status": "explicit",
-            "source_refs": deepcopy(clarification["source_refs"]),
-            "alternatives": [],
-        }
-    return {
-        "version": "odylith.greenfield.parallel-materiality-decision.v3",
-        "outcome": {
-            "decision": assessment["decision"],
-            "clarification": deepcopy(assessment["clarification"]),
-        },
-        "fields": fields,
     }
 
 

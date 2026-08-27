@@ -2,5 +2,4 @@
 
 __all__ = [
     "greenfield_proposals_cli",
-    "project_intelligence_binding",
 ]

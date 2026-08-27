@@ -24,21 +24,26 @@ from odylith.runtime.domain_intelligence.greenfield_create_contract import (
     PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_create_contract import (
+    PRODUCT_CREATE_TRANSACTION_FIELDS,
+)
+from odylith.runtime.domain_intelligence.greenfield_create_contract import (
     PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_create_contract import PRODUCT_CREATE_TRANSACTION_VERSION
 from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_ALLOWED_OPERATIONS
 from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_FORBIDDEN_OPERATIONS
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.domain_intelligence import greenfield_transaction_path_boundary
 
 
 _POSTCONFIRM_RUNTIME_SOURCE_FILES = (
     "__init__.py",
     "cli.py",
-    "install/fs.py",
     "runtime/common/derivation_provenance.py",
     "runtime/common/environment.py",
     "runtime/domain_intelligence/greenfield_commit_journal.py",
+    "runtime/domain_intelligence/greenfield_commit_journal_store.py",
+    "runtime/domain_intelligence/greenfield_commit_recovery.py",
     "runtime/domain_intelligence/greenfield_commit_transaction.py",
     "runtime/domain_intelligence/greenfield_create_cli.py",
     "runtime/domain_intelligence/greenfield_compiled_write.py",
@@ -53,6 +58,7 @@ _POSTCONFIRM_RUNTIME_SOURCE_FILES = (
     "runtime/domain_intelligence/greenfield_repository_lock.py",
     "runtime/domain_intelligence/greenfield_repository_write_set.py",
     "runtime/domain_intelligence/greenfield_transaction.py",
+    "runtime/domain_intelligence/greenfield_transaction_path_boundary.py",
 )
 _VOLATILE_HASH_KEYS = frozenset({"elapsed_seconds", "whole_project_elapsed_seconds"})
 _SEALED_COMMIT_ATTESTATION = object()
@@ -133,11 +139,15 @@ def load_sealed_product_create_commit(
 
     target = Path(path).expanduser()
     receipt_path = target.with_name(target.name + ".compiler-receipt.v1.json")
-    if target.is_symlink() or receipt_path.is_symlink():
-        raise ValueError("ProductCreateTransaction file and compiler receipt must not be symlinks")
     try:
-        payload_bytes = target.read_bytes()
-        receipt_bytes = receipt_path.read_bytes()
+        if repo_root is None:
+            if target.is_symlink() or receipt_path.is_symlink():
+                raise ValueError("ProductCreateTransaction file and compiler receipt must not be symlinks")
+            payload_bytes = target.read_bytes()
+            receipt_bytes = receipt_path.read_bytes()
+        else:
+            payload_bytes = greenfield_transaction_path_boundary.read_bytes(repo_root, target)
+            receipt_bytes = greenfield_transaction_path_boundary.read_bytes(repo_root, receipt_path)
         receipt_payload = json.loads(receipt_bytes.decode("utf-8"))
         payload = json.loads(payload_bytes.decode("utf-8"))
     except FileNotFoundError as error:
@@ -152,6 +162,11 @@ def load_sealed_product_create_commit(
     except OSError as error:
         raise RuntimeError(
             "environment/IO failure while reading the pre-confirm ProductCreateTransaction; no governed records were written"
+        ) from error
+    except greenfield_transaction_path_boundary.GreenfieldTransactionPathError as error:
+        raise ValueError(
+            "ProductCreateTransaction path is outside the safe repository transaction boundary; "
+            "no governed records were written"
         ) from error
     if not isinstance(payload, Mapping) or not isinstance(receipt_payload, Mapping):
         raise ValueError("ProductCreateTransaction and compiler receipt must be JSON objects")
@@ -169,6 +184,8 @@ def load_sealed_product_create_commit(
         raise ValueError("ProductCreateTransaction compiler receipt has an unsupported version")
     if hashlib.sha256(payload_bytes).hexdigest() != str(receipt_payload.get("transaction_file_sha256", "")).strip():
         raise ValueError("ProductCreateTransaction file does not match its pre-confirm compiler receipt")
+    if set(payload) != set(PRODUCT_CREATE_TRANSACTION_FIELDS):
+        raise ValueError("ProductCreateTransaction v2 payload is malformed")
     runtime_identity = receipt_payload.get("post_confirm_runtime_identity")
     if not isinstance(runtime_identity, Mapping) or dict(runtime_identity) != build_product_create_transaction_compiler_identity():
         raise ValueError(
@@ -229,7 +246,12 @@ def load_sealed_product_create_commit(
         _commit_manifest_preview_json=_sealed_mapping_json(commit_manifest_preview),
         _transaction_summary_json=_sealed_mapping_json(transaction_summary),
         transaction_hash=transaction_hash,
-        transaction_file=target.resolve(),
+        transaction_file=(
+            Path(repo_root).expanduser().resolve()
+            / greenfield_transaction_path_boundary.relative_token(repo_root, target)
+            if repo_root is not None
+            else target.resolve()
+        ),
         prewrite_package=SealedGreenfieldCommitPackage(
             _repository_write_set_json=_sealed_mapping_json(write_set),
             _commit_result_preview_json=_sealed_mapping_json(commit_preview),
@@ -318,17 +340,8 @@ def build_product_create_transaction_compiler_identity() -> dict[str, Any]:
 
 
 def _payload_hash(payload: Mapping[str, Any]) -> str:
-    fields = (
-        "version",
-        "release_selector",
-        "proposal",
-        "validation_gate",
-        "prewrite_package",
-        "backlog_result",
-        "intent_authority",
-        "quality_manifest",
-        "compiler_provenance",
-        "commit_summary",
+    fields = tuple(
+        field for field in PRODUCT_CREATE_TRANSACTION_FIELDS if field != "transaction_hash"
     )
     canonical = json.dumps(
         {field: _json_ready(payload.get(field)) for field in fields},

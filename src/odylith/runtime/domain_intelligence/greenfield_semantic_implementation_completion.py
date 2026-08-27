@@ -20,8 +20,6 @@ def single_release_system_targets(
         for relation_kind, collections in {
             "implements": ("workflow_steps", "state_objects", "visible_outputs"),
             "depends_on": ("external_systems",),
-            "constrained_by": ("operational_constraints",),
-            "excludes": ("non_goals",),
         }.items()
     }
 

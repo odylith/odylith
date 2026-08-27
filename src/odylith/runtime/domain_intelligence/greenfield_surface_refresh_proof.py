@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from odylith.runtime.governance import owned_surface_refresh
+from odylith.runtime.surfaces import compass_refresh_contract
 
 
 GREENFIELD_SURFACE_REFRESH_PROOF_VERSION = "greenfield.prewrite_surface_refresh.v1"
@@ -39,6 +40,9 @@ def build_prewrite_surface_refresh_preview(
         surfaces=GREENFIELD_VISIBLE_SURFACES,
         operation_label="Greenfield pre-confirm staged surface refresh",
         atlas_sync=False,
+        compass_refresh_profile=(
+            compass_refresh_contract.SEALED_PRECONFIRM_REFRESH_PROFILE
+        ),
     )
     missing = [path for path in GREENFIELD_REQUIRED_SURFACE_ARTIFACTS if _missing_or_empty(root / path)]
     if missing:

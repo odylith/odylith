@@ -29,8 +29,6 @@ def build_greenfield_commit_result_preview(
 ) -> dict[str, Any]:
     """Build the operator result without requiring commit-time artifact parsing."""
 
-    source = Path(source_root).expanduser().resolve()
-    target = Path(target_root).expanduser().resolve()
     preview = dict(staged_surfaces.surface_refresh_preview)
     dashboard_refresh = {
         "status": "passed",
@@ -59,7 +57,7 @@ def build_greenfield_commit_result_preview(
         "release_target": dict(release_target or {"selector": "", "release_id": "none", "events": []}),
         "completion_priority_quality_debt": [],
     }
-    return _remap_stage_paths(result, source_root=source, target_root=target)
+    return result
 
 
 def require_greenfield_commit_result_preview(value: object) -> dict[str, Any]:
@@ -81,23 +79,6 @@ def require_greenfield_commit_result_preview(value: object) -> dict[str, Any]:
     if payload.get("completion_priority_quality_debt") not in ([], ()):
         raise ValueError("ProductCreateTransaction commit result preview contains unresolved quality debt")
     return payload
-
-
-def _remap_stage_paths(value: Any, *, source_root: Path, target_root: Path) -> Any:
-    source = str(source_root)
-    target = str(target_root)
-    if isinstance(value, Mapping):
-        return {
-            str(key).replace(source, target): _remap_stage_paths(item, source_root=source_root, target_root=target_root)
-            for key, item in value.items()
-        }
-    if isinstance(value, tuple):
-        return tuple(_remap_stage_paths(item, source_root=source_root, target_root=target_root) for item in value)
-    if isinstance(value, list):
-        return [_remap_stage_paths(item, source_root=source_root, target_root=target_root) for item in value]
-    if isinstance(value, str):
-        return value.replace(source, target)
-    return value
 
 
 __all__ = ["build_greenfield_commit_result_preview", "require_greenfield_commit_result_preview"]

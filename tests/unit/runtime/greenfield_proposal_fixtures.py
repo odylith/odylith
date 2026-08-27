@@ -31,14 +31,16 @@ def compiled_graph_transaction(repo_root: Path) -> Any:
     """Compile the canonical v2 graph fixture through the public graph workflow."""
 
     intent = semantic_intent_with_authority()
+    authority = intent[PRODUCT_INTENT_AUTHORITY_KEY]
     proposal = build_verified_semantic_proposal_for_repo(
         repo_root=repo_root,
-        authority=intent[PRODUCT_INTENT_AUTHORITY_KEY],
+        authority=authority,
         release_selector="0.0.1",
     )
     return compile_verified_semantic_transaction(
         repo_root=repo_root,
         proposal=proposal,
+        intent_authority=authority,
         release_selector="0.0.1",
     )
 

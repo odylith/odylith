@@ -53,9 +53,9 @@ def record_compiled_greenfield_acceptance(
     return {
         "recorded": True,
         "reused_existing": reused,
-        "stream": str(stream_path),
-        "accepted_project": str(accepted_path),
-        "project_brief": str(brief_path),
+        "stream": Path(agent_runtime_contract.AGENT_STREAM_PATH).as_posix(),
+        "accepted_project": Path(ACCEPTED_PROJECT_SOURCE_PATH).as_posix(),
+        "project_brief": Path(PROJECT_BRIEF_SOURCE_PATH).as_posix(),
         "event": dict(existing),
     }
 

@@ -9,7 +9,9 @@ from pathlib import Path
 import shlex
 from typing import Any, Mapping
 
-from odylith.runtime.domain_intelligence.greenfield_create_contract import product_intent_authorities_match
+from odylith.runtime.domain_intelligence.greenfield_product_intent_binding import (
+    require_product_intent_review_binding,
+)
 
 
 _PUBLIC_INTENT_AUTHORITY_SUMMARY_VERSION = "odylith.product-intent-authority-summary.v1"
@@ -285,25 +287,16 @@ def _compile_prompt_evidence_transaction(
     candidate_authority = candidate_intent.get("product_intent_authority")
     if not isinstance(candidate_authority, Mapping):
         raise RuntimeError("pre-confirm typed Product Intent authority is missing")
-    proposal = dict(proposal)
-    proposal["product_intent_authority"] = candidate_authority
     transaction = compile_verified_semantic_transaction(
         repo_root=repo_root,
         proposal=proposal,
+        intent_authority=candidate_authority,
         release_selector=release_selector,
     )
-    proposal_authority = (
-        transaction.proposal.get("product_intent_authority")
-        if isinstance(transaction.proposal, Mapping)
-        else None
-    )
     transaction_authority = transaction.intent_authority if isinstance(transaction.intent_authority, Mapping) else {}
-    if not product_intent_authorities_match(proposal_authority, transaction_authority):
-        raise RuntimeError(
-            "pre-confirm compiler produced a transaction whose Product Intent authority bytes do not match "
-            "the visible typed preview"
-        )
-    candidate_intent = dict(transaction.proposal.get("intent") or {})
+    review_package = transaction.prewrite_package.proposal
+    require_product_intent_review_binding(review_package, transaction_authority)
+    candidate_intent = dict(review_package.get("intent") or {})
     candidate_intent["product_intent_authority"] = transaction_authority
     transaction_path = greenfield_pending_transaction_store.stage_pending_transaction(
         repo_root=repo_root,
@@ -455,7 +448,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                     write_compiled_product_create_transaction_file,
                 )
 
-                write_compiled_product_create_transaction_file(path, transaction)
+                write_compiled_product_create_transaction_file(
+                    path,
+                    transaction,
+                    repo_root=repo_root,
+                )
                 output_path = str(path)
             else:
                 output_path = str(staged_path)

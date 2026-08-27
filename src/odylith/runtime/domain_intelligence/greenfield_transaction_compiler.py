@@ -13,10 +13,9 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
     require_product_create_transaction_verified,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_binding import (
-    PRODUCT_INTENT_AUTHORITY_KEY,
     rebind_authoritative_product_facts,
     require_authoritative_intent_binding,
-    require_product_intent_authority,
+    require_product_intent_review_binding,
 )
 from odylith.runtime.domain_intelligence.greenfield_release_contract import (
     DEFAULT_GREENFIELD_RELEASE_SELECTOR,
@@ -30,17 +29,17 @@ def compile_sealed_greenfield_transaction(
     *,
     repo_root: Path,
     proposal: Mapping[str, Any],
+    intent_authority: Mapping[str, Any],
     release_selector: str,
     verified_semantic_prewrite: PrewriteBuilder,
 ) -> ProductCreateTransaction:
     """Validate one current graph authority and compile its exact staged write set."""
 
     root = Path(repo_root).expanduser().resolve()
-    authority_value = proposal.get(PRODUCT_INTENT_AUTHORITY_KEY)
-    if not isinstance(authority_value, Mapping):
-        raise ValueError("ProductCreateTransaction is missing confirmed Product Intent authority")
-    intent_authority = dict(authority_value)
-    require_product_intent_authority(intent_authority)
+    if not isinstance(intent_authority, Mapping):
+        raise ValueError("ProductCreateTransaction compiler requires explicit Product Intent authority")
+    intent_authority = dict(intent_authority)
+    require_product_intent_review_binding(proposal, intent_authority)
     release_selector = _semantic_release_selector(proposal, release_selector)
     authoritative_intent = proposal.get("intent")
     if not isinstance(authoritative_intent, Mapping):
@@ -49,6 +48,7 @@ def compile_sealed_greenfield_transaction(
     proposal, _prewrite_report, prewrite_build, quality_manifest = verified_semantic_prewrite(
         root=root,
         proposal=proposal,
+        intent_authority=intent_authority,
         release_selector=release_selector,
     )
     package_proposal = prewrite_build.package.proposal
@@ -60,7 +60,7 @@ def compile_sealed_greenfield_transaction(
         authoritative_intent=authoritative_intent,
         authority=intent_authority,
     )
-    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = intent_authority
+    require_product_intent_review_binding(proposal, intent_authority)
     from odylith.runtime.domain_intelligence.greenfield_semantic_package_validation import (
         require_verified_semantic_package,
     )
@@ -68,6 +68,7 @@ def compile_sealed_greenfield_transaction(
     rebound_package = replace(prewrite_build.package, proposal=proposal)
     validation_report = require_verified_semantic_package(
         rebound_package,
+        intent_authority=intent_authority,
         release_selector=release_selector,
     )
     rebound_package = replace(
@@ -76,11 +77,9 @@ def compile_sealed_greenfield_transaction(
     )
     prewrite_build = replace(prewrite_build, package=rebound_package)
     transaction = build_product_create_transaction(
-        proposal=proposal,
         release_selector=release_selector,
         validation_gate=validation_report.to_dict(),
         prewrite_package=prewrite_build.package,
-        backlog_result=prewrite_build.backlog_result,
         intent_authority=intent_authority,
         quality_manifest=quality_manifest,
         repo_root=root,

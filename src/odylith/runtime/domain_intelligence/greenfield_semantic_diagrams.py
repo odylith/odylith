@@ -20,27 +20,33 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_projection_plan imp
 
 _WATCH_PATHS = ["odylith/radar/source", "odylith/registry/source"]
 _NODE_ROLES = {
-    "identity": "Product identity",
     "actor": "Human actor",
+    "audience": "Output audience",
+    "entity": "Canonical entity",
     "workflow_step": "Workflow step",
     "state_object": "State object",
     "visible_output": "Visible output",
     "external_system": "External dependency",
     "internal_system": "Product responsibility",
     "component_responsibility": "Component responsibility",
-    "operational_constraint": "Operational constraint",
-    "non_goal": "Excluded scope",
+    "product_boundary": "Product boundary",
+    "policy_boundary": "Policy boundary",
     "assumption": "Visible assumption",
-    "ambiguity": "Open ambiguity",
 }
 _EDGE_LABELS = {
     "owned_by": "owned by",
+    "input_entity": "takes input",
+    "target_entity": "targets",
+    "creates": "creates",
     "produces": "produces",
+    "output_of": "is output for",
+    "visible_to": "visible to",
     "changes": "changes",
+    "maintains": "maintains",
+    "state_of": "is state for",
     "depends_on": "depends on",
     "implements": "implements",
-    "constrained_by": "constrained by",
-    "excludes": "excludes",
+    "applies_to": "applies to",
 }
 
 
@@ -61,7 +67,7 @@ def semantic_diagrams(
             "description": _component_description(row),
             "custody_state": str(row["custody_state"]),
             "evidence_tier": str(row["evidence_tier"]),
-            "semantic_fact_id": str(row["semantic_fact_id"]),
+            "implementation_policy_id": str(row["implementation_policy_id"]),
         }
         for row in plan.components
     ]

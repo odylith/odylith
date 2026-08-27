@@ -43,6 +43,7 @@ def _release_row(
         "active_workstream_count": len(active_workstreams),
         "completed_workstream_count": len(completed_workstreams),
     }
+    row["source_path"] = release_planning_contract.RELEASES_REGISTRY_PATH.as_posix()
     row["display_label"] = _surface_release_label(row) or str(release.release_id).strip()
     return row
 

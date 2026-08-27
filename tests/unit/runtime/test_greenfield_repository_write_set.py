@@ -131,14 +131,15 @@ def test_repository_write_set_syncs_directory_only_creation_through_repo_root(
         source_root=source,
         staged_root=stage,
     )
-    calls: list[Path] = []
-    real_sync = greenfield_repository_write_set.fsync_directory
+    calls: list[tuple[Path, str]] = []
+    boundary = greenfield_repository_write_set.greenfield_transaction_path_boundary
+    real_ensure = boundary.ensure_directory
 
-    def record_sync(path: Path) -> None:
-        calls.append(Path(path))
-        real_sync(path)
+    def record_ensure(repo_root: Path, path: Path | str) -> Path:
+        calls.append((Path(repo_root), str(path)))
+        return real_ensure(repo_root, path)
 
-    monkeypatch.setattr(greenfield_repository_write_set, "fsync_directory", record_sync)
+    monkeypatch.setattr(boundary, "ensure_directory", record_ensure)
 
     result = greenfield_repository_write_set.apply_compiled_greenfield_repository_write_set(
         repo_root=source,
@@ -148,8 +149,8 @@ def test_repository_write_set_syncs_directory_only_creation_through_repo_root(
     assert result["write_count"] == 0
     assert result["directory_count"] == 3
     assert created.is_dir()
-    assert created in calls
-    assert source in calls
+    assert all(repo_root == source for repo_root, _path in calls)
+    assert "odylith/radar/source/empty" in {path for _repo_root, path in calls}
 
 
 def test_repository_write_set_rejects_repo_drift_before_first_write(tmp_path: Path) -> None:
@@ -213,23 +214,24 @@ def test_repository_write_set_rolls_back_mid_write_failures(
         source_root=source,
         staged_root=stage,
     )
-    real_write = greenfield_repository_write_set.atomic_write_bytes
+    real_write = greenfield_repository_write_set.transaction_atomic_write_bytes
     calls = 0
 
     def fail_second(
-        path: Path,
+        repo_root: Path,
+        path: str,
         data: bytes,
         *,
-        mode: int | None = None,
+        mode: int,
         temporary_directory: Path | None = None,
     ) -> Path:
         nonlocal calls
         calls += 1
         if calls == 2:
             raise failure
-        return real_write(path, data, mode=mode, temporary_directory=temporary_directory)
+        return real_write(repo_root, path, data, mode=mode, temporary_directory=temporary_directory)
 
-    monkeypatch.setattr(greenfield_repository_write_set, "atomic_write_bytes", fail_second)
+    monkeypatch.setattr(greenfield_repository_write_set, "transaction_atomic_write_bytes", fail_second)
     paths = greenfield_repository_write_set.greenfield_repository_write_paths(write_set)
     transaction = GreenfieldApplyTransaction(source, paths=paths)
     with pytest.raises(type(failure)):
@@ -265,14 +267,18 @@ def test_repository_write_set_rolls_back_after_file_delete_when_directory_delete
         source_root=source,
         staged_root=stage,
     )
-    real_rmdir = greenfield_repository_write_set.Path.rmdir
+    real_rmdir = greenfield_repository_write_set.greenfield_transaction_path_boundary.remove_directory
 
-    def fail_removed_directory(path: Path) -> None:
-        if path == removed_directory:
+    def fail_removed_directory(repo_root: Path, path: str) -> None:
+        if Path(repo_root) / path == removed_directory:
             raise OSError("directory delete failed")
-        real_rmdir(path)
+        real_rmdir(repo_root, path)
 
-    monkeypatch.setattr(greenfield_repository_write_set.Path, "rmdir", fail_removed_directory)
+    monkeypatch.setattr(
+        greenfield_repository_write_set.greenfield_transaction_path_boundary,
+        "remove_directory",
+        fail_removed_directory,
+    )
     paths = greenfield_repository_write_set.greenfield_repository_write_paths(write_set)
     transaction = GreenfieldApplyTransaction(source, paths=paths)
 
@@ -344,18 +350,25 @@ def test_repository_write_set_readback_failure_rolls_back(tmp_path: Path, monkey
         source_root=source,
         staged_root=stage,
     )
-    real_write = greenfield_repository_write_set.atomic_write_bytes
+    real_write = greenfield_repository_write_set.transaction_atomic_write_bytes
 
     def corrupt(
-        path: Path,
+        repo_root: Path,
+        path: str,
         data: bytes,
         *,
-        mode: int | None = None,
+        mode: int,
         temporary_directory: Path | None = None,
     ) -> Path:
-        return real_write(path, data + b"corrupt", mode=mode, temporary_directory=temporary_directory)
+        return real_write(
+            repo_root,
+            path,
+            data + b"corrupt",
+            mode=mode,
+            temporary_directory=temporary_directory,
+        )
 
-    monkeypatch.setattr(greenfield_repository_write_set, "atomic_write_bytes", corrupt)
+    monkeypatch.setattr(greenfield_repository_write_set, "transaction_atomic_write_bytes", corrupt)
     paths = greenfield_repository_write_set.greenfield_repository_write_paths(write_set)
     transaction = GreenfieldApplyTransaction(source, paths=paths)
     with pytest.raises(RuntimeError, match="readback drifted"):
@@ -383,22 +396,25 @@ def test_repository_write_set_rolls_back_when_target_directory_sync_fails(
         source_root=source,
         staged_root=stage,
     )
-    real_sync = greenfield_repository_write_set.fsync_directory
+    boundary = greenfield_repository_write_set.greenfield_transaction_path_boundary
+    real_sync = boundary.os.fsync
     calls = 0
 
-    def fail_once(path: Path) -> None:
+    def fail_once(fd: int) -> None:
         nonlocal calls
-        calls += 1
+        if boundary.stat.S_ISDIR(boundary.os.fstat(fd).st_mode):
+            calls += 1
         if calls == 1:
+            calls += 1
             raise OSError("directory sync failed")
-        real_sync(path)
+        real_sync(fd)
 
-    monkeypatch.setattr(greenfield_repository_write_set, "fsync_directory", fail_once)
     paths = greenfield_repository_write_set.greenfield_repository_write_paths(write_set)
     transaction = GreenfieldApplyTransaction(source, paths=paths)
 
     with pytest.raises(OSError, match="directory sync failed"):
         with transaction:
+            monkeypatch.setattr(boundary.os, "fsync", fail_once)
             greenfield_repository_write_set.apply_compiled_greenfield_repository_write_set(
                 repo_root=source,
                 write_set=write_set,
@@ -423,10 +439,18 @@ def test_repository_write_set_rolls_back_when_target_file_sync_fails(
         staged_root=stage,
     )
 
-    def fail_sync(_path: Path) -> None:
+    def fail_sync(
+        _repo_root: Path,
+        _path: str,
+        _data: bytes,
+        *,
+        mode: int,
+        temporary_directory: Path | None,
+    ) -> Path:
+        _ = mode, temporary_directory
         raise OSError("file sync failed")
 
-    monkeypatch.setattr(greenfield_repository_write_set, "fsync_file", fail_sync)
+    monkeypatch.setattr(greenfield_repository_write_set, "transaction_atomic_write_bytes", fail_sync)
     paths = greenfield_repository_write_set.greenfield_repository_write_paths(write_set)
     transaction = GreenfieldApplyTransaction(source, paths=paths)
 

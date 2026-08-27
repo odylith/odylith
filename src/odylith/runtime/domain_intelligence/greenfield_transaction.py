@@ -4,15 +4,12 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import signal
-import shutil
-import tempfile
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
-from odylith.install.fs import atomic_write_text
-from odylith.install.fs import fsync_directory
-from odylith.install.fs import fsync_file
+from odylith.runtime.domain_intelligence import greenfield_transaction_path_boundary
 
 
 class GreenfieldApplyTransaction:
@@ -74,32 +71,46 @@ class GreenfieldApplyTransaction:
 
     def __enter__(self) -> "GreenfieldApplyTransaction":
         if self._snapshot_root is None:
-            self._snapshot_root = Path(tempfile.mkdtemp(prefix="odylith-greenfield-rollback-"))
-        elif self._snapshot_root.exists() or self._snapshot_root.is_symlink():
-            raise ValueError(f"greenfield rollback snapshot already exists: {self._snapshot_root}")
+            parent = ".odylith/runtime/greenfield/rollback"
+            token = greenfield_transaction_path_boundary.make_temporary_directory(
+                self.repo_root,
+                parent,
+                prefix=".prepare-",
+            )
+            self._snapshot_root = self.repo_root / token
         else:
-            self._snapshot_root.mkdir(parents=True, exist_ok=False)
-            fsync_directory(self._snapshot_root.parent)
+            token = greenfield_transaction_path_boundary.relative_token(
+                self.repo_root,
+                self._snapshot_root,
+            )
+            if greenfield_transaction_path_boundary.path_kind(self.repo_root, token) != "missing":
+                raise ValueError(f"greenfield rollback snapshot already exists: {self._snapshot_root}")
+            greenfield_transaction_path_boundary.ensure_directory(self.repo_root, token)
+        snapshot_token = self._snapshot_token()
         for token in self._snapshot_paths:
             source = self.repo_root / token
-            target = self._snapshot_root / token
-            marker = _missing_marker(self._snapshot_root, token)
-            marker.parent.mkdir(parents=True, exist_ok=True)
-            if source.exists() or source.is_symlink():
+            target = self.repo_root / snapshot_token / token
+            marker = snapshot_missing_marker_token(snapshot_token, token)
+            if greenfield_transaction_path_boundary.path_kind(self.repo_root, token) != "missing":
                 _copy_path(source, target)
-                _sync_path(target)
             else:
-                atomic_write_text(marker, "missing\n")
-        atomic_write_text(
-            self._snapshot_root / self._SNAPSHOT_MANIFEST,
-            json.dumps(
-                _snapshot_manifest(self._snapshot_root, self._snapshot_paths),
-                indent=2,
-                sort_keys=True,
-            )
-            + "\n",
+                greenfield_transaction_path_boundary.atomic_write_bytes(
+                    self.repo_root,
+                    marker,
+                    b"missing\n",
+                )
+        greenfield_transaction_path_boundary.atomic_write_bytes(
+            self.repo_root,
+            f"{snapshot_token}/{self._SNAPSHOT_MANIFEST}",
+            (
+                json.dumps(
+                    _snapshot_manifest(self.repo_root, snapshot_token, self._snapshot_paths),
+                    indent=2,
+                    sort_keys=True,
+                )
+                + "\n"
+            ).encode("utf-8"),
         )
-        fsync_directory(self._snapshot_root)
         self._install_signal_guard()
         return self
 
@@ -130,7 +141,11 @@ class GreenfieldApplyTransaction:
                 self._rolled_back = True
         finally:
             if self._snapshot_root is not None and not self._rollback_error and not self._retain_snapshot:
-                shutil.rmtree(self._snapshot_root, ignore_errors=True)
+                greenfield_transaction_path_boundary.remove_path(
+                    self.repo_root,
+                    self._snapshot_token(),
+                    missing_ok=True,
+                )
         return False
 
     def _install_signal_guard(self) -> None:
@@ -153,23 +168,33 @@ class GreenfieldApplyTransaction:
     def _restore(self) -> None:
         if self._snapshot_root is None:
             return
-        manifest = _validated_snapshot_manifest(self._snapshot_root, self._snapshot_paths)
+        snapshot_token = self._snapshot_token()
+        manifest = _validated_snapshot_manifest(
+            self.repo_root,
+            snapshot_token,
+            self._snapshot_paths,
+        )
         for token in sorted(self._snapshot_paths, key=lambda item: len(Path(item).parts), reverse=True):
             target = self.repo_root / token
             snapshot = self._snapshot_root / token
             entry = manifest[token]
-            if target.exists() or target.is_symlink():
-                _remove_path(target)
-                fsync_directory(target.parent)
+            if greenfield_transaction_path_boundary.path_kind(self.repo_root, token) != "missing":
+                greenfield_transaction_path_boundary.remove_path(self.repo_root, token)
             if entry["state"] == "present":
                 _copy_path(snapshot, target)
-                _sync_path(target)
-                fsync_directory(target.parent)
-                actual = _path_fingerprint(target)
+                actual = _path_fingerprint(self.repo_root, token)
                 if actual != entry["sha256"]:
                     raise RuntimeError(f"greenfield rollback readback mismatch: {token}")
-            elif target.exists() or target.is_symlink():
+            elif greenfield_transaction_path_boundary.path_kind(self.repo_root, token) != "missing":
                 raise RuntimeError(f"greenfield rollback expected an absent path: {token}")
+
+    def _snapshot_token(self) -> str:
+        if self._snapshot_root is None:
+            raise RuntimeError("greenfield rollback snapshot is not initialized")
+        return greenfield_transaction_path_boundary.relative_token(
+            self.repo_root,
+            self._snapshot_root,
+        )
 
     @classmethod
     def restore_snapshot(
@@ -187,7 +212,14 @@ class GreenfieldApplyTransaction:
             snapshot_root=snapshot_root,
             retain_snapshot=True,
         )
-        if transaction._snapshot_root is None or not transaction._snapshot_root.is_dir():
+        if (
+            transaction._snapshot_root is None
+            or greenfield_transaction_path_boundary.path_kind(
+                transaction.repo_root,
+                transaction._snapshot_token(),
+            )
+            != "directory"
+        ):
             raise RuntimeError(f"greenfield rollback snapshot is missing: {snapshot_root}")
         transaction._restore()
 
@@ -204,31 +236,47 @@ def _validated_snapshot_paths(paths: Sequence[str]) -> tuple[str, ...]:
     return tuple(result)
 
 
-def _missing_marker(snapshot_root: Path, token: str) -> Path:
+def snapshot_missing_marker_token(snapshot_token: str, token: str) -> str:
     digest = hashlib.sha256(token.encode("utf-8")).hexdigest()
-    return snapshot_root / ".missing" / digest
+    return f"{snapshot_token}/.missing/{digest}"
 
 
-def _snapshot_manifest(snapshot_root: Path, paths: Sequence[str]) -> dict[str, object]:
+def _snapshot_manifest(
+    repo_root: Path,
+    snapshot_token: str,
+    paths: Sequence[str],
+) -> dict[str, object]:
     entries: dict[str, dict[str, str]] = {}
     for token in paths:
-        snapshot = snapshot_root / token
-        marker = _missing_marker(snapshot_root, token)
-        if snapshot.exists() or snapshot.is_symlink():
-            entries[token] = {"state": "present", "sha256": _path_fingerprint(snapshot)}
-        elif marker.is_file() and not marker.is_symlink() and marker.read_text(encoding="utf-8") == "missing\n":
+        snapshot = f"{snapshot_token}/{token}"
+        marker = snapshot_missing_marker_token(snapshot_token, token)
+        if greenfield_transaction_path_boundary.path_kind(repo_root, snapshot) != "missing":
+            entries[token] = {
+                "state": "present",
+                "sha256": _path_fingerprint(repo_root, snapshot),
+            }
+        elif (
+            greenfield_transaction_path_boundary.path_kind(repo_root, marker) == "file"
+            and greenfield_transaction_path_boundary.read_bytes(repo_root, marker) == b"missing\n"
+        ):
             entries[token] = {"state": "missing", "sha256": ""}
         else:
             raise RuntimeError(f"greenfield rollback snapshot inventory is incomplete: {token}")
     return {"schema_version": 1, "entries": entries}
 
 
-def _validated_snapshot_manifest(snapshot_root: Path, paths: Sequence[str]) -> dict[str, dict[str, str]]:
-    manifest_path = snapshot_root / GreenfieldApplyTransaction._SNAPSHOT_MANIFEST
-    if manifest_path.is_symlink() or not manifest_path.is_file():
+def _validated_snapshot_manifest(
+    repo_root: Path,
+    snapshot_token: str,
+    paths: Sequence[str],
+) -> dict[str, dict[str, str]]:
+    manifest_path = f"{snapshot_token}/{GreenfieldApplyTransaction._SNAPSHOT_MANIFEST}"
+    if greenfield_transaction_path_boundary.path_kind(repo_root, manifest_path) != "file":
         raise RuntimeError("greenfield rollback snapshot manifest is missing or unsafe")
     try:
-        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+        payload = json.loads(
+            greenfield_transaction_path_boundary.read_bytes(repo_root, manifest_path).decode("utf-8")
+        )
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise RuntimeError("greenfield rollback snapshot manifest is unreadable") from exc
     raw_entries = payload.get("entries") if isinstance(payload, dict) and payload.get("schema_version") == 1 else None
@@ -239,14 +287,17 @@ def _validated_snapshot_manifest(snapshot_root: Path, paths: Sequence[str]) -> d
         raw_entry = raw_entries.get(token)
         state = str(raw_entry.get("state") or "") if isinstance(raw_entry, dict) else ""
         expected_hash = str(raw_entry.get("sha256") or "") if isinstance(raw_entry, dict) else ""
-        snapshot = snapshot_root / token
-        marker = _missing_marker(snapshot_root, token)
-        snapshot_present = snapshot.exists() or snapshot.is_symlink()
-        marker_valid = marker.is_file() and not marker.is_symlink() and marker.read_text(encoding="utf-8") == "missing\n"
+        snapshot = f"{snapshot_token}/{token}"
+        marker = snapshot_missing_marker_token(snapshot_token, token)
+        snapshot_present = greenfield_transaction_path_boundary.path_kind(repo_root, snapshot) != "missing"
+        marker_valid = (
+            greenfield_transaction_path_boundary.path_kind(repo_root, marker) == "file"
+            and greenfield_transaction_path_boundary.read_bytes(repo_root, marker) == b"missing\n"
+        )
         if state == "present":
-            if not snapshot_present or marker.exists() or not expected_hash:
+            if not snapshot_present or marker_valid or not expected_hash:
                 raise RuntimeError(f"greenfield rollback snapshot inventory is invalid: {token}")
-            if _path_fingerprint(snapshot) != expected_hash:
+            if _path_fingerprint(repo_root, snapshot) != expected_hash:
                 raise RuntimeError(f"greenfield rollback snapshot integrity check failed: {token}")
         elif state == "missing":
             if snapshot_present or not marker_valid or expected_hash:
@@ -257,31 +308,25 @@ def _validated_snapshot_manifest(snapshot_root: Path, paths: Sequence[str]) -> d
     return entries
 
 
-def _path_fingerprint(path: Path) -> str:
+def _path_fingerprint(repo_root: Path, path: Path | str) -> str:
     digest = hashlib.sha256()
-
-    def update(candidate: Path, relative: str) -> None:
+    token = greenfield_transaction_path_boundary.relative_token(repo_root, path)
+    entries = greenfield_transaction_path_boundary.scan_tree(
+        repo_root,
+        token,
+        require_present=True,
+    )
+    for entry in entries:
+        relative = Path(entry.path).relative_to(token).as_posix()
+        if relative == ".":
+            relative = ""
         digest.update(relative.encode("utf-8"))
         digest.update(b"\0")
-        if candidate.is_symlink():
-            digest.update(b"symlink\0")
-            digest.update(str(candidate.readlink()).encode("utf-8"))
-            return
-        if candidate.is_file():
+        if entry.kind == "file":
             digest.update(b"file\0")
-            with candidate.open("rb") as handle:
-                for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-                    digest.update(chunk)
-            return
-        if candidate.is_dir():
+            digest.update(entry.data)
+        else:
             digest.update(b"directory\0")
-            for child in sorted(candidate.iterdir(), key=lambda item: item.name):
-                child_relative = f"{relative}/{child.name}" if relative else child.name
-                update(child, child_relative)
-            return
-        raise RuntimeError(f"greenfield rollback snapshot path is unreadable: {candidate}")
-
-    update(path, "")
     return digest.hexdigest()
 
 
@@ -294,35 +339,12 @@ def _raise_greenfield_commit_interrupted(signum: int, _frame: object) -> None:
 
 
 def _copy_path(source: Path, target: Path) -> None:
-    target.parent.mkdir(parents=True, exist_ok=True)
-    if source.is_symlink():
-        target.symlink_to(source.readlink())
-    elif source.is_dir():
-        shutil.copytree(source, target, symlinks=True)
-    else:
-        shutil.copy2(source, target)
+    common = Path(os.path.commonpath((str(source), str(target)))).resolve(strict=False)
+    greenfield_transaction_path_boundary.copy_tree(common, source, target)
 
 
-def _remove_path(target: Path) -> None:
-    if target.is_symlink() or target.is_file():
-        target.unlink()
-    elif target.is_dir():
-        shutil.rmtree(target)
-
-
-def _sync_path(path: Path) -> None:
-    if path.is_symlink():
-        fsync_directory(path.parent)
-        return
-    if path.is_file():
-        fsync_file(path)
-        fsync_directory(path.parent)
-        return
-    if path.is_dir():
-        for child in sorted(path.iterdir(), key=lambda item: item.name):
-            _sync_path(child)
-        fsync_directory(path)
-        fsync_directory(path.parent)
-
-
-__all__ = ["GreenfieldApplyTransaction", "GreenfieldCommitInterrupted"]
+__all__ = [
+    "GreenfieldApplyTransaction",
+    "GreenfieldCommitInterrupted",
+    "snapshot_missing_marker_token",
+]

@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-
 _MAX_NARRATIVE_FACTS = 8
 _MAX_NARRATIVE_CANDIDATES = 8
 _MAX_SUMMARY_ROWS = 3
@@ -17,14 +16,14 @@ def project_semantic_narratives(
 ) -> list[dict[str, Any]]:
     """Return source-custodied narrative views without prose interpretation."""
 
-    identities = _rows(facts, "identities")
+    audiences = _rows(facts, "audiences")
     actors = _rows(facts, "actors")
     steps = _rows(facts, "workflow_steps")
     states = _rows(facts, "state_objects")
     outputs = _rows(facts, "visible_outputs")
     dependencies = _rows(facts, "external_systems")
-    constraints = _rows(facts, "operational_constraints")
-    non_goals = _rows(facts, "non_goals")
+    product_boundaries = _rows(facts, "product_boundaries")
+    policy_boundaries = _rows(facts, "policy_boundaries")
     index = {
         str(row["fact_id"]): row
         for rows in facts.values()
@@ -32,16 +31,25 @@ def project_semantic_narratives(
     }
     producer_steps = _relation_subjects(relations, "produces", index=index)
     change_steps = _relation_subjects(relations, "changes", index=index)
+    workflow_actors = _workflow_actors(
+        relations,
+        actor_index={str(row["fact_id"]): row for row in actors},
+        step_ids={str(row["fact_id"]) for row in steps},
+    )
 
     result = [
-        _product_story(identities, actors, steps, outputs),
-        _problem(actors, steps, constraints),
-        _customer(identities, actors, steps),
-        _opportunity(identities, steps, outputs),
+        _product_story(workflow_actors, steps, outputs),
+        _problem(workflow_actors, steps, policy_boundaries),
+        _customer(audiences, actors, steps),
+        _opportunity(steps, outputs),
         _product_view(
-            identities, outputs, states, dependencies, constraints, non_goals
+            outputs,
+            states,
+            dependencies,
+            product_boundaries,
+            policy_boundaries,
         ),
-        _proof_boundary(outputs, states, constraints, non_goals),
+        _proof_boundary(outputs, states),
     ]
     metrics = _success_metrics(
         steps,
@@ -60,69 +68,59 @@ def project_semantic_narratives(
 
 
 def _product_story(
-    identities: Sequence[Mapping[str, Any]],
-    actors: Sequence[Mapping[str, Any]],
+    workflow_actors: Sequence[Mapping[str, Any]],
     steps: Sequence[Mapping[str, Any]],
     outputs: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
     scope = _scope(
         steps=steps[:_MAX_SUMMARY_ROWS],
         outputs=outputs[:2],
-        identity=identities[:1],
-        actors=actors[:2],
+        actors=workflow_actors[:_MAX_NARRATIVE_FACTS],
     )
-    identity = _labels(scope["identity"], fallback="the product")
-    participants = _labels(scope["actors"], fallback="the product")
-    actions = _actions(scope["steps"])
-    text = f"For {participants}, the first path in {identity} is to {actions}."
+    text = f"The product workflow steps: {_quoted_actions(scope['steps'])}."
+    if scope["actors"]:
+        owner = "Owner" if len(scope["actors"]) == 1 else "Owners"
+        text += f" {owner}: {_labels(scope['actors'])}."
     if scope["outputs"]:
-        text += f" The path makes {_result_subject(scope['outputs'])} visible."
+        text += f" Visible output: {_quoted_labels(scope['outputs'])}."
     return _narrative("product_story", 0, text, scope)
 
 
 def _problem(
-    actors: Sequence[Mapping[str, Any]],
+    workflow_actors: Sequence[Mapping[str, Any]],
     steps: Sequence[Mapping[str, Any]],
-    constraints: Sequence[Mapping[str, Any]],
+    policy_boundaries: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
     scope = _scope(
         steps=steps[:2],
-        constraints=constraints[:2],
-        actors=actors[:2],
+        policy_boundaries=policy_boundaries[:2],
+        actors=workflow_actors[:_MAX_NARRATIVE_FACTS],
     )
-    participants = _labels(scope["actors"])
-    if len(scope["actors"]) == 1:
-        text = (
-            f"The declared role, {participants}, needs a governed path to "
-            f"{_actions(scope['steps'])}."
-        )
-    elif scope["actors"]:
-        text = (
-            f"The declared participants, {participants}, need a governed path to "
-            f"{_actions(scope['steps'])}."
-        )
-    else:
-        text = f"The product must provide a governed path to {_actions(scope['steps'])}."
-    if scope["constraints"]:
-        text += f" The path must respect {_labels(scope['constraints'])}."
+    text = "The release must preserve the accepted workflow and its ownership."
+    if scope["policy_boundaries"]:
+        text += f" It must also uphold {_labels(scope['policy_boundaries'])}."
     return _narrative("problem", 0, text, scope)
 
 
 def _customer(
-    identities: Sequence[Mapping[str, Any]],
+    audiences: Sequence[Mapping[str, Any]],
     actors: Sequence[Mapping[str, Any]],
     steps: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
     if actors:
-        scope = _scope(actors=actors[:4])
+        scope = _scope(actors=actors[:_MAX_NARRATIVE_FACTS])
         participants = _quoted_labels(scope["actors"])
         text = (
             f"The declared participant is {participants}."
             if len(scope["actors"]) == 1
             else f"The declared participants are {participants}."
         )
+    elif audiences:
+        scope = _scope(audiences=audiences[:_MAX_NARRATIVE_FACTS])
+        label = "audience" if len(scope["audiences"]) == 1 else "audiences"
+        text = f"The declared {label} is {_quoted_labels(scope['audiences'])}."
     else:
-        scope = _scope(identity=identities[:1], steps=steps[:1])
+        scope = _scope(steps=steps[:1])
         text = (
             "No human participant is declared; the first path is owned by the "
             "product or its systems."
@@ -131,81 +129,62 @@ def _customer(
 
 
 def _opportunity(
-    identities: Sequence[Mapping[str, Any]],
     steps: Sequence[Mapping[str, Any]],
     outputs: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
-    scope = _scope(
-        outputs=outputs[:2], steps=steps[:1], identity=identities[:1]
-    )
-    identity = _labels(scope["identity"], fallback="the product")
+    scope = _scope(outputs=outputs[:2], steps=steps[:1])
     if scope["steps"]:
         text = (
-            f"The opportunity for {identity} is to support the source-backed action "
-            f"“{_actions(scope['steps'])}” and make "
-            f"{_result_subject(scope['outputs'])} visible."
+            f"The product can make {_quoted_labels(scope['outputs'])} available "
+            "through the accepted path."
         )
     else:
         text = (
-            f"The opportunity for {identity} is to make "
+            "The opportunity is to make "
             f"{_result_subject(scope['outputs'])} visible."
         )
     return _narrative("opportunity", 0, text, scope)
 
 
 def _product_view(
-    identities: Sequence[Mapping[str, Any]],
     outputs: Sequence[Mapping[str, Any]],
     states: Sequence[Mapping[str, Any]],
     dependencies: Sequence[Mapping[str, Any]],
-    constraints: Sequence[Mapping[str, Any]],
-    non_goals: Sequence[Mapping[str, Any]],
+    product_boundaries: Sequence[Mapping[str, Any]],
+    policy_boundaries: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
     scope = _scope(
         outputs=outputs[:2],
-        identity=identities[:1],
         states=states[:1],
         dependencies=dependencies[:1],
-        constraints=constraints[:1],
-        non_goals=non_goals[:1],
+        product_boundaries=product_boundaries[:1],
+        policy_boundaries=policy_boundaries[:1],
     )
-    identity = _labels(scope["identity"], fallback="the declared product")
-    text = (
-        f"The product view for {identity} includes the first-path workflow and "
-        f"{_labels(scope['outputs'])}."
-    )
+    text = f"The product includes the accepted workflow and exposes {_quoted_labels(scope['outputs'])}."
     if scope["states"]:
-        text += f" Its durable state is {_labels(scope['states'])}."
+        text += f" Governed state: {_labels(scope['states'])}."
     if scope["dependencies"]:
-        text += f" Its explicit dependency is {_labels(scope['dependencies'])}."
-    if scope["constraints"]:
-        text += f" Its operating constraint is {_labels(scope['constraints'])}."
-    if scope["non_goals"]:
-        text += f" It excludes {_labels(scope['non_goals'])}."
+        text += f" Dependency: {_labels(scope['dependencies'])}."
+    if scope["product_boundaries"]:
+        text += f" Product boundary: {_labels(scope['product_boundaries'])}."
+    if scope["policy_boundaries"]:
+        text += f" Policy boundary: {_labels(scope['policy_boundaries'])}."
     return _narrative("product_view", 0, text, scope)
 
 
 def _proof_boundary(
     outputs: Sequence[Mapping[str, Any]],
     states: Sequence[Mapping[str, Any]],
-    constraints: Sequence[Mapping[str, Any]],
-    non_goals: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
     scope = _scope(
         outputs=outputs[:2],
         states=states[:2],
-        constraints=constraints[:2],
-        non_goals=non_goals[:2],
     )
-    clauses = [f"visibility of {_result_subject(scope['outputs'])}"]
+    clauses = [f"{_quoted_labels(scope['outputs'])} visible"]
     transitions = _transitions(scope["states"])
     if transitions:
         clauses.append(transitions)
-    if scope["constraints"]:
-        clauses.append(f"compliance with {_labels(scope['constraints'])}")
-    text = f"Release evidence must show {_join(clauses)}."
-    if scope["non_goals"]:
-        text += f" It must also show that {_labels(scope['non_goals'])} remains excluded."
+    text = f"Release proof: {_join(clauses)}."
     return _narrative("proof_boundary", 0, text, scope)
 
 
@@ -236,16 +215,10 @@ def _success_metrics(
         step = change_steps.get(str(state["fact_id"]))
         scope = _scope(state=(state,), step=(step,) if step else ())
         if scope["step"]:
-            text = (
-                f"When {_step_completion(scope['step'])}, {_state_subject(scope['state'])} changes "
-                f"from {transition['from_state']} to {transition['to_state']}."
-            )
+            text = f"When {_step_completion(scope['step'])}, {_state_transition(state, finite=True)}."
         else:
-            subject = _state_subject(scope["state"])
-            text = (
-                f"{subject[:1].upper()}{subject[1:]} changes from "
-                f"{transition['from_state']} to {transition['to_state']}."
-            )
+            transition = _state_transition(state, finite=True)
+            text = f"{transition[:1].upper()}{transition[1:]}."
         result.append(_narrative("success_metric", len(result), text, scope))
     for step in steps:
         if len(result) >= 2:
@@ -291,10 +264,7 @@ def _evidence_requirements(
             continue
         step = change_steps.get(str(state["fact_id"]))
         scope = _scope(state=(state,), step=(step,) if step else ())
-        text = (
-            f"Evidence must show {_state_subject(scope['state'])} changing from "
-            f"{transition['from_state']} to {transition['to_state']}"
-        )
+        text = f"Evidence must show {_state_transition(state, finite=False)}"
         result.append(
             _narrative("evidence_requirement", len(result), text + ".", scope)
         )
@@ -366,17 +336,35 @@ def _relation_subjects(
     return result
 
 
+def _workflow_actors(
+    relations: Mapping[str, Sequence[Mapping[str, Any]]],
+    *,
+    actor_index: Mapping[str, Mapping[str, Any]],
+    step_ids: set[str],
+) -> list[Mapping[str, Any]]:
+    """Return unique human owners in the accepted workflow relation order."""
+
+    result: list[Mapping[str, Any]] = []
+    seen: set[str] = set()
+    for relation in relations.get("owned_by", ()):
+        actor_id = str(relation.get("object_id") or "")
+        step_id = str(relation.get("subject_id") or "")
+        actor = actor_index.get(actor_id)
+        if (
+            actor_id
+            and actor_id not in seen
+            and step_id in step_ids
+            and actor is not None
+        ):
+            result.append(actor)
+            seen.add(actor_id)
+    return result
+
+
 def _rows(
     facts: Mapping[str, Sequence[Mapping[str, Any]]], name: str
 ) -> list[Mapping[str, Any]]:
     return list(facts.get(name, ()))
-
-
-def _attribute(row: Mapping[str, Any], name: str) -> str:
-    for attribute in row.get("attributes", ()):
-        if isinstance(attribute, Mapping) and attribute.get("name") == name:
-            return str(attribute.get("value") or "").strip()
-    return ""
 
 
 def _labels(rows: Sequence[Mapping[str, Any]], *, fallback: str = "") -> str:
@@ -384,12 +372,30 @@ def _labels(rows: Sequence[Mapping[str, Any]], *, fallback: str = "") -> str:
     return _join([label for label in labels if label]) or fallback
 
 
-def _actions(rows: Sequence[Mapping[str, Any]]) -> str:
-    actions = [
-        _fragment(_attribute(row, "action") or str(row.get("label") or ""))
-        for row in rows
-    ]
-    return "; then ".join(action for action in actions if action)
+def _quoted_actions(rows: Sequence[Mapping[str, Any]]) -> str:
+    actions = []
+    for row in rows:
+        attributes = row.get("attributes", ())
+        action_phrase = next(
+            (
+                str(attribute.get("value") or "")
+                for attribute in attributes
+                if isinstance(attribute, Mapping)
+                and attribute.get("name") == "action_phrase"
+            ),
+            str(row.get("label") or ""),
+        )
+        action = _fragment(action_phrase)
+        if action:
+            actions.append(f"“{action}”")
+    return _join(actions)
+
+
+def _attribute(row: Mapping[str, Any], name: str) -> str:
+    for attribute in row.get("attributes", ()):
+        if isinstance(attribute, Mapping) and attribute.get("name") == name:
+            return str(attribute.get("value") or "")
+    return ""
 
 
 def _quoted_labels(rows: Sequence[Mapping[str, Any]]) -> str:
@@ -423,11 +429,30 @@ def _transitions(rows: Sequence[Mapping[str, Any]]) -> str:
     for row in rows:
         transition = row.get("transition")
         if isinstance(transition, Mapping):
-            values.append(
-                f"{_fragment(str(row.get('label') or 'state'))} changing from "
-                f"{transition['from_state']} to {transition['to_state']}"
-            )
+            values.append(_state_transition(row, finite=False))
     return _join(values)
+
+
+def _state_transition(row: Mapping[str, Any], *, finite: bool) -> str:
+    """Render one typed transition without reparsing its label or endpoints."""
+
+    subject = _fragment(str(row.get("label") or "state"))
+    transition = row.get("transition")
+    if not isinstance(transition, Mapping):
+        return subject
+    before = transition.get("from_state")
+    after = transition.get("to_state")
+    if before is None:
+        verb = "becomes" if finite else "becoming"
+        return f"{subject} {verb} {_fragment(str(after))}"
+    if after is None:
+        verb = "leaves" if finite else "leaving"
+        return f"{subject} {verb} {_fragment(str(before))}"
+    verb = "changes" if finite else "changing"
+    return (
+        f"{subject} {verb} from {_fragment(str(before))} "
+        f"to {_fragment(str(after))}"
+    )
 
 
 def _join(values: Sequence[str]) -> str:

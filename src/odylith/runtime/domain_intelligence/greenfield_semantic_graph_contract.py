@@ -6,27 +6,33 @@ from typing import Any
 
 
 SEMANTIC_FACT_KINDS = (
-    "identity",
+    "audience",
     "actor",
+    "entity",
     "workflow_step",
     "state_object",
     "visible_output",
     "external_system",
     "internal_system",
     "component_responsibility",
-    "operational_constraint",
-    "non_goal",
+    "product_boundary",
+    "policy_boundary",
     "assumption",
-    "ambiguity",
 )
 SEMANTIC_RELATION_KINDS = (
     "owned_by",
+    "input_entity",
+    "target_entity",
+    "creates",
     "produces",
+    "output_of",
+    "visible_to",
     "changes",
+    "maintains",
+    "state_of",
     "depends_on",
     "implements",
-    "constrained_by",
-    "excludes",
+    "applies_to",
 )
 SEMANTIC_NARRATIVE_FIELDS = (
     "product_story",
@@ -38,21 +44,11 @@ SEMANTIC_NARRATIVE_FIELDS = (
     "success_metric",
     "evidence_requirement",
 )
-SEMANTIC_CLARIFICATION_FIELDS = (
-    "identity",
-    "role",
-    "first_path",
-    "state_object",
-    "visible_result",
-    "dependency",
-    "constraint",
-    "non_goal",
-    "component_boundary",
-)
 SEMANTIC_ATTRIBUTE_NAMES = (
     "action",
     "action_phrase",
     "object",
+    "entity_id",
     "condition",
     "responsibility",
     "component_kind",
@@ -61,10 +57,11 @@ SEMANTIC_ATTRIBUTE_NAMES = (
     "proof",
     "risk",
     "release_scope",
-    "source_title",
+    "audience_kind",
     "access_mode",
-    "materiality_field",
-    "question",
+    "modalities",
+    "statement",
+    "stable_state",
 )
 SINGULAR_NARRATIVE_FIELDS = frozenset(
     {"product_story", "problem", "customer", "opportunity", "product_view", "proof_boundary"}
@@ -82,9 +79,12 @@ INTERNAL_SYSTEM_RELEASE_SCOPES = (
     "deferred",
 )
 FACT_REQUIRED_ATTRIBUTES = {
-    "identity": ("source_title",),
+    "audience": ("audience_kind",),
     "workflow_step": ("action", "action_phrase"),
-    "state_object": ("object",),
+    "state_object": ("object", "entity_id"),
+    "visible_output": ("entity_id",),
+    "product_boundary": ("statement",),
+    "policy_boundary": ("modalities", "statement"),
     "internal_system": (
         "responsibility",
         "component_kind",
@@ -100,58 +100,66 @@ FACT_OWNER_KINDS = {
     for kind in SEMANTIC_FACT_KINDS
 }
 FACT_SEMANTIC_ROLES = {
-    "identity": "the source-backed product identity, excluding discarded or superseded labels",
+    "audience": "one explicit passive human or nonhuman recipient; never a workflow owner",
     "actor": "one explicit human role or participant; preserve each declared role separately",
+    "entity": (
+        "one canonical source-declared domain or observable entity; identity comes from its graph id, "
+        "never from matching its label against workflow prose"
+    ),
     "workflow_step": "one ordered source-entailable action with its real semantic owner kind",
     "state_object": (
         "one durable domain object with either no transition or one atomic "
-        "from_state/to_state transition object"
+        "transition object whose nullable endpoints preserve only source-declared states"
     ),
     "visible_output": "one source-entailable result that a consumer can observe",
     "external_system": "one explicit dependency or external boundary; never merge named dependencies",
     "internal_system": (
-        "one specific implementation responsibility needed for typed workflow, state, or output facts; "
-        "never a generic interface, local capability, or restatement of the whole product"
+        "one source-explicit internal boundary; never synthesize a default system or restate the product"
     ),
     "component_responsibility": "one source-entailable responsibility boundary not owned by another fact",
-    "operational_constraint": (
-        "a rule limiting how an accepted capability, access path, or execution behavior may operate; "
-        "classify by its relationship to accepted behavior, regardless of grammatical form"
+    "product_boundary": (
+        "one source-declared product scope, execution-location, deployment, or data-locality boundary; "
+        "never a behavioral policy"
     ),
-    "non_goal": (
-        "an entire capability or outcome excluded from product scope; classify by its relationship "
-        "to accepted behavior, regardless of grammatical form, and never duplicate it as a constraint"
+    "policy_boundary": (
+        "one neutral source-grounded boundary preserving its complete statement and every explicit modality"
     ),
     "assumption": "a visible non-material interpretation needed to proceed",
-    "ambiguity": "an unresolved material meaning that requires clarification",
 }
 COMPLETE_FACT_COUNTS = {
-    "identity": {"minimum": 1, "maximum": 1},
+    "audience": {"minimum": 0, "maximum": 64},
     "actor": {"minimum": 0, "maximum": 64},
+    "entity": {"minimum": 0, "maximum": 64},
     "workflow_step": {"minimum": 1},
     "state_object": {"minimum": 0, "maximum": 16},
     "visible_output": {"minimum": 1},
-    "internal_system": {"minimum": 1, "maximum": 128},
+    "internal_system": {"minimum": 0, "maximum": 128},
 }
 RELATION_ENDPOINT_KINDS = {
     "owned_by": {"subject": ("workflow_step",), "object": ("actor",)},
+    "input_entity": {"subject": ("workflow_step",), "object": ("entity",)},
+    "target_entity": {"subject": ("workflow_step",), "object": ("entity",)},
+    "creates": {"subject": ("workflow_step",), "object": ("entity",)},
     "produces": {"subject": ("workflow_step",), "object": ("visible_output",)},
+    "output_of": {"subject": ("visible_output",), "object": ("entity",)},
+    "visible_to": {
+        "subject": ("visible_output",),
+        "object": ("actor", "audience"),
+    },
     "changes": {"subject": ("workflow_step",), "object": ("state_object",)},
+    "maintains": {"subject": ("workflow_step",), "object": ("state_object",)},
+    "state_of": {"subject": ("state_object",), "object": ("entity",)},
     "depends_on": {
-        "subject": ("identity", "internal_system", "workflow_step"),
+        "subject": ("internal_system", "workflow_step"),
         "object": ("external_system", "internal_system"),
     },
     "implements": {
         "subject": ("internal_system",),
         "object": ("workflow_step", "state_object", "visible_output"),
     },
-    "constrained_by": {
-        "subject": ("identity", "internal_system", "workflow_step"),
-        "object": ("operational_constraint",),
-    },
-    "excludes": {
-        "subject": ("identity", "internal_system", "workflow_step"),
-        "object": ("non_goal",),
+    "applies_to": {
+        "subject": ("policy_boundary",),
+        "object": ("workflow_step", "external_system", "internal_system"),
     },
 }
 
@@ -166,10 +174,9 @@ def semantic_intent_authoring_contract() -> dict[str, Any]:
                 "ask one focused question, bind the answer as operator_edit evidence, "
                 "then author a new complete packet"
             ),
-            "clarification_fields": list(SEMANTIC_CLARIFICATION_FIELDS),
             "clarification_graph": (
                 "preserve every settled source-cited fact, relation, and narrative; "
-                "omit only meaning that depends on the unresolved field"
+                "ask one question citing the exact source uncertainty and carry no accepted graph rows"
             ),
         },
         "source_citation_contract": {
@@ -190,15 +197,12 @@ def semantic_intent_authoring_contract() -> dict[str, Any]:
                         },
                         "release_scope_semantics": {
                             "first_path_required": (
-                                "included in the first release because the component either "
-                                "implements a workflow/state/output fact or provides a typed "
-                                "boundary required by such a component"
+                                "the source explicitly places this boundary in the first release"
                             ),
                             "deferred": "excluded from the first release",
                             "implementation_role": (
-                                "derive result ownership only from implements relations; derive "
-                                "required boundary support only from typed dependency, constraint, "
-                                "or exclusion relations"
+                                "preserve only source-entailable relations; project delivery policy "
+                                "outside the canonical Semantic Intent graph"
                             ),
                         },
                     }
@@ -231,13 +235,17 @@ def semantic_intent_authoring_contract() -> dict[str, Any]:
             "empty_actor_and_state_axes_must_not_be_synthesized": True,
             "every_actor_owned_step_has_exactly_one_owned_by_relation": True,
             "product_and_system_steps_have_no_owned_by_relation": True,
-            "every_visible_output_has_a_typed_produces_relation": True,
-            "every_transitioned_state_object_has_a_typed_changes_relation": True,
-            "state_objects_without_a_transition_have_no_changes_relation": True,
-            "minimum_first_path_required_internal_systems": 1,
-            "implementation_coverage_release_scopes": ["first_path_required"],
-            "resultless_first_path_systems_require_typed_supporting_topology": True,
-            "every_workflow_step_state_object_and_visible_output_is_implemented_by_an_active_system": True,
+            "visible_output_relations_exist_only_when_source_explicit": True,
+            "source_entailable_output_recipients_use_visible_to_instead_of_workflow_ownership": True,
+            "state_change_relations_exist_only_when_source_explicit": True,
+            "workflow_entity_roles_are_typed_relations_to_canonical_entity_ids": True,
+            "state_and_output_identity_are_bound_to_exactly_one_canonical_entity": True,
+            "canonical_graph_custody": (
+                "facts and relations preserve only source-entailable meaning; "
+                "implementation policy is projected outside the canonical graph"
+            ),
+            "explicit_internal_systems_are_optional": True,
+            "implementation_policy_is_not_a_semantic_fact_or_relation": True,
             "maximum_transition_pairs_per_state_object": 1,
             "multiple_transitions_for_one_state_object": "clarification_required",
         },
@@ -256,7 +264,6 @@ __all__ = [
     "RELATION_ENDPOINT_KINDS",
     "SEMANTIC_ATTRIBUTE_NAMES",
     "SEMANTIC_FACT_KINDS",
-    "SEMANTIC_CLARIFICATION_FIELDS",
     "SEMANTIC_NARRATIVE_FIELDS",
     "SEMANTIC_RELATION_KINDS",
     "SINGULAR_NARRATIVE_FIELDS",

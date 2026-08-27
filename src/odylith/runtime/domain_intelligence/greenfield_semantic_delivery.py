@@ -131,6 +131,23 @@ def semantic_next_steps(
             1,
             f"Reconstruct every state object and transition for {_plain(state_labels)}.",
         )
+    single_workstream = project_id == start_id
+    project_first_prompt = (
+        f"Begin `{start_id}` {title} after its graph proof is accepted."
+        if single_workstream
+        else (
+            f"Review `{project_id}` {project_title}, then open `{start_id}` {title} "
+            "only after its graph proof is accepted."
+        )
+    )
+    release_review_step = (
+        f"Compare `{start_id}` with its component and proof links for release `{release_selector}`."
+        if single_workstream
+        else (
+            f"Open `{start_id}` and compare its component and proof links with "
+            f"release `{release_selector}`."
+        )
+    )
     return {
         "custody_state": SEMANTIC_SYSTEM_POLICY_CUSTODY,
         "evidence_tier": semantic_evidence_tier(SEMANTIC_SYSTEM_POLICY_CUSTODY),
@@ -139,9 +156,7 @@ def semantic_next_steps(
         "start_workstream_id": start_id,
         "start_workstream_title": title,
         "release_selector": str(release_selector).strip(),
-        "project_first_prompt": (
-            f"Review `{project_id}` {project_title}, then open `{start_id}` {title} only after its graph proof is accepted."
-        ),
+        "project_first_prompt": project_first_prompt,
         "implementation_prompt": (
             f"Start `{start_id}` {title}. {topology_prompt}{state_prompt} "
             "Do not change the sealed fact, relation, component, diagram, or workstream topology."
@@ -156,7 +171,7 @@ def semantic_next_steps(
         "validation_gates": validation_gates,
         "operator_sequence": [
             "Review the accepted project brief and source-cited Semantic Intent graph.",
-            f"Open `{start_id}` and compare its component and proof links with release `{release_selector}`.",
+            release_review_step,
             "Resolve any graph contradiction before authoring a technical plan or changing source.",
             f"After the gates pass, author the first technical plan for `{start_id}`.",
         ],
@@ -217,7 +232,11 @@ def _quoted(values: Sequence[str]) -> str:
 
 
 def _plain(values: Sequence[str]) -> str:
-    return ", ".join(values)
+    return ", ".join(
+        str(value).strip().rstrip(" .!?")
+        for value in values
+        if str(value).strip().rstrip(" .!?")
+    )
 
 
 def _strings(value: Any) -> tuple[str, ...]:

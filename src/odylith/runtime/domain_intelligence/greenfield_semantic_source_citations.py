@@ -78,7 +78,7 @@ def bind_semantic_evidence_blocks(
             ref_id = value.get("ref_id")
             if not isinstance(ref_id, str) or ref_id not in catalog:
                 raise ValueError("Semantic evidence block handle is outside its catalog")
-            return dict(catalog[ref_id])
+            return _canonical_evidence_block_ref(catalog[ref_id])
         return {
             key: bind_semantic_evidence_blocks(nested, catalog=catalog)
             for key, nested in value.items()
@@ -91,6 +91,15 @@ def bind_semantic_evidence_blocks(
             for nested in value
         ]
     return value
+
+
+def _canonical_evidence_block_ref(value: Mapping[str, Any]) -> dict[str, Any]:
+    """Project provider catalog metadata onto the sealed citation contract."""
+
+    required = ("source_id", "quote", "occurrence")
+    if any(field not in value for field in required):
+        raise ValueError("Semantic evidence block catalog row is incomplete")
+    return {field: value[field] for field in required}
 
 
 def _evidence_blocks(source: str) -> list[str]:

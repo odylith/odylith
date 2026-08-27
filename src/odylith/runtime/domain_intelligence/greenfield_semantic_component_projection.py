@@ -1,4 +1,4 @@
-"""Project component contracts directly from sealed Semantic Intent graph edges."""
+"""Project one explicit implementation policy from sealed Semantic Intent facts."""
 
 from __future__ import annotations
 
@@ -8,20 +8,18 @@ from typing import Any
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
     require_semantic_intent_ir,
     semantic_state_transition,
+    semantic_state_transition_phrase,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_identifiers import (
     semantic_artifact_identifier,
-)
-from odylith.runtime.domain_intelligence.greenfield_semantic_atomic_source_custody import (
-    validated_atomic_source_claims,
 )
 
 
 SEMANTIC_SYSTEM_POLICY_CUSTODY = "system_policy"
 SEMANTIC_COMPONENT_CONTRACT_VERSION = (
-    "odylith.greenfield.semantic-component-contract.v3"
+    "odylith.greenfield.semantic-component-contract.v9"
 )
-_RELEASE_COMPONENT_SCOPE = "first_path_required"
+_IMPLEMENTATION_POLICY_ID = "implementation-policy.0"
 
 
 def semantic_evidence_tier(custody_state: str) -> str:
@@ -56,7 +54,7 @@ def semantic_component_rows_from_authority(
     *,
     project_slug: str,
 ) -> list[dict[str, Any]]:
-    """Return complete component rows without interpreting system prose."""
+    """Return component policy without adding it to Semantic Intent authority."""
 
     if not isinstance(authority, Mapping) or authority.get("origin") != "verified_semantic_intent_packet":
         raise ValueError("ProductCreateTransaction authority lacks Semantic Intent custody")
@@ -66,7 +64,6 @@ def semantic_component_rows_from_authority(
     semantic_intent = require_semantic_intent_ir(
         authority.get("semantic_intent"),
         evidence_sources=evidence_sources,
-        source_claims=validated_atomic_source_claims(authority),
     )
     return semantic_component_rows(semantic_intent, project_slug=project_slug)
 
@@ -76,198 +73,134 @@ def semantic_component_rows(
     *,
     project_slug: str,
 ) -> list[dict[str, Any]]:
-    """Project typed systems and implementation edges into governance components."""
+    """Project one explicit implementation policy outside canonical meaning."""
 
     facts = list(semantic_intent.get("facts", ()))
     relations = list(semantic_intent.get("relations", ()))
     by_id = {str(row["fact_id"]): row for row in facts}
-    systems = sorted(
-        (
-            row
-            for row in facts
-            if row.get("kind") == "internal_system"
-            and _attributes(row).get("release_scope") == _RELEASE_COMPONENT_SCOPE
-        ),
-        key=lambda row: int(row["order"]),
+    steps = _facts_of_kind(facts, "workflow_step")
+    states = _facts_of_kind(facts, "state_object")
+    outputs = _facts_of_kind(facts, "visible_output")
+    if not steps or not outputs:
+        raise ValueError(
+            "verified semantic projection requires workflow and visible-output facts"
+        )
+    input_entities = _relation_targets(relations, kind="input_entity")
+    target_entities = _relation_targets(relations, kind="target_entity")
+    produced_entities = _created_or_produced_entities_by_step(relations)
+    accepted_entity_rows = _accepted_entity_rows(
+        steps=steps,
+        by_id=by_id,
+        input_entities=input_entities,
+        target_entities=target_entities,
+        produced_entities=produced_entities,
     )
-    dependencies = _relation_targets(relations, kind="depends_on")
-    implementations = _relation_targets(relations, kind="implements")
-    constraints = _relation_targets(relations, kind="constrained_by")
-    exclusions = _relation_targets(relations, kind="excludes")
-    downstream = _downstream_systems(systems, dependencies)
-    _require_release_implementation_coverage(
-        facts=facts,
-        systems=systems,
-        implementations=implementations,
+    state_entity_rows = _effect_entity_rows(states, by_id=by_id)
+    output_entity_rows = _effect_entity_rows(outputs, by_id=by_id)
+    workflow_fact_ids = tuple(str(row["fact_id"]) for row in steps)
+    state_fact_ids = tuple(str(row["fact_id"]) for row in states)
+    output_fact_ids = tuple(str(row["fact_id"]) for row in outputs)
+    covered_fact_ids = (*workflow_fact_ids, *state_fact_ids, *output_fact_ids)
+    workflow_labels = tuple(str(row["label"]) for row in steps)
+    state_labels = tuple(str(row["label"]) for row in states)
+    output_labels = tuple(str(row["label"]) for row in outputs)
+    transition_labels = tuple(_state_label(row) for row in states)
+    dependencies = _facts_of_kind(facts, "external_system")
+    dependency_labels = _ordered_unique(str(row["label"]) for row in dependencies)
+    accepted_inputs = _sentence_list(
+        (*_entity_labels(accepted_entity_rows), *dependency_labels),
+        fallback="Source-cited workflow facts",
     )
-    rows: list[dict[str, Any]] = []
-    for system in systems:
-        system_id = str(system["fact_id"])
-        attributes = _attributes(system)
-        implemented = tuple(
-            by_id[target]
-            for target in implementations.get(system_id, ())
-            if target in by_id
+    result_summary = _sentence_list(
+        (*output_labels, *transition_labels),
+        fallback=_sentence_list(workflow_labels, fallback=""),
+    )
+    presentation = semantic_intent.get("presentation")
+    if not isinstance(presentation, Mapping):
+        raise ValueError("verified semantic projection lacks presentation metadata")
+    title = str(presentation["title"])
+    label = f"{title} First Path"
+    component_id = semantic_artifact_identifier(
+        f"{project_slug}-first-path",
+        fallback="greenfield-first-path",
+    )
+    responsibility = (
+        "Deliver the sealed first-path workflow: "
+        f"{_sentence_list(workflow_labels, fallback='')}."
+    )
+    boundary = "Own only the covered workflow steps and their declared effects."
+    outside_boundary = "Meaning not present in the sealed Semantic Intent graph."
+    proof = "Prove every covered workflow step and declared effect from exact typed facts."
+    risk = "Implementation could diverge from the sealed Semantic Intent graph."
+    proof_obligations = [proof]
+    if state_labels:
+        proof_obligations.append(
+            f"{_sentence_list((_state_proof(row) for row in states), fallback='')} "
+            f"and verify {_sentence_list(output_labels, fallback='')} from exact typed facts."
         )
-        steps = _implemented_facts(implemented, "workflow_step")
-        direct_states = _implemented_facts(implemented, "state_object")
-        direct_outputs = _implemented_facts(implemented, "visible_output")
-        workflow_fact_ids = tuple(str(row["fact_id"]) for row in steps)
-        workflow_labels = tuple(str(row["label"]) for row in steps)
-        state_labels = tuple(str(row["label"]) for row in direct_states)
-        output_labels = tuple(str(row["label"]) for row in direct_outputs)
-        transition_labels = tuple(_state_label(row) for row in direct_states)
-        dependency_labels = _ordered_unique(
-            str(by_id[target]["label"])
-            for target in dependencies.get(system_id, ())
-            if target in by_id
-        )
-        dependency_input_labels = _ordered_unique(
-            _dependency_input_label(by_id[target])
-            for target in dependencies.get(system_id, ())
-            if target in by_id
-        )
-        downstream_labels = tuple(
-            str(by_id[target]["label"])
-            for target in downstream.get(system_id, ())
-            if target in by_id
-        )
-        label = str(system["label"])
-        output_identity = {value.casefold() for value in output_labels}
-        input_labels = _ordered_unique(
-            _attributes(step).get("object", "")
-            for step in steps
-            if _attributes(step).get("object", "").casefold() not in output_identity
-        )
-        component_id = semantic_artifact_identifier(
-            label,
-            fallback=f"component-{len(rows) + 1}",
-        )
-        accepted_inputs = _sentence_list(
-            input_labels + dependency_input_labels,
-            fallback="Source-cited workflow facts",
-        )
-        result_labels = output_labels or state_labels or workflow_labels
-        has_result = bool(result_labels)
-        component_role = (
-            "result_implementing" if has_result else "boundary_supporting"
-        )
-        produced = (
-            _sentence_list(
-                (*output_labels, *transition_labels) or result_labels,
-                fallback="",
-            )
-            if has_result
-            else ""
-        )
-        boundary_interfaces = _boundary_interfaces(
-            system_id=system_id,
-            label=label,
-            by_id=by_id,
-            dependencies=dependencies,
-            constraints=constraints,
-            exclusions=exclusions,
-            downstream=downstream,
-        )
-        upstream = _sentence_list(
+    projection_basis_fact_ids = tuple(str(row["fact_id"]) for row in facts)
+    projection_basis_custody = semantic_fact_custody_rows(facts)
+    product_boundaries = _facts_of_kind(facts, "product_boundary")
+    contract = {
+        "schema_version": SEMANTIC_COMPONENT_CONTRACT_VERSION,
+        "implementation_policy_id": _IMPLEMENTATION_POLICY_ID,
+        "component_role": "result_implementing",
+        "covered_fact_ids": list(covered_fact_ids),
+        "projection_basis_fact_ids": list(projection_basis_fact_ids),
+        "workflow_fact_ids": list(workflow_fact_ids),
+        "workflow_labels": list(workflow_labels),
+        "state_objects": list(state_labels),
+        "visible_outputs": list(output_labels),
+        "accepted_input_entities": accepted_entity_rows,
+        "accepted_inputs": accepted_inputs,
+        "state_entities": state_entity_rows,
+        "visible_output_entities": output_entity_rows,
+        "product_boundaries": [str(row["statement"]) for row in product_boundaries],
+        "upstream_truth": _sentence_list(
             dependency_labels,
             fallback="Source-cited operator intent",
-        )
-        consumers = _sentence_list(downstream_labels, fallback="Release review")
-        proof = attributes["proof"]
-        proof_obligations = [proof]
-        if not has_result:
-            if not boundary_interfaces:
-                raise ValueError(
-                    f"resultless semantic component `{label}` lacks a typed supporting boundary"
-                )
-            proof_obligations.append(
-                f"Verify the typed boundary relations for {label}: "
-                f"{_sentence_list(boundary_interfaces, fallback='')}."
-            )
-        if state_labels:
-            proof_obligations.append(
-                f"Reconstruct {_sentence_list(state_labels, fallback='')} and verify "
-                f"{_sentence_list(output_labels or result_labels, fallback='')} from exact typed facts."
-            )
-        interfaces = (
-            _interfaces(
+        ),
+        "downstream_consumers": "Release review",
+        "outside_boundary": outside_boundary,
+        "local_proof": proof_obligations,
+        "unique_failure": risk,
+    }
+    return [
+        {
+            "component_id": component_id,
+            "implementation_policy_id": _IMPLEMENTATION_POLICY_ID,
+            "label": label,
+            "kind": "service",
+            "intended_path": f"src/{project_slug}/{component_id.replace('-', '_')}",
+            "responsibility": responsibility,
+            "boundary": boundary,
+            "result_summary": result_summary,
+            "dependencies": [f"Depends on {value}." for value in dependency_labels],
+            "interfaces": _interfaces(
                 accepted_inputs=accepted_inputs,
-                result_summary=produced,
+                result_summary=result_summary,
                 steps=steps,
-            )
-            if has_result
-            else list(boundary_interfaces)
-        )
-        contract = {
-            "schema_version": SEMANTIC_COMPONENT_CONTRACT_VERSION,
-            "component_role": component_role,
-            "workflow_fact_ids": list(workflow_fact_ids),
-            "workflow_labels": list(workflow_labels),
-            "state_objects": list(state_labels),
-            "visible_outputs": list(output_labels),
-            "accepted_inputs": accepted_inputs,
-            "upstream_truth": upstream,
-            "downstream_consumers": consumers,
-            "outside_boundary": attributes["outside_boundary"],
-            "local_proof": proof_obligations,
-            "unique_failure": attributes["risk"],
+            ),
+            "validation": proof_obligations,
+            "risks": semantic_delivery_risks(domain_risk=risk),
+            "status": "planned",
+            "qualification": "candidate",
+            "custody_state": SEMANTIC_SYSTEM_POLICY_CUSTODY,
+            "evidence_tier": semantic_evidence_tier(
+                SEMANTIC_SYSTEM_POLICY_CUSTODY
+            ),
+            "release_scope": "first_path_required",
+            "component_role": "result_implementing",
+            "covered_fact_ids": list(covered_fact_ids),
+            "projection_basis_fact_ids": list(projection_basis_fact_ids),
+            "projection_basis_custody": projection_basis_custody,
+            "component_contract": contract,
         }
-        rows.append(
-            {
-                "component_id": component_id,
-                "label": label,
-                "kind": attributes["component_kind"],
-                "intended_path": f"src/{project_slug}/{component_id.replace('-', '_')}",
-                "responsibility": attributes["responsibility"],
-                "boundary": attributes["boundary"],
-                "result_summary": produced,
-                "dependencies": [f"Depends on {value}." for value in dependency_labels],
-                "interfaces": interfaces,
-                "validation": proof_obligations,
-                "risks": semantic_delivery_risks(domain_risk=attributes["risk"]),
-                "status": "planned",
-                "qualification": "candidate",
-                "custody_state": str(system["custody"]),
-                "evidence_tier": semantic_evidence_tier(str(system["custody"])),
-                "release_scope": attributes["release_scope"],
-                "component_role": component_role,
-                "source_system_description": str(system["statement"]),
-                "semantic_fact_id": system_id,
-                "semantic_implements": [str(row["fact_id"]) for row in implemented],
-                "semantic_fact_custody": semantic_fact_custody_rows((system, *implemented)),
-                "component_contract": contract,
-            }
-        )
-    return rows
-
-
-def _require_release_implementation_coverage(
-    *,
-    facts: Sequence[Mapping[str, Any]],
-    systems: Sequence[Mapping[str, Any]],
-    implementations: Mapping[str, tuple[str, ...]],
-) -> None:
-    required_targets = {
-        str(fact["fact_id"])
-        for fact in facts
-        if fact.get("kind") in {"workflow_step", "state_object", "visible_output"}
-    }
-    release_targets = {
-        target
-        for system in systems
-        for target in implementations.get(str(system["fact_id"]), ())
-    }
-    missing = sorted(required_targets - release_targets)
-    if missing:
-        raise ValueError(
-            "verified semantic release defers required workflow or visible-output ownership: "
-            + ", ".join(missing)
-        )
+    ]
 
 
 def semantic_delivery_risks(*, domain_risk: str) -> list[str]:
-    """Return only the component risk accepted in the semantic graph."""
+    """Return the explicit risk carried by the plan-local component policy."""
 
     risk = str(domain_risk or "").strip()
     if not risk:
@@ -293,56 +226,110 @@ def _relation_targets(
     }
 
 
-def _downstream_systems(
-    systems: Sequence[Mapping[str, Any]],
-    dependencies: Mapping[str, tuple[str, ...]],
+def _created_or_produced_entities_by_step(
+    relations: Sequence[Mapping[str, Any]],
 ) -> dict[str, tuple[str, ...]]:
-    system_ids = {str(row["fact_id"]) for row in systems}
-    result: dict[str, list[str]] = {}
-    for consumer, targets in dependencies.items():
-        if consumer not in system_ids:
-            continue
-        for target in targets:
-            if target in system_ids:
-                result.setdefault(target, []).append(consumer)
-    return {key: tuple(value) for key, value in result.items()}
+    """Resolve internal entity identity through exact creation and output paths."""
+
+    outputs_by_step = _relation_targets(relations, kind="produces")
+    entities_by_output = _relation_targets(relations, kind="output_of")
+    result: dict[str, tuple[str, ...]] = dict(
+        _relation_targets(relations, kind="creates")
+    )
+    for step_id, output_ids in outputs_by_step.items():
+        result[step_id] = tuple(
+            (
+                *result.get(step_id, ()),
+                *(
+            entity_id
+                    for output_id in output_ids
+                    for entity_id in entities_by_output.get(output_id, ())
+                ),
+            )
+        )
+    return result
 
 
-def _boundary_interfaces(
+def _accepted_entity_rows(
     *,
-    system_id: str,
-    label: str,
+    steps: Sequence[Mapping[str, Any]],
     by_id: Mapping[str, Mapping[str, Any]],
-    dependencies: Mapping[str, tuple[str, ...]],
-    constraints: Mapping[str, tuple[str, ...]],
-    exclusions: Mapping[str, tuple[str, ...]],
-    downstream: Mapping[str, tuple[str, ...]],
-) -> tuple[str, ...]:
-    """Render exact typed boundary edges without inventing a result."""
+    input_entities: Mapping[str, tuple[str, ...]],
+    target_entities: Mapping[str, tuple[str, ...]],
+    produced_entities: Mapping[str, tuple[str, ...]],
+) -> list[dict[str, Any]]:
+    """Project component inputs by entity id, never by matching labels."""
 
-    lines = [
-        *(
-            f"{by_id[target]['label']} depends on {label}"
-            for target in downstream.get(system_id, ())
-            if target in by_id
-        ),
-        *(
-            f"{label} depends on {by_id[target]['label']}"
-            for target in dependencies.get(system_id, ())
-            if target in by_id
-        ),
-        *(
-            f"{label} is constrained by {by_id[target]['label']}"
-            for target in constraints.get(system_id, ())
-            if target in by_id
-        ),
-        *(
-            f"{label} excludes {by_id[target]['label']}"
-            for target in exclusions.get(system_id, ())
-            if target in by_id
-        ),
-    ]
-    return _ordered_unique(lines)
+    rows: dict[str, dict[str, Any]] = {}
+    produced_before_step: set[str] = set()
+    for step in steps:
+        step_id = str(step["fact_id"])
+        for role, bindings in (
+            ("input", input_entities.get(step_id, ())),
+            ("target", target_entities.get(step_id, ())),
+        ):
+            for entity_id in bindings:
+                if entity_id in produced_before_step:
+                    continue
+                entity = by_id.get(entity_id)
+                if entity is None or entity.get("kind") != "entity":
+                    raise ValueError(
+                        f"workflow step `{step_id}` has a dangling typed entity binding"
+                    )
+                row = rows.setdefault(
+                    entity_id,
+                    {
+                        "entity_id": entity_id,
+                        "label": str(entity["label"]),
+                        "roles": [],
+                    },
+                )
+                if role not in row["roles"]:
+                    row["roles"].append(role)
+        produced_before_step.update(produced_entities.get(step_id, ()))
+    return list(rows.values())
+
+
+def _effect_entity_rows(
+    effects: Sequence[Mapping[str, Any]],
+    *,
+    by_id: Mapping[str, Mapping[str, Any]],
+) -> list[dict[str, str]]:
+    """Bind each state or output effect to its canonical entity fact."""
+
+    result: list[dict[str, str]] = []
+    for effect in effects:
+        entity_id = _attributes(effect).get("entity_id", "")
+        entity = by_id.get(entity_id)
+        if entity is None or entity.get("kind") != "entity":
+            raise ValueError(
+                f"semantic effect `{effect['fact_id']}` lacks canonical entity custody"
+            )
+        result.append(
+            {
+                "effect_fact_id": str(effect["fact_id"]),
+                "entity_id": entity_id,
+                "label": str(entity["label"]),
+            }
+        )
+    return result
+
+
+def _entity_labels(rows: Sequence[Mapping[str, Any]]) -> tuple[str, ...]:
+    """Disambiguate equal display labels without collapsing distinct entity ids."""
+
+    counts: dict[str, int] = {}
+    for row in rows:
+        label = str(row["label"])
+        counts[label] = counts.get(label, 0) + 1
+    return tuple(
+        (
+            f"{row['label']} [{row['entity_id']}]"
+            if counts[str(row["label"])] > 1
+            else str(row["label"])
+        )
+        for row in rows
+    )
 
 
 def _state_label(fact: Mapping[str, Any]) -> str:
@@ -350,10 +337,17 @@ def _state_label(fact: Mapping[str, Any]) -> str:
     label = str(fact["label"])
     if transition is None:
         return label
-    return f"{label}: {transition['from_state']} to {transition['to_state']}"
+    return f"{label}: {semantic_state_transition_phrase(fact)}"
 
 
-def _implemented_facts(
+def _state_proof(fact: Mapping[str, Any]) -> str:
+    transition = semantic_state_transition(fact)
+    if transition is None:
+        return f"Verify {str(fact['label']).strip()}"
+    return f"Reconstruct {_state_label(fact)}"
+
+
+def _facts_of_kind(
     facts: Sequence[Mapping[str, Any]],
     kind: str,
 ) -> tuple[Mapping[str, Any], ...]:
@@ -373,17 +367,10 @@ def _interfaces(
 ) -> list[str]:
     interfaces = [f"Accepts {accepted_inputs}.", f"Produces {result_summary}."]
     interfaces.extend(
-        f"Implements the “{str(step['label']).strip()}” workflow step."
+        f"Covers the “{str(step['label']).strip()}” workflow step."
         for step in steps
     )
     return interfaces
-
-
-def _dependency_input_label(fact: Mapping[str, Any]) -> str:
-    label = str(fact["label"])
-    if fact.get("kind") == "internal_system":
-        return f"accepted result from {label}"
-    return label
 
 
 def _attributes(fact: Mapping[str, Any]) -> dict[str, str]:

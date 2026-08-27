@@ -4,8 +4,11 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 import fcntl
+import os
 from pathlib import Path
 from typing import Iterator
+
+from odylith.runtime.domain_intelligence import greenfield_transaction_path_boundary
 
 
 class GreenfieldRepositoryBusyError(RuntimeError):
@@ -34,11 +37,13 @@ def greenfield_repository_read_lock(repo_root: Path) -> Iterator[None]:
 
 @contextmanager
 def _repository_lock(repo_root: Path, *, mode: int) -> Iterator[None]:
-    lock_path = Path(repo_root).expanduser().resolve() / ".odylith/runtime/greenfield/create.lock"
     try:
-        lock_path.parent.mkdir(parents=True, exist_ok=True)
-        handle = lock_path.open("a+b")
-    except OSError as exc:
+        descriptor = greenfield_transaction_path_boundary.open_lock_file(
+            repo_root,
+            ".odylith/runtime/greenfield/create.lock",
+        )
+        handle = os.fdopen(descriptor, "a+b")
+    except (OSError, greenfield_transaction_path_boundary.GreenfieldTransactionPathError) as exc:
         raise GreenfieldRepositoryLockError("Greenfield repository lock is unavailable") from exc
     with handle:
         try:
