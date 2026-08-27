@@ -352,6 +352,24 @@ this plan as active until the size and ownership targets are met.
   zero P0/P1 findings and meets the consumer-utility, equivalence, latency, and
   cost contracts.
 
+## Provider-Transport Checkpoint — 2026-08-27
+
+- A direct author trial emitted repeated typed effects for one action/entity.
+  The canonical validator failed closed. This is a provider transport-shape
+  defect—not evidence for a semantic retry, prose rule, or adjudication tier.
+- `uniqueItems` was rejected by the provider before authoring and is retired
+  from the active source-author schema. The provider now emits one
+  `entity_effect_slots` row per action/entity. Deterministic binding orders
+  slots by entity index and expands nullable typed fields into the unchanged
+  canonical `entity_effects` shape. It rejects duplicate, empty, malformed,
+  and canonical-row-injection slots; it does not parse, merge, filter, or
+  repair meaning.
+- Focused source/packet (`51`), projection/execution (`40`), and installed
+  source-pipeline/leakage (`14`) proof pass. The historical corpus is absent
+  as raw prompt evidence from the active workspace, so no profile selection or
+  release claim is inferred from old candidate output. A freshly frozen whole
+  cohort remains the next gate.
+
 ## Stop Conditions
 
 - Stop if an extraction changes the sealed transaction hash for unchanged

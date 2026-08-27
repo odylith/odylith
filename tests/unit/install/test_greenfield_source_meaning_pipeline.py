@@ -189,11 +189,9 @@ def test_working_title_changes_transaction_but_not_accepted_semantic_facts(
     assert baseline["intent_authority"]["product_facts_sha256"] == changed[
         "intent_authority"
     ]["product_facts_sha256"]
-    assert (
-        baseline["prewrite_package"]["proposal"]["intent"]["project_slug"]
-        == changed["prewrite_package"]["proposal"]["intent"]["project_slug"]
-        == "consumer"
-    )
+    baseline_slug = baseline["prewrite_package"]["proposal"]["intent"]["project_slug"]
+    assert baseline_slug == changed["prewrite_package"]["proposal"]["intent"]["project_slug"]
+    assert baseline_slug.startswith("consumer-")
 
 
 def _author_result(graph: dict[str, object]) -> dict[str, object]:

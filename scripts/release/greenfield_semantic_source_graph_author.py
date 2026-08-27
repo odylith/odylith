@@ -52,10 +52,12 @@ def run_source_meaning_author(
         host_profile=host_profile,
     )
     evidence_sources = {"operator_prompt": prompt_text, "operator_edit": ""}
-    graph = bind_semantic_source_meaning_graph(
-        apply_semantic_source_meaning_completeness_gate(provider_graph),
-        evidence_catalog=evidence_catalog,
-        evidence_sources=evidence_sources,
+    graph = apply_semantic_source_meaning_completeness_gate(
+        bind_semantic_source_meaning_graph(
+            provider_graph,
+            evidence_catalog=evidence_catalog,
+            evidence_sources=evidence_sources,
+        )
     )
     return {
         "graph": graph,

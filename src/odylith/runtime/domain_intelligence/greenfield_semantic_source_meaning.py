@@ -34,7 +34,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_meaning_cont
 
 
 SEMANTIC_SOURCE_MEANING_AUTHOR_RUN_VERSION = (
-    "odylith.greenfield.semantic-source-meaning-author-run.v20"
+    "odylith.greenfield.semantic-source-meaning-author-run.v21"
 )
 
 
@@ -50,10 +50,12 @@ def bind_semantic_source_meaning_graph(
     evidence_catalog: Mapping[str, Mapping[str, Any]],
     evidence_sources: Mapping[str, str],
 ) -> dict[str, Any]:
-    """Resolve opaque evidence handles, then validate the immutable graph."""
+    """Bind provider slots and opaque evidence handles into canonical graph rows."""
 
     return require_semantic_source_meaning_graph(
-        bind_semantic_evidence_blocks(value, catalog=evidence_catalog),
+        _bind_provider_effect_slots(
+            bind_semantic_evidence_blocks(value, catalog=evidence_catalog)
+        ),
         evidence_sources=evidence_sources,
     )
 
@@ -356,6 +358,62 @@ def _mapping(value: Any, label: str) -> Mapping[str, Any]:
     if not isinstance(value, Mapping):
         raise ValueError(f"{label} is malformed")
     return value
+
+
+def _bind_provider_effect_slots(value: Any) -> dict[str, Any]:
+    """Expand the provider-only one-entity slots without changing semantic content."""
+
+    graph = deepcopy(_mapping(value, "Semantic source-meaning graph"))
+    workflow = _rows(graph.get("workflow"), 64, "workflow")
+    canonical_workflow: list[dict[str, Any]] = []
+    slot_keys = {"entity_index", *SOURCE_MEANING_ENTITY_EFFECT_KINDS}
+    for raw_step in workflow:
+        step = dict(raw_step)
+        if "entity_effects" in step:
+            raise ValueError("Semantic source-meaning provider graph uses canonical effect rows")
+        slots = _rows(
+            step.pop("entity_effect_slots", None),
+            64,
+            "provider entity effect slots",
+        )
+        slots_by_entity: dict[int, Mapping[str, Any]] = {}
+        effects: list[dict[str, Any]] = []
+        for slot in slots:
+            if set(slot) != slot_keys:
+                raise ValueError(
+                    "Semantic source-meaning provider entity effect slot is malformed"
+                )
+            entity_index = slot.get("entity_index")
+            if not isinstance(entity_index, int) or isinstance(entity_index, bool):
+                raise ValueError(
+                    "Semantic source-meaning provider entity effect index is malformed"
+                )
+            if entity_index in slots_by_entity:
+                raise ValueError("Semantic source-meaning provider repeats one entity effect slot")
+            slots_by_entity[entity_index] = slot
+
+        for entity_index in sorted(slots_by_entity):
+            slot = slots_by_entity[entity_index]
+            has_effect = False
+            for kind in SOURCE_MEANING_ENTITY_EFFECT_KINDS:
+                payload = slot.get(kind)
+                if payload is None:
+                    continue
+                if not isinstance(payload, Mapping) or {
+                    "kind",
+                    "entity_index",
+                } & set(payload):
+                    raise ValueError("Semantic source-meaning provider effect payload is malformed")
+                effects.append(
+                    {"kind": kind, "entity_index": entity_index, **dict(payload)}
+                )
+                has_effect = True
+            if not has_effect:
+                raise ValueError("Semantic source-meaning provider entity effect slot is empty")
+        step["entity_effects"] = effects
+        canonical_workflow.append(step)
+    graph["workflow"] = canonical_workflow
+    return graph
 
 
 def _sequence(value: Any, maximum: int, label: str) -> list[Any]:

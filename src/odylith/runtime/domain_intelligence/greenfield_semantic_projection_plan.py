@@ -13,7 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_component_projectio
 )
 
 
-SEMANTIC_PROJECTION_PLAN_VERSION = "odylith.greenfield.semantic-projection-plan.v16"
+SEMANTIC_PROJECTION_PLAN_VERSION = "odylith.greenfield.semantic-projection-plan.v17"
 _FACT_KIND_ORDER = (
     "audience",
     "actor",

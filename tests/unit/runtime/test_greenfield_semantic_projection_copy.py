@@ -213,7 +213,7 @@ def test_policy_free_projects_still_use_structured_copy_and_product_boundary() -
         "Required path: Step 1 — Select one ready card. Boundaries: repo-local."
     )
     assert product_view.endswith("Boundaries: repo-local.")
-    assert proposal["schema_version"] == "odylith.greenfield.proposal.v10"
+    assert proposal["schema_version"] == "odylith.greenfield.proposal.v11"
     assert proposal["intent"]["presentation"] == graph["presentation"]
     assert proposal["intent"]["owned_capabilities"] == [
         "Claim Desk First Path: Deliver the sealed first-path workflow: Select one ready card."
@@ -241,9 +241,11 @@ def test_working_title_is_disclosed_but_does_not_control_durable_identity() -> N
         observed_source={"repo_name": "consumer"},
     )
 
+    assert first["intent"]["project_slug"] == second["intent"]["project_slug"]
+    assert first["intent"]["project_slug"].startswith("consumer-")
     assert [row["component_id"] for row in first["components"]] == [
         row["component_id"] for row in second["components"]
-    ] == ["consumer-first-path"]
+    ] == [f"{first['intent']['project_slug']}-first-path"]
     assert [row["intended_path"] for row in first["components"]] == [
         row["intended_path"] for row in second["components"]
     ]
@@ -251,6 +253,20 @@ def test_working_title_is_disclosed_but_does_not_control_durable_identity() -> N
         row["slug"] for row in second["projection_plan"]["diagrams"]
     ]
     assert first["components"][0]["label"] != second["components"][0]["label"]
+
+    different = _proposal_from_graph(
+        _graph_for_actions(
+            ("Select one ready card.",),
+            include_policy=False,
+            output_label="Audit receipt",
+        ),
+        observed_source={"repo_name": "consumer"},
+    )
+    assert different["intent"]["project_slug"] != first["intent"]["project_slug"]
+    assert different["components"][0]["component_id"] != first["components"][0]["component_id"]
+    assert [row["slug"] for row in different["projection_plan"]["diagrams"]] != [
+        row["slug"] for row in first["projection_plan"]["diagrams"]
+    ]
 
     created = [
         {**row, "idea_id": f"B-{index:03d}"}

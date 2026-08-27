@@ -22,6 +22,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_component_projectio
 from odylith.runtime.domain_intelligence.greenfield_semantic_diagrams import semantic_diagrams
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
     require_semantic_intent_ir,
+    semantic_intent_meaning_sha256,
     semantic_intent_product_facts,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_identifiers import semantic_artifact_identifier
@@ -61,7 +62,7 @@ def build_verified_semantic_proposal(
     release = str(release_selector or "").strip() or DEFAULT_GREENFIELD_RELEASE_SELECTOR
     title = str(graph["presentation"]["title"])
     project_slug = semantic_artifact_identifier(
-        observed_source.get("repo_name"),
+        f"{semantic_artifact_identifier(observed_source.get('repo_name'), fallback='greenfield-project')}-{semantic_intent_meaning_sha256(graph)[:12]}",
         fallback="greenfield-project",
     )
     projection_plan = build_semantic_projection_plan(
@@ -91,7 +92,7 @@ def build_verified_semantic_proposal(
         proof_boundary=str(product_facts["proof_boundary"]),
     )
     proposal: dict[str, Any] = {
-        "schema_version": "odylith.greenfield.proposal.v10",
+        "schema_version": "odylith.greenfield.proposal.v11",
         "mode": "host_reasoned_greenfield_proposal",
         "provider_calls": 0,
         "host_agnostic": True,

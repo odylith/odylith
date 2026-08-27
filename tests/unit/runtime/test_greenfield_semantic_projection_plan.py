@@ -543,7 +543,7 @@ def test_verified_proposal_persists_and_consumes_one_projection_plan() -> None:
     )
 
     assert proposal["projection_plan"]["version"] == (
-            "odylith.greenfield.semantic-projection-plan.v16"
+            "odylith.greenfield.semantic-projection-plan.v17"
     )
     assert "apply_semantic_input" not in proposal
     assert {
@@ -567,7 +567,7 @@ def test_verified_proposal_persists_and_consumes_one_projection_plan() -> None:
     assert proposal["diagrams"][0]["projection_view_edge_ids"] == []
     plan = build_semantic_projection_plan(
         packet["semantic_intent"],
-        project_slug="greenfield-project",
+        project_slug=proposal["intent"]["project_slug"],
     )
     assert proposal["projection_plan"] == semantic_projection_plan_mapping(plan)
     release_plan = semantic_release_plan(

@@ -43,7 +43,7 @@ COMMAND_TIMEOUT_SECONDS = 300
 PROOF_SCOPE = "real_installed_additive_write_sigkill_recovery_conflict_same_hash_retry_and_fsync_rollback"
 RECOVERY_CASE_SCOPE = "current-semantic-intent-release-fixture"
 _GOVERNED_ROOTS = ("odylith", "src/odylith/bundle/assets/odylith")
-_DEFAULT_SEMANTIC_FIXTURE = Path(__file__).resolve().parent / "fixtures" / "greenfield-semantic-smoke.v35.json"
+_DEFAULT_SEMANTIC_FIXTURE = Path(__file__).resolve().parent / "fixtures" / "greenfield-semantic-smoke.v37.json"
 
 
 @dataclass(frozen=True)

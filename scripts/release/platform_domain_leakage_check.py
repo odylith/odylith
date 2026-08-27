@@ -13,7 +13,7 @@ import tarfile
 import zipfile
 
 
-DEFAULT_FIXTURE_PATH = "scripts/release/fixtures/greenfield-semantic-smoke.v35.json"
+DEFAULT_FIXTURE_PATH = "scripts/release/fixtures/greenfield-semantic-smoke.v37.json"
 FIXTURE_AUTHORING_FILES = frozenset(
     {"scripts/release/generate_greenfield_semantic_smoke_fixture.py"}
 )

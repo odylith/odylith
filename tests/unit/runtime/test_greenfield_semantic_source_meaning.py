@@ -24,13 +24,18 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_component_projectio
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_meaning import (
     SEMANTIC_SOURCE_MEANING_GRAPH_VERSION,
     apply_semantic_source_meaning_completeness_gate,
+    bind_semantic_source_meaning_graph,
     compile_semantic_source_meaning,
     require_semantic_source_meaning_graph,
     semantic_source_meaning_contract,
+    semantic_source_meaning_provider_schema,
     semantic_source_meaning_sha256,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_meaning_contract import (
     semantic_source_meaning_graph_schema,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations import (
+    semantic_evidence_block_catalog,
 )
 
 
@@ -1172,6 +1177,60 @@ def test_entity_effects_reject_dangling_and_duplicate_typed_relations() -> None:
         require_semantic_source_meaning_graph(graph, evidence_sources=SOURCES)
 
 
+def test_provider_effect_slots_bind_one_entity_once_without_semantic_rewrite() -> None:
+    graph = _graph()
+    provider = deepcopy(graph)
+    for step in provider["workflow"]:
+        slots: dict[int, dict[str, object]] = {}
+        for effect in step.pop("entity_effects"):
+            entity_index = effect["entity_index"]
+            slot = slots.setdefault(
+                entity_index,
+                {
+                    "entity_index": entity_index,
+                    "input": None,
+                    "target": None,
+                    "created": None,
+                    "changed": None,
+                    "stable": None,
+                    "visible_result": None,
+                },
+            )
+            payload = dict(effect)
+            payload.pop("kind")
+            payload.pop("entity_index")
+            slot[effect["kind"]] = payload
+        step["entity_effect_slots"] = [slots[index] for index in sorted(slots)]
+
+    bound = bind_semantic_source_meaning_graph(
+        provider,
+        evidence_catalog=semantic_evidence_block_catalog(SOURCES),
+        evidence_sources=SOURCES,
+    )
+    assert bound == graph
+
+    reordered = deepcopy(provider)
+    reordered["workflow"][0]["entity_effect_slots"].reverse()
+    assert (
+        bind_semantic_source_meaning_graph(
+            reordered,
+            evidence_catalog=semantic_evidence_block_catalog(SOURCES),
+            evidence_sources=SOURCES,
+        )
+        == graph
+    )
+
+    provider["workflow"][0]["entity_effect_slots"].append(
+        deepcopy(provider["workflow"][0]["entity_effect_slots"][0])
+    )
+    with pytest.raises(ValueError, match="repeats one entity effect slot"):
+        bind_semantic_source_meaning_graph(
+            provider,
+            evidence_catalog=semantic_evidence_block_catalog(SOURCES),
+            evidence_sources=SOURCES,
+        )
+
+
 def test_state_change_owns_its_target_without_duplicate_projected_edges() -> None:
     graph = _graph()
     accepted = require_semantic_source_meaning_graph(graph, evidence_sources=SOURCES)
@@ -1341,6 +1400,29 @@ def test_provider_schema_hard_cuts_singular_workflow_object_fields() -> None:
     assert "product_root" not in properties
     assert "label" not in kind_to_properties["changed"]
     assert "label" not in kind_to_properties["visible_result"]
+
+    provider_schema = semantic_source_meaning_provider_schema(
+        semantic_evidence_block_catalog(SOURCES)
+    )
+    provider_properties = provider_schema["properties"]["workflow"]["items"][
+        "properties"
+    ]
+    assert "entity_effects" not in provider_properties
+    slots = provider_properties["entity_effect_slots"]["items"]
+    assert set(slots["required"]) == {
+        "entity_index",
+        "input",
+        "target",
+        "created",
+        "changed",
+        "stable",
+        "visible_result",
+    }
+    assert all(
+        slot["anyOf"][0] == {"type": "null"}
+        for key, slot in slots["properties"].items()
+        if key != "entity_index"
+    )
 
     old = _graph()
     old["version"] = "odylith.greenfield.semantic-source-meaning-graph.v6"

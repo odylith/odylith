@@ -240,3 +240,18 @@
 - Disclosed Replacement Projection Closure (2026-08-16): Typed prompt custody now keeps complete actor-led paths, visible outcomes, state transitions, and dependency boundaries without admitting discarded or presentation-only evidence. Modal repair covers semantic path values without weakening grammar gates; component contracts preserve coordinated outputs, anchored participial states, and local terms; Atlas flowcharts retain at least three distinct semantic events without padding the result through repeated copy. The exact replacement projection file passed `10/10`, component suites passed `76/76`, diagram/copy suites passed `50/50`, and the final cross-owner runtime matrix passed `396/396`. Independent closure found no P0/P1. CB-303 remains `Open` pending exact-distribution, installed browser-state, and newly untouched one-shot holdout proof; retained v3 metadata still cannot substitute for missing screenshots.
 
 - Exact-Distribution Disclosed Replay Reopen (2026-08-16): The retired 24-case replacement corpus was replayed against exact pushed commit `725ebb3c9ecb08e84924f3414219c37646211f09` and wheel SHA-256 `a0738d884e77ffe35655a28123dc7fb13e59d917dfbaf21a0f7d3cb704f4767d`. The installed run failed closed at `15/24`; result SHA-256 is `555e19c2cb84510925a38fadcd97708793aa865ae6f6d8ff719c2dfe0abe9397`. Two cases exposed sentence-shaped state objects entering Atlas labels and a typed proof step that lost the accepted `confirm` tail; one additional case found the retired literal `becomes reviewable` in shipped diagram source. The diagram label owner now stops shared labels at relative-clause boundaries, the distinct replay-proof event retains typed confirmation without repeating the visible result, and the shipped summary uses generic evidence-tracing copy. Exact disclosed Atlas controls pass `5/5`, the full projection file `13/13`, confirmed diagrams `24/24`, package/copy `27/27`, and the structural leakage scan `5/5`. This is source proof only: CB-303 stays `Open` until a fresh committed distribution passes the complete installed disclosed replay and every later release gate.
+
+- Provider-Transport Follow-Up (2026-08-27): A direct source-author trial
+  failed closed because the provider repeated a typed effect for one
+  action/entity. The attempted schema-only uniqueness constraint was rejected
+  by the provider before authoring, so it was removed rather than backed by
+  text rules or validation-retry logic. The active source-author contract now
+  emits one provider-only typed effect slot per action/entity and
+  deterministically binds it to the existing canonical effect rows. Duplicate,
+  empty, malformed, and canonical-row-injection slots reject before semantic
+  compilation; no prose parsing, semantic merge, fallback, or repair is added.
+  Focused source/packet (`51`), projection/execution (`40`), and installed
+  pipeline/leakage (`14`) proof pass. The historical candidate corpus is not
+  present as raw evidence, so no model profile or release conclusion is
+  inferred from prior outputs. A fresh frozen cohort, later release gates, and
+  the untouched holdout remain required before CB-303 can close.

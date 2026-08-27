@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-08-20
+Last updated: 2026-08-27
 
 
 ## Overview
@@ -59,6 +59,16 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-08-27: Replaced an unsupported provider uniqueness constraint with a
+  bounded typed transport shape. (Plan: [B-144](odylith/radar/radar.html?view=plan&workstream=B-144); Bug: `CB-303`)
+  The provider emits one `entity_effect_slots` row per workflow action/entity,
+  with nullable typed relationship fields. The source-meaning owner
+  deterministically binds that transport into the unchanged canonical graph,
+  rejects duplicate or malformed slots, and never reparses text, retries an
+  author, or repairs semantic content. Focused source/packet,
+  projection/execution, and installed leakage proof pass. A fresh frozen cohort
+  remains required before any profile or release decision.
 
 - 2026-08-20: Replaced rescue graph re-authoring with selection-only typed candidate adjudication. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-349`; Diagram: D-045)
   The standard path produces two independent source-grounded graph candidates

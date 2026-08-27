@@ -15,7 +15,7 @@ SEMANTIC_SOURCE_MEANING_GRAPH_VERSION = (
     "odylith.greenfield.semantic-source-meaning-graph.v16"
 )
 SEMANTIC_SOURCE_MEANING_CONTRACT_VERSION = (
-    "odylith.greenfield.semantic-source-meaning-contract.v21"
+    "odylith.greenfield.semantic-source-meaning-contract.v22"
 )
 
 SOURCE_MEANING_COLLECTIONS = (
@@ -43,6 +43,7 @@ SOURCE_MEANING_ENTITY_EFFECT_KINDS = (
 
 def semantic_source_meaning_graph_schema(
     *, source_ref_schema: Mapping[str, Any] | None = None,
+    _provider_effect_slots: bool = False,
 ) -> dict[str, Any]:
     """Return the exact graph schema accepted at the semantic boundary."""
 
@@ -113,6 +114,61 @@ def semantic_source_meaning_graph_schema(
             ),
         ]
     }
+    effect_payloads = {
+        "input": _object({"source_refs": refs}),
+        "target": _object({"source_refs": refs}),
+        "created": _object(
+            {"source_refs": refs, "edge_source_refs": refs}
+        ),
+        "changed": _object(
+            {
+                "source_refs": refs,
+                "from_state": _text_schema(200),
+                "to_state": _text_schema(200),
+                "edge_source_refs": refs,
+            }
+        ),
+        "stable": _object(
+            {
+                "source_refs": refs,
+                "stable_state": _text_schema(200),
+                "edge_source_refs": refs,
+            }
+        ),
+        "visible_result": _object(
+            {
+                "source_refs": refs,
+                "visible_to": _array(
+                    {"anyOf": [actor_recipient, audience_recipient]}, maximum=64
+                ),
+                "edge_source_refs": refs,
+            }
+        ),
+    }
+    entity_effect_slots = _array(
+        _object(
+            {
+                "entity_index": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 63,
+                },
+                **{
+                    kind: _nullable(payload)
+                    for kind, payload in effect_payloads.items()
+                },
+            }
+        ),
+        maximum=64,
+    )
+    workflow_effects_key = (
+        "entity_effect_slots" if _provider_effect_slots else "entity_effects"
+    )
+    workflow_effects = (
+        entity_effect_slots
+        if _provider_effect_slots
+        else _array(entity_effect, maximum=64)
+    )
     policy_boundary = {
         "anyOf": [
             _object(
@@ -210,7 +266,7 @@ def semantic_source_meaning_graph_schema(
                 _object(
                     {
                         "action": _text_schema(200),
-                        "entity_effects": _array(entity_effect, maximum=64),
+                        workflow_effects_key: workflow_effects,
                         "owner_actor_index": {
                             "anyOf": [
                                 {"type": "integer", "minimum": 0, "maximum": 63},
@@ -282,7 +338,8 @@ def semantic_source_meaning_provider_schema(
     """Return the provider schema using opaque exact-evidence handles."""
 
     return semantic_source_meaning_graph_schema(
-        source_ref_schema=semantic_evidence_block_schema(evidence_catalog)
+        source_ref_schema=semantic_evidence_block_schema(evidence_catalog),
+        _provider_effect_slots=True,
     )
 
 
@@ -319,11 +376,12 @@ def semantic_source_meaning_contract(
             "workflow_and_effects": (
                 "Each workflow row is one ordered in-product action. Its action is the complete "
                 "source-faithful human-readable action statement. Define each durable or observable "
-                "thing once in the root entities table. entity_effects records every exact typed "
-                "relationship between that action and an entity: input, target, created, changed, "
-                "or visible_result. A step may relate to one entity in more than one distinct way, "
-                "but cannot repeat the same typed relationship. Runtime projects those tags and "
-                "indexes directly; it never reparses action text. The product container named only "
+                "thing once in the root entities table. entity_effect_slots has one row for each "
+                "touched root entity, ordered by entity index. Each slot has one nullable field for "
+                "each exact relationship between that action and the entity: input, target, created, "
+                "changed, stable, or visible_result. Put every relationship for that entity in its "
+                "one slot; never repeat an entity slot. Runtime binds those fields directly; it never "
+                "reparses action text. The product container named only "
                 "by the operator's build request belongs to presentation, not entities; include it "
                 "as an entity only when the source separately uses it in an in-product action, "
                 "state, or result. created records source-declared "
@@ -414,6 +472,10 @@ def _array(
     if maximum is not None:
         result["maxItems"] = maximum
     return result
+
+
+def _nullable(schema: Mapping[str, Any]) -> dict[str, Any]:
+    return {"anyOf": [{"type": "null"}, dict(schema)]}
 
 
 def _text_schema(maximum: int) -> dict[str, Any]:
