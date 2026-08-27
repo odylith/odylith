@@ -910,8 +910,13 @@ def test_fsync_phase_reports_the_observed_retry_receipt_hash(tmp_path: Path, mon
     )
     monkeypatch.setattr(module, "_install_repo", lambda **_kwargs: repo_root.mkdir(exist_ok=True))
     monkeypatch.setattr(module, "_compile_transaction", lambda **_kwargs: compiled)
-    fingerprints = iter(({"before": "1"}, {"before": "1"}, {"after": "1"}, {"after": "1"}))
-    monkeypatch.setattr(module, "_governed_fingerprint", lambda _root: next(fingerprints))
+    fingerprints = iter(({"before": "1"}, {"after": "1"}, {"after": "1"}))
+    rollback_fingerprints = iter(({"before": "content"}, {"before": "content"}))
+
+    def governed_fingerprint(_root, *, include_mtime=True):  # noqa: ANN001, FBT002
+        return next(fingerprints if include_mtime else rollback_fingerprints)
+
+    monkeypatch.setattr(module, "_governed_fingerprint", governed_fingerprint)
     monkeypatch.setattr(
         module,
         "_run_faulted_create",
@@ -984,3 +989,17 @@ def test_interrupted_write_selector_ignores_unchanged_governed_files(tmp_path: P
     )
 
     assert selected == changed
+
+
+def test_rollback_fingerprint_ignores_restore_mtime_but_not_governed_bytes(tmp_path: Path) -> None:
+    module = _module()
+    governed = tmp_path / "odylith/radar/source/plan.md"
+    governed.parent.mkdir(parents=True)
+    governed.write_text("sealed bytes\n", encoding="utf-8")
+
+    before = module._governed_fingerprint(tmp_path, include_mtime=False)  # noqa: SLF001
+    os.utime(governed, ns=(governed.stat().st_atime_ns, governed.stat().st_mtime_ns + 1))
+    assert module._governed_fingerprint(tmp_path, include_mtime=False) == before  # noqa: SLF001
+
+    governed.write_text("changed bytes\n", encoding="utf-8")
+    assert module._governed_fingerprint(tmp_path, include_mtime=False) != before  # noqa: SLF001

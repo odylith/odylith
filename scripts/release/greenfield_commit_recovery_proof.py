@@ -603,6 +603,7 @@ def _run_fsync_rollback_phase(
         case=case,
     )
     before = _governed_fingerprint(repo_root)
+    rollback_before = _governed_fingerprint(repo_root, include_mtime=False)
     generation_before = _installed_generation_observation(
         repo_root=repo_root,
         env=env,
@@ -621,7 +622,7 @@ def _run_fsync_rollback_phase(
         raise RuntimeError(f"installed fsync failure reported unexpected failure kind: {failure_kind or 'missing'}")
     if str(commit_failure.get("rollback_status") or "") != "rolled_back":
         raise RuntimeError("installed fsync failure did not report a completed rollback")
-    if _governed_fingerprint(repo_root) != before:
+    if _governed_fingerprint(repo_root, include_mtime=False) != rollback_before:
         raise RuntimeError("installed fsync failure left partial governed writes after rollback")
     failed_journal = _journal_state(repo_root=repo_root, transaction_hash=compiled.transaction_hash)
     if failed_journal.get("state") != "aborted":
@@ -901,15 +902,16 @@ def _journal_state(*, repo_root: Path, transaction_hash: str) -> Mapping[str, An
     return _json_mapping(state_path.read_text(encoding="utf-8"), label="installed create journal state")
 
 
-def _governed_fingerprint(repo_root: Path) -> dict[str, str]:
+def _governed_fingerprint(repo_root: Path, *, include_mtime: bool = True) -> dict[str, str]:
     root = Path(repo_root).expanduser().resolve()
     result: dict[str, str] = {}
+    file_fingerprint = _file_fingerprint if include_mtime else _file_content_fingerprint
     for relative_root in _GOVERNED_ROOTS:
         candidate = root / relative_root
         if candidate.is_symlink():
             raise RuntimeError(f"installed recovery proof found a governed symlink: {candidate}")
         if candidate.is_file():
-            result[relative_root] = _file_fingerprint(candidate)
+            result[relative_root] = file_fingerprint(candidate)
             continue
         if not candidate.is_dir():
             continue
@@ -917,7 +919,7 @@ def _governed_fingerprint(repo_root: Path) -> dict[str, str]:
             if file_path.is_symlink():
                 raise RuntimeError(f"installed recovery proof found a governed symlink: {file_path}")
             relative_path = file_path.relative_to(root).as_posix()
-            result[relative_path] = _file_fingerprint(file_path)
+            result[relative_path] = file_fingerprint(file_path)
     return result
 
 
@@ -943,6 +945,12 @@ def _file_fingerprint(path: Path) -> str:
     stat_result = path.stat()
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     return f"{stat_result.st_mode:o}:{stat_result.st_mtime_ns}:{digest}"
+
+
+def _file_content_fingerprint(path: Path) -> str:
+    stat_result = path.stat()
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    return f"{stat_result.st_mode:o}:{digest}"
 
 
 def _require_success(result: Any, *, label: str) -> None:
