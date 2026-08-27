@@ -60,8 +60,7 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
-- 2026-08-27: Replaced an unsupported provider uniqueness constraint with a
-  bounded typed transport shape. (Plan: [B-144](odylith/radar/radar.html?view=plan&workstream=B-144); Bug: `CB-303`)
+- 2026-08-27: Replaced an unsupported provider uniqueness constraint with a bounded typed transport shape. (Plan: [B-144](odylith/radar/radar.html?view=plan&workstream=B-144); Bug: `CB-303`)
   The provider emits one `entity_effect_slots` row per workflow action/entity,
   with nullable typed relationship fields. The source-meaning owner
   deterministically binds that transport into the unchanged canonical graph,
