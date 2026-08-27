@@ -15,7 +15,7 @@ import sys
 from odylith import cli
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 
-original = greenfield_repository_write_set.atomic_write_bytes
+original = greenfield_repository_write_set.transaction_atomic_write_bytes
 root = Path.cwd().resolve()
 
 
@@ -31,43 +31,42 @@ def is_live_governed_path(value):
 
 def crash_after_first_sealed_write(*args, **kwargs):
     result = original(*args, **kwargs)
-    if args and is_live_governed_path(args[0]):
+    path = args[1] if len(args) > 1 else kwargs.get("path")
+    if path is not None and is_live_governed_path(path):
         os.kill(os.getpid(), signal.SIGKILL)
     return result
 
 
-greenfield_repository_write_set.atomic_write_bytes = crash_after_first_sealed_write
+greenfield_repository_write_set.transaction_atomic_write_bytes = crash_after_first_sealed_write
 raise SystemExit(cli.main(sys.argv[1:]))
 """
 
 FSYNC_FAILURE_FAULT = """
-from pathlib import Path
 import sys
 
 from odylith import cli
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.domain_intelligence import greenfield_transaction_path_boundary
 
-original = greenfield_repository_write_set.fsync_file
-root = Path.cwd().resolve()
-
-
-def is_live_governed_path(value):
-    try:
-        relative = Path(value).resolve().relative_to(root).as_posix()
-    except (OSError, ValueError):
-        return False
-    return relative == "odylith" or relative.startswith("odylith/") or relative.startswith(
-        "src/odylith/bundle/assets/odylith/"
-    )
+original_write = greenfield_repository_write_set.transaction_atomic_write_bytes
+original_fsync = greenfield_transaction_path_boundary.os.fsync
+armed = False
 
 
-def fail_after_first_sealed_write(*args, **kwargs):
-    if args and is_live_governed_path(args[0]):
+def arm_first_sealed_write(*args, **kwargs):
+    global armed
+    armed = True
+    return original_write(*args, **kwargs)
+
+
+def fail_armed_fsync(*args, **kwargs):
+    if armed:
         raise OSError("injected installed Greenfield fsync failure")
-    return original(*args, **kwargs)
+    return original_fsync(*args, **kwargs)
 
 
-greenfield_repository_write_set.fsync_file = fail_after_first_sealed_write
+greenfield_repository_write_set.transaction_atomic_write_bytes = arm_first_sealed_write
+greenfield_transaction_path_boundary.os.fsync = fail_armed_fsync
 raise SystemExit(cli.main(sys.argv[1:]))
 """
 
