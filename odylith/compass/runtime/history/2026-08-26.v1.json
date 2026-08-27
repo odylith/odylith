@@ -42,10 +42,10 @@
   },
   "digest": {
     "24h": [
-      "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
+      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
     ],
     "48h": [
-      "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
+      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
     ]
   },
   "digest_scoped": {
@@ -165,16 +165,16 @@
         "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-011": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-012": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-013": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-014": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-015": [
         "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
@@ -605,16 +605,16 @@
         "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-011": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-012": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-013": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-014": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-015": [
         "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
@@ -938,20 +938,20 @@
       "fingerprint": "5b4b2943fdf7089a5016968222b40fefd4bbba5e2144f0ff134bfdee4d6bff42",
       "substrate_fingerprint": "5b4b2943fdf7089a5016968222b40fefd4bbba5e2144f0ff134bfdee4d6bff42",
       "bundle_fingerprint": "",
-      "provider_decision": "provider_error",
+      "provider_decision": "provider_deferred",
       "last_successful_narration_fingerprint": "",
       "generated_utc": "2026-08-27T00:44:15Z",
       "sections": [],
       "diagnostics": {
-        "reason": "provider_error",
-        "title": "Brief unavailable right now",
-        "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
-        "provider": "claude-cli",
-        "provider_failure_code": "provider_error",
-        "provider_failure_detail": "Claude CLI exited with status 1. {\"type\":\"result\",\"subtype\":\"success\",\"is_error\":true,\"api_error_status\":null,\"duration_ms\":71,\"duration_api_ms\":0,\"num_turns\":1,\"result\":\"No ... lUsage\":{},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"uuid\":\"6dd63cfd-5a49-467c-b54e-7546a26745d8\"}",
-        "provider_model": "haiku",
-        "provider_reasoning_effort": "medium",
-        "next_retry_utc": "2026-08-27T01:14:17Z"
+        "reason": "provider_deferred",
+        "title": "Fresh brief still warming",
+        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+        "fallback_title": "Local runtime facts",
+        "fallback_digest": [
+          "Current: Land re-scope B-022 as the umbrella workstream for honest benchmark improvement; Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022) is in active.",
+          "Next: Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022): The corpus grows beyond the current 30-scenario suite with deeper weak.",
+          "Watch: Greenfield release evidence certifies a stale mechanism and misapplies the 60 90. It is still open at P1."
+        ]
       },
       "evidence_lookup": {}
     },
@@ -962,20 +962,20 @@
       "fingerprint": "d96d01087e51aed62e49a74a4caefc5823db6dfa7a40e224b0bd9cc2a95ecc0e",
       "substrate_fingerprint": "d96d01087e51aed62e49a74a4caefc5823db6dfa7a40e224b0bd9cc2a95ecc0e",
       "bundle_fingerprint": "",
-      "provider_decision": "provider_error",
+      "provider_decision": "provider_deferred",
       "last_successful_narration_fingerprint": "",
       "generated_utc": "2026-08-27T00:44:15Z",
       "sections": [],
       "diagnostics": {
-        "reason": "provider_error",
-        "title": "Brief unavailable right now",
-        "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
-        "provider": "claude-cli",
-        "provider_failure_code": "provider_error",
-        "provider_failure_detail": "Claude CLI exited with status 1. {\"type\":\"result\",\"subtype\":\"success\",\"is_error\":true,\"api_error_status\":null,\"duration_ms\":71,\"duration_api_ms\":0,\"num_turns\":1,\"result\":\"No ... lUsage\":{},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"uuid\":\"6dd63cfd-5a49-467c-b54e-7546a26745d8\"}",
-        "provider_model": "haiku",
-        "provider_reasoning_effort": "medium",
-        "next_retry_utc": "2026-08-27T01:14:17Z"
+        "reason": "provider_deferred",
+        "title": "Fresh brief still warming",
+        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+        "fallback_title": "Local runtime facts",
+        "fallback_digest": [
+          "Current: Land re-scope B-022 as the umbrella workstream for honest benchmark improvement; Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022) is in active.",
+          "Next: Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022): The corpus grows beyond the current 30-scenario suite with deeper weak.",
+          "Watch: Greenfield release evidence certifies a stale mechanism and misapplies the 60 90. It is still open at P1."
+        ]
       },
       "evidence_lookup": {}
     }
@@ -1609,19 +1609,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "04eadd876f9f2750286c610d64bcec5aa553057d750f0b0592ef7c78b2d38296",
+        "substrate_fingerprint": "04eadd876f9f2750286c610d64bcec5aa553057d750f0b0592ef7c78b2d38296",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-27T00:44:15Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Memory Coherence, Contradiction Retention, and Onboarding Continuity (B-011) is completed.",
+            "Next: Immediate forcing function is to log the next concrete checkpoint for Memory Coherence, Contradiction Retention, and Onboarding Continuity (B-011) so Compass stops leaning on aging evidence.",
+            "Watch: Freshness signal is aging: latest linked execution proof for Memory Coherence, Contradiction Retention, and Onboarding Continuity (B-011) is more than six hours old, so live momentum still."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -1629,19 +1633,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "d27ffb020984c038bd3e961f2c08552a88ee418004a95d8c673038c751751665",
+        "substrate_fingerprint": "d27ffb020984c038bd3e961f2c08552a88ee418004a95d8c673038c751751665",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-27T00:44:15Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Add implicit local-provider autodetect to the shared reasoning adapter, prefer the current host when detectable, add a Claude Code CLI structured; Local Provider Autodetect and Compass AI.",
+            "Next: Immediate forcing function is to log the next concrete checkpoint for Local Provider Autodetect and Compass AI Brief Recovery (B-012) so Compass stops leaning on aging evidence.",
+            "Watch: Freshness signal is aging: latest linked execution proof for Local Provider Autodetect and Compass AI Brief Recovery (B-012) is more than six hours old, so live momentum still needs another."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -1649,19 +1657,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "9182897e2f31d3a23520f6f2174ebb4f572fe1feb70154db5857bb533690d313",
+        "substrate_fingerprint": "9182897e2f31d3a23520f6f2174ebb4f572fe1feb70154db5857bb533690d313",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-27T00:44:15Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Shared Runtime Contract Reuse for Surface Bundles and Execution Profiles (B-013) is completed.",
+            "Next: Immediate forcing function is to log the next concrete checkpoint for Shared Runtime Contract Reuse for Surface Bundles and Execution Profiles (B-013) so Compass stops leaning on aging.",
+            "Watch: Freshness signal is aging: latest linked execution proof for Shared Runtime Contract Reuse for Surface Bundles and Execution Profiles (B-013) is more than six hours old, so live momentum."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -1669,19 +1681,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "375df5438f9d1367246d5e565f2feeb000766b9bc398d25856af91cba65e6e9d",
+        "substrate_fingerprint": "375df5438f9d1367246d5e565f2feeb000766b9bc398d25856af91cba65e6e9d",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-27T00:44:15Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Land bring the store-side daemon client up to the same trust contract as the CLI-side client, enforce loopback-only TCP transport reuse, keep repair; Context Engine Daemon Lifecycle.",
+            "Next: Immediate forcing function is to log the next concrete checkpoint for Context Engine Daemon Lifecycle, Transport Security, and Repair Hardening (B-014) so Compass stops leaning on aging.",
+            "Watch: Freshness signal is aging: latest linked execution proof for Context Engine Daemon Lifecycle, Transport Security, and Repair Hardening (B-014) is more than six hours old, so live momentum."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -4381,19 +4397,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "cb5866b33c9c6528900bfc07c33b43c39d227b43778c2efe2e8079f3a255b3b5",
+        "substrate_fingerprint": "cb5866b33c9c6528900bfc07c33b43c39d227b43778c2efe2e8079f3a255b3b5",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-27T00:44:15Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Memory Coherence, Contradiction Retention, and Onboarding Continuity (B-011) is completed.",
+            "Next: Immediate forcing function is to log the next concrete checkpoint for Memory Coherence, Contradiction Retention, and Onboarding Continuity (B-011) so Compass stops leaning on aging evidence.",
+            "Watch: Freshness signal is aging: latest linked execution proof for Memory Coherence, Contradiction Retention, and Onboarding Continuity (B-011) is more than six hours old, so live momentum still."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -4401,19 +4421,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "a40ced1ac62173141ed7ae5216dd48bc2420360dc634919ed6360ae87c59399e",
+        "substrate_fingerprint": "a40ced1ac62173141ed7ae5216dd48bc2420360dc634919ed6360ae87c59399e",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-27T00:44:15Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Add implicit local-provider autodetect to the shared reasoning adapter, prefer the current host when detectable, add a Claude Code CLI structured; Local Provider Autodetect and Compass AI.",
+            "Next: Immediate forcing function is to log the next concrete checkpoint for Local Provider Autodetect and Compass AI Brief Recovery (B-012) so Compass stops leaning on aging evidence.",
+            "Watch: Freshness signal is aging: latest linked execution proof for Local Provider Autodetect and Compass AI Brief Recovery (B-012) is more than six hours old, so live momentum still needs another."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -4421,19 +4445,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "cfb62ac802ca2859a6da46ee18a919975742bc5e3153a7760b97c3b4dfb14d40",
+        "substrate_fingerprint": "cfb62ac802ca2859a6da46ee18a919975742bc5e3153a7760b97c3b4dfb14d40",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-27T00:44:15Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Shared Runtime Contract Reuse for Surface Bundles and Execution Profiles (B-013) is completed.",
+            "Next: Immediate forcing function is to log the next concrete checkpoint for Shared Runtime Contract Reuse for Surface Bundles and Execution Profiles (B-013) so Compass stops leaning on aging.",
+            "Watch: Freshness signal is aging: latest linked execution proof for Shared Runtime Contract Reuse for Surface Bundles and Execution Profiles (B-013) is more than six hours old, so live momentum."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -4441,19 +4469,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "602c96cb12189f2cd270bd36532dc04565f7327b4acf5c4a02026598bb2ea9d4",
+        "substrate_fingerprint": "602c96cb12189f2cd270bd36532dc04565f7327b4acf5c4a02026598bb2ea9d4",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-27T00:44:15Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Land bring the store-side daemon client up to the same trust contract as the CLI-side client, enforce loopback-only TCP transport reuse, keep repair; Context Engine Daemon Lifecycle.",
+            "Next: Immediate forcing function is to log the next concrete checkpoint for Context Engine Daemon Lifecycle, Transport Security, and Repair Hardening (B-014) so Compass stops leaning on aging.",
+            "Watch: Freshness signal is aging: latest linked execution proof for Context Engine Daemon Lifecycle, Transport Security, and Repair Hardening (B-014) is more than six hours old, so live momentum."
+          ]
         },
         "evidence_lookup": {}
       },

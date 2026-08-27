@@ -1,4 +1,4 @@
-status: queued
+status: finished
 
 idea_id: B-146
 
@@ -28,7 +28,7 @@ confidence: High
 
 founder_override: no
 
-promoted_to_plan:
+promoted_to_plan: odylith/technical-plans/done/2026-08/2026-08-26-v0-1-15-node-owned-greenfield-extension-migration-assessment.md
 
 execution_model: standard
 
@@ -69,6 +69,10 @@ The node-owned Semantic Intent extension contract changes managed runtime and re
 - `migration-observer:0.1.15:browser-surfaces:21d87c2da5ef`
 - `migration-observer:0.1.15:install-managed-assets:6aad0d78490e`
 - `migration-observer:0.1.15:install-managed-assets:3d76b3df0543`
+- `migration-observer:0.1.15:browser-surfaces:96039a953cd7`
+- `migration-observer:0.1.15:install-managed-assets:13d6f64a015b`
+- `migration-observer:0.1.15:browser-surfaces:3fee2d4c478e`
+- `migration-observer:0.1.15:install-managed-assets:b45cab51875d`
 
 ## Customer
 Odylith maintainers and operators upgrading existing consumer repositories that use Greenfield proposals and browser-rendered governance surfaces.
@@ -77,7 +81,7 @@ Odylith maintainers and operators upgrading existing consumer repositories that 
 Prove that the new typed edge contract requires only verified runtime activation and deterministic surface refresh, while repo-owned Casebook, Radar, Registry, and Atlas source truth remains unchanged and recoverable.
 
 ## Proposed Solution
-Treat Semantic Intent v12, authority v18, and compiler identity v17 as a fail-closed runtime boundary. Existing installations adopt the change only through verified atomic runtime activation. Derived browser and bundle surfaces are regenerated from preserved governance source truth; no consumer data is transformed.
+Treat semantic-source-meaning graph v16, Semantic Intent IR v23, packet v35, Product Intent authority v40, and compiler identity v33 as one fail-closed runtime boundary. Existing installations adopt the change only through verified atomic runtime activation. Derived browser and bundle surfaces are regenerated from preserved governance source truth; no consumer data is transformed.
 
 ## Scope
 - Assess the new semantic protocol and generated-surface bytes against existing consumer-install contracts.
@@ -99,9 +103,10 @@ Treat Semantic Intent v12, authority v18, and compiler identity v17 as a fail-cl
 The exact migration-observer fingerprint is registered; release migration-gate passes; obsolete Semantic Intent packets remain rejected; managed runtime activation remains atomic; generated browser surfaces refresh from preserved source truth; no destructive consumer-data migration is introduced.
 
 ## Validation
-- Focused protocol, custody, and migration proof passed 154 tests.
-- `make dev-validate` passed 4,405 tests with 1 expected skip; its sole initial blocker was the pre-assessment migration fingerprint.
-- The exact v0.1.15 migration gate now passes with zero blockers, and commit-boundary focused proof passes 22 tests.
+- The current one-call Greenfield source-meaning path completed its 24-case disclosed cohort with every expected terminal under the strict standard 60-second ceiling; the slowest case took 32.848 seconds.
+- Greenfield runtime and install proof passed 463 tests; all seven revision-bound deterministic transaction laws passed.
+- Fresh local v0.1.15 release assets completed the disposable clean-install, upgrade, stale-residue, and browser normal/empty/fallback/degraded/error matrix with exit status 0.
+- The two current browser and install-managed fingerprints above are the release migration-gate assessment evidence; the gate must be rerun after this record is refreshed.
 
 ## Rollout
 - Ship through the normal verified runtime release and activation path.
@@ -117,16 +122,16 @@ Treat Semantic Intent v12 and authority v18 as a fail-closed runtime boundary. E
 - `odylith`
 
 ## Interface Changes
-- Semantic graph extension v2 replaces the top-level relation list with node-owned typed edge groups.
-- Semantic Intent request v16, packet v12, authority v18, and compiler identity v17 form one fail-closed protocol boundary.
+- Semantic-source-meaning graph v16 owns node-bound entities, effects, dependencies, and policy boundaries.
+- Semantic Intent IR v23, packet v35, authority v40, and compiler identity v33 form one fail-closed protocol boundary.
 
 ## Migration/Compatibility
 - No destructive consumer-data migration is required.
-- Semantic Intent v11 and authority v17 remain historical bytes and are rejected on the v12/v18 execution path; the operator must rebuild from source evidence before confirmation.
+- Earlier Semantic Intent packets and Product Intent authorities remain historical bytes and are rejected on the v23/v35/v40 execution path; the operator must rebuild from source evidence before confirmation.
 - Existing generated browser surfaces are replaceable projections and refresh from preserved governed source truth.
 
 ## Test Strategy
-- Require the exact migration gate, focused protocol/version tests, atomic activation coverage, and the full development validator before release evidence is generated.
+- Require the exact migration gate, focused protocol/version tests, atomic activation coverage, the revision-bound deterministic laws, and the full development validator before release evidence is generated.
 
 ## Open Questions
-- Does a fresh 24-case development cohort eliminate the extension-boundary failure without creating a new recurring semantic class or unacceptable latency?
+- Independent review, host parity, lower-capability safety, and the untouched final holdout remain release gates; none may be replaced by this migration assessment.

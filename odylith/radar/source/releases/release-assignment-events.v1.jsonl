@@ -127,3 +127,5 @@
 {"action": "add", "note": "Target newly created queued backlog record(s) from `odylith backlog create --release current`.", "recorded_at": "2026-07-20T23:02:16Z", "release_id": "release-0-1-15", "workstream_id": "B-145"}
 {"action": "remove", "note": "Migration assessment completed before release promotion; no active delivery assignment remains.", "recorded_at": "2026-07-20T23:10:57Z", "release_id": "release-0-1-15", "workstream_id": "B-145"}
 {"action": "add", "recorded_at": "2026-08-16T09:41:41Z", "release_id": "release-0-1-15", "workstream_id": "B-144"}
+{"action": "add", "recorded_at": "2026-08-27T00:39:36Z", "release_id": "release-0-1-15", "workstream_id": "B-146"}
+{"action": "remove", "recorded_at": "2026-08-27T00:44:14Z", "release_id": "release-0-1-15", "workstream_id": "B-146"}

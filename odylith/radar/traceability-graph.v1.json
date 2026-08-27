@@ -9,8 +9,8 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "1914e4a18436716ecc909aea38cf3c07dba0cc80583df61780af9461500a4f7e",
-    "file_count": 317,
+    "digest": "db2a4403b4ec7afa553e06c9676f74bd1c6e1fa69b0b63e12897f51eeb9af7ee",
+    "file_count": 318,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
       "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
@@ -265,6 +265,7 @@
       "odylith/technical-plans/done/2026-04/2026-04-28-trust-bootstrap-warning-suppression-and-success-clarity.md",
       "odylith/technical-plans/done/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
       "odylith/technical-plans/done/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md",
+      "odylith/technical-plans/done/2026-08/2026-08-26-v0-1-15-node-owned-greenfield-extension-migration-assessment.md",
       "odylith/technical-plans/parked/.gitkeep",
       "odylith/atlas/source/catalog/diagrams.v1.json",
       "odylith/registry/source/component_registry.v1.json",
@@ -3469,7 +3470,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -4404,7 +4405,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -4504,7 +4505,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -4602,7 +4603,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -4738,7 +4739,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -4846,7 +4847,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -5063,7 +5064,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -5163,7 +5164,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -5401,7 +5402,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -6937,7 +6938,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7031,7 +7032,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7134,7 +7135,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7237,7 +7238,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7340,7 +7341,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7443,7 +7444,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7546,7 +7547,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7649,7 +7650,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7752,7 +7753,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -8445,12 +8446,13 @@
         ],
         "completed_workstreams": [
           "B-140",
-          "B-145"
+          "B-145",
+          "B-146"
         ],
-        "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 3,
-        "completed_workstream_count": 2
+        "completed_workstream_count": 3
       },
       "release_history": [
         {
@@ -8552,12 +8554,13 @@
         ],
         "completed_workstreams": [
           "B-140",
-          "B-145"
+          "B-145",
+          "B-146"
         ],
-        "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 3,
-        "completed_workstream_count": 2
+        "completed_workstream_count": 3
       },
       "release_history": [
         {
@@ -8699,12 +8702,13 @@
         ],
         "completed_workstreams": [
           "B-140",
-          "B-145"
+          "B-145",
+          "B-146"
         ],
-        "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 3,
-        "completed_workstream_count": 2
+        "completed_workstream_count": 3
       },
       "release_history": [
         {
@@ -8797,7 +8801,7 @@
     {
       "idea_id": "B-146",
       "title": "Assess node-owned Greenfield extension migration for v0.1.15",
-      "status": "queued",
+      "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
       "workstream_children": [],
@@ -8815,7 +8819,7 @@
         "D-045"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-08/2026-08-18-assess-node-owned-greenfield-extension-migration-for-v0-1-15.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-08/2026-08-26-v0-1-15-node-owned-greenfield-extension-migration-assessment.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -8823,10 +8827,35 @@
       },
       "active_release_id": "",
       "active_release": {},
-      "release_history": [],
-      "release_history_summary": "",
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-146",
+          "release_id": "release-0-1-15",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-08-27T00:39:36Z",
+          "note": "",
+          "release_label": "0.1.15",
+          "from_release_label": "",
+          "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-146",
+          "release_id": "release-0-1-15",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-08-27T00:44:14Z",
+          "note": "",
+          "release_label": "0.1.15",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Removed from 0.1.15",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 1,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -8889,7 +8918,7 @@
         "B-116",
         "B-117"
       ],
-      "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+      "source_path": "odylith/radar/source/releases/releases.v1.json",
       "terminal": true,
       "active_workstream_count": 0,
       "completed_workstream_count": 36
@@ -8923,7 +8952,7 @@
       "completed_workstreams": [
         "B-127"
       ],
-      "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+      "source_path": "odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
       "active_workstream_count": 10,
       "completed_workstream_count": 1
@@ -8944,7 +8973,7 @@
       "aliases": [],
       "active_workstreams": [],
       "completed_workstreams": [],
-      "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+      "source_path": "odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
       "active_workstream_count": 0,
       "completed_workstream_count": 0
@@ -8974,7 +9003,7 @@
         "B-125"
       ],
       "completed_workstreams": [],
-      "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+      "source_path": "odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
       "active_workstream_count": 8,
       "completed_workstream_count": 0
@@ -9002,12 +9031,13 @@
       ],
       "completed_workstreams": [
         "B-140",
-        "B-145"
+        "B-145",
+        "B-146"
       ],
-      "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+      "source_path": "odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
       "active_workstream_count": 3,
-      "completed_workstream_count": 2
+      "completed_workstream_count": 3
     }
   ],
   "release_aliases": {
@@ -9034,12 +9064,13 @@
       ],
       "completed_workstreams": [
         "B-140",
-        "B-145"
+        "B-145",
+        "B-146"
       ],
-      "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+      "source_path": "odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
       "active_workstream_count": 3,
-      "completed_workstream_count": 2
+      "completed_workstream_count": 3
     }
   },
   "current_release": {
@@ -9065,12 +9096,13 @@
     ],
     "completed_workstreams": [
       "B-140",
-      "B-145"
+      "B-145",
+      "B-146"
     ],
-    "source_path": "/Users/freedom/.codex/worktrees/odylith-release-e2f60d51/odylith/radar/source/releases/releases.v1.json",
+    "source_path": "odylith/radar/source/releases/releases.v1.json",
     "terminal": false,
     "active_workstream_count": 3,
-    "completed_workstream_count": 2
+    "completed_workstream_count": 3
   },
   "next_release": {},
   "release_summary": {
@@ -10932,7 +10964,7 @@
       "id": "B-146",
       "type": "workstream",
       "label": "Assess node-owned Greenfield extension migration for v0.1.15",
-      "status": "queued",
+      "status": "finished",
       "workstream_type": "standalone",
       "file": "odylith/radar/source/ideas/2026-08/2026-08-18-assess-node-owned-greenfield-extension-migration-for-v0-1-15.md"
     },
@@ -14306,6 +14338,12 @@
       "type": "plan",
       "label": "odylith/technical-plans/done/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md",
       "file": "odylith/technical-plans/done/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-08/2026-08-26-v0-1-15-node-owned-greenfield-extension-migration-assessment.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-08/2026-08-26-v0-1-15-node-owned-greenfield-extension-migration-assessment.md",
+      "file": "odylith/technical-plans/done/2026-08/2026-08-26-v0-1-15-node-owned-greenfield-extension-migration-assessment.md"
     },
     {
       "id": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
@@ -20933,6 +20971,11 @@
       "edge_type": "diagram_linkage"
     },
     {
+      "source": "B-146",
+      "target": "plan:odylith/technical-plans/done/2026-08/2026-08-26-v0-1-15-node-owned-greenfield-extension-migration-assessment.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
       "source": "component:atlas",
       "target": "diagram:D-001",
       "edge_type": "component_diagram"
@@ -24970,7 +25013,7 @@
       "code_reference_count": 0
     },
     "B-146": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 1,
       "runbook_count": 0,
       "developer_doc_count": 0,
@@ -25088,12 +25131,12 @@
     "active_release_assignment_count": 21,
     "execution_program_count": 5,
     "execution_wave_count": 30,
-    "node_count": 356,
-    "edge_count": 1823,
+    "node_count": 357,
+    "edge_count": 1824,
     "warning_count": 7,
     "warning_item_count": 7,
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-08-20 15:27:33Z"
+  "generated_utc": "2026-08-27 00:44:51Z"
 }
