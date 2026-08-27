@@ -13,7 +13,10 @@ import tarfile
 import zipfile
 
 
-DEFAULT_FIXTURE_GLOB = "scripts/release/fixtures/greenfield-semantic-smoke.v*.json"
+DEFAULT_FIXTURE_PATH = "scripts/release/fixtures/greenfield-semantic-smoke.v35.json"
+FIXTURE_AUTHORING_FILES = frozenset(
+    {"scripts/release/generate_greenfield_semantic_smoke_fixture.py"}
+)
 TEXT_SUFFIXES = frozenset(
     {".css", ".html", ".js", ".json", ".md", ".mjs", ".py", ".sh", ".toml", ".txt", ".yaml", ".yml"}
 )
@@ -60,7 +63,7 @@ def load_custody_sentinels(
     """Load explicit, source-grounded sentinels from semantic release fixtures."""
 
     root = Path(repo_root).expanduser().resolve()
-    paths = tuple(fixture_paths or sorted(root.glob(DEFAULT_FIXTURE_GLOB)))
+    paths = tuple(fixture_paths or (root / DEFAULT_FIXTURE_PATH,))
     if not paths:
         raise RuntimeError("platform custody check requires at least one semantic release fixture")
     sentinels: list[str] = []
@@ -212,7 +215,10 @@ def _should_scan_source_file(path: Path, repo_root: Path) -> bool:
         return False
     relative = path.relative_to(repo_root)
     parts = set(relative.parts)
-    if relative.as_posix().startswith("scripts/release/fixtures/"):
+    if (
+        relative.as_posix().startswith("scripts/release/fixtures/")
+        or relative.as_posix() in FIXTURE_AUTHORING_FILES
+    ):
         return False
     if path.name in EVALUATION_EVIDENCE_FILES or "tests" in parts:
         return False

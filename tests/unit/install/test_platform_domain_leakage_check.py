@@ -59,6 +59,7 @@ def test_repo_scan_matches_exact_semantic_sentinel_across_code_separators(tmp_pa
 def test_repo_scan_excludes_fixture_tests_and_governance_evidence(tmp_path: Path) -> None:
     for relative in (
         "scripts/release/fixtures/semantic.json",
+        "scripts/release/generate_greenfield_semantic_smoke_fixture.py",
         "tests/unit/test_fixture.py",
         "odylith/radar/source/history.md",
     ):
@@ -90,3 +91,11 @@ def test_default_release_fixture_is_explicit_and_current_repo_is_clean() -> None
     sentinels = leakage.load_custody_sentinels(repo_root=repo_root)
     assert "Claim Desk" in sentinels
     assert leakage.scan_platform_custody(repo_root=repo_root, sentinels=sentinels) == ()
+
+
+def test_default_release_fixture_does_not_treat_historical_smoke_bytes_as_active() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    historical = repo_root / "scripts/release/fixtures/greenfield-semantic-smoke.v13.json"
+
+    assert "platform_custody_sentinels" not in json.loads(historical.read_text(encoding="utf-8"))
+    assert leakage.load_custody_sentinels(repo_root=repo_root)
