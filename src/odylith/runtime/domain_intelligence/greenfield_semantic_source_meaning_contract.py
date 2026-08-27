@@ -15,7 +15,7 @@ SEMANTIC_SOURCE_MEANING_GRAPH_VERSION = (
     "odylith.greenfield.semantic-source-meaning-graph.v16"
 )
 SEMANTIC_SOURCE_MEANING_CONTRACT_VERSION = (
-    "odylith.greenfield.semantic-source-meaning-contract.v22"
+    "odylith.greenfield.semantic-source-meaning-contract.v23"
 )
 
 SOURCE_MEANING_COLLECTIONS = (
@@ -410,10 +410,13 @@ def semantic_source_meaning_contract(
                 "do not infer a viewer from an actor or output citation."
             ),
             "boundaries": (
-                "Dependencies are external sources or systems declared as used, required, or "
-                "available to the first path, including any source with a declared access mode "
-                "or boundary. access_mode is the sole owner of generic read or read-only dependency "
-                "access; do not duplicate it as policy. A restriction that merely names a class does not create a dependency. "
+                "Dependencies are separately named operational or information resources that the first "
+                "path uses, requires, or has available. They may be local or remote; locality is a "
+                "product boundary and never a reason to omit an otherwise used resource. A product entity "
+                "is an object the workflow acts on, changes, creates, or presents. A named item that only "
+                "enables a workflow action is a dependency, not an entity input. access_mode is the sole "
+                "owner of generic read or read-only dependency access; do not duplicate it as policy. "
+                "A restriction that merely names a class does not create a dependency. "
                 "A class that the source permits naming but explicitly forbids accessing is a "
                 "product or policy boundary, never a dependency. "
                 "Product boundaries preserve source-declared product scope, execution location, "

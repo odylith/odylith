@@ -228,6 +228,14 @@ def test_source_meaning_compiles_without_invented_causal_relations() -> None:
     ]
 
 
+def test_source_contract_distinguishes_operational_resources_from_product_entities() -> None:
+    boundaries = semantic_source_meaning_contract()["semantic_ownership"]["boundaries"]
+
+    assert "may be local or remote" in boundaries
+    assert "never a reason to omit an otherwise used resource" in boundaries
+    assert "not an entity input" in boundaries
+
+
 def test_presentation_remains_outside_the_accepted_semantic_fact_graph() -> None:
     graph = require_semantic_source_meaning_graph(_graph(), evidence_sources=SOURCES)
     intent = require_semantic_intent_ir(
