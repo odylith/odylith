@@ -51,6 +51,7 @@ from odylith.runtime.domain_intelligence import greenfield_transaction_path_boun
 original_write = greenfield_repository_write_set.transaction_atomic_write_bytes
 original_fsync = greenfield_transaction_path_boundary.os.fsync
 armed = False
+fired = False
 
 
 def arm_first_sealed_write(*args, **kwargs):
@@ -60,7 +61,9 @@ def arm_first_sealed_write(*args, **kwargs):
 
 
 def fail_armed_fsync(*args, **kwargs):
-    if armed:
+    global fired
+    if armed and not fired:
+        fired = True
         raise OSError("injected installed Greenfield fsync failure")
     return original_fsync(*args, **kwargs)
 
