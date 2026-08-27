@@ -35,12 +35,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 550,
-    "mapped_workstream_evidence_count": 503,
+    "explicit_event_count": 552,
+    "mapped_workstream_evidence_count": 505,
     "recent_path_match_count": 0,
     "spec_history_event_count": 5,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 550
+    "timeline_event_count": 552
   },
   "name": "Registry",
   "path_prefixes": [
@@ -50,6 +50,74 @@
   ],
   "spec_ref": "odylith/registry/source/components/registry/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1170,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-08-20T08:25:52-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-19-greenfield-release-evidence-certifies-a-stale-mechanism-and-misapplies-the-60-90.md"
+      ],
+      "confidence": "high",
+      "event_index": 1168,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-08-19T14:36:15-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 3,
       "artifacts": [
