@@ -13,11 +13,12 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_component_projectio
 )
 
 
-SEMANTIC_PROJECTION_PLAN_VERSION = "odylith.greenfield.semantic-projection-plan.v17"
+SEMANTIC_PROJECTION_PLAN_VERSION = "odylith.greenfield.semantic-projection-plan.v18"
 _FACT_KIND_ORDER = (
     "audience",
     "actor",
     "entity",
+    "record_requirement",
     "workflow_step",
     "state_object",
     "visible_output",
@@ -39,6 +40,7 @@ _RELATION_KIND_ORDER = (
     "changes",
     "maintains",
     "state_of",
+    "required_for",
     "depends_on",
     "implements",
     "applies_to",
@@ -433,6 +435,14 @@ def semantic_validation_strategy(
             "from exact typed evidence; verify any declared producing edge without "
             "inventing one."
         ),
+        *(
+            [
+                f"Verify source-cited {_record_requirement_kind(node)}: "
+                f"{node.statement}"
+                for node in plan.nodes
+                if node.kind == "record_requirement"
+            ]
+        ),
         f"Compare release evidence with the sealed proof boundary: {proof_boundary}",
         *success_metrics,
     ]
@@ -440,6 +450,14 @@ def semantic_validation_strategy(
 
 def _node_statements(plan: SemanticProjectionPlan, kind: str) -> tuple[str, ...]:
     return tuple(node.statement for node in plan.nodes if node.kind == kind)
+
+
+def _record_requirement_kind(node: SemanticProjectionNode) -> str:
+    attributes = dict(node.attributes)
+    kind = attributes.get("requirement_kind")
+    if kind not in {"record_field", "custody_evidence", "proof_requirement"}:
+        raise ValueError("record requirement lacks an accepted requirement kind")
+    return kind.replace("_", " ")
 
 
 def _diagram_plans(
@@ -456,11 +474,13 @@ def _diagram_plans(
     audience_ids = _fact_ids(nodes, "audience")
     actor_ids = _fact_ids(nodes, "actor")
     entity_ids = _fact_ids(nodes, "entity")
+    record_requirement_ids = _fact_ids(nodes, "record_requirement")
     first_path_ids = {
         *workflow_ids,
         *audience_ids,
         *actor_ids,
         *entity_ids,
+        *record_requirement_ids,
         *state_fact_ids,
         *visible_output_fact_ids,
     }
@@ -479,6 +499,7 @@ def _diagram_plans(
             "produces",
             "output_of",
             "visible_to",
+            "required_for",
         }
         and edge.subject_id in first_path_ids
         and edge.object_id in first_path_ids

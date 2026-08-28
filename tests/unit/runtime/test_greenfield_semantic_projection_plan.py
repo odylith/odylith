@@ -27,6 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_projection_plan imp
     build_semantic_projection_plan,
     semantic_projection_plan_mapping,
     semantic_release_plan,
+    semantic_validation_strategy,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_proposal import (
     build_verified_semantic_proposal,
@@ -160,6 +161,60 @@ def test_diagram_boxes_disambiguate_equal_labels_by_typed_role() -> None:
     assert "Signal View — Workflow step" in labels
     assert "Signal View — Visible output" in labels
     assert len({label.casefold() for label in labels}) == len(labels)
+
+
+def test_record_requirement_reaches_delivery_plan_atlas_and_release_evidence() -> None:
+    graph = _stateless_graph()
+    statement = "Retain the source receipt with the signal summary."
+    graph["facts"].append(
+        _fact(
+            "record-requirement.0",
+            "record_requirement",
+            statement,
+            statement,
+            0,
+            attributes={
+                "requirement_kind": "custody_evidence",
+                "entity_id": "entity.2",
+            },
+        )
+    )
+    graph["relations"].append(
+        _relation(
+            "relation.required_for.0",
+            "required_for",
+            "record-requirement.0",
+            "entity.2",
+            0,
+        )
+    )
+
+    plan = build_semantic_projection_plan(graph, project_slug="signal-view")
+    diagrams = semantic_diagrams(plan=plan, backlog=_backlog(plan))
+    validation = semantic_validation_strategy(
+        plan=plan,
+        success_metrics=(),
+        proof_boundary="Deliver the accepted graph without semantic drift.",
+    )
+
+    first_path = plan.diagram_plans[0]
+    assert "record-requirement.0" in first_path.fact_ids
+    assert "relation.required_for.0" in first_path.relation_ids
+    assert "record-requirement.0" in diagrams[0]["semantic_fact_ids"]
+    assert "relation.required_for.0" in diagrams[0]["semantic_relation_ids"]
+    assert {
+        "label": statement,
+        "role": "Record, custody, or proof requirement",
+        "description": statement,
+    } in diagrams[0]["diagram_boxes"]
+    assert "--> |" not in diagrams[0]["mermaid_source"]
+    assert "-->|is required for|" in diagrams[0]["mermaid_source"]
+    assert validation == [
+        "Validate every workflow step in graph order and verify any declared owner relation.",
+        "Show every visible output (Signal chart, Signal summary) from exact typed evidence; verify any declared producing edge without inventing one.",
+        f"Verify source-cited custody evidence: {statement}",
+        "Compare release evidence with the sealed proof boundary: Deliver the accepted graph without semantic drift.",
+    ]
 
 
 def test_state_object_without_endpoint_pair_stays_stateful_without_invented_transition() -> None:
@@ -543,7 +598,7 @@ def test_verified_proposal_persists_and_consumes_one_projection_plan() -> None:
     )
 
     assert proposal["projection_plan"]["version"] == (
-            "odylith.greenfield.semantic-projection-plan.v17"
+        "odylith.greenfield.semantic-projection-plan.v18"
     )
     assert "apply_semantic_input" not in proposal
     assert {

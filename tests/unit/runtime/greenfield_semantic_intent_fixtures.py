@@ -139,6 +139,7 @@ def _claim_desk_source_meaning_graph() -> dict[str, Any]:
                 "source_refs": [semantic_ref(PATH_EVIDENCE)],
             },
         ],
+        "record_requirements": [],
         "workflow": [
             {
                 "action": "claim one ready card",
@@ -305,6 +306,7 @@ def stateless_semantic_intent_packet() -> tuple[dict[str, Any], str]:
                 "source_refs": [semantic_ref(prompt)],
             }
         ],
+        "record_requirements": [],
         "non_material_gaps": [],
         "provenance_only": [],
         "clarification": {

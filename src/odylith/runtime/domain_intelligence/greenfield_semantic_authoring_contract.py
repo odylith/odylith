@@ -18,7 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_meaning impo
 
 
 SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION = (
-    "odylith.greenfield.semantic-intent-authoring-request.v45"
+    "odylith.greenfield.semantic-intent-authoring-request.v46"
 )
 SEMANTIC_INTENT_MANDATORY_CHALLENGES = (
     "unsupported_addition",

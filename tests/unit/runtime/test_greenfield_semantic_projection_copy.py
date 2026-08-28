@@ -83,6 +83,48 @@ def test_policy_renderer_preserves_each_typed_modality() -> None:
     )
 
 
+def test_record_requirement_is_retained_in_the_release_package() -> None:
+    statement = "Retain the claim receipt with its source evidence."
+    graph = _graph_for_actions(("Select one ready card.",), include_policy=False)
+    graph["record_requirements"] = [
+        {
+            "kind": "custody_evidence",
+            "statement": statement,
+            "entity_index": 1,
+            "source_refs": [
+                {
+                    "source_id": "operator_prompt",
+                    "quote": statement,
+                    "occurrence": 1,
+                }
+            ],
+        }
+    ]
+
+    proposal = _proposal_from_graph(
+        graph,
+        prompt=f"{SEMANTIC_PROMPT} {statement}",
+    )
+    requirement_section = next(
+        row
+        for row in proposal["project_brief"]["blueprint_sections"]
+        if row["section"] == "Record, custody, and proof requirements"
+    )
+
+    assert requirement_section["must_capture"] == (
+        "custody evidence: Retain the claim receipt with its source evidence"
+    )
+    assert (
+        f"Verify source-cited custody evidence: {statement}"
+        in proposal["validation_strategy"]
+    )
+    assert (
+        "Release evidence verifies every source-cited record, custody, and proof "
+        f"requirement: custody evidence: {statement.rstrip('.')}."
+        in proposal["project_brief"]["coding_readiness_gates"]
+    )
+
+
 def test_release_proof_and_single_workstream_handoff_do_not_repeat_actions() -> None:
     proposal = _gfhi_001_like_proposal()
     handoff, dashboard = _handoff_and_dashboard(proposal)
@@ -213,7 +255,7 @@ def test_policy_free_projects_still_use_structured_copy_and_product_boundary() -
         "Required path: Step 1 — Select one ready card. Boundaries: repo-local."
     )
     assert product_view.endswith("Boundaries: repo-local.")
-    assert proposal["schema_version"] == "odylith.greenfield.proposal.v11"
+    assert proposal["schema_version"] == "odylith.greenfield.proposal.v12"
     assert proposal["intent"]["presentation"] == graph["presentation"]
     assert proposal["intent"]["owned_capabilities"] == [
         "Claim Desk First Path: Deliver the sealed first-path workflow: Select one ready card."
@@ -390,18 +432,19 @@ def _proposal_from_graph(
     graph: dict[str, Any],
     *,
     observed_source: dict[str, Any] | None = None,
+    prompt: str = SEMANTIC_PROMPT,
 ) -> dict[str, Any]:
     baseline = semantic_intent_packet()
     author_run = copy.deepcopy(baseline["author_run"])
     author_run["graph_sha256"] = semantic_source_meaning_sha256(graph)
     packet = build_semantic_intent_packet(
         graph,
-        prompt=SEMANTIC_PROMPT,
+        prompt=prompt,
         author_run=author_run,
     )
-    verified = require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
+    verified = require_semantic_intent_packet(packet, prompt=prompt)
     return build_verified_semantic_proposal(
-        authority=semantic_intent_authority(verified, prompt=SEMANTIC_PROMPT),
+        authority=semantic_intent_authority(verified, prompt=prompt),
         observed_source=observed_source or {},
         release_selector="0.0.1",
     )

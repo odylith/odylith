@@ -92,6 +92,30 @@ def test_graph_preview_renders_current_typed_policy_boundary_without_reinterpret
     assert "Internal product systems" not in rendered
 
 
+def test_graph_preview_renders_typed_record_requirements_without_reparsing() -> None:
+    rendered = render_candidate_intent_markdown(
+        {
+            "title": "Handoff board",
+            "presentation": {"status": "source_declared"},
+            "record_requirements": [
+                {
+                    "record_requirement_id": "record-requirement.0",
+                    "kind": "custody_evidence",
+                    "statement": "Keep the handoff receipt with its source seal.",
+                    "entity_id": "entity.0",
+                    "entity_label": "Handoff receipt",
+                }
+            ],
+        }
+    )
+
+    assert "## Record, custody, and proof requirements" in rendered
+    assert (
+        "- Handoff receipt — custody evidence: Keep the handoff receipt with its source seal."
+        in rendered
+    )
+
+
 def test_graph_preview_cold_import_does_not_load_legacy_semantic_authorities() -> None:
     root = Path(__file__).resolve().parents[3]
     script = """

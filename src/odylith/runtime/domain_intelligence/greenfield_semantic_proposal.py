@@ -92,7 +92,7 @@ def build_verified_semantic_proposal(
         proof_boundary=str(product_facts["proof_boundary"]),
     )
     proposal: dict[str, Any] = {
-        "schema_version": "odylith.greenfield.proposal.v11",
+        "schema_version": "odylith.greenfield.proposal.v12",
         "mode": "host_reasoned_greenfield_proposal",
         "provider_calls": 0,
         "host_agnostic": True,
@@ -202,6 +202,7 @@ def _project_brief(
     step_phrases = [_attributes(row)["action_phrase"] for row in _facts(graph, "workflow_step")]
     state_summary = _sentence_list(plan.state_labels)
     output_summary = _sentence_list(plan.visible_output_labels)
+    record_requirement_rows = _record_requirement_rows(plan)
     blueprint = [
         _brief_section(
             "Consumer outcome",
@@ -230,6 +231,17 @@ def _project_brief(
                 else f"Visible outputs: {output_summary}."
             ),
             "Names the product evidence without adding an undeclared state model.",
+        ),
+        *(
+            [
+                _brief_section(
+                    "Record, custody, and proof requirements",
+                    _sentence_list(record_requirement_rows),
+                    "Preserves source-cited requirements attached to canonical product entities.",
+                )
+            ]
+            if record_requirement_rows
+            else []
         ),
         _brief_section(
             "Release proof and limits",
@@ -278,10 +290,35 @@ def _project_brief(
                 if plan.state_labels
                 else f"Release {release} demonstrates every visible output: {output_summary}."
             ),
+            *(
+                [
+                    "Release evidence verifies every source-cited record, custody, and proof requirement: "
+                    f"{_sentence_list(record_requirement_rows)}."
+                ]
+                if record_requirement_rows
+                else []
+            ),
             f"Policy boundaries remain enforced: {_sentence_list(_fragments(policy_boundaries), fallback='none asserted')}.",
         ],
         "policy_boundaries": policy_boundaries,
     }
+
+
+def _record_requirement_rows(plan: SemanticProjectionPlan) -> list[str]:
+    labels = {
+        "record_field": "record field",
+        "custody_evidence": "custody evidence",
+        "proof_requirement": "proof requirement",
+    }
+    result: list[str] = []
+    for node in plan.nodes:
+        if node.kind != "record_requirement":
+            continue
+        kind = dict(node.attributes).get("requirement_kind")
+        if kind not in labels:
+            raise ValueError("record requirement lacks an accepted requirement kind")
+        result.append(f"{labels[kind]}: {node.statement}")
+    return result
 
 
 def _risks(components: Sequence[Mapping[str, Any]]) -> list[dict[str, str]]:

@@ -25,6 +25,9 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract impo
     RELATION_ENDPOINT_KINDS as _RELATION_ENDPOINT_KINDS,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract import (
+    RECORD_REQUIREMENT_KINDS,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract import (
     SEMANTIC_ATTRIBUTE_NAMES,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract import (
@@ -45,8 +48,8 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract impo
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations import (
     require_semantic_source_refs,
 )
-SEMANTIC_INTENT_IR_VERSION = "odylith.greenfield.semantic-intent-ir.v23"
-SEMANTIC_INTENT_PACKET_VERSION = "odylith.greenfield.semantic-intent-packet.v35"
+SEMANTIC_INTENT_IR_VERSION = "odylith.greenfield.semantic-intent-ir.v24"
+SEMANTIC_INTENT_PACKET_VERSION = "odylith.greenfield.semantic-intent-packet.v36"
 
 _CUSTODY_STATES = frozenset({"source_fact", "visible_assumption"})
 _OWNER_KINDS = frozenset({"none", "actor", "product", "system"})
@@ -134,6 +137,11 @@ def semantic_intent_product_facts(ir: Mapping[str, Any]) -> dict[str, Any]:
         "product_view": narratives["product_view"][0]["text"],
         "success_metrics": [row["text"] for row in narratives["success_metric"]],
         "evidence_requirements": [row["text"] for row in narratives["evidence_requirement"]],
+        "record_requirements": _record_requirement_views(
+            by_kind["record_requirement"],
+            relations=ir["relations"],
+            fact_index={str(fact["fact_id"]): fact for fact in facts},
+        ),
         "human_actors": _actor_views(
             by_kind["actor"],
             by_kind["workflow_step"],
@@ -360,6 +368,11 @@ def _require_kind_contract(*, kind: str, owner_kind: str, attributes: Mapping[st
             raise ValueError("Semantic Intent internal system has an invalid component kind")
         if attributes["release_scope"] not in INTERNAL_SYSTEM_RELEASE_SCOPES:
             raise ValueError("Semantic Intent internal system has an invalid release scope")
+    if (
+        kind == "record_requirement"
+        and attributes["requirement_kind"] not in RECORD_REQUIREMENT_KINDS
+    ):
+        raise ValueError("Semantic Intent record requirement has an invalid kind")
 
 
 def semantic_state_transition(
@@ -503,6 +516,7 @@ def _require_complete_material_graph(
     changes = [row for row in relations if row["kind"] == "changes"]
     maintains = [row for row in relations if row["kind"] == "maintains"]
     state_of = [row for row in relations if row["kind"] == "state_of"]
+    required_for = [row for row in relations if row["kind"] == "required_for"]
     actor_ids = {row["fact_id"] for row in by_kind["actor"]}
     entity_ids = {row["fact_id"] for row in by_kind["entity"]}
     entity_by_id = {str(row["fact_id"]): row for row in by_kind["entity"]}
@@ -514,6 +528,11 @@ def _require_complete_material_graph(
         if semantic_state_transition(row) is not None
     }
     stable_state_ids = state_ids - transitioned_state_ids
+    _require_record_requirement_attachments(
+        requirements=by_kind["record_requirement"],
+        relations=required_for,
+        entities=entity_by_id,
+    )
     for step in by_kind["workflow_step"]:
         owners = [row for row in owned_by if row["subject_id"] == step["fact_id"]]
         if step["owner_kind"] == "actor":
@@ -601,6 +620,63 @@ def _require_entity_identity_edges(
             raise ValueError(
                 "Semantic Intent output label disagrees with its entity"
             )
+
+
+def _require_record_requirement_attachments(
+    *,
+    requirements: Sequence[Mapping[str, Any]],
+    relations: Sequence[Mapping[str, Any]],
+    entities: Mapping[str, Mapping[str, Any]],
+) -> None:
+    """Require every record requirement to retain one canonical entity attachment."""
+
+    for requirement in requirements:
+        requirement_id = str(requirement["fact_id"])
+        targets = [
+            str(row["object_id"])
+            for row in relations
+            if row["subject_id"] == requirement_id
+        ]
+        if len(targets) != 1 or targets[0] not in entities:
+            raise ValueError(
+                "Semantic Intent record requirement lacks one canonical entity attachment"
+            )
+        if _attribute(requirement, "entity_id") != targets[0]:
+            raise ValueError(
+                "Semantic Intent record requirement entity attribute disagrees with its typed edge"
+            )
+
+
+def _record_requirement_views(
+    requirements: Sequence[Mapping[str, Any]],
+    *,
+    relations: Sequence[Mapping[str, Any]],
+    fact_index: Mapping[str, Mapping[str, Any]],
+) -> list[dict[str, str]]:
+    """Project record requirements from typed facts and their exact attachment edge."""
+
+    targets_by_requirement = {
+        str(row["subject_id"]): str(row["object_id"])
+        for row in relations
+        if row["kind"] == "required_for"
+    }
+    result: list[dict[str, str]] = []
+    for requirement in requirements:
+        requirement_id = str(requirement["fact_id"])
+        entity_id = targets_by_requirement.get(requirement_id, "")
+        entity = fact_index.get(entity_id)
+        if entity is None:
+            raise ValueError("Semantic Intent record requirement lacks an attached entity")
+        result.append(
+            {
+                "record_requirement_id": requirement_id,
+                "kind": _attribute(requirement, "requirement_kind"),
+                "statement": str(requirement["statement"]),
+                "entity_id": entity_id,
+                "entity_label": str(entity["label"]),
+            }
+        )
+    return result
 
 
 def _require_unique_state_transitions(facts: Sequence[Mapping[str, Any]]) -> None:

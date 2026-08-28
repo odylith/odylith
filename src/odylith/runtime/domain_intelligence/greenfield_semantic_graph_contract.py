@@ -5,10 +5,16 @@ from __future__ import annotations
 from typing import Any
 
 
+RECORD_REQUIREMENT_KINDS = (
+    "record_field",
+    "custody_evidence",
+    "proof_requirement",
+)
 SEMANTIC_FACT_KINDS = (
     "audience",
     "actor",
     "entity",
+    "record_requirement",
     "workflow_step",
     "state_object",
     "visible_output",
@@ -30,6 +36,7 @@ SEMANTIC_RELATION_KINDS = (
     "changes",
     "maintains",
     "state_of",
+    "required_for",
     "depends_on",
     "implements",
     "applies_to",
@@ -62,6 +69,7 @@ SEMANTIC_ATTRIBUTE_NAMES = (
     "modalities",
     "statement",
     "stable_state",
+    "requirement_kind",
 )
 SINGULAR_NARRATIVE_FIELDS = frozenset(
     {"product_story", "problem", "customer", "opportunity", "product_view", "proof_boundary"}
@@ -81,6 +89,7 @@ INTERNAL_SYSTEM_RELEASE_SCOPES = (
 FACT_REQUIRED_ATTRIBUTES = {
     "audience": ("audience_kind",),
     "workflow_step": ("action", "action_phrase"),
+    "record_requirement": ("requirement_kind", "entity_id"),
     "state_object": ("object", "entity_id"),
     "visible_output": ("entity_id",),
     "product_boundary": ("statement",),
@@ -112,6 +121,10 @@ FACT_SEMANTIC_ROLES = {
         "transition object whose nullable endpoints preserve only source-declared states"
     ),
     "visible_output": "one source-entailable result that a consumer can observe",
+    "record_requirement": (
+        "one source-declared record field, custody/evidence, or proof obligation "
+        "attached to exactly one canonical entity"
+    ),
     "external_system": "one explicit dependency or external boundary; never merge named dependencies",
     "internal_system": (
         "one source-explicit internal boundary; never synthesize a default system or restate the product"
@@ -130,6 +143,7 @@ COMPLETE_FACT_COUNTS = {
     "audience": {"minimum": 0, "maximum": 64},
     "actor": {"minimum": 0, "maximum": 64},
     "entity": {"minimum": 0, "maximum": 64},
+    "record_requirement": {"minimum": 0, "maximum": 64},
     "workflow_step": {"minimum": 1},
     "state_object": {"minimum": 0, "maximum": 16},
     "visible_output": {"minimum": 1},
@@ -149,6 +163,10 @@ RELATION_ENDPOINT_KINDS = {
     "changes": {"subject": ("workflow_step",), "object": ("state_object",)},
     "maintains": {"subject": ("workflow_step",), "object": ("state_object",)},
     "state_of": {"subject": ("state_object",), "object": ("entity",)},
+    "required_for": {
+        "subject": ("record_requirement",),
+        "object": ("entity",),
+    },
     "depends_on": {
         "subject": ("internal_system", "workflow_step"),
         "object": ("external_system", "internal_system"),
@@ -239,6 +257,7 @@ def semantic_intent_authoring_contract() -> dict[str, Any]:
             "source_entailable_output_recipients_use_visible_to_instead_of_workflow_ownership": True,
             "state_change_relations_exist_only_when_source_explicit": True,
             "workflow_entity_roles_are_typed_relations_to_canonical_entity_ids": True,
+            "record_requirements_are_attached_to_exactly_one_canonical_entity": True,
             "state_and_output_identity_are_bound_to_exactly_one_canonical_entity": True,
             "canonical_graph_custody": (
                 "facts and relations preserve only source-entailable meaning; "
@@ -266,6 +285,7 @@ __all__ = [
     "SEMANTIC_FACT_KINDS",
     "SEMANTIC_NARRATIVE_FIELDS",
     "SEMANTIC_RELATION_KINDS",
+    "RECORD_REQUIREMENT_KINDS",
     "SINGULAR_NARRATIVE_FIELDS",
     "semantic_intent_authoring_contract",
 ]

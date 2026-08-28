@@ -8,6 +8,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_backlog_projection 
     semantic_policy_boundary_summaries,
 )
 
+
 def render_candidate_intent_markdown(intent: Mapping[str, Any]) -> str:
     """Render the human view of the typed candidate; Markdown remains non-authoritative."""
 
@@ -69,6 +70,12 @@ def render_candidate_intent_markdown(intent: Mapping[str, Any]) -> str:
             empty_text="None.",
         ),
         "",
+        "## Record, custody, and proof requirements",
+        *_bullet_lines(
+            _record_requirement_lines(intent.get("record_requirements")),
+            empty_text="None.",
+        ),
+        "",
         "## Ambiguities",
         *_bullet_lines(intent.get("ambiguities"), empty_text="None."),
         "",
@@ -116,6 +123,27 @@ def _human_actor_lines(value: Any) -> list[str]:
             if actions
             else label
         )
+    return result
+
+
+def _record_requirement_lines(value: Any) -> list[str]:
+    if not isinstance(value, (list, tuple)):
+        return []
+    labels = {
+        "record_field": "record field",
+        "custody_evidence": "custody evidence",
+        "proof_requirement": "proof requirement",
+    }
+    result: list[str] = []
+    for row in value:
+        if not isinstance(row, Mapping):
+            raise ValueError("verified Product Intent record requirement is malformed")
+        entity_label = str(row.get("entity_label") or "").strip()
+        kind = str(row.get("kind") or "").strip()
+        statement = str(row.get("statement") or "").strip()
+        if not entity_label or kind not in labels or not statement:
+            raise ValueError("verified Product Intent record requirement is incomplete")
+        result.append(f"{entity_label} — {labels[kind]}: {statement}")
     return result
 
 

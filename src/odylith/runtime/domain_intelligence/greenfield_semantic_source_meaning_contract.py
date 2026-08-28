@@ -9,19 +9,23 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations im
     semantic_evidence_block_schema,
     semantic_source_ref_schema,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract import (
+    RECORD_REQUIREMENT_KINDS,
+)
 
 
 SEMANTIC_SOURCE_MEANING_GRAPH_VERSION = (
-    "odylith.greenfield.semantic-source-meaning-graph.v16"
+    "odylith.greenfield.semantic-source-meaning-graph.v17"
 )
 SEMANTIC_SOURCE_MEANING_CONTRACT_VERSION = (
-    "odylith.greenfield.semantic-source-meaning-contract.v23"
+    "odylith.greenfield.semantic-source-meaning-contract.v24"
 )
 
 SOURCE_MEANING_COLLECTIONS = (
     "audiences",
     "actors",
     "entities",
+    "record_requirements",
     "workflow",
     "dependencies",
     "product_boundaries",
@@ -31,6 +35,7 @@ SOURCE_MEANING_COLLECTIONS = (
 )
 SOURCE_MEANING_MODALITIES = ("permitted", "prohibited", "required", "limited")
 SOURCE_MEANING_AUDIENCE_KINDS = ("explicit_human", "explicit_nonhuman")
+SOURCE_MEANING_RECORD_REQUIREMENT_KINDS = RECORD_REQUIREMENT_KINDS
 SOURCE_MEANING_ENTITY_EFFECT_KINDS = (
     "input",
     "target",
@@ -262,6 +267,24 @@ def semantic_source_meaning_graph_schema(
                 ),
                 maximum=64,
             ),
+            "record_requirements": _array(
+                _object(
+                    {
+                        "kind": {
+                            "type": "string",
+                            "enum": list(SOURCE_MEANING_RECORD_REQUIREMENT_KINDS),
+                        },
+                        "statement": _text_schema(500),
+                        "entity_index": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 63,
+                        },
+                        "source_refs": refs,
+                    }
+                ),
+                maximum=64,
+            ),
             "workflow": _array(
                 _object(
                     {
@@ -397,6 +420,17 @@ def semantic_source_meaning_contract(
                 "only the state value, without a verb or sentence punctuation. A global prohibition "
                 "is policy, not a stable effect. Transition endpoints are not stable effects."
             ),
+            "record_requirements": (
+                "Record requirements preserve one source-declared field, custody/evidence, or "
+                "proof obligation for one canonical product entity. Use record_field for an "
+                "attribute the product must retain, custody_evidence for evidence or custody "
+                "that must accompany the entity, and proof_requirement for an explicit proof "
+                "obligation. Preserve the complete source statement and attach it to the exact "
+                "entity index it qualifies. A record requirement is not a product entity, "
+                "workflow action, dependency, policy boundary, or non-material gap. Do not "
+                "promote it to entities merely to satisfy workflow binding, and do not infer or "
+                "merge requirements from wording."
+            ),
             "success": (
                 "A produced output is a source-declared observable artifact or human-visible "
                 "confirmation. Creating an intermediate object does not make it an observable "
@@ -492,6 +526,7 @@ __all__ = [
     "SOURCE_MEANING_COLLECTIONS",
     "SOURCE_MEANING_ENTITY_EFFECT_KINDS",
     "SOURCE_MEANING_MODALITIES",
+    "SOURCE_MEANING_RECORD_REQUIREMENT_KINDS",
     "semantic_source_meaning_contract",
     "semantic_source_meaning_graph_schema",
     "semantic_source_meaning_provider_schema",

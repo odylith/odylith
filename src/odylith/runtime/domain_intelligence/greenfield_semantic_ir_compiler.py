@@ -134,6 +134,34 @@ def _source_fact_graph(
                 row["source_refs"],
             )
         )
+    for index, row in enumerate(graph["record_requirements"]):
+        entity_index = int(row["entity_index"])
+        entity_id = f"entity.{entity_index}"
+        requirement_id = f"record-requirement.{index}"
+        statement = str(row["statement"])
+        facts.append(
+            _fact(
+                requirement_id,
+                "record_requirement",
+                statement,
+                statement,
+                index,
+                "none",
+                "source_fact",
+                [
+                    ("requirement_kind", str(row["kind"])),
+                    ("entity_id", entity_id),
+                ],
+                row["source_refs"],
+            )
+        )
+        _append_relation(
+            relations,
+            "required_for",
+            requirement_id,
+            entity_id,
+            row["source_refs"],
+        )
     state_order = 0
     output_order = 0
     for step_index, row in enumerate(workflow):

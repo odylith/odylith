@@ -44,6 +44,7 @@ PROMPT = (
     "A shift coordinator claims one ready card. "
     "The card moves from ready to claimed. "
     "Show a claim receipt. "
+    "Record the card claim time in the claim receipt. "
     "Read the local duty roster without remote access. "
     "Never reassign a card automatically."
 )
@@ -82,6 +83,7 @@ def _graph() -> dict[str, object]:
                 "source_refs": [_ref("Show a claim receipt.")],
             },
         ],
+        "record_requirements": [],
         "workflow": [
             {
                 "action": "claim one ready card",
@@ -724,9 +726,10 @@ def test_contract_is_compact_field_semantics_not_a_rule_stack() -> None:
     contract = semantic_source_meaning_contract()
     assert "laws" not in contract
     assert set(contract["semantic_ownership"]) == {
-            "audience_and_actors",
-            "workflow_and_effects",
-            "success",
+        "audience_and_actors",
+        "workflow_and_effects",
+        "record_requirements",
+        "success",
         "boundaries",
         "presentation_and_provenance",
         "clarification",
@@ -1374,6 +1377,87 @@ def test_product_boundary_is_distinct_from_policy_and_absence_stays_empty() -> N
         )
     )
     assert absent["product_boundaries"] == []
+
+
+def test_record_requirements_preserve_typed_entity_custody_without_entity_promotion() -> None:
+    graph = _graph()
+    graph["record_requirements"] = [
+        {
+            "kind": "record_field",
+            "statement": "Record the card claim time in the claim receipt.",
+            "entity_index": 1,
+            "source_refs": [
+                _ref("Record the card claim time in the claim receipt.")
+            ],
+        }
+    ]
+
+    intent = require_semantic_intent_ir(
+        compile_semantic_source_meaning(
+            require_semantic_source_meaning_graph(graph, evidence_sources=SOURCES),
+            semantic_intent_ir_version=SEMANTIC_INTENT_IR_VERSION,
+        ),
+        evidence_sources=SOURCES,
+    )
+
+    requirement = next(
+        row for row in intent["facts"] if row["kind"] == "record_requirement"
+    )
+    assert requirement["fact_id"] == "record-requirement.0"
+    assert {row["name"]: row["value"] for row in requirement["attributes"]} == {
+        "requirement_kind": "record_field",
+        "entity_id": "entity.1",
+    }
+    assert [
+        (row["subject_id"], row["object_id"])
+        for row in intent["relations"]
+        if row["kind"] == "required_for"
+    ] == [("record-requirement.0", "entity.1")]
+    assert semantic_intent_product_facts(intent)["record_requirements"] == [
+        {
+            "record_requirement_id": "record-requirement.0",
+            "kind": "record_field",
+            "statement": "Record the card claim time in the claim receipt.",
+            "entity_id": "entity.1",
+            "entity_label": "Claim receipt",
+        }
+    ]
+
+    detached = deepcopy(intent)
+    detached["relations"] = [
+        row for row in detached["relations"] if row["kind"] != "required_for"
+    ]
+    with pytest.raises(ValueError, match="record requirement lacks one canonical entity attachment"):
+        require_semantic_intent_ir(detached, evidence_sources=SOURCES)
+
+    graph["record_requirements"][0]["entity_index"] = 9
+    with pytest.raises(ValueError, match="record requirement entity"):
+        require_semantic_source_meaning_graph(graph, evidence_sources=SOURCES)
+
+
+def test_record_requirement_cannot_substitute_for_entity_workflow_binding() -> None:
+    graph = _graph()
+    graph["workflow"][0]["entity_effects"] = [
+        (
+            {**effect, "entity_index": 0}
+            if effect["entity_index"] == 1
+            else effect
+        )
+        for effect in graph["workflow"][0]["entity_effects"]
+    ]
+    graph["record_requirements"] = [
+        {
+            "kind": "proof_requirement",
+            "statement": "Record the card claim time in the claim receipt.",
+            "entity_index": 1,
+            "source_refs": [
+                _ref("Record the card claim time in the claim receipt.")
+            ],
+        }
+    ]
+
+    with pytest.raises(ValueError, match="unbound entity"):
+        require_semantic_source_meaning_graph(graph, evidence_sources=SOURCES)
 
 
 def test_provider_schema_hard_cuts_singular_workflow_object_fields() -> None:

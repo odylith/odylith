@@ -27,6 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_meaning_cont
     SOURCE_MEANING_COLLECTIONS,
     SOURCE_MEANING_ENTITY_EFFECT_KINDS,
     SOURCE_MEANING_MODALITIES,
+    SOURCE_MEANING_RECORD_REQUIREMENT_KINDS,
     semantic_source_meaning_contract,
     semantic_source_meaning_graph_schema,
     semantic_source_meaning_provider_schema,
@@ -34,7 +35,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_meaning_cont
 
 
 SEMANTIC_SOURCE_MEANING_AUTHOR_RUN_VERSION = (
-    "odylith.greenfield.semantic-source-meaning-author-run.v21"
+    "odylith.greenfield.semantic-source-meaning-author-run.v22"
 )
 
 
@@ -170,6 +171,25 @@ def require_semantic_source_meaning_graph(
         _exact_keys(row, {"label", "source_refs"})
         _text(row.get("label"), 300)
         _refs(row.get("source_refs"), evidence_sources)
+
+    record_requirements = _rows(
+        graph.get("record_requirements"), 64, "record requirements"
+    )
+    record_requirement_keys: set[tuple[str, int, str]] = set()
+    for row in record_requirements:
+        _exact_keys(row, {"kind", "statement", "entity_index", "source_refs"})
+        kind = _enum(
+            row.get("kind"), set(SOURCE_MEANING_RECORD_REQUIREMENT_KINDS)
+        )
+        statement = _text(row.get("statement"), 500)
+        entity_index = _required_index(
+            row.get("entity_index"), len(entities), "record requirement entity"
+        )
+        _refs(row.get("source_refs"), evidence_sources)
+        key = (kind, entity_index, statement)
+        if key in record_requirement_keys:
+            raise ValueError("Semantic source meaning repeats one record requirement")
+        record_requirement_keys.add(key)
 
     workflow = _rows(graph.get("workflow"), 64, "workflow")
     if not workflow:

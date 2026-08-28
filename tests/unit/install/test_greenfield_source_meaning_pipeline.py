@@ -125,6 +125,52 @@ def test_standard_pipeline_returns_one_question_without_transaction(
     assert receipt["packet"]["source_meaning_graph"]["workflow"]
 
 
+def test_standard_pipeline_seals_a_deadline_failure_receipt(
+    monkeypatch, tmp_path: Path
+) -> None:
+    profile = standard_author_profile("codex", 0)
+    failed_author = {
+        "stage": "source_meaning_author",
+        "case_id": "source-meaning",
+        "host_profile": "codex",
+        "model": profile["model"],
+        "reasoning_effort": profile["reasoning_effort"],
+        "status": "failed",
+        "failure_kind": "deadline",
+        "failure": "host exceeded its 54-second stage budget",
+        "graph": None,
+        "graph_sha256": "",
+        "author_run": None,
+        "usage": {},
+        "wall_ms": 54_000,
+        "model_call_count": 1,
+    }
+    monkeypatch.setattr(
+        pipeline,
+        "run_authoring_wave",
+        lambda **_: (
+            failed_author,
+            (
+                "deadline",
+                "source_meaning_author",
+                "host exceeded its 54-second stage budget",
+            ),
+        ),
+    )
+    receipt_path = tmp_path / "receipt.json"
+
+    receipt = pipeline.run_standard_pipeline(
+        corpus_path=_corpus(tmp_path / "corpus.json"),
+        case_id="source-meaning",
+        output_path=receipt_path,
+    )
+
+    assert receipt["status"] == "failed"
+    assert receipt["outcome"] == "standard_deadline_exceeded"
+    assert receipt["failed_stage"] == "source_meaning_author"
+    assert json.loads(receipt_path.read_text(encoding="utf-8")) == receipt
+
+
 def test_budget_contract_is_strict_54_plus_5() -> None:
     contract = pipeline.standard_budget_contract()
     assert contract["source_meaning_author_max_seconds"] == 54
