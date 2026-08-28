@@ -232,10 +232,13 @@ def test_source_meaning_compiles_without_invented_causal_relations() -> None:
 
 def test_source_contract_distinguishes_operational_resources_from_product_entities() -> None:
     boundaries = semantic_source_meaning_contract()["semantic_ownership"]["boundaries"]
+    workflow = semantic_source_meaning_contract()["semantic_ownership"]["workflow_and_effects"]
 
     assert "may be local or remote" in boundaries
     assert "never a reason to omit an otherwise used resource" in boundaries
     assert "not an entity input" in boundaries
+    assert "close the root entities table against those effect slots" in workflow
+    assert "Classify by its typed relationship, not its wording" in workflow
 
 
 def test_presentation_remains_outside_the_accepted_semantic_fact_graph() -> None:

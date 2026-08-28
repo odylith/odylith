@@ -18,7 +18,7 @@ SEMANTIC_SOURCE_MEANING_GRAPH_VERSION = (
     "odylith.greenfield.semantic-source-meaning-graph.v17"
 )
 SEMANTIC_SOURCE_MEANING_CONTRACT_VERSION = (
-    "odylith.greenfield.semantic-source-meaning-contract.v24"
+    "odylith.greenfield.semantic-source-meaning-contract.v25"
 )
 
 SOURCE_MEANING_COLLECTIONS = (
@@ -404,7 +404,12 @@ def semantic_source_meaning_contract(
                 "each exact relationship between that action and the entity: input, target, created, "
                 "changed, stable, or visible_result. Put every relationship for that entity in its "
                 "one slot; never repeat an entity slot. Runtime binds those fields directly; it never "
-                "reparses action text. The product container named only "
+                "reparses action text. Before returning, close the root entities table against those "
+                "effect slots: every root entity has at least one source-supported effect slot, and a "
+                "mentioned but unattached context never becomes an entity. Classify by its typed "
+                "relationship, not its wording: preserve a non-effect fact only in its distinct "
+                "dependency, boundary, record-requirement, or gap role; otherwise omit it rather "
+                "than inventing a workflow binding. The product container named only "
                 "by the operator's build request belongs to presentation, not entities; include it "
                 "as an entity only when the source separately uses it in an in-product action, "
                 "state, or result. created records source-declared "
