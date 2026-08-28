@@ -18,7 +18,7 @@ SEMANTIC_SOURCE_MEANING_GRAPH_VERSION = (
     "odylith.greenfield.semantic-source-meaning-graph.v17"
 )
 SEMANTIC_SOURCE_MEANING_CONTRACT_VERSION = (
-    "odylith.greenfield.semantic-source-meaning-contract.v25"
+    "odylith.greenfield.semantic-source-meaning-contract.v26"
 )
 
 SOURCE_MEANING_COLLECTIONS = (
@@ -480,8 +480,12 @@ def semantic_source_meaning_contract(
             "clarification": (
                 "Ask exactly one focused question only for a material conflict or missing owner, "
                 "first path, observable result, boundary, dependency, proof, or safety fact. Cite the "
-                "exact source bytes that establish the uncertainty. For an ownership conflict, ask directly which role owns the action "
-                "and leave that owner unset; never ask whether role labels are the same."
+                "exact source bytes that establish the uncertainty. A choice that only completes a "
+                "source-grounded typed attachment is internal graph construction, not a material "
+                "question; resolve it from the complete source. A question is material only when "
+                "different answers would change consumer behavior, safety, or the proof boundary. "
+                "For an ownership conflict, ask directly which role owns the action and leave that "
+                "owner unset; never ask whether role labels are the same."
             ),
         },
         "hard_laws": [

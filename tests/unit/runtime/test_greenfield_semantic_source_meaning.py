@@ -738,6 +738,9 @@ def test_contract_is_compact_field_semantics_not_a_rule_stack() -> None:
         "clarification",
     }
     assert len(contract["hard_laws"]) == 3
+    clarification = contract["semantic_ownership"]["clarification"]
+    assert "internal graph construction, not a material question" in clarification
+    assert "consumer behavior, safety, or the proof boundary" in clarification
 
 
 def test_actorless_complete_source_meaning_requires_explicit_audience() -> None:
