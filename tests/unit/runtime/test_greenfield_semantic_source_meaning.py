@@ -239,6 +239,7 @@ def test_source_contract_distinguishes_operational_resources_from_product_entiti
     assert "not an entity input" in boundaries
     assert "close the root entities table against those effect slots" in workflow
     assert "Classify by its typed relationship, not its wording" in workflow
+    assert "Canonical entity identity is an internal graph coordinate" in workflow
 
 
 def test_presentation_remains_outside_the_accepted_semantic_fact_graph() -> None:
@@ -741,6 +742,7 @@ def test_contract_is_compact_field_semantics_not_a_rule_stack() -> None:
     clarification = contract["semantic_ownership"]["clarification"]
     assert "internal graph construction, not a material question" in clarification
     assert "consumer behavior, safety, or the proof boundary" in clarification
+    assert "internal canonical entity identity" in clarification
 
 
 def test_actorless_complete_source_meaning_requires_explicit_audience() -> None:

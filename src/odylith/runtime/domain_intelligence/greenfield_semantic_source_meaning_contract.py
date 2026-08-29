@@ -18,7 +18,7 @@ SEMANTIC_SOURCE_MEANING_GRAPH_VERSION = (
     "odylith.greenfield.semantic-source-meaning-graph.v17"
 )
 SEMANTIC_SOURCE_MEANING_CONTRACT_VERSION = (
-    "odylith.greenfield.semantic-source-meaning-contract.v26"
+    "odylith.greenfield.semantic-source-meaning-contract.v27"
 )
 
 SOURCE_MEANING_COLLECTIONS = (
@@ -409,7 +409,11 @@ def semantic_source_meaning_contract(
                 "mentioned but unattached context never becomes an entity. Classify by its typed "
                 "relationship, not its wording: preserve a non-effect fact only in its distinct "
                 "dependency, boundary, record-requirement, or gap role; otherwise omit it rather "
-                "than inventing a workflow binding. The product container named only "
+                "than inventing a workflow binding. Canonical entity identity is an internal graph "
+                "coordinate, not a consumer decision: when the source declares a subjectless "
+                "lifecycle or custody property for its central source-declared record, anchor that "
+                "fact to the source-declared record through a supported effect instead of asking "
+                "which entity owns it. The product container named only "
                 "by the operator's build request belongs to presentation, not entities; include it "
                 "as an entity only when the source separately uses it in an in-product action, "
                 "state, or result. created records source-declared "
@@ -484,6 +488,8 @@ def semantic_source_meaning_contract(
                 "source-grounded typed attachment is internal graph construction, not a material "
                 "question; resolve it from the complete source. A question is material only when "
                 "different answers would change consumer behavior, safety, or the proof boundary. "
+                "Never ask a consumer to choose an internal canonical entity identity for an "
+                "otherwise settled fact. "
                 "For an ownership conflict, ask directly which role owns the action and leave that "
                 "owner unset; never ask whether role labels are the same."
             ),
