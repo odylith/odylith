@@ -171,10 +171,14 @@ def test_standard_pipeline_seals_a_deadline_failure_receipt(
     assert json.loads(receipt_path.read_text(encoding="utf-8")) == receipt
 
 
-def test_budget_contract_is_strict_54_plus_5() -> None:
+def test_budget_contract_keeps_direct_finalize_and_rescue_handoff_below_60() -> None:
     contract = pipeline.standard_budget_contract()
-    assert contract["source_meaning_author_max_seconds"] == 54
+    assert contract["source_meaning_author_max_seconds"] == 58
     assert contract["packet_and_transaction_reserve_seconds"] == 5
+    assert contract["direct_finalize_authoring_seconds"] == 54
+    assert contract["rescue_handoff_reserve_seconds"] == 1
+    assert contract["direct_critical_path_seconds"] == 59
+    assert contract["rescue_handoff_critical_path_seconds"] == 59
     assert contract["critical_path_seconds"] == 59
     assert contract["deadline_seconds"] == 60
     assert contract["comparison"] == "strictly_less_than"

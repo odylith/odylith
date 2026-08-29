@@ -28,7 +28,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_meaning impo
 )
 
 
-AUTHOR_MAX_SECONDS = 54
+AUTHOR_MAX_SECONDS = 58
 AUTHOR_COUNT = 1
 
 

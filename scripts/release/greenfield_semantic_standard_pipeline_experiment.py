@@ -43,13 +43,22 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_workflow import (
 
 DETERMINISTIC_RESERVE_SECONDS = 5
 STANDARD_AUTHORING_SECONDS = AUTHOR_MAX_SECONDS
+DIRECT_FINALIZE_AUTHORING_SECONDS = 54
+RESCUE_HANDOFF_RESERVE_SECONDS = 1
 
 
 def standard_budget_contract() -> dict[str, Any]:
-    """Return the measured 54+5 allocation strictly below 60 seconds."""
+    """Reserve a <60-second direct path and a <60-second rescue handoff."""
 
-    critical_path = STANDARD_AUTHORING_SECONDS + DETERMINISTIC_RESERVE_SECONDS
-    if critical_path >= STANDARD_COMPLETION_DEADLINE_SECONDS:
+    direct_critical_path = (
+        DIRECT_FINALIZE_AUTHORING_SECONDS + DETERMINISTIC_RESERVE_SECONDS
+    )
+    rescue_handoff_critical_path = (
+        STANDARD_AUTHORING_SECONDS + RESCUE_HANDOFF_RESERVE_SECONDS
+    )
+    if max(direct_critical_path, rescue_handoff_critical_path) >= (
+        STANDARD_COMPLETION_DEADLINE_SECONDS
+    ):
         raise RuntimeError("standard pipeline allocation does not finish before 60 seconds")
     return {
         "tier": "standard",
@@ -60,7 +69,13 @@ def standard_budget_contract() -> dict[str, Any]:
         "successful_model_call_counts": {"commit": [1], "clarify": [1]},
         "source_authority": "one_unchanged_source_meaning_graph",
         "packet_and_transaction_reserve_seconds": DETERMINISTIC_RESERVE_SECONDS,
-        "critical_path_seconds": critical_path,
+        "direct_finalize_authoring_seconds": DIRECT_FINALIZE_AUTHORING_SECONDS,
+        "rescue_handoff_reserve_seconds": RESCUE_HANDOFF_RESERVE_SECONDS,
+        "direct_critical_path_seconds": direct_critical_path,
+        "rescue_handoff_critical_path_seconds": rescue_handoff_critical_path,
+        "critical_path_seconds": max(
+            direct_critical_path, rescue_handoff_critical_path
+        ),
         "retries": 0,
         "critics": 0,
         "selectors": 0,
