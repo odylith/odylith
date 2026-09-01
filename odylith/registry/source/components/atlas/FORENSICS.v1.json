@@ -59,7 +59,7 @@
         "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
-      "event_index": 1150,
+      "event_index": 1148,
       "explicit_components": [
         "atlas",
         "compass",
@@ -92,7 +92,7 @@
       "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
-      "event_index": 1149,
+      "event_index": 1147,
       "explicit_components": [
         "atlas",
         "compass",
@@ -129,7 +129,7 @@
         "tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py"
       ],
       "confidence": "high",
-      "event_index": 1148,
+      "event_index": 1146,
       "explicit_components": [
         "atlas",
         "compass",
@@ -165,7 +165,7 @@
         "tests/integration/runtime/test_greenfield_component_contract_preconfirm.py"
       ],
       "confidence": "high",
-      "event_index": 1147,
+      "event_index": 1145,
       "explicit_components": [
         "atlas",
         "compass",
@@ -202,7 +202,7 @@
         "tests/unit/runtime/test_greenfield_code_hygiene.py"
       ],
       "confidence": "high",
-      "event_index": 1146,
+      "event_index": 1144,
       "explicit_components": [
         "atlas",
         "compass",
@@ -238,7 +238,7 @@
         "tests/unit/runtime/test_greenfield_transaction_intent_authority.py"
       ],
       "confidence": "high",
-      "event_index": 1145,
+      "event_index": 1143,
       "explicit_components": [
         "atlas",
         "compass",
@@ -275,7 +275,7 @@
         "tests/unit/runtime/test_greenfield_prompt_workflow_custody.py"
       ],
       "confidence": "high",
-      "event_index": 1144,
+      "event_index": 1142,
       "explicit_components": [
         "atlas",
         "compass",
@@ -312,7 +312,7 @@
         "tests/fixtures/greenfield-release-corpus/retired-ba25-final-holdout-regressions.v1.json"
       ],
       "confidence": "high",
-      "event_index": 1143,
+      "event_index": 1141,
       "explicit_components": [
         "atlas",
         "compass",
@@ -351,7 +351,7 @@
         "src/odylith/runtime/domain_intelligence/greenfield_external_boundary_semantics.py"
       ],
       "confidence": "high",
-      "event_index": 1142,
+      "event_index": 1140,
       "explicit_components": [
         "atlas",
         "compass",
