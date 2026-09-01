@@ -59,7 +59,10 @@ This section captures synchronized requirement and contract signals derived from
   60/90/120 budgets while binding standard to Luna medium, rescue to Terra high,
   and deep to Sol high. It is not release evidence until the same public cases
   pass installed transaction, readback, browser, recovery, quality, and sealed
-  profile proof without retries or post-hoc tier promotion.
+  profile proof without retries or post-hoc tier promotion. The maintainer proof
+  controller must load this checked-out contract from the candidate source tree;
+  an older Odylith package installed in the host virtual environment is never
+  profile truth for a detached release candidate.
 
 - 2026-09-01: Sealed explicit coordinated-actor carry in authored-semantics v7. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   The model marks an omitted coordinated subject with occurrence zero; the

@@ -147,6 +147,7 @@ if [[ -n "${GREENFIELD_MATRIX_REQUIRED_STRESSORS:-}" ]]; then
 fi
 
 set +e
+PYTHONPATH="$odylith_repo_root/src${PYTHONPATH:+:$PYTHONPATH}" \
 "$odylith_python" scripts/release/greenfield_preconfirm_matrix.py \
   --dist-dir "$dist_dir" \
   --version "$requested_version" \

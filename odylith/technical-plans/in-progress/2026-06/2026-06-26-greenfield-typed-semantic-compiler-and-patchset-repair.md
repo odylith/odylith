@@ -4072,3 +4072,10 @@ above.
       the complete installed transaction, recovery, browser, quality, and sealed
       request-parity gates without retries or post-hoc tier promotion. The final
       holdout remains untouched.
+    - 2026-09-01 proof-attribution correction: the first v3 matrix attempt
+      stopped before install or provider execution because the controller loaded
+      the host venv's installed v2 profile contract. The release wrapper now
+      prepends the detached candidate's checked-out `src` root, with a regression
+      assertion that keeps the controller and candidate revision identical. No
+      consumer transaction or write occurred; rerun the same three public cases
+      from a rebuilt immutable candidate before judging the model bindings.

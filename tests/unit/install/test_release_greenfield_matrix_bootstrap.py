@@ -148,6 +148,7 @@ def test_greenfield_preconfirm_matrix_target_runs_installed_release_gate() -> No
     assert './bin/greenfield-preconfirm-matrix "$(VERSION)" "$(DIST)"' in makefile
     assert 'requested_version="${1:-${VERSION:-$(current_source_version)}}"' in text
     assert 'temp_parent="${TEMP_PARENT:-${TMPDIR:-/tmp}}"' in text
+    assert 'PYTHONPATH="$odylith_repo_root/src${PYTHONPATH:+:$PYTHONPATH}"' in text
     assert 'scripts/release/greenfield_preconfirm_matrix.py \\' in text
     assert 'extra_args=()' in text
     assert "require_current_component_forensics" in text
