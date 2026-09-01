@@ -52,6 +52,15 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-09-01: Opened model-profile contract v3 as a bounded availability candidate. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  A three-case exact-distribution run proved that sharing one Spark binding made
+  standard, rescue, and deep fail together when that model's credits were
+  exhausted. The candidate keeps one preselected provider call and the exact
+  60/90/120 budgets while binding standard to Luna medium, rescue to Terra high,
+  and deep to Sol high. It is not release evidence until the same public cases
+  pass installed transaction, readback, browser, recovery, quality, and sealed
+  profile proof without retries or post-hoc tier promotion.
+
 - 2026-09-01: Sealed explicit coordinated-actor carry in authored-semantics v7. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   The model marks an omitted coordinated subject with occurrence zero; the
   deterministic relation owner converts that decision to `actor_is_carried` and

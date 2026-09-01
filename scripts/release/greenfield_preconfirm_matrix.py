@@ -2410,7 +2410,7 @@ def _execute_matrix_campaign(
         "proof_scope": {
             "model_profiles": "real_installed_source_cited_authored_preconfirm_cases",
             "timing_tiers": "strict_standard_under_60_rescue_under_90_deep_under_120",
-            "lower_capability_model": "real_installed_gpt-5.3-codex-spark-medium_authored_preconfirm",
+            "lower_capability_model": "real_installed_gpt-5.6-luna-medium_authored_preconfirm",
             "unavailable_provider": (
                 "real_installed_fail_closed_no_write"
                 if unavailable_provider.get("status") == "passed"

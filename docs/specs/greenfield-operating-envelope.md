@@ -46,11 +46,11 @@ callback and visibility contract.
 
 Release evaluation covers three pinned successful profiles:
 
-- `greenfield-standard-gpt-5.3-codex-spark-medium-v2`: the default, `auto`, and
+- `greenfield-standard-gpt-5.6-luna-medium-v3`: the default, `auto`, and
   lower-capability path, with one 60-second end-to-end consumer budget.
-- `greenfield-rescue-gpt-5.3-codex-spark-high-v2`: the explicit high-reasoning
+- `greenfield-rescue-gpt-5.6-terra-high-v3`: the explicit high-reasoning
   rescue path, with one 90-second end-to-end consumer budget.
-- `greenfield-deep-gpt-5.3-codex-spark-high-v2`: the explicit high-reasoning deep
+- `greenfield-deep-gpt-5.6-sol-high-v3`: the explicit high-reasoning deep
   path, with one 120-second end-to-end consumer budget.
 
 The selected profile is fixed before the model request. Elapsed time or a failed

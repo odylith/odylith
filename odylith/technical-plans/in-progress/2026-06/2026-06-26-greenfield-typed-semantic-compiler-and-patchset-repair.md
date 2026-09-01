@@ -4060,3 +4060,15 @@ above.
       installed consumer, fresh unseen standard/rescue/deep success within the
       exact 60/90/120 budgets, independent public adjudication, explicit operator
       approval, and the one-shot protected holdout.
+    - 2026-09-01 model-profile availability reopen: exact distribution
+      `5694d9854` built cleanly, then three new public cases assigned across
+      standard, rescue, and deep all failed before typed validation because the
+      three supported-success profiles shared one exhausted Spark credit pool.
+      No transaction or governed write occurred. Schema-only availability proof
+      passed for Luna medium, Terra high, and Sol high in 3.58-4.95 seconds, so
+      model-profile contract v3 binds those models to standard, rescue, and deep
+      respectively without changing the single-call architecture or the exact
+      60/90/120 budgets. The candidate wins only if the same public cases pass
+      the complete installed transaction, recovery, browser, quality, and sealed
+      request-parity gates without retries or post-hoc tier promotion. The final
+      holdout remains untouched.

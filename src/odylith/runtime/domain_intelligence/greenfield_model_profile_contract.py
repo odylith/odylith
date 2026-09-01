@@ -11,11 +11,11 @@ from dataclasses import dataclass
 from types import MappingProxyType
 
 
-GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v2"
+GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v3"
 
-STANDARD_PROFILE_ID = "greenfield-standard-gpt-5.3-codex-spark-medium-v2"
-RESCUE_PROFILE_ID = "greenfield-rescue-gpt-5.3-codex-spark-high-v2"
-DEEP_PROFILE_ID = "greenfield-deep-gpt-5.3-codex-spark-high-v2"
+STANDARD_PROFILE_ID = "greenfield-standard-gpt-5.6-luna-medium-v3"
+RESCUE_PROFILE_ID = "greenfield-rescue-gpt-5.6-terra-high-v3"
+DEEP_PROFILE_ID = "greenfield-deep-gpt-5.6-sol-high-v3"
 UNAVAILABLE_PROVIDER_PROFILE_ID = "greenfield-unavailable-provider-no-write-v1"
 
 
@@ -40,7 +40,7 @@ _PROFILES = MappingProxyType(
             profile_id=STANDARD_PROFILE_ID,
             repair_tier="standard",
             provider="codex-cli",
-            model="gpt-5.3-codex-spark",
+            model="gpt-5.6-luna",
             reasoning_effort="medium",
             consumer_budget_seconds=60.0,
             model_timeout_seconds=45.0,
@@ -50,7 +50,7 @@ _PROFILES = MappingProxyType(
             profile_id=RESCUE_PROFILE_ID,
             repair_tier="rescue",
             provider="codex-cli",
-            model="gpt-5.3-codex-spark",
+            model="gpt-5.6-terra",
             reasoning_effort="high",
             consumer_budget_seconds=90.0,
             model_timeout_seconds=75.0,
@@ -59,7 +59,7 @@ _PROFILES = MappingProxyType(
             profile_id=DEEP_PROFILE_ID,
             repair_tier="deep",
             provider="codex-cli",
-            model="gpt-5.3-codex-spark",
+            model="gpt-5.6-sol",
             reasoning_effort="high",
             consumer_budget_seconds=120.0,
             model_timeout_seconds=105.0,
