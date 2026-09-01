@@ -1,240 +1,67 @@
-"""Quality checks for accepted-greenfield Project implementation prompts."""
+"""Structural quality checks for Greenfield implementation prompts."""
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import RenderedArtifact
 from odylith.runtime.common.value_coercion import normalize_string
-from odylith.runtime.domain_intelligence.greenfield_text import visible_words
+from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
+    PROJECT_HANDOFF_STEP_SEQUENCE,
+    project_handoff_step_contract_issues,
+)
 
 
 _PROJECT_PROMPT_REQUIRED_FIELDS = ("label", "when", "prompt", "result", "stop")
-_PROJECT_PROMPT_STALE_LABELS = frozenset(
-    {
-        "accept it",
-        "implement first coding slice",
-        "pause",
-        "reject it",
-        "revise it",
-        "revise project direction",
-        "start implementation plan",
-    }
-)
-_PROJECT_PROMPT_GENERIC_PHRASES = (
-    "change <what is wrong>",
-    "refresh this dashboard",
-    "open the first implementation plan",
-    "implement the first coding slice",
-)
 
 
 def project_implementation_prompt_issues(artifact: RenderedArtifact) -> list[str]:
-    """Return hard-gate issues for Project tab implementation handoff prompts."""
+    """Validate presentation presence and its typed action contract.
+
+    Product meaning and implementation obligations are never inferred from the
+    visible prompt. General copy-quality checks own grammar and legibility;
+    this gate owns only sequence identity and structural completeness.
+    """
 
     if artifact.surface != "Project implementation prompt":
         return []
-    fields = {key: normalize_string(value) for key, value in dict(artifact.fields).items()}
+    raw_fields = dict(artifact.fields)
+    fields = {
+        key: normalize_string(value)
+        for key, value in raw_fields.items()
+    }
     issues: list[str] = []
     missing = [key for key in _PROJECT_PROMPT_REQUIRED_FIELDS if not fields.get(key)]
     if missing:
         issues.append(f"{artifact.identity} is missing prompt fields: {', '.join(missing)}")
-    label = fields.get("label", "")
-    label_key = label.casefold().strip()
-    if label_key in _PROJECT_PROMPT_STALE_LABELS:
-        issues.append(f"{artifact.identity} uses stale generic handoff prompt label")
-    prompt = fields.get("prompt", "")
-    stop = fields.get("stop", "")
-    result = fields.get("result", "")
-    combined = " ".join(value for value in (label, prompt, stop, result, fields.get("when", "")) if value)
-    lowered = combined.casefold()
-    if len(visible_words(prompt)) < 24:
-        issues.append(f"{artifact.identity} has a shallow implementation prompt")
-    if "<" in combined and ">" in combined:
-        issues.append(f"{artifact.identity} contains unresolved placeholder copy")
-    for phrase in _PROJECT_PROMPT_GENERIC_PHRASES:
-        if phrase in lowered:
-            issues.append(f"{artifact.identity} uses generic handoff copy `{phrase}`")
-    if "accepted" not in lowered:
-        issues.append(f"{artifact.identity} does not anchor to accepted product direction")
-    if "stop" not in stop.casefold() and "do not" not in stop.casefold():
-        issues.append(f"{artifact.identity} stop condition is not explicit enough")
-    if _has_gerund_actor_drift(combined):
-        issues.append(f"{artifact.identity} has gerundized actor or product-subject drift")
-    issues.extend(_source_launch_prompt_scope_issues(artifact, fields))
-    return issues
-
-
-def _source_launch_prompt_scope_issues(artifact: RenderedArtifact, fields: Mapping[str, str]) -> list[str]:
-    step_id = _prompt_step_id(fields)
-    prompt = fields.get("prompt", "").casefold()
-    stop = fields.get("stop", "").casefold()
-    result = fields.get("result", "").casefold()
-    combined = " ".join((prompt, stop, result))
-    issues: list[str] = []
-    if step_id == "choose_language" and not _contains_all(combined, ("runtime", "test")):
-        issues.append(f"{artifact.identity} does not make language/runtime/test tradeoffs explicit")
-    if step_id == "create_plan":
-        if not _binds_first_release_work_item(combined):
-            issues.append(f"{artifact.identity} does not bind the plan to the accepted first-release work item")
-        if not _contains_all(combined, ("source boundary", "files", "proof")):
-            issues.append(f"{artifact.identity} does not require source boundary, files, and proof gates")
-        if "validation" not in combined and "test commands" not in combined:
-            issues.append(f"{artifact.identity} does not require validation commands")
-        if "excluded" not in combined:
-            issues.append(f"{artifact.identity} does not preserve excluded scope")
-    if step_id == "build_slice":
-        if not _binds_first_release_work_item(combined):
-            issues.append(f"{artifact.identity} does not bind implementation to the accepted first-release work item")
-        if not _contains_all(combined, ("target files", "build only", "input validation", "structured result")):
-            issues.append(f"{artifact.identity} does not bound the implementation slice tightly")
-        if "risk" not in combined or ("outside the slice" not in combined and "excluded" not in combined):
-            issues.append(f"{artifact.identity} does not carry risk and excluded-scope controls")
-    if step_id == "prove_behavior":
-        if not _binds_first_release_work_item(combined):
-            issues.append(f"{artifact.identity} does not bind proof to the accepted first-release work item")
-        if not _contains_all(combined, ("valid input", "missing", "validation")):
-            issues.append(f"{artifact.identity} does not require valid, missing-input, and validation proof")
-        if "fails" not in stop:
-            issues.append(f"{artifact.identity} does not stop on failed validation")
-    if step_id == "refresh_governance":
-        if not _binds_first_release_work_item(combined):
-            issues.append(f"{artifact.identity} does not bind refresh to the accepted first-release work item")
-        if "governed records" not in combined or "implemented behavior" not in combined:
-            issues.append(f"{artifact.identity} does not bind governance refresh to implemented behavior")
-        if "release readiness" not in stop:
-            issues.append(f"{artifact.identity} can imply release readiness without source proof")
-    return issues
-
-
-def _prompt_step_id(fields: Mapping[str, str]) -> str:
-    explicit = normalize_string(fields.get("step_id") or fields.get("id") or fields.get("kind")).casefold()
-    if explicit:
-        return explicit.replace("-", "_").replace(" ", "_")
-    label = normalize_string(fields.get("label")).casefold()
-    if "language" in label or "runtime" in label:
-        return "choose_language"
-    if "plan" in label:
-        return "create_plan"
-    if "build" in label or "slice" in label:
-        return "build_slice"
-    if "test" in label or "proof" in label:
-        return "prove_behavior"
-    if "refresh" in label or "governed" in label:
-        return "refresh_governance"
-    return _prompt_step_from_position(_prompt_position(fields))
-
-
-def _prompt_step_from_position(position: int) -> str:
-    return {
-        1: "choose_language",
-        2: "create_plan",
-        3: "build_slice",
-        4: "prove_behavior",
-        5: "refresh_governance",
-    }.get(position, "")
-
-
-def _binds_first_release_work_item(value: str) -> bool:
-    return any(
-        phrase in value
-        for phrase in (
-            "accepted first-release work item",
-            "governed target",
-            "governed workstream",
+    position = _position(fields.get("position", ""))
+    if position < 1 or position > len(PROJECT_HANDOFF_STEP_SEQUENCE):
+        issues.append(f"{artifact.identity} has an invalid typed handoff sequence position")
+        return issues
+    expected_step_id = PROJECT_HANDOFF_STEP_SEQUENCE[position - 1]
+    explicit_step_id = normalize_string(fields.get("step_id"))
+    if explicit_step_id != expected_step_id:
+        issues.append(f"{artifact.identity} has a step identity that does not match its sequence position")
+    issues.extend(
+        f"{artifact.identity} {issue}"
+        for issue in project_handoff_step_contract_issues(
+            artifact.contract
+            or (
+                raw_fields.get("contract")
+                if isinstance(raw_fields.get("contract"), Mapping)
+                else {}
+            ),
+            expected_step_id=expected_step_id,
         )
     )
+    return issues
 
 
-def _prompt_position(fields: Mapping[str, str]) -> int:
-    raw = fields.get("position", "")
+def _position(value: str) -> int:
     try:
-        return int(raw)
+        return int(value)
     except ValueError:
         return 0
-
-
-def _contains_all(value: str, terms: Sequence[str]) -> bool:
-    return all(term in value for term in terms)
-
-
-_ACTOR_OR_PRODUCT_SUBJECT_MARKERS = frozenset(
-    {
-        "analyst",
-        "coordinator",
-        "desk",
-        "lead",
-        "manager",
-        "operator",
-        "owner",
-        "participant",
-        "reviewer",
-        "service",
-        "system",
-        "team",
-        "user",
-        "workspace",
-    }
-)
-
-
-def _has_gerund_actor_drift(value: str) -> bool:
-    segments = _proof_action_segments(value)
-    return any(_segment_has_gerund_actor_drift(segment) for segment in segments)
-
-
-def _proof_action_segments(value: str) -> tuple[str, ...]:
-    text = normalize_string(value)
-    lowered = text.casefold()
-    segments: list[str] = []
-    for marker in ("proof gates for", "evidence covering", "covering"):
-        start = lowered.find(marker)
-        if start >= 0:
-            segments.append(_bounded_proof_action_segment(text[start + len(marker) :]))
-    return tuple(segments)
-
-
-def _bounded_proof_action_segment(value: str) -> str:
-    text = normalize_string(value)
-    lowered = text.casefold()
-    end = len(text)
-    for marker in (
-        ", and excluded scope:",
-        ". governed target:",
-        ". coding-readiness",
-        ". validation commands",
-        ".",
-    ):
-        index = lowered.find(marker)
-        if index >= 0:
-            end = min(end, index)
-    return text[:end]
-
-
-def _segment_has_gerund_actor_drift(value: str) -> bool:
-    raw_words = [word.strip("'") for word in visible_words(value)]
-    words = [word.casefold() for word in raw_words]
-    for index, word in enumerate(words):
-        raw_word = raw_words[index]
-        if len(word) < 7 or not word.endswith("ing"):
-            continue
-        if raw_word[:1] and not raw_word[:1].islower():
-            continue
-        window = words[index + 1 : index + 6]
-        for marker_offset, token in enumerate(window):
-            if token not in _ACTOR_OR_PRODUCT_SUBJECT_MARKERS:
-                continue
-            tail_index = index + marker_offset + 2
-            if tail_index < len(words) and _looks_like_finite_prompt_verb(words[tail_index]):
-                return True
-    return False
-
-
-def _looks_like_finite_prompt_verb(value: str) -> bool:
-    word = value.casefold().strip("'")
-    if word in {"has", "is", "needs", "owns", "reads", "sees", "uses"}:
-        return True
-    return len(word) > 3 and word.endswith(("ed", "es", "s"))
 
 
 __all__ = ["project_implementation_prompt_issues"]

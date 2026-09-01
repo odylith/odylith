@@ -8,6 +8,17 @@ import json
 from pathlib import Path
 import sys
 
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    combined_prompt_evidence_source,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    supported_greenfield_model_profile_ids,
+)
+from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
+    SUPPORTED_COMPLEXITY_BANDS,
+    SUPPORTED_PUBLIC_INPUT_FORMATS,
+)
+
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS_ROOT = REPO_ROOT / "scripts" / "release"
@@ -99,30 +110,57 @@ def write_semantic_release_fixture(*, repo_root: Path, temp_root: Path) -> tuple
         ),
         encoding="utf-8",
     )
-    prompts = (
-        "Omega Operator records one proof token.",
-        "Sigma Operator accepts one permit decision.",
-        "Delta Operator publishes one readiness result.",
+    cases = (
+        {
+            "prompt": "Omega Operator records one proof token.",
+            "edit_evidence": "",
+            "complexity": {},
+        },
+        {
+            "prompt": "Sigma Operator accepts one permit decision.",
+            "edit_evidence": "Keep the accepted decision visible for review.",
+            "complexity": {"actors": 5},
+        },
+        {
+            "prompt": "Delta Operator publishes one readiness result.",
+            "edit_evidence": "",
+            "complexity": {
+                "actors": 17,
+                "internal_systems": 17,
+                "ambiguities": 9,
+                "safety_boundaries": 9,
+            },
+        },
     )
     holdout_path = temp_root / "holdout.json"
     holdout_path.write_text(
         json.dumps(
             {
-                "version": "odylith.greenfield.final-holdout.v1",
+                "version": "odylith.greenfield.final-holdout.v2",
                 "claim_class": "blinded-independent-synthetic-holdout",
                 "cases": [
                     {
                         "case_id": f"holdout-{index}",
                         "name": f"holdout {index}",
-                        "prompt": prompt,
-                        "required_terms": [prompt.split()[0]],
-                        "leakage_terms": [" ".join(prompt.rstrip(".").split()[-2:])],
+                        "prompt": row["prompt"],
+                        "required_terms": [row["prompt"].split()[0]],
+                        "leakage_terms": [" ".join(row["prompt"].rstrip(".").split()[-2:])],
+                        **(
+                            {"confirmed_intent_markdown": row["edit_evidence"]}
+                            if row["edit_evidence"]
+                            else {}
+                        ),
                     }
-                    for index, prompt in enumerate(prompts, start=1)
+                    for index, row in enumerate(cases, start=1)
                 ],
                 "annotations": [
-                    _semantic_annotation(f"holdout-{index}", prompt)
-                    for index, prompt in enumerate(prompts, start=1)
+                    _semantic_annotation(
+                        f"holdout-{index}",
+                        row["prompt"],
+                        edit_evidence=row["edit_evidence"],
+                        complexity_overrides=row["complexity"],
+                    )
+                    for index, row in enumerate(cases, start=1)
                 ],
             }
         ),
@@ -132,7 +170,7 @@ def write_semantic_release_fixture(*, repo_root: Path, temp_root: Path) -> tuple
     manifest_path.write_text(
         json.dumps(
             {
-                "version": "odylith.greenfield.evaluation-splits.v1",
+                "version": "odylith.greenfield.evaluation-splits.v2",
                 "tracked_corpus": {
                     "path": "tests/fixtures/tracked.json",
                     "sha256": hashlib.sha256(tracked_path.read_bytes()).hexdigest(),
@@ -155,17 +193,22 @@ def write_semantic_release_fixture(*, repo_root: Path, temp_root: Path) -> tuple
                     "claim_class": "blinded-independent-synthetic-holdout",
                 },
                 "profiles": {
-                    "models": [
-                        "provider-free-standard-v1",
-                        "bounded-reasoning-standard-v1",
-                        "lower-capability-safe-v1",
-                    ],
+                    "complexity_bands": list(SUPPORTED_COMPLEXITY_BANDS),
+                    "evidence_formats": list(SUPPORTED_PUBLIC_INPUT_FORMATS),
+                    "models": list(supported_greenfield_model_profile_ids()),
                     "model_assignment": {
                         "version": "case-id-balanced-sha256-v1",
                         "seed": "f1e5a66a5cce578b0bd9f56d96f08887358632627231769667c432933b9dfe6f",
                     },
                 },
-                "frozen_floors": {},
+                "frozen_floors": {
+                    "version": "odylith.greenfield.structural-floors.v1",
+                    "atomic_semantic_fidelity": 1.0,
+                    "clarification_identity": 1.0,
+                    "unnecessary_question_rate_ceiling": 0.0,
+                    "overall_case_success": 1.0,
+                    "worst_slice_success": 1.0,
+                },
             }
         ),
         encoding="utf-8",
@@ -173,45 +216,66 @@ def write_semantic_release_fixture(*, repo_root: Path, temp_root: Path) -> tuple
     return holdout_path, manifest_path
 
 
-def _semantic_annotation(case_id: str, prompt: str) -> dict[str, object]:
+def _semantic_annotation(
+    case_id: str,
+    prompt: str,
+    *,
+    edit_evidence: str = "",
+    complexity_overrides: dict[str, int] | None = None,
+) -> dict[str, object]:
     actor = "Operator"
-    actor_start = prompt.encode("utf-8").index(actor.encode("utf-8"))
+    evidence = combined_prompt_evidence_source(prompt=prompt, edit_evidence=edit_evidence)
+    actor_bytes = actor.encode("utf-8")
+    actor_start = evidence.encode("utf-8").index(actor_bytes)
     return {
         "case_id": case_id,
+        "split": "final_holdout",
         "prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
         "expected_outcome": "commit",
-        "expected_question_fields": [],
-        "actors": [
+        "expected_clarification": None,
+        "atoms": [
             {
                 "id": "actor-1",
-                "value": actor,
-                "source_quote": actor,
-                "source_start": actor_start,
-                "source_end": actor_start + len(actor.encode("utf-8")),
+                "category": "actors",
+                "evaluation_role": "scored",
                 "materiality": "material",
                 "expected_custody": "accepted_fact",
+                "expected_polarity": "affirmed",
+                "source": {
+                    "source_id": "operator_evidence",
+                    "start_byte": actor_start,
+                    "end_byte": actor_start + len(actor_bytes),
+                    "quote_sha256": hashlib.sha256(actor_bytes).hexdigest(),
+                },
+                "projection_links": [
+                    {
+                        "field": "human_actors",
+                        "path": "/human_actors/0",
+                        "value_sha256": hashlib.sha256(actor_bytes).hexdigest(),
+                        "projection_start_byte": 0,
+                        "projection_end_byte": len(actor_bytes),
+                        "relation_order": 0,
+                        "relation_role": "",
+                    }
+                ],
             }
         ],
-        "actions": [],
-        "states": [],
-        "outputs": [],
-        "constraints": [],
-        "dependencies": [],
-        "assumptions": [],
-        "ambiguities": [],
-        "non_goals": [],
-        "material_questions": [],
-        "critical_constraints": [],
-        "explicit_systems": [],
         "complexity": {
-            "evidence_bytes": len(prompt.encode("utf-8")),
-            "documents": 1,
+            "evidence_bytes": len(evidence.encode("utf-8")),
+            "documents": 2 if edit_evidence else 1,
             "actors": 1,
             "state_objects": 1,
             "paths": 1,
             "external_systems": 0,
+            "internal_systems": 0,
             "contradictions": 0,
             "ambiguities": 0,
             "safety_boundaries": 0,
+            "success_metrics": 0,
+            "evidence_requirements": 0,
+            "component_responsibilities": 0,
+            "assumptions": 0,
+            "non_goals": 0,
+            **dict(complexity_overrides or {}),
         },
     }

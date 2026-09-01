@@ -15,8 +15,7 @@ from typing import Any
 from odylith.runtime.common.value_coercion import dedupe_by_key
 from odylith.runtime.domain_intelligence import artifact_tribunal_actors
 from odylith.runtime.domain_intelligence.artifact_graph import DomainIntelligenceGraph
-from odylith.runtime.domain_intelligence.artifact_graph import domain_graph_from_workstream
-from odylith.runtime.domain_intelligence.artifact_graph import graph_layer as _layer
+from odylith.runtime.domain_intelligence.artifact_graph import canonical_graph_from_workstream
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import normalize_connector_sequence
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -40,9 +39,9 @@ def build_artifact_enrichment(
     row: Mapping[str, Any],
     proposal: Mapping[str, Any] | None = None,
 ) -> ArtifactEnrichment:
-    """Project one workstream's domain graph into artifact-native payloads."""
+    """Project one typed workstream into artifact-native payloads."""
 
-    graph = domain_graph_from_workstream(row.get("domain_intelligence"), row=row, proposal=proposal or {})
+    graph = canonical_graph_from_workstream(row=row, proposal=proposal or {})
     return ArtifactEnrichment(
         radar_sections=radar_enrichment_sections(row=row, graph=graph),
         registry_contract=registry_projection(graph),
@@ -70,7 +69,7 @@ def radar_enrichment_sections(
         [
             *_first_path_enrichment_lines(focus=focus, first_slice=first_slice),
             _scoped_sentence("State object", focus, _first(graph.state_objects)),
-            _scoped_sentence("Boundary", focus, _first(_layer(row, "scope")) or _first(graph.maturity_and_origin)),
+            _scoped_sentence("Boundary", focus, _first(graph.maturity_and_origin)),
         ]
     )
     if first_path:

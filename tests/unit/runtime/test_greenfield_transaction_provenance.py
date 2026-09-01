@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_create_transaction
 from odylith.runtime.domain_intelligence import greenfield_create_cli
 from odylith.runtime.domain_intelligence import greenfield_commit_transaction
+from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store
 from odylith.runtime.domain_intelligence.greenfield_commit_transaction import (
     _POSTCONFIRM_RUNTIME_SOURCE_FILES,
 )
@@ -37,46 +38,20 @@ from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import (
     PRECONFIRM_QUALITY_MANIFEST_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
-from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
+from odylith.runtime.surfaces import greenfield_host_confirmation
 from tests.unit.runtime.greenfield_proposal_fixtures import compiled_greenfield_package_fixture
-from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
+from tests.unit.runtime.greenfield_proposal_fixtures import canonical_model_authored_intent_fixture
+from tests.unit.runtime.greenfield_proposal_fixtures import _canonical_model_authored_greenfield_fixture
+from tests.unit.runtime.greenfield_proposal_fixtures import approved_authored_quality_manifest_fixture
 
 
 def _quality_manifest() -> dict[str, Any]:
-    return {
-        "version": PRECONFIRM_QUALITY_MANIFEST_VERSION,
-        "engine": PRECONFIRM_ENGINE_VERSION,
-        "status": "passed",
-        "validation_status": "passed",
-        "hard_blocker": False,
-        "issue_count": 0,
-        "write_transaction": {
-            "status": "not_started",
-            "rollback_guard": "enabled",
-            "prewrite_clean_before_commit": True,
-        },
-    }
+    return approved_authored_quality_manifest_fixture()
 
 
 def _transaction(repo_root: Path) -> Any:
-    intent = confirmed_intent_with_authority(
-        CONFIRMED_INTENT_TEXT,
-        prompt="Draft a greenfield proposal for a municipal permit review workspace",
-        repo_root=repo_root,
-        write_files=True,
-    )
-    authority = dict(intent[PRODUCT_INTENT_AUTHORITY_KEY])
-    proposal = {
-        "intent": {
-            key: value
-            for key, value in intent.items()
-            if key != PRODUCT_INTENT_AUTHORITY_KEY
-        },
-        PRODUCT_INTENT_AUTHORITY_KEY: authority,
-        "backlog": [{"title": "Prove permit review path"}],
-        "components": [],
-        "diagrams": [],
-    }
+    proposal = _canonical_model_authored_greenfield_fixture(repo_root)
+    authority = dict(proposal[PRODUCT_INTENT_AUTHORITY_KEY])
     package = compiled_greenfield_package_fixture(
         proposal=proposal,
         repo_root=repo_root,
@@ -404,6 +379,101 @@ def test_commit_treats_product_quality_and_authority_as_opaque_after_hash_confir
     assert result["repository_write_set"]["status"] == "passed"
 
 
+@pytest.mark.parametrize("host", ("codex", "claude"))
+def test_host_and_cli_accept_the_same_hash_with_opaque_product_evidence(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    host: str,
+) -> None:
+    transaction = _transaction(tmp_path)
+    transaction_path = greenfield_pending_transaction_store.stage_pending_transaction(
+        repo_root=tmp_path,
+        transaction=transaction,
+    )
+    payload = json.loads(transaction_path.read_text(encoding="utf-8"))
+    payload["quality_manifest"]["status"] = "failed"
+    payload["intent_authority"]["authority_snapshot_sha256"] = "opaque-preconfirm-evidence"
+    payload["proposal"][PRODUCT_INTENT_AUTHORITY_KEY]["authority_snapshot_sha256"] = (
+        "opaque-preconfirm-evidence"
+    )
+    rewritten_hash = _rewrite_sealed_transaction(transaction_path, payload)
+    rewritten_directory = greenfield_pending_transaction_store.pending_transaction_directory(
+        tmp_path,
+        rewritten_hash,
+    )
+    transaction_path.parent.rename(rewritten_directory)
+    transaction_path = rewritten_directory / transaction_path.name
+
+    sealed = load_sealed_product_create_commit(transaction_path, repo_root=tmp_path)
+    assert sealed.transaction_hash == rewritten_hash
+    monkeypatch.setattr(
+        greenfield_host_confirmation.greenfield_post_confirm_handoff,
+        "post_confirm_navigation",
+        lambda *_args, **_kwargs: {
+            "dashboard_path": "/tmp/odylith/index.html",
+            "project_url": "file:///tmp/odylith/index.html?tab=project",
+        },
+    )
+    monkeypatch.setattr(
+        greenfield_host_confirmation.greenfield_post_confirm_handoff,
+        "open_committed_dashboard",
+        lambda _navigation: {"status": "unavailable", "reason": "test", "url": ""},
+    )
+    monkeypatch.setattr(
+        greenfield_host_confirmation.greenfield_post_confirm_handoff,
+        "completion_markdown",
+        lambda **_kwargs: "published",
+    )
+
+    source_root = Path(__file__).resolve().parents[3] / "src" / "odylith"
+    admitted_runtime = {
+        (source_root / relative_path).resolve()
+        for relative_path in _POSTCONFIRM_RUNTIME_SOURCE_FILES
+    }
+    executed: set[Path] = set()
+
+    def trace(frame: Any, event: str, _argument: Any) -> Any:
+        if event == "call":
+            source_path = Path(frame.f_code.co_filename).resolve()
+            if source_path.is_relative_to(source_root):
+                executed.add(source_path)
+        return trace
+
+    previous_trace = sys.gettrace()
+    sys.settrace(trace)
+    try:
+        decision = greenfield_host_confirmation.maybe_handle_greenfield_decision(
+            repo_root=tmp_path,
+            host_family=host,
+            prompt=f"CONFIRM {rewritten_hash}",
+        )
+    finally:
+        sys.settrace(previous_trace)
+    cli_result = greenfield_create_cli.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--transaction-file",
+            str(transaction_path),
+            "--transaction-hash",
+            rewritten_hash,
+            "--confirm",
+        ]
+    )
+
+    assert decision is not None
+    assert decision["status"] == "CLOSED"
+    assert decision["transaction_hash"] == rewritten_hash
+    assert cli_result == 0
+    assert "Odylith committed the validated Greenfield package." in capsys.readouterr().out
+    assert executed <= admitted_runtime
+    assert source_root / "runtime/domain_intelligence/greenfield_create_commit.py" in executed
+    assert source_root / "runtime/domain_intelligence/greenfield_generation_store.py" in executed
+    assert source_root / "runtime/domain_intelligence/greenfield_compiled_write.py" in executed
+
+
 def test_commit_derives_execution_reporting_from_the_sealed_write_set(tmp_path: Path) -> None:
     transaction = _transaction(tmp_path)
     transaction_path = tmp_path / "product-create-transaction.v1.json"
@@ -613,6 +683,49 @@ def test_commit_rejects_compiler_identity_drift_before_the_write_boundary(
             repo_root=tmp_path,
             transaction_file=transaction_path,
             transaction_hash=transaction.transaction_hash,
+            confirm=True,
+        )
+
+    assert not (tmp_path / "odylith/radar/source").exists()
+
+
+@pytest.mark.parametrize(
+    ("field", "retired_value"),
+    (
+        ("version", "odylith.product-intent-authority.v6"),
+        ("envelope_schema_version", "odylith.product-intent-envelope.v6"),
+        ("ledger_version", "odylith.product-intent-custody-ledger.v5"),
+        ("atomic_ledger_version", "odylith.product-intent-atomic-facts.v1"),
+    ),
+)
+def test_commit_only_admission_rejects_retired_sealed_intent_versions_without_writes(
+    tmp_path: Path,
+    field: str,
+    retired_value: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    transaction = _transaction(tmp_path)
+    transaction_path = tmp_path / "product-create-transaction.v1.json"
+    greenfield_create_transaction.write_compiled_product_create_transaction_file(
+        transaction_path,
+        transaction,
+    )
+    payload = json.loads(transaction_path.read_text(encoding="utf-8"))
+    payload["intent_authority"][field] = retired_value
+    payload["proposal"]["product_intent_authority"][field] = retired_value
+    rewritten_hash = _rewrite_sealed_transaction(transaction_path, payload)
+
+    def forbidden(*_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("retired custody versions must fail before the write boundary")
+
+    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
+    monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
+
+    with pytest.raises(ValueError, match="retired sealed Product Intent authority, envelope, or ledger version"):
+        greenfield_create_commit.commit_greenfield_create_transaction(
+            repo_root=tmp_path,
+            transaction_file=transaction_path,
+            transaction_hash=rewritten_hash,
             confirm=True,
         )
 

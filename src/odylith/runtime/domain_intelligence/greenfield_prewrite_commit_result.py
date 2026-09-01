@@ -57,7 +57,6 @@ def build_greenfield_commit_result_preview(
         "prewrite_safety": dict(prewrite_safety),
         "release_bootstrap": dict(release_bootstrap or {"created": False, "release": {}}),
         "release_target": dict(release_target or {"selector": "", "release_id": "none", "events": []}),
-        "completion_priority_quality_debt": [],
     }
     return _remap_stage_paths(result, source_root=source, target_root=target)
 
@@ -78,7 +77,7 @@ def require_greenfield_commit_result_preview(value: object) -> dict[str, Any]:
     dashboard = payload.get("dashboard_refresh")
     if not isinstance(dashboard, Mapping) or str(dashboard.get("status", "")).strip() != "passed":
         raise ValueError("ProductCreateTransaction commit result preview is missing surface refresh proof")
-    if payload.get("completion_priority_quality_debt") not in ([], ()):
+    if payload.get("completion_priority_quality_debt", []) not in ([], ()):
         raise ValueError("ProductCreateTransaction commit result preview contains unresolved quality debt")
     return payload
 

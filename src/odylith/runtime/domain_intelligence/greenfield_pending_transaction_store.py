@@ -6,9 +6,15 @@ import re
 from pathlib import Path
 import shutil
 import tempfile
+from typing import TYPE_CHECKING
 
 from odylith.install.fs import fsync_directory
-from odylith.runtime.domain_intelligence import greenfield_create_transaction
+from odylith.runtime.domain_intelligence import greenfield_commit_transaction
+
+if TYPE_CHECKING:
+    from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
+        ProductCreateTransaction,
+    )
 
 
 PENDING_TRANSACTION_FILENAME = "product-create-transaction.v1.json"
@@ -31,7 +37,7 @@ def pending_transaction_path(repo_root: Path, transaction_hash: str) -> Path:
 def stage_pending_transaction(
     *,
     repo_root: Path,
-    transaction: greenfield_create_transaction.ProductCreateTransaction,
+    transaction: ProductCreateTransaction,
 ) -> Path:
     """Publish one immutable pending package with atomic directory visibility."""
 
@@ -44,11 +50,9 @@ def stage_pending_transaction(
     fsync_directory(parent.parent)
     target = parent / digest
     if target.exists() or target.is_symlink():
-        path = resolve_pending_transaction(repo_root=root, transaction_hash=digest)
-        existing = greenfield_create_transaction.load_compiled_product_create_transaction_file(path)
-        if existing.transaction_hash != digest:
-            raise RuntimeError("Greenfield pending transaction address is occupied by different bytes")
-        return path
+        return resolve_pending_transaction(repo_root=root, transaction_hash=digest)
+    from odylith.runtime.domain_intelligence import greenfield_create_transaction
+
     temporary = Path(tempfile.mkdtemp(prefix=f".stage-{digest[:12]}-", dir=parent))
     try:
         path = temporary / PENDING_TRANSACTION_FILENAME
@@ -65,13 +69,17 @@ def stage_pending_transaction(
 def resolve_pending_transaction(*, repo_root: Path, transaction_hash: str) -> Path:
     """Resolve and verify the exact pending package named by a user decision."""
 
+    root = Path(repo_root).expanduser().resolve()
     digest = _require_digest(transaction_hash)
-    directory = pending_transaction_directory(repo_root, digest)
+    directory = pending_transaction_directory(root, digest)
     path = directory / PENDING_TRANSACTION_FILENAME
-    receipt = greenfield_create_transaction.product_create_transaction_receipt_path(path)
+    receipt = path.with_name(path.name + ".compiler-receipt.v1.json")
     if directory.is_symlink() or not directory.is_dir() or path.is_symlink() or receipt.is_symlink():
         raise ValueError("Greenfield pending transaction is missing or unsafe")
-    transaction = greenfield_create_transaction.load_compiled_product_create_transaction_file(path)
+    transaction = greenfield_commit_transaction.load_sealed_product_create_commit(
+        path,
+        repo_root=root,
+    )
     if transaction.transaction_hash != digest:
         raise ValueError("Greenfield pending transaction does not match its decision hash")
     return path

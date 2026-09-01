@@ -37,6 +37,8 @@ from greenfield_matrix_attempt_ledger import initialize_attempt_ledger  # noqa: 
 from greenfield_matrix_corpus_provenance import evaluate_release_corpus  # noqa: E402
 from greenfield_matrix_corpus_provenance import load_release_audit_file  # noqa: E402
 from greenfield_matrix_failure_response import write_synthetic_shard_payload  # noqa: E402
+from greenfield_final_holdout_guard import complete_final_holdout_run  # noqa: E402
+from greenfield_final_holdout_guard import read_final_holdout_run  # noqa: E402
 
 
 @dataclass(frozen=True)
@@ -46,8 +48,6 @@ class CampaignShard:
     proof_tier: str
     install_mode: str
     include_browser_proof: bool
-    include_rescue_smoke: bool
-    include_natural_rescue_proof: bool
     stop_after_failures: int
     stop_after_cluster_failures: int
     require_high_variance_stressors: bool
@@ -59,6 +59,7 @@ class CampaignShard:
     evaluation_split_manifest: Path | None = None
     final_holdout_run_ledger: Path | None = None
     implementation_revision: str = ""
+    distribution_provenance_file: Path | None = None
 
     @property
     def name(self) -> str:
@@ -323,7 +324,7 @@ def _run_shard(
         telemetry_jsonl=telemetry_jsonl,
         attempt_ledger_jsonl=attempt_ledger_jsonl,
     )
-    if shard.case_file.is_file():
+    if shard.case_file.is_file() and not _is_complete_semantic_release((shard,)):
         initialize_attempt_ledger(attempt_ledger_jsonl, load_case_file(shard.case_file))
     shard_temp_parent = _prepare_shard_temp_parent(
         base_temp_parent=temp_parent,
@@ -460,6 +461,10 @@ def _run_shard(
             attempt_ledger_jsonl=attempt_ledger_jsonl,
         )
     finally:
+        _terminalize_reaped_semantic_child(
+            shard=shard,
+            result_path=telemetry_dir / f"{shard.name}.interrupted.v2.json",
+        )
         try:
             temp_parent_cleaner(shard_temp_parent)
         except RuntimeError as exc:
@@ -481,6 +486,24 @@ def _run_shard(
             detail=cleanup_error,
             failure_status="shard-temp-cleanup-failed",
             attempt_ledger_jsonl=attempt_ledger_jsonl,
+        )
+    lifecycle_issue = _semantic_holdout_lifecycle_issue(shard=shard, shard_passed=result.passed)
+    if lifecycle_issue:
+        result = replace(
+            result,
+            status="failed",
+            returncode=result.returncode or 1,
+            failed_case_count=max(1, result.failed_case_count),
+            failure_clusters=(
+                *result.failure_clusters,
+                {
+                    "cluster": "campaign.final-holdout-lifecycle-invalid",
+                    "count": 1,
+                    "cases": [shard.name],
+                    "example_issue": lifecycle_issue,
+                },
+            ),
+            stop_reason=result.stop_reason or "final-holdout-lifecycle-invalid",
         )
     progress.emit(
         "shard_completed",
@@ -703,55 +726,60 @@ def _run_command_with_progress(
         )
         stop_requested = False
         own_stop_grace_until = 0.0
-        while process.poll() is None:
-            telemetry_offset = forward(
-                telemetry_jsonl=telemetry_jsonl,
-                offset=telemetry_offset,
-                shard=shard,
-                progress=progress,
-            )
-            decision = progress.tier_stop_decision(
-                tier=shard.tier,
-                current_shard=shard.name,
-                stop_after_failures=shard.stop_after_failures,
-                stop_after_cluster_failures=shard.stop_after_cluster_failures,
-            )
-            if decision and not stop_event.is_set():
-                if progress.mark_tier_stop_emitted(shard.tier):
-                    progress.emit(
-                        "tier_stop_requested",
-                        {
-                            "tier": shard.tier,
-                            "shard": shard.name,
-                            "stop_reason": str(decision.get("reason") or ""),
-                            "origin_shard": str(decision.get("origin_shard") or ""),
-                            "failed_case_count": int(decision.get("failed_case_count") or 0),
-                            "cluster_counts": dict(_mapping(decision.get("cluster_counts"))),
-                        },
-                    )
-                stop_event.set()
-                if str(decision.get("origin_shard") or "") == shard.name:
-                    own_stop_grace_until = time.perf_counter() + 1.5
-            if stop_event.is_set() and not stop_requested:
+        try:
+            while process.poll() is None:
+                telemetry_offset = forward(
+                    telemetry_jsonl=telemetry_jsonl,
+                    offset=telemetry_offset,
+                    shard=shard,
+                    progress=progress,
+                )
                 decision = progress.tier_stop_decision(
                     tier=shard.tier,
                     current_shard=shard.name,
                     stop_after_failures=shard.stop_after_failures,
                     stop_after_cluster_failures=shard.stop_after_cluster_failures,
                 )
-                if (
-                    str(decision.get("origin_shard") or "") == shard.name
-                    and own_stop_grace_until
-                    and time.perf_counter() < own_stop_grace_until
-                ):
-                    time.sleep(0.25)
-                    continue
-                if process.poll() is None:
-                    stop_reason = str(decision.get("reason") or "") or "aborted-after-tier-stop"
-                    _interrupt_process(process)
-                    stop_requested = True
-            time.sleep(0.25)
-        returncode = process.wait()
+                if decision and not stop_event.is_set():
+                    if progress.mark_tier_stop_emitted(shard.tier):
+                        progress.emit(
+                            "tier_stop_requested",
+                            {
+                                "tier": shard.tier,
+                                "shard": shard.name,
+                                "stop_reason": str(decision.get("reason") or ""),
+                                "origin_shard": str(decision.get("origin_shard") or ""),
+                                "failed_case_count": int(decision.get("failed_case_count") or 0),
+                                "cluster_counts": dict(_mapping(decision.get("cluster_counts"))),
+                            },
+                        )
+                    stop_event.set()
+                    if str(decision.get("origin_shard") or "") == shard.name:
+                        own_stop_grace_until = time.perf_counter() + 1.5
+                if stop_event.is_set() and not stop_requested:
+                    decision = progress.tier_stop_decision(
+                        tier=shard.tier,
+                        current_shard=shard.name,
+                        stop_after_failures=shard.stop_after_failures,
+                        stop_after_cluster_failures=shard.stop_after_cluster_failures,
+                    )
+                    if (
+                        str(decision.get("origin_shard") or "") == shard.name
+                        and own_stop_grace_until
+                        and time.perf_counter() < own_stop_grace_until
+                    ):
+                        time.sleep(0.25)
+                        continue
+                    if process.poll() is None:
+                        stop_reason = str(decision.get("reason") or "") or "aborted-after-tier-stop"
+                        _interrupt_process(process)
+                        stop_requested = True
+                time.sleep(0.25)
+            returncode = process.wait()
+            _reap_process_group(process)
+        except BaseException:
+            _interrupt_process(process)
+            raise
         forward(
             telemetry_jsonl=telemetry_jsonl,
             offset=telemetry_offset,
@@ -797,23 +825,63 @@ def _forward_shard_telemetry(
 
 
 def _interrupt_process(process: subprocess.Popen[str]) -> None:
-    if process.poll() is not None:
+    _signal_process_group(process, signal.SIGINT)
+    try:
+        process.wait(timeout=20)
+    except subprocess.TimeoutExpired:
+        _signal_process_group(process, signal.SIGTERM)
+        try:
+            process.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            _signal_process_group(process, signal.SIGKILL)
+            process.wait()
+    _reap_process_group(process)
+
+
+def _reap_process_group(process: subprocess.Popen[str]) -> None:
+    """Ensure no descendant from the shard session survives its leader."""
+
+    if not hasattr(os, "killpg"):
+        if process.poll() is None:
+            process.wait()
         return
     try:
-        if hasattr(os, "killpg"):
-            os.killpg(process.pid, signal.SIGINT)
-        else:
-            process.terminate()
-        process.wait(timeout=20)
-    except (OSError, subprocess.TimeoutExpired):
+        os.killpg(process.pid, 0)
+    except ProcessLookupError:
+        return
+    except PermissionError:
+        return
+    _signal_process_group(process, signal.SIGTERM)
+    deadline = time.monotonic() + 5.0
+    while time.monotonic() < deadline:
         try:
-            process.terminate()
-            process.wait(timeout=10)
-        except (OSError, subprocess.TimeoutExpired):
-            try:
-                process.kill()
-            except OSError:
-                return
+            os.killpg(process.pid, 0)
+        except ProcessLookupError:
+            return
+        except PermissionError:
+            return
+        time.sleep(0.05)
+    _signal_process_group(process, signal.SIGKILL)
+    deadline = time.monotonic() + 5.0
+    while time.monotonic() < deadline:
+        try:
+            os.killpg(process.pid, 0)
+        except ProcessLookupError:
+            return
+        except PermissionError:
+            return
+        time.sleep(0.05)
+    raise RuntimeError("shard process group could not be fully reaped")
+
+
+def _signal_process_group(process: subprocess.Popen[str], requested_signal: int) -> None:
+    try:
+        if hasattr(os, "killpg"):
+            os.killpg(process.pid, requested_signal)
+        elif process.poll() is None:
+            process.send_signal(requested_signal)
+    except ProcessLookupError:
+        return
 
 
 def _unlink_quietly(path: Path) -> None:
@@ -861,12 +929,6 @@ def _matrix_command(
         command.append("--include-browser-proof")
     else:
         command.append("--allow-skipped-browser-proof")
-    command.append("--include-rescue-smoke" if shard.include_rescue_smoke else "--skip-rescue-smoke")
-    command.append(
-        "--include-natural-rescue-proof"
-        if shard.include_natural_rescue_proof
-        else "--skip-natural-rescue-proof"
-    )
     command.append(
         "--include-commit-recovery-proof"
         if shard.proof_tier == "release"
@@ -894,6 +956,8 @@ def _matrix_command(
         command.extend(["--final-holdout-run-ledger", str(shard.final_holdout_run_ledger)])
     if shard.implementation_revision:
         command.extend(["--implementation-revision", shard.implementation_revision])
+    if shard.distribution_provenance_file is not None:
+        command.extend(["--distribution-provenance-file", str(shard.distribution_provenance_file)])
     if shard.proof_tier == "discovery" and shard.required_stressors:
         command.append("--allow-partial-stressor-coverage")
     return command
@@ -906,41 +970,43 @@ def _tier_case_file_preflight_failure(
     telemetry_dir: Path,
     temp_parent: Path,
 ) -> ShardRunResult | None:
-    for shard in shards:
-        if not shard.case_file.exists():
-            continue
-        try:
-            load_case_file(shard.case_file)
-        except RuntimeError as exc:
-            return ShardRunResult(
-                tier=shard.tier,
-                name=shard.name,
-                case_file=str(shard.case_file),
-                status="failed",
-                returncode=2,
-                seconds=0.0,
-                output_json=str(output_dir / f"{shard.name}.result.v1.json"),
-                telemetry_jsonl=str(telemetry_dir / f"{shard.name}.telemetry.v1.jsonl"),
-                temp_parent=str(_shard_temp_parent(base_temp_parent=temp_parent, shard=shard)),
-                payload_status="case-file-invalid",
-                completed_case_count=0,
-                failed_case_count=1,
-                failure_clusters=(
-                    {
-                        "cluster": "campaign.case-file-invalid",
-                        "count": 1,
-                        "cases": [shard.name],
-                        "example_issue": _tail_excerpt(str(exc)),
-                        "replay_scope": "source-shard",
-                        "shard_replay_case_file": str(shard.case_file),
-                    },
-                ),
-                stdout_excerpt="",
-                stderr_excerpt=_excerpt(str(exc)),
-                stop_reason="case-file-invalid",
-            )
     release_shards = tuple(shard for shard in shards if shard.proof_tier == "release")
-    if release_shards and not _is_complete_semantic_release(release_shards):
+    semantic_release = _is_complete_semantic_release(release_shards)
+    if not semantic_release:
+        for shard in shards:
+            if not shard.case_file.exists():
+                continue
+            try:
+                load_case_file(shard.case_file)
+            except RuntimeError as exc:
+                return ShardRunResult(
+                    tier=shard.tier,
+                    name=shard.name,
+                    case_file=str(shard.case_file),
+                    status="failed",
+                    returncode=2,
+                    seconds=0.0,
+                    output_json=str(output_dir / f"{shard.name}.result.v1.json"),
+                    telemetry_jsonl=str(telemetry_dir / f"{shard.name}.telemetry.v1.jsonl"),
+                    temp_parent=str(_shard_temp_parent(base_temp_parent=temp_parent, shard=shard)),
+                    payload_status="case-file-invalid",
+                    completed_case_count=0,
+                    failed_case_count=1,
+                    failure_clusters=(
+                        {
+                            "cluster": "campaign.case-file-invalid",
+                            "count": 1,
+                            "cases": [shard.name],
+                            "example_issue": _tail_excerpt(str(exc)),
+                            "replay_scope": "source-shard",
+                            "shard_replay_case_file": str(shard.case_file),
+                        },
+                    ),
+                    stdout_excerpt="",
+                    stderr_excerpt=_excerpt(str(exc)),
+                    stop_reason="case-file-invalid",
+                )
+    if release_shards and not semantic_release:
         audit_file = release_shards[0].release_audit_file
         if audit_file is None:
             return _release_corpus_preflight_failure(
@@ -1016,9 +1082,59 @@ def _is_complete_semantic_release(shards: Sequence[CampaignShard]) -> bool:
         and shard.evaluation_split_manifest is not None
         and shard.final_holdout_run_ledger is not None
         and shard.release_input_snapshot_root is not None
+        and shard.distribution_provenance_file is not None
         and len(revision) == 40
         and all(character in "0123456789abcdef" for character in revision)
     )
+
+
+def _terminalize_reaped_semantic_child(*, shard: CampaignShard, result_path: Path) -> bool:
+    """Terminalize a claimed ledger only after the shard process has been reaped."""
+
+    if not _is_complete_semantic_release((shard,)) or shard.final_holdout_run_ledger is None:
+        return False
+    try:
+        ledger = read_final_holdout_run(shard.final_holdout_run_ledger)
+    except RuntimeError:
+        return False
+    if ledger.get("status") != "claimed":
+        return False
+    path = Path(result_path).expanduser().resolve()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {
+                "version": "odylith.greenfield.final-holdout-parent-interruption.v1",
+                "status": "interrupted",
+                "reason": "release child exited after claim without a terminal outcome",
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    complete_final_holdout_run(
+        ledger_path=shard.final_holdout_run_ledger,
+        result_path=path,
+        outcome="interrupted",
+    )
+    return True
+
+
+def _semantic_holdout_lifecycle_issue(*, shard: CampaignShard, shard_passed: bool) -> str:
+    if not _is_complete_semantic_release((shard,)) or shard.final_holdout_run_ledger is None:
+        return ""
+    try:
+        ledger = read_final_holdout_run(shard.final_holdout_run_ledger)
+    except RuntimeError:
+        return "semantic release child did not persist its exclusive final-holdout ledger"
+    status = str(ledger.get("status") or "")
+    if status not in {"passed", "failed", "interrupted"}:
+        return "semantic release child left a non-terminal final-holdout ledger"
+    if shard_passed and status != "passed":
+        return f"semantic release shard passed while its final-holdout outcome was {status}"
+    return ""
 
 
 def _release_corpus_preflight_failure(
@@ -1059,6 +1175,8 @@ def _release_corpus_preflight_failure(
 
 def _missing_tier_required_stressors(shards: Sequence[CampaignShard]) -> tuple[str, ...]:
     if not shards:
+        return ()
+    if _is_complete_semantic_release(shards):
         return ()
     required = tuple(
         dict.fromkeys(

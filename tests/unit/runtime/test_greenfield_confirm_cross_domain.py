@@ -2,14 +2,21 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import pytest
 
-from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_component_commit
-from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence import greenfield_proposals_cli
 from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    combined_prompt_evidence_source,
+)
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    StructuredAuthoringProvider,
+    authored_response,
+)
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
 
@@ -47,31 +54,270 @@ _SOURCE_DOMAIN_LEAK_TERMS = (
 )
 
 
+def _intent(
+    *,
+    title: str,
+    product_story: str,
+    state_object: str,
+    first_path: str,
+    proof_boundary: str,
+    problem: str,
+    customer: str,
+    opportunity: str,
+    product_view: str,
+    success_metrics: list[str],
+    evidence_requirements: list[str],
+    operational_constraints: list[str],
+    component_responsibilities: list[str],
+    human_actors: list[str],
+    external_systems: list[str],
+    internal_systems: list[str],
+    non_goals: list[str],
+) -> dict[str, Any]:
+    return {
+        "title": title,
+        "product_story": product_story,
+        "state_object": state_object,
+        "first_path": first_path,
+        "proof_boundary": proof_boundary,
+        "problem": problem,
+        "customer": customer,
+        "opportunity": opportunity,
+        "product_view": product_view,
+        "success_metrics": success_metrics,
+        "evidence_requirements": evidence_requirements,
+        "operational_constraints": operational_constraints,
+        "component_responsibilities": component_responsibilities,
+        "human_actors": human_actors,
+        "external_systems": external_systems,
+        "internal_systems": internal_systems,
+        "assumptions": [],
+        "ambiguities": [],
+        "non_goals": non_goals,
+    }
+
+
+_CASES = (
+    pytest.param(
+        "protocol-outcome",
+        _intent(
+            title="Protocol Outcome Notebook",
+            product_story="Self-directed researchers need one reviewable protocol and outcome record.",
+            state_object="protocol outcome record",
+            first_path=(
+                "Self-directed researcher creates a protocol, records an intervention, adds baseline and "
+                "follow-up measurements, and sees a reviewable outcome review."
+            ),
+            proof_boundary=(
+                "Replay one protocol, intervention, baseline measurement, follow-up measurement, and "
+                "outcome review with source notes and visible blockers."
+            ),
+            problem="Protocol evidence is fragmented and hard to review without implying scientific certainty.",
+            customer="Self-directed researchers and study collaborators",
+            opportunity="Keep protocol setup, intervention records, measurements, and outcome review aligned.",
+            product_view="Protocol Outcome Notebook preserves one evidence-linked outcome review.",
+            success_metrics=["A researcher sees a replayable outcome review."],
+            evidence_requirements=["Retain baseline measurement and follow-up measurement source notes."],
+            operational_constraints=["Do not claim causal or medical correctness."],
+            component_responsibilities=[
+                "Record protocol setup and required-source blockers.",
+                "Record intervention timing and amount-as-recorded.",
+                "Align baseline measurement, follow-up measurement, and outcome review.",
+            ],
+            human_actors=["Self-directed researcher", "Study collaborator"],
+            external_systems=["Measurement spreadsheet", "Source document folder"],
+            internal_systems=["Protocol Builder", "Intervention Log", "Outcome Review Surface"],
+            non_goals=["Scientific or medical certainty is outside the first release."],
+        ),
+        "Self-directed researcher",
+        "creates",
+        "protocol",
+        "outcome review",
+        ("protocol", "intervention", "baseline measurement", "follow-up measurement", "outcome review"),
+        ("fare option", "symptom episode", "service address", "application packet"),
+        id="protocol-outcome",
+    ),
+    pytest.param(
+        "symptom-relief",
+        _intent(
+            title="Symptom Relief Journal",
+            product_story="People managing recurring symptoms need a private, reviewable episode timeline.",
+            state_object="symptom episode",
+            first_path=(
+                "Journal owner records one symptom episode, adds body area and a relief action, edits the "
+                "entry, and sees the corrected timeline with a safety notice."
+            ),
+            proof_boundary=(
+                "Replay one symptom episode with relief action, edit history, timeline evidence, and safety notice intact."
+            ),
+            problem="Symptom and relief history is hard to review consistently over time.",
+            customer="People tracking recurring symptoms",
+            opportunity="Preserve the episode, relief action, correction, and safety context together.",
+            product_view="Symptom Relief Journal shows a corrected, non-clinical episode timeline.",
+            success_metrics=["A journal owner sees the corrected symptom timeline."],
+            evidence_requirements=["Retain body area, relief action, edit history, and safety notice."],
+            operational_constraints=["Do not diagnose, prescribe, or recommend medication dosing."],
+            component_responsibilities=[
+                "Record symptom episode fields and edit history.",
+                "Record relief action and non-advice boundaries.",
+                "Show the corrected timeline and safety notice.",
+            ],
+            human_actors=["Journal owner", "Care partner"],
+            external_systems=["User-supplied exported notes"],
+            internal_systems=["Episode Capture", "Relief Action Ledger", "Timeline View"],
+            non_goals=["Clinical diagnosis and dosing advice are outside the first release."],
+        ),
+        "Journal owner",
+        "records",
+        "symptom episode",
+        "corrected timeline",
+        ("symptom episode", "body area", "relief action", "timeline", "safety notice"),
+        ("fare option", "baseline measurement", "service address", "application packet"),
+        id="symptom-relief",
+    ),
+    pytest.param(
+        "fare-choice",
+        _intent(
+            title="Fare Choice Assistant",
+            product_story="Trip planners need a reviewable comparison of travel options for one trip.",
+            state_object="trip comparison record",
+            first_path=(
+                "Trip planner enters origin and destination, compares each fare option, selects one option, "
+                "and sees the saved rationale with a stale-quote blocker."
+            ),
+            proof_boundary=(
+                "Replay one trip from origin and destination through ranked fare options, selected option, "
+                "saved rationale, and visible stale-quote evidence."
+            ),
+            problem="Travel price, timing, and constraint evidence is difficult to compare and retain.",
+            customer="Trip planners and budget approvers",
+            opportunity="Keep the selected option and the reason for choosing it reviewable.",
+            product_view="Fare Choice Assistant preserves ranked fare evidence and the final decision note.",
+            success_metrics=["A trip planner sees the selected option and saved rationale."],
+            evidence_requirements=["Retain origin, destination, fare option timestamps, and stale-quote state."],
+            operational_constraints=["Do not make the cheapest option final when user constraints disagree."],
+            component_responsibilities=[
+                "Record origin, destination, and required-field blockers.",
+                "Record fare option, travel time, and stale-quote evidence.",
+                "Show the selected option and saved rationale.",
+            ],
+            human_actors=["Trip planner", "Budget approver"],
+            external_systems=["Transit fare feed", "Rideshare quote export"],
+            internal_systems=["Trip Intake", "Fare Option Collector", "Decision Note View"],
+            non_goals=["Live provider booking is outside the first release."],
+        ),
+        "Trip planner",
+        "enters",
+        "origin and destination",
+        "saved rationale",
+        ("origin", "destination", "fare option", "selected option", "stale-quote"),
+        ("symptom episode", "baseline measurement", "service address", "application packet"),
+        id="fare-choice",
+    ),
+    pytest.param(
+        "service-visit",
+        _intent(
+            title="Home Repair Visit Planner",
+            product_story="Home repair teams need one reviewable path from service request to scheduled visit.",
+            state_object="service visit record",
+            first_path=(
+                "Service coordinator verifies the service address, selects a visit window, assigns a technician, "
+                "creates a quote estimate, and sees the confirmed visit with readiness blockers."
+            ),
+            proof_boundary=(
+                "Replay one service request through verified service address, visit window, technician assignment, "
+                "quote estimate, confirmation, and readiness evidence."
+            ),
+            problem="Service requests lose readiness and estimate context across scheduling handoffs.",
+            customer="Home repair coordinators and technician leads",
+            opportunity="Keep visit scheduling, quote context, and readiness blockers together.",
+            product_view="Home Repair Visit Planner shows the confirmed visit and its readiness state.",
+            success_metrics=["A coordinator sees the confirmed visit with readiness blockers."],
+            evidence_requirements=["Retain service address, visit window, technician, quote estimate, and readiness state."],
+            operational_constraints=["Quote estimates are planning context, not binding contracts."],
+            component_responsibilities=[
+                "Record service address and missing-detail blockers.",
+                "Record visit window and technician assignment.",
+                "Show quote estimate, confirmation, and readiness blockers.",
+            ],
+            human_actors=["Service coordinator", "Technician lead"],
+            external_systems=["Calendar availability export", "Parts catalog fixture"],
+            internal_systems=["Service Request Intake", "Visit Scheduler", "Readiness Review View"],
+            non_goals=["Binding quotes and live scheduling integrations are outside the first release."],
+        ),
+        "Service coordinator",
+        "verifies",
+        "service address",
+        "confirmed visit",
+        ("service address", "visit window", "technician", "quote estimate", "readiness"),
+        ("fare option", "symptom episode", "baseline measurement", "application packet"),
+        id="service-visit",
+    ),
+    pytest.param(
+        "decision-review",
+        _intent(
+            title="Grant Decision Review Desk",
+            product_story="Funding programs need application evidence, scoring, rationale, and outcome kept together.",
+            state_object="grant decision record",
+            first_path=(
+                "Program officer opens an application packet, checks eligibility, records a score and rationale, "
+                "and sees the published outcome notice with unresolved conflicts visible."
+            ),
+            proof_boundary=(
+                "Replay one application packet through eligibility, score, rationale, conflict state, and outcome notice."
+            ),
+            problem="Grant decision evidence and rationale become fragmented across reviewers.",
+            customer="Program officers, applicant representatives, and appeal assessors",
+            opportunity="Keep the application packet and every decision fact reviewable.",
+            product_view="Grant Decision Review Desk publishes an evidence-linked outcome notice.",
+            success_metrics=["A program officer sees the outcome notice with conflict state and rationale."],
+            evidence_requirements=["Retain application packet, eligibility rule version, score, and rationale."],
+            operational_constraints=["Do not hide unresolved conflicts or missing rationale."],
+            component_responsibilities=[
+                "Record application packet identity and missing-packet blockers.",
+                "Record eligibility, score, rationale, and conflict state.",
+                "Show the outcome notice and appeal blocker context.",
+            ],
+            human_actors=["Program officer", "Applicant representative", "Appeal assessor"],
+            external_systems=["Application intake export", "Eligibility policy document"],
+            internal_systems=["Packet Intake", "Scoring Ledger", "Outcome Publication View"],
+            non_goals=["Appeal adjudication is outside the first release."],
+        ),
+        "Program officer",
+        "opens",
+        "application packet",
+        "published outcome notice",
+        ("application packet", "eligibility", "score", "rationale", "outcome notice"),
+        ("fare option", "symptom episode", "baseline measurement", "service address"),
+        id="decision-review",
+    ),
+)
+
+
+def _source(intent: dict[str, Any]) -> str:
+    return ". ".join(
+        str(item)
+        for value in intent.values()
+        for item in (value if isinstance(value, list) else [value])
+        if str(item)
+    )
+
+
 def _run_confirmed_transaction_create(
     *,
     repo_root: Path,
     prompt: str,
-    capsys,
-    release: str = "0.0.1",
+    capsys: Any,
 ) -> tuple[int, str]:
-    propose_args = [
-        "propose",
-        "--repo-root",
-        str(repo_root),
-        "--prompt",
-        prompt,
-        "--edit-evidence",
-        ".odylith/runtime/greenfield/confirmed-intent.md",
-        "--format",
-        "json",
-    ]
-    compile_rc = greenfield_proposals.main(propose_args)
+    compile_rc = greenfield_proposals_cli.main(
+        ["propose", "--repo-root", str(repo_root), "--prompt", prompt, "--format", "json"]
+    )
     compile_output = capsys.readouterr().out
     assert compile_rc == 0, compile_output
     compile_payload = json.loads(compile_output)
     transaction_hash = str(compile_payload["product_create_transaction"]["transaction_hash"])
     transaction_file = str(compile_payload["transaction_file"])
-    create_rc = greenfield_proposals.main(
+    create_rc = greenfield_proposals_cli.main(
         [
             "create",
             "--repo-root",
@@ -86,233 +332,53 @@ def _run_confirmed_transaction_create(
     return create_rc, capsys.readouterr().out
 
 
-_INTENT_FIXTURES = (
-    pytest.param(
-        "protocol-outcome",
-        """# Protocol Outcome Notebook
-
-Product story
-A self-directed researcher needs one notebook that connects protocol setup, intervention records, measurements, and outcome review without implying scientific certainty.
-
-State object
-A tracked protocol record carries intervention entries, timing, amount-as-recorded, baseline measurement, follow-up measurement, source note, outcome review status, and blockers.
-
-First complete path
-A researcher creates a protocol, records an intervention with timing and amount, adds a baseline measurement, later adds a follow-up measurement, and sees one outcome review that keeps the evidence aligned.
-
-Human actors
-- Self-directed researcher: creates protocols, records interventions, and reviews outcome evidence.
-- Study collaborator: checks source notes, blockers, and outcome review status.
-
-External systems
-- User-supplied spreadsheet for measurement imports.
-- Source document folder for reference notes.
-
-Internal product systems
-- Protocol Builder - owns protocol setup, measurement intent, and required-source blockers.
-- Intervention Log - records timing, amount-as-recorded, schedule context, and intervention evidence.
-- Measurement Store - records baseline and follow-up measurements, source notes, and validation blockers.
-- Outcome Review Surface - aligns protocol, intervention, measurements, blockers, and outcome review status.
-
-Critical assumptions
-- Release 0.0.1 records user-entered facts and does not claim causal or medical correctness.
-- The first release uses local fixtures before any live measurement integration.
-
-Ambiguities
-- Which measurement formats should be supported first.
-- Whether collaborators can edit or only review.
-
-Proof boundary
-Release 0.0.1 succeeds when one protocol, intervention record, baseline measurement, follow-up measurement, and outcome review can be replayed with source notes and visible blockers for missing evidence.
-""",
-        ("protocol", "intervention", "baseline measurement", "follow-up measurement", "outcome review"),
-        ("fare option", "symptom episode", "service address", "application packet"),
-        id="protocol-outcome",
-    ),
-    pytest.param(
-        "symptom-relief",
-        """# Symptom Relief Journal
-
-Product story
-A person managing recurring symptoms needs a journal that captures an episode, what they tried for relief, and how the episode changed over time without giving diagnosis or dosing advice.
-
-State object
-A symptom episode record tracks intensity, body area, trigger note, relief action, medication-as-recorded note, side-effect note, timeline event, edit history, and safety disclaimer acknowledgement.
-
-First complete path
-A person records one symptom episode, adds intensity and body area, notes a trigger, records a relief action, views the event on a timeline, edits the entry, and sees the corrected timeline state.
-
-Human actors
-- Symptom journal owner: records episodes, relief actions, edits, and timeline review.
-- Care partner: reviews shared episode context and safety notes when invited.
-
-External systems
-- Optional exported notes supplied by the user.
-
-Internal product systems
-- Episode Capture - owns symptom episode fields, required-entry blockers, and edit history.
-- Relief Action Ledger - records relief actions, medication-as-recorded notes, side effects, and non-advice boundaries.
-- Timeline View - shows episode events, edits, blockers, and corrected state.
-- Safety Notice Boundary - keeps diagnosis, dosing, emergency escalation, and caregiver sharing boundaries visible.
-
-Critical assumptions
-- Release 0.0.1 is a tracking product, not a clinical decision product.
-- Medication notes are recorded exactly as supplied by the user and never recommended by the product.
-
-Ambiguities
-- Whether invited care partners can comment or only view.
-
-Proof boundary
-Release 0.0.1 succeeds when one user can record, view, edit, and replay a symptom episode with relief action, safety notice, and timeline evidence intact.
-""",
-        ("symptom episode", "body area", "relief action", "timeline", "safety notice"),
-        ("fare option", "baseline measurement", "service address", "application packet"),
-        id="symptom-relief",
-    ),
-    pytest.param(
-        "fare-choice",
-        """# Fare Choice Assistant
-
-Product story
-A trip planner needs a compact assistant that compares travel options for a specific trip and preserves why the cheapest or preferred option was selected.
-
-State object
-A trip comparison record tracks origin, destination, departure time, fare option, travel time, constraint, ranked result, selected option, decision note, and stale-quote blocker.
-
-First complete path
-A planner enters origin, destination, and departure time, imports available fare options, compares price and travel time, selects one option, and saves the decision note with stale-quote blockers visible.
-
-Human actors
-- Trip planner: enters trip details, compares options, and selects the preferred route.
-- Budget approver: reviews fare evidence, selected option, and stale-quote blockers.
-
-External systems
-- Transit fare feed for fixture fare options.
-- Rideshare quote export supplied by the user.
-
-Internal product systems
-- Trip Intake - owns origin, destination, departure time, required-field blockers, and trip identity.
-- Fare Option Collector - records fare options, travel time, source timestamp, and stale-quote blockers.
-- Comparison Ranker - orders options by price, timing, constraints, and selected option rationale.
-- Decision Note View - preserves selected option, decision note, evidence, and handoff status.
-
-Critical assumptions
-- Release 0.0.1 uses fixture fare data before live provider integrations.
-- Cheapest option is not automatically final when user constraints say otherwise.
-
-Ambiguities
-- Which fare sources must be trusted first.
-
-Proof boundary
-Release 0.0.1 succeeds when one trip can move from entered route details to ranked fare options, selected option, saved rationale, and visible stale-quote evidence.
-""",
-        ("origin", "destination", "fare option", "selected option", "stale-quote"),
-        ("symptom episode", "baseline measurement", "service address", "application packet"),
-        id="fare-choice",
-    ),
-    pytest.param(
-        "service-visit",
-        """# Home Repair Visit Planner
-
-Product story
-A home repair team needs one planner that turns a service request into a scheduled visit with readiness evidence, quote context, and visible blockers.
-
-State object
-A service visit record tracks requester contact, service address, issue description, visit window, technician assignment, quote estimate, readiness checklist, blocker reason, and confirmation status.
-
-First complete path
-A requester submits an issue, the coordinator verifies service address and issue details, selects a visit window, assigns a technician, creates a quote estimate, and confirms the scheduled visit with readiness blockers visible.
-
-Human actors
-- Homeowner requester: submits the issue, service address, and preferred visit window.
-- Service coordinator: verifies details, schedules the visit, and confirms readiness.
-- Technician lead: reviews assignment, quote estimate, and blocker reason before the visit.
-
-External systems
-- Calendar availability export for visit windows.
-- Parts catalog fixture for quote estimate inputs.
-
-Internal product systems
-- Service Request Intake - owns requester contact, service address, issue details, and missing-detail blockers.
-- Visit Scheduler - owns visit windows, technician assignment, schedule conflicts, and confirmation status.
-- Quote Estimate Builder - records quote estimate inputs, parts context, and review blockers.
-- Readiness Review View - shows readiness checklist, blocker reason, assignment, and scheduled visit handoff.
-
-Critical assumptions
-- Release 0.0.1 uses fixture availability and parts data before live integrations.
-- Quote estimates are planning context, not a binding contract.
-
-Ambiguities
-- Whether requesters can reschedule directly in the first release.
-
-Proof boundary
-Release 0.0.1 succeeds when one service request can be verified, scheduled, assigned, estimated, confirmed, and reviewed with readiness evidence and blockers intact.
-""",
-        ("service address", "visit window", "technician", "quote estimate", "readiness"),
-        ("fare option", "symptom episode", "baseline measurement", "application packet"),
-        id="service-visit",
-    ),
-    pytest.param(
-        "decision-review",
-        """# Grant Decision Review Desk
-
-Product story
-A funding program needs a review desk that keeps application evidence, eligibility checks, scoring, rationale, and published outcome together.
-
-State object
-A grant decision record tracks application packet, applicant identity, eligibility rule version, score entry, reviewer rationale, conflict marker, approval status, outcome notice, and appeal blocker.
-
-First complete path
-A program officer opens an application packet, checks eligibility rules, records score entries, adds rationale, resolves or marks conflicts, approves or blocks the decision, and publishes an outcome notice with evidence attached.
-
-Human actors
-- Program officer: reviews packets, eligibility, scores, rationale, and outcome status.
-- Applicant representative: receives the outcome notice and appeal blocker context.
-- Appeal assessor: checks conflicts, rationale, and evidence when a decision is disputed.
-
-External systems
-- Application intake export for packet fixtures.
-- Eligibility policy document for rule references.
-
-Internal product systems
-- Packet Intake - owns application packet identity, applicant identity, and missing-packet blockers.
-- Eligibility Rule Check - records rule version, eligibility result, conflict marker, and blocked decision state.
-- Scoring Ledger - records score entries, rationale, reviewer evidence, and disputed-score blockers.
-- Outcome Publication View - publishes approval or blocked outcome, notice state, appeal blocker, and evidence handoff.
-
-Critical assumptions
-- Release 0.0.1 uses fixture packets and policy documents before live applicant portals.
-- Published outcomes must not hide unresolved conflicts or missing rationale.
-
-Ambiguities
-- Whether appeals are recorded in release 0.0.1 or deferred.
-
-Proof boundary
-Release 0.0.1 succeeds when one application packet can be checked, scored, justified, approved or blocked, and published with rule version, rationale, conflict state, and evidence visible.
-""",
-        ("application packet", "eligibility", "score", "rationale", "outcome notice"),
-        ("fare option", "symptom episode", "baseline measurement", "service address"),
-        id="decision-review",
-    ),
+@pytest.mark.parametrize(
+    ("name", "intent", "actor", "action", "target", "visible_result", "expected_terms", "forbidden_terms"),
+    _CASES,
 )
-
-
-@pytest.mark.parametrize(("name", "intent_text", "expected_terms", "forbidden_terms"), _INTENT_FIXTURES)
 def test_greenfield_create_confirm_completes_cross_domain_projects(
-    tmp_path,
-    monkeypatch,
-    capsys,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: Any,
     name: str,
-    intent_text: str,
+    intent: dict[str, Any],
+    actor: str,
+    action: str,
+    target: str,
+    visible_result: str,
     expected_terms: tuple[str, ...],
     forbidden_terms: tuple[str, ...],
 ) -> None:
+    del name
     _seed_empty_governance_repo(tmp_path)
-    intent_path = tmp_path / ".odylith/runtime/greenfield/confirmed-intent.md"
-    intent_path.parent.mkdir(parents=True, exist_ok=True)
-    intent_path.write_text(intent_text, encoding="utf-8")
+    source = _source(intent)
+    staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
+    provider = StructuredAuthoringProvider(
+        authored_response(
+            intent,
+            evidence_text=staged_evidence,
+            first_path_relations=[
+                {
+                    "actor_kind": "human",
+                    "actor_quote": actor,
+                    "event_quote": intent["first_path"],
+                    "action_verb_quote": action,
+                    "target_quote": target,
+                    "visible_result_quote": visible_result,
+                    "recovery_path": False,
+                }
+            ],
+            component_responsibility_owners=intent["internal_systems"],
+            component_responsibility_event_orders=[0] * len(intent["component_responsibilities"]),
+        )
+    )
+    monkeypatch.setattr(
+        greenfield_proposals_cli,
+        "_greenfield_authoring_provider",
+        lambda **_kwargs: (provider, "test-model", "low"),
+    )
 
-    def render_preconfirm_surfaces(*, repo_root: Path):
+    def render_preconfirm_surfaces(*, repo_root: Path) -> dict[str, Any]:
         for relative_path in greenfield_surface_refresh_proof.GREENFIELD_REQUIRED_SURFACE_ARTIFACTS:
             path = Path(repo_root) / relative_path
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -324,9 +390,16 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
         "build_prewrite_surface_refresh_preview",
         render_preconfirm_surfaces,
     )
-    monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(
+        greenfield_component_commit.component_authoring.owned_surface_refresh,
+        "raise_for_failed_refresh",
+        lambda **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh,
+        "raise_for_failed_refresh",
+        lambda **_kwargs: None,
+    )
     monkeypatch.setattr(
         greenfield_apply_diagrams,
         "raise_for_greenfield_rendered_surface_custody",
@@ -335,21 +408,29 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
 
     rc, output = _run_confirmed_transaction_create(
         repo_root=tmp_path,
-        prompt=f"Create {name}",
+        prompt=source,
         capsys=capsys,
-        release="0.0.1",
     )
 
     assert rc == 0, output
+    assert provider.calls == 1
     assert "- validation gate: passed" in output
-    accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
-    registry = json.loads((tmp_path / "odylith/registry/source/component_registry.v1.json").read_text(encoding="utf-8"))
-    compass_events = (tmp_path / "odylith/compass/runtime/agent-stream.v1.jsonl").read_text(encoding="utf-8").splitlines()
-    release_events = (tmp_path / "odylith/radar/source/releases/release-assignment-events.v1.jsonl").read_text(encoding="utf-8").splitlines()
+    accepted = json.loads(
+        (tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8")
+    )
+    registry = json.loads(
+        (tmp_path / "odylith/registry/source/component_registry.v1.json").read_text(encoding="utf-8")
+    )
+    compass_events = (
+        tmp_path / "odylith/compass/runtime/agent-stream.v1.jsonl"
+    ).read_text(encoding="utf-8").splitlines()
+    release_events = (
+        tmp_path / "odylith/radar/source/releases/release-assignment-events.v1.jsonl"
+    ).read_text(encoding="utf-8").splitlines()
     assert accepted["validation_gate"]["status"] == "passed"
     assert isinstance(accepted["proposal"]["semantic_model"], dict)
-    assert len(list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))) >= 4
-    assert len(registry["components"]) >= 3
+    assert len(list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))) >= 2
+    assert len(registry["components"]) == len(intent["component_responsibilities"])
     assert len(list((tmp_path / "odylith/atlas/source").glob("*.mmd"))) >= 4
     assert release_events
     assert compass_events and json.loads(compass_events[-1])["kind"] == "decision"
@@ -360,7 +441,7 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
         assert banned not in rendered
 
 
-def _rendered_greenfield_text(root) -> str:
+def _rendered_greenfield_text(root: Path) -> str:
     suffixes = {".md", ".json", ".jsonl", ".mmd"}
     return "\n".join(
         path.read_text(encoding="utf-8", errors="ignore")

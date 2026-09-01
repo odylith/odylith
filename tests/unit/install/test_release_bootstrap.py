@@ -1429,7 +1429,7 @@ def test_release_preflight_uses_isolated_temp_dist_dir() -> None:
     assert 'preflight_root="$(mktemp -d "${TMPDIR:-/tmp}/odylith-release-preflight.XXXXXX")"' in text
     assert 'dist_dir="$preflight_root/dist"' in text
     assert 'trap \'rm -rf "$preflight_root"\' EXIT' in text
-    assert 'run_release_proof_steps "$resolved_version" "$dist_dir"' in text
+    assert 'run_release_proof_steps "$resolved_version" "$dist_dir" terminal' in text
     assert 'run_release_proof_steps() {' in shared
     assert '"$odylith_python" "$odylith_host_repo_root/scripts/sync_version_truth.py" --repo-root . sync' in shared
     assert '"$odylith_python" -m hatch build --target wheel "$dist_dir"' in shared

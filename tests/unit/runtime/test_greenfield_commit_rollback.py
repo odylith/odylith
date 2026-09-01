@@ -13,44 +13,20 @@ from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import PRE
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import PRECONFIRM_QUALITY_MANIFEST_VERSION
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from odylith.runtime.surfaces import brand_assets
-from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import compiled_greenfield_package_fixture
-from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
+from tests.unit.runtime.greenfield_proposal_fixtures import canonical_model_authored_intent_fixture
+from tests.unit.runtime.greenfield_proposal_fixtures import _canonical_model_authored_greenfield_fixture
+from tests.unit.runtime.greenfield_proposal_fixtures import approved_authored_quality_manifest_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_transaction
 
 
 def _quality_manifest() -> dict[str, Any]:
-    return {
-        "version": PRECONFIRM_QUALITY_MANIFEST_VERSION,
-        "engine": PRECONFIRM_ENGINE_VERSION,
-        "status": "passed",
-        "validation_status": "passed",
-        "hard_blocker": False,
-        "issue_count": 0,
-        "write_transaction": {
-            "status": "not_started",
-            "rollback_guard": "enabled",
-            "prewrite_clean_before_commit": True,
-        },
-    }
+    return approved_authored_quality_manifest_fixture()
 
 
 def _transaction(repo_root: Path) -> Any:
-    intent = confirmed_intent_with_authority(
-        CONFIRMED_INTENT_TEXT,
-        prompt="Draft a greenfield proposal for a municipal permit review workspace",
-        repo_root=repo_root,
-        write_files=True,
-    )
-    proposal_intent = dict(intent)
-    authority = dict(proposal_intent.pop(PRODUCT_INTENT_AUTHORITY_KEY))
-    proposal = {
-        "intent": proposal_intent,
-        PRODUCT_INTENT_AUTHORITY_KEY: authority,
-        "backlog": [{"title": "Prove permit review path"}],
-        "components": [],
-        "diagrams": [],
-    }
+    proposal = _canonical_model_authored_greenfield_fixture(repo_root)
+    authority = dict(proposal[PRODUCT_INTENT_AUTHORITY_KEY])
     package = compiled_greenfield_package_fixture(
         proposal=proposal,
         repo_root=repo_root,

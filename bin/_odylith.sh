@@ -300,9 +300,25 @@ require_current_component_forensics() {
 run_release_proof_steps() {
   local resolved_version="$1"
   local dist_dir="$2"
+  local matrix_gate_mode="${3:-discovery}"
   local tag="v${resolved_version}"
   require_version "$resolved_version"
   [[ -n "$dist_dir" ]] || die "run_release_proof_steps requires dist_dir"
+  case "$matrix_gate_mode" in
+    discovery|terminal)
+      ;;
+    *)
+      die "run_release_proof_steps matrix mode must be discovery or terminal"
+      ;;
+  esac
+
+  local matrix_release_intent="${GREENFIELD_MATRIX_RELEASE_INTENT:-0}"
+  if [[ "$matrix_release_intent" != "0" && "$matrix_release_intent" != "1" ]]; then
+    die "GREENFIELD_MATRIX_RELEASE_INTENT must be 0 or 1"
+  fi
+  if [[ "$matrix_gate_mode" == "discovery" && "$matrix_release_intent" == "1" ]]; then
+    die "release candidate proof is non-disclosing; terminal Greenfield release proof belongs to release-preflight"
+  fi
 
   "$odylith_python" "$odylith_host_repo_root/scripts/sync_version_truth.py" --repo-root . sync
   "$odylith_python" "$odylith_host_repo_root/scripts/sync_version_truth.py" --repo-root . release-check --expected-version "$resolved_version"
@@ -348,15 +364,46 @@ print(f"release preflight wheel ok: {wheel}")
 PY
 
   "$odylith_python" scripts/release/local_release_smoke.py --version "$resolved_version" --dist-dir "$dist_dir"
-  local matrix_temp_parent
+  local matrix_temp_parent matrix_case_file release_audit_file release_audit_repo_root
+  local sealed_release_input_root semantic_annotations_file evaluation_split_manifest
+  local final_holdout_run_ledger implementation_revision distribution_provenance_file
   matrix_temp_parent="${ODYLITH_GREENFIELD_MATRIX_TEMP_PARENT:-$(dirname "$dist_dir")}"
-  ensure_playwright_chromium
-  "$odylith_python" scripts/release/greenfield_preconfirm_matrix.py \
-    --version "$resolved_version" \
-    --dist-dir "$dist_dir" \
-    --temp-parent "$matrix_temp_parent" \
-    --proof-tier release \
-    --include-natural-rescue-proof \
-    --include-browser-proof \
-    --output-json "$dist_dir/greenfield-preconfirm-matrix.v1.json"
+  matrix_case_file=""
+  release_audit_file=""
+  release_audit_repo_root=""
+  sealed_release_input_root=""
+  semantic_annotations_file=""
+  evaluation_split_manifest=""
+  final_holdout_run_ledger=""
+  implementation_revision=""
+  distribution_provenance_file=""
+  if [[ "$matrix_gate_mode" == "terminal" && "$matrix_release_intent" == "1" ]]; then
+    matrix_case_file="${GREENFIELD_MATRIX_CASE_FILE:-}"
+    release_audit_file="${GREENFIELD_MATRIX_RELEASE_AUDIT_FILE:-}"
+    release_audit_repo_root="${GREENFIELD_MATRIX_RELEASE_AUDIT_REPO_ROOT:-}"
+    sealed_release_input_root="${GREENFIELD_MATRIX_SEALED_RELEASE_INPUT_ROOT:-}"
+    semantic_annotations_file="${GREENFIELD_MATRIX_SEMANTIC_ANNOTATIONS_FILE:-}"
+    evaluation_split_manifest="${GREENFIELD_MATRIX_EVALUATION_SPLIT_MANIFEST:-}"
+    final_holdout_run_ledger="${GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER:-}"
+    implementation_revision="$(git -C "$odylith_repo_root" rev-parse HEAD)"
+    distribution_provenance_file="$dist_dir/build-provenance.v1.json"
+  else
+    matrix_release_intent=0
+  fi
+
+  GREENFIELD_MATRIX_RELEASE_INTENT="$matrix_release_intent" \
+  GREENFIELD_MATRIX_CASE_FILE="$matrix_case_file" \
+  GREENFIELD_MATRIX_RELEASE_AUDIT_FILE="$release_audit_file" \
+  GREENFIELD_MATRIX_RELEASE_AUDIT_REPO_ROOT="$release_audit_repo_root" \
+  GREENFIELD_MATRIX_SEALED_RELEASE_INPUT_ROOT="$sealed_release_input_root" \
+  GREENFIELD_MATRIX_SEMANTIC_ANNOTATIONS_FILE="$semantic_annotations_file" \
+  GREENFIELD_MATRIX_EVALUATION_SPLIT_MANIFEST="$evaluation_split_manifest" \
+  GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER="$final_holdout_run_ledger" \
+  GREENFIELD_MATRIX_IMPLEMENTATION_REVISION="$implementation_revision" \
+  GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE="$distribution_provenance_file" \
+  GREENFIELD_MATRIX_OUTPUT_JSON="$dist_dir/greenfield-preconfirm-matrix.v1.json" \
+  BROWSER_PROOF=1 \
+  COMMIT_RECOVERY_PROOF=1 \
+  TEMP_PARENT="$matrix_temp_parent" \
+  "$odylith_repo_root/bin/greenfield-preconfirm-matrix" "$resolved_version" "$dist_dir"
 }

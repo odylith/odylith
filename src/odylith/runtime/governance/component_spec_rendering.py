@@ -8,20 +8,31 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import display_text
 from odylith.runtime.common.prose_grammar import finite_action_clause
-from odylith.runtime.domain_intelligence.greenfield_component_contract import (
-    dependencies_from_contract,
-    interfaces_from_contract,
-    responsibility_from_contract,
-    risks_from_contract,
-    validation_from_contract,
-)
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
-from odylith.runtime.governance.component_spec_narrative import build_narrative_component_spec
 
 
 def sentence_fragment(value: str) -> str:
     text = display_text.strip_inline_markdown_emphasis_tokens(value)
     return " ".join(text.strip().split()).rstrip(".")
+
+
+def _contract_values(contract: Mapping[str, Any], key: str) -> tuple[str, ...]:
+    return tuple(sentence_fragment(value) for value in text_values(contract.get(key)) if sentence_fragment(value))
+
+
+def _contract_interface_lines(contract: Mapping[str, Any]) -> tuple[str, ...]:
+    return (
+        *(f"Accepts: {value}" for value in _contract_values(contract, "accepted_inputs")),
+        *(f"Produces: {value}" for value in _contract_values(contract, "produced_outputs")),
+        *(f"Transitions: {value}" for value in _contract_values(contract, "states_or_transitions")),
+    )
+
+
+def _contract_dependency_lines(contract: Mapping[str, Any]) -> tuple[str, ...]:
+    return (
+        *(f"Upstream truth: {value}" for value in _contract_values(contract, "upstream_truth")),
+        *(f"Downstream consumer: {value}" for value in _contract_values(contract, "downstream_consumers")),
+    )
 
 
 def build_component_spec(
@@ -49,29 +60,7 @@ def build_component_spec(
     contract = component_contract or {}
     has_contract = bool(contract)
     uses_user_intent = any(item.casefold() == "user_intent" for item in normalized_sources)
-    if has_contract or uses_user_intent:
-        narrative_contract = contract or _fallback_narrative_contract(
-            label=label,
-            responsibility=responsibility,
-            boundary=boundary,
-            dependencies=dependencies,
-            interfaces=interfaces,
-            validation=validation,
-            risks=risks,
-        )
-        return build_narrative_component_spec(
-            component_id=component_id,
-            label=label,
-            path=path,
-            kind=kind,
-            status=status,
-            sources=normalized_sources,
-            workstreams=workstreams,
-            diagrams=diagrams,
-            responsibility=responsibility,
-            implementation_handoff=handoff,
-            component_contract=narrative_contract,
-        )
+    del uses_user_intent
     profile = _kind_profile(kind)
     workstream_ids = [str(item).strip().upper() for item in workstreams if str(item).strip()]
     diagram_ids = [str(item).strip().upper() for item in diagrams if str(item).strip()]
@@ -84,7 +73,7 @@ def build_component_spec(
     handoff_validation = _handoff_list(handoff, "validation_gates")
     handoff_commands = _handoff_list(handoff, "verification_commands")
 
-    responsibility_source = responsibility_from_contract(label, contract) if has_contract else responsibility
+    responsibility_source = responsibility
     responsibility_text = sentence_fragment(responsibility_source)
     responsibility_line = responsibility_text if has_contract else _responsibility_sentence(responsibility_text, default_verb=profile["default_verb"])
     boundary_source = _contract_boundary_intro(label=label, profile=profile, contract=contract) if has_contract else boundary
@@ -94,15 +83,15 @@ def build_component_spec(
     related_workstreams = ", ".join(f"`{item}`" for item in workstream_ids) if workstream_ids else "none yet"
     related_diagrams = ", ".join(f"`{item}`" for item in diagram_ids) if diagram_ids else "none yet"
     proof_lines = _component_proof_lines(
-        validation=validation_from_contract(contract) if has_contract else validation,
+        validation=_contract_values(contract, "local_proof") if has_contract else validation,
         handoff_validation=handoff_validation,
         label=label,
         boundary=boundary_text,
         responsibility=responsibility_line or responsibility_text,
     )
-    interface_lines = _unique_lines(interfaces_from_contract(contract) if has_contract else interfaces or (profile["default_interface"],))
-    dependency_lines = _dependency_lines(dependencies_from_contract(contract) if has_contract else dependencies or (profile["default_dependency"],))
-    risk_lines = _unique_lines(risks_from_contract(label, contract) if has_contract else risks or (profile["default_risk"],))
+    interface_lines = _unique_lines(_contract_interface_lines(contract) if has_contract else interfaces or (profile["default_interface"],))
+    dependency_lines = _dependency_lines(_contract_dependency_lines(contract) if has_contract else dependencies or (profile["default_dependency"],))
+    risk_lines = _unique_lines(risks or _contract_values(contract, "unique_failure") or (profile["default_risk"],))
     outside_boundary = _contract_outside_boundary_lines(contract) if has_contract else _outside_boundary_lines(boundary=boundary_text, profile=profile)
     owns_lines = _contract_field_lines(contract, "owned_state") if has_contract else ((responsibility_line,) if responsibility_line else (profile["default_owns"],))
     accepts_lines = _contract_field_lines(contract, "accepted_inputs") if has_contract else ()
@@ -326,8 +315,8 @@ def _component_contract_role_paragraphs(
     contract: Mapping[str, Any],
 ) -> tuple[str, ...]:
     role = profile.get("role_noun", "ownership boundary")
-    owned = _first_contract_item(str(contract.get("owned_state", "")))
-    failure = sentence_fragment(str(contract.get("unique_failure", "")))
+    owned = _first_contract_item(contract.get("owned_state"))
+    failure = _first_contract_item(contract.get("unique_failure"))
     proof = _first_text(contract.get("local_proof"))
     focus = f" for {_lower_first(owned)}" if owned else ""
     sentences = [f"{label} is a {role}{focus}"]
@@ -341,32 +330,17 @@ def _component_contract_role_paragraphs(
 
 
 def _contract_summary_from_contract(*, label: str, contract: Mapping[str, Any]) -> str:
-    states = sentence_fragment(str(contract.get("states_or_transitions", "")))
+    states = _contract_values(contract, "states_or_transitions")
     proof_rows = tuple(_strip_proof_prefix(value) for value in text_values(contract.get("local_proof")))
-    blocking = next((row for row in proof_rows if re.search(r"\b(block|reject|invalid|missing|stale|unauthorized)\b", row, re.I)), "")
-    provenance = next((row for row in proof_rows if re.search(r"\b(provenance|replay|history|source|snapshot|rationale)\b", row, re.I)), "")
     rows = [
-        f"{label} transitions through {_lower_first(states)}" if states else "",
-        f"Blocking invariant: {_lower_first(blocking)}" if blocking else "",
-        f"Traceability invariant: {_lower_first(provenance)}" if provenance and provenance != blocking else "",
+        f"{label} transitions through {_lower_first(_join_phrase(states))}" if states else "",
+        f"Proof obligations: {_lower_first(_join_phrase(proof_rows))}" if proof_rows else "",
     ]
     return ". ".join(sentence_fragment(row) for row in rows if sentence_fragment(row))
 
 
-def _contract_collaborator_sentence(contract: Mapping[str, Any]) -> str:
-    upstream = sentence_fragment(str(contract.get("upstream_truth", "")))
-    downstream = sentence_fragment(str(contract.get("downstream_consumers", "")))
-    if upstream and downstream:
-        return f"Upstream truth comes from {upstream}; downstream consumers are {downstream}"
-    if upstream:
-        return f"Upstream truth comes from {upstream}"
-    if downstream:
-        return f"Downstream consumers are {downstream}"
-    return ""
-
-
 def _contract_boundary_intro(*, label: str, profile: Mapping[str, str], contract: Mapping[str, Any]) -> str:
-    owned = _first_contract_item(str(contract.get("owned_state", "")))
+    owned = _first_contract_item(contract.get("owned_state"))
     role = profile.get("role_noun", "ownership boundary")
     if owned:
         return f"{label} is the {role} for {owned}; the structured contract below keeps state, inputs, outputs, transitions, and refusals separate"
@@ -374,92 +348,21 @@ def _contract_boundary_intro(*, label: str, profile: Mapping[str, str], contract
 
 
 def _contract_field_lines(contract: Mapping[str, Any], key: str) -> tuple[str, ...]:
-    raw = sentence_fragment(str(contract.get(key, "")))
-    if not raw:
-        return ()
-    rows = [_strip_conjunction(sentence_fragment(part)) for part in re.split(r",|;", raw) if sentence_fragment(part)]
-    if len(rows) <= 1:
-        return (raw,)
-    return _unique_lines(rows)
+    return _unique_lines(_contract_values(contract, key))
 
 
-def _first_contract_item(value: str) -> str:
-    text = sentence_fragment(str(value))
-    if not text:
-        return ""
-    head = re.split(r",|;", text, maxsplit=1)[0]
-    return _strip_conjunction(head)
+def _first_contract_item(value: Any) -> str:
+    return next(iter(text_values(value)), "")
 
 
 def _contract_outside_boundary_lines(contract: Mapping[str, Any]) -> tuple[str, ...]:
-    outside = sentence_fragment(str(contract.get("outside_boundary", "")))
-    if not outside:
+    rows = _contract_values(contract, "outside_boundary")
+    if not rows:
         return ()
-    return _outside_boundary_bucket_lines(outside)
-
-
-def _outside_boundary_bucket_lines(outside: str) -> tuple[str, ...]:
-    buckets = {
-        "Refused domain responsibilities": [],
-        "Sibling-owned state": [],
-        "Forbidden runtime authorities": [],
-    }
-    current_label = ""
-    for part in re.split(r";", outside):
-        segment = sentence_fragment(part)
-        if not segment:
-            continue
-        match = re.match(
-            r"^(?P<label>refused domain responsibilities|sibling-owned state|forbidden runtime authorities)\s*:\s*(?P<body>.+)$",
-            segment,
-            flags=re.I,
-        )
-        if match:
-            current_label = _bucket_label(match.group("label"))
-            _extend_bucket(buckets[current_label], match.group("body"))
-            continue
-        for clause in re.split(r",", segment):
-            text = _strip_conjunction(clause)
-            if text:
-                buckets[_classify_outside_clause(text, current_label)].append(text)
-    if not buckets["Forbidden runtime authorities"]:
-        buckets["Forbidden runtime authorities"].append("runtime implementation outside the accepted proof boundary")
-    rows: list[str] = []
-    for label, values in buckets.items():
-        cleaned = _unique_lines(values)
-        if cleaned:
-            body = _join_phrase(cleaned)
-            rows.append(f"{label}: {body}")
-    return tuple(rows)
-
-
-def _bucket_label(value: str) -> str:
-    text = sentence_fragment(value).casefold()
-    if text.startswith("sibling"):
-        return "Sibling-owned state"
-    if text.startswith("forbidden"):
-        return "Forbidden runtime authorities"
-    return "Refused domain responsibilities"
-
-
-def _extend_bucket(target: list[str], body: str) -> None:
-    for part in re.split(r",|;", body):
-        text = _strip_conjunction(part)
-        if text:
-            target.append(text)
-
-
-def _classify_outside_clause(value: str, current_label: str = "") -> str:
-    text = sentence_fragment(value).casefold()
-    if current_label and not re.search(r"\b(upstream|release|runtime|authority|mutation|source truth)\b", text):
-        return current_label
-    if "sibling" in text or "owned by" in text:
-        return "Sibling-owned state"
-    if re.search(r"\b(upstream source truth|release approval|runtime implementation|silent overwrite|mutation|provider truth)\b", text):
-        return "Forbidden runtime authorities"
-    if re.search(r"\b(state|record|comment|snapshot|marker|history|evidence|handoff)\b", text) and "authority" not in text:
-        return "Sibling-owned state"
-    return "Refused domain responsibilities"
+    return tuple(
+        f"Refused domain responsibility: {row}"
+        for row in rows
+    )
 
 
 def _first_text(value: Any) -> str:

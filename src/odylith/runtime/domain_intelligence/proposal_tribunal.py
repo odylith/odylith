@@ -1,109 +1,53 @@
-"""Deterministic Tribunal gate for confirmed greenfield proposals.
-
-The host model authors open-world project reasoning. Odylith's job is to keep
-the write path governed: fail before source-truth writes when the proposal does
-not form a coherent workstream/component/diagram/release topology.
-"""
+"""Deterministic Tribunal for sealed authored Greenfield proposals."""
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
+from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, Mapping, Sequence
+from typing import Any
 
-from odylith.runtime.analysis_engine.types import slugify
-from odylith.runtime.domain_intelligence.artifact_tribunal_actors import tribunal_actor_projection
-from odylith.runtime.domain_intelligence.artifact_tribunal_actors import tribunal_visible_actor_quality_issues
-from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
+from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
+    build_authored_greenfield_proposal,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_PROJECTION_ORIGIN,
+    AUTHORED_SEMANTICS_KEY,
+    first_path_relations_from_intent,
+)
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
-from odylith.runtime.domain_intelligence.greenfield_text import collect_text_values
-from odylith.runtime.domain_intelligence.greenfield_text import text_values
-from odylith.runtime.domain_intelligence import greenfield_programs
-from odylith.runtime.domain_intelligence.project_intelligence_binding import project_intelligence_binding_issues
-from odylith.runtime.domain_intelligence.proposal_tribunal_substance import check_confirmed_artifact_substance
+from odylith.runtime.domain_intelligence.project_intelligence_binding import (
+    PROJECT_INTELLIGENCE_BINDING_KEY,
+    project_intelligence_binding_issues,
+)
 from odylith.runtime.domain_intelligence.proposal_validation import format_proposal_issue_report
 
-_WORKSTREAM_REF_FIELDS = (
-    "workstreams",
-    "workstream_ids",
-    "workstream_titles",
-    "related_workstreams",
-    "related_workstream_ids",
-    "related_workstream_titles",
-    "backlog",
-    "backlog_titles",
-    "target_workstreams",
-    "target_workstream_titles",
-    "primary_workstreams",
-    "workstream_focus",
-)
-_COMPONENT_REF_FIELDS = (
-    "component_focus",
-    "component_ids",
-    "components",
-    "related_components",
-    "related_component_ids",
-)
-_DIAGRAM_REF_FIELDS = (
-    "diagram_slugs",
-    "related_diagram_slugs",
-    "related_diagrams",
-    "diagrams",
-)
-_SECURITY_POSTURE_FIELDS = (
+
+_AUTHORED_EXACT_PROJECTION_FIELDS = (
+    "schema_version",
+    "mode",
+    "provider_calls",
+    "host_agnostic",
+    "write_policy",
+    "projection_origin",
+    "classification",
+    "greenfield_ux",
+    "assumptions",
+    "open_questions",
+    "risks",
     "security_compliance",
-    "security_posture",
-    "compliance_posture",
-    "domain_risk",
-    "risk_posture",
+    "validation_strategy",
+    "project_brief",
+    "project_intelligence",
+    "release_plan",
+    "backlog",
+    "components",
+    "semantic_model",
+    "diagrams",
+    "apply_commands",
 )
-_RISK_TOKENS = (
-    "risk",
-    "failure",
-    "fallback",
-    "rollback",
-    "mitigation",
-    "blast radius",
-    "slo",
-    "sla",
-    "recovery",
-    "degraded",
-    "scope",
-    "operational",
-)
-_SECURITY_TOKENS = (
-    "security",
-    "auth",
-    "authentication",
-    "authorization",
-    "credential",
-    "permission",
-    "session",
-    "secret",
-    "token",
-    "access",
-    "ownership",
-    "private",
-    "abuse",
-    "threat",
-    "pii",
-    "data risk",
-)
-_POLICY_TOKENS = (
-    "compliance",
-    "policy",
-    "privacy",
-    "retention",
-    "audit",
-    "regulated",
-    "gdpr",
-    "hipaa",
-    "pci",
-    "soc2",
-    "moderation",
-    "accessibility",
-    "public",
-    "private",
-    "safety",
+_ARTIFACT_BOUND_PROJECTION_FIELDS = frozenset(
+    {"release_plan", "backlog", "components", "diagrams"}
 )
 
 
@@ -138,350 +82,171 @@ def run_greenfield_tribunal(
     *,
     release_selector: str = "",
 ) -> GreenfieldTribunalDecision:
-    """Adjudicate proposal coherence before greenfield source-truth writes."""
+    """Adjudicate exact authored projection coherence before source-truth writes."""
 
-    backlog = mapping_rows(proposal.get("backlog"))
-    components = mapping_rows(proposal.get("components"))
-    diagrams = mapping_rows(proposal.get("diagrams"))
-    release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
-    selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
+    intent_value = proposal.get("intent")
+    intent = intent_value if isinstance(intent_value, Mapping) else {}
+    if (
+        proposal.get("projection_origin") != AUTHORED_PROJECTION_ORIGIN
+        and AUTHORED_SEMANTICS_KEY not in intent
+    ):
+        raise ValueError("Greenfield Tribunal requires a sealed authored projection")
+    return _run_authored_projection_tribunal(
+        proposal,
+        intent=intent,
+        release_selector=release_selector,
+    )
+
+
+def _run_authored_projection_tribunal(
+    proposal: Mapping[str, Any],
+    *,
+    intent: Mapping[str, Any],
+    release_selector: str,
+) -> GreenfieldTribunalDecision:
     issues: list[str] = []
-    warnings: list[str] = []
-    dimensions: dict[str, str] = {}
-    visible_actors = tribunal_actor_projection(proposal)
-
+    if proposal.get("projection_origin") != AUTHORED_PROJECTION_ORIGIN:
+        issues.append("authored proposal must preserve its projection origin")
+    try:
+        relations = first_path_relations_from_intent(intent)
+    except (TypeError, ValueError):
+        relations = ()
+    if not relations:
+        issues.append("authored proposal must preserve valid first_path_relations")
     issues.extend(project_intelligence_binding_issues(proposal))
-    issues.extend(f"quality gate: {issue}" for issue in greenfield_quality_issues(proposal))
-    dimensions["product_story"] = (
-        "accepted product story, first path, release boundary, and proof boundary stay connected"
+
+    rows = {
+        key: mapping_rows(proposal.get(key))
+        for key in ("backlog", "components", "diagrams")
+    }
+    for key, projected in rows.items():
+        raw = proposal.get(key)
+        if not isinstance(raw, list) or not raw or len(raw) != len(projected):
+            issues.append(f"authored proposal `{key}` must be a non-empty list of objects")
+    issues.extend(
+        _authored_projection_binding_issues(
+            proposal=proposal,
+            intent=intent,
+            release_selector=release_selector,
+        )
     )
 
-    _check_release_plan(
-        release_plan=release_plan,
-        selector=selector,
-        issues=issues,
-        warnings=warnings,
+    visible_actors = tuple(
+        {
+            "stable_role": "domain_operator",
+            "visible_actor": str(row.get("actor_quote") or ""),
+            "actor_source": "explicit_intent_actor",
+            "responsibility": str(row.get("event_quote") or ""),
+        }
+        for row in relations
+        if row.get("actor_kind") == "human"
     )
-    dimensions["release_boundary"] = "first release selector, target scope, and promotion criteria are present"
-
-    _check_backlog_topology(
-        backlog=backlog,
-        components=components,
-        diagrams=diagrams,
-        issues=issues,
-    )
-    dimensions["work_items"] = "child work items carry component, diagram, dependency, and proof expectations"
-
-    _check_component_specs(components=components, diagrams=diagrams, issues=issues)
-    dimensions["component_ownership"] = "candidate components carry planned ownership, interfaces, dependencies, and proof"
-
-    _check_diagram_traceability(
-        proposal=proposal,
-        diagrams=diagrams,
-        backlog=backlog,
-        components=components,
-        issues=issues,
-    )
-    dimensions["architecture_views"] = "diagrams carry explicit work item and component traceability hints"
-
-    check_confirmed_artifact_substance(
-        proposal=proposal,
-        backlog=backlog,
-        components=components,
-        diagrams=diagrams,
-        issues=issues,
-    )
-    dimensions["artifact_substance"] = "confirmed Radar, Registry, and Atlas records carry product-specific substance"
-
-    _check_domain_security_posture(proposal=proposal, issues=issues)
-    dimensions["domain_security"] = "explicit domain risk, security, compliance, policy, and abuse posture present"
-    _check_visible_tribunal_actors(visible_actors=visible_actors, issues=issues)
-    actor_labels = ", ".join(row["visible_actor"] for row in visible_actors[:4])
-    dimensions["validation_roles"] = (
-        "stable judgment roles render as grounded product actors or explicit governance owner roles: "
-        f"{actor_labels}"
-    )
-
-    dimensions["record_refresh"] = "accepted product records refresh after all writes"
-    status = "failed" if issues else "passed"
-    summary = (
-        "Accepted product direction is coherent enough to create project records."
-        if not issues
-        else "Accepted product direction is not coherent enough to create project records."
-    )
+    dimensions = {
+        "typed_intent": f"checked {len(relations)} typed first-path relation(s) from the authored intent",
+        "artifact_topology": (
+            f"checked {len(rows['backlog'])} backlog row(s), "
+            f"{len(rows['components'])} component(s), and {len(rows['diagrams'])} diagram(s) "
+            "for exact authored identifiers and references"
+        ),
+        "semantic_projection": (
+            f"checked {len(_authored_events(relations))} authored event(s) against the "
+            "semantic model, component sequence, and workstream projection"
+        ),
+        "provenance": (
+            "checked the authored projection origin and project-intelligence bindings "
+            "to intent.authored_semantics"
+        ),
+    }
     return GreenfieldTribunalDecision(
-        status=status,
+        status="failed" if issues else "passed",
         version="greenfield-validation-gate-v1",
-        summary=summary,
+        summary="Accepted typed product direction is structurally complete for project records."
+        if not issues
+        else "Accepted typed product direction is not structurally complete for project records.",
         dimensions=dimensions,
-        issues=tuple(issues),
-        warnings=tuple(warnings),
+        issues=tuple(dict.fromkeys(issues)),
+        warnings=(),
         visible_actors=visible_actors,
     )
+
+
+def _authored_projection_binding_issues(
+    *,
+    proposal: Mapping[str, Any],
+    intent: Mapping[str, Any],
+    release_selector: str,
+) -> tuple[str, ...]:
+    release_value = proposal.get("release_plan")
+    release_plan = release_value if isinstance(release_value, Mapping) else {}
+    selector = str(release_selector or release_plan.get("selector") or "").strip()
+    try:
+        expected = build_authored_greenfield_proposal(
+            observed_source={},
+            release_selector=selector,
+            confirmed_intent=intent,
+        )
+    except (TypeError, ValueError):
+        return ("authored proposal could not be reproduced from its sealed typed intent",)
+
+    actual_view = _authored_projection_view(proposal)
+    expected_view = _authored_projection_view(expected)
+    drifted = [
+        field
+        for field in _AUTHORED_EXACT_PROJECTION_FIELDS
+        if actual_view[field] != expected_view[field]
+    ]
+    if not drifted:
+        return ()
+    return (
+        "authored proposal must exactly match the deterministic projection of its sealed typed intent: "
+        + ", ".join(drifted),
+    )
+
+
+def _authored_projection_view(proposal: Mapping[str, Any]) -> dict[str, Any]:
+    """Return builder-owned fields without later provenance decoration."""
+
+    view: dict[str, Any] = {}
+    for field in _AUTHORED_EXACT_PROJECTION_FIELDS:
+        value = deepcopy(proposal.get(field))
+        if field in _ARTIFACT_BOUND_PROJECTION_FIELDS:
+            value = _without_project_intelligence_binding(value)
+        view[field] = value
+    return view
+
+
+def _without_project_intelligence_binding(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        row = dict(value)
+        row.pop(PROJECT_INTELLIGENCE_BINDING_KEY, None)
+        return row
+    if isinstance(value, list):
+        return [
+            _without_project_intelligence_binding(row) if isinstance(row, Mapping) else row
+            for row in value
+        ]
+    return value
+
+
+def _authored_events(relations: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        {
+            "index": index,
+            "actor": row.get("actor_quote"),
+            "owner_system": row.get("owner_system_quote"),
+            "action": row.get("action_verb_quote"),
+            "target_entity": row.get("target_quote"),
+            "mutation": row.get("event_quote"),
+            "visible_result": bool(row.get("visible_result_quote")),
+            "recovery_path": row.get("recovery_path"),
+            "text": row.get("event_quote"),
+            "source_kind": "accepted_first_path",
+        }
+        for index, row in enumerate(relations, start=1)
+    ]
 
 
 def raise_for_failed_greenfield_tribunal(decision: GreenfieldTribunalDecision) -> None:
     if decision.passed:
         return
     raise ValueError(format_proposal_issue_report("validation gate", list(decision.issues)))
-
-
-def _check_release_plan(
-    *,
-    release_plan: Mapping[str, Any],
-    selector: str,
-    issues: list[str],
-    warnings: list[str],
-) -> None:
-    if not selector:
-        issues.append("release plan must resolve to a release selector")
-    if not _has_text(release_plan, "label") and not _has_text(release_plan, "provisional_release_id"):
-        issues.append("release plan must name the first governed release")
-    if not _has_any_text(
-        release_plan,
-        ("target_workstreams", "target_workstream_titles", "target_workstream_ids"),
-    ):
-        warnings.append("release plan does not explicitly name first-release workstreams")
-    if not _has_any_text(
-        release_plan,
-        ("release_stages", "milestones", "promotion_criteria", "strategy"),
-    ):
-        issues.append("release plan must include stages, milestones, promotion criteria, or strategy")
-
-
-def _check_backlog_topology(
-    *,
-    backlog: Sequence[Mapping[str, Any]],
-    components: Sequence[Mapping[str, Any]],
-    diagrams: Sequence[Mapping[str, Any]],
-    issues: list[str],
-) -> None:
-    component_aliases = _component_aliases(components)
-    diagram_slugs = {
-        slugify(str(row.get("slug", "")))
-        for row in diagrams
-        if str(row.get("slug", "")).strip()
-    }
-    for index, row in enumerate(backlog[1:], start=2):
-        title = str(row.get("title", f"row {index}")).strip() or f"row {index}"
-        component_refs = _slug_values(collect_text_values(row, _COMPONENT_REF_FIELDS))
-        diagram_refs = _slug_values(collect_text_values(row, _DIAGRAM_REF_FIELDS))
-        if not component_refs:
-            issues.append(f"child backlog `{title}` must name component_focus or related_components")
-        elif component_aliases and not (component_refs & component_aliases):
-            issues.append(f"child backlog `{title}` component_focus does not match a planned component")
-        if not diagram_refs:
-            issues.append(f"child backlog `{title}` must name related_diagram_slugs or related_diagrams")
-        elif diagram_slugs and not (diagram_refs & diagram_slugs):
-            issues.append(f"child backlog `{title}` diagram reference does not match a planned architecture diagram")
-        if not _has_any_text(row, ("dependencies", "depends_on", "interfaces", "interface_changes")):
-            issues.append(f"child backlog `{title}` must carry dependency or interface expectations")
-        if not _has_any_text(row, ("validation", "validation_gate", "test_strategy", "success_metrics")):
-            issues.append(f"child backlog `{title}` must carry validation or test strategy")
-
-
-def _check_component_specs(
-    *,
-    components: Sequence[Mapping[str, Any]],
-    diagrams: Sequence[Mapping[str, Any]],
-    issues: list[str],
-) -> None:
-    diagram_component_aliases = _diagram_component_aliases(diagrams)
-    for index, row in enumerate(components, start=1):
-        label = str(row.get("component_id", "") or row.get("label", "") or f"component {index}").strip()
-        if not _has_text(row, "boundary"):
-            issues.append(f"component `{label}` must describe its planned boundary")
-        if not _has_any_text(row, ("interfaces", "interface_changes")):
-            issues.append(f"component `{label}` must describe planned interfaces")
-        if not _has_any_text(row, ("dependencies", "depends_on")):
-            issues.append(f"component `{label}` must describe dependency expectations")
-        if not _has_any_text(row, ("validation", "test_strategy")):
-            issues.append(f"component `{label}` must describe validation or proof expectations")
-        aliases = _slug_values(
-            (
-                str(row.get("component_id", "")),
-                str(row.get("label", "")),
-                str(row.get("name", "")),
-            )
-        )
-        if diagram_component_aliases and not (aliases & diagram_component_aliases):
-            issues.append(f"component `{label}` must appear in at least one planned architecture diagram")
-
-
-def _check_diagram_traceability(
-    *,
-    proposal: Mapping[str, Any],
-    diagrams: Sequence[Mapping[str, Any]],
-    backlog: Sequence[Mapping[str, Any]],
-    components: Sequence[Mapping[str, Any]],
-    issues: list[str],
-) -> None:
-    backlog_aliases = _backlog_aliases(backlog)
-    component_aliases = _component_aliases(components)
-    project_title_slugs = _project_title_slugs(proposal)
-    for index, row in enumerate(diagrams, start=1):
-        slug = str(row.get("slug", f"diagram {index}")).strip() or f"diagram {index}"
-        title = str(row.get("title", "")).strip()
-        title_slug = slugify(title)
-        if title_slug and any(
-            title_slug == project_slug or title_slug.startswith(f"{project_slug}-")
-            for project_slug in project_title_slugs
-        ):
-            issues.append(
-                f"diagram `{slug}` title must name the architecture view, not repeat the project title"
-            )
-        refs = _slug_values(collect_text_values(row, _WORKSTREAM_REF_FIELDS))
-        if not refs:
-            issues.append(f"diagram `{slug}` must name related workstream or backlog focus")
-        elif backlog_aliases and not (refs & backlog_aliases):
-            issues.append(f"diagram `{slug}` workstream focus does not match proposed backlog ids or titles")
-        aliases = _diagram_component_aliases((row,))
-        if component_aliases and not (aliases & component_aliases):
-            issues.append(f"diagram `{slug}` components do not match planned components")
-
-
-def _check_domain_security_posture(*, proposal: Mapping[str, Any], issues: list[str]) -> None:
-    explicit_posture = collect_text_values(proposal, _SECURITY_POSTURE_FIELDS)
-    if not explicit_posture:
-        issues.append("proposal must include explicit security_compliance, security_posture, or domain risk posture")
-        return
-    text = " ".join((*explicit_posture, *text_values(proposal))).casefold()
-    if not _contains_any(text, _RISK_TOKENS):
-        issues.append("proposal security_compliance posture must assess domain, delivery, or operational risk")
-    if not _contains_any(text, _SECURITY_TOKENS):
-        issues.append("proposal security_compliance posture must assess security posture")
-    if not _contains_any(text, _POLICY_TOKENS):
-        issues.append("proposal security_compliance posture must assess compliance, policy, privacy, accessibility, or safety posture")
-
-
-_GENERIC_VISIBLE_TRIBUNAL_ACTORS = {
-    "operator",
-    "maintainer",
-    "reviewer",
-    "primary user",
-    "project operator",
-    "domain reviewer",
-    "implementation owner",
-    "evidence owner",
-    "end-user advocate",
-    "workflow operator",
-    "risk reviewer",
-    "proof owner",
-    "proof reviewer",
-    "build owner",
-    "release owner",
-}
-_STABLE_ROLE_LABELS = {
-    "beneficiary advocate",
-    "domain operator",
-    "risk owner",
-    "evidence owner",
-    "implementation owner",
-    "release owner",
-}
-
-
-def _check_visible_tribunal_actors(
-    *,
-    visible_actors: Sequence[Mapping[str, str]],
-    issues: list[str],
-) -> None:
-    labels = [str(row.get("visible_actor", "")).strip() for row in visible_actors]
-    generic = [
-        label
-        for label in labels
-        if label.casefold() in _GENERIC_VISIBLE_TRIBUNAL_ACTORS
-        or label.casefold().replace("_", " ") in _STABLE_ROLE_LABELS
-    ]
-    if generic:
-        issues.append(
-            "Tribunal visible actors must be project-specific, not stable-role placeholders: "
-            + ", ".join(generic)
-        )
-    issues.extend(tribunal_visible_actor_quality_issues(visible_actors))
-
-
-def _project_title_slugs(proposal: Mapping[str, Any]) -> set[str]:
-    intent = proposal.get("intent", {}) if isinstance(proposal.get("intent"), Mapping) else {}
-    values = (intent.get("title"), intent.get("project_slug"))
-    return {slugify(str(value)) for value in values if str(value or "").strip()}
-
-
-def _has_text(row: Mapping[str, Any], key: str) -> bool:
-    return any(text_values(row.get(key)))
-
-
-def _has_any_text(row: Mapping[str, Any], keys: Sequence[str]) -> bool:
-    return any(_has_text(row, key) for key in keys)
-
-
-def _contains_any(text: str, tokens: Sequence[str]) -> bool:
-    return any(token in text for token in tokens)
-
-
-def _slug_values(values: Sequence[str]) -> set[str]:
-    result: set[str] = set()
-    for value in values:
-        slug = slugify(str(value))
-        if slug:
-            result.add(slug)
-            result.add(slug.replace("-", ""))
-    return result
-
-
-def _component_aliases(components: Sequence[Mapping[str, Any]]) -> set[str]:
-    aliases: set[str] = set()
-    for row in components:
-        aliases.update(
-            _slug_values(
-                (
-                    str(row.get("component_id", "")),
-                    str(row.get("label", "")),
-                    str(row.get("name", "")),
-                )
-            )
-        )
-    return aliases
-
-
-def _backlog_aliases(backlog: Sequence[Mapping[str, Any]]) -> set[str]:
-    aliases: set[str] = set()
-    for row in backlog:
-        aliases.update(
-            _slug_values(
-                (
-                    str(row.get("id", "")),
-                    str(row.get("idea_id", "")),
-                    str(row.get("workstream_id", "")),
-                    str(row.get("title", "")),
-                )
-            )
-        )
-    return aliases
-
-
-def _diagram_component_aliases(diagrams: Sequence[Mapping[str, Any]]) -> set[str]:
-    aliases: set[str] = set()
-    for row in diagrams:
-        aliases.update(_slug_values(collect_text_values(row, _COMPONENT_REF_FIELDS)))
-        for component in row.get("components", []) if isinstance(row.get("components"), list) else []:
-            if isinstance(component, Mapping):
-                aliases.update(
-                    _slug_values(
-                        (
-                            str(component.get("component_id", "")),
-                            str(component.get("label", "")),
-                            str(component.get("name", "")),
-                        )
-                    )
-                )
-            else:
-                aliases.update(_slug_values((str(component),)))
-    return aliases
-
-
-__all__ = [
-    "GreenfieldTribunalDecision",
-    "raise_for_failed_greenfield_tribunal",
-    "run_greenfield_tribunal",
-]

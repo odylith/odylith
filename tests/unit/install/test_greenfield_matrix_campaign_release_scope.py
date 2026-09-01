@@ -22,8 +22,6 @@ def test_matrix_command_separates_discovery_and_release_policy(tmp_path: Path) -
         proof_tier="discovery",
         install_mode="seeded",
         include_browser_proof=False,
-        include_rescue_smoke=False,
-        include_natural_rescue_proof=False,
         stop_after_failures=1,
         stop_after_cluster_failures=2,
         require_high_variance_stressors=True,
@@ -35,8 +33,6 @@ def test_matrix_command_separates_discovery_and_release_policy(tmp_path: Path) -
         proof_tier="release",
         install_mode="full",
         include_browser_proof=True,
-        include_rescue_smoke=True,
-        include_natural_rescue_proof=True,
         stop_after_failures=0,
         stop_after_cluster_failures=0,
         require_high_variance_stressors=True,
@@ -63,8 +59,6 @@ def test_matrix_command_separates_discovery_and_release_policy(tmp_path: Path) -
 
     assert command_arg(discovery_command, "--proof-tier") == "discovery"
     assert "--allow-skipped-browser-proof" in discovery_command
-    assert "--skip-rescue-smoke" in discovery_command
-    assert "--skip-natural-rescue-proof" in discovery_command
     assert "--skip-commit-recovery-proof" in discovery_command
     assert "--require-high-variance-stressors" not in discovery_command
     assert command_arg(discovery_command, "--required-stressor") == "modal-expert-lens"
@@ -72,8 +66,6 @@ def test_matrix_command_separates_discovery_and_release_policy(tmp_path: Path) -
     assert command_arg(discovery_command, "--install-mode") == "seeded"
     assert command_arg(release_command, "--proof-tier") == "release"
     assert "--include-browser-proof" in release_command
-    assert "--include-rescue-smoke" in release_command
-    assert "--include-natural-rescue-proof" in release_command
     assert "--include-commit-recovery-proof" in release_command
     assert command_arg(release_command, "--install-mode") == "full"
     assert "--stop-after-failures" not in release_command
@@ -152,8 +144,6 @@ def test_semantic_release_shard_does_not_require_a_source_corpus_audit(tmp_path:
         proof_tier="release",
         install_mode="full",
         include_browser_proof=True,
-        include_rescue_smoke=True,
-        include_natural_rescue_proof=True,
         stop_after_failures=0,
         stop_after_cluster_failures=0,
         require_high_variance_stressors=False,
@@ -163,6 +153,7 @@ def test_semantic_release_shard_does_not_require_a_source_corpus_audit(tmp_path:
         evaluation_split_manifest=tmp_path / "evaluation-splits.v1.json",
         final_holdout_run_ledger=tmp_path / "final-holdout-run.v1.json",
         implementation_revision="a" * 40,
+        distribution_provenance_file=tmp_path / "build-provenance.v1.json",
     )
 
     failure = shard_runner._tier_case_file_preflight_failure(  # noqa: SLF001
@@ -186,8 +177,6 @@ def test_partial_semantic_release_contract_still_requires_a_source_corpus_audit(
         proof_tier="release",
         install_mode="full",
         include_browser_proof=True,
-        include_rescue_smoke=True,
-        include_natural_rescue_proof=True,
         stop_after_failures=0,
         stop_after_cluster_failures=0,
         require_high_variance_stressors=False,
@@ -197,6 +186,7 @@ def test_partial_semantic_release_contract_still_requires_a_source_corpus_audit(
         evaluation_split_manifest=tmp_path / "evaluation-splits.v1.json",
         final_holdout_run_ledger=None,
         implementation_revision="a" * 40,
+        distribution_provenance_file=tmp_path / "build-provenance.v1.json",
     )
 
     failure = shard_runner._tier_case_file_preflight_failure(  # noqa: SLF001
@@ -211,7 +201,7 @@ def test_partial_semantic_release_contract_still_requires_a_source_corpus_audit(
     assert "release proof requires --release-audit-file" in failure.stderr_excerpt
 
 
-def test_campaign_runs_a_sealed_semantic_release_without_a_source_corpus_audit(
+def test_campaign_starts_semantic_child_before_any_protected_input_read(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
@@ -231,20 +221,66 @@ def test_campaign_runs_a_sealed_semantic_release_without_a_source_corpus_audit(
         encoding="utf-8",
     )
     commands: list[list[str]] = []
+    child_started = False
+    protected_paths = {holdout.resolve(), manifest.resolve()}
+    shard_runner = sys.modules["greenfield_matrix_campaign_shard_runner"]
+    guard = sys.modules["greenfield_final_holdout_guard"]
+    guard_sha256 = guard._sha256_file  # noqa: SLF001
+
+    def protected_hash(path):  # noqa: ANN001
+        if Path(path).resolve() in protected_paths:
+            assert child_started, "protected input was opened before the release child started"
+        return guard_sha256(path)
 
     def fake_run(**kwargs):  # noqa: ANN001
+        nonlocal child_started
         command = kwargs["command"]
         commands.append(command)
-        write_payload(Path(command_arg(command, "--output-json")), status="passed")
+        child_started = True
+        result_path = Path(command_arg(command, "--output-json"))
+        ledger_path = Path(command_arg(command, "--final-holdout-run-ledger"))
+        guard.claim_final_holdout_run(
+            ledger_path=ledger_path,
+            implementation_revision=command_arg(command, "--implementation-revision"),
+            distribution_provenance_sha256="f" * 64,
+        )
+        guard.bind_final_holdout_inputs(
+            ledger_path=ledger_path,
+            protected_inputs={
+                "final_holdout": Path(command_arg(command, "--semantic-annotations-file")),
+                "evaluation_manifest": Path(command_arg(command, "--evaluation-split-manifest")),
+            },
+        )
+        write_payload(result_path, status="passed")
+        guard.complete_final_holdout_run(
+            ledger_path=ledger_path,
+            result_path=result_path,
+            outcome="passed",
+        )
         return subprocess.CompletedProcess(command, 0, "passed shard", ""), ""
 
-    release_input_manifest = module._release_proof_input_manifest  # noqa: SLF001
     monkeypatch.setattr(module, "REPO_ROOT", repo_root)
     monkeypatch.setattr(
         module,
         "_release_proof_input_manifest",
-        lambda **kwargs: release_input_manifest(**kwargs, repo_root=repo_root),
+        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("semantic input manifest must be child-owned")),
     )
+    monkeypatch.setattr(
+        module,
+        "_seal_release_proof_inputs",
+        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("semantic inputs must not be copied")),
+    )
+    monkeypatch.setattr(
+        shard_runner,
+        "load_case_file",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("holdout loaded before child claim")),
+    )
+    monkeypatch.setattr(
+        shard_runner,
+        "initialize_attempt_ledger",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("attempt ledger initialized pre-claim")),
+    )
+    monkeypatch.setattr(guard, "_sha256_file", protected_hash)  # noqa: SLF001
     monkeypatch.setattr(module, "_run_command_with_progress", fake_run)
 
     payload = module.run_campaign(
@@ -259,6 +295,7 @@ def test_campaign_runs_a_sealed_semantic_release_without_a_source_corpus_audit(
         final_holdout_run_ledger=tmp_path / "final-holdout-run.v1.json",
         implementation_revision="a" * 40,
         require_release_readiness=True,
+        require_high_variance_stressors=True,
     )
 
     assert payload["status"] == "release-ready"
@@ -277,7 +314,11 @@ def test_campaign_runs_a_sealed_semantic_release_without_a_source_corpus_audit(
         commands[0], "--case-file"
     )
     sealed_root = Path(command_arg(commands[0], "--sealed-release-input-root"))
-    assert not sealed_root.exists()
+    assert sealed_root == tmp_path
+    assert sealed_root.exists()
+    assert command_arg(commands[0], "--distribution-provenance-file") == str(
+        dist_dir / "build-provenance.v1.json"
+    )
 
 
 def test_semantic_release_rejects_revision_not_bound_to_distribution_provenance(tmp_path: Path) -> None:

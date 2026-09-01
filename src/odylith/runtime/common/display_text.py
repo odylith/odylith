@@ -35,3 +35,29 @@ def strip_inline_markdown_emphasis_tree(value: object) -> Any:
     if isinstance(value, Sequence) and not isinstance(value, (bytes, bytearray)):
         return [strip_inline_markdown_emphasis_tree(item) for item in value]
     return value
+
+
+def present_verb(value: object, *, singular: str, plural: str) -> str:
+    """Select display-only verb agreement without importing semantic analyzers."""
+
+    text = " ".join(str(value or "").split())
+    words = [
+        token.strip(".,:;!?()[]{}\"'").casefold()
+        for token in text.split()
+        if token.strip(".,:;!?()[]{}\"'")
+    ]
+    if not words:
+        return singular
+    head = next(
+        (
+            word
+            for word in reversed(words)
+            if word not in {"context", "detail", "evidence", "state"}
+        ),
+        words[-1],
+    )
+    if head.endswith("s") and head not in {"status", "process"}:
+        return plural
+    if " and " in f" {text.casefold()} ":
+        return plural
+    return singular

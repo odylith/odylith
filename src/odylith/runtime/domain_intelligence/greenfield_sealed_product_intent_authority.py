@@ -17,25 +17,51 @@ from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
 from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
     require_atomic_fact_ledger,
 )
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_RELATION_SET_SHA256_KEY,
+)
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     require_supported_greenfield_operating_envelope,
 )
 
 
 PRODUCT_INTENT_AUTHORITY_KEY = "product_intent_authority"
-PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v5"
-PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION = "odylith.product-intent-envelope.v5"
-PRODUCT_INTENT_LEDGER_VERSION = "odylith.product-intent-custody-ledger.v4"
+PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v7"
+PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION = "odylith.product-intent-envelope.v7"
+PRODUCT_INTENT_LEDGER_VERSION = "odylith.product-intent-custody-ledger.v6"
 _AUTHORITY_VERSION_CONTRACTS = {
     PRODUCT_INTENT_AUTHORITY_VERSION: (
         PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION,
         PRODUCT_INTENT_LEDGER_VERSION,
     ),
-    "odylith.product-intent-authority.v4": (
-        "odylith.product-intent-envelope.v4",
-        "odylith.product-intent-custody-ledger.v3",
-    ),
 }
+_PRODUCT_INTENT_AUTHORITY_FIELDS = frozenset(
+    {
+        "version",
+        "origin",
+        "structured_intent_path",
+        "markdown_source_path",
+        "envelope_schema_version",
+        "ledger_version",
+        "decision",
+        "fact_authority",
+        "markdown_authority",
+        "product_facts_sha256",
+        "markdown_source_sha256",
+        "source_format",
+        "materiality_status",
+        "blocked_material_fields",
+        "clarification_policy",
+        "operating_envelope",
+        "material_fields",
+        "material_custody_sha256",
+        "atomic_ledger_version",
+        "atomic_facts",
+        "atomic_custody_sha256",
+        AUTHORED_RELATION_SET_SHA256_KEY,
+        "authority_snapshot_sha256",
+    }
+)
 MATERIAL_FACT_KEYS = (
     "product_story",
     "state_object",
@@ -103,6 +129,8 @@ def require_product_intent_authority_structure(authority: Mapping[str, Any]) -> 
 
 
 def _require_exact_authority_fields(authority: Mapping[str, Any]) -> None:
+    if set(authority) != _PRODUCT_INTENT_AUTHORITY_FIELDS:
+        raise ValueError("ProductCreateTransaction sealed Product Intent authority fields are invalid")
     version = authority.get("version")
     version_contract = _AUTHORITY_VERSION_CONTRACTS.get(version)
     if version_contract is None:
@@ -133,7 +161,11 @@ def _require_exact_authority_fields(authority: Mapping[str, Any]) -> None:
     ):
         if not _is_nonempty_string(authority.get(key)):
             raise ValueError("ProductCreateTransaction sealed Product Intent authority is missing required custody")
-    for key in ("product_facts_sha256", "markdown_source_sha256"):
+    for key in (
+        "product_facts_sha256",
+        "markdown_source_sha256",
+        AUTHORED_RELATION_SET_SHA256_KEY,
+    ):
         if not _is_sha256(authority.get(key)):
             raise ValueError("ProductCreateTransaction sealed Product Intent authority custody hash mismatch")
     if authority.get("materiality_status") != "passed":
@@ -199,6 +231,7 @@ def _authority_snapshot_payload(authority: Mapping[str, Any]) -> dict[str, Any]:
         "atomic_ledger_version": authority.get("atomic_ledger_version"),
         "atomic_facts": authority.get("atomic_facts"),
         "atomic_custody_sha256": authority.get("atomic_custody_sha256"),
+        AUTHORED_RELATION_SET_SHA256_KEY: authority.get(AUTHORED_RELATION_SET_SHA256_KEY),
     }
 
 
@@ -273,6 +306,7 @@ def _valid_span_refs(value: Any, span_ids: Any) -> bool:
 
 
 __all__ = [
+    "AUTHORED_RELATION_SET_SHA256_KEY",
     "MATERIAL_FACT_KEYS",
     "PRODUCT_INTENT_AUTHORITY_KEY",
     "PRODUCT_INTENT_AUTHORITY_VERSION",

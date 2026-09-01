@@ -7,15 +7,14 @@ from typing import Any
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
-from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_create_baseline
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
-from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
-from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
+from tests.unit.runtime.greenfield_proposal_fixtures import canonical_model_authored_intent_fixture
+from tests.unit.runtime.greenfield_proposal_fixtures import _canonical_model_authored_greenfield_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_transaction
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
 
@@ -24,7 +23,6 @@ _PROMPT = "Draft a greenfield proposal for a municipal permit review workspace"
 
 
 def _disable_refreshes(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(
         greenfield_apply_diagrams,
         "raise_for_greenfield_rendered_surface_custody",
@@ -48,25 +46,21 @@ def _disable_refreshes(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def _proposal(repo_root: Path) -> dict[str, object]:
-    return greenfield_proposals.build_greenfield_proposal(
-        repo_root=repo_root,
-        prompt=_PROMPT,
-        release_selector="0.0.1",
-        confirmed_intent=confirmed_intent_with_authority(
-            CONFIRMED_INTENT_TEXT,
-            prompt=_PROMPT,
-            repo_root=repo_root,
-            write_files=True,
-        ),
-    )
+    return _canonical_model_authored_greenfield_fixture(repo_root)
 
 
 def _compiled_transaction(repo_root: Path, monkeypatch: pytest.MonkeyPatch) -> Any:
     _disable_refreshes(monkeypatch)
+    proposal = _proposal(repo_root)
+    authoring_receipt = dict(proposal.pop("_test_model_authoring_receipt"))
     return greenfield_proposals.compile_greenfield_create_transaction(
         repo_root=repo_root,
-        proposal=_proposal(repo_root),
+        proposal=proposal,
         release_selector="0.0.1",
+        proposal_ready=True,
+        preconfirm_elapsed_seconds=float(authoring_receipt["elapsed_seconds"]),
+        model_authoring_tier=str(authoring_receipt["tier"]),
+        model_authoring_receipt=authoring_receipt,
     )
 
 

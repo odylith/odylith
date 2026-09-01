@@ -87,18 +87,26 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _load_governed_documents(*, repo_root: Path) -> tuple[dict[str, Any], list[dict[str, Any]], dict[str, backlog_contract.IdeaSpec]]:
+def _load_governed_documents(
+    *,
+    repo_root: Path,
+    idea_specs: Mapping[str, backlog_contract.IdeaSpec] | None = None,
+) -> tuple[dict[str, Any], list[dict[str, Any]], dict[str, backlog_contract.IdeaSpec]]:
     registry_path = release_planning_contract.releases_registry_path(repo_root=repo_root)
     event_log_path = release_planning_contract.release_assignment_event_log_path(repo_root=repo_root)
     registry_document, registry_errors = release_planning_contract.load_registry_document(path=registry_path)
     event_documents, event_errors = release_planning_contract.load_assignment_event_documents(path=event_log_path)
-    idea_specs, idea_errors = backlog_contract._validate_idea_specs(  # noqa: SLF001
-        repo_root.joinpath("odylith/radar/source/ideas")
-    )
+    if idea_specs is None:
+        resolved_idea_specs, idea_errors = backlog_contract._validate_idea_specs(  # noqa: SLF001
+            repo_root.joinpath("odylith/radar/source/ideas")
+        )
+    else:
+        resolved_idea_specs = dict(idea_specs)
+        idea_errors = []
     all_errors = [*registry_errors, *event_errors, *idea_errors]
     if all_errors:
         raise ValueError("\n".join(all_errors))
-    return registry_document, event_documents, idea_specs
+    return registry_document, event_documents, resolved_idea_specs
 
 
 def _render_release_payload(*, payload: Mapping[str, Any]) -> str:
@@ -632,8 +640,10 @@ def add_workstreams_to_release(
 ) -> dict[str, Any]:
     """Assign one or more known workstreams to a release after full preflight."""
     root = Path(repo_root).resolve()
-    registry_document, event_documents, loaded_idea_specs = _load_governed_documents(repo_root=root)
-    effective_idea_specs = dict(idea_specs if idea_specs is not None else loaded_idea_specs)
+    registry_document, event_documents, effective_idea_specs = _load_governed_documents(
+        repo_root=root,
+        idea_specs=idea_specs,
+    )
     state, _payload = _validated_state(
         repo_root=root,
         registry_document=registry_document,
@@ -727,17 +737,21 @@ def ensure_release_selector(
     name: str = "",
     notes: str = "",
     aliases: Sequence[str] = (),
+    idea_specs: Mapping[str, backlog_contract.IdeaSpec] | None = None,
     dry_run: bool = False,
 ) -> dict[str, Any]:
     """Create a release target when a requested selector is not defined yet."""
 
     root = Path(repo_root).resolve()
-    registry_document, event_documents, idea_specs = _load_governed_documents(repo_root=root)
+    registry_document, event_documents, resolved_idea_specs = _load_governed_documents(
+        repo_root=root,
+        idea_specs=idea_specs,
+    )
     state, payload = _validated_state(
         repo_root=root,
         registry_document=registry_document,
         event_documents=event_documents,
-        idea_specs=idea_specs,
+        idea_specs=resolved_idea_specs,
     )
     try:
         release = state.release_for_selector(selector)
@@ -792,7 +806,7 @@ def ensure_release_selector(
         repo_root=root,
         registry_document=document,
         event_documents=event_documents,
-        idea_specs=idea_specs,
+        idea_specs=resolved_idea_specs,
     )
     governance = _release_governance_decision(
         repo_root=root,

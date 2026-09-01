@@ -9,6 +9,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 import re
+import unicodedata
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import repo_path_resolver
@@ -165,10 +166,20 @@ def _resolve_governed_radar_paths(
 
 
 def _slugify(value: str) -> str:
-    token = re.sub(r"[^a-z0-9]+", "-", str(value or "").strip().lower())
-    token = token.strip("-")
-    if len(token) > 96:
-        token = token[:96].rstrip("-")
+    normalized = unicodedata.normalize("NFKC", str(value or "").strip()).casefold()
+    characters: list[str] = []
+    separator_pending = False
+    for character in normalized:
+        if character.isalnum():
+            if separator_pending and characters:
+                characters.append("-")
+            characters.append(character)
+            separator_pending = False
+        elif characters:
+            separator_pending = True
+    token = "".join(characters)
+    while len(token.encode("utf-8")) > 180:
+        token = token[:-1].rstrip("-")
     return token or "workstream"
 
 
@@ -312,7 +323,12 @@ def _default_sections_for_title(title: str) -> dict[str, str]:
     return backlog_contract.default_section_boilerplate(title)
 
 
-def _grounded_sections_for_title(*, title: str, args: argparse.Namespace) -> dict[str, str]:
+def _grounded_sections_for_title(
+    *,
+    title: str,
+    args: argparse.Namespace,
+    source_custody: Mapping[str, Any] | None = None,
+) -> dict[str, str]:
     sections = dict(_default_sections_for_title(title))
     sections["Problem"] = str(args.problem).strip()
     sections["Customer"] = str(args.customer).strip()
@@ -336,17 +352,23 @@ def _grounded_sections_for_title(*, title: str, args: argparse.Namespace) -> dic
             section_title = str(section).strip()
             if section_title and str(body).strip():
                 sections[section_title] = str(body).strip()
-    validation_errors = backlog_contract.core_detail_section_errors(
-        title=title,
-        sections=sections,
-        path=Path("<generated>"),
-    )
-    if validation_errors:
-        raise ValueError("; ".join(validation_errors))
+    if not artifact_tribunal.source_custody_valid(source_custody):
+        validation_errors = backlog_contract.core_detail_section_errors(
+            title=title,
+            sections=sections,
+            path=Path("<generated>"),
+        )
+        if validation_errors:
+            raise ValueError("; ".join(validation_errors))
     return sections
 
 
-def _backlog_tribunal_decision(*, title: str, sections: Mapping[str, str]) -> artifact_tribunal.GovernedArtifactTribunalDecision:
+def _backlog_tribunal_decision(
+    *,
+    title: str,
+    sections: Mapping[str, str],
+    source_custody: Mapping[str, Any] | None = None,
+) -> artifact_tribunal.GovernedArtifactTribunalDecision:
     tribunal = artifact_tribunal.run_governed_artifact_tribunal(
         artifact_kind="backlog",
         payload={
@@ -359,6 +381,7 @@ def _backlog_tribunal_decision(*, title: str, sections: Mapping[str, str]) -> ar
             "risks": sections.get("Risks", ""),
             "validation": sections.get("Validation", ""),
         },
+        source_custody=source_custody,
     )
     artifact_tribunal.raise_for_failed_artifact_tribunal(tribunal)
     return tribunal
@@ -637,7 +660,7 @@ def _build_rationale_lines(
     override_note: str,
     override_review_date: str,
 ) -> list[str]:
-    if item.rationale_lines and _has_required_rationale_lines(item.rationale_lines):
+    if item.rationale_lines:
         return [str(line).strip() for line in item.rationale_lines if str(line).strip()]
     cost_line = "- tradeoff: keep the first pass narrow until owner, evidence, and validation are explicit."
     if item.founder_override:
@@ -656,20 +679,6 @@ def _build_rationale_lines(
         "- deferred for now: later automation, integrations, and release expansion wait until the first proof path is accepted.",
         "- ranking basis: score-based rank; no manual priority override.",
     ]
-
-
-def _has_required_rationale_lines(lines: Sequence[str]) -> bool:
-    text = "\n".join(str(line).casefold() for line in lines)
-    return all(
-        bullet in text
-        for bullet in (
-            "- why now:",
-            "- expected outcome:",
-            "- tradeoff:",
-            "- deferred for now:",
-            "- ranking basis:",
-        )
-    )
 
 
 def _unique_idea_path(*, ideas_root: Path, title: str, today: dt.date, reserved: set[Path]) -> Path:
@@ -922,8 +931,20 @@ def create_queued_backlog_items(
         else:
             idea_path = _unique_idea_path(ideas_root=ideas_root, title=title, today=today, reserved=reserved_paths)
         reserved_paths.add(idea_path)
-        sections = _grounded_sections_for_title(title=title, args=row_args)
-        tribunal_decisions.append(_backlog_tribunal_decision(title=title, sections=sections).to_dict())
+        custody_value = getattr(row_args, "source_custody", None)
+        source_custody = custody_value if isinstance(custody_value, Mapping) else None
+        sections = _grounded_sections_for_title(
+            title=title,
+            args=row_args,
+            source_custody=source_custody,
+        )
+        tribunal_decisions.append(
+            _backlog_tribunal_decision(
+                title=title,
+                sections=sections,
+                source_custody=source_custody,
+            ).to_dict()
+        )
         text = _render_idea_text(metadata=metadata, sections=sections)
         new_text_by_path[idea_path] = text
         item = CreatedBacklogItem(

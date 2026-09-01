@@ -16,7 +16,6 @@ from typing import Any, Mapping, Sequence
 from odylith.runtime.common.prose_grammar import finite_action_clause
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import reference_relation_description
 from odylith.runtime.governance import artifact_tribunal
-from odylith.runtime.governance import component_spec_rendering
 from odylith.runtime.governance import owned_surface_refresh
 
 _REGISTRY_PATH_RELATIVE = Path("odylith/registry/source/component_registry.v1.json")
@@ -118,8 +117,14 @@ def _clean_sequence(values: Sequence[str] | str) -> tuple[str, ...]:
     return tuple(str(item).strip() for item in values if str(item).strip())
 
 
+def _sentence_fragment(value: Any) -> str:
+    from odylith.runtime.governance.component_spec_rendering import sentence_fragment
+
+    return sentence_fragment(value)
+
+
 def _responsibility_clause(value: str) -> str:
-    text = component_spec_rendering.sentence_fragment(value)
+    text = _sentence_fragment(value)
     if not text:
         return ""
     clauses = [
@@ -138,21 +143,21 @@ def _responsibility_clause(value: str) -> str:
 
 
 def _finite_responsibility_clause(value: str) -> str:
-    text = component_spec_rendering.sentence_fragment(value)
+    text = _sentence_fragment(value)
     if not text:
         return ""
     return finite_action_clause(text, default_verb="owns", default_single_token=False)
 
 
 def _registry_focus_phrase(*, label: str, responsibility: str) -> str:
-    label_text = component_spec_rendering.sentence_fragment(label)
+    label_text = _sentence_fragment(label)
     label_focus = re.sub(
         r"\b(?:adapter|service|engine|surface|client|module|system|component)\b$",
         "",
         label_text,
         flags=re.IGNORECASE,
     ).strip(" .")
-    text = component_spec_rendering.sentence_fragment(responsibility)
+    text = _sentence_fragment(responsibility)
     first_clause = re.split(r"\s*;\s*", text, maxsplit=1)[0] if text else ""
     relation = reference_relation_description(first_clause)
     if relation:
@@ -178,12 +183,12 @@ def _registry_focus_phrase(*, label: str, responsibility: str) -> str:
 
 
 def _starts_with_finite_action(value: str) -> bool:
-    words = component_spec_rendering.sentence_fragment(value).split()
+    words = _sentence_fragment(value).split()
     return bool(words and words[0].strip(" .,;:").casefold() in _FINITE_ACTION_LEADS)
 
 
 def _finite_action_object(value: str) -> str:
-    words = component_spec_rendering.sentence_fragment(value).split()
+    words = _sentence_fragment(value).split()
     if len(words) < 3 or words[0].strip(" .,;:").casefold() not in _FINITE_ACTION_LEADS:
         return ""
     text = " ".join(words[1:]).strip(" .,:;")
@@ -455,7 +460,9 @@ def register_component(
 
     spec_dir = components_root / component_id
     spec_path = spec_dir / "CURRENT_SPEC.md"
-    spec_text = component_spec_rendering.build_component_spec(
+    from odylith.runtime.governance.component_spec_rendering import build_component_spec
+
+    spec_text = build_component_spec(
         component_id=component_id,
         label=label,
         path=path,

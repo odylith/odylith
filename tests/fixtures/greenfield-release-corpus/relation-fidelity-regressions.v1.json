@@ -1,0 +1,111 @@
+{
+  "version": "odylith.greenfield.relation-fidelity-regressions.v1",
+  "claim_class": "public-development-relation-fidelity-controls",
+  "authority_boundary": "Frozen typed annotations are compared with sealed authored semantics; these control labels are not semantic inference rules.",
+  "cases": [
+    {
+      "id": "wrong-product-owner",
+      "mutation": "wrong_product_owner",
+      "expected_outcome": "reject",
+      "expected_categories": [
+        "first_path_events_mismatch",
+        "component_responsibility_relations_mismatch"
+      ]
+    },
+    {
+      "id": "wrong-external-actor",
+      "mutation": "wrong_external_actor",
+      "expected_outcome": "reject",
+      "expected_categories": [
+        "first_path_events_mismatch"
+      ]
+    },
+    {
+      "id": "wrong-actor-selected-fact",
+      "mutation": "wrong_actor_fact",
+      "expected_outcome": "reject",
+      "expected_categories": [
+        "first_path_events_mismatch"
+      ]
+    },
+    {
+      "id": "wrong-existing-context-event",
+      "mutation": "wrong_existing_context_event",
+      "expected_outcome": "reject",
+      "expected_categories": [
+        "context_relations_mismatch"
+      ]
+    },
+    {
+      "id": "false-independence",
+      "mutation": "false_independence",
+      "expected_outcome": "reject",
+      "expected_categories": [
+        "context_relations_mismatch"
+      ]
+    },
+    {
+      "id": "wrong-action",
+      "mutation": "wrong_action",
+      "expected_outcome": "reject",
+      "expected_categories": [
+        "first_path_events_mismatch"
+      ]
+    },
+    {
+      "id": "wrong-target",
+      "mutation": "wrong_target",
+      "expected_outcome": "reject",
+      "expected_categories": [
+        "first_path_events_mismatch"
+      ]
+    },
+    {
+      "id": "wrong-recovery-path",
+      "mutation": "wrong_recovery_path",
+      "expected_outcome": "reject",
+      "expected_categories": [
+        "first_path_events_mismatch"
+      ]
+    },
+    {
+      "id": "mutual-context-omission",
+      "mutation": "mutual_context_omission",
+      "expected_outcome": "reject",
+      "expected_categories": [
+        "relation_annotation_invalid",
+        "relation_custody_invalid"
+      ]
+    },
+    {
+      "id": "mutual-component-omission",
+      "mutation": "mutual_component_omission",
+      "expected_outcome": "reject",
+      "expected_categories": [
+        "relation_annotation_invalid",
+        "relation_custody_invalid"
+      ]
+    },
+    {
+      "id": "selected-component-terminal-substitution",
+      "mutation": "selected_component_terminal_substitution",
+      "expected_outcome": "reject",
+      "expected_categories": [
+        "component_responsibility_relations_mismatch",
+        "relation_custody_invalid"
+      ]
+    },
+    {
+      "id": "valid-independent-context",
+      "mutation": null,
+      "expected_outcome": "accept",
+      "expected_categories": []
+    },
+    {
+      "id": "repeated-identical-source-distinct-events",
+      "mutation": null,
+      "expected_outcome": "accept",
+      "expected_categories": []
+    }
+  ]
+}

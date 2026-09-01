@@ -48,8 +48,6 @@ def test_shard_run_resets_stale_result_and_telemetry_files(tmp_path: Path) -> No
         proof_tier="discovery",
         install_mode="seeded",
         include_browser_proof=False,
-        include_rescue_smoke=False,
-        include_natural_rescue_proof=False,
         stop_after_failures=1,
         stop_after_cluster_failures=1,
         require_high_variance_stressors=False,

@@ -32,37 +32,47 @@ def matrix_preflight_failures(
     cases: Sequence[GreenfieldMatrixCase],
     required_stressors: Sequence[str],
     enforce_required_stressors: bool = True,
+    enforce_lexical_controls: bool = True,
 ) -> tuple[MatrixPreflightFailure, ...]:
     issues_by_case: dict[GreenfieldMatrixCase, list[str]] = {}
-    terms_by_case = {case: case_preflight_leakage_terms(case) for case in cases}
-    for case in cases:
-        missing_terms = ungrounded_required_terms(
-            prompt=case.prompt,
-            confirmed_intent_markdown=str(getattr(case, "confirmed_intent_markdown", "") or ""),
-            required_terms=tuple(getattr(case, "required_terms", ()) or ()),
-        )
-        if missing_terms:
-            _add_issue(
-                issues_by_case,
-                case,
-                "required terms are not grounded in the prompt or confirmed intent: "
-                + ", ".join(missing_terms),
+    terms_by_case = (
+        {case: case_preflight_leakage_terms(case) for case in cases}
+        if enforce_lexical_controls
+        else {}
+    )
+    if enforce_lexical_controls:
+        for case in cases:
+            missing_terms = ungrounded_required_terms(
+                prompt=case.prompt,
+                confirmed_intent_markdown=str(getattr(case, "confirmed_intent_markdown", "") or ""),
+                required_terms=tuple(getattr(case, "required_terms", ()) or ()),
             )
-        if not terms_by_case.get(case):
-            _add_issue(
-                issues_by_case,
-                case,
-                "leakage_terms are required before platform domain leakage proof can run",
-            )
+            if missing_terms:
+                _add_issue(
+                    issues_by_case,
+                    case,
+                    "required terms are not grounded in the prompt or confirmed intent: "
+                    + ", ".join(missing_terms),
+                )
+            if not terms_by_case.get(case):
+                _add_issue(
+                    issues_by_case,
+                    case,
+                    "leakage_terms are required before platform domain leakage proof can run",
+                )
     missing_stressors = missing_required_stressors(cases, required_stressors) if enforce_required_stressors else ()
     if missing_stressors:
         detail = "selected case set is missing required stressor classes: " + ", ".join(missing_stressors)
         for case in cases:
             _add_issue(issues_by_case, case, detail)
-    findings = _platform_domain_leakage_findings(
-        repo_root=repo_root,
-        release_dir=release_dir,
-        terms_by_case=terms_by_case,
+    findings = (
+        _platform_domain_leakage_findings(
+            repo_root=repo_root,
+            release_dir=release_dir,
+            terms_by_case=terms_by_case,
+        )
+        if enforce_lexical_controls
+        else ()
     )
     platform_native_terms = frozenset(str(finding.term).strip() for finding in findings if str(finding.term).strip())
     for case, terms in terms_by_case.items():

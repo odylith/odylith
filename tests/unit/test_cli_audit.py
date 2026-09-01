@@ -550,6 +550,34 @@ def test_cli_handler_dispatch_matrix(monkeypatch, tmp_path: Path, case: dict[str
     assert case["check"](captured["args"], tmp_path)
 
 
+def test_greenfield_propose_dispatches_the_public_cli_adapter(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_module_main(module: str, argv: list[str]) -> int:
+        captured["module"] = module
+        captured["argv"] = argv
+        return 92
+
+    monkeypatch.setattr(cli, "_run_module_main", fake_module_main)
+    args = argparse.Namespace(
+        greenfield_command="propose",
+        repo_root=str(tmp_path),
+        forwarded=["--prompt", "Build a lab notebook"],
+    )
+
+    rc = cli._cmd_greenfield(args)  # noqa: SLF001
+
+    assert rc == 92
+    assert captured["module"] == "odylith.runtime.domain_intelligence.greenfield_proposals_cli"
+    assert captured["argv"] == [
+        "propose",
+        "--repo-root",
+        str(tmp_path),
+        "--prompt",
+        "Build a lab notebook",
+    ]
+
+
 @pytest.mark.parametrize("case", _OWNED_SURFACE_REFRESH_CASES, ids=lambda case: " ".join(case["path"]))
 def test_cli_owned_surface_refresh_dispatch_matrix(monkeypatch, tmp_path: Path, case: dict[str, object]) -> None:
     captured: dict[str, object] = {}

@@ -9,28 +9,20 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from collections.abc import Sequence
-import re
 from typing import Any
 
-from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
-from odylith.runtime.artifact_quality.greenfield_package_quality import (
-    greenfield_rendered_package_quality_issues,
+from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import (
+    sealed_authored_projection,
 )
-from odylith.runtime.domain_intelligence.greenfield_project_brief import PROJECT_BRIEF_SCHEMA_VERSION
-from odylith.runtime.domain_intelligence.greenfield_project_brief import project_brief_issues
-from odylith.runtime.domain_intelligence.greenfield_atlas_semantic_coverage import (
-    atlas_first_path_contract_coverage_text,
-)
-from odylith.runtime.domain_intelligence.greenfield_first_path_coverage import first_path_contract_has_coverage
-from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_handoff_quality import (
+    next_steps_preview_issues,
+    project_dashboard_preview_issues,
+)
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_count
 from odylith.runtime.domain_intelligence.greenfield_rows import row_count
 from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
     PRODUCT_INTENT_AUTHORITY_KEY,
-)
-from odylith.runtime.domain_intelligence.greenfield_preconfirm_semantic_drift import (
-    semantic_overlap_ratio as _semantic_overlap_ratio,
 )
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_findings import (
     completion_review_findings,
@@ -60,9 +52,11 @@ from odylith.runtime.domain_intelligence.greenfield_completion_types import (
     GreenfieldCompletionReport,
 )
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
-from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
+
+
+PROJECT_BRIEF_SCHEMA_VERSION = "odylith.greenfield.project_brief.v1"
 
 
 def build_greenfield_completion_report(
@@ -71,9 +65,14 @@ def build_greenfield_completion_report(
     release_selector: str = "",
     rendered_component_specs: Mapping[str, str] | None = None,
     tribunal_preview: Mapping[str, Any] | None = None,
+    model_authored: bool = False,
 ) -> GreenfieldCompletionReport:
     """Evaluate the full pre-confirm package before any governed write."""
 
+    del model_authored
+    if not sealed_authored_projection(proposal):
+        raise ValueError("Greenfield pre-confirm completion requires a sealed authored projection")
+    model_authored = True
     rendered_specs = dict(rendered_component_specs or {})
     cached_tribunal = _cached_tribunal_result(tribunal_preview)
     if cached_tribunal is None:
@@ -87,10 +86,10 @@ def build_greenfield_completion_report(
             proposal,
             rendered_specs=rendered_specs,
             tribunal_issues=tribunal_issues,
+            model_authored=model_authored,
         )
     )
     issues = unique_text([finding.message for finding in findings])
-    issues = unique_text(issues)
     return GreenfieldCompletionReport(
         status="failed" if issues or findings else "passed",
         version="greenfield-pre-confirm-completion-v1",
@@ -107,20 +106,30 @@ def build_greenfield_completion_report(
     )
 
 
-def build_greenfield_package_report(package: GreenfieldCompletionPackage) -> GreenfieldCompletionReport:
+def build_greenfield_package_report(
+    package: GreenfieldCompletionPackage,
+    *,
+    model_authored: bool = False,
+) -> GreenfieldCompletionReport:
     """Evaluate the named in-memory package used by confirmed greenfield writes."""
 
+    del model_authored
+    if not sealed_authored_projection(package.proposal):
+        raise ValueError("Greenfield prewrite package requires a sealed authored projection")
+    model_authored = True
     report = build_greenfield_completion_report(
         package.proposal,
         release_selector=package.release_selector,
         rendered_component_specs=package.rendered_component_specs,
         tribunal_preview=package.tribunal_preview,
+        model_authored=model_authored,
     )
-    package_issues = _package_artifact_issues(package)
+    package_issues = _package_artifact_issues(package, model_authored=model_authored)
     package_findings = package_review_findings(
         package,
         package_issues=package_issues,
-        package_findings=package_artifact_findings(package),
+        package_findings=package_artifact_findings(package, model_authored=model_authored),
+        model_authored=model_authored,
     )
     findings = dedupe_review_findings([*report.findings, *package_findings])
     issues = unique_text([*report.issues, *(finding.message for finding in package_findings)])
@@ -175,9 +184,14 @@ def assert_greenfield_completion_ready(
     return report
 
 
-def assert_greenfield_package_ready(package: GreenfieldCompletionPackage) -> GreenfieldCompletionReport:
+def assert_greenfield_package_ready(
+    package: GreenfieldCompletionPackage,
+    *,
+    model_authored: bool = False,
+) -> GreenfieldCompletionReport:
     """Enforce the full pre-confirm package before write application continues."""
 
+    del model_authored
     report = build_greenfield_package_report(package)
     raise_for_failed_greenfield_completion(report)
     return report
@@ -198,7 +212,14 @@ def _cached_tribunal_result(preview: Mapping[str, Any] | None) -> tuple[str, lis
     return status or "unknown", issues
 
 
-def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
+def _package_artifact_issues(
+    package: GreenfieldCompletionPackage,
+    *,
+    model_authored: bool = False,
+) -> list[str]:
+    del model_authored
+    if not sealed_authored_projection(package.proposal):
+        return ["prewrite package requires a sealed authored projection"]
     issues: list[str] = []
     backlog_result = package.backlog_result if isinstance(package.backlog_result, Mapping) else {}
     atlas_sources = package.rendered_atlas_sources if isinstance(package.rendered_atlas_sources, Mapping) else {}
@@ -225,11 +246,9 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
             issues.append("prewrite Radar package must render one workstream file per created workstream")
         if not clean_text(backlog_result.get("backlog_index_text")):
             issues.append("prewrite Radar package missing rendered backlog index text")
-        issues.extend(generated_public_copy_issues("prewrite Radar package", idea_files))
         validation_gate = backlog_result.get("validation_gate") if isinstance(backlog_result.get("validation_gate"), Mapping) else {}
         if clean_text(validation_gate.get("status")) != "passed":
             issues.append("prewrite Radar package validation gate did not pass")
-        issues.extend(_radar_preview_semantic_issues(package, idea_files=idea_files))
     elif package.rendered_component_specs:
         issues.append("prewrite package with Registry specs must include Radar workstream render output")
     if backlog_result and not atlas_sources:
@@ -238,9 +257,9 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
         if len(package.atlas_diagram_ids) != len(atlas_sources):
             issues.append("prewrite Atlas package must include one compiled diagram id per Mermaid source")
         for diagram_id in package.atlas_diagram_ids:
-            if not re.fullmatch(r"D-\d{3,}", clean_text(diagram_id)):
+            if not _valid_compiled_diagram_id(clean_text(diagram_id)):
                 issues.append("prewrite Atlas package contains an invalid compiled diagram id")
-        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", clean_text(package.atlas_review_date)):
+        if not _valid_iso_date_shape(clean_text(package.atlas_review_date)):
             issues.append("prewrite Atlas package must include a compiled review date")
         diagram_rows = mapping_rows(package.proposal.get("diagrams"))
         if len(atlas_sources) != len(diagram_rows):
@@ -266,7 +285,6 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
                 continue
             if not _has_mermaid_declaration(text):
                 issues.append("prewrite Atlas package contains Mermaid source without a diagram declaration")
-        issues.extend(_atlas_preview_semantic_issues(package, atlas_sources))
     if package.rendered_component_specs and not component_preview:
         issues.append("prewrite Registry package must include component authoring previews")
     if component_preview:
@@ -287,11 +305,12 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
                 issues.append("prewrite component authoring preview missing compiled authoring input")
             elif clean_text(authoring_input.get("component_id")) != clean_text(row.get("component_id")):
                 issues.append("prewrite component authoring input drifted from Registry preview component id")
-        issues.extend(generated_public_copy_issues("prewrite Registry preview", component_preview))
     if backlog_result and not project_brief_preview:
         issues.append("prewrite package must include project brief preview")
     if project_brief_preview:
-        issues.extend(_project_brief_preview_issues(package, project_brief_preview))
+        issues.extend(
+            _project_brief_preview_issues(project_brief_preview)
+        )
     if backlog_result and not tribunal_preview:
         issues.append("prewrite package must include Tribunal evidence preview")
     if tribunal_preview:
@@ -299,12 +318,19 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
     if backlog_result and component_preview and atlas_sources and not accepted_preview:
         issues.append("prewrite package must include accepted-project memory preview")
     if accepted_preview:
-        issues.extend(_accepted_project_preview_issues(package, accepted_preview, component_preview, atlas_sources))
-        issues.extend(generated_public_copy_issues("accepted-project memory preview", accepted_preview))
+        issues.extend(
+            _accepted_project_preview_issues(package, accepted_preview, component_preview, atlas_sources)
+        )
     if backlog_result and component_preview and atlas_sources and not project_dashboard_preview:
         issues.append("prewrite package must include Project dashboard preview")
     if project_dashboard_preview:
-        issues.extend(_project_dashboard_preview_issues(project_dashboard_preview))
+        issues.extend(
+            project_dashboard_preview_issues(
+                package,
+                project_dashboard_preview,
+                model_authored=True,
+            )
+        )
     if backlog_result and component_preview and atlas_sources and not compass_preview:
         issues.append("prewrite package must include Compass memory event preview")
     if compass_preview:
@@ -312,7 +338,13 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
     if backlog_result and not next_steps_preview:
         issues.append("prewrite package must include operator next-steps preview")
     if next_steps_preview:
-        issues.extend(_next_steps_preview_issues(package, next_steps_preview))
+        issues.extend(
+            next_steps_preview_issues(
+                package,
+                next_steps_preview,
+                semantic_checks=False,
+            )
+        )
     issues.extend(surface_refresh_preview_issues(package.surface_refresh_preview))
     if package.release_selector and backlog_result and not package.release_workstream_ids:
         issues.append("prewrite release package must resolve first-release workstream ids")
@@ -341,55 +373,15 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
             if clean_text(target_release.get("release_id")) and clean_text(assignment_release.get("release_id")):
                 if clean_text(target_release.get("release_id")) != clean_text(assignment_release.get("release_id")):
                     issues.append("prewrite release target preview drifted from release assignment preview")
-    issues.extend(greenfield_rendered_package_quality_issues(package))
     return issues
 
 
-def _project_dashboard_preview_issues(project_dashboard_preview: Mapping[str, Any]) -> list[str]:
+
+
+def _project_brief_preview_issues(project_brief_preview: Mapping[str, Any]) -> list[str]:
     issues: list[str] = []
-    prompts = mapping_rows(project_dashboard_preview.get("host_handoff_prompts"))
-    if len(prompts) < 5:
-        issues.append("Project dashboard preview must include all source-launch implementation prompts")
-    return issues
-
-
-def _project_brief_preview_issues(
-    package: GreenfieldCompletionPackage,
-    project_brief_preview: Mapping[str, Any],
-) -> list[str]:
-    issues = [
-        issue.replace("proposal `project_brief`", "project brief preview")
-        for issue in project_brief_issues(
-            project_brief_preview,
-            operational_constraints=text_values(
-                package.proposal.get("intent", {}).get("operational_constraints", ())
-                if isinstance(package.proposal.get("intent"), Mapping)
-                else ()
-            ),
-        )
-    ]
     if clean_text(project_brief_preview.get("schema_version")) != PROJECT_BRIEF_SCHEMA_VERSION:
         issues.append("project brief preview has an unsupported schema version")
-    if not _confirmed_greenfield_package(package.proposal):
-        return issues
-    semantic = package.proposal.get("semantic_model") if isinstance(package.proposal.get("semantic_model"), Mapping) else {}
-    first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
-    proof_boundary = (
-        semantic.get("domain_ontology", {}).get("proof_boundary")
-        if isinstance(semantic.get("domain_ontology"), Mapping)
-        else ""
-    )
-    preview_text = clean_text(" ".join(value for item in text_values(project_brief_preview) for value in text_values(item)))
-    first_path_capability = clean_text(first_path.get("capability"))
-    first_path_raw_path = clean_text(first_path.get("raw_path"))
-    if (
-        first_path_capability
-        and _semantic_overlap_ratio(first_path_capability, preview_text) < 0.16
-        and (not first_path_raw_path or _semantic_overlap_ratio(first_path_raw_path, preview_text) < 0.16)
-    ):
-        issues.append("project brief preview missing semantic coverage for FirstPathContract")
-    if clean_text(proof_boundary) and _semantic_overlap_ratio(clean_text(proof_boundary), preview_text) < 0.12:
-        issues.append("project brief preview missing semantic coverage for proof boundary")
     return issues
 
 
@@ -409,167 +401,6 @@ def _tribunal_preview_issues(tribunal_preview: Mapping[str, Any]) -> list[str]:
     return issues
 
 
-def _next_steps_preview_issues(
-    package: GreenfieldCompletionPackage,
-    next_steps_preview: Mapping[str, Any],
-) -> list[str]:
-    issues: list[str] = []
-    created_ids = {
-        clean_text(row.get("idea_id")).upper()
-        for row in mapping_rows((package.backlog_result or {}).get("created"))
-        if clean_text(row.get("idea_id"))
-    }
-    start_id = clean_text(next_steps_preview.get("start_workstream_id")).upper()
-    project_id = clean_text(next_steps_preview.get("project_workstream_id")).upper()
-    if not start_id:
-        issues.append("operator next-steps preview must identify the first implementation workstream")
-    elif created_ids and start_id not in created_ids:
-        issues.append("operator next-steps preview start workstream drifted from Radar prewrite output")
-    if project_id and created_ids and project_id not in created_ids:
-        issues.append("operator next-steps preview project workstream drifted from Radar prewrite output")
-    if clean_text(next_steps_preview.get("release_selector")) != clean_text(package.release_selector):
-        issues.append("operator next-steps preview release selector drifted from requested release")
-    _require_preview_text(
-        next_steps_preview,
-        "implementation_prompt",
-        issues,
-        "operator next-steps preview must include an implementation prompt",
-        min_words=18,
-    )
-    prompt = clean_text(next_steps_preview.get("implementation_prompt"))
-    title = clean_text(next_steps_preview.get("start_workstream_title"))
-    if start_id and start_id not in prompt.upper():
-        issues.append("operator next-steps implementation prompt must name the first implementation workstream")
-    if title and _semantic_overlap_ratio(title, prompt) < 0.32:
-        issues.append("operator next-steps implementation prompt must mention the first implementation workstream title")
-    semantic = package.proposal.get("semantic_model") if isinstance(package.proposal.get("semantic_model"), Mapping) else {}
-    first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
-    first_path_text = _next_step_first_path_overlap_text(first_path)
-    if first_path_text and not _next_step_prompt_preserves_first_path(first_path, prompt):
-        issues.append("operator next-steps implementation prompt must overlap the accepted first path")
-    operator_sequence = text_values(next_steps_preview.get("operator_sequence"))
-    if len(operator_sequence) < 3:
-        issues.append("operator next-steps preview must include an actionable operator sequence")
-    gates = text_values(next_steps_preview.get("coding_readiness_gates"))
-    if len(gates) < 4:
-        issues.append("operator next-steps preview must carry coding-readiness gates")
-    commands = text_values(next_steps_preview.get("verification_commands"))
-    if len(commands) < 2:
-        issues.append("operator next-steps preview must include multiple verification commands")
-    issues.extend(_operator_next_step_copy_issues(next_steps_preview))
-    return issues
-
-
-def _operator_next_step_copy_issues(next_steps_preview: Mapping[str, Any]) -> list[str]:
-    return list(generated_public_copy_issues("operator next-steps preview", next_steps_preview))
-
-
-def _next_step_prompt_preserves_first_path(first_path: Mapping[str, Any], prompt: str) -> bool:
-    prompt_text = clean_text(prompt).casefold()
-    if not prompt_text:
-        return False
-    for candidate in _next_step_first_path_literal_candidates(first_path):
-        text = clean_text(candidate)
-        if text and text.casefold() in prompt_text:
-            return True
-    overlap_text = _next_step_first_path_overlap_text(first_path)
-    return bool(overlap_text and _semantic_overlap_ratio(overlap_text, prompt) >= 0.08)
-
-
-def _next_step_first_path_literal_candidates(first_path: Mapping[str, Any]) -> tuple[str, ...]:
-    values: list[str] = []
-    for key in ("raw_path",):
-        text = clean_text(first_path.get(key))
-        if text:
-            values.append(text)
-    return tuple(dict.fromkeys(values))
-
-
-def _next_step_first_path_overlap_text(first_path: Mapping[str, Any]) -> str:
-    """Return the semantic first-path projection that operator handoff copy must preserve."""
-
-    values: list[str] = []
-    for key in ("raw_path", "capability", "visible_result", "mutation", "action", "entity"):
-        text = clean_text(first_path.get(key))
-        if text:
-            values.append(text)
-    events = first_path.get("events")
-    if isinstance(events, Sequence) and not isinstance(events, (str, bytes)):
-        for event in events:
-            if not isinstance(event, Mapping):
-                continue
-            for key in ("text", "mutation", "action", "target_entity"):
-                text = clean_text(event.get(key))
-                if text:
-                    values.append(text)
-    return clean_text(" ".join(values))
-
-
-def _require_preview_text(
-    value: Mapping[str, Any],
-    key: str,
-    issues: list[str],
-    message: str,
-    *,
-    min_words: int,
-) -> None:
-    text = clean_text(value.get(key))
-    if not text:
-        issues.append(message)
-        return
-    if len([part for part in text.replace("/", " ").split() if part.strip()]) < min_words:
-        issues.append(message)
-
-
-def _radar_preview_semantic_issues(package: GreenfieldCompletionPackage, *, idea_files: Mapping[Any, Any]) -> list[str]:
-    if not _confirmed_greenfield_package(package.proposal):
-        return []
-    text = clean_text(" ".join(str(value or "") for value in idea_files.values()))
-    if not text:
-        return []
-    semantic = package.proposal.get("semantic_model") if isinstance(package.proposal.get("semantic_model"), Mapping) else {}
-    first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
-    ontology = semantic.get("domain_ontology") if isinstance(semantic.get("domain_ontology"), Mapping) else {}
-    issues: list[str] = []
-    if not first_path_contract_has_coverage(
-        first_path,
-        text,
-        overlap_ratio=_semantic_overlap_ratio,
-        threshold=0.18,
-    ):
-        issues.append("prewrite Radar package missing semantic coverage for first path")
-    proof_boundary = clean_text(ontology.get("proof_boundary"))
-    if proof_boundary and _semantic_overlap_ratio(proof_boundary, text) < 0.18:
-        issues.append("prewrite Radar package missing semantic coverage for proof boundary")
-    return issues
-
-
-def _atlas_preview_semantic_issues(package: GreenfieldCompletionPackage, atlas_sources: Mapping[str, str]) -> list[str]:
-    if not _confirmed_greenfield_package(package.proposal):
-        return []
-    text = clean_text(" ".join(str(value or "") for value in atlas_sources.values()))
-    if not text:
-        return []
-    semantic = package.proposal.get("semantic_model") if isinstance(package.proposal.get("semantic_model"), Mapping) else {}
-    graph = semantic.get("diagram_event_graph") if isinstance(semantic.get("diagram_event_graph"), Mapping) else {}
-    first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
-    issues: list[str] = []
-    first_path_text = atlas_first_path_contract_coverage_text(semantic)
-    if first_path_text and _semantic_overlap_ratio(first_path_text, text) < 0.16:
-        issues.append("prewrite Atlas package missing semantic coverage for FirstPathContract")
-    if "proof checkpoint" not in text.casefold():
-        issues.append("prewrite Atlas package missing proof checkpoint diagram label")
-    checkpoint = _atlas_checkpoint_search_text(clean_text(graph.get("proof_checkpoint")))
-    if checkpoint and _semantic_overlap_ratio(checkpoint, text) < 0.12:
-        issues.append("prewrite Atlas package missing semantic coverage for DiagramEventGraph proof checkpoint")
-    return issues
-
-
-def _atlas_checkpoint_search_text(value: str) -> str:
-    text = clean_text(value)
-    text = re.sub(r"^accepted\s+first\s+path\s+proof\s*:\s*", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^proven\s+when\s+", "", text, flags=re.IGNORECASE)
-    return text
 
 
 def _accepted_project_preview_issues(
@@ -601,7 +432,6 @@ def _accepted_project_preview_issues(
         issues.append("accepted-project memory preview diagram count drifted from Atlas prewrite output")
     if package.release_selector and clean_text(created.get("release_selector")) != clean_text(package.release_selector):
         issues.append("accepted-project memory preview release selector drifted from requested release")
-    issues.extend(_source_launch_preview_issues(package, accepted_preview))
     issues.extend(_prewrite_path_leak_issues("accepted-project memory preview", accepted_preview))
     issues.extend(
         _component_preview_path_fidelity_issues(
@@ -611,79 +441,6 @@ def _accepted_project_preview_issues(
         )
     )
     return issues
-
-
-_SOURCE_LAUNCH_TERM_STOPWORDS = frozenset(
-    {
-        "accepted",
-        "action",
-        "after",
-        "before",
-        "blocked",
-        "coding",
-        "complete",
-        "evidence",
-        "first",
-        "handoff",
-        "path",
-        "product",
-        "project",
-        "proof",
-        "release",
-        "result",
-        "scope",
-        "source",
-        "state",
-        "success",
-        "this",
-        "until",
-        "user",
-        "workstream",
-    }
-)
-
-
-def _source_launch_preview_issues(
-    package: GreenfieldCompletionPackage,
-    accepted_preview: Mapping[str, Any],
-) -> list[str]:
-    source_launch = accepted_preview.get("source_launch") if isinstance(accepted_preview.get("source_launch"), Mapping) else {}
-    prompt = clean_text(source_launch.get("implementation_prompt"))
-    if not prompt:
-        return []
-    issues = list(generated_public_copy_issues("accepted-project source launch", prompt))
-    proposal = accepted_preview.get("proposal") if isinstance(accepted_preview.get("proposal"), Mapping) else package.proposal
-    semantic = proposal.get("semantic_model") if isinstance(proposal.get("semantic_model"), Mapping) else {}
-    contract = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
-    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
-    raw_path = clean_text(contract.get("raw_path") or intent.get("first_path"))
-    state_object = clean_text(intent.get("state_object"))
-    accepted_segment = _source_launch_accepted_path_segment(prompt)
-    if (
-        accepted_segment
-        and raw_path
-        and state_object
-        and _source_launch_has_state_object_drift(accepted_segment, raw_path=raw_path, state_object=state_object)
-    ):
-        issues.append("accepted-project source launch implementation prompt mixes state-object terms into the accepted first-path clause")
-    return issues
-
-
-def _source_launch_accepted_path_segment(value: str) -> str:
-    match = re.search(
-        r"\bPreserve this accepted first path:\s*(?P<body>.+?)(?:\s+Treat\b|$)",
-        clean_text(value),
-        flags=re.I,
-    )
-    return clean_text(match.group("body")) if match else ""
-
-
-def _source_launch_has_state_object_drift(segment: str, *, raw_path: str, state_object: str) -> bool:
-    path_terms = set(ordered_terms(raw_path, minimum=4, stopwords=_SOURCE_LAUNCH_TERM_STOPWORDS, stem_ing=True))
-    state_terms = set(ordered_terms(state_object, minimum=4, stopwords=_SOURCE_LAUNCH_TERM_STOPWORDS, stem_ing=True))
-    segment_terms = set(ordered_terms(segment, minimum=4, stopwords=_SOURCE_LAUNCH_TERM_STOPWORDS, stem_ing=True))
-    unexpected_state_terms = (state_terms - path_terms) & segment_terms
-    return len(unexpected_state_terms) >= 2
 
 
 def _compass_memory_preview_issues(
@@ -733,11 +490,6 @@ def _component_preview_path_fidelity_issues(
     return issues
 
 
-def _confirmed_greenfield_package(proposal: Mapping[str, Any]) -> bool:
-    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
-    return clean_text(intent.get("reasoning_mode")) == "odylith_confirmed_governed_proposal"
-
-
 def _active_component_rows(proposal: Mapping[str, Any]) -> list[Mapping[str, Any]]:
     rows = mapping_rows(proposal.get("components"))
     active = [
@@ -749,14 +501,45 @@ def _active_component_rows(proposal: Mapping[str, Any]) -> list[Mapping[str, Any
 
 
 def _has_mermaid_declaration(value: str) -> bool:
-    return bool(
-        re.search(
-            r"(?m)^\s*(?:"
-            r"sequenceDiagram|flowchart|graph|classDiagram|stateDiagram(?:-v2)?|erDiagram|"
-            r"journey|gantt|pie|mindmap|timeline|quadrantChart|gitGraph|C4Context|C4Container|C4Component"
-            r")\b",
-            value,
-        )
+    declarations = {
+        "sequenceDiagram",
+        "flowchart",
+        "graph",
+        "classDiagram",
+        "stateDiagram",
+        "stateDiagram-v2",
+        "erDiagram",
+        "journey",
+        "gantt",
+        "pie",
+        "mindmap",
+        "timeline",
+        "quadrantChart",
+        "gitGraph",
+        "C4Context",
+        "C4Container",
+        "C4Component",
+    }
+    return any(
+        line.strip().split(maxsplit=1)[0] in declarations
+        for line in str(value or "").splitlines()
+        if line.strip()
+    )
+
+
+def _valid_compiled_diagram_id(value: str) -> bool:
+    suffix = value[2:] if value.startswith("D-") else ""
+    return len(suffix) >= 3 and suffix.isdigit()
+
+
+def _valid_iso_date_shape(value: str) -> bool:
+    return (
+        len(value) == 10
+        and value[4:5] == "-"
+        and value[7:8] == "-"
+        and value[:4].isdigit()
+        and value[5:7].isdigit()
+        and value[8:].isdigit()
     )
 
 

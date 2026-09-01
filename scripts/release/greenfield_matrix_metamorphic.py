@@ -3,65 +3,24 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-import re
 from typing import Any
 
-from greenfield_matrix_types import GreenfieldMatrixResult
 from greenfield_matrix_clarification import focused_material_question
 from greenfield_matrix_clarification import material_question_field_issues
+from greenfield_matrix_types import GreenfieldMatrixResult
 from greenfield_preconfirm_matrix_cases import CLARIFICATION_REQUIRED_EXPECTATION
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from greenfield_preconfirm_matrix_cases import case_expectation
 
 
-METAMORPHIC_OUTPUT_VERSION = "odylith.greenfield.matrix.metamorphic-output.v1"
-INVARIANT_FACT_FLOORS = {
-    "product_story": 0.60,
-    "state_object": 0.65,
-    "first_path": 0.65,
-    "proof_boundary": 0.60,
-    "human_actors": 0.70,
-    "external_systems": 0.75,
-    "internal_systems": 0.70,
-    "non_goals": 0.70,
-    "operational_constraints": 0.70,
-}
-_TOKEN_RE = re.compile(r"[a-z0-9]+")
-_NON_SEMANTIC_TOKENS = frozenset(
-    {
-        "a",
-        "an",
-        "and",
-        "as",
-        "at",
-        "be",
-        "before",
-        "by",
-        "can",
-        "for",
-        "from",
-        "in",
-        "into",
-        "is",
-        "it",
-        "of",
-        "on",
-        "one",
-        "or",
-        "that",
-        "the",
-        "their",
-        "this",
-        "to",
-        "with",
-    }
-)
+METAMORPHIC_OUTPUT_VERSION = "odylith.greenfield.matrix.metamorphic-output.v2"
 
 
 def evaluate_metamorphic_outputs(
     *,
     cases: Sequence[GreenfieldMatrixCase],
     results: Sequence[GreenfieldMatrixResult],
+    semantic_digests: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
     """Require equivalent-source variants to preserve their declared completion contract."""
 
@@ -98,7 +57,14 @@ def evaluate_metamorphic_outputs(
             pending_groups.append(group)
             continue
         complete_groups += 1
-        issues.extend(_group_issues(group=group, members=members, results_by_case_id=results_by_case_id))
+        issues.extend(
+            _group_issues(
+                group=group,
+                members=members,
+                results_by_case_id=results_by_case_id,
+                semantic_digests=semantic_digests or {},
+            )
+        )
     status = "failed" if issues else "pending" if pending_groups else "passed"
     return _evaluation(
         status=status,
@@ -115,6 +81,7 @@ def _group_issues(
     group: str,
     members: Sequence[GreenfieldMatrixCase],
     results_by_case_id: Mapping[str, GreenfieldMatrixResult],
+    semantic_digests: Mapping[str, str],
 ) -> list[str]:
     issues: list[str] = []
     expected_source_ids = {case.provenance.source_id for case in members}
@@ -146,57 +113,37 @@ def _group_issues(
         )
     if all(case_expectation(case) != CLARIFICATION_REQUIRED_EXPECTATION for case in members):
         issues.extend(
-            _invariant_meaning_issues(
+            _normalized_semantic_digest_issues(
                 group=group,
                 members=members,
-                results_by_case_id=results_by_case_id,
+                semantic_digests=semantic_digests,
             )
         )
     return issues
 
 
-def _invariant_meaning_issues(
+def _normalized_semantic_digest_issues(
     *,
     group: str,
     members: Sequence[GreenfieldMatrixCase],
-    results_by_case_id: Mapping[str, GreenfieldMatrixResult],
+    semantic_digests: Mapping[str, str],
 ) -> list[str]:
-    snapshots = [
-        (
-            _case_id(case),
-            _mapping(
-                _mapping(
-                    _mapping(results_by_case_id[_case_id(case)].evidence).get("preconfirm_dry_run")
-                ).get("semantic_snapshot")
-            ),
-        )
+    digests = {
+        _case_id(case): str(semantic_digests.get(_case_id(case)) or "").strip()
         for case in members
-    ]
-    missing = [case_id for case_id, snapshot in snapshots if not snapshot]
+    }
+    missing = [case_id for case_id, digest in digests.items() if not _is_sha256(digest)]
     if missing:
-        return [f"metamorphic group {group} lacks pre-confirm semantic snapshots for: {', '.join(missing)}"]
-    baseline_id, baseline = snapshots[0]
-    baseline_facts = _mapping(baseline.get("facts"))
-    issues: list[str] = []
-    for case_id, snapshot in snapshots[1:]:
-        facts = _mapping(snapshot.get("facts"))
-        for field, floor in INVARIANT_FACT_FLOORS.items():
-            baseline_tokens = _semantic_tokens(baseline_facts.get(field))
-            candidate_tokens = _semantic_tokens(facts.get(field))
-            if not baseline_tokens and not candidate_tokens:
-                continue
-            if not baseline_tokens or not candidate_tokens:
-                issues.append(
-                    f"metamorphic group {group} changed canonical field presence for {field}: {baseline_id}, {case_id}"
-                )
-                continue
-            overlap = _jaccard(baseline_tokens, candidate_tokens)
-            if overlap < floor:
-                issues.append(
-                    f"metamorphic group {group} changed normalized {field} meaning "
-                    f"({overlap:.3f} < {floor:.2f}): {baseline_id}, {case_id}"
-                )
-    return issues
+        return [
+            f"metamorphic group {group} lacks a verified normalized semantic digest for: "
+            + ", ".join(missing)
+        ]
+    if len(set(digests.values())) != 1:
+        return [
+            f"metamorphic group {group} changed frozen canonical semantic identities or relations: "
+            + ", ".join(sorted(digests))
+        ]
+    return []
 
 
 def _completion_invariant_issues(
@@ -259,7 +206,10 @@ def _clarification_invariant_issues(
     no_write = _mapping(evidence.get("no_write"))
     receipt = _mapping(evidence.get("preconfirm_dry_run"))
     required_fields = clarification.get("required_fields")
-    expected_fields = list(case_evidence.get("expected_question_fields") or [])
+    expected_clarification = _mapping(case_evidence.get("expected_clarification"))
+    expected_field = str(expected_clarification.get("field") or "").strip()
+    expected_question = str(expected_clarification.get("question") or "").strip()
+    expected_fields = [expected_field] if expected_field else []
     before_record_count = no_write.get("before_record_count")
     after_record_count = no_write.get("after_record_count")
     issues: list[str] = []
@@ -274,6 +224,8 @@ def _clarification_invariant_issues(
             issues.append(f"metamorphic group {group} case {case_id} {field_issue}")
         if not focused_material_question(clarification.get("question"), required_fields=expected_fields):
             issues.append(f"metamorphic group {group} case {case_id} did not ask its focused material question")
+        if expected_question and clarification.get("question") != expected_question:
+            issues.append(f"metamorphic group {group} case {case_id} changed its frozen clarification question")
     if required_fields != expected_fields:
         issues.append(f"metamorphic group {group} case {case_id} changed its expected material fields")
     if clarification.get("returncode") != 0:
@@ -348,19 +300,4 @@ def _matching_record_counts(before: Any, after: Any) -> bool:
     )
 
 
-def _semantic_tokens(value: Any) -> frozenset[str]:
-    if isinstance(value, Mapping):
-        text = " ".join(str(item) for item in value.values())
-    elif isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        text = " ".join(str(item) for item in value)
-    else:
-        text = str(value or "")
-    return frozenset(token for token in _TOKEN_RE.findall(text.casefold()) if token not in _NON_SEMANTIC_TOKENS)
-
-
-def _jaccard(left: frozenset[str], right: frozenset[str]) -> float:
-    union = left | right
-    return len(left & right) / len(union) if union else 1.0
-
-
-__all__ = ["INVARIANT_FACT_FLOORS", "METAMORPHIC_OUTPUT_VERSION", "evaluate_metamorphic_outputs"]
+__all__ = ["METAMORPHIC_OUTPUT_VERSION", "evaluate_metamorphic_outputs"]

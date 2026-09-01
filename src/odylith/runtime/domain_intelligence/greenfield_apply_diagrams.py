@@ -6,12 +6,18 @@ import datetime as dt
 import json
 import re
 from collections.abc import Mapping, Sequence
+from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.common.value_coercion import dedupe_strings
+from odylith.runtime.domain_intelligence.greenfield_authored_atlas_view import (
+    AUTHORED_ATLAS_AUTHORITY_KEY,
+    is_authored_atlas_view,
+    validate_authored_atlas_view,
+)
 from odylith.runtime.domain_intelligence.proposal_validation import validated_mermaid_source
 from odylith.runtime.surfaces import scaffold_mermaid_diagram
 
@@ -64,7 +70,14 @@ def render_prewrite_atlas_sources(proposal: Mapping[str, Any]) -> dict[str, str]
         slug = str(row.get("slug", "")).strip() or slugify(str(row.get("title", "")).strip())
         if not slug:
             continue
-        sources[f"odylith/atlas/source/{slug}.mmd"] = validated_mermaid_source(row).rstrip() + "\n"
+        if is_authored_atlas_view(row):
+            source = row.get("mermaid_source")
+            if not isinstance(source, str):
+                raise ValueError("authored Atlas row is missing its exact Mermaid source")
+            validate_authored_atlas_view(row, source_text=source)
+            sources[f"odylith/atlas/source/{slug}.mmd"] = source
+        else:
+            sources[f"odylith/atlas/source/{slug}.mmd"] = validated_mermaid_source(row).rstrip() + "\n"
     return sources
 
 
@@ -137,6 +150,17 @@ def render_prewrite_atlas_catalog_rows(
         link_state = str(row.get("link_state", "")).strip()
         if link_state:
             entry["link_state"] = link_state
+        if is_authored_atlas_view(row):
+            source = row.get("mermaid_source")
+            if not isinstance(source, str):
+                raise ValueError("authored Atlas row is missing its exact Mermaid source")
+            authored_view = validate_authored_atlas_view(row, source_text=source)
+            entry["projection_origin"] = row["projection_origin"]
+            entry["diagram_boxes"] = authored_view["diagram_boxes"]
+            entry[AUTHORED_ATLAS_AUTHORITY_KEY] = deepcopy(
+                row[AUTHORED_ATLAS_AUTHORITY_KEY]
+            )
+            validate_authored_atlas_view(entry, source_text=source)
         compiled_rows.append(dict(entry))
     return tuple(compiled_rows)
 
@@ -295,10 +319,14 @@ def compiled_atlas_source(
         if required:
             raise ValueError("compiled greenfield Atlas catalog row missing source_mmd")
         return ""
-    source = str(rendered_atlas_sources.get(source_mmd, "")).strip()
-    if required and not source:
+    raw_source = rendered_atlas_sources.get(source_mmd, "")
+    source = raw_source if isinstance(raw_source, str) else str(raw_source)
+    if required and not source.strip():
         raise ValueError(f"compiled greenfield Atlas source missing for {source_mmd}")
-    return source
+    if source and is_authored_atlas_view(catalog_row):
+        validate_authored_atlas_view(catalog_row, source_text=source)
+        return source
+    return source.strip()
 
 
 def atlas_source_path_for_row(row: Mapping[str, Any]) -> str:

@@ -6,16 +6,14 @@ from pathlib import Path
 
 import pytest
 
-from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_compiled_write
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence import proposal_memory
 from tests.unit.runtime.test_greenfield_create_transaction import _transaction
 
 
-def test_write_compiled_greenfield_package_bypasses_legacy_proposal_writer(
+def test_write_compiled_greenfield_package_applies_only_the_sealed_write_set(
     tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     transaction = _transaction(repo_root=tmp_path)
     staged_root = tmp_path / "staged"
@@ -31,21 +29,12 @@ def test_write_compiled_greenfield_package_bypasses_legacy_proposal_writer(
         prewrite_package=replace(transaction.prewrite_package, repository_write_set=write_set),
     )
 
-    def forbidden(*_args: object, **_kwargs: object) -> None:
-        raise AssertionError("compiled transaction commits must not route through the legacy proposal writer")
-
-    monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
-
-    result = greenfield_compiled_write.write_compiled_greenfield_package(
-        root=tmp_path,
-        transaction=transaction,
-        completion_priority_write_policy={"status": "write_allowed_with_projection_quality_debt"},
-    )
+    result = greenfield_compiled_write.write_compiled_greenfield_package(root=tmp_path, transaction=transaction)
 
     assert result["mode"] == "applied"
     assert (tmp_path / "odylith/index.html").read_text(encoding="utf-8") == "sealed project surface\n"
     assert result["repository_write_set"]["write_set_hash"] == write_set["write_set_hash"]
-    assert result["completion_priority_quality_debt"] == []
+    assert "completion_priority_quality_debt" not in result
 
 
 def test_write_compiled_greenfield_package_rejects_missing_write_set_before_writes(
@@ -80,7 +69,6 @@ def test_write_compiled_greenfield_package_reports_sealed_preview_without_qualit
     )
     preview = dict(transaction.prewrite_package.commit_result_preview or {})
     preview["dashboard_refresh"] = {"status": "failed"}
-    preview["completion_priority_quality_debt"] = ["pre-confirm fixture debt"]
     transaction = replace(
         transaction,
         prewrite_package=replace(
@@ -93,7 +81,6 @@ def test_write_compiled_greenfield_package_reports_sealed_preview_without_qualit
     result = greenfield_compiled_write.write_compiled_greenfield_package(root=tmp_path, transaction=transaction)
 
     assert result["dashboard_refresh"]["status"] == "failed"
-    assert result["completion_priority_quality_debt"] == ["pre-confirm fixture debt"]
     assert (tmp_path / "odylith/index.html").read_text(encoding="utf-8") == "sealed project surface\n"
 
 

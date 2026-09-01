@@ -8,12 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from odylith.runtime.common.value_coercion import dedupe_strings
-from odylith.runtime.domain_intelligence import greenfield_component_registry_scope
 from odylith.runtime.domain_intelligence import greenfield_traceability
-from odylith.runtime.domain_intelligence.greenfield_apply_components import component_authoring_responsibility
-from odylith.runtime.domain_intelligence.greenfield_apply_components import component_dependency_lines
-from odylith.runtime.domain_intelligence.greenfield_apply_components import component_risk_lines
-from odylith.runtime.domain_intelligence.greenfield_experience import row_text_tuple
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.governance import component_authoring
 
@@ -120,50 +115,6 @@ def compiled_component_registry_entry_issues(*, key: str, preview: Mapping[str, 
         if not str(registry_entry.get(field, "")).strip():
             issues.append(f"{key}: compiled component registry_entry missing {field}")
     return issues
-
-
-def legacy_component_authoring_input(
-    *,
-    row: Mapping[str, Any],
-    handoff: Mapping[str, Any],
-    traceability_plan: Any,
-    component_diagram_scope: Mapping[str, Sequence[str]],
-    component_dependency_lookup: Mapping[str, str],
-    proposal: Mapping[str, Any],
-) -> dict[str, Any]:
-    key = greenfield_traceability.component_key(row)
-    return {
-        "component_id": str(row.get("component_id", "")).strip(),
-        "label": str(row.get("label", "")).strip(),
-        "path": str(row.get("intended_path", "")).strip(),
-        "kind": str(row.get("kind", "service")).strip() or "service",
-        "category": "application",
-        "qualification": str(row.get("qualification", "candidate")).strip() or "candidate",
-        "owner": "repo",
-        "status": str(row.get("status", "planned")).strip() or "planned",
-        "product_layer": "application",
-        "sources": ("user_intent",),
-        "workstreams": greenfield_component_registry_scope.registry_component_workstreams(
-            handoff=handoff,
-            fallback=traceability_plan.component_workstreams.get(key, ()),
-        ),
-        "diagrams": greenfield_component_registry_scope.registry_component_diagrams(
-            row=row,
-            diagram_scope=component_diagram_scope,
-            fallback=traceability_plan.component_diagrams.get(key, ()),
-        ),
-        "responsibility": component_authoring_responsibility(row),
-        "boundary": str(row.get("boundary", "")).strip(),
-        "dependencies": component_dependency_lines(
-            row_text_tuple(row, "dependencies", "depends_on"),
-            lookup=component_dependency_lookup,
-        ),
-        "interfaces": row_text_tuple(row, "interfaces", "interface_changes"),
-        "validation": row_text_tuple(row, "validation", "test_strategy"),
-        "risks": component_risk_lines(row, proposal),
-        "implementation_handoff": handoff,
-        "component_contract": row.get("component_contract") if isinstance(row.get("component_contract"), Mapping) else None,
-    }
 
 
 def register_component_from_authoring_input(

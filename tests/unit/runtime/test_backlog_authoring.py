@@ -732,3 +732,7 @@ def test_backlog_create_rejects_boilerplate_core_detail(tmp_path: Path, capsys) 
 
     assert rc == 2
     assert "core detail section `## Problem` still uses backlog-create boilerplate" in output
+
+
+def test_workstream_slug_preserves_unicode_identity_without_ascii_fallback() -> None:
+    assert backlog_authoring._slugify("交付 港務台") == "交付-港務台"

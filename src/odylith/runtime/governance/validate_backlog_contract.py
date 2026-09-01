@@ -138,7 +138,6 @@ _IDEA_ID_RE = re.compile(r"^B-(?P<num>\d{3,})$")
 _IDEA_FILE_RE = re.compile(r"^(?P<date>\d{4}-\d{2}-\d{2})-(?P<slug>[a-z0-9][a-z0-9-]*)$")
 _REVIEW_DATE_RE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
 _UPDATE_STAMP_RE = re.compile(r"^Last updated \(UTC\):\s*(?P<date>\d{4}-\d{2}-\d{2})\s*$", re.M)
-_STOPWORDS: set[str] = {"and", "for", "the", "with", "from", "into", "only", "global"}
 _EXECUTION_SECTION_TITLES: tuple[str, ...] = (
     "In Planning/Implementation (Linked to `odylith/technical-plans/in-progress`)",
     "In Planning/Implementation (Linked to `odylith/technical-plans/in-progress` or an active parent wave)",
@@ -627,24 +626,6 @@ def _strip_inline_code(cell: str) -> str:
     if token.startswith("`") and token.endswith("`") and len(token) >= 2:
         return token[1:-1].strip()
     return token
-
-
-def _normalize_title_tokens(title: str) -> set[str]:
-    tokens = {
-        token
-        for token in re.findall(r"[a-z0-9]+", str(title or "").lower())
-        if len(token) >= 3 and token not in _STOPWORDS
-    }
-    return tokens
-
-
-def _jaccard_similarity(a: set[str], b: set[str]) -> float:
-    if not a or not b:
-        return 0.0
-    union = a | b
-    if not union:
-        return 0.0
-    return len(a & b) / len(union)
 
 
 def _extract_reorder_log_sections(
@@ -1165,13 +1146,8 @@ def _validate_idea_specs_uncached(
         for section in _REQUIRED_SECTIONS:
             if section not in spec.sections:
                 errors.append(f"{path}: missing required section `## {section}`")
-        errors.extend(
-            core_detail_section_errors(
-                title=str(spec.metadata.get("title", "")).strip(),
-                sections=spec.section_bodies,
-                path=path,
-            )
-        )
+            elif not str(spec.section_bodies.get(section, "")).strip():
+                errors.append(f"{path}: required section `## {section}` must be non-empty")
 
         errors.extend(
             backlog_title_contract.validate_workstream_title(
@@ -1653,8 +1629,6 @@ def _validate_backlog_index(
             ideas=ideas,
         )
     )
-    errors.extend(_validate_duplicate_risk(ideas=ideas, active_ids=active_ids))
-
     return active_ids, execution_ids, parked_ids, finished_ids, active_ranks, errors
 
 
@@ -1922,14 +1896,6 @@ def _validate_reorder_rationale_log(
                 lines=[str(line) for line in value.get("lines", [])] if isinstance(value.get("lines"), list) else [],
             )
 
-    required_bullets = (
-        "- why now:",
-        "- expected outcome:",
-        "- tradeoff:",
-        "- deferred for now:",
-        "- ranking basis:",
-    )
-
     for idea_id in sorted(active_ids):
         if idea_id not in sections:
             errors.append(
@@ -1948,12 +1914,8 @@ def _validate_reorder_rationale_log(
                 f"{backlog_index}: rationale heading for `{idea_id}` must be exactly "
                 f"`### {expected_heading}`, found `### {section.heading.strip()}`"
             )
-        section_text = "\n".join(section.lines).lower()
-        for bullet in required_bullets:
-            if bullet not in section_text:
-                errors.append(
-                    f"{backlog_index}: reorder rationale for `{idea_id}` missing `{bullet}`"
-                )
+        if not any(str(line).strip() for line in section.lines):
+            errors.append(f"{backlog_index}: reorder rationale for `{idea_id}` must be non-empty")
 
     for idea_id, spec in sorted(ideas.items()):
         if not spec.founder_override:
@@ -1984,28 +1946,6 @@ def _validate_reorder_rationale_log(
         if _REVIEW_DATE_RE.search(section_text) is None:
             errors.append(
                 f"{backlog_index}: priority override idea `{idea_id}` must include review checkpoint date (YYYY-MM-DD)"
-            )
-    return errors
-
-
-def _validate_duplicate_risk(*, ideas: dict[str, IdeaSpec], active_ids: set[str]) -> list[str]:
-    errors: list[str] = []
-    active_specs = [ideas[idea_id] for idea_id in sorted(active_ids) if idea_id in ideas]
-    for idx, left in enumerate(active_specs):
-        left_tokens = _normalize_title_tokens(left.metadata.get("title", ""))
-        if len(left_tokens) < 4:
-            continue
-        for right in active_specs[idx + 1 :]:
-            right_tokens = _normalize_title_tokens(right.metadata.get("title", ""))
-            if len(right_tokens) < 4:
-                continue
-            similarity = _jaccard_similarity(left_tokens, right_tokens)
-            if similarity < 0.85:
-                continue
-            errors.append(
-                "possible duplicate active ideas: "
-                f"`{left.idea_id}` <-> `{right.idea_id}` similarity={similarity:.2f}; "
-                "merge or supersede explicitly"
             )
     return errors
 

@@ -7,19 +7,49 @@ from collections.abc import Mapping, Sequence
 from math import sqrt
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    combined_prompt_evidence_source,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    require_greenfield_model_profile_observation,
+    supported_greenfield_model_profile_ids,
+)
+from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
+    SUPPORTED_COMPLEXITY_BANDS,
+    SUPPORTED_PUBLIC_INPUT_FORMATS,
+    greenfield_complexity_band,
+    require_supported_greenfield_operating_envelope,
+)
+
 from greenfield_matrix_types import GreenfieldMatrixResult
 
 
-STATISTICS_VERSION = "odylith.greenfield.matrix.statistics.v1"
+STATISTICS_VERSION = "odylith.greenfield.matrix.statistics.v2"
 _Z_95 = 1.959963984540054
+_MINIMUM_RELEASE_SLICE_SAMPLES = 4
+RELEASE_SLICE_DIMENSIONS = (
+    "complexity_band",
+    "evidence_format",
+    "model_profile",
+)
+_DISCOVERY_TAG_SLICE_DIMENSIONS = frozenset(
+    {"complexity", "model_profile", "host_profile"}
+)
 
 
 def outcome_statistics(
     *,
     cases: Sequence[Any],
     results: Sequence[GreenfieldMatrixResult],
+    release: bool = False,
+    required_slices: Mapping[str, Sequence[str]] | None = None,
 ) -> dict[str, Any]:
-    """Report point estimates, Wilson intervals, and worst observed slices."""
+    """Report point estimates, intervals, and evidence-bound release slices.
+
+    Discovery retains the historic descriptive tag slices.  Release reports
+    instead classify the support-critical axes from each sealed transaction;
+    case tags cannot manufacture coverage.
+    """
 
     case_ids = [_case_id(case) for case in cases]
     result_ids = [_result_case_id(result) for result in results]
@@ -29,6 +59,7 @@ def outcome_statistics(
     rows: list[dict[str, Any]] = []
     slice_members: dict[tuple[str, str], list[bool]] = defaultdict(list)
     missing_case_ids: list[str] = []
+    evidence_issues: list[str] = []
     for case in cases:
         case_id = _case_id(case)
         result = results_by_id.get(case_id)
@@ -37,7 +68,25 @@ def outcome_statistics(
             continue
         passed = result.status == "passed" and result.quality.passed
         rows.append({"case_id": case_id, "passed": passed})
-        for dimension, value in _case_slices(case):
+        slices = _case_slices(case)
+        if release:
+            sealed_slices, sealed_issues = release_slice_evidence(
+                case=case,
+                result=result,
+            )
+            evidence_issues.extend(
+                f"case `{case_id}` {issue}"
+                for issue in sealed_issues
+            )
+            slices = (
+                *(
+                    row
+                    for row in slices
+                    if row[0] not in _DISCOVERY_TAG_SLICE_DIMENSIONS
+                ),
+                *sealed_slices.items(),
+            )
+        for dimension, value in slices:
             slice_members[(dimension, value)].append(passed)
 
     passed_count = sum(1 for row in rows if row["passed"])
@@ -50,18 +99,59 @@ def outcome_statistics(
     worst = min(
         completed_slices,
         key=lambda row: (
-            float(row["point_estimate"]),
             float(row["confidence_interval_95"]["lower"]),
+            float(row["point_estimate"]),
             str(row["dimension"]),
             str(row["value"]),
         ),
         default=None,
     )
     lower, upper = wilson_interval(passed_count, sample_count)
-    complete = not missing_case_ids and not duplicate_case_ids and not duplicate_result_ids
+    supplied_release_contract = (
+        required_slices if required_slices is not None else release_slice_contract()
+    )
+    release_contract = _normalized_slice_contract(supplied_release_contract) if release else {}
+    release_contract_issues = (
+        _release_slice_contract_issues(
+            supplied=supplied_release_contract,
+            normalized=release_contract,
+        )
+        if release
+        else []
+    )
+    release_minimum_samples = release_slice_minimum_sample_contract() if release else {}
+    coverage_issues = (
+        release_slice_coverage_issues(
+            slices=slices,
+            required=release_contract,
+            minimum_samples=release_minimum_samples,
+        )
+        if release
+        else []
+    )
+    failing_release_slices = [
+        row
+        for row in slices
+        if row["dimension"] in release_contract and int(row["failed_count"]) > 0
+    ]
+    complete = not (
+        missing_case_ids
+        or duplicate_case_ids
+        or duplicate_result_ids
+        or evidence_issues
+        or release_contract_issues
+        or coverage_issues
+    )
+    passed = complete and not failing_release_slices
     return {
         "version": STATISTICS_VERSION,
-        "status": "complete" if complete else "incomplete",
+        "status": (
+            "passed" if release and passed
+            else "failed" if release
+            else "complete" if complete
+            else "incomplete"
+        ),
+        "passed": passed if release else complete,
         "selected_case_count": len(cases),
         "sample_count": sample_count,
         "passed_count": passed_count,
@@ -71,9 +161,175 @@ def outcome_statistics(
         "missing_case_ids": missing_case_ids,
         "duplicate_case_ids": duplicate_case_ids,
         "duplicate_result_ids": duplicate_result_ids,
+        "release_required_slices": release_contract,
+        "release_minimum_samples": release_minimum_samples,
+        "release_contract_issues": release_contract_issues,
+        "release_evidence_issues": list(dict.fromkeys(evidence_issues)),
+        "release_coverage_issues": coverage_issues,
+        "failing_release_slices": failing_release_slices,
         "worst_slice": worst or {},
         "slices": slices,
     }
+
+
+def release_slice_contract() -> dict[str, tuple[str, ...]]:
+    """Return every published release slice that needs observed coverage."""
+
+    return {
+        "complexity_band": tuple(SUPPORTED_COMPLEXITY_BANDS),
+        "evidence_format": tuple(SUPPORTED_PUBLIC_INPUT_FORMATS),
+        "model_profile": supported_greenfield_model_profile_ids(),
+    }
+
+
+def release_slice_minimum_sample_contract() -> dict[str, dict[str, int]]:
+    """Return the frozen evidence count required for every release slice.
+
+    Four is the smallest perfect binomial sample whose 95% Wilson lower bound
+    exceeds one half; smaller slices cannot support even a majority claim.
+    """
+
+    return {
+        dimension: {
+            value: _MINIMUM_RELEASE_SLICE_SAMPLES
+            for value in values
+        }
+        for dimension, values in release_slice_contract().items()
+    }
+
+
+def release_slice_minimum_sample_contract_issues(value: Any) -> list[str]:
+    """Reject absent, narrowed, or operator-softened release sample minima."""
+
+    if not isinstance(value, Mapping):
+        return ["release slice minimum samples must match the published contract"]
+    normalized: dict[str, dict[str, int]] = {}
+    for dimension, required_values in release_slice_contract().items():
+        rows = value.get(dimension)
+        if not isinstance(rows, Mapping):
+            normalized[dimension] = {}
+            continue
+        normalized[dimension] = {
+            str(slice_value): int(sample_count)
+            for slice_value, sample_count in rows.items()
+            if (
+                str(slice_value).strip()
+                and isinstance(sample_count, int)
+                and not isinstance(sample_count, bool)
+                and sample_count > 0
+            )
+        }
+        if set(rows) != set(required_values):
+            continue
+    if (
+        set(value) != set(RELEASE_SLICE_DIMENSIONS)
+        or normalized != release_slice_minimum_sample_contract()
+    ):
+        return ["release slice minimum samples must match the published contract"]
+    return []
+
+
+def expected_case_evidence_format(case: Any) -> str:
+    """Return the public format actually sent through Greenfield authoring."""
+
+    return (
+        "operator_prompt_with_edit_evidence"
+        if str(getattr(case, "confirmed_intent_markdown", "") or "").strip()
+        else "operator_prompt"
+    )
+
+
+def expected_case_source_complexity(case: Any) -> dict[str, int]:
+    """Return source dimensions independently knowable from frozen case bytes."""
+
+    edit_evidence = str(getattr(case, "confirmed_intent_markdown", "") or "").strip()
+    evidence_source = combined_prompt_evidence_source(
+        prompt=str(getattr(case, "prompt", "") or ""),
+        edit_evidence=edit_evidence,
+    )
+    return {
+        "evidence_bytes": len(evidence_source.encode("utf-8")),
+        "documents": 2 if edit_evidence else 1,
+    }
+
+
+def release_slice_evidence(
+    *,
+    case: Any,
+    result: GreenfieldMatrixResult,
+    annotated_complexity: Mapping[str, Any] | None = None,
+    allow_unsealed_clarification: bool = False,
+) -> tuple[dict[str, str], tuple[str, ...]]:
+    """Return support slices from sealed evidence, never from mutable case tags."""
+
+    issues: list[str] = []
+    evidence = _mapping(result.evidence)
+    receipt = _mapping(evidence.get("preconfirm_dry_run"))
+    snapshot = _mapping(receipt.get("semantic_snapshot"))
+    envelope = _mapping(snapshot.get("operating_envelope"))
+    expected_format = expected_case_evidence_format(case)
+    annotated = dict(annotated_complexity) if isinstance(annotated_complexity, Mapping) else {}
+    source_dimensions = expected_case_source_complexity(case)
+    for dimension, expected in source_dimensions.items():
+        if annotated and annotated.get(dimension) != expected:
+            issues.append(f"annotated complexity `{dimension}` does not match frozen source evidence")
+
+    sealed_profile = ""
+    if envelope:
+        try:
+            require_supported_greenfield_operating_envelope(envelope)
+        except ValueError:
+            issues.append("has an invalid sealed operating-envelope receipt")
+        complexity = _mapping(envelope.get("complexity"))
+        dimensions = _mapping(complexity.get("dimensions"))
+        if annotated and dimensions != annotated:
+            issues.append("annotated complexity does not match the sealed operating-envelope dimensions")
+        complexity_band = str(complexity.get("band") or "").strip()
+        evidence_format = str(envelope.get("evidence_format") or "").strip()
+        observed_model = _mapping(_mapping(envelope.get("model_contract")).get("observed"))
+        sealed_profile = str(observed_model.get("profile_id") or "").strip()
+    elif allow_unsealed_clarification and annotated:
+        complexity_band = greenfield_complexity_band(annotated)
+        evidence_format = expected_format
+    else:
+        complexity_band = ""
+        evidence_format = ""
+        issues.append("lacks a sealed operating-envelope receipt")
+
+    if evidence_format != expected_format:
+        issues.append("sealed evidence format does not match the frozen case input")
+    model_evidence = _mapping(evidence.get("model_profile"))
+    observed_profile = str(model_evidence.get("profile_id") or "").strip()
+    if not observed_profile:
+        issues.append("lacks an observed model profile")
+    elif observed_profile not in supported_greenfield_model_profile_ids():
+        issues.append("claims an unknown model profile")
+    if sealed_profile and sealed_profile != observed_profile:
+        issues.append("observed model profile does not match the sealed operating envelope")
+    if not sealed_profile and observed_profile:
+        observed = _mapping(model_evidence.get("observed"))
+        try:
+            require_greenfield_model_profile_observation(
+                profile_id=observed_profile,
+                provider=str(observed.get("provider") or ""),
+                model=str(observed.get("model") or ""),
+                reasoning_effort=str(observed.get("reasoning_effort") or ""),
+                effective_timeout_seconds=observed.get("effective_timeout_seconds"),
+            )
+        except ValueError:
+            issues.append("has invalid unsealed model-profile observation evidence")
+        if model_evidence.get("status") != "passed" or model_evidence.get("issues") != []:
+            issues.append("has unproven model-profile result evidence")
+
+    slices = {
+        "complexity_band": complexity_band,
+        "evidence_format": evidence_format,
+        "model_profile": sealed_profile or observed_profile,
+    }
+    for dimension, value in slices.items():
+        if not value:
+            issues.append(f"lacks release slice `{dimension}`")
+    return slices, tuple(dict.fromkeys(issues))
 
 
 def wilson_interval(successes: int, sample_count: int) -> tuple[float, float]:
@@ -130,10 +386,76 @@ def _case_slices(case: Any) -> tuple[tuple[str, str], ...]:
     return tuple(dict.fromkeys(values))
 
 
+def _normalized_slice_contract(
+    value: Mapping[str, Sequence[str]],
+) -> dict[str, tuple[str, ...]]:
+    contract: dict[str, tuple[str, ...]] = {}
+    for dimension in RELEASE_SLICE_DIMENSIONS:
+        rows = value.get(dimension)
+        if not isinstance(rows, Sequence) or isinstance(rows, (str, bytes, bytearray)):
+            contract[dimension] = ()
+            continue
+        contract[dimension] = tuple(
+            dict.fromkeys(str(item or "").strip() for item in rows if str(item or "").strip())
+        )
+    return contract
+
+
+def _release_slice_contract_issues(
+    *,
+    supplied: Mapping[str, Sequence[str]],
+    normalized: Mapping[str, Sequence[str]],
+) -> list[str]:
+    if set(supplied) != set(RELEASE_SLICE_DIMENSIONS):
+        return ["release slice contract must declare only every published slice dimension"]
+    if dict(normalized) != release_slice_contract():
+        return ["release slice contract does not match the published operating envelope"]
+    return []
+
+
+def release_slice_coverage_issues(
+    *,
+    slices: Sequence[Mapping[str, Any]],
+    required: Mapping[str, Sequence[str]],
+    minimum_samples: Mapping[str, Mapping[str, int]] | None = None,
+) -> list[str]:
+    issues: list[str] = []
+    observed: dict[str, set[str]] = defaultdict(set)
+    sample_counts: dict[tuple[str, str], int] = {}
+    for row in slices:
+        dimension = str(row.get("dimension") or "")
+        value = str(row.get("value") or "")
+        if dimension in required and value:
+            observed[dimension].add(value)
+            sample_counts[(dimension, value)] = int(row.get("sample_count", 0) or 0)
+    for dimension, required_values in required.items():
+        required_set = set(required_values)
+        dimension_minimums = _mapping(_mapping(minimum_samples).get(dimension))
+        missing = sorted(required_set - observed[dimension])
+        unknown = sorted(observed[dimension] - required_set)
+        if missing:
+            issues.append(f"release evidence lacks {dimension} coverage: " + ", ".join(missing))
+        if unknown:
+            issues.append(f"release evidence has unknown {dimension} slices: " + ", ".join(unknown))
+        for value in sorted(required_set & observed[dimension]):
+            minimum = int(dimension_minimums.get(value, 0) or 0)
+            observed_count = sample_counts.get((dimension, value), 0)
+            if minimum > 0 and observed_count < minimum:
+                issues.append(
+                    f"release evidence has {observed_count} sample(s) for {dimension} `{value}`; "
+                    f"requires at least {minimum}"
+                )
+    return issues
+
+
 def _result_case_id(result: GreenfieldMatrixResult) -> str:
     evidence = result.evidence if isinstance(result.evidence, Mapping) else {}
     case = evidence.get("case") if isinstance(evidence.get("case"), Mapping) else {}
     return str(case.get("id") or "").strip()
+
+
+def _mapping(value: Any) -> dict[str, Any]:
+    return dict(value) if isinstance(value, Mapping) else {}
 
 
 def _case_id(case: Any) -> str:
@@ -158,4 +480,16 @@ def _interval_payload(lower: float, upper: float) -> dict[str, Any]:
     }
 
 
-__all__ = ["STATISTICS_VERSION", "outcome_statistics", "wilson_interval"]
+__all__ = [
+    "RELEASE_SLICE_DIMENSIONS",
+    "STATISTICS_VERSION",
+    "expected_case_evidence_format",
+    "expected_case_source_complexity",
+    "outcome_statistics",
+    "release_slice_contract",
+    "release_slice_coverage_issues",
+    "release_slice_evidence",
+    "release_slice_minimum_sample_contract",
+    "release_slice_minimum_sample_contract_issues",
+    "wilson_interval",
+]

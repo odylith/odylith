@@ -12,7 +12,7 @@ import signal
 from typing import Any
 import uuid
 
-from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import (
+from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
     combined_prompt_evidence_source,
 )
 
@@ -33,6 +33,8 @@ from greenfield_commit_recovery_generation import (
     require_published_generation_boundary as _require_published_generation_boundary,
 )
 from greenfield_matrix_release_artifacts import is_sha256
+from greenfield_model_profiles import STANDARD_PROFILE_ID
+from greenfield_model_profiles import model_profile_environment
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from local_release_smoke import _cleanup_smoke_temp_root
 from local_release_smoke import _local_release_env
@@ -783,7 +785,10 @@ def _run_faulted_create(*, repo_root: Path, env: Mapping[str, str], command: lis
 def _installed_release_env(*, base_url: str, version: str) -> dict[str, str]:
     """Keep every installed proof command independent from the maintainer source tree."""
 
-    env = _local_release_env(base_url=base_url, version=version)
+    env = model_profile_environment(
+        STANDARD_PROFILE_ID,
+        _local_release_env(base_url=base_url, version=version),
+    )
     env.pop("PYTHONPATH", None)
     return env
 

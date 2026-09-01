@@ -5,7 +5,9 @@ from pathlib import Path
 import time
 
 from odylith.install.state import write_install_state, write_upgrade_spotlight, write_version_pin
-from tests.unit.runtime.greenfield_proposal_fixtures import _apply_ready_greenfield_fixture as _host_greenfield_fixture
+from tests.unit.runtime.greenfield_proposal_fixtures import (
+    _canonical_model_authored_greenfield_fixture as _authored_greenfield_fixture,
+)
 from odylith.runtime.surfaces import render_tooling_dashboard as renderer
 from odylith.runtime.surfaces import tooling_dashboard_shell_presenter
 
@@ -1371,7 +1373,7 @@ def test_render_tooling_dashboard_rebuilds_when_greenfield_project_is_accepted(
     first_html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
     assert "Project not defined yet" in first_html
 
-    proposal = _host_greenfield_fixture(tmp_path, "Build an ecommerce site with checkout recovery")
+    proposal = _authored_greenfield_fixture(tmp_path)
     accepted_path = tmp_path / "odylith" / "runtime" / "source" / "accepted-project.v1.json"
     accepted_path.write_text(
         json.dumps(
@@ -1396,7 +1398,7 @@ def test_render_tooling_dashboard_rebuilds_when_greenfield_project_is_accepted(
     payload_js = (tmp_path / "odylith" / "tooling-payload.v1.js").read_text(encoding="utf-8")
 
     assert "Product Story" in html
-    assert "Ecommerce Site With Checkout Recovery" in payload_js
+    assert "Commerce Launch System" in payload_js
     assert "Project not defined yet" not in html
 
 

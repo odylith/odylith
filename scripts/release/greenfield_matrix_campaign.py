@@ -160,6 +160,7 @@ def campaign_summary(
     results: Sequence[GreenfieldMatrixResult],
     config: MatrixCampaignConfig,
     stopped_reason: str,
+    semantic_digests: Mapping[str, str] | None = None,
 ) -> Mapping[str, Any]:
     completed = len(results)
     failures = sum(1 for result in results if result.status != "passed" or not result.quality.passed)
@@ -180,8 +181,16 @@ def campaign_summary(
         "stressor_coverage": stressor_coverage(cases, config.required_stressors),
         "stressor_variance": variance_evaluation(cases, config.required_stressors),
         "stressor_outcomes": stressor_outcomes(cases=cases, results=results),
-        "outcome_statistics": outcome_statistics(cases=cases, results=results),
-        "metamorphic_output": evaluate_metamorphic_outputs(cases=cases, results=results),
+        "outcome_statistics": outcome_statistics(
+            cases=cases,
+            results=results,
+            release=config.proof_tier == "release",
+        ),
+        "metamorphic_output": evaluate_metamorphic_outputs(
+            cases=cases,
+            results=results,
+            semantic_digests=semantic_digests,
+        ),
         "release_readiness_boundary": _release_readiness_boundary(config),
     }
 
@@ -261,6 +270,7 @@ def _compact_result(result: GreenfieldMatrixResult) -> Mapping[str, Any]:
         "status": result.status,
         "quality_passed": result.quality.passed,
         "score": result.quality.score,
+        "proposal_seconds": result.proposal_seconds,
         "create_seconds": result.create_seconds,
         "create_returncode": result.create_returncode,
         "issue_count": len(result.quality.issues),

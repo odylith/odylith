@@ -1,90 +1,37 @@
-"""Deterministic semantic release scoring against blinded atomic annotations."""
+"""Structural Greenfield release scoring over sealed model-authored custody."""
 
 from __future__ import annotations
 
 from collections import Counter, defaultdict
 from collections.abc import Mapping, Sequence
 import hashlib
-import re
+import json
 from typing import Any
 
-from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import ATOMIC_CATEGORY_FIELDS
-from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import atomic_claim_units
-from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import atomic_fact_ledger_hash
-from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import require_atomic_fact_ledger
+from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
+    atomic_fact_ledger_hash,
+)
+from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
+    require_atomic_fact_ledger,
+)
 
+from greenfield_matrix_statistics import RELEASE_SLICE_DIMENSIONS
+from greenfield_matrix_statistics import release_slice_contract
+from greenfield_matrix_statistics import release_slice_coverage_issues
+from greenfield_matrix_statistics import release_slice_evidence
+from greenfield_matrix_statistics import release_slice_minimum_sample_contract
+from greenfield_matrix_statistics import release_slice_minimum_sample_contract_issues
 from greenfield_matrix_statistics import wilson_interval
 from greenfield_matrix_types import GreenfieldMatrixResult
-from greenfield_matrix_clarification import question_field_key
+from greenfield_relation_fidelity import RELATION_FAMILIES
+from greenfield_relation_fidelity import annotation_relation_evidence
+from greenfield_relation_fidelity import snapshot_relation_evidence
 
 
-SEMANTIC_RELEASE_SCORE_VERSION = "odylith.greenfield.semantic-release-score.v1"
-_TOKEN_RE = re.compile(r"[a-z0-9]+")
-_STOPWORDS = frozenset(
-    {
-        "a",
-        "an",
-        "and",
-        "as",
-        "at",
-        "be",
-        "before",
-        "by",
-        "can",
-        "for",
-        "from",
-        "in",
-        "into",
-        "is",
-        "it",
-        "of",
-        "on",
-        "one",
-        "or",
-        "that",
-        "the",
-        "their",
-        "this",
-        "to",
-        "with",
-    }
-)
-_VALID_MATERIAL_CUSTODY = frozenset({"accepted_fact", "bounded_interpretation"})
-_INDEPENDENT_PRODUCT_EVIDENCE_HEADINGS = frozenset(
-    {
-        "ambiguities",
-        "assumptions",
-        "component responsibilities",
-        "customer",
-        "external systems",
-        "first complete path",
-        "first path",
-        "human actors",
-        "internal product systems",
-        "internal systems",
-        "non goals",
-        "non-goals",
-        "open questions",
-        "operational constraints",
-        "operator edit evidence",
-        "operator prompt evidence",
-        "opportunity",
-        "problem",
-        "product name",
-        "product story",
-        "product view",
-        "proof boundary",
-        "state",
-        "state object",
-        "success metrics",
-        "title",
-    }
-)
-_SOURCE_METADATA_LABEL_RE = re.compile(
-    r"\b(?:source\s+evidence|source\s+repository|repository\s+description)\s*(?::|-)\s*",
-    flags=re.IGNORECASE,
-)
-_SOURCE_METADATA_BOUNDARY_PUNCTUATION = (".", "!", "?", "-", ";", ":", ",")
+SEMANTIC_RELEASE_SCORE_VERSION = "odylith.greenfield.semantic-release-score.v5"
+NORMALIZED_SEMANTIC_DIGEST_VERSION = "odylith.greenfield.normalized-semantics.v1"
+_SCORED_ROLE = "scored"
+_REFERENCE_ROLE = "reference_only"
 
 
 def evaluate_semantic_release(
@@ -93,26 +40,30 @@ def evaluate_semantic_release(
     annotations: Mapping[str, Mapping[str, Any]],
     results: Sequence[GreenfieldMatrixResult],
     floors: Mapping[str, Any],
+    release_required_slices: Mapping[str, Sequence[str]] | None = None,
     _include_model_profiles: bool = True,
     _allow_not_applicable_metrics: bool = False,
 ) -> dict[str, Any]:
-    """Score result semantics without returning blinded evidence text."""
+    """Compare frozen expectations with exact atomic custody and typed outcomes."""
 
     case_ids = [_case_id(case) for case in cases]
     result_ids = [_result_case_id(result) for result in results]
     duplicate_case_ids = _duplicates(case_ids)
     duplicate_result_ids = _duplicates(result_ids)
-    results_by_id = {case_id: result for case_id, result in zip(result_ids, results, strict=False) if case_id}
+    results_by_id = {
+        case_id: result
+        for case_id, result in zip(result_ids, results, strict=False)
+        if case_id
+    }
     metric_counts: dict[str, list[int]] = {
-        "accepted_fact_custody": [0, 0],
-        "critical_constraint_recall": [0, 0],
-        "explicit_system_recall": [0, 0],
-        "material_question_recall": [0, 0],
+        "atomic_semantic_fidelity": [0, 0],
+        "relation_fidelity": [0, 0],
+        "clarification_identity": [0, 0],
         "unnecessary_question_rate": [0, 0],
-        "first_path_comprehension": [0, 0],
     }
     case_outcomes: list[dict[str, Any]] = []
     p0_findings: list[dict[str, str]] = []
+    p1_findings: list[dict[str, str]] = []
     missing_case_ids: list[str] = []
     for case in cases:
         case_id = _case_id(case)
@@ -123,23 +74,46 @@ def evaluate_semantic_release(
             continue
         outcome = _score_case(
             case=case,
+            case_id=case_id,
             annotation=annotation,
             result=result,
             metric_counts=metric_counts,
         )
         case_outcomes.append(outcome)
         p0_findings.extend(outcome["p0_findings"])
+        p1_findings.extend(outcome["p1_findings"])
 
     metrics = {name: _metric(name, *counts) for name, counts in metric_counts.items()}
+    relation_metric = metrics["relation_fidelity"]
+    relation_metric["sample_count"] = relation_metric["denominator"]
+    relation_metric["correct_count"] = relation_metric["numerator"]
+    relation_metric["incorrect_count"] = relation_metric["denominator"] - relation_metric["numerator"]
+    relation_metric["point_estimate"] = relation_metric["rate"]
+    if not relation_metric["denominator"]:
+        relation_metric["evidence"] = "no commit relation samples were selected"
     passed_count = sum(1 for outcome in case_outcomes if outcome["passed"])
     sample_count = len(case_outcomes)
     overall = _metric("overall_case_success", passed_count, sample_count)
-    lower, upper = wilson_interval(passed_count, sample_count)
-    overall["confidence_interval_95"] = _interval_payload(lower, upper)
     slices = _slice_rows(cases=cases, outcomes=case_outcomes)
     worst_slice = min(
         slices,
-        key=lambda row: (float(row["point_estimate"]), str(row["dimension"]), str(row["value"])),
+        key=lambda row: (
+            float(row["confidence_interval_95"]["lower"]),
+            float(row["point_estimate"]),
+            str(row["dimension"]),
+            str(row["value"]),
+        ),
+        default={},
+    )
+    relation_slices = _relation_slice_rows(cases=cases, outcomes=case_outcomes)
+    worst_relation_slice = min(
+        relation_slices,
+        key=lambda row: (
+            float(row["confidence_interval_95"]["lower"]),
+            float(row["point_estimate"]),
+            str(row["dimension"]),
+            str(row["value"]),
+        ),
         default={},
     )
     checks = _floor_checks(
@@ -147,26 +121,69 @@ def evaluate_semantic_release(
         metrics=metrics,
         overall=overall,
         worst_slice=worst_slice,
+        worst_relation_slice=worst_relation_slice,
         p0_findings=p0_findings,
+        p1_findings=p1_findings,
         allow_not_applicable_metrics=_allow_not_applicable_metrics,
     )
     issues = [
         str(check["issue"])
         for check in checks
-        if check["status"] in {"failed", "unproven"} and str(check.get("issue") or "").strip()
+        if check["status"] in {"failed", "unproven"}
+        and str(check.get("issue") or "").strip()
     ]
     if missing_case_ids:
         issues.append("semantic release results are incomplete")
+    if set(annotations) != set(case_ids):
+        issues.append("semantic release annotations do not exactly match selected cases")
     if duplicate_case_ids:
         issues.append("semantic release cases contain duplicate IDs")
     if duplicate_result_ids:
         issues.append("semantic release results contain duplicate IDs")
+    release_evidence_issues = [
+        f"case `{outcome['case_id']}` {issue}"
+        for outcome in case_outcomes
+        for issue in outcome["release_evidence_issues"]
+    ]
+    issues.extend(release_evidence_issues)
+    relation_evidence_issues = [
+        f"case `{outcome['case_id']}` {issue}"
+        for outcome in case_outcomes
+        for issue in outcome["relation_evidence_issues"]
+    ]
+    issues.extend(relation_evidence_issues)
+    required_slices = _required_release_slices(release_required_slices)
+    release_minimum_samples = release_slice_minimum_sample_contract()
+    if release_required_slices is not None and (
+        set(release_required_slices) != set(RELEASE_SLICE_DIMENSIONS)
+        or required_slices != release_slice_contract()
+    ):
+        issues.append("semantic release slice contract does not match the published operating envelope")
+    minimum_sample_contract_issues = (
+        release_slice_minimum_sample_contract_issues(
+            floors.get("release_slice_minimum_samples")
+        )
+        if release_required_slices is not None
+        else []
+    )
+    issues.extend(minimum_sample_contract_issues)
+    coverage_issues = (
+        release_slice_coverage_issues(
+            slices=slices,
+            required=required_slices,
+            minimum_samples=release_minimum_samples,
+        )
+        if release_required_slices is not None
+        else []
+    )
+    issues.extend(coverage_issues)
     model_profiles = (
         _model_profile_reports(
             cases=cases,
             annotations=annotations,
             results=results,
             floors=floors,
+            case_outcomes=case_outcomes,
         )
         if _include_model_profiles
         else []
@@ -174,6 +191,10 @@ def evaluate_semantic_release(
     for profile in model_profiles:
         if profile["status"] != "passed":
             issues.append(f"model profile `{profile['profile']}` failed the semantic release floors")
+    normalized_semantic_digests = {
+        str(row["case_id"]): str(row["normalized_semantic_digest"])
+        for row in case_outcomes if str(row.get("normalized_semantic_digest") or "")
+    }
     return {
         "version": SEMANTIC_RELEASE_SCORE_VERSION,
         "status": "passed" if not issues else "failed",
@@ -184,13 +205,28 @@ def evaluate_semantic_release(
         "duplicate_case_ids": duplicate_case_ids,
         "duplicate_result_ids": duplicate_result_ids,
         "metrics": metrics,
+        "relation_sample_count": int(relation_metric["sample_count"]),
+        "relation_fidelity_by_family": _relation_family_metrics(case_outcomes),
+        "relation_slices": relation_slices,
+        "worst_relation_slice": worst_relation_slice,
         "overall_case_success": overall,
         "worst_slice": worst_slice,
         "slices": slices,
         "p0_count": len(p0_findings),
         "p0_findings": p0_findings,
+        "p1_count": len(p1_findings),
+        "p1_findings": p1_findings,
         "floor_checks": checks,
         "issues": list(dict.fromkeys(issues)),
+        "release_required_slices": required_slices,
+        "release_minimum_samples": (
+            release_minimum_samples if release_required_slices is not None else {}
+        ),
+        "release_minimum_sample_contract_issues": minimum_sample_contract_issues,
+        "release_evidence_issues": release_evidence_issues,
+        "relation_evidence_issues": relation_evidence_issues,
+        "normalized_semantic_digests": normalized_semantic_digests,
+        "release_coverage_issues": coverage_issues,
         "model_profiles": model_profiles,
         "case_outcomes": [
             {
@@ -199,114 +235,82 @@ def evaluate_semantic_release(
                 "expected_outcome": row["expected_outcome"],
                 "observed_outcome": row["observed_outcome"],
                 "failed_dimensions": row["failed_dimensions"],
+                "release_slices": row["release_slices"],
+                "relation_counts": row["relation_counts"],
+                "normalized_semantic_digest": row["normalized_semantic_digest"],
             }
             for row in case_outcomes
         ],
     }
 
 
-def _model_profile_reports(
-    *,
-    cases: Sequence[Any],
-    annotations: Mapping[str, Mapping[str, Any]],
-    results: Sequence[GreenfieldMatrixResult],
-    floors: Mapping[str, Any],
-) -> list[dict[str, Any]]:
-    grouped: dict[str, list[Any]] = defaultdict(list)
-    for case in cases:
-        profile = _model_profile(case)
-        if profile:
-            grouped[profile].append(case)
-    results_by_id = {_result_case_id(result): result for result in results}
-    reports: list[dict[str, Any]] = []
-    for profile, profile_cases in sorted(grouped.items()):
-        case_ids = {_case_id(case) for case in profile_cases}
-        report = evaluate_semantic_release(
-            cases=profile_cases,
-            annotations={case_id: annotations[case_id] for case_id in case_ids if case_id in annotations},
-            results=[results_by_id[case_id] for case_id in case_ids if case_id in results_by_id],
-            floors=floors,
-            _include_model_profiles=False,
-            _allow_not_applicable_metrics=True,
-        )
-        reports.append(
-            {
-                "profile": profile,
-                "status": report["status"],
-                "passed": report["passed"],
-                "sample_count": report["sample_count"],
-                "metrics": report["metrics"],
-                "overall_case_success": report["overall_case_success"],
-                "worst_slice": report["worst_slice"],
-                "p0_count": report["p0_count"],
-                "floor_checks": report["floor_checks"],
-                "issues": report["issues"],
-            }
-        )
-    return reports
-
-
-def _model_profile(case: Any) -> str:
-    profiles = [
-        str(tag).partition(":")[2]
-        for tag in getattr(case, "tags", ()) or ()
-        if str(tag).startswith("model-profile:")
-    ]
-    return profiles[0] if len(profiles) == 1 else ""
-
-
 def _score_case(
     *,
     case: Any,
+    case_id: str,
     annotation: Mapping[str, Any],
     result: GreenfieldMatrixResult,
     metric_counts: Mapping[str, list[int]],
 ) -> dict[str, Any]:
-    case_id = _case_id(case)
-    expected = str(annotation.get("expected_outcome") or "").strip()
+    expected = str(annotation.get("expected_outcome") or "")
     evidence = _mapping(result.evidence)
     clarification = _mapping(evidence.get("clarification"))
     receipt = _mapping(evidence.get("preconfirm_dry_run"))
     snapshot = _mapping(receipt.get("semantic_snapshot"))
-    facts = _mapping(snapshot.get("facts"))
-    if str(clarification.get("mode") or "") == "clarification_required":
+    if clarification.get("mode") == "clarification_required":
         observed = "clarify"
     else:
         observed = "commit" if snapshot else "failed"
     failed_dimensions: list[str] = []
     p0: list[dict[str, str]] = []
+    p1: list[dict[str, str]] = []
+    relation_counts = _empty_relation_counts()
+    relation_evidence_issues: list[str] = []
+    normalized_semantic_digest = ""
     if expected != observed or result.status != "passed" or not result.quality.passed:
         failed_dimensions.append("outcome")
     if expected == "clarify" and observed == "commit":
-        p0.append(_p0(case_id, "material_ambiguity_ignored"))
+        p0.append(_finding(case_id, "material_ambiguity_ignored"))
 
     if expected == "commit":
         metric_counts["unnecessary_question_rate"][1] += 1
         if observed == "clarify":
             metric_counts["unnecessary_question_rate"][0] += 1
         if snapshot:
-            _score_commit_semantics(
+            relation_counts, relation_evidence_issues, normalized_semantic_digest = _score_commit(
+                case=case,
                 case_id=case_id,
                 annotation=annotation,
                 snapshot=snapshot,
-                facts=facts,
-                prompt_text=str(getattr(case, "prompt", "") or "").strip(),
-                confirmed_intent_markdown=str(
-                    getattr(case, "confirmed_intent_markdown", "") or ""
-                ).strip(),
                 metric_counts=metric_counts,
                 failed_dimensions=failed_dimensions,
                 p0=p0,
+                p1=p1,
             )
     elif expected == "clarify":
-        metric_counts["material_question_recall"][1] += 1
-        expected_fields = {question_field_key(value) for value in _strings(annotation.get("expected_question_fields"))}
-        observed_fields = {question_field_key(value) for value in _strings(clarification.get("required_fields"))}
-        question_recalled = observed == "clarify" and (not expected_fields or expected_fields <= observed_fields)
-        if question_recalled:
-            metric_counts["material_question_recall"][0] += 1
+        metric_counts["clarification_identity"][1] += 1
+        expected_clarification = _mapping(annotation.get("expected_clarification"))
+        observed_fields = clarification.get("required_fields")
+        exact_identity = (
+            observed == "clarify"
+            and isinstance(observed_fields, Sequence)
+            and not isinstance(observed_fields, (str, bytes, bytearray))
+            and list(observed_fields) == [expected_clarification.get("field")]
+            and clarification.get("question") == expected_clarification.get("question")
+        )
+        if exact_identity:
+            metric_counts["clarification_identity"][0] += 1
         else:
-            failed_dimensions.append("material_question_recall")
+            failed_dimensions.append("clarification_identity")
+
+    release_slices, release_evidence_issues = release_slice_evidence(
+        case=case,
+        result=result,
+        annotated_complexity=_mapping(annotation.get("complexity")),
+        allow_unsealed_clarification=expected == "clarify" and observed == "clarify",
+    )
+    if release_evidence_issues:
+        failed_dimensions.append("release_evidence")
 
     return {
         "case_id": case_id,
@@ -315,91 +319,254 @@ def _score_case(
         "passed": not failed_dimensions and not p0,
         "failed_dimensions": list(dict.fromkeys(failed_dimensions)),
         "p0_findings": p0,
+        "p1_findings": p1,
+        "relation_counts": relation_counts,
+        "relation_evidence_issues": relation_evidence_issues,
+        "normalized_semantic_digest": normalized_semantic_digest,
+        "release_slices": release_slices,
+        "release_evidence_issues": list(release_evidence_issues),
     }
 
 
-def _score_commit_semantics(
+def _score_commit(
     *,
+    case: Any,
     case_id: str,
     annotation: Mapping[str, Any],
     snapshot: Mapping[str, Any],
-    facts: Mapping[str, Any],
-    prompt_text: str,
-    confirmed_intent_markdown: str,
     metric_counts: Mapping[str, list[int]],
     failed_dimensions: list[str],
     p0: list[dict[str, str]],
-) -> None:
-    atomic_facts = _validated_atomic_facts(
-        snapshot,
-        facts=facts,
-        prompt_text=prompt_text,
-        confirmed_intent_markdown=confirmed_intent_markdown,
+    p1: list[dict[str, str]],
+) -> tuple[dict[str, Any], list[str], str]:
+    expected_relations = annotation_relation_evidence(
+        case=case,
+        value=annotation.get("relation_fidelity"),
+        atom_rows=annotation.get("atoms"),
     )
-    if atomic_facts is None:
-        atomic_facts = ()
-        failed_dimensions.append("atomic_custody_invalid")
-        p0.append(_p0(case_id, "atomic_custody_invalid"))
-    for category in _atomic_categories():
-        for item in _items(annotation.get(category)):
-            if str(item.get("expected_custody") or "") != "accepted_fact":
-                continue
-            metric_counts["accepted_fact_custody"][1] += 1
-            if _claim_has_custody(
-                category=category,
-                value=item.get("value"),
-                expected_custody="accepted_fact",
-                facts=facts,
-                atomic_facts=atomic_facts,
-            ):
-                metric_counts["accepted_fact_custody"][0] += 1
-            else:
-                failed_dimensions.append("accepted_fact_custody")
-
-    constraint_claims = _atomic_claim_values(atomic_facts) or _fact_claim_values(facts)
-    for value in _expected_values(annotation.get("critical_constraints")):
-        metric_counts["critical_constraint_recall"][1] += 1
-        if _claim_recalled_in(value, constraint_claims):
-            metric_counts["critical_constraint_recall"][0] += 1
-        else:
-            failed_dimensions.append("critical_constraint_recall")
-            p0.append(_p0(case_id, "critical_constraint_missing"))
-
-    system_claims = _atomic_claim_values(
-        atomic_facts,
-        categories=frozenset({"dependencies"}),
-    ) or _fact_claim_values(
-        facts,
-        fields=("external_systems", "internal_systems", "component_responsibilities"),
-    )
-    for value in _expected_values(annotation.get("explicit_systems")):
-        metric_counts["explicit_system_recall"][1] += 1
-        if _claim_recalled_in(value, system_claims):
-            metric_counts["explicit_system_recall"][0] += 1
-        else:
-            failed_dimensions.append("explicit_system_recall")
-            p0.append(_p0(case_id, "explicit_system_missing"))
-
-    first_path_text = _flatten_text(
-        {
-            "human_actors": facts.get("human_actors"),
-            "state_object": facts.get("state_object"),
-            "first_path": facts.get("first_path"),
-            "proof_boundary": facts.get("proof_boundary"),
-        }
-    )
-    first_path_items = [
-        item
-        for category in ("actors", "actions", "states", "outputs")
-        for item in _items(annotation.get(category))
-        if str(item.get("materiality") or "") == "material"
+    actual_relations = snapshot_relation_evidence(case=case, snapshot=snapshot)
+    relation_counts = _empty_relation_counts()
+    relation_issues = [
+        *(f"relation annotation {issue}" for issue in expected_relations.issues),
+        *(f"relation custody {issue}" for issue in actual_relations.issues),
     ]
-    for item in first_path_items:
-        metric_counts["first_path_comprehension"][1] += 1
-        if _claim_recalled(item.get("value"), first_path_text):
-            metric_counts["first_path_comprehension"][0] += 1
-        else:
-            failed_dimensions.append("first_path_comprehension")
+    if expected_relations.issues:
+        p1.append(_finding(case_id, "relation_annotation_invalid"))
+    if actual_relations.issues:
+        p1.append(_finding(case_id, "relation_custody_invalid"))
+    for family in RELATION_FAMILIES:
+        expected_family = Counter(expected_relations.keys.get(family, ()))
+        actual_family = Counter(actual_relations.keys.get(family, ()))
+        matched = (
+            sum((expected_family & actual_family).values())
+            if not relation_issues
+            else 0
+        )
+        sample_count = max(
+            sum((expected_family | actual_family).values()),
+            int(expected_relations.minimum_samples.get(family, 0)),
+            int(actual_relations.minimum_samples.get(family, 0)),
+        )
+        relation_counts["matched"] += matched
+        relation_counts["sample_count"] += sample_count
+        relation_counts["families"][family] = {
+            "matched": matched,
+            "sample_count": sample_count,
+        }
+        if expected_family != actual_family:
+            p1.append(_finding(case_id, f"{family}_mismatch"))
+    metric_counts["relation_fidelity"][0] += int(relation_counts["matched"])
+    metric_counts["relation_fidelity"][1] += int(relation_counts["sample_count"])
+    if relation_issues or relation_counts["matched"] != relation_counts["sample_count"]:
+        failed_dimensions.append("relation_fidelity")
+
+    actual_rows = _validated_atomic_facts(snapshot)
+    if actual_rows is None:
+        failed_dimensions.append("atomic_custody_invalid")
+        p0.append(_finding(case_id, "atomic_custody_invalid"))
+        return relation_counts, relation_issues, ""
+    expected_rows = _annotation_atoms(annotation, role=_SCORED_ROLE)
+    reference_rows = _annotation_atoms(annotation, role=_REFERENCE_ROLE)
+    expected = Counter(_expected_atom_key(row) for row in expected_rows)
+    reference = {_expected_atom_key(row) for row in reference_rows}
+    actual = Counter(
+        key
+        for row in actual_rows
+        if (key := _actual_atom_key(row)) not in reference
+    )
+    union_count = sum((expected | actual).values())
+    matched_count = sum((expected & actual).values())
+    metric_counts["atomic_semantic_fidelity"][0] += matched_count
+    metric_counts["atomic_semantic_fidelity"][1] += union_count
+    if expected != actual:
+        failed_dimensions.append("atomic_semantic_fidelity")
+        if expected - actual:
+            p0.append(_finding(case_id, "expected_atomic_fact_missing"))
+        if actual - expected:
+            p0.append(_finding(case_id, "unexpected_atomic_fact"))
+    digest = ""
+    if (
+        expected == actual
+        and not relation_issues
+        and relation_counts["matched"] == relation_counts["sample_count"]
+    ):
+        digest = _normalized_semantic_digest(annotation)
+        if not digest:
+            failed_dimensions.append("normalized_semantic_identity")
+            p1.append(_finding(case_id, "normalized_semantic_identity_invalid"))
+    return relation_counts, relation_issues, digest
+
+
+def _normalized_semantic_digest(annotation: Mapping[str, Any]) -> str:
+    """Bind canonical atom IDs to the exact relation graph without source wording."""
+
+    path_ids: dict[tuple[str, str, int], str] = {}
+    role_ids: dict[tuple[int, str], str] = {}
+    seen_ids: set[str] = set()
+    scored_atoms: list[tuple[str, str, str, str, str, str]] = []
+    try:
+        for atom in _items(annotation.get("atoms")):
+            atom_id = str(atom.get("id") or "").strip()
+            source_hash = str(_mapping(atom.get("source")).get("quote_sha256") or "")
+            if not atom_id or atom_id in seen_ids or len(source_hash) != 64:
+                return ""
+            seen_ids.add(atom_id)
+            if atom.get("evaluation_role") == _SCORED_ROLE:
+                scored_atoms.append((
+                    atom_id, str(atom.get("category") or ""), _SCORED_ROLE,
+                    str(atom.get("materiality") or ""), str(atom.get("expected_custody") or ""),
+                    str(atom.get("expected_polarity") or ""),
+                ))
+            for link in _items(atom.get("projection_links")):
+                order = int(link["relation_order"])
+                path = str(link["path"])
+                role = str(link["relation_role"])
+                if order < 0 or not path or not _index_identity(path_ids, (path, source_hash, order), atom_id):
+                    return ""
+                if order and role and not _index_identity(role_ids, (order, role), atom_id):
+                    return ""
+        relation = _mapping(annotation.get("relation_fidelity"))
+        events: list[tuple[Any, ...]] = []
+        for row in _items(relation.get("first_path_events")):
+            order = int(row["order"])
+            actor_id = _path_identity(path_ids, row, "actor_fact", order)
+            owner_id = _path_identity(path_ids, row, "product_owner", order) if row.get("product_owner_path") else ""
+            action_id = role_ids.get((order, "action_verb_quote"), "")
+            target_id = role_ids.get((order, "target_quote"), "")
+            visible_id = role_ids.get((order, "visible_result_quote"), "")
+            if (
+                order <= 0
+                or actor_id != role_ids.get((order, "actor_quote"), "")
+                or not action_id
+                or bool(row.get("target_sha256")) != bool(target_id)
+                or bool(row.get("visible_result_sha256")) != bool(visible_id)
+                or bool(row.get("product_owner_path")) != bool(owner_id)
+            ):
+                return ""
+            events.append((
+                order, str(row.get("actor_kind") or ""), actor_id, owner_id,
+                action_id, target_id, visible_id, row.get("recovery_path"),
+            ))
+        contexts = [
+            (
+                str(row["context_kind"]), _path_identity(
+                    path_ids, row, "fact", int(row["first_path_event_order"])
+                ), int(row["first_path_event_order"]),
+            )
+            for row in _items(relation.get("context_relations"))
+        ]
+        components = [
+            (
+                _path_identity(path_ids, row, "responsibility", int(row["first_path_event_order"])),
+                _path_identity(path_ids, row, "product_owner", int(row["first_path_event_order"])),
+                int(row["first_path_event_order"]), str(row["responsibility_source"]),
+            )
+            for row in _items(relation.get("component_responsibility_relations"))
+        ]
+    except (KeyError, TypeError, ValueError):
+        return ""
+    if not scored_atoms or not events or not components:
+        return ""
+    if any(not row[1] for row in contexts) or any(not row[0] or not row[1] for row in components):
+        return ""
+    payload = {
+        "version": NORMALIZED_SEMANTIC_DIGEST_VERSION,
+        "expected_outcome": "commit",
+        "atoms": sorted(scored_atoms),
+        "relations": {"first_path_events": sorted(events), "context_relations": sorted(contexts),
+                      "component_responsibility_relations": sorted(components)},
+    }
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _index_identity(index: dict[Any, str], key: Any, atom_id: str) -> bool:
+    existing = index.setdefault(key, atom_id)
+    return existing == atom_id
+
+
+def _path_identity(index: Mapping[tuple[str, str, int], str], row: Mapping[str, Any], prefix: str, order: int) -> str:
+    key = (str(row.get(f"{prefix}_path") or ""), str(row.get(f"{prefix}_sha256") or ""), order)
+    return str(index.get(key) or index.get((key[0], key[1], 0)) or "")
+
+
+def _validated_atomic_facts(
+    snapshot: Mapping[str, Any],
+) -> tuple[Mapping[str, Any], ...] | None:
+    value = snapshot.get("atomic_facts")
+    try:
+        require_atomic_fact_ledger(value, facts=_mapping(snapshot.get("facts")))
+    except ValueError:
+        return None
+    rows = _items(value)
+    if str(snapshot.get("atomic_custody_sha256") or "") != atomic_fact_ledger_hash(rows):
+        return None
+    return rows
+
+
+def _annotation_atoms(
+    annotation: Mapping[str, Any],
+    *,
+    role: str,
+) -> tuple[Mapping[str, Any], ...]:
+    return tuple(
+        row
+        for row in _items(annotation.get("atoms"))
+        if row.get("evaluation_role") == role
+    )
+
+
+def _expected_atom_key(row: Mapping[str, Any]) -> tuple[Any, ...]:
+    source = _mapping(row.get("source"))
+    return (
+        str(row.get("category") or ""),
+        str(row.get("expected_polarity") or ""),
+        str(row.get("expected_custody") or ""),
+        int(source.get("start_byte", -1)),
+        int(source.get("end_byte", -1)),
+        str(source.get("quote_sha256") or ""),
+        _links_key(row.get("projection_links")),
+    )
+
+
+def _actual_atom_key(row: Mapping[str, Any]) -> tuple[Any, ...]:
+    categories = _strings(row.get("categories"))
+    refs = _items(row.get("source_span_refs"))
+    ref = refs[0] if len(refs) == 1 else {}
+    return (
+        categories[0] if len(categories) == 1 else "",
+        str(row.get("polarity") or ""),
+        str(row.get("custody_state") or ""),
+        int(ref.get("source_start_byte", -1)),
+        int(ref.get("source_end_byte", -1)),
+        str(ref.get("text_sha256") or ""),
+        _links_key(row.get("projection_links")),
+    )
+
+
+def _links_key(value: Any) -> str:
+    rows = list(value) if _is_sequence(value) else []
+    return json.dumps(rows, sort_keys=True, separators=(",", ":"))
 
 
 def _floor_checks(
@@ -408,30 +575,28 @@ def _floor_checks(
     metrics: Mapping[str, Mapping[str, Any]],
     overall: Mapping[str, Any],
     worst_slice: Mapping[str, Any],
+    worst_relation_slice: Mapping[str, Any],
     p0_findings: Sequence[Mapping[str, str]],
+    p1_findings: Sequence[Mapping[str, str]],
     allow_not_applicable_metrics: bool,
 ) -> list[dict[str, Any]]:
-    checks: list[dict[str, Any]] = []
-    checks.append(
+    checks = [
+        _check("no_observed_p0_contradiction", not p0_findings, "observed P0 semantic contradiction"),
         _check(
-            "no_observed_p0_contradiction",
-            not p0_findings,
-            "observed P0 semantic contradiction",
-        )
-    )
-    for name in (
-        "accepted_fact_custody",
-        "critical_constraint_recall",
-        "explicit_system_recall",
-        "material_question_recall",
-        "first_path_comprehension",
-    ):
+            "no_observed_p1_relation_defect",
+            not p1_findings,
+            "observed P1 typed-relation defect",
+        ),
+    ]
+    for name in ("atomic_semantic_fidelity", "relation_fidelity", "clarification_identity"):
         checks.append(
             _metric_floor_check(
                 name,
                 metrics[name],
                 floors.get(name),
-                allow_not_applicable=allow_not_applicable_metrics,
+                allow_not_applicable=(
+                    allow_not_applicable_metrics and name != "relation_fidelity"
+                ),
             )
         )
     checks.append(
@@ -447,19 +612,85 @@ def _floor_checks(
             "overall_case_success",
             overall,
             floors.get("overall_case_success"),
-            allow_not_applicable=False,
         )
     )
-    worst_rate = worst_slice.get("point_estimate") if worst_slice else None
     checks.append(
         _check_threshold(
             "worst_slice_success",
-            observed=worst_rate,
+            observed=(
+                _mapping(worst_slice.get("confidence_interval_95")).get("lower")
+                if worst_slice
+                else None
+            ),
             expected=floors.get("worst_slice_success"),
             direction="floor",
         )
     )
+    checks.append(
+        _check_threshold(
+            "worst_relation_slice_fidelity",
+            observed=(
+                _mapping(worst_relation_slice.get("confidence_interval_95")).get("lower")
+                if worst_relation_slice
+                else None
+            ),
+            expected=floors.get("relation_fidelity"),
+            direction="floor",
+        )
+    )
     return checks
+
+
+def _model_profile_reports(
+    *,
+    cases: Sequence[Any],
+    annotations: Mapping[str, Mapping[str, Any]],
+    results: Sequence[GreenfieldMatrixResult],
+    floors: Mapping[str, Any],
+    case_outcomes: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    profile_by_case = {
+        str(outcome.get("case_id") or ""): str(
+            _mapping(outcome.get("release_slices")).get("model_profile") or ""
+        )
+        for outcome in case_outcomes
+    }
+    grouped: dict[str, list[Any]] = defaultdict(list)
+    for case in cases:
+        profile = profile_by_case.get(_case_id(case), "")
+        if profile:
+            grouped[profile].append(case)
+    results_by_id = {_result_case_id(result): result for result in results}
+    reports: list[dict[str, Any]] = []
+    for profile, profile_cases in sorted(grouped.items()):
+        case_ids = {_case_id(case) for case in profile_cases}
+        report = evaluate_semantic_release(
+            cases=profile_cases,
+            annotations={case_id: annotations[case_id] for case_id in case_ids if case_id in annotations},
+            results=[results_by_id[case_id] for case_id in case_ids if case_id in results_by_id],
+            floors=floors,
+            release_required_slices=None,
+            _include_model_profiles=False,
+            _allow_not_applicable_metrics=True,
+        )
+        reports.append(
+            {
+                "profile": profile,
+                "status": report["status"],
+                "passed": report["passed"],
+                "sample_count": report["sample_count"],
+                "metrics": report["metrics"],
+                "overall_case_success": report["overall_case_success"],
+                "worst_slice": report["worst_slice"],
+                "worst_relation_slice": report["worst_relation_slice"],
+                "relation_slices": report["relation_slices"],
+                "p0_count": report["p0_count"],
+                "p1_count": report["p1_count"],
+                "floor_checks": report["floor_checks"],
+                "issues": report["issues"],
+            }
+        )
+    return reports
 
 
 def _metric_floor_check(
@@ -471,7 +702,11 @@ def _metric_floor_check(
 ) -> dict[str, Any]:
     if allow_not_applicable and metric.get("status") == "not_applicable":
         return _not_applicable_check(name, expected)
-    observed = metric.get("rate") if metric.get("status") == "measured" else None
+    observed = (
+        _mapping(metric.get("confidence_interval_95")).get("lower")
+        if metric.get("status") == "measured"
+        else None
+    )
     return _check_threshold(name, observed=observed, expected=expected, direction="floor")
 
 
@@ -484,18 +719,12 @@ def _metric_ceiling_check(
 ) -> dict[str, Any]:
     if allow_not_applicable and metric.get("status") == "not_applicable":
         return _not_applicable_check(name, expected)
-    observed = metric.get("rate") if metric.get("status") == "measured" else None
+    observed = (
+        _mapping(metric.get("confidence_interval_95")).get("upper")
+        if metric.get("status") == "measured"
+        else None
+    )
     return _check_threshold(name, observed=observed, expected=expected, direction="ceiling")
-
-
-def _not_applicable_check(name: str, expected: Any) -> dict[str, Any]:
-    return {
-        "name": name,
-        "status": "not_applicable",
-        "observed": None,
-        "expected": expected,
-        "issue": "",
-    }
 
 
 def _check_threshold(name: str, *, observed: Any, expected: Any, direction: str) -> dict[str, Any]:
@@ -526,28 +755,54 @@ def _check_threshold(name: str, *, observed: Any, expected: Any, direction: str)
     }
 
 
+def _not_applicable_check(name: str, expected: Any) -> dict[str, Any]:
+    return {
+        "name": name,
+        "status": "not_applicable",
+        "observed": None,
+        "expected": expected,
+        "issue": "",
+    }
+
+
 def _check(name: str, passed: bool, issue: str) -> dict[str, Any]:
     return {"name": name, "status": "passed" if passed else "failed", "issue": "" if passed else issue}
 
 
 def _metric(name: str, numerator: int, denominator: int) -> dict[str, Any]:
-    return {
+    metric = {
         "name": name,
         "status": "measured" if denominator else "not_applicable",
         "numerator": int(numerator),
         "denominator": int(denominator),
         "rate": round(numerator / denominator, 6) if denominator else None,
     }
+    if denominator:
+        lower, upper = wilson_interval(numerator, denominator)
+        metric["confidence_interval_95"] = _interval_payload(lower, upper)
+    else:
+        metric["confidence_interval_95"] = None
+    return metric
 
 
 def _slice_rows(*, cases: Sequence[Any], outcomes: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
     outcome_by_id = {str(row["case_id"]): bool(row["passed"]) for row in outcomes}
+    release_slices_by_id = {
+        str(row.get("case_id") or ""): _mapping(row.get("release_slices"))
+        for row in outcomes
+    }
     grouped: dict[tuple[str, str], list[bool]] = defaultdict(list)
     for case in cases:
         case_id = _case_id(case)
         if case_id not in outcome_by_id:
             continue
-        for dimension, value in _case_slices(case):
+        release_slices = release_slices_by_id.get(case_id, {})
+        for dimension, value in (
+            *_case_slices(case),
+            *((dimension, str(release_slices.get(dimension) or "")) for dimension in RELEASE_SLICE_DIMENSIONS),
+        ):
+            if not value:
+                continue
             grouped[(dimension, value)].append(outcome_by_id[case_id])
     rows: list[dict[str, Any]] = []
     for (dimension, value), values in sorted(grouped.items()):
@@ -568,294 +823,128 @@ def _slice_rows(*, cases: Sequence[Any], outcomes: Sequence[Mapping[str, Any]]) 
     return rows
 
 
-def _case_slices(case: Any) -> tuple[tuple[str, str], ...]:
-    rows = [
-        ("input_style", str(getattr(case, "input_style", "") or "unspecified")),
-        ("expectation", str(getattr(case, "expectation", "") or "transaction_committed")),
-    ]
-    for tag in getattr(case, "tags", ()) or ():
-        token = str(tag or "").strip()
-        if ":" in token:
-            dimension, _, value = token.partition(":")
-            if dimension in {"complexity", "model-profile", "host-profile", "slice"}:
-                rows.append((dimension.replace("-", "_"), value or "unspecified"))
-    return tuple(dict.fromkeys(rows))
-
-
-def _claim_has_custody(
+def _relation_slice_rows(
     *,
-    category: str,
-    value: Any,
-    expected_custody: str,
-    facts: Mapping[str, Any],
-    atomic_facts: Sequence[Mapping[str, Any]],
-) -> bool:
-    allowed_fields = set(ATOMIC_CATEGORY_FIELDS.get(category, ()))
-    for atom in atomic_facts:
-        if category not in _strings(atom.get("categories")):
-            continue
-        custody_state = str(atom.get("custody_state") or "")
-        if custody_state != expected_custody or custody_state not in _VALID_MATERIAL_CUSTODY:
-            continue
-        if not _claim_recalled(value, str(atom.get("normalized_value") or "")):
-            continue
-        for link in _items(atom.get("projection_links")):
-            field = str(link.get("field") or "")
-            if field in allowed_fields and _claim_recalled(value, _flatten_text(facts.get(field))):
-                return True
-    return False
-
-
-def _validated_atomic_facts(
-    snapshot: Mapping[str, Any],
-    *,
-    facts: Mapping[str, Any],
-    prompt_text: str,
-    confirmed_intent_markdown: str,
-) -> tuple[Mapping[str, Any], ...] | None:
-    value = snapshot.get("atomic_facts")
-    try:
-        require_atomic_fact_ledger(value, facts=facts)
-    except ValueError:
-        return None
-    rows = _items(value)
-    if str(snapshot.get("atomic_custody_sha256") or "") != atomic_fact_ledger_hash(rows):
-        return None
-    source_units = _independent_source_units(
-        prompt_text=prompt_text,
-        confirmed_intent_markdown=confirmed_intent_markdown,
-    )
-    source_by_hash = {
-        _sha256_text(unit): unit
-        for unit in source_units
+    cases: Sequence[Any],
+    outcomes: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    counts_by_id = {
+        str(row.get("case_id") or ""): _mapping(row.get("relation_counts"))
+        for row in outcomes
     }
-    for atom in rows:
-        if atom.get("custody_state") != "accepted_fact":
+    release_slices_by_id = {
+        str(row.get("case_id") or ""): _mapping(row.get("release_slices"))
+        for row in outcomes
+    }
+    grouped: dict[tuple[str, str], list[int]] = defaultdict(lambda: [0, 0])
+    for case in cases:
+        case_id = _case_id(case)
+        counts = counts_by_id.get(case_id, {})
+        sample_count = int(counts.get("sample_count", 0) or 0)
+        if sample_count <= 0:
             continue
-        claim = str(atom.get("normalized_value") or "")
-        refs = _items(atom.get("source_span_refs"))
-        if not refs or not any(
-            (source := source_by_hash.get(str(ref.get("text_sha256") or ""))) is not None
-            and _ordered_source_entailment(source=source, claim=claim)
-            for ref in refs
+        matched = int(counts.get("matched", 0) or 0)
+        release_slices = release_slices_by_id.get(case_id, {})
+        for dimension, value in (
+            *_case_slices(case),
+            *((dimension, str(release_slices.get(dimension) or "")) for dimension in RELEASE_SLICE_DIMENSIONS),
         ):
-            return None
+            if not value:
+                continue
+            grouped[(dimension, value)][0] += matched
+            grouped[(dimension, value)][1] += sample_count
+    rows: list[dict[str, Any]] = []
+    for (dimension, value), (matched, sample_count) in sorted(grouped.items()):
+        lower, upper = wilson_interval(matched, sample_count)
+        rows.append(
+            {
+                "dimension": dimension,
+                "value": value,
+                "sample_count": sample_count,
+                "correct_count": matched,
+                "incorrect_count": sample_count - matched,
+                "point_estimate": round(matched / sample_count, 6),
+                "confidence_interval_95": _interval_payload(lower, upper),
+            }
+        )
     return rows
 
 
-def _independent_source_units(
-    *,
-    prompt_text: str,
-    confirmed_intent_markdown: str,
-) -> tuple[str, ...]:
-    texts = (
-        _independent_product_evidence_text(prompt_text),
-        _independent_product_evidence_text(confirmed_intent_markdown),
-    )
-    units: list[str] = []
-    for text in texts:
-        for line in text.splitlines():
-            cleaned_line = " ".join(line.strip().split()).strip()
-            if not cleaned_line or cleaned_line.startswith(("```", "<!--")):
-                continue
-            units.append(cleaned_line)
-            for sentence in re.split(r"(?<=[.!?])\s+|;\s*", cleaned_line):
-                sentence = sentence.strip(" .;:")
-                if not sentence:
-                    continue
-                units.append(sentence)
-                units.extend(
-                    clause
-                    for row in re.split(r"[,:]\s*", sentence)
-                    if (clause := " ".join(row.strip().split()).strip(" .;:"))
-                )
-    return tuple(dict.fromkeys(units))
+def _relation_family_metrics(
+    outcomes: Sequence[Mapping[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    totals = {family: [0, 0] for family in RELATION_FAMILIES}
+    for outcome in outcomes:
+        families = _mapping(_mapping(outcome.get("relation_counts")).get("families"))
+        for family in RELATION_FAMILIES:
+            counts = _mapping(families.get(family))
+            totals[family][0] += int(counts.get("matched", 0) or 0)
+            totals[family][1] += int(counts.get("sample_count", 0) or 0)
+    metrics: dict[str, dict[str, Any]] = {}
+    for family, (matched, sample_count) in totals.items():
+        metric = _metric(family, matched, sample_count)
+        metric["sample_count"] = sample_count
+        metric["correct_count"] = matched
+        metric["incorrect_count"] = sample_count - matched
+        metric["point_estimate"] = metric["rate"]
+        if not sample_count:
+            metric["evidence"] = "no relation samples for this family"
+        metrics[family] = metric
+    return metrics
 
 
-def _independent_product_evidence_text(value: str) -> str:
-    rows: list[str] = []
-    source = str(value or "")
-    has_markdown_heading = any(_independent_heading_key(row) for row in source.splitlines())
-    collecting = not has_markdown_heading
-    for row in source.splitlines():
-        heading = _independent_heading_key(row)
-        if heading:
-            collecting = heading in _INDEPENDENT_PRODUCT_EVIDENCE_HEADINGS
+def _empty_relation_counts() -> dict[str, Any]:
+    return {
+        "matched": 0,
+        "sample_count": 0,
+        "families": {
+            family: {"matched": 0, "sample_count": 0}
+            for family in RELATION_FAMILIES
+        },
+    }
+
+
+def _case_slices(case: Any) -> tuple[tuple[str, str], ...]:
+    provenance = getattr(case, "provenance", None)
+    rows = [
+        ("input_style", str(getattr(case, "input_style", "") or "unspecified")),
+        ("expectation", str(getattr(case, "expectation", "") or "transaction_committed")),
+        ("source_family", str(getattr(provenance, "source_family", "") or "unspecified")),
+    ]
+    return tuple(dict.fromkeys(rows))
+
+
+def _required_release_slices(
+    value: Mapping[str, Sequence[str]] | None,
+) -> dict[str, tuple[str, ...]]:
+    if value is None:
+        return {}
+    normalized: dict[str, tuple[str, ...]] = {}
+    for dimension in RELEASE_SLICE_DIMENSIONS:
+        rows = value.get(dimension)
+        if not _is_sequence(rows):
+            normalized[dimension] = ()
             continue
-        if collecting:
-            rows.append(row)
-    text = "\n".join(rows).strip()
-    for label in _SOURCE_METADATA_LABEL_RE.finditer(text):
-        prefix = text[: label.start()]
-        if not prefix or prefix.rstrip().endswith(_SOURCE_METADATA_BOUNDARY_PUNCTUATION):
-            return prefix.rstrip(" \t-;:,")
-    return text
-
-
-def _independent_heading_key(value: str) -> str:
-    match = re.match(r"^\s{0,3}#{1,6}\s+(?P<label>.+?)\s*$", str(value or ""))
-    if not match:
-        return ""
-    return " ".join(match.group("label").strip().rstrip(":").casefold().split())
-
-
-def _ordered_source_entailment(*, source: str, claim: str) -> bool:
-    source_tokens = _semantic_sequence(source)
-    claim_tokens = _semantic_sequence(claim)
-    if not claim_tokens or len(claim_tokens) > len(source_tokens):
-        return False
-    size = len(claim_tokens)
-    return any(source_tokens[index : index + size] == claim_tokens for index in range(len(source_tokens) - size + 1))
-
-
-def _semantic_sequence(value: Any) -> tuple[str, ...]:
-    return tuple(
-        _stem_token(token)
-        for token in _TOKEN_RE.findall(str(value or "").casefold())
-        if token not in _STOPWORDS
-    )
-
-
-def _stem_token(value: str) -> str:
-    if len(value) > 5 and value.endswith("ies"):
-        return value[:-3] + "y"
-    if len(value) > 5 and value.endswith("ing"):
-        stem = value[:-3]
-        return stem[:-1] if len(stem) > 3 and stem[-1:] == stem[-2:-1] else stem
-    if len(value) > 4 and value.endswith("ed"):
-        stem = value[:-2]
-        return stem[:-1] if len(stem) > 3 and stem[-1:] == stem[-2:-1] else stem
-    if len(value) > 4 and value.endswith("es") and value[:-2].endswith(("ch", "o", "s", "sh", "x", "z")):
-        value = value[:-2]
-    elif len(value) > 3 and value.endswith("s") and not value.endswith("ss"):
-        value = value[:-1]
-    if len(value) > 5 and value.endswith("e"):
-        return value[:-1]
-    return value
-
-
-def _sha256_text(value: str) -> str:
-    return hashlib.sha256(value.encode("utf-8")).hexdigest()
-
-
-def _claim_recalled(expected: Any, observed: str) -> bool:
-    expected_tokens = _tokens(expected)
-    if not expected_tokens:
-        return False
-    observed_tokens = _tokens(observed)
-    return expected_tokens <= observed_tokens and _is_negated(expected) == _is_negated(observed)
-
-
-def _claim_recalled_in(expected: Any, observed_claims: Sequence[str]) -> bool:
-    return any(
-        _claim_recalled(expected, unit)
-        for claim in observed_claims
-        for unit in atomic_claim_units(claim)
-    )
-
-
-def _atomic_claim_values(
-    atomic_facts: Sequence[Mapping[str, Any]],
-    *,
-    categories: frozenset[str] = frozenset(),
-) -> tuple[str, ...]:
-    claims: list[str] = []
-    for atom in atomic_facts:
-        if str(atom.get("custody_state") or "") not in _VALID_MATERIAL_CUSTODY:
-            continue
-        atom_categories = set(_strings(atom.get("categories")))
-        if categories and not categories & atom_categories:
-            continue
-        claim = str(atom.get("normalized_value") or "").strip()
-        if claim:
-            claims.append(claim)
-    return tuple(dict.fromkeys(claims))
-
-
-def _fact_claim_values(
-    facts: Mapping[str, Any],
-    *,
-    fields: Sequence[str] = (),
-) -> tuple[str, ...]:
-    claims: list[str] = []
-    selected = fields or tuple(str(field) for field in facts)
-    for field in selected:
-        claims.extend(_value_claims(facts.get(field)))
-    return tuple(dict.fromkeys(claims))
-
-
-def _value_claims(value: Any) -> tuple[str, ...]:
-    if isinstance(value, Mapping):
-        return tuple(
-            claim
-            for child in value.values()
-            for claim in _value_claims(child)
+        normalized[dimension] = tuple(
+            dict.fromkeys(str(item or "").strip() for item in rows if str(item or "").strip())
         )
-    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        return tuple(
-            claim
-            for child in value
-            for claim in _value_claims(child)
-        )
-    claim = str(value or "").strip()
-    return (claim,) if claim else ()
-
-
-def _is_negated(value: Any) -> bool:
-    tokens = set(_TOKEN_RE.findall(str(value or "").casefold()))
-    return bool(tokens & {"no", "not", "never", "without"})
-
-
-def _tokens(value: Any) -> frozenset[str]:
-    return frozenset(
-        token
-        for token in _TOKEN_RE.findall(str(value or "").casefold())
-        if token not in _STOPWORDS
-    )
-
-
-def _flatten_text(value: Any) -> str:
-    if isinstance(value, Mapping):
-        return " ".join(_flatten_text(item) for item in value.values())
-    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        return " ".join(_flatten_text(item) for item in value)
-    return str(value or "")
+    return normalized
 
 
 def _items(value: Any) -> tuple[Mapping[str, Any], ...]:
-    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+    if not _is_sequence(value):
         return ()
     return tuple(item for item in value if isinstance(item, Mapping))
 
 
-def _expected_values(value: Any) -> tuple[str, ...]:
-    values: list[str] = []
-    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        for item in value:
-            text = str(item.get("value") or "").strip() if isinstance(item, Mapping) else str(item or "").strip()
-            if text:
-                values.append(text)
-    return tuple(values)
-
-
 def _strings(value: Any) -> tuple[str, ...]:
-    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+    if not _is_sequence(value):
         return ()
-    return tuple(str(item or "").strip() for item in value if str(item or "").strip())
+    return tuple(str(item) for item in value)
 
 
-def _atomic_categories() -> tuple[str, ...]:
-    return (
-        "actors",
-        "actions",
-        "states",
-        "outputs",
-        "constraints",
-        "dependencies",
-        "assumptions",
-        "ambiguities",
-        "non_goals",
-    )
+def _is_sequence(value: Any) -> bool:
+    return isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray))
 
 
 def _duplicates(values: Sequence[str]) -> list[str]:
@@ -872,7 +961,7 @@ def _interval_payload(lower: float, upper: float) -> dict[str, Any]:
     }
 
 
-def _p0(case_id: str, category: str) -> dict[str, str]:
+def _finding(case_id: str, category: str) -> dict[str, str]:
     return {"case_id": case_id, "category": category}
 
 
@@ -888,5 +977,4 @@ def _result_case_id(result: GreenfieldMatrixResult) -> str:
     case = _mapping(_mapping(result.evidence).get("case"))
     return str(case.get("id") or "").strip()
 
-
-__all__ = ["SEMANTIC_RELEASE_SCORE_VERSION", "evaluate_semantic_release"]
+__all__ = ["NORMALIZED_SEMANTIC_DIGEST_VERSION", "SEMANTIC_RELEASE_SCORE_VERSION", "evaluate_semantic_release"]

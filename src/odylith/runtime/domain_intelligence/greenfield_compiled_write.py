@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
@@ -14,12 +13,10 @@ def write_compiled_greenfield_package(
     *,
     root: Path,
     transaction: Any,
-    completion_priority_write_policy: Mapping[str, Any] | None = None,
     temporary_directory: Path | None = None,
 ) -> dict[str, Any]:
     """Apply only repository bytes and deletions sealed before confirmation."""
 
-    _ = completion_priority_write_policy
     result = compiled_greenfield_commit_result(transaction=transaction)
     actual_readback = greenfield_repository_write_set.apply_compiled_greenfield_repository_write_set(
         repo_root=Path(root).expanduser().resolve(),

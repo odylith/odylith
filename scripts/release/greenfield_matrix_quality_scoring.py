@@ -11,16 +11,17 @@ from greenfield_matrix_package_evidence import evidence_finding_messages
 from greenfield_matrix_package_evidence import package_evidence_findings
 from greenfield_matrix_types import GreenfieldArtifactCounts
 from greenfield_matrix_types import GreenfieldQualityVerdict
-from greenfield_surface_health import REQUIRED_RENDERED_SURFACES
-from greenfield_surface_health import SURFACE_PAYLOAD_CONTRACTS
-from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
-from odylith.runtime.artifact_quality.greenfield_quality_lenses import build_greenfield_quality_lens_report
 from odylith.runtime.common.value_coercion import mapping_copy
 from odylith.runtime.domain_intelligence.artifact_tribunal_actors import tribunal_visible_actor_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    get_greenfield_model_profile,
+    model_profile_id_for_repair_tier,
+)
 
 
 PRECONFIRM_BUDGET_SECONDS = 60.0
+UNSCORED_QUALITY_SCORE = -1
 QUALITY_SCORE_DIMENSIONS = (
     "completion",
     "latency",
@@ -50,19 +51,17 @@ def build_quality_verdict(
     browser_surface_proof_required: bool = True,
     confirmation_ux_issues: Sequence[str] = (),
     create_returncode: int,
+    proposal_seconds: float,
     create_seconds: float,
     create_detail: str = "",
     external_issues: Sequence[str] = (),
 ) -> GreenfieldQualityVerdict:
     manifest = mapping_copy(create_payload.get("commit_manifest"))
     manifest_lenses = _manifest_lenses(manifest)
-    package_lens_report = mapping_copy(build_greenfield_quality_lens_report(package)) if create_returncode == 0 else {}
-    package_lenses = _package_lenses(package_lens_report)
     evidence_findings = tuple(package_evidence_findings(package)) if create_returncode == 0 else ()
     rendered_issues = _rendered_issues(
         create_returncode=create_returncode,
         package=package,
-        package_lens_report=package_lens_report,
         evidence_findings=evidence_findings,
         create_payload=create_payload,
         surface_issues=surface_issues,
@@ -82,12 +81,17 @@ def build_quality_verdict(
             manifest,
             product_create_transaction=mapping_copy(create_payload.get("product_create_transaction")),
         ),
-        *completion_issues(counts=counts, create_returncode=create_returncode, create_seconds=create_seconds),
+        *completion_issues(
+            counts=counts,
+            manifest=manifest,
+            create_returncode=create_returncode,
+            proposal_seconds=proposal_seconds,
+            create_seconds=create_seconds,
+        ),
         *(str(issue).strip() for issue in external_issues if str(issue).strip()),
     ]
     lenses = _quality_lenses(
         manifest_lenses=manifest_lenses,
-        package_lenses=package_lenses,
         evidence_findings=evidence_findings,
         counts=counts,
         manifest=manifest,
@@ -96,11 +100,11 @@ def build_quality_verdict(
     for lens, passed in lenses.items():
         if not passed:
             issues.append(f"{lens} release-matrix lens failed")
-    unique_issues = tuple(dict.fromkeys(issue for issue in issues if str(issue).strip()))
     scores = _quality_scores(
         manifest=manifest,
         counts=counts,
         create_returncode=create_returncode,
+        proposal_seconds=proposal_seconds,
         create_seconds=create_seconds,
         rendered_issues=rendered_issues,
         prompt_issues=prompt_issues,
@@ -111,6 +115,13 @@ def build_quality_verdict(
         browser_surface_issues=browser_surface_issues,
         confirmation_ux_issues=confirmation_ux_issues,
     )
+    unscored_dimensions = _unscored_dimensions(scores)
+    if unscored_dimensions:
+        issues.append(
+            "release-quality evidence is unproven for unscored dimension(s): "
+            + ", ".join(unscored_dimensions)
+        )
+    unique_issues = tuple(dict.fromkeys(issue for issue in issues if str(issue).strip()))
     final_score = _final_quality_score(
         scores=scores,
         manifest=manifest,
@@ -143,7 +154,9 @@ def build_quality_verdict(
 def completion_issues(
     *,
     counts: GreenfieldArtifactCounts,
+    manifest: Mapping[str, Any],
     create_returncode: int,
+    proposal_seconds: float,
     create_seconds: float,
 ) -> tuple[str, ...]:
     issues: list[str] = []
@@ -151,15 +164,7 @@ def completion_issues(
         issues.append(f"commit-only create exited with code {create_returncode}")
     if create_seconds >= PRECONFIRM_BUDGET_SECONDS:
         issues.append(f"commit-only create exceeded {PRECONFIRM_BUDGET_SECONDS:.0f}s: {create_seconds:.3f}s")
-    minimums = required_count_minimums(counts)
-    for label, value in _count_values(counts).items():
-        if value < minimums[label]:
-            issues.append(f"{label} incomplete: expected at least {minimums[label]}, found {value}")
-    domain_term_minimum = required_domain_term_hits(counts)
-    if counts.domain_term_hits < domain_term_minimum:
-        issues.append(
-            f"domain term coverage too low: expected at least {domain_term_minimum}, found {counts.domain_term_hits}"
-        )
+    issues.extend(proposal_time_issues(manifest, proposal_seconds=proposal_seconds))
     return tuple(issues)
 
 
@@ -168,51 +173,6 @@ def command_excerpt(value: str, limit: int = 4000) -> str:
     if len(text) <= limit:
         return text
     return f"{text[:limit].rstrip()}...[truncated]"
-
-
-def required_count_minimums(counts: GreenfieldArtifactCounts | None = None) -> dict[str, int]:
-    expected_registry_components = max(
-        1,
-        int(getattr(counts, "expected_registry_components", 0) or 0),
-    )
-    return {
-        "Radar workstreams": 4,
-        "Registry component specs": expected_registry_components,
-        "Atlas Mermaid sources": 4,
-        "Compass records": 1,
-        "release records": 1,
-        "project brief records": 1,
-        "trace nodes": 12,
-        "trace workstreams": 4,
-        "rendered surfaces": len(REQUIRED_RENDERED_SURFACES),
-        "rendered surface payloads": len(SURFACE_PAYLOAD_CONTRACTS) * 2,
-        "Atlas rendered diagram assets": 8,
-        "Project implementation prompts": 5,
-    }
-
-
-def count_key(label: str) -> str:
-    return {
-        "Radar workstreams": "radar_workstreams",
-        "Registry component specs": "registry_component_specs",
-        "Atlas Mermaid sources": "atlas_mermaid_sources",
-        "Compass records": "compass_records",
-        "release records": "release_records",
-        "project brief records": "project_brief_records",
-        "trace nodes": "trace_nodes",
-        "trace workstreams": "trace_workstreams",
-        "rendered surfaces": "rendered_surfaces",
-        "rendered surface payloads": "rendered_surface_payloads",
-        "Atlas rendered diagram assets": "atlas_rendered_assets",
-        "Project implementation prompts": "project_implementation_prompts",
-    }.get(label, label)
-
-
-def required_domain_term_hits(counts: GreenfieldArtifactCounts) -> int:
-    declared_terms = int(counts.required_domain_terms or 0)
-    if declared_terms > 0:
-        return declared_terms
-    return 3
 
 
 def write_committed(manifest: Mapping[str, Any]) -> bool:
@@ -291,16 +251,18 @@ def _transaction_hash_match_issues(
     return tuple(issues)
 
 
-def elapsed_time_issues(manifest: Mapping[str, Any], *, budget_seconds: float) -> tuple[str, ...]:
-    value = manifest.get("whole_project_elapsed_seconds")
+def proposal_time_issues(manifest: Mapping[str, Any], *, proposal_seconds: float) -> tuple[str, ...]:
+    budget_seconds = _sealed_tier_budget_seconds(manifest)
+    if budget_seconds is None:
+        return ("proposal manifest does not declare an approved 60/90/120 repair-tier budget",)
     try:
-        elapsed = float(value)
+        elapsed = float(proposal_seconds)
     except (TypeError, ValueError):
-        return ("manifest is missing a positive measured elapsed time",)
+        return ("proposal proof is missing a positive measured elapsed time",)
     if not math.isfinite(elapsed) or elapsed <= 0.0:
-        return ("manifest is missing a positive measured elapsed time",)
-    if elapsed >= float(budget_seconds):
-        return (f"manifest reports elapsed time outside the {float(budget_seconds):g}-second budget",)
+        return ("proposal proof is missing a positive measured elapsed time",)
+    if elapsed >= budget_seconds:
+        return (f"proposal exceeded its sealed {budget_seconds:g}-second tier budget: {elapsed:.3f}s",)
     return ()
 
 
@@ -308,7 +270,6 @@ def _rendered_issues(
     *,
     create_returncode: int,
     package: Any,
-    package_lens_report: Mapping[str, Any],
     evidence_findings: Sequence[Any],
     create_payload: Mapping[str, Any],
     surface_issues: Sequence[str],
@@ -318,8 +279,6 @@ def _rendered_issues(
     return tuple(
         dict.fromkeys(
             (
-                *tuple(greenfield_rendered_package_quality_issues(package)),
-                *tuple(_package_lens_issues(package_lens_report)),
                 *tuple(evidence_finding_messages(evidence_findings)),
                 *tuple(_validation_gate_actor_issues(create_payload=create_payload, package=package)),
                 *tuple(str(issue).strip() for issue in surface_issues if str(issue).strip()),
@@ -331,46 +290,30 @@ def _rendered_issues(
 def _quality_lenses(
     *,
     manifest_lenses: Mapping[str, Any],
-    package_lenses: Mapping[str, Any],
     evidence_findings: Sequence[Any],
     counts: GreenfieldArtifactCounts,
     manifest: Mapping[str, Any],
     create_returncode: int,
 ) -> dict[str, bool]:
+    del counts
     return {
         "product_manager": (
             _lens_passed(manifest_lenses, "product_manager")
-            and _lens_passed(package_lenses, "product_manager")
             and not evidence_blocks_dimension(evidence_findings, "product_manager")
-            and counts.radar_workstreams >= 4
-            and counts.release_records >= 1
-            and counts.project_brief_records >= 1
         ),
         "architect": (
             _lens_passed(manifest_lenses, "architect")
-            and _lens_passed(package_lenses, "architect")
             and not evidence_blocks_dimension(evidence_findings, "architect")
-            and counts.registry_component_specs
-            == max(1, counts.expected_registry_components or counts.registry_component_specs)
-            and counts.atlas_mermaid_sources >= 4
-            and counts.trace_nodes >= 12
-            and counts.trace_workstreams >= 4
         ),
         "engineer": (
             _lens_passed(manifest_lenses, "engineer")
-            and _lens_passed(package_lenses, "engineer")
             and not evidence_blocks_dimension(evidence_findings, "engineer")
-            and counts.registry_component_specs
-            == max(1, counts.expected_registry_components or counts.registry_component_specs)
-            and counts.release_records >= 1
             and create_returncode == 0
             and write_committed(manifest)
         ),
         "domain_expert": (
             _lens_passed(manifest_lenses, "domain_expert")
-            and _lens_passed(package_lenses, "domain_expert")
             and not evidence_blocks_dimension(evidence_findings, "domain_expert")
-            and counts.domain_term_hits >= required_domain_term_hits(counts)
         ),
     }
 
@@ -380,6 +323,7 @@ def _quality_scores(
     manifest: Mapping[str, Any],
     counts: GreenfieldArtifactCounts,
     create_returncode: int,
+    proposal_seconds: float,
     create_seconds: float,
     rendered_issues: Sequence[str],
     prompt_issues: Sequence[str],
@@ -390,33 +334,47 @@ def _quality_scores(
     browser_surface_issues: Sequence[str] = (),
     confirmation_ux_issues: Sequence[str] = (),
 ) -> dict[str, int]:
+    package_evidence_measured = create_returncode == 0
     return {
-        "completion": (
-            0
-            if evidence_blocks_dimension(evidence_findings, "completion")
-            else _completion_score(manifest=manifest, counts=counts, create_returncode=create_returncode)
+        "completion": _completion_score(
+            manifest=manifest,
+            create_returncode=create_returncode,
+            evidence_findings=evidence_findings,
+            evidence_measured=package_evidence_measured,
         ),
-        "latency": _latency_score(create_returncode=create_returncode, create_seconds=create_seconds),
+        "latency": _latency_score(
+            manifest=manifest,
+            create_returncode=create_returncode,
+            proposal_seconds=proposal_seconds,
+            create_seconds=create_seconds,
+        ),
         "semantic_manifest": _semantic_manifest_score(manifest),
         "copy_semantic_clarity": _copy_semantic_clarity_score(
             manifest=manifest,
             create_returncode=create_returncode,
             rendered_issues=rendered_issues,
         ),
-        "governance_depth": (
-            0 if evidence_blocks_dimension(evidence_findings, "governance_depth") else _governance_depth_score(counts)
+        "governance_depth": _evidence_backed_dimension_score(
+            dimension="governance_depth",
+            create_returncode=create_returncode,
+            evidence_findings=evidence_findings,
+            evidence_measured=package_evidence_measured,
         ),
-        "traceability": _traceability_score(counts),
-        "operator_usefulness": (
-            0
-            if evidence_blocks_dimension(evidence_findings, "operator_usefulness")
-            else _operator_usefulness_score(counts=counts, create_returncode=create_returncode)
+        "traceability": _traceability_score(
+            counts=counts,
+            create_returncode=create_returncode,
+        ),
+        "operator_usefulness": _evidence_backed_dimension_score(
+            dimension="operator_usefulness",
+            create_returncode=create_returncode,
+            evidence_findings=evidence_findings,
+            evidence_measured=package_evidence_measured,
         ),
         "implementation_prompts": _implementation_prompt_score(
-            counts=counts,
             create_returncode=create_returncode,
             prompt_issues=prompt_issues,
             evidence_findings=evidence_findings,
+            evidence_measured=package_evidence_measured,
         ),
         "browser_surface_proof": _browser_surface_proof_score(
             create_returncode=create_returncode,
@@ -435,22 +393,37 @@ def _quality_scores(
     }
 
 
-def _completion_score(*, manifest: Mapping[str, Any], counts: GreenfieldArtifactCounts, create_returncode: int) -> int:
+def _completion_score(
+    *,
+    manifest: Mapping[str, Any],
+    create_returncode: int,
+    evidence_findings: Sequence[Any],
+    evidence_measured: bool,
+) -> int:
     if create_returncode != 0 or not write_committed(manifest):
         return 0
-    ratio = _count_floor_ratio(counts, required_count_minimums(counts))
-    return 10 if ratio >= 1.0 else int(ratio * 8)
+    return _evidence_backed_dimension_score(
+        dimension="completion",
+        create_returncode=create_returncode,
+        evidence_findings=evidence_findings,
+        evidence_measured=evidence_measured,
+    )
 
 
-def _latency_score(*, create_returncode: int, create_seconds: float) -> int:
+def _latency_score(
+    *,
+    manifest: Mapping[str, Any],
+    create_returncode: int,
+    proposal_seconds: float,
+    create_seconds: float,
+) -> int:
     if create_returncode != 0:
         return 0
-    if create_seconds < PRECONFIRM_BUDGET_SECONDS:
+    if create_seconds < PRECONFIRM_BUDGET_SECONDS and not proposal_time_issues(
+        manifest,
+        proposal_seconds=proposal_seconds,
+    ):
         return 10
-    if create_seconds < 90.0:
-        return 6
-    if create_seconds < 120.0:
-        return 3
     return 0
 
 
@@ -471,45 +444,49 @@ def _copy_semantic_clarity_score(
     return max(0, 10 - (2 * len(tuple(rendered_issues))))
 
 
-def _governance_depth_score(counts: GreenfieldArtifactCounts) -> int:
-    ratio = _count_floor_ratio(counts, required_count_minimums(counts))
-    return 10 if ratio >= 1.0 else int(ratio * 10)
-
-
-def _traceability_score(counts: GreenfieldArtifactCounts) -> int:
-    minimums = {"trace nodes": 12, "trace workstreams": 4}
-    values = {"trace nodes": counts.trace_nodes, "trace workstreams": counts.trace_workstreams}
-    ratio = _count_floor_ratio(values, minimums)
-    return 10 if ratio >= 1.0 else int(ratio * 10)
-
-
-def _operator_usefulness_score(*, counts: GreenfieldArtifactCounts, create_returncode: int) -> int:
+def _evidence_backed_dimension_score(
+    *,
+    dimension: str,
+    create_returncode: int,
+    evidence_findings: Sequence[Any],
+    evidence_measured: bool,
+) -> int:
     if create_returncode != 0:
         return 0
-    minimums = {
-        "release records": 1,
-        "project brief records": 1,
-        "rendered surfaces": len(REQUIRED_RENDERED_SURFACES),
-    }
-    values = {
-        "release records": counts.release_records,
-        "project brief records": counts.project_brief_records,
-        "rendered surfaces": counts.rendered_surfaces,
-    }
-    ratio = _count_floor_ratio(values, minimums)
-    return 10 if ratio >= 1.0 else int(ratio * 10)
+    if not evidence_measured:
+        return UNSCORED_QUALITY_SCORE
+    return 0 if evidence_blocks_dimension(evidence_findings, dimension) else 10
+
+
+def _traceability_score(*, counts: GreenfieldArtifactCounts, create_returncode: int) -> int:
+    if create_returncode != 0:
+        return 0
+    if counts.trace_nodes == 0 and counts.trace_workstreams == 0:
+        return UNSCORED_QUALITY_SCORE
+    if (
+        counts.radar_workstreams <= 0
+        or counts.trace_nodes < counts.trace_workstreams
+        or counts.trace_workstreams != counts.radar_workstreams
+    ):
+        return 0
+    return 10
 
 
 def _implementation_prompt_score(
     *,
-    counts: GreenfieldArtifactCounts,
     create_returncode: int,
     prompt_issues: Sequence[str],
     evidence_findings: Sequence[Any] = (),
+    evidence_measured: bool,
 ) -> int:
-    if create_returncode != 0 or prompt_issues or evidence_blocks_dimension(evidence_findings, "implementation_prompts"):
+    if create_returncode != 0 or prompt_issues:
         return 0
-    return 10 if counts.project_implementation_prompts >= 5 else 0
+    return _evidence_backed_dimension_score(
+        dimension="implementation_prompts",
+        create_returncode=create_returncode,
+        evidence_findings=evidence_findings,
+        evidence_measured=evidence_measured,
+    )
 
 
 def _final_quality_score(
@@ -522,6 +499,8 @@ def _final_quality_score(
     external_issues: Sequence[str] = (),
 ) -> int:
     if create_returncode != 0 or not write_committed(manifest) or any(str(issue).strip() for issue in external_issues):
+        return 0
+    if _unscored_dimensions(scores):
         return 0
     scored_dimensions = [
         int(scores.get(dimension, 0))
@@ -539,8 +518,11 @@ def _final_quality_score(
 
 
 def _score_basis(scores: Mapping[str, int]) -> str:
-    if int(scores.get("browser_surface_proof", 0)) < 0:
+    unscored_dimensions = _unscored_dimensions(scores)
+    if unscored_dimensions == ("browser_surface_proof",):
         return "volume_discovery_without_browser_surface_proof"
+    if unscored_dimensions:
+        return "release_quality_unproven"
     return "release"
 
 
@@ -567,26 +549,30 @@ def _score_explanation(
         explanations.append(f"Project implementation prompt findings cap release score at 4; findings={len(tuple(prompt_issues))}")
     if _manifest_issues(manifest):
         explanations.append("manifest or transaction issues cap release score at 4")
-    unscored_dimensions = [dimension for dimension, value in scores.items() if int(value) < 0]
+    unscored_dimensions = _unscored_dimensions(scores)
+    if unscored_dimensions:
+        explanations.append(
+            "release-quality score is unproven because positive evidence is missing for: "
+            + ", ".join(unscored_dimensions)
+        )
+        return tuple(explanations)
     scored_values = [int(value) for value in scores.values() if int(value) >= 0]
     if score == 10 and scored_values and all(value == 10 for value in scored_values):
-        if unscored_dimensions:
-            explanations.append(
-                "all scored release-quality dimensions scored 10; "
-                f"unscored dimensions: {', '.join(unscored_dimensions)}"
-            )
-            explanations.append(
-                "browser surface proof was not requested and is unscored; "
-                "this is volume-discovery evidence, not complete browser release proof"
-            )
-        else:
-            explanations.append("all brutal release-quality dimensions scored 10")
+        explanations.append("all brutal release-quality dimensions scored 10")
         explanations.extend(_passing_score_evidence(counts, prompt_issues, lenses))
         return tuple(explanations)
     weakest = [dimension for dimension, value in scores.items() if int(value) == score]
     if weakest:
         explanations.append(f"final score follows weakest dimension: {', '.join(weakest)}")
     return tuple(explanations)
+
+
+def _unscored_dimensions(scores: Mapping[str, int]) -> tuple[str, ...]:
+    return tuple(
+        dimension
+        for dimension in QUALITY_SCORE_DIMENSIONS
+        if int(scores.get(dimension, UNSCORED_QUALITY_SCORE)) < 0
+    )
 
 
 def _passing_score_evidence(
@@ -614,36 +600,6 @@ def _passing_score_evidence(
     )
 
 
-def _count_floor_ratio(values: GreenfieldArtifactCounts | Mapping[str, int], minimums: Mapping[str, int]) -> float:
-    rows = values.to_dict() if isinstance(values, GreenfieldArtifactCounts) else dict(values)
-    if not minimums:
-        return 1.0
-    ratios = []
-    for label, minimum in minimums.items():
-        if minimum <= 0:
-            continue
-        value = int(rows.get(count_key(label), rows.get(label, 0)) or 0)
-        ratios.append(min(1.0, value / float(minimum)))
-    return min(ratios) if ratios else 1.0
-
-
-def _count_values(counts: GreenfieldArtifactCounts) -> dict[str, int]:
-    return {
-        "Radar workstreams": counts.radar_workstreams,
-        "Registry component specs": counts.registry_component_specs,
-        "Atlas Mermaid sources": counts.atlas_mermaid_sources,
-        "Compass records": counts.compass_records,
-        "release records": counts.release_records,
-        "project brief records": counts.project_brief_records,
-        "trace nodes": counts.trace_nodes,
-        "trace workstreams": counts.trace_workstreams,
-        "rendered surfaces": counts.rendered_surfaces,
-        "rendered surface payloads": counts.rendered_surface_payloads,
-        "Atlas rendered diagram assets": counts.atlas_rendered_assets,
-        "Project implementation prompts": counts.project_implementation_prompts,
-    }
-
-
 def _manifest_issues(
     manifest: Mapping[str, Any],
     *,
@@ -665,14 +621,29 @@ def _manifest_issues(
             product_create_transaction=product_create_transaction,
         )
     )
-    issues.extend(
-        f"pre-confirm {issue}"
-        for issue in elapsed_time_issues(manifest, budget_seconds=PRECONFIRM_BUDGET_SECONDS)
-    )
+    tier_budget_seconds = _sealed_tier_budget_seconds(manifest)
+    if tier_budget_seconds is None:
+        issues.append("pre-confirm manifest does not declare an approved 60/90/120 repair-tier budget")
     lens_report = mapping_copy(manifest.get("quality_lenses"))
     if str(lens_report.get("status", "")).strip() != "passed":
         issues.append("pre-confirm quality lens report did not pass")
     return tuple(issues)
+
+
+def _sealed_tier_budget_seconds(manifest: Mapping[str, Any]) -> float | None:
+    requested_tier = str(manifest.get("requested_repair_tier", "")).strip()
+    active_tier = str(manifest.get("repair_tier", "")).strip()
+    try:
+        selected_profile = get_greenfield_model_profile(
+            model_profile_id_for_repair_tier(requested_tier)
+        )
+        declared = float(manifest.get("budget_seconds"))
+    except (TypeError, ValueError):
+        return None
+    if active_tier != selected_profile.repair_tier:
+        return None
+    expected = selected_profile.consumer_budget_seconds
+    return expected if declared == expected else None
 
 
 def _validation_gate_actor_issues(*, create_payload: Mapping[str, Any], package: Any) -> tuple[str, ...]:
@@ -749,21 +720,6 @@ def _manifest_lenses(manifest: Mapping[str, Any]) -> Mapping[str, Any]:
     return mapping_copy(mapping_copy(manifest.get("quality_lenses")).get("lenses"))
 
 
-def _package_lenses(package_lens_report: Mapping[str, Any]) -> Mapping[str, Any]:
-    return mapping_copy(package_lens_report.get("lenses"))
-
-
-def _package_lens_issues(package_lens_report: Mapping[str, Any]) -> tuple[str, ...]:
-    if not package_lens_report:
-        return ("independent package quality lens report missing",)
-    issues = tuple(str(issue).strip() for issue in package_lens_report.get("issues", ()) if str(issue).strip())
-    if issues:
-        return issues
-    if str(package_lens_report.get("status", "")).strip() != "passed":
-        return ("independent package quality lens report did not pass",)
-    return ()
-
-
 def _lens_passed(lenses: Mapping[str, Any], name: str) -> bool:
     return str(mapping_copy(lenses.get(name)).get("status", "")).strip() == "passed"
 
@@ -781,10 +737,7 @@ __all__ = [
     "build_quality_verdict",
     "command_excerpt",
     "completion_issues",
-    "count_key",
-    "required_count_minimums",
-    "required_domain_term_hits",
-    "elapsed_time_issues",
+    "proposal_time_issues",
     "write_committed",
     "write_transaction_custody_issues",
 ]

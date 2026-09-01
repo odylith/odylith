@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from odylith.runtime.domain_intelligence import greenfield_create_transaction
 from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store
 from odylith.runtime.domain_intelligence import greenfield_repository_lock
 from tests.unit.runtime.test_greenfield_create_transaction import _transaction
@@ -42,7 +43,7 @@ def test_pending_transaction_staging_failure_has_no_visible_partial_package(
         raise OSError("injected staging failure")
 
     monkeypatch.setattr(
-        greenfield_pending_transaction_store.greenfield_create_transaction,
+        greenfield_create_transaction,
         "write_compiled_product_create_transaction_file",
         _fail,
     )
@@ -59,6 +60,31 @@ def test_pending_transaction_staging_failure_has_no_visible_partial_package(
     )
     assert not target.exists()
     assert not list(target.parent.glob(".stage-*"))
+
+
+def test_pending_resolution_never_rehydrates_preconfirm_transaction(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    transaction = _transaction(repo_root=tmp_path)
+    path = greenfield_pending_transaction_store.stage_pending_transaction(
+        repo_root=tmp_path,
+        transaction=transaction,
+    )
+
+    def _forbidden(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("hash resolution must not rehydrate pre-confirm semantics")
+
+    monkeypatch.setattr(
+        greenfield_create_transaction,
+        "load_compiled_product_create_transaction_file",
+        _forbidden,
+    )
+
+    assert greenfield_pending_transaction_store.resolve_pending_transaction(
+        repo_root=tmp_path,
+        transaction_hash=transaction.transaction_hash,
+    ) == path
 
 
 def test_pending_transaction_address_rejects_mutated_existing_bytes(tmp_path: Path) -> None:

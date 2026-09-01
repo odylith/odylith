@@ -233,12 +233,9 @@ def test_projection_repair_targets_map_preview_findings_to_source_facts() -> Non
     assert dashboard_proof.operation_kind == "semantic_proof_boundary"
 
 
-def test_artifact_plan_ir_contract_replaces_private_projection_maps_in_callers() -> None:
-    patchset_source = (DOMAIN_INTELLIGENCE / "greenfield_preconfirm_patchset.py").read_text(encoding="utf-8")
+def test_artifact_plan_ir_contract_replaces_private_projection_maps_in_executor() -> None:
     executor_source = (DOMAIN_INTELLIGENCE / "greenfield_artifact_plan_patch_executor.py").read_text(encoding="utf-8")
 
-    assert "def _projection_from_target_path" not in patchset_source
-    assert "artifact_plan_affected_projections" in patchset_source
     assert "_SURFACE_DEFAULT_PROJECTIONS" not in (DOMAIN_INTELLIGENCE / "greenfield_artifact_plan.py").read_text(
         encoding="utf-8"
     )

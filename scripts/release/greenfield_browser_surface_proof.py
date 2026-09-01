@@ -8,9 +8,6 @@ from urllib.parse import quote
 from urllib.parse import urlparse
 
 from local_release_smoke import _serve_directory
-from odylith.runtime.artifact_quality.greenfield_project_judgment import project_story_semantic_issues
-
-
 BROWSER_SURFACE_PROOF_SCOPE = "per_case_headless_generated_surface_state_matrix"
 BROWSER_PROJECT_MOBILE_VIEWPORT = {"width": 430, "height": 932}
 BROWSER_SURFACE_EXPECTATIONS = (
@@ -34,7 +31,12 @@ def browser_runtime_preflight_issues() -> tuple[str, ...]:
     try:
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(headless=True)
-            browser.close()
+            try:
+                for viewport in ({"width": 1440, "height": 1100}, BROWSER_PROJECT_MOBILE_VIEWPORT):
+                    context = browser.new_context(viewport=viewport)
+                    context.close()
+            finally:
+                browser.close()
     except PlaywrightError as exc:
         return (f"browser surface proof failed to launch Chromium during preflight: {exc}",)
     return ()
@@ -311,9 +313,53 @@ def _project_state_assertion_issues(
     if distinct_story_body_count != rendered_story_body_count:
         issues.append("browser surface project repeated Product Story body copy")
     rows = [row for row in story_rows if isinstance(row, dict)] if isinstance(story_rows, (list, tuple)) else []
-    issues.extend(project_story_semantic_issues(rows))
+    issues.extend(_project_story_binding_issues(rows))
     if clipped_text_count:
         issues.append("browser surface project clips visible text")
+    return tuple(issues)
+
+
+def _project_story_binding_issues(rows: list[dict[str, Any]]) -> tuple[str, ...]:
+    """Check exact rendered card bindings without interpreting prose."""
+
+    expected = {
+        "user problem": ("User Problem", "user_problem"),
+        "first path": ("First Path", "first_path"),
+        "product boundary": ("Product Boundary", "product_boundary"),
+        "owned capabilities": ("Owned Capabilities", "owned_capabilities"),
+        "proof": ("Proof", "proof"),
+    }
+    issues: list[str] = []
+    seen: set[str] = set()
+    bodies: set[str] = set()
+    for row in rows:
+        raw_label = str(row.get("label") or "").strip()
+        label_key = raw_label.casefold()
+        expected_row = expected.get(label_key)
+        if expected_row is None:
+            issues.append(
+                f"greenfield Project Product Story card has an unexpected semantic label: `{raw_label}`"
+            )
+            continue
+        canonical_label, expected_slot = expected_row
+        seen.add(label_key)
+        actual_slot = str(row.get("semantic_slot") or "").strip()
+        if actual_slot != expected_slot:
+            issues.append(
+                "greenfield Project Product Story card is bound to the wrong semantic slot: "
+                f"`{canonical_label}` uses `{actual_slot}` instead of `{expected_slot}`"
+            )
+        body = str(row.get("body") or "").strip()
+        if not body:
+            issues.append(f"greenfield Project Product Story `{canonical_label}` card is empty")
+        elif body.casefold() in bodies:
+            issues.append("greenfield Project Product Story repeats body copy across semantic cards")
+        else:
+            bodies.add(body.casefold())
+    if rows:
+        for key, (canonical_label, _slot) in expected.items():
+            if key not in seen:
+                issues.append(f"greenfield Project Product Story is missing its `{canonical_label}` card")
     return tuple(issues)
 
 

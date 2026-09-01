@@ -8,7 +8,7 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
-from odylith.runtime.domain_intelligence.artifact_graph import domain_graph_from_workstream
+from odylith.runtime.domain_intelligence.artifact_graph import canonical_graph_from_workstream
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import restore_source_acronym_number_tokens
 from odylith.runtime.project_intelligence.utils import dict_value, list_value, sentence
 
@@ -118,10 +118,7 @@ def _lens(*, proposal: Mapping[str, Any], backlog: Sequence[Mapping[str, Any]], 
         if token:
             return _lens_label(token, proposal=proposal)
     for row in backlog:
-        intelligence = row.get("domain_intelligence")
-        if not isinstance(intelligence, Mapping):
-            continue
-        graph = domain_graph_from_workstream(intelligence, row=row, proposal=proposal)
+        graph = canonical_graph_from_workstream(row=row, proposal=proposal)
         if graph.primary_lens:
             return _lens_label(graph.primary_lens, proposal=proposal)
     for component in components:

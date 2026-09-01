@@ -34,10 +34,15 @@ def _run_greenfield_preconfirm_matrix(
         "BROWSER_PROOF",
         "COMMIT_RECOVERY_PROOF",
         "GREENFIELD_MATRIX_CASE_FILE",
+        "GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE",
+        "GREENFIELD_MATRIX_EVALUATION_SPLIT_MANIFEST",
+        "GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER",
+        "GREENFIELD_MATRIX_IMPLEMENTATION_REVISION",
         "GREENFIELD_MATRIX_RELEASE_AUDIT_FILE",
+        "GREENFIELD_MATRIX_RELEASE_AUDIT_REPO_ROOT",
         "GREENFIELD_MATRIX_RELEASE_INTENT",
-        "NATURAL_RESCUE_PROOF",
-        "RESCUE_SMOKE",
+        "GREENFIELD_MATRIX_SEALED_RELEASE_INPUT_ROOT",
+        "GREENFIELD_MATRIX_SEMANTIC_ANNOTATIONS_FILE",
     ):
         environment.pop(name, None)
     environment.update(
@@ -57,6 +62,26 @@ def _run_greenfield_preconfirm_matrix(
         capture_output=True,
         text=True,
     )
+
+
+def _release_input_overrides(tmp_path: Path) -> dict[str, str]:
+    sealed_root = tmp_path / "sealed-inputs"
+    sealed_root.mkdir()
+    case_file = sealed_root / "cases.json"
+    annotations_file = sealed_root / "annotations.json"
+    manifest_file = sealed_root / "evaluation-manifest.json"
+    provenance_file = tmp_path / "build-provenance.v1.json"
+    for path in (case_file, annotations_file, manifest_file, provenance_file):
+        path.write_text("{}\n", encoding="utf-8")
+    return {
+        "GREENFIELD_MATRIX_CASE_FILE": str(case_file),
+        "GREENFIELD_MATRIX_SEALED_RELEASE_INPUT_ROOT": str(sealed_root),
+        "GREENFIELD_MATRIX_SEMANTIC_ANNOTATIONS_FILE": str(annotations_file),
+        "GREENFIELD_MATRIX_EVALUATION_SPLIT_MANIFEST": str(manifest_file),
+        "GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER": str(tmp_path / "final-holdout-ledger.json"),
+        "GREENFIELD_MATRIX_IMPLEMENTATION_REVISION": "a" * 40,
+        "GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE": str(provenance_file),
+    }
 
 
 def test_local_release_assets_target_builds_maintainer_installable_assets() -> None:
@@ -82,6 +107,37 @@ def test_local_release_assets_target_builds_maintainer_installable_assets() -> N
     assert "make local-release-assets" in help_text
 
 
+def test_greenfield_lifecycle_target_includes_transaction_commit_and_recovery_owners() -> None:
+    makefile = (REPO_ROOT / "Makefile").read_text(encoding="utf-8")
+
+    for test_path in (
+        "tests/unit/runtime/test_greenfield_create_transaction.py",
+        "tests/unit/runtime/test_greenfield_apply_commit_only_boundary.py",
+        "tests/unit/runtime/test_greenfield_transaction.py",
+        "tests/unit/runtime/test_greenfield_commit_journal.py",
+        "tests/unit/runtime/test_greenfield_commit_rollback.py",
+        "tests/unit/install/test_greenfield_commit_recovery_proof.py",
+    ):
+        assert test_path in makefile
+
+
+def test_greenfield_release_matrix_gates_on_explicit_profile_scorecard() -> None:
+    scorecard = (REPO_ROOT / "scripts/release/greenfield_onboarding_quality_scorecard.py").read_text(
+        encoding="utf-8"
+    )
+    matrix = (REPO_ROOT / "scripts/release/greenfield_preconfirm_matrix.py").read_text(
+        encoding="utf-8"
+    )
+
+    assert "model_profile_proof: Mapping" in scorecard
+    assert "unavailable_provider_proof: Mapping" in scorecard
+    assert "natural_rescue_proof" not in scorecard
+    assert "rescue_proof" not in scorecard
+    assert "model_profile_proof=profile_proof" in matrix
+    assert "unavailable_provider_proof=unavailable_provider" in matrix
+    assert 'or onboarding_quality_scorecard.get("status") == "passed"' in matrix
+
+
 def test_greenfield_preconfirm_matrix_target_runs_installed_release_gate() -> None:
     text = (REPO_ROOT / "bin" / "greenfield-preconfirm-matrix").read_text(encoding="utf-8")
     makefile = (REPO_ROOT / "Makefile").read_text(encoding="utf-8")
@@ -94,13 +150,11 @@ def test_greenfield_preconfirm_matrix_target_runs_installed_release_gate() -> No
     assert 'temp_parent="${TEMP_PARENT:-${TMPDIR:-/tmp}}"' in text
     assert 'scripts/release/greenfield_preconfirm_matrix.py \\' in text
     assert 'extra_args=()' in text
-    assert 'rescue_smoke_enabled=1' in text
     assert "require_current_component_forensics" in text
-    assert 'RESCUE_SMOKE:-1' in text
-    assert '--skip-rescue-smoke' in text
-    assert 'NATURAL_RESCUE_PROOF:-1' in text
-    assert '--include-natural-rescue-proof' in text
-    assert '--skip-natural-rescue-proof' in text
+    assert "RESCUE_" + "SMOKE" not in text
+    assert "NATURAL_" + "RESCUE_PROOF" not in text
+    assert "--include-" + "natural-rescue-proof" not in text
+    assert "--skip-" + "rescue-smoke" not in text
     assert 'BROWSER_PROOF:-1' in text
     assert '--include-browser-proof' in text
     assert 'browser_proof_enabled=0' in text
@@ -109,18 +163,36 @@ def test_greenfield_preconfirm_matrix_target_runs_installed_release_gate() -> No
     assert '--skip-commit-recovery-proof' in text
     assert 'release_case_file="${GREENFIELD_MATRIX_CASE_FILE:-}"' in text
     assert 'release_audit_file="${GREENFIELD_MATRIX_RELEASE_AUDIT_FILE:-}"' in text
+    assert 'release_audit_repo_root="${GREENFIELD_MATRIX_RELEASE_AUDIT_REPO_ROOT:-}"' in text
+    assert 'sealed_release_input_root="${GREENFIELD_MATRIX_SEALED_RELEASE_INPUT_ROOT:-}"' in text
+    assert 'semantic_annotations_file="${GREENFIELD_MATRIX_SEMANTIC_ANNOTATIONS_FILE:-}"' in text
+    assert 'evaluation_split_manifest="${GREENFIELD_MATRIX_EVALUATION_SPLIT_MANIFEST:-}"' in text
+    assert 'final_holdout_run_ledger="${GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER:-}"' in text
+    assert 'implementation_revision="${GREENFIELD_MATRIX_IMPLEMENTATION_REVISION:-}"' in text
+    assert 'distribution_provenance_file="${GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE:-}"' in text
     assert 'release_intent="${GREENFIELD_MATRIX_RELEASE_INTENT:-0}"' in text
     assert 'GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_CASE_FILE' in text
-    assert 'GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_RELEASE_AUDIT_FILE' in text
-    assert 'GREENFIELD_MATRIX_RELEASE_INTENT=1 requires RESCUE_SMOKE=1' in text
-    assert 'GREENFIELD_MATRIX_RELEASE_INTENT=1 requires NATURAL_RESCUE_PROOF=1' in text
+    assert 'GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_SEALED_RELEASE_INPUT_ROOT' in text
+    assert 'GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_SEMANTIC_ANNOTATIONS_FILE' in text
+    assert 'GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_EVALUATION_SPLIT_MANIFEST' in text
+    assert 'GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER' in text
+    assert 'GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_IMPLEMENTATION_REVISION' in text
+    assert 'GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE' in text
+    assert 'GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_RELEASE_AUDIT_FILE' not in text
     assert 'GREENFIELD_MATRIX_RELEASE_INTENT=1 requires BROWSER_PROOF=1' in text
     assert 'GREENFIELD_MATRIX_RELEASE_INTENT=1 requires COMMIT_RECOVERY_PROOF=1' in text
     assert 'GREENFIELD_MATRIX_RELEASE_AUDIT_FILE requires GREENFIELD_MATRIX_CASE_FILE' in text
-    assert 'if [[ "$release_intent" == "1" || (' in text
+    assert 'if [[ "$release_intent" == "1" || (' not in text
     assert '--proof-tier release' in text
     assert '--proof-tier discovery' in text
     assert '--release-audit-file "$release_audit_file"' in text
+    assert '--release-audit-repo-root "$release_audit_repo_root"' in text
+    assert '--sealed-release-input-root "$sealed_release_input_root"' in text
+    assert '--semantic-annotations-file "$semantic_annotations_file"' in text
+    assert '--evaluation-split-manifest "$evaluation_split_manifest"' in text
+    assert '--final-holdout-run-ledger "$final_holdout_run_ledger"' in text
+    assert '--implementation-revision "$implementation_revision"' in text
+    assert '--distribution-provenance-file "$distribution_provenance_file"' in text
     assert 'ensure_playwright_chromium' in text
     assert '"$odylith_python" -m playwright install chromium >/dev/null' in shared
     assert 'proof_json="${GREENFIELD_MATRIX_OUTPUT_JSON:-$dist_dir/greenfield-preconfirm-matrix.v1.json}"' in text
@@ -141,88 +213,87 @@ def test_greenfield_preconfirm_matrix_target_runs_installed_release_gate() -> No
     assert '--output-json "$proof_json"' in text
     assert "make greenfield-preconfirm-matrix" in help_text
     assert "write greenfield-preconfirm-matrix.v1.json" in help_text
-    assert "per-case generated browser surface state proof" in help_text
-    assert "installed CLI auto-rescue wiring smoke" in help_text
-    assert "host-planned structured rescue proof" in help_text
+    assert "per-case browser surface state" in help_text
+    assert "one-call model-first authoring" in help_text
     assert "GREENFIELD_MATRIX_TELEMETRY_JSONL" in help_text
     assert "GREENFIELD_MATRIX_STOP_AFTER_CLUSTER_FAILURES" in help_text
-    assert "NATURAL_RESCUE_PROOF=0" in help_text
-    assert "automatically downgrades the run to discovery proof" in help_text
+    assert "SIGKILL/same-hash-retry/fsync-rollback recovery" in help_text
 
 
 @pytest.mark.parametrize(
-    ("overrides", "expected_error"),
+    ("missing_name", "expected_error"),
     (
         (
-            {},
+            "GREENFIELD_MATRIX_CASE_FILE",
             "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_CASE_FILE",
         ),
         (
-            {"GREENFIELD_MATRIX_CASE_FILE": "/missing/cases.json"},
-            "GREENFIELD_MATRIX_RELEASE_INTENT=1 case file is missing: /missing/cases.json",
+            "GREENFIELD_MATRIX_SEALED_RELEASE_INPUT_ROOT",
+            "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_SEALED_RELEASE_INPUT_ROOT",
         ),
         (
-            {"GREENFIELD_MATRIX_CASE_FILE": "{case_file}"},
-            "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_RELEASE_AUDIT_FILE",
+            "GREENFIELD_MATRIX_SEMANTIC_ANNOTATIONS_FILE",
+            "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_SEMANTIC_ANNOTATIONS_FILE",
         ),
         (
-            {
-                "GREENFIELD_MATRIX_CASE_FILE": "{case_file}",
-                "GREENFIELD_MATRIX_RELEASE_AUDIT_FILE": "/missing/audit.json",
-            },
-            "GREENFIELD_MATRIX_RELEASE_INTENT=1 audit file is missing: /missing/audit.json",
+            "GREENFIELD_MATRIX_EVALUATION_SPLIT_MANIFEST",
+            "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_EVALUATION_SPLIT_MANIFEST",
         ),
         (
-            {
-                "GREENFIELD_MATRIX_CASE_FILE": "{case_file}",
-                "GREENFIELD_MATRIX_RELEASE_AUDIT_FILE": "{audit_file}",
-                "RESCUE_SMOKE": "0",
-            },
-            "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires RESCUE_SMOKE=1",
+            "GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER",
+            "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER",
         ),
         (
-            {
-                "GREENFIELD_MATRIX_CASE_FILE": "{case_file}",
-                "GREENFIELD_MATRIX_RELEASE_AUDIT_FILE": "{audit_file}",
-                "NATURAL_RESCUE_PROOF": "0",
-            },
-            "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires NATURAL_RESCUE_PROOF=1",
+            "GREENFIELD_MATRIX_IMPLEMENTATION_REVISION",
+            "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_IMPLEMENTATION_REVISION",
         ),
         (
-            {
-                "GREENFIELD_MATRIX_CASE_FILE": "{case_file}",
-                "GREENFIELD_MATRIX_RELEASE_AUDIT_FILE": "{audit_file}",
-                "BROWSER_PROOF": "0",
-            },
-            "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires BROWSER_PROOF=1",
-        ),
-        (
-            {
-                "GREENFIELD_MATRIX_CASE_FILE": "{case_file}",
-                "GREENFIELD_MATRIX_RELEASE_AUDIT_FILE": "{audit_file}",
-                "COMMIT_RECOVERY_PROOF": "0",
-            },
-            "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires COMMIT_RECOVERY_PROOF=1",
+            "GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE",
+            "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE",
         ),
     ),
 )
 def test_greenfield_preconfirm_matrix_release_intent_rejects_missing_prerequisites(
     tmp_path: Path,
-    overrides: dict[str, str],
+    missing_name: str,
     expected_error: str,
 ) -> None:
-    case_file = tmp_path / "cases.json"
-    audit_file = tmp_path / "audit.json"
-    case_file.write_text("{}\n", encoding="utf-8")
-    audit_file.write_text("{}\n", encoding="utf-8")
-    resolved_overrides = {
-        name: value.format(case_file=case_file, audit_file=audit_file)
-        for name, value in overrides.items()
-    }
+    overrides = _release_input_overrides(tmp_path)
+    overrides.pop(missing_name)
 
     result = _run_greenfield_preconfirm_matrix(
         tmp_path,
-        overrides={"GREENFIELD_MATRIX_RELEASE_INTENT": "1", **resolved_overrides},
+        overrides={"GREENFIELD_MATRIX_RELEASE_INTENT": "1", **overrides},
+    )
+
+    assert result.returncode != 0
+    assert expected_error in result.stderr
+
+
+@pytest.mark.parametrize(
+    ("disabled_flag", "expected_error"),
+    (
+        ("BROWSER_PROOF", "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires BROWSER_PROOF=1"),
+        (
+            "COMMIT_RECOVERY_PROOF",
+            "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires COMMIT_RECOVERY_PROOF=1",
+        ),
+    ),
+)
+def test_greenfield_preconfirm_matrix_release_intent_rejects_disabled_required_proof(
+    tmp_path: Path,
+    disabled_flag: str,
+    expected_error: str,
+) -> None:
+    overrides = _release_input_overrides(tmp_path)
+
+    result = _run_greenfield_preconfirm_matrix(
+        tmp_path,
+        overrides={
+            "GREENFIELD_MATRIX_RELEASE_INTENT": "1",
+            disabled_flag: "0",
+            **overrides,
+        },
     )
 
     assert result.returncode != 0
@@ -230,35 +301,34 @@ def test_greenfield_preconfirm_matrix_release_intent_rejects_missing_prerequisit
 
 
 def test_greenfield_preconfirm_matrix_without_release_intent_runs_discovery_proof(tmp_path: Path) -> None:
-    case_file = tmp_path / "cases.json"
-    case_file.write_text("{}\n", encoding="utf-8")
+    overrides = _release_input_overrides(tmp_path)
 
     result = _run_greenfield_preconfirm_matrix(
         tmp_path,
         overrides={
             "BROWSER_PROOF": "0",
-            "GREENFIELD_MATRIX_CASE_FILE": str(case_file),
+            **overrides,
         },
     )
 
     assert result.returncode == 0, result.stderr
     invocations = (tmp_path / "fake-python.log").read_text(encoding="utf-8")
     assert "--proof-tier discovery" in invocations
+    assert "--sealed-release-input-root" not in invocations
+    assert "--semantic-annotations-file" not in invocations
+    assert "--evaluation-split-manifest" not in invocations
+    assert "--final-holdout-run-ledger" not in invocations
     assert not list(tmp_path.glob("odylith-greenfield-wrapper-run.*"))
 
 
-def test_greenfield_preconfirm_matrix_release_intent_runs_release_proof(tmp_path: Path) -> None:
-    case_file = tmp_path / "cases.json"
-    audit_file = tmp_path / "audit.json"
-    case_file.write_text("{}\n", encoding="utf-8")
-    audit_file.write_text("{}\n", encoding="utf-8")
+def test_greenfield_preconfirm_matrix_release_intent_runs_release_proof_without_audit(tmp_path: Path) -> None:
+    overrides = _release_input_overrides(tmp_path)
 
     result = _run_greenfield_preconfirm_matrix(
         tmp_path,
         overrides={
             "GREENFIELD_MATRIX_RELEASE_INTENT": "1",
-            "GREENFIELD_MATRIX_CASE_FILE": str(case_file),
-            "GREENFIELD_MATRIX_RELEASE_AUDIT_FILE": str(audit_file),
+            **overrides,
         },
     )
 
@@ -266,6 +336,39 @@ def test_greenfield_preconfirm_matrix_release_intent_runs_release_proof(tmp_path
     invocations = (tmp_path / "fake-python.log").read_text(encoding="utf-8")
     assert "--proof-tier release" in invocations
     assert "--include-commit-recovery-proof" in invocations
+    assert f"--sealed-release-input-root {overrides['GREENFIELD_MATRIX_SEALED_RELEASE_INPUT_ROOT']}" in invocations
+    assert f"--semantic-annotations-file {overrides['GREENFIELD_MATRIX_SEMANTIC_ANNOTATIONS_FILE']}" in invocations
+    assert f"--evaluation-split-manifest {overrides['GREENFIELD_MATRIX_EVALUATION_SPLIT_MANIFEST']}" in invocations
+    assert f"--final-holdout-run-ledger {overrides['GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER']}" in invocations
+    assert f"--implementation-revision {'a' * 40}" in invocations
+    assert (
+        f"--distribution-provenance-file {overrides['GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE']}"
+        in invocations
+    )
+    assert "--release-audit-file" not in invocations
+
+
+def test_greenfield_preconfirm_matrix_release_intent_forwards_optional_audit_under_sealed_root(
+    tmp_path: Path,
+) -> None:
+    overrides = _release_input_overrides(tmp_path)
+    sealed_root = Path(overrides["GREENFIELD_MATRIX_SEALED_RELEASE_INPUT_ROOT"])
+    audit_file = sealed_root / "audit.json"
+    audit_file.write_text("{}\n", encoding="utf-8")
+
+    result = _run_greenfield_preconfirm_matrix(
+        tmp_path,
+        overrides={
+            "GREENFIELD_MATRIX_RELEASE_INTENT": "1",
+            "GREENFIELD_MATRIX_RELEASE_AUDIT_FILE": str(audit_file),
+            **overrides,
+        },
+    )
+
+    assert result.returncode == 0, result.stderr
+    invocations = (tmp_path / "fake-python.log").read_text(encoding="utf-8")
+    assert f"--release-audit-file {audit_file}" in invocations
+    assert f"--release-audit-repo-root {sealed_root}" in invocations
 
 
 def test_greenfield_preconfirm_matrix_preserves_its_outer_temp_root_after_nonzero_controller_exit(
@@ -397,20 +500,28 @@ def test_release_candidate_is_pr_safe_non_publishing_current_checkout_lane() -> 
     assert "git restore -- AGENTS.md CLAUDE.md .agents .claude .codex odylith/compass/runtime" in text
     assert "git clean -fd -- .agents .claude .codex odylith/compass/runtime" in text
     assert 'require_clean_worktree' in text
-    assert 'run_release_proof_steps "$resolved_version" "$dist_dir"' in text
+    assert 'run_release_proof_steps "$resolved_version" "$dist_dir" discovery' in text
     assert 'benchmark_override_mode="$(release_benchmark_override_mode "$resolved_version")"' in text
     assert "skip_proof_and_compare" in text
     assert "tracked maintainer override marks benchmark proof advisory for this exact release" in text
     assert 'benchmark compare --repo-root . --baseline last-shipped' in text
-    assert 'scripts/release/greenfield_preconfirm_matrix.py \\' in shared
+    assert 'scripts/release/greenfield_preconfirm_matrix.py \\' not in shared
+    assert '"$odylith_repo_root/bin/greenfield-preconfirm-matrix" "$resolved_version" "$dist_dir"' in shared
     assert "scripts/release/platform_domain_leakage_check.py" in shared
     assert 'sync-component-spec-requirements --repo-root "$odylith_repo_root" --check-only' in shared
     assert "Registry component forensics are stale for the checked-out source" in shared
     assert 'ensure_playwright_chromium' in shared
-    assert '--proof-tier release' in shared
-    assert '--include-natural-rescue-proof' in shared
-    assert '--include-browser-proof' in shared
-    assert '--output-json "$dist_dir/greenfield-preconfirm-matrix.v1.json"' in shared
+    assert 'GREENFIELD_MATRIX_RELEASE_INTENT="$matrix_release_intent"' in shared
+    assert 'GREENFIELD_MATRIX_OUTPUT_JSON="$dist_dir/greenfield-preconfirm-matrix.v1.json"' in shared
+    assert 'GREENFIELD_MATRIX_IMPLEMENTATION_REVISION="$implementation_revision"' in shared
+    assert 'GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE="$distribution_provenance_file"' in shared
+    assert 'implementation_revision="$(git -C "$odylith_repo_root" rev-parse HEAD)"' in shared
+    assert 'distribution_provenance_file="$dist_dir/build-provenance.v1.json"' in shared
+    assert "RESCUE_" + "SMOKE" not in shared
+    assert "NATURAL_" + "RESCUE_PROOF" not in shared
+    assert 'BROWSER_PROOF=1' in shared
+    assert 'COMMIT_RECOVERY_PROOF=1' in shared
+    assert "release candidate proof is non-disclosing" in shared
     assert 'release_version_session.py' not in text
     assert 'release_worktree.py' not in text
     assert 'release-candidate:' in makefile

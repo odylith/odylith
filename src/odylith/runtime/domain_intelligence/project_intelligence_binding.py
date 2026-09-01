@@ -8,11 +8,18 @@ from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.common.value_coercion import mapping_copy
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_PROJECTION_ORIGIN,
+    AUTHORED_SEMANTICS_KEY,
+    AUTHORED_SEMANTICS_VERSION,
+    first_path_relations_from_intent,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 
 PROJECT_INTELLIGENCE_BINDING_KEY = "project_intelligence_binding"
 ARTIFACT_DERIVATION_KEY = "artifact_derivation"
 PROJECT_INTELLIGENCE_ROOT = "project_intelligence"
+AUTHORED_SEMANTICS_ROOT = f"intent.{AUTHORED_SEMANTICS_KEY}"
 
 _DERIVED_ARTIFACTS = (
     "release_plan",
@@ -28,19 +35,26 @@ def attach_project_intelligence_bindings(proposal: Mapping[str, Any]) -> dict[st
     result = copy.deepcopy(dict(proposal))
     project_intelligence = mapping_copy(result.get("project_intelligence"))
     intent = mapping_copy(result.get("intent"))
-    base = _base_binding(project_intelligence=project_intelligence, intent=intent)
+    root, root_schema_version, evidence_boundary, rule = _projection_authority(
+        result,
+        project_intelligence=project_intelligence,
+        intent=intent,
+    )
+    base = _base_binding(
+        project_intelligence=project_intelligence,
+        intent=intent,
+        source=root,
+        schema_version=root_schema_version,
+        evidence_boundary=evidence_boundary,
+    )
     result[ARTIFACT_DERIVATION_KEY] = {
-        "root": PROJECT_INTELLIGENCE_ROOT,
+        "root": root,
         "root_schema_version": base["schema_version"],
         "project_title": base["project_title"],
         "project_slug": base["project_slug"],
         "derived_artifacts": list(_DERIVED_ARTIFACTS),
         "validation_gate": "greenfield-validation-gate-v1",
-        "rule": (
-            "Greenfield governance artifacts are projected from project_intelligence first; "
-            "artifact-specific writers may shape the native surface but must preserve purpose, "
-            "scope, state, proof, ownership, risk, and validation posture."
-        ),
+        "rule": rule,
     }
 
     result["release_plan"] = _bind_mapping(
@@ -62,22 +76,31 @@ def project_intelligence_binding_issues(proposal: Mapping[str, Any]) -> list[str
     project_intelligence = proposal.get("project_intelligence")
     if not isinstance(project_intelligence, Mapping):
         return ["proposal project_intelligence must exist before artifact projection"]
-    expected_schema = clean_text(project_intelligence.get("schema_version"))
+    intent = mapping_copy(proposal.get("intent"))
+    try:
+        expected_root, expected_schema, _, _ = _projection_authority(
+            proposal,
+            project_intelligence=project_intelligence,
+            intent=intent,
+        )
+    except ValueError as exc:
+        return [str(exc)]
     if not expected_schema:
-        issues.append("proposal project_intelligence must include schema_version before artifact projection")
+        issues.append("proposal semantic authority must include a schema version before artifact projection")
     derivation = proposal.get(ARTIFACT_DERIVATION_KEY)
     if not isinstance(derivation, Mapping):
-        issues.append("proposal artifact_derivation must declare project_intelligence as the root")
+        issues.append(f"proposal artifact_derivation must declare {expected_root} as the root")
     else:
-        if clean_text(derivation.get("root")) != PROJECT_INTELLIGENCE_ROOT:
-            issues.append("proposal artifact_derivation.root must be project_intelligence")
+        if clean_text(derivation.get("root")) != expected_root:
+            issues.append(f"proposal artifact_derivation.root must be {expected_root}")
         if expected_schema and clean_text(derivation.get("root_schema_version")) != expected_schema:
-            issues.append("proposal artifact_derivation.root_schema_version must match project_intelligence")
+            issues.append("proposal artifact_derivation.root_schema_version must match its semantic authority")
 
     _check_mapping_binding(
         proposal.get("release_plan"),
         owner="release_plan",
         expected_schema=expected_schema,
+        expected_source=expected_root,
         expected_artifact_kind="release_plan",
         expected_artifact_id=_release_identifier(proposal.get("release_plan")),
         issues=issues,
@@ -86,6 +109,7 @@ def project_intelligence_binding_issues(proposal: Mapping[str, Any]) -> list[str
         proposal.get("backlog"),
         owner="backlog row",
         expected_schema=expected_schema,
+        expected_source=expected_root,
         artifact_kind="radar_workstream",
         issues=issues,
     )
@@ -93,6 +117,7 @@ def project_intelligence_binding_issues(proposal: Mapping[str, Any]) -> list[str
         proposal.get("components"),
         owner="component row",
         expected_schema=expected_schema,
+        expected_source=expected_root,
         artifact_kind="registry_component",
         issues=issues,
     )
@@ -100,19 +125,60 @@ def project_intelligence_binding_issues(proposal: Mapping[str, Any]) -> list[str
         proposal.get("diagrams"),
         owner="diagram row",
         expected_schema=expected_schema,
+        expected_source=expected_root,
         artifact_kind="atlas_diagram",
         issues=issues,
     )
     return issues
 
 
-def _base_binding(*, project_intelligence: Mapping[str, Any], intent: Mapping[str, Any]) -> dict[str, str]:
+def _projection_authority(
+    proposal: Mapping[str, Any],
+    *,
+    project_intelligence: Mapping[str, Any],
+    intent: Mapping[str, Any],
+) -> tuple[str, str, str, str]:
+    if proposal.get("projection_origin") == AUTHORED_PROJECTION_ORIGIN:
+        if not first_path_relations_from_intent(intent):
+            raise ValueError("model-authored artifact projection requires verified authored semantics")
+        semantics = mapping_copy(intent.get(AUTHORED_SEMANTICS_KEY))
+        if semantics.get("version") != AUTHORED_SEMANTICS_VERSION:
+            raise ValueError("model-authored artifact projection requires a supported authored-semantics version")
+        return (
+            AUTHORED_SEMANTICS_ROOT,
+            AUTHORED_SEMANTICS_VERSION,
+            "projected_from_verified_authored_semantics",
+            (
+                "Greenfield governance artifacts copy verified authored relations and accepted facts; "
+                "project_intelligence is a derived view and must not reinterpret canonical meaning."
+            ),
+        )
+    return (
+        PROJECT_INTELLIGENCE_ROOT,
+        clean_text(project_intelligence.get("schema_version")),
+        "derived_from_project_intelligence",
+        (
+            "Greenfield governance artifacts are projected from project_intelligence first; "
+            "artifact-specific writers may shape the native surface but must preserve purpose, "
+            "scope, state, proof, ownership, risk, and validation posture."
+        ),
+    )
+
+
+def _base_binding(
+    *,
+    project_intelligence: Mapping[str, Any],
+    intent: Mapping[str, Any],
+    source: str,
+    schema_version: str,
+    evidence_boundary: str,
+) -> dict[str, str]:
     return {
-        "source": PROJECT_INTELLIGENCE_ROOT,
-        "schema_version": clean_text(project_intelligence.get("schema_version")),
+        "source": source,
+        "schema_version": schema_version,
         "project_title": clean_text(intent.get("title")) or clean_text(project_intelligence.get("project_name")),
         "project_slug": clean_text(intent.get("project_slug")),
-        "evidence_boundary": "derived_from_project_intelligence",
+        "evidence_boundary": evidence_boundary,
     }
 
 
@@ -192,6 +258,7 @@ def _check_mapping_binding(
     *,
     owner: str,
     expected_schema: str,
+    expected_source: str,
     expected_artifact_kind: str,
     expected_artifact_id: str,
     issues: list[str],
@@ -203,6 +270,7 @@ def _check_mapping_binding(
         value,
         owner=owner,
         expected_schema=expected_schema,
+        expected_source=expected_source,
         expected_artifact_kind=expected_artifact_kind,
         expected_artifact_id=expected_artifact_id,
         issues=issues,
@@ -214,6 +282,7 @@ def _check_row_bindings(
     *,
     owner: str,
     expected_schema: str,
+    expected_source: str,
     artifact_kind: str,
     issues: list[str],
 ) -> None:
@@ -228,6 +297,7 @@ def _check_row_bindings(
             row,
             owner=f"{owner} {index}",
             expected_schema=expected_schema,
+            expected_source=expected_source,
             expected_artifact_kind=artifact_kind,
             expected_artifact_id=_artifact_identifier(row, fallback=f"{artifact_kind}-{index}"),
             issues=issues,
@@ -239,6 +309,7 @@ def _check_binding(
     *,
     owner: str,
     expected_schema: str,
+    expected_source: str,
     expected_artifact_kind: str,
     expected_artifact_id: str,
     issues: list[str],
@@ -247,10 +318,10 @@ def _check_binding(
     if not isinstance(binding, Mapping):
         issues.append(f"{owner} must carry project_intelligence_binding")
         return
-    if clean_text(binding.get("source")) != PROJECT_INTELLIGENCE_ROOT:
-        issues.append(f"{owner} project_intelligence_binding.source must be project_intelligence")
+    if clean_text(binding.get("source")) != expected_source:
+        issues.append(f"{owner} project_intelligence_binding.source must be {expected_source}")
     if expected_schema and clean_text(binding.get("schema_version")) != expected_schema:
-        issues.append(f"{owner} project_intelligence_binding.schema_version must match project_intelligence")
+        issues.append(f"{owner} project_intelligence_binding.schema_version must match its semantic authority")
     if clean_text(binding.get("artifact_kind")) != expected_artifact_kind:
         issues.append(
             f"{owner} project_intelligence_binding.artifact_kind must be {expected_artifact_kind}"
@@ -263,6 +334,7 @@ def _check_binding(
 
 __all__ = [
     "ARTIFACT_DERIVATION_KEY",
+    "AUTHORED_SEMANTICS_ROOT",
     "PROJECT_INTELLIGENCE_BINDING_KEY",
     "PROJECT_INTELLIGENCE_ROOT",
     "attach_project_intelligence_bindings",

@@ -7,7 +7,10 @@ import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_compiled_package_contract
 from odylith.runtime.domain_intelligence import greenfield_prewrite_commit_result
-from tests.unit.runtime.greenfield_proposal_fixtures import compiled_greenfield_package_fixture
+from tests.unit.runtime.greenfield_proposal_fixtures import (
+    _canonical_model_authored_greenfield_fixture,
+    compiled_greenfield_package_fixture,
+)
 
 
 def _valid_preview() -> dict[str, object]:
@@ -17,7 +20,6 @@ def _valid_preview() -> dict[str, object]:
         "components": [],
         "diagrams": [],
         "dashboard_refresh": {"status": "passed"},
-        "completion_priority_quality_debt": [],
     }
 
 
@@ -44,12 +46,7 @@ def test_compiled_package_rejects_incomplete_text_report_before_confirmation(
     tmp_path: Path,
     key: str,
 ) -> None:
-    proposal = {
-        "intent": {"title": "Receipt Contract Workspace"},
-        "backlog": [{"title": "Prove the receipt contract"}],
-        "components": [],
-        "diagrams": [],
-    }
+    proposal = _canonical_model_authored_greenfield_fixture(tmp_path)
     package = compiled_greenfield_package_fixture(proposal, repo_root=tmp_path)
     preview = dict(package.commit_result_preview or {})
     preview.pop(key)
@@ -73,12 +70,7 @@ def test_compiled_package_rejects_quality_preview_before_confirmation(
     preview_update: dict[str, object],
     message: str,
 ) -> None:
-    proposal = {
-        "intent": {"title": "Receipt Contract Workspace"},
-        "backlog": [{"title": "Prove the receipt contract"}],
-        "components": [],
-        "diagrams": [],
-    }
+    proposal = _canonical_model_authored_greenfield_fixture(tmp_path)
     package = compiled_greenfield_package_fixture(proposal, repo_root=tmp_path)
     preview = {**dict(package.commit_result_preview or {}), **preview_update}
 

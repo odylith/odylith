@@ -10,7 +10,7 @@ from typing import Any, Iterable, Mapping, Sequence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import (
     capitalize_sentence_start_preserving_source_terms,
 )
-from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract_support import present_verb
+from odylith.runtime.common.display_text import present_verb
 from odylith.runtime.domain_intelligence.greenfield_deferral_predicates import terminal_deferral_subject
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_action_target_language
 from odylith.runtime.surfaces import atlas_diagram_intelligence

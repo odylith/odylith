@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from typing import Any
 
 
@@ -59,6 +59,7 @@ class GreenfieldMatrixResult:
     create_seconds: float
     counts: GreenfieldArtifactCounts
     quality: GreenfieldQualityVerdict
+    proposal_seconds: float = 0.0
     browser_surface_issues: tuple[str, ...] = ()
     browser_surface_proof_attempted: bool = False
     create_returncode: int = 0
@@ -75,6 +76,7 @@ class GreenfieldMatrixResult:
             "name": self.name,
             "status": self.status,
             "create_seconds": self.create_seconds,
+            "proposal_seconds": self.proposal_seconds,
             "create_returncode": self.create_returncode,
             "counts": self.counts.to_dict(),
             "quality": self.quality.to_dict(),
@@ -88,43 +90,8 @@ class GreenfieldMatrixResult:
             "commit_manifest_summary": dict(self.commit_manifest_summary or {}),
             "evidence": dict(self.evidence or {}),
         }
-
-
-@dataclass(frozen=True)
-class GreenfieldRescueSmokeResult:
-    status: str
-    cli_create_seconds: float
-    counts: GreenfieldArtifactCounts
-    issues: tuple[str, ...]
-    manifest: Mapping[str, Any]
-    proof_scope: str = "synthetic_typed_probe_wiring_only"
-    natural_rescue_quality_proven: bool = False
-    provider_failure_fallback_proven: bool = False
-    provider_failure_observation: Mapping[str, Any] = field(default_factory=dict)
-    create_returncode: int = 0
-
-    @property
-    def passed(self) -> bool:
-        return self.status == "passed" and not self.issues
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "status": self.status,
-            "cli_create_seconds": self.cli_create_seconds,
-            "create_returncode": self.create_returncode,
-            "counts": self.counts.to_dict(),
-            "issues": list(self.issues),
-            "manifest": dict(self.manifest),
-            "proof_scope": self.proof_scope,
-            "natural_rescue_quality_proven": self.natural_rescue_quality_proven,
-            "provider_failure_fallback_proven": self.provider_failure_fallback_proven,
-            "provider_failure_observation": dict(self.provider_failure_observation),
-        }
-
-
 __all__ = [
     "GreenfieldArtifactCounts",
     "GreenfieldMatrixResult",
     "GreenfieldQualityVerdict",
-    "GreenfieldRescueSmokeResult",
 ]

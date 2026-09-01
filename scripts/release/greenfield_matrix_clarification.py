@@ -20,53 +20,19 @@ FOCUSED_FIRST_PATH_QUESTION = (
 )
 _NO_WRITE_ROOTS = (Path(".odylith/runtime/greenfield"), Path("odylith"))
 _STAGED_TRANSACTION_ROOT = Path(".odylith/runtime/greenfield/pending")
-_FIELD_TOKEN_RE = re.compile(r"[a-z0-9]+")
-_CORE_MATERIAL_QUESTION_FIELDS = frozenset(
+_FIELD_ID_RE = re.compile(r"[a-z][a-z0-9_]*")
+MATERIAL_QUESTION_FIELDS = frozenset(
     {
-        "decision_authority",
-        "dependency_source",
-        "display_audience",
-        "first_approval_actor",
         "first_path",
-        "governing_decision_rule",
         "human_actors",
-        "product_story",
+        "external_systems",
+        "non_goals",
+        "operational_constraints",
+        "product_boundary",
         "proof_boundary",
-        "proof_record_owner",
-        "state_object",
-        "state_transition",
         "visible_result",
     }
 )
-_MATERIAL_DECISION_FIELD_TOKENS = frozenset(
-    {
-        "access",
-        "actor",
-        "approval",
-        "authority",
-        "audience",
-        "boundary",
-        "dependency",
-        "jurisdiction",
-        "owner",
-        "path",
-        "period",
-        "policy",
-        "procedure",
-        "protocol",
-        "restriction",
-        "result",
-        "role",
-        "route",
-        "rule",
-        "source",
-        "standard",
-        "state",
-        "transition",
-        "window",
-    }
-)
-_MATERIAL_FIELD_LINK_WORDS = frozenset({"between", "first", "governing", "may", "record", "the", "who"})
 
 
 @dataclass(frozen=True)
@@ -121,6 +87,8 @@ def clarification_contract_issues(
     execution: ClarificationExecution,
     *,
     expected_fields: Sequence[str] = (),
+    expected_question: str = "",
+    expected_model_profile_id: str = "",
 ) -> tuple[str, ...]:
     """Require exactly the small, host-neutral clarification payload and no writes."""
 
@@ -145,23 +113,66 @@ def clarification_contract_issues(
     if "product_create_transaction" in payload:
         issues.append("clarification proposal must not include ProductCreateTransaction")
     clarification = payload.get("clarification") if isinstance(payload.get("clarification"), Mapping) else {}
-    if set(clarification) != {"question", "required_fields"}:
-        issues.append("clarification payload must contain only question and required_fields")
+    if set(clarification) != {
+        "question",
+        "required_fields",
+        "model_profile",
+        "consistency_assessment",
+    }:
+        issues.append(
+            "clarification payload must contain only question, required_fields, model_profile, "
+            "and consistency_assessment"
+        )
+    model_profile = clarification.get("model_profile")
+    model_profile = model_profile if isinstance(model_profile, Mapping) else {}
+    if set(model_profile) != {
+        "profile_id",
+        "provider",
+        "model",
+        "reasoning_effort",
+        "effective_timeout_seconds",
+        "authoring_tier",
+    }:
+        issues.append("clarification model_profile must contain the stable six-field request observation")
+    if expected_model_profile_id and str(model_profile.get("profile_id") or "").strip() != expected_model_profile_id:
+        issues.append("clarification model_profile must match the selected pre-call profile")
+    consistency = clarification.get("consistency_assessment")
+    consistency = consistency if isinstance(consistency, Mapping) else {}
+    if set(consistency) != {"status", "source_spans"}:
+        issues.append("clarification consistency_assessment must contain only status and source_spans")
+    consistency_status = str(consistency.get("status") or "").strip()
+    raw_consistency_spans = consistency.get("source_spans")
+    consistency_spans = (
+        tuple(raw_consistency_spans)
+        if isinstance(raw_consistency_spans, Sequence)
+        and not isinstance(raw_consistency_spans, (str, bytes, bytearray))
+        else ()
+    )
+    if consistency_status == "consistent" and consistency_spans:
+        issues.append("consistent clarification must not claim conflicting source spans")
+    elif consistency_status == "material_contradiction" and (
+        len(consistency_spans) < 2
+        or any(not isinstance(span, Mapping) for span in consistency_spans)
+    ):
+        issues.append("material contradiction clarification requires at least two source-bound spans")
+    elif consistency_status not in {"consistent", "material_contradiction"}:
+        issues.append("clarification consistency_assessment has an unsupported status")
     required_fields = tuple(str(field).strip() for field in expected_fields if str(field).strip())
     if not required_fields:
         issues.append("clarification release case lacks frozen expected material fields")
+    elif len(required_fields) != 1:
+        issues.append("clarification release case must freeze exactly one typed material field")
     observed_fields = tuple(
         str(field).strip()
         for field in (clarification.get("required_fields") or ())
         if str(field).strip()
     )
-    if required_fields and not focused_material_question(
-        clarification.get("question"), required_fields=required_fields
-    ):
-        issues.append("clarification payload must ask one focused question about the expected material fields")
-    if required_fields and tuple(question_field_key(field) for field in observed_fields) != tuple(
-        question_field_key(field) for field in required_fields
-    ):
+    question = clarification.get("question")
+    if required_fields and not focused_material_question(question, required_fields=required_fields):
+        issues.append("clarification payload must contain one bounded question for typed material fields")
+    if expected_question and question != expected_question:
+        issues.append("clarification payload question must match the frozen typed clarification")
+    if required_fields and observed_fields != required_fields:
         issues.append(
             "clarification payload required_fields must match the expected material fields: "
             + ", ".join(required_fields)
@@ -211,27 +222,15 @@ def focused_first_path_question(value: Any) -> bool:
 
 
 def focused_material_question(value: Any, *, required_fields: Sequence[str]) -> bool:
-    """Require one concise question whose language covers each typed material field."""
+    """Require one bounded question paired with closed typed material fields."""
 
     if not isinstance(value, str):
         return False
-    question = " ".join(value.strip().split())
+    question = value.strip()
     if not question.endswith("?") or question.count("?") != 1 or len(question) > 280:
         return False
-    lowered = question.casefold()
-    anchors = {
-        "display_audience": ("who", "audience", "public", "private", "allowed to see"),
-        "visible_result": ("result", "see", "show", "display", "receive"),
-        "dependency_source": ("source", "where", "supply", "from"),
-        "state_transition": ("state", "status", "change", "transition"),
-        "proof_boundary": ("proof", "claim", "boundary", "safety", "demonstrate"),
-        "human_actors": ("who", "person", "people", "user"),
-        "first_path": ("first complete", "complete task", "finish", "first path"),
-    }
-    return all(
-        any(anchor in lowered for anchor in anchors.get(str(field), (str(field).replace("_", " "),)))
-        for field in required_fields
-    )
+    fields = tuple(question_field_key(field) for field in required_fields)
+    return len(fields) == 1 and fields[0] in MATERIAL_QUESTION_FIELDS
 
 
 def material_question_field_issues(
@@ -239,9 +238,9 @@ def material_question_field_issues(
     *,
     source_texts: Sequence[str],
 ) -> tuple[str, ...]:
-    """Reject evaluator question fields that are neither typed nor source-grounded."""
+    """Reject evaluator question fields outside the product-owned typed contract."""
 
-    source_tokens = set(_FIELD_TOKEN_RE.findall(" ".join(source_texts).casefold()))
+    del source_texts
     issues: list[str] = []
     seen: set[str] = set()
     for raw in fields:
@@ -250,24 +249,16 @@ def material_question_field_issues(
             issues.append(f"duplicate or empty material question field `{raw}`")
             continue
         seen.add(field)
-        if field in _CORE_MATERIAL_QUESTION_FIELDS:
-            continue
-        tokens = set(field.split("_"))
-        if not tokens & _MATERIAL_DECISION_FIELD_TOKENS:
+        if field not in MATERIAL_QUESTION_FIELDS:
             issues.append(f"unsupported material question field `{raw}`")
-            continue
-        distinctive = tokens - _MATERIAL_DECISION_FIELD_TOKENS - _MATERIAL_FIELD_LINK_WORDS
-        if distinctive and not distinctive & source_tokens:
-            issues.append(f"material question field `{raw}` is not grounded in source evidence")
-        elif not distinctive and not tokens <= source_tokens:
-            issues.append(f"material question field `{raw}` is not grounded in source evidence")
     return tuple(issues)
 
 
 def question_field_key(value: Any) -> str:
-    """Canonicalize one material field ID without changing its display label."""
+    """Return one already-canonical typed material-field ID."""
 
-    return "_".join(_FIELD_TOKEN_RE.findall(str(value or "").casefold()))
+    field = str(value or "").strip()
+    return field if _FIELD_ID_RE.fullmatch(field) else ""
 
 
 def _sha256_file(path: Path) -> str:
@@ -281,6 +272,7 @@ def _sha256_file(path: Path) -> str:
 __all__ = [
     "CLARIFICATION_REQUIRED_EXPECTATION",
     "FOCUSED_FIRST_PATH_QUESTION",
+    "MATERIAL_QUESTION_FIELDS",
     "ClarificationExecution",
     "clarification_contract_issues",
     "clarification_quality_verdict",

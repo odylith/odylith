@@ -11,10 +11,8 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import (
     capitalize_sentence_start_preserving_source_terms,
 )
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_role_signal
-from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.project_intelligence.focus import backlog_rows_by_id
 from odylith.runtime.project_intelligence.narration import evidence_boundary_phrase
-from odylith.runtime.project_intelligence.product_story_cards import build_greenfield_story_cards
 from odylith.runtime.project_intelligence.summary import action_sentence, concise_text
 from odylith.runtime.project_intelligence.utils import (
     dict_value,
@@ -46,6 +44,8 @@ def build_greenfield_product_story(
     visible_result: str = "",
 ) -> dict[str, Any]:
     """Build proposal-origin story prose from the accepted project graph."""
+
+    raise ValueError("Legacy Greenfield story recomposition is retired; use the authored dashboard projection")
 
     brief = dict_value(project_brief)
     accepted_intent = dict_value(intent)
@@ -634,21 +634,6 @@ def _first_path_concrete_story(value: str) -> str:
     text = _strip_first_path_preface(sentence(value).strip())
     if not text:
         return ""
-    model = first_path_model(text)
-    if model.steps:
-        rows: list[str] = []
-        for step in model.steps:
-            clean = sentence(step).strip(" .")
-            if not clean:
-                continue
-            clean = _clean_opening_launcher_step(clean)
-            if not clean:
-                continue
-            rows.append(_subjectify_path_step(clean))
-            if len(rows) >= 4:
-                break
-        if rows:
-            return _story_excerpt(". ".join(rows), limit=640).rstrip(".")
     if re.search(r"\b1[.)]\s+[A-Z]", text):
         numbered = _numbered_path_story(text)
         if numbered:

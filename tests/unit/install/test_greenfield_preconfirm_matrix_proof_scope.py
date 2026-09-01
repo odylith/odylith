@@ -4,6 +4,7 @@ import importlib
 import importlib.util
 import json
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -81,24 +82,58 @@ def _passing_quality(module) -> object:
 
 
 def _passing_matrix_result(module, *, manifest_summary: dict[str, object] | None = None) -> object:
+    profile_id = module.model_profile_id_for_repair_tier("standard")
+    profile = module.get_greenfield_model_profile(profile_id)
     return module.GreenfieldMatrixResult(
         name="matrix case",
         status="passed",
+        proposal_seconds=18.0,
         create_seconds=18.0,
         counts=_full_counts(module),
         quality=_passing_quality(module),
         browser_surface_proof_attempted=True,
         commit_manifest_summary=manifest_summary or {},
+        evidence={
+            "case": {"id": "matrix-case"},
+            "model_profile": {
+                "profile_id": profile_id,
+                "status": "passed",
+                "issues": [],
+                "observed": {
+                    "profile_id": profile_id,
+                    "provider": profile.provider,
+                    "model": profile.model,
+                    "reasoning_effort": profile.reasoning_effort,
+                    "effective_timeout_seconds": profile.model_timeout_seconds,
+                    "authoring_tier": profile.repair_tier,
+                },
+            },
+        },
     )
 
 
-def _passing_rescue_result(module) -> object:
-    return module.GreenfieldRescueSmokeResult(
-        status="passed",
-        cli_create_seconds=44.0,
-        counts=_full_counts(module),
-        issues=(),
-        manifest={"repair_tier": "rescue"},
+def _passing_profile_result(module, profile_id: str, proposal_seconds: float) -> object:
+    profile = module.get_greenfield_model_profile(profile_id)
+    return replace(
+        _passing_matrix_result(module),
+        name=profile_id,
+        proposal_seconds=proposal_seconds,
+        evidence={
+            "case": {"id": profile_id},
+            "model_profile": {
+                "profile_id": profile_id,
+                "status": "passed",
+                "issues": [],
+                "observed": {
+                    "profile_id": profile_id,
+                    "provider": profile.provider,
+                    "model": profile.model,
+                    "reasoning_effort": profile.reasoning_effort,
+                    "effective_timeout_seconds": profile.model_timeout_seconds,
+                    "authoring_tier": profile.repair_tier,
+                },
+            },
+        },
     )
 
 
@@ -194,7 +229,6 @@ def test_main_uses_external_case_files_instead_of_default_catalog(
         return (_passing_matrix_result(module),)
 
     monkeypatch.setattr(module, "run_matrix", fake_run_matrix)
-    monkeypatch.setattr(module, "run_rescue_smoke", lambda **_kwargs: _passing_rescue_result(module))
 
     exit_code = module.main(
         [
@@ -267,7 +301,6 @@ def test_main_ignores_a_concurrent_sibling_run_when_checking_owned_cleanup(monke
     sibling = tmp_path / "odylith-greenfield-matrix-active-sibling"
     sibling.mkdir()
     monkeypatch.setattr(module, "run_matrix", lambda **_kwargs: (_passing_matrix_result(module),))
-    monkeypatch.setattr(module, "run_rescue_smoke", lambda **_kwargs: _passing_rescue_result(module))
 
     exit_code = module.main(
         [
@@ -312,7 +345,6 @@ def test_main_marks_the_proof_failed_when_final_namespace_cleanup_fails(monkeypa
 
     monkeypatch.setattr(module, "acquire_matrix_run_lease", lambda **_kwargs: FailingLease())
     monkeypatch.setattr(module, "run_matrix", lambda **_kwargs: (_passing_matrix_result(module),))
-    monkeypatch.setattr(module, "run_rescue_smoke", lambda **_kwargs: _passing_rescue_result(module))
 
     exit_code = module.main(
         [
@@ -347,7 +379,6 @@ def test_main_fails_when_owned_temp_cleanup_finds_a_leftover_repo(monkeypatch, t
         return (_passing_matrix_result(module),)
 
     monkeypatch.setattr(module, "run_matrix", fake_run_matrix)
-    monkeypatch.setattr(module, "run_rescue_smoke", lambda **_kwargs: _passing_rescue_result(module))
 
     exit_code = module.main(
         [
@@ -377,7 +408,6 @@ def test_main_fails_when_installed_commit_recovery_proof_fails(monkeypatch, tmp_
     dist_dir = tmp_path / "dist"
     _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
     monkeypatch.setattr(module, "run_matrix", lambda **_kwargs: (_passing_matrix_result(module),))
-    monkeypatch.setattr(module, "run_rescue_smoke", lambda **_kwargs: _passing_rescue_result(module))
     monkeypatch.setattr(
         module,
         "run_installed_commit_recovery_proof",
@@ -419,9 +449,8 @@ def test_main_binds_commit_recovery_to_the_selected_external_case(monkeypatch, t
         confirmed_intent_markdown="# External Intent\n\n## State\nA durable record.",
     )
     captured: dict[str, object] = {}
-    monkeypatch.setattr(module, "_load_cli_case_files", lambda _paths: (external_case,))
+    monkeypatch.setattr(module, "_load_cli_case_files", lambda _paths, **_kwargs: (external_case,))
     monkeypatch.setattr(module, "run_matrix", lambda **_kwargs: (_passing_matrix_result(module),))
-    monkeypatch.setattr(module, "run_rescue_smoke", lambda **_kwargs: _passing_rescue_result(module))
 
     def fake_commit_recovery(**kwargs):  # noqa: ANN001
         captured.update(kwargs)
@@ -553,8 +582,6 @@ def test_release_campaign_forwards_the_evaluated_audit_binding_to_commit_recover
         install_mode="fresh",
         allow_partial_stressor_coverage=False,
         include_commit_recovery_proof=True,
-        include_rescue_smoke=False,
-        include_natural_rescue_proof=False,
         json_output=True,
         attempt_ledger_jsonl=None,
     )
@@ -583,6 +610,13 @@ def test_release_campaign_forwards_the_evaluated_audit_binding_to_commit_recover
         },
     )()
     monkeypatch.setattr(module, "run_matrix", lambda **_kwargs: (_passing_matrix_result(module),))
+    monkeypatch.setattr(module, "run_unavailable_provider_proof", lambda **_kwargs: {"status": "passed"})
+    monkeypatch.setattr(module, "model_profile_release_proof", lambda *_args, **_kwargs: {"status": "passed"})
+    monkeypatch.setattr(
+        module,
+        "build_onboarding_quality_scorecard",
+        lambda **_kwargs: {"status": "passed", "score": 10},
+    )
     monkeypatch.setattr(module, "browser_proof_summary", lambda *_args, **_kwargs: {"status": "passed"})
     monkeypatch.setattr(module, "_platform_leakage_proof_summary", lambda _results: {"status": "passed"})
     monkeypatch.setattr(module, "temp_cleanup_proof", lambda _path: {"status": "passed"})
@@ -634,8 +668,6 @@ def test_semantic_release_campaign_uses_sealed_case_binding_for_commit_recovery(
         install_mode="fresh",
         allow_partial_stressor_coverage=False,
         include_commit_recovery_proof=True,
-        include_rescue_smoke=False,
-        include_natural_rescue_proof=False,
         json_output=True,
         attempt_ledger_jsonl=None,
         semantic_annotations_file=str(tmp_path / "final-holdout.v1.json"),
@@ -658,6 +690,13 @@ def test_semantic_release_campaign_uses_sealed_case_binding_for_commit_recovery(
         },
     )()
     monkeypatch.setattr(module, "run_matrix", lambda **_kwargs: (_passing_matrix_result(module),))
+    monkeypatch.setattr(module, "run_unavailable_provider_proof", lambda **_kwargs: {"status": "passed"})
+    monkeypatch.setattr(module, "model_profile_release_proof", lambda *_args, **_kwargs: {"status": "passed"})
+    monkeypatch.setattr(
+        module,
+        "build_onboarding_quality_scorecard",
+        lambda **_kwargs: {"status": "passed", "score": 10},
+    )
     monkeypatch.setattr(module, "browser_proof_summary", lambda *_args, **_kwargs: {"status": "passed"})
     monkeypatch.setattr(module, "_platform_leakage_proof_summary", lambda _results: {"status": "passed"})
     monkeypatch.setattr(module, "temp_cleanup_proof", lambda _path: {"status": "passed"})
@@ -692,6 +731,71 @@ def test_semantic_release_campaign_uses_sealed_case_binding_for_commit_recovery(
     assert payload["commit_recovery_proof"]["recovery_case"]["binding_scope"] == "campaign-case-v1"
 
 
+def test_release_campaign_fails_when_onboarding_scorecard_fails(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    module = _module()
+    release_case = module.default_cases()[0]
+    args = module.argparse.Namespace(
+        dist_dir=str(tmp_path / "dist"),
+        version="0.1.15",
+        include_browser_proof=True,
+        install_mode="fresh",
+        allow_partial_stressor_coverage=False,
+        include_commit_recovery_proof=False,
+        json_output=True,
+        attempt_ledger_jsonl=None,
+        semantic_annotations_file="",
+        evaluation_split_manifest="",
+    )
+    config = module.MatrixCampaignConfig(
+        phase=module.campaign_phase_from_value("gate"),
+        proof_tier=module.proof_tier_from_value("release"),
+        telemetry_jsonl=None,
+        stop_after_failures=0,
+        stop_after_cluster_failures=0,
+        required_stressors=(),
+    )
+    lease = type(
+        "Lease",
+        (),
+        {
+            "temp_namespace": tmp_path,
+            "to_dict": lambda self: {"temporary_namespace": str(tmp_path)},
+        },
+    )()
+    monkeypatch.setattr(module, "run_matrix", lambda **_kwargs: (_passing_matrix_result(module),))
+    monkeypatch.setattr(module, "run_unavailable_provider_proof", lambda **_kwargs: {"status": "passed"})
+    monkeypatch.setattr(module, "model_profile_release_proof", lambda *_args, **_kwargs: {"status": "passed"})
+    monkeypatch.setattr(
+        module,
+        "build_onboarding_quality_scorecard",
+        lambda **_kwargs: {"status": "failed", "score": 0},
+    )
+    monkeypatch.setattr(module, "browser_proof_summary", lambda *_args, **_kwargs: {"status": "passed"})
+    monkeypatch.setattr(module, "_platform_leakage_proof_summary", lambda _results: {"status": "passed"})
+    monkeypatch.setattr(module, "temp_cleanup_proof", lambda _path: {"status": "passed"})
+    monkeypatch.setattr(module, "_semantic_release_report", lambda **_kwargs: {"status": "passed"})
+
+    exit_code = module._execute_matrix_campaign(  # noqa: SLF001
+        args=args,
+        selected_cases=(release_case,),
+        planned_cases=(release_case,),
+        release_audits=(),
+        campaign_config=config,
+        corpus_provenance={"status": "passed"},
+        output_path=None,
+        lease=lease,
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 1
+    assert payload["status"] == "failed"
+    assert payload["onboarding_quality_scorecard"] == {"status": "failed", "score": 0}
+
+
 def test_final_holdout_child_rechecks_sealed_distribution_provenance_before_claim(tmp_path: Path) -> None:
     module = _module()
     sealed_root = tmp_path / "sealed-inputs"
@@ -715,6 +819,7 @@ def test_final_holdout_child_rechecks_sealed_distribution_provenance_before_clai
         output_json=str(tmp_path / "result.json"),
         semantic_annotations_file=str(sealed_root / "private/final-holdout.v1.json"),
         evaluation_split_manifest=str(sealed_root / "evaluation-splits.v1.json"),
+        distribution_provenance_file=str(provenance),
     )
 
     with pytest.raises(RuntimeError, match="implementation revision does not match distribution build provenance"):
@@ -735,7 +840,7 @@ def test_temp_cleanup_proof_finds_leftover_files_and_symlinks(tmp_path: Path) ->
     leftover_file.write_text("stale temp payload", encoding="utf-8")
     leftover_target = tmp_path / "target"
     leftover_target.mkdir()
-    leftover_link = tmp_path / "odylith-greenfield-rescue-leftover-link"
+    leftover_link = tmp_path / "odylith-greenfield-unavailable-leftover-link"
     leftover_link.symlink_to(leftover_target, target_is_directory=True)
 
     proof = module.temp_cleanup_proof(tmp_path)
@@ -756,9 +861,9 @@ def test_temp_cleanup_proof_finds_installed_recovery_leftovers(tmp_path: Path) -
     assert str(leftover) in proof["remaining_paths"]
 
 
-def test_temp_cleanup_proof_finds_natural_rescue_leftovers(tmp_path: Path) -> None:
+def test_temp_cleanup_proof_finds_unavailable_provider_leftovers(tmp_path: Path) -> None:
     module = _module()
-    leftover = tmp_path / "odylith-greenfield-natural-rescue-leftover"
+    leftover = tmp_path / "odylith-greenfield-unavailable-leftover"
     leftover.mkdir()
 
     proof = module.temp_cleanup_proof(tmp_path)
@@ -767,91 +872,83 @@ def test_temp_cleanup_proof_finds_natural_rescue_leftovers(tmp_path: Path) -> No
     assert str(leftover) in proof["remaining_paths"]
 
 
-def test_natural_rescue_quality_requires_structured_non_probe_case() -> None:
+def test_model_profile_release_proof_requires_all_tiers_under_strict_budgets() -> None:
     module = _module()
-    synthetic = _passing_matrix_result(
-        module,
-        manifest_summary={
-            "status": "passed",
-            "validation_status": "passed",
-            "repair_tier": "rescue",
-            "rescue_activated": True,
-            "repaired_issue_codes": ["preconfirm_rescue_probe"],
-            "tribunal_patch_plan_status": "planned",
-            "tribunal_patch_plan_operation_count": 1,
-            "tribunal_patch_plan_provider": "codex-cli",
-        },
-    )
-    natural = _passing_matrix_result(
-        module,
-        manifest_summary={
-            "status": "passed",
-            "validation_status": "passed",
-            "repair_tier": "rescue",
-            "rescue_activated": True,
-            "repaired_issue_codes": ["semantic_alignment"],
-            "tribunal_patch_plan_status": "planned",
-            "tribunal_patch_plan_operation_count": 1,
-            "tribunal_patch_plan_provider": "codex-cli",
-        },
-    )
-    fallback = _passing_matrix_result(
-        module,
-        manifest_summary={
-            "status": "passed",
-            "validation_status": "passed",
-            "repair_tier": "rescue",
-            "rescue_activated": True,
-            "repaired_issue_codes": ["structured_rescue_semantic_patch"],
-            "tribunal_patch_plan_status": "provider_failed",
-            "tribunal_patch_plan_operation_count": 0,
-            "tribunal_patch_plan_provider": "codex-cli",
-            "structured_patch_fallback_status": "applied",
-            "structured_patch_fallback_source": "source_anchored_semantic_fact",
-            "structured_patch_fallback_operation_count": 1,
-            "structured_patch_fallback_provider": "codex-cli",
-            "structured_patch_fallback_provider_failure_code": "timeout",
-        },
+    results = tuple(
+        _passing_profile_result(module, profile_id, elapsed)
+        for profile_id, elapsed in zip(
+            tuple(module.model_profile_id_for_repair_tier(tier) for tier in ("standard", "rescue", "deep")),
+            (59.9, 89.9, 119.9),
+            strict=True,
+        )
     )
 
-    assert module.natural_rescue_quality_proven((synthetic,)) is False
-    assert module.natural_rescue_quality_proven((natural,)) is True
-    assert module.natural_rescue_quality_proven((fallback,)) is True
+    proof = module.model_profile_release_proof(results, require_complete=True)
+    assert proof["status"] == "passed"
+    standard_profile_id = module.model_profile_id_for_repair_tier("standard")
+    assert proof["profiles"][standard_profile_id]["lower_capability"] is True
+    assert module.model_profile_release_proof(results[:-1], require_complete=True)["status"] == "failed"
+    breached = replace(
+        results[0],
+        proposal_seconds=module.get_greenfield_model_profile(
+            module.model_profile_id_for_repair_tier("standard")
+        ).consumer_budget_seconds,
+    )
+    assert module.model_profile_release_proof((breached, *results[1:]), require_complete=True)["status"] == "failed"
 
 
-def test_provider_failure_observation_requires_failed_plan_and_source_anchored_fallback() -> None:
+def test_model_profile_release_proof_rejects_elapsed_tier_relabeling() -> None:
     module = _module()
-    manifest = {
-        "last_repair_patchset_request": {
-            "status": "repairable",
-            "operation_count": 1,
-            "operations": [{"operation_id": "GF-PATCH-001"}],
-            "tribunal_patch_plan": {
-                "status": "provider_failed",
-                "operation_count": 0,
-                "provider": {"provider": "codex-cli", "last_failure_code": "nonzero_exit"},
-            },
-            "structured_patch_fallback": {
-                "status": "applied",
-                "source": "source_anchored_semantic_fact",
-                "operation_count": 1,
-                "provider_failure": {"provider": "codex-cli", "code": "nonzero_exit"},
-            },
-        }
+    rescue_id = module.model_profile_id_for_repair_tier("rescue")
+    result = _passing_profile_result(module, rescue_id, 30.0)
+    evidence = dict(result.evidence or {})
+    profile_evidence = dict(evidence["model_profile"])
+    profile_evidence["observed"] = {**profile_evidence["observed"], "authoring_tier": "standard"}
+    evidence["model_profile"] = profile_evidence
+
+    proof = module.model_profile_release_proof(
+        (replace(result, evidence=evidence),),
+        require_complete=False,
+    )
+
+    assert proof["status"] == "failed"
+    assert any("authoring tier" in issue for issue in proof["issues"])
+
+
+def test_model_profile_release_proof_requires_a_passed_terminal_result() -> None:
+    module = _module()
+    result = _passing_profile_result(
+        module,
+        module.model_profile_id_for_repair_tier("standard"),
+        18.0,
+    )
+
+    proof = module.model_profile_release_proof(
+        (replace(result, status="failed"),),
+        require_complete=False,
+    )
+
+    assert proof["status"] == "failed"
+    assert any("terminal matrix result" in issue for issue in proof["issues"])
+
+
+def test_unavailable_provider_proof_requires_fast_no_write_failure() -> None:
+    module = _module()
+    values = {
+        "returncode": 1,
+        "proposal_seconds": 1.0,
+        "detail": "Greenfield model authoring is unavailable; no records were created.",
+        "write_audit_active": True,
+        "write_audit_error": "",
+        "write_attempts": (),
+        "subprocess_attempts": (),
+        "changed_records": (),
+        "staged_transaction_present": False,
     }
 
-    observation = module._provider_failure_observation(manifest)  # noqa: SLF001
-
-    assert observation == {
-        "proven": True,
-        "provider": "codex-cli",
-        "failure_code": "nonzero_exit",
-        "fallback_status": "applied",
-        "fallback_source": "source_anchored_semantic_fact",
-        "fallback_operation_count": 1,
-    }
-    manifest["last_repair_patchset_request"]["tribunal_patch_plan"]["status"] = "planned"
-    assert module._provider_failure_observation(manifest)["proven"] is False  # noqa: SLF001
+    assert module.unavailable_provider_proof_issues(**values) == ()
+    assert module.unavailable_provider_proof_issues(**{**values, "returncode": 0})
+    assert module.unavailable_provider_proof_issues(**{**values, "write_attempts": ("open",)})
 
 
 def test_commit_manifest_summary_uses_last_repair_patchset_for_clean_final_pass() -> None:
@@ -867,7 +964,7 @@ def test_commit_manifest_summary_uses_last_repair_patchset_for_clean_final_pass(
             "passes": 2,
             "issue_count": 0,
             "repaired_issue_codes": ["semantic_alignment"],
-            "whole_project_elapsed_seconds": 0.125,
+            "create_elapsed_seconds": 0.125,
             "write_transaction": {
                 "status": "committed",
                 "commit_only": True,
@@ -923,7 +1020,7 @@ def test_commit_manifest_summary_uses_last_repair_patchset_for_clean_final_pass(
     assert summary["structured_patch_fallback_operation_count"] == 1
     assert summary["structured_patch_fallback_provider"] == "codex-cli"
     assert summary["structured_patch_fallback_provider_failure_code"] == "timeout"
-    assert summary["whole_project_elapsed_seconds"] == 0.125
+    assert summary["create_elapsed_seconds"] == 0.125
     assert summary["write_transaction"] == {
         "status": "committed",
         "commit_only": True,
@@ -945,4 +1042,4 @@ def test_commit_manifest_summary_does_not_invent_missing_elapsed_time() -> None:
 
     summary = module.commit_manifest_summary({"status": "passed"})
 
-    assert summary["whole_project_elapsed_seconds"] is None
+    assert summary["create_elapsed_seconds"] is None

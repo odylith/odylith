@@ -13,6 +13,22 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS_ROOT = REPO_ROOT / "scripts" / "release"
 
 
+class _NoopServer:
+    def shutdown(self) -> None:
+        return None
+
+    def server_close(self) -> None:
+        return None
+
+
+def _stub_server(monkeypatch: pytest.MonkeyPatch, module: object) -> None:
+    monkeypatch.setattr(
+        module,
+        "_serve_directory",
+        lambda _dist_dir: (_NoopServer(), "http://127.0.0.1:8123"),
+    )
+
+
 def _module():
     if str(SCRIPTS_ROOT) not in sys.path:
         sys.path.insert(0, str(SCRIPTS_ROOT))
@@ -27,8 +43,12 @@ def _module():
     return module
 
 
-def test_exact_preamble_probe_writes_sanitized_observation_before_cleaning_temp_root(tmp_path: Path) -> None:
+def test_exact_preamble_probe_writes_sanitized_observation_before_cleaning_temp_root(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     module = _module()
+    _stub_server(monkeypatch, module)
     dist_dir = tmp_path / "dist"
     dist_dir.mkdir()
     install_script = dist_dir / "install.sh"
@@ -138,8 +158,12 @@ def test_exact_preamble_probe_cli_rejects_non_finite_install_timeout() -> None:
     assert exc_info.value.code == 2
 
 
-def test_exact_preamble_probe_records_install_failure_without_leaking_temp_root(tmp_path: Path) -> None:
+def test_exact_preamble_probe_records_install_failure_without_leaking_temp_root(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     module = _module()
+    _stub_server(monkeypatch, module)
     dist_dir = tmp_path / "dist"
     dist_dir.mkdir()
     install_script = dist_dir / "install.sh"

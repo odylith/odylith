@@ -9,6 +9,9 @@ from typing import Any
 
 from odylith.runtime.common.mermaid_text import visible_mermaid_label_quality_texts
 from odylith.runtime.common.value_coercion import normalize_string
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_PROJECTION_ORIGIN,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
 
@@ -32,6 +35,7 @@ class RenderedArtifact:
     repair_path: str = "prewrite_package.artifact_draft_set.copy_quality"
     kind: str = "prose"
     fields: Mapping[str, str] = field(default_factory=dict)
+    contract: Mapping[str, Any] = field(default_factory=dict)
     semantic_node_id: str | None = None
 
     @property
@@ -61,6 +65,8 @@ class RenderedPackageQualityFinding:
 
 def collect_rendered_package_artifacts(package: Any) -> list[RenderedArtifact]:
     artifacts: list[RenderedArtifact] = []
+    proposal = package_mapping(getattr(package, "proposal", None))
+    typed_handoff = proposal.get("projection_origin") == AUTHORED_PROJECTION_ORIGIN
     backlog_result = package_mapping(getattr(package, "backlog_result", None))
     for path, text in package_mapping(backlog_result.get("idea_files")).items():
         name = _artifact_name(path)
@@ -138,6 +144,7 @@ def collect_rendered_package_artifacts(package: Any) -> list[RenderedArtifact]:
                 next_steps,
                 "next_steps",
                 "prewrite_package.next_steps_preview",
+                kind="typed_handoff" if typed_handoff else "prose",
             )
         )
 
@@ -158,7 +165,12 @@ def collect_rendered_package_artifacts(package: Any) -> list[RenderedArtifact]:
             )
         )
 
-    artifacts.extend(_project_handoff_prompt_artifacts(getattr(package, "project_dashboard_preview", None)))
+    artifacts.extend(
+        _project_handoff_prompt_artifacts(
+            getattr(package, "project_dashboard_preview", None),
+            typed_handoff=typed_handoff,
+        )
+    )
     return artifacts
 
 
@@ -302,7 +314,11 @@ def package_mapping(value: Any) -> Mapping[Any, Any]:
     return value if isinstance(value, Mapping) else {}
 
 
-def _project_handoff_prompt_artifacts(value: Any) -> list[RenderedArtifact]:
+def _project_handoff_prompt_artifacts(
+    value: Any,
+    *,
+    typed_handoff: bool,
+) -> list[RenderedArtifact]:
     project = package_mapping(value)
     rows = _mapping_rows(project.get("host_handoff_prompts"))
     artifacts: list[RenderedArtifact] = []
@@ -318,7 +334,9 @@ def _project_handoff_prompt_artifacts(value: Any) -> list[RenderedArtifact]:
                 text,
                 "project_dashboard",
                 f"prewrite_package.project_dashboard_preview.host_handoff_prompts[{index - 1}]",
+                kind="typed_handoff" if typed_handoff else "prose",
                 fields=fields,
+                contract=package_mapping(row.get("contract")),
             )
         )
     return artifacts

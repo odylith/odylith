@@ -183,7 +183,10 @@ def test_installed_release_env_removes_maintainer_source_path(monkeypatch) -> No
 
     env = module._installed_release_env(base_url="http://127.0.0.1:8123", version="0.1.15")
 
-    assert env == {"ODYLITH_VERSION": "0.1.15"}
+    assert "PYTHONPATH" not in env
+    assert env["ODYLITH_VERSION"] == "0.1.15"
+    assert env["ODYLITH_GREENFIELD_MODEL_PROFILE"] == module.STANDARD_PROFILE_ID
+    assert env["ODYLITH_REASONING_PROVIDER"] == "codex-cli"
 
 
 def test_runtime_identity_requires_the_managed_installed_runtime(tmp_path: Path, monkeypatch) -> None:

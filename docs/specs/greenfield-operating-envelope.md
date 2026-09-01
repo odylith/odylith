@@ -1,6 +1,6 @@
 # Greenfield Operating Envelope
 
-Version: `odylith.greenfield-operating-envelope.v2`
+Version: `odylith.greenfield-operating-envelope.v3`
 
 Profile: `single-product-governance-onboarding`
 
@@ -10,13 +10,19 @@ semantic correctness.
 ## Supported evidence
 
 - English text supplied as one operator request plus, optionally, one edit.
-- Operator text, pasted Markdown, JSON Product Intent, or a typed Product Intent
-  envelope. PDF, image, audio, and remote-URL ingestion are not direct Greenfield
-  formats; a host may extract their text as untrusted evidence first.
-- 1 byte through 8 MiB of combined evidence, at most two evidence documents.
-- One product and one first-release path, with at most 64 human actors, 16 state
-  objects, 128 external systems, 128 internal systems, 16 contradictions, 32
-  ambiguities, and 32 explicit safety or operational boundaries.
+- The public source formats are `operator_prompt` and
+  `operator_prompt_with_edit_evidence`. Pasted Markdown is accepted as text in
+  either document. JSON and typed envelopes are internal custody formats, not
+  public evidence inputs. PDF, image, audio, and remote-URL ingestion are not
+  direct Greenfield formats; a host may extract their text as untrusted evidence
+  first.
+- 1 byte through 64 KiB of combined evidence, across at most two evidence
+  documents.
+- One product, one state object, and one first-release path. Each authored list
+  may contain at most 32 items, including human actors, external systems,
+  internal systems, ambiguities, and explicit safety or operational boundaries.
+  An unresolved contradiction is outside the commit envelope and must produce
+  the one material clarification or a safe no-write outcome.
 
 The sealed receipt records evidence volume, documents, actors, state objects,
 paths, systems, contradictions, ambiguities, and safety boundaries. It labels
@@ -33,26 +39,42 @@ legal, or production claims.
 
 ## Host and model profiles
 
-Codex and Claude are the deterministic confirmation hosts. Both pass the pending
-transaction hash to the same pre-model callback. Other hosts may render proposals
-but cannot offer governed writes until they prove the same callback and visibility
-contract.
+Codex and Claude are the deterministic confirmation hosts. Both pass the sealed
+transaction hash to the same commit-only confirmation callback. Other hosts may
+render proposals but cannot offer governed writes until they prove the same hash
+callback and visibility contract.
 
-Release evaluation covers `provider-free-standard-v1`,
-`bounded-reasoning-standard-v1`, and `lower-capability-safe-v1`. These are behavior
-profiles, not claims about every provider model. Host-model output is candidate
-evidence only. The lower-capability profile must clarify or fail safely instead of
-inventing product truth.
+Release evaluation covers three pinned successful profiles:
+
+- `greenfield-standard-gpt-5.3-codex-spark-medium-v2`: the default, `auto`, and
+  lower-capability path, with one 60-second end-to-end consumer budget.
+- `greenfield-rescue-gpt-5.3-codex-spark-high-v2`: the explicit high-reasoning
+  rescue path, with one 90-second end-to-end consumer budget.
+- `greenfield-deep-gpt-5.3-codex-spark-high-v2`: the explicit high-reasoning deep
+  path, with one 120-second end-to-end consumer budget.
+
+The selected profile is fixed before the model request. Elapsed time or a failed
+attempt never relabels or extends a standard request into rescue or deep. These
+are bounded provider-request profiles, not claims about every provider model.
+Host-model output is candidate evidence only. The lower-capability profile must
+clarify or fail safely instead of inventing product truth. Provider unavailability
+is separately proven as a fast, no-write environment outcome and is not a
+supported-success profile.
 
 ## Filesystem contract
 
 The supported publication target is one local writable repository with owned
 relative paths, no symlink traversal, an exclusive advisory lock, same-filesystem
 atomic file replacement, and durable `fsync` support. Greenfield materializes the
-sealed after-image as one immutable generation, projects compatibility files under
-rollback guard, and switches one active-generation record only after readback.
-Canonical Greenfield readers pin that record; injected failure before the switch
-cannot expose the new generation, and failure after the switch recovers forward.
+sealed after-image as an immutable generation, projects compatibility files under
+rollback guard, and records active-generation identity for recovery and coherent
+Greenfield handoff reads.
+
+The public guarantee remains journaled crash recovery, not package-level atomic
+visibility. Compatibility readers do not yet universally resolve one atomic
+generation pointer. Injected failures must therefore preserve or recover the
+journaled transaction truth without claiming that every repository reader can
+observe only an all-old or all-new package.
 
 The supported `odylith` CLI is the cooperating boundary for later managed writes.
 While such a writer holds the repository lock, canonical readers remain on the old

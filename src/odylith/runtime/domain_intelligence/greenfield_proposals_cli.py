@@ -3,20 +3,35 @@
 from __future__ import annotations
 
 import argparse
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
+from dataclasses import replace
 import json
 from pathlib import Path
 import shlex
+import time
 from typing import Any, Mapping
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store
-from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import GreenfieldClarificationRequired
-from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import materialize_prompt_intent_hypothesis
-from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import render_product_intent_preview
+from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import GreenfieldClarificationRequired
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
+    require_product_create_transaction_quality_approved,
+)
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
+    require_product_create_transaction_verified,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import materialize_model_authored_intent
+from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
+from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import render_product_intent_preview
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    get_greenfield_model_profile,
+    model_profile_id_for_repair_tier,
+)
+from odylith.runtime.domain_intelligence.greenfield_operating_envelope import MAX_EVIDENCE_BYTES
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import GreenfieldPreconfirmEngineError
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import PRECONFIRM_REPAIR_TIERS
 from odylith.runtime.project_intelligence.intent_confirmation import format_confirmation_choice_lines
+from odylith.runtime.reasoning import odylith_reasoning
 
 
 _PUBLIC_INTENT_AUTHORITY_SUMMARY_VERSION = "odylith.product-intent-authority-summary.v1"
@@ -54,6 +69,21 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         help="Reserved preview depth selector. `propose` always compiles the full staged transaction before the final rail.",
     )
     propose.add_argument(
+        "--repair-tier",
+        choices=PRECONFIRM_REPAIR_TIERS,
+        default=greenfield_proposals.DEFAULT_PRECONFIRM_REPAIR_TIER,
+        help=(
+            "Proposal budget: auto/standard use the pinned under-60s profile; rescue and deep are explicit "
+            "pinned under-90s and under-120s profiles."
+        ),
+    )
+    propose.add_argument(
+        "--evidence-language",
+        choices=("en",),
+        default="en",
+        help="Declared language of prompt and EDIT evidence. Greenfield v3 currently supports English evidence.",
+    )
+    propose.add_argument(
         "--confirm-intent",
         action="store_true",
         help=argparse.SUPPRESS,
@@ -80,8 +110,8 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         choices=PRECONFIRM_REPAIR_TIERS,
         default=greenfield_proposals.DEFAULT_PRECONFIRM_REPAIR_TIER,
         help=(
-            "Create-transaction compiler budget: auto keeps standard compilation under 60s and enters 90s "
-            "rescue only for repairable semantic or quality gates; deep is explicit 120s premium/CI proof."
+            "Create-transaction compiler budget: auto/standard use the pinned under-60s profile; rescue and "
+            "deep are explicit pinned under-90s and under-120s profiles."
         ),
     )
     apply.add_argument("--json", action="store_true", dest="as_json")
@@ -93,6 +123,12 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     compile_transaction.add_argument("--prompt", required=True)
     compile_transaction.add_argument("--edit", default="", help=argparse.SUPPRESS)
     compile_transaction.add_argument("--edit-evidence", default="", help=argparse.SUPPRESS)
+    compile_transaction.add_argument(
+        "--evidence-language",
+        choices=("en",),
+        default="en",
+        help=argparse.SUPPRESS,
+    )
     compile_transaction.add_argument(
         "--intent-file",
         "--confirmed-intent-file",
@@ -106,8 +142,8 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         choices=PRECONFIRM_REPAIR_TIERS,
         default=greenfield_proposals.DEFAULT_PRECONFIRM_REPAIR_TIER,
         help=(
-            "Create-transaction compiler budget: auto keeps standard compilation under 60s and enters 90s "
-            "rescue only for repairable semantic or quality gates; deep is explicit 120s premium/CI proof."
+            "Create-transaction compiler budget: auto/standard use the pinned under-60s profile; rescue and "
+            "deep are explicit pinned under-90s and under-120s profiles."
         ),
     )
     compile_transaction.add_argument(
@@ -234,6 +270,12 @@ def _print_greenfield_clarification(exc: GreenfieldClarificationRequired, *, as_
         "question": exc.question,
         "required_fields": list(exc.required_fields),
     }
+    model_profile = exc.authoring_receipt.get("model_profile")
+    if isinstance(model_profile, Mapping):
+        clarification["model_profile"] = dict(model_profile)
+    consistency = exc.authoring_receipt.get("consistency_assessment")
+    if isinstance(consistency, Mapping):
+        clarification["consistency_assessment"] = dict(consistency)
     if as_json:
         print(json.dumps({"mode": "clarification_required", "clarification": clarification}, indent=2, sort_keys=True))
         return
@@ -270,9 +312,16 @@ def _edit_evidence_from_args(args: argparse.Namespace, *, repo_root: Path) -> st
     if not path.is_absolute():
         path = repo_root / path
     try:
-        return path.read_text(encoding="utf-8")
+        with path.open("rb") as handle:
+            payload = handle.read(MAX_EVIDENCE_BYTES + 1)
     except OSError as exc:
         raise RuntimeError("environment/IO failure while reading EDIT evidence") from exc
+    if len(payload) > MAX_EVIDENCE_BYTES:
+        raise ValueError("Greenfield EDIT evidence exceeds the declared model-input bound")
+    try:
+        return payload.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise ValueError("Greenfield EDIT evidence must be valid UTF-8 text") from exc
 
 
 def _compile_prompt_evidence_transaction(
@@ -282,13 +331,55 @@ def _compile_prompt_evidence_transaction(
     edit_evidence: str,
     release_selector: str,
     repair_tier: str = "",
+    source_language: str = "en",
+    started_at: float | None = None,
+    clock: Callable[[], float] | None = None,
 ) -> tuple[dict[str, Any], Any, Path]:
-    candidate_intent = materialize_prompt_intent_hypothesis(
+    now = clock or time.perf_counter
+    started = now() if started_at is None else float(started_at)
+    requested_tier = str(repair_tier or greenfield_proposals.DEFAULT_PRECONFIRM_REPAIR_TIER).strip().casefold()
+    prepared_evidence = prepare_model_authoring_evidence(
+        prompt=prompt,
+        edit_evidence=edit_evidence,
+        source_language=source_language,
+    )
+    profile_id = model_profile_id_for_repair_tier(requested_tier)
+    profile = get_greenfield_model_profile(profile_id)
+    if profile.model_timeout_seconds - max(0.0, now() - started) < 1.0:
+        raise RuntimeError(
+            "Greenfield proposal exhausted its shared time budget while reading evidence; no records were created."
+        )
+    provider_result = _greenfield_authoring_provider(
+        repo_root=repo_root,
+        profile_id=profile_id,
+    )
+    provider = provider_result[0]
+    model = profile.model
+    reasoning_effort = profile.reasoning_effort
+    authoring_timeout_seconds = profile.model_timeout_seconds - max(0.0, now() - started)
+    if authoring_timeout_seconds < 1.0:
+        raise RuntimeError(
+            "Greenfield proposal exhausted its shared time budget during provider setup; no records were created."
+        )
+    authoring_receipt: dict[str, Any] = {}
+    candidate_intent = materialize_model_authored_intent(
         prompt=prompt,
         repo_root=repo_root,
-        fallback_title=greenfield_proposals.intent_title(prompt),
         edit_evidence=edit_evidence,
+        authoring_provider=provider,
+        authoring_timeout_seconds=authoring_timeout_seconds,
+        authoring_model=model,
+        authoring_reasoning_effort=reasoning_effort,
+        authoring_profile_id=profile_id,
+        source_language=source_language,
+        prepared_evidence=prepared_evidence,
+        authoring_receipt=authoring_receipt,
     )
+    authoring_tier = str(authoring_receipt.get("tier") or "").strip()
+    if authoring_tier not in {"standard", "rescue", "deep"}:
+        raise RuntimeError(
+            "Greenfield did not receive a valid source-cited authoring receipt; no records were created."
+        )
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=repo_root,
         prompt=prompt,
@@ -300,11 +391,15 @@ def _compile_prompt_evidence_transaction(
         raise RuntimeError("pre-confirm typed Product Intent authority is missing")
     proposal = dict(proposal)
     proposal["product_intent_authority"] = candidate_authority
+    elapsed_before_preconfirm_seconds = max(0.0, now() - started)
     transaction = greenfield_proposals.compile_greenfield_create_transaction(
         repo_root=repo_root,
         proposal=proposal,
         release_selector=release_selector,
         proposal_ready=True,
+        preconfirm_elapsed_seconds=elapsed_before_preconfirm_seconds,
+        model_authoring_tier=authoring_tier,
+        model_authoring_receipt=authoring_receipt,
         **({"repair_tier": repair_tier} if repair_tier else {}),
     )
     candidate_intent = dict(transaction.proposal.get("intent") or {})
@@ -318,11 +413,85 @@ def _compile_prompt_evidence_transaction(
         raise RuntimeError(
             "pre-confirm compiler produced a transaction whose product facts do not match the visible typed preview"
         )
+    quality_manifest = dict(transaction.quality_manifest)
+    quality_manifest["elapsed_seconds"] = round(max(0.0, now() - started), 3)
+    transaction = replace(transaction, quality_manifest=quality_manifest)
+    require_product_create_transaction_quality_approved(transaction.quality_manifest)
+    require_product_create_transaction_verified(transaction)
+    transaction_path = _stage_pending_transaction_with_deadline(
+        repo_root=repo_root,
+        transaction=transaction,
+        started_at=started,
+        clock=now,
+    )
+    return candidate_intent, transaction, transaction_path
+
+
+def _stage_pending_transaction_with_deadline(
+    *,
+    repo_root: Path,
+    transaction: Any,
+    started_at: float,
+    clock: Callable[[], float],
+) -> Path:
+    """Publish only while the sealed consumer deadline remains valid."""
+
+    budget_seconds = float(transaction.quality_manifest.get("budget_seconds") or 0.0)
+    if max(0.0, clock() - started_at) >= budget_seconds:
+        raise RuntimeError("Greenfield proposal exceeded its sealed repair-tier time budget; no records were created.")
+    pending_directory = greenfield_pending_transaction_store.pending_transaction_directory(
+        repo_root,
+        transaction.transaction_hash,
+    )
+    pending_preexisted = pending_directory.exists()
     transaction_path = greenfield_pending_transaction_store.stage_pending_transaction(
         repo_root=repo_root,
         transaction=transaction,
     )
-    return candidate_intent, transaction, transaction_path
+    final_elapsed_seconds = max(0.0, clock() - started_at)
+    if final_elapsed_seconds >= budget_seconds:
+        if not pending_preexisted:
+            try:
+                greenfield_pending_transaction_store.discard_pending_transaction(
+                    repo_root=repo_root,
+                    transaction_hash=transaction.transaction_hash,
+                )
+            except (OSError, RuntimeError, ValueError) as exc:
+                raise RuntimeError(
+                    "Greenfield proposal exceeded its sealed repair-tier time budget and its pending transaction could not be retired; do not confirm it."
+                ) from exc
+        raise RuntimeError("Greenfield proposal exceeded its sealed repair-tier time budget; no records were created.")
+    return transaction_path
+
+
+def _greenfield_authoring_provider(*, repo_root: Path, profile_id: str) -> tuple[Any, str, str]:
+    """Resolve the single semantic authoring call for a Greenfield proposal.
+
+    Greenfield never falls back to lexical inference when this provider is not
+    available. The generic reasoning layer owns host selection; this adapter
+    only pins the authoring request to its declared single-call budget.
+    """
+
+    profile = get_greenfield_model_profile(profile_id)
+    configured = odylith_reasoning.reasoning_config_from_env(repo_root=repo_root)
+    config = replace(
+        configured,
+        provider=profile.provider,
+        model=profile.model,
+        codex_reasoning_effort=profile.reasoning_effort,
+    )
+    provider = odylith_reasoning.provider_from_config(
+        config,
+        repo_root=repo_root,
+        require_auto_mode=True,
+        allow_implicit_local_provider=True,
+    )
+    if provider is None:
+        raise RuntimeError(
+            "A verified source-cited Greenfield package could not be produced because model authoring is unavailable; "
+            "no records were created."
+        )
+    return provider, profile.model, profile.reasoning_effort
 
 
 def _public_intent_hypothesis(candidate_intent: Mapping[str, Any]) -> dict[str, Any]:
@@ -364,12 +533,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             _print_greenfield_error(ValueError(_retired_intent_file_message()), as_json=args.output_format == "json")
             return 2
         try:
+            started_at = time.perf_counter()
             edit_evidence = _edit_evidence_from_args(args, repo_root=repo_root)
             candidate_intent, transaction, transaction_path = _compile_prompt_evidence_transaction(
                 repo_root=repo_root,
                 prompt=str(args.prompt),
                 release_selector="",
                 edit_evidence=edit_evidence,
+                repair_tier=str(args.repair_tier),
+                source_language=str(args.evidence_language),
+                started_at=started_at,
             )
         except GreenfieldClarificationRequired as exc:
             return _finish_clarification(exc=exc, as_json=args.output_format == "json")
@@ -406,6 +579,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             _print_greenfield_error(ValueError(_retired_intent_file_message()), as_json=args.output_format == "json")
             return 2
         try:
+            started_at = time.perf_counter()
             edit_evidence = _edit_evidence_from_args(args, repo_root=repo_root)
             candidate_intent, transaction, staged_path = _compile_prompt_evidence_transaction(
                 repo_root=repo_root,
@@ -413,6 +587,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 release_selector=str(args.release),
                 edit_evidence=edit_evidence,
                 repair_tier=str(args.repair_tier),
+                source_language=str(args.evidence_language),
+                started_at=started_at,
             )
             output_path = str(args.output or "").strip()
             if output_path:

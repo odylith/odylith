@@ -30,6 +30,6 @@ dist_dir="$preflight_root/dist"
 mkdir -p "$dist_dir"
 trap 'rm -rf "$preflight_root"' EXIT
 
-run_release_proof_steps "$resolved_version" "$dist_dir"
+run_release_proof_steps "$resolved_version" "$dist_dir" terminal
 
 echo "release preflight ready for ${tag}"

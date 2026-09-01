@@ -119,7 +119,7 @@ def commit_greenfield_create_transaction(
                 result = greenfield_compiled_write.compiled_greenfield_commit_result(transaction=transaction)
                 final_manifest = finalize_greenfield_commit_manifest(
                     transaction.commit_manifest_preview,
-                    whole_project_elapsed_seconds=time.perf_counter() - started,
+                    create_elapsed_seconds=time.perf_counter() - started,
                     write_transaction_status="committed",
                 )
                 transaction_summary = transaction.summary()
@@ -134,7 +134,7 @@ def commit_greenfield_create_transaction(
                 write_manifest["lifecycle_version"] = greenfield_create_lifecycle.CREATE_LIFECYCLE_VERSION
                 write_manifest["lifecycle_state"] = greenfield_create_lifecycle.CLOSED
                 final_manifest["write_transaction"] = write_manifest
-                final_manifest["whole_project_elapsed_seconds"] = round(time.perf_counter() - started, 3)
+                final_manifest["create_elapsed_seconds"] = round(time.perf_counter() - started, 3)
                 result["commit_manifest"] = final_manifest
                 result["product_create_transaction"] = transaction_summary
                 generation = greenfield_generation_store.materialize_immutable_greenfield_generation(

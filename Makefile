@@ -16,6 +16,13 @@ GREENFIELD_FAST_TESTS := \
 
 GREENFIELD_LIFECYCLE_TESTS := \
 	tests/unit/runtime/test_greenfield_cli_paths.py \
+	tests/unit/runtime/test_greenfield_create_transaction.py \
+	tests/unit/runtime/test_greenfield_apply_commit_only_boundary.py \
+	tests/unit/runtime/test_greenfield_transaction.py \
+	tests/unit/runtime/test_greenfield_commit_journal.py \
+	tests/unit/runtime/test_greenfield_commit_rollback.py \
+	tests/unit/runtime/test_greenfield_model_intent_authoring.py \
+	tests/unit/install/test_greenfield_commit_recovery_proof.py \
 	tests/unit/install/test_greenfield_browser_surface_proof.py \
 	tests/unit/runtime/test_greenfield_host_confirmation.py \
 	tests/unit/runtime/test_greenfield_host_routing.py

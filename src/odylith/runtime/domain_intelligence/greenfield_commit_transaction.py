@@ -53,8 +53,14 @@ _POSTCONFIRM_RUNTIME_SOURCE_FILES = (
     "runtime/domain_intelligence/greenfield_transaction.py",
     "runtime/surfaces/greenfield_host_confirmation.py",
 )
-_VOLATILE_HASH_KEYS = frozenset({"elapsed_seconds", "whole_project_elapsed_seconds"})
+_VOLATILE_HASH_KEYS = frozenset({"elapsed_seconds", "whole_project_elapsed_seconds", "create_elapsed_seconds"})
 _SEALED_COMMIT_ATTESTATION = object()
+_CURRENT_SEALED_INTENT_VERSIONS = {
+    "version": "odylith.product-intent-authority.v7",
+    "envelope_schema_version": "odylith.product-intent-envelope.v7",
+    "ledger_version": "odylith.product-intent-custody-ledger.v6",
+    "atomic_ledger_version": "odylith.product-intent-atomic-facts.v2",
+}
 
 
 @dataclass(frozen=True)
@@ -181,6 +187,7 @@ def load_sealed_product_create_commit(
         raise ValueError("ProductCreateTransaction hash does not match its pre-confirm compiler receipt")
     if str(payload.get("version", "")).strip() != PRODUCT_CREATE_TRANSACTION_VERSION:
         raise ValueError("ProductCreateTransaction has an unsupported version")
+    _require_current_sealed_intent_versions(payload)
     package = payload.get("prewrite_package")
     if not isinstance(package, Mapping):
         raise ValueError("ProductCreateTransaction is missing its sealed prewrite package")
@@ -238,6 +245,27 @@ def require_sealed_commit_transaction(transaction: Any) -> None:
     package = getattr(transaction, "prewrite_package", None)
     write_set = getattr(package, "repository_write_set", None)
     greenfield_repository_write_set.require_compiled_greenfield_repository_write_set(write_set)
+
+
+def _require_current_sealed_intent_versions(payload: Mapping[str, Any]) -> None:
+    """Admit only current sealed custody versions without interpreting product facts."""
+
+    authority = payload.get("intent_authority")
+    proposal = payload.get("proposal")
+    proposal_authority = (
+        proposal.get("product_intent_authority")
+        if isinstance(proposal, Mapping)
+        else None
+    )
+    for candidate in (authority, proposal_authority):
+        if not isinstance(candidate, Mapping) or any(
+            candidate.get(key) != expected
+            for key, expected in _CURRENT_SEALED_INTENT_VERSIONS.items()
+        ):
+            raise ValueError(
+                "ProductCreateTransaction uses a retired sealed Product Intent authority, envelope, or ledger version; "
+                "no governed records were written. Rebuild the pre-confirm transaction before committing."
+            )
 
 
 def require_product_create_transaction_compiler_provenance_payload(

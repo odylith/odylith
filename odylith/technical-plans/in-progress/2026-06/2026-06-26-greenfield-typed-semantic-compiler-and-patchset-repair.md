@@ -4045,3 +4045,18 @@ above.
       rerun lifecycle and the maintained matrix from case one, prove desktop and
       mobile normal/fallback/degraded browser states, and complete installed
       reviewer adjudication before the untouched one-shot holdout.
+    - 2026-09-01 model-authored v13 runtime checkpoint: the active mechanism now
+      uses one source-cited structured model response and deterministic typed
+      custody projection; the retired semantic parser/repair tower is absent and
+      the canonical semantic boundary rejects regex imports. A coordinated HIIT
+      path exposed one dropped ownership fact: model `actor_occurrence=0` was not
+      retained in the sealed relation. Authored-semantics v7 now carries that fact
+      explicitly and validates exact immediate actor/entity/owner continuity,
+      with first-event carry, silent actor changes, and product-only implicit
+      actors rejected. Fresh proof passes 52 focused model/custody/parser tests,
+      the 10.66-second HIIT lifecycle, all 615 Greenfield runtime tests, all 456
+      install tests, and 15 normal/fallback/degraded desktop/mobile browser tests.
+      The final holdout remains untouched. Remaining gates are a rebuilt clean
+      installed consumer, fresh unseen standard/rescue/deep success within the
+      exact 60/90/120 budgets, independent public adjudication, explicit operator
+      approval, and the one-shot protected holdout.

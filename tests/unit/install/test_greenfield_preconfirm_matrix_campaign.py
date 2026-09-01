@@ -45,9 +45,12 @@ def _case(module, name: str, *, stressors: tuple[str, ...] = ()):
 
 def _result(module, *, name: str, passed: bool = True):
     score = 10 if passed else 0
+    profile_id = module.model_profile_id_for_repair_tier("standard")
+    profile = module.get_greenfield_model_profile(profile_id)
     return module.GreenfieldMatrixResult(
         name=name,
         status="passed" if passed else "failed",
+        proposal_seconds=18.0,
         create_seconds=18.0,
         counts=module.GreenfieldArtifactCounts(),
         quality=module.GreenfieldQualityVerdict(
@@ -63,6 +66,22 @@ def _result(module, *, name: str, passed: bool = True):
             score=score,
             score_explanation=("campaign test verdict",),
         ),
+        evidence={
+            "case": {"id": name},
+            "model_profile": {
+                "profile_id": profile_id,
+                "status": "passed",
+                "issues": [],
+                "observed": {
+                    "profile_id": profile_id,
+                    "provider": profile.provider,
+                    "model": profile.model,
+                    "reasoning_effort": profile.reasoning_effort,
+                    "effective_timeout_seconds": profile.model_timeout_seconds,
+                    "authoring_tier": profile.repair_tier,
+                },
+            },
+        },
     )
 
 
@@ -451,18 +470,6 @@ def test_main_persists_campaign_summary_for_discovery_runs(tmp_path: Path, monke
         return module.GreenfieldInstalledCommitRecoveryProof(status="passed", issues=())
 
     monkeypatch.setattr(module, "run_installed_commit_recovery_proof", fake_commit_recovery)
-    monkeypatch.setattr(
-        module,
-        "run_rescue_smoke",
-        lambda **_kwargs: module.GreenfieldRescueSmokeResult(
-            status="passed",
-            cli_create_seconds=3.0,
-            counts=module.GreenfieldArtifactCounts(),
-            issues=(),
-            manifest={},
-        ),
-    )
-
     exit_code = module.main(
         [
             "--dist-dir",
@@ -527,7 +534,7 @@ def test_main_rejects_release_policy_without_browser_proof(tmp_path: Path) -> No
         raise AssertionError("release proof without browser proof should be rejected")
 
 
-def test_main_rejects_release_policy_without_natural_rescue_proof(tmp_path: Path) -> None:
+def test_main_release_policy_does_not_require_retired_rescue_proofs(tmp_path: Path) -> None:
     module = _module()
     dist_dir = tmp_path / "dist"
     _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
@@ -547,9 +554,9 @@ def test_main_rejects_release_policy_without_natural_rescue_proof(tmp_path: Path
             ]
         )
     except RuntimeError as exc:
-        assert "release proof must include natural rescue proof" in str(exc)
+        assert "release proof must include installed commit recovery proof" in str(exc)
     else:
-        raise AssertionError("release proof without natural rescue proof should be rejected")
+        raise AssertionError("release proof without commit recovery proof should be rejected")
 
 
 def test_main_rejects_release_policy_without_installed_commit_recovery_proof(tmp_path: Path) -> None:
@@ -569,7 +576,6 @@ def test_main_rejects_release_policy_without_installed_commit_recovery_proof(tmp
                 "--proof-tier",
                 "release",
                 "--include-browser-proof",
-                "--include-natural-rescue-proof",
             ]
         )
     except RuntimeError as exc:

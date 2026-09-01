@@ -4,11 +4,11 @@ import json
 from collections.abc import Mapping
 from dataclasses import replace
 from pathlib import Path
+import tempfile
 from typing import Any
 
 import pytest
 
-from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_backlog_commit
@@ -19,13 +19,11 @@ from odylith.runtime.domain_intelligence import greenfield_create_baseline
 from odylith.runtime.domain_intelligence import greenfield_compiled_write
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_create_transaction
-from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_release_commit
+from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence import greenfield_repository_lock
 from odylith.runtime.domain_intelligence import greenfield_traceability
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import PRODUCT_CREATE_TRANSACTION_COMPILER
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import load_compiled_product_create_transaction_file
@@ -33,18 +31,28 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import pr
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import write_compiled_product_create_transaction_file
+from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+    GREENFIELD_INTENT_AUTHORING_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_PROJECTION_ORIGIN,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    DEEP_PROFILE_ID,
+    RESCUE_PROFILE_ID,
+    STANDARD_PROFILE_ID,
+    get_greenfield_model_profile,
+)
 from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_ENGINE_VERSION
 from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_QUALITY_MANIFEST_VERSION
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
-from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
-from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_intent_authority_from_envelope
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.surfaces import brand_assets
-from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
+from tests.unit.runtime.greenfield_proposal_fixtures import materialize_typed_intent_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_package_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_transaction
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
@@ -75,56 +83,145 @@ def _proposal() -> dict[str, Any]:
     }
 
 
-def _intent_authority(
-    repo_root: Path,
-    *,
-    write_files: bool = False,
-    intent: Mapping[str, Any] | None = None,
-    source_text: str = "",
-) -> dict[str, Any]:
-    markdown_path = repo_root / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
-    structured_path = markdown_path.with_suffix(".json")
-    facts = dict(intent) if isinstance(intent, Mapping) else dict(_proposal()["intent"])
-    evidence = source_text or json.dumps(facts, ensure_ascii=True, sort_keys=True)
-    envelope = build_product_intent_envelope(
-        facts,
-        source_text=evidence,
-        source_path=markdown_path,
-        source_format="markdown" if source_text else "in_memory_confirmed_intent",
+def _authored_supplier_proposal(repo_root: Path) -> tuple[dict[str, Any], dict[str, Any]]:
+    first_path = (
+        "Supplier Risk Analyst records one supplier risk case. "
+        "Supplier Review Service presents the supplier evidence. "
+        "Supplier Risk Analyst reviews the evidence. "
+        "Supplier Risk Analyst records a decision. "
+        "Supplier Review Service shows a reviewable risk receipt."
     )
-    if write_files:
-        markdown_path.parent.mkdir(parents=True, exist_ok=True)
-        markdown_path.write_text(evidence, encoding="utf-8")
-        write_structured_confirmed_intent_file(markdown_path, facts, envelope=envelope)
-    return product_intent_authority_from_envelope(
-        envelope,
-        structured_intent_path=structured_path,
-        markdown_source_path=markdown_path,
-    )
-
-
-def _confirmed_intent_with_authority(repo_root: Path) -> dict[str, Any]:
-    intent = parse_confirmed_intent_text(
-        CONFIRMED_INTENT_TEXT,
-        prompt="Draft a greenfield proposal for a municipal permit review workspace",
-    )
-    intent[PRODUCT_INTENT_AUTHORITY_KEY] = _intent_authority(
+    intent: dict[str, Any] = {
+        "title": "Supplier Risk Board",
+        "product_story": (
+            "Supplier Risk Board gives supplier risk analysts one reviewable place for "
+            "supplier decisions and their evidence."
+        ),
+        "state_object": "supplier risk case",
+        "first_path": first_path,
+        "proof_boundary": (
+            "Verify one supplier case, its evidence, recorded decision, and reviewable risk "
+            "receipt together."
+        ),
+        "problem": "Supplier risk decisions lose trust when evidence and decisions are separated.",
+        "customer": "Supplier risk analysts",
+        "opportunity": "Prove one traceable supplier review before broadening the workflow.",
+        "product_view": "The board keeps supplier evidence, review state, and decisions connected.",
+        "success_metrics": ["A reviewer can trace one decision to its supplier evidence."],
+        "evidence_requirements": ["Retain the supplier evidence and recorded decision together."],
+        "operational_constraints": ["Keep every decision traceable to reviewed evidence."],
+        "component_responsibilities": [
+            "Own supplier case state, evidence review, decisions, and risk receipts."
+        ],
+        "human_actors": ["Supplier Risk Analyst"],
+        "external_systems": [],
+        "internal_systems": ["Supplier Review Service"],
+        "assumptions": ["The first release supports one reviewer role."],
+        "ambiguities": [],
+        "non_goals": ["Do not automate supplier approval decisions."],
+    }
+    candidate = materialize_typed_intent_fixture(
         repo_root,
-        write_files=True,
         intent=intent,
-        source_text=CONFIRMED_INTENT_TEXT,
+        first_path_relations=[
+            {
+                "actor_kind": "human",
+                "actor_quote": "Supplier Risk Analyst",
+                "event_quote": "Supplier Risk Analyst records one supplier risk case",
+                "action_verb_quote": "records",
+                "target_quote": "one supplier risk case",
+                "visible_result_quote": "",
+                "recovery_path": False,
+            },
+            {
+                "actor_kind": "product",
+                "actor_quote": "Supplier Review Service",
+                "owner_system_quote": "Supplier Review Service",
+                "event_quote": "Supplier Review Service presents the supplier evidence",
+                "action_verb_quote": "presents",
+                "target_quote": "the supplier evidence",
+                "visible_result_quote": "",
+                "recovery_path": False,
+            },
+            {
+                "actor_kind": "human",
+                "actor_quote": "Supplier Risk Analyst",
+                "event_quote": "Supplier Risk Analyst reviews the evidence",
+                "action_verb_quote": "reviews",
+                "target_quote": "the evidence",
+                "visible_result_quote": "",
+                "recovery_path": False,
+            },
+            {
+                "actor_kind": "human",
+                "actor_quote": "Supplier Risk Analyst",
+                "event_quote": "Supplier Risk Analyst records a decision",
+                "action_verb_quote": "records",
+                "target_quote": "a decision",
+                "visible_result_quote": "",
+                "recovery_path": False,
+            },
+            {
+                "actor_kind": "product",
+                "actor_quote": "Supplier Review Service",
+                "owner_system_quote": "Supplier Review Service",
+                "event_quote": "Supplier Review Service shows a reviewable risk receipt",
+                "action_verb_quote": "shows",
+                "target_quote": "a reviewable risk receipt",
+                "visible_result_quote": "a reviewable risk receipt",
+                "recovery_path": False,
+            },
+        ],
+        component_responsibility_owners=["Supplier Review Service"],
+        component_responsibility_event_orders=[5],
     )
-    return intent
+    authority = dict(candidate.pop(PRODUCT_INTENT_AUTHORITY_KEY))
+    proposal = {
+        "intent": candidate,
+        PRODUCT_INTENT_AUTHORITY_KEY: authority,
+        "projection_origin": AUTHORED_PROJECTION_ORIGIN,
+        "backlog": [{"title": "Prove supplier risk review path"}],
+        "components": [],
+        "diagrams": [],
+    }
+    return proposal, authority
+
+
+def _complete_authored_supplier_proposal(
+    repo_root: Path,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Project the typed supplier intent through the real authored proposal path."""
+
+    minimal, authority = _authored_supplier_proposal(repo_root)
+    confirmed_intent = {
+        **dict(minimal["intent"]),
+        PRODUCT_INTENT_AUTHORITY_KEY: authority,
+    }
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=repo_root,
+        prompt=str(confirmed_intent.get("prompt") or ""),
+        release_selector="0.0.1",
+        confirmed_intent=confirmed_intent,
+        require_completion_ready=False,
+    )
+    return proposal, authority
 
 
 def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
     idea_path = Path("/repo/odylith/radar/source/ideas/B-001.md")
-    created_backlog = [{"title": "Prove supplier risk review path", "idea_id": "B-001", "idea_path": str(idea_path)}]
+    backlog_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
+    workstream_title = str(
+        (backlog_rows[0].get("title") if backlog_rows else "")
+        or "Prove supplier risk review path"
+    )
+    created_backlog = [
+        {"title": workstream_title, "idea_id": "B-001", "idea_path": str(idea_path)}
+    ]
     backlog_result = {
         "created": created_backlog,
-        "idea_files": {str(idea_path): "Supplier risk review path"},
+        "idea_files": {str(idea_path): workstream_title},
         "backlog_index": "/repo/odylith/radar/source/INDEX.md",
-        "backlog_index_text": "| B-001 | Prove supplier risk review path |",
+        "backlog_index_text": f"| B-001 | {workstream_title} |",
         "_candidate_idea_specs": {
             "B-001": backlog_contract.IdeaSpec(
                 path=idea_path,
@@ -154,6 +251,47 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
         traceability_plan=traceability_plan,
         review_date="2026-07-07",
     )
+    component_rows = [row for row in proposal.get("components", []) if isinstance(row, Mapping)]
+    component_row = component_rows[0] if component_rows else {}
+    component_id = str(component_row.get("component_id") or "supplier-risk-service")
+    component_label = str(component_row.get("label") or "Supplier Risk Service")
+    component_path = str(component_row.get("intended_path") or "src/supplier_risk")
+    component_kind = str(component_row.get("kind") or "service")
+    component_responsibility = str(
+        component_row.get("responsibility")
+        or "Supplier Risk Service keeps supplier review state attached."
+    )
+    component_key = greenfield_traceability.component_key(
+        {"component_id": component_id, "label": component_label}
+    )
+    component_diagrams = traceability_plan.component_diagrams.get(component_key, ())
+    component_handoff = {
+        "workstream_id": "B-001",
+        "workstream_title": workstream_title,
+        "implementation_prompt": "Implement the accepted supplier risk review path.",
+    }
+    component_authoring_input = {
+        "component_id": component_id,
+        "label": component_label,
+        "path": component_path,
+        "kind": component_kind,
+        "category": "application",
+        "qualification": "candidate",
+        "owner": "repo",
+        "status": "planned",
+        "product_layer": "application",
+        "sources": ("user_intent",),
+        "workstreams": ("B-001",),
+        "diagrams": component_diagrams,
+        "responsibility": component_responsibility,
+        "boundary": str(component_row.get("boundary") or "Supplier review state only."),
+        "dependencies": (),
+        "interfaces": (),
+        "validation": (),
+        "risks": (),
+        "implementation_handoff": component_handoff,
+        "component_contract": dict(component_row.get("component_contract") or {}),
+    }
     package = GreenfieldCompletionPackage(
         proposal=proposal,
         release_selector="0.0.1",
@@ -166,61 +304,35 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
         surface_refresh_preview=surface_refresh_preview_fixture(),
         component_registry_preview=(
             {
-                "component_id": "supplier-risk-service",
-                "label": "Supplier Risk Service",
-                "spec_path": "odylith/registry/source/components/supplier-risk-service/CURRENT_SPEC.md",
-                "implementation_handoff": {
-                    "workstream_id": "B-001",
-                    "workstream_title": "Prove supplier risk review path",
-                    "implementation_prompt": "Implement the accepted supplier risk review path.",
-                },
-                "authoring_input": {
-                    "component_id": "supplier-risk-service",
-                    "label": "Supplier Risk Service",
-                    "path": "src/supplier_risk",
-                    "kind": "service",
-                    "category": "application",
-                    "qualification": "candidate",
-                    "owner": "repo",
-                    "status": "planned",
-                    "product_layer": "application",
-                    "sources": ("user_intent",),
-                    "workstreams": ("B-001",),
-                    "diagrams": (),
-                    "responsibility": "Supplier Risk Service keeps supplier review state attached.",
-                    "boundary": "Supplier review state only.",
-                    "dependencies": (),
-                    "interfaces": (),
-                    "validation": (),
-                    "risks": (),
-                    "implementation_handoff": {
-                        "workstream_id": "B-001",
-                        "workstream_title": "Prove supplier risk review path",
-                        "implementation_prompt": "Implement the accepted supplier risk review path.",
-                    },
-                    "component_contract": {},
-                },
+                "component_id": component_id,
+                "label": component_label,
+                "spec_path": f"odylith/registry/source/components/{component_id}/CURRENT_SPEC.md",
+                "implementation_handoff": component_handoff,
+                "authoring_input": component_authoring_input,
                 "registry_entry": {
-                    "component_id": "supplier-risk-service",
-                    "name": "Supplier Risk Service",
-                    "kind": "service",
+                    "component_id": component_id,
+                    "name": component_label,
+                    "kind": component_kind,
                     "category": "application",
                     "qualification": "candidate",
                     "aliases": [],
-                    "path_prefixes": ["src/supplier_risk"],
+                    "path_prefixes": [component_path],
                     "workstreams": ["B-001"],
-                    "diagrams": [],
+                    "diagrams": list(component_diagrams),
                     "owner": "repo",
                     "status": "planned",
-                    "what_it_is": "Supplier Risk Service defines the planned service ownership boundary for supplier review state.",
+                    "what_it_is": f"{component_label} defines the planned ownership boundary for supplier review state.",
                     "why_tracked": "Tracked from user-stated intent because this named ownership boundary must stay understandable before source-backed behavior promotes it.",
-                    "spec_ref": "odylith/registry/source/components/supplier-risk-service/CURRENT_SPEC.md",
+                    "spec_ref": f"odylith/registry/source/components/{component_id}/CURRENT_SPEC.md",
                     "sources": ["user_intent"],
                     "subcomponents": [],
                     "product_layer": "application",
                 },
             },
         ),
+        rendered_component_specs={
+            component_label: f"# {component_label}\n\n{component_responsibility}\n",
+        },
         project_brief_record_text=f"# Supplier Risk Board Project Brief\n\n- accepted_at: {COMPILED_ACCEPTED_AT}\n",
         accepted_project_preview={
             "schema_version": "odylith.accepted_project.v1",
@@ -284,25 +396,6 @@ def _seal_test_package(package: GreenfieldCompletionPackage, *, repo_root: Path)
     return seal_compiled_greenfield_package_fixture(package, repo_root=repo_root)
 
 
-def _record_compiled_memory_for_readback(**kwargs: Any) -> dict[str, Any]:
-    repo_root = Path(kwargs["repo_root"])
-    source_root = repo_root / "odylith/runtime/source"
-    source_root.mkdir(parents=True, exist_ok=True)
-    accepted_project = dict(kwargs.get("accepted_project_preview") or {})
-    (source_root / "accepted-project.v1.json").write_text(
-        json.dumps(accepted_project, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
-    (source_root / "project-brief.v1.md").write_text(
-        str(kwargs.get("project_brief_record_text") or ""),
-        encoding="utf-8",
-    )
-    event = dict(kwargs.get("compass_memory_preview") or {})
-    stream_path = repo_root / "odylith/compass/runtime/agent-stream.v1.jsonl"
-    _write_compass_memory_event(repo_root, event)
-    return {"stream": str(stream_path), "event": event}
-
-
 def _compiled_memory_event(package: GreenfieldCompletionPackage) -> dict[str, Any]:
     return dict(package.compass_memory_preview or {})
 
@@ -322,15 +415,179 @@ def _approved_quality_manifest(**overrides: Any) -> dict[str, Any]:
         "validation_status": "passed",
         "issue_count": 0,
         "hard_blocker": None,
+        "requested_repair_tier": "auto",
+        "repair_tier": "standard",
+        "budget_seconds": 60.0,
         "elapsed_seconds": 12.3,
         "write_transaction": {
             "status": "not_started",
             "rollback_guard": "enabled",
             "prewrite_clean_before_commit": True,
         },
+        "semantic_compiler": {
+            "version": "odylith.greenfield.authored-semantic-validation.v1",
+            "status": "passed",
+            "semantic_owner": "single_model_authoring_response",
+            "post_authoring_interpretation_calls": 0,
+        },
+        "model_authoring": _approved_model_authoring(
+            STANDARD_PROFILE_ID,
+            elapsed_seconds=12.0,
+        ),
     }
     manifest.update(overrides)
     return manifest
+
+
+def _approved_model_authoring(profile_id: str, *, elapsed_seconds: float) -> dict[str, Any]:
+    profile = get_greenfield_model_profile(profile_id)
+    return {
+        "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
+        "semantic_model_call_count": 1,
+        "tier": profile.repair_tier,
+        "elapsed_seconds": elapsed_seconds,
+        "model_profile": {
+            "profile_id": profile.profile_id,
+            "provider": profile.provider,
+            "model": profile.model,
+            "reasoning_effort": profile.reasoning_effort,
+            "effective_timeout_seconds": profile.model_timeout_seconds,
+            "authoring_tier": profile.repair_tier,
+        },
+    }
+
+
+def test_quality_approval_accepts_one_model_call_and_zero_reinterpretation() -> None:
+    greenfield_create_transaction.require_product_create_transaction_quality_approved(
+        _approved_quality_manifest(
+            semantic_compiler={
+                "version": "odylith.greenfield.authored-semantic-validation.v1",
+                "status": "passed",
+                "semantic_owner": "single_model_authoring_response",
+                "post_authoring_interpretation_calls": 0,
+            },
+            model_authoring=_approved_model_authoring(
+                STANDARD_PROFILE_ID,
+                elapsed_seconds=12.0,
+            ),
+        )
+    )
+
+
+def test_quality_approval_accepts_explicit_deep_profile() -> None:
+    greenfield_create_transaction.require_product_create_transaction_quality_approved(
+        _approved_quality_manifest(
+            requested_repair_tier="deep",
+            repair_tier="deep",
+            budget_seconds=120.0,
+            semantic_compiler={
+                "version": "odylith.greenfield.authored-semantic-validation.v1",
+                "status": "passed",
+                "semantic_owner": "single_model_authoring_response",
+                "post_authoring_interpretation_calls": 0,
+            },
+            model_authoring=_approved_model_authoring(
+                DEEP_PROFILE_ID,
+                elapsed_seconds=100.0,
+            ),
+        )
+    )
+
+
+def test_quality_approval_accepts_explicit_rescue_profile() -> None:
+    greenfield_create_transaction.require_product_create_transaction_quality_approved(
+        _approved_quality_manifest(
+            requested_repair_tier="rescue",
+            repair_tier="rescue",
+            budget_seconds=90.0,
+            semantic_compiler={
+                "version": "odylith.greenfield.authored-semantic-validation.v1",
+                "status": "passed",
+                "semantic_owner": "single_model_authoring_response",
+                "post_authoring_interpretation_calls": 0,
+            },
+            model_authoring=_approved_model_authoring(
+                RESCUE_PROFILE_ID,
+                elapsed_seconds=80.0,
+            ),
+        )
+    )
+
+
+def test_quality_approval_rejects_default_route_relabelled_as_rescue() -> None:
+    with pytest.raises(ValueError, match="quality manifest is not approved"):
+        greenfield_create_transaction.require_product_create_transaction_quality_approved(
+            _approved_quality_manifest(
+                requested_repair_tier="auto",
+                repair_tier="rescue",
+                budget_seconds=90.0,
+                semantic_compiler={
+                    "version": "odylith.greenfield.authored-semantic-validation.v1",
+                    "status": "passed",
+                    "semantic_owner": "single_model_authoring_response",
+                    "post_authoring_interpretation_calls": 0,
+                },
+                model_authoring=_approved_model_authoring(
+                    RESCUE_PROFILE_ID,
+                    elapsed_seconds=50.0,
+                ),
+            )
+        )
+
+
+def test_quality_approval_rejects_profile_tier_relabeling() -> None:
+    receipt = _approved_model_authoring(DEEP_PROFILE_ID, elapsed_seconds=12.0)
+    receipt["tier"] = "standard"
+
+    with pytest.raises(ValueError, match="quality manifest is not approved"):
+        greenfield_create_transaction.require_product_create_transaction_quality_approved(
+            _approved_quality_manifest(
+                requested_repair_tier="deep",
+                repair_tier="deep",
+                budget_seconds=120.0,
+                semantic_compiler={
+                    "version": "odylith.greenfield.authored-semantic-validation.v1",
+                    "status": "passed",
+                    "semantic_owner": "single_model_authoring_response",
+                    "post_authoring_interpretation_calls": 0,
+                },
+                model_authoring=receipt,
+            )
+        )
+
+
+@pytest.mark.parametrize(
+    "retired_version",
+    (
+        "odylith.greenfield.model-intent-authoring.v1",
+        "odylith.greenfield.intent-authoring.v4",
+        "odylith.greenfield.intent-authoring.v5",
+    ),
+)
+def test_quality_approval_rejects_retired_model_authoring_versions(
+    retired_version: str,
+) -> None:
+    with pytest.raises(
+        ValueError,
+        match="pre-confirm ProductCreateTransaction quality manifest is not approved",
+    ):
+        greenfield_create_transaction.require_product_create_transaction_quality_approved(
+            _approved_quality_manifest(
+                semantic_compiler={
+                    "version": "odylith.greenfield.authored-semantic-validation.v1",
+                    "status": "passed",
+                    "semantic_owner": "single_model_authoring_response",
+                    "post_authoring_interpretation_calls": 0,
+                },
+                model_authoring={
+                    "authoring_version": retired_version,
+                    "semantic_model_call_count": 1,
+                    "tier": "standard",
+                    "elapsed_seconds": 12.0,
+                },
+            ),
+            authored_projection_verified=True,
+        )
 
 
 def _valid_idea_file_text(*, idea_id: str, title: str) -> str:
@@ -364,10 +621,8 @@ def _valid_idea_file_text(*, idea_id: str, title: str) -> str:
 
 
 def _transaction(repo_root: Path | None = None) -> Any:
-    root = repo_root or Path("/repo")
-    proposal = _proposal()
-    authority = _intent_authority(root, write_files=repo_root is not None)
-    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = authority
+    root = repo_root or Path(tempfile.mkdtemp(prefix="odylith-authored-transaction-"))
+    proposal, authority = _complete_authored_supplier_proposal(root)
     package = replace(
         _package(proposal),
         baseline_writes=greenfield_create_baseline.precompiled_greenfield_create_baseline_writes(root),
@@ -394,7 +649,7 @@ def _sealed_transaction(repo_root: Path, transaction: Any | None = None) -> Any:
 
 
 def test_compiled_memory_readback_rejects_accepted_project_drift(tmp_path: Path) -> None:
-    package = _package(_proposal())
+    package = _package(_complete_authored_supplier_proposal(tmp_path)[0])
     source_root = tmp_path / "odylith/runtime/source"
     source_root.mkdir(parents=True, exist_ok=True)
     accepted_project = dict(package.accepted_project_preview or {})
@@ -419,7 +674,7 @@ def test_compiled_memory_readback_rejects_accepted_project_drift(tmp_path: Path)
 
 
 def test_compiled_memory_readback_accepts_json_round_trip_equivalent_preview(tmp_path: Path) -> None:
-    package = _package(_proposal())
+    package = _package(_complete_authored_supplier_proposal(tmp_path)[0])
     preview = dict(package.accepted_project_preview or {})
     preview["created"] = {
         **dict(preview.get("created") or {}),
@@ -448,7 +703,7 @@ def test_compiled_memory_readback_accepts_json_round_trip_equivalent_preview(tmp
 
 
 def test_compiled_memory_readback_rejects_canonicalized_compass_component_ids(tmp_path: Path) -> None:
-    package = _package(_proposal())
+    package = _package(_complete_authored_supplier_proposal(tmp_path)[0])
     preview = dict(package.compass_memory_preview or {})
     preview["components"] = ["Supplier-Risk-Service"]
     package = replace(package, compass_memory_preview=preview)
@@ -476,7 +731,7 @@ def test_compiled_memory_readback_rejects_canonicalized_compass_component_ids(tm
 
 
 def test_compiled_memory_readback_rejects_compass_event_drift(tmp_path: Path) -> None:
-    package = _package(_proposal())
+    package = _package(_complete_authored_supplier_proposal(tmp_path)[0])
     source_root = tmp_path / "odylith/runtime/source"
     source_root.mkdir(parents=True, exist_ok=True)
     accepted_project = dict(package.accepted_project_preview or {})
@@ -501,7 +756,7 @@ def test_compiled_memory_readback_rejects_compass_event_drift(tmp_path: Path) ->
 
 
 def test_compiled_memory_readback_rejects_missing_compass_stream_event(tmp_path: Path) -> None:
-    package = _package(_proposal())
+    package = _package(_complete_authored_supplier_proposal(tmp_path)[0])
     source_root = tmp_path / "odylith/runtime/source"
     source_root.mkdir(parents=True, exist_ok=True)
     accepted_project = dict(package.accepted_project_preview or {})
@@ -652,19 +907,8 @@ def test_compiled_transaction_file_requires_untampered_compiler_receipt(tmp_path
 
 
 def test_product_create_transaction_json_round_trips_traceability_diagram_links() -> None:
-    authority = _intent_authority(Path("/repo"))
-    proposal = {
-        **_proposal(),
-        PRODUCT_INTENT_AUTHORITY_KEY: authority,
-        "diagrams": [
-            {
-                "slug": "supplier-risk-flow",
-                "title": "Supplier Risk Flow",
-                "summary": "Supplier risk review path traceability.",
-                "kind": "flowchart",
-            }
-        ],
-    }
+    root = Path(tempfile.mkdtemp(prefix="odylith-authored-traceability-"))
+    proposal, authority = _complete_authored_supplier_proposal(root)
     package = _package(proposal)
     transaction = build_product_create_transaction(
         proposal=proposal,
@@ -674,7 +918,7 @@ def test_product_create_transaction_json_round_trips_traceability_diagram_links(
         backlog_result=package.backlog_result or {},
         intent_authority=authority,
         quality_manifest=_approved_quality_manifest(),
-        repo_root=Path("/repo"),
+        repo_root=root,
     )
 
     restored = product_create_transaction_from_dict(product_create_transaction_to_dict(transaction))
@@ -704,6 +948,7 @@ def test_product_create_commit_owner_stays_separate_from_proposal_generation() -
     assert "materialize_precompiled_brand_assets" not in commit_source
     assert "ensure_greenfield_create_baseline" not in commit_source
     assert "write_greenfield_proposal" not in commit_source
+    assert "greenfield_apply_write" not in commit_source
     forbidden_commit_tokens = (
         "run_greenfield_preconfirm_engine",
         "complete_confirmed_proposal",
@@ -727,11 +972,13 @@ def test_commit_product_create_transaction_is_commit_only(
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
         raise AssertionError("commit must not run product interpretation, generation, repair, or surface refresh")
 
-    monkeypatch.setattr(greenfield_proposals, "_build_repaired_prewrite_package", forbidden)
+    for retired_name in (
+        "_build_repaired_prewrite_package",
+        "complete_confirmed_proposal",
+        "complete_greenfield_semantic_apply_payload",
+    ):
+        assert not hasattr(greenfield_proposals, retired_name)
     monkeypatch.setattr(greenfield_proposals, "run_greenfield_preconfirm_engine", forbidden)
-    monkeypatch.setattr(greenfield_proposals, "complete_confirmed_proposal", forbidden)
-    monkeypatch.setattr(greenfield_proposals, "complete_greenfield_semantic_apply_payload", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
     monkeypatch.setattr(greenfield_apply_prewrite, "build_prewrite_completion_package", forbidden)
     monkeypatch.setattr(greenfield_release_commit, "materialize_compiled_release_target", forbidden)
     monkeypatch.setattr(greenfield_release_commit, "materialize_compiled_release_assignment", forbidden)
@@ -767,7 +1014,6 @@ def test_commit_product_create_transaction_rejects_bad_hash_before_write(
         raise AssertionError("bad transaction hash must fail before baseline setup, rollback guard, or write path")
 
     monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
     monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
 
     with pytest.raises(ValueError, match="does not match the confirmed transaction hash"):
@@ -909,6 +1155,50 @@ def test_commit_product_create_transaction_rejects_missing_confirm_before_hash_o
                 "commit_only": True,
             }
         ),
+        _approved_quality_manifest(elapsed_seconds=60.0),
+        _approved_quality_manifest(budget_seconds=90.0),
+        _approved_quality_manifest(
+            requested_repair_tier="auto",
+            repair_tier="rescue",
+            budget_seconds=90.0,
+        ),
+        _approved_quality_manifest(
+            requested_repair_tier="auto",
+            repair_tier="deep",
+            budget_seconds=120.0,
+        ),
+        _approved_quality_manifest(
+            semantic_compiler={
+                "semantic_owner": "single_model_authoring_response",
+                "post_authoring_interpretation_calls": 0,
+            }
+        ),
+        _approved_quality_manifest(
+            semantic_compiler={
+                "version": "odylith.greenfield.authored-semantic-validation.v1",
+                "status": "passed",
+                "semantic_owner": "single_model_authoring_response",
+                "post_authoring_interpretation_calls": 0,
+            },
+            model_authoring={
+                "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
+                "semantic_model_call_count": 1,
+                "tier": "standard",
+            },
+        ),
+        _approved_quality_manifest(
+            semantic_compiler={
+                "version": "odylith.greenfield.authored-semantic-validation.v1",
+                "status": "passed",
+                "semantic_owner": "single_model_authoring_response",
+                "post_authoring_interpretation_calls": 0,
+            },
+            model_authoring={
+                "authoring_version": "odylith.greenfield.intent-authoring.v4",
+                "semantic_model_call_count": 1,
+                "tier": "standard",
+            },
+        ),
     ),
 )
 def test_build_product_create_transaction_rejects_unapproved_manifest_before_confirmation(
@@ -929,82 +1219,8 @@ def test_build_product_create_transaction_rejects_unapproved_manifest_before_con
         )
 
 
-def test_write_greenfield_proposal_does_not_materialize_a_program(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    proposal = _proposal()
-    package = _package(proposal)
-    backlog_result = dict(package.backlog_result or {})
-    idea_path = tmp_path / "odylith/radar/source/ideas/B-001.md"
-    backlog_result["created"] = [
-        {**dict(row), "idea_path": str(idea_path)}
-        for row in backlog_result.get("created", [])
-        if isinstance(row, dict)
-    ]
-    backlog_result["idea_files"] = {str(idea_path): "Supplier risk review path\n"}
-    backlog_result["backlog_index"] = str(tmp_path / "odylith/radar/source/INDEX.md")
-    backlog_result["backlog_index_text"] = "| B-001 | Prove supplier risk review path |\n"
-    package = replace(
-        package,
-        backlog_result=backlog_result,
-        traceability_plan=greenfield_traceability.build_traceability_plan(
-            proposal=proposal,
-            created_backlog=backlog_result["created"],
-            diagram_ids=(),
-        ),
-    )
-    def forbidden(*_args: Any, **_kwargs: Any) -> None:
-        raise AssertionError("greenfield onboarding must not create an execution program")
-
-    monkeypatch.setattr(greenfield_programs, "first_release_workstream_ids", forbidden)
-    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "build_traceability_plan", forbidden)
-    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "apply_backlog_traceability", forbidden)
-    monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_component_handoffs", forbidden)
-    monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_next_steps", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "record_greenfield_acceptance", forbidden)
-    monkeypatch.setattr(
-        greenfield_apply_write,
-        "record_compiled_greenfield_acceptance",
-        _record_compiled_memory_for_readback,
-    )
-    monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_package_quality", forbidden)
-    calls: dict[str, Any] = {}
-
-    def fake_compiled_readback(**kwargs: Any) -> None:
-        calls["compiled_readback"] = kwargs
-
-    monkeypatch.setattr(
-        greenfield_apply_write.greenfield_compiled_readback,
-        "raise_for_compiled_backlog_and_atlas_readback",
-        fake_compiled_readback,
-    )
-    monkeypatch.setattr(greenfield_apply_write, "_refresh_greenfield_dashboard", lambda **_kwargs: {"status": "passed"})
-    monkeypatch.setattr(
-        greenfield_apply_diagrams,
-        "raise_for_greenfield_rendered_surface_custody",
-        lambda **_kwargs: {"status": "skipped"},
-    )
-
-    result = greenfield_apply_write.write_greenfield_proposal(
-        root=tmp_path,
-        proposal=proposal,
-        release_selector="",
-        tribunal={"status": "passed", "issues": []},
-        backlog_result=backlog_result,
-        prewrite_package=package,
-    )
-
-    assert calls["compiled_readback"]["package"] is package
-    assert result["next_steps"] == package.next_steps_preview
-    assert "program" not in result
-    assert not list((tmp_path / "odylith/radar/source/programs").glob("*.execution-waves.v1.json"))
-    assert result["backlog_topology"] == ["odylith/radar/source/ideas/B-001.md"]
-
 def test_compiled_backlog_atlas_readback_rejects_backlog_drift(tmp_path: Path) -> None:
-    proposal = _proposal()
+    proposal = _complete_authored_supplier_proposal(tmp_path)[0]
     idea_path = tmp_path / "odylith/radar/source/ideas/2026-07/2026-07-07-supplier-risk-readback-path.md"
     index_path = tmp_path / "odylith/radar/source/INDEX.md"
     package = _package(proposal)
@@ -1027,7 +1243,7 @@ def test_compiled_backlog_atlas_readback_rejects_backlog_drift(tmp_path: Path) -
 
 
 def test_compiled_backlog_atlas_readback_rejects_atlas_drift(tmp_path: Path) -> None:
-    proposal = _proposal()
+    proposal = _complete_authored_supplier_proposal(tmp_path)[0]
     idea_path = tmp_path / "odylith/radar/source/ideas/2026-07/2026-07-07-supplier-risk-readback-path.md"
     index_path = tmp_path / "odylith/radar/source/INDEX.md"
     atlas_path = tmp_path / "odylith/atlas/source/supplier-risk-flow.mmd"
@@ -1056,20 +1272,9 @@ def test_compiled_backlog_atlas_readback_rejects_atlas_drift(tmp_path: Path) -> 
 
 
 def test_compiled_backlog_atlas_readback_accepts_exact_atlas_catalog_rows(tmp_path: Path) -> None:
-    proposal = {
-        **_proposal(),
-        "diagrams": [
-            {
-                "slug": "supplier-risk-flow",
-                "title": "Supplier Risk Flow",
-                "summary": "Supplier risk review path traceability.",
-                "kind": "flowchart",
-            }
-        ],
-    }
+    proposal = _complete_authored_supplier_proposal(tmp_path)[0]
     idea_path = tmp_path / "odylith/radar/source/ideas/2026-07/2026-07-07-supplier-risk-readback-path.md"
     index_path = tmp_path / "odylith/radar/source/INDEX.md"
-    atlas_path = tmp_path / "odylith/atlas/source/supplier-risk-flow.mmd"
     catalog_path = tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json"
     package = _package(proposal)
     package = replace(
@@ -1083,13 +1288,21 @@ def test_compiled_backlog_atlas_readback_accepts_exact_atlas_catalog_rows(tmp_pa
     )
     idea_path.parent.mkdir(parents=True, exist_ok=True)
     index_path.parent.mkdir(parents=True, exist_ok=True)
-    atlas_path.parent.mkdir(parents=True, exist_ok=True)
     catalog_path.parent.mkdir(parents=True, exist_ok=True)
     idea_path.write_text("compiled backlog text\n", encoding="utf-8")
     index_path.write_text("| compiled backlog index |\n", encoding="utf-8")
-    atlas_path.write_text(package.rendered_atlas_sources["odylith/atlas/source/supplier-risk-flow.mmd"], encoding="utf-8")
+    for relative_path, source in package.rendered_atlas_sources.items():
+        atlas_path = tmp_path / relative_path
+        atlas_path.parent.mkdir(parents=True, exist_ok=True)
+        atlas_path.write_text(source, encoding="utf-8")
     catalog_path.write_text(
-        json.dumps({"schema_version": "odylith.diagrams.v1", "diagrams": [dict(package.atlas_catalog_rows[0])]}, indent=2)
+        json.dumps(
+            {
+                "schema_version": "odylith.diagrams.v1",
+                "diagrams": [dict(row) for row in package.atlas_catalog_rows],
+            },
+            indent=2,
+        )
         + "\n",
         encoding="utf-8",
     )
@@ -1098,20 +1311,9 @@ def test_compiled_backlog_atlas_readback_accepts_exact_atlas_catalog_rows(tmp_pa
 
 
 def test_compiled_backlog_atlas_readback_rejects_atlas_catalog_drift(tmp_path: Path) -> None:
-    proposal = {
-        **_proposal(),
-        "diagrams": [
-            {
-                "slug": "supplier-risk-flow",
-                "title": "Supplier Risk Flow",
-                "summary": "Supplier risk review path traceability.",
-                "kind": "flowchart",
-            }
-        ],
-    }
+    proposal = _complete_authored_supplier_proposal(tmp_path)[0]
     idea_path = tmp_path / "odylith/radar/source/ideas/2026-07/2026-07-07-supplier-risk-readback-path.md"
     index_path = tmp_path / "odylith/radar/source/INDEX.md"
-    atlas_path = tmp_path / "odylith/atlas/source/supplier-risk-flow.mmd"
     catalog_path = tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json"
     package = _package(proposal)
     package = replace(
@@ -1127,13 +1329,17 @@ def test_compiled_backlog_atlas_readback_rejects_atlas_catalog_drift(tmp_path: P
     catalog_row["title"] = "Drifted Supplier Risk Flow"
     idea_path.parent.mkdir(parents=True, exist_ok=True)
     index_path.parent.mkdir(parents=True, exist_ok=True)
-    atlas_path.parent.mkdir(parents=True, exist_ok=True)
     catalog_path.parent.mkdir(parents=True, exist_ok=True)
     idea_path.write_text("compiled backlog text\n", encoding="utf-8")
     index_path.write_text("| compiled backlog index |\n", encoding="utf-8")
-    atlas_path.write_text(package.rendered_atlas_sources["odylith/atlas/source/supplier-risk-flow.mmd"], encoding="utf-8")
+    for relative_path, source in package.rendered_atlas_sources.items():
+        atlas_path = tmp_path / relative_path
+        atlas_path.parent.mkdir(parents=True, exist_ok=True)
+        atlas_path.write_text(source, encoding="utf-8")
+    catalog_rows = [dict(row) for row in package.atlas_catalog_rows]
+    catalog_rows[0] = catalog_row
     catalog_path.write_text(
-        json.dumps({"schema_version": "odylith.diagrams.v1", "diagrams": [catalog_row]}, indent=2) + "\n",
+        json.dumps({"schema_version": "odylith.diagrams.v1", "diagrams": catalog_rows}, indent=2) + "\n",
         encoding="utf-8",
     )
 
@@ -1157,12 +1363,15 @@ def test_compiled_backlog_writer_rejects_path_escape(tmp_path: Path) -> None:
 
 def test_prewrite_compiled_backlog_omits_program_metadata(tmp_path: Path) -> None:
     _seed_empty_governance_repo(tmp_path)
-    prompt = "Draft a greenfield proposal for a municipal permit review workspace"
+    authored, authority = _authored_supplier_proposal(tmp_path)
+    confirmed_intent = dict(authored["intent"])
+    confirmed_intent[PRODUCT_INTENT_AUTHORITY_KEY] = authority
+    prompt = str(confirmed_intent["prompt"])
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=_confirmed_intent_with_authority(tmp_path),
+        confirmed_intent=confirmed_intent,
     )
     tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
 
@@ -1172,7 +1381,7 @@ def test_prewrite_compiled_backlog_omits_program_metadata(tmp_path: Path) -> Non
         release_selector="0.0.1",
         backlog_args=greenfield_proposals._backlog_apply_args(proposal, release_selector="0.0.1"),
         validation_gate=tribunal.to_dict(),
-        release_assignment_note=greenfield_apply_write.release_assignment_note(selector="0.0.1"),
+        release_assignment_note=greenfield_apply_prewrite.release_assignment_note(selector="0.0.1"),
     )
 
     rendered_backlog = "\n".join(prewrite.backlog_result["idea_files"].values())
@@ -1219,193 +1428,44 @@ def test_prewrite_compiled_backlog_omits_program_metadata(tmp_path: Path) -> Non
     assert not list((tmp_path / "odylith/radar/source/programs").glob("*.execution-waves.v1.json"))
 
 
-def test_write_greenfield_proposal_compiled_path_does_not_run_source_casing_repair(
+def test_compiled_write_replays_exact_sealed_release_payloads(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    proposal = {
-        **_proposal(),
-        "intent": {
-            "title": "GLP-1 Companion",
-            "prompt": "Build a GLP-1 companion that keeps GLP-1 medication tracking reviewable.",
-        },
-        "confirmed_intent": {
-            "product_story": "GLP-1 patients need a reviewable medication tracking path.",
-        },
-    }
-    package = _package(proposal)
-    backlog_result = dict(package.backlog_result or {})
-    idea_path = tmp_path / "odylith/radar/source/ideas/B-001.md"
-    backlog_result["created"] = [
-        {**dict(row), "idea_path": str(idea_path)}
-        for row in backlog_result.get("created", [])
-        if isinstance(row, dict)
-    ]
-    backlog_result["idea_files"] = {str(idea_path): "GLP-1 companion review path\n"}
-    backlog_result["backlog_index"] = str(tmp_path / "odylith/radar/source/INDEX.md")
-    backlog_result["backlog_index_text"] = "| B-001 | Prove GLP-1 companion review path |\n"
-    package = replace(
-        package,
-        backlog_result=backlog_result,
-        traceability_plan=greenfield_traceability.build_traceability_plan(
-            proposal=proposal,
-            created_backlog=backlog_result["created"],
-            diagram_ids=(),
-        ),
+    staged_root = tmp_path / "staged"
+    release_registry_path = staged_root / "odylith/radar/source/releases/releases.v1.json"
+    event_log_path = staged_root / "odylith/radar/source/releases/release-assignment-events.v1.jsonl"
+    release_registry_path.parent.mkdir(parents=True, exist_ok=True)
+    release_registry_bytes = b'{"aliases":{"0.0.1":"release-0-0-1","current":"release-0-0-1"}}\n'
+    event_log_bytes = b'{"action":"add","release_id":"release-0-0-1","workstream_id":"B-001"}\n'
+    release_registry_path.write_bytes(release_registry_bytes)
+    event_log_path.write_bytes(event_log_bytes)
+    write_set = greenfield_repository_write_set.compile_greenfield_repository_write_set(
+        source_root=tmp_path,
+        staged_root=staged_root,
     )
-
-    def forbidden(*_args: Any, **_kwargs: Any) -> None:
-        raise AssertionError("compiled create must not repair source casing after confirmation")
-
-    monkeypatch.setattr(greenfield_apply_write.greenfield_source_casing, "proposal_source_casing_text", forbidden)
-    monkeypatch.setattr(greenfield_apply_write.greenfield_source_casing, "restore_source_casing_in_public_copy", forbidden)
-    monkeypatch.setattr(greenfield_apply_write.greenfield_source_casing, "package_with_source_casing", forbidden)
-    monkeypatch.setattr(greenfield_programs, "first_release_workstream_ids", forbidden)
-    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "build_traceability_plan", forbidden)
-    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "apply_backlog_traceability", forbidden)
-    monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_component_handoffs", forbidden)
-    monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_next_steps", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "record_greenfield_acceptance", forbidden)
-    monkeypatch.setattr(
-        greenfield_apply_write,
-        "record_compiled_greenfield_acceptance",
-        _record_compiled_memory_for_readback,
-    )
-    monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_package_quality", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "_refresh_greenfield_dashboard", lambda **_kwargs: {"status": "passed"})
-    monkeypatch.setattr(
-        greenfield_apply_diagrams,
-        "raise_for_greenfield_rendered_surface_custody",
-        lambda **_kwargs: {"status": "skipped"},
-    )
-
-    result = greenfield_apply_write.write_greenfield_proposal(
-        root=tmp_path,
-        proposal=proposal,
-        release_selector="",
-        tribunal={"status": "passed", "issues": []},
-        backlog_result=backlog_result,
-        prewrite_package=package,
-    )
-
-    assert result["next_steps"] == package.next_steps_preview
-    assert result["backlog_topology"] == ["odylith/radar/source/ideas/B-001.md"]
-
-
-def test_write_greenfield_proposal_compiled_path_replays_release_payloads(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    proposal = _proposal()
-    package = _package(proposal)
-    backlog_result = dict(package.backlog_result or {})
-    idea_path = tmp_path / "odylith/radar/source/ideas/2026-07/2026-07-07-supplier-risk-release-replay-path.md"
-    idea_title = "Prove supplier risk release replay path"
-    backlog_result["created"] = [
-        {**dict(row), "title": idea_title, "idea_path": str(idea_path)}
-        for row in backlog_result.get("created", [])
-        if isinstance(row, dict)
-    ]
-    backlog_result["idea_files"] = {str(idea_path): _valid_idea_file_text(idea_id="B-001", title=idea_title)}
-    backlog_result["backlog_index"] = str(tmp_path / "odylith/radar/source/INDEX.md")
-    backlog_result["backlog_index_text"] = "| B-001 | Prove supplier risk release replay path |\n"
-    compiled_release = {
-        "release_id": "release-0-0-1",
-        "status": "planning",
-        "version": "0.0.1",
-        "tag": "v0.0.1",
-        "name": "0.0.1",
-        "notes": "Compiled release plan for Supplier Risk Board.",
-        "created_utc": "2026-07-07",
-        "shipped_utc": "",
-        "closed_utc": "",
-        "aliases": ["0.0.1", "current"],
-    }
-    compiled_event = {
-        "action": "add",
-        "workstream_id": "B-001",
-        "release_id": "release-0-0-1",
-        "recorded_at": "2026-07-07T00:00:00Z",
-        "note": "Compiled assignment note.",
-    }
-    package = replace(
-        package,
-        backlog_result=backlog_result,
-        traceability_plan=greenfield_traceability.build_traceability_plan(
-            proposal=proposal,
-            created_backlog=backlog_result["created"],
-            diagram_ids=(),
-        ),
-        release_target_result={
-            "command": "ensure",
-            "created": True,
-            "dry_run": True,
-            "release": compiled_release,
-            "registry_path": str(tmp_path / "odylith/radar/source/releases/releases.v1.json"),
-        },
-        release_assignment_result={
-            "command": "add",
-            "dry_run": True,
-            "events": [compiled_event],
-            "workstream_ids": ["B-001"],
-            "new_workstream_ids": ["B-001"],
-            "existing_workstream_ids": [],
-            "release": compiled_release,
-            "event_log_path": str(tmp_path / "odylith/radar/source/releases/release-assignment-events.v1.jsonl"),
-        },
+    transaction = _transaction(repo_root=tmp_path)
+    transaction = replace(
+        transaction,
+        prewrite_package=replace(transaction.prewrite_package, repository_write_set=write_set),
     )
 
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
         raise AssertionError("compiled create must not recompute release writes after confirmation")
 
-    monkeypatch.setattr(greenfield_apply_write.greenfield_apply_prewrite, "ensure_release_target", forbidden)
-    monkeypatch.setattr(greenfield_apply_write.release_planning_authoring, "add_workstreams_to_release", forbidden)
-    monkeypatch.setattr(greenfield_programs, "first_release_workstream_ids", forbidden)
-    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "build_traceability_plan", forbidden)
-    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "apply_backlog_traceability", forbidden)
-    monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_component_handoffs", forbidden)
-    monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_next_steps", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "record_greenfield_acceptance", forbidden)
-    monkeypatch.setattr(
-        greenfield_apply_write,
-        "record_compiled_greenfield_acceptance",
-        _record_compiled_memory_for_readback,
-    )
-    monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_package_quality", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "_refresh_greenfield_dashboard", lambda **_kwargs: {"status": "passed"})
-    monkeypatch.setattr(
-        greenfield_apply_diagrams,
-        "raise_for_greenfield_rendered_surface_custody",
-        lambda **_kwargs: {"status": "skipped"},
-    )
+    monkeypatch.setattr(greenfield_release_commit, "materialize_compiled_release_target", forbidden)
+    monkeypatch.setattr(greenfield_release_commit, "materialize_compiled_release_assignment", forbidden)
 
-    result = greenfield_apply_write.write_greenfield_proposal(
+    result = greenfield_compiled_write.write_compiled_greenfield_package(
         root=tmp_path,
-        proposal=proposal,
-        release_selector="0.0.1",
-        tribunal={"status": "passed", "issues": []},
-        backlog_result=backlog_result,
-        prewrite_package=package,
+        transaction=transaction,
     )
 
-    release_registry = json.loads(
-        (tmp_path / "odylith/radar/source/releases/releases.v1.json").read_text(encoding="utf-8")
-    )
-    event_log = (tmp_path / "odylith/radar/source/releases/release-assignment-events.v1.jsonl").read_text(
-        encoding="utf-8"
-    )
-    committed_events = [json.loads(line) for line in event_log.splitlines() if line.strip()]
-    assert release_registry["aliases"]["0.0.1"] == "release-0-0-1"
-    assert release_registry["aliases"]["current"] == "release-0-0-1"
-    assert release_registry["releases"][0] == {key: compiled_release[key] for key in release_registry["releases"][0]}
-    assert committed_events == [compiled_event]
-    assert result["release_bootstrap"]["dry_run"] is False
-    assert result["release_target"]["dry_run"] is False
-    assert result["release_target"]["events"] == [compiled_event]
+    assert (tmp_path / "odylith/radar/source/releases/releases.v1.json").read_bytes() == release_registry_bytes
+    assert (
+        tmp_path / "odylith/radar/source/releases/release-assignment-events.v1.jsonl"
+    ).read_bytes() == event_log_bytes
+    assert result["repository_write_set"]["write_set_hash"] == write_set["write_set_hash"]
 
 
 def test_compiled_release_assignment_replay_is_idempotent(tmp_path: Path) -> None:
@@ -1478,67 +1538,8 @@ def test_compiled_release_assignment_replay_is_idempotent(tmp_path: Path) -> Non
     assert committed_events == [compiled_event]
 
 
-def test_write_greenfield_proposal_legacy_path_still_applies_backlog_traceability(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    proposal = _proposal()
-    idea_path = tmp_path / "odylith/radar/source/ideas/B-001.md"
-    backlog_result: dict[str, Any] = {
-        "created": [{"title": "Prove supplier risk review path", "idea_id": "B-001", "idea_path": str(idea_path)}],
-        "idea_files": {str(idea_path): "Supplier risk review path\n"},
-        "backlog_index": str(tmp_path / "odylith/radar/source/INDEX.md"),
-        "backlog_index_text": "| B-001 | Prove supplier risk review path |\n",
-        "_candidate_idea_specs": {},
-    }
-    sentinel_plan = greenfield_traceability.build_traceability_plan(
-        proposal=proposal,
-        created_backlog=backlog_result["created"],
-        diagram_ids=(),
-    )
-    build_calls: list[dict[str, Any]] = []
-    traceability_calls: list[dict[str, Any]] = []
-
-    def fake_build_traceability(**kwargs: Any) -> greenfield_traceability.GreenfieldTraceabilityPlan:
-        build_calls.append(kwargs)
-        return sentinel_plan
-
-    def fake_apply_traceability(**kwargs: Any) -> list[str]:
-        traceability_calls.append(kwargs)
-        return ["legacy-traceability-applied"]
-
-    monkeypatch.setattr(greenfield_programs, "first_release_workstream_ids", lambda **_kwargs: ["B-001"])
-    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "build_traceability_plan", fake_build_traceability)
-    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "apply_backlog_traceability", fake_apply_traceability)
-    monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_package_quality", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write, "_refresh_greenfield_dashboard", lambda **_kwargs: {"status": "passed"})
-    monkeypatch.setattr(
-        greenfield_apply_diagrams,
-        "raise_for_greenfield_rendered_surface_custody",
-        lambda **_kwargs: {"status": "skipped"},
-    )
-    monkeypatch.setattr(greenfield_apply_write, "record_greenfield_acceptance", lambda **_kwargs: {"event": {}})
-
-    result = greenfield_apply_write.write_greenfield_proposal(
-        root=tmp_path,
-        proposal=proposal,
-        release_selector="",
-        tribunal={"status": "passed", "issues": []},
-        backlog_result=backlog_result,
-    )
-
-    assert len(build_calls) == 1
-    assert len(traceability_calls) == 1
-    assert traceability_calls[0]["plan"] is sentinel_plan
-    assert result["backlog_topology"] == ["legacy-traceability-applied"]
-
-
 def test_product_create_transaction_rejects_incomplete_compiled_package_before_confirm(tmp_path: Path) -> None:
-    proposal = _proposal()
-    authority = _intent_authority(tmp_path, write_files=True)
-    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = authority
+    proposal, authority = _complete_authored_supplier_proposal(tmp_path)
     package = replace(_package(proposal), next_steps_preview=None)
 
     with pytest.raises(ValueError, match="missing compiled next_steps_preview"):
@@ -1554,10 +1555,49 @@ def test_product_create_transaction_rejects_incomplete_compiled_package_before_c
         )
 
 
+def test_product_create_transaction_rejects_drift_between_reviewed_and_compiled_proposals(
+    tmp_path: Path,
+) -> None:
+    proposal, authority = _complete_authored_supplier_proposal(tmp_path)
+    drifted_intent = {**proposal["intent"], "first_path": "DRIFTED PACKAGE PATH"}
+    package = replace(_package(proposal), proposal={**proposal, "intent": drifted_intent})
+
+    with pytest.raises(ValueError, match="compiled package proposal does not match"):
+        build_product_create_transaction(
+            proposal=proposal,
+            release_selector="0.0.1",
+            validation_gate={"status": "passed", "issues": []},
+            backlog_result=package.backlog_result or {},
+            prewrite_package=package,
+            intent_authority=authority,
+            quality_manifest=_approved_quality_manifest(),
+            repo_root=tmp_path,
+        )
+
+
+def test_hash_verification_rejects_rehashed_compiled_package_proposal_drift(tmp_path: Path) -> None:
+    transaction = _transaction(repo_root=tmp_path)
+    drifted_intent = {
+        **transaction.prewrite_package.proposal["intent"],
+        "first_path": "DRIFTED PACKAGE PATH",
+    }
+    drifted_package = replace(
+        transaction.prewrite_package,
+        proposal={**transaction.prewrite_package.proposal, "intent": drifted_intent},
+    )
+    drifted = replace(transaction, prewrite_package=drifted_package, transaction_hash="")
+    drifted = replace(
+        drifted,
+        transaction_hash=greenfield_create_transaction.product_create_transaction_hash(drifted),
+    )
+
+    assert not drifted.verified
+    with pytest.raises(ValueError, match="compiled package proposal does not match"):
+        greenfield_create_transaction.require_product_create_transaction_hash_verified(drifted)
+
+
 def test_product_create_transaction_rejects_missing_surface_refresh_proof_before_confirm(tmp_path: Path) -> None:
-    proposal = _proposal()
-    authority = _intent_authority(tmp_path, write_files=True)
-    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = authority
+    proposal, authority = _complete_authored_supplier_proposal(tmp_path)
     package = replace(_package(proposal), surface_refresh_preview=None)
 
     with pytest.raises(ValueError, match="missing compiled pre-confirm surface refresh proof"):
@@ -1576,19 +1616,7 @@ def test_product_create_transaction_rejects_missing_surface_refresh_proof_before
 def test_product_create_transaction_rejects_missing_compiled_atlas_catalog_rows_before_confirm(
     tmp_path: Path,
 ) -> None:
-    proposal = {
-        **_proposal(),
-        "diagrams": [
-            {
-                "slug": "supplier-risk-flow",
-                "title": "Supplier Risk Flow",
-                "summary": "Supplier risk review path traceability.",
-                "kind": "flowchart",
-            }
-        ],
-    }
-    authority = _intent_authority(tmp_path, write_files=True)
-    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = authority
+    proposal, authority = _complete_authored_supplier_proposal(tmp_path)
     package = replace(_package(proposal), atlas_catalog_rows=())
 
     with pytest.raises(ValueError, match="Atlas catalog rows missing or incomplete"):
@@ -1605,9 +1633,7 @@ def test_product_create_transaction_rejects_missing_compiled_atlas_catalog_rows_
 
 
 def test_product_create_transaction_rejects_missing_compiled_traceability_before_confirm(tmp_path: Path) -> None:
-    proposal = _proposal()
-    authority = _intent_authority(tmp_path, write_files=True)
-    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = authority
+    proposal, authority = _complete_authored_supplier_proposal(tmp_path)
     package = replace(_package(proposal), traceability_plan=None)
 
     with pytest.raises(ValueError, match="missing compiled traceability_plan"):
@@ -1623,23 +1649,10 @@ def test_product_create_transaction_rejects_missing_compiled_traceability_before
         )
 
 
-def test_write_greenfield_proposal_rejects_compiled_traceability_without_diagram_links(
+def test_product_create_transaction_rejects_compiled_traceability_without_diagram_links(
     tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    proposal = {
-        **_proposal(),
-        "diagrams": [
-            {
-                "slug": "supplier-risk-flow",
-                "title": "Supplier Risk Flow",
-                "summary": "Supplier risk review path traceability.",
-                "kind": "flowchart",
-            }
-        ],
-    }
-    authority = _intent_authority(tmp_path, write_files=True)
-    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = authority
+    proposal, authority = _complete_authored_supplier_proposal(tmp_path)
     package = _package(proposal)
     traceability_plan = replace(package.traceability_plan, diagram_links=())
     package = replace(package, traceability_plan=traceability_plan)
@@ -1657,113 +1670,44 @@ def test_write_greenfield_proposal_rejects_compiled_traceability_without_diagram
         )
 
 
-def test_write_greenfield_proposal_uses_precompiled_component_authoring_input(
+def test_compiled_write_uses_exact_precompiled_component_bytes(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    proposal = {
-        **_proposal(),
-        "components": [
-            {
-                "component_id": "supplier-risk-service",
-                "label": "Proposal Recomputed Label",
-                "intended_path": "src/proposal",
-                "kind": "service",
-                "release_scope": "first_release",
-                "responsibility": "This proposal value must not be used after confirmation.",
-            }
-        ],
-    }
-    package = _package(proposal)
-    backlog_result = dict(package.backlog_result or {})
-    idea_path = tmp_path / "odylith/radar/source/ideas/B-001.md"
-    backlog_result["created"] = [
-        {**dict(row), "idea_path": str(idea_path)}
-        for row in backlog_result.get("created", [])
-        if isinstance(row, dict)
-    ]
-    backlog_result["idea_files"] = {str(idea_path): "Supplier risk review path\n"}
-    backlog_result["backlog_index"] = str(tmp_path / "odylith/radar/source/INDEX.md")
-    backlog_result["backlog_index_text"] = "| B-001 | Prove supplier risk review path |\n"
-    authoring_input = {
-        **package.component_registry_preview[0]["authoring_input"],
-        "label": "Compiled Registry Service",
-        "path": "src/compiled",
-        "responsibility": "Compiled Registry Service keeps accepted supplier review state attached.",
-        "workstreams": ("B-001", "B-099"),
-    }
-    registry_entry = {
-        **package.component_registry_preview[0]["registry_entry"],
-        "name": "Compiled Registry Service",
-        "path_prefixes": ["src/compiled"],
-        "workstreams": ["B-001", "B-099"],
-        "what_it_is": "Compiled Registry Service defines the planned service ownership boundary for accepted supplier review state.",
-    }
-    component_preview = (
-        {
-            **package.component_registry_preview[0],
-            "label": "Compiled Registry Service",
-            "authoring_input": authoring_input,
-            "registry_entry": registry_entry,
-        },
+    staged_root = tmp_path / "staged"
+    registry_path = staged_root / "odylith/registry/source/component_registry.v1.json"
+    spec_path = staged_root / "odylith/registry/source/components/supplier-risk-service/CURRENT_SPEC.md"
+    registry_path.parent.mkdir(parents=True, exist_ok=True)
+    spec_path.parent.mkdir(parents=True, exist_ok=True)
+    registry_bytes = b'{"components":[{"component_id":"supplier-risk-service","name":"Compiled Registry Service"}]}\n'
+    spec_bytes = b"# Compiled Registry Service\n\nCompiled registry service spec.\n"
+    registry_path.write_bytes(registry_bytes)
+    spec_path.write_bytes(spec_bytes)
+    write_set = greenfield_repository_write_set.compile_greenfield_repository_write_set(
+        source_root=tmp_path,
+        staged_root=staged_root,
     )
-    package = replace(
-        package,
-        proposal=proposal,
-        backlog_result=backlog_result,
-        component_registry_preview=component_preview,
-        traceability_plan=greenfield_traceability.build_traceability_plan(
-            proposal=proposal,
-            created_backlog=backlog_result["created"],
-            diagram_ids=(),
-        ),
-        rendered_component_specs={
-            "Compiled Registry Service": "# Compiled Registry Service\n\nCompiled registry service spec.\n"
-        },
+    transaction = _transaction(repo_root=tmp_path)
+    transaction = replace(
+        transaction,
+        prewrite_package=replace(transaction.prewrite_package, repository_write_set=write_set),
     )
+
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
         raise AssertionError("post-confirm write must not recompute component authoring inputs")
 
-    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "build_traceability_plan", forbidden)
-    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "apply_backlog_traceability", forbidden)
-    monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_component_handoffs", forbidden)
-    monkeypatch.setattr(greenfield_component_commit, "component_authoring_responsibility", forbidden)
-    monkeypatch.setattr(greenfield_component_commit, "component_dependency_lines", forbidden)
-    monkeypatch.setattr(greenfield_component_commit, "component_risk_lines", forbidden)
+    assert not hasattr(greenfield_component_commit, "component_authoring_responsibility")
+    assert not hasattr(greenfield_component_commit, "component_dependency_lines")
+    assert not hasattr(greenfield_component_commit, "component_risk_lines")
     monkeypatch.setattr(greenfield_component_commit.component_authoring, "register_component", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "record_greenfield_acceptance", forbidden)
-    monkeypatch.setattr(
-        greenfield_apply_write,
-        "record_compiled_greenfield_acceptance",
-        _record_compiled_memory_for_readback,
-    )
-    monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_package_quality", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "_refresh_greenfield_dashboard", lambda **_kwargs: {"status": "passed"})
-    monkeypatch.setattr(
-        greenfield_apply_diagrams,
-        "raise_for_greenfield_rendered_surface_custody",
-        lambda **_kwargs: {"status": "skipped"},
-    )
 
-    result = greenfield_apply_write.write_greenfield_proposal(
+    result = greenfield_compiled_write.write_compiled_greenfield_package(
         root=tmp_path,
-        proposal=proposal,
-        release_selector="",
-        tribunal={"status": "passed", "issues": []},
-        backlog_result=backlog_result,
-        prewrite_package=package,
+        transaction=transaction,
     )
 
-    registry = json.loads(
-        (tmp_path / "odylith/registry/source/component_registry.v1.json").read_text(encoding="utf-8")
-    )
-    committed_entry = registry["components"][0]
-    assert committed_entry == registry_entry
-    committed_spec = (
+    assert (tmp_path / "odylith/registry/source/component_registry.v1.json").read_bytes() == registry_bytes
+    assert (
         tmp_path / "odylith/registry/source/components/supplier-risk-service/CURRENT_SPEC.md"
-    ).read_text(encoding="utf-8")
-    assert committed_spec == "# Compiled Registry Service\n\nCompiled registry service spec.\n"
-    assert result["components"][0]["label"] == "Compiled Registry Service"
-    assert result["backlog_topology"] == ["odylith/radar/source/ideas/B-001.md"]
+    ).read_bytes() == spec_bytes
+    assert result["repository_write_set"]["write_set_hash"] == write_set["write_set_hash"]

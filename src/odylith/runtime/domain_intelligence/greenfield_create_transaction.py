@@ -11,6 +11,7 @@ from dataclasses import is_dataclass
 from dataclasses import replace
 import hashlib
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -42,6 +43,18 @@ from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_
 from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_FORBIDDEN_OPERATIONS
 from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_ENGINE_VERSION
 from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_QUALITY_MANIFEST_VERSION
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_PROJECTION_ORIGIN,
+    require_relation_authority_parity,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+    GREENFIELD_INTENT_AUTHORING_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    get_greenfield_model_profile,
+    greenfield_model_profile_observation_issues,
+    model_profile_id_for_repair_tier,
+)
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     PRODUCT_INTENT_AUTHORITY_KEY,
@@ -57,6 +70,7 @@ from odylith.runtime.governance import validate_backlog_contract as backlog_cont
 _VOLATILE_HASH_KEYS = {
     "elapsed_seconds",
     "whole_project_elapsed_seconds",
+    "create_elapsed_seconds",
 }
 _PRODUCT_CREATE_TRANSACTION_COMPILER_ATTESTATION = object()
 
@@ -78,10 +92,13 @@ class ProductCreateTransaction:
 
     @property
     def verified(self) -> bool:
-        return (
-            self._compiler_attestation is _PRODUCT_CREATE_TRANSACTION_COMPILER_ATTESTATION
-            and self.transaction_hash == product_create_transaction_hash(self)
-        )
+        if self._compiler_attestation is not _PRODUCT_CREATE_TRANSACTION_COMPILER_ATTESTATION:
+            return False
+        try:
+            require_product_create_transaction_hash_verified(self)
+        except ValueError:
+            return False
+        return True
 
     def summary(self) -> dict[str, Any]:
         return {
@@ -131,13 +148,24 @@ def build_product_create_transaction(
 
     authority = dict(intent_authority) if isinstance(intent_authority, Mapping) else _authority_from_proposal(proposal)
     require_product_intent_authority(authority)
-    _require_proposal_intent_authority_binding(proposal, authority)
+    authored_projection_verified = _require_proposal_intent_authority_binding(
+        proposal,
+        authority,
+    )
     release_text = str(release_selector or "").strip()
     greenfield_compiled_package_contract.require_complete_compiled_greenfield_package(
         prewrite_package,
         release_selector=release_text,
     )
-    require_product_create_transaction_quality_approved(quality_manifest)
+    _require_prewrite_package_proposal_binding(
+        proposal=proposal,
+        prewrite_package=prewrite_package,
+        authority=authority,
+    )
+    require_product_create_transaction_quality_approved(
+        quality_manifest,
+        authored_projection_verified=authored_projection_verified,
+    )
     transaction = ProductCreateTransaction(
         version=PRODUCT_CREATE_TRANSACTION_VERSION,
         release_selector=release_text,
@@ -164,7 +192,44 @@ def _authority_from_proposal(proposal: Mapping[str, Any]) -> Mapping[str, Any]:
     raise ValueError("ProductCreateTransaction is missing confirmed Product Intent authority")
 
 
-def require_product_create_transaction_quality_approved(quality_manifest: Mapping[str, Any]) -> None:
+def _require_prewrite_package_proposal_binding(
+    *,
+    proposal: Mapping[str, Any],
+    prewrite_package: GreenfieldCompletionPackage,
+    authority: Mapping[str, Any],
+) -> None:
+    """Require the compiled package to carry the exact authority-bound proposal."""
+
+    package_proposal = prewrite_package.proposal
+    if not isinstance(package_proposal, Mapping):
+        raise ValueError("ProductCreateTransaction compiled package is missing its proposal")
+    try:
+        proposal_bytes = json.dumps(
+            proposal,
+            ensure_ascii=True,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("ascii")
+        package_bytes = json.dumps(
+            package_proposal,
+            ensure_ascii=True,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("ascii")
+    except (TypeError, ValueError) as exc:
+        raise ValueError("ProductCreateTransaction proposal must be canonical JSON data") from exc
+    if proposal_bytes != package_bytes:
+        raise ValueError(
+            "ProductCreateTransaction compiled package proposal does not match its reviewed proposal"
+        )
+    _require_proposal_intent_authority_binding(package_proposal, authority)
+
+
+def require_product_create_transaction_quality_approved(
+    quality_manifest: Mapping[str, Any],
+    *,
+    authored_projection_verified: bool | None = None,
+) -> None:
     """Require every product-quality decision before a transaction can be confirmed."""
 
     manifest = dict(quality_manifest)
@@ -182,17 +247,112 @@ def require_product_create_transaction_quality_approved(quality_manifest: Mappin
         and write_transaction.get("prewrite_clean_before_commit") is True
         and "commit_only" not in write_transaction
     )
+    requested_tier = str(manifest.get("requested_repair_tier", "")).strip()
+    active_tier = str(manifest.get("repair_tier", "")).strip()
+    try:
+        elapsed_seconds = float(manifest.get("elapsed_seconds"))
+        budget_seconds = float(manifest.get("budget_seconds"))
+        selected_profile = get_greenfield_model_profile(
+            model_profile_id_for_repair_tier(requested_tier)
+        )
+    except (TypeError, ValueError):
+        elapsed_seconds = math.inf
+        budget_seconds = -1.0
+        selected_profile = None
+    tier_route_approved = bool(
+        selected_profile is not None
+        and active_tier == selected_profile.repair_tier
+    )
+    timing_approved = (
+        tier_route_approved
+        and selected_profile is not None
+        and budget_seconds == selected_profile.consumer_budget_seconds
+        and math.isfinite(elapsed_seconds)
+        and 0.0 <= elapsed_seconds < budget_seconds
+    )
+    semantic_compiler = manifest.get("semantic_compiler")
+    semantic_compiler = semantic_compiler if isinstance(semantic_compiler, Mapping) else {}
+    raw_model_authoring = manifest.get("model_authoring")
+    model_authoring = raw_model_authoring if isinstance(raw_model_authoring, Mapping) else {}
+    manifest_claims_authored = str(semantic_compiler.get("semantic_owner", "")).strip() == (
+        "single_model_authoring_response"
+    )
+    authored_projection = (
+        manifest_claims_authored
+        if authored_projection_verified is None
+        else authored_projection_verified
+    )
+    authored_manifest_matches_projection = (
+        manifest_claims_authored == authored_projection
+        and ("model_authoring" in manifest) == authored_projection
+    )
+    model_authoring_approved = not authored_projection or (
+        str(semantic_compiler.get("version", "")).strip()
+        == "odylith.greenfield.authored-semantic-validation.v1"
+        and str(semantic_compiler.get("status", "")).strip() == "passed"
+        and str(model_authoring.get("authoring_version", "")).strip()
+        == GREENFIELD_INTENT_AUTHORING_VERSION
+        and model_authoring.get("semantic_model_call_count") == 1
+        and _model_authoring_profile_approved(
+            model_authoring,
+            requested_repair_tier=requested_tier,
+        )
+        and semantic_compiler.get("post_authoring_interpretation_calls") == 0
+    )
     if (
         quality_status == "passed"
         and validation_status in {"", "passed"}
         and not hard_blocker
         and issue_count == 0
         and pre_confirm_write_sealed
+        and timing_approved
+        and authored_manifest_matches_projection
+        and model_authoring_approved
     ):
         return
     raise ValueError(
         "pre-confirm ProductCreateTransaction quality manifest is not approved; "
         "repair or clarify before showing CONFIRM"
+    )
+
+
+def _model_authoring_profile_approved(
+    model_authoring: Mapping[str, Any],
+    *,
+    requested_repair_tier: str,
+) -> bool:
+    raw_observation = model_authoring.get("model_profile")
+    observation = raw_observation if isinstance(raw_observation, Mapping) else {}
+    if set(observation) != {
+        "profile_id",
+        "provider",
+        "model",
+        "reasoning_effort",
+        "effective_timeout_seconds",
+        "authoring_tier",
+    }:
+        return False
+    profile_id = str(observation.get("profile_id") or "").strip()
+    authoring_tier = str(model_authoring.get("tier") or "").strip().casefold()
+    if str(observation.get("authoring_tier") or "").strip().casefold() != authoring_tier:
+        return False
+    try:
+        profile = get_greenfield_model_profile(profile_id)
+        expected_profile_id = model_profile_id_for_repair_tier(requested_repair_tier)
+        observation_issues = greenfield_model_profile_observation_issues(
+            profile_id=profile_id,
+            provider=str(observation.get("provider") or ""),
+            model=str(observation.get("model") or ""),
+            reasoning_effort=str(observation.get("reasoning_effort") or ""),
+            effective_timeout_seconds=observation.get("effective_timeout_seconds"),
+            authoring_tier=str(observation.get("authoring_tier") or ""),
+        )
+    except (TypeError, ValueError):
+        return False
+    return (
+        profile_id == expected_profile_id
+        and authoring_tier == profile.repair_tier
+        and not observation_issues
     )
 
 
@@ -212,6 +372,11 @@ def require_product_create_transaction_hash_verified(transaction: ProductCreateT
 
     require_product_intent_authority(transaction.intent_authority)
     _require_proposal_intent_authority_binding(transaction.proposal, transaction.intent_authority)
+    _require_prewrite_package_proposal_binding(
+        proposal=transaction.proposal,
+        prewrite_package=transaction.prewrite_package,
+        authority=transaction.intent_authority,
+    )
     expected = product_create_transaction_hash(transaction)
     if transaction.transaction_hash != expected:
         raise ValueError(
@@ -222,7 +387,7 @@ def require_product_create_transaction_hash_verified(transaction: ProductCreateT
 def _require_proposal_intent_authority_binding(
     proposal: Mapping[str, Any],
     authority: Mapping[str, Any],
-) -> None:
+) -> bool:
     """Require the sealed facts hash to describe the transaction's typed intent."""
 
     intent = proposal.get("intent") if isinstance(proposal, Mapping) else None
@@ -235,6 +400,13 @@ def _require_proposal_intent_authority_binding(
             "ProductCreateTransaction proposal facts do not match its sealed Product Intent authority; "
             "rebuild the transaction before showing CONFIRM"
         )
+    relations = require_relation_authority_parity(intent, authority)
+    projection_authored = proposal.get("projection_origin") == AUTHORED_PROJECTION_ORIGIN
+    if bool(relations) != projection_authored:
+        raise ValueError(
+            "ProductCreateTransaction authored projection origin does not match sealed relation authority"
+        )
+    return projection_authored
 
 
 def build_product_create_transaction_provenance(

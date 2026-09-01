@@ -417,6 +417,7 @@ def _synthetic_failed_result(
         "name": str(getattr(case, "name", "") or getattr(case, "slug", "")),
         "case": case_identity,
         "status": "failed",
+        "proposal_seconds": 0.0,
         "create_seconds": 0.0,
         "create_returncode": int(returncode),
         "counts": {},

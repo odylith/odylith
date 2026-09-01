@@ -7,15 +7,14 @@ from collections.abc import Mapping
 from typing import Any
 
 from odylith.runtime.common.value_coercion import dedupe_strings
-from odylith.runtime.domain_intelligence.greenfield_product_risks import risk_text_has_framework_leak
-
-from odylith.runtime.domain_intelligence.greenfield_project_brief import project_brief_issues
-from odylith.runtime.domain_intelligence.greenfield_component_contract import component_contract_issues
-from odylith.runtime.domain_intelligence.greenfield_project_intelligence import project_intelligence_issues
-from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
-from odylith.runtime.domain_intelligence.greenfield_text import text_values
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_PROJECTION_ORIGIN,
+    first_path_relations_from_intent,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
+    authored_projection_parity_issues,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import word_count
-from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import domain_intelligence_issues
 from odylith.runtime.domain_intelligence.project_intelligence_binding import project_intelligence_binding_issues
 
 
@@ -80,6 +79,15 @@ def validate_host_reasoned_proposal(proposal: Mapping[str, Any]) -> None:
 def collect_host_reasoned_proposal_issues(proposal: Mapping[str, Any]) -> list[str]:
     """Return all proposal validation issues found in one pass."""
 
+    intent_value = proposal.get("intent")
+    intent = intent_value if isinstance(intent_value, Mapping) else {}
+    model_authored = (
+        proposal.get("projection_origin") == AUTHORED_PROJECTION_ORIGIN
+        and bool(first_path_relations_from_intent(intent))
+    )
+    if not model_authored:
+        return ["greenfield proposal validation requires a sealed authored projection"]
+
     issues: list[str] = []
 
     def capture(callback: Any) -> Any:
@@ -94,38 +102,29 @@ def collect_host_reasoned_proposal_issues(proposal: Mapping[str, Any]) -> list[s
         issues.append("greenfield apply requires a host-reasoned proposal, not a reasoning request or catalog output")
     capture(lambda: _require_mapping(proposal, "intent"))
     capture(lambda: _require_mapping(proposal, "observed_source"))
-    capture(lambda: _require_nonempty_sequence(proposal, "assumptions"))
+    capture(lambda: _require_sequence(proposal, "assumptions"))
     capture(lambda: _require_sequence(proposal, "open_questions"))
-    risks = capture(lambda: _require_nonempty_sequence(proposal, "risks"))
-    if isinstance(risks, list):
-        issues.extend(_risk_quality_issues(risks))
+    capture(lambda: _require_sequence(proposal, "risks"))
     capture(lambda: _require_nonempty_sequence(proposal, "validation_strategy"))
     project_brief = capture(lambda: _require_mapping(proposal, "project_brief"))
     if isinstance(project_brief, Mapping):
-        intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
-        for issue in project_brief_issues(
-            project_brief,
-            operational_constraints=text_values(intent.get("operational_constraints")),
-        ):
-            issues.append(issue)
+        capture(lambda: _validate_authored_project_brief(project_brief))
     project_intelligence = capture(lambda: _require_mapping(proposal, "project_intelligence"))
     if isinstance(project_intelligence, Mapping):
-        for issue in project_intelligence_issues(project_intelligence):
-            issues.append(issue)
-    issues.extend(greenfield_quality_issues(proposal))
+        capture(lambda: _validate_authored_project_intelligence(project_intelligence))
     capture(lambda: _require_mapping(proposal, "release_plan"))
     backlog = capture(lambda: _require_nonempty_sequence(proposal, "backlog"))
     components = capture(lambda: _require_nonempty_sequence(proposal, "components"))
     diagrams = capture(lambda: _require_nonempty_sequence(proposal, "diagrams"))
     if isinstance(backlog, list):
         for index, row in enumerate(backlog, start=1):
-            capture(lambda row=row, index=index: _validate_backlog_row(row, index))
+            capture(lambda row=row, index=index: _validate_backlog_row(row, index, model_authored=model_authored))
     if isinstance(components, list):
         for index, row in enumerate(components, start=1):
-            capture(lambda row=row, index=index: _validate_component_row(row, index))
-        issues.extend(component_contract_issues(proposal))
+            capture(lambda row=row, index=index: _validate_component_row(row, index, model_authored=model_authored))
     if isinstance(diagrams, list):
-        capture(lambda: _validate_diagrams(diagrams))
+        capture(lambda: _validate_diagrams(diagrams, model_authored=model_authored))
+    issues.extend(authored_projection_parity_issues(proposal))
     issues.extend(project_intelligence_binding_issues(proposal))
     return _dedupe_issues(issues)
 
@@ -149,31 +148,6 @@ def format_proposal_issue_report(label: str, issues: list[str] | tuple[str, ...]
 
 def _dedupe_issues(issues: list[str] | tuple[str, ...]) -> list[str]:
     return dedupe_strings(issues)
-
-
-def _risk_quality_issues(risks: list[Any]) -> list[str]:
-    boilerplate = (
-        "Starting implementation without a named product spine",
-        "Security, privacy, accessibility, and operational risks can be under-modeled in broad greenfield prompts",
-    )
-    issues: list[str] = []
-    for index, row in enumerate(risks, start=1):
-        text = _risk_text(row)
-        if any(phrase in text for phrase in boilerplate):
-            issues.append(
-                f"proposal risks[{index}] uses generic greenfield boilerplate instead of project-specific risk"
-            )
-        if risk_text_has_framework_leak(row):
-            issues.append(
-                f"proposal risks[{index}] describes Odylith process instead of real product, user, operator, business, or compliance risk"
-            )
-    return issues
-
-
-def _risk_text(value: Any) -> str:
-    if isinstance(value, Mapping):
-        return " ".join(str(nested or "") for nested in value.values())
-    return str(value or "")
 
 
 def _first_content_line(source: str) -> str:
@@ -239,22 +213,28 @@ def _require_sequence(proposal: Mapping[str, Any], key: str) -> list[Any]:
     return value
 
 
-def _validate_backlog_row(row: Any, index: int) -> None:
+def _validate_backlog_row(row: Any, index: int, *, model_authored: bool = False) -> None:
     if not isinstance(row, Mapping):
         raise ValueError(f"backlog row {index} must be an object")
     for key in ("title", "problem", "customer", "opportunity", "product_view", "recommended_first_slice"):
-        min_words = 2 if key == "title" else 1 if key == "customer" else 6
-        _require_text(row, key, owner=f"backlog row {index}", min_words=min_words)
-    _validate_rationale_lines(row, index)
+        min_words = 1 if model_authored else 2 if key == "title" else 1 if key == "customer" else 6
+        _require_text(
+            row,
+            key,
+            owner=f"backlog row {index}",
+            min_words=min_words,
+            legacy_copy_checks=not model_authored,
+        )
+    if not model_authored:
+        _validate_rationale_lines(row, index)
     metrics = [str(item).strip() for item in row.get("success_metrics", []) if str(item).strip()]
-    if len(metrics) < 2:
+    if len(metrics) < (1 if model_authored else 2):
         raise ValueError(f"backlog row {index} must include at least two success_metrics")
     for metric_index, metric in enumerate(metrics, start=1):
+        if model_authored:
+            continue
         if word_count(metric) < 4:
             raise ValueError(f"backlog row {index} success_metrics[{metric_index}] is too shallow")
-    intelligence_issues = domain_intelligence_issues(row.get("domain_intelligence"), owner=f"backlog row {index}")
-    if intelligence_issues:
-        raise ValueError("; ".join(intelligence_issues))
     _validate_evidence_tier(row, owner=f"backlog row {index}")
 
 
@@ -283,23 +263,69 @@ def _validate_rationale_lines(row: Mapping[str, Any], index: int) -> None:
             raise ValueError(f"backlog row {index} rationale_lines[{line_index}] is too shallow")
 
 
-def _validate_component_row(row: Any, index: int) -> None:
+def _validate_component_row(row: Any, index: int, *, model_authored: bool = False) -> None:
     if not isinstance(row, Mapping):
         raise ValueError(f"component row {index} must be an object")
     for key in ("component_id", "label", "kind", "intended_path", "responsibility", "status", "qualification"):
-        _require_text(row, key, owner=f"component row {index}", min_words=6 if key == "responsibility" else 1)
+        _require_text(
+            row,
+            key,
+            owner=f"component row {index}",
+            min_words=1 if model_authored else 6 if key == "responsibility" else 1,
+            legacy_copy_checks=not model_authored,
+        )
+    if model_authored:
+        contract = row.get("component_contract")
+        if row.get("projection_origin") != AUTHORED_PROJECTION_ORIGIN or not isinstance(contract, Mapping):
+            raise ValueError(f"component row {index} must preserve the authored typed projection contract")
     _validate_evidence_tier(row, owner=f"component row {index}")
 
 
-def _validate_diagrams(diagrams: list[Any]) -> None:
+def _validate_authored_project_brief(value: Mapping[str, Any]) -> None:
+    if value.get("schema_version") != "odylith.greenfield.project_brief.v1":
+        raise ValueError("model-authored project brief has an unsupported schema version")
+    for key in ("purpose", "project_outcome"):
+        _require_text(
+            value,
+            key,
+            owner="model-authored project brief",
+            legacy_copy_checks=False,
+        )
+    if not isinstance(value.get("blueprint_sections"), list) or not value.get("blueprint_sections"):
+        raise ValueError("model-authored project brief must include typed blueprint sections")
+
+
+def _validate_authored_project_intelligence(value: Mapping[str, Any]) -> None:
+    if value.get("schema_version") != "odylith.greenfield.project_intelligence.v1":
+        raise ValueError("model-authored project intelligence has an unsupported schema version")
+    if value.get("projection_origin") != AUTHORED_PROJECTION_ORIGIN:
+        raise ValueError("model-authored project intelligence must preserve its projection origin")
+    _require_text(
+        value,
+        "purpose",
+        owner="model-authored project intelligence",
+        legacy_copy_checks=False,
+    )
+
+
+def _validate_diagrams(diagrams: list[Any], *, model_authored: bool = False) -> None:
     slugs: set[str] = set()
     sources: list[str] = []
     for index, row in enumerate(diagrams, start=1):
         if not isinstance(row, Mapping):
             raise ValueError(f"diagram row {index} must be an object")
         for key in ("slug", "title", "kind", "summary", "link_state"):
-            _require_text(row, key, owner=f"diagram row {index}")
-        _validate_diagram_components(row, index)
+            _require_text(
+                row,
+                key,
+                owner=f"diagram row {index}",
+                legacy_copy_checks=not model_authored,
+            )
+        _validate_diagram_components(
+            row,
+            index,
+            legacy_copy_checks=not model_authored,
+        )
         slug = str(row.get("slug", "")).strip()
         if slug in slugs:
             raise ValueError(f"diagram slug `{slug}` appears more than once")
@@ -330,26 +356,50 @@ def _validate_evidence_tier(row: Mapping[str, Any], *, owner: str) -> None:
         raise ValueError(f"{owner} evidence_tier must be one of {sorted(_VALID_EVIDENCE_TIERS)}")
 
 
-def _require_text(row: Mapping[str, Any], key: str, *, owner: str, min_words: int = 1) -> str:
+def _require_text(
+    row: Mapping[str, Any],
+    key: str,
+    *,
+    owner: str,
+    min_words: int = 1,
+    legacy_copy_checks: bool = True,
+) -> str:
     value = str(row.get(key, "")).strip()
     if not value:
         raise ValueError(f"{owner} `{key}` must be non-empty")
-    if value.casefold() in _PLACEHOLDER_TOKENS:
+    if legacy_copy_checks and value.casefold() in _PLACEHOLDER_TOKENS:
         raise ValueError(f"{owner} `{key}` must not be placeholder text")
-    if word_count(value) < min_words:
+    if legacy_copy_checks and word_count(value) < min_words:
         raise ValueError(f"{owner} `{key}` must contain at least {min_words} meaningful words")
     return value
 
 
-def _validate_diagram_components(row: Mapping[str, Any], index: int) -> None:
+def _validate_diagram_components(
+    row: Mapping[str, Any],
+    index: int,
+    *,
+    legacy_copy_checks: bool = True,
+) -> None:
     components = row.get("components")
     if not isinstance(components, list) or not components:
         raise ValueError(f"diagram row {index} must include related components")
     for component_index, component in enumerate(components, start=1):
         if not isinstance(component, Mapping):
             raise ValueError(f"diagram row {index} components[{component_index}] must be an object")
-        _require_text(component, "name", owner=f"diagram row {index} components[{component_index}]", min_words=1)
-        _require_text(component, "description", owner=f"diagram row {index} components[{component_index}]", min_words=4)
+        _require_text(
+            component,
+            "name",
+            owner=f"diagram row {index} components[{component_index}]",
+            min_words=1,
+            legacy_copy_checks=legacy_copy_checks,
+        )
+        _require_text(
+            component,
+            "description",
+            owner=f"diagram row {index} components[{component_index}]",
+            min_words=4,
+            legacy_copy_checks=legacy_copy_checks,
+        )
 
 
 def _canonical_source(source: str) -> str:

@@ -22,9 +22,6 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from local_release_smoke import _cleanup_smoke_temp_root, _local_release_env, _serve_directory  # noqa: E402
-from greenfield_rescue_smoke import PRECONFIRM_RESCUE_BUDGET_SECONDS  # noqa: E402
-from greenfield_rescue_smoke import installed_auto_rescue_env  # noqa: E402
-from greenfield_rescue_smoke import rescue_cli_issues  # noqa: E402
 from greenfield_browser_proof_summary import browser_proof_summary  # noqa: E402
 from greenfield_browser_surface_proof import (  # noqa: E402
     BROWSER_SURFACE_PROOF_SCOPE,
@@ -51,6 +48,7 @@ from greenfield_matrix_corpus_provenance import evaluate_release_corpus  # noqa:
 from greenfield_matrix_corpus_provenance import load_release_audit_file  # noqa: E402
 from greenfield_evaluation_contract import evaluate_frozen_evaluation_contract  # noqa: E402
 from greenfield_evaluation_contract import validate_atomic_annotations  # noqa: E402
+from greenfield_final_holdout_guard import bind_final_holdout_inputs  # noqa: E402
 from greenfield_final_holdout_guard import claim_final_holdout_run  # noqa: E402
 from greenfield_final_holdout_guard import complete_final_holdout_run  # noqa: E402
 from greenfield_distribution_provenance import verify_distribution_provenance  # noqa: E402
@@ -71,19 +69,13 @@ from greenfield_model_profiles import case_model_profile  # noqa: E402
 from greenfield_model_profiles import model_profile_environment  # noqa: E402
 from greenfield_model_profiles import model_profile_evidence  # noqa: E402
 from greenfield_model_profiles import profile_counts  # noqa: E402
-from greenfield_model_profile_proof import (  # noqa: E402
-    combine_natural_rescue_results as _combined_natural_rescue_result,
-)
-from greenfield_model_profile_proof import (  # noqa: E402
-    provider_failure_observation as _provider_failure_observation,
-)
-from greenfield_model_profile_proof import (  # noqa: E402
-    provider_failure_rescue_env as _installed_provider_failure_rescue_env,
-)
+from greenfield_model_profiles import UNAVAILABLE_PROVIDER_PROFILE  # noqa: E402
+from greenfield_model_profile_proof import model_profile_release_proof  # noqa: E402
+from greenfield_model_profile_proof import sealed_model_profile_observation  # noqa: E402
+from greenfield_model_profile_proof import unavailable_provider_proof_issues  # noqa: E402
 from greenfield_onboarding_quality_scorecard import build_onboarding_quality_scorecard  # noqa: E402
 from greenfield_matrix_preflight import matrix_preflight_failures  # noqa: E402
 from greenfield_matrix_package_evidence import package_evidence_findings  # noqa: E402
-from greenfield_matrix_proof_scope import natural_rescue_quality_proven  # noqa: E402
 from greenfield_matrix_proof_scope import commit_manifest_summary  # noqa: E402
 from greenfield_matrix_proof_scope import temp_cleanup_proof  # noqa: E402
 from greenfield_matrix_run_lease import acquire_matrix_run_lease  # noqa: E402
@@ -92,20 +84,19 @@ from greenfield_semantic_release_score import evaluate_semantic_release  # noqa:
 from greenfield_commit_recovery_proof import GreenfieldInstalledCommitRecoveryProof  # noqa: E402
 from greenfield_commit_recovery_proof import PROOF_SCOPE as COMMIT_RECOVERY_PROOF_SCOPE  # noqa: E402
 from greenfield_commit_recovery_proof import run_installed_commit_recovery_proof  # noqa: E402
-from greenfield_commit_recovery_proof import select_recovery_case  # noqa: E402
+from greenfield_commit_recovery_cases import select_recovery_case  # noqa: E402
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase  # noqa: E402
 from greenfield_preconfirm_matrix_cases import CLARIFICATION_REQUIRED_EXPECTATION  # noqa: E402
 from greenfield_preconfirm_matrix_cases import VALID_CASE_EXPECTATIONS  # noqa: E402
 from greenfield_preconfirm_matrix_cases import case_evidence  # noqa: E402
 from greenfield_preconfirm_matrix_cases import case_expectation  # noqa: E402
-from greenfield_preconfirm_matrix_cases import default_cases, rescue_smoke_case  # noqa: E402
+from greenfield_preconfirm_matrix_cases import default_cases  # noqa: E402
 from greenfield_process import CommandLifecycleObserverError  # noqa: E402
 from greenfield_process import command_lifecycle_observer  # noqa: E402
 from greenfield_process import run_command_with_group_timeout as _run  # noqa: E402
 from greenfield_matrix_types import GreenfieldArtifactCounts  # noqa: E402
 from greenfield_matrix_types import GreenfieldMatrixResult  # noqa: E402
 from greenfield_matrix_types import GreenfieldQualityVerdict  # noqa: E402
-from greenfield_matrix_types import GreenfieldRescueSmokeResult  # noqa: E402
 from greenfield_matrix_transaction_evidence import CompiledCreateExecution  # noqa: E402
 from greenfield_matrix_transaction_evidence import commit_precompiled_transaction  # noqa: E402
 from greenfield_matrix_transaction_evidence import confirmation_preview_issues  # noqa: E402
@@ -119,21 +110,14 @@ from greenfield_matrix_quality_scoring import PRECONFIRM_BUDGET_SECONDS  # noqa:
 from greenfield_matrix_quality_scoring import QUALITY_SCORE_DIMENSIONS  # noqa: E402
 from greenfield_matrix_quality_scoring import build_quality_verdict  # noqa: E402
 from greenfield_matrix_quality_scoring import command_excerpt  # noqa: E402
-from greenfield_matrix_quality_scoring import count_key  # noqa: E402
-from greenfield_matrix_quality_scoring import required_count_minimums  # noqa: E402
-from greenfield_matrix_quality_scoring import write_transaction_custody_issues  # noqa: E402
 from greenfield_tooling_payload_reader import read_tooling_payload_js  # noqa: E402
-from odylith.runtime.domain_intelligence.greenfield_preconfirm_rescue_probe import RESCUE_PROBE_CODE  # noqa: E402
-from odylith.runtime.domain_intelligence.greenfield_preconfirm_structured_rescue_proof import (  # noqa: E402
-    STRUCTURED_RESCUE_PROOF_CODE,
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (  # noqa: E402
+    get_greenfield_model_profile,
 )
-from odylith.runtime.domain_intelligence.greenfield_preconfirm_structured_rescue_proof import (  # noqa: E402
-    structured_rescue_proof_env,
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (  # noqa: E402
+    model_profile_id_for_repair_tier,
 )
 from odylith.runtime.domain_intelligence.greenfield_text import text_values  # noqa: E402
-from odylith.runtime.artifact_quality.greenfield_package_quality import (  # noqa: E402
-    greenfield_rendered_package_quality_issues,
-)
 import platform_domain_leakage_check as platform_domain_leakage  # noqa: E402
 
 
@@ -161,17 +145,29 @@ class _FinalHoldoutRun:
     ledger_path: Path
     holdout_path: Path
     evaluation_manifest_path: Path
+    case_paths: tuple[Path, ...]
     implementation_revision: str
+    distribution_provenance_sha256: str
     claimed: bool = False
 
     def claim(self) -> None:
         claim_final_holdout_run(
             ledger_path=self.ledger_path,
-            holdout_path=self.holdout_path,
-            evaluation_manifest_path=self.evaluation_manifest_path,
             implementation_revision=self.implementation_revision,
+            distribution_provenance_sha256=self.distribution_provenance_sha256,
         )
         self.claimed = True
+        bind_final_holdout_inputs(
+            ledger_path=self.ledger_path,
+            protected_inputs={
+                "final_holdout": self.holdout_path,
+                "evaluation_manifest": self.evaluation_manifest_path,
+                **{
+                    f"case_file_{index:03d}": path
+                    for index, path in enumerate(self.case_paths, start=1)
+                },
+            },
+        )
 
     def complete(self, *, result_path: Path, outcome: str) -> None:
         if self.claimed:
@@ -209,6 +205,10 @@ def run_matrix(
     """Run the real installed greenfield create path for each matrix case."""
 
     selected_cases = assign_model_profiles(tuple(cases) or default_cases())
+    semantic_release_requested = bool(
+        str(semantic_annotations_file or "").strip()
+        or str(evaluation_split_manifest or "").strip()
+    )
     _raise_for_unsupported_case_expectations(selected_cases)
     install_mode = _validated_install_mode(install_mode)
     campaign_config = MatrixCampaignConfig(
@@ -223,8 +223,6 @@ def run_matrix(
         config=campaign_config,
         install_mode=install_mode,
         include_browser_proof=include_browser_proof,
-        include_rescue_smoke=True,
-        include_natural_rescue_proof=True,
         # run_matrix is the per-case inner loop; main owns the one-per-run installed recovery proof.
         include_commit_recovery_proof=True,
         allow_skipped_browser_proof=False,
@@ -278,6 +276,7 @@ def run_matrix(
         temp_parent=Path(temp_parent),
         include_browser_proof=include_browser_proof,
         enforce_required_stressors=not allow_partial_stressor_coverage,
+        enforce_lexical_controls=not semantic_release_requested,
     )
     if preflight_results:
         if telemetry_jsonl is None and incremental_output_json is None:
@@ -321,10 +320,14 @@ def run_matrix(
         return tuple(results)
     if before_product_execution is not None:
         before_product_execution()
-    platform_baseline_terms = _platform_baseline_required_terms(
-        repo_root=REPO_ROOT,
-        release_dir=release_dir,
-        cases=selected_cases,
+    platform_baseline_terms = (
+        ()
+        if semantic_release_requested
+        else _platform_baseline_required_terms(
+            repo_root=REPO_ROOT,
+            release_dir=release_dir,
+            cases=selected_cases,
+        )
     )
     run_root = Path(temp_parent).expanduser().resolve() / f"odylith-greenfield-matrix-{uuid.uuid4().hex[:8]}"
     run_root.mkdir(parents=True, exist_ok=False)
@@ -398,8 +401,10 @@ def run_matrix(
                         skip_install=seed_repo is not None,
                         install_mode=install_mode,
                         require_write_audit=True,
+                        include_lexical_custody_proof=not semantic_release_requested,
                     )
-                result = _with_case_platform_leakage_issues(result=result, release_dir=release_dir)
+                if not semantic_release_requested:
+                    result = _with_case_platform_leakage_issues(result=result, release_dir=release_dir)
                 reason = stop_reason((*results, result), campaign_config)
             except CommandLifecycleObserverError as exc:
                 result = _failed_case(
@@ -494,6 +499,7 @@ def _matrix_preflight_results(
     temp_parent: Path,
     include_browser_proof: bool = False,
     enforce_required_stressors: bool = True,
+    enforce_lexical_controls: bool = True,
 ) -> tuple[GreenfieldMatrixResult, ...]:
     failures = matrix_preflight_failures(
         repo_root=REPO_ROOT,
@@ -501,6 +507,7 @@ def _matrix_preflight_results(
         cases=cases,
         required_stressors=required_stressors,
         enforce_required_stressors=enforce_required_stressors,
+        enforce_lexical_controls=enforce_lexical_controls,
     )
     browser_issues = browser_runtime_preflight_issues() if include_browser_proof else ()
     if not failures and not browser_issues:
@@ -661,8 +668,6 @@ def _raise_for_invalid_campaign_policy(
     config: MatrixCampaignConfig,
     install_mode: str,
     include_browser_proof: bool,
-    include_rescue_smoke: bool,
-    include_natural_rescue_proof: bool,
     include_commit_recovery_proof: bool = False,
     allow_skipped_browser_proof: bool,
     allow_partial_stressor_coverage: bool = False,
@@ -677,10 +682,6 @@ def _raise_for_invalid_campaign_policy(
         violations.append("release proof must use full install mode")
     if not include_browser_proof:
         violations.append("release proof must include browser proof")
-    if not include_rescue_smoke:
-        violations.append("release proof must include installed rescue smoke")
-    if not include_natural_rescue_proof:
-        violations.append("release proof must include natural rescue proof")
     if not include_commit_recovery_proof:
         violations.append("release proof must include installed commit recovery proof")
     if allow_skipped_browser_proof:
@@ -757,71 +758,109 @@ def _seed_clone_ignore(directory: str, names: Sequence[str]) -> set[str]:
     return blocked
 
 
-def run_rescue_smoke(
+def run_unavailable_provider_proof(
     *,
     dist_dir: Path,
     version: str,
     temp_parent: Path,
-) -> GreenfieldRescueSmokeResult:
-    """Prove installed rescue-tier writes and auto-rescue engine escalation."""
+    case: GreenfieldMatrixCase,
+) -> dict[str, Any]:
+    """Prove installed model authoring fails closed when its provider is absent."""
 
     release_dir = Path(dist_dir).expanduser().resolve()
     install_script = release_dir / "install.sh"
     if not install_script.is_file():
         raise FileNotFoundError(f"missing local release install script: {install_script}")
-    run_root = Path(temp_parent).expanduser().resolve() / f"odylith-greenfield-rescue-{uuid.uuid4().hex[:8]}"
+    run_root = Path(temp_parent).expanduser().resolve() / f"odylith-greenfield-unavailable-{uuid.uuid4().hex[:8]}"
     run_root.mkdir(parents=True, exist_ok=False)
     server, base_url = _serve_directory(release_dir)
     try:
-        repo_root = run_root / f"odylith-sim-rescue-{uuid.uuid4().hex[:8]}"
-        result = _run_rescue_smoke_case(
-            repo_root=repo_root,
-            install_script=install_script,
-            base_url=base_url,
-            version=version,
+        repo_root = run_root / "consumer-repo"
+        repo_root.mkdir()
+        base_env = _local_release_env(base_url=base_url, version=version)
+        env = model_profile_environment(
+            UNAVAILABLE_PROVIDER_PROFILE,
+            base_env,
+            unavailable_provider_bin=str(run_root / "missing-codex-provider"),
         )
-        _cleanup_repo_before_next(repo_root)
-        return result
-    finally:
-        server.shutdown()
-        server.server_close()
-        _cleanup_run_root(run_root)
-
-
-def run_natural_rescue_proof(
-    *,
-    dist_dir: Path,
-    version: str,
-    temp_parent: Path,
-) -> GreenfieldRescueSmokeResult:
-    """Prove installed host-planned structured rescue repair."""
-
-    release_dir = Path(dist_dir).expanduser().resolve()
-    install_script = release_dir / "install.sh"
-    if not install_script.is_file():
-        raise FileNotFoundError(f"missing local release install script: {install_script}")
-    run_root = Path(temp_parent).expanduser().resolve() / f"odylith-greenfield-natural-rescue-{uuid.uuid4().hex[:8]}"
-    run_root.mkdir(parents=True, exist_ok=False)
-    server, base_url = _serve_directory(release_dir)
-    try:
-        bounded_root = run_root / f"odylith-sim-natural-rescue-{uuid.uuid4().hex[:8]}"
-        bounded = _run_natural_rescue_case(
-            repo_root=bounded_root,
-            install_script=install_script,
-            base_url=base_url,
-            version=version,
+        _run(cwd=repo_root, env=env, command=["git", "init"], timeout=60)
+        install = _run(
+            cwd=repo_root,
+            env=env,
+            command=["bash", str(install_script)],
+            timeout=COMMAND_TIMEOUT_SECONDS,
         )
-        _cleanup_repo_before_next(bounded_root)
-        failure_root = run_root / f"odylith-sim-provider-failure-{uuid.uuid4().hex[:8]}"
-        provider_failure = _run_natural_rescue_case(
-            repo_root=failure_root,
-            install_script=install_script,
-            base_url=base_url,
-            version=version,
-            require_provider_failure=True,
+        if install.returncode != 0:
+            return {
+                "version": "odylith.greenfield.unavailable-provider-proof.v1",
+                "status": "failed",
+                "profile_id": UNAVAILABLE_PROVIDER_PROFILE,
+                "proposal_seconds": 0.0,
+                "returncode": install.returncode,
+                "no_write": {},
+                "issues": [f"install_failed: {command_excerpt(install.stderr or install.stdout, limit=800)}"],
+            }
+        audit = begin_installed_write_audit(repo_root=repo_root)
+        attempt: dict[str, Any] = {}
+
+        def invoke() -> Any:
+            completed = _run_greenfield_propose(
+                repo_root=repo_root,
+                env={**env, **audit.environment()},
+                prompt=case.prompt,
+                edit_evidence=str(case.confirmed_intent_markdown or ""),
+                timeout=90,
+                repair_tier="rescue",
+                command=audit.command(
+                    runtime_python=repo_root / ".odylith/runtime/current/bin/python",
+                    arguments=(),
+                ),
+                pass_fds=audit.pass_fds,
+            )
+            attempt["completed"] = completed
+            return completed
+
+        try:
+            execution = run_expected_clarification(
+                repo_root=repo_root,
+                invoke=invoke,
+                parse_payload=_parse_json_object,
+            )
+        finally:
+            audit_evidence = audit.finish()
+        completed = attempt.get("completed")
+        detail = str(getattr(completed, "stderr", "") or getattr(completed, "stdout", "") or "")
+        issues = unavailable_provider_proof_issues(
+            returncode=execution.returncode,
+            proposal_seconds=execution.seconds,
+            detail=detail,
+            write_audit_active=audit_evidence.active,
+            write_audit_error=audit_evidence.error,
+            write_attempts=audit_evidence.write_attempts,
+            subprocess_attempts=audit_evidence.subprocess_attempts,
+            changed_records=execution.changed_records,
+            staged_transaction_present=execution.staged_transaction_present,
         )
-        _cleanup_repo_before_next(failure_root)
-        return _combined_natural_rescue_result(bounded, provider_failure)
+        return {
+            "version": "odylith.greenfield.unavailable-provider-proof.v1",
+            "status": "passed" if not issues else "failed",
+            "profile_id": UNAVAILABLE_PROVIDER_PROFILE,
+            "model_profile": model_profile_evidence(UNAVAILABLE_PROVIDER_PROFILE, env),
+            "proposal_seconds": execution.seconds,
+            "returncode": execution.returncode,
+            "failure_detail": command_excerpt(detail, limit=800),
+            "no_write": {
+                "before_record_count": execution.before_record_count,
+                "after_record_count": execution.after_record_count,
+                "changed_records": list(execution.changed_records),
+                "staged_transaction_present": execution.staged_transaction_present,
+                "write_audit_active": audit_evidence.active,
+                "write_attempts": list(audit_evidence.write_attempts),
+                "subprocess_attempts": list(audit_evidence.subprocess_attempts),
+                "write_audit_error": audit_evidence.error,
+            },
+            "issues": list(issues),
+        }
     finally:
         server.shutdown()
         server.server_close()
@@ -840,9 +879,11 @@ def _run_case(
     skip_install: bool = False,
     install_mode: str = "full",
     require_write_audit: bool = True,
+    include_lexical_custody_proof: bool = True,
 ) -> GreenfieldMatrixResult:
     case = assign_model_profiles((case,))[0]
     profile = case_model_profile(case)
+    profile_contract = get_greenfield_model_profile(profile)
     env = model_profile_environment(
         profile,
         _local_release_env(base_url=base_url, version=version),
@@ -862,37 +903,57 @@ def _run_case(
             case=case,
             repo_root=repo_root,
             env=env,
-            timeout=120,
+            timeout=int(profile_contract.consumer_budget_seconds),
+            repair_tier=profile_contract.repair_tier,
             install_script=install_script,
             version=version,
             install_mode=install_mode,
         )
         return replace(
             result,
-            evidence={**dict(result.evidence), "model_profile": model_profile_evidence(profile, env)},
+            evidence=dict(result.evidence),
         )
     execution = _run_compiled_greenfield_create_with_receipt(
         repo_root=repo_root,
         env=env,
         prompt=case.prompt,
         edit_evidence=str(case.confirmed_intent_markdown or ""),
-        timeout=120,
+        repair_tier=profile_contract.repair_tier,
     )
     create = execution.create
+    proposal_seconds = execution.proposal_seconds
     create_seconds = execution.create_seconds
     payload = _parse_json_object(create.stdout)
     manifest = _as_mapping(payload.get("commit_manifest"))
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
+    profile_evidence = model_profile_evidence(
+        profile,
+        env,
+        observed=sealed_model_profile_observation(
+            proposal=_as_mapping(getattr(package, "proposal", None)),
+            create_payload=payload,
+        ),
+    )
     counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
     surface_issues = rendered_surface_health_issues(repo_root=repo_root)
     generated_text = _generated_text(repo_root=repo_root, package=package)
-    leakage_terms = _case_generated_leakage_terms(
-        case=case,
-        generated_text=generated_text,
-        platform_baseline_terms=platform_baseline_terms,
+    leakage_terms = (
+        _case_generated_leakage_terms(
+            case=case,
+            generated_text=generated_text,
+            platform_baseline_terms=platform_baseline_terms,
+        )
+        if include_lexical_custody_proof
+        else ()
     )
-    source_custody_issues = _source_evidence_custody_issues(case=case, generated_text=generated_text)
-    source_custody_issues += _source_evidence_content_custody_issues(case=case, generated_text=generated_text)
+    source_custody_issues = (
+        (
+            *_source_evidence_custody_issues(case=case, generated_text=generated_text),
+            *_source_evidence_content_custody_issues(case=case, generated_text=generated_text),
+        )
+        if include_lexical_custody_proof
+        else ()
+    )
     browser_surface_proof_attempted = bool(include_browser_proof and create.returncode == 0)
     browser_surface_issues = (
         browser_surface_proof_issues(repo_root=repo_root) if browser_surface_proof_attempted else ()
@@ -900,6 +961,7 @@ def _run_case(
     receipt_issues = dry_run_commit_issues(
         receipt=execution.dry_run_receipt,
         create_payload=payload,
+        repo_root=repo_root,
     )
     decision_rail_issues = confirmation_preview_issues(proposal_payload=execution.proposal_payload)
     navigation_issues = post_confirm_navigation_issues(
@@ -917,9 +979,16 @@ def _run_case(
         browser_surface_proof_required=include_browser_proof,
         confirmation_ux_issues=(*decision_rail_issues, *navigation_issues),
         create_returncode=create.returncode,
+        proposal_seconds=proposal_seconds,
         create_seconds=create_seconds,
         create_detail=create.stderr or create.stdout,
-        external_issues=(*receipt_issues, *decision_rail_issues, *navigation_issues, *source_custody_issues),
+        external_issues=(
+            *receipt_issues,
+            *decision_rail_issues,
+            *navigation_issues,
+            *source_custody_issues,
+            *(str(issue) for issue in profile_evidence.get("issues", ())),
+        ),
     )
     evidence = dict(
         _case_evidence_manifest(
@@ -942,11 +1011,12 @@ def _run_case(
         "decision_rail_issues": list(decision_rail_issues),
         "post_confirm_navigation_issues": list(navigation_issues),
     }
-    evidence["model_profile"] = model_profile_evidence(profile, env)
+    evidence["model_profile"] = profile_evidence
     return GreenfieldMatrixResult(
         name=case.name,
         status="passed" if quality.passed else "failed",
         create_seconds=create_seconds,
+        proposal_seconds=proposal_seconds,
         counts=counts,
         quality=quality,
         browser_surface_issues=browser_surface_issues,
@@ -983,6 +1053,7 @@ def _run_expected_clarification_case(
     repo_root: Path,
     env: Mapping[str, str],
     timeout: int,
+    repair_tier: str,
     install_script: Path,
     version: str,
     install_mode: str,
@@ -997,6 +1068,7 @@ def _run_expected_clarification_case(
                 prompt=case.prompt,
                 edit_evidence=str(case.confirmed_intent_markdown or ""),
                 timeout=timeout,
+                repair_tier=repair_tier,
                 command=(
                     audit.command(
                         runtime_python=repo_root / ".odylith/runtime/current/bin/python",
@@ -1017,12 +1089,27 @@ def _run_expected_clarification_case(
         write_audit_error=audit_evidence.error,
     )
     payload = execution.payload
-    issues = clarification_contract_issues(
+    issues = list(clarification_contract_issues(
         execution,
-        expected_fields=tuple(getattr(case, "expected_question_fields", ()) or ()),
-    )
+        expected_fields=(
+            (str(getattr(case, "expected_clarification_field", "") or "").strip(),)
+            if str(getattr(case, "expected_clarification_field", "") or "").strip()
+            else ()
+        ),
+        expected_question=str(
+            getattr(case, "expected_clarification_question", "") or ""
+        ).strip(),
+        expected_model_profile_id=model_profile_id_for_repair_tier(repair_tier),
+    ))
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
     counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
+    profile_id = model_profile_id_for_repair_tier(repair_tier)
+    profile_evidence = model_profile_evidence(
+        profile_id,
+        env,
+        observed=sealed_model_profile_observation(create_payload=payload),
+    )
+    issues.extend(str(issue) for issue in profile_evidence.get("issues", ()))
     quality = clarification_quality_verdict(issues)
     evidence = dict(
         _case_evidence_manifest(
@@ -1056,10 +1143,12 @@ def _run_expected_clarification_case(
         "subprocess_attempts": list(execution.subprocess_attempts),
         "write_audit_error": execution.write_audit_error,
     }
+    evidence["model_profile"] = profile_evidence
     return GreenfieldMatrixResult(
         name=case.name,
         status="passed" if quality.passed else "failed",
         create_seconds=execution.seconds,
+        proposal_seconds=execution.seconds,
         counts=counts,
         quality=quality,
         create_returncode=execution.returncode,
@@ -1076,17 +1165,17 @@ def _run_compiled_greenfield_create(
     repo_root: Path,
     env: Mapping[str, str],
     prompt: str,
-    timeout: int,
     edit_evidence: str = "",
-) -> tuple[Any, float]:
+    repair_tier: str = "auto",
+) -> tuple[Any, float, float]:
     execution = _run_compiled_greenfield_create_with_receipt(
         repo_root=repo_root,
         env=env,
         prompt=prompt,
-        timeout=timeout,
         edit_evidence=edit_evidence,
+        repair_tier=repair_tier,
     )
-    return execution.create, execution.create_seconds
+    return execution.create, execution.proposal_seconds, execution.create_seconds
 
 
 def _run_compiled_greenfield_create_with_receipt(
@@ -1094,24 +1183,33 @@ def _run_compiled_greenfield_create_with_receipt(
     repo_root: Path,
     env: Mapping[str, str],
     prompt: str,
-    timeout: int,
     edit_evidence: str = "",
+    repair_tier: str = "auto",
 ) -> CompiledCreateExecution:
+    profile_id = model_profile_id_for_repair_tier(repair_tier)
+    configured_profile_id = str(env.get("ODYLITH_GREENFIELD_MODEL_PROFILE") or "").strip()
+    if configured_profile_id != profile_id:
+        raise ValueError("release proof repair tier does not match its configured model profile")
+    proposal_timeout = int(get_greenfield_model_profile(profile_id).consumer_budget_seconds)
+    proposal_started = time.perf_counter()
     proposed = _run_greenfield_propose(
         repo_root=repo_root,
         env=env,
         prompt=prompt,
         edit_evidence=edit_evidence,
-        timeout=timeout,
+        timeout=proposal_timeout,
+        repair_tier=repair_tier,
     )
+    proposal_seconds = round(time.perf_counter() - proposal_started, 3)
     return commit_precompiled_transaction(
         repo_root=repo_root,
         proposed=proposed,
+        proposal_seconds=proposal_seconds,
         invoke_create=lambda command: _run(
             cwd=repo_root,
             env=env,
             command=list(command),
-            timeout=timeout,
+            timeout=60,
         ),
     )
 
@@ -1123,6 +1221,7 @@ def _run_greenfield_propose(
     prompt: str,
     timeout: int,
     edit_evidence: str = "",
+    repair_tier: str = "",
     command: Sequence[str] | None = None,
     pass_fds: tuple[int, ...] = (),
 ) -> Any:
@@ -1131,6 +1230,7 @@ def _run_greenfield_propose(
         _greenfield_propose_arguments(
             prompt=prompt,
             edit_evidence=edit_evidence,
+            repair_tier=repair_tier,
         )
     )
     run_kwargs: dict[str, Any] = {
@@ -1144,7 +1244,12 @@ def _run_greenfield_propose(
     return _run(**run_kwargs)
 
 
-def _greenfield_propose_arguments(*, prompt: str, edit_evidence: str = "") -> list[str]:
+def _greenfield_propose_arguments(
+    *,
+    prompt: str,
+    edit_evidence: str = "",
+    repair_tier: str = "",
+) -> list[str]:
     arguments = [
         "greenfield",
         "propose",
@@ -1157,6 +1262,8 @@ def _greenfield_propose_arguments(*, prompt: str, edit_evidence: str = "") -> li
     ]
     if edit_evidence.strip():
         arguments.extend(["--edit", edit_evidence])
+    if repair_tier:
+        arguments.extend(["--repair-tier", repair_tier])
     return arguments
 
 
@@ -1407,228 +1514,6 @@ def _excerpt(value: str, limit: int = EVIDENCE_EXCERPT_CHARS) -> str:
     if len(text) <= limit:
         return text
     return f"{text[:limit].rstrip()}..."
-
-
-def _run_rescue_smoke_case(
-    *,
-    repo_root: Path,
-    install_script: Path,
-    base_url: str,
-    version: str,
-) -> GreenfieldRescueSmokeResult:
-    case = rescue_smoke_case()
-    repo_root.mkdir(parents=True)
-    env = _local_release_env(base_url=base_url, version=version)
-    _run(cwd=repo_root, env=env, command=["git", "init"], timeout=60)
-    install = _run(cwd=repo_root, env=env, command=["bash", str(install_script)], timeout=COMMAND_TIMEOUT_SECONDS)
-    if install.returncode != 0:
-        return _rescue_smoke_result(
-            create_payload={},
-            counts=GreenfieldArtifactCounts(),
-            issues=(f"install_failed: {(install.stderr or install.stdout).strip()[:800]}",),
-            create_returncode=install.returncode,
-        )
-    create, create_seconds = _run_compiled_greenfield_create(
-        repo_root=repo_root,
-        env=installed_auto_rescue_env(env),
-        prompt=case.prompt,
-        timeout=150,
-    )
-    payload = _parse_json_object(create.stdout)
-    package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
-    counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
-    surface_issues = rendered_surface_health_issues(repo_root=repo_root)
-    issues = list(
-        rescue_cli_issues(
-            manifest=_as_mapping(payload.get("commit_manifest")),
-            package=package,
-            counts=counts,
-            count_minimums=required_count_minimums(counts),
-            count_key=count_key,
-            write_transaction_issues=write_transaction_custody_issues,
-            as_mapping=_as_mapping,
-            package_quality_issues=greenfield_rendered_package_quality_issues,
-            create_returncode=create.returncode,
-            create_seconds=create_seconds,
-            detail=create.stderr or create.stdout,
-            expected_requested_tier="auto",
-        )
-    )
-    issues.extend(surface_issues)
-    return _rescue_smoke_result(
-        create_payload=payload,
-        counts=counts,
-        issues=tuple(issues),
-        create_returncode=create.returncode,
-        cli_create_seconds=create_seconds,
-    )
-
-
-def _run_natural_rescue_case(
-    *,
-    repo_root: Path,
-    install_script: Path,
-    base_url: str,
-    version: str,
-    require_provider_failure: bool = False,
-) -> GreenfieldRescueSmokeResult:
-    case = rescue_smoke_case()
-    repo_root.mkdir(parents=True)
-    env = _local_release_env(base_url=base_url, version=version)
-    _run(cwd=repo_root, env=env, command=["git", "init"], timeout=60)
-    install = _run(cwd=repo_root, env=env, command=["bash", str(install_script)], timeout=COMMAND_TIMEOUT_SECONDS)
-    if install.returncode != 0:
-        return _rescue_smoke_result(
-            create_payload={},
-            counts=GreenfieldArtifactCounts(),
-            issues=(f"install_failed: {(install.stderr or install.stdout).strip()[:800]}",),
-            create_returncode=install.returncode,
-            proof_scope="real_installed_structured_patch_plan_case",
-        )
-    create, create_seconds = _run_compiled_greenfield_create(
-        repo_root=repo_root,
-        env=(
-            _installed_provider_failure_rescue_env(env)
-            if require_provider_failure
-            else _installed_structured_rescue_env(env)
-        ),
-        prompt=case.prompt,
-        timeout=150,
-    )
-    payload = _parse_json_object(create.stdout)
-    manifest = _as_mapping(payload.get("commit_manifest"))
-    package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
-    counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
-    surface_issues = rendered_surface_health_issues(repo_root=repo_root)
-    issues = list(
-        rescue_cli_issues(
-            manifest=manifest,
-            package=package,
-            counts=counts,
-            count_minimums=required_count_minimums(counts),
-            count_key=count_key,
-            write_transaction_issues=write_transaction_custody_issues,
-            as_mapping=_as_mapping,
-            package_quality_issues=greenfield_rendered_package_quality_issues,
-            create_returncode=create.returncode,
-            create_seconds=create_seconds,
-            detail=create.stderr or create.stdout,
-            expected_requested_tier="auto",
-            expected_repaired_issue_code=STRUCTURED_RESCUE_PROOF_CODE,
-            forbidden_repaired_issue_codes=(RESCUE_PROBE_CODE,),
-        )
-    )
-    issues.extend(_natural_rescue_manifest_issues(manifest))
-    provider_failure_observation = _provider_failure_observation(manifest)
-    if require_provider_failure and not provider_failure_observation.get("proven"):
-        issues.append(
-            "lower-capability rescue proof did not observe provider failure followed by source-anchored fallback"
-        )
-    issues.extend(surface_issues)
-    return _rescue_smoke_result(
-        create_payload=payload,
-        counts=counts,
-        issues=tuple(issues),
-        create_returncode=create.returncode,
-        cli_create_seconds=create_seconds,
-        proof_scope=(
-            "real_installed_provider_failure_fallback_case"
-            if require_provider_failure
-            else "real_installed_structured_patch_plan_case"
-        ),
-        natural_rescue_quality_proven=not issues,
-        provider_failure_fallback_proven=bool(
-            require_provider_failure and provider_failure_observation.get("proven") and not issues
-        ),
-        provider_failure_observation=provider_failure_observation if require_provider_failure else {},
-    )
-
-
-def _rescue_smoke_result(
-    *,
-    create_payload: Mapping[str, Any],
-    counts: GreenfieldArtifactCounts,
-    issues: Sequence[str],
-    create_returncode: int,
-    cli_create_seconds: float = 0.0,
-    proof_scope: str = "synthetic_typed_probe_wiring_only",
-    natural_rescue_quality_proven: bool = False,
-    provider_failure_fallback_proven: bool = False,
-    provider_failure_observation: Mapping[str, Any] | None = None,
-) -> GreenfieldRescueSmokeResult:
-    cleaned_issues = tuple(dict.fromkeys(issue for issue in issues if str(issue).strip()))
-    return GreenfieldRescueSmokeResult(
-        status="passed" if not cleaned_issues else "failed",
-        cli_create_seconds=cli_create_seconds,
-        counts=counts,
-        issues=cleaned_issues,
-        manifest=_as_mapping(create_payload.get("commit_manifest")),
-        proof_scope=proof_scope,
-        natural_rescue_quality_proven=bool(natural_rescue_quality_proven and not cleaned_issues),
-        provider_failure_fallback_proven=bool(provider_failure_fallback_proven and not cleaned_issues),
-        provider_failure_observation=dict(provider_failure_observation or {}),
-        create_returncode=create_returncode,
-    )
-
-
-def _installed_structured_rescue_env(env: Mapping[str, str]) -> dict[str, str]:
-    values = structured_rescue_proof_env(env)
-    values["ODYLITH_REASONING_MODE"] = os.environ.get("ODYLITH_REASONING_MODE", "auto")
-    values["ODYLITH_REASONING_PROVIDER"] = _structured_rescue_provider()
-    values["ODYLITH_REASONING_TIMEOUT_SECONDS"] = os.environ.get("ODYLITH_REASONING_TIMEOUT_SECONDS", "35")
-    for key in (
-        "ODYLITH_REASONING_MODEL",
-        "ODYLITH_REASONING_CODEX_BIN",
-        "ODYLITH_REASONING_CODEX_REASONING_EFFORT",
-        "ODYLITH_REASONING_CLAUDE_BIN",
-        "ODYLITH_REASONING_CLAUDE_REASONING_EFFORT",
-    ):
-        if key in os.environ:
-            values[key] = os.environ[key]
-        else:
-            values.pop(key, None)
-    return values
-
-
-def _structured_rescue_provider() -> str:
-    provider = os.environ.get("ODYLITH_STRUCTURED_RESCUE_PROVIDER") or os.environ.get("ODYLITH_REASONING_PROVIDER")
-    provider = str(provider or "").strip()
-    if provider and provider != "auto-local":
-        return provider
-    return "codex-cli"
-
-
-def _natural_rescue_manifest_issues(manifest: Mapping[str, Any]) -> tuple[str, ...]:
-    summary = commit_manifest_summary(manifest)
-    issues: list[str] = []
-    if summary.get("patchset_summary_source") != "last_repair_patchset_request":
-        issues.append("natural rescue proof did not preserve the last repair PatchSet in the final manifest")
-    if not _natural_rescue_plan_or_fallback_proven(summary):
-        issues.append(
-            "natural rescue proof did not record a planned Tribunal structured patch plan "
-            "or a source-anchored semantic fallback after provider failure"
-        )
-    if RESCUE_PROBE_CODE in set(summary.get("repaired_issue_codes") or ()):
-        issues.append("natural rescue proof used the deterministic rescue probe")
-    if STRUCTURED_RESCUE_PROOF_CODE not in set(summary.get("repaired_issue_codes") or ()):
-        issues.append(f"natural rescue proof did not repair `{STRUCTURED_RESCUE_PROOF_CODE}`")
-    return tuple(issues)
-
-
-def _natural_rescue_plan_or_fallback_proven(summary: Mapping[str, Any]) -> bool:
-    if (
-        summary.get("tribunal_patch_plan_status") == "planned"
-        and int(summary.get("tribunal_patch_plan_operation_count") or 0) > 0
-        and str(summary.get("tribunal_patch_plan_provider") or "").strip()
-    ):
-        return True
-    return (
-        summary.get("structured_patch_fallback_status") == "applied"
-        and summary.get("structured_patch_fallback_source") == "source_anchored_semantic_fact"
-        and int(summary.get("structured_patch_fallback_operation_count") or 0) > 0
-        and str(summary.get("structured_patch_fallback_provider") or "").strip()
-        and str(summary.get("structured_patch_fallback_provider_failure_code") or "").strip()
-    )
 
 
 def collect_artifact_package(*, repo_root: Path, create_payload: Mapping[str, Any]) -> Any:
@@ -1913,26 +1798,6 @@ def _print_human_summary(results: Sequence[GreenfieldMatrixResult]) -> None:
             print(f"   score: {explanation}")
 
 
-def _print_rescue_summary(rescue: GreenfieldRescueSmokeResult | None) -> None:
-    if rescue is None:
-        return
-    print(
-        " - rescue smoke ({scope}): {status}, cli_auto_rescue={cli:.3f}s, issues={issues}, "
-        "radar={radar}, registry={registry}, atlas={atlas}, trace_nodes={trace_nodes}".format(
-            scope=rescue.proof_scope,
-            status=rescue.status,
-            cli=rescue.cli_create_seconds,
-            issues=len(rescue.issues),
-            radar=rescue.counts.radar_workstreams,
-            registry=rescue.counts.registry_component_specs,
-            atlas=rescue.counts.atlas_mermaid_sources,
-            trace_nodes=rescue.counts.trace_nodes,
-        )
-    )
-    for issue in rescue.issues:
-        print(f"   issue: {issue}")
-
-
 def _platform_leakage_proof_summary(results: Sequence[GreenfieldMatrixResult]) -> dict[str, Any]:
     terms = sorted(
         {
@@ -1972,29 +1837,6 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
             "JSON file containing fresh high-variance GreenfieldMatrixCase records. "
             "Repeatable; when present, these cases replace the maintained default catalog."
         ),
-    )
-    parser.add_argument(
-        "--include-rescue-smoke",
-        action="store_true",
-        default=True,
-        help="Prove installed CLI auto-rescue governed writes. Enabled by default.",
-    )
-    parser.add_argument(
-        "--skip-rescue-smoke",
-        action="store_false",
-        dest="include_rescue_smoke",
-        help="Skip rescue smoke for local debugging only; this is not release proof.",
-    )
-    parser.add_argument(
-        "--include-natural-rescue-proof",
-        action="store_true",
-        help="Prove installed host-planned structured semantic rescue.",
-    )
-    parser.add_argument(
-        "--skip-natural-rescue-proof",
-        action="store_false",
-        dest="include_natural_rescue_proof",
-        help="Skip host-planned rescue proof for local debugging only; this is not release proof.",
     )
     parser.add_argument(
         "--include-commit-recovery-proof",
@@ -2116,7 +1958,23 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         default="",
         help="Full 40-character Git revision of the implementation under final holdout proof.",
     )
+    parser.add_argument(
+        "--distribution-provenance-file",
+        default="",
+        help="Exact verified distribution provenance; it is never copied into protected input custody.",
+    )
     return parser.parse_args(argv)
+
+
+def _release_path_without_symlink_segments(value: str | Path, *, label: str) -> Path:
+    path = Path(value).expanduser()
+    absolute_path = path if path.is_absolute() else Path.cwd() / path
+    current = Path(absolute_path.anchor)
+    for part in absolute_path.parts[1:]:
+        current /= part
+        if current.is_symlink():
+            raise RuntimeError(f"release proof {label} crosses a symlink: {current}")
+    return absolute_path
 
 
 def _require_sealed_release_input_root(
@@ -2133,24 +1991,39 @@ def _require_sealed_release_input_root(
         return
     if not sealed_root.strip():
         raise RuntimeError("release proof requires --sealed-release-input-root")
-    root = Path(sealed_root).expanduser().resolve()
+    unresolved_root = _release_path_without_symlink_segments(
+        sealed_root,
+        label="sealed input root",
+    )
+    root = unresolved_root.resolve()
     if not root.is_dir():
         raise RuntimeError("release proof sealed input root does not exist")
     values = (*case_files, semantic_annotations_file, evaluation_split_manifest)
     if not all(str(value or "").strip() for value in values):
         raise RuntimeError("release proof requires sealed case, annotation, and evaluation-manifest inputs")
     for value in values:
-        path = Path(str(value)).expanduser().resolve()
+        unresolved_path = _release_path_without_symlink_segments(
+            str(value),
+            label="sealed input",
+        )
+        path = unresolved_path.resolve()
         try:
             path.relative_to(root)
         except ValueError as exc:
             raise RuntimeError("release proof inputs must live under the sealed input root") from exc
-        if not path.is_file() or path.is_symlink():
+        if not path.is_file():
             raise RuntimeError(f"release proof sealed input is missing or unsafe: {path.name}")
     if release_audit_file:
-        if release_audit_repo_root != root:
+        unresolved_audit_root = _release_path_without_symlink_segments(
+            release_audit_repo_root,
+            label="audit root",
+        )
+        if unresolved_audit_root.resolve() != root:
             raise RuntimeError("release proof audit root must equal the sealed input root")
-        audit_path = Path(release_audit_file).expanduser().resolve()
+        audit_path = _release_path_without_symlink_segments(
+            release_audit_file,
+            label="audit input",
+        ).resolve()
         try:
             audit_path.relative_to(root)
         except ValueError as exc:
@@ -2173,12 +2046,22 @@ def _final_holdout_run_from_args(
         raise RuntimeError("release proof requires a full --implementation-revision")
     if not output_token:
         raise RuntimeError("release proof requires --output-json for terminal holdout evidence")
-    ledger_path = Path(ledger_token).expanduser().resolve()
-    if ledger_path.exists() or ledger_path.is_symlink():
+    provenance_token = str(getattr(args, "distribution_provenance_file", "") or "").strip()
+    if not provenance_token:
+        raise RuntimeError("release proof requires --distribution-provenance-file")
+    ledger_path = _release_path_without_symlink_segments(
+        ledger_token,
+        label="final holdout run ledger",
+    ).resolve()
+    if ledger_path.exists():
         raise RuntimeError("final holdout run ledger already exists; the holdout cannot be rerun")
     sealed_root = Path(sealed_input_root).expanduser().resolve()
-    verify_distribution_provenance(
-        provenance_path=sealed_root / "private/build-provenance.v1.json",
+    provenance_path = _release_path_without_symlink_segments(
+        provenance_token,
+        label="distribution provenance",
+    )
+    provenance = verify_distribution_provenance(
+        provenance_path=provenance_path,
         implementation_revision=revision,
     )
     try:
@@ -2191,14 +2074,19 @@ def _final_holdout_run_from_args(
         ledger_path=ledger_path,
         holdout_path=Path(str(args.semantic_annotations_file)).expanduser().resolve(),
         evaluation_manifest_path=Path(str(args.evaluation_split_manifest)).expanduser().resolve(),
+        case_paths=tuple(
+            Path(str(value)).expanduser().resolve()
+            for value in (getattr(args, "case_file", ()) or ())
+        ),
         implementation_revision=revision,
+        distribution_provenance_sha256=str(provenance["sha256"]),
     )
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     release_audit_repo_root = (
-        Path(str(args.release_audit_repo_root)).expanduser().resolve()
+        Path(str(args.release_audit_repo_root)).expanduser()
         if str(args.release_audit_repo_root or "").strip()
         else REPO_ROOT
     )
@@ -2223,8 +2111,6 @@ def main(argv: Sequence[str] | None = None) -> int:
             config=campaign_config,
             install_mode=str(args.install_mode),
             include_browser_proof=bool(args.include_browser_proof),
-            include_rescue_smoke=bool(args.include_rescue_smoke),
-            include_natural_rescue_proof=bool(args.include_natural_rescue_proof),
             include_commit_recovery_proof=bool(args.include_commit_recovery_proof),
             allow_skipped_browser_proof=bool(args.allow_skipped_browser_proof),
             allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
@@ -2240,12 +2126,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         semantic_annotations_file=str(args.semantic_annotations_file or ""),
         evaluation_split_manifest=str(args.evaluation_split_manifest or ""),
     )
+    release_audit_repo_root = release_audit_repo_root.resolve()
     _raise_for_invalid_campaign_policy(
         config=campaign_config,
         install_mode=str(args.install_mode),
         include_browser_proof=bool(args.include_browser_proof),
-        include_rescue_smoke=bool(args.include_rescue_smoke),
-        include_natural_rescue_proof=bool(args.include_natural_rescue_proof),
         include_commit_recovery_proof=bool(args.include_commit_recovery_proof),
         allow_skipped_browser_proof=bool(args.allow_skipped_browser_proof),
         allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
@@ -2253,41 +2138,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         evaluation_split_manifest=str(args.evaluation_split_manifest or ""),
     )
     final_holdout_run = _final_holdout_run_from_args(args, sealed_input_root=sealed_input_root)
-    selected_cases = _load_cli_case_files(args.case_file or ())
-    planned_cases = selected_cases or default_cases()
-    release_audits = (
-        load_release_audit_file(
-            Path(str(args.release_audit_file)),
-            repo_root=release_audit_repo_root,
-        )
-        if str(args.release_audit_file or "").strip()
-        else ()
-    )
-    if campaign_config.proof_tier == "release":
-        corpus_provenance = evaluate_frozen_evaluation_contract(
-            repo_root=Path(sealed_input_root),
-            manifest_path=Path(str(args.evaluation_split_manifest)),
-            final_holdout_path=Path(str(args.semantic_annotations_file)),
-        )
-    else:
-        corpus_provenance = discovery_corpus_summary(planned_cases)
-    _raise_for_invalid_campaign_policy(
-        config=campaign_config,
-        install_mode=str(args.install_mode),
-        include_browser_proof=bool(args.include_browser_proof),
-        include_rescue_smoke=bool(args.include_rescue_smoke),
-        include_natural_rescue_proof=bool(args.include_natural_rescue_proof),
-        include_commit_recovery_proof=bool(args.include_commit_recovery_proof),
-        allow_skipped_browser_proof=bool(args.allow_skipped_browser_proof),
-        allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
-        release_corpus_issues=(
-            tuple(corpus_provenance.get("issues") or ())
-            if campaign_config.proof_tier == "release" and isinstance(corpus_provenance, Mapping)
-            else ()
-        ),
-        semantic_annotations_file=str(args.semantic_annotations_file or ""),
-        evaluation_split_manifest=str(args.evaluation_split_manifest or ""),
-    )
+    if final_holdout_run is not None:
+        install_script = Path(args.dist_dir).expanduser().resolve() / "install.sh"
+        if not install_script.is_file():
+            raise RuntimeError("final holdout preflight requires the exact release distribution")
+        browser_issues = browser_runtime_preflight_issues() if bool(args.include_browser_proof) else ()
+        if browser_issues:
+            raise RuntimeError("final holdout browser preflight failed: " + "; ".join(browser_issues))
     output_path = (
         Path(str(args.output_json)).expanduser().resolve()
         if str(args.output_json or "").strip()
@@ -2299,6 +2156,44 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     try:
         try:
+            if final_holdout_run is not None:
+                final_holdout_run.claim()
+            selected_cases = _load_cli_case_files(
+                args.case_file or (),
+                enforce_lexical_controls=final_holdout_run is None,
+            )
+            planned_cases = selected_cases or default_cases()
+            release_audits = (
+                load_release_audit_file(
+                    Path(str(args.release_audit_file)),
+                    repo_root=release_audit_repo_root,
+                )
+                if str(args.release_audit_file or "").strip()
+                else ()
+            )
+            if campaign_config.proof_tier == "release":
+                corpus_provenance = evaluate_frozen_evaluation_contract(
+                    repo_root=Path(sealed_input_root),
+                    manifest_path=Path(str(args.evaluation_split_manifest)),
+                    final_holdout_path=Path(str(args.semantic_annotations_file)),
+                )
+            else:
+                corpus_provenance = discovery_corpus_summary(planned_cases)
+            _raise_for_invalid_campaign_policy(
+                config=campaign_config,
+                install_mode=str(args.install_mode),
+                include_browser_proof=bool(args.include_browser_proof),
+                include_commit_recovery_proof=bool(args.include_commit_recovery_proof),
+                allow_skipped_browser_proof=bool(args.allow_skipped_browser_proof),
+                allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
+                release_corpus_issues=(
+                    tuple(corpus_provenance.get("issues") or ())
+                    if campaign_config.proof_tier == "release" and isinstance(corpus_provenance, Mapping)
+                    else ()
+                ),
+                semantic_annotations_file=str(args.semantic_annotations_file or ""),
+                evaluation_split_manifest=str(args.evaluation_split_manifest or ""),
+            )
             return_code = _execute_matrix_campaign(
                 args=args,
                 selected_cases=selected_cases,
@@ -2310,7 +2205,6 @@ def main(argv: Sequence[str] | None = None) -> int:
                 output_path=output_path,
                 lease=lease,
                 finalize_lease=True,
-                before_product_execution=(final_holdout_run.claim if final_holdout_run else None),
             )
             if final_holdout_run is not None and final_holdout_run.claimed:
                 if output_path is None or not output_path.is_file():
@@ -2322,7 +2216,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             return return_code
         except BaseException as error:
             if final_holdout_run is not None and final_holdout_run.claimed:
-                interrupted = lease.temp_namespace / "final-holdout-interrupted-result.v1.json"
+                interrupted = lease.temp_namespace / "final-holdout-interrupted-result.v2.json"
                 write_matrix_payload(
                     output_path=interrupted,
                     payload={
@@ -2355,7 +2249,7 @@ def _execute_matrix_campaign(
     """Run one fully isolated proof campaign under its output lease."""
 
     temp_parent = lease.temp_namespace
-    profiled_cases = assign_model_profiles(selected_cases)
+    profiled_cases = assign_model_profiles(selected_cases or planned_cases)
     telemetry = MatrixTelemetryWriter(campaign_config.telemetry_jsonl)
     provenance_summary = getattr(corpus_provenance, "summary", {})
     approved_audit_bindings = (
@@ -2422,23 +2316,22 @@ def _execute_matrix_campaign(
             if bool(args.include_commit_recovery_proof)
             else None
         )
-        rescue = (
-            run_rescue_smoke(
+        unavailable_provider = (
+            run_unavailable_provider_proof(
                 dist_dir=Path(args.dist_dir),
                 version=str(args.version),
                 temp_parent=temp_parent,
+                case=next(
+                    (
+                        case
+                        for case in profiled_cases
+                        if case_expectation(case) != CLARIFICATION_REQUIRED_EXPECTATION
+                    ),
+                    profiled_cases[0],
+                ),
             )
-            if bool(args.include_rescue_smoke)
-            else None
-        )
-        natural_rescue = (
-            run_natural_rescue_proof(
-                dist_dir=Path(args.dist_dir),
-                version=str(args.version),
-                temp_parent=temp_parent,
-            )
-            if bool(args.include_natural_rescue_proof)
-            else None
+            if campaign_config.proof_tier == "release"
+            else {"status": "not_requested", "issues": []}
         )
     browser_proof = browser_proof_summary(results, include_browser_proof=bool(args.include_browser_proof))
     platform_leakage_proof = _platform_leakage_proof_summary(results)
@@ -2458,11 +2351,9 @@ def _execute_matrix_campaign(
                 **cleanup_proof,
                 "run_namespace_cleanup": "passed",
             }
-    natural_rescue_proven = natural_rescue_quality_proven(results) or bool(
-        natural_rescue and natural_rescue.natural_rescue_quality_proven
-    )
-    provider_failure_fallback_proven = bool(
-        natural_rescue and natural_rescue.provider_failure_fallback_proven
+    profile_proof = model_profile_release_proof(
+        results,
+        require_complete=campaign_config.proof_tier == "release",
     )
     browser_status = str(browser_proof.get("status") or "").strip()
     browser_passed = browser_status == "passed" or (
@@ -2471,35 +2362,41 @@ def _execute_matrix_campaign(
     )
     platform_leakage_passed = str(platform_leakage_proof.get("status") or "").strip() == "passed"
     cleanup_passed = str(cleanup_proof.get("status") or "").strip() == "passed"
-    metamorphic_output = evaluate_metamorphic_outputs(cases=profiled_cases, results=results)
-    onboarding_quality_scorecard = build_onboarding_quality_scorecard(
-        results=results,
-        browser_proof=browser_proof,
-        platform_leakage_proof=platform_leakage_proof,
-        metamorphic_output=metamorphic_output,
-        rescue_proof=rescue,
-        natural_rescue_proof=natural_rescue,
-        commit_recovery_proof=commit_recovery,
-    )
     semantic_release = _semantic_release_report(
         args=args,
         cases=profiled_cases,
         results=results,
     )
+    semantic_digests = _as_mapping(semantic_release.get("normalized_semantic_digests"))
+    metamorphic_output = evaluate_metamorphic_outputs(
+        cases=profiled_cases,
+        results=results,
+        semantic_digests=semantic_digests,
+    )
+    onboarding_quality_scorecard = build_onboarding_quality_scorecard(
+        results=results,
+        browser_proof=browser_proof,
+        platform_leakage_proof=platform_leakage_proof,
+        metamorphic_output=metamorphic_output,
+        model_profile_proof=profile_proof,
+        unavailable_provider_proof=unavailable_provider,
+        commit_recovery_proof=commit_recovery,
+    )
     semantic_release_passed = semantic_release.get("status") in {"not_requested", "passed"}
     passed = (
         all(result.quality.passed for result in results)
-        and (rescue is None or rescue.passed)
-        and (
-            natural_rescue is None
-            or (natural_rescue.passed and provider_failure_fallback_proven)
-        )
+        and profile_proof.get("status") == "passed"
+        and unavailable_provider.get("status") in {"not_requested", "passed"}
         and (commit_recovery is None or commit_recovery.passed)
         and browser_passed
         and platform_leakage_passed
         and cleanup_passed
         and bool(metamorphic_output.get("passed"))
         and semantic_release_passed
+        and (
+            campaign_config.proof_tier != "release"
+            or onboarding_quality_scorecard.get("status") == "passed"
+        )
     )
     payload = {
         "version": QUALITY_MATRIX_VERSION,
@@ -2511,20 +2408,16 @@ def _execute_matrix_campaign(
             else "failed"
         ),
         "proof_scope": {
-            "standard_path": "real_installed_greenfield_preconfirm_quality_matrix",
-            "rescue_path": "synthetic_typed_probe_wiring_only",
-            "natural_rescue_path": (
-                "real_installed_structured_patch_plan_case"
-                if natural_rescue_proven
-                else "not_proven"
+            "model_profiles": "real_installed_source_cited_authored_preconfirm_cases",
+            "timing_tiers": "strict_standard_under_60_rescue_under_90_deep_under_120",
+            "lower_capability_model": "real_installed_gpt-5.3-codex-spark-medium_authored_preconfirm",
+            "unavailable_provider": (
+                "real_installed_fail_closed_no_write"
+                if unavailable_provider.get("status") == "passed"
+                else "not_requested"
+                if unavailable_provider.get("status") == "not_requested"
+                else "failed"
             ),
-            "natural_rescue_quality_proven": natural_rescue_proven,
-            "lower_capability_provider_failure_path": (
-                "real_installed_provider_failure_fallback_case"
-                if provider_failure_fallback_proven
-                else "not_proven"
-            ),
-            "lower_capability_provider_failure_proven": provider_failure_fallback_proven,
             "commit_recovery_path": (
                 COMMIT_RECOVERY_PROOF_SCOPE if commit_recovery is not None else "not_requested"
             ),
@@ -2545,19 +2438,18 @@ def _execute_matrix_campaign(
             results=results,
             config=campaign_config,
             stopped_reason=stop_reason(results, campaign_config),
+            semantic_digests=semantic_digests,
         ),
         "metamorphic_output": metamorphic_output,
         "browser_surface_proof": browser_proof,
         "platform_domain_leakage_proof": platform_leakage_proof,
         "temp_cleanup_proof": cleanup_proof,
         "onboarding_quality_scorecard": onboarding_quality_scorecard,
+        "model_profile_proof": profile_proof,
+        "unavailable_provider_proof": unavailable_provider,
         "semantic_release": semantic_release,
         "proof_run": lease.to_dict(),
     }
-    if rescue is not None:
-        payload["rescue_smoke"] = rescue.to_dict()
-    if natural_rescue is not None:
-        payload["natural_rescue_proof"] = natural_rescue.to_dict()
     if commit_recovery is not None:
         payload["commit_recovery_proof"] = commit_recovery.to_dict()
     write_matrix_payload(output_path=output_path, payload=payload)
@@ -2565,8 +2457,6 @@ def _execute_matrix_campaign(
         print(json.dumps(payload, indent=2, sort_keys=True))
     else:
         _print_human_summary(results)
-        _print_rescue_summary(rescue)
-        _print_rescue_summary(natural_rescue)
     return 0 if payload["status"] in {"passed", "discovery-passed"} else 1
 
 
@@ -2646,17 +2536,27 @@ def _semantic_release_report(
         annotations=annotations,
         results=results,
         floors=_as_mapping(contract.get("frozen_floors")),
+        release_required_slices=_as_mapping(contract.get("required_release_slices")),
     )
     report["evaluation_contract"] = contract
     return report
 
 
-def _load_cli_case_files(case_files: Sequence[str]) -> tuple[GreenfieldMatrixCase, ...]:
+def _load_cli_case_files(
+    case_files: Sequence[str],
+    *,
+    enforce_lexical_controls: bool = True,
+) -> tuple[GreenfieldMatrixCase, ...]:
     cases: list[GreenfieldMatrixCase] = []
     for case_file in case_files:
         token = str(case_file or "").strip()
         if token:
-            cases.extend(load_case_file(Path(token)))
+            cases.extend(
+                load_case_file(
+                    Path(token),
+                    enforce_lexical_controls=enforce_lexical_controls,
+                )
+            )
     return tuple(cases)
 
 

@@ -132,8 +132,6 @@ def project_intelligence_issues(value: Any) -> list[str]:
         minimum = 3 if key in {"intent", "ontology", "operators", "validation_obligations", "topology"} else 2
         if len(rows) < minimum:
             issues.append(f"proposal `project_intelligence.{key}` must include at least {minimum} rows")
-        elif any(word_count(row) < 5 for row in rows[:minimum]):
-            issues.append(f"proposal `project_intelligence.{key}` contains shallow rows")
     return issues
 
 

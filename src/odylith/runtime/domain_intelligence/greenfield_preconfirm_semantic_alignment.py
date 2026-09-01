@@ -6,6 +6,9 @@ from collections.abc import Mapping
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_PROJECTION_ORIGIN,
+)
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -13,7 +16,11 @@ from odylith.runtime.domain_intelligence.greenfield_text import text_values
 _FIRST_PATH_CAPABILITY_ALIGNMENT_THRESHOLD = 0.25
 
 
-def semantic_model_shape_issues(semantic: Mapping[str, Any]) -> list[str]:
+def semantic_model_shape_issues(
+    semantic: Mapping[str, Any],
+    *,
+    include_lexical_alignment: bool = True,
+) -> list[str]:
     required = (
         "first_path_contract",
         "domain_ontology",
@@ -39,7 +46,7 @@ def semantic_model_shape_issues(semantic: Mapping[str, Any]) -> list[str]:
     first_path_raw_path = clean_text(first_path.get("raw_path") if isinstance(first_path, Mapping) else "")
     if not first_path_capability:
         issues.append("FirstPathContract must preserve the accepted path capability")
-    elif _first_path_capability_drifted(first_path_capability, first_path_raw_path):
+    elif include_lexical_alignment and _first_path_capability_drifted(first_path_capability, first_path_raw_path):
         issues.append("FirstPathContract capability drifted from accepted raw path")
     ontology = semantic.get("domain_ontology") if isinstance(semantic.get("domain_ontology"), Mapping) else {}
     if not clean_text(ontology.get("product_title") if isinstance(ontology, Mapping) else ""):
@@ -64,6 +71,7 @@ def semantic_component_alignment_issues(proposal: Mapping[str, Any], semantic: M
     issues: list[str] = []
     proposal_by_id = {_component_id(row): row for row in proposal_components if _component_id(row)}
     model_by_id = {_component_id(row): row for row in model_components if _component_id(row)}
+    authored = proposal.get("projection_origin") == AUTHORED_PROJECTION_ORIGIN
     if set(proposal_by_id) != set(model_by_id):
         missing = sorted(set(proposal_by_id) - set(model_by_id))
         extra = sorted(set(model_by_id) - set(proposal_by_id))
@@ -76,6 +84,20 @@ def semantic_component_alignment_issues(proposal: Mapping[str, Any], semantic: M
         if not isinstance(model, Mapping):
             continue
         contract = row.get("component_contract") if isinstance(row.get("component_contract"), Mapping) else {}
+        if authored:
+            for key in (
+                "owner_system",
+                "responsibility_facts",
+                "owner_bound_events",
+                "event_targets",
+                "visible_results",
+                "recovery_events",
+            ):
+                if model.get(key) != contract.get(key):
+                    issues.append(
+                        f"GreenfieldSemanticModel component `{component_id}` drifted from authored `{key}`"
+                    )
+            continue
         checks = {
             "label": clean_text(row.get("label")),
             "release_scope": clean_text(row.get("release_scope")),
@@ -95,15 +117,16 @@ def semantic_component_alignment_issues(proposal: Mapping[str, Any], semantic: M
         model_proofs = tuple(clean_text(value) for value in text_values(model.get("proof_obligations")) if clean_text(value))
         if proposal_proofs and proposal_proofs != model_proofs:
             issues.append(f"GreenfieldSemanticModel component `{component_id}` proof obligations drifted from ComponentContract")
-    proof_keys = {
-        clean_text(row.get("key"))
-        for row in mapping_rows(semantic.get("proof_obligations"))
-    }
-    for component_id, row in proposal_by_id.items():
-        if clean_text(row.get("release_scope")) == "out_of_scope":
-            continue
-        if f"component_{component_id}" not in proof_keys:
-            issues.append(f"GreenfieldSemanticModel missing proof obligation for active component `{component_id}`")
+    if not authored:
+        proof_keys = {
+            clean_text(row.get("key"))
+            for row in mapping_rows(semantic.get("proof_obligations"))
+        }
+        for component_id, row in proposal_by_id.items():
+            if clean_text(row.get("release_scope")) == "out_of_scope":
+                continue
+            if f"component_{component_id}" not in proof_keys:
+                issues.append(f"GreenfieldSemanticModel missing proof obligation for active component `{component_id}`")
     return issues
 
 
@@ -211,8 +234,6 @@ def _first_path_capability_drifted(capability: str, raw_path: str) -> bool:
     raw_path_terms = set(_capability_alignment_terms(raw_path))
     if len(capability_terms) < 3 or not raw_path_terms:
         return False
-    if len(raw_path_terms) >= 8 and len(capability_terms) <= 4:
-        return True
     shared = len([term for term in capability_terms if term in raw_path_terms])
     return shared / max(1, len(capability_terms)) < _FIRST_PATH_CAPABILITY_ALIGNMENT_THRESHOLD
 

@@ -39,7 +39,6 @@ from greenfield_matrix_campaign_shard_runner import _matrix_command  # noqa: E40
 from greenfield_matrix_campaign_shard_runner import _run_command_with_progress  # noqa: E402,F401
 from greenfield_matrix_campaign_progress import CampaignProgressWriter  # noqa: E402
 from greenfield_matrix_case_file import load_case_file  # noqa: E402
-from greenfield_evaluation_contract import evaluate_frozen_evaluation_contract  # noqa: E402
 from greenfield_matrix_corpus_provenance import load_release_audit_file  # noqa: E402
 from greenfield_matrix_failure_response import campaign_failure_clusters  # noqa: E402
 from greenfield_matrix_failure_response import failure_response_plan  # noqa: E402
@@ -60,8 +59,6 @@ class ReleaseProofInputSnapshot:
     audit_file: Path | None
     manifest_path: Path
     input_references: tuple[dict[str, str], ...]
-    semantic_annotations_file: Path | None = None
-    evaluation_split_manifest: Path | None = None
 
 
 def run_campaign(
@@ -105,7 +102,8 @@ def run_campaign(
     telemetry_dir.mkdir(parents=True, exist_ok=True)
     distribution_provenance: dict[str, str] | None = None
     distribution_provenance_path: Path | None = None
-    if semantic_annotations_file is not None:
+    semantic_release_requested = semantic_annotations_file is not None or evaluation_split_manifest is not None
+    if semantic_release_requested:
         if final_holdout_run_ledger is None:
             raise RuntimeError("semantic release proof requires a one-shot final holdout run ledger")
         revision = str(implementation_revision or "").strip().casefold()
@@ -120,35 +118,45 @@ def run_campaign(
             "kind": "distribution-build-provenance",
             **verified_provenance,
         }
+        if semantic_annotations_file is None or evaluation_split_manifest is None:
+            raise RuntimeError("semantic release proof requires both annotations and an evaluation manifest")
     normalized_required_stressors = required_stressors_from_values(
         required_stressors,
         use_default=bool(require_high_variance_stressors),
     )
-    release_proof_inputs = _release_proof_input_manifest(
-        case_files=release_case_files,
-        release_audit_file=release_audit_file,
-        semantic_annotations_file=semantic_annotations_file,
-        evaluation_split_manifest=evaluation_split_manifest,
+    release_proof_inputs = (
+        []
+        if semantic_release_requested
+        else _release_proof_input_manifest(
+            case_files=release_case_files,
+            release_audit_file=release_audit_file,
+        )
     )
     if distribution_provenance is not None:
         release_proof_inputs.append(distribution_provenance)
-    release_snapshot = _seal_release_proof_inputs(
-        case_files=release_case_files,
-        release_audit_file=release_audit_file,
-        semantic_annotations_file=semantic_annotations_file,
-        evaluation_split_manifest=evaluation_split_manifest,
-        repo_root=REPO_ROOT,
-        temp_parent=temp_parent,
-        distribution_provenance_file=distribution_provenance_path,
+    release_snapshot = (
+        None
+        if semantic_release_requested
+        else _seal_release_proof_inputs(
+            case_files=release_case_files,
+            release_audit_file=release_audit_file,
+            repo_root=REPO_ROOT,
+            temp_parent=temp_parent,
+        )
     )
     sealed_release_case_files = release_snapshot.case_files if release_snapshot is not None else release_case_files
     sealed_release_audit_file = release_snapshot.audit_file if release_snapshot is not None else release_audit_file
     sealed_release_audit_repo_root = release_snapshot.root if release_snapshot is not None else None
-    sealed_semantic_annotations = (
-        release_snapshot.semantic_annotations_file if release_snapshot is not None else semantic_annotations_file
-    )
-    sealed_evaluation_manifest = (
-        release_snapshot.evaluation_split_manifest if release_snapshot is not None else evaluation_split_manifest
+    sealed_semantic_annotations = semantic_annotations_file
+    sealed_evaluation_manifest = evaluation_split_manifest
+    semantic_release_input_root = (
+        _path_only_semantic_release_root(
+            case_files=sealed_release_case_files,
+            semantic_annotations_file=sealed_semantic_annotations,
+            evaluation_split_manifest=sealed_evaluation_manifest,
+        )
+        if semantic_release_requested
+        else None
     )
     snapshot_exit_cleanup = (
         atexit.register(shutil.rmtree, release_snapshot.root, ignore_errors=True)
@@ -200,11 +208,12 @@ def run_campaign(
             required_stressors=normalized_required_stressors,
             release_audit_file=sealed_release_audit_file,
             release_audit_repo_root=sealed_release_audit_repo_root,
-            release_input_snapshot_root=sealed_release_audit_repo_root,
+            release_input_snapshot_root=semantic_release_input_root or sealed_release_audit_repo_root,
             semantic_annotations_file=sealed_semantic_annotations,
             evaluation_split_manifest=sealed_evaluation_manifest,
             final_holdout_run_ledger=final_holdout_run_ledger,
             implementation_revision=implementation_revision,
+            distribution_provenance_file=distribution_provenance_path,
         ),
     )
     selected_shard_count = sum(len(shards) for shards in tiers)
@@ -311,7 +320,13 @@ def run_campaign(
         ),
         "release_proof_inputs": release_proof_inputs,
         "release_proof_snapshot": {
-            "status": "sealed" if release_snapshot is not None else "not-sealed",
+            "status": (
+                "child-owned-after-claim"
+                if semantic_release_requested
+                else "sealed"
+                if release_snapshot is not None
+                else "not-sealed"
+            ),
             "input_count": len(release_snapshot.input_references) if release_snapshot is not None else 0,
             "input_hashes": [
                 {"kind": reference["kind"], "sha256": reference["sha256"]}
@@ -366,8 +381,6 @@ def _discovery_tier(
             proof_tier="discovery",
             install_mode="seeded",
             include_browser_proof=False,
-            include_rescue_smoke=False,
-            include_natural_rescue_proof=False,
             stop_after_failures=max(0, int(stop_after_failures)),
             stop_after_cluster_failures=max(0, int(stop_after_cluster_failures)),
             require_high_variance_stressors=bool(require_high_variance_stressors),
@@ -390,6 +403,7 @@ def _release_tier(
     evaluation_split_manifest: Path | None = None,
     final_holdout_run_ledger: Path | None = None,
     implementation_revision: str = "",
+    distribution_provenance_file: Path | None = None,
 ) -> tuple[CampaignShard, ...]:
     return tuple(
         CampaignShard(
@@ -398,8 +412,6 @@ def _release_tier(
             proof_tier="release",
             install_mode="full",
             include_browser_proof=True,
-            include_rescue_smoke=True,
-            include_natural_rescue_proof=True,
             stop_after_failures=0,
             stop_after_cluster_failures=0,
             require_high_variance_stressors=bool(require_high_variance_stressors),
@@ -429,9 +441,35 @@ def _release_tier(
                 else None
             ),
             implementation_revision=str(implementation_revision or "").strip().casefold(),
+            distribution_provenance_file=(
+                Path(distribution_provenance_file).expanduser().resolve()
+                if distribution_provenance_file
+                else None
+            ),
         )
         for case_file in case_files
     )
+
+
+def _path_only_semantic_release_root(
+    *,
+    case_files: Sequence[Path],
+    semantic_annotations_file: Path | None,
+    evaluation_split_manifest: Path | None,
+) -> Path:
+    """Return an existing containment root without opening protected inputs."""
+
+    if semantic_annotations_file is None or evaluation_split_manifest is None:
+        raise RuntimeError("semantic release proof requires both annotations and an evaluation manifest")
+    annotation_path = Path(semantic_annotations_file).expanduser().resolve()
+    case_paths = tuple(Path(path).expanduser().resolve() for path in case_files)
+    if case_paths != (annotation_path,):
+        raise RuntimeError("semantic release proof must run the complete holdout as one unsharded case file")
+    manifest_path = Path(evaluation_split_manifest).expanduser().resolve()
+    common_path = Path(os.path.commonpath((str(annotation_path), str(manifest_path))))
+    if common_path == Path(common_path.anchor) or not common_path.is_dir():
+        raise RuntimeError("semantic release inputs must share an explicit non-root directory")
+    return common_path
 
 
 def _tier_max_workers(
@@ -474,8 +512,6 @@ def _release_proof_input_manifest(
     *,
     case_files: Sequence[Path],
     release_audit_file: Path | None,
-    semantic_annotations_file: Path | None = None,
-    evaluation_split_manifest: Path | None = None,
     repo_root: Path = REPO_ROOT,
 ) -> list[dict[str, str]]:
     """Bind every release-proof input so a later mutation cannot retain a valid claim."""
@@ -499,13 +535,6 @@ def _release_proof_input_manifest(
         ):
             if not any(existing["path"] == reference["path"] for existing in references):
                 references.append(reference)
-    if semantic_annotations_file is not None:
-        append_reference("semantic-annotations-file", Path(semantic_annotations_file))
-    if evaluation_split_manifest is not None:
-        manifest_path = Path(evaluation_split_manifest)
-        append_reference("evaluation-split-manifest", manifest_path)
-        tracked_path = _tracked_corpus_path(manifest_path=manifest_path, repo_root=repo_root)
-        append_reference("evaluation-tracked-corpus", tracked_path)
     return references
 
 
@@ -559,27 +588,11 @@ def _seal_release_proof_inputs(
     *,
     case_files: Sequence[Path],
     release_audit_file: Path | None,
-    semantic_annotations_file: Path | None = None,
-    evaluation_split_manifest: Path | None = None,
     repo_root: Path,
     temp_parent: Path,
-    distribution_provenance_file: Path | None = None,
 ) -> ReleaseProofInputSnapshot | None:
     """Copy stable release inputs before execution so proof cannot observe later mutations."""
 
-    if semantic_annotations_file is not None or evaluation_split_manifest is not None:
-        if semantic_annotations_file is None or evaluation_split_manifest is None:
-            raise RuntimeError("semantic release proof requires both annotations and an evaluation manifest")
-        if distribution_provenance_file is None:
-            raise RuntimeError("semantic release proof requires distribution build provenance")
-        return _seal_semantic_release_inputs(
-            case_files=case_files,
-            semantic_annotations_file=semantic_annotations_file,
-            evaluation_split_manifest=evaluation_split_manifest,
-            repo_root=repo_root,
-            temp_parent=temp_parent,
-            distribution_provenance_file=distribution_provenance_file,
-        )
     if not case_files or release_audit_file is None:
         return None
     root = Path(repo_root).expanduser().resolve()
@@ -636,103 +649,6 @@ def _seal_release_proof_inputs(
     except BaseException:
         shutil.rmtree(snapshot_root, ignore_errors=True)
         raise
-
-
-def _seal_semantic_release_inputs(
-    *,
-    case_files: Sequence[Path],
-    semantic_annotations_file: Path,
-    evaluation_split_manifest: Path,
-    repo_root: Path,
-    temp_parent: Path,
-    distribution_provenance_file: Path,
-) -> ReleaseProofInputSnapshot:
-    root = Path(repo_root).expanduser().resolve()
-    annotations_path = Path(semantic_annotations_file).expanduser().resolve()
-    manifest_path = Path(evaluation_split_manifest).expanduser().resolve()
-    case_paths = tuple(Path(path).expanduser().resolve() for path in case_files)
-    if case_paths != (annotations_path,):
-        raise RuntimeError("semantic release proof must run the complete holdout as one unsharded case file")
-    tracked_path = _tracked_corpus_path(manifest_path=manifest_path, repo_root=root)
-    provenance_path = Path(distribution_provenance_file).expanduser().resolve()
-    sources = (annotations_path, manifest_path, tracked_path, provenance_path)
-    snapshot_parent = Path(temp_parent).expanduser().resolve()
-    snapshot_parent.mkdir(parents=True, exist_ok=True)
-    snapshot_root = Path(tempfile.mkdtemp(prefix="odylith-semantic-release-inputs-", dir=snapshot_parent))
-    try:
-        snapshot_annotations = snapshot_root / "private/final-holdout.v1.json"
-        snapshot_manifest = snapshot_root / manifest_path.relative_to(root)
-        snapshot_tracked = snapshot_root / tracked_path.relative_to(root)
-        snapshot_provenance = snapshot_root / "private/build-provenance.v1.json"
-        destinations = (snapshot_annotations, snapshot_manifest, snapshot_tracked, snapshot_provenance)
-        for source, destination in zip(sources, destinations, strict=True):
-            _copy_hash_bound_release_input(source, destination)
-        contract = evaluate_frozen_evaluation_contract(
-            repo_root=snapshot_root,
-            manifest_path=snapshot_manifest,
-            final_holdout_path=snapshot_annotations,
-        )
-        if not contract.get("passed"):
-            raise RuntimeError(
-                "semantic release proof inputs failed their frozen contract: "
-                + "; ".join(str(issue) for issue in contract.get("issues") or ())
-            )
-        references = tuple(
-            _proof_input_reference(kind, path)
-            for kind, path in (
-                ("semantic-annotations-file", snapshot_annotations),
-                ("evaluation-split-manifest", snapshot_manifest),
-                ("evaluation-tracked-corpus", snapshot_tracked),
-                ("distribution-build-provenance", snapshot_provenance),
-            )
-        )
-        seal_path = snapshot_root / "semantic-release-input-snapshot.v1.json"
-        seal_path.write_text(
-            json.dumps(
-                {
-                    "version": "odylith.greenfield.semantic-release-input-snapshot.v1",
-                    "inputs": list(references),
-                },
-                indent=2,
-                sort_keys=True,
-            )
-            + "\n",
-            encoding="utf-8",
-        )
-        with seal_path.open("r+b") as handle:
-            handle.flush()
-            os.fsync(handle.fileno())
-        return ReleaseProofInputSnapshot(
-            root=snapshot_root,
-            case_files=(snapshot_annotations,),
-            audit_file=None,
-            manifest_path=seal_path,
-            input_references=references,
-            semantic_annotations_file=snapshot_annotations,
-            evaluation_split_manifest=snapshot_manifest,
-        )
-    except BaseException:
-        shutil.rmtree(snapshot_root, ignore_errors=True)
-        raise
-
-
-def _tracked_corpus_path(*, manifest_path: Path, repo_root: Path) -> Path:
-    path = Path(manifest_path).expanduser().resolve()
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as error:
-        raise RuntimeError(f"evaluation split manifest is unreadable: {error}") from error
-    tracked = payload.get("tracked_corpus") if isinstance(payload, Mapping) else None
-    token = str(tracked.get("path") or "").strip() if isinstance(tracked, Mapping) else ""
-    root = Path(repo_root).expanduser().resolve()
-    candidate = (root / token).resolve()
-    try:
-        candidate.relative_to(root)
-    except ValueError as error:
-        raise RuntimeError("evaluation tracked corpus escapes the repository") from error
-    if not token or not candidate.is_file() or candidate.is_symlink():
-        raise RuntimeError("evaluation tracked corpus is missing or unsafe")
-    return candidate
 
 
 def _copy_hash_bound_release_input(source: Path, destination: Path) -> None:

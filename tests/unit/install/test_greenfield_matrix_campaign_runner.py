@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 from threading import Event
 
@@ -864,8 +866,6 @@ def test_tier_interrupt_signals_active_shard_before_executor_waits(tmp_path: Pat
         proof_tier="release",
         install_mode="full",
         include_browser_proof=True,
-        include_rescue_smoke=True,
-        include_natural_rescue_proof=True,
         stop_after_failures=1,
         stop_after_cluster_failures=1,
         require_high_variance_stressors=False,
@@ -909,6 +909,115 @@ def test_tier_interrupt_signals_active_shard_before_executor_waits(tmp_path: Pat
         )
 
     assert stop_observed.is_set()
+
+
+def test_interrupt_reaps_the_entire_shard_process_group(tmp_path: Path) -> None:
+    module = _shard_runner_module()
+    ready = tmp_path / "descendant-ready"
+    code = (
+        "import pathlib,subprocess,sys,time; "
+        "subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)']); "
+        "pathlib.Path(sys.argv[1]).write_text('ready', encoding='utf-8'); "
+        "time.sleep(60)"
+    )
+    process = subprocess.Popen(
+        [sys.executable, "-c", code, str(ready)],
+        start_new_session=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    deadline = time.monotonic() + 5
+    while not ready.exists() and time.monotonic() < deadline:
+        time.sleep(0.02)
+    assert ready.exists()
+
+    module._interrupt_process(process)  # noqa: SLF001
+
+    assert process.poll() is not None
+    with pytest.raises(ProcessLookupError):
+        os.killpg(process.pid, 0)
+
+
+def test_reaped_semantic_child_gets_exactly_one_interrupted_terminal_outcome(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    module = _shard_runner_module()
+    guard = sys.modules["greenfield_final_holdout_guard"]
+    holdout = tmp_path / "holdout.json"
+    manifest = tmp_path / "manifest.json"
+    provenance = tmp_path / "build-provenance.v1.json"
+    ledger = tmp_path / "final-holdout-run.v2.json"
+    _write_case_file(holdout, name="forced termination holdout", stressors=())
+    manifest.write_text("{}\n", encoding="utf-8")
+    provenance.write_text("{}\n", encoding="utf-8")
+    shard = module.CampaignShard(
+        tier="release-proof",
+        case_file=holdout,
+        proof_tier="release",
+        install_mode="full",
+        include_browser_proof=True,
+        stop_after_failures=0,
+        stop_after_cluster_failures=0,
+        require_high_variance_stressors=False,
+        required_stressors=(),
+        release_input_snapshot_root=tmp_path,
+        semantic_annotations_file=holdout,
+        evaluation_split_manifest=manifest,
+        final_holdout_run_ledger=ledger,
+        implementation_revision="a" * 40,
+        distribution_provenance_file=provenance,
+    )
+    child_reaped = False
+
+    def killed_child(**kwargs):  # noqa: ANN003
+        nonlocal child_reaped
+        guard.claim_final_holdout_run(
+            ledger_path=ledger,
+            implementation_revision="a" * 40,
+            distribution_provenance_sha256="b" * 64,
+        )
+        child_reaped = True
+        return subprocess.CompletedProcess(kwargs["command"], 137, "", "forced termination"), "interrupted"
+
+    original_read = module.read_final_holdout_run
+
+    def read_after_reap(path):  # noqa: ANN001
+        assert child_reaped
+        return original_read(path)
+
+    monkeypatch.setattr(module, "read_final_holdout_run", read_after_reap)
+    progress = module.CampaignProgressWriter(
+        jsonl_path=tmp_path / "progress.jsonl",
+        snapshot_path=tmp_path / "progress.json",
+    )
+    result = module._run_shard(  # noqa: SLF001
+        shard=shard,
+        dist_dir=tmp_path / "dist",
+        version="0.1.15",
+        temp_parent=tmp_path / "tmp",
+        output_dir=tmp_path / "out",
+        telemetry_dir=tmp_path / "telemetry",
+        stop_event=Event(),
+        progress=progress,
+        command_runner=killed_child,
+        telemetry_forwarder=lambda **_kwargs: 0,
+        temp_parent_cleaner=module._cleanup_shard_temp_parent,  # noqa: SLF001
+    )
+
+    terminal = guard.read_final_holdout_run(ledger)
+    terminal_bytes = ledger.read_bytes()
+    interruption_result = tmp_path / "telemetry/release-proof-holdout.interrupted.v2.json"
+    assert result.status == "stopped"
+    assert terminal["status"] == "interrupted"
+    assert interruption_result.is_file()
+    with pytest.raises(RuntimeError, match="not in its one terminalizable claimed state"):
+        guard.complete_final_holdout_run(
+            ledger_path=ledger,
+            result_path=interruption_result,
+            outcome="interrupted",
+        )
+    assert ledger.read_bytes() == terminal_bytes
 
 
 def test_campaign_can_require_release_readiness_for_release_claims(tmp_path: Path, monkeypatch) -> None:
@@ -976,7 +1085,7 @@ def test_campaign_refuses_release_execution_when_inputs_cannot_be_sealed(tmp_pat
         )
 
 
-def test_semantic_release_inputs_are_sealed_and_forwarded_as_one_holdout(tmp_path: Path) -> None:
+def test_semantic_release_inputs_are_forwarded_by_path_without_parent_sealing(tmp_path: Path) -> None:
     module = _module()
     repo_root = tmp_path / "repo"
     holdout_path, manifest_path = write_semantic_release_fixture(
@@ -995,35 +1104,24 @@ def test_semantic_release_inputs_are_sealed_and_forwarded_as_one_holdout(tmp_pat
         encoding="utf-8",
     )
 
-    snapshot = module._seal_release_proof_inputs(  # noqa: SLF001
+    release_root = module._path_only_semantic_release_root(  # noqa: SLF001
         case_files=(holdout_path,),
-        release_audit_file=None,
         semantic_annotations_file=holdout_path,
         evaluation_split_manifest=manifest_path,
-        repo_root=repo_root,
-        temp_parent=tmp_path / "snapshots",
-        distribution_provenance_file=provenance_path,
     )
 
-    assert snapshot is not None
-    assert snapshot.case_files == (snapshot.semantic_annotations_file,)
-    assert (snapshot.root / "private/build-provenance.v1.json").read_bytes() == provenance_path.read_bytes()
-    assert {reference["kind"] for reference in snapshot.input_references} == {
-        "semantic-annotations-file",
-        "evaluation-split-manifest",
-        "evaluation-tracked-corpus",
-        "distribution-build-provenance",
-    }
+    assert release_root == tmp_path
     shard = module._release_tier(  # noqa: SLF001
         "release-proof",
-        snapshot.case_files,
+        (holdout_path,),
         require_high_variance_stressors=False,
         required_stressors=(),
-        release_input_snapshot_root=snapshot.root,
-        semantic_annotations_file=snapshot.semantic_annotations_file,
-        evaluation_split_manifest=snapshot.evaluation_split_manifest,
+        release_input_snapshot_root=release_root,
+        semantic_annotations_file=holdout_path,
+        evaluation_split_manifest=manifest_path,
         final_holdout_run_ledger=tmp_path / "final-holdout-run-ledger.json",
         implementation_revision="a" * 40,
+        distribution_provenance_file=provenance_path,
     )[0]
     command = module._matrix_command(  # noqa: SLF001
         shard=shard,
@@ -1033,11 +1131,13 @@ def test_semantic_release_inputs_are_sealed_and_forwarded_as_one_holdout(tmp_pat
         output_json=tmp_path / "result.json",
         telemetry_jsonl=tmp_path / "telemetry.jsonl",
     )
-    assert _arg(command, "--semantic-annotations-file") == str(snapshot.semantic_annotations_file)
-    assert _arg(command, "--evaluation-split-manifest") == str(snapshot.evaluation_split_manifest)
+    assert _arg(command, "--case-file") == str(holdout_path)
+    assert _arg(command, "--semantic-annotations-file") == str(holdout_path)
+    assert _arg(command, "--evaluation-split-manifest") == str(manifest_path)
+    assert _arg(command, "--sealed-release-input-root") == str(tmp_path)
+    assert _arg(command, "--distribution-provenance-file") == str(provenance_path)
     assert _arg(command, "--final-holdout-run-ledger") == str(tmp_path / "final-holdout-run-ledger.json")
     assert _arg(command, "--implementation-revision") == "a" * 40
-    shutil.rmtree(snapshot.root)
 
 
 def test_campaign_requires_one_shot_guard_for_semantic_release(tmp_path: Path) -> None:
@@ -1233,8 +1333,6 @@ def test_campaign_progress_counts_shard_completed_failure_when_case_telemetry_st
         proof_tier="discovery",
         install_mode="seeded",
         include_browser_proof=False,
-        include_rescue_smoke=False,
-        include_natural_rescue_proof=False,
         stop_after_failures=1,
         stop_after_cluster_failures=1,
         require_high_variance_stressors=False,
@@ -1278,8 +1376,6 @@ def test_progress_snapshot_tracks_running_cases_until_completion(tmp_path: Path)
         proof_tier="discovery",
         install_mode="seeded",
         include_browser_proof=False,
-        include_rescue_smoke=False,
-        include_natural_rescue_proof=False,
         stop_after_failures=1,
         stop_after_cluster_failures=1,
         require_high_variance_stressors=False,
@@ -1336,8 +1432,6 @@ def test_shard_telemetry_tail_does_not_duplicate_partial_json_line(tmp_path: Pat
         proof_tier="discovery",
         install_mode="seeded",
         include_browser_proof=False,
-        include_rescue_smoke=False,
-        include_natural_rescue_proof=False,
         stop_after_failures=1,
         stop_after_cluster_failures=1,
         require_high_variance_stressors=False,
@@ -1383,8 +1477,6 @@ def test_progress_writer_recommends_live_tier_stop_from_merged_telemetry(tmp_pat
         proof_tier="discovery",
         install_mode="seeded",
         include_browser_proof=False,
-        include_rescue_smoke=False,
-        include_natural_rescue_proof=False,
         stop_after_failures=0,
         stop_after_cluster_failures=2,
         require_high_variance_stressors=False,
@@ -1426,8 +1518,6 @@ def test_progress_writer_uses_failure_emitting_shard_as_live_stop_origin(tmp_pat
         proof_tier="discovery",
         install_mode="seeded",
         include_browser_proof=False,
-        include_rescue_smoke=False,
-        include_natural_rescue_proof=False,
         stop_after_failures=0,
         stop_after_cluster_failures=1,
         require_high_variance_stressors=False,
@@ -1439,8 +1529,6 @@ def test_progress_writer_uses_failure_emitting_shard_as_live_stop_origin(tmp_pat
         proof_tier="discovery",
         install_mode="seeded",
         include_browser_proof=False,
-        include_rescue_smoke=False,
-        include_natural_rescue_proof=False,
         stop_after_failures=0,
         stop_after_cluster_failures=1,
         require_high_variance_stressors=False,

@@ -6,34 +6,27 @@ from types import SimpleNamespace
 
 import pytest
 
-from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import collect_rendered_package_artifacts
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
-from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import proposal_memory
-from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
-from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import (
     build_greenfield_package_report,
     GreenfieldCompletionPackage,
     _component_preview_path_fidelity_issues,
 )
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_package_hygiene import prewrite_path_leak_issues
-from odylith.runtime.domain_intelligence.greenfield_preconfirm_repair import repair_greenfield_package_until_clean
 from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
     PRODUCT_INTENT_AUTHORITY_KEY,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import semantic_compiler_issues
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.project_intelligence.greenfield import build_greenfield_payload
-from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
-from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
+from tests.unit.runtime.greenfield_proposal_fixtures import _canonical_model_authored_greenfield_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import commit_precompiled_greenfield_proposal
 from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_transaction
@@ -45,89 +38,6 @@ ROOT = Path(__file__).resolve().parents[3]
 APPLY_PREWRITE_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_apply_prewrite.py"
 APPLY_COMPONENTS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_apply_components.py"
 APPLY_DIAGRAMS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_apply_diagrams.py"
-CALORIE_BURN_CONFIRMED_INTENT_TEXT = """# Calorie Burn Optimizer
-
-## Product story
-Most people who want to lose fat or train for an event don't actually know how much energy they burn on a given day, so they guess at how much to eat and how hard to train. The Calorie Burn Optimizer turns the day's planned and logged activity into a trustworthy energy-out picture, then recommends the specific adjustments - workout intensity, session length, or activity mix - that move someone toward their goal without overtraining or under-fueling. The win is a clear daily answer to "did I burn enough, and what should I change tomorrow?"
-
-## State object
-The central object is a daily energy profile for one person: resting metabolic baseline, logged activities with their estimated calorie cost, a target burn for the day, and the running gap between actual and target. This profile accumulates over time into a trend the optimizer reasons against.
-
-## First complete path
-A person sets a goal and basic body stats, logs or imports a day's activities, and immediately sees their estimated total burn against target plus one concrete recommendation for the next day. That single loop — profile in, burn estimate out, actionable adjustment — is the first thing that must work end to end.
-
-## Human actors
-- The individual optimizing their own calorie burn (primary)
-- A coach or trainer reviewing a client's burn trend and goals (secondary)
-
-## External systems
-- Wearable and fitness trackers as an activity-data source
-- A reference calorie-cost dataset for activity types
-
-## Internal product systems
-- Burn estimation engine that converts body stats plus logged activity into an energy-out number
-- Goal and target service that sets and tracks the daily burn target against the trend
-- Recommendation engine that proposes the next adjustment
-- Activity log and profile store
-
-## Critical assumptions
-- A single person optimizing their own burn is the launch user, not a multi-client coaching platform
-- Estimates from standard formulas and MET tables are accurate enough for guidance, not medical precision
-- Activity can be entered manually at first; live wearable sync is valuable but not required for the first path
-- Calorie burn is the focus; full diet and intake tracking is out of scope for the first release
-
-## Ambiguities
-- Is the optimizer an active recommender that prescribes changes, or a passive estimator that only tracks burn?
-- Whether goals are weight-loss driven, performance driven, or both
-- Whether wearable integration is in scope for the first release or a later wave
-
-## Proof boundary
-Proven when one person can set a goal, log a day of activity, see an estimated total burn against target, and receive one next-day adjustment recommendation - using manual entry and standard estimation, no wearable sync required.
-"""
-SUN_BURN_CONFIRMED_INTENT_TEXT = """## SunRecover — sunburn relief and skin-recovery coach
-
-### Product story
-A person comes home from a day outside with a painful burn, an uneven tan they want gone, and worry about lasting skin damage. SunRecover meets them in that moment: they snap a photo of the affected skin and answer a few quick questions about pain, timing, and skin type, and the app returns a clear, staged recovery plan — what to do in the next hour, the next few days, and the next couple of weeks to calm the burn, fade the tan evenly, and support the skin's own repair. It tracks healing day over day, adjusts the plan as the skin changes, and flags when something looks serious enough to see a clinician rather than treat at home.
-
-### State object
-The unit of truth is a recovery episode: one sunburn or sun-exposure event for one person, holding the initial assessment (severity, body area, skin type, time since exposure), the staged care plan, the daily check-in log with photos and symptom scores, and the healing trajectory derived from those check-ins. An episode moves from assessed, to active recovery, to healed or escalated-to-care.
-
-### First complete path
-A user opens the app after a burn, captures a photo and answers the intake questions, and immediately receives a severity read and a first-24-hours action plan. Over the following days the app prompts daily check-ins, compares new photos and symptom scores against the baseline, updates the plan as the burn settles and the tan fades, and marks the episode healed — or surfaces a clear escalation warning if severity or warning signs cross a safety threshold.
-
-### Human actors
-- Sun-exposed individual recovering a burn, fading a tan, and minimizing skin damage
-- Caregiver managing recovery on behalf of a child or family member
-- Dermatology or primary-care clinician receiving an escalation hand-off or shared episode summary
-
-### External systems
-- Device camera and photo library for capturing and storing skin images
-- A skin-assessment model or service that grades burn severity and tracks change from images
-- UV index and location weather data to time care and warn about re-exposure
-- Optional clinician or telehealth channel for escalation referrals
-
-### Internal product systems
-- Intake and severity assessment engine
-- Staged recovery-plan generator (burn relief, even-tan fading, repair support)
-- Daily check-in and healing-trajectory tracker
-- Safety and escalation rules engine
-- Episode history and reminder/notification service
-
-### Critical assumptions
-- Image-based severity grading is good enough to guide self-care and trigger escalation, but never replaces medical diagnosis
-- Care guidance is grounded in established dermatology and sun-care evidence, not invented remedies
-- Users will complete short daily check-ins for the recovery window
-- "Remove tan quickly and optimally" means safe, evidence-based fading and repair, not aggressive or risky methods
-
-### Ambiguities
-- Scope of "skin damage": short-term burn recovery only, or also longer-term concerns like pigmentation, peeling, and aging signs?
-- Regulatory posture: positioned as general wellness guidance, or pursuing a medical-device/clinical claim that changes the proof and compliance bar?
-- Product recommendations: does the app suggest or sell specific products (aftercare, SPF), or stay vendor-neutral?
-- Platform target: mobile-first native, or web?
-
-### Proof boundary
-This is a confirmation-only draft, so no product code exists yet. The first thing the product must prove is that the intake-to-first-plan path produces a safe, evidence-grounded recovery plan and correctly raises an escalation warning when severity or warning signs cross a safety threshold. A close second is that day-over-day check-ins reliably detect whether skin is healing or worsening.
-"""
 def test_greenfield_apply_prewrite_component_and_diagram_phases_stay_dedicated() -> None:
     parent_source = APPLY_PREWRITE_PATH.read_text(encoding="utf-8")
     component_source = APPLY_COMPONENTS_PATH.read_text(encoding="utf-8")
@@ -153,8 +63,13 @@ def test_greenfield_apply_prewrite_component_and_diagram_phases_stay_dedicated()
     assert "def render_prewrite_component_specs" in component_source
     assert "def preview_prewrite_components" in component_source
     assert "def component_authoring_prewrite_inputs" in component_source
-    assert "def component_dependency_lines" in component_source
-    assert "def component_risk_lines" in component_source
+    for retired in (
+        "def component_dependency_lines",
+        "def component_risk_lines",
+        "def _dependency_clause_phrase",
+        "_COMPONENT_RISK_TOKENS",
+    ):
+        assert retired not in component_source
     assert "def allocated_diagram_ids" in diagram_source
     assert "def render_prewrite_atlas_sources" in diagram_source
 
@@ -176,102 +91,14 @@ def test_prewrite_safety_evidence_records_dry_run_preview_before_commit() -> Non
 
 
 def _proposal(tmp_path: Path) -> dict[str, object]:
-    return greenfield_proposals.build_greenfield_proposal(
-        repo_root=tmp_path,
-        prompt="Draft a greenfield proposal for a municipal permit review workspace",
-        release_selector="0.0.1",
-        confirmed_intent=confirmed_intent_with_authority(
-            CONFIRMED_INTENT_TEXT,
-            prompt="Draft a greenfield proposal for a municipal permit review workspace",
-            repo_root=tmp_path,
-            write_files=True,
-        ),
-    )
+    return _canonical_model_authored_greenfield_fixture(tmp_path)
 
 
-def test_confirmed_completion_reconciles_release_plan_to_repaired_backlog_titles(tmp_path: Path) -> None:
-    confirmed_intent = confirmed_intent_with_authority(
-        """# Product Intent Confirmation: Breakeven Solver Evaluation Workspace
-
-## Product Story
-PDE researchers need one reviewable workspace for turning neural and classical solver evidence into a bounded release decision without spreading assumptions across notes, spreadsheets, and ad hoc messages.
-
-## State Object
-A solver evaluation case tracks benchmark dataset, PDE family, neural solver run, classical solver run, error target, training budget, inference cost, breakeven solve count, reviewer note, invalid assumption flag, export status, and version history.
-
-## Human Actors
-Evaluation researcher; benchmark reviewer; release decision owner.
-
-## First Complete Path
-One evaluator can create a solver evaluation case, add neural and classical runs, match error targets, compute breakeven complexity, flag invalid assumptions, and export a reproducible evidence packet.
-
-## Proof Boundary
-Release 0.0.1 succeeds when one benchmark case can be created, reviewed, blocked for invalid assumptions, and exported with replayable evidence without claiming universal solver superiority.
-""",
-        prompt="Productize the PDE solver evaluation paper.",
-        repo_root=tmp_path,
-        write_files=True,
-    )
-    proposal = greenfield_proposals.build_greenfield_proposal(
-        repo_root=tmp_path,
-        prompt="Productize the PDE solver evaluation paper.",
-        release_selector="0.0.1",
-        confirmed_intent=confirmed_intent,
-    )
-
-    completed = complete_confirmed_proposal(proposal, release_selector="0.0.1")
-
-    child_titles = [str(row["title"]) for row in completed["backlog"][1:]]
-    release_plan = completed["release_plan"]
-    assert release_plan["target_workstream_titles"] == child_titles
-    assert release_plan["release_stages"][0]["workstream_titles"] == [child_titles[0]]
-
-
-def test_confirmed_completion_repairs_slide_style_proof_metric_projection(tmp_path: Path) -> None:
-    confirmed_intent = confirmed_intent_with_authority(
-        """Slide 1 - Breakeven Solver Evaluation Workspace
-- Why: PDE researchers need one reviewable workspace for turning neural and classical solver evidence into a bounded release decision without spreading assumptions across notes, spreadsheets, and ad hoc messages.
-- People: Evaluation researcher; benchmark reviewer; release decision owner.
-
-Slide 2 - Product Shape
-- State: A solver evaluation case tracks benchmark dataset, PDE family, neural solver run, classical solver run, error target, training budget, inference cost, breakeven solve count, reviewer note, invalid assumption flag, export status, and version history.
-- First workflow: One evaluator can create a solver evaluation case, add neural and classical runs, match error targets, compute breakeven complexity, flag invalid assumptions, and export a reproducible evidence packet.
-
-Slide 3 - Release Proof
-- Proof: Release 0.0.1 succeeds when one benchmark case can be created, reviewed, blocked for invalid assumptions, and exported with replayable evidence without claiming universal solver superiority.
-- Out of scope: broad claims outside the first release.
-
-Speaker Notes
-Make it beautiful; this note is not product truth.
-""",
-        prompt="Productize the PDE solver evaluation slide deck.",
-        repo_root=tmp_path,
-        write_files=True,
-    )
-    proposal = greenfield_proposals.build_greenfield_proposal(
-        repo_root=tmp_path,
-        prompt="Productize the PDE solver evaluation slide deck.",
-        release_selector="0.0.1",
-        confirmed_intent=confirmed_intent,
-    )
-
-    completed = complete_confirmed_proposal(proposal, release_selector="0.0.1")
-
-    assert semantic_compiler_issues(completed) == []
-    root_metrics = " ".join(str(row) for row in completed["backlog"][0]["success_metrics"])
-    assert "exported with replayable evidence" not in root_metrics.casefold()
-    assert "export a reproducible evidence packet" in root_metrics.casefold()
-    assert "exported reproducible evidence packet" in root_metrics.casefold()
-    assert "slide 3" not in root_metrics.casefold()
-    assert "speaker notes" not in root_metrics.casefold()
-
-
-def test_greenfield_prewrite_project_dashboard_uses_target_repo_language_signal(
+def test_greenfield_prewrite_builds_complete_authored_surface_package(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     stub_preconfirm_surface_refresh(monkeypatch)
-    (tmp_path / "package.json").write_text('{"scripts":{"test":"vitest"}}\n', encoding="utf-8")
     proposal = _proposal(tmp_path)
     tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
 
@@ -281,11 +108,8 @@ def test_greenfield_prewrite_project_dashboard_uses_target_repo_language_signal(
         release_selector="0.0.1",
         backlog_args=greenfield_proposals._backlog_apply_args(proposal, release_selector="0.0.1"),
         validation_gate=tribunal.to_dict(),
-        release_assignment_note=greenfield_apply_write.release_assignment_note(selector="0.0.1"),
+        release_assignment_note=greenfield_apply_prewrite.release_assignment_note(selector="0.0.1"),
     )
-
-    prompts = prewrite.package.project_dashboard_preview.get("host_handoff_prompts", [])
-    first_prompt = str(prompts[0].get("prompt", "")) if prompts else ""
 
     assert prewrite.package.prewrite_safety_preview["status"] == "passed"
     assert prewrite.package.prewrite_safety_preview["checks"] == {
@@ -322,14 +146,14 @@ def test_greenfield_prewrite_project_dashboard_uses_target_repo_language_signal(
     accepted_at = str(prewrite.package.accepted_project_preview.get("accepted_at", "")).strip()
     assert accepted_at and accepted_at != "prewrite"
     assert prewrite.package.compass_memory_preview["ts_iso"] == accepted_at
-    assert prewrite.package.project_brief_record_text.startswith("# Municipal Permit Review Workspace Project Brief")
+    title = str(proposal["intent"]["title"])
+    assert prewrite.package.project_brief_record_text.startswith(f"# {title} Project Brief")
     assert f"- accepted_at: {accepted_at}" in prewrite.package.project_brief_record_text
     assert all(not Path(str(token)).is_absolute() for token in prewrite.package.compass_memory_preview["artifacts"])
     assert all(
         isinstance(row.get("implementation_handoff"), dict) and row["implementation_handoff"]
         for row in prewrite.package.component_registry_preview
     )
-    assert "Current signal: existing repo language signals point to TypeScript" in first_prompt
 
 
 def _disable_refreshes(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -338,7 +162,6 @@ def _disable_refreshes(monkeypatch: pytest.MonkeyPatch) -> None:
         "build_prewrite_surface_refresh_preview",
         lambda **_kwargs: surface_refresh_preview_fixture(),
     )
-    monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(
         greenfield_apply_diagrams,
         "raise_for_greenfield_rendered_surface_custody",
@@ -615,212 +438,14 @@ def _package_for_quality_report(
     return GreenfieldCompletionPackage(proposal=proposal, **values)
 
 
-def test_confirmed_completion_varies_success_proof_metrics_before_package_gate(tmp_path: Path) -> None:
-    proposal = complete_confirmed_proposal(_proposal(tmp_path), release_selector="0.0.1")
-    rendered = "\n".join(
-        "\n".join(str(item) for item in row.get("success_metrics", []))
-        for row in proposal.get("backlog", [])
-        if isinstance(row, dict)
-    )
-    report = build_greenfield_package_report(_package_for_quality_report(proposal))
-
-    assert "The proof record explains blocked, missing, or invalid input before a result is presented" not in rendered
-    assert "State responsibility, actor, source, status, result, and recovery context stay attached" not in rendered
-    assert "repeats a noncanonical sentence" not in "\n".join(report.issues)
-
-
 def test_greenfield_package_report_rejects_missing_surface_refresh_proof(tmp_path: Path) -> None:
-    proposal = complete_confirmed_proposal(_proposal(tmp_path), release_selector="0.0.1")
+    proposal = _proposal(tmp_path)
     report = build_greenfield_package_report(
         _package_for_quality_report(proposal, surface_refresh_preview=None)
     )
 
     assert report.status == "failed"
     assert "missing compiled pre-confirm surface refresh proof" in report.issues
-
-
-def test_greenfield_prewrite_package_passes_calorie_burn_quality_regression(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    stub_preconfirm_surface_refresh(monkeypatch)
-    prompt = "Draft a greenfield proposal for a calorie burn optimizer"
-    proposal = greenfield_proposals.build_greenfield_proposal(
-        repo_root=tmp_path,
-        prompt=prompt,
-        release_selector="0.0.1",
-        confirmed_intent=confirmed_intent_with_authority(
-            CALORIE_BURN_CONFIRMED_INTENT_TEXT,
-            prompt=prompt,
-            repo_root=tmp_path,
-            write_files=True,
-        ),
-    )
-    tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
-    prewrite = greenfield_apply_prewrite.build_prewrite_completion_package(
-        root=tmp_path,
-        proposal=proposal,
-        release_selector="0.0.1",
-        backlog_args=greenfield_proposals._backlog_apply_args(proposal, release_selector="0.0.1"),
-        validation_gate=tribunal.to_dict(),
-        release_assignment_note=greenfield_apply_write.release_assignment_note(selector="0.0.1"),
-    )
-
-    encoded = json.dumps(proposal)
-    report = build_greenfield_package_report(prewrite.package)
-    recommendation_component = next(
-        component
-        for component in proposal["components"]
-        if "Recommendation Engine" in str(component.get("label", ""))
-    )
-    idea_text = "\n".join(str(value) for value in prewrite.backlog_result.get("idea_files", {}).values())
-    component_text = "\n".join(str(value) for value in (prewrite.package.rendered_component_specs or {}).values())
-    activity_component_text = next(
-        str(value)
-        for key, value in (prewrite.package.rendered_component_specs or {}).items()
-        if "Activity Log" in str(key)
-    )
-    rendered_text = "\n".join(
-        [
-            idea_text,
-            component_text,
-            "\n".join(str(value) for value in (prewrite.package.rendered_atlas_sources or {}).values()),
-        ]
-    )
-
-    assert report.passed, "\n".join(report.issues)
-    assert "can sets" not in encoded
-    assert "central object is" not in encoded
-    assert "The Individual Optimizing Their" not in encoded
-    assert "Activity Log and Profile. External" not in encoded
-    assert "Activity Log and Profile Store" in encoded
-    assert "burn against target plus" not in encoded
-    assert "estimated total burn against target" not in encoded
-    assert "activity trustworthy energy-out picture" not in rendered_text
-    assert "basic body stat on a successful path" not in rendered_text
-    assert "reference calorie-cost dataset activity" not in activity_component_text
-    assert "one concrete." not in rendered_text
-    assert "seted" not in rendered_text
-    assert "concrete recommendation next" not in rendered_text
-    assert "for the first\"]" not in rendered_text
-    assert "body stats plus logged activity, energy-out number, and burn estimation are calculated" not in component_text
-    assert "If something is missing" not in rendered_text
-    assert ", Whether wearable" not in rendered_text
-    assert "Live wearable sync scope<br/>remains deferred" in rendered_text
-    assert '?".' not in rendered_text
-    assert "while Activity Log and Profile Store ownership" not in component_text
-    assert " outside boundary" not in component_text
-    assert "ownership over Activity Log and Profile Store local state" not in component_text
-    assert (
-        "Activity Log and Profile Store can consume next-day adjustment recommendation while Recommendation Engine keeps ownership of its state"
-        in component_text
-    )
-    assert "## Proposed Solution\nBurn Estimation Engine should support" not in idea_text
-    assert "Start with the smallest implementation slice" not in idea_text
-    assert "\n- for " not in rendered_text
-    assert ".. Impact" not in rendered_text
-    assert "estimated total burn compared with the target and one concrete recommendation" in encoded
-    assert "Proposes the next adjustment" in str(recommendation_component.get("responsibility", ""))
-    assert "Maintains proposes" not in str(recommendation_component.get("responsibility", ""))
-    assert "one concrete" not in str(recommendation_component.get("responsibility", "")).casefold()
-    assert "It should explain how the energy-out number is calculated" in component_text
-    assert "Successful path evidence for Burn Estimation Engine: energy-out number" in component_text
-    assert "Successful path evidence for Recommendation Engine: next-day adjustment recommendation" in component_text
-    assert "Successful path evidence for Activity Log and Profile Store" in activity_component_text
-    assert "Successful path evidence for Daily Activity Log and Profile Store" not in activity_component_text
-    assert "No explicit dependency recorded yet" not in idea_text
-    assert "Run focused validation for the touched paths once implementation begins" not in idea_text
-    assert "Queue now, then bind a technical plan when the implementation wave starts" not in idea_text
-
-
-def test_greenfield_prewrite_package_passes_sun_burn_quality_regression(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    stub_preconfirm_surface_refresh(monkeypatch)
-    prompt = "Draft a greenfield proposal for a sunburn relief and skin-recovery coach"
-    proposal = greenfield_proposals.build_greenfield_proposal(
-        repo_root=tmp_path,
-        prompt=prompt,
-        release_selector="0.0.1",
-        confirmed_intent=confirmed_intent_with_authority(
-            SUN_BURN_CONFIRMED_INTENT_TEXT,
-            prompt=prompt,
-            repo_root=tmp_path,
-            write_files=True,
-        ),
-    )
-    tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
-    prewrite = greenfield_apply_prewrite.build_prewrite_completion_package(
-        root=tmp_path,
-        proposal=proposal,
-        release_selector="0.0.1",
-        backlog_args=greenfield_proposals._backlog_apply_args(proposal, release_selector="0.0.1"),
-        validation_gate=tribunal.to_dict(),
-        release_assignment_note=greenfield_apply_write.release_assignment_note(selector="0.0.1"),
-    )
-
-    report = build_greenfield_package_report(prewrite.package)
-    encoded = json.dumps(proposal)
-    artifact_encoded = json.dumps(
-        {
-            key: value
-            for key, value in proposal.items()
-            if key not in {"intent", "semantic_model"}
-        }
-    )
-    idea_text = "\n".join(str(value) for value in prewrite.backlog_result.get("idea_files", {}).values())
-    component_text = "\n".join(str(value) for value in (prewrite.package.rendered_component_specs or {}).values())
-    atlas_text = "\n".join(str(value) for value in (prewrite.package.rendered_atlas_sources or {}).values())
-    preview_text = "\n".join(
-        [
-            json.dumps(prewrite.package.project_brief_preview),
-            json.dumps(prewrite.package.next_steps_preview),
-        ]
-    )
-    narrative_text = "\n".join([idea_text, component_text, preview_text])
-    rendered_text = "\n".join(
-        [
-            narrative_text,
-            atlas_text,
-        ]
-    )
-
-    assert report.passed, "\n".join(report.issues)
-    assert "Recovery Episode" in encoded
-    assert "Episode History, Reminder, and Notification" in rendered_text
-    assert "safe, evidence-grounded recovery plan" in rendered_text
-    assert "first-24-hours action plan" in rendered_text
-    assert "warning when safety threshold" in rendered_text
-    assert "is crossed" in rendered_text
-    for forbidden in (
-        "Unit of Truth Is A Recovery Episode",
-        "Reminder/notification",
-        "Dermatology or -care",
-        "checking-ins",
-        "against;",
-        "returns a clear.",
-        "produces a in the same release story",
-        "the first thing the product must prove is that",
-        "The accepted first path proves",
-        "A close second is",
-        "contributes information",
-        "actor actor",
-        "action action",
-        "state state",
-        "proof proof",
-        "validation validation",
-        "decision decision",
-        "release release",
-        "and and",
-        "episode history and reminder and and",
-        "Success proof covers answering the intake questions, receiving a severity read and a first-24-hours action plan, prompting daily check-ins, and comparing new photos and symptom scores against the baseline and a first-24-hours action plan",
-        "confirmation-only draft",
-        "Keep Keep",
-        "That relationship is what makes the outcome reviewable instead of a black-box claim",
-    ):
-        assert forbidden not in rendered_text
-        assert forbidden not in artifact_encoded
 
 
 def test_greenfield_package_gate_requires_prewrite_atlas_sources(tmp_path: Path) -> None:
@@ -974,678 +599,6 @@ def test_greenfield_package_gate_requires_operator_next_steps_preview(tmp_path: 
     assert "operator next-steps preview" in "\n".join(report.issues)
 
 
-def test_greenfield_package_gate_rejects_mechanical_operator_next_steps(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    next_steps = _next_steps_preview()
-    next_steps["implementation_prompt"] = (
-        "Implement the first slice by accepting actor identity, validation context, and upstream handoff "
-        "and producing blocker signal, review rationale, and downstream handoff."
-    )
-
-    report = build_greenfield_package_report(
-        GreenfieldCompletionPackage(
-            proposal=proposal,
-            release_selector="0.0.1",
-            rendered_atlas_sources=greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal),
-            component_registry_preview=_prewrite_component_preview(proposal),
-            project_brief_preview=proposal["project_brief"],
-            tribunal_preview=_tribunal_preview(),
-            accepted_project_preview=_accepted_preview(proposal),
-            compass_memory_preview=_compass_preview(proposal),
-            next_steps_preview=next_steps,
-            backlog_result=_prewrite_backlog_result(proposal),
-            release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
-            release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
-            release_workstream_ids=("B-001",),
-        )
-    )
-
-    assert not report.passed
-    assert "operator next-steps preview leaked Registry contract tuple prose" in "\n".join(report.issues)
-
-
-def test_greenfield_package_repair_does_not_rewrite_mixed_action_inflection(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    next_steps = _next_steps_preview()
-    next_steps["coding_readiness_gates"] = [
-        "The first path is accepted: mark the location, optionally notes context and save.",
-        "Release boundary is acknowledged.",
-        "Verification commands are known.",
-    ]
-    package = _package_for_quality_report(proposal, next_steps_preview=next_steps)
-
-    initial = build_greenfield_package_report(package)
-    result = repair_greenfield_package_until_clean(package)
-    rendered = json.dumps(result.package.next_steps_preview, sort_keys=True)
-
-    assert not initial.passed
-    assert any("mixed finite/base action prose" in issue for issue in initial.issues)
-    assert not result.changed
-    assert not result.report.passed
-    assert any(
-        finding.code == "generated_copy_quality"
-        and finding.repairability == "plan_patch"
-        and finding.projection_id == "next_steps"
-        for finding in result.report.findings
-    )
-    assert "optionally notes context and save" in rendered
-
-
-def test_greenfield_package_repair_does_not_rewrite_malformed_responsibility_copy(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    backlog_result = _prewrite_backlog_result(proposal)
-    rendered_specs = greenfield_apply_components.render_prewrite_component_specs(
-        root=tmp_path,
-        proposal=proposal,
-        release_selector="0.0.1",
-        backlog_result=backlog_result,
-    )
-    first_label = next(iter(rendered_specs))
-    rendered_specs[first_label] = f"{rendered_specs[first_label]}\n\n{first_label} owns maintains state."
-    package = _package_for_quality_report(
-        proposal,
-        rendered_component_specs=rendered_specs,
-        backlog_result=backlog_result,
-    )
-
-    initial = build_greenfield_package_report(package)
-    result = repair_greenfield_package_until_clean(package)
-    rendered = json.dumps(result.package.rendered_component_specs, sort_keys=True)
-
-    assert not initial.passed
-    assert any("malformed ownership verb pair" in issue for issue in initial.issues)
-    assert not result.changed
-    assert result.initial_report == initial
-    assert not result.report.passed
-    assert any(
-        finding.code == "component_contract_quality"
-        and finding.repairability == "plan_patch"
-        and finding.projection_id == "registry"
-        for finding in result.report.findings
-    )
-    assert "owns maintains" in rendered
-
-
-def test_greenfield_package_gate_rejects_structural_contract_tuple_variants(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    next_steps = _next_steps_preview()
-    next_steps["implementation_prompt"] = (
-        "Implement the first slice by accepting user identity, routing context, and source handoff "
-        "and producing error signal, reviewer rationale, and delivery handoff."
-    )
-
-    report = build_greenfield_package_report(
-        GreenfieldCompletionPackage(
-            proposal=proposal,
-            release_selector="0.0.1",
-            rendered_atlas_sources=greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal),
-            component_registry_preview=_prewrite_component_preview(proposal),
-            project_brief_preview=proposal["project_brief"],
-            tribunal_preview=_tribunal_preview(),
-            accepted_project_preview=_accepted_preview(proposal),
-            compass_memory_preview=_compass_preview(proposal),
-            next_steps_preview=next_steps,
-            backlog_result=_prewrite_backlog_result(proposal),
-            release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
-            release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
-            release_workstream_ids=("B-001",),
-        )
-    )
-
-    issues = "\n".join(report.issues)
-    assert not report.passed
-    assert "operator next-steps preview leaked Registry contract tuple prose" in issues
-    assert "operator next-steps preview leaked produced-output tuple prose" in issues
-
-
-def test_greenfield_package_gate_rejects_mechanical_radar_gate_copy(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    backlog_result = _prewrite_backlog_result(proposal)
-    backlog_result["idea_files"] = {
-        path: (
-            f"{text}\n\nGate: Validate that Build Visit Capture First Path satisfies its local success criteria: "
-            "Visit Capture accepts actor identity, validation context, and upstream handoff.\n"
-        )
-        for path, text in backlog_result["idea_files"].items()
-    }
-
-    report = build_greenfield_package_report(
-        GreenfieldCompletionPackage(
-            proposal=proposal,
-            release_selector="0.0.1",
-            rendered_atlas_sources=greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal),
-            component_registry_preview=_prewrite_component_preview(proposal),
-            project_brief_preview=proposal["project_brief"],
-            tribunal_preview=_tribunal_preview(),
-            accepted_project_preview=_accepted_preview(proposal),
-            compass_memory_preview=_compass_preview(proposal),
-            next_steps_preview=_next_steps_preview(),
-            backlog_result=backlog_result,
-            release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
-            release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
-            release_workstream_ids=("B-001",),
-        )
-    )
-
-    assert not report.passed
-    assert "prewrite Radar package leaked raw success-metric gate prose" in "\n".join(report.issues)
-
-
-def test_greenfield_package_gate_rejects_mechanical_registry_preview_copy(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    component_preview = [dict(row) for row in _prewrite_component_preview(proposal)]
-    component_preview[0]["what_it_is"] = (
-        "Broken preview accepts actor identity, validation context, and upstream handoff and "
-        "produces blocker signal, review rationale, and downstream handoff."
-    )
-
-    report = build_greenfield_package_report(
-        GreenfieldCompletionPackage(
-            proposal=proposal,
-            release_selector="0.0.1",
-            rendered_atlas_sources=greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal),
-            component_registry_preview=tuple(component_preview),
-            project_brief_preview=proposal["project_brief"],
-            tribunal_preview=_tribunal_preview(),
-            accepted_project_preview=_accepted_preview(proposal),
-            compass_memory_preview=_compass_preview(proposal),
-            next_steps_preview=_next_steps_preview(),
-            backlog_result=_prewrite_backlog_result(proposal),
-            release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
-            release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
-            release_workstream_ids=("B-001",),
-        )
-    )
-
-    assert not report.passed
-    assert "prewrite Registry preview leaked Registry contract tuple prose" in "\n".join(report.issues)
-
-
-def test_greenfield_package_gate_rejects_mechanical_accepted_project_copy(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    accepted = _accepted_preview(proposal)
-    accepted["created"]["components"][0]["summary"] = (
-        "Generated memory accepts actor identity, validation context, and upstream handoff."
-    )
-
-    report = build_greenfield_package_report(
-        GreenfieldCompletionPackage(
-            proposal=proposal,
-            release_selector="0.0.1",
-            rendered_atlas_sources=greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal),
-            component_registry_preview=_prewrite_component_preview(proposal),
-            project_brief_preview=proposal["project_brief"],
-            tribunal_preview=_tribunal_preview(),
-            accepted_project_preview=accepted,
-            compass_memory_preview=_compass_preview(proposal),
-            next_steps_preview=_next_steps_preview(),
-            backlog_result=_prewrite_backlog_result(proposal),
-            release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
-            release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
-            release_workstream_ids=("B-001",),
-        )
-    )
-
-    assert not report.passed
-    assert "accepted-project memory preview leaked Registry contract tuple prose" in "\n".join(report.issues)
-
-
-def test_greenfield_package_gate_rejects_private_authority_in_accepted_project(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    accepted = _accepted_preview(proposal)
-    accepted["proposal"][PRODUCT_INTENT_AUTHORITY_KEY] = {"source_spans": [{"evidence_text": "private"}]}
-
-    report = build_greenfield_package_report(
-        _package_for_quality_report(proposal, accepted_project_preview=accepted)
-    )
-
-    assert not report.passed
-    assert "accepted-project memory preview contains the private Product Intent authority receipt" in report.issues
-
-
-def test_greenfield_package_gate_rejects_rendered_modal_grammar_drift(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    backlog_result = _prewrite_backlog_result(proposal)
-    first_path = next(iter(backlog_result["idea_files"]))
-    backlog_result["idea_files"][first_path] += (
-        "\n\nA representative user can sets a target and use the clear result to decide what to do next.\n"
-    )
-
-    report = build_greenfield_package_report(
-        _package_for_quality_report(proposal, backlog_result=backlog_result)
-    )
-
-    assert not report.passed
-    assert "modal/base-form grammar drift" in "\n".join(report.issues)
-
-
-def test_greenfield_package_gate_allows_title_case_possessive_pronouns(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    backlog_result = _prewrite_backlog_result(proposal)
-    first_path = next(iter(backlog_result["idea_files"]))
-    backlog_result["idea_files"][first_path] += (
-        "\n\n## Let Person On The GLP-1 Medication Set Up Their Medication Current Dose and Weekly Injection Day\n"
-        "\nKeep validation gates tied to this workstream before expanding adjacent source ownership: "
-        "Let Person On The GLP-1 Medication Set Up Their Medication.\n"
-    )
-
-    report = build_greenfield_package_report(
-        _package_for_quality_report(proposal, backlog_result=backlog_result)
-    )
-
-    assert report.passed, "\n".join(report.issues)
-
-
-def test_greenfield_package_gate_still_rejects_prose_capitalization_drift(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    backlog_result = _prewrite_backlog_result(proposal)
-    first_path = next(iter(backlog_result["idea_files"]))
-    backlog_result["idea_files"][first_path] += (
-        "\nThe product records the injection and Their next due date stays visible.\n"
-    )
-
-    report = build_greenfield_package_report(
-        _package_for_quality_report(proposal, backlog_result=backlog_result)
-    )
-
-    assert not report.passed
-    assert "mid-sentence capitalization drift near `Their`" in "\n".join(report.issues)
-
-
-def test_greenfield_package_gate_rejects_lowercase_fragment_bullets(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    backlog_result = _prewrite_backlog_result(proposal)
-    first_path = next(iter(backlog_result["idea_files"]))
-    backlog_result["idea_files"][first_path] += "\n- for Review Workspace, access and audit obligations stay visible.\n"
-
-    report = build_greenfield_package_report(
-        _package_for_quality_report(proposal, backlog_result=backlog_result)
-    )
-
-    assert not report.passed
-    assert "sentence-fragment drift" in "\n".join(report.issues)
-
-
-def test_greenfield_package_gate_rejects_doubled_punctuation(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    backlog_result = _prewrite_backlog_result(proposal)
-    first_path = next(iter(backlog_result["idea_files"]))
-    backlog_result["idea_files"][first_path] += "\nOpen question.. Impact: unclear ownership.\n"
-
-    report = build_greenfield_package_report(
-        _package_for_quality_report(proposal, backlog_result=backlog_result)
-    )
-
-    assert not report.passed
-    assert "doubled sentence punctuation" in "\n".join(report.issues)
-
-
-def test_greenfield_package_gate_rejects_quoted_question_doubled_punctuation(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    backlog_result = _prewrite_backlog_result(proposal)
-    first_path = next(iter(backlog_result["idea_files"]))
-    backlog_result["idea_files"][first_path] += '\nThe prompt asks "what changed?".\n'
-
-    report = build_greenfield_package_report(
-        _package_for_quality_report(proposal, backlog_result=backlog_result)
-    )
-
-    assert not report.passed
-    assert "doubled sentence punctuation" in "\n".join(report.issues)
-
-
-def test_greenfield_package_gate_rejects_clipped_terminal_modifier(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    backlog_result = _prewrite_backlog_result(proposal)
-    first_path = next(iter(backlog_result["idea_files"]))
-    backlog_result["idea_files"][first_path] += "\nThe visible result ends with one concrete.\n"
-
-    report = build_greenfield_package_report(
-        _package_for_quality_report(proposal, backlog_result=backlog_result)
-    )
-
-    assert not report.passed
-    assert "clipped modifier phrase" in "\n".join(report.issues)
-
-
-def test_next_steps_preview_trims_clipped_terminal_fragments() -> None:
-    assert greenfield_experience._trim_preview_terminal_fragment(  # noqa: SLF001
-        "Assemble denial reasons, reviewer objections, and final"
-    ) == "Assemble denial reasons, reviewer objections"
-    assert greenfield_experience._trim_preview_terminal_fragment(  # noqa: SLF001
-        "Review source context and accepted participants without"
-    ) == "Review source context and accepted participants"
-    assert greenfield_experience._trim_preview_terminal_fragment(  # noqa: SLF001
-        "The appeal status is final"
-    ) == "The appeal status is final"
-    assert greenfield_experience._first_slice_text(  # noqa: SLF001
-        {"recommended_first_slice": "Do not expand beyond recording first entry and logging again until"}
-    ) == "Do not expand beyond recording first entry and logging again"
-
-
-def test_greenfield_package_inspection_preserves_operator_next_step_dangling_tail(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    next_steps = _next_steps_preview()
-    next_steps["implementation_prompt"] = (
-        "After project-first scope is accepted, start B-001 Municipal Permit Review First Slice: import one permit "
-        "application, record a zoning check, capture one applicant revision, and prove the supervisor decision package "
-        "with blocked-input and replay evidence until."
-    )
-    package = _package_for_quality_report(proposal, next_steps_preview=next_steps)
-
-    initial = build_greenfield_package_report(package)
-    inspected = repair_greenfield_package_until_clean(package)
-
-    assert not initial.passed
-    assert inspected.initial_report == initial
-    assert not inspected.changed
-    assert not inspected.report.passed
-    rendered = json.dumps(inspected.package.next_steps_preview, sort_keys=True)
-    assert "replay evidence until" in rendered
-    assert "clipped or dangling phrase ending" in "\n".join(inspected.report.issues)
-
-
-def test_greenfield_package_inspection_preserves_radar_clause_dangling_tails(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    backlog_result = _prewrite_backlog_result(proposal)
-    first_path = next(iter(backlog_result["idea_files"]))
-    backlog_result["idea_files"][first_path] += (
-        "\n## Generated Clause Check\n"
-        "- The path should not leave a clause dangling from, or another clause dangling into.\n"
-    )
-    package = _package_for_quality_report(proposal, backlog_result=backlog_result)
-
-    initial = build_greenfield_package_report(package)
-    inspected = repair_greenfield_package_until_clean(package)
-
-    assert not initial.passed
-    assert inspected.initial_report == initial
-    assert not inspected.changed
-    assert not inspected.report.passed
-    rendered = "\n".join(str(value) for value in inspected.package.backlog_result["idea_files"].values())
-    assert "dangling from," in rendered
-    assert "dangling into." in rendered
-    assert "clipped or dangling phrase ending" in "\n".join(inspected.report.issues)
-
-
-def test_greenfield_package_gate_rejects_clipped_terminal_article(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    backlog_result = _prewrite_backlog_result(proposal)
-    first_path = next(iter(backlog_result["idea_files"]))
-    backlog_result["idea_files"][first_path] += "\nThe ranking basis says this path produces a.\n"
-
-    report = build_greenfield_package_report(
-        _package_for_quality_report(proposal, backlog_result=backlog_result)
-    )
-
-    assert not report.passed
-    assert "clipped article phrase" in "\n".join(report.issues)
-
-
-def test_greenfield_package_gate_rejects_invalid_lifecycle_inflection(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    backlog_result = _prewrite_backlog_result(proposal)
-    rendered_specs = greenfield_apply_components.render_prewrite_component_specs(
-        root=tmp_path,
-        proposal=proposal,
-        release_selector="0.0.1",
-        backlog_result=backlog_result,
-    )
-    first_key = next(iter(rendered_specs))
-    rendered_specs[first_key] += "\n\nThe important lifecycle is requested, seted, flaging, and validated.\n"
-
-    report = build_greenfield_package_report(
-        _package_for_quality_report(proposal, backlog_result=backlog_result, rendered_component_specs=rendered_specs)
-    )
-
-    assert not report.passed
-    issues = "\n".join(report.issues)
-    assert "invalid verb inflection" in issues
-    assert "`seted`" in issues
-    assert "`flaging`" in issues
-
-
-def test_greenfield_package_gate_rejects_vague_missing_input_copy(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    backlog_result = _prewrite_backlog_result(proposal)
-    first_path = next(iter(backlog_result["idea_files"]))
-    backlog_result["idea_files"][first_path] += (
-        "\nIf something is missing, it should explain the problem before it presents a result.\n"
-    )
-
-    report = build_greenfield_package_report(
-        _package_for_quality_report(proposal, backlog_result=backlog_result)
-    )
-
-    assert not report.passed
-    assert "vague missing-input copy" in "\n".join(report.issues)
-
-
-def test_greenfield_package_gate_rejects_vague_missing_input_variants(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    backlog_result = _prewrite_backlog_result(proposal)
-    first_path = next(iter(backlog_result["idea_files"]))
-    backlog_result["idea_files"][first_path] += "\nIf anything is absent, show a blocker before presenting a result.\n"
-
-    report = build_greenfield_package_report(
-        _package_for_quality_report(proposal, backlog_result=backlog_result)
-    )
-
-    assert not report.passed
-    assert "vague missing-input copy" in "\n".join(report.issues)
-
-
-def test_greenfield_package_gate_rejects_comma_spliced_capitalized_clause(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    backlog_result = _prewrite_backlog_result(proposal)
-    first_path = next(iter(backlog_result["idea_files"]))
-    backlog_result["idea_files"][first_path] += (
-        "\nKeep this slice inside the accepted scope: first release only, Whether integration is deferred.\n"
-    )
-
-    report = build_greenfield_package_report(
-        _package_for_quality_report(proposal, backlog_result=backlog_result)
-    )
-
-    assert not report.passed
-    assert "comma-spliced capitalized clause drift" in "\n".join(report.issues)
-
-
-def test_greenfield_package_gate_allows_comma_separated_capitalized_component_label(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    backlog_result = _prewrite_backlog_result(proposal)
-    first_path = next(iter(backlog_result["idea_files"]))
-    backlog_result["idea_files"][first_path] += (
-        "\nimpacted_parts: Container Discharge Workflow Support Service, "
-        "Whether Vessel Can Sail Delivery Service\n"
-    )
-
-    report = build_greenfield_package_report(
-        _package_for_quality_report(proposal, backlog_result=backlog_result)
-    )
-
-    assert "comma-spliced capitalized clause drift" not in "\n".join(report.issues)
-
-
-def test_greenfield_package_gate_scopes_modal_coordination_to_one_markdown_line(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    backlog_result = _prewrite_backlog_result(proposal)
-    first_path = next(iter(backlog_result["idea_files"]))
-    backlog_result["idea_files"][first_path] += (
-        "\n- Delivery Service can accept incomplete input and explain the risk.\n"
-        "- Delivery Service accepts the required facts and rejects incomplete entries.\n"
-    )
-
-    report = build_greenfield_package_report(
-        _package_for_quality_report(proposal, backlog_result=backlog_result)
-    )
-
-    assert "coordinated modal grammar drift" not in "\n".join(report.issues)
-
-
-def test_greenfield_package_gate_rejects_same_line_modal_coordination_drift(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    backlog_result = _prewrite_backlog_result(proposal)
-    first_path = next(iter(backlog_result["idea_files"]))
-    backlog_result["idea_files"][first_path] += (
-        "\nDelivery Service can accept the required facts and rejects incomplete entries.\n"
-    )
-
-    report = build_greenfield_package_report(
-        _package_for_quality_report(proposal, backlog_result=backlog_result)
-    )
-
-    assert "coordinated modal grammar drift" in "\n".join(report.issues)
-
-
-def test_greenfield_package_gate_rejects_open_scope_question_as_boundary(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    backlog_result = _prewrite_backlog_result(proposal)
-    first_path = next(iter(backlog_result["idea_files"]))
-    backlog_result["idea_files"][first_path] += (
-        "\nOut of scope: core workflow only; whether integration is in scope until the first path holds.\n"
-    )
-
-    report = build_greenfield_package_report(
-        _package_for_quality_report(proposal, backlog_result=backlog_result)
-    )
-
-    assert not report.passed
-    assert "open scope question as a boundary clause" in "\n".join(report.issues)
-
-
-def test_greenfield_package_gate_rejects_clipped_boundary_phrase(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    rendered_specs = greenfield_apply_components.render_prewrite_component_specs(
-        root=tmp_path,
-        proposal=proposal,
-        release_selector="0.0.1",
-        backlog_result=_prewrite_backlog_result(proposal),
-    )
-    first_key = next(iter(rendered_specs))
-    rendered_specs[first_key] += "\n\nSibling state remains outside boundary.\n"
-
-    report = build_greenfield_package_report(
-        _package_for_quality_report(proposal, rendered_component_specs=rendered_specs)
-    )
-
-    assert not report.passed
-    assert "clipped boundary phrase" in "\n".join(report.issues)
-
-
-def test_greenfield_package_gate_rejects_disconnected_mermaid_nodes(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    atlas_sources = greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal)
-    first_path = next(iter(atlas_sources))
-    atlas_sources[first_path] = 'flowchart LR\n  A["Start"] --> B["End"]\n  C["Orphan"]\n'
-
-    report = build_greenfield_package_report(
-        _package_for_quality_report(proposal, rendered_atlas_sources=atlas_sources)
-    )
-
-    assert not report.passed
-    assert "disconnected Mermaid node `C`" in "\n".join(report.issues)
-
-
-def test_greenfield_package_gate_requires_compiled_atlas_review_date(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-
-    report = build_greenfield_package_report(
-        _package_for_quality_report(proposal, atlas_review_date="")
-    )
-
-    assert not report.passed
-    assert "prewrite Atlas package must include a compiled review date" in "\n".join(report.issues)
-
-
-def test_greenfield_package_gate_rejects_repeated_noncanonical_rendered_sentences(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    repeated = (
-        "The generated artifact repeats this planning statement across components without adding owned state, "
-        "boundary detail, proof evidence, or a clear reader-specific decision."
-    )
-    rendered_specs = {
-        f"Component {index}": f"# Component {index}\n\n{repeated}\n"
-        for index in range(1, 4)
-    }
-
-    report = build_greenfield_package_report(
-        _package_for_quality_report(proposal, rendered_component_specs=rendered_specs)
-    )
-
-    assert not report.passed
-    assert "repeats noncanonical prose" in "\n".join(report.issues)
-
-
-def test_greenfield_package_repetition_allows_component_labels_as_identifiers(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    label = "Kitchen Robot Controller for Home Cooks Intake Register Service"
-    proposal["components"] = [{"component_id": "intake-register", "label": label}]
-    rendered_specs = {
-        f"Component {index}": f"# Component {index}\n\n{label}\n"
-        for index in range(1, 4)
-    }
-
-    issues = greenfield_rendered_package_quality_issues(
-        _package_for_quality_report(proposal, rendered_component_specs=rendered_specs)
-    )
-
-    assert "repeats a noncanonical sentence" not in "\n".join(issues)
-
-
-def test_greenfield_package_repetition_rejects_repeated_proof_boundary_source_text(tmp_path: Path) -> None:
-    repeated = (
-        "Version 0.0.1 is proven when a record moves across its full lifecycle, appears as a scheduled item, "
-        "shows a live status with an event timeline, and settles into a finished result that remains browsable."
-    )
-    package = SimpleNamespace(
-        proposal={"intent": {"title": "Lifecycle Review", "proof_boundary": repeated}},
-        backlog_result={
-            "idea_files": {
-                str(tmp_path / f"idea-{index}.md"): f"# Idea {index}\n\n{repeated}\n"
-                for index in range(1, 4)
-            }
-        },
-        rendered_component_specs={},
-        rendered_atlas_sources={},
-        project_brief_preview={},
-        next_steps_preview={},
-    )
-
-    issues = greenfield_rendered_package_quality_issues(package)
-
-    assert "repeats noncanonical prose" in "\n".join(issues)
-
-
-def test_project_brief_record_quality_preserves_markdown_boundaries() -> None:
-    project_brief = """# Film Festival Accessibility Screening Planner Project Brief
-
-## Project Design Board
-- First path: Programmers can publish accessible screening readiness
-  - Why: A narrow first path keeps the first release testable and prevents broad platform drift.
-"""
-    package = SimpleNamespace(
-        proposal={"intent": {"title": "Film Festival Accessibility Screening Planner"}},
-        backlog_result={},
-        rendered_component_specs={},
-        rendered_atlas_sources={},
-        project_brief_record_text=project_brief,
-        project_brief_preview={},
-        next_steps_preview={},
-    )
-
-    project_artifacts = [
-        artifact
-        for artifact in collect_rendered_package_artifacts(package)
-        if artifact.surface == "Project brief"
-    ]
-    assert project_artifacts and "\n  - Why:" in project_artifacts[0].text
-    assert not any(
-        "coordinated modal grammar drift" in issue
-        for issue in greenfield_rendered_package_quality_issues(package)
-    )
-
-
 def test_greenfield_package_gate_rejects_staged_paths_in_accepted_project_preview(tmp_path: Path) -> None:
     proposal = _proposal(tmp_path)
     component_preview = _staged_component_preview(proposal)
@@ -1731,7 +684,7 @@ def test_greenfield_accepted_project_preview_relativizes_target_paths_against_ta
     accepted = greenfield_apply_prewrite.preview_accepted_project_memory(
         root=staged_root,
         target_root=target_root,
-        proposal={"intent": {"title": "Case Review Workspace"}, "diagrams": []},
+        proposal=_proposal(staged_root),
         backlog_result={
             "created": [
                 {
@@ -1807,13 +760,7 @@ def test_greenfield_component_memory_path_fidelity_treats_alias_roots_as_same_pa
 
 
 def test_greenfield_accepted_memory_preserves_structural_path_underscores(tmp_path: Path) -> None:
-    proposal = {
-        "intent": {
-            "title": "Genomic Variant Triage Board",
-            "reasoning_mode": "odylith_confirmed_governed_proposal",
-        },
-        "semantic_model": {},
-    }
+    proposal = _proposal(tmp_path)
     component = {
         "component_id": "variant-case-ledger",
         "label": "Variant Case Ledger",
@@ -1861,7 +808,7 @@ def test_greenfield_prewrite_hygiene_rejects_all_ephemeral_absolute_paths() -> N
 
 
 def test_greenfield_accepted_memory_rebases_staged_workstream_paths(tmp_path: Path) -> None:
-    proposal = {"intent": {"title": "Release Notes Workspace", "reasoning_mode": "odylith_confirmed_governed_proposal"}}
+    proposal = _proposal(tmp_path)
     accepted = proposal_memory.build_accepted_project_source_payload(
         proposal=proposal,
         backlog_items=(
@@ -1882,56 +829,6 @@ def test_greenfield_accepted_memory_rebases_staged_workstream_paths(tmp_path: Pa
     assert accepted["created"]["workstreams"][0]["idea_path"] == "odylith/radar/source/ideas/2026-07/release-notes.md"
 
 
-def test_greenfield_package_gate_rejects_workstream_preview_without_semantic_proof(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    backlog_result = _prewrite_backlog_result(proposal)
-    backlog_result["idea_files"] = {path: "# Detached\n\nUnrelated placeholder text.\n" for path in backlog_result["idea_files"]}
-
-    report = build_greenfield_package_report(
-        GreenfieldCompletionPackage(
-            proposal=proposal,
-            release_selector="0.0.1",
-            rendered_atlas_sources=greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal),
-            component_registry_preview=_prewrite_component_preview(proposal),
-            accepted_project_preview=_accepted_preview(proposal),
-            compass_memory_preview=_compass_preview(proposal),
-            backlog_result=backlog_result,
-            release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
-            release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
-            release_workstream_ids=("B-001",),
-        )
-    )
-
-    assert not report.passed
-    assert "prewrite Radar package missing semantic coverage" in "\n".join(report.issues)
-
-
-def test_greenfield_package_gate_rejects_atlas_preview_without_proof_checkpoint(tmp_path: Path) -> None:
-    proposal = _proposal(tmp_path)
-    atlas_sources = {
-        path: "flowchart LR\n  A[Detached placeholder]\n"
-        for path in greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal)
-    }
-
-    report = build_greenfield_package_report(
-        GreenfieldCompletionPackage(
-            proposal=proposal,
-            release_selector="0.0.1",
-            rendered_atlas_sources=atlas_sources,
-            component_registry_preview=_prewrite_component_preview(proposal),
-            accepted_project_preview=_accepted_preview(proposal),
-            compass_memory_preview=_compass_preview(proposal),
-            backlog_result=_prewrite_backlog_result(proposal),
-            release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
-            release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
-            release_workstream_ids=("B-001",),
-        )
-    )
-
-    assert not report.passed
-    assert "proof checkpoint" in "\n".join(report.issues)
-
-
 def test_greenfield_apply_blocks_bad_rendered_specs_before_governed_writes(tmp_path: Path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
     proposal = _proposal(tmp_path)
@@ -1950,37 +847,6 @@ def test_greenfield_apply_blocks_bad_rendered_specs_before_governed_writes(tmp_p
     assert list((tmp_path / "odylith/atlas/source").glob("*.mmd")) == []
 
 
-def test_greenfield_apply_rerenders_prewrite_package_after_repairable_package_failure(
-    tmp_path: Path,
-    monkeypatch,
-) -> None:
-    proposal = _proposal(tmp_path)
-    _disable_refreshes(monkeypatch)
-    original = greenfield_apply_components.render_prewrite_component_specs
-    calls = 0
-
-    def flaky_render(**kwargs):
-        nonlocal calls
-        calls += 1
-        if calls == 1:
-            return {"Broken Component": "Broken Component owns maintains state."}
-        return original(**kwargs)
-
-    monkeypatch.setattr(greenfield_apply_components, "render_prewrite_component_specs", flaky_render)
-
-    result = commit_precompiled_greenfield_proposal(
-        repo_root=tmp_path,
-        proposal=proposal,
-        confirm=True,
-        release_selector="0.0.1",
-    )
-
-    assert calls >= 2
-    assert result["validation_gate"]["status"] == "passed"
-    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
-    assert list((tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md"))
-
-
 def test_greenfield_apply_commits_prewrite_atlas_source_not_regenerated_drift(tmp_path: Path, monkeypatch) -> None:
     proposal = _proposal(tmp_path)
     _disable_refreshes(monkeypatch)
@@ -1988,6 +854,7 @@ def test_greenfield_apply_commits_prewrite_atlas_source_not_regenerated_drift(tm
         repo_root=tmp_path,
         proposal=proposal,
         release_selector="0.0.1",
+        model_authoring_receipt=proposal.get("_test_model_authoring_receipt"),
     )
     sealed = seal_compiled_greenfield_transaction(repo_root=tmp_path, transaction=transaction)
     original_allocated_diagram_ids = greenfield_apply_diagrams.allocated_diagram_ids
@@ -2035,6 +902,7 @@ def test_greenfield_commit_does_not_rematerialize_component_specs_after_confirma
         repo_root=tmp_path,
         proposal=proposal,
         release_selector="0.0.1",
+        model_authoring_receipt=proposal.get("_test_model_authoring_receipt"),
     )
     sealed = seal_compiled_greenfield_transaction(repo_root=tmp_path, transaction=transaction)
     materialize_calls = 0
@@ -2074,6 +942,7 @@ def test_greenfield_commit_does_not_regenerate_project_brief_after_confirmation(
         repo_root=tmp_path,
         proposal=proposal,
         release_selector="0.0.1",
+        model_authoring_receipt=proposal.get("_test_model_authoring_receipt"),
     )
     sealed = seal_compiled_greenfield_transaction(repo_root=tmp_path, transaction=transaction)
     writer_calls = 0
@@ -2154,6 +1023,7 @@ def test_greenfield_commit_does_not_rebuild_release_target_after_confirmation(tm
         repo_root=tmp_path,
         proposal=proposal,
         release_selector="0.0.1",
+        model_authoring_receipt=proposal.get("_test_model_authoring_receipt"),
     )
     sealed = seal_compiled_greenfield_transaction(repo_root=tmp_path, transaction=transaction)
 

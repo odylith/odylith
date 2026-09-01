@@ -170,7 +170,7 @@ _CODEX_HOST_COMMAND_MODULES = {
     "intervention-status": "odylith.runtime.surfaces.codex_host_intervention_status",
 }
 _SHOW_CAPABILITIES_MODULE = "odylith.runtime.analysis_engine.show_capabilities"
-_GREENFIELD_PROPOSALS_MODULE = "odylith.runtime.domain_intelligence.greenfield_proposals"
+_GREENFIELD_PROPOSALS_MODULE = "odylith.runtime.domain_intelligence.greenfield_proposals_cli"
 _GREENFIELD_CREATE_MODULE = "odylith.runtime.domain_intelligence.greenfield_create_cli"
 _GREENFIELD_COMMANDS = (
     ("propose", "Draft a provider-free greenfield governance proposal."),

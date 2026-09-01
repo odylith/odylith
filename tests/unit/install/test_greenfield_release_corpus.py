@@ -12,7 +12,6 @@ from urllib.error import HTTPError
 
 import pytest
 
-from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -366,25 +365,6 @@ def test_source_fixture_keeps_explicit_intent_and_source_only_cases_separate() -
     assert confirmed_case["leakage_terms"][0] not in first_path
     assert "User intent:" not in clarification_case["prompt"]
     assert clarification_case.get("confirmed_intent_markdown") is None
-
-
-def test_source_fixture_explicit_user_intent_is_the_recovered_prompt_path() -> None:
-    payload = json.loads(
-        (
-            REPO_ROOT
-            / "tests/fixtures/greenfield-release-corpus/greenfield-release-source-provenanced.v3.json"
-        ).read_text(encoding="utf-8")
-    )
-
-    explicit_intent_cases = (case for case in payload["cases"] if "User intent:" in case["prompt"])
-    for case in explicit_intent_cases:
-        source = prompt_intent_source(case["prompt"])
-        expected = case["prompt"].split("User intent:", maxsplit=1)[1].split("Source repository:", maxsplit=1)[0].strip(" .")
-
-        assert source.first_path == expected, case["case_id"]
-        assert source.actor, case["case_id"]
-        assert "User intent:" not in source.actor
-        assert "User intent:" not in source.first_path
 
 
 def test_shipped_release_audit_fixture_is_hash_bound_and_evaluable() -> None:

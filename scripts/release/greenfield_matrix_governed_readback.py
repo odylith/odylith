@@ -70,7 +70,9 @@ def governed_readback_findings(
     *,
     release_selector: str = "",
     release_workstream_ids: Sequence[str] = (),
-    expected_registry_components: int = 0,
+    expected_radar_workstreams: int | None = None,
+    expected_registry_components: int | None = None,
+    expected_atlas_diagrams: int | None = None,
 ) -> tuple[tuple[str, str], ...]:
     """Return dimension/message pairs for persisted governance proof gaps."""
 
@@ -81,7 +83,21 @@ def governed_readback_findings(
     findings.extend(
         _surface_payload_findings(
             readback,
-            expected_registry_components=max(0, int(expected_registry_components)),
+            expected_radar_workstreams=(
+                max(0, int(expected_radar_workstreams))
+                if expected_radar_workstreams is not None
+                else None
+            ),
+            expected_registry_components=(
+                max(0, int(expected_registry_components))
+                if expected_registry_components is not None
+                else None
+            ),
+            expected_atlas_diagrams=(
+                max(0, int(expected_atlas_diagrams))
+                if expected_atlas_diagrams is not None
+                else None
+            ),
         )
     )
     return tuple(dict.fromkeys(findings))
@@ -196,18 +212,28 @@ def _compass_findings(readback: GovernedReadback) -> list[tuple[str, str]]:
 def _surface_payload_findings(
     readback: GovernedReadback,
     *,
-    expected_registry_components: int = 0,
+    expected_radar_workstreams: int | None = None,
+    expected_registry_components: int | None = None,
+    expected_atlas_diagrams: int | None = None,
 ) -> list[tuple[str, str]]:
     findings: list[tuple[str, str]] = []
     payloads = readback.surface_payloads
     for surface in SURFACE_PAYLOAD_GLOBALS:
         if surface not in payloads:
             findings.append(("browser_surface_proof", f"{surface} surface payload readback is missing or invalid"))
-    if "radar" in payloads and len(_mapping_rows(payloads["radar"].get("entries"))) < 4:
-        findings.append(("governance_depth", "Radar surface payload exposes fewer than four workstreams"))
+    if "radar" in payloads and expected_radar_workstreams is not None:
+        observed_workstreams = len(_mapping_rows(payloads["radar"].get("entries")))
+        if observed_workstreams != expected_radar_workstreams:
+            findings.append(
+                (
+                    "governance_depth",
+                    "Radar surface payload does not match the sealed workstream set: "
+                    f"expected {expected_radar_workstreams}, found {observed_workstreams}",
+                )
+            )
     if "registry" in payloads:
         observed_components = len(_mapping_rows(payloads["registry"].get("components")))
-        if expected_registry_components and observed_components != expected_registry_components:
+        if expected_registry_components is not None and observed_components != expected_registry_components:
             findings.append(
                 (
                     "architect",
@@ -215,8 +241,16 @@ def _surface_payload_findings(
                     f"expected {expected_registry_components}, found {observed_components}",
                 )
             )
-    if "atlas" in payloads and len(_mapping_rows(payloads["atlas"].get("diagrams"))) < 4:
-        findings.append(("architect", "Atlas surface payload exposes fewer than four diagrams"))
+    if "atlas" in payloads and expected_atlas_diagrams is not None:
+        observed_diagrams = len(_mapping_rows(payloads["atlas"].get("diagrams")))
+        if observed_diagrams != expected_atlas_diagrams:
+            findings.append(
+                (
+                    "architect",
+                    "Atlas surface payload does not match the sealed diagram set: "
+                    f"expected {expected_atlas_diagrams}, found {observed_diagrams}",
+                )
+            )
     if "compass" in payloads:
         compass = payloads["compass"]
         if not normalize_string(compass.get("runtime_json_href")) or not normalize_string(compass.get("source_truth_href")):

@@ -16,6 +16,7 @@ def materialize_compiled_release_target(
     repo_root: Path,
     release_selector: str,
     release_target_result: Mapping[str, Any],
+    idea_specs: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Write the precompiled release target without rebuilding it from proposal text."""
 
@@ -28,6 +29,7 @@ def materialize_compiled_release_target(
 
     registry_document, event_documents, idea_specs = release_planning_authoring._load_governed_documents(  # noqa: SLF001
         repo_root=root,
+        idea_specs=idea_specs,
     )
     releases = release_planning_authoring._registry_release_rows(registry_document)  # noqa: SLF001
     aliases = release_planning_authoring._registry_alias_map(registry_document)  # noqa: SLF001
@@ -62,7 +64,10 @@ def materialize_compiled_release_target(
     )
     if changed:
         release_planning_authoring._write_registry_document(repo_root=root, document=document)  # noqa: SLF001
-    state, payload = _validated_current_release_payload(repo_root=root)
+    state, payload = _validated_current_release_payload(
+        repo_root=root,
+        idea_specs=idea_specs,
+    )
     committed_release = next(
         row for row in payload["catalog"] if str(row.get("release_id", "")).strip() == release_id
     )
@@ -79,6 +84,7 @@ def materialize_compiled_release_assignment(
     *,
     repo_root: Path,
     release_assignment_result: Mapping[str, Any],
+    idea_specs: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Append precompiled release assignment events without recomputing membership."""
 
@@ -87,6 +93,7 @@ def materialize_compiled_release_assignment(
     compiled_events = [_event_payload(row) for row in _mapping_rows(result.get("events"))]
     registry_document, event_documents, idea_specs = release_planning_authoring._load_governed_documents(  # noqa: SLF001
         repo_root=root,
+        idea_specs=idea_specs,
     )
     existing_rendered = {
         release_planning_contract.render_assignment_event(event)
@@ -106,7 +113,10 @@ def materialize_compiled_release_assignment(
     )
     if new_events:
         release_planning_authoring._append_event_documents(repo_root=root, events=new_events)  # noqa: SLF001
-    state, payload = _validated_current_release_payload(repo_root=root)
+    state, payload = _validated_current_release_payload(
+        repo_root=root,
+        idea_specs=idea_specs,
+    )
     release_id = str(_mapping(result.get("release")).get("release_id", "")).strip()
     committed_release = (
         next(
@@ -126,9 +136,14 @@ def materialize_compiled_release_assignment(
     }
 
 
-def _validated_current_release_payload(*, repo_root: Path) -> tuple[Any, dict[str, Any]]:
+def _validated_current_release_payload(
+    *,
+    repo_root: Path,
+    idea_specs: Mapping[str, Any] | None = None,
+) -> tuple[Any, dict[str, Any]]:
     registry_document, event_documents, idea_specs = release_planning_authoring._load_governed_documents(  # noqa: SLF001
         repo_root=repo_root,
+        idea_specs=idea_specs,
     )
     return _validate_release_state(
         repo_root=repo_root,

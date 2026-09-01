@@ -2,13 +2,26 @@ from __future__ import annotations
 
 import io
 import json
+import os
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
+from odylith.runtime.domain_intelligence import greenfield_atomic_fact_ledger
+from odylith.runtime.domain_intelligence import greenfield_authored_semantics
+from odylith.runtime.domain_intelligence import greenfield_commit_transaction
 from odylith.runtime.domain_intelligence import greenfield_create_commit
+from odylith.runtime.domain_intelligence import greenfield_create_transaction
+from odylith.runtime.domain_intelligence import greenfield_model_intent_authoring
 from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store
+from odylith.runtime.domain_intelligence import greenfield_product_intent_envelope
 from odylith.runtime.domain_intelligence import greenfield_repository_lock
+from odylith.runtime.domain_intelligence.greenfield_commit_transaction import (
+    _POSTCONFIRM_RUNTIME_SOURCE_FILES,
+)
+from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.surfaces import claude_host_prompt_bundle
 from odylith.runtime.surfaces import codex_host_prompt_context
 from odylith.runtime.surfaces import greenfield_host_confirmation
@@ -58,7 +71,7 @@ def _stub_navigation(monkeypatch: pytest.MonkeyPatch) -> None:
 @pytest.mark.parametrize("host", ["codex", "claude"])
 def test_supported_hosts_commit_the_pending_hash_without_semantic_work(
     tmp_path: Path,
-    monkeypatch,
+    monkeypatch: pytest.MonkeyPatch,
     host: str,
 ) -> None:
     transaction, _receipt, transaction_hash = _stage_pending_transaction(tmp_path)
@@ -80,11 +93,49 @@ def test_supported_hosts_commit_the_pending_hash_without_semantic_work(
         lambda _navigation: {"status": "unavailable", "reason": "test", "url": ""},
     )
 
-    decision = greenfield_host_confirmation.maybe_handle_greenfield_decision(
-        repo_root=tmp_path,
-        host_family=host,
-        prompt=f"CONFIRM {transaction_hash}",
-    )
+    def _forbidden(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("host CONFIRM reached pre-confirm semantic or model work")
+
+    for owner, attribute in (
+        (greenfield_create_transaction, "load_compiled_product_create_transaction_file"),
+        (greenfield_product_intent_envelope, "require_product_intent_authority"),
+        (greenfield_authored_semantics, "require_authored_relation_source_custody"),
+        (greenfield_authored_semantics, "require_authored_relation_authority"),
+        (greenfield_authored_semantics, "require_relation_authority_parity"),
+        (greenfield_atomic_fact_ledger, "require_atomic_fact_ledger"),
+        (greenfield_model_intent_authoring, "author_greenfield_intent"),
+        (odylith_reasoning.OpenAICompatibleReasoningProvider, "generate_structured"),
+        (odylith_reasoning.CodexCliReasoningProvider, "generate_structured"),
+        (odylith_reasoning.AnthropicDirectReasoningProvider, "generate_structured"),
+        (odylith_reasoning.ClaudeCliReasoningProvider, "generate_structured"),
+    ):
+        monkeypatch.setattr(owner, attribute, _forbidden)
+
+    source_root = Path(__file__).resolve().parents[3] / "src" / "odylith"
+    admitted_runtime = {
+        (source_root / relative_path).resolve()
+        for relative_path in _POSTCONFIRM_RUNTIME_SOURCE_FILES
+    }
+    executed: set[Path] = set()
+
+    def _trace(frame: object, event: str, _argument: object) -> object:
+        if event == "call":
+            code = getattr(frame, "f_code")
+            source_path = Path(code.co_filename).resolve()
+            if source_path.is_relative_to(source_root):
+                executed.add(source_path)
+        return _trace
+
+    previous_trace = sys.gettrace()
+    sys.settrace(_trace)
+    try:
+        decision = greenfield_host_confirmation.maybe_handle_greenfield_decision(
+            repo_root=tmp_path,
+            host_family=host,
+            prompt=f"CONFIRM {transaction_hash}",
+        )
+    finally:
+        sys.settrace(previous_trace)
 
     assert decision is not None
     assert decision["status"] == "CLOSED"
@@ -99,6 +150,80 @@ def test_supported_hosts_commit_the_pending_hash_without_semantic_work(
             "confirm": True,
         }
     ]
+    assert executed <= admitted_runtime
+    assert source_root / "runtime/surfaces/greenfield_host_confirmation.py" in executed
+    assert source_root / "runtime/domain_intelligence/greenfield_pending_transaction_store.py" in executed
+    assert source_root / "runtime/domain_intelligence/greenfield_commit_transaction.py" in executed
+
+
+@pytest.mark.parametrize("host", ["codex", "claude"])
+def test_host_confirmation_callback_imports_no_preconfirm_runtime_in_a_fresh_process(
+    tmp_path: Path,
+    host: str,
+) -> None:
+    _transaction_path, _receipt, transaction_hash = _stage_pending_transaction(tmp_path)
+    source_root = Path(__file__).resolve().parents[3] / "src"
+    script = """
+import json
+from pathlib import Path
+import sys
+
+from odylith.runtime.surfaces import greenfield_host_confirmation as confirmation
+
+forbidden = (
+    "odylith.runtime.domain_intelligence.greenfield_create_transaction",
+    "odylith.runtime.domain_intelligence.greenfield_product_intent_envelope",
+    "odylith.runtime.domain_intelligence.greenfield_authored_semantics",
+    "odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger",
+    "odylith.runtime.domain_intelligence.greenfield_operating_envelope",
+    "odylith.runtime.domain_intelligence.greenfield_model_profile_contract",
+    "odylith.runtime.domain_intelligence.greenfield_model_intent_authoring",
+    "odylith.runtime.domain_intelligence.greenfield_model_intent_materialization",
+    "odylith.runtime.reasoning.odylith_reasoning",
+)
+loaded_after_import = sorted(name for name in forbidden if name in sys.modules)
+confirmation.greenfield_create_commit.commit_greenfield_create_transaction = lambda **_kwargs: {
+    "product_create_transaction": {
+        "repository_write_count": 1,
+        "quality_status": "passed",
+        "validation_status": "passed",
+    }
+}
+confirmation.greenfield_post_confirm_handoff.post_confirm_navigation = lambda *_args, **_kwargs: {
+    "dashboard_path": "/tmp/odylith/index.html",
+    "project_url": "file:///tmp/odylith/index.html?tab=project",
+}
+confirmation.greenfield_post_confirm_handoff.open_committed_dashboard = lambda _navigation: {
+    "status": "unavailable",
+    "reason": "test",
+    "url": "",
+}
+decision = confirmation.maybe_handle_greenfield_decision(
+    repo_root=Path(sys.argv[1]),
+    host_family=sys.argv[3],
+    prompt=f"CONFIRM {sys.argv[2]}",
+)
+print(json.dumps({
+    "loaded_after_import": loaded_after_import,
+    "loaded_after_callback": sorted(name for name in forbidden if name in sys.modules),
+    "status": decision.get("status") if decision else None,
+}))
+"""
+    completed = subprocess.run(
+        [sys.executable, "-c", script, str(tmp_path), transaction_hash, host],
+        check=False,
+        capture_output=True,
+        env={**os.environ, "PYTHONPATH": str(source_root)},
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(completed.stdout.strip().splitlines()[-1])
+    assert payload == {
+        "loaded_after_import": [],
+        "loaded_after_callback": [],
+        "status": "CLOSED",
+    }
 
 
 def test_codex_and_claude_hooks_short_circuit_to_identical_confirmation_payload(

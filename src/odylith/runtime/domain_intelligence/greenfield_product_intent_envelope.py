@@ -7,84 +7,38 @@ import copy
 import hashlib
 import json
 from pathlib import Path
-import re
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
     ATOMIC_FACT_LEDGER_VERSION,
-)
-from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
     append_atomic_source_spans,
-)
-from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
     atomic_fact_ledger_hash,
-)
-from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
     build_atomic_fact_ledger,
-)
-from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
     require_atomic_fact_ledger,
 )
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import (
-    confirmed_intent_sections,
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_RELATION_SET_SHA256_KEY,
+    AUTHORED_SEMANTICS_KEY,
+    authored_relation_set_sha256,
+    component_responsibility_relations_from_intent,
+    first_path_context_relations_from_intent,
+    first_path_relations_from_intent,
+    require_authored_relation_source_custody,
 )
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import (
-    is_confirmed_intent_ignored_section,
-)
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import (
-    is_confirmed_intent_supporting_section,
-)
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import (
-    is_first_path_meta_control_language,
-)
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import (
-    is_terminal_first_path_meta_loop_summary,
-)
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import (
-    split_unpunctuated_first_path_meta_control,
-)
-from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import is_deferred_actor
-from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
     MATERIAL_FACT_KEYS,
-)
-from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
     PRODUCT_INTENT_AUTHORITY_KEY,
-)
-from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
     PRODUCT_INTENT_AUTHORITY_VERSION,
-)
-from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
     PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION,
-)
-from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
     PRODUCT_INTENT_LEDGER_VERSION,
-)
-from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
-    TYPED_SOURCE_FORMATS,
-)
-from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
     product_intent_authority_snapshot_hash as _sealed_product_intent_authority_snapshot_hash,
-)
-from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
     product_intent_material_custody_hash,
-)
-from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
     require_product_intent_authority_structure,
 )
-from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
-from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
-    greenfield_operating_envelope_receipt,
-)
-from odylith.runtime.domain_intelligence.greenfield_typed_source_spans import (
-    append_typed_source_spans,
-)
+from odylith.runtime.domain_intelligence.greenfield_operating_envelope import greenfield_operating_envelope_receipt
 
 
 PRODUCT_FACTS_HASH_KEY = "product_facts_sha256"
-LEGACY_PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSIONS = frozenset(
-    {"odylith.product-intent-envelope.v3", "odylith.product-intent-envelope.v4"}
-)
 
 PRODUCT_FACT_KEYS = (
     "title",
@@ -126,18 +80,14 @@ LIST_FACT_KEYS = frozenset(
 
 
 def is_product_intent_envelope(value: object) -> bool:
-    """Return true when a JSON object carries the current product-intent envelope."""
+    """Return true only for the current authored-custody envelope shape."""
 
-    return isinstance(value, Mapping) and str(value.get("schema_version") or "") == PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION
-
-
-def is_legacy_product_intent_envelope(value: object) -> bool:
-    """Return true for a supported legacy envelope that requires pre-confirm migration."""
-
-    return bool(
-        isinstance(value, Mapping)
-        and str(value.get("schema_version") or "") in LEGACY_PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSIONS
-    )
+    if not isinstance(value, Mapping):
+        return False
+    if value.get("schema_version") != PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION:
+        return False
+    ledger = value.get("custody_ledger")
+    return bool(isinstance(ledger, Mapping) and _is_sha256(ledger.get(AUTHORED_RELATION_SET_SHA256_KEY)))
 
 
 def product_facts_from_envelope(value: object, *, source_text: str = "") -> dict[str, Any] | None:
@@ -155,9 +105,14 @@ def product_facts_from_envelope(value: object, *, source_text: str = "") -> dict
         return None
     facts = value.get("product_facts")
     if isinstance(facts, Mapping):
-        payload = product_facts_payload(facts)
+        try:
+            payload = product_facts_payload(facts)
+        except ValueError:
+            return None
+        if set(facts) != set(payload):
+            return None
         expected_hash = _envelope_product_facts_hash(value)
-        if expected_hash and expected_hash != product_facts_hash(payload):
+        if not expected_hash or expected_hash != product_facts_hash(payload):
             return None
         custody_ledger = value.get("custody_ledger")
         source_evidence = value.get("source_evidence")
@@ -178,25 +133,6 @@ def product_facts_from_envelope(value: object, *, source_text: str = "") -> dict
     return None
 
 
-def product_facts_from_legacy_envelope(value: object, *, source_text: str = "") -> dict[str, Any] | None:
-    """Recover hash-bound legacy facts for a current pre-confirm envelope rebuild."""
-
-    if not is_legacy_product_intent_envelope(value) or not isinstance(value, Mapping) or not source_text:
-        return None
-    expected_source_hash = _envelope_source_hash(value)
-    actual_source_hash = hashlib.sha256(source_text.encode("utf-8")).hexdigest()
-    if not expected_source_hash or expected_source_hash != actual_source_hash:
-        return None
-    facts = value.get("product_facts")
-    if not isinstance(facts, Mapping):
-        return None
-    payload = product_facts_payload(facts)
-    expected_facts_hash = _envelope_product_facts_hash(value)
-    if not expected_facts_hash or expected_facts_hash != product_facts_hash(payload):
-        return None
-    return payload
-
-
 def product_facts_hash(intent: Mapping[str, Any]) -> str:
     """Return a stable integrity hash for canonical product facts."""
 
@@ -206,7 +142,7 @@ def product_facts_hash(intent: Mapping[str, Any]) -> str:
 
 
 def product_facts_payload(intent: Mapping[str, Any]) -> dict[str, Any]:
-    """Return only canonical product fact fields from a normalized intent."""
+    """Return canonical product fact bytes without reinterpreting normalized intent."""
 
     payload: dict[str, Any] = {}
     for key in PRODUCT_FACT_KEYS:
@@ -214,38 +150,28 @@ def product_facts_payload(intent: Mapping[str, Any]) -> dict[str, Any]:
             continue
         value = intent.get(key)
         if key in LIST_FACT_KEYS:
-            rows = confirmed_text_values(value)
+            rows = _exact_string_rows(value)
             if rows:
                 payload[key] = rows
             continue
-        text = clean_markdown_text(value)
+        if not isinstance(value, str):
+            raise ValueError(f"model-authored Product Intent fact {key} must be an exact string")
+        text = value
         if text:
             payload[key] = text
     return payload
 
 
-def canonical_product_facts_payload(intent: Mapping[str, Any]) -> dict[str, Any]:
-    """Canonicalize new facts before sealing without weakening exact hash checks."""
-
-    payload = product_facts_payload(intent)
-    actor_rows = canonical_product_actor_rows(payload.get("human_actors", ()))
-    if actor_rows:
-        payload["human_actors"] = actor_rows
-    else:
-        payload.pop("human_actors", None)
-    return payload
+def _exact_text(value: Any) -> str:
+    return value if isinstance(value, str) else ""
 
 
-def canonical_product_actor_rows(values: Sequence[str]) -> list[str]:
-    """Exclude unresolved deferred actor alternatives from canonical product facts."""
-
-    rows = confirmed_text_values(values)
-    return [row for row in rows if not _deferred_actor_alternative(row)]
-
-
-def _deferred_actor_alternative(value: str) -> bool:
-    label = clean_markdown_text(value).split(":", 1)[0].casefold()
-    return is_deferred_actor(value) and " or " in label
+def _exact_string_rows(value: Any) -> list[str]:
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+        raise ValueError("model-authored Product Intent list fact must be an exact string list")
+    if any(not isinstance(row, str) or not row for row in value):
+        raise ValueError("model-authored Product Intent list fact must be an exact string list")
+    return list(value)
 
 
 def rebind_authoritative_product_facts(
@@ -258,7 +184,10 @@ def rebind_authoritative_product_facts(
     rebound = copy.deepcopy(dict(intent))
     for key in PRODUCT_FACT_KEYS:
         rebound.pop(key, None)
-    rebound.update(copy.deepcopy(canonical_product_facts_payload(authoritative_intent)))
+    if AUTHORED_SEMANTICS_KEY not in authoritative_intent:
+        raise ValueError("authoritative Product Intent must retain sealed authored semantics")
+    authoritative_facts = product_facts_payload(authoritative_intent)
+    rebound.update(copy.deepcopy(authoritative_facts))
     return rebound
 
 
@@ -268,76 +197,92 @@ def build_product_intent_envelope(
     source_text: str = "",
     source_path: Path | str | None = None,
     source_format: str = "",
+    source_document_count: int = 1,
+    source_language: str = "en",
+    model_authoring: Mapping[str, Any] | None = None,
+    authored_source_spans: Sequence[Mapping[str, Any]] | None = None,
+    authored_atomic_claims: Sequence[Mapping[str, Any]] | None = None,
+    authored_source_sha256: str | None = None,
 ) -> dict[str, Any]:
     """Build the typed custody record trusted by pre-confirm compilers."""
 
-    facts = canonical_product_facts_payload(intent)
-    sections = (
-        confirmed_intent_sections(source_text)
-        if source_text and source_format not in TYPED_SOURCE_FORMATS
-        else {}
+    if AUTHORED_SEMANTICS_KEY not in intent:
+        raise ValueError(
+            "Product Intent envelope construction requires sealed model-authored semantics"
+        )
+    authored_relations = first_path_relations_from_intent(intent)
+    first_path_context_relations = first_path_context_relations_from_intent(intent)
+    component_responsibility_relations = component_responsibility_relations_from_intent(
+        intent
     )
-    spans, source_span_ids_by_field, product_claim_span_ids_by_field = _source_spans(sections)
-    if source_format not in TYPED_SOURCE_FORMATS:
-        _add_source_title_span(
-            facts,
-            spans=spans,
-            source_span_ids_by_field=source_span_ids_by_field,
-            product_claim_span_ids_by_field=product_claim_span_ids_by_field,
-            source_text=source_text,
+    if not authored_relations:
+        raise ValueError(
+            "model-authored Product Intent requires exact relation custody"
         )
-        _add_source_story_span(
-            facts,
-            spans=spans,
-            source_span_ids_by_field=source_span_ids_by_field,
-            product_claim_span_ids_by_field=product_claim_span_ids_by_field,
-            source_text=source_text,
+    authored_relation_set_sha256_value = authored_relation_set_sha256(
+        authored_relations,
+        component_responsibility_relations,
+        first_path_context_relations=first_path_context_relations,
+    )
+    facts = product_facts_payload(intent)
+    source_bytes = str(source_text or "").encode("utf-8")
+    source_sha256 = hashlib.sha256(source_bytes).hexdigest() if source_text else ""
+    if authored_source_spans is None or authored_atomic_claims is None:
+        raise ValueError("model-authored Product Intent requires exact source spans and atomic claims")
+    if not source_bytes or authored_source_sha256 != source_sha256:
+        raise ValueError(
+            "model-authored Product Intent source custody does not match the exact authoring evidence digest"
         )
-        _add_unheaded_material_source_spans(
-            facts,
-            spans=spans,
-            source_span_ids_by_field=source_span_ids_by_field,
-            product_claim_span_ids_by_field=product_claim_span_ids_by_field,
-            source_sections=sections,
-        )
-    append_typed_source_spans(
+    spans, source_span_ids_by_field, product_claim_span_ids_by_field = _authored_source_spans(
+        authored_source_spans,
+        source_bytes=source_bytes,
         facts=facts,
-        spans=spans,
-        source_span_ids_by_field=source_span_ids_by_field,
-        product_claim_span_ids_by_field=product_claim_span_ids_by_field,
-        source_text=source_text,
-        source_format=source_format,
-        typed_source_formats=TYPED_SOURCE_FORMATS,
-        canonical_row_fields=("human_actors",),
     )
-    append_atomic_source_spans(spans)
+    _verify_authored_atomic_claim_source(
+        authored_atomic_claims,
+        source_bytes=source_bytes,
+        source_spans=spans,
+    )
+    require_authored_relation_source_custody(
+        authored_relations,
+        context_relations=first_path_context_relations,
+        source_bytes=source_bytes,
+        source_spans=spans,
+    )
+    append_atomic_source_spans(
+        spans,
+        authored_atomic_claims=authored_atomic_claims,
+    )
     _add_span_digests(spans)
-    evidence_span_ids = _evidence_span_ids(spans)
     fields = _field_custody(
         facts,
         source_span_ids_by_field=source_span_ids_by_field,
         product_claim_span_ids_by_field=product_claim_span_ids_by_field,
-        evidence_span_ids=evidence_span_ids,
         spans=spans,
-        source_format=source_format,
     )
-    atomic_facts = build_atomic_fact_ledger(facts=facts, spans=spans)
-    ignored = [span for span in spans if span.get("classification") == "ignored_instruction"]
+    atomic_facts = build_atomic_fact_ledger(
+        facts=facts,
+        spans=spans,
+        authored_atomic_claims=authored_atomic_claims,
+    )
     supporting = [span for span in spans if span.get("classification") == "supporting_evidence"]
-    source_sha256 = hashlib.sha256(str(source_text or "").encode("utf-8")).hexdigest() if source_text else ""
     operating_envelope = greenfield_operating_envelope_receipt(
         facts=facts,
         source_format=source_format or "unknown",
         source_size_bytes=len(str(source_text or "").encode("utf-8")),
+        source_document_count=source_document_count,
+        source_language=source_language,
+        model_authoring=model_authoring,
     )
     return {
         "schema_version": PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION,
         "product_facts": facts,
         "custody_ledger": {
             "version": PRODUCT_INTENT_LEDGER_VERSION,
+            AUTHORED_RELATION_SET_SHA256_KEY: authored_relation_set_sha256_value,
             "fields": fields,
             "atomic_facts": atomic_facts,
-            "ignored_instructions": ignored,
+            "ignored_instructions": [],
             "supporting_evidence": supporting,
         },
         "source_evidence": {
@@ -357,6 +302,213 @@ def build_product_intent_envelope(
     }
 
 
+def _authored_source_spans(
+    values: Sequence[Mapping[str, Any]],
+    *,
+    source_bytes: bytes,
+    facts: Mapping[str, Any],
+) -> tuple[list[dict[str, Any]], dict[str, list[str]], dict[str, list[str]]]:
+    """Reverify every authored span against the exact envelope source bytes."""
+
+    spans: list[dict[str, Any]] = []
+    source_span_ids_by_field: dict[str, list[str]] = {}
+    product_claim_span_ids_by_field: dict[str, list[str]] = {}
+    seen_ids: set[str] = set()
+    common_fields = {
+        "span_id",
+        "section_key",
+        "row_index",
+        "classification",
+        "text",
+        "source_start_byte",
+        "source_end_byte",
+        "quote_sha256",
+    }
+    projection_fields = {
+        "projection_path",
+        "projection_start_byte",
+        "projection_end_byte",
+    }
+    for raw in values:
+        classification = (
+            raw.get("classification")
+            if isinstance(raw, Mapping) and isinstance(raw.get("classification"), str)
+            else ""
+        )
+        expected_fields = (
+            common_fields | projection_fields
+            if classification == "product_claim"
+            else common_fields
+        )
+        if not isinstance(raw, Mapping) or set(raw) != expected_fields:
+            raise ValueError("model-authored Product Intent source custody is malformed")
+        span_id = raw.get("span_id") if isinstance(raw.get("span_id"), str) else ""
+        field = raw.get("section_key") if isinstance(raw.get("section_key"), str) else ""
+        text = raw.get("text") if isinstance(raw.get("text"), str) else ""
+        row_index = raw.get("row_index")
+        start = raw.get("source_start_byte")
+        end = raw.get("source_end_byte")
+        projection_path = raw.get("projection_path")
+        projection_start = raw.get("projection_start_byte")
+        projection_end = raw.get("projection_end_byte")
+        quote_sha256 = raw.get("quote_sha256") if isinstance(raw.get("quote_sha256"), str) else ""
+        text_bytes = text.encode("utf-8")
+        projection_bytes = _projection_value_bytes(facts, projection_path)
+        if (
+            not span_id
+            or span_id in seen_ids
+            or field not in PRODUCT_FACT_KEYS
+            or not text
+            or classification not in {"product_claim", "supporting_evidence"}
+            or not isinstance(row_index, int)
+            or isinstance(row_index, bool)
+            or row_index < 1
+            or not _valid_authored_byte_range(start, end, limit=len(source_bytes))
+            or (
+                classification == "product_claim"
+                and (
+                    not isinstance(projection_path, str)
+                    or not projection_path
+                    or not _valid_authored_byte_range(
+                        projection_start,
+                        projection_end,
+                        limit=len(projection_bytes or b""),
+                    )
+                    or projection_end - projection_start != len(text_bytes)
+                    or projection_bytes is None
+                    or projection_bytes[projection_start:projection_end] != text_bytes
+                )
+            )
+            or source_bytes[start:end] != text_bytes
+            or quote_sha256 != hashlib.sha256(text_bytes).hexdigest()
+        ):
+            raise ValueError("model-authored Product Intent source custody is malformed")
+        seen_ids.add(span_id)
+        span = {
+            "span_id": span_id,
+            "section_key": field,
+            "row_index": row_index,
+            "classification": classification,
+            "text": text,
+            "source_start_byte": start,
+            "source_end_byte": end,
+            "quote_sha256": quote_sha256,
+        }
+        if classification == "product_claim":
+            span.update(
+                {
+                    "projection_path": projection_path,
+                    "projection_start_byte": projection_start,
+                    "projection_end_byte": projection_end,
+                }
+            )
+        spans.append(span)
+        source_span_ids_by_field.setdefault(field, []).append(span_id)
+        if classification == "product_claim":
+            product_claim_span_ids_by_field.setdefault(field, []).append(span_id)
+    return spans, source_span_ids_by_field, product_claim_span_ids_by_field
+
+
+def _projection_value_bytes(facts: Mapping[str, Any], path: Any) -> bytes | None:
+    if not isinstance(path, str) or not path.startswith("/"):
+        return None
+    parts = path.split("/")[1:]
+    if len(parts) not in {1, 2} or parts[0] not in PRODUCT_FACT_KEYS:
+        return None
+    value = facts.get(parts[0])
+    if len(parts) == 2:
+        if not isinstance(value, list):
+            return None
+        try:
+            index = int(parts[1])
+        except ValueError:
+            return None
+        if str(index) != parts[1] or index < 0 or index >= len(value):
+            return None
+        value = value[index]
+    if not isinstance(value, str):
+        return None
+    return value.encode("utf-8")
+
+
+def _verify_authored_atomic_claim_source(
+    values: Sequence[Mapping[str, Any]],
+    *,
+    source_bytes: bytes,
+    source_spans: Sequence[Mapping[str, Any]],
+) -> None:
+    """Reject atomic coordinates that were derived from different evidence bytes."""
+
+    if (
+        not isinstance(values, Sequence)
+        or isinstance(values, (str, bytes, bytearray))
+        or not values
+    ):
+        raise ValueError("model-authored Product Intent atomic source custody is malformed")
+    parent_ranges: dict[str, list[tuple[int, int]]] = {}
+    for span in source_spans:
+        if span.get("classification") != "product_claim":
+            continue
+        parent_ranges.setdefault(str(span.get("section_key") or ""), []).append(
+            (int(span["source_start_byte"]), int(span["source_end_byte"]))
+        )
+    expected_fields = {
+        "field",
+        "category",
+        "polarity",
+        "source_start_byte",
+        "source_end_byte",
+        "quote",
+        "quote_sha256",
+        "projection_path",
+        "projection_start_byte",
+        "projection_end_byte",
+        "projection_value_sha256",
+        "relation_order",
+        "relation_role",
+    }
+    for claim in values:
+        if not isinstance(claim, Mapping) or set(claim) != expected_fields:
+            raise ValueError("model-authored Product Intent atomic source custody is malformed")
+        field = claim.get("field") if isinstance(claim.get("field"), str) else ""
+        quote = claim.get("quote") if isinstance(claim.get("quote"), str) else ""
+        start = claim.get("source_start_byte")
+        end = claim.get("source_end_byte")
+        quote_bytes = quote.encode("utf-8")
+        if (
+            not field
+            or not quote
+            or not _valid_authored_byte_range(start, end, limit=len(source_bytes))
+            or source_bytes[start:end] != quote_bytes
+            or claim.get("quote_sha256") != hashlib.sha256(quote_bytes).hexdigest()
+            or not any(
+                parent_start <= start and end <= parent_end
+                for parent_start, parent_end in parent_ranges.get(field, ())
+            )
+        ):
+            raise ValueError(
+                "model-authored Product Intent atomic source custody does not match the exact envelope source"
+            )
+
+
+def _valid_authored_byte_range(start: Any, end: Any, *, limit: int) -> bool:
+    return bool(
+        isinstance(start, int)
+        and not isinstance(start, bool)
+        and isinstance(end, int)
+        and not isinstance(end, bool)
+        and 0 <= start < end <= limit
+    )
+
+
+def _authority_string_list(value: Any, *, field_name: str) -> list[str]:
+    if not isinstance(value, list) or any(not isinstance(row, str) or not row for row in value):
+        raise ValueError(
+            f"confirmed Product Intent authority field {field_name} must be an exact string list"
+        )
+    return list(value)
+
+
 def product_intent_authority_from_envelope(
     envelope: Mapping[str, Any],
     *,
@@ -364,6 +516,9 @@ def product_intent_authority_from_envelope(
     markdown_source_path: Path | str | None = None,
 ) -> dict[str, Any]:
     """Return the compact transaction-bound authority snapshot for an envelope."""
+
+    if not is_product_intent_envelope(envelope):
+        raise ValueError("Product Intent authority requires a current authored-custody envelope")
 
     source_evidence = envelope.get("source_evidence") if isinstance(envelope.get("source_evidence"), Mapping) else {}
     custody_ledger = envelope.get("custody_ledger") if isinstance(envelope.get("custody_ledger"), Mapping) else {}
@@ -374,6 +529,12 @@ def product_intent_authority_from_envelope(
     if not isinstance(atomic_facts, Sequence) or isinstance(atomic_facts, (str, bytes, bytearray)):
         atomic_facts = []
     facts = envelope.get("product_facts") if isinstance(envelope.get("product_facts"), Mapping) else {}
+    facts_payload = product_facts_payload(facts)
+    if set(facts) != set(facts_payload):
+        raise ValueError("confirmed Product Intent product facts are malformed")
+    expected_facts_hash = _exact_text(decision_record.get(PRODUCT_FACTS_HASH_KEY))
+    if expected_facts_hash != product_facts_hash(facts_payload):
+        raise ValueError("confirmed Product Intent product facts hash mismatch")
     source_spans = source_evidence.get("spans")
     if not isinstance(source_spans, Sequence) or isinstance(source_spans, (str, bytes, bytearray)):
         raise ValueError("confirmed Product Intent atomic source custody is malformed")
@@ -385,61 +546,54 @@ def product_intent_authority_from_envelope(
     for key in MATERIAL_FACT_KEYS:
         field = fields.get(key) if isinstance(fields.get(key), Mapping) else {}
         material_fields[key] = {
-            "custody_state": clean_markdown_text(field.get("custody_state")),
-            "derivation": clean_markdown_text(field.get("derivation")),
-            "confidence": clean_markdown_text(field.get("confidence")),
-            "entailment_relationship": clean_markdown_text(field.get("entailment_relationship")),
-            "source_span_ids": confirmed_text_values(field.get("source_span_ids")),
-            "product_claim_span_ids": confirmed_text_values(field.get("product_claim_span_ids")),
+            "custody_state": _exact_text(field.get("custody_state")),
+            "derivation": _exact_text(field.get("derivation")),
+            "confidence": _exact_text(field.get("confidence")),
+            "entailment_relationship": _exact_text(field.get("entailment_relationship")),
+            "source_span_ids": _authority_string_list(
+                field.get("source_span_ids"),
+                field_name=f"{key}.source_span_ids",
+            ),
+            "product_claim_span_ids": _authority_string_list(
+                field.get("product_claim_span_ids"),
+                field_name=f"{key}.product_claim_span_ids",
+            ),
             "source_span_refs": _authority_span_refs(field.get("source_span_refs")),
         }
     material_custody_sha256 = product_intent_material_custody_hash(material_fields)
     authority = {
         "version": PRODUCT_INTENT_AUTHORITY_VERSION,
         "origin": "verified_typed_envelope",
-        "structured_intent_path": clean_markdown_text(structured_intent_path),
-        "markdown_source_path": clean_markdown_text(markdown_source_path or source_evidence.get("source_path")),
-        "envelope_schema_version": clean_markdown_text(envelope.get("schema_version")),
-        "ledger_version": clean_markdown_text(custody_ledger.get("version")),
-        "decision": clean_markdown_text(decision_record.get("decision")),
-        "fact_authority": clean_markdown_text(decision_record.get("fact_authority")),
-        "markdown_authority": clean_markdown_text(decision_record.get("markdown_authority")),
-        PRODUCT_FACTS_HASH_KEY: clean_markdown_text(decision_record.get(PRODUCT_FACTS_HASH_KEY)),
-        "markdown_source_sha256": clean_markdown_text(source_evidence.get("source_sha256")),
-        "source_format": clean_markdown_text(source_evidence.get("source_format")) or "unknown",
-        "materiality_status": clean_markdown_text(materiality_gate.get("status")),
-        "blocked_material_fields": confirmed_text_values(materiality_gate.get("blocked_fields")),
-        "clarification_policy": clean_markdown_text(materiality_gate.get("clarification_policy")),
+        "structured_intent_path": _path_text(structured_intent_path),
+        "markdown_source_path": _path_text(
+            markdown_source_path or source_evidence.get("source_path")
+        ),
+        "envelope_schema_version": _exact_text(envelope.get("schema_version")),
+        "ledger_version": _exact_text(custody_ledger.get("version")),
+        "decision": _exact_text(decision_record.get("decision")),
+        "fact_authority": _exact_text(decision_record.get("fact_authority")),
+        "markdown_authority": _exact_text(decision_record.get("markdown_authority")),
+        PRODUCT_FACTS_HASH_KEY: _exact_text(decision_record.get(PRODUCT_FACTS_HASH_KEY)),
+        "markdown_source_sha256": _exact_text(source_evidence.get("source_sha256")),
+        "source_format": _exact_text(source_evidence.get("source_format")) or "unknown",
+        "materiality_status": _exact_text(materiality_gate.get("status")),
+        "blocked_material_fields": _authority_string_list(
+            materiality_gate.get("blocked_fields"),
+            field_name="materiality_gate.blocked_fields",
+        ),
+        "clarification_policy": _exact_text(materiality_gate.get("clarification_policy")),
         "operating_envelope": copy.deepcopy(dict(operating_envelope)),
         "material_fields": material_fields,
         "material_custody_sha256": material_custody_sha256,
         "atomic_ledger_version": ATOMIC_FACT_LEDGER_VERSION,
         "atomic_facts": copy.deepcopy(list(atomic_facts)),
         "atomic_custody_sha256": atomic_fact_ledger_hash(atomic_facts),
+        AUTHORED_RELATION_SET_SHA256_KEY: _exact_text(
+            custody_ledger.get(AUTHORED_RELATION_SET_SHA256_KEY)
+        ),
     }
     authority["authority_snapshot_sha256"] = product_intent_authority_snapshot_hash(authority)
     return authority
-
-
-def product_intent_authority_from_intent(
-    intent: Mapping[str, Any],
-    *,
-    source_text: str = "",
-    source_path: Path | str | None = None,
-    source_format: str = "in_memory_confirmed_intent",
-) -> dict[str, Any]:
-    """Build compact intent authority from an accepted in-memory intent mapping."""
-
-    facts = canonical_product_facts_payload(intent)
-    if not source_text and source_format in TYPED_SOURCE_FORMATS:
-        source_text = json.dumps(facts, ensure_ascii=True, sort_keys=True)
-    envelope = build_product_intent_envelope(
-        facts,
-        source_text=source_text,
-        source_path=source_path,
-        source_format=source_format,
-    )
-    return product_intent_authority_from_envelope(envelope)
 
 
 def product_intent_authority_from_mapping(value: Mapping[str, Any]) -> dict[str, Any]:
@@ -470,243 +624,14 @@ def _envelope_product_facts_hash(value: Mapping[str, Any]) -> str:
     decision_record = value.get("decision_record")
     if not isinstance(decision_record, Mapping):
         return ""
-    return clean_markdown_text(decision_record.get(PRODUCT_FACTS_HASH_KEY))
+    return _exact_text(decision_record.get(PRODUCT_FACTS_HASH_KEY))
 
 
 def _envelope_source_hash(value: Mapping[str, Any]) -> str:
     evidence = value.get("source_evidence")
     if not isinstance(evidence, Mapping):
         return ""
-    return clean_markdown_text(evidence.get("source_sha256"))
-
-
-def _source_spans(
-    sections: Mapping[str, Sequence[str]],
-) -> tuple[list[dict[str, Any]], dict[str, list[str]], dict[str, list[str]]]:
-    spans: list[dict[str, Any]] = []
-    source_span_ids_by_field: dict[str, list[str]] = {}
-    product_claim_span_ids_by_field: dict[str, list[str]] = {}
-    for section_key, rows in sections.items():
-        section_classification = _span_classification(section_key)
-        for index, row in enumerate(rows, start=1):
-            text = clean_markdown_text(row)
-            if not text:
-                continue
-            classified_units = (
-                _canonical_source_units(text, section_key=section_key)
-                if section_classification == "product_claim" and section_key in PRODUCT_FACT_KEYS
-                else [(text, section_classification)]
-            )
-            for unit_index, (unit_text, classification) in enumerate(classified_units, start=1):
-                if section_key == "human_actors" and _deferred_actor_alternative(unit_text):
-                    classification = "supporting_evidence"
-                span_id = f"{section_key}:{index}"
-                if len(classified_units) > 1:
-                    span_id = f"{span_id}.{unit_index}"
-                span = {
-                    "span_id": span_id,
-                    "section_key": section_key,
-                    "row_index": index,
-                    "classification": classification,
-                    "text": unit_text,
-                }
-                spans.append(span)
-                if section_key in PRODUCT_FACT_KEYS:
-                    source_span_ids_by_field.setdefault(section_key, []).append(span_id)
-                    if classification == "product_claim":
-                        product_claim_span_ids_by_field.setdefault(section_key, []).append(span_id)
-    return spans, source_span_ids_by_field, product_claim_span_ids_by_field
-
-
-def _canonical_source_units(text: str, *, section_key: str) -> list[tuple[str, str]]:
-    units: list[tuple[str, str]] = []
-    for sentence in _sentence_units(text):
-        if section_key == "first_path" and is_terminal_first_path_meta_loop_summary(sentence):
-            units.append((sentence, "supporting_evidence"))
-            continue
-        inline_meta = split_unpunctuated_first_path_meta_control(sentence) if section_key == "first_path" else None
-        if inline_meta is not None:
-            before, meta, after = inline_meta
-            units.extend(
-                (fragment, classification)
-                for fragment, classification in (
-                    (before, "product_claim"),
-                    (meta, "supporting_evidence"),
-                    (after, "product_claim"),
-                )
-                if fragment
-            )
-            continue
-        clauses = _clause_units(sentence)
-        if section_key == "first_path" and any(
-            _is_first_path_supporting_clause(clause)
-            for clause in clauses
-        ):
-            units.extend(
-                (
-                    clause,
-                    "supporting_evidence"
-                    if _is_first_path_supporting_clause(clause)
-                    else "product_claim",
-                )
-                for clause in clauses
-            )
-            continue
-        units.append((sentence, "product_claim"))
-    return units
-
-
-def _sentence_units(value: str) -> list[str]:
-    rows = re.split(r"(?<=[.!?])\s+", clean_markdown_text(value))
-    return [text for row in rows if (text := clean_markdown_text(row))]
-
-
-def _clause_units(value: str) -> list[str]:
-    rows = re.split(r"\s+(?:[\u2013\u2014]|-)\s+|[;,]\s+", clean_markdown_text(value))
-    return [text for row in rows if (text := clean_markdown_text(row).strip(" .;"))]
-
-
-def _is_first_path_supporting_clause(value: str) -> bool:
-    """Keep editorial product-proof summaries out of product-claim custody."""
-
-    text = clean_markdown_text(value)
-    if not is_first_path_meta_control_language(text):
-        return False
-    return not bool(
-        re.search(
-            r"\b(?:can|will|needs?\s+to)\b|\bfrom\b.+\bthrough\b|\b(?:by|after|before)\s+\w+ing\b",
-            text,
-            flags=re.IGNORECASE,
-        )
-    )
-
-
-def _add_source_title_span(
-    facts: Mapping[str, Any],
-    *,
-    spans: list[dict[str, Any]],
-    source_span_ids_by_field: dict[str, list[str]],
-    product_claim_span_ids_by_field: dict[str, list[str]],
-    source_text: str,
-) -> None:
-    if source_span_ids_by_field.get("title"):
-        return
-    title = clean_markdown_text(facts.get("title"))
-    if not title or title.casefold() not in clean_markdown_text(source_text).casefold():
-        return
-    span_id = "title:source-heading"
-    spans.append(
-        {
-            "span_id": span_id,
-            "section_key": "title",
-            "row_index": 0,
-            "classification": "product_claim",
-            "text": title,
-        }
-    )
-    source_span_ids_by_field["title"] = [span_id]
-    product_claim_span_ids_by_field["title"] = [span_id]
-
-
-def _add_source_story_span(
-    facts: Mapping[str, Any],
-    *,
-    spans: list[dict[str, Any]],
-    source_span_ids_by_field: dict[str, list[str]],
-    product_claim_span_ids_by_field: dict[str, list[str]],
-    source_text: str,
-) -> None:
-    if source_span_ids_by_field.get("product_story"):
-        return
-    story = clean_markdown_text(facts.get("product_story"))
-    if not story or story.casefold() not in clean_markdown_text(source_text).casefold():
-        return
-    span_id = "product_story:source-preamble"
-    spans.append(
-        {
-            "span_id": span_id,
-            "section_key": "product_story",
-            "row_index": 0,
-            "classification": "product_claim",
-            "text": story,
-        }
-    )
-    source_span_ids_by_field["product_story"] = [span_id]
-    product_claim_span_ids_by_field["product_story"] = [span_id]
-
-
-def _add_unheaded_material_source_spans(
-    facts: Mapping[str, Any],
-    *,
-    spans: list[dict[str, Any]],
-    source_span_ids_by_field: dict[str, list[str]],
-    product_claim_span_ids_by_field: dict[str, list[str]],
-    source_sections: Mapping[str, Sequence[str]],
-) -> None:
-    """Preserve paragraph-level custody when a complete intent has no headings."""
-
-    if any(key != "preamble" for key in source_sections):
-        return
-    preamble_rows = [
-        (index, clean_markdown_text(row))
-        for index, row in enumerate(source_sections.get("preamble", ()), start=1)
-        if clean_markdown_text(row)
-    ]
-    for key in MATERIAL_FACT_KEYS:
-        if source_span_ids_by_field.get(key):
-            continue
-        matched_rows = _unheaded_source_rows_for_fact(key=key, value=facts.get(key), rows=preamble_rows)
-        if not matched_rows:
-            continue
-        span_ids: list[str] = []
-        for row_index, text in matched_rows:
-            span_id = f"{key}:source-preamble:{row_index}"
-            spans.append(
-                {
-                    "span_id": span_id,
-                    "section_key": key,
-                    "row_index": row_index,
-                    "classification": "product_claim",
-                    "text": text,
-                }
-            )
-            span_ids.append(span_id)
-        source_span_ids_by_field[key] = span_ids
-        product_claim_span_ids_by_field[key] = span_ids
-
-
-def _unheaded_source_rows_for_fact(
-    *,
-    key: str,
-    value: Any,
-    rows: Sequence[tuple[int, str]],
-) -> list[tuple[int, str]]:
-    if key != "human_actors":
-        fact = clean_markdown_text(value).casefold()
-        return [(index, text) for index, text in rows if fact and fact in text.casefold()]
-    labels = [
-        clean_markdown_text(actor).split(":", 1)[0].casefold()
-        for actor in confirmed_text_values(value)
-        if clean_markdown_text(actor)
-    ]
-    matched: list[tuple[int, str]] = []
-    for label in labels:
-        row = next(((index, text) for index, text in rows if label and label in text.casefold()), None)
-        if row is None:
-            return []
-        if row not in matched:
-            matched.append(row)
-    return matched
-
-
-def _span_classification(section_key: str) -> str:
-    if section_key in PRODUCT_FACT_KEYS:
-        return "product_claim"
-    if is_confirmed_intent_ignored_section(section_key):
-        return "ignored_instruction"
-    if is_confirmed_intent_supporting_section(section_key) or section_key == "preamble":
-        return "supporting_evidence"
-    return "supporting_evidence"
+    return _exact_text(evidence.get("source_sha256"))
 
 
 def _field_custody(
@@ -714,12 +639,9 @@ def _field_custody(
     *,
     source_span_ids_by_field: Mapping[str, Sequence[str]],
     product_claim_span_ids_by_field: Mapping[str, Sequence[str]],
-    evidence_span_ids: Sequence[str],
     spans: Sequence[Mapping[str, Any]],
-    source_format: str,
 ) -> dict[str, dict[str, Any]]:
     fields: dict[str, dict[str, Any]] = {}
-    typed_source = source_format in TYPED_SOURCE_FORMATS
     span_refs = {str(span.get("span_id") or ""): span for span in spans}
     for key in PRODUCT_FACT_KEYS:
         if key not in facts or not _has_fact_value(facts.get(key)):
@@ -730,22 +652,14 @@ def _field_custody(
         state = _custody_state(
             key=key,
             span_ids=product_claim_span_ids,
-            evidence_span_ids=evidence_span_ids,
-            typed_source=typed_source,
         )
-        source_span_ids = direct_source_span_ids or (
-            list(evidence_span_ids) if state in {"bounded_interpretation", "assumption"} else []
-        )
+        source_span_ids = direct_source_span_ids
         fields[key] = {
             "custody_state": state,
             "derivation": (
-                "canonical_product_section"
+                "exact_authored_projection"
                 if canonical_claim
-                else _derivation_for(
-                    state=state,
-                    span_ids=product_claim_span_ids,
-                    typed_source=typed_source,
-                )
+                else "unresolved_authored_fact"
             ),
             "confidence": _confidence_for(state),
             "entailment_relationship": _entailment_relationship(state, canonical_claim=canonical_claim),
@@ -764,30 +678,12 @@ def _custody_state(
     *,
     key: str,
     span_ids: Sequence[str],
-    evidence_span_ids: Sequence[str],
-    typed_source: bool,
 ) -> str:
     if key == "assumptions":
         return "assumption"
     if span_ids:
         return "accepted_fact"
-    if evidence_span_ids:
-        return "bounded_interpretation"
-    if typed_source:
-        return "inferred_fact"
     return "inferred_fact"
-
-
-def _derivation_for(*, state: str, span_ids: Sequence[str], typed_source: bool) -> str:
-    if span_ids:
-        return "canonical_product_section"
-    if state == "assumption":
-        return "visible_assumption"
-    if state == "bounded_interpretation":
-        return "bounded_interpretation_from_evidence"
-    if typed_source:
-        return "unresolved_typed_source_fact"
-    return "normalization_or_completion"
 
 
 def _confidence_for(state: str) -> str:
@@ -833,28 +729,18 @@ def _materiality_gate(
 
 def _add_span_digests(spans: Sequence[dict[str, Any]]) -> None:
     for span in spans:
-        text = clean_markdown_text(span.get("text"))
+        text = _exact_text(span.get("text"))
         span["text_sha256"] = hashlib.sha256(text.encode("utf-8")).hexdigest()
-
-
-def _evidence_span_ids(spans: Sequence[Mapping[str, Any]]) -> list[str]:
-    return [
-        str(span.get("span_id"))
-        for span in spans
-        if str(span.get("span_id") or "")
-        and span.get("classification") == "supporting_evidence"
-        and not clean_markdown_text(span.get("text")).startswith("<!-- odylith:")
-    ]
 
 
 def _span_ref(span: Mapping[str, Any]) -> dict[str, str]:
     ref = {
-        "span_id": clean_markdown_text(span.get("span_id")),
-        "classification": clean_markdown_text(span.get("classification")),
-        "text_sha256": clean_markdown_text(span.get("text_sha256")),
+        "span_id": _exact_text(span.get("span_id")),
+        "classification": _exact_text(span.get("classification")),
+        "text_sha256": _exact_text(span.get("text_sha256")),
     }
     if ref["classification"] == "supporting_evidence":
-        evidence_text = clean_markdown_text(span.get("evidence_text") or span.get("text"))
+        evidence_text = _exact_text(span.get("evidence_text") or span.get("text"))
         if evidence_text:
             ref["evidence_text"] = evidence_text
     return ref
@@ -872,14 +758,30 @@ def _authority_span_refs(value: Any) -> list[dict[str, str]]:
 
 def _has_fact_value(value: Any) -> bool:
     if isinstance(value, str):
-        return bool(clean_markdown_text(value))
+        return bool(value)
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        return any(clean_markdown_text(row) for row in value)
+        return any(isinstance(row, str) and bool(row) for row in value)
     return value is not None
 
 
+def _path_text(value: Any) -> str:
+    if isinstance(value, Path):
+        return str(value)
+    return _exact_text(value)
+
+
+def _is_sha256(value: Any) -> bool:
+    if not isinstance(value, str) or len(value) != 64:
+        return False
+    try:
+        int(value, 16)
+    except ValueError:
+        return False
+    return True
+
+
 __all__ = [
-    "LEGACY_PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSIONS",
+    "LIST_FACT_KEYS",
     "PRODUCT_FACT_KEYS",
     "PRODUCT_FACTS_HASH_KEY",
     "PRODUCT_INTENT_AUTHORITY_KEY",
@@ -887,17 +789,12 @@ __all__ = [
     "PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION",
     "PRODUCT_INTENT_LEDGER_VERSION",
     "build_product_intent_envelope",
-    "is_legacy_product_intent_envelope",
     "is_product_intent_envelope",
     "product_intent_authority_from_envelope",
-    "product_intent_authority_from_intent",
     "product_intent_authority_from_mapping",
     "product_intent_authority_snapshot_hash",
     "product_facts_from_envelope",
-    "product_facts_from_legacy_envelope",
-    "canonical_product_facts_payload",
     "product_facts_payload",
-    "canonical_product_actor_rows",
     "rebind_authoritative_product_facts",
     "require_product_intent_authority",
 ]

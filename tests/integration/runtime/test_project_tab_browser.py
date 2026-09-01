@@ -4,8 +4,10 @@ import json
 from pathlib import Path
 
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
-from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_component_commit
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_PROJECTION_ORIGIN,
+)
 from odylith.runtime.project_intelligence import assets
 from odylith.runtime.project_intelligence import builder as project_intelligence_builder
 from odylith.runtime.project_intelligence import presenter as project_intelligence_presenter
@@ -16,7 +18,7 @@ from tests.integration.runtime.surface_browser_test_support import (
     _static_server,
 )
 from tests.unit.runtime.greenfield_proposal_fixtures import (
-    _apply_ready_greenfield_fixture,
+    _canonical_model_authored_greenfield_fixture,
     _seed_empty_governance_repo,
     commit_precompiled_greenfield_proposal,
     stub_preconfirm_surface_refresh,
@@ -26,11 +28,6 @@ from tests.unit.runtime.greenfield_proposal_fixtures import (
 def _write_greenfield_project_page(tmp_path: Path, monkeypatch) -> Path:  # noqa: ANN001
     _seed_empty_governance_repo(tmp_path)
     stub_preconfirm_surface_refresh(monkeypatch)
-    monkeypatch.setattr(
-        greenfield_apply_write.owned_surface_refresh,
-        "raise_for_failed_refreshes",
-        lambda **_kwargs: None,
-    )
     monkeypatch.setattr(
         greenfield_component_commit.component_authoring.owned_surface_refresh,
         "raise_for_failed_refresh",
@@ -46,7 +43,7 @@ def _write_greenfield_project_page(tmp_path: Path, monkeypatch) -> Path:  # noqa
         "raise_for_greenfield_rendered_surface_custody",
         lambda **_kwargs: {},
     )
-    proposal = _apply_ready_greenfield_fixture(tmp_path, "Build an ecommerce site with checkout recovery")
+    proposal = _canonical_model_authored_greenfield_fixture(tmp_path)
     commit_precompiled_greenfield_proposal(
         repo_root=tmp_path,
         proposal=proposal,
@@ -57,7 +54,7 @@ def _write_greenfield_project_page(tmp_path: Path, monkeypatch) -> Path:  # noqa
         repo_root=tmp_path,
         shell_payload={},
     )
-    assert payload["projection"]["origin"] == "accepted greenfield project"
+    assert payload["projection"]["origin"] == AUTHORED_PROJECTION_ORIGIN
     assert payload["sections"][0] == "product_story"
     assert (tmp_path / "odylith" / "runtime" / "source" / "accepted-project.v1.json").is_file()
 
@@ -211,7 +208,7 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
     page.locator(".project-host-handoff").wait_for(timeout=15000)
     surface_text = page.locator(".project-surface").inner_text()
     assert "Product Story" in surface_text
-    assert "Risks" in surface_text
+    assert "Risks" not in surface_text
     assert "Project not defined yet" not in surface_text
     assert "Current orienting work" not in surface_text
     assert "Mockrepo" not in surface_text
@@ -221,11 +218,11 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
     assert "Human " + "takeaway" not in surface_text
     assert "First source creation sequence" in surface_text
     assert "Choose implementation language" in surface_text
-    assert "Create first implementation plan" in surface_text
-    assert "Build smallest runnable slice" in surface_text
-    assert "Add tests and proof" in surface_text
+    assert "Open first implementation plan" in surface_text
+    assert "Implement first runnable slice" in surface_text
+    assert "Run authored proof" in surface_text
     assert "Refresh governed records" in surface_text
-    assert "Do not edit source yet" in surface_text
+    assert "Stop before source edits until the plan is accepted" in surface_text
     assert "Topology spine" not in surface_text
     assert "How the story becomes governance" not in surface_text
     assert "Status now" not in surface_text
@@ -233,8 +230,8 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
     assert "Who uses it?" not in surface_text
     assert page.locator(".project-state-grid").count() == 0
     assert page.locator(".project-scenario").count() == 0
-    assert page.locator(".project-risks").count() == 1
-    assert page.locator(".project-risk-card").count() >= 1
+    assert page.locator(".project-risks").count() == 0
+    assert page.locator(".project-risk-card").count() == 0
     assert page.locator(".project-answer-strip").count() == 0
     assert page.locator('.project-job-card a[href*="tab=radar"][href*="workstream="]').count() >= 1
     assert page.locator(".project-job-card em").count() == 0

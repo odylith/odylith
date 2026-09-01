@@ -27,8 +27,8 @@ def build_onboarding_quality_scorecard(
     browser_proof: Mapping[str, Any],
     platform_leakage_proof: Mapping[str, Any],
     metamorphic_output: Mapping[str, Any],
-    rescue_proof: Any | None,
-    natural_rescue_proof: Any | None,
+    model_profile_proof: Mapping[str, Any],
+    unavailable_provider_proof: Mapping[str, Any],
     commit_recovery_proof: Any | None,
 ) -> dict[str, Any]:
     """Return a strict ten-dimension scorecard for the installed onboarding corpus.
@@ -43,8 +43,12 @@ def build_onboarding_quality_scorecard(
     all_transaction_scores = lambda *names: _all_scores(transaction_results, *names)
     browser_passed = _mapping_status(browser_proof) == "passed"
     custody_passed = _mapping_status(platform_leakage_proof) == "passed" and bool(metamorphic_output.get("passed"))
-    rescue_passed = _proof_passed(rescue_proof)
-    natural_rescue_passed = _proof_passed(natural_rescue_proof)
+    profile_issues = _profile_evidence_issues(
+        transaction_results=transaction_results,
+        clarification_results=clarification_results,
+        model_profile_proof=model_profile_proof,
+    )
+    unavailable_provider_passed = _mapping_status(unavailable_provider_proof) == "passed"
     recovery_passed = _proof_passed(commit_recovery_proof)
 
     dimensions = {
@@ -93,12 +97,28 @@ def build_onboarding_quality_scorecard(
             missing=_missing_transaction_scores(transaction_results, "copy_semantic_clarity", "domain_expert"),
         ),
         "preconfirm_tribunal_accuracy": _dimension(
-            passed=bool(transaction_results) and all_transaction_scores("semantic_manifest") and rescue_passed and natural_rescue_passed,
-            evidence=(
-                "all committed cases passed the typed manifest gate",
-                "synthetic rescue and real structured rescue proof passed" if rescue_passed and natural_rescue_passed else "one or more pre-confirm rescue proofs did not pass",
+            passed=(
+                bool(transaction_results)
+                and all_transaction_scores("semantic_manifest")
+                and not profile_issues
+                and unavailable_provider_passed
             ),
-            missing=_missing_transaction_scores(transaction_results, "semantic_manifest"),
+            evidence=(
+                "standard, rescue, and deep profiles passed one committed semantic-manifest floor"
+                if not profile_issues
+                else "one or more installed profile obligations did not pass",
+                "the lower-capability profile returned a passed no-write clarification"
+                if not profile_issues
+                else "lower-capability safe clarification was not proven",
+                "the unavailable-provider case failed quickly without writes or staging"
+                if unavailable_provider_passed
+                else "unavailable-provider fast no-write behavior was not proven",
+            ),
+            missing=(
+                *_missing_transaction_scores(transaction_results, "semantic_manifest"),
+                *profile_issues,
+                *(() if unavailable_provider_passed else ("unavailable-provider fast no-write proof did not pass",)),
+            ),
         ),
         "confirm_time_atomicity_readback_retry_and_recovery": _dimension(
             passed=bool(transaction_results) and all_transaction_scores("completion", "engineer") and recovery_passed,
@@ -160,6 +180,60 @@ def _expectation(result: Any) -> str:
 
 def _quality_passed(result: Any) -> bool:
     return bool(getattr(getattr(result, "quality", None), "passed", False))
+
+
+def _profile_evidence_issues(
+    *,
+    transaction_results: Sequence[Any],
+    clarification_results: Sequence[Any],
+    model_profile_proof: Mapping[str, Any],
+) -> tuple[str, ...]:
+    issues: list[str] = []
+    if _mapping_status(model_profile_proof) != "passed":
+        issues.append("installed model-profile proof did not pass")
+    profile_value = model_profile_proof.get("profiles")
+    profiles = profile_value if isinstance(profile_value, Mapping) else {}
+    lower_capability_profile_ids: list[str] = []
+    for tier in ("standard", "rescue", "deep"):
+        matching_profiles = tuple(
+            (str(profile_id), summary)
+            for profile_id, summary in profiles.items()
+            if isinstance(summary, Mapping) and str(summary.get("repair_tier") or "").strip() == tier
+        )
+        if len(matching_profiles) != 1:
+            issues.append(f"installed model-profile proof does not identify one {tier} profile")
+            continue
+        profile_id, summary = matching_profiles[0]
+        if str(summary.get("status") or "").strip() != "passed":
+            issues.append(f"installed {tier} model profile did not pass")
+        profile_results = tuple(
+            result
+            for result in transaction_results
+            if _result_profile_id(result) == profile_id
+        )
+        if not profile_results:
+            issues.append(f"installed {tier} model profile has no committed semantic-floor case")
+        else:
+            issues.extend(_missing_transaction_scores(profile_results, "semantic_manifest"))
+        if bool(summary.get("lower_capability")):
+            lower_capability_profile_ids.append(profile_id)
+    safe_clarifications = tuple(
+        result
+        for result in clarification_results
+        if _result_profile_id(result) in lower_capability_profile_ids
+        and _quality_passed(result)
+    )
+    if not lower_capability_profile_ids:
+        issues.append("installed model-profile proof does not identify a lower-capability profile")
+    elif not safe_clarifications:
+        issues.append("lower-capability profile lacks a passed no-write clarification case")
+    return tuple(dict.fromkeys(issues))
+
+
+def _result_profile_id(result: Any) -> str:
+    evidence = getattr(result, "evidence", {})
+    profile = evidence.get("model_profile") if isinstance(evidence, Mapping) else {}
+    return str(profile.get("profile_id") or "").strip() if isinstance(profile, Mapping) else ""
 
 
 def _mapping_status(value: Mapping[str, Any]) -> str:

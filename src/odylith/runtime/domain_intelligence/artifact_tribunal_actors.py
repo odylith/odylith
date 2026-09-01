@@ -7,7 +7,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.domain_intelligence.artifact_graph import DomainIntelligenceGraph
-from odylith.runtime.domain_intelligence.artifact_graph import domain_graph_from_workstream
+from odylith.runtime.domain_intelligence.artifact_graph import canonical_graph_from_workstream
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import accepted_actor_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import restore_source_acronym_number_tokens
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import restore_source_token_casing
@@ -105,11 +105,7 @@ def tribunal_actor_projection(proposal: Mapping[str, Any]) -> tuple[dict[str, st
 
 def _first_domain_graph(proposal: Mapping[str, Any]) -> DomainIntelligenceGraph:
     rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
-    for row in rows:
-        intelligence = row.get("domain_intelligence")
-        if isinstance(intelligence, Mapping):
-            return domain_graph_from_workstream(intelligence, row=row, proposal=proposal)
-    return domain_graph_from_workstream({}, row=rows[0] if rows else {}, proposal=proposal)
+    return canonical_graph_from_workstream(row=rows[0] if rows else {}, proposal=proposal)
 
 
 def _domain_actor_names(graph: DomainIntelligenceGraph, *, proposal: Mapping[str, Any]) -> dict[str, str]:
@@ -426,16 +422,9 @@ def _proposal_actor_candidates(proposal: Mapping[str, Any]) -> tuple[str, ...]:
     """Prefer accepted project actors over internal role fallbacks."""
 
     values: list[str] = []
-    for item in proposal.get("backlog", []):
-        if not isinstance(item, Mapping):
-            continue
-        intelligence = item.get("domain_intelligence")
-        if isinstance(intelligence, Mapping):
-            values.extend(_actor_segments(intelligence.get("actors")))
-    project = proposal.get("project_intelligence")
-    if isinstance(project, Mapping):
-        for key in ("actors", "owners", "operators"):
-            values.extend(_actor_segments(project.get(key)))
+    intent = proposal.get("intent")
+    if isinstance(intent, Mapping):
+        values.extend(_actor_segments(intent.get("human_actors")))
     for item in proposal.get("backlog", []):
         if not isinstance(item, Mapping):
             continue

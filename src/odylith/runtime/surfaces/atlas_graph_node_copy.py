@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract_support import present_verb
+from odylith.runtime.common.display_text import present_verb
 
 
 _ACTION_RE = re.compile(

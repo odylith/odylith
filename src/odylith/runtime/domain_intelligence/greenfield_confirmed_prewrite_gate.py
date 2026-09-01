@@ -6,78 +6,54 @@ from collections.abc import Mapping
 from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_programs
-from odylith.runtime.domain_intelligence.greenfield_component_contract import component_contract_issues
-from odylith.runtime.domain_intelligence.greenfield_component_contract_differentiation import component_spec_preflight_issues
-from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_generated_text as _clean
-from odylith.runtime.domain_intelligence.greenfield_rows import dict_rows
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    authored_projection_relations,
+    authored_source_custody,
+)
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    PRODUCT_INTENT_AUTHORITY_KEY,
+)
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
-from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import select_visible_result_candidate
-from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
-from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
-from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
-from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
-from odylith.runtime.domain_intelligence.proposal_validation import collect_host_reasoned_proposal_issues
+from odylith.runtime.domain_intelligence.proposal_tribunal import (
+    run_greenfield_tribunal,
+)
+from odylith.runtime.domain_intelligence.proposal_validation import (
+    collect_host_reasoned_proposal_issues,
+)
 from odylith.runtime.governance import artifact_tribunal
-
-
-def complete_semantic_model(
-    proposal: dict[str, Any],
-    *,
-    title: str,
-    state_object: str,
-    first_path: str,
-    proof_boundary: str,
-) -> bool:
-    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
-    state_source = _clean(intent.get("state_object")) or state_object
-    visible_candidate = select_visible_result_candidate(
-        first_path,
-        proof_boundary=proof_boundary,
-        product_view=intent.get("product_view"),
-        state_object=state_source,
-    )
-    visible_result = (
-        visible_candidate.text
-        if visible_candidate.source_path != "proof_boundary" and len(visible_candidate.text.split()) >= 2
-        else ""
-    )
-    model = semantic_model_mapping(
-        build_greenfield_semantic_model(
-            title=title,
-            state_object=state_source,
-            first_path=first_path,
-            visible_result=visible_result,
-            proof_boundary=proof_boundary,
-            components=dict_rows(proposal.get("components")),
-            human_actors=text_values(intent.get("human_actors")),
-            internal_systems=text_values(intent.get("internal_systems")),
-            external_systems=text_values(intent.get("external_systems")),
-            non_goals=text_values(proposal.get("non_goals") or intent.get("non_goals")),
-            operational_constraints=text_values(intent.get("operational_constraints")),
-            workstreams=mapping_rows(proposal.get("backlog")),
-            source_requirements=text_values(intent.get("evidence_requirements")),
-        )
-    )
-    if proposal.get("semantic_model") == model:
-        return False
-    proposal["semantic_model"] = model
-    return True
 
 
 def preflight_issues(proposal: Mapping[str, Any], *, release_selector: str) -> list[str]:
     issues: list[str] = []
+    model_authored = bool(authored_projection_relations(proposal))
+    source_custody: Mapping[str, Any] | None = None
+    if model_authored:
+        intent = proposal.get("intent")
+        authority = proposal.get(PRODUCT_INTENT_AUTHORITY_KEY)
+        if not isinstance(intent, Mapping) or not isinstance(authority, Mapping):
+            raise ValueError("model-authored prewrite is missing sealed Product Intent authority")
+        source_custody = authored_source_custody(intent=intent, authority=authority)
+    else:
+        return ["Greenfield prewrite requires sealed model-authored typed intent"]
     issues.extend(collect_host_reasoned_proposal_issues(proposal))
-    issues.extend(component_contract_issues(proposal))
-    issues.extend(component_spec_preflight_issues(proposal))
     selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
     tribunal = run_greenfield_tribunal(proposal, release_selector=selector)
     issues.extend(tribunal.issues)
-    issues.extend(_artifact_issues(proposal))
+    issues.extend(
+        _artifact_issues(
+            proposal,
+            source_custody=source_custody,
+        )
+    )
     return list(unique_text(issues))
 
 
-def _artifact_issues(proposal: Mapping[str, Any]) -> list[str]:
+def _artifact_issues(
+    proposal: Mapping[str, Any],
+    *,
+    source_custody: Mapping[str, Any] | None = None,
+) -> list[str]:
     issues: list[str] = []
     for index, row in enumerate(mapping_rows(proposal.get("backlog")), start=1):
         decision = artifact_tribunal.run_governed_artifact_tribunal(
@@ -92,6 +68,7 @@ def _artifact_issues(proposal: Mapping[str, Any]) -> list[str]:
                 "risks": [row.get("domain_risk", ""), row.get("security_posture", ""), row.get("risks", "")],
                 "validation": row.get("validation", ""),
             },
+            source_custody=source_custody,
         )
         issues.extend(f"backlog row {index}: {issue}" for issue in decision.issues)
     for index, row in enumerate(mapping_rows(proposal.get("components")), start=1):
@@ -109,6 +86,7 @@ def _artifact_issues(proposal: Mapping[str, Any]) -> list[str]:
                 "validation": row.get("validation", ""),
                 "risks": row.get("risks", ""),
             },
+            source_custody=source_custody,
         )
         issues.extend(f"component row {index}: {issue}" for issue in decision.issues)
     for index, row in enumerate(mapping_rows(proposal.get("diagrams")), start=1):
@@ -126,9 +104,10 @@ def _artifact_issues(proposal: Mapping[str, Any]) -> list[str]:
                 "related_backlog": row.get("related_backlog", "") or row.get("related_diagrams", ""),
                 "related_code": row.get("related_code", ""),
             },
+            source_custody=source_custody,
         )
         issues.extend(f"diagram row {index}: {issue}" for issue in decision.issues)
     return issues
 
 
-__all__ = ["complete_semantic_model", "preflight_issues"]
+__all__ = ["preflight_issues"]

@@ -35,6 +35,7 @@ from odylith.runtime.domain_intelligence import greenfield_release_commit
 from odylith.runtime.domain_intelligence import greenfield_source_casing
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence import greenfield_traceability_commit
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import authored_projection_relations
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.proposal_memory import build_greenfield_acceptance_event_preview
@@ -55,6 +56,12 @@ class GreenfieldPrewriteBuild:
     backlog_result: Mapping[str, Any]
 
 
+def release_assignment_note(*, selector: str) -> str:
+    """Return the deterministic note sealed with first-release targeting."""
+
+    return f"Target confirmed first-release greenfield workstream(s) for release `{selector}`."
+
+
 def build_prewrite_completion_package(
     *,
     root: Path,
@@ -66,7 +73,12 @@ def build_prewrite_completion_package(
 ) -> GreenfieldPrewriteBuild:
     """Render the full confirmed-create package in a staged repo before writes."""
 
-    source_text = greenfield_source_casing.proposal_source_casing_text(proposal)
+    authored_projection = bool(authored_projection_relations(proposal))
+    source_text = (
+        ""
+        if authored_projection
+        else greenfield_source_casing.proposal_source_casing_text(proposal)
+    )
     accepted_at = _compiled_acceptance_timestamp()
     baseline_writes = greenfield_create_baseline.precompiled_greenfield_create_baseline_writes(root)
     brand_asset_writes = brand_assets.precompiled_brand_asset_writes(repo_root=root)
@@ -167,12 +179,14 @@ def build_prewrite_completion_package(
                 repo_root=prewrite_root,
                 proposal=proposal,
                 selector=release_selector,
+                idea_specs=staged_backlog_result["_candidate_idea_specs"],
                 dry_run=True,
             )
             staged_release_bootstrap = greenfield_release_commit.materialize_compiled_release_target(
                 repo_root=prewrite_root,
                 release_selector=release_selector,
                 release_target_result=preview_release_target,
+                idea_specs=staged_backlog_result["_candidate_idea_specs"],
             )
             preview_release_assignment = release_planning_authoring.add_workstreams_to_release(
                 repo_root=prewrite_root,
@@ -186,6 +200,7 @@ def build_prewrite_completion_package(
             staged_release_targeting = greenfield_release_commit.materialize_compiled_release_assignment(
                 repo_root=prewrite_root,
                 release_assignment_result=preview_release_assignment,
+                idea_specs=staged_backlog_result["_candidate_idea_specs"],
             )
             staged_release_targeting = {
                 **staged_release_targeting,
@@ -197,7 +212,7 @@ def build_prewrite_completion_package(
             release_assignment_result=preview_release_assignment,
             release_selector=release_selector,
         )
-        package_proposal = proposal_with_component_brief_gate(proposal)
+        package_proposal = dict(proposal) if authored_projection else proposal_with_component_brief_gate(proposal)
         project_brief = package_proposal.get("project_brief") if isinstance(package_proposal.get("project_brief"), Mapping) else {}
         next_steps_preview = greenfield_experience.build_next_steps(
             proposal=package_proposal,
@@ -316,7 +331,8 @@ def build_prewrite_completion_package(
             repository_write_set=transaction_seal.repository_write_set,
             commit_result_preview=transaction_seal.commit_result_preview,
         )
-        package = greenfield_source_casing.package_with_source_casing(package)
+        if not authored_projection:
+            package = greenfield_source_casing.package_with_source_casing(package)
         source_cased_seal = greenfield_prewrite_transaction_seal.seal_staged_greenfield_create(
             greenfield_prewrite_transaction_seal.GreenfieldPrewriteSealRequest(
                 prewrite_root=prewrite_root,
@@ -541,6 +557,7 @@ def ensure_release_target(
     repo_root: Path,
     proposal: Mapping[str, Any],
     selector: str,
+    idea_specs: Mapping[str, Any] | None = None,
     dry_run: bool = False,
 ) -> dict[str, Any]:
     """Create or preview the release selector needed by confirmed greenfield apply."""
@@ -566,6 +583,7 @@ def ensure_release_target(
         name=release_name,
         notes=f"Greenfield release plan for {title}; created only after proposal confirmation.",
         aliases=tuple(release_aliases),
+        idea_specs=idea_specs,
         dry_run=dry_run,
     )
 
@@ -763,6 +781,7 @@ __all__ = [
     "mark_previous_greenfield_workstreams_stale",
     "remove_prewrite_stale_idea_files",
     "remove_stale_workstream_artifacts",
+    "release_assignment_note",
     "preview_accepted_project_memory",
     "preview_compass_acceptance_event",
     "preview_project_dashboard_payload",

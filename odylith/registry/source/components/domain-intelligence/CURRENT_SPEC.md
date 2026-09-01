@@ -1,16 +1,17 @@
 # Domain Intelligence
-Last updated: 2026-08-13
+Last updated: 2026-09-01
 
 
 ## Overview
 
-Domain Intelligence owns the Greenfield evidence-to-transaction boundary. It
-turns untrusted operator evidence into typed product facts, compiles and validates
-the complete governed package before confirmation, stores each pending package at
-an immutable hash-addressed path, and publishes the accepted package as one
-transaction-addressed generation. Codex and Claude transport the same exact
-hash-bound `CONFIRM`, `EDIT`, and `REJECT` contract; host prose is never product
-truth and no product interpretation or artifact generation runs after confirmation.
+Domain Intelligence owns the Greenfield evidence-to-transaction boundary. One
+pinned authoring-model response selects source-cited facts and typed relations;
+deterministic code verifies exact custody, projects the complete governed package,
+and validates it before confirmation. Each pending package is immutable and
+hash-addressed, and accepted bytes publish as one transaction-addressed generation.
+Codex and Claude transport the same exact hash-bound `CONFIRM`, `EDIT`, and
+`REJECT` contract. No evidence interpretation, model call, artifact generation,
+or prose repair runs after confirmation.
 
 ## Boundary
 
@@ -50,6 +51,23 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-09-01: Sealed explicit coordinated-actor carry in authored-semantics v7. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  The model marks an omitted coordinated subject with occurrence zero; the
+  deterministic relation owner converts that decision to `actor_is_carried` and
+  permits it only when the immediately preceding actor kind, quote, selected fact,
+  and product owner are identical. First-event carry, silent actor changes, and
+  product-only implicit actors fail closed. Atomic custody binds carried actors to
+  their selected entity facts. Full current-tree proof passes 615 Greenfield runtime
+  tests, 456 install tests, and 15 browser-state tests.
+
+- 2026-09-01: Replaced Greenfield prose recovery with model-authored typed intent v13. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  One source-cited structured response owns product facts, first-path events,
+  context links, component responsibilities, assumptions, and ambiguities.
+  Deterministic code owns byte coordinates, hashes, transaction construction,
+  projection, and exact readback. A structural boundary test rejects regex imports
+  across semantic authoring and projection; remaining active regex uses are scalar
+  identifier, digest, version, timestamp, and diagram-ID validation only.
 
 - 2026-08-12: Bound accepted component state to typed compiler custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   Semantic contracts carry their exact validated owned-state fragments through
@@ -3183,13 +3201,12 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Research Basis
 
-The v0.1.14 runtime deliberately avoids a hardcoded domain catalog as the
-proposal author. User requests can span any product, science, math, research,
-art, policy, infrastructure, or mixed project shape. Until Odylith has a real
-marketplace or collectively curated domain catalog, the right architecture is
-host-reasoned authorship plus Odylith validation. The host model reasons from
-the actual prompt and repo evidence; Odylith enforces evidence tiers,
-confirmation gates, topology requirements, apply schema, and durable memory.
+The v0.1.15 runtime deliberately avoids a hardcoded domain catalog and
+domain-vocabulary rules. User requests can span any product, science, math,
+research, art, policy, infrastructure, or mixed project shape. A pinned model
+authors source-cited typed meaning from the complete evidence; deterministic
+Odylith boundaries verify custody, materiality, transaction integrity,
+projection coherence, confirmation, and readback.
 
 ## Dependencies
 
@@ -3201,35 +3218,18 @@ confirmation gates, topology requirements, apply schema, and durable memory.
 
 ## Test Coverage
 
-- `tests/unit/runtime/test_greenfield_proposals.py`
-- `tests/unit/runtime/test_greenfield_confirmed_intent.py`
-- `tests/unit/runtime/test_greenfield_confirmed_repair.py`
-- `tests/unit/runtime/test_greenfield_row_coercion.py`
-- `tests/unit/runtime/test_greenfield_coercion_hygiene.py`
-- `tests/unit/runtime/test_greenfield_project_brief_rendering.py`
-- `tests/unit/runtime/test_greenfield_component_spec_quality.py`
-- `tests/unit/runtime/test_tribunal_lens.py`
-- `tests/unit/runtime/test_greenfield_quality_lens_repair.py`
-- `tests/unit/runtime/test_greenfield_preconfirm_projection_rerender.py`
-- `tests/unit/runtime/test_greenfield_preconfirm_patch_payload.py`
-- `tests/unit/runtime/test_greenfield_preconfirm_quality_repairs.py`
+- `tests/unit/runtime/test_greenfield_model_intent_authoring.py`
+- `tests/unit/runtime/test_greenfield_model_path_custody.py`
+- `tests/unit/runtime/test_greenfield_parser_authority_retirement.py`
+- `tests/unit/runtime/test_greenfield_create_transaction.py`
+- `tests/unit/runtime/test_greenfield_transaction.py`
+- `tests/unit/runtime/test_greenfield_commit_journal.py`
+- `tests/unit/runtime/test_greenfield_commit_rollback.py`
+- `tests/unit/runtime/test_greenfield_host_confirmation.py`
 - `tests/unit/runtime/test_greenfield_host_routing.py`
-- `tests/unit/runtime/test_greenfield_intelligence_schema.py`
-- `tests/unit/runtime/test_greenfield_atlas_contract.py`
-- `tests/unit/runtime/test_greenfield_sparse_confirmed_intent.py`
-- `tests/unit/runtime/test_greenfield_confirmed_surfaces.py`
-- `tests/unit/runtime/test_greenfield_general_artifact_quality.py`
-- `tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py`
-- `tests/unit/runtime/test_greenfield_live_simulation_regressions.py`
-- `tests/unit/install/test_greenfield_preconfirm_matrix.py`
-- `tests/unit/runtime/test_tribunal_patch_planner.py`
-- `tests/unit/runtime/test_odylith_reasoning.py`
-- `tests/unit/runtime/test_tribunal_engine.py`
-- `tests/unit/test_cli.py`
-- `tests/unit/runtime/test_component_authoring.py`
-- `tests/unit/runtime/test_program_wave_authoring.py`
-- `tests/unit/runtime/test_execution_wave_view_model.py`
-- `tests/unit/runtime/test_execution_wave_ui_runtime_primitives.py`
-- `tests/integration/runtime/test_surface_browser_smoke.py`
-- `tests/integration/runtime/test_compass_browser_regression_matrix.py`
-- `tests/unit/runtime/test_compass_transaction_runtime.py`
+- `tests/integration/runtime/test_greenfield_hiit_preconfirm_quality.py`
+- `tests/integration/runtime/test_project_tab_browser.py`
+- `tests/unit/install/test_greenfield_browser_surface_proof.py`
+- `tests/unit/install/test_greenfield_commit_recovery_proof.py`
+- `tests/unit/install/test_greenfield_relation_fidelity.py`
+- `tests/unit/install/test_greenfield_semantic_release_score.py`

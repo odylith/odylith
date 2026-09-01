@@ -40,16 +40,8 @@ trap cleanup_wrapper_temp_root EXIT
 trap preserve_wrapper_temp_root_on_signal INT TERM
 
 extra_args=()
-rescue_smoke_enabled=1
-natural_rescue_enabled=1
 browser_proof_enabled=1
 commit_recovery_proof_enabled=1
-if [[ "${RESCUE_SMOKE:-1}" == "0" ]]; then
-  rescue_smoke_enabled=0
-fi
-if [[ "${NATURAL_RESCUE_PROOF:-1}" == "0" ]]; then
-  natural_rescue_enabled=0
-fi
 if [[ "${BROWSER_PROOF:-1}" == "0" ]]; then
   browser_proof_enabled=0
 fi
@@ -58,6 +50,13 @@ if [[ "${COMMIT_RECOVERY_PROOF:-1}" == "0" ]]; then
 fi
 release_case_file="${GREENFIELD_MATRIX_CASE_FILE:-}"
 release_audit_file="${GREENFIELD_MATRIX_RELEASE_AUDIT_FILE:-}"
+release_audit_repo_root="${GREENFIELD_MATRIX_RELEASE_AUDIT_REPO_ROOT:-}"
+sealed_release_input_root="${GREENFIELD_MATRIX_SEALED_RELEASE_INPUT_ROOT:-}"
+semantic_annotations_file="${GREENFIELD_MATRIX_SEMANTIC_ANNOTATIONS_FILE:-}"
+evaluation_split_manifest="${GREENFIELD_MATRIX_EVALUATION_SPLIT_MANIFEST:-}"
+final_holdout_run_ledger="${GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER:-}"
+implementation_revision="${GREENFIELD_MATRIX_IMPLEMENTATION_REVISION:-}"
+distribution_provenance_file="${GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE:-}"
 release_intent="${GREENFIELD_MATRIX_RELEASE_INTENT:-0}"
 if [[ "$release_intent" != "0" && "$release_intent" != "1" ]]; then
   die "GREENFIELD_MATRIX_RELEASE_INTENT must be 0 or 1"
@@ -65,29 +64,30 @@ fi
 if [[ "$release_intent" == "1" ]]; then
   [[ -n "$release_case_file" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_CASE_FILE"
   [[ -f "$release_case_file" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 case file is missing: $release_case_file"
-  [[ -n "$release_audit_file" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_RELEASE_AUDIT_FILE"
-  [[ -f "$release_audit_file" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 audit file is missing: $release_audit_file"
-  [[ "$rescue_smoke_enabled" == "1" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires RESCUE_SMOKE=1"
-  [[ "$natural_rescue_enabled" == "1" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires NATURAL_RESCUE_PROOF=1"
+  [[ -n "$sealed_release_input_root" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_SEALED_RELEASE_INPUT_ROOT"
+  [[ -n "$semantic_annotations_file" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_SEMANTIC_ANNOTATIONS_FILE"
+  [[ -n "$evaluation_split_manifest" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_EVALUATION_SPLIT_MANIFEST"
+  [[ -n "$final_holdout_run_ledger" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER"
+  [[ -n "$implementation_revision" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_IMPLEMENTATION_REVISION"
+  [[ -n "$distribution_provenance_file" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE"
   [[ "$browser_proof_enabled" == "1" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires BROWSER_PROOF=1"
   [[ "$commit_recovery_proof_enabled" == "1" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires COMMIT_RECOVERY_PROOF=1"
 elif [[ -n "$release_audit_file" && -z "$release_case_file" ]]; then
   die "GREENFIELD_MATRIX_RELEASE_AUDIT_FILE requires GREENFIELD_MATRIX_CASE_FILE"
 fi
-if [[ "$release_intent" == "1" || ( "$rescue_smoke_enabled" == "1" && "$natural_rescue_enabled" == "1" && "$browser_proof_enabled" == "1" && "$commit_recovery_proof_enabled" == "1" && -n "$release_case_file" && -n "$release_audit_file" ) ]]; then
+if [[ "$release_intent" == "1" && -n "$release_audit_file" && -z "$release_audit_repo_root" ]]; then
+  release_audit_repo_root="$sealed_release_input_root"
+fi
+if [[ -n "$release_audit_repo_root" && -z "$release_audit_file" ]]; then
+  die "GREENFIELD_MATRIX_RELEASE_AUDIT_REPO_ROOT requires GREENFIELD_MATRIX_RELEASE_AUDIT_FILE"
+fi
+if [[ -n "$release_audit_file" ]]; then
+  [[ -f "$release_audit_file" ]] || die "GREENFIELD_MATRIX_RELEASE_AUDIT_FILE is missing: $release_audit_file"
+fi
+if [[ "$release_intent" == "1" ]]; then
   extra_args+=(--proof-tier release)
 else
   extra_args+=(--proof-tier discovery)
-fi
-if [[ "$rescue_smoke_enabled" == "1" ]]; then
-  extra_args+=(--include-rescue-smoke)
-else
-  extra_args+=(--skip-rescue-smoke)
-fi
-if [[ "$natural_rescue_enabled" == "1" ]]; then
-  extra_args+=(--include-natural-rescue-proof)
-else
-  extra_args+=(--skip-natural-rescue-proof)
 fi
 if [[ "$browser_proof_enabled" == "1" ]]; then
   extra_args+=(--include-browser-proof)
@@ -105,6 +105,19 @@ if [[ -n "$release_case_file" ]]; then
 fi
 if [[ -n "$release_audit_file" ]]; then
   extra_args+=(--release-audit-file "$release_audit_file")
+fi
+if [[ -n "$release_audit_repo_root" ]]; then
+  extra_args+=(--release-audit-repo-root "$release_audit_repo_root")
+fi
+if [[ "$release_intent" == "1" ]]; then
+  extra_args+=(
+    --sealed-release-input-root "$sealed_release_input_root"
+    --semantic-annotations-file "$semantic_annotations_file"
+    --evaluation-split-manifest "$evaluation_split_manifest"
+    --final-holdout-run-ledger "$final_holdout_run_ledger"
+    --implementation-revision "$implementation_revision"
+    --distribution-provenance-file "$distribution_provenance_file"
+  )
 fi
 if [[ -n "${GREENFIELD_MATRIX_INSTALL_MODE:-}" ]]; then
   extra_args+=(--install-mode "$GREENFIELD_MATRIX_INSTALL_MODE")

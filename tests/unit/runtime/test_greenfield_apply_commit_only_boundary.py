@@ -8,26 +8,21 @@ from typing import Any
 
 import pytest
 
-from odylith.runtime.common import display_text
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
-from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_backlog_commit
 from odylith.runtime.domain_intelligence import greenfield_compiled_package_contract
 from odylith.runtime.domain_intelligence import greenfield_component_commit
-from odylith.runtime.domain_intelligence import greenfield_confirmed_intent
 from odylith.runtime.domain_intelligence import greenfield_create_commit
-from odylith.runtime.domain_intelligence import greenfield_preconfirm_rescue_planner
-from odylith.runtime.domain_intelligence import greenfield_preconfirm_patch_apply
 from odylith.runtime.domain_intelligence import greenfield_prewrite_surface_stage
-from odylith.runtime.domain_intelligence import greenfield_prompt_intent_materialization
+from odylith.runtime.domain_intelligence import greenfield_model_intent_materialization
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_proposals_cli
 from odylith.runtime.domain_intelligence import greenfield_release_commit
 from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence import greenfield_traceability_commit
 from odylith.runtime.domain_intelligence import proposal_memory
-from tests.unit.runtime.greenfield_proposal_fixtures import _governed_greenfield_fixture
+from tests.unit.runtime.greenfield_proposal_fixtures import _canonical_model_authored_greenfield_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
 
@@ -35,6 +30,7 @@ from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_prev
 def test_apply_confirm_is_disabled_before_compile_commit_boundary(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
 ) -> None:
     compile_calls: list[dict[str, Any]] = []
 
@@ -44,16 +40,12 @@ def test_apply_confirm_is_disabled_before_compile_commit_boundary(
 
     monkeypatch.setattr(greenfield_proposals, "compile_greenfield_create_transaction", forbidden_compile)
 
-    proposal = {"backlog": [{"title": "Accepted package"}]}
+    rc = greenfield_proposals_cli.main(
+        ["apply", "--repo-root", str(tmp_path), "--confirm"]
+    )
 
-    with pytest.raises(ValueError, match="greenfield apply is disabled"):
-        greenfield_proposals.apply_greenfield_proposal(
-            repo_root=tmp_path,
-            proposal=proposal,
-            confirm=True,
-            release_selector="0.0.1",
-        )
-
+    assert rc == 2
+    assert "greenfield apply is disabled" in capsys.readouterr().out
     assert compile_calls == []
 
 
@@ -82,12 +74,17 @@ def test_create_confirm_cli_commits_transaction_without_post_confirm_generation(
         "raise_for_greenfield_rendered_surface_custody",
         lambda **_kwargs: {"status": "passed", "atlas_surface_count": 3, "atlas_diagram_count": 2},
     )
-    proposal = _governed_greenfield_fixture(tmp_path, "plant sensor")
+    proposal = _canonical_model_authored_greenfield_fixture(tmp_path)
+    authoring_receipt = proposal.pop("_test_model_authoring_receipt")
+    assert isinstance(authoring_receipt, dict)
     transaction = greenfield_proposals.compile_greenfield_create_transaction(
         repo_root=tmp_path,
         proposal=proposal,
         release_selector="0.0.1",
         proposal_ready=True,
+        preconfirm_elapsed_seconds=float(authoring_receipt.get("elapsed_seconds") or 0.0),
+        model_authoring_tier=str(authoring_receipt.get("tier") or ""),
+        model_authoring_receipt=authoring_receipt,
     )
     write_set = transaction.prewrite_package.repository_write_set or {}
     write_paths = {
@@ -110,22 +107,12 @@ def test_create_confirm_cli_commits_transaction_without_post_confirm_generation(
         raise AssertionError("commit-only create must not compile, repair, clean, or rebuild package projections")
 
     monkeypatch.setattr(greenfield_proposals, "compile_greenfield_create_transaction", forbidden)
-    monkeypatch.setattr(greenfield_proposals, "_build_repaired_prewrite_package", forbidden)
-    monkeypatch.setattr(greenfield_proposals, "apply_greenfield_patchset_repairs", forbidden)
-    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "apply_greenfield_patchset_repairs", forbidden)
-    monkeypatch.setattr(greenfield_preconfirm_rescue_planner.odylith_reasoning, "provider_from_config", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "_build_authored_prewrite_package", forbidden)
     monkeypatch.setattr(
-        greenfield_preconfirm_rescue_planner.tribunal_patch_planner,
-        "plan_structured_patch",
+        greenfield_model_intent_materialization,
+        "materialize_model_authored_intent",
         forbidden,
     )
-    monkeypatch.setattr(
-        greenfield_prompt_intent_materialization,
-        "materialize_prompt_intent_hypothesis",
-        forbidden,
-    )
-    monkeypatch.setattr(greenfield_confirmed_intent, "load_confirmed_intent_record", forbidden)
-    monkeypatch.setattr(display_text, "strip_inline_markdown_emphasis_tree", forbidden)
     monkeypatch.setattr(greenfield_apply_prewrite, "build_prewrite_completion_package", forbidden)
     monkeypatch.setattr(greenfield_prewrite_surface_stage, "build_staged_surface_refresh_preview", forbidden)
     monkeypatch.setattr(greenfield_prewrite_surface_stage, "materialize_staged_greenfield_surfaces", forbidden)
@@ -137,7 +124,6 @@ def test_create_confirm_cli_commits_transaction_without_post_confirm_generation(
     monkeypatch.setattr(greenfield_release_commit, "materialize_compiled_release_assignment", forbidden)
     monkeypatch.setattr(greenfield_traceability_commit, "rebase_compiled_traceability_plan", forbidden)
     monkeypatch.setattr(proposal_memory, "record_compiled_greenfield_acceptance", forbidden)
-    monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", forbidden)
     monkeypatch.setattr(
         greenfield_component_commit.component_authoring.owned_surface_refresh,
         "raise_for_failed_refresh",
@@ -193,6 +179,7 @@ def test_commit_executor_has_no_preconfirm_compiler_or_rescue_imports() -> None:
     )
 
     assert not {
+        "odylith.runtime.domain_intelligence.greenfield_apply_write",
         "odylith.runtime.domain_intelligence.greenfield_preconfirm_engine",
         "odylith.runtime.domain_intelligence.greenfield_preconfirm_rescue_planner",
         "odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority",

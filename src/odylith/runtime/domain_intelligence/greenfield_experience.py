@@ -1,85 +1,52 @@
-"""Operator-facing greenfield implementation handoff helpers.
+"""Structural implementation handoffs for model-authored Greenfield intent.
 
-This module owns the text and ID shaping that turns an accepted proposal into
-the next coding move. Greenfield apply writes governance truth elsewhere; this
-owner keeps the human handoff, component runways, and first-release proof language
-consistent across CLI output and candidate component specs.
+The model-authoring boundary has already selected and source-bound canonical
+meaning. This module copies those typed facts into coding-readiness and
+component handoffs without parsing, clipping, repairing, or reclassifying prose.
 """
 
 from __future__ import annotations
 
-from typing import Any, Mapping, Sequence
+from typing import Any, Mapping, Protocol, Sequence
 
-from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    GreenfieldAuthoredSemanticsError,
+    authored_projection_relations,
+)
+from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
+    build_coding_readiness_contract,
+    render_coding_readiness_gates,
+)
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
-from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
-from odylith.runtime.domain_intelligence.greenfield_text import dedupe_adjacent_words
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_cover_article_language
-from odylith.runtime.domain_intelligence.greenfield_text import strip_dangling_word_tail
-from odylith.runtime.domain_intelligence.greenfield_text import text_values
-from odylith.runtime.domain_intelligence.greenfield_text import unique_text
-from odylith.runtime.domain_intelligence import greenfield_traceability
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import normalize_first_path
-from odylith.runtime.domain_intelligence.greenfield_confirmed_text import CONFIRMED_DANGLING_WORDS
-from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_action_phrase
-from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_outcome_phrase
-from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_sentence
-from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import (
-    first_release_boundary_summary,
-)
 
-_PREVIEW_TERMINAL_MODIFIERS = frozenset(
-    {
-        "accepted",
-        "actionable",
-        "clear",
-        "complete",
-        "concrete",
-        "first",
-        "reviewable",
-        "specific",
-        "trusted",
-        "visible",
-    }
-)
-_PREVIEW_DANGLING_WORDS = frozenset(
-    (CONFIRMED_DANGLING_WORDS - {"final"}) | {"around", "from", "keep", "keeps", "return", "returns"}
-)
-_PREVIEW_TERMINAL_FINAL_STATE_WORDS = frozenset(
-    {"case", "decision", "match", "record", "result", "review", "score", "status"}
-)
-_PREVIEW_SUBORDINATE_TAIL_MARKERS = frozenset({"because", "if", "unless", "until", "when", "where", "while", "which"})
-_PREVIEW_SUBORDINATE_TAIL_VERBS = frozenset(
-    {
-        "are",
-        "blocks",
-        "changes",
-        "exists",
-        "fails",
-        "has",
-        "have",
-        "is",
-        "passes",
-        "was",
-        "were",
-        "will",
-    }
-)
+
+class _TraceabilityPlan(Protocol):
+    component_workstreams: Mapping[str, Sequence[str]]
 
 
 def row_text_tuple(row: Mapping[str, Any], *keys: str) -> tuple[str, ...]:
+    """Return exact string rows from the first populated typed field."""
+
     for key in keys:
-        values = text_values(row.get(key))
+        value = row.get(key)
+        if isinstance(value, str):
+            values = (value,) if value.strip() else ()
+        elif isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+            values = tuple(item for item in value if isinstance(item, str) and item.strip())
+        else:
+            values = ()
         if values:
             return values
     return ()
 
 
-def proposal_posture_tuple(proposal: Mapping[str, Any], *keys: str) -> tuple[str, ...]:
-    rows: list[str] = []
-    for key in keys:
-        rows.extend(text_values(proposal.get(key)))
-    return unique_text(rows)
+def _require_authored_relations(proposal: Mapping[str, Any]) -> tuple[dict[str, Any], ...]:
+    relations = authored_projection_relations(proposal)
+    if not relations:
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield implementation handoff requires model-authored typed intent"
+        )
+    return relations
 
 
 def build_next_steps(
@@ -89,56 +56,91 @@ def build_next_steps(
     first_release_workstreams: Sequence[str],
     release_selector: str,
 ) -> dict[str, Any]:
+    """Project verified authored fields into the completion handoff without reinterpretation."""
+
+    _require_authored_relations(proposal)
     created = mapping_rows(backlog_result.get("created"))
     by_id = _created_by_id(created)
     project_id = next(iter(by_id), "")
-    project_row = by_id.get(project_id, {})
+    if not project_id:
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield implementation handoff is missing its created project workstream"
+        )
     candidate_ids = _candidate_start_ids(
         first_release_workstreams=first_release_workstreams,
         project_id=project_id,
     )
     start_id = candidate_ids[0] if candidate_ids else project_id
+    if start_id not in by_id:
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield implementation handoff references an unknown first-release workstream"
+        )
+    project_row = by_id.get(project_id, {})
     start_row = by_id.get(start_id, {})
-    proposal_row = _proposal_row_for_created_id(proposal=proposal, created=created, created_id=start_id)
-    validation_items = _validation_items(row=proposal_row)
-    first_slice = _first_slice_text(proposal_row)
-    first_path = _first_path_summary(proposal)
-    release_requirements = _first_release_requirement_sentence(proposal)
-    title = str(start_row.get("title", "")).strip()
-    project_title = str(project_row.get("title", "")).strip() or str(
-        proposal.get("intent", {}).get("title", "the greenfield project")
-        if isinstance(proposal.get("intent"), Mapping)
-        else "the greenfield project"
-    ).strip()
-    project_brief = proposal.get("project_brief", {}) if isinstance(proposal.get("project_brief"), Mapping) else {}
-    customization_options = _customization_options(project_brief)
-    readiness_gates = _readiness_gates(project_brief)
-    anchor_gate = _semantic_anchor_gate(proposal)
-    if anchor_gate:
-        readiness_gates = [*readiness_gates, anchor_gate]
-        validation_items = unique_text([*validation_items, anchor_gate])
+    proposal_row = _proposal_row_for_created_id(
+        proposal=proposal,
+        created=created,
+        created_id=start_id,
+    )
+    if not proposal_row:
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield implementation handoff is missing its typed backlog projection"
+        )
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    project_brief = (
+        proposal.get("project_brief")
+        if isinstance(proposal.get("project_brief"), Mapping)
+        else {}
+    )
+    project_title = str(project_row.get("title") or intent.get("title") or "").strip()
+    start_title = str(start_row.get("title") or project_title).strip()
+    first_path_value = intent.get("first_path")
+    first_path = first_path_value if isinstance(first_path_value, str) else ""
+    proof_boundary_value = intent.get("proof_boundary")
+    proof_boundary = proof_boundary_value if isinstance(proof_boundary_value, str) else ""
+    validation_metrics = list(
+        dict.fromkeys(
+            [
+                *row_text_tuple(intent, "success_metrics"),
+                *row_text_tuple(proposal_row, "success_metrics"),
+            ]
+        )
+    )
+    validation_items = list(dict.fromkeys([proof_boundary, *validation_metrics]))
+    customization_options = list(row_text_tuple(project_brief, "customization_options"))
+    readiness_contract = build_coding_readiness_contract(
+        workstream_id=start_id,
+        workstream_title=start_title,
+        release_selector=release_selector,
+        accepted_first_path=first_path,
+        proof_boundary=proof_boundary,
+        evidence_requirements=row_text_tuple(intent, "evidence_requirements"),
+        operational_constraints=row_text_tuple(intent, "operational_constraints"),
+        non_goals=row_text_tuple(intent, "non_goals"),
+    )
+    readiness_gates = render_coding_readiness_gates(readiness_contract)
     return {
         "project_workstream_id": project_id,
         "project_workstream_title": project_title,
         "start_workstream_id": start_id,
-        "start_workstream_title": title,
+        "start_workstream_title": start_title,
         "release_selector": release_selector,
         "project_first_prompt": _project_first_prompt(
             project_id=project_id,
             project_title=project_title,
             start_id=start_id,
-            start_title=title,
+            start_title=start_title,
         ),
         "implementation_prompt": _implementation_prompt(
             start_id=start_id,
-            title=title,
-            first_slice=first_slice,
+            title=start_title,
             first_path=first_path,
-            release_requirements=release_requirements,
+            release_requirements=proof_boundary,
         ),
         "customization_options": customization_options,
         "coding_readiness_gates": readiness_gates,
-        "validation_gates": list(validation_items[:6]),
+        "coding_readiness_contract": readiness_contract,
+        "validation_gates": validation_items,
         "operator_sequence": [
             "Do not start source edits from this closeout; treat the applied records as the project review board.",
             (
@@ -167,50 +169,93 @@ def build_component_handoffs(
     proposal: Mapping[str, Any],
     backlog_result: Mapping[str, Any],
     first_release_workstreams: Sequence[str],
-    traceability_plan: greenfield_traceability.GreenfieldTraceabilityPlan,
+    traceability_plan: _TraceabilityPlan,
     release_selector: str,
 ) -> dict[str, dict[str, Any]]:
+    """Bind each typed component to its exact authored workstream and proof facts."""
+
+    _require_authored_relations(proposal)
     created = mapping_rows(backlog_result.get("created"))
     by_id = _created_by_id(created)
     project_id = next(iter(by_id), "")
-    first_release_ids = [str(item).strip().upper() for item in first_release_workstreams if str(item).strip()]
+    first_release_ids = [
+        str(item).strip().upper()
+        for item in first_release_workstreams
+        if str(item).strip()
+    ]
     handoffs: dict[str, dict[str, Any]] = {}
     components = mapping_rows(proposal.get("components"))
-    project_context = _project_context(proposal)
-    for row in components:
-        key = greenfield_traceability.component_key(row)
-        focused_child_ids = _component_focused_child_ids(
-            proposal=proposal,
-            created=created,
-            component_row=row,
-            umbrella_id=project_id,
+    if not components:
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield component handoff is missing its typed components"
         )
+    project_context = _project_context(proposal)
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    first_path = intent.get("first_path") if isinstance(intent.get("first_path"), str) else ""
+    proof_boundary = (
+        intent.get("proof_boundary") if isinstance(intent.get("proof_boundary"), str) else ""
+    )
+    success_metrics = row_text_tuple(intent, "success_metrics")
+    for row in components:
+        component_id = str(row.get("component_id") or "").strip()
+        if not component_id:
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield component handoff is missing its typed component id"
+            )
         component_workstreams = [
             str(item).strip().upper()
-            for item in traceability_plan.component_workstreams.get(key, ())
+            for item in traceability_plan.component_workstreams.get(component_id, ())
             if str(item).strip()
         ]
+        if not component_workstreams:
+            raise GreenfieldAuthoredSemanticsError(
+                f"Greenfield component `{component_id}` is missing its typed workstream binding"
+            )
         child_ids = [item for item in component_workstreams if item != project_id]
-        release_focused_ids = [item for item in focused_child_ids if item in first_release_ids]
-        release_child_ids = [item for item in child_ids if item in first_release_ids]
-        start_id = (
-            release_focused_ids
-            or focused_child_ids
-            or release_child_ids
-            or child_ids
-            or [project_id]
-        )[0]
-        proposal_row = _proposal_row_for_created_id(proposal=proposal, created=created, created_id=start_id)
+        release_child_ids = [item for item in first_release_ids if item in child_ids]
+        start_id = (release_child_ids or child_ids or component_workstreams)[0]
+        if start_id not in by_id:
+            raise GreenfieldAuthoredSemanticsError(
+                f"Greenfield component `{component_id}` references an unknown workstream"
+            )
+        proposal_row = _proposal_row_for_created_id(
+            proposal=proposal,
+            created=created,
+            created_id=start_id,
+        )
+        if not proposal_row:
+            raise GreenfieldAuthoredSemanticsError(
+                f"Greenfield component `{component_id}` is missing its typed backlog projection"
+            )
         title = str(by_id.get(start_id, {}).get("title", "")).strip()
-        first_slice = _first_slice_text(proposal_row)
-        first_slice = _component_local_first_slice(row, fallback=first_slice)
-        handoffs[key] = {
+        first_slice_rows = row_text_tuple(proposal_row, "recommended_first_slice")
+        first_slice = first_slice_rows[0] if first_slice_rows else first_path
+        if not isinstance(row.get("component_contract"), Mapping):
+            raise GreenfieldAuthoredSemanticsError(
+                f"Greenfield component `{component_id}` is missing its typed component contract"
+            )
+        component_contract = dict(row["component_contract"])
+        validation_gates = list(
+            dict.fromkeys(
+                [
+                    proof_boundary,
+                    *row_text_tuple(proposal_row, "validation"),
+                    *row_text_tuple(proposal_row, "success_metrics"),
+                    *success_metrics,
+                ]
+            )
+        )
+        handoffs[component_id] = {
             **project_context,
             "workstream_id": start_id,
             "workstream_title": title,
             "release_selector": release_selector,
             "first_slice": first_slice,
-            "validation_gates": list(_validation_items(row=proposal_row)[:6]),
+            "accepted_first_path": first_path,
+            "proof_boundary": proof_boundary,
+            "success_metrics": list(success_metrics),
+            "component_contract": component_contract,
+            "validation_gates": validation_gates,
             "verification_commands": verification_commands(start_id),
         }
     return handoffs
@@ -218,21 +263,23 @@ def build_component_handoffs(
 
 def _project_context(proposal: Mapping[str, Any]) -> dict[str, str]:
     intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
-    project_brief = proposal.get("project_brief") if isinstance(proposal.get("project_brief"), Mapping) else {}
-    validation = proposal.get("validation_strategy") if isinstance(proposal.get("validation_strategy"), Mapping) else {}
+    project_brief = (
+        proposal.get("project_brief")
+        if isinstance(proposal.get("project_brief"), Mapping)
+        else {}
+    )
     return {
-        "project_title": str(intent.get("title", "") or "").strip(),
-        "project_purpose": str(
+        "project_title": intent.get("title") if isinstance(intent.get("title"), str) else "",
+        "project_purpose": (
             project_brief.get("purpose")
-            or project_brief.get("summary")
-            or project_brief.get("operator_value")
-            or ""
-        ).strip(),
-        "project_outcome": str(
+            if isinstance(project_brief.get("purpose"), str)
+            else ""
+        ),
+        "project_outcome": (
             project_brief.get("project_outcome")
-            or validation.get("first_slice_proof")
-            or ""
-        ).strip(),
+            if isinstance(project_brief.get("project_outcome"), str)
+            else ""
+        ),
     }
 
 
@@ -244,79 +291,6 @@ def verification_commands(start_workstream_id: str) -> list[str]:
         "./.odylith/bin/odylith validate plan-traceability --repo-root .",
         "./.odylith/bin/odylith sync --repo-root . --impact-mode selective",
     ]
-
-
-def _component_focused_child_ids(
-    *,
-    proposal: Mapping[str, Any],
-    created: Sequence[Mapping[str, Any]],
-    component_row: Mapping[str, Any],
-    umbrella_id: str,
-) -> list[str]:
-    aliases = _component_aliases(component_row)
-    if not aliases:
-        return []
-    rows = mapping_rows(proposal.get("backlog"))
-    scored: list[tuple[int, int, str]] = []
-    for index, row in enumerate(rows):
-        if index >= len(created):
-            break
-        idea_id = str(created[index].get("idea_id", "")).strip().upper()
-        if not idea_id or idea_id == umbrella_id:
-            continue
-        score = _component_focus_score(component_aliases=aliases, row=row)
-        if score > 0:
-            scored.append((score, -index, idea_id))
-    return list(unique_text(idea_id for _score, _neg_index, idea_id in sorted(scored, reverse=True)))
-
-
-def _component_focus_score(*, component_aliases: set[str], row: Mapping[str, Any]) -> int:
-    focus_aliases = _focus_aliases(row)
-    if not (component_aliases & focus_aliases):
-        return 0
-    score = 10
-    if len(focus_aliases) == 1:
-        score += 8
-    haystack_aliases = _slug_aliases(
-        [
-            row.get("title"),
-            row.get("problem"),
-            row.get("product_view"),
-            row.get("recommended_first_slice"),
-        ]
-    )
-    if component_aliases & haystack_aliases:
-        score += 4
-    return score
-
-
-def _component_aliases(row: Mapping[str, Any]) -> set[str]:
-    return _slug_aliases([row.get("component_id"), row.get("id"), row.get("label"), row.get("name")])
-
-
-def _focus_aliases(row: Mapping[str, Any]) -> set[str]:
-    values: list[Any] = []
-    for key in (
-        "component_focus",
-        "components",
-        "component_ids",
-        "related_components",
-        "related_component_ids",
-    ):
-        values.extend(text_values(row.get(key)))
-    return _slug_aliases(values)
-
-
-def _slug_aliases(values: Sequence[Any]) -> set[str]:
-    aliases: set[str] = set()
-    for value in values:
-        token = " ".join(str(value or "").split()).strip()
-        if not token:
-            continue
-        slug = slugify(token)
-        if slug:
-            aliases.add(slug)
-    return aliases
 
 
 def _created_by_id(created: Sequence[Mapping[str, Any]]) -> dict[str, Mapping[str, Any]]:
@@ -355,249 +329,13 @@ def _proposal_row_for_created_id(
     return {}
 
 
-def _first_slice_text(row: Mapping[str, Any]) -> str:
-    return _preview_safe_fragment(
-        " ".join(row_text_tuple(row, "recommended_first_slice", "first_slice_proof")).strip()
-        or "Implement the smallest source-backed slice for this workstream and prove it with the listed proof checks.",
-        limit=420,
-    )
-
-
-def _first_path_summary(proposal: Mapping[str, Any]) -> str:
-    canonical_first_path = _canonical_accepted_first_path(proposal)
-    if canonical_first_path:
-        return canonical_first_path
-    brief_first_path = _project_brief_first_path(proposal)
-    if brief_first_path:
-        return brief_first_path
-    semantic = proposal.get("semantic_model") if isinstance(proposal.get("semantic_model"), Mapping) else {}
-    first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
-    raw_path = normalize_first_path(str(first_path.get("raw_path", ""))) if isinstance(first_path, Mapping) else ""
-    if raw_path:
-        action = readable_action_chain_sentence(
-            raw_path,
-            fallback="",
-            limit=420,
-            max_steps=6,
-            include_visible_results=True,
-        ) or first_path_action_phrase(raw_path, fallback="", limit=240, max_fragments=4)
-        outcome = first_path_outcome_phrase(raw_path, fallback="", limit=150)
-        action = _preview_safe_fragment(action, limit=420)
-        outcome = _preview_safe_fragment(outcome, limit=150)
-        if action and outcome and outcome.casefold() not in action.casefold():
-            return _preview_safe_fragment(f"{action}, ending with {outcome}", limit=460)
-        return _preview_safe_fragment(action or outcome or raw_path, limit=460)
-    return ""
-
-
-def _first_release_requirement_sentence(proposal: Mapping[str, Any]) -> str:
-    """Render affirmative release scope without recasting it as the first user path."""
-
-    semantic = proposal.get("semantic_model") if isinstance(proposal.get("semantic_model"), Mapping) else {}
-    ontology = semantic.get("domain_ontology") if isinstance(semantic.get("domain_ontology"), Mapping) else {}
-    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
-    proof_boundary = str(ontology.get("proof_boundary") or intent.get("proof_boundary") or "").strip()
-    return first_release_boundary_summary(proof_boundary)
-
-
-def _canonical_accepted_first_path(proposal: Mapping[str, Any]) -> str:
-    apply_input = proposal.get("apply_semantic_input") if isinstance(proposal.get("apply_semantic_input"), Mapping) else {}
-    source = normalize_first_path(str(apply_input.get("first_path", ""))) if isinstance(apply_input, Mapping) else ""
-    text = _preview_safe_fragment(source, limit=460)
-    if text:
-        return text
-    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
-    source = normalize_first_path(str(intent.get("first_path", ""))) if isinstance(intent, Mapping) else ""
-    return _preview_safe_fragment(source, limit=460)
-
-
-def _project_brief_first_path(proposal: Mapping[str, Any]) -> str:
-    project_brief = proposal.get("project_brief") if isinstance(proposal.get("project_brief"), Mapping) else {}
-    sections = project_brief.get("blueprint_sections") if isinstance(project_brief, Mapping) else []
-    if not isinstance(sections, Sequence) or isinstance(sections, (str, bytes)):
-        return ""
-    for row in sections:
-        if not isinstance(row, Mapping):
-            continue
-        section = str(row.get("section", "")).casefold()
-        if "first" not in section or "path" not in section:
-            continue
-        must_capture = _preview_safe_fragment(row.get("must_capture"), limit=460)
-        if must_capture:
-            return must_capture
-    return ""
-
-
-def _component_local_first_slice(row: Mapping[str, Any], *, fallback: str) -> str:
-    label = str(row.get("label", "") or row.get("component_id", "") or "component").strip()
-    contract = row.get("component_contract") if isinstance(row.get("component_contract"), Mapping) else {}
-    inputs = _short_contract_text(contract.get("accepted_inputs") if isinstance(contract, Mapping) else "")
-    outputs = _short_contract_text(contract.get("produced_outputs") if isinstance(contract, Mapping) else "")
-    proof = _short_contract_text(
-        _first_contract_text(contract.get("local_proof")) if isinstance(contract, Mapping) else "",
-        limit=260,
-    )
-    responsibility = _short_contract_text(row.get("responsibility") or row.get("boundary"))
-    validation = _short_contract_text(_first_contract_text(row_text_tuple(row, "validation", "test_strategy")))
-    if label and proof:
-        return (
-            f"Implement {label} local proof: {proof}. When {label} receives missing or invalid input, keep the "
-            "result, explanation, and recovery path reviewable."
-        )
-    if label and inputs and outputs:
-        return (
-            f"Implement {label} local contract: accept {inputs}, produce {outputs}, "
-            "and block invalid or missing state."
-        )
-    if label and responsibility and validation:
-        return f"Implement {label} inside this boundary: {responsibility}. Prove it with {validation}."
-    if label and validation:
-        return f"Implement {label} so its local validation can show: {validation}."
-    if label and responsibility:
-        return f"Implement {label} inside this boundary: {responsibility}."
-    return fallback
-
-
-def _first_contract_text(value: Any) -> str:
-    for item in text_values(value):
-        text = " ".join(str(item or "").split()).strip(" .")
-        if text:
-            return text
-    return ""
-
-
-def _short_contract_text(value: Any, *, limit: int = 180) -> str:
-    return clip_text_at_word_boundary(
-        value,
-        limit=limit,
-        strip_edges=" .",
-        dangling_words=_PREVIEW_DANGLING_WORDS,
-    ).strip(" ,;:")
-
-
-def _validation_items(*, row: Mapping[str, Any]) -> tuple[str, ...]:
-    return unique_text(
-        [
-            cleaned
-            for item in [
-                *row_text_tuple(row, "validation", "test_strategy"),
-                *row_text_tuple(row, "success_metrics"),
-            ]
-            if (cleaned := _preview_safe_validation_item(item))
-        ]
-    )
-
-
-def _semantic_anchor_gate(proposal: Mapping[str, Any]) -> str:
-    anchors = _semantic_source_anchors(proposal)
-    if not anchors:
-        return ""
-    return _preview_safe_fragment(
-        "Preserve prompt-grounded evidence anchors in source and proof: " + "; ".join(anchors[:8]),
-        limit=520,
-    )
-
-
-def _semantic_source_anchors(proposal: Mapping[str, Any]) -> tuple[str, ...]:
-    semantic = proposal.get("semantic_model") if isinstance(proposal.get("semantic_model"), Mapping) else {}
-    evaluation = semantic.get("evaluation_semantics") if isinstance(semantic.get("evaluation_semantics"), Mapping) else {}
-    rows = text_values(evaluation.get("source_anchors")) if isinstance(evaluation, Mapping) else []
-    if not rows:
-        intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
-        rows = text_values(intent.get("evidence_requirements")) if isinstance(intent, Mapping) else []
-    return tuple(row for row in rows if row)
-
-
-def _preview_safe_validation_item(value: Any) -> str:
-    return _preview_safe_fragment(normalize_cover_article_language(value), limit=220)
-
-
-def _preview_safe_fragment(value: Any, *, limit: int) -> str:
-    text = clip_text_at_word_boundary(
-        value,
-        limit=limit,
-        strip_edges=" .",
-        dangling_words=_PREVIEW_DANGLING_WORDS,
-        rstrip_chars=" ,;:.",
-    )
-    text = dedupe_adjacent_words(text)
-    return _trim_preview_terminal_fragment(text).strip(" ,;:")
-
-
-def _trim_preview_terminal_fragment(value: str) -> str:
-    text = str(value or "").strip(" ,;:.")
-    words = text.split()
-    if len(words) >= 2:
-        previous = words[-2].casefold().strip(".,;:")
-        tail = words[-1].casefold().strip(".,;:")
-        if previous in {"a", "an", "one", "the", "this", "that"} and tail in _PREVIEW_TERMINAL_MODIFIERS:
-            text = " ".join(words[:-2]).strip(" ,;:.")
-        elif tail == "final" and not _preview_allows_terminal_final(words):
-            text = " ".join(words[:-1]).strip(" ,;:.")
-    words = _trim_preview_subordinate_tail(text.split())
-    text = " ".join(words).strip(" ,;:.")
-    return strip_dangling_word_tail(text, dangling_words=_PREVIEW_DANGLING_WORDS)
-
-
-def _trim_preview_subordinate_tail(words: Sequence[str]) -> list[str]:
-    lowered = [word.casefold().strip(".,;:") for word in words]
-    for index in range(len(lowered) - 1, -1, -1):
-        marker = lowered[index]
-        if marker not in _PREVIEW_SUBORDINATE_TAIL_MARKERS:
-            continue
-        tail = lowered[index + 1 :]
-        if len(tail) > 7:
-            return list(words)
-        if not tail or tail[-1] in {"are", "is", "was", "were"}:
-            return list(words[:index])
-        if not any(token in _PREVIEW_SUBORDINATE_TAIL_VERBS for token in tail):
-            return list(words[:index])
-        return list(words)
-    return list(words)
-
-
-def _preview_allows_terminal_final(words: Sequence[str]) -> bool:
-    lowered = [word.casefold().strip(".,;:'") for word in words if word.strip(".,;:'")]
-    if len(lowered) < 2 or lowered[-1] != "final":
-        return False
-    previous = lowered[-2]
-    if previous in _PREVIEW_TERMINAL_FINAL_STATE_WORDS:
-        return True
-    if previous in {"is", "becomes", "became"} and any(
-        token in _PREVIEW_TERMINAL_FINAL_STATE_WORDS for token in lowered[:-2]
-    ):
-        return True
-    return any(
-        token in {"finalize", "finalizes", "finalized", "finalizing", "mark", "marked", "marks"}
-        for token in lowered[:-1]
-    )
-
-
-def _customization_options(project_brief: Mapping[str, Any]) -> list[str]:
-    rows = project_brief.get("customization_options", []) if isinstance(project_brief, Mapping) else []
-    result: list[str] = []
-    for row in rows if isinstance(rows, list) else []:
-        if not isinstance(row, Mapping):
-            continue
-        decision = str(row.get("decision", "")).strip()
-        recommended = str(row.get("recommended", "")).strip()
-        if decision and recommended:
-            result.append(f"{decision}: {recommended}")
-    return result[:8]
-
-
-def _readiness_gates(project_brief: Mapping[str, Any]) -> list[str]:
-    gates = project_brief.get("coding_readiness_gates", []) if isinstance(project_brief, Mapping) else []
-    if not isinstance(gates, list):
-        return []
-    return [
-        cleaned
-        for item in gates
-        if (cleaned := _preview_safe_fragment(item, limit=520))
-    ]
-
-
-def _project_first_prompt(*, project_id: str, project_title: str, start_id: str, start_title: str) -> str:
+def _project_first_prompt(
+    *,
+    project_id: str,
+    project_title: str,
+    start_id: str,
+    start_title: str,
+) -> str:
     target = project_id or start_id or "<project-workstream-id>"
     next_lane = f"{start_id} {start_title}".strip() if start_id else "the first targeted child workstream"
     return (
@@ -610,36 +348,19 @@ def _implementation_prompt(
     *,
     start_id: str,
     title: str,
-    first_slice: str,
-    first_path: str = "",
-    release_requirements: str = "",
+    first_path: str,
+    release_requirements: str,
 ) -> str:
-    if not start_id:
-        return (
-            "After the project-first scope is accepted, select the first targeted child workstream, write a technical "
-            "plan, implement the smallest source-backed slice, then run its listed proof checks."
-        )
     title_text = title or "the first targeted workstream"
-    first_slice_text = str(first_slice or "").strip()
-    if first_slice_text and first_slice_text[-1] not in ".!?":
-        first_slice_text = f"{first_slice_text}."
     first_path_text = str(first_path or "").strip()
     if first_path_text and first_path_text[-1] not in ".!?":
         first_path_text = f"{first_path_text}."
     release_requirements_text = str(release_requirements or "").strip()
     if release_requirements_text and release_requirements_text[-1] not in ".!?":
         release_requirements_text = f"{release_requirements_text}."
-    if first_path_text:
-        return (
-            f"After project-first scope is accepted, start {start_id}. "
-            f"Preserve this accepted first path: {first_path_text} "
-            f"{release_requirements_text + ' ' if release_requirements_text else ''}"
-            f"Treat `{title_text}` as the first coding scope and do not expand scope until success, blocked-input, "
-            "replay, and handoff evidence is written and reviewed."
-        )
-    scope_sentence = f"{first_slice_text} " if first_slice_text else ""
     return (
-        f"After project-first scope is accepted, start {start_id}: {scope_sentence}"
+        f"After project-first scope is accepted, start {start_id}. "
+        f"Preserve this accepted first path: {first_path_text} "
         f"{release_requirements_text + ' ' if release_requirements_text else ''}"
         f"Treat `{title_text}` as the first coding scope and do not expand scope until success, blocked-input, "
         "replay, and handoff evidence is written and reviewed."

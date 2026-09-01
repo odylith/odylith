@@ -109,6 +109,29 @@ def coverage_term(value: str) -> str:
     token = value.strip(".,:;()[]{}").casefold()
     if token in {"prove", "proves", "proved", "proven", "proof"}:
         return "proof"
+    inflections = {
+        "accepted": "accept",
+        "blocked": "block",
+        "completed": "complete",
+        "coordinated": "coordinate",
+        "corrected": "correct",
+        "decided": "decide",
+        "delivered": "deliver",
+        "described": "describe",
+        "preserved": "preserve",
+        "published": "publish",
+        "received": "receive",
+        "recorded": "record",
+        "requested": "request",
+        "revised": "revise",
+        "reviewed": "review",
+        "validated": "validate",
+        "verified": "verify",
+    }
+    if token in inflections:
+        return inflections[token]
+    if token.endswith("ied") and len(token) > 5:
+        return f"{token[:-3]}y"
     return token
 
 

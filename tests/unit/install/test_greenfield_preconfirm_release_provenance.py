@@ -68,7 +68,6 @@ def test_release_cli_rejects_missing_commit_recovery_proof_before_any_installed_
                 "--proof-tier",
                 "release",
                 "--include-browser-proof",
-                "--include-natural-rescue-proof",
             ]
         )
 

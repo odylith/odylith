@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+import hashlib
 import sys
 
 from tests.greenfield_matrix_campaign_test_support import SCRIPTS_ROOT
@@ -19,16 +20,59 @@ from greenfield_matrix_types import GreenfieldMatrixResult
 from greenfield_matrix_types import GreenfieldQualityVerdict
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from greenfield_preconfirm_matrix_cases import case_evidence
+from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
+    append_atomic_source_spans,
+    atomic_fact_ledger_hash,
+    build_atomic_fact_ledger,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_SEMANTICS_VERSION,
+    authored_relation_set_sha256,
+    combined_prompt_evidence_source,
+)
 
 
 HASH = "c" * 64
 SOURCE_HASH = "d" * 64
+SEMANTIC_DIGEST = "a" * 64
+DESCRIPTION_FIRST_PATH = "An operator records one evidence decision and reviews the accepted result."
+TOPIC_FIRST_PATH = "A reviewer logs one governed decision and inspects the approved outcome."
+
+_FACTS_BY_CASE_ID: dict[str, dict[str, object]] = {
+    "source-001-description": {
+        "title": "Evidence Workspace",
+        "product_story": "Evidence Workspace helps an operator review a governed evidence decision.",
+        "state_object": "An evidence decision tracks its status and accepted result.",
+        "first_path": DESCRIPTION_FIRST_PATH,
+        "proof_boundary": "The first release proves one accepted evidence decision.",
+        "human_actors": ["operator"],
+    },
+    "source-001-topic": {
+        "title": "Evidence Workspace",
+        "product_story": "The Evidence Workspace lets a reviewer inspect a controlled decision record.",
+        "state_object": "The decision record preserves its state and approved outcome.",
+        "first_path": TOPIC_FIRST_PATH,
+        "proof_boundary": "Release one demonstrates one approved decision.",
+        "human_actors": ["reviewer"],
+    },
+}
+
+_EVENT_PARTS_BY_CASE_ID = {
+    "source-001-description": ("operator", "records", "one evidence decision", "accepted result"),
+    "source-001-topic": ("reviewer", "logs", "one governed decision", "approved outcome"),
+}
 
 
-def test_metamorphic_output_requires_same_sealed_commit_behavior() -> None:
+def test_metamorphic_output_accepts_paraphrase_equivalent_typed_meaning() -> None:
     cases = _cases()
 
-    evaluation = evaluate_metamorphic_outputs(cases=cases, results=tuple(_result(case) for case in cases))
+    assert DESCRIPTION_FIRST_PATH != TOPIC_FIRST_PATH
+
+    evaluation = evaluate_metamorphic_outputs(
+        cases=cases,
+        results=tuple(_result(case) for case in cases),
+        semantic_digests=_semantic_digests(cases),
+    )
 
     assert evaluation["status"] == "passed"
     assert evaluation["complete_group_count"] == 1
@@ -38,23 +82,60 @@ def test_metamorphic_output_rejects_changed_readback_hash() -> None:
     cases = _cases()
     results = (_result(cases[0]), _result(cases[1], committed_hash="e" * 64))
 
-    evaluation = evaluate_metamorphic_outputs(cases=cases, results=results)
+    evaluation = evaluate_metamorphic_outputs(
+        cases=cases,
+        results=results,
+        semantic_digests=_semantic_digests(cases),
+    )
 
     assert evaluation["status"] == "failed"
     assert "changed the sealed transaction hash" in evaluation["issues"][0]
 
 
-def test_metamorphic_output_rejects_normalized_first_path_drift() -> None:
-    cases = _cases()
+def test_metamorphic_output_rejects_typed_contradiction_despite_lexical_overlap() -> None:
+    baseline, candidate = _cases()
+    contradictory_path = "A reviewer never logs one governed decision or inspects the approved outcome."
+    contradictory_facts = {**_facts(candidate), "first_path": contradictory_path}
+    candidate = replace(candidate, prompt=_prompt_for_facts(contradictory_facts))
     results = (
-        _result(cases[0]),
-        _result(cases[1], first_path="A reviewer exports unrelated payroll records to an external broker."),
+        _result(baseline),
+        _result(candidate, first_path=contradictory_path, atomic_polarity="prohibited"),
     )
 
-    evaluation = evaluate_metamorphic_outputs(cases=cases, results=results)
+    evaluation = evaluate_metamorphic_outputs(
+        cases=(baseline, candidate),
+        results=results,
+        semantic_digests={baseline.case_id: SEMANTIC_DIGEST},
+    )
 
     assert evaluation["status"] == "failed"
-    assert any("changed normalized first_path meaning" in issue for issue in evaluation["issues"])
+    assert any("lacks a verified normalized semantic digest" in issue for issue in evaluation["issues"])
+
+
+def test_metamorphic_output_fails_closed_without_a_verified_semantic_digest() -> None:
+    cases = _cases()
+
+    evaluation = evaluate_metamorphic_outputs(
+        cases=cases,
+        results=tuple(_result(case) for case in cases),
+        semantic_digests={cases[0].case_id: SEMANTIC_DIGEST},
+    )
+
+    assert evaluation["status"] == "failed"
+    assert any("lacks a verified normalized semantic digest" in issue for issue in evaluation["issues"])
+
+
+def test_metamorphic_output_rejects_same_topology_with_different_semantic_identities() -> None:
+    baseline, candidate = _cases()
+
+    evaluation = evaluate_metamorphic_outputs(
+        cases=(baseline, candidate),
+        results=(_result(baseline), _result(candidate)),
+        semantic_digests={baseline.case_id: SEMANTIC_DIGEST, candidate.case_id: "b" * 64},
+    )
+
+    assert evaluation["status"] == "failed"
+    assert any("changed frozen canonical semantic identities or relations" in issue for issue in evaluation["issues"])
 
 
 def test_metamorphic_output_accepts_required_clarification_without_a_transaction() -> None:
@@ -71,7 +152,11 @@ def test_metamorphic_output_accepts_required_clarification_without_a_transaction
 
 def test_metamorphic_output_rejects_clarification_without_a_frozen_oracle() -> None:
     committed_case, clarification_case = _clarification_pair_cases()
-    clarification_case = replace(clarification_case, expected_question_fields=())
+    clarification_case = replace(
+        clarification_case,
+        expected_clarification_field="",
+        expected_clarification_question="",
+    )
 
     evaluation = evaluate_metamorphic_outputs(
         cases=(committed_case, clarification_case),
@@ -86,7 +171,7 @@ def test_metamorphic_output_rejects_an_untyped_clarification_oracle() -> None:
     committed_case, clarification_case = _clarification_pair_cases()
     clarification_case = replace(
         clarification_case,
-        expected_question_fields=("totally_unbounded_field",),
+        expected_clarification_field="totally_unbounded_field",
     )
 
     evaluation = evaluate_metamorphic_outputs(
@@ -228,7 +313,7 @@ def _cases() -> tuple[GreenfieldMatrixCase, GreenfieldMatrixCase]:
         GreenfieldMatrixCase(
             case_id="source-001-description",
             name="description variant",
-            prompt="Create an evidence workspace.",
+            prompt=_prompt_for_facts(_FACTS_BY_CASE_ID["source-001-description"]),
             required_terms=("evidence",),
             provenance=provenance,
             metamorphic_group="source-001",
@@ -237,7 +322,7 @@ def _cases() -> tuple[GreenfieldMatrixCase, GreenfieldMatrixCase]:
         GreenfieldMatrixCase(
             case_id="source-001-topic",
             name="topic variant",
-            prompt="Create an evidence workspace from a topic.",
+            prompt=_prompt_for_facts(_FACTS_BY_CASE_ID["source-001-topic"]),
             required_terms=("evidence",),
             provenance=provenance,
             metamorphic_group="source-001",
@@ -246,12 +331,16 @@ def _cases() -> tuple[GreenfieldMatrixCase, GreenfieldMatrixCase]:
     )
 
 
+def _semantic_digests(cases: tuple[GreenfieldMatrixCase, ...]) -> dict[str, str]:
+    return {case.case_id: SEMANTIC_DIGEST for case in cases}
+
+
 def _clarification_pair_cases() -> tuple[GreenfieldMatrixCase, GreenfieldMatrixCase]:
     committed_case, topic_case = _cases()
     return committed_case, replace(
         topic_case,
         expectation="clarification_required",
-        expected_question_fields=("first_path",),
+        expected_clarification_field="first_path",
     )
 
 
@@ -259,8 +348,12 @@ def _result(
     case: GreenfieldMatrixCase,
     *,
     committed_hash: str = HASH,
-    first_path: str = "An operator records one evidence decision and reviews the accepted result.",
+    first_path: str | None = None,
+    atomic_polarity: str = "affirmed",
 ) -> GreenfieldMatrixResult:
+    facts = _facts(case)
+    if first_path is not None:
+        facts["first_path"] = first_path
     summary = {
         "write_transaction": {
             "commit_only": True,
@@ -281,17 +374,147 @@ def _result(
             "preconfirm_dry_run": {
                 "status": "compiled",
                 "transaction_hash": HASH,
-                "semantic_snapshot": {
-                    "facts": {
-                        "product_story": "Evidence Workspace helps an operator review a governed evidence decision.",
-                        "state_object": "An evidence decision tracks its status and accepted result.",
-                        "first_path": first_path,
-                        "proof_boundary": "The first release proves one accepted evidence decision.",
-                        "human_actors": ["Operator: records and reviews the evidence decision."],
-                    }
-                },
+                "semantic_snapshot": _typed_semantic_snapshot(
+                    case=case,
+                    facts=facts,
+                    atomic_polarity=atomic_polarity,
+                ),
             },
         },
+    )
+
+
+def _typed_semantic_snapshot(
+    *,
+    case: GreenfieldMatrixCase,
+    facts: dict[str, object],
+    atomic_polarity: str,
+) -> dict[str, object]:
+    evidence = combined_prompt_evidence_source(
+        prompt=case.prompt,
+        edit_evidence=str(case.confirmed_intent_markdown or ""),
+    )
+    source_bytes = evidence.encode("utf-8")
+    first_path = str(facts["first_path"])
+    path_bytes = first_path.encode("utf-8")
+    actor, action, target, visible_result = _EVENT_PARTS_BY_CASE_ID[case.case_id]
+    event_start = source_bytes.index(path_bytes)
+    state_object = str(facts["state_object"])
+    state_bytes = state_object.encode("utf-8")
+    state_start = source_bytes.index(state_bytes)
+    relations = [
+        {
+            "order": 1,
+            "source_start_byte": event_start,
+            "source_end_byte": event_start + len(path_bytes),
+            "event_start_byte": 0,
+            "event_end_byte": len(path_bytes),
+            "actor_kind": "human",
+            "actor_quote": actor,
+            "actor_is_carried": False,
+            "actor_fact_path": "/human_actors/0",
+            "actor_fact_quote": actor,
+            "owner_system_path": "",
+            "owner_system_quote": "",
+            "event_quote": first_path,
+            "action_verb_quote": action,
+            "target_quote": target,
+            "visible_result_quote": visible_result,
+            "recovery_path": False,
+        }
+    ]
+    contexts = [
+        {
+            "context_kind": "state_object",
+            "fact_path": "/state_object",
+            "fact_quote": state_object,
+            "source_start_byte": state_start,
+            "source_end_byte": state_start + len(state_bytes),
+            "first_path_event_order": 1,
+        }
+    ]
+    components = [
+        {
+            "responsibility_path": "/first_path",
+            "responsibility_quote": visible_result,
+            "owner_system_path": "/title",
+            "owner_system_quote": str(facts["title"]),
+            "first_path_event_order": 1,
+            "responsibility_source": "terminal_visible_result",
+        }
+    ]
+    semantics = {
+        "version": AUTHORED_SEMANTICS_VERSION,
+        "first_path_relations": relations,
+        "first_path_context_relations": contexts,
+        "component_responsibility_relations": components,
+    }
+    atoms = _atomic_facts(
+        facts=facts,
+        source_bytes=source_bytes,
+        event_source_start=event_start,
+        action=action,
+        polarity=atomic_polarity,
+    )
+    return {
+        "facts": facts,
+        "atomic_facts": atoms,
+        "atomic_custody_sha256": atomic_fact_ledger_hash(atoms),
+        "authored_semantics": semantics,
+        "authored_relation_set_sha256": authored_relation_set_sha256(
+            relations,
+            components,
+            first_path_context_relations=contexts,
+        ),
+    }
+
+
+def _atomic_facts(
+    *,
+    facts: dict[str, object],
+    source_bytes: bytes,
+    event_source_start: int,
+    action: str,
+    polarity: str,
+) -> list[dict[str, object]]:
+    first_path = str(facts["first_path"])
+    path_bytes = first_path.encode("utf-8")
+    action_bytes = action.encode("utf-8")
+    projection_start = path_bytes.index(action_bytes)
+    source_start = event_source_start + projection_start
+    claim = {
+        "field": "first_path",
+        "category": "actions",
+        "polarity": polarity,
+        "source_start_byte": source_start,
+        "source_end_byte": source_start + len(action_bytes),
+        "quote": action,
+        "quote_sha256": hashlib.sha256(action_bytes).hexdigest(),
+        "projection_path": "/first_path",
+        "projection_start_byte": projection_start,
+        "projection_end_byte": projection_start + len(action_bytes),
+        "projection_value_sha256": hashlib.sha256(path_bytes).hexdigest(),
+        "relation_order": 1,
+        "relation_role": "action_verb_quote",
+    }
+    assert source_bytes[source_start : source_start + len(action_bytes)] == action_bytes
+    spans: list[dict[str, object]] = []
+    append_atomic_source_spans(spans, authored_atomic_claims=[claim])
+    return build_atomic_fact_ledger(
+        facts=facts,
+        spans=spans,
+        authored_atomic_claims=[claim],
+    )
+
+
+def _facts(case: GreenfieldMatrixCase) -> dict[str, object]:
+    return dict(_FACTS_BY_CASE_ID[case.case_id])
+
+
+def _prompt_for_facts(facts: dict[str, object]) -> str:
+    return " ".join(
+        str(facts[field])
+        for field in ("title", "product_story", "state_object", "first_path", "proof_boundary")
     )
 
 

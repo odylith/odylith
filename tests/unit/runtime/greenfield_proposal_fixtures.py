@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import copy
 import json
 from collections.abc import Mapping
 from dataclasses import replace
@@ -12,18 +11,34 @@ from odylith.runtime.domain_intelligence.greenfield_commit_transaction import lo
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
+from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence import greenfield_traceability
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
-from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_diagram_rows
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_PROJECTION_ORIGIN,
+)
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
-from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
-from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_intent_authority_from_envelope
-from odylith.runtime.domain_intelligence.project_intelligence_binding import attach_project_intelligence_bindings
+from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
+    materialize_model_authored_intent,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    STANDARD_PROFILE_ID,
+    get_greenfield_model_profile,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+    GREENFIELD_INTENT_AUTHORING_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import (
+    PRECONFIRM_ENGINE_VERSION,
+    PRECONFIRM_QUALITY_MANIFEST_VERSION,
+)
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import PROJECT_INTELLIGENCE_LAYERS
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    StructuredAuthoringProvider,
+    authored_response,
+)
 
 
 def _write(path: Path, text: str) -> None:
@@ -85,6 +100,15 @@ HIIT_CONFIRMED_INTENT_TEXT = """PulseHIIT - guided high-intensity interval train
 ## Product story
 PulseHIIT helps a trainee start a guided high-intensity interval workout, follow hands-free timing and cues, and review the completed session afterward.
 
+## Problem
+A trainee needs hands-free interval timing and cues without repeatedly touching the screen.
+
+## Opportunity
+One guided path can turn a preset workout into a completed, reviewable session.
+
+## Product view
+PulseHIIT guides the trainee through intervals and preserves the completed session in history.
+
 ## State object
 The core state is a workout session: selected workout, interval plan, current interval, elapsed and remaining time, audio and on-screen cue state, pause/resume state, completion state, and saved history entry.
 
@@ -118,13 +142,6 @@ Release 0.0.1 succeeds when a trainee can choose a preset interval workout, star
 """
 
 
-def _confirmed_intent() -> dict[str, object]:
-    return confirmed_intent_with_authority(
-        CONFIRMED_INTENT_TEXT,
-        prompt="Draft a greenfield proposal for a municipal permit review workspace",
-    )
-
-
 def commit_precompiled_greenfield_proposal(
     *,
     repo_root: Path,
@@ -139,24 +156,25 @@ def commit_precompiled_greenfield_proposal(
     if not confirm:
         raise ValueError("--confirm is required before greenfield apply writes accepted product records")
     root = Path(repo_root).expanduser().resolve()
-    if not proposal_ready:
-        proposal = greenfield_proposals.normalize_host_reasoned_proposal(proposal)
-        proposal = greenfield_proposals.complete_confirmed_proposal(
-            proposal,
-            release_selector=release_selector,
-        )
-        proposal = greenfield_proposals.normalize_host_reasoned_proposal(proposal)
-        proposal = greenfield_proposals.complete_greenfield_semantic_apply_payload(
-            proposal,
-            release_selector=release_selector,
-        )
-    proposal = _with_test_product_intent_authority(proposal, repo_root=root)
+    proposal = dict(proposal)
+    authoring_receipt = proposal.pop("_test_model_authoring_receipt", None)
+    authoring_receipt = (
+        dict(authoring_receipt) if isinstance(authoring_receipt, Mapping) else {}
+    )
+    authored_projection = str(proposal.get("projection_origin") or "") == AUTHORED_PROJECTION_ORIGIN
+    if not authored_projection:
+        raise ValueError("test commit helper requires an already model-authored proposal")
+    if PRODUCT_INTENT_AUTHORITY_KEY not in proposal:
+        raise ValueError("test commit helper requires sealed Product Intent authority")
     transaction = greenfield_proposals.compile_greenfield_create_transaction(
         repo_root=root,
         proposal=proposal,
         release_selector=release_selector,
-        proposal_ready=proposal_ready,
+        proposal_ready=proposal_ready or authored_projection,
         repair_tier=repair_tier,
+        preconfirm_elapsed_seconds=float(authoring_receipt.get("elapsed_seconds") or 0.0),
+        model_authoring_tier=str(authoring_receipt.get("tier") or ""),
+        model_authoring_receipt=authoring_receipt,
     )
     sealed = seal_compiled_greenfield_transaction(repo_root=root, transaction=transaction)
     return greenfield_create_commit.commit_greenfield_create_transaction(
@@ -173,78 +191,6 @@ def seal_compiled_greenfield_transaction(*, repo_root: Path, transaction: Any) -
     path = Path(repo_root) / ".odylith" / "runtime" / "greenfield" / "test-product-create-transaction.v1.json"
     greenfield_proposals.write_product_create_transaction_file(path, transaction)
     return load_sealed_product_create_commit(path)
-def _with_test_product_intent_authority(proposal: dict[str, object], *, repo_root: Path) -> dict[str, object]:
-    if isinstance(proposal.get(PRODUCT_INTENT_AUTHORITY_KEY), dict):
-        return proposal
-    prepared = dict(proposal)
-    intent = prepared.get("intent")
-    if not isinstance(intent, Mapping):
-        raise ValueError("test proposal needs typed Product Intent before authority sealing")
-    sealed_intent = confirmed_mapping_with_authority(intent, repo_root=repo_root)
-    prepared["intent"] = sealed_intent
-    prepared[PRODUCT_INTENT_AUTHORITY_KEY] = sealed_intent.pop(PRODUCT_INTENT_AUTHORITY_KEY)
-    return prepared
-
-
-def confirmed_intent_with_authority(
-    text: str,
-    *,
-    prompt: str,
-    repo_root: Path | None = None,
-    write_files: bool = False,
-    source_format: str = "markdown",
-) -> dict[str, object]:
-    intent = parse_confirmed_intent_text(
-        text,
-        prompt=prompt,
-    )
-    root = Path("/repo") if repo_root is None else Path(repo_root)
-    markdown_path = root / ".odylith/runtime/greenfield/confirmed-intent.md"
-    envelope = build_product_intent_envelope(
-        intent,
-        source_text=text,
-        source_path=markdown_path,
-        source_format=source_format,
-    )
-    intent = dict(envelope["product_facts"])
-    if write_files:
-        markdown_path.parent.mkdir(parents=True, exist_ok=True)
-        markdown_path.write_text(text, encoding="utf-8")
-        write_structured_confirmed_intent_file(markdown_path, intent, envelope=envelope)
-    intent[PRODUCT_INTENT_AUTHORITY_KEY] = product_intent_authority_from_envelope(
-        envelope,
-        structured_intent_path=markdown_path.with_suffix(".json"),
-        markdown_source_path=markdown_path,
-    )
-    return intent
-
-
-def confirmed_mapping_with_authority(
-    intent: Mapping[str, Any],
-    *,
-    repo_root: Path | None = None,
-) -> dict[str, Any]:
-    prepared = dict(intent)
-    source_text = json.dumps(prepared, ensure_ascii=True, sort_keys=True)
-    root = Path("/repo") if repo_root is None else Path(repo_root)
-    markdown_path = root / ".odylith/runtime/greenfield/confirmed-intent.md"
-    envelope = build_product_intent_envelope(
-        prepared,
-        source_text=source_text,
-        source_path=markdown_path,
-        source_format="in_memory_confirmed_intent",
-    )
-    prepared = dict(envelope["product_facts"])
-    if repo_root is not None:
-        markdown_path.parent.mkdir(parents=True, exist_ok=True)
-        markdown_path.write_text(source_text, encoding="utf-8")
-        write_structured_confirmed_intent_file(markdown_path, prepared, envelope=envelope)
-    prepared[PRODUCT_INTENT_AUTHORITY_KEY] = product_intent_authority_from_envelope(
-        envelope,
-        structured_intent_path=markdown_path.with_suffix(".json"),
-        markdown_source_path=markdown_path,
-    )
-    return prepared
 
 
 def compiled_greenfield_package_fixture(
@@ -255,10 +201,36 @@ def compiled_greenfield_package_fixture(
     baseline_writes: dict[str, str] | None = None,
     brand_asset_writes: dict[str, dict[str, str]] | None = None,
 ) -> GreenfieldCompletionPackage:
-    idea_id = "B-001"
-    title = "Prove first accepted path"
-    idea_path = Path(repo_root) / "odylith/radar/source/ideas/B-001.md"
-    created_backlog = [{"title": title, "idea_id": idea_id, "idea_path": str(idea_path)}]
+    backlog_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
+    if not backlog_rows:
+        backlog_rows = [{"title": "Prove first accepted path"}]
+    created_backlog: list[dict[str, str]] = []
+    candidate_specs: dict[str, backlog_contract.IdeaSpec] = {}
+    idea_files: dict[str, str] = {}
+    index_rows: list[str] = []
+    for index, row in enumerate(backlog_rows, start=1):
+        idea_id = f"B-{index:03d}"
+        title = str(row.get("title") or f"Prove accepted path {index}").strip()
+        idea_path = Path(repo_root) / f"odylith/radar/source/ideas/{idea_id}.md"
+        created_backlog.append(
+            {"title": title, "idea_id": idea_id, "idea_path": str(idea_path)}
+        )
+        idea_files[str(idea_path)] = f"{title}\n"
+        index_rows.append(f"| {idea_id} | {title} |\n")
+        candidate_specs[idea_id] = backlog_contract.IdeaSpec(
+            path=idea_path,
+            metadata={"idea_id": idea_id, "status": "candidate"},
+            sections={"Problem", "Product View"},
+            section_bodies={
+                "Problem": str(row.get("problem") or "The accepted path needs a durable proof record."),
+                "Product View": str(
+                    row.get("product_view") or "The product exposes the accepted first path."
+                ),
+            },
+        )
+    idea_id = str(created_backlog[0]["idea_id"])
+    title = str(created_backlog[0]["title"])
+    workstream_ids = tuple(str(row["idea_id"]) for row in created_backlog)
     diagram_rows = [row for row in proposal.get("diagrams", []) if isinstance(row, dict)]
     diagram_ids = tuple(f"D-{index:03d}" for index, _row in enumerate(diagram_rows, start=1))
     rendered_atlas_sources = {
@@ -269,21 +241,32 @@ def compiled_greenfield_package_fixture(
     }
     backlog_result = {
         "created": created_backlog,
-        "idea_files": {str(idea_path): f"{title}\n"},
+        "idea_files": idea_files,
         "backlog_index": str(Path(repo_root) / "odylith/radar/source/INDEX.md"),
-        "backlog_index_text": f"| {idea_id} | {title} |\n",
-        "_candidate_idea_specs": {
-            idea_id: backlog_contract.IdeaSpec(
-                path=idea_path,
-                metadata={"idea_id": idea_id, "status": "candidate"},
-                sections={"Problem", "Product View"},
-                section_bodies={
-                    "Problem": "The first accepted path needs a durable proof record.",
-                    "Product View": "The product exposes the accepted first path.",
-                },
-            )
-        },
+        "backlog_index_text": "".join(index_rows),
+        "_candidate_idea_specs": candidate_specs,
     }
+    component_rows = greenfield_apply_components.first_release_component_rows(proposal)
+    rendered_component_specs = (
+        greenfield_apply_components.render_prewrite_component_specs(
+            root=repo_root,
+            proposal=proposal,
+            release_selector=release_selector,
+            backlog_result=backlog_result,
+        )
+        if component_rows
+        else {}
+    )
+    component_registry_preview = (
+        greenfield_apply_components.preview_prewrite_components(
+            root=repo_root,
+            proposal=proposal,
+            release_selector=release_selector,
+            backlog_result=backlog_result,
+        )
+        if component_rows
+        else ()
+    )
     release_id = "release-0-0-1"
     traceability_plan = greenfield_traceability.build_traceability_plan(
         proposal=proposal,
@@ -300,10 +283,12 @@ def compiled_greenfield_package_fixture(
     package = GreenfieldCompletionPackage(
         proposal=proposal,
         release_selector=release_selector,
+        rendered_component_specs=rendered_component_specs,
         rendered_atlas_sources=rendered_atlas_sources,
         atlas_review_date="2026-07-07",
         atlas_diagram_ids=diagram_ids,
         atlas_catalog_rows=atlas_catalog_rows,
+        component_registry_preview=component_registry_preview,
         backlog_result=backlog_result,
         project_brief_record_text="# Compiled Greenfield Project Brief\n\n- accepted_at: prewrite\n",
         accepted_project_preview={
@@ -313,7 +298,11 @@ def compiled_greenfield_package_fixture(
             "accepted_at": "prewrite",
             "title": str(proposal.get("intent", {}).get("title", "Compiled Greenfield Project")),
             "source_launch": {"implementation_prompt": f"Start {idea_id} from the compiled transaction package."},
-            "created": {"workstreams": [{"idea_id": idea_id}], "components": [], "diagrams": list(diagram_ids)},
+            "created": {
+                "workstreams": [{"idea_id": value} for value in workstream_ids],
+                "components": [],
+                "diagrams": list(diagram_ids),
+            },
             "validation_gate": {"status": "passed", "issues": []},
         },
         compass_memory_preview={
@@ -323,7 +312,7 @@ def compiled_greenfield_package_fixture(
             "ts_iso": "prewrite",
             "author": "odylith",
             "source": "domain-intelligence",
-            "workstreams": [idea_id],
+            "workstreams": list(workstream_ids),
             "artifacts": ["odylith/runtime/source/project-brief.v1.md"],
             "components": [],
             "evidence_tier": "user_intent",
@@ -359,11 +348,11 @@ def compiled_greenfield_package_fixture(
         },
         release_assignment_result={
             "dry_run": True,
-            "workstream_ids": [idea_id],
+            "workstream_ids": list(workstream_ids),
             "events": [],
             "release": {"release_id": release_id},
         },
-        release_workstream_ids=(idea_id,),
+        release_workstream_ids=workstream_ids,
     )
     return seal_compiled_greenfield_package_fixture(package, repo_root=repo_root)
 
@@ -403,7 +392,6 @@ def seal_compiled_greenfield_package_fixture(
         "prewrite_safety": dict(package.prewrite_safety_preview or {}),
         "release_bootstrap": dict(package.release_target_result or {"created": False, "release": {}}),
         "release_target": dict(package.release_assignment_result or {"events": []}),
-        "completion_priority_quality_debt": [],
     }
     return replace(
         package,
@@ -422,6 +410,51 @@ def surface_refresh_preview_fixture() -> dict[str, Any]:
         "artifact_paths": list(greenfield_surface_refresh_proof.GREENFIELD_REQUIRED_SURFACE_ARTIFACTS),
         "view": "odylith/index.html?tab=project",
     }
+
+
+def approved_authored_quality_manifest_fixture(**overrides: Any) -> dict[str, Any]:
+    """Return one valid standard-profile receipt for authored transaction-law tests."""
+
+    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
+    manifest: dict[str, Any] = {
+        "version": PRECONFIRM_QUALITY_MANIFEST_VERSION,
+        "engine": PRECONFIRM_ENGINE_VERSION,
+        "status": "passed",
+        "validation_status": "passed",
+        "issue_count": 0,
+        "hard_blocker": None,
+        "requested_repair_tier": "auto",
+        "repair_tier": profile.repair_tier,
+        "budget_seconds": profile.consumer_budget_seconds,
+        "elapsed_seconds": 1.0,
+        "write_transaction": {
+            "status": "not_started",
+            "rollback_guard": "enabled",
+            "prewrite_clean_before_commit": True,
+        },
+        "semantic_compiler": {
+            "version": "odylith.greenfield.authored-semantic-validation.v1",
+            "status": "passed",
+            "semantic_owner": "single_model_authoring_response",
+            "post_authoring_interpretation_calls": 0,
+        },
+        "model_authoring": {
+            "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
+            "semantic_model_call_count": 1,
+            "tier": profile.repair_tier,
+            "elapsed_seconds": 0.5,
+            "model_profile": {
+                "profile_id": profile.profile_id,
+                "provider": profile.provider,
+                "model": profile.model,
+                "reasoning_effort": profile.reasoning_effort,
+                "effective_timeout_seconds": profile.model_timeout_seconds,
+                "authoring_tier": profile.repair_tier,
+            },
+        },
+    }
+    manifest.update(overrides)
+    return manifest
 
 
 def stub_preconfirm_surface_refresh(monkeypatch: Any) -> None:
@@ -485,67 +518,206 @@ def _seed_empty_governance_repo(repo_root: Path) -> None:
     )
 
 
-def _governed_greenfield_fixture(repo_root: Path, prompt: str) -> dict[str, object]:
-    proposal = copy.deepcopy(_host_reasoned_ecommerce_proposal())
-    title = greenfield_proposals.intent_title(prompt) or "Host Authored Greenfield Project"
-    slug = greenfield_proposals.slugify(title)
-    intent = proposal["intent"]
-    assert isinstance(intent, dict)
-    intent.update(
-        {
-            "prompt": prompt,
-            "title": title,
-            "project_slug": slug,
-            "human_actors": [
-                "Shopper: completes the browse-to-checkout path and reviews the order draft with recovery status.",
-            ],
-        }
+def materialize_typed_intent_fixture(
+    repo_root: Path,
+    *,
+    intent: Mapping[str, Any],
+    first_path_relations: list[Mapping[str, Any]],
+    component_responsibility_owners: list[str],
+    component_responsibility_event_orders: list[int],
+    first_path_context_event_orders: Mapping[str, int] | None = None,
+    authoring_receipt: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Materialize explicit typed fixture data through the shipped custody path."""
+
+    source = ". ".join(
+        str(row)
+        for value in intent.values()
+        for row in (value if isinstance(value, list) else [value])
+        if str(row)
     )
-    proposal["project_brief"] = _host_project_brief(title=title, prompt=prompt, release="0.0.1")
-    proposal["project_intelligence"] = _host_project_intelligence(title=title, release="0.0.1")
-    release_focus = _host_release_focus_for_prompt(prompt)
-    release_plan = proposal.get("release_plan")
-    if isinstance(release_plan, dict):
-        release_plan.update(
-            {
-                "label": f"{title} first governed release",
-                "provisional_release_id": f"release-{slug}-first",
-                "strategy": f"Promote the {release_focus} only after validation proof and refreshed release evidence.",
-            }
-        )
-        milestones = release_plan.get("milestones")
-        if isinstance(milestones, list):
-            for milestone in milestones:
-                if isinstance(milestone, dict):
-                    milestone["exit_criteria"] = (
-                        f"The named product operator accepts the {release_focus}, components, topology, and validation."
-                    )
-    backlog = proposal.get("backlog")
-    if isinstance(backlog, list):
-        actor_lines = _host_actor_lines_for_prompt(prompt)
-        for row in backlog:
-            if isinstance(row, dict):
-                row["domain_intelligence"] = _host_domain_intelligence(
-                    title=title,
-                    row_title=str(row.get("title") or title),
-                    actors=actor_lines,
-                )
-    proposal = greenfield_proposals.normalize_host_reasoned_proposal(proposal)
-    proposal = greenfield_proposals.complete_confirmed_proposal(proposal, release_selector="0.0.1")
-    proposal = greenfield_proposals.normalize_host_reasoned_proposal(proposal)
-    proposal = greenfield_proposals.complete_greenfield_semantic_apply_payload(proposal, release_selector="0.0.1")
-    complete_diagram_rows(proposal)
-    proposal = attach_project_intelligence_bindings(proposal)
-    final_intent = proposal.get("intent")
-    assert isinstance(final_intent, Mapping)
-    sealed_intent = confirmed_mapping_with_authority(final_intent, repo_root=repo_root)
-    authority = sealed_intent.pop(PRODUCT_INTENT_AUTHORITY_KEY)
-    proposal["intent"] = sealed_intent
-    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = authority
+    receipt = authoring_receipt if authoring_receipt is not None else {}
+    return materialize_model_authored_intent(
+        prompt=source,
+        repo_root=repo_root,
+        authoring_provider=StructuredAuthoringProvider(
+            authored_response(
+                intent,
+                evidence_text=source,
+                first_path_relations=first_path_relations,
+                first_path_context_event_orders=first_path_context_event_orders,
+                component_responsibility_owners=component_responsibility_owners,
+                component_responsibility_event_orders=component_responsibility_event_orders,
+            )
+        ),
+        authoring_timeout_seconds=54,
+        authoring_profile_id=STANDARD_PROFILE_ID,
+        authoring_receipt=receipt,
+    )
+
+
+def canonical_model_authored_intent_fixture(
+    repo_root: Path,
+    *,
+    authoring_receipt: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Return explicit typed Commerce intent authored from exact cited evidence."""
+
+    first_path = (
+        "Shopper opens Storefront and adds one product to the cart. "
+        "Storefront sends the cart to Checkout Orchestrator. "
+        "Checkout Orchestrator requests a sandbox payment from Payment Sandbox. "
+        "Payment Sandbox returns a failed payment response. "
+        "Shopper retries checkout. "
+        "Checkout Orchestrator creates an order draft and shows recovery status."
+    )
+    intent: dict[str, Any] = {
+        "title": "Commerce Launch System",
+        "product_story": (
+            "Commerce Launch System lets a shopper complete a reviewable browse-to-checkout "
+            "journey and recover from a failed sandbox payment."
+        ),
+        "state_object": "order draft",
+        "first_path": first_path,
+        "proof_boundary": (
+            "Verify the failed sandbox payment, retry, idempotent order draft, and visible "
+            "recovery status without claiming production payment readiness."
+        ),
+        "problem": (
+            "Shoppers and commerce builders cannot trust checkout until cart, payment, retry, "
+            "and order-draft evidence stay connected."
+        ),
+        "customer": "Shoppers and commerce builders",
+        "opportunity": "Prove one browse-to-checkout recovery path before production expansion.",
+        "product_view": (
+            "The product keeps browse, checkout recovery, order-draft state, and review evidence "
+            "visible as one journey."
+        ),
+        "success_metrics": [
+            "A shopper sees recovery status after retrying a failed sandbox payment.",
+            "A reviewer can trace the idempotent order draft to the cart and payment evidence.",
+        ],
+        "evidence_requirements": [
+            "Retain the failed payment response with the retry outcome.",
+            "Retain the order draft with its cart and payment evidence.",
+        ],
+        "operational_constraints": [
+            "Keep order creation idempotent under retry.",
+            "Keep production payment readiness outside the first release claim.",
+        ],
+        "component_responsibilities": [
+            "Own browse, cart entry, checkout entry, and user-facing errors.",
+            "Own payment handoff, order draft, idempotency, and recovery boundaries.",
+            "Own product facts, price snapshots, inventory visibility, and merchandising review.",
+        ],
+        "human_actors": ["Shopper"],
+        "external_systems": ["Payment Sandbox"],
+        "internal_systems": ["Storefront", "Checkout Orchestrator", "Catalog Boundary"],
+        "assumptions": [
+            "The first release uses a sandbox payment response.",
+        ],
+        "ambiguities": [],
+        "non_goals": [
+            "Do not claim production payment readiness.",
+            "Do not automate merchandising decisions.",
+        ],
+    }
+    relations = [
+        {
+            "actor_kind": "human",
+            "actor_quote": "Shopper",
+            "event_quote": "Shopper opens Storefront and adds one product to the cart",
+            "action_verb_quote": "opens",
+            "target_quote": "Storefront",
+            "visible_result_quote": "",
+            "recovery_path": False,
+        },
+        {
+            "actor_kind": "product",
+            "actor_quote": "Storefront",
+            "owner_system_quote": "Storefront",
+            "event_quote": "Storefront sends the cart to Checkout Orchestrator",
+            "action_verb_quote": "sends",
+            "target_quote": "the cart",
+            "visible_result_quote": "",
+            "recovery_path": False,
+        },
+        {
+            "actor_kind": "product",
+            "actor_quote": "Checkout Orchestrator",
+            "owner_system_quote": "Checkout Orchestrator",
+            "event_quote": (
+                "Checkout Orchestrator requests a sandbox payment from Payment Sandbox"
+            ),
+            "action_verb_quote": "requests",
+            "target_quote": "a sandbox payment",
+            "visible_result_quote": "",
+            "recovery_path": False,
+        },
+        {
+            "actor_kind": "external_system",
+            "actor_quote": "Payment Sandbox",
+            "event_quote": "Payment Sandbox returns a failed payment response",
+            "action_verb_quote": "returns",
+            "target_quote": "a failed payment response",
+            "visible_result_quote": "",
+            "recovery_path": True,
+        },
+        {
+            "actor_kind": "human",
+            "actor_quote": "Shopper",
+            "event_quote": "Shopper retries checkout",
+            "action_verb_quote": "retries",
+            "target_quote": "checkout",
+            "visible_result_quote": "",
+            "recovery_path": True,
+        },
+        {
+            "actor_kind": "product",
+            "actor_quote": "Checkout Orchestrator",
+            "owner_system_quote": "Checkout Orchestrator",
+            "event_quote": (
+                "Checkout Orchestrator creates an order draft and shows recovery status"
+            ),
+            "action_verb_quote": "creates",
+            "target_quote": "an order draft",
+            "visible_result_quote": "recovery status",
+            "recovery_path": True,
+        },
+    ]
+    return materialize_typed_intent_fixture(
+        repo_root,
+        intent=intent,
+        first_path_relations=relations,
+        first_path_context_event_orders={"/state_object": 6},
+        component_responsibility_owners=[
+            "Storefront",
+            "Checkout Orchestrator",
+            "Catalog Boundary",
+        ],
+        component_responsibility_event_orders=[2, 6, 0],
+        authoring_receipt=authoring_receipt,
+    )
+
+
+def _canonical_model_authored_greenfield_fixture(repo_root: Path) -> dict[str, Any]:
+    """Return one explicit typed Commerce proposal with sealed source custody."""
+
+    authoring_receipt: dict[str, Any] = {}
+    candidate = canonical_model_authored_intent_fixture(
+        repo_root,
+        authoring_receipt=authoring_receipt,
+    )
+    source = str(candidate["prompt"])
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=repo_root,
+        prompt=source,
+        release_selector="0.0.1",
+        confirmed_intent=candidate,
+        require_completion_ready=False,
+    )
+    proposal["_test_model_authoring_receipt"] = authoring_receipt
     return proposal
-
-
-_apply_ready_greenfield_fixture = _governed_greenfield_fixture
 
 
 def _host_reasoned_ecommerce_proposal() -> dict[str, object]:

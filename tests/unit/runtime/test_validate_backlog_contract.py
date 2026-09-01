@@ -402,15 +402,15 @@ def test_backlog_contract_rejects_queued_p0_release_spine_without_topology(
     assert rc == 0
 
 
-def test_backlog_contract_rejects_placeholder_core_detail_section(
+def test_backlog_contract_rejects_empty_required_section(
     tmp_path: Path,
     capsys,  # noqa: ANN001 - pytest fixture
 ) -> None:
     _implementation_path, queued_path = _seed_minimal_repo(tmp_path)
     text = queued_path.read_text(encoding="utf-8")
     text = text.replace(
-        "## Problem\nSeed workstream problem detail is grounded enough for backlog validation.",
-        "## Problem\nDetails.",
+        "## Problem\nSeed workstream problem detail is grounded enough for backlog validation.\n\n## Customer",
+        "## Problem\n\n## Customer",
     )
     queued_path.write_text(text, encoding="utf-8")
 
@@ -418,10 +418,10 @@ def test_backlog_contract_rejects_placeholder_core_detail_section(
     out = capsys.readouterr().out
 
     assert rc == 2
-    assert "core detail section `## Problem` uses placeholder-like text" in out
+    assert "required section `## Problem` must be non-empty" in out
 
 
-def test_backlog_contract_rejects_boilerplate_core_detail_section(
+def test_backlog_contract_does_not_reinterpret_persisted_core_detail_copy(
     tmp_path: Path,
     capsys,  # noqa: ANN001 - pytest fixture
 ) -> None:
@@ -436,8 +436,7 @@ def test_backlog_contract_rejects_boilerplate_core_detail_section(
     rc = gate.main(["--repo-root", str(tmp_path)])
     out = capsys.readouterr().out
 
-    assert rc == 2
-    assert "core detail section `## Customer` still uses backlog-create boilerplate" in out
+    assert rc == 0, out
 
 
 def test_validate_idea_specs_ignores_legacy_cache_without_section_bodies(tmp_path: Path) -> None:

@@ -18,7 +18,11 @@ from greenfield_preconfirm_matrix_cases import VALID_CASE_EXPECTATIONS
 from odylith.runtime.domain_intelligence.greenfield_text import dedupe_adjacent_words
 
 
-def load_case_file(path: Path) -> tuple[GreenfieldMatrixCase, ...]:
+def load_case_file(
+    path: Path,
+    *,
+    enforce_lexical_controls: bool = True,
+) -> tuple[GreenfieldMatrixCase, ...]:
     """Load matrix cases from a JSON file without baking domains into Odylith."""
 
     case_path = Path(path).expanduser().resolve()
@@ -31,16 +35,16 @@ def load_case_file(path: Path) -> tuple[GreenfieldMatrixCase, ...]:
     cases = _case_rows(raw)
     if not cases:
         raise RuntimeError(f"greenfield case file {case_path} must define at least one case")
-    question_fields = _expected_question_fields_by_case(raw)
+    expected_clarifications = _expected_clarifications_by_case(raw)
     compiled = tuple(
         _case_from_row(
             row,
             index=index,
             source=case_path,
-            expected_question_fields=question_fields.get(
-                _optional_text(row.get("case_id")) or _optional_text(row.get("id")),
-                (),
+            expected_clarification=expected_clarifications.get(
+                _optional_text(row.get("case_id")) or _optional_text(row.get("id"))
             ),
+            enforce_lexical_controls=enforce_lexical_controls,
         )
         for index, row in enumerate(cases, 1)
     )
@@ -77,7 +81,8 @@ def _case_from_row(
     *,
     index: int,
     source: Path,
-    expected_question_fields: tuple[str, ...] = (),
+    expected_clarification: tuple[str, str] | None = None,
+    enforce_lexical_controls: bool = True,
 ) -> GreenfieldMatrixCase:
     name = _required_text(row, "name", index=index, source=source)
     prompt = _canonical_block_text(_required_block_text(row, "prompt", index=index, source=source))
@@ -88,30 +93,34 @@ def _case_from_row(
         provenance = case_provenance_from_mapping(row.get("provenance"))
     except ValueError as exc:
         raise RuntimeError(f"{source} case {index} ({name}) has invalid provenance: {exc}") from exc
-    if not required_terms:
-        raise RuntimeError(f"{source} case {index} ({name}) must define required_terms")
-    if not leakage_terms:
-        raise RuntimeError(f"{source} case {index} ({name}) must define leakage_terms")
-    missing_terms = ungrounded_required_terms(
-        prompt=prompt,
-        confirmed_intent_markdown=confirmed_intent,
-        required_terms=required_terms,
-    )
-    if missing_terms:
-        raise RuntimeError(
-            f"{source} case {index} ({name}) has ungrounded required_terms: {', '.join(missing_terms)}; "
-            "required_terms must be source-grounded in the case prompt or confirmed intent"
+    if enforce_lexical_controls:
+        if not required_terms:
+            raise RuntimeError(f"{source} case {index} ({name}) must define required_terms")
+        if not leakage_terms:
+            raise RuntimeError(f"{source} case {index} ({name}) must define leakage_terms")
+        missing_terms = ungrounded_required_terms(
+            prompt=prompt,
+            confirmed_intent_markdown=confirmed_intent,
+            required_terms=required_terms,
         )
-    missing_leakage_terms = ungrounded_leakage_terms(
-        prompt=prompt,
-        confirmed_intent_markdown=confirmed_intent,
-        leakage_terms=leakage_terms,
-    )
-    if missing_leakage_terms:
-        raise RuntimeError(
-            f"{source} case {index} ({name}) has ungrounded leakage_terms: {', '.join(missing_leakage_terms)}; "
-            "leakage_terms must be source-grounded in the case prompt or confirmed intent"
+        if missing_terms:
+            raise RuntimeError(
+                f"{source} case {index} ({name}) has ungrounded required_terms: {', '.join(missing_terms)}; "
+                "required_terms must be source-grounded in the case prompt or confirmed intent"
+            )
+        missing_leakage_terms = ungrounded_leakage_terms(
+            prompt=prompt,
+            confirmed_intent_markdown=confirmed_intent,
+            leakage_terms=leakage_terms,
         )
+        if missing_leakage_terms:
+            raise RuntimeError(
+                f"{source} case {index} ({name}) has ungrounded leakage_terms: {', '.join(missing_leakage_terms)}; "
+                "leakage_terms must be source-grounded in the case prompt or confirmed intent"
+            )
+    else:
+        required_terms = ()
+        leakage_terms = ()
     try:
         input_style_token = normalize_axis_token(row.get("input_style"))
         input_style = normalize_input_style(input_style_token)
@@ -139,25 +148,33 @@ def _case_from_row(
         input_style_declared=bool(input_style_token),
         metamorphic_group=metamorphic_group,
         metamorphic_transform=metamorphic_transform,
-        expected_question_fields=expected_question_fields,
+        expected_clarification_field=(expected_clarification or ("", ""))[0],
+        expected_clarification_question=(expected_clarification or ("", ""))[1],
     )
 
 
-def _expected_question_fields_by_case(raw: Any) -> dict[str, tuple[str, ...]]:
+def _expected_clarifications_by_case(raw: Any) -> dict[str, tuple[str, str]]:
     if not isinstance(raw, Mapping):
         return {}
     annotations = raw.get("annotations")
     if not isinstance(annotations, Sequence) or isinstance(annotations, (str, bytes, bytearray)):
         return {}
-    fields: dict[str, tuple[str, ...]] = {}
+    clarifications: dict[str, tuple[str, str]] = {}
     for row in annotations:
         if not isinstance(row, Mapping):
             continue
         case_id = _optional_text(row.get("case_id"))
-        expected = _string_tuple(row.get("expected_question_fields"))
-        if case_id and expected:
-            fields[case_id] = expected
-    return fields
+        expected = row.get("expected_clarification")
+        if not case_id or expected is None:
+            continue
+        if not isinstance(expected, Mapping):
+            raise RuntimeError(f"annotation `{case_id}` has invalid expected_clarification")
+        field = _optional_text(expected.get("field"))
+        question = _optional_block_text(expected.get("question"))
+        if not field or not question:
+            raise RuntimeError(f"annotation `{case_id}` has incomplete expected_clarification")
+        clarifications[case_id] = (field, question)
+    return clarifications
 
 
 def ungrounded_required_terms(

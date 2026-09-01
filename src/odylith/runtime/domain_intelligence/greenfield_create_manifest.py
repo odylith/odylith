@@ -13,13 +13,13 @@ PRECONFIRM_QUALITY_MANIFEST_VERSION = "greenfield-pre-confirm-quality-manifest-v
 def finalize_greenfield_commit_manifest(
     manifest: Mapping[str, Any],
     *,
-    whole_project_elapsed_seconds: float,
+    create_elapsed_seconds: float,
     write_transaction_status: str,
 ) -> dict[str, Any]:
     """Attach commit evidence without invoking the pre-confirm compiler."""
 
     payload = dict(manifest)
-    payload["whole_project_elapsed_seconds"] = round(float(whole_project_elapsed_seconds), 3)
+    payload["create_elapsed_seconds"] = round(float(create_elapsed_seconds), 3)
     transaction = dict(payload.get("write_transaction") if isinstance(payload.get("write_transaction"), Mapping) else {})
     transaction["status"] = write_transaction_status
     transaction["rollback_guard"] = "enabled"

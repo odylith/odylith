@@ -17,11 +17,10 @@ from pathlib import Path
 import re
 from typing import Any, Callable, Mapping, Sequence
 
+from odylith.runtime.domain_intelligence import greenfield_authored_atlas_view
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance.delivery import scope_signal_ladder
-from odylith.runtime.surfaces import atlas_box_explanations
 from odylith.runtime.surfaces import atlas_detail_layout
-from odylith.runtime.surfaces import atlas_diagram_intelligence
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import dashboard_shell_links
 from odylith.runtime.surfaces import dashboard_ui_primitives
@@ -482,13 +481,31 @@ def _load_catalog(
         kind = _display_text(_assert_non_empty(name="kind", value=item.get("kind"), errors=errors, context=context))
         status = _display_text(_assert_non_empty(name="status", value=item.get("status"), errors=errors, context=context))
         owner = _display_text(_assert_non_empty(name="owner", value=item.get("owner"), errors=errors, context=context))
-        summary = _display_text(_assert_non_empty(name="summary", value=item.get("summary"), errors=errors, context=context))
-        read_guide = _display_text(item.get("read_guide", ""))
-        catalog_diagram_boxes = atlas_box_explanations.normalize_catalog_diagram_boxes(
-            raw_boxes=item.get("diagram_boxes", []),
-            context=context,
-            errors=errors,
-        )
+        authored_view_claimed = greenfield_authored_atlas_view.is_authored_atlas_view(item)
+        if authored_view_claimed:
+            summary = item.get("summary", "") if isinstance(item.get("summary"), str) else ""
+            read_guide = item.get("read_guide", "") if isinstance(item.get("read_guide"), str) else ""
+            _assert_non_empty(name="summary", value=summary, errors=errors, context=context)
+            catalog_diagram_boxes: list[dict[str, str]] = []
+        else:
+            # Unmarked catalogs retain the general Mermaid/prose interpretation path.
+            # Marked authored rows are already a sealed typed view and never enter it.
+            from odylith.runtime.surfaces import atlas_box_explanations
+
+            summary = _display_text(
+                _assert_non_empty(
+                    name="summary",
+                    value=item.get("summary"),
+                    errors=errors,
+                    context=context,
+                )
+            )
+            read_guide = _display_text(item.get("read_guide", ""))
+            catalog_diagram_boxes = atlas_box_explanations.normalize_catalog_diagram_boxes(
+                raw_boxes=item.get("diagram_boxes", []),
+                context=context,
+                errors=errors,
+            )
         source_mmd = _assert_non_empty(name="source_mmd", value=item.get("source_mmd"), errors=errors, context=context)
         source_svg = _assert_non_empty(name="source_svg", value=item.get("source_svg"), errors=errors, context=context)
         source_png = str(item.get("source_png", "")).strip()
@@ -542,27 +559,48 @@ def _load_catalog(
             if not target.exists():
                 errors.append(f"{context}: change_watch_paths entry does not exist: {watch}")
 
-        raw_components = item.get("components", [])
-        if not isinstance(raw_components, list) or not raw_components:
-            errors.append(f"{context}: `components` must be a non-empty list")
-            components: list[dict[str, str]] = []
-        else:
-            components = []
-            for comp_idx, comp in enumerate(raw_components):
-                if not isinstance(comp, dict):
-                    errors.append(f"{context}: components[{comp_idx}] must be an object")
-                    continue
-                comp_name = _display_text(comp.get("name", ""))
-                comp_desc = atlas_box_explanations.clean_component_description(
-                    name=comp_name,
-                    description=_display_text(comp.get("description", "")),
+        source_text = ""
+        if authored_view_claimed and mmd_path is not None:
+            try:
+                source_text = mmd_path.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError) as exc:
+                errors.append(
+                    f"{context}: source_mmd is unreadable: {source_mmd} ({exc.__class__.__name__})"
                 )
-                if not comp_name or not comp_desc:
-                    errors.append(
-                        f"{context}: components[{comp_idx}] requires non-empty `name` and `description`"
+
+        authored_view: dict[str, Any] | None = None
+        if authored_view_claimed:
+            try:
+                authored_view = greenfield_authored_atlas_view.validate_authored_atlas_view(
+                    item,
+                    source_text=source_text,
+                )
+            except ValueError as exc:
+                errors.append(f"{context}: {exc}")
+                continue
+            components = authored_view["components"]
+        else:
+            raw_components = item.get("components", [])
+            if not isinstance(raw_components, list) or not raw_components:
+                errors.append(f"{context}: `components` must be a non-empty list")
+                components = []
+            else:
+                components = []
+                for comp_idx, comp in enumerate(raw_components):
+                    if not isinstance(comp, dict):
+                        errors.append(f"{context}: components[{comp_idx}] must be an object")
+                        continue
+                    comp_name = _display_text(comp.get("name", ""))
+                    comp_desc = atlas_box_explanations.clean_component_description(
+                        name=comp_name,
+                        description=_display_text(comp.get("description", "")),
                     )
-                    continue
-                components.append({"name": comp_name, "description": comp_desc})
+                    if not comp_name or not comp_desc:
+                        errors.append(
+                            f"{context}: components[{comp_idx}] requires non-empty `name` and `description`"
+                        )
+                        continue
+                    components.append({"name": comp_name, "description": comp_desc})
 
         related_backlog = _validate_related_paths(
             repo_root=repo_root,
@@ -675,28 +713,39 @@ def _load_catalog(
         if mmd_path is None or svg_path is None or review_date is None:
             continue
 
-        try:
-            source_text = mmd_path.read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError) as exc:
-            errors.append(f"{context}: source_mmd is unreadable: {source_mmd} ({exc.__class__.__name__})")
-            source_text = ""
-        diagram_boxes = list(
-            atlas_box_explanations.merge_diagram_box_explanations(
-                source_text=source_text,
-                catalog_boxes=catalog_diagram_boxes,
-                component_rows=components,
-                diagram_title=title,
-                diagram_summary=summary,
+        if authored_view is not None:
+            diagram_boxes = authored_view["diagram_boxes"]
+            rendered_summary = authored_view["summary"]
+            rendered_read_guide = authored_view["read_guide"]
+        else:
+            from odylith.runtime.surfaces import atlas_diagram_intelligence
+
+            try:
+                source_text = mmd_path.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError) as exc:
+                errors.append(
+                    f"{context}: source_mmd is unreadable: {source_mmd} ({exc.__class__.__name__})"
+                )
+                source_text = ""
+            diagram_boxes = list(
+                atlas_box_explanations.merge_diagram_box_explanations(
+                    source_text=source_text,
+                    catalog_boxes=catalog_diagram_boxes,
+                    component_rows=components,
+                    diagram_title=title,
+                    diagram_summary=summary,
+                )
             )
-        )
-        diagram_boxes = _display_rows(diagram_boxes, ("label", "role", "description"))
-        diagram_narrative = atlas_diagram_intelligence.build_diagram_narrative(
-            title=title,
-            kind=kind,
-            summary=summary,
-            read_guide=read_guide,
-            source_text=source_text,
-        )
+            diagram_boxes = _display_rows(diagram_boxes, ("label", "role", "description"))
+            diagram_narrative = atlas_diagram_intelligence.build_diagram_narrative(
+                title=title,
+                kind=kind,
+                summary=summary,
+                read_guide=read_guide,
+                source_text=source_text,
+            )
+            rendered_summary = _display_text(diagram_narrative.summary)
+            rendered_read_guide = _display_text(diagram_narrative.read_guide)
 
         viewbox_dims = _extract_svg_viewbox_dimensions(svg_path)
         viewbox_width = float(viewbox_dims[0]) if viewbox_dims else 0.0
@@ -755,8 +804,8 @@ def _load_catalog(
                 "kind": kind,
                 "status": status,
                 "owner": owner,
-                "summary": _display_text(diagram_narrative.summary),
-                "read_guide": _display_text(diagram_narrative.read_guide),
+                "summary": rendered_summary,
+                "read_guide": rendered_read_guide,
                 "diagram_boxes": diagram_boxes,
                 "last_reviewed_utc": review_date.isoformat(),
                 "review_age_days": review_age_days,

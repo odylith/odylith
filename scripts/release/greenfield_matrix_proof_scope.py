@@ -6,13 +6,9 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
-from greenfield_matrix_types import GreenfieldMatrixResult
-
-
 TEMP_CLEANUP_PATTERNS: tuple[str, ...] = (
     "odylith-greenfield-matrix-*",
-    "odylith-greenfield-rescue-*",
-    "odylith-greenfield-natural-rescue-*",
+    "odylith-greenfield-unavailable-*",
     "odylith-greenfield-commit-recovery-*",
     "odylith-source-*",
     "odylith-debug-*",
@@ -54,7 +50,7 @@ def commit_manifest_summary(manifest: Mapping[str, Any]) -> dict[str, Any]:
         "structured_patch_fallback_provider_failure_code": str(
             fallback_provider.get("code") or fallback_provider.get("last_failure_code") or ""
         ).strip(),
-        "whole_project_elapsed_seconds": manifest.get("whole_project_elapsed_seconds"),
+        "create_elapsed_seconds": manifest.get("create_elapsed_seconds"),
         "write_transaction": {
             "status": str(write_transaction.get("status", "")).strip(),
             "commit_only": write_transaction.get("commit_only") is True,
@@ -79,42 +75,6 @@ def commit_manifest_summary(manifest: Mapping[str, Any]) -> dict[str, Any]:
         "issue_surfaces": _manifest_issue_values(manifest, "surface"),
         "issue_signatures": _manifest_issue_signatures(manifest),
     }
-
-
-def natural_rescue_quality_proven(results: Sequence[GreenfieldMatrixResult]) -> bool:
-    """Return true only when a real installed case proves provider-backed rescue."""
-
-    for result in results:
-        summary = dict(result.commit_manifest_summary or {})
-        if result.status != "passed":
-            continue
-        if summary.get("status") != "passed" or summary.get("validation_status") != "passed":
-            continue
-        if summary.get("repair_tier") not in {"rescue", "deep"} or not summary.get("rescue_activated"):
-            continue
-        repaired_codes = set(summary.get("repaired_issue_codes") or [])
-        if "preconfirm_rescue_probe" in repaired_codes:
-            continue
-        if not _structured_rescue_plan_or_fallback_proven(summary):
-            continue
-        return True
-    return False
-
-
-def _structured_rescue_plan_or_fallback_proven(summary: Mapping[str, Any]) -> bool:
-    if (
-        summary.get("tribunal_patch_plan_status") == "planned"
-        and int(summary.get("tribunal_patch_plan_operation_count") or 0) > 0
-        and str(summary.get("tribunal_patch_plan_provider", "")).strip()
-    ):
-        return True
-    return (
-        summary.get("structured_patch_fallback_status") == "applied"
-        and summary.get("structured_patch_fallback_source") == "source_anchored_semantic_fact"
-        and int(summary.get("structured_patch_fallback_operation_count") or 0) > 0
-        and str(summary.get("structured_patch_fallback_provider", "")).strip()
-        and str(summary.get("structured_patch_fallback_provider_failure_code", "")).strip()
-    )
 
 
 def temp_cleanup_proof(temp_parent: Path) -> dict[str, Any]:
@@ -202,7 +162,6 @@ def _slug(value: Any) -> str:
 
 
 __all__ = [
-    "natural_rescue_quality_proven",
     "commit_manifest_summary",
     "temp_cleanup_proof",
 ]

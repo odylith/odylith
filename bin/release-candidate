@@ -18,7 +18,7 @@ dist_dir="$candidate_root/dist"
 mkdir -p "$dist_dir"
 trap 'rm -rf "$candidate_root"' EXIT
 
-run_release_proof_steps "$resolved_version" "$dist_dir"
+run_release_proof_steps "$resolved_version" "$dist_dir" discovery
 benchmark_override_mode="$(release_benchmark_override_mode "$resolved_version")"
 if [[ "$benchmark_override_mode" == "skip_proof_and_compare" ]]; then
   echo "benchmark compare skipped for v${resolved_version}: tracked maintainer override marks benchmark proof advisory for this exact release"
