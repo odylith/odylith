@@ -108,14 +108,14 @@ def _response(source: str) -> dict[str, object]:
 
 def _carried_human_actor_response() -> tuple[str, dict[str, Any], dict[str, Any]]:
     first_path = (
-        "Dock attendant Ivo enters a vessel tag, checks its status, "
+        "A dock attendant Ivo enters a vessel tag; the attendant checks its status "
         "and sees the berth placement"
     )
     intent = {
         **_TEXT_FIELDS,
         **_LIST_FIELDS,
         "first_path": first_path,
-        "human_actors": ["Dock attendant Ivo", "Mara"],
+        "human_actors": ["dock attendant Ivo", "Mara"],
     }
     source = ". ".join(
         str(row)
@@ -130,9 +130,9 @@ def _carried_human_actor_response() -> tuple[str, dict[str, Any], dict[str, Any]
         first_path_relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Dock attendant Ivo",
-                "actor_fact_quote": "Dock attendant Ivo",
-                "event_quote": "Dock attendant Ivo enters a vessel tag",
+                "actor_quote": "A dock attendant Ivo",
+                "actor_fact_quote": "dock attendant Ivo",
+                "event_quote": "A dock attendant Ivo enters a vessel tag",
                 "action_verb_quote": "enters",
                 "target_quote": "a vessel tag",
                 "visible_result_quote": "",
@@ -140,9 +140,9 @@ def _carried_human_actor_response() -> tuple[str, dict[str, Any], dict[str, Any]
             },
             {
                 "actor_kind": "human",
-                "actor_quote": "Dock attendant Ivo",
-                "actor_fact_quote": "Dock attendant Ivo",
-                "event_quote": "checks its status",
+                "actor_quote": "the attendant",
+                "actor_fact_quote": "dock attendant Ivo",
+                "event_quote": "the attendant checks its status",
                 "action_verb_quote": "checks",
                 "target_quote": "its status",
                 "visible_result_quote": "",
@@ -150,8 +150,8 @@ def _carried_human_actor_response() -> tuple[str, dict[str, Any], dict[str, Any]
             },
             {
                 "actor_kind": "human",
-                "actor_quote": "Dock attendant Ivo",
-                "actor_fact_quote": "Dock attendant Ivo",
+                "actor_quote": "the attendant",
+                "actor_fact_quote": "dock attendant Ivo",
                 "event_quote": "sees the berth placement",
                 "action_verb_quote": "sees",
                 "target_quote": "the berth placement",
@@ -206,7 +206,7 @@ def test_coordinated_events_preserve_one_explicit_typed_actor_carry() -> None:
 
     assert [row["actor_is_carried"] for row in result.first_path_relations] == [
         False,
-        True,
+        False,
         True,
     ]
     assert validate_first_path_relations(
@@ -219,7 +219,7 @@ def test_coordinated_events_preserve_one_explicit_typed_actor_carry() -> None:
     ) == result.first_path_relations
 
     tampered = [dict(row) for row in result.first_path_relations]
-    tampered[1]["actor_is_carried"] = False
+    tampered[2]["actor_is_carried"] = False
     with pytest.raises(GreenfieldAuthoredSemanticsError, match="ungrounded first-path relations"):
         validate_first_path_relations(
             tampered,
@@ -236,10 +236,9 @@ def test_actor_carry_cannot_start_a_path_or_change_to_an_unspoken_actor(
     relation_index: int,
 ) -> None:
     source, response, _intent = _carried_human_actor_response()
-    relation = response["first_path_relations"][relation_index]
+    relation = response["events"][relation_index]
     relation["actor_quote"] = "Mara"
     relation["actor_fact_quote"] = "Mara"
-    relation["actor_occurrence"] = 0
 
     with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path actor"):
         author_greenfield_intent(
@@ -258,9 +257,6 @@ def test_materialization_preserves_exact_first_path_bytes(tmp_path) -> None:  # 
         fact for fact in response["facts"] if fact["field"] == "first_path"  # type: ignore[index]
     )
     first_path_fact["quote"] = exact_first_path
-    for relation in response["first_path_relations"]:  # type: ignore[index]
-        relation["fact_quote"] = exact_first_path
-
     candidate = materialize_model_authored_intent(
         prompt=source,
         repo_root=tmp_path,

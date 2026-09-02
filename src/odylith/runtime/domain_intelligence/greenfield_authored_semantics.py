@@ -7,10 +7,14 @@ import hashlib
 import json
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
+    intent_text_at_path,
+    intent_text_rows,
+)
 from odylith.runtime.governance.artifact_tribunal import _bind_verified_source_custody
 
 AUTHORED_SEMANTICS_KEY = "authored_semantics"
-AUTHORED_SEMANTICS_VERSION = "odylith.greenfield.authored-semantics.v7"
+AUTHORED_SEMANTICS_VERSION = "odylith.greenfield.authored-semantics.v8"
 AUTHORED_RELATION_SET_SHA256_KEY = "authored_relation_set_sha256"
 AUTHORED_PROJECTION_ORIGIN = "model_authored_typed_intent"
 AUTHORED_SEMANTIC_ROOT = f"intent.{AUTHORED_SEMANTICS_KEY}"
@@ -115,6 +119,8 @@ def validate_first_path_relations(
     external_systems: Sequence[str] = (),
     internal_systems: Sequence[str] = (),
     product_title: str = "",
+    proof_boundary: str = "",
+    success_metrics: Sequence[str] = (),
 ) -> tuple[dict[str, Any], ...]:
     """Return ordered relations whose quoted parts are exact first-path bytes."""
 
@@ -126,6 +132,7 @@ def validate_first_path_relations(
     ):
         raise GreenfieldAuthoredSemanticsError("Greenfield authoring returned invalid first-path relations")
     path = str(first_path or "")
+    visible_result_facts = (path, str(proof_boundary or ""), *map(str, success_metrics))
     owner_values = _owner_projection_values(
         title=product_title,
         internal_systems=internal_systems,
@@ -152,16 +159,16 @@ def validate_first_path_relations(
         event_start = raw.get("event_start_byte")
         event_end = raw.get("event_end_byte")
         actor_kind = str(raw.get("actor_kind") or "")
-        actor_quote = str(raw.get("actor_quote") or "").strip()
+        actor_quote = str(raw.get("actor_quote") or "")
         actor_is_carried = raw.get("actor_is_carried")
         actor_fact_path = str(raw.get("actor_fact_path") or "")
         actor_fact_quote = str(raw.get("actor_fact_quote") or "")
         owner_system_path = str(raw.get("owner_system_path") or "")
         owner_system_quote = str(raw.get("owner_system_quote") or "")
-        event_quote = str(raw.get("event_quote") or "").strip()
-        action_verb_quote = str(raw.get("action_verb_quote") or "").strip()
-        target_quote = str(raw.get("target_quote") or "").strip()
-        visible_result_quote = str(raw.get("visible_result_quote") or "").strip()
+        event_quote = str(raw.get("event_quote") or "")
+        action_verb_quote = str(raw.get("action_verb_quote") or "")
+        target_quote = str(raw.get("target_quote") or "")
+        visible_result_quote = str(raw.get("visible_result_quote") or "")
         recovery_path = raw.get("recovery_path")
         if (
             order != expected_order
@@ -213,7 +220,9 @@ def validate_first_path_relations(
             raise GreenfieldAuthoredSemanticsError("Greenfield authoring returned ungrounded first-path relations")
         if target_quote and target_quote not in event_quote:
             raise GreenfieldAuthoredSemanticsError("Greenfield authoring returned ungrounded first-path relations")
-        if visible_result_quote and visible_result_quote not in event_quote:
+        if visible_result_quote and not any(
+            visible_result_quote in fact for fact in visible_result_facts if fact
+        ):
             raise GreenfieldAuthoredSemanticsError("Greenfield authoring returned ungrounded first-path relations")
         if actor_kind == "human":
             human_seen = True
@@ -592,9 +601,8 @@ def validate_first_path_context_relations(
             source_end=source_end,
             first_path_relations=first_path_relations,
         )
-        contradicted_event_link = bool(
-            len(overlapping_orders) > 1
-            or (overlapping_orders and event_order not in overlapping_orders)
+        expected_event_order = (
+            next(iter(overlapping_orders)) if len(overlapping_orders) == 1 else 0
         )
         if (
             raw.get("context_kind") != expected_kind
@@ -610,8 +618,7 @@ def validate_first_path_context_relations(
             or isinstance(event_order, bool)
             or event_order < 0
             or (event_order and event_order not in event_orders)
-            or contradicted_event_link
-            or (expected_kind == "state_object" and not event_order)
+            or event_order != expected_event_order
         ):
             raise GreenfieldAuthoredSemanticsError(
                 "Greenfield authored first-path context relation does not match its accepted fact"
@@ -792,23 +799,11 @@ def _authored_relations_from_intent(
         relations,
         first_path=str(intent.get("first_path") or ""),
         human_actors=tuple(str(row) for row in actor_values if str(row)),
-        external_systems=tuple(
-            str(row)
-            for row in intent.get("external_systems", ())
-            if str(row)
-        )
-        if isinstance(intent.get("external_systems"), Sequence)
-        and not isinstance(intent.get("external_systems"), (str, bytes, bytearray))
-        else (),
-        internal_systems=tuple(
-            str(row)
-            for row in intent.get("internal_systems", ())
-            if str(row)
-        )
-        if isinstance(intent.get("internal_systems"), Sequence)
-        and not isinstance(intent.get("internal_systems"), (str, bytes, bytearray))
-        else (),
+        external_systems=intent_text_rows(intent.get("external_systems")),
+        internal_systems=intent_text_rows(intent.get("internal_systems")),
         product_title=str(intent.get("title") or ""),
+        proof_boundary=str(intent.get("proof_boundary") or ""),
+        success_metrics=intent_text_rows(intent.get("success_metrics")),
     )
     context_relations = validate_first_path_context_relations(
         semantics.get("first_path_context_relations"),
@@ -944,13 +939,17 @@ def validate_component_responsibility_relations(
                     "Greenfield authored semantics assign contradictory owners to one product event"
                 )
         if responsibility_source == "terminal_visible_result":
+            responsibility_quote = str(raw.get("responsibility_quote") or "")
+            responsibility_fact = intent_text_at_path(intent, responsibility_path)
             if (
                 expected_paths
-                or responsibility_path != "/first_path"
                 or linked_event is None
+                or event_order != len(events_by_order)
                 or not str(linked_event.get("visible_result_quote") or "")
-                or str(raw.get("responsibility_quote") or "")
+                or responsibility_quote
                 != str(linked_event.get("visible_result_quote") or "")
+                or not responsibility_fact
+                or responsibility_quote not in responsibility_fact
             ):
                 raise GreenfieldAuthoredSemanticsError(
                     "Greenfield authored terminal component responsibility is malformed"

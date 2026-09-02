@@ -223,11 +223,6 @@ def _hiit_authoring_provider(prompt: str) -> StructuredAuthoringProvider:
             intent,
             evidence_text=evidence,
             first_path_relations=relations,
-            first_path_context_event_orders={
-                "/state_object": 6,
-                "/external_systems/0": 4,
-                "/operational_constraints/0": 0,
-            },
             terminal_component_owner="the timer",
         )
     )

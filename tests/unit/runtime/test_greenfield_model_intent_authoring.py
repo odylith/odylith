@@ -238,7 +238,6 @@ def test_model_authored_multi_component_events_bind_to_exact_source_owned_system
         intent,
         evidence_text=source,
         component_responsibility_owners=["Intake Desk", "Review Board"],
-        component_responsibility_event_orders=[2, 3],
         first_path_relations=[
             {
                 "actor_kind": "human",
@@ -733,9 +732,9 @@ def test_authoring_rejects_fragment_stitching_for_a_singular_field() -> None:
 def test_authoring_rejects_an_action_relation_not_present_in_the_accepted_path() -> None:
     source = _source()
     response = _response(source)
-    response["first_path_relations"][0]["action_verb_quote"] = "deletes"  # type: ignore[index]
+    response["events"][0]["action_quote"] = "deletes"  # type: ignore[index]
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path relations"):
+    with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path event"):
         author_greenfield_intent(
             evidence_text=source,
             provider=StructuredAuthoringProvider(response),
@@ -746,9 +745,9 @@ def test_authoring_rejects_an_action_relation_not_present_in_the_accepted_path()
 def test_authoring_rejects_a_missing_component_responsibility_owner() -> None:
     source = _source()
     response = _response(source)
-    response["component_responsibility_relations"] = []
+    response["components"] = []
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="without typed owners"):
+    with pytest.raises(GreenfieldModelAuthoringError, match="invalid component ownership"):
         author_greenfield_intent(
             evidence_text=source,
             provider=StructuredAuthoringProvider(response),
@@ -759,11 +758,11 @@ def test_authoring_rejects_a_missing_component_responsibility_owner() -> None:
 def test_authoring_rejects_a_duplicate_component_responsibility_owner() -> None:
     source = _source()
     response = _response(source)
-    relations = response["component_responsibility_relations"]
+    relations = response["components"]
     assert isinstance(relations, list)
     relations.append(dict(relations[0]))
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="duplicated a component responsibility"):
+    with pytest.raises(GreenfieldModelAuthoringError, match="duplicated component ownership"):
         author_greenfield_intent(
             evidence_text=source,
             provider=StructuredAuthoringProvider(response),
@@ -781,11 +780,9 @@ def test_authoring_rejects_a_component_owner_that_is_not_a_product_system_fact()
         for fact in facts
         if fact["field"] == "human_actors"
     )
-    response["component_responsibility_relations"][0][  # type: ignore[index]
-        "independent_owner_fact_quote"
-    ] = human_fact_quote
+    response["components"][0]["owner_fact_quote"] = human_fact_quote  # type: ignore[index]
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="unbound component responsibility owner"):
+    with pytest.raises(GreenfieldModelAuthoringError, match="unbound component owner"):
         author_greenfield_intent(
             evidence_text=source,
             provider=StructuredAuthoringProvider(response),
@@ -810,7 +807,7 @@ def test_authoring_canonicalizes_component_owner_rows_to_responsibility_order() 
         evidence_text=source,
         component_responsibility_owners=["Berth map", "Berth map"],
     )
-    response["component_responsibility_relations"].reverse()
+    response["components"].reverse()
 
     result = author_greenfield_intent(
         evidence_text=source,
@@ -909,10 +906,7 @@ def test_envelope_reverifies_atomic_claim_bytes_against_the_exact_source() -> No
         )
 
 
-@pytest.mark.parametrize("event_order", (0, 1))
-def test_authoring_requires_the_exact_event_link_for_an_overlapping_responsibility(
-    event_order: int,
-) -> None:
+def test_authoring_derives_the_exact_event_link_for_an_overlapping_responsibility() -> None:
     product_event = "Intake Desk records the permit application"
     first_path = f"Applicant Nia submits a permit packet, then {product_event}"
     intent = {
@@ -935,7 +929,6 @@ def test_authoring_requires_the_exact_event_link_for_an_overlapping_responsibili
         intent,
         evidence_text=source,
         component_responsibility_owners=["Intake Desk"],
-        component_responsibility_event_orders=[event_order],
         first_path_relations=[
             {
                 "actor_kind": "human",
@@ -959,12 +952,15 @@ def test_authoring_requires_the_exact_event_link_for_an_overlapping_responsibili
         ],
     )
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="typed link for an overlapping product event"):
-        author_greenfield_intent(
-            evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
-            clock=lambda: 0.0,
-        )
+    result = author_greenfield_intent(
+        evidence_text=source,
+        provider=StructuredAuthoringProvider(response),
+        clock=lambda: 0.0,
+    )
+
+    assert result.component_responsibility_relations[0][
+        "first_path_event_order"
+    ] == 2
 
 
 def test_authoring_rejects_a_repeated_owner_on_one_typed_product_event() -> None:
@@ -990,7 +986,6 @@ def test_authoring_rejects_a_repeated_owner_on_one_typed_product_event() -> None
         intent,
         evidence_text=source,
         component_responsibility_owners=["Review Board"],
-        component_responsibility_event_orders=[2],
         first_path_relations=[
             {
                 "actor_kind": "human",
@@ -1014,11 +1009,11 @@ def test_authoring_rejects_a_repeated_owner_on_one_typed_product_event() -> None
         ],
     )
 
-    component_relations = response["component_responsibility_relations"]
+    component_relations = response["components"]
     assert isinstance(component_relations, list)
-    component_relations[0]["independent_owner_fact_quote"] = "Review Board"
+    component_relations[0]["owner_fact_quote"] = "Review Board"
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="must inherit"):
+    with pytest.raises(GreenfieldModelAuthoringError, match="contradictory component owners"):
         author_greenfield_intent(
             evidence_text=source,
             provider=StructuredAuthoringProvider(response),
@@ -1040,7 +1035,7 @@ def test_authoring_rejects_duplicate_labels_for_distinct_owner_paths() -> None:
         if str(row)
     )
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="duplicate labels for distinct product owners"):
+    with pytest.raises(GreenfieldModelAuthoringError, match="ambiguous product owner"):
         author_greenfield_intent(
             evidence_text=source,
             provider=StructuredAuthoringProvider(
@@ -1124,7 +1119,86 @@ def test_product_owned_terminal_result_uses_the_typed_event_owner() -> None:
     assert contracts[0]["responsibility_facts"] == ["it listed"]
 
 
-def test_human_owned_terminal_result_cannot_fabricate_a_component_owner() -> None:
+def test_terminal_result_keeps_exact_proof_fact_custody_outside_final_event() -> None:
+    result_quote = "pickup readiness"
+    proof_boundary = "Verify pickup readiness after each released batch"
+    first_path = (
+        "Coordinator Nia records each donation and "
+        "Pickup Relay releases each batch"
+    )
+    intent = {
+        **_TEXT_FIELDS,
+        **_LIST_FIELDS,
+        "title": "Pickup Relay",
+        "state_object": "donation batch",
+        "first_path": first_path,
+        "proof_boundary": proof_boundary,
+        "success_metrics": ["Each donation batch is released"],
+        "component_responsibilities": [],
+        "human_actors": ["Coordinator Nia"],
+        "external_systems": [],
+        "internal_systems": [],
+    }
+    source = ". ".join(
+        str(row)
+        for value in intent.values()
+        for row in (value if isinstance(value, list) else [value])
+        if str(row)
+    )
+    result = author_greenfield_intent(
+        evidence_text=source,
+        provider=StructuredAuthoringProvider(
+            authored_response(
+                intent,
+                evidence_text=source,
+                terminal_component_owner="Pickup Relay",
+                first_path_relations=[
+                    {
+                        "actor_kind": "human",
+                        "actor_quote": "Coordinator Nia",
+                        "event_quote": "Coordinator Nia records each donation",
+                        "action_verb_quote": "records",
+                        "target_quote": "each donation",
+                        "visible_result_quote": "",
+                        "recovery_path": False,
+                    },
+                    {
+                        "actor_kind": "product",
+                        "actor_quote": "Pickup Relay",
+                        "owner_system_quote": "Pickup Relay",
+                        "event_quote": "Pickup Relay releases each batch",
+                        "action_verb_quote": "releases",
+                        "target_quote": "each batch",
+                        "visible_result_quote": result_quote,
+                        "recovery_path": False,
+                    },
+                ],
+            )
+        ),
+        clock=lambda: 0.0,
+    )
+
+    terminal_event = result.first_path_relations[-1]
+    assert result_quote not in terminal_event["event_quote"]
+    assert terminal_event["visible_result_quote"] == result_quote
+    assert result.component_responsibility_relations[0]["responsibility_path"] == "/proof_boundary"
+    visible_claim = next(
+        row
+        for row in result.atomic_claims
+        if row["relation_role"] == "visible_result_quote"
+    )
+    assert visible_claim["projection_path"] == "/proof_boundary"
+    assert visible_claim["projection_start_byte"] == proof_boundary.index(result_quote)
+    source_bytes = source.encode("utf-8")
+    assert (
+        source_bytes[
+            visible_claim["source_start_byte"] : visible_claim["source_end_byte"]
+        ].decode("utf-8")
+        == result_quote
+    )
+
+
+def test_human_terminal_result_uses_one_explicit_grounded_product_owner() -> None:
     first_path = "Applicant Nia enters one item and sees it listed"
     intent = {
         **_TEXT_FIELDS,
@@ -1143,21 +1217,28 @@ def test_human_owned_terminal_result_cannot_fabricate_a_component_owner() -> Non
         if str(row)
     )
 
-    with pytest.raises(
-        GreenfieldModelAuthoringError,
-        match="terminal component responsibility without a typed product event owner",
-    ):
-        author_greenfield_intent(
-            evidence_text=source,
-            provider=StructuredAuthoringProvider(
-                authored_response(
-                    intent,
-                    evidence_text=source,
-                    terminal_component_owner="Permit Relay",
-                )
-            ),
-            clock=lambda: 0.0,
-        )
+    result = author_greenfield_intent(
+        evidence_text=source,
+        provider=StructuredAuthoringProvider(
+            authored_response(
+                intent,
+                evidence_text=source,
+                terminal_component_owner="Permit Relay",
+            )
+        ),
+        clock=lambda: 0.0,
+    )
+
+    assert result.component_responsibility_relations == (
+        {
+            "responsibility_path": "/first_path",
+            "responsibility_quote": first_path,
+            "owner_system_path": "/title",
+            "owner_system_quote": "Permit Relay",
+            "first_path_event_order": 1,
+            "responsibility_source": "terminal_visible_result",
+        },
+    )
 
 
 def test_human_only_path_cannot_reach_staging_without_component_viability() -> None:
@@ -1183,9 +1264,9 @@ def test_human_only_path_cannot_reach_staging_without_component_viability() -> N
         evidence_text=source,
         terminal_component_owner="Permit Relay",
     )
-    response["component_responsibility_relations"] = []
+    response["components"] = []
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="viable component projection"):
+    with pytest.raises(GreenfieldModelAuthoringError, match="invalid component ownership"):
         author_greenfield_intent(
             evidence_text=source,
             provider=StructuredAuthoringProvider(response),
@@ -1226,7 +1307,7 @@ def test_component_relation_order_is_unicode_and_domain_neutral() -> None:
         evidence_text=source,
         component_responsibility_owners=["Sąsaja", "航路"],
     )
-    response["component_responsibility_relations"].reverse()
+    response["components"].reverse()
 
     result = author_greenfield_intent(
         evidence_text=source,
@@ -1387,12 +1468,9 @@ def test_source_bound_nonmaterial_conflict_increases_sealed_ambiguity(
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
     response = _response(staged_evidence)
     response["ambiguities"] = ["The evidence gives two retention periods that require later resolution."]
-    response["consistency_assessment"] = {
+    response["consistency"] = {
         "status": "non_material_ambiguity",
-        "conflicting_quotes": [
-            {"quote": first_claim, "occurrence": 1},
-            {"quote": second_claim, "occurrence": 1},
-        ],
+        "conflicting_quotes": [first_claim, second_claim],
     }
 
     candidate = materialize_model_authored_intent(

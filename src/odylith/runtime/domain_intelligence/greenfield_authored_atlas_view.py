@@ -506,18 +506,13 @@ def _state_view(
         ),
         None,
     )
-    if not isinstance(linked_event, Mapping):
-        raise ValueError("authored Atlas state view requires its linked first-path event")
-    event_quote = _required_string(linked_event.get("event_quote"), "state-linked event")
     lines = [
         "flowchart LR",
         '  subgraph accepted_facts["Accepted project facts"]',
         f'    state["State object<br/>{_mermaid_label(state_object)}"]',
-        f'    state_event["State-linked event<br/>{_mermaid_label(event_quote)}"]',
         f'    result["Visible result<br/>{_mermaid_label(visible_result)}"]',
         f'    proof["Proof boundary<br/>{_mermaid_label(proof_boundary)}"]',
         "  end",
-        "  state -. source-bound link .-> state_event",
     ]
     boxes = [
         _box(
@@ -527,15 +522,28 @@ def _state_view(
             "Groups the typed state, result, and proof facts without inferring transitions.",
         ),
         _box("state", state_object, "State object", f"Accepted state object: {state_object}"),
-        _box(
-            "state_event",
-            event_quote,
-            "State-linked event",
-            f"First-path event explicitly linked to the accepted state object: {event_quote}",
-        ),
         _box("result", visible_result, "Visible result", f"Accepted visible result: {visible_result}"),
         _box("proof", proof_boundary, "Proof boundary", f"Accepted proof boundary: {proof_boundary}"),
     ]
+    if isinstance(linked_event, Mapping):
+        event_quote = _required_string(
+            linked_event.get("event_quote"), "state-linked event"
+        )
+        lines.insert(
+            3,
+            f'    state_event["State-linked event<br/>{_mermaid_label(event_quote)}"]',
+        )
+        lines.append("  state -. exact source overlap .-> state_event")
+        boxes.insert(
+            2,
+            _box(
+                "state_event",
+                event_quote,
+                "State-linked event",
+                "Exact source overlap binds this event to the accepted state object: "
+                f"{event_quote}",
+            ),
+        )
     return _styled_mermaid(lines), boxes
 
 

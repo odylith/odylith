@@ -886,7 +886,7 @@ def test_model_profile_release_proof_requires_all_tiers_under_strict_budgets() -
     proof = module.model_profile_release_proof(results, require_complete=True)
     assert proof["status"] == "passed"
     standard_profile_id = module.model_profile_id_for_repair_tier("standard")
-    assert proof["profiles"][standard_profile_id]["lower_capability"] is True
+    assert proof["profiles"][standard_profile_id]["lower_capability"] is False
     assert module.model_profile_release_proof(results[:-1], require_complete=True)["status"] == "failed"
     breached = replace(
         results[0],

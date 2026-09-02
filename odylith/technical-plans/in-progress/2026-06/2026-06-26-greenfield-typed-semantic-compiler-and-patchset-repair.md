@@ -4079,3 +4079,25 @@ above.
       assertion that keeps the controller and candidate revision identical. No
       consumer transaction or write occurred; rerun the same three public cases
       from a rebuilt immutable candidate before judging the model bindings.
+    - 2026-09-02 compact direct-evidence graph checkpoint: the exact v3 public
+      installed run failed `0/3`, while a bounded one-call alternative over the
+      same standard, rescue, and deep prompts passed typed source validation in
+      `37.463s`, `44.556s`, and `87.369s`. The candidate response owns selected
+      facts, ordered actor/action events, one terminal result, and component
+      ownership; deterministic code owns only exact coordinates, actor carry,
+      overlap links, and sealed atomic custody. The superseded 828-line relation
+      compiler is deleted, and no semantic regex parser, repair retry, or tier
+      cascade remains on this authoring boundary. A fresh standard production
+      call exposed a redundant proof-fact list that could contradict the already
+      selected exact result occurrence. Intent-authoring v15 removes that field
+      and binds terminal custody to the narrowest containing selected fact, with
+      authored order as the exact-span tie-breaker. The saved failing response
+      then validated unchanged apart from the removed field, and a fresh v15
+      standard response passed in `29.524s`. Focused proof is `75/75`; widened
+      proof is `162/162`; the complete Greenfield runtime and install suites are
+      `594/594` and `432/432`; and the Project browser matrix is `4/4`. The
+      mechanism wins only if a rebuilt immutable distribution passes the
+      complete installed public `60/90/120` proposal, transaction, readback,
+      recovery, browser, quality, and sealed profile gates. The protected
+      holdout remains untouched and still requires explicit operator approval
+      after public adjudication.

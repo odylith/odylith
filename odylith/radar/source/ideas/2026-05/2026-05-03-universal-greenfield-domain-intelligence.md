@@ -2687,6 +2687,20 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   Browser-state proof, rebuilt exact dist, installed replay, recovery laws, and
   a fresh untouched holdout remain mandatory.
 
+- 2026-09-02 compact direct-evidence graph checkpoint replaces the failed v3
+  installed mechanism with one model-authored fact/event/terminal/component
+  graph and deterministic exact custody. The bounded public comparison passes
+  standard, rescue, and deep authoring in `37.463s`, `44.556s`, and `87.369s`;
+  the reduced v15 production contract passes a fresh standard call in
+  `29.524s`, complete Greenfield runtime/install proof at `594/594` and
+  `432/432`, and the normal/compact/blank/degraded Project browser matrix at
+  `4/4`. The obsolete 828-line relation compiler and redundant model-authored
+  event/proof links are removed without adding semantic regexes or retries.
+  B-142 remains in implementation until the rebuilt immutable package passes
+  the exact installed `60/90/120` transaction, recovery, browser/readback, and
+  quality matrix, followed by independent public adjudication and the
+  explicitly approved untouched holdout.
+
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.
   The active release contract is standard post-confirm under 60 seconds without

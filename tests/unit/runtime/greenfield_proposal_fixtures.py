@@ -524,8 +524,6 @@ def materialize_typed_intent_fixture(
     intent: Mapping[str, Any],
     first_path_relations: list[Mapping[str, Any]],
     component_responsibility_owners: list[str],
-    component_responsibility_event_orders: list[int],
-    first_path_context_event_orders: Mapping[str, int] | None = None,
     authoring_receipt: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Materialize explicit typed fixture data through the shipped custody path."""
@@ -545,9 +543,7 @@ def materialize_typed_intent_fixture(
                 intent,
                 evidence_text=source,
                 first_path_relations=first_path_relations,
-                first_path_context_event_orders=first_path_context_event_orders,
                 component_responsibility_owners=component_responsibility_owners,
-                component_responsibility_event_orders=component_responsibility_event_orders,
             )
         ),
         authoring_timeout_seconds=54,
@@ -689,13 +685,11 @@ def canonical_model_authored_intent_fixture(
         repo_root,
         intent=intent,
         first_path_relations=relations,
-        first_path_context_event_orders={"/state_object": 6},
         component_responsibility_owners=[
             "Storefront",
             "Checkout Orchestrator",
             "Catalog Boundary",
         ],
-        component_responsibility_event_orders=[2, 6, 0],
         authoring_receipt=authoring_receipt,
     )
 

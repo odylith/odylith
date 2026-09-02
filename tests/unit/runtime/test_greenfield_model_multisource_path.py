@@ -12,7 +12,7 @@ import pytest
 
 from odylith.runtime.domain_intelligence import (
     greenfield_authored_semantics,
-    greenfield_model_authored_relations,
+    greenfield_model_direct_evidence_graph,
     greenfield_model_intent_authoring,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
@@ -37,7 +37,7 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
 def test_model_relation_ownership_is_real_and_regex_free() -> None:
     owners = (
         greenfield_authored_semantics,
-        greenfield_model_authored_relations,
+        greenfield_model_direct_evidence_graph,
         greenfield_model_intent_authoring,
     )
     for owner in owners:
@@ -57,13 +57,8 @@ def test_model_relation_ownership_is_real_and_regex_free() -> None:
     }
     assert "derive_model_first_path_relations" not in sealed_owner_functions
     assert "derive_model_first_path_context_relations" not in sealed_owner_functions
-    assert (
-        greenfield_model_authored_relations.derive_model_first_path_relations.__module__
-        == greenfield_model_authored_relations.__name__
-    )
-    assert (
-        greenfield_model_authored_relations.derive_model_first_path_context_relations.__module__
-        == greenfield_model_authored_relations.__name__
+    assert greenfield_model_direct_evidence_graph.derive_model_relations.__module__ == (
+        greenfield_model_direct_evidence_graph.__name__
     )
 
 
@@ -157,11 +152,6 @@ def _response(
         intent,
         first_path_segments=segments,
         first_path_relations=relations,
-        first_path_context_event_orders={
-            "/state_object": 3,
-            "/external_systems/0": 2,
-            "/operational_constraints/0": 0,
-        },
         terminal_component_owner="berth map",
     )
 
@@ -257,7 +247,7 @@ def test_authoring_rejects_unreferenced_first_path_segment() -> None:
         segments=segments,
         relations=[*relations[:2], relations[3]],
     )
-    with pytest.raises(GreenfieldModelAuthoringError, match="source segment without a typed event"):
+    with pytest.raises(GreenfieldModelAuthoringError, match="complete human-first path"):
         author_greenfield_intent(
             evidence_text=combined_prompt_evidence_source(
                 prompt=prompt,
@@ -268,46 +258,26 @@ def test_authoring_rejects_unreferenced_first_path_segment() -> None:
         )
 
 
-@pytest.mark.parametrize("context_kind", ["external_system", "operational_constraint"])
-def test_authoring_rejects_missing_explicit_context_custody(context_kind: str) -> None:
+def test_authoring_derives_context_custody_without_model_restatement() -> None:
     prompt, edit_evidence, intent, segments, relations = _case()
     response = _response(intent=intent, segments=segments, relations=relations)
-    field = {
-        "external_system": "external_systems",
-        "operational_constraint": "operational_constraints",
-    }[context_kind]
-    fact_quote = next(
-        fact["quote"] for fact in response["facts"] if fact["field"] == field
+    result = author_greenfield_intent(
+        evidence_text=combined_prompt_evidence_source(
+            prompt=prompt,
+            edit_evidence=edit_evidence,
+        ),
+        provider=StructuredAuthoringProvider(response),
+        clock=lambda: 0.0,
     )
-    response["first_path_context_relations"] = [
-        row
-        for row in response["first_path_context_relations"]
-        if not (row["fact_field"] == field and row["fact_quote"] == fact_quote)
+
+    assert [
+        (row["context_kind"], row["first_path_event_order"])
+        for row in result.first_path_context_relations
+    ] == [
+        ("state_object", 3),
+        ("external_system", 2),
+        ("operational_constraint", 0),
     ]
-    with pytest.raises(GreenfieldModelAuthoringError, match="context facts unadjudicated"):
-        author_greenfield_intent(
-            evidence_text=combined_prompt_evidence_source(
-                prompt=prompt,
-                edit_evidence=edit_evidence,
-            ),
-            provider=StructuredAuthoringProvider(response),
-            clock=lambda: 0.0,
-        )
-
-
-def test_authoring_rejects_wrong_context_link() -> None:
-    prompt, edit_evidence, intent, segments, relations = _case()
-    response = _response(intent=intent, segments=segments, relations=relations)
-    response["first_path_context_relations"][0]["first_path_event_order"] = 0
-    with pytest.raises(GreenfieldModelAuthoringError, match="invalid first-path context link"):
-        author_greenfield_intent(
-            evidence_text=combined_prompt_evidence_source(
-                prompt=prompt,
-                edit_evidence=edit_evidence,
-            ),
-            provider=StructuredAuthoringProvider(response),
-            clock=lambda: 0.0,
-        )
 
 
 def test_authoring_canonicalizes_a_unique_segment_occurrence() -> None:
@@ -334,7 +304,7 @@ def test_authoring_rejects_events_reordered_against_composite_path() -> None:
     prompt, edit_evidence, intent, segments, relations = _case()
     reordered = [relations[1], relations[0], *relations[2:]]
     response = _response(intent=intent, segments=segments, relations=reordered)
-    with pytest.raises(GreenfieldModelAuthoringError, match="invalid first-path relations"):
+    with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path event"):
         author_greenfield_intent(
             evidence_text=combined_prompt_evidence_source(
                 prompt=prompt,
@@ -386,9 +356,19 @@ def test_reordered_evidence_preserves_typed_meaning_but_changes_source_coordinat
     assert without_source(original.first_path_relations) == without_source(
         reordered.first_path_relations
     )
-    assert without_source(original.first_path_context_relations) == without_source(
-        reordered.first_path_context_relations
-    )
+    without_derived_link = lambda rows: [  # noqa: E731 - compact comparison projection
+        {
+            key: value
+            for key, value in row.items()
+            if not key.startswith("source_") and key != "first_path_event_order"
+        }
+        for row in rows
+    ]
+    assert without_derived_link(
+        original.first_path_context_relations
+    ) == without_derived_link(reordered.first_path_context_relations)
+    assert original.first_path_context_relations[0]["first_path_event_order"] == 3
+    assert reordered.first_path_context_relations[0]["first_path_event_order"] == 0
     assert [
         (row["source_start_byte"], row["source_end_byte"])
         for row in original.first_path_relations

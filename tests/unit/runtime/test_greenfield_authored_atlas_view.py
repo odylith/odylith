@@ -161,7 +161,7 @@ def test_authored_atlas_depth_is_four_distinct_semantic_views_not_a_count_floor(
     assert "actor1 --> product" in source_by_slug["harbor-desk-context"]
     assert "actor1 --> component1" not in source_by_slug["harbor-desk-context"]
     assert "external1 -.-> component1" in source_by_slug["harbor-desk-context"]
-    assert "state -. source-bound link .-> state_event" in source_by_slug["harbor-desk-state"]
+    assert "state -. exact source overlap .-> state_event" in source_by_slug["harbor-desk-state"]
     assert "state_event --> result" not in source_by_slug["harbor-desk-state"]
     assert "result --> proof" not in source_by_slug["harbor-desk-state"]
     assert "external1 -.-> component1" in source_by_slug["harbor-desk-boundaries"]

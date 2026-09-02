@@ -15,6 +15,9 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_RELATION_ROLES,
     GreenfieldAuthoredSemanticsError,
 )
+from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
+    intent_text_at_path,
+)
 
 
 _FACT_ATOM_POLICY = {
@@ -49,6 +52,7 @@ def derive_model_atomic_claims(
     intent: Mapping[str, Any],
     selected_facts: Sequence[Mapping[str, Any]],
     first_path_relations: Sequence[Mapping[str, Any]],
+    terminal_result_fact: Mapping[str, Any],
 ) -> tuple[dict[str, Any], ...]:
     """Derive redundant atomic custody from model-owned facts and relations."""
 
@@ -64,6 +68,15 @@ def derive_model_atomic_claims(
         for role in AUTHORED_RELATION_ROLES:
             quote = str(relation.get(role) or "")
             if not quote:
+                continue
+            if role == "visible_result_quote":
+                rows.append(
+                    _terminal_result_claim(
+                        intent=intent,
+                        relation=relation,
+                        terminal_result_fact=terminal_result_fact,
+                    )
+                )
                 continue
             if role == "actor_quote" and quote not in event:
                 rows.append(
@@ -85,6 +98,34 @@ def derive_model_atomic_claims(
                 )
             )
     return tuple(rows)
+
+
+def _terminal_result_claim(
+    *,
+    intent: Mapping[str, Any],
+    relation: Mapping[str, Any],
+    terminal_result_fact: Mapping[str, Any],
+) -> dict[str, Any]:
+    quote = str(relation.get("visible_result_quote") or "")
+    if quote != str(terminal_result_fact.get("terminal_result_quote") or ""):
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring returned an ungrounded terminal result"
+        )
+    return _claim(
+        intent=intent,
+        fact=terminal_result_fact,
+        quote=quote,
+        category="outputs",
+        polarity="affirmed",
+        source_start=_integer(
+            terminal_result_fact.get("terminal_result_source_start_byte")
+        ),
+        projection_start=_integer(
+            terminal_result_fact.get("terminal_result_projection_start_byte")
+        ),
+        relation_order=_integer(relation.get("order")),
+        relation_role="visible_result_quote",
+    )
 
 
 def _whole_fact_claim(
@@ -160,12 +201,11 @@ def _implicit_actor_claim(
     relation: Mapping[str, Any],
     actor_fact: Mapping[str, Any] | None,
 ) -> dict[str, Any]:
-    quote = str(relation.get("actor_quote") or "")
+    actor_fact_quote = str(relation.get("actor_fact_quote") or "")
     if (
         actor_fact is None
         or relation.get("actor_is_carried") is not True
-        or quote != str(relation.get("actor_fact_quote") or "")
-        or quote != str(actor_fact.get("quote") or "")
+        or actor_fact_quote != str(actor_fact.get("quote") or "")
     ):
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring returned an ungrounded atomic actor"
@@ -173,7 +213,7 @@ def _implicit_actor_claim(
     return _claim(
         intent=intent,
         fact=actor_fact,
-        quote=quote,
+        quote=actor_fact_quote,
         category="actors",
         polarity="affirmed",
         source_start=_integer(actor_fact.get("source_start_byte")),
@@ -201,7 +241,11 @@ def _claim(
         )
     field = str(fact.get("field") or "")
     projection_path = str(fact.get("projection_path") or "")
-    projection_value = _projection_value(intent, field=field, path=projection_path)
+    projection_value = intent_text_at_path(intent, projection_path)
+    if not projection_value:
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring returned an invalid atomic projection"
+        )
     quote_bytes = quote.encode("utf-8")
     return {
         "field": field,
@@ -220,24 +264,6 @@ def _claim(
         "relation_order": relation_order,
         "relation_role": relation_role,
     }
-
-
-def _projection_value(intent: Mapping[str, Any], *, field: str, path: str) -> str:
-    value = intent.get(field)
-    if path == f"/{field}" and isinstance(value, str):
-        return value
-    prefix = f"/{field}/"
-    index_text = path.removeprefix(prefix) if path.startswith(prefix) else ""
-    if not index_text.isdigit() or not isinstance(value, list):
-        raise GreenfieldAuthoredSemanticsError(
-            "Greenfield authoring returned an invalid atomic projection"
-        )
-    index = int(index_text)
-    if index >= len(value):
-        raise GreenfieldAuthoredSemanticsError(
-            "Greenfield authoring returned an invalid atomic projection"
-        )
-    return str(value[index])
 
 
 def _integer(value: Any) -> int:

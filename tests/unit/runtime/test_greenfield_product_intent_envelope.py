@@ -118,7 +118,6 @@ def _authored_result(source: str) -> GreenfieldModelAuthoredIntent:
                 evidence_text=source,
                 first_path_relations=_RELATIONS,
                 component_responsibility_owners=["Berth map"],
-                component_responsibility_event_orders=[2],
             )
         ),
         model_profile_id=STANDARD_PROFILE_ID,

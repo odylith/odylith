@@ -33,7 +33,6 @@ def _proposal(
     intent: dict[str, Any],
     relations: list[dict[str, Any]],
     responsibility_owners: list[str],
-    responsibility_event_orders: list[int],
 ) -> dict[str, Any]:
     source = _source(intent)
     candidate = materialize_model_authored_intent(
@@ -45,7 +44,6 @@ def _proposal(
                 evidence_text=source,
                 first_path_relations=relations,
                 component_responsibility_owners=responsibility_owners,
-                component_responsibility_event_orders=responsibility_event_orders,
             )
         ),
         authoring_timeout_seconds=54,
@@ -122,7 +120,6 @@ def _simple_proposal(tmp_path: Path) -> dict[str, Any]:
             },
         ],
         responsibility_owners=["Intake Board"],
-        responsibility_event_orders=[2],
     )
 
 
@@ -210,7 +207,6 @@ def _structured_proposal(tmp_path: Path) -> dict[str, Any]:
             },
         ],
         responsibility_owners=["Intake Router", "Receipt Ledger"],
-        responsibility_event_orders=[2, 4],
     )
 
 
@@ -224,7 +220,6 @@ def _sparse_proposal(
     component_responsibilities: list[str],
     relations: list[dict[str, Any]],
     responsibility_owners: list[str],
-    responsibility_event_orders: list[int],
 ) -> dict[str, Any]:
     first_path = ". ".join(row["event_quote"] for row in relations) + "."
     intent = {
@@ -253,7 +248,6 @@ def _sparse_proposal(
         intent=intent,
         relations=relations,
         responsibility_owners=responsibility_owners,
-        responsibility_event_orders=responsibility_event_orders,
     )
 
 
@@ -593,7 +587,6 @@ def test_authored_service_readiness_keeps_nonapproval_as_a_safety_boundary(
             },
         ],
         responsibility_owners=["Readiness Ledger", "Readiness Board"],
-        responsibility_event_orders=[2, 3],
     )
 
     assert proposal["intent"]["operational_constraints"] == [safety_boundary]
@@ -677,7 +670,6 @@ def test_authored_solar_path_keeps_user_outcome_distinct_from_meta_proof(
             },
         ],
         responsibility_owners=["Forecast Engine", "Plan Board"],
-        responsibility_event_orders=[2, 3],
     )
 
     first_path_contract = proposal["semantic_model"]["first_path_contract"]
@@ -757,7 +749,6 @@ def test_authored_ocean_reproducibility_stays_proof_not_component_identity(
             },
         ],
         responsibility_owners=["Calibration Ledger", "Publication Gate"],
-        responsibility_event_orders=[2, 3],
     )
 
     _assert_component_ownership_is_source_exact(proposal)
@@ -836,7 +827,6 @@ def test_authored_health_tracking_retains_safety_and_first_path_outcome(
             },
         ],
         responsibility_owners=["Episode Ledger", "Trend Board"],
-        responsibility_event_orders=[2, 3],
     )
 
     _assert_component_ownership_is_source_exact(proposal)
@@ -916,7 +906,6 @@ def test_authored_robotic_safety_projects_the_reviewed_recovery_status(
             },
         ],
         responsibility_owners=["Safety Ledger", "Recovery Board"],
-        responsibility_event_orders=[2, 3],
     )
 
     assert proposal["semantic_model"]["first_path_contract"]["visible_result"] == visible_result
@@ -1004,7 +993,6 @@ def test_authored_service_goal_components_cannot_acquire_cross_domain_templates(
             },
         ],
         responsibility_owners=["Goal Planner", "Progress Ledger", "Reminder Board"],
-        responsibility_event_orders=[2, 3, 4],
     )
 
     _assert_component_ownership_is_source_exact(proposal)
@@ -1060,7 +1048,6 @@ def test_sparse_depth_keeps_facts_in_project_without_filler_rows(tmp_path: Path)
                 "component_responsibilities": ["Record the request and publish its receipt."],
                 "relations": [human_event, intake_event, intake_result_event],
                 "responsibility_owners": ["Intake Board"],
-                "responsibility_event_orders": [2],
             },
             "/external_systems/0",
             4,
@@ -1078,7 +1065,6 @@ def test_sparse_depth_keeps_facts_in_project_without_filler_rows(tmp_path: Path)
                 ],
                 "relations": [human_event, intake_event, receipt_event],
                 "responsibility_owners": ["Intake Board", "Receipt Ledger"],
-                "responsibility_event_orders": [2, 3],
             },
             "/component_responsibilities/1",
             4,
@@ -1096,7 +1082,6 @@ def test_sparse_depth_keeps_facts_in_project_without_filler_rows(tmp_path: Path)
                 "component_responsibilities": ["Record the request and publish its receipt."],
                 "relations": [human_event, intake_event, intake_result_event],
                 "responsibility_owners": ["Intake Board"],
-                "responsibility_event_orders": [2],
             },
             "/evidence_requirements/1",
             3,

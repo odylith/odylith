@@ -73,7 +73,6 @@ def _authored_stage_inputs(repo_root: Path) -> tuple[dict[str, object], dict[str
                 intent,
                 evidence_text=evidence,
                 component_responsibility_owners=["Evidence Ledger"],
-                component_responsibility_event_orders=[2],
                 first_path_relations=[
                     {
                         "actor_kind": "human",

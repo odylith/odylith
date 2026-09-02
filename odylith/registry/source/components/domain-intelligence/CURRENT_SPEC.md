@@ -3211,6 +3211,26 @@ This section captures synchronized requirement and contract signals derived from
   installed matrix, lifecycle/recovery/host-parity, browser-state, and untouched
   one-shot holdout proof remain required.
 
+- Greenfield direct-evidence graph contract: one pre-confirm structured model
+  call owns selected source facts, ordered typed actor/action events, the exact
+  terminal result, and component ownership. Domain Intelligence adds only
+  deterministic byte custody, immediate actor-carry validation, exact-overlap
+  context and responsibility links, and sealed atomic claims; it does not infer
+  canonical meaning with regexes, retry the authoring call, or repair model prose.
+  Intent-authoring v15 removes model-authored component event orders and the
+  redundant terminal proof-fact list. The terminal result quote plus occurrence
+  must lie inside a selected fact; custody binds the narrowest containing fact
+  and uses authored fact order only when exact spans tie. A terminal result may
+  therefore remain source-exact in a proof or success fact even when it is not
+  repeated in the final event. The old 828-line relation compiler is removed.
+  Public source evidence currently passes standard, rescue, and deep model
+  validation in `37.463s`, `44.556s`, and `87.369s`; a fresh v15 standard call
+  passes in `29.524s`; complete Greenfield runtime/install proof passes
+  `594/594` and `432/432`; and normal, compact, blank, and degraded Project
+  browser proof passes `4/4`. Installed `60/90/120`, transaction, recovery,
+  browser/readback, human-quality, and protected-holdout proof remain release
+  requirements.
+
 ## Research Basis
 
 The v0.1.15 runtime deliberately avoids a hardcoded domain catalog and

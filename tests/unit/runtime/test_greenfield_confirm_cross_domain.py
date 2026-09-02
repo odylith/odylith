@@ -369,7 +369,6 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
                 }
             ],
             component_responsibility_owners=intent["internal_systems"],
-            component_responsibility_event_orders=[0] * len(intent["component_responsibilities"]),
         )
     )
     monkeypatch.setattr(

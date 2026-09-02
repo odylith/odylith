@@ -100,11 +100,6 @@ def _harbor_case() -> tuple[str, dict[str, object], dict[str, object]]:
                 "recovery_path": False,
             },
         ],
-        first_path_context_event_orders={
-            "/state_object": 3,
-            "/external_systems/0": 2,
-            "/operational_constraints/0": 0,
-        },
         terminal_component_owner="berth map",
     )
     return evidence, intent, response
@@ -136,11 +131,11 @@ def _author(
 
 def test_named_product_event_rejects_another_selected_product_owner() -> None:
     evidence, _intent, response = _harbor_case()
-    relations = response["first_path_relations"]
+    relations = response["events"]
     assert isinstance(relations, list)
-    relations[2]["owner_system_fact_quote"] = "berth map"
+    relations[2]["actor_fact_quote"] = "berth map"
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="product event owner"):
+    with pytest.raises(GreenfieldModelAuthoringError, match="exact selected actor fact"):
         _author(evidence, response)
 
 
@@ -155,7 +150,7 @@ def test_named_product_event_accepts_its_exact_selected_owner() -> None:
 
 def test_external_event_actor_must_reference_a_selected_external_fact() -> None:
     evidence, _intent, response = _harbor_case()
-    relations = response["first_path_relations"]
+    relations = response["events"]
     assert isinstance(relations, list)
     relations[1]["actor_fact_quote"] = "Harbor Relay"
 
@@ -165,11 +160,10 @@ def test_external_event_actor_must_reference_a_selected_external_fact() -> None:
 
 def test_exact_external_actor_cannot_be_retyped_as_product_authority() -> None:
     evidence, _intent, response = _harbor_case()
-    relations = response["first_path_relations"]
+    relations = response["events"]
     assert isinstance(relations, list)
     relations[1]["actor_kind"] = "product"
     relations[1]["actor_fact_quote"] = "Harbor Relay"
-    relations[1]["owner_system_fact_quote"] = "Harbor Relay"
 
     with pytest.raises(GreenfieldModelAuthoringError, match="exact selected actor fact"):
         _author(evidence, response)
@@ -310,7 +304,6 @@ def test_coordinated_clauses_preserve_carried_actors_and_every_action() -> None:
             },
         ],
         component_responsibility_owners=["Permit Relay", "Permit Relay"],
-        component_responsibility_event_orders=[3, 4],
     )
 
     result = _author(evidence, response)
@@ -332,63 +325,6 @@ def test_coordinated_clauses_preserve_carried_actors_and_every_action() -> None:
         for row in result.atomic_claims
         if row["relation_role"] == "action_verb_quote"
     ] == ["uploads", "reviews", "stores", "shows"]
-
-
-@pytest.mark.parametrize(
-    ("context_path", "wrong_order"),
-    (
-        ("/state_object", 1),
-        ("/external_systems/0", 0),
-    ),
-)
-def test_context_links_reject_wrong_or_false_independent_event_orders(
-    context_path: str,
-    wrong_order: int,
-) -> None:
-    evidence, _intent, response = _harbor_case()
-    fact_field = {
-            "/state_object": "state_object",
-            "/external_systems/0": "external_systems",
-            "/operational_constraints/0": "operational_constraints",
-        }[context_path]
-    fact_quote = {
-            "/state_object": "approved berth state",
-            "/external_systems/0": "Tide Authority API",
-            "/operational_constraints/0": "Do not place a berth without clearance",
-        }[context_path]
-    context = response["first_path_context_relations"]
-    assert isinstance(context, list)
-    row = next(
-        item
-        for item in context
-        if item["fact_field"] == fact_field and item["fact_quote"] == fact_quote
-    )
-    row["first_path_event_order"] = wrong_order
-
-    with pytest.raises(GreenfieldModelAuthoringError, match="context link"):
-        _author(evidence, response)
-
-
-def test_separate_source_context_uses_the_explicit_typed_event_reference() -> None:
-    evidence, _intent, response = _harbor_case()
-    context = response["first_path_context_relations"]
-    assert isinstance(context, list)
-    row = next(
-        item
-        for item in context
-        if item["fact_field"] == "operational_constraints"
-        and item["fact_quote"] == "Do not place a berth without clearance"
-    )
-    row["first_path_event_order"] = 2
-
-    result = _author(evidence, response)
-
-    constraint = next(
-        item
-        for item in result.first_path_context_relations
-        if item["context_kind"] == "operational_constraint"
-    )
-    assert constraint["first_path_event_order"] == 2
 
 
 def test_sealed_separate_source_context_rejects_an_unknown_event_order() -> None:
@@ -661,10 +597,6 @@ def test_utf8_multiactor_path_preserves_meaning_when_source_order_differs() -> N
                 "recovery_path": False,
             },
         ],
-        first_path_context_event_orders={
-            "/state_object": 1,
-            "/external_systems/0": 2,
-        },
         terminal_component_owner="Café Console",
     )
 

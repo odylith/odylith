@@ -173,7 +173,6 @@ def _authored_supplier_proposal(repo_root: Path) -> tuple[dict[str, Any], dict[s
             },
         ],
         component_responsibility_owners=["Supplier Review Service"],
-        component_responsibility_event_orders=[5],
     )
     authority = dict(candidate.pop(PRODUCT_INTENT_AUTHORITY_KEY))
     proposal = {
