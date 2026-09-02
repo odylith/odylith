@@ -61,16 +61,16 @@ supersedes:
 superseded_by: 
 
 ## Problem
-Empty or thin consumer repos could dead-end on broad project intent such as building an ecommerce site because Odylith treated missing app source as a hard refusal point instead of producing a confirmation-gated governance proposal. That made the consumer lane accurate but unhelpful, and it left Radar, Registry, Atlas, program waves, release planning, and validation strategy uncaptured until the operator supplied fully-formed governance fields.
+Empty or thin consumer repos could dead-end on broad project intent such as building an ecommerce site because Odylith treated missing app source as a hard refusal point instead of producing a confirmation-gated governance proposal. That made the consumer lane accurate but unhelpful, and it left Radar, Registry, Atlas, release planning, and validation strategy uncaptured until the operator supplied fully-formed governance fields.
 
 ## Customer
 Consumer-lane operators starting a new product, research project, science or math codebase, data platform, cloud platform, security workflow, device workflow, CLI, library, app, game, or education experience before source-backed boundaries exist.
 
 ## Opportunity
-Add an Odylith-owned confirmed greenfield path that turns vague or precise project intent into concrete backlog, program waves, provisional release plan, planned Registry components, Atlas topology, assumptions, risks, and validation obligations while keeping observed source, user intent, and Odylith assumptions distinct.
+Add an Odylith-owned confirmed greenfield path that turns vague or precise project intent into concrete backlog, a provisional release plan, planned Registry components, Atlas topology, assumptions, risks, and validation obligations while keeping observed source, user intent, and Odylith assumptions distinct.
 
 ## Proposed Solution
-Create a first-class `runtime/domain_intelligence` package that makes Odylith own the evidence/schema/proposal/apply layer end to end after Product Intent Confirmation. `odylith greenfield propose` stays a no-write Product Intent Confirmation path so the host can narrate product story, actors, systems, assumptions, ambiguities, and next choices in normal chat. After confirmation, `odylith greenfield create --confirm` builds an apply-ready proposal inside Odylith, validates the same product shape, runs a deterministic greenfield Tribunal, rejects disconnected or duplicated topology, writes only through owned Radar, Registry, Atlas, release-targeting, and Compass memory paths, and performs one final Radar/Registry/Atlas/Compass refresh after all accepted artifacts exist. `propose --confirm-intent --format json` remains an optional review/export artifact, not the default host-authored write path.
+Create a first-class `runtime/domain_intelligence` package that owns the complete evidence-to-transaction boundary. `odylith greenfield propose` sends the untrusted request through exactly one preselected authoring-model profile. That response selects source-cited facts, ordered actor/action events, one terminal result, component ownership, assumptions, and ambiguities. Deterministic code verifies exact byte custody, derives only structural links and coordinates, projects every governed surface in isolated staging, runs the Greenfield Tribunal, and seals one immutable `ProductCreateTransaction` before showing `CONFIRM`, `EDIT`, or `REJECT`. `odylith greenfield create --transaction-file ... --transaction-hash ... --confirm` only verifies receipt, hash, and preconditions, atomically publishes the reviewed bytes, validates readback, and refreshes owned surfaces. It never parses evidence, calls a model, generates artifacts, or repairs prose after confirmation.
 
 ## Research Signals
 External ecosystem checks argue against a narrow canned project taxonomy. GitHub Octoverse 2025 shows high-volume new repository creation, AI/agent growth, TypeScript-heavy application work, Python/Jupyter AI and data-science work, and private/product repos growing alongside public open source. CNCF organizes cloud-native work around infrastructure, delivery, observability, security, AI/ML, and runtime ecosystems. Apache describes mature open-source projects across data, cloud, search, libraries, geospatial, IoT, and related categories. NASA's software and open-data surfaces show science projects built from code, data, analysis pipelines, simulation/modeling tools, visualization, reproducibility, and sustained scientific libraries. Those signals prove greenfield intent is open-world; the durable contract is therefore generic product-first narration plus Odylith-owned apply-ready proposal generation, validation, topology hygiene, release targeting, program/wave formation, and durable memory.
@@ -89,18 +89,18 @@ External ecosystem checks argue against a narrow canned project taxonomy. GitHub
 - Let the host model reason over any product, science, math, research,
   infrastructure, art, education, policy, device, data, or mixed project shape;
   do not constrain the proposal to an in-code domain list.
-- Require the confirmed proposal to carry concrete backlog candidates,
-  candidate Registry components, Atlas Mermaid sources,
-  program formation, wave-to-workstream policy, release strategy, validation
-  obligations, risks, assumptions, and open questions.
+- Require the staged proposal to carry concrete backlog candidates, candidate
+  Registry components, Atlas Mermaid sources, release strategy, validation
+  obligations, risks, assumptions, and open questions before confirmation.
 - Default apply-ready greenfield scaffolds must carry a multi-view Atlas
   architecture suite, not a token diagram pair: at minimum topology,
   first-slice sequence, component ownership, state/data contract, and
   validation/release topology; domain-specific profiles should add the
   operational-risk views the prompt makes material.
 - Preserve evidence separation: observed source, user intent, and Odylith assumptions must stay distinct.
-- Keep Odylith CLI proposal generation provider-free by default; the active host
-  model performs the reasoning already happening in the chat.
+- Use exactly one pinned authoring-model request per proposal. Standard, rescue,
+  and deep are operator-selected profiles with independent 60/90/120 budgets,
+  not a retry ladder or post-hoc tier-promotion cascade.
 - Write only after explicit confirmation and reject missing or duplicated Atlas
   topology before any governed file changes.
 - Filter Compass timeline audit entries so zero-file prompt-intervention narration does not become fake implementation history.
@@ -123,59 +123,52 @@ External ecosystem checks argue against a narrow canned project taxonomy. GitHub
 - Depends on B-141 for the v0.1.14 host/runtime integrity lane: greenfield prompt routing must preserve low-latency host behavior, Intervention Engine separation, consumer-lane feature integrity, robust upgrade migration, and generated-surface refresh proof.
 
 ## Success Metrics
-Greenfield propose returns a low-latency, provider_calls=0 Product Intent Confirmation request for any vague or precise greenfield prompt.
+Greenfield propose returns one complete, source-cited Product Intent transaction candidate for any supported vague or precise greenfield prompt through exactly one preselected model call.
 Product Intent Confirmation guidance requires scannable sectioned Markdown, short paragraphs, bullets where appropriate, and plain domain terms with no code ticks or decorative bold markers.
-Greenfield create confirmed by the operator builds an apply-ready proposal inside Odylith with backlog candidates, program waves, release plan, planned Registry components, draft Atlas Mermaid sources, assumptions, risks, validation strategy, open questions, and exact governed-write evidence.
-Provider-free greenfield scaffolds include a multi-view Atlas suite with mutually traceable workstream/component links; complex physical, analytical, and operational domains can add risk, safety, telemetry, deployment-boundary, and observability/audit views without hard-coded domain families.
+Before confirmation, Greenfield stages an apply-ready proposal with backlog candidates, release plan, planned Registry components, draft Atlas Mermaid sources, assumptions, risks, validation strategy, open questions, and exact governed-write evidence.
+Greenfield scaffolds include a multi-view Atlas suite with mutually traceable workstream/component links; complex physical, analytical, and operational domains can add risk, safety, telemetry, deployment-boundary, and observability/audit views without hard-coded domain families.
 Greenfield proposals carry a project-first brief before backlog: direction options, pre-coding checkpoints, coding-readiness gates, and host-independent commands must be visible in text and JSON before apply.
 Greenfield Registry component specs stay component-owned: they must not copy project-level risk/security/compliance posture into every dossier, and each spec must name the component's own boundary, outside-boundary exclusions, collaborators, interfaces, failure modes, proof obligations, first source path, most specific child workstream anchor, and component-local diagram set instead of project-wide topology links.
-Greenfield create/apply writes through owned Radar, Registry, Atlas, release-targeting, and Compass memory paths only after --confirm, preserving user_intent evidence and source-backed truth separation.
-Apply rejects missing Mermaid source, duplicated diagram source, incomplete proposal sections, and invalid evidence tiers before any governed write.
+Greenfield create writes the exact sealed Radar, Registry, Atlas, release-targeting, and Compass bytes only after hash-bound confirmation, preserving user-intent evidence and source-backed truth separation.
+The pre-confirm compiler rejects missing Mermaid source, duplicated diagram source, incomplete proposal sections, and invalid evidence tiers before any governed write.
 Apply/create closeout leads with the project workstream and readiness gates, then names the eventual first coding workstream as a later lane rather than the immediate next action.
 Host prompt routing avoids noisy raw Observation chatter for normal greenfield intents while preserving earned intervention paths.
-Greenfield create/apply runs a deterministic proposal Tribunal before any governed write and refreshes Radar, Registry, Atlas, and Compass once after all accepted artifacts are written.
+Greenfield proposal compilation runs a deterministic Tribunal before confirmation; commit-only create refreshes Radar, Registry, Atlas, and Compass once after the sealed artifacts are written.
 Compass timeline audit filters zero-file prompt-intervention narration so routing notes do not render as fake implementation history.
+Standard, rescue, and deep complete the full installed proposal, confirmation, readback, recovery, browser, and quality path within 60, 90, and 120 seconds respectively, with no retry, tier cascade, or post-confirm semantic work.
 
 ## Current Completion Gate
-- Confirmed greenfield creation must compile accepted intent into a lossless
-  `ConfirmedIntentIR`, then a host-reasoned `SemanticModelIR`, then a
-  deterministic `ArtifactPlanIR` before rendering any governed surface.
-  Required semantic structures include `FirstPathContract`, `DomainOntology`,
-  `ComponentContract`, `ReleaseScope`, `WorkstreamContract`,
-  `DiagramEventGraph`, and `ProofObligation`.
-- Host reasoning owns ambiguity adjudication: actor/action/object sense,
-  state-object ownership, proof obligations, domain-risk posture, deferred
-  scope, and artifact destination. Every ambiguity decision must leave a
-  decision-ledger entry with source provenance and rejected interpretations.
-- Registry, Radar, Atlas, project intelligence, release topology, and proof
-  review must render from sanctioned `ArtifactPlanIR` projection fields instead
-  of independently re-parsing loose prose or seeing each other's surface syntax.
-- The quality gate must fail closed before writes on first-path drift,
-  provisional-title leakage, wrong-domain vocabulary, malformed ownership
-  grammar, dangling punctuation, clipped sentences, duplicated words,
-  proof-token soup, repeated proof walls, repeated sentence shape across
-  surfaces, deferred-scope leakage, and missing active-release topology.
-- PM, architect, engineer, and domain-expert review must produce typed
-  `ReviewReport` findings with codes, semantic node IDs, source-map targets,
-  projection IDs, severity, and repairability. Human-readable diagnostics are
-  output only; they must not be the repair-routing API.
-- Repair must return a typed `PatchSet` against `SemanticModelIR` or
-  `ArtifactPlanIR`, not rewritten public prose. Odylith rerenders only impacted
-  projections, reruns deterministic gates, and writes records only after the
-  final manifest passes.
-- Standard path target: complete post-confirm governed artifacts under 60
-  seconds with no host rescue. Rescue path target: allow one targeted
-  host-reasoned semantic/plan patch up to 90 seconds only when a final
-  semantic/quality gate fails and the failure bundle is repairable. 120 seconds
-  is reserved for explicit premium/deep repair or CI simulation, not default
-  operator flow.
-- Failed mechanism to avoid: do not grow regex/template towers or rendered-text
-  rewrite loops as the semantic repair strategy. Regex may support mechanical
-  parsing, tokenization, and formatting behind named owners; it must not own
-  product meaning, domain classification, ambiguity resolution, or premium
-  quality judgment.
-- The proof suite must include adversarial greenfield fixtures across unrelated domains and must assert zero leakage between fixture term signatures. Release custody now requires a platform domain-leakage gate before local-release build completion, standalone installed-matrix proof, and shared release proof; fixture terms may live in tests, governed evidence, evaluation corpora, and release notes, but not in runtime or shipped guidance defaults.
-- Completion requires an end-to-end `greenfield create --confirm` proof that produces premium, domain-specific Radar workstreams, Registry component contracts, Atlas diagrams, project story, release assignment, and Tribunal evidence without adding project-specific logic to Odylith product code.
+- One model-authored direct evidence graph owns semantic selection: exact source
+  facts, ordered events, terminal result, component ownership, assumptions, and
+  ambiguities. Deterministic code may derive coordinates, hashes, actor carry,
+  exact-overlap links, transaction structure, and projections, but must not
+  reinterpret prose or invent domain meaning.
+- Registry, Radar, Atlas, Project, release topology, and Tribunal surfaces render
+  only from the sealed graph and its custody-bound structural projections. They
+  must not reparse one another's Markdown, labels, or narrative copy.
+- Every transaction-material fact must have exact eligible source custody.
+  Material ambiguity produces at most one focused question; non-material gaps
+  remain explicit assumptions. An invalid response fails closed before preview.
+- There is no semantic retry stack. Standard, rescue, and deep each make one
+  request through the profile selected before authoring and must finish the full
+  installed lifecycle within 60, 90, and 120 seconds respectively.
+- The quality gate must fail closed before confirmation on missing meaning,
+  cross-surface drift, malformed ownership, clipping, repetition, disconnected
+  topology, invalid Registry contracts, private-custody leakage, or incomplete
+  release proof. Evaluators must compare typed structure and sealed payload
+  fidelity instead of inferring quality from regex-classified prose.
+- CONFIRM is commit-only. It verifies the reviewed hash and preconditions,
+  writes the exact sealed bytes under rollback guard, validates readback, and
+  refreshes owned surfaces. Any model call, evidence parsing, artifact
+  generation, semantic repair, or prose repair after confirmation is forbidden.
+- Failed mechanisms to avoid: regex/template semantic towers, rendered-text
+  rewrite loops, fixture-specific vocabulary, independently generated recovery
+  transactions, retry cascades, and stale evaluator expectations that reward a
+  superseded schema rather than consumer utility.
+- Completion requires one immutable distribution to pass fresh public standard,
+  rescue, and deep cases end to end with complete governance, browser, recovery,
+  host-parity, exact-readback, and independent quality proof. Only then may the
+  operator authorize the one-shot protected holdout.
 
 ## Validation
 - Unit tests for the Product Intent request contract, open-world confirmed proposal generation, required Mermaid sources, duplicate-topology rejection, program waves, release plan, CLI JSON, host greenfield routing, component authoring user-intent metadata, and Compass zero-file intervention chatter filtering.

@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-09-01
+Last updated: 2026-09-02
 
 
 ## Overview
@@ -51,6 +51,18 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-09-02: Bound release judgment to the canonical authored transaction instead of retired prose contracts. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  Immutable candidate `d607fc8d3` completed fresh standard, rescue, and deep
+  packages in `51.921s`, `64.916s`, and `70.079s`, inside the exact
+  `60/90/120` budgets. The correction admits authored component specs through
+  Registry's source-boundary and dated-history contract, exposes the six stable
+  Tribunal roles, checks browser story cards against the sealed typed payload,
+  and reuses one sealed transaction across recovery fault phases. Semantic
+  selection remains one model-authored direct evidence graph; no regex parser,
+  retry cascade, or post-confirm generation was introduced. Full source proof
+  passes `609` Greenfield runtime and `458` Greenfield install tests; rebuilt
+  immutable installed proof remains required.
 
 - 2026-09-01: Opened model-profile contract v3 as a bounded availability candidate. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   A three-case exact-distribution run proved that sharing one Spark binding made

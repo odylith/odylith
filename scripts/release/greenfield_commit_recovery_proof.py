@@ -133,6 +133,14 @@ class _CompiledRecoveryTransaction:
     intent_authority: Mapping[str, Any]
 
 
+@dataclass(frozen=True)
+class _RecoverySeed:
+    """One installed baseline and one sealed transaction reused by every fault phase."""
+
+    repo_root: Path
+    transaction: _CompiledRecoveryTransaction
+
+
 def run_installed_commit_recovery_proof(
     *,
     dist_dir: Path,
@@ -162,12 +170,19 @@ def run_installed_commit_recovery_proof(
         run_root.mkdir(parents=True, exist_ok=False)
         server, base_url = _serve_directory(release_dir)
         env = _installed_release_env(base_url=base_url, version=version)
+        seed = _prepare_recovery_seed(
+            run_root=run_root,
+            install_script=install_script,
+            env=env,
+            case=recovery_case,
+        )
         sigkill_facts = _run_sigkill_recovery_phase(
             run_root=run_root,
             install_script=install_script,
             env=env,
             version=version,
             case=recovery_case,
+            seed=seed,
         )
         facts.update(sigkill_facts)
         operator_conflict_facts = _run_operator_conflict_recovery_phase(
@@ -175,6 +190,7 @@ def run_installed_commit_recovery_proof(
             install_script=install_script,
             env=env,
             case=recovery_case,
+            seed=seed,
         )
         facts.update(operator_conflict_facts)
         fsync_facts = _run_fsync_rollback_phase(
@@ -182,6 +198,7 @@ def run_installed_commit_recovery_proof(
             install_script=install_script,
             env=env,
             case=recovery_case,
+            seed=seed,
         )
         facts.update(fsync_facts)
         product_facts_hashes_by_phase = {
@@ -346,15 +363,17 @@ def _run_sigkill_recovery_phase(
     env: Mapping[str, str],
     version: str,
     case: GreenfieldMatrixCase,
+    seed: _RecoverySeed | None = None,
 ) -> dict[str, Any]:
-    repo_root = run_root / "sigkill-same-hash"
-    _install_repo(repo_root=repo_root, install_script=install_script, env=env)
-    runtime_identity = _installed_runtime_identity(repo_root=repo_root, env=env, version=version)
-    compiled = _compile_transaction(
-        repo_root=repo_root,
+    repo_root, compiled = _phase_repo_and_transaction(
+        run_root=run_root,
+        phase_name="sigkill-same-hash",
+        install_script=install_script,
         env=env,
         case=case,
+        seed=seed,
     )
+    runtime_identity = _installed_runtime_identity(repo_root=repo_root, env=env, version=version)
     before = _governed_fingerprint(repo_root)
     generation_before = _installed_generation_observation(
         repo_root=repo_root,
@@ -458,15 +477,17 @@ def _run_operator_conflict_recovery_phase(
     install_script: Path,
     env: Mapping[str, str],
     case: GreenfieldMatrixCase,
+    seed: _RecoverySeed | None = None,
 ) -> dict[str, Any]:
     """Prove recovery preserves a later operator mutation instead of restoring over it."""
 
-    repo_root = run_root / "operator-conflict"
-    _install_repo(repo_root=repo_root, install_script=install_script, env=env)
-    compiled = _compile_transaction(
-        repo_root=repo_root,
+    repo_root, compiled = _phase_repo_and_transaction(
+        run_root=run_root,
+        phase_name="operator-conflict",
+        install_script=install_script,
         env=env,
         case=case,
+        seed=seed,
     )
     before = _governed_fingerprint(repo_root)
     generation_before = _installed_generation_observation(
@@ -571,13 +592,15 @@ def _run_fsync_rollback_phase(
     install_script: Path,
     env: Mapping[str, str],
     case: GreenfieldMatrixCase,
+    seed: _RecoverySeed | None = None,
 ) -> dict[str, Any]:
-    repo_root = run_root / "fsync-rollback"
-    _install_repo(repo_root=repo_root, install_script=install_script, env=env)
-    compiled = _compile_transaction(
-        repo_root=repo_root,
+    repo_root, compiled = _phase_repo_and_transaction(
+        run_root=run_root,
+        phase_name="fsync-rollback",
+        install_script=install_script,
         env=env,
         case=case,
+        seed=seed,
     )
     before = _governed_fingerprint(repo_root)
     generation_before = _installed_generation_observation(
@@ -687,6 +710,57 @@ def _install_repo(*, repo_root: Path, install_script: Path, env: Mapping[str, st
         timeout=COMMAND_TIMEOUT_SECONDS,
     )
     _require_success(installed, label="installed commit recovery install")
+
+
+def _prepare_recovery_seed(
+    *,
+    run_root: Path,
+    install_script: Path,
+    env: Mapping[str, str],
+    case: GreenfieldMatrixCase,
+) -> _RecoverySeed:
+    """Compile once so recovery phases exercise identical sealed bytes."""
+
+    repo_root = run_root / "sealed-transaction-seed"
+    _install_repo(repo_root=repo_root, install_script=install_script, env=env)
+    transaction = _compile_transaction(repo_root=repo_root, env=env, case=case)
+    return _RecoverySeed(repo_root=repo_root, transaction=transaction)
+
+
+def _phase_repo_and_transaction(
+    *,
+    run_root: Path,
+    phase_name: str,
+    install_script: Path,
+    env: Mapping[str, str],
+    case: GreenfieldMatrixCase,
+    seed: _RecoverySeed | None,
+) -> tuple[Path, _CompiledRecoveryTransaction]:
+    repo_root = run_root / phase_name
+    if seed is None:
+        _install_repo(repo_root=repo_root, install_script=install_script, env=env)
+        return repo_root, _compile_transaction(repo_root=repo_root, env=env, case=case)
+    shutil.copytree(seed.repo_root, repo_root)
+    return repo_root, _transaction_for_phase(seed=seed)
+
+
+def _transaction_for_phase(*, seed: _RecoverySeed) -> _CompiledRecoveryTransaction:
+    transaction = seed.transaction
+    transaction_path = Path(transaction.transaction_file).expanduser()
+    if transaction_path.is_absolute():
+        try:
+            transaction_file = str(transaction_path.resolve().relative_to(seed.repo_root.resolve()))
+        except ValueError as exc:
+            raise RuntimeError("installed recovery transaction file is outside its sealed seed repo") from exc
+    else:
+        transaction_file = str(transaction_path)
+    return _CompiledRecoveryTransaction(
+        transaction_file=transaction_file,
+        transaction_hash=transaction.transaction_hash,
+        product_facts_hash=transaction.product_facts_hash,
+        write_set_hash=transaction.write_set_hash,
+        intent_authority=transaction.intent_authority,
+    )
 
 
 def _compile_transaction(

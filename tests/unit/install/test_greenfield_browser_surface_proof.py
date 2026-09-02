@@ -104,7 +104,7 @@ def test_project_state_assertion_requires_persisted_prompt_state() -> None:
 
     assert (
         module._project_state_assertion_issues(
-            payload_origin="accepted greenfield project",
+            payload_origin=module.AUTHORED_PROJECTION_ORIGIN,
             payload_prompt_count=5,
             empty_payload_prompts=0,
             rendered_prompt_count=5,
@@ -140,7 +140,6 @@ def test_project_state_assertion_requires_persisted_prompt_state() -> None:
     assert "browser surface project payload contains empty implementation prompt text" in issues
     assert "browser surface project rendered fewer than five implementation prompt cards" in issues
     assert "browser surface project rendered the blank project state after commit-only create" in issues
-    assert "browser surface project repeated Product Story body copy" in issues
     assert "browser surface project clips visible text" in issues
 
 
@@ -148,7 +147,7 @@ def test_project_state_assertion_rejects_wrong_semantic_story_slot() -> None:
     module = _module()
 
     issues = module._project_state_assertion_issues(
-        payload_origin="accepted greenfield project",
+        payload_origin=module.AUTHORED_PROJECTION_ORIGIN,
         payload_prompt_count=5,
         empty_payload_prompts=0,
         rendered_prompt_count=5,
@@ -177,7 +176,7 @@ def test_project_state_assertion_accepts_css_transformed_story_labels() -> None:
     module = _module()
 
     issues = module._project_state_assertion_issues(
-        payload_origin="accepted greenfield project",
+        payload_origin=module.AUTHORED_PROJECTION_ORIGIN,
         payload_prompt_count=5,
         empty_payload_prompts=0,
         rendered_prompt_count=5,
@@ -209,11 +208,59 @@ def test_project_state_assertion_accepts_css_transformed_story_labels() -> None:
     assert issues == ()
 
 
+def test_project_state_assertion_compares_shared_source_facts_to_typed_payload() -> None:
+    module = _module()
+    rows = [
+        {"label": "User Problem", "semantic_slot": "user_problem", "body": "One accepted fact."},
+        {"label": "First Path", "semantic_slot": "first_path", "body": "One accepted path."},
+        {"label": "Product Boundary", "semantic_slot": "product_boundary", "body": "One boundary."},
+        {"label": "Owned Capabilities", "semantic_slot": "owned_capabilities", "body": "One capability."},
+        {"label": "Proof", "semantic_slot": "proof", "body": "One accepted path."},
+    ]
+
+    issues = module._project_state_assertion_issues(
+        payload_origin=module.AUTHORED_PROJECTION_ORIGIN,
+        payload_prompt_count=5,
+        empty_payload_prompts=0,
+        rendered_prompt_count=5,
+        has_prompt_grid=True,
+        has_blank_state=False,
+        has_implementation_prompts=True,
+        max_prompt_overflow=0,
+        pane_overflow=0,
+        rendered_story_body_count=5,
+        distinct_story_body_count=4,
+        story_rows=rows,
+        payload_story_rows=rows,
+    )
+
+    assert issues == ()
+    drifted = [dict(row) for row in rows]
+    drifted[-1]["body"] = "A different rendered claim."
+    issues = module._project_state_assertion_issues(
+        payload_origin=module.AUTHORED_PROJECTION_ORIGIN,
+        payload_prompt_count=5,
+        empty_payload_prompts=0,
+        rendered_prompt_count=5,
+        has_prompt_grid=True,
+        has_blank_state=False,
+        has_implementation_prompts=True,
+        max_prompt_overflow=0,
+        pane_overflow=0,
+        rendered_story_body_count=5,
+        distinct_story_body_count=5,
+        story_rows=drifted,
+        payload_story_rows=rows,
+    )
+
+    assert "browser surface project Product Story cards drifted from the sealed payload" in issues
+
+
 def test_project_state_assertion_rejects_confusable_uppercase_story_label() -> None:
     module = _module()
 
     issues = module._project_state_assertion_issues(
-        payload_origin="accepted greenfield project",
+        payload_origin=module.AUTHORED_PROJECTION_ORIGIN,
         payload_prompt_count=5,
         empty_payload_prompts=0,
         rendered_prompt_count=5,

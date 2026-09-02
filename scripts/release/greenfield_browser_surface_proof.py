@@ -7,6 +7,9 @@ from typing import Any
 from urllib.parse import quote
 from urllib.parse import urlparse
 
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_PROJECTION_ORIGIN,
+)
 from local_release_smoke import _serve_directory
 BROWSER_SURFACE_PROOF_SCOPE = "per_case_headless_generated_surface_state_matrix"
 BROWSER_PROJECT_MOBILE_VIEWPORT = {"width": 430, "height": 932}
@@ -199,6 +202,12 @@ def _project_generated_state_issues(*, context: Any, base_url: str, timeout_ms: 
                   return false;
                 });
                 const text = String(node.innerText || "");
+                const projectPayload = (window.__ODYLITH_TOOLING_DATA__ || {}).project_intelligence || {};
+                const expectedPromptLabels = (Array.isArray(projectPayload.host_handoff_prompts)
+                  ? projectPayload.host_handoff_prompts
+                  : [])
+                  .map((row) => String(row && row.label || "").trim())
+                  .filter(Boolean);
                 return {
                   promptCount: prompts.length,
                   storyBodyCount: storyBodies.length,
@@ -209,13 +218,8 @@ def _project_generated_state_issues(*, context: Any, base_url: str, timeout_ms: 
                   clippedTextCount: clippedText.length,
                   hasPromptGrid: Boolean(node.querySelector(".project-host-prompt-grid")),
                   hasBlankState: text.includes("Project not defined yet"),
-                  hasImplementationPrompts: [
-                    "Choose implementation language",
-                    "Create first implementation plan",
-                    "Build smallest runnable slice",
-                    "Add tests and proof",
-                    "Refresh governed records"
-                  ].every((label) => text.includes(label)),
+                  hasImplementationPrompts: expectedPromptLabels.length >= 5
+                    && expectedPromptLabels.every((label) => text.includes(label)),
                   maxPromptOverflow: prompts.reduce(
                     (max, card) => Math.max(max, card.scrollWidth - card.clientWidth),
                     0
@@ -234,7 +238,11 @@ def _project_generated_state_issues(*, context: Any, base_url: str, timeout_ms: 
                 return {
                   origin: project && project.projection && project.projection.origin || "",
                   promptCount: prompts.length,
-                  emptyPrompts: prompts.filter((row) => !String(row && row.prompt || "").trim()).length
+                  emptyPrompts: prompts.filter((row) => !String(row && row.prompt || "").trim()).length,
+                  storyRows: project && project.product_story
+                    && Array.isArray(project.product_story.release_contract)
+                    ? project.product_story.release_contract
+                    : []
                 };
             }"""
         )
@@ -263,6 +271,9 @@ def _project_generated_state_issues(*, context: Any, base_url: str, timeout_ms: 
                 story_rows=(
                     project_state.get("storyRows", ()) if isinstance(project_state, dict) else ()
                 ),
+                payload_story_rows=(
+                    payload_state.get("storyRows", ()) if isinstance(payload_state, dict) else ()
+                ),
             )
         )
     except Exception as exc:
@@ -288,9 +299,10 @@ def _project_state_assertion_issues(
     distinct_story_body_count: int = 5,
     clipped_text_count: int = 0,
     story_rows: Any = (),
+    payload_story_rows: Any = (),
 ) -> tuple[str, ...]:
     issues: list[str] = []
-    if payload_origin != "accepted greenfield project":
+    if payload_origin != AUTHORED_PROJECTION_ORIGIN:
         issues.append("browser surface project payload is not accepted greenfield project state")
     if payload_prompt_count < 5:
         issues.append("browser surface project payload exposes fewer than five implementation prompts")
@@ -310,10 +322,15 @@ def _project_state_assertion_issues(
         issues.append("browser surface project pane overflows horizontally")
     if rendered_story_body_count != 5:
         issues.append("browser surface project did not render all five Product Story bodies")
-    if distinct_story_body_count != rendered_story_body_count:
-        issues.append("browser surface project repeated Product Story body copy")
     rows = [row for row in story_rows if isinstance(row, dict)] if isinstance(story_rows, (list, tuple)) else []
     issues.extend(_project_story_binding_issues(rows))
+    expected_rows = (
+        [row for row in payload_story_rows if isinstance(row, dict)]
+        if isinstance(payload_story_rows, (list, tuple))
+        else []
+    )
+    if expected_rows and not _story_rows_match_payload(rows, expected_rows):
+        issues.append("browser surface project Product Story cards drifted from the sealed payload")
     if clipped_text_count:
         issues.append("browser surface project clips visible text")
     return tuple(issues)
@@ -331,7 +348,6 @@ def _project_story_binding_issues(rows: list[dict[str, Any]]) -> tuple[str, ...]
     }
     issues: list[str] = []
     seen: set[str] = set()
-    bodies: set[str] = set()
     for row in rows:
         raw_label = str(row.get("label") or "").strip()
         label_key = raw_label.casefold()
@@ -352,15 +368,30 @@ def _project_story_binding_issues(rows: list[dict[str, Any]]) -> tuple[str, ...]
         body = str(row.get("body") or "").strip()
         if not body:
             issues.append(f"greenfield Project Product Story `{canonical_label}` card is empty")
-        elif body.casefold() in bodies:
-            issues.append("greenfield Project Product Story repeats body copy across semantic cards")
-        else:
-            bodies.add(body.casefold())
     if rows:
         for key, (canonical_label, _slot) in expected.items():
             if key not in seen:
                 issues.append(f"greenfield Project Product Story is missing its `{canonical_label}` card")
     return tuple(issues)
+
+
+def _story_rows_match_payload(
+    rendered_rows: list[dict[str, Any]],
+    payload_rows: list[dict[str, Any]],
+) -> bool:
+    """Compare the rendered typed card contract without interpreting its prose."""
+
+    if len(rendered_rows) != len(payload_rows):
+        return False
+    for rendered, expected in zip(rendered_rows, payload_rows, strict=True):
+        if str(rendered.get("label") or "").strip().casefold() != str(
+            expected.get("label") or ""
+        ).strip().casefold():
+            return False
+        for key in ("semantic_slot", "body"):
+            if str(rendered.get(key) or "").strip() != str(expected.get(key) or "").strip():
+                return False
+    return True
 
 
 def _invalid_route_recovery_issues(*, context: Any, base_url: str, timeout_ms: int) -> tuple[str, ...]:

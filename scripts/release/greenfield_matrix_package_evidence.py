@@ -16,6 +16,9 @@ from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import (
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import package_mapping
 from odylith.runtime.common.mermaid_text import visible_mermaid_label_quality_texts
 from odylith.runtime.common.value_coercion import normalize_string
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_PROJECTION_ORIGIN,
+)
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
     PROJECT_HANDOFF_STEP_SEQUENCE,
@@ -39,12 +42,12 @@ _RADAR_REQUIRED_SECTIONS = (
     "## Success Metrics",
     "## Validation",
 )
-_REGISTRY_REQUIRED_PROOF = (
+_REGISTRY_REQUIRED_SECTIONS = (
     "Source boundary",
+    "Source-custodied responsibility",
+    "Source-custodied owner relations",
     "Trace links",
-    "Successful path evidence",
-    "Blocked input evidence",
-    "Replay evidence",
+    "Feature History",
 )
 def package_evidence_findings(package: Any) -> tuple[PackageEvidenceFinding, ...]:
     """Return independent readback findings that should block premium scores."""
@@ -104,9 +107,9 @@ def _authored_project_brief_findings(
         findings.append(
             _finding("product_manager", "independent project brief has an unsupported schema version")
         )
-    if normalize_string(brief.get("projection_origin")) != "model_authored_atomic_semantics":
+    if normalize_string(brief.get("projection_origin")) != AUTHORED_PROJECTION_ORIGIN:
         findings.append(
-            _finding("product_manager", "independent project brief is not an authored atomic projection")
+            _finding("product_manager", "independent project brief is not the sealed authored projection")
         )
     for field in ("purpose", "operating_principle", "project_outcome"):
         if not normalize_string(brief.get(field)):
@@ -214,9 +217,14 @@ def _registry_findings(
             )
         )
     for artifact in specs:
-        missing = [phrase for phrase in _REGISTRY_REQUIRED_PROOF if phrase not in artifact.text]
+        missing = [phrase for phrase in _REGISTRY_REQUIRED_SECTIONS if phrase not in artifact.text]
         if missing:
-            findings.append(_finding("engineer", f"{artifact.identity} is missing proof contract text: {', '.join(missing)}"))
+            findings.append(
+                _finding(
+                    "engineer",
+                    f"{artifact.identity} is missing authored component sections: {', '.join(missing)}",
+                )
+            )
     return findings
 
 
@@ -236,7 +244,7 @@ def _atlas_findings(*, artifacts: Sequence[RenderedArtifact], proposal: Mapping[
         labels = visible_mermaid_label_quality_texts(artifact.text)
         if len(labels) < 2:
             findings.append(_finding("architect", f"{artifact.identity} has too few visible topology labels"))
-        if not any(operator in artifact.text for operator in ("-->", "-->>", "-.->", "==>", "->>")):
+        if not any(operator in artifact.text for operator in ("-->", "-->>", ".->", "==>", "->>")):
             findings.append(_finding("architect", f"{artifact.identity} has no visible topology edge"))
     return findings
 

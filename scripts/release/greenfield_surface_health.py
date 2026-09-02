@@ -7,6 +7,10 @@ import json
 from pathlib import Path
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_PROJECTION_ORIGIN,
+)
+
 
 REQUIRED_RENDERED_SURFACES = (
     "odylith/radar/radar.html",
@@ -222,6 +226,7 @@ def _project_payload_issues(shell_payload: dict[str, Any]) -> list[str]:
         "accepted greenfield project",
         "greenfield proposal",
         "source-backed project",
+        AUTHORED_PROJECTION_ORIGIN,
     }:
         issues.append("odylith/index.html project payload has an unknown projection origin")
     return issues

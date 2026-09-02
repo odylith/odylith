@@ -152,7 +152,10 @@ def test_authored_component_spec_is_structural_and_bypasses_legacy_owners(
     authoring_input = previews[0]["authoring_input"]
     assert "source_custody" not in authoring_input
     assert "Planned path: `src/harbor-planner/berth-map`" in spec
+    assert "## Source boundary" in spec
     assert "## Trace links" in spec
+    assert "## Feature History" in spec
+    assert "(Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))" in spec
     assert "## Source-custodied owner relations" in spec
     assert "### Owner system" in spec
     assert "### Owner-bound events" in spec

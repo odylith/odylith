@@ -4129,3 +4129,21 @@ above.
       the sparse all-role discriminator passes, and authored/model proof is
       `122/122`. Rebuild the immutable candidate and require the full installed
       matrix before accepting this correction.
+    - 2026-09-02 full-package proof and evaluator correction: immutable
+      candidate `d607fc8d3` completed the fresh public standard, rescue, and
+      deep cases in `51.921s`, `64.916s`, and `70.079s`, within the exact
+      `60/90/120` budgets, and each case committed the complete expected
+      governance package. The semantic mechanism therefore crossed the
+      transaction, commit, readback, and product-depth frontier; aggregate
+      release status remained `0/3` because one real Registry admission gap
+      and several retired evaluator assumptions failed after create. The
+      bounded correction adds Registry's source boundary and dated plan-linked
+      `Feature History`, exposes all six fixed Tribunal review roles, accepts
+      the canonical authored origin and valid labeled dotted Mermaid edge,
+      compares rendered Product Story cards to their sealed typed payload, and
+      reuses one sealed transaction across independent recovery fault phases.
+      It does not add a semantic regex, parser, model retry, tier cascade, or
+      post-confirm generation path. Full source proof is `609/609` Greenfield
+      runtime and `458/458` Greenfield install tests. Freeze this mechanism and
+      rebuild one immutable candidate; only a fresh exact installed matrix may
+      justify another mechanism change. The protected holdout remains untouched.

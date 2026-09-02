@@ -189,6 +189,50 @@ def test_installed_release_env_removes_maintainer_source_path(monkeypatch) -> No
     assert env["ODYLITH_REASONING_PROVIDER"] == "codex-cli"
 
 
+def test_recovery_phases_reuse_one_sealed_transaction(tmp_path: Path, monkeypatch) -> None:
+    module = _module()
+    seed_root = tmp_path / "seed"
+    transaction_path = seed_root / ".odylith/runtime/greenfield/pending/hash/product-create-transaction.v1.json"
+    transaction_path.parent.mkdir(parents=True)
+    transaction_path.write_text("{}\n", encoding="utf-8")
+    seed = module._RecoverySeed(  # noqa: SLF001
+        repo_root=seed_root,
+        transaction=module._CompiledRecoveryTransaction(  # noqa: SLF001
+            transaction_file=str(transaction_path),
+            transaction_hash="a" * 64,
+            product_facts_hash="c" * 64,
+            write_set_hash="b" * 64,
+            intent_authority={},
+        ),
+    )
+    monkeypatch.setattr(
+        module,
+        "_install_repo",
+        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("seeded phase must not reinstall")),
+    )
+    monkeypatch.setattr(
+        module,
+        "_compile_transaction",
+        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("seeded phase must not re-author")),
+    )
+
+    repo_root, transaction = module._phase_repo_and_transaction(  # noqa: SLF001
+        run_root=tmp_path,
+        phase_name="phase",
+        install_script=tmp_path / "install.sh",
+        env={"PATH": "/usr/bin"},
+        case=module.GreenfieldMatrixCase(
+            name="bound recovery case",
+            prompt="Create the exact recovery-bound product.",
+            required_terms=("recovery",),
+        ),
+        seed=seed,
+    )
+
+    assert (repo_root / transaction.transaction_file).read_text(encoding="utf-8") == "{}\n"
+    assert transaction.product_facts_hash == "c" * 64
+
+
 def test_runtime_identity_requires_the_managed_installed_runtime(tmp_path: Path, monkeypatch) -> None:
     module = _module()
     module_path = tmp_path / ".odylith/runtime/versions/0.1.15/lib/odylith/__init__.py"
@@ -625,6 +669,20 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
 
     monkeypatch.setattr(module, "_serve_directory", lambda _path: (_Server(), "http://127.0.0.1:8123"))
     monkeypatch.setattr(module, "_installed_release_env", lambda **_kwargs: {"PATH": "/usr/bin"})
+    monkeypatch.setattr(
+        module,
+        "_prepare_recovery_seed",
+        lambda **_kwargs: module._RecoverySeed(  # noqa: SLF001
+            repo_root=tmp_path / "seed",
+            transaction=module._CompiledRecoveryTransaction(  # noqa: SLF001
+                transaction_file=".odylith/runtime/greenfield/product-create-transaction.v1.json",
+                transaction_hash="a" * 64,
+                product_facts_hash="c" * 64,
+                write_set_hash="b" * 64,
+                intent_authority={},
+            ),
+        ),
+    )
 
     def sigkill_phase(**kwargs):  # noqa: ANN001
         captured_cases.append(kwargs["case"])

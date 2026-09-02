@@ -12,7 +12,13 @@ from greenfield_matrix_package_evidence import package_evidence_findings
 from greenfield_matrix_types import GreenfieldArtifactCounts
 from greenfield_matrix_types import GreenfieldQualityVerdict
 from odylith.runtime.common.value_coercion import mapping_copy
-from odylith.runtime.domain_intelligence.artifact_tribunal_actors import tribunal_visible_actor_quality_issues
+from odylith.runtime.domain_intelligence.artifact_tribunal_actors import (
+    TRIBUNAL_STABLE_ROLES,
+    tribunal_visible_actor_quality_issues,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_PROJECTION_ORIGIN,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     get_greenfield_model_profile,
@@ -655,6 +661,8 @@ def _validation_gate_actor_issues(*, create_payload: Mapping[str, Any], package:
     )
     issues: list[str] = []
     source_labels: dict[str, dict[str, str]] = {}
+    proposal = mapping_copy(getattr(package, "proposal", {}))
+    authored_projection = proposal.get("projection_origin") == AUTHORED_PROJECTION_ORIGIN
     for source_name, validation_gate in sources:
         visible_actors = validation_gate.get("visible_actors")
         if not isinstance(visible_actors, Sequence) or isinstance(visible_actors, (str, bytes)):
@@ -666,11 +674,41 @@ def _validation_gate_actor_issues(*, create_payload: Mapping[str, Any], package:
             for row in rows
             if str(row.get("stable_role", "")).strip()
         }
-        issues.extend(f"{source_name} {issue}" for issue in tribunal_visible_actor_quality_issues(rows))
+        actor_issues = (
+            _authored_visible_actor_quality_issues(rows)
+            if authored_projection
+            else tribunal_visible_actor_quality_issues(rows)
+        )
+        issues.extend(f"{source_name} {issue}" for issue in actor_issues)
     if source_labels.get("create payload") and source_labels.get("accepted-project readback"):
         if source_labels["create payload"] != source_labels["accepted-project readback"]:
             issues.append("accepted-project validation gate visible actors drifted from create payload")
     return tuple(dict.fromkeys(issue for issue in issues if str(issue).strip()))
+
+
+def _authored_visible_actor_quality_issues(
+    visible_actors: Sequence[Mapping[str, Any]],
+) -> tuple[str, ...]:
+    """Validate the closed authored role contract without parsing actor labels."""
+
+    roles = [str(row.get("stable_role") or "").strip() for row in visible_actors]
+    issues: list[str] = []
+    for role in TRIBUNAL_STABLE_ROLES:
+        matching = [row for row in visible_actors if str(row.get("stable_role") or "").strip() == role]
+        if not matching:
+            issues.append(f"Tribunal visible actor missing for {role}")
+            continue
+        if len(matching) > 1:
+            issues.append(f"Tribunal visible actor duplicated for {role}")
+            continue
+        row = matching[0]
+        for field in ("visible_actor", "actor_source", "responsibility"):
+            if not clean_text(row.get(field)):
+                issues.append(f"Tribunal visible actor for {role} is missing {field}")
+    unexpected = sorted(set(roles) - set(TRIBUNAL_STABLE_ROLES))
+    if unexpected:
+        issues.append("Tribunal visible actors contain unsupported roles: " + ", ".join(unexpected))
+    return tuple(issues)
 
 
 def _browser_surface_proof_issues(

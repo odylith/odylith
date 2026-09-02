@@ -8,6 +8,7 @@ inventing local boundaries, interfaces, dependencies, risks, or proof claims.
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+import datetime as dt
 from pathlib import Path
 from typing import Any
 
@@ -239,6 +240,11 @@ def build_authored_component_spec(row: Mapping[str, Any]) -> str:
             f"- Planned path: `{path}`",
             f"- Semantic authority: `{AUTHORED_SEMANTIC_ROOT}`",
             "",
+            "## Source boundary",
+            "",
+            f"- Planned source path: `{path}`",
+            f"- Owner system: `{owner_system}`",
+            "",
             "## Source-custodied responsibility",
             "",
             _relation_facts(responsibility_facts, relation_label="responsibility fact"),
@@ -283,7 +289,22 @@ def build_authored_component_spec(row: Mapping[str, Any]) -> str:
             *[f"- Workstream: `{workstream}`" for workstream in workstreams],
             *([f"- Diagram: `{diagram}`" for diagram in diagrams] or ["- Diagram: no authored component link"]),
             "",
+            "## Feature History",
+            "",
+            _feature_history_line(workstreams[0]),
+            "",
         ]
+    )
+
+
+def _feature_history_line(workstream_id: str) -> str:
+    """Bind the initial candidate record to its allocated Greenfield workstream."""
+
+    review_date = dt.date.today().isoformat()
+    plan_href = f"odylith/radar/radar.html?view=plan&workstream={workstream_id}"
+    return (
+        f"- {review_date}: Initial candidate component projected from sealed Product Intent. "
+        f"(Plan: [{workstream_id}]({plan_href}))"
     )
 
 
