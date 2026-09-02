@@ -266,6 +266,7 @@ def _semantic_values(proposal: dict[str, Any]) -> dict[str, str]:
             "first_path",
             "proof_boundary",
         )
+        if intent.get(field)
     }
     for field in (
         "human_actors",
@@ -448,10 +449,15 @@ def test_structured_authored_project_adds_only_distinct_typed_workstream_roles(
     assert "Archive Vault" in backlog[2]["opportunity"]
     assert "A dock attendant sees the signed cargo receipt." in backlog[3]["success_metrics"]
     _assert_owned_rendering(proposal)
-    assert semantics["project"]["shared_fact_refs"] == [
-        "/internal_systems/0",
-        "/internal_systems/1",
-    ]
+    specialized_fact_refs = {
+        ref
+        for role in ("workflow", "boundary", "proof")
+        for ref in semantics[role]["fact_refs"]
+    }
+    assert set(semantics["project"]["shared_fact_refs"]) == specialized_fact_refs
+    assert not set(semantics["project"]["shared_fact_refs"]) & set(
+        semantics["project"]["fact_refs"]
+    )
     assert semantics["workflow"]["shared_fact_refs"] == [
         "/title",
         "/customer",
@@ -515,6 +521,110 @@ def test_structured_authored_project_adds_only_distinct_typed_workstream_roles(
     ]
     assert all("Ownership and Proof" not in title for title in diagrams)
     assert all("Release Proof Review" not in title for title in diagrams)
+
+
+def test_direct_evidence_graph_material_facts_compile_complete_project_and_workflow(
+    tmp_path: Path,
+) -> None:
+    first_path = (
+        "Donor registers a batch. "
+        "Volunteer inspects the batch. "
+        "Supervisor releases the batch."
+    )
+    product_story = "Create a governed community exchange."
+    proof_boundary = "Supervisor releases the batch."
+    intent = {
+        "title": "Community Exchange",
+        "product_story": product_story,
+        "state_object": "batch",
+        "first_path": first_path,
+        "proof_boundary": proof_boundary,
+        "problem": "",
+        "customer": "",
+        "opportunity": "",
+        "product_view": "",
+        "success_metrics": [],
+        "evidence_requirements": [
+            "Supervisor releases the batch.",
+            "Retain the release receipt.",
+        ],
+        "operational_constraints": [
+            "Preserve the release decision.",
+            "Keep inspection evidence reviewable.",
+        ],
+        "component_responsibilities": ["Preserve the release decision."],
+        "human_actors": ["Donor", "Volunteer", "Supervisor"],
+        "external_systems": ["Safety Registry"],
+        "internal_systems": [],
+        "assumptions": [],
+        "ambiguities": [],
+        "non_goals": ["Do not override a safety hold."],
+    }
+    proposal = _proposal(
+        tmp_path,
+        intent=intent,
+        relations=[
+            {
+                "actor_kind": "human",
+                "actor_quote": "Donor",
+                "event_quote": "Donor registers a batch",
+                "action_verb_quote": "registers",
+                "target_quote": "a batch",
+                "visible_result_quote": "",
+                "recovery_path": False,
+            },
+            {
+                "actor_kind": "human",
+                "actor_quote": "Volunteer",
+                "event_quote": "Volunteer inspects the batch",
+                "action_verb_quote": "inspects",
+                "target_quote": "the batch",
+                "visible_result_quote": "",
+                "recovery_path": False,
+            },
+            {
+                "actor_kind": "human",
+                "actor_quote": "Supervisor",
+                "event_quote": "Supervisor releases the batch",
+                "action_verb_quote": "releases",
+                "target_quote": "the batch",
+                "visible_result_quote": "releases the batch",
+                "recovery_path": False,
+            },
+        ],
+        responsibility_owners=["Community Exchange"],
+    )
+
+    backlog = {
+        row["workstream_role"]: row
+        for row in proposal["backlog"]
+    }
+    assert list(backlog) == [
+        "project",
+        "workflow",
+        "boundary",
+        "proof",
+    ]
+    project = backlog["project"]
+    workflow = backlog["workflow"]
+    assert project["recommended_first_slice"] == first_path
+    assert product_story in project["problem"]
+    assert project["customer"] == "Donor"
+    assert product_story in project["opportunity"]
+    assert first_path in project["product_view"]
+    assert project["success_metrics"] == [proof_boundary]
+    assert workflow["customer"] == "Donor"
+    assert product_story in workflow["opportunity"]
+    assert backlog["boundary"]["customer"] == "Donor"
+    assert backlog["proof"]["customer"] == "Donor"
+    project_semantics = project["authored_workstream_semantics"]
+    assert {
+        "/first_path",
+        "/proof_boundary",
+        "/human_actors/0",
+        "/external_systems/0",
+    } <= set(project_semantics["shared_fact_refs"])
+    _assert_owned_rendering(proposal)
 
 
 def test_authored_service_readiness_keeps_nonapproval_as_a_safety_boundary(

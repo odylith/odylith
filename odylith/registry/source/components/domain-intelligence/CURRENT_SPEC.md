@@ -3241,6 +3241,19 @@ This section captures synchronized requirement and contract signals derived from
   closed `0/3` before confirmation; the corrected v16 source discriminators
   pass standard, rescue, and deep in `36.362s`, `30.353s`, and `60.315s`, with
   widened safety proof at `153/153`. Installed release proof remains pending.
+- Authored-workstream-semantics v4 keeps evidence ownership exclusive while
+  making visibility explicit: the
+  integrative project workstream cites canonical facts owned by specialized
+  workflow, boundary, and proof rows through `shared_fact_refs`. This is a
+  citation edge, not a second semantic interpretation. When optional authored
+  presentation facts are absent, required backlog fields use exact selected
+  product-story, first-human-actor, state/path, and proof facts; a supplied
+  product view retains precedence. Specialized workstreams share only the
+  minimum canonical customer context and workflow opportunity fallback needed
+  for a complete row. Immutable revision `9bcdce790` exposed the prior false
+  exclusivity as a `0/3` installed compiler failure after in-budget model calls;
+  all three recorded responses now compile completion-ready and the
+  authored/model suite passes `122/122`. Rebuilt installed proof is pending.
 
 ## Research Basis
 

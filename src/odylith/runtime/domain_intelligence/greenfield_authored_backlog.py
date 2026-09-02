@@ -23,7 +23,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 
 AUTHORED_WORKSTREAM_ROLES = ("project", "workflow", "boundary", "proof")
 AUTHORED_WORKSTREAM_SEMANTICS_KEY = "authored_workstream_semantics"
-AUTHORED_WORKSTREAM_SEMANTICS_VERSION = "odylith.greenfield.authored-workstream-semantics.v3"
+AUTHORED_WORKSTREAM_SEMANTICS_VERSION = "odylith.greenfield.authored-workstream-semantics.v4"
 _DIAGRAM_ROLES_BY_WORKSTREAM = {
     "project": ("context", "sequence", "state_evidence", "component_boundaries"),
     "workflow": ("context", "sequence"),
@@ -220,7 +220,12 @@ def _backlog_row(
     }
     owned_fact_values = facts.get("fact_values")
     fact_values = owned_fact_values if isinstance(owned_fact_values, Mapping) else {}
-    owned_refs = semantic_contract.get("fact_refs")
+    owned_refs = _unique(
+        [
+            *_strings(semantic_contract.get("fact_refs")),
+            *_strings(semantic_contract.get("shared_fact_refs")),
+        ]
+    )
     row["radar_sections"] = _radar_sections(
         row=row,
         scope=_strings(projection["scope"]),
@@ -257,34 +262,43 @@ def _role_projection(
     shared_fact_refs = _strings(semantic_contract.get("shared_fact_refs"))
     visible_fact_refs = _unique([*fact_refs, *shared_fact_refs])
     title_refs = _exact_refs(visible_fact_refs, "/title")
-    customer_context_refs = _exact_refs(visible_fact_refs, "/customer")
+    customer_context_refs = _exact_refs(visible_fact_refs, "/customer") or _prefix_refs(
+        visible_fact_refs,
+        "/human_actors/",
+    )[:1]
 
     if role == "project":
-        story_refs = _exact_refs(fact_refs, "/product_story")
-        problem_refs = _exact_refs(fact_refs, "/problem")
-        customer_refs = _exact_refs(fact_refs, "/customer")
-        opportunity_refs = _exact_refs(fact_refs, "/opportunity") or story_refs
-        view_refs = _exact_refs(fact_refs, "/product_view", "/state_object", "/first_path")
+        story_refs = _exact_refs(visible_fact_refs, "/product_story")
+        problem_refs = _exact_refs(visible_fact_refs, "/problem") or story_refs
+        customer_refs = customer_context_refs
+        opportunity_refs = _exact_refs(visible_fact_refs, "/opportunity") or story_refs
+        view_refs = _exact_refs(
+            visible_fact_refs,
+            "/product_view",
+            "/state_object",
+            "/first_path",
+        )
+        outcome_refs = _exact_refs(visible_fact_refs, "/product_view") or view_refs
         metric_refs = [
-            *_prefix_refs(fact_refs, "/success_metrics/"),
-            *_exact_refs(fact_refs, "/proof_boundary"),
+            *_prefix_refs(visible_fact_refs, "/success_metrics/"),
+            *_exact_refs(visible_fact_refs, "/proof_boundary"),
         ] or story_refs
         evidence_refs = _prefix_refs(
-            fact_refs,
+            visible_fact_refs,
             "/evidence_requirements/",
             "/operational_constraints/",
         )
         validation_refs = _unique([*metric_refs, *evidence_refs]) or view_refs
-        dependency_refs = _prefix_refs(fact_refs, "/external_systems/")
-        deferred_refs = _prefix_refs(fact_refs, "/non_goals/")
+        dependency_refs = _prefix_refs(visible_fact_refs, "/external_systems/")
+        deferred_refs = _prefix_refs(visible_fact_refs, "/non_goals/")
         scope_refs = _exact_refs(
-            fact_refs,
+            visible_fact_refs,
             "/product_story",
             "/state_object",
             "/first_path",
         )
-        first_slice_refs = _exact_refs(fact_refs, "/first_path") or _exact_refs(
-            fact_refs,
+        first_slice_refs = _exact_refs(visible_fact_refs, "/first_path") or _exact_refs(
+            visible_fact_refs,
             "/product_view",
         )
         first_slice = _required_text(
@@ -308,10 +322,10 @@ def _role_projection(
             "ordering_why_now": _joined_values(fact_values, opportunity_refs),
             "ordering_expected_outcome": _joined_values(
                 fact_values,
-                _exact_refs(fact_refs, "/product_view"),
+                outcome_refs,
             ),
             "field_refs": {
-                "title": _exact_refs(fact_refs, "/title"),
+                "title": title_refs,
                 "problem": problem_refs,
                 "customer": customer_refs,
                 "opportunity": opportunity_refs,
@@ -323,13 +337,16 @@ def _role_projection(
                 "deferred_scope": deferred_refs,
                 "scope": scope_refs,
                 "ordering_why_now": opportunity_refs,
-                "ordering_expected_outcome": _exact_refs(fact_refs, "/product_view"),
+                "ordering_expected_outcome": outcome_refs,
             },
         }
     if role == "workflow":
         actor_refs = _prefix_refs(fact_refs, "/human_actors/")
         path_refs = _exact_refs(fact_refs, "/first_path")
-        opportunity_refs = _exact_refs(fact_refs, "/opportunity")
+        opportunity_refs = _exact_refs(fact_refs, "/opportunity") or _exact_refs(
+            visible_fact_refs,
+            "/product_story",
+        )
         event_refs = _prefix_refs(relation_refs, "/authored_semantics/first_path_relations/")
         events = _values_for_refs(relation_values, event_refs)
         final_event_refs = event_refs[-1:]
@@ -568,8 +585,13 @@ def _validated_rendered_field_refs(
         "validation",
         "radar_sections.Impacted Components",
     )
-    if any(not rendered.get(field) for field in required_fields):
-        raise ValueError("model-authored workstream has an uncited required field")
+    missing_fields = [field for field in required_fields if not rendered.get(field)]
+    if missing_fields:
+        role = _text(semantic_contract.get("role")) or "unknown"
+        raise ValueError(
+            f"model-authored {role} workstream has uncited required fields: "
+            + ", ".join(missing_fields)
+        )
     return rendered
 
 
@@ -854,18 +876,31 @@ def _workstream_semantic_contracts(
             for ref in component_fact_refs_by_role.get(role, ())
             if ref not in fact_refs
         ]
-        if role != "project":
+        if role == "project":
+            # The project row integrates the canonical facts owned by its
+            # specialized child workstreams. Sharing permits citation without
+            # introducing a second semantic owner or recomposing source prose.
+            shared_fact_refs.extend(
+                ref for ref in fact_values if ref not in fact_refs
+            )
+        else:
+            customer_refs = _exact_refs(fact_values, "/customer") or _prefix_refs(
+                fact_values,
+                "/human_actors/",
+            )[:1]
             shared_fact_refs = [
                 "/title",
-                "/customer",
+                *customer_refs,
                 *shared_fact_refs,
             ]
+            if role == "workflow" and not _exact_refs(fact_refs, "/opportunity"):
+                shared_fact_refs.extend(_exact_refs(fact_values, "/product_story"))
         contracts[role] = {
             "version": AUTHORED_WORKSTREAM_SEMANTICS_VERSION,
             "role": role,
             "fact_refs": list(fact_refs),
             "relation_refs": list(relation_refs),
-            "shared_fact_refs": _known_refs(shared_fact_refs, fact_values),
+            "shared_fact_refs": _known_refs(_unique(shared_fact_refs), fact_values),
         }
     if claimed_facts != set(fact_values) or claimed_relations != set(relation_values):
         raise ValueError("model-authored workstream semantics left typed evidence unowned")

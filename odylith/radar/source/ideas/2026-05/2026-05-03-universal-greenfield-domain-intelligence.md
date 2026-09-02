@@ -2713,6 +2713,20 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passes `153/153`. The mechanism remains provisional until a rebuilt immutable
   package passes the complete installed public gate.
 
+- 2026-09-02 installed workstream-visibility correction: revision
+  `9bcdce790` completed the exact standard, rescue, and deep model calls within
+  budget in `36.589s`, `31.545s`, and `72.587s`, but failed closed `0/3` before
+  transaction staging because the project row could not cite the first-path
+  fact exclusively owned by the workflow row. Authored-workstream-semantics v4
+  preserves one semantic owner and gives the integrative project explicit
+  shared citations;
+  absent optional presentation facts fall back only to exact selected
+  product-story, first-actor, state/path, and proof facts. It adds no regex,
+  prose parser, model call, retry, or repair cascade. All three recorded public
+  responses now compile completion-ready and the authored/model suite passes
+  `122/122`. B-142 remains in implementation until a rebuilt immutable package
+  passes the complete installed public gate.
+
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.
   The active release contract is standard post-confirm under 60 seconds without

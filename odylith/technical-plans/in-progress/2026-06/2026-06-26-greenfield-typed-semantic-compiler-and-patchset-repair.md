@@ -4114,3 +4114,18 @@ above.
       source discriminators pass in `36.362s`, `30.353s`, and `60.315s`; the
       widened safety/profile set passes `153/153`. Rebuild once and rerun the
       complete installed public gate before changing the mechanism again.
+    - 2026-09-02 workstream-visibility correction: immutable candidate
+      `9bcdce790` completed the exact public model calls in `36.589s`,
+      `31.545s`, and `72.587s`, but failed proposal compilation `0/3` because
+      the workflow row exclusively owned `/first_path` while the required
+      project first slice could not cite it. The direct graph itself was valid.
+      Authored-workstream-semantics v4 keeps single semantic ownership and
+      exposes specialized facts to the integrative project row through
+      explicit shared refs; when optional
+      presentation facts are absent, project and workflow fields may use only
+      exact selected product-story, first-actor, state/path, and proof facts.
+      No regex, prose reconstruction, retry, or additional model call is
+      permitted. The three recorded public responses compile completion-ready,
+      the sparse all-role discriminator passes, and authored/model proof is
+      `122/122`. Rebuild the immutable candidate and require the full installed
+      matrix before accepting this correction.
