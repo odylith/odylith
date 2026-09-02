@@ -30,6 +30,9 @@ or prose repair runs after confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py`, `src/odylith/runtime/domain_intelligence/greenfield_create_contract.py`, `tests/unit/runtime/test_greenfield_transaction_provenance.py`
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`
@@ -45,12 +48,18 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-08-08 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/common/prose_tail.py`, `src/odylith/runtime/domain_intelligence/greenfield_component_outputs.py`, `tests/unit/runtime/test_greenfield_code_hygiene.py`
-- **2026-08-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py`, `tests/unit/runtime/test_greenfield_transaction_intent_authority.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-09-02: Made post-confirm compiler identity stable across byte-identical install roots. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-325`; Diagram: D-043)
+  Compiler identity v5 hashes the fixed logical post-confirm source names and
+  their bytes instead of resolved absolute installation paths. Copying one
+  sealed seed repo into isolated recovery phases therefore preserves identity,
+  while any covered source-byte change still rejects confirmation before the
+  write boundary. Focused provenance and recovery proof passes `49/49`; the
+  complete Greenfield runtime and install suites pass `611/611` and `459/459`.
+  Immutable installed crash-recovery and public matrix proof remain required.
 
 - 2026-09-02: Bound release judgment to the canonical authored transaction instead of retired prose contracts. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   Immutable candidate `d607fc8d3` completed fresh standard, rescue, and deep
@@ -1983,9 +1992,12 @@ This section captures synchronized requirement and contract signals derived from
   source-derived outcomes; they may promote a parsed terminal choice only when
   a prior real event entails it and owns a choose/select action.
 - `greenfield_commit_transaction.py` owns the exact post-confirm runtime-source
-  inventory included in compiler identity. Lower-level commit and CLI traces
-  must each equal their explicit executed subset; new imports may not enter the
-  confirmed path through wildcard or implicit provenance.
+  inventory included in compiler identity. Identity hashes stable logical source
+  names and bytes, never deployment-root paths; byte-identical runtimes may move
+  between install roots, while any covered byte drift must fail before writes.
+  Lower-level commit and CLI traces must each equal their explicit executed
+  subset; new imports may not enter the confirmed path through wildcard or
+  implicit provenance.
 - `greenfield_repository_write_set.py` owns the exact pre-confirm repository
   mutation: approved managed paths, before/after tree fingerprints, file bytes,
   modes, file deletions, empty-directory creation/deletion, symlink refusal,

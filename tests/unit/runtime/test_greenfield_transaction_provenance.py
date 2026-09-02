@@ -125,6 +125,7 @@ def test_compiler_identity_fingerprints_only_postconfirm_runtime() -> None:
     assert "runtime/domain_intelligence/greenfield_repository_write_set.py" in paths
     assert "runtime/domain_intelligence/greenfield_commit_journal.py" in paths
     assert "runtime/common/environment.py" in paths
+    assert "runtime/common/derivation_provenance.py" not in paths
     assert "cli.py" in paths
     assert "runtime/domain_intelligence/greenfield_proposals_cli.py" in paths
     assert "runtime/domain_intelligence/greenfield_transaction.py" in paths
@@ -137,6 +138,25 @@ def test_compiler_identity_fingerprints_only_postconfirm_runtime() -> None:
     assert "runtime/domain_intelligence/greenfield_structural_copy.py" not in paths
     assert "runtime/artifact_quality/generated_copy_quality.py" not in paths
     assert "runtime/surfaces/render_casebook_dashboard.py" not in paths
+
+
+def test_compiler_identity_is_stable_across_identical_install_roots(tmp_path: Path) -> None:
+    first_root = tmp_path / "first-install" / "odylith"
+    second_root = tmp_path / "second-install" / "odylith"
+    for logical_path in _POSTCONFIRM_RUNTIME_SOURCE_FILES:
+        payload = f"sealed runtime source: {logical_path}\n"
+        for root in (first_root, second_root):
+            target = root / logical_path
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(payload, encoding="utf-8")
+
+    first = greenfield_commit_transaction._fingerprint_postconfirm_runtime_source_files(first_root)  # noqa: SLF001
+    second = greenfield_commit_transaction._fingerprint_postconfirm_runtime_source_files(second_root)  # noqa: SLF001
+
+    assert first == second
+    changed = second_root / _POSTCONFIRM_RUNTIME_SOURCE_FILES[-1]
+    changed.write_text("runtime drift\n", encoding="utf-8")
+    assert greenfield_commit_transaction._fingerprint_postconfirm_runtime_source_files(second_root) != first  # noqa: SLF001
 
 
 def test_postconfirm_receipt_covers_executed_runtime(tmp_path: Path) -> None:

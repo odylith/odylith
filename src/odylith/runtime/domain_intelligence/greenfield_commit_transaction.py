@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Any
 
 from odylith import __version__
-from odylith.runtime.common import derivation_provenance
 from odylith.runtime.domain_intelligence.greenfield_create_contract import (
     PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY,
 )
@@ -33,7 +32,6 @@ _POSTCONFIRM_RUNTIME_SOURCE_FILES = (
     "__init__.py",
     "cli.py",
     "install/fs.py",
-    "runtime/common/derivation_provenance.py",
     "runtime/common/environment.py",
     "runtime/domain_intelligence/greenfield_commit_journal.py",
     "runtime/domain_intelligence/greenfield_commit_transaction.py",
@@ -318,13 +316,30 @@ def require_product_create_transaction_compiler_provenance_payload(
 
 def build_product_create_transaction_compiler_identity() -> dict[str, Any]:
     source_root = Path(__file__).resolve().parents[2]
-    paths = tuple(source_root / name for name in _POSTCONFIRM_RUNTIME_SOURCE_FILES)
     return {
         "version": PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION,
         "odylith_version": __version__,
-        "source_files_sha256": derivation_provenance.fingerprint_source_files(paths),
-        "source_file_count": len(paths),
+        "source_files_sha256": _fingerprint_postconfirm_runtime_source_files(source_root),
+        "source_file_count": len(_POSTCONFIRM_RUNTIME_SOURCE_FILES),
     }
+
+
+def _fingerprint_postconfirm_runtime_source_files(source_root: Path) -> str:
+    """Hash logical runtime files without binding identity to an install path."""
+
+    rows: list[dict[str, str]] = []
+    for logical_path in _POSTCONFIRM_RUNTIME_SOURCE_FILES:
+        path = source_root / logical_path
+        if not path.is_file():
+            digest = "missing"
+        else:
+            try:
+                digest = hashlib.sha256(path.read_bytes()).hexdigest()
+            except OSError:
+                digest = "unreadable"
+        rows.append({"path": logical_path, "sha256": digest})
+    rendered = json.dumps(rows, ensure_ascii=True, separators=(",", ":"), sort_keys=True)
+    return hashlib.sha256(rendered.encode("utf-8")).hexdigest()
 
 
 def _payload_hash(payload: Mapping[str, Any]) -> str:

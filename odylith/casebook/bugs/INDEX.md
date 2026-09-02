@@ -6,6 +6,7 @@ Last updated (UTC): 2026-09-02
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-325 | 2026-09-02 | Greenfield recovery proof bound compiler identity to absolute install path | P1 | domain-intelligence-greenfield | Open | [2026-09-02-greenfield-recovery-proof-bound-compiler-identity-to-absolute-install-path.md](2026-09-02-greenfield-recovery-proof-bound-compiler-identity-to-absolute-install-path.md) |
 | CB-324 | 2026-08-09 | Source metadata bypassed product intent custody and triggered generic fallback | P1 | domain-intelligence-greenfield | FixedPendingRelease | [2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md](2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md) |
 | CB-323 | 2026-08-06 | Greenfield sealed intent cannot prove atomic accepted fact custody | P0 | domain-intelligence | InProgress | [2026-08-06-greenfield-sealed-intent-cannot-prove-atomic-accepted-fact-custody.md](2026-08-06-greenfield-sealed-intent-cannot-prove-atomic-accepted-fact-custody.md) |
 | CB-322 | 2026-08-05 | Final holdout permits mutually contradictory required and forbidden terms | P0 | release | FixedPendingRelease | [2026-08-05-final-holdout-permits-mutually-contradictory-required-and-forbidden-terms.md](2026-08-05-final-holdout-permits-mutually-contradictory-required-and-forbidden-terms.md) |

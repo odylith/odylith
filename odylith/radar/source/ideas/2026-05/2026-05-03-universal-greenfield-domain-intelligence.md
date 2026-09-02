@@ -2733,6 +2733,19 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   install/release. B-142 remains in implementation pending the separate
   recovery-identity correction and a rebuilt exact installed matrix.
 
+- 2026-09-02 recovery-identity source correction: the v8 installed recovery
+  gate rejected a cloned, byte-identical runtime before SIGKILL injection
+  because compiler identity included resolved absolute source paths. The
+  compiler identity v5 contract hashes the fixed logical post-confirm source
+  names and their bytes, so install-root relocation is stable while any covered
+  byte change still invalidates confirmation before writes. Focused provenance
+  and recovery proof passes `49/49`; the complete Greenfield runtime and
+  install suites pass `611/611` and `459/459`. `CB-325` records the escaped
+  proof defect and bans per-phase reauthoring, receipt rewriting, or drift-guard
+  weakening. B-142 remains in implementation until an immutable installed
+  recovery run crosses the former failure phase and the unchanged public
+  `60/90/120` matrix passes.
+
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.
   The active release contract is standard post-confirm under 60 seconds without

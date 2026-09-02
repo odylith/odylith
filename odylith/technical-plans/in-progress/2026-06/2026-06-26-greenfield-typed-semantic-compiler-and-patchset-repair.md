@@ -4176,3 +4176,18 @@ above.
       post-confirm work was added. The v8 recovery runtime-identity mismatch is
       a separate open gate; correct it before rebuilding and rerunning the exact
       installed matrix. The protected holdout remains untouched.
+    - 2026-09-02 recovery identity v5 correction: `CB-325` traced the installed
+      recovery abort to a location-dependent code fingerprint. The receipt
+      guard had hashed resolved absolute source paths, so copying the entire
+      prepared seed repo to an isolated fault-phase root changed identity even
+      when every covered runtime byte was identical. The bounded correction
+      hashes logical post-confirm source names plus content, removes the now
+      unexecuted shared fingerprint helper from the post-confirm inventory, and
+      bumps compiler identity to v5. Relocation equality and mutated-byte
+      inequality are both pinned; focused proof passes `49/49`, complete
+      Greenfield runtime passes `611/611`, and install/release passes `459/459`.
+      Do not weaken runtime-drift rejection, regenerate a transaction per fault
+      phase, or rewrite its receipt. Freeze these bytes into one immutable
+      package and require recovery to cross SIGKILL, conflict, fsync rollback,
+      idempotent retry, and readback before rerunning the unchanged public
+      `60/90/120` matrix. The protected holdout remains untouched.
