@@ -302,23 +302,24 @@ def _quality_lenses(
     create_returncode: int,
 ) -> dict[str, bool]:
     del counts
+    structural_validation = _typed_structural_validation_passed(manifest)
     return {
         "product_manager": (
-            _lens_passed(manifest_lenses, "product_manager")
+            (_lens_passed(manifest_lenses, "product_manager") or structural_validation)
             and not evidence_blocks_dimension(evidence_findings, "product_manager")
         ),
         "architect": (
-            _lens_passed(manifest_lenses, "architect")
+            (_lens_passed(manifest_lenses, "architect") or structural_validation)
             and not evidence_blocks_dimension(evidence_findings, "architect")
         ),
         "engineer": (
-            _lens_passed(manifest_lenses, "engineer")
+            (_lens_passed(manifest_lenses, "engineer") or structural_validation)
             and not evidence_blocks_dimension(evidence_findings, "engineer")
             and create_returncode == 0
             and write_committed(manifest)
         ),
         "domain_expert": (
-            _lens_passed(manifest_lenses, "domain_expert")
+            (_lens_passed(manifest_lenses, "domain_expert") or structural_validation)
             and not evidence_blocks_dimension(evidence_findings, "domain_expert")
         ),
     }
@@ -631,7 +632,10 @@ def _manifest_issues(
     if tier_budget_seconds is None:
         issues.append("pre-confirm manifest does not declare an approved 60/90/120 repair-tier budget")
     lens_report = mapping_copy(manifest.get("quality_lenses"))
-    if str(lens_report.get("status", "")).strip() != "passed":
+    if (
+        str(lens_report.get("status", "")).strip() != "passed"
+        and not _typed_structural_validation_passed(manifest)
+    ):
         issues.append("pre-confirm quality lens report did not pass")
     return tuple(issues)
 
@@ -760,6 +764,24 @@ def _manifest_lenses(manifest: Mapping[str, Any]) -> Mapping[str, Any]:
 
 def _lens_passed(lenses: Mapping[str, Any], name: str) -> bool:
     return str(mapping_copy(lenses.get(name)).get("status", "")).strip() == "passed"
+
+
+def _typed_structural_validation_passed(manifest: Mapping[str, Any]) -> bool:
+    """Authenticate the authored route's explicit replacement for prose lenses."""
+
+    lens_report = mapping_copy(manifest.get("quality_lenses"))
+    semantic_compiler = mapping_copy(manifest.get("semantic_compiler"))
+    return (
+        str(manifest.get("status", "")).strip() == "passed"
+        and str(manifest.get("validation_status", "")).strip() == "passed"
+        and int(manifest.get("issue_count") or 0) == 0
+        and str(lens_report.get("status", "")).strip() == "not_applicable"
+        and str(lens_report.get("reason", "")).strip() == "typed_structural_validation"
+        and str(semantic_compiler.get("status", "")).strip() == "passed"
+        and str(semantic_compiler.get("semantic_owner", "")).strip()
+        == "single_model_authoring_response"
+        and semantic_compiler.get("post_authoring_interpretation_calls") == 0
+    )
 
 
 def _create_failure_detail_issues(*, create_returncode: int, create_detail: str) -> tuple[str, ...]:

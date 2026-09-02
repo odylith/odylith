@@ -626,6 +626,9 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:start -->
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_greenfield_browser_surface_proof.py`, `tests/unit/install/test_greenfield_matrix_product_intent_custody.py`
+- **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_component_spec.py`, `src/odylith/runtime/domain_intelligence/proposal_tribunal.py`
 - **2026-08-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
@@ -639,11 +642,19 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_canonical_meaning.py`, `src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py`, `src/odylith/runtime/domain_intelligence/greenfield_confirmed_title_completion.py`
-- **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-model-profile-claimed-unobserved-provider-failure.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-09-02: Bound Greenfield release scoring to authenticated typed validation and visible browser text. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
+  The authored route may replace legacy prose-lens receipts only when its
+  manifest, validation status, zero issue count, single-model semantic owner,
+  and zero post-authoring interpretation count all pass. Independent package
+  evidence continues to gate each release dimension. Browser proof compares
+  exact card labels, semantic slots, and content after HTML-visible whitespace
+  collapse, so presentation newlines cannot masquerade as semantic drift.
+  Immutable v7 completed all public proposals and commits inside `60/90/120`;
+  rebuilt exact-distribution proof remains required.
+
 - 2026-08-03: Moved canonical full-suite pytest execution behind deterministic fresh-process shards after a long-lived Python 3.13 process emitted order-dependent failures and terminated with `SIGBUS`. The runner preserves collected order, reports every failed or signaled shard, continues the remaining corpus, and returns one fail-closed aggregate verdict. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-308`)
 - 2026-07-05: Proved the retained final local-installable dist through strict installed release proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`)
   Release proof for

@@ -379,7 +379,7 @@ def _story_rows_match_payload(
     rendered_rows: list[dict[str, Any]],
     payload_rows: list[dict[str, Any]],
 ) -> bool:
-    """Compare the rendered typed card contract without interpreting its prose."""
+    """Compare the rendered typed card contract under browser whitespace rules."""
 
     if len(rendered_rows) != len(payload_rows):
         return False
@@ -388,10 +388,19 @@ def _story_rows_match_payload(
             expected.get("label") or ""
         ).strip().casefold():
             return False
-        for key in ("semantic_slot", "body"):
-            if str(rendered.get(key) or "").strip() != str(expected.get(key) or "").strip():
-                return False
+        if str(rendered.get("semantic_slot") or "").strip() != str(
+            expected.get("semantic_slot") or ""
+        ).strip():
+            return False
+        if _browser_visible_text(rendered.get("body")) != _browser_visible_text(expected.get("body")):
+            return False
     return True
+
+
+def _browser_visible_text(value: Any) -> str:
+    """Apply only HTML-visible whitespace collapse; retain every content token."""
+
+    return " ".join(str(value or "").split())
 
 
 def _invalid_route_recovery_issues(*, context: Any, base_url: str, timeout_ms: int) -> tuple[str, ...]:

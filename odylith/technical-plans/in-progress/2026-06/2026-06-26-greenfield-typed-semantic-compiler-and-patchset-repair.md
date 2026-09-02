@@ -4147,3 +4147,18 @@ above.
       runtime and `458/458` Greenfield install tests. Freeze this mechanism and
       rebuild one immutable candidate; only a fresh exact installed matrix may
       justify another mechanism change. The protected holdout remains untouched.
+    - 2026-09-02 v7 typed-validation proof correction: immutable candidate
+      `3367d913c` completed public standard, rescue, and deep proposals in
+      `45.516s`, `47.311s`, and `80.295s` and commit-only create in `1.825s`,
+      `1.734s`, and `1.993s`. Every runtime pre-confirm report passed and each
+      complete package committed, but the release scorer treated the authored
+      route's explicit typed-structural replacement for legacy prose lenses as
+      failure. One browser case also compared sealed multiline text with the
+      browser's whitespace-collapsed rendering. The bounded correction accepts
+      typed structural validation only when its manifest, single-model owner,
+      zero post-authoring interpretation count, and zero-issue report all pass;
+      independent package evidence remains a hard lens gate. Browser proof now
+      normalizes whitespace only while retaining exact labels, semantic slots,
+      and content tokens. Focused proof is `32/32`; the full Greenfield install
+      unit suite is `459/459`. Freeze the semantic mechanism and rerun the exact
+      installed matrix from a rebuilt immutable candidate.

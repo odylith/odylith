@@ -40,6 +40,31 @@ def _manifest() -> dict[str, object]:
     }
 
 
+def _authored_structural_manifest() -> dict[str, object]:
+    manifest = _manifest()
+    manifest.update(
+        {
+            "status": "passed",
+            "validation_status": "passed",
+            "issue_count": 0,
+            "budget_seconds": 60.0,
+            "requested_repair_tier": "standard",
+            "repair_tier": "standard",
+            "quality_lenses": {
+                "status": "not_applicable",
+                "lenses": {},
+                "reason": "typed_structural_validation",
+            },
+            "semantic_compiler": {
+                "status": "passed",
+                "semantic_owner": "single_model_authoring_response",
+                "post_authoring_interpretation_calls": 0,
+            },
+        }
+    )
+    return manifest
+
+
 def test_write_transaction_custody_accepts_matching_product_intent_hashes() -> None:
     scoring = _scoring_module()
 
@@ -86,3 +111,20 @@ def test_write_transaction_custody_rejects_manifest_or_receipt_product_intent_dr
     )
 
     assert "write transaction Product Intent facts hash does not match the create payload summary" in receipt_issues
+
+
+def test_authored_structural_validation_replaces_legacy_prose_lenses_only_when_authenticated() -> None:
+    scoring = _scoring_module()
+    manifest = _authored_structural_manifest()
+
+    assert scoring._typed_structural_validation_passed(manifest) is True  # noqa: SLF001
+    assert scoring._manifest_issues(manifest) == ()  # noqa: SLF001
+
+    semantic_compiler = manifest["semantic_compiler"]
+    assert isinstance(semantic_compiler, dict)
+    semantic_compiler["post_authoring_interpretation_calls"] = 1
+
+    assert scoring._typed_structural_validation_passed(manifest) is False  # noqa: SLF001
+    assert "pre-confirm quality lens report did not pass" in scoring._manifest_issues(  # noqa: SLF001
+        manifest
+    )

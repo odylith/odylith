@@ -212,11 +212,13 @@ def test_project_state_assertion_compares_shared_source_facts_to_typed_payload()
     module = _module()
     rows = [
         {"label": "User Problem", "semantic_slot": "user_problem", "body": "One accepted fact."},
-        {"label": "First Path", "semantic_slot": "first_path", "body": "One accepted path."},
+        {"label": "First Path", "semantic_slot": "first_path", "body": "One accepted path.\nThen another."},
         {"label": "Product Boundary", "semantic_slot": "product_boundary", "body": "One boundary."},
         {"label": "Owned Capabilities", "semantic_slot": "owned_capabilities", "body": "One capability."},
-        {"label": "Proof", "semantic_slot": "proof", "body": "One accepted path."},
+        {"label": "Proof", "semantic_slot": "proof", "body": "One accepted path. Then another."},
     ]
+    rendered_rows = [dict(row) for row in rows]
+    rendered_rows[1]["body"] = "One accepted path. Then another."
 
     issues = module._project_state_assertion_issues(
         payload_origin=module.AUTHORED_PROJECTION_ORIGIN,
@@ -230,12 +232,12 @@ def test_project_state_assertion_compares_shared_source_facts_to_typed_payload()
         pane_overflow=0,
         rendered_story_body_count=5,
         distinct_story_body_count=4,
-        story_rows=rows,
+        story_rows=rendered_rows,
         payload_story_rows=rows,
     )
 
     assert issues == ()
-    drifted = [dict(row) for row in rows]
+    drifted = [dict(row) for row in rendered_rows]
     drifted[-1]["body"] = "A different rendered claim."
     issues = module._project_state_assertion_issues(
         payload_origin=module.AUTHORED_PROJECTION_ORIGIN,
