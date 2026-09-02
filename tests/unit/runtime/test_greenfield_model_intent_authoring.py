@@ -625,17 +625,41 @@ def test_authoring_accepts_an_explicit_repeated_quote_occurrence_without_first_m
     assert result.atomic_claims[0]["source_start_byte"] == second_start
 
 
-def test_authoring_rejects_an_impossible_occurrence_for_a_repeated_quote() -> None:
+def test_authoring_normalizes_impossible_occurrence_to_first_exact_match() -> None:
     source = f"Harbor Desk. {_source()}"
     response = _response(source)
     response["facts"][0]["occurrence"] = source.count("Harbor Desk") + 1  # type: ignore[index]
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="quote occurrence that is not present"):
-        author_greenfield_intent(
-            evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
-            clock=lambda: 0.0,
-        )
+    result = author_greenfield_intent(
+        evidence_text=source,
+        provider=StructuredAuthoringProvider(response),
+        clock=lambda: 0.0,
+    )
+
+    assert result.source_spans[0]["source_start_byte"] == 0
+    assert result.atomic_claims[0]["source_start_byte"] == 0
+
+
+def test_authoring_prompt_requires_every_transaction_material_fact() -> None:
+    source = _source()
+    provider = StructuredAuthoringProvider(_response(source))
+
+    author_greenfield_intent(
+        evidence_text=source,
+        provider=provider,
+        clock=lambda: 0.0,
+    )
+
+    for field in (
+        "product_story",
+        "state_object",
+        "first_path",
+        "proof_boundary",
+        "human_actors",
+    ):
+        assert field in provider.last_request_system_prompt
+    assert "owner_fact_quote" in provider.last_request_system_prompt
+    assert "internal_systems fact or the selected title fact" in provider.last_request_system_prompt
 
 
 def test_authoring_derives_atomic_custody_without_a_second_model_semantic_payload() -> None:

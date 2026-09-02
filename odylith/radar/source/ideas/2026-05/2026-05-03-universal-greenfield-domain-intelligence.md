@@ -2701,6 +2701,18 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   quality matrix, followed by independent public adjudication and the
   explicitly approved untouched holdout.
 
+- 2026-09-02 immutable-matrix correction: revision `c2208bb7e` built cleanly
+  but failed the exact installed public matrix `0/3` before confirmation because
+  two responses omitted source-present transaction-material facts and one
+  response supplied an impossible exact-quote ordinal. Intent-authoring v16 now
+  requires all five material fact classes, constrains component owners to
+  selected product-system or title facts, and leaves impossible ordinal
+  normalization to deterministic exact-byte custody. It adds no semantic regex,
+  retry, or tier cascade. Corrected standard, rescue, and deep source
+  discriminators pass in `36.362s`, `30.353s`, and `60.315s`, and widened proof
+  passes `153/153`. The mechanism remains provisional until a rebuilt immutable
+  package passes the complete installed public gate.
+
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.
   The active release contract is standard post-confirm under 60 seconds without

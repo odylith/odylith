@@ -3230,6 +3230,17 @@ This section captures synchronized requirement and contract signals derived from
   browser proof passes `4/4`. Installed `60/90/120`, transaction, recovery,
   browser/readback, human-quality, and protected-holdout proof remain release
   requirements.
+- Intent-authoring v16 aligns the one-call response obligation with the sealed
+  transaction materiality gate: every authored graph must select exact
+  `product_story`, `state_object`, `first_path`, `proof_boundary`, and
+  `human_actors` facts. Component owners must equal a selected
+  `internal_systems` or title fact. The model still chooses meaning and exact
+  quote text; deterministic custody owns coordinates and normalizes only an
+  impossible ordinal to the first identical byte match, so model counting
+  cannot veto a grounded claim. The first v15 immutable public matrix failed
+  closed `0/3` before confirmation; the corrected v16 source discriminators
+  pass standard, rescue, and deep in `36.362s`, `30.353s`, and `60.315s`, with
+  widened safety proof at `153/153`. Installed release proof remains pending.
 
 ## Research Basis
 

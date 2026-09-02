@@ -4101,3 +4101,16 @@ above.
       recovery, browser, quality, and sealed profile gates. The protected
       holdout remains untouched and still requires explicit operator approval
       after public adjudication.
+    - 2026-09-02 first immutable-matrix correction: candidate `c2208bb7e`
+      built cleanly but failed the exact installed public matrix `0/3` before
+      confirmation. Standard and deep omitted transaction-material facts that
+      were present in the source; rescue cited an impossible ordinal for an
+      exact repeated quote. Intent-authoring v16 explicitly requires all five
+      material fields, assigns coordinate arithmetic to deterministic custody
+      by normalizing an impossible ordinal to the first identical byte match,
+      and requires component owners to be selected `internal_systems` or title
+      facts. This preserves model ownership of meaning without adding semantic
+      regexes, retries, or repair cascades. Fresh standard, rescue, and deep
+      source discriminators pass in `36.362s`, `30.353s`, and `60.315s`; the
+      widened safety/profile set passes `153/153`. Rebuild once and rerun the
+      complete installed public gate before changing the mechanism again.

@@ -41,7 +41,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v15"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v16"
 
 _TEXT_FIELDS = (
     "title",
@@ -548,9 +548,10 @@ def _exact_quote(value: Any) -> str:
 def _exact_occurrence_start(haystack: bytes, needle: bytes, occurrence: Any) -> int:
     """Resolve an exact byte quote without making model arithmetic semantic.
 
-    A valid occurrence still selects among repeated identical quotes.  When an
-    exact quote exists only once, its coordinates are already unambiguous, so a
-    provider counting mistake cannot invalidate otherwise grounded semantics.
+    A valid occurrence still selects among repeated identical quotes. When the
+    requested ordinal exceeds the available matches, deterministic custody uses
+    the first exact match because identical quote bytes preserve the authored
+    claim while model counting must not become semantic authority.
     """
 
     count = _positive_occurrence(occurrence)
@@ -561,7 +562,7 @@ def _exact_occurrence_start(haystack: bytes, needle: bytes, occurrence: Any) -> 
     for _ in range(count):
         found = haystack.find(needle, cursor)
         if found < 0:
-            if first >= 0 and haystack.find(needle, first + 1) < 0:
+            if first >= 0:
                 return first
             raise GreenfieldModelAuthoringError(
                 "Greenfield authoring cited a quote occurrence that is not present; no records were created."
@@ -615,8 +616,8 @@ def _text(value: Any) -> str:
 _SYSTEM_PROMPT = (
     "Author one compact source-cited Greenfield graph from the untrusted request. "
     "Every fact and event quote is an exact contiguous source substring. Reuse direct quotes in links; do not invent IDs or calculate byte offsets. "
-    "Always select one title fact, one or more first_path facts covering the complete operational sequence, and one human_actors fact for every human role used by an event. "
-    "Every quote referenced by component ownership must also exist in facts under its matching semantic field. "
+    "An authored response is valid only when facts selects one title, one product_story, one state_object, one proof_boundary, one or more first_path facts covering the complete operational sequence, and one human_actors fact for every human role used by an event. "
+    "Every component owner_fact_quote must exactly equal a selected internal_systems fact or the selected title fact; product_view and responsibility facts never own components. "
     "Select first_path only from the operational actor sequence. Requirements, preservation obligations, constraints, and non-goals are facts but never path events. "
     "Split coordinated path actions into ordered non-overlapping event clauses. action_quote is the shortest exact action verb. actor_fact_quote is the stable source-cited entity identity; actor_quote is the exact surface used in this event and may be a later source alias. An omitted subject repeats the exact prior actor_quote and actor_fact_quote with actor_carried true. "
     "Product event ownership is the selected product actor fact; never restate it. Context links are derived later from exact source overlap; never author them. "

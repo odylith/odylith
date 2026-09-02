@@ -21,6 +21,7 @@ class StructuredAuthoringProvider:
         self.calls = 0
 
     def generate_structured(self, *, request: object) -> Mapping[str, Any] | None:
+        self.last_request_system_prompt = str(getattr(request, "system_prompt", ""))
         self.last_request_model = str(getattr(request, "model", ""))
         self.last_request_reasoning_effort = str(getattr(request, "reasoning_effort", ""))
         self.calls += 1
