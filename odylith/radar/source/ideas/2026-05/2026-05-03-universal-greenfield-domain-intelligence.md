@@ -2720,6 +2720,19 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `122/122`. B-142 remains in implementation until a rebuilt immutable package
   passes the complete installed public gate.
 
+- 2026-09-02 v8 event-restatement correction: immutable revision `ced54a967`
+  passed two public cases at full package quality and within budget, but the
+  rescue case failed closed after its one model call restated an event that did
+  not match the already selected exact path fact. Intent-authoring v17 removes
+  model-authored event text, ordinal, actor kind, and carry state. Ordered exact
+  first-path facts are the event spans; deterministic custody derives those
+  structural fields while the model retains the semantic actor/action/target,
+  recovery, terminal, and ownership decisions. This reduces the contract and
+  code surface without regex, retries, or post-confirm work. Source proof is
+  `81/81` focused, `610/610` complete Greenfield runtime, and `459/459`
+  install/release. B-142 remains in implementation pending the separate
+  recovery-identity correction and a rebuilt exact installed matrix.
+
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.
   The active release contract is standard post-confirm under 60 seconds without

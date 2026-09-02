@@ -30,6 +30,9 @@ or prose repair runs after confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_component_spec.py`, `src/odylith/runtime/domain_intelligence/proposal_tribunal.py`
@@ -45,9 +48,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-08-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py`, `tests/unit/runtime/test_greenfield_transaction_intent_authority.py`
-- **2026-08-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-06-greenfield-sealed-intent-cannot-prove-atomic-accepted-fact-custody.md`, `src/odylith/runtime/domain_intelligence/greenfield_atomic_fact_ledger.py`, `tests/unit/runtime/test_greenfield_prompt_workflow_custody.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -3253,6 +3253,19 @@ This section captures synchronized requirement and contract signals derived from
   closed `0/3` before confirmation; the corrected v16 source discriminators
   pass standard, rescue, and deep in `36.362s`, `30.353s`, and `60.315s`, with
   widened safety proof at `153/153`. Installed release proof remains pending.
+- Intent-authoring v17 removes four redundant model obligations exposed by the
+  v8 public matrix. The model no longer restates an event's exact text, ordinal,
+  actor kind, or carry bit after selecting exact ordered `first_path` facts.
+  Each selected path fact is the event span; Domain Intelligence derives order
+  and byte coordinates, derives actor kind from the selected actor-fact field,
+  and derives carry from exact surface presence plus the immediately preceding
+  actor binding. The model remains the sole semantic author for source-fact
+  selection, actor identity and surface, action/target roles, recovery meaning,
+  terminal result, and component ownership. This contract has no semantic
+  regex, prose parser, retry, fallback tier, or post-confirm work. Fresh proof
+  passes `81/81` focused tests, `610/610` Greenfield runtime tests, and
+  `459/459` install/release tests. Installed matrix and recovery proof remain
+  pending.
 - Authored-workstream-semantics v4 keeps evidence ownership exclusive while
   making visibility explicit: the
   integrative project workstream cites canonical facts owned by specialized

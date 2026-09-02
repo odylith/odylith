@@ -53,6 +53,7 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     clarification_response,
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import (
+    _AUTHORED_FIRST_PATH,
     _LIST_FIELDS,
     _TEXT_FIELDS,
     _response,
@@ -91,7 +92,7 @@ def test_model_authored_intent_reaches_staged_product_intent_without_parser_reco
         authoring_receipt=receipt,
     )
 
-    assert candidate["first_path"].rstrip(".") == _TEXT_FIELDS["first_path"]
+    assert candidate["first_path"] == _AUTHORED_FIRST_PATH
     assert candidate["human_actors"] == ["Dock attendant Ivo"]
     assert candidate["internal_systems"] == ["Berth map"]
     assert receipt["tier"] == "rescue"
@@ -100,7 +101,9 @@ def test_model_authored_intent_reaches_staged_product_intent_without_parser_reco
     assert candidate["authored_semantics"]["first_path_relations"][0]["action_verb_quote"] == "enters"
     assert "model_authoring" not in candidate
     assert candidate["product_intent_authority"]["material_fields"]["first_path"]["source_span_ids"] == [
-        "authoring:first_path:1:4"
+        "authoring:first_path:1:4",
+        "authoring:first_path:2:5",
+        "authoring:first_path:3:6",
     ]
     envelope = candidate["product_intent_authority"]["operating_envelope"]
     observed_evidence = envelope["evidence_contract"]["observed"]
@@ -191,7 +194,13 @@ def test_edit_evidence_reauthors_one_new_typed_candidate_with_one_model_call(tmp
     )
 
     assert candidate["title"] == "Harbor Desk Plus"
-    assert candidate["first_path"] == edited_path
+    assert candidate["first_path"] == "\n".join(
+        (
+            "Dock attendant Ivo scans a vessel tag",
+            "the product records berth occupancy",
+            "the berth map shows the reviewed placement",
+        )
+    )
     assert candidate["authored_semantics"]["first_path_relations"][0]["action_verb_quote"] == "scans"
     assert candidate["product_intent_authority"]["source_format"] == "operator_prompt_with_edit_evidence"
     assert provider.calls == 1
@@ -390,9 +399,9 @@ def test_model_authored_project_seals_one_package_with_justified_boundary(tmp_pa
     assert transaction.prewrite_package is not None
     next_steps = transaction.prewrite_package.next_steps_preview
     assert next_steps is not None
-    assert next_steps["coding_readiness_contract"]["source_facts"]["accepted_first_path"] == _TEXT_FIELDS[
-        "first_path"
-    ]
+    assert next_steps["coding_readiness_contract"]["source_facts"]["accepted_first_path"] == (
+        _AUTHORED_FIRST_PATH
+    )
     assert [
         row["gate_id"] for row in next_steps["coding_readiness_contract"]["gates"]
     ] == [
@@ -603,10 +612,10 @@ def test_authoring_collapses_exact_duplicate_typed_fact_rows() -> None:
         clock=lambda: 0.0,
     )
 
-    assert result.intent["first_path"] == _TEXT_FIELDS["first_path"]
+    assert result.intent["first_path"] == _AUTHORED_FIRST_PATH
     assert sum(
         1 for span in result.source_spans if span["section_key"] == "first_path"
-    ) == 1
+    ) == 3
 
 
 def test_authoring_accepts_an_explicit_repeated_quote_occurrence_without_first_match_rebinding() -> None:

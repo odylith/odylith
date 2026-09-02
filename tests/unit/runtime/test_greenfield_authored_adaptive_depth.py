@@ -607,11 +607,17 @@ def test_direct_evidence_graph_material_facts_compile_complete_project_and_workf
     ]
     project = backlog["project"]
     workflow = backlog["workflow"]
-    assert project["recommended_first_slice"] == first_path
+    assert project["recommended_first_slice"] == "\n".join(
+        (
+            "Donor registers a batch",
+            "Volunteer inspects the batch",
+            "Supervisor releases the batch",
+        )
+    )
     assert product_story in project["problem"]
     assert project["customer"] == "Donor"
     assert product_story in project["opportunity"]
-    assert first_path in project["product_view"]
+    assert project["recommended_first_slice"] in project["product_view"]
     assert project["success_metrics"] == [proof_boundary]
     assert workflow["customer"] == "Donor"
     assert product_story in workflow["opportunity"]
@@ -704,7 +710,13 @@ def test_authored_service_readiness_keeps_nonapproval_as_a_safety_boundary(
         "Automatic operational approval is outside the first release."
     ]
     first_path_contract = proposal["semantic_model"]["first_path_contract"]
-    assert first_path_contract["raw_path"] == first_path
+    assert first_path_contract["raw_path"] == "\n".join(
+        (
+            "Coordinator records service capacity evidence",
+            "Readiness Ledger records review status",
+            "Readiness Board shows a reviewable readiness report",
+        )
+    )
     assert first_path_contract["visible_result"] == "reviewable readiness report"
     assert "automatic operational approval" not in str(first_path_contract).casefold()
 
@@ -783,7 +795,13 @@ def test_authored_solar_path_keeps_user_outcome_distinct_from_meta_proof(
     )
 
     first_path_contract = proposal["semantic_model"]["first_path_contract"]
-    assert first_path_contract["raw_path"] == first_path
+    assert first_path_contract["raw_path"] == "\n".join(
+        (
+            "Homeowner connects a solar inverter and battery",
+            "Forecast Engine computes a forecast-driven dispatch schedule",
+            f"Plan Board shows {visible_result}",
+        )
+    )
     assert first_path_contract["visible_result"] == visible_result
     assert proof_boundary == proposal["intent"]["proof_boundary"]
     assert "Release proof succeeds" not in first_path_contract["raw_path"]

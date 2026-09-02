@@ -39,6 +39,14 @@ def authored_response(
 ) -> dict[str, Any]:
     """Build a model-shaped response using quotes and occurrence ordinals only."""
 
+    source_relations = tuple(
+        first_path_relations or _default_first_path_relations(intent)
+    )
+    path_segments = (
+        [str(row).strip() for row in first_path_segments]
+        if first_path_segments is not None
+        else [str(row.get("event_quote") or "").strip() for row in source_relations]
+    )
     facts: list[dict[str, Any]] = []
     fact_indexes: dict[str, int] = {}
     first_path_fact_indexes: list[int] = []
@@ -46,8 +54,8 @@ def authored_response(
         if field in {"assumptions", "ambiguities"}:
             continue
         rows = (
-            list(first_path_segments)
-            if field == "first_path" and first_path_segments is not None
+            path_segments
+            if field == "first_path"
             else value if isinstance(value, list) else [value]
         )
         for row_index, row in enumerate(rows):
@@ -61,15 +69,6 @@ def authored_response(
             if field == "first_path":
                 first_path_fact_indexes.append(fact_index)
 
-    first_path = str(intent.get("first_path") or "").strip()
-    source_relations = tuple(
-        first_path_relations or _default_first_path_relations(intent)
-    )
-    path_segments = (
-        [str(row).strip() for row in first_path_segments]
-        if first_path_segments is not None
-        else [first_path]
-    )
     relation_rows = _relation_rows(
         source_relations,
         first_path_segments=(
@@ -144,7 +143,7 @@ def _relation_rows(
     intent: Mapping[str, Any],
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
-    for order, relation in enumerate(relations, start=1):
+    for relation in relations:
         event_quote = str(relation.get("event_quote") or "")
         actor_quote = str(relation.get("actor_quote") or "")
         action_quote = str(relation.get("action_verb_quote") or "")
@@ -166,12 +165,8 @@ def _relation_rows(
             selected_segment_index = matches[0]
         if selected_segment_index < 0 or selected_segment_index >= len(first_path_fact_indexes):
             raise ValueError("authored fixture relation references an unknown first_path segment")
-        selected_segment = str(first_path_segments[selected_segment_index])
         rows.append(
             {
-                "order": order,
-                "event_quote": event_quote,
-                "actor_kind": actor_kind,
                 "actor_fact_quote": _actor_fact_quote(
                     relation,
                     actor_kind=actor_kind,
@@ -180,7 +175,6 @@ def _relation_rows(
                     intent=intent,
                 ),
                 "actor_quote": actor_quote,
-                "actor_carried": actor_quote not in event_quote,
                 "action_quote": action_quote,
                 "target_quote": target_quote,
                 "recovery_path": bool(relation.get("recovery_path")),

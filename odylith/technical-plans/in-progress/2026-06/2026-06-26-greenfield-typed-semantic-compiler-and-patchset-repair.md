@@ -4162,3 +4162,17 @@ above.
       and content tokens. Focused proof is `32/32`; the full Greenfield install
       unit suite is `459/459`. Freeze the semantic mechanism and rerun the exact
       installed matrix from a rebuilt immutable candidate.
+    - 2026-09-02 v8 duplicate-event correction: immutable candidate
+      `ced54a967` passed two public packages at full `10/10` quality and within
+      their `60/120` budgets, while rescue returned in `29.853s` but rejected
+      one event that did not ground against its separately selected first-path
+      fact. Intent-authoring v17 removes the redundant event text, ordinal,
+      actor kind, and carry fields. Ordered exact path facts now are the event
+      spans; custody derives their order, coordinates, actor kind, and immediate
+      carry state without authoring or repairing meaning. The model retains
+      action/target, actor identity, recovery, terminal, and component decisions.
+      Focused, complete runtime, and install proof passes `81/81`, `610/610`,
+      and `459/459`. No semantic regex, parser, retry, tier cascade, or
+      post-confirm work was added. The v8 recovery runtime-identity mismatch is
+      a separate open gate; correct it before rebuilding and rerunning the exact
+      installed matrix. The protected holdout remains untouched.

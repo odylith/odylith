@@ -158,15 +158,12 @@ def test_external_event_actor_must_reference_a_selected_external_fact() -> None:
         _author(evidence, response)
 
 
-def test_exact_external_actor_cannot_be_retyped_as_product_authority() -> None:
+def test_exact_external_actor_kind_is_derived_from_its_selected_fact() -> None:
     evidence, _intent, response = _harbor_case()
-    relations = response["events"]
-    assert isinstance(relations, list)
-    relations[1]["actor_kind"] = "product"
-    relations[1]["actor_fact_quote"] = "Harbor Relay"
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="exact selected actor fact"):
-        _author(evidence, response)
+    result = _author(evidence, response)
+
+    assert result.first_path_relations[1]["actor_kind"] == "external_system"
 
 
 def test_product_pronoun_uses_an_explicit_selected_actor_fact() -> None:
@@ -262,7 +259,7 @@ def test_coordinated_clauses_preserve_carried_actors_and_every_action() -> None:
     response = authored_response(
         intent,
         evidence_text=evidence,
-        first_path_segments=[first_path],
+        first_path_segments=list(events),
         first_path_relations=[
             {
                 "actor_kind": "human",

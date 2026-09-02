@@ -54,6 +54,13 @@ _LIST_FIELDS = {
     "ambiguities": [],
     "non_goals": ["Do not manage vessel scheduling"],
 }
+_AUTHORED_FIRST_PATH = "\n".join(
+    (
+        "Dock attendant Ivo enters a vessel tag",
+        "the product records berth occupancy",
+        "the berth map shows the placement",
+    )
+)
 
 
 def _source() -> str:
@@ -176,7 +183,7 @@ def test_authoring_accepts_only_byte_verified_source_citations() -> None:
         clock=lambda: next(ticks),
     )
 
-    assert result.intent["first_path"] == _TEXT_FIELDS["first_path"]
+    assert result.intent["first_path"] == _AUTHORED_FIRST_PATH
     assert result.first_path_relations[0]["actor_quote"] == "Dock attendant Ivo"
     assert result.first_path_relations[1]["owner_system_path"] == "/internal_systems/0"
     assert result.first_path_relations[-1]["visible_result_quote"] == "the berth map shows the placement"
@@ -191,7 +198,7 @@ def test_authoring_accepts_only_byte_verified_source_citations() -> None:
         },
     )
     assert result.tier == "rescue"
-    assert len(result.source_spans) == 17
+    assert len(result.source_spans) == 19
     assert provider.calls == 1
 
 
@@ -211,7 +218,7 @@ def test_coordinated_events_preserve_one_explicit_typed_actor_carry() -> None:
     ]
     assert validate_first_path_relations(
         result.first_path_relations,
-        first_path=str(intent["first_path"]),
+        first_path=str(result.intent["first_path"]),
         human_actors=intent["human_actors"],
         external_systems=intent["external_systems"],
         internal_systems=intent["internal_systems"],
@@ -223,7 +230,7 @@ def test_coordinated_events_preserve_one_explicit_typed_actor_carry() -> None:
     with pytest.raises(GreenfieldAuthoredSemanticsError, match="ungrounded first-path relations"):
         validate_first_path_relations(
             tampered,
-            first_path=str(intent["first_path"]),
+            first_path=str(result.intent["first_path"]),
             human_actors=intent["human_actors"],
             external_systems=intent["external_systems"],
             internal_systems=intent["internal_systems"],
@@ -248,15 +255,9 @@ def test_actor_carry_cannot_start_a_path_or_change_to_an_unspoken_actor(
         )
 
 
-def test_materialization_preserves_exact_first_path_bytes(tmp_path) -> None:  # type: ignore[no-untyped-def]
-    first_path = _TEXT_FIELDS["first_path"]
-    exact_first_path = f"  {first_path}  "
-    source = _source().replace(first_path, exact_first_path)
+def test_materialization_preserves_exact_event_fact_bytes(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    source = _source()
     response = _response(source)
-    first_path_fact = next(
-        fact for fact in response["facts"] if fact["field"] == "first_path"  # type: ignore[index]
-    )
-    first_path_fact["quote"] = exact_first_path
     candidate = materialize_model_authored_intent(
         prompt=source,
         repo_root=tmp_path,
@@ -265,11 +266,11 @@ def test_materialization_preserves_exact_first_path_bytes(tmp_path) -> None:  # 
         authoring_profile_id=RESCUE_PROFILE_ID,
     )
 
-    assert candidate["first_path"] == exact_first_path
+    assert candidate["first_path"] == _AUTHORED_FIRST_PATH
     for relation in candidate["authored_semantics"]["first_path_relations"]:
         start = relation["event_start_byte"]
         end = relation["event_end_byte"]
-        assert exact_first_path.encode("utf-8")[start:end] == relation["event_quote"].encode("utf-8")
+        assert _AUTHORED_FIRST_PATH.encode("utf-8")[start:end] == relation["event_quote"].encode("utf-8")
 
 
 def test_verified_authoring_spans_become_the_product_intent_custody_source() -> None:
@@ -298,7 +299,9 @@ def test_verified_authoring_spans_become_the_product_intent_custody_source() -> 
     authority = product_intent_authority_from_envelope(envelope)
 
     assert authority["material_fields"]["first_path"]["source_span_ids"] == [
-        "authoring:first_path:1:4"
+        "authoring:first_path:1:4",
+        "authoring:first_path:2:5",
+        "authoring:first_path:3:6",
     ]
     assert authority["atomic_facts"]
     action_atom = next(
@@ -315,7 +318,7 @@ def test_verified_authoring_spans_become_the_product_intent_custody_source() -> 
         {
             "field": "first_path",
             "path": "/first_path",
-            "value_sha256": hashlib.sha256(_TEXT_FIELDS["first_path"].encode("utf-8")).hexdigest(),
+            "value_sha256": hashlib.sha256(_AUTHORED_FIRST_PATH.encode("utf-8")).hexdigest(),
             "projection_start_byte": len("Dock attendant Ivo ".encode("utf-8")),
             "projection_end_byte": len("Dock attendant Ivo enters".encode("utf-8")),
             "relation_order": 1,

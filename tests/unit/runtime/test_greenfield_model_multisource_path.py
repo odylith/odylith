@@ -60,6 +60,36 @@ def test_model_relation_ownership_is_real_and_regex_free() -> None:
     assert greenfield_model_direct_evidence_graph.derive_model_relations.__module__ == (
         greenfield_model_direct_evidence_graph.__name__
     )
+    assert greenfield_model_direct_evidence_graph.MODEL_EVENT_FIELDS == frozenset(
+        {
+            "actor_fact_quote",
+            "actor_quote",
+            "action_quote",
+            "target_quote",
+            "recovery_path",
+        }
+    )
+    assert set(
+        greenfield_model_direct_evidence_graph.MODEL_EVENT_SCHEMA["items"][
+            "properties"
+        ]
+    ) == greenfield_model_direct_evidence_graph.MODEL_EVENT_FIELDS
+
+
+def test_model_event_contract_rejects_restatement_of_derived_custody() -> None:
+    prompt, edit_evidence, intent, segments, relations = _case()
+    response = _response(intent=intent, segments=segments, relations=relations)
+    response["events"][0]["event_quote"] = "restated event"  # type: ignore[index]
+
+    with pytest.raises(GreenfieldModelAuthoringError, match="invalid first-path events"):
+        author_greenfield_intent(
+            evidence_text=combined_prompt_evidence_source(
+                prompt=prompt,
+                edit_evidence=edit_evidence,
+            ),
+            provider=StructuredAuthoringProvider(response),
+            clock=lambda: 0.0,
+        )
 
 
 def _case() -> tuple[str, str, dict[str, object], list[str], list[dict[str, object]]]:
@@ -247,7 +277,7 @@ def test_authoring_rejects_unreferenced_first_path_segment() -> None:
         segments=segments,
         relations=[*relations[:2], relations[3]],
     )
-    with pytest.raises(GreenfieldModelAuthoringError, match="complete human-first path"):
+    with pytest.raises(GreenfieldModelAuthoringError, match="one first-path fact per event"):
         author_greenfield_intent(
             evidence_text=combined_prompt_evidence_source(
                 prompt=prompt,
@@ -304,7 +334,7 @@ def test_authoring_rejects_events_reordered_against_composite_path() -> None:
     prompt, edit_evidence, intent, segments, relations = _case()
     reordered = [relations[1], relations[0], *relations[2:]]
     response = _response(intent=intent, segments=segments, relations=reordered)
-    with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path event"):
+    with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path actor"):
         author_greenfield_intent(
             evidence_text=combined_prompt_evidence_source(
                 prompt=prompt,

@@ -28,12 +28,8 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 
 MODEL_EVENT_FIELDS = frozenset(
     {
-        "order",
-        "event_quote",
-        "actor_kind",
         "actor_fact_quote",
         "actor_quote",
-        "actor_carried",
         "action_quote",
         "target_quote",
         "recovery_path",
@@ -121,44 +117,35 @@ def _derive_events(
     )
     if (
         not path_facts
+        or len(path_facts) != len(value)
         or "\n".join(str(fact.get("quote") or "") for fact in path_facts)
         != first_path
     ):
         raise GreenfieldAuthoredSemanticsError(
-            "Greenfield authoring returned first-path facts outside the canonical projection"
+            "Greenfield authoring must select exactly one first-path fact per event"
         )
     actor_values = _selected_actor_projection_values(selected_facts)
     owner_values = _selected_owner_projection_values(selected_facts)
-    path_fact_indexes = {
-        _positive_index(fact.get("fact_index")) for fact in path_facts
-    }
     rows: list[dict[str, Any]] = []
-    covered_path_facts: set[int] = set()
     seen_source_events: set[tuple[int, int]] = set()
-    cursor = 0
     human_seen = False
-    for expected_order, raw in enumerate(value, start=1):
+    for expected_order, (raw, selected_fact) in enumerate(
+        zip(value, path_facts, strict=True), start=1
+    ):
         if not isinstance(raw, Mapping) or set(raw) != MODEL_EVENT_FIELDS:
             raise GreenfieldAuthoredSemanticsError(
                 "Greenfield authoring returned invalid first-path events"
             )
-        event_quote = _required_quote(raw.get("event_quote"))
-        located = _locate_next_event(
-            path_facts=path_facts,
-            event_quote=event_quote,
-            cursor=cursor,
-        )
-        if located is None or raw.get("order") != expected_order:
-            raise GreenfieldAuthoredSemanticsError(
-                "Greenfield authoring returned an ungrounded first-path event"
-            )
-        selected_fact, local_start, event_start = located
+        event_quote = _required_quote(selected_fact.get("quote"))
         event_length = len(event_quote.encode("utf-8"))
-        event_end = event_start + event_length
-        source_start = (
-            _nonnegative_int(selected_fact.get("source_start_byte")) + local_start
-        )
-        source_end = source_start + event_length
+        event_start = _nonnegative_int(selected_fact.get("projection_start_byte"))
+        event_end = _positive_int(selected_fact.get("projection_end_byte"))
+        source_start = _nonnegative_int(selected_fact.get("source_start_byte"))
+        source_end = _positive_int(selected_fact.get("source_end_byte"))
+        if event_end - event_start != event_length or source_end - source_start != event_length:
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield authoring returned invalid source custody"
+            )
         if any(
             source_start < seen_end and seen_start < source_end
             for seen_start, seen_end in seen_source_events
@@ -167,10 +154,8 @@ def _derive_events(
                 "Greenfield authoring returned overlapping first-path events"
             )
 
-        actor_kind = str(raw.get("actor_kind") or "")
         actor_quote = _required_quote(raw.get("actor_quote"))
-        actor_fact_path, actor_fact_quote = _event_actor_fact(
-            actor_kind=actor_kind,
+        actor_kind, actor_fact_path, actor_fact_quote = _event_actor_fact(
             actor_fact_quote=raw.get("actor_fact_quote"),
             selected_facts=selected_facts,
         )
@@ -190,8 +175,8 @@ def _derive_events(
             actor_values=actor_values,
             owner_values=owner_values,
         )
-        actor_carried = raw.get("actor_carried")
         actor_explicit = actor_quote in event_quote
+        actor_carried = not actor_explicit
         actor_binding = {
             "actor_kind": actor_kind,
             "actor_quote": actor_quote,
@@ -202,15 +187,11 @@ def _derive_events(
         }
         previous_binding = rows[-1] if rows else None
         if (
-            not isinstance(actor_carried, bool)
-            or actor_carried == actor_explicit
-            or (
-                actor_carried
-                and (
-                    previous_binding is None
-                    or first_path_actor_binding_identity(previous_binding)
-                    != first_path_actor_binding_identity(actor_binding)
-                )
+            actor_carried
+            and (
+                previous_binding is None
+                or first_path_actor_binding_identity(previous_binding)
+                != first_path_actor_binding_identity(actor_binding)
             )
         ):
             raise GreenfieldAuthoredSemanticsError(
@@ -245,12 +226,9 @@ def _derive_events(
                 "recovery_path": recovery_path,
             }
         )
-        covered_path_facts.add(_positive_index(selected_fact.get("fact_index")))
         seen_source_events.add((source_start, source_end))
-        cursor = event_end
     if (
-        covered_path_facts != path_fact_indexes
-        or not human_seen
+        not human_seen
         or rows[0]["actor_kind"] != "human"
     ):
         raise GreenfieldAuthoredSemanticsError(
@@ -264,36 +242,6 @@ def _derive_events(
     )
     rows[-1]["visible_result_quote"] = terminal_fact["terminal_result_quote"]
     return tuple(rows), terminal_fact
-
-
-def _locate_next_event(
-    *,
-    path_facts: Sequence[Mapping[str, Any]],
-    event_quote: str,
-    cursor: int,
-) -> tuple[Mapping[str, Any], int, int] | None:
-    candidates: list[tuple[int, int, Mapping[str, Any], int]] = []
-    needle = event_quote.encode("utf-8")
-    for fact in path_facts:
-        segment = str(fact.get("quote") or "").encode("utf-8")
-        projection_start = _nonnegative_int(fact.get("projection_start_byte"))
-        for local_start in _occurrence_starts(segment, needle):
-            event_start = projection_start + local_start
-            if event_start >= cursor:
-                candidates.append(
-                    (
-                        event_start,
-                        _positive_index(fact.get("fact_index")),
-                        fact,
-                        local_start,
-                    )
-                )
-    if not candidates:
-        return None
-    event_start, _fact_index, fact, local_start = min(
-        candidates, key=lambda row: row[:2]
-    )
-    return fact, local_start, event_start
 
 
 def _terminal_result_fact(
@@ -517,20 +465,20 @@ def _derive_component_relations(
 
 def _event_actor_fact(
     *,
-    actor_kind: str,
     actor_fact_quote: Any,
     selected_facts: Sequence[Mapping[str, Any]],
-) -> tuple[str, str]:
-    expected_fields = {
-        "human": {"human_actors"},
-        "external_system": {"external_systems"},
-        "product": {"title", "internal_systems"},
-    }.get(actor_kind, set())
+) -> tuple[str, str, str]:
+    actor_kind_by_field = {
+        "human_actors": "human",
+        "external_systems": "external_system",
+        "title": "product",
+        "internal_systems": "product",
+    }
     quote = str(actor_fact_quote or "")
     matches = tuple(
         fact
         for fact in selected_facts
-        if str(fact.get("field") or "") in expected_fields
+        if str(fact.get("field") or "") in actor_kind_by_field
         and str(fact.get("quote") or "") == quote
     )
     if len(matches) != 1:
@@ -545,7 +493,7 @@ def _event_actor_fact(
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring returned an invalid first-path actor fact"
         )
-    return path, quote
+    return actor_kind_by_field[str(fact.get("field") or "")], path, quote
 
 
 def _selected_actor_projection_values(
@@ -724,15 +672,8 @@ MODEL_EVENT_SCHEMA: dict[str, Any] = _array_schema(
         "additionalProperties": False,
         "required": sorted(MODEL_EVENT_FIELDS),
         "properties": {
-            "order": {"type": "integer", "minimum": 1},
-            "event_quote": _quote_schema(required=True),
-            "actor_kind": {
-                "type": "string",
-                "enum": list(FIRST_PATH_ACTOR_KINDS),
-            },
             "actor_fact_quote": _quote_schema(required=True),
             "actor_quote": _quote_schema(required=True),
-            "actor_carried": {"type": "boolean"},
             "action_quote": _quote_schema(required=True),
             "target_quote": _quote_schema(),
             "recovery_path": {"type": "boolean"},
