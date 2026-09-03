@@ -2816,6 +2816,29 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   implementation pending immutable installed recovery and the unchanged public
   `60/90/120` matrix.
 
+- 2026-09-03 product-owner alias reopen: clean immutable dist-v12 accepted the
+  typed v19 fact object, then the public standard-tier case failed before
+  staging because the selected product title and one internal system shared an
+  exact source label. `CB-327` traces three duplicate identity consumers across
+  event, actor, and component custody. Replace them with one typed product-owner
+  resolver that treats a title plus one exact internal-system label as one
+  identity, preferring the narrower system path, while retaining fail-closed
+  rejection for cross-kind collisions and multiple indistinguishable internal
+  systems. Do not add prompt-only warnings, regexes, retries, or response
+  rewriting. B-142 remains in implementation pending rebuilt recovery and the
+  unchanged public `60/90/120` matrix.
+
+- 2026-09-03 product-owner alias source correction: authored-semantics v10
+  centralizes product identity for the direct graph and sealed validator. A
+  title plus one same-label internal system resolves to the narrower system
+  path; multiple internal paths and product/human collisions still fail closed.
+  Focused, complete runtime, and install/release proof passes `92/92`,
+  `618/618`, and `459/459`. A fresh one-call standard-profile authoring run on
+  the same public case passes with four grounded events in `26.465s`. No regex,
+  retry, response mutation, or extra model call was added. B-142 remains in
+  implementation pending immutable installed recovery and the unchanged public
+  `60/90/120` matrix.
+
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.
   The active release contract is standard post-confirm under 60 seconds without

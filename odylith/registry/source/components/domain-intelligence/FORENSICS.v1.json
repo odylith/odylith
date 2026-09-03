@@ -8,12 +8,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 552,
-    "mapped_workstream_evidence_count": 460,
+    "explicit_event_count": 553,
+    "mapped_workstream_evidence_count": 461,
     "recent_path_match_count": 0,
-    "spec_history_event_count": 300,
+    "spec_history_event_count": 301,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 552
+    "timeline_event_count": 553
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,6 +21,44 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 4,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_authored_semantics.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py",
+        "tests/unit/runtime/test_greenfield_model_intent_authoring.py"
+      ],
+      "confidence": "high",
+      "event_index": 1159,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
+      "ts_iso": "2026-09-02T18:22:02-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 4,
       "artifacts": [

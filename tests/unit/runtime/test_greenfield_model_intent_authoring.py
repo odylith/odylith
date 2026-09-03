@@ -1076,34 +1076,6 @@ def test_authoring_rejects_a_repeated_owner_on_one_typed_product_event() -> None
         )
 
 
-def test_authoring_rejects_duplicate_labels_for_distinct_owner_paths() -> None:
-    intent = {
-        **_TEXT_FIELDS,
-        **_LIST_FIELDS,
-        "title": "Harbor Desk",
-        "internal_systems": ["Harbor Desk"],
-    }
-    source = ". ".join(
-        str(row)
-        for value in intent.values()
-        for row in (value if isinstance(value, list) else [value])
-        if str(row)
-    )
-
-    with pytest.raises(GreenfieldModelAuthoringError, match="ambiguous product owner"):
-        author_greenfield_intent(
-            evidence_text=source,
-            provider=StructuredAuthoringProvider(
-                authored_response(
-                    intent,
-                    evidence_text=source,
-                    component_responsibility_owners=["Harbor Desk"],
-                )
-            ),
-            clock=lambda: 0.0,
-        )
-
-
 def test_product_owned_terminal_result_uses_the_typed_event_owner() -> None:
     first_path = "Applicant Nia enters one item and Permit Relay shows it listed"
     intent = {

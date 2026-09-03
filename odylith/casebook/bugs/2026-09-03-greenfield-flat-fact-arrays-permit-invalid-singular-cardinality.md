@@ -77,3 +77,11 @@
   passes `459/459`, and static compilation plus diff checks pass. This is
   source closure only; immutable installed recovery and public `60/90/120`
   proof remain open.
+
+- Immutable Installed Advancement (2026-09-03): Clean dist-v12 at
+  `18f226fb39e0a3736d949672339274ce179a5936` accepted the v19 typed fact object
+  for the same public standard-tier case and advanced beyond the escaped
+  singular-cardinality failure. It later failed on the distinct product-owner
+  alias defect recorded as `CB-327`, before staging or writes. This is live
+  installed evidence that the old cardinality failure is removed, but release
+  closure still requires the complete recovery and public matrix gates.

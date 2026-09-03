@@ -15,7 +15,7 @@ from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
 from odylith.runtime.governance.artifact_tribunal import _bind_verified_source_custody
 
 AUTHORED_SEMANTICS_KEY = "authored_semantics"
-AUTHORED_SEMANTICS_VERSION = "odylith.greenfield.authored-semantics.v9"
+AUTHORED_SEMANTICS_VERSION = "odylith.greenfield.authored-semantics.v10"
 AUTHORED_RELATION_SET_SHA256_KEY = "authored_relation_set_sha256"
 AUTHORED_PROJECTION_ORIGIN = "model_authored_typed_intent"
 AUTHORED_SEMANTIC_ROOT = f"intent.{AUTHORED_SEMANTICS_KEY}"
@@ -133,7 +133,7 @@ def validate_first_path_relations(
         raise GreenfieldAuthoredSemanticsError("Greenfield authoring returned invalid first-path relations")
     path = str(first_path or "")
     visible_result_facts = (path, *map(str, terminal_result_facts))
-    owner_values = _owner_projection_values(
+    owner_values = canonical_product_owner_projection_values(
         title=product_title,
         internal_systems=internal_systems,
     )
@@ -259,23 +259,23 @@ def validate_first_path_relations(
     return tuple(rows)
 
 
-def _owner_projection_values(
+def canonical_product_owner_projection_values(
     *,
     title: str,
     internal_systems: Sequence[str],
 ) -> dict[str, str]:
+    """Resolve a title alias to one system while rejecting duplicate systems."""
     values: dict[str, str] = {}
     quote_paths: dict[str, str] = {}
-    owner_rows = [
-        (f"/internal_systems/{index}", str(value))
-        for index, value in enumerate(internal_systems)
-    ]
+    owner_rows = [(f"/internal_systems/{index}", str(value)) for index, value in enumerate(internal_systems)]
     owner_rows.append(("/title", str(title or "")))
     for path, quote in owner_rows:
         if not quote:
             continue
         existing_path = quote_paths.get(quote)
         if existing_path is not None and existing_path != path:
+            if path == "/title" and existing_path.startswith("/internal_systems/"):
+                continue
             raise GreenfieldAuthoredSemanticsError(
                 "Greenfield authored semantics contain duplicate labels for distinct product owners"
             )
@@ -437,7 +437,7 @@ def authored_component_relation_facts(
 ) -> tuple[dict[str, Any], ...]:
     """Group exact product-event relations into the sole authored component contract."""
 
-    owner_values = _owner_projection_values(
+    owner_values = canonical_product_owner_projection_values(
         title=title,
         internal_systems=internal_systems,
     )
@@ -889,7 +889,7 @@ def validate_component_responsibility_relations(
         and not isinstance(systems_value, (str, bytes, bytearray))
         else ()
     )
-    owner_values = _owner_projection_values(
+    owner_values = canonical_product_owner_projection_values(
         title=str(intent.get("title") or ""),
         internal_systems=systems,
     )
@@ -1182,6 +1182,7 @@ __all__ = [
     "authored_source_custody",
     "authored_projection_relations",
     "authored_visible_result",
+    "canonical_product_owner_projection_values",
     "combined_prompt_evidence_source",
     "component_responsibility_relations_from_intent",
     "first_path_context_relations_from_intent",

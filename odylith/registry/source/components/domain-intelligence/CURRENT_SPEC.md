@@ -32,6 +32,9 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:start -->
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_semantics.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `tests/unit/runtime/test_greenfield_model_intent_authoring.py`
+- **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-03-greenfield-flat-fact-arrays-permit-invalid-singular-cardinality.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`, `tests/unit/runtime/greenfield_model_authoring_fixtures.py`, `tests/unit/runtime/test_greenfield_model_intent_authoring.py`
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
@@ -45,12 +48,20 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`
-- **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_component_spec.py`, `src/odylith/runtime/domain_intelligence/proposal_tribunal.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-09-03: Unified Greenfield product-owner identity across authored and sealed semantics. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-327`; Diagram: D-043)
+  Authored-semantics v10 provides the single product-owner projection contract
+  used by direct event compilation, component ownership, and later validation.
+  An exact title plus one internal-system alias binds to the narrower system
+  path; multiple indistinguishable internal systems and product/human label
+  collisions remain invalid. Focused, complete runtime, and install/release
+  proof passes `92/92`, `618/618`, and `459/459`; a fresh one-call source-local
+  standard case passes in `26.465s`. No regex, retry, response rewriting, or
+  post-confirm interpretation was introduced. Immutable installed recovery and
+  public matrix proof remain open.
 
 - 2026-09-03: Encoded Greenfield source-fact cardinality in the model response schema. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-326`; Diagram: D-043)
   Intent-authoring v19 replaces the heterogeneous flat fact array with one

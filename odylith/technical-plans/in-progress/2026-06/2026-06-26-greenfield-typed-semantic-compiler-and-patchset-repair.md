@@ -4261,3 +4261,28 @@ above.
       checks pass. Freeze and rebuild these bytes, rerun isolated installed
       recovery, and only then run the unchanged public `60/90/120` matrix. The
       protected holdout remains untouched.
+    - 2026-09-03 product-owner alias reopen: clean immutable dist-v12 crossed
+      the v19 cardinality boundary, then the same standard-tier public case
+      stopped before staging with `ambiguous product owner`. The model selected
+      one exact label as both product title and internal system, which is one
+      real product identity projected through two typed facts, not two owners.
+      `CB-327` owns the defect. Replace the independent event, actor, and
+      component quote indexes with one shared product-owner resolver that
+      canonicalizes only a title plus one same-label internal system onto the
+      narrower system path. Preserve rejection for cross-kind label collisions
+      and multiple indistinguishable internal systems. Add no regex, prompt-only
+      duplicate rule, retry, response mutation, or second model call. Rerun
+      focused and full source proof, rebuild once, and require installed
+      recovery before the public `60/90/120` matrix. The protected holdout
+      remains untouched.
+    - 2026-09-03 product-owner alias source resolution: authored-semantics v10
+      makes one resolver authoritative for product owner identity across direct
+      event compilation, component ownership, and later sealed validation. It
+      canonicalizes only an exact title plus one internal-system alias to the
+      narrower system path and preserves fail-closed rejection for multiple
+      indistinguishable internal systems or cross-kind collisions. Focused
+      proof passes `92/92`, full Greenfield runtime passes `618/618`, and
+      install/release passes `459/459`. A fresh source-local standard-profile
+      call on the same public case authored four grounded events in `26.465s`.
+      Freeze these bytes, rerun immutable installed recovery, and only then run
+      the public `60/90/120` matrix. The protected holdout remains untouched.

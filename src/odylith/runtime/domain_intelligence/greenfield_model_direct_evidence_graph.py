@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     MAX_COMPONENT_RESPONSIBILITY_RELATIONS,
     MAX_FIRST_PATH_RELATIONS,
     GreenfieldAuthoredSemanticsError,
+    canonical_product_owner_projection_values,
     first_path_actor_binding_identity,
     overlapping_first_path_event_orders,
     require_first_path_actor_binding,
@@ -128,7 +129,11 @@ def _derive_events(
             "Greenfield authoring must select exactly one first-path fact per event"
         )
     actor_values = _selected_actor_projection_values(selected_facts)
-    owner_values = _selected_owner_projection_values(selected_facts)
+    owner_facts = _selected_product_owner_facts(selected_facts)
+    owner_values = {
+        str(fact.get("projection_path") or ""): quote
+        for quote, fact in owner_facts.items()
+    }
     rows: list[dict[str, Any]] = []
     seen_source_events: set[tuple[int, int]] = set()
     human_seen = False
@@ -161,6 +166,7 @@ def _derive_events(
         actor_kind, actor_fact_path, actor_fact_quote = _event_actor_fact(
             actor_fact_quote=raw.get("actor_fact_quote"),
             selected_facts=selected_facts,
+            product_owner_facts=owner_facts,
         )
         if actor_kind == "product":
             owner_system_path = actor_fact_path
@@ -366,11 +372,7 @@ def _derive_component_relations(
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring returned invalid component ownership"
         )
-    owner_facts = _unique_facts_by_quote(
-        fact
-        for fact in selected_facts
-        if str(fact.get("field") or "") in {"title", "internal_systems"}
-    )
+    owner_facts = _selected_product_owner_facts(selected_facts)
     responsibility_facts = tuple(
         fact
         for fact in selected_facts
@@ -471,33 +473,35 @@ def _event_actor_fact(
     *,
     actor_fact_quote: Any,
     selected_facts: Sequence[Mapping[str, Any]],
+    product_owner_facts: Mapping[str, Mapping[str, Any]],
 ) -> tuple[str, str, str]:
-    actor_kind_by_field = {
+    non_product_kind_by_field = {
         "human_actors": "human",
         "external_systems": "external_system",
-        "title": "product",
-        "internal_systems": "product",
     }
     quote = str(actor_fact_quote or "")
-    matches = tuple(
+    non_product_matches = tuple(
         fact
         for fact in selected_facts
-        if str(fact.get("field") or "") in actor_kind_by_field
+        if str(fact.get("field") or "") in non_product_kind_by_field
         and str(fact.get("quote") or "") == quote
     )
-    if len(matches) != 1:
+    product_fact = product_owner_facts.get(quote)
+    if (product_fact is None and len(non_product_matches) != 1) or (
+        product_fact is not None and non_product_matches
+    ):
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring returned an unbound first-path actor fact"
         )
-    fact = matches[0]
+    fact = product_fact or non_product_matches[0]
+    field = str(fact.get("field") or "")
     path = str(fact.get("projection_path") or "")
-    if not _canonical_actor_path(
-        field=str(fact.get("field") or ""), path=path
-    ):
+    if not _canonical_actor_path(field=field, path=path):
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring returned an invalid first-path actor fact"
         )
-    return actor_kind_by_field[str(fact.get("field") or "")], path, quote
+    actor_kind = "product" if product_fact is not None else non_product_kind_by_field[field]
+    return actor_kind, path, quote
 
 
 def _selected_actor_projection_values(
@@ -529,11 +533,12 @@ def _selected_actor_projection_values(
     return values
 
 
-def _selected_owner_projection_values(
+def _selected_product_owner_facts(
     selected_facts: Sequence[Mapping[str, Any]],
-) -> dict[str, str]:
-    values: dict[str, str] = {}
-    quotes: set[str] = set()
+) -> dict[str, Mapping[str, Any]]:
+    facts_by_path: dict[str, Mapping[str, Any]] = {}
+    title = ""
+    internal_facts: list[Mapping[str, Any]] = []
     for fact in selected_facts:
         field = str(fact.get("field") or "")
         if field not in {"title", "internal_systems"}:
@@ -543,15 +548,29 @@ def _selected_owner_projection_values(
         if (
             not _canonical_actor_path(field=field, path=path)
             or not quote
-            or path in values
-            or quote in quotes
+            or path in facts_by_path
         ):
             raise GreenfieldAuthoredSemanticsError(
                 "Greenfield authoring returned an ambiguous product owner"
             )
-        values[path] = quote
-        quotes.add(quote)
-    return values
+        facts_by_path[path] = fact
+        if field == "title":
+            title = quote
+        else:
+            expected_path = f"/internal_systems/{len(internal_facts)}"
+            if path != expected_path:
+                raise GreenfieldAuthoredSemanticsError(
+                    "Greenfield authoring returned an ambiguous product owner"
+                )
+            internal_facts.append(fact)
+    owner_values = canonical_product_owner_projection_values(
+        title=title,
+        internal_systems=tuple(str(fact.get("quote") or "") for fact in internal_facts),
+    )
+    return {
+        quote: facts_by_path[path]
+        for path, quote in owner_values.items()
+    }
 
 
 def _unique_facts_by_quote(
