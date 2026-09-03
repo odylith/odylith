@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-06-26
 
-Updated: 2026-08-06
+Updated: 2026-09-03
 
 Backlog: B-142
 
@@ -4300,3 +4300,20 @@ above.
       regex, retry, response rewrite, additional model call, or post-confirm
       work. Rebuild once and require the full recovery gate before the unchanged
       public matrix. The protected holdout remains untouched.
+    - 2026-09-03 immutable v14 public winning-candidate proof: clean dist-v14
+      from candidate `62bcdd8147e47874e984483b48fb1fb0a20ca413`
+      passes the unchanged installed standard, rescue, and deep cases in
+      `44.315s`, `44.053s`, and `66.854s`, inside their exact `60/90/120`
+      proposal budgets. Commit-only create completes in `1.712s`, `1.733s`,
+      and `1.752s`; every package scores release-quality `10/10`. Browser proof
+      passes `3/3`; installed SIGKILL recovery, operator-conflict preservation,
+      fsync rollback and retry, same-hash idempotency, generation readback, and
+      cleanup pass without issues. Mark `CB-325`, `CB-326`, and `CB-327` fixed
+      pending release. Freeze candidate semantics: one model-authored direct
+      evidence graph, exact typed custody, one shared product-owner map,
+      deterministic projection, no semantic regex, no retry or tier cascade,
+      no second model call, and no post-confirm interpretation. This is the
+      public winning candidate, not final universal or release closure. Keep
+      B-142 in progress, do not tune against protected data, and require explicit
+      approval before correcting and executing the untouched protected
+      revision-6 evaluation package once.

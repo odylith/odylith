@@ -1,6 +1,6 @@
 - Bug ID: CB-326
 
-- Status: InProgress
+- Status: FixedPendingRelease
 
 - Created: 2026-09-03
 
@@ -46,7 +46,7 @@
 
 - Rollback/Forward Fix: Forward fix only; preserve fail-closed behavior until the typed schema is proven.
 
-- Verification: Intent-authoring v19 encodes scalar versus repeated cardinality in the closed output schema. Focused authoring proof passes 140 tests, complete Greenfield runtime proof passes 616 tests, and install/release proof passes 459 tests. Immutable installed recovery and the unchanged public 60/90/120 matrix remain required.
+- Verification: Intent-authoring v19 encodes scalar versus repeated cardinality in the closed output schema; immutable dist-v14 passes installed recovery and all three unchanged public 60/90/120 cases at release-quality 10/10.
 
 - Prevention: Encode cardinality in the structured output schema instead of prompt-only conventions or downstream repair.
 
@@ -85,3 +85,14 @@
   alias defect recorded as `CB-327`, before staging or writes. This is live
   installed evidence that the old cardinality failure is removed, but release
   closure still requires the complete recovery and public matrix gates.
+
+- Immutable Installed V14 Verification (2026-09-03): Clean dist-v14 from
+  candidate `62bcdd8147e47874e984483b48fb1fb0a20ca413` passes the installed
+  recovery gate and the unchanged public three-case matrix. The typed v19 fact
+  contract accepts the community, subsea, and neuromorphic requests without a
+  cardinality rejection; proposal times are `44.315s`, `44.053s`, and
+  `66.854s` inside their exact `60/90/120` budgets, create times are `1.712s`,
+  `1.733s`, and `1.752s`, and every package scores release-quality `10/10`.
+  Browser proof passes `3/3`, cleanup passes, and the matrix reports no failure
+  cluster. CB-326 is fixed pending release. No regex, retry, response rewrite,
+  or post-confirm interpretation was introduced.

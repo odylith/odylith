@@ -1,6 +1,6 @@
 - Bug ID: CB-325
 
-- Status: Open
+- Status: FixedPendingRelease
 
 - Created: 2026-09-02
 
@@ -44,7 +44,7 @@
 
 - Rollback/Forward Fix: Forward-fix the identity calculation; do not weaken receipt verification or rewrite sealed receipts in the proof.
 
-- Verification: Focused provenance and recovery tests pass 49/49; full Greenfield runtime passes 611 and full Greenfield install/release passes 459. Immutable installed recovery proof remains required.
+- Verification: Immutable dist-v14 from candidate `62bcdd8147e47874e984483b48fb1fb0a20ca413` passes the complete installed SIGKILL, operator-conflict, fsync-failure, rollback, recovery, same-hash retry, generation-readback, and public matrix gates.
 
 - Prevention: Every runtime identity must distinguish semantic code bytes from deployment location and carry a relocation plus mutation regression.
 
@@ -80,3 +80,20 @@
   recovery proof passes `20/20`, complete Greenfield runtime passes `618/618`,
   and install/release passes `460/460`. The corrected source harness reaches
   installed model authoring; immutable fault-phase proof remains required.
+
+- Immutable Installed V14 Verification (2026-09-03): Clean dist-v14 from
+  candidate `62bcdd8147e47874e984483b48fb1fb0a20ca413` passes the complete
+  installed recovery proof with no issues. SIGKILL terminates the active commit
+  at return code `-9` after a governed generation is present; its journal moves
+  from `projecting` to `closed` on recovery, and both recovery and same-hash
+  retry return `0`. The operator-conflict phase returns `2` with
+  `post_confirm_commit_recovery_conflict`, preserves the operator mutation and
+  recovery snapshot, keeps the recovery path bound, and does not begin
+  rollback. The injected fsync failure returns `2` with the expected
+  environment/I/O classification, records `aborted`, then closes on a retry
+  that returns `0`; its same-hash retry also returns `0`. All three phases bind
+  the identical Product Intent facts hash
+  `5918a4652ea062abc0e73e8542d66cf891f032f35b7bddc5f3df2b0092ae8b50`,
+  and the runtime is the phase-local managed `0.1.15` install. CB-325 is fixed
+  pending release; receipt verification and fail-closed conflict behavior were
+  not weakened.

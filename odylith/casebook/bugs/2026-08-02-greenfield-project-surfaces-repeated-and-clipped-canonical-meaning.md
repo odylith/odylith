@@ -260,3 +260,21 @@
 - V9 Terminal-Result Contract Drift Reopen (2026-09-02): Exact immutable candidate `1fe4209b3` rebuilt successfully after the recovery-identity v5 correction, but its isolated installed recovery proof failed closed during the single authoring call with `Greenfield authoring returned ungrounded first-path relations`. It did not reach the corrected compiler-identity guard, inject SIGKILL, or write governed records. The direct-evidence graph permits the model to bind its exact terminal result to any selected source fact, and deterministic custody accepts that binding. A later authored-semantics validator independently narrows visible terminal evidence to only first-path, proof-boundary, and success-metric facts, rejecting otherwise valid selected Product Story, Opportunity, or Product View output evidence. This is duplicated typed-contract ownership, not evidence for a retry, prose parser, regex rule, or second model call. Align both validators on one explicit terminal-result source set, pin a selected-output regression, and rerun installed recovery before attributing any live result to `CB-325`. The protected holdout remains untouched.
 
 - V9 Terminal-Result Contract Drift Source Resolution (2026-09-02): Intent-authoring v18 and authored-semantics v9 now share one typed terminal-result source set. An exact result may come from a selected Product Story, Opportunity, Product View, Success Metric, First Path, or Proof Boundary fact only when that fact was selected by the single model response; selected actor, state, constraint, and unrelated facts remain ineligible. New positive and negative regressions prove a Product Story result survives direct derivation, atomic source/projection custody, and later sealed-intent validation while a selected non-output fact remains rejected. Focused contract proof passes `113/113`, the complete Greenfield runtime suite passes `612/612`, the install suite passes `459/459`, static compilation passes, and the touched semantic source remains free of regex interpretation. This is source closure only: immutable installed recovery must still cross the corrected identity guard before `CB-325` can be verified, and the unchanged public `60/90/120` matrix remains required. The protected holdout remains untouched.
+
+- Immutable V14 Public Winning-Candidate Proof (2026-09-03): Clean dist-v14
+  from candidate `62bcdd8147e47874e984483b48fb1fb0a20ca413` passes the unchanged
+  installed public standard, rescue, and deep cases in `44.315s`, `44.053s`,
+  and `66.854s`, inside the exact `60/90/120` proposal budgets. Commit-only
+  create completes in `1.712s`, `1.733s`, and `1.752s`. Every package scores
+  release-quality `10/10` across semantic clarity, completion, governance
+  depth, operator usefulness, traceability, implementation prompts, browser
+  proof, expert lenses, and latency. Browser proof passes `3/3`; installed
+  SIGKILL recovery, conflict preservation, fsync failure and retry, same-hash
+  idempotency, generation readback, and cleanup all pass with no issues. The
+  candidate retains one model-authored direct evidence graph, exact typed
+  custody, one shared product-owner map, deterministic projection, no semantic
+  regex, no retry or tier cascade, no second model call, and no post-confirm
+  interpretation. This establishes a public winning mechanism candidate, not
+  arbitrary-input or release completion. CB-303 remains open pending approved
+  correction and one-shot execution of the untouched protected revision-6
+  evaluation package, followed by final release judgment.

@@ -1,6 +1,6 @@
 - Bug ID: CB-327
 
-- Status: InProgress
+- Status: FixedPendingRelease
 
 - Created: 2026-09-03
 
@@ -46,7 +46,7 @@
 
 - Rollback/Forward Fix: Forward fix the shared owner identity boundary; keep ambiguous cross-kind and same-kind conflicts fail-closed.
 
-- Verification: Title/internal-system alias success is proven through event, component, and full candidate materialization while multiple internal owners and cross-kind collisions still fail closed. Focused proof passes 92 tests, complete Greenfield runtime passes 618, install/release passes 459, and a fresh source-local model call on the same public case authored four events in 26.465 seconds. Immutable installed recovery and the public 60/90/120 matrix remain required.
+- Verification: Title/internal-system alias success is proven through event, component, full proposal, installed recovery, and the unchanged public 60/90/120 matrix while multiple internal owners and cross-kind collisions still fail closed.
 
 - Prevention: All event, actor, and component ownership consumers must use one canonical product-owner identity owner.
 
@@ -95,3 +95,16 @@
   warning, retry, response rewrite, second model call, or post-confirm work was
   added. A rebuilt immutable recovery proof and public `60/90/120` matrix remain
   required.
+
+- Immutable Installed V14 Verification (2026-09-03): Clean dist-v14 from
+  candidate `62bcdd8147e47874e984483b48fb1fb0a20ca413` passes the complete
+  installed recovery gate and all three unchanged public cases. The original
+  community title/internal-system alias now publishes a complete package in
+  `44.315s` plus `1.712s` commit time at release-quality `10/10`; the unrelated
+  rescue and deep cases also pass in `44.053s` and `66.854s`, each with
+  release-quality `10/10`. Browser proof passes `3/3`, every recovery phase
+  binds one identical Product Intent facts hash, and the matrix reports no
+  failure cluster. CB-327 is fixed pending release. The shared typed owner map
+  remains the single interpretation boundary across direct semantics, sealed
+  validation, and Radar; no regex, retry, second model call, or post-confirm
+  repair was added.

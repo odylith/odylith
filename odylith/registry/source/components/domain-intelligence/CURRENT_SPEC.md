@@ -30,6 +30,9 @@ or prose repair runs after confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/casebook/bugs/2026-09-02-greenfield-recovery-proof-bound-compiler-identity-to-absolute-install-path.md`, `odylith/casebook/bugs/2026-09-03-greenfield-flat-fact-arrays-permit-invalid-singular-cardinality.md`, `odylith/casebook/bugs/2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md`, plus 2 more
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-02-greenfield-recovery-proof-bound-compiler-identity-to-absolute-install-path.md`, `odylith/casebook/bugs/2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_backlog.py`
@@ -45,12 +48,23 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_authored_semantics.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`, `tests/unit/runtime/test_greenfield_model_intent_authoring.py`
-- **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py`, `src/odylith/runtime/domain_intelligence/greenfield_create_contract.py`, `tests/unit/runtime/test_greenfield_transaction_provenance.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-09-03: Proved the direct-evidence mechanism across the immutable public operating envelope. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-303`, `CB-325`, `CB-326`, `CB-327`; Diagram: D-043)
+  Clean dist-v14 from candidate
+  `62bcdd8147e47874e984483b48fb1fb0a20ca413` passes unchanged installed
+  standard, rescue, and deep requests in `44.315s`, `44.053s`, and `66.854s`
+  inside the exact `60/90/120` proposal budgets; commits complete in `1.712s`,
+  `1.733s`, and `1.752s`. All three packages score release-quality `10/10`,
+  browser proof passes `3/3`, and SIGKILL, operator-conflict, fsync, rollback,
+  retry, readback, idempotency, and cleanup proof passes without issues. The
+  candidate retains one source-cited model response, exact typed custody, one
+  shared product-owner projection, deterministic compilation, and commit-only
+  post-confirm publication. No semantic regex, retry cascade, second model
+  call, or post-confirm interpretation is active. Protected revision-6
+  evaluation remains untouched and is the next approval-gated release test.
 
 - 2026-09-03: Extended canonical product-owner identity through Radar and kept recovery clones trust-valid. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-325`, `CB-327`; Diagram: D-043)
   The installed recovery harness preserves the active-version symlink and

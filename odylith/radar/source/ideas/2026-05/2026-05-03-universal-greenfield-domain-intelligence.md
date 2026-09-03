@@ -2855,6 +2855,23 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   B-142 remains in implementation pending rebuilt immutable recovery and the
   unchanged public `60/90/120` matrix.
 
+- 2026-09-03 immutable v14 public winning-candidate proof: clean dist-v14 from
+  candidate `62bcdd8147e47874e984483b48fb1fb0a20ca413` passes the unchanged
+  installed standard, rescue, and deep cases in `44.315s`, `44.053s`, and
+  `66.854s`, inside the exact `60/90/120` proposal budgets. Commit-only create
+  completes in `1.712s`, `1.733s`, and `1.752s`; every package scores
+  release-quality `10/10`. Browser proof passes `3/3`, and installed SIGKILL
+  recovery, operator-conflict preservation, fsync rollback and retry,
+  same-hash idempotency, generation readback, and cleanup pass without issues.
+  `CB-325`, `CB-326`, and `CB-327` are fixed pending release. The winning
+  candidate keeps one model-authored direct evidence graph, exact typed custody,
+  one shared product-owner map, deterministic projection, no semantic regex,
+  no retry or tier cascade, no second model call, and no post-confirm
+  interpretation. B-142 remains in implementation because the public matrix is
+  descriptive evidence, not a universal guarantee; approved correction and
+  one-shot execution of the untouched protected revision-6 evaluation package
+  remain the next release gate.
+
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.
   The active release contract is standard post-confirm under 60 seconds without
