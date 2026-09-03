@@ -4191,3 +4191,25 @@ above.
       package and require recovery to cross SIGKILL, conflict, fsync rollback,
       idempotent retry, and readback before rerunning the unchanged public
       `60/90/120` matrix. The protected holdout remains untouched.
+    - 2026-09-02 terminal-result contract drift: the first exact immutable
+      recovery rerun from `1fe4209b3` stopped during authoring, before reaching
+      the corrected identity guard or writing records. The direct graph already
+      proves that the terminal quote belongs to a selected fact, but the later
+      authored-semantics validator maintains a narrower, independently encoded
+      allowlist that omits selected Product Story, Opportunity, and Product View
+      output facts. Replace the duplicate restriction with one shared typed
+      terminal-source contract and add a selected-output characterization test.
+      This repair must not introduce regex semantics, prose recomposition,
+      retries, extra model calls, or post-confirm work. Rebuild and rerun the
+      isolated installed recovery proof before the full public matrix; keep the
+      protected holdout untouched.
+    - 2026-09-02 terminal-result source resolution: intent-authoring v18 and
+      authored-semantics v9 now share the explicit eligible field set. Selected
+      Product Story, Opportunity, Product View, Success Metric, First Path, and
+      Proof Boundary facts may ground the exact terminal result; other selected
+      fact types may not. The model still owns the meaning, quote, and selected
+      evidence, while deterministic code verifies type and byte custody only.
+      The new selected-output regression and widened contract pack pass, as do
+      all `612` Greenfield runtime and `459` install tests. Freeze these bytes,
+      rerun isolated installed recovery first, and only then rerun the unchanged
+      public `60/90/120` matrix. The protected holdout remains untouched.

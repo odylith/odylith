@@ -2746,6 +2746,29 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   recovery run crosses the former failure phase and the unchanged public
   `60/90/120` matrix passes.
 
+- 2026-09-02 terminal-result contract alignment gate: exact immutable candidate
+  `1fe4209b3` failed closed during the installed recovery proof's single
+  authoring call, before compiler-identity verification, fault injection, or
+  governed writes. The direct-evidence graph accepts an exact terminal result
+  from any selected source fact, while the later authored-semantics validator
+  independently accepts only first-path, proof-boundary, or success-metric
+  evidence. Align both owners on one explicit set of selected output, path, and
+  proof fields and pin the cross-owner contract. Do not add a retry, semantic
+  regex, prose parser, fallback tier, or second model call. B-142 remains in
+  implementation until the rebuilt installed recovery proof crosses the
+  identity guard and the unchanged public `60/90/120` matrix passes.
+
+- 2026-09-02 terminal-result source correction: intent-authoring v18 and
+  authored-semantics v9 now share one typed set of eligible selected facts:
+  Product Story, Opportunity, Product View, Success Metric, First Path, and
+  Proof Boundary. The model owns the exact terminal meaning and quote;
+  deterministic code verifies only field eligibility and byte custody. The
+  selected-output regression, widened contract pack, complete Greenfield
+  runtime suite, and install suite pass `2/2`, `113/113`, `612/612`, and
+  `459/459`. No semantic regex, prose reparser, retry, extra model call, or
+  post-confirm work was added. B-142 remains in implementation pending rebuilt
+  immutable recovery and the unchanged public `60/90/120` matrix.
+
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.
   The active release contract is standard post-confirm under 60 seconds without

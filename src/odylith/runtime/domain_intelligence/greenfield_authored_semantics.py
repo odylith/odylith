@@ -8,13 +8,14 @@ import json
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
+    intent_terminal_result_values,
     intent_text_at_path,
     intent_text_rows,
 )
 from odylith.runtime.governance.artifact_tribunal import _bind_verified_source_custody
 
 AUTHORED_SEMANTICS_KEY = "authored_semantics"
-AUTHORED_SEMANTICS_VERSION = "odylith.greenfield.authored-semantics.v8"
+AUTHORED_SEMANTICS_VERSION = "odylith.greenfield.authored-semantics.v9"
 AUTHORED_RELATION_SET_SHA256_KEY = "authored_relation_set_sha256"
 AUTHORED_PROJECTION_ORIGIN = "model_authored_typed_intent"
 AUTHORED_SEMANTIC_ROOT = f"intent.{AUTHORED_SEMANTICS_KEY}"
@@ -119,8 +120,7 @@ def validate_first_path_relations(
     external_systems: Sequence[str] = (),
     internal_systems: Sequence[str] = (),
     product_title: str = "",
-    proof_boundary: str = "",
-    success_metrics: Sequence[str] = (),
+    terminal_result_facts: Sequence[str] = (),
 ) -> tuple[dict[str, Any], ...]:
     """Return ordered relations whose quoted parts are exact first-path bytes."""
 
@@ -132,7 +132,7 @@ def validate_first_path_relations(
     ):
         raise GreenfieldAuthoredSemanticsError("Greenfield authoring returned invalid first-path relations")
     path = str(first_path or "")
-    visible_result_facts = (path, str(proof_boundary or ""), *map(str, success_metrics))
+    visible_result_facts = (path, *map(str, terminal_result_facts))
     owner_values = _owner_projection_values(
         title=product_title,
         internal_systems=internal_systems,
@@ -802,8 +802,7 @@ def _authored_relations_from_intent(
         external_systems=intent_text_rows(intent.get("external_systems")),
         internal_systems=intent_text_rows(intent.get("internal_systems")),
         product_title=str(intent.get("title") or ""),
-        proof_boundary=str(intent.get("proof_boundary") or ""),
-        success_metrics=intent_text_rows(intent.get("success_metrics")),
+        terminal_result_facts=intent_terminal_result_values(intent),
     )
     context_relations = validate_first_path_context_relations(
         semantics.get("first_path_context_relations"),

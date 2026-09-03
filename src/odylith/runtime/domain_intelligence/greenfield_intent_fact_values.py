@@ -5,6 +5,15 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+TERMINAL_RESULT_FACT_FIELDS = (
+    "first_path",
+    "product_story",
+    "opportunity",
+    "product_view",
+    "success_metrics",
+    "proof_boundary",
+)
+
 
 def intent_text_at_path(intent: Mapping[str, Any], path: str) -> str:
     """Return the exact string at one root or one-index-deep intent path."""
@@ -34,4 +43,23 @@ def intent_text_rows(value: Any) -> tuple[str, ...]:
     return tuple(str(row) for row in value if str(row))
 
 
-__all__ = ["intent_text_at_path", "intent_text_rows"]
+def intent_terminal_result_values(intent: Mapping[str, Any]) -> tuple[str, ...]:
+    """Return exact selected output, path, and proof facts eligible as results."""
+
+    values: list[str] = []
+    for field in TERMINAL_RESULT_FACT_FIELDS:
+        value = intent.get(field)
+        if isinstance(value, str):
+            if value:
+                values.append(value)
+        else:
+            values.extend(intent_text_rows(value))
+    return tuple(values)
+
+
+__all__ = [
+    "TERMINAL_RESULT_FACT_FIELDS",
+    "intent_terminal_result_values",
+    "intent_text_at_path",
+    "intent_text_rows",
+]

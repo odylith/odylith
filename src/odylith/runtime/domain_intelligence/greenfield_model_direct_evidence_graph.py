@@ -21,6 +21,9 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     overlapping_first_path_event_orders,
     require_first_path_actor_binding,
 )
+from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
+    TERMINAL_RESULT_FACT_FIELDS,
+)
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     MAX_AUTHORED_FIELD_VALUE_CHARS,
 )
@@ -274,7 +277,8 @@ def _terminal_result_fact(
     containing_facts = [
         fact
         for fact in selected_facts
-        if _nonnegative_int(fact.get("source_start_byte")) <= result_start
+        if str(fact.get("field") or "") in TERMINAL_RESULT_FACT_FIELDS
+        and _nonnegative_int(fact.get("source_start_byte")) <= result_start
         and result_end <= _positive_int(fact.get("source_end_byte"))
     ]
     exact_facts = [

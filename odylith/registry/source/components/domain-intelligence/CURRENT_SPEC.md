@@ -30,6 +30,9 @@ or prose repair runs after confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_authored_semantics.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`, `tests/unit/runtime/test_greenfield_model_intent_authoring.py`
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py`, `src/odylith/runtime/domain_intelligence/greenfield_create_contract.py`, `tests/unit/runtime/test_greenfield_transaction_provenance.py`
@@ -45,12 +48,20 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-08-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_canonical_meaning.py`, `tests/integration/runtime/test_greenfield_component_contract_preconfirm.py`
-- **2026-08-08 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `src/odylith/runtime/common/prose_tail.py`, `src/odylith/runtime/domain_intelligence/greenfield_component_outputs.py`, `tests/unit/runtime/test_greenfield_code_hygiene.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-09-02: Unified terminal-result evidence across the direct graph and sealed semantics. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  Intent-authoring v18 and authored-semantics v9 share one typed terminal-source
+  contract: selected Product Story, Opportunity, Product View, Success Metric,
+  First Path, or Proof Boundary facts may ground the exact visible result.
+  Selected actors, states, constraints, and other facts cannot. The model still
+  chooses the exact result and source fact; deterministic code only verifies
+  its typed field and byte custody. Focused contract proof passes `113/113`,
+  the complete Greenfield runtime suite passes `612/612`, and the install suite
+  passes `459/459`. Immutable installed recovery and public-matrix proof remain
+  required.
 
 - 2026-09-02: Made post-confirm compiler identity stable across byte-identical install roots. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-325`; Diagram: D-043)
   Compiler identity v5 hashes the fixed logical post-confirm source names and
@@ -3242,11 +3253,14 @@ This section captures synchronized requirement and contract signals derived from
   context and responsibility links, and sealed atomic claims; it does not infer
   canonical meaning with regexes, retry the authoring call, or repair model prose.
   Intent-authoring v15 removes model-authored component event orders and the
-  redundant terminal proof-fact list. The terminal result quote plus occurrence
-  must lie inside a selected fact; custody binds the narrowest containing fact
-  and uses authored fact order only when exact spans tie. A terminal result may
-  therefore remain source-exact in a proof or success fact even when it is not
-  repeated in the final event. The old 828-line relation compiler is removed.
+  redundant terminal proof-fact list. Intent-authoring v18 and authored-semantics
+  v9 share the terminal-source field contract: the result quote plus occurrence
+  must lie inside a selected Product Story, Opportunity, Product View, Success
+  Metric, First Path, or Proof Boundary fact. Custody binds the narrowest
+  containing fact and uses authored fact order only when exact spans tie. A
+  terminal result may therefore remain source-exact in a selected output or
+  proof fact even when it is not repeated in the final event. The old 828-line
+  relation compiler is removed.
   Public source evidence currently passes standard, rescue, and deep model
   validation in `37.463s`, `44.556s`, and `87.369s`; a fresh v15 standard call
   passes in `29.524s`; complete Greenfield runtime/install proof passes
