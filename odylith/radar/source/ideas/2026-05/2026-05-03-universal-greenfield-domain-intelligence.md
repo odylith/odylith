@@ -2839,6 +2839,22 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   implementation pending immutable installed recovery and the unchanged public
   `60/90/120` matrix.
 
+- 2026-09-03 v13 recovery-clone and downstream-owner reopen: immutable dist-v13
+  crossed the corrected product-owner authoring boundary and injected SIGKILL,
+  but recovery stopped because the proof clone had dereferenced the installed
+  `current` runtime symlink into a non-versioned directory. A phase-local,
+  version-bound clone corrects that harness defect and rejects external runtime
+  targets. The next installed call then exposed the same owner alias in Radar:
+  direct and sealed semantics used the canonical internal-system path, while
+  backlog citation independently rematched the component label against both
+  title and system facts. Radar now consumes the shared canonical owner map, and
+  the alias regression builds the complete proposal through all backlog rows.
+  Focused proof passes `35/35`, complete Greenfield runtime passes `618/618`,
+  and install/release passes `460/460`. No semantic regex, retry, response
+  repair, additional model call, or post-confirm interpretation was added.
+  B-142 remains in implementation pending rebuilt immutable recovery and the
+  unchanged public `60/90/120` matrix.
+
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.
   The active release contract is standard post-confirm under 60 seconds without

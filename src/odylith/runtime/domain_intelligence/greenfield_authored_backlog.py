@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_radar_ordering impo
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
+    canonical_product_owner_projection_values,
 )
 
 
@@ -67,6 +68,10 @@ def build_authored_backlog(
     component_labels = _component_values(components, "label")
     if not component_ids or len(component_ids) != len(components):
         raise ValueError("model-authored backlog requires typed component identifiers")
+    product_owner_values = canonical_product_owner_projection_values(
+        title=title,
+        internal_systems=internal_systems,
+    )
 
     fact_values = _fact_values(
         title=title,
@@ -111,6 +116,7 @@ def build_authored_backlog(
     component_fact_refs_by_role = {
         role: _component_fact_refs(
             fact_values=fact_values,
+            product_owner_values=product_owner_values,
             component_ids=component_ids,
             component_labels=component_labels,
             component_focus=component_focus_by_role[role],
@@ -138,6 +144,7 @@ def build_authored_backlog(
         "title": title,
         "component_ids": component_ids,
         "component_labels": component_labels,
+        "product_owner_values": product_owner_values,
         "fact_values": fact_values,
         "relation_values": relation_values,
         "workflow_components": workflow_components,
@@ -529,6 +536,11 @@ def _radar_rendered_field_refs(
     fact_refs = _strings(semantic_contract.get("fact_refs"))
     component_refs = _component_fact_refs(
         fact_values=fact_values,
+        product_owner_values=(
+            facts.get("product_owner_values")
+            if isinstance(facts.get("product_owner_values"), Mapping)
+            else {}
+        ),
         component_ids=_strings(facts.get("component_ids")),
         component_labels=_strings(facts.get("component_labels")),
         component_focus=_strings(projection.get("component_focus")),
@@ -1006,26 +1018,28 @@ def _focused_component_labels(
 def _component_fact_refs(
     *,
     fact_values: Mapping[str, Any],
+    product_owner_values: Mapping[str, Any],
     component_ids: Sequence[str],
     component_labels: Sequence[str],
     component_focus: Sequence[str],
 ) -> list[str]:
     labels_by_id = dict(zip(component_ids, component_labels, strict=True))
+    refs_by_label = {
+        str(label): str(ref)
+        for ref, label in product_owner_values.items()
+        if isinstance(ref, str)
+        and str(label)
+        and fact_values.get(ref) == label
+    }
     refs: list[str] = []
     for component_id in component_focus:
         if component_id not in labels_by_id:
             raise ValueError("model-authored workstream has an unknown impacted component")
         label = labels_by_id[component_id]
-        matching = [
-            ref
-            for ref, value in fact_values.items()
-            if isinstance(ref, str)
-            and (ref == "/title" or ref.startswith("/internal_systems/"))
-            and value == label
-        ]
-        if len(matching) != 1:
+        ref = refs_by_label.get(label)
+        if ref is None:
             raise ValueError("model-authored workstream has an uncited impacted component")
-        refs.extend(matching)
+        refs.append(ref)
     return _unique(refs)
 
 

@@ -65,3 +65,18 @@
 - Exact Installed V10 Reopen (2026-09-02): Immutable clean candidate `f26925486` crossed model authoring and transaction staging, then its isolated SIGKILL phase failed closed before fault injection because compiler provenance still compared `repo_root_fingerprint` as the SHA-256 of the absolute checkout path. No governed write occurred. Identity v5 correctly removed absolute paths from the runtime-source fingerprint, but an adjacent provenance field retained the same location-dependent assumption. The repository write set already seals and verifies every managed before-fingerprint plus the active generation identity, so the path digest adds false location coupling without protecting repository state. Replace it with an explicit stable repository-context policy marker, retain the exact write-set and active-generation preconditions, bump compiler identity, and prove both relocation success and repository-content drift rejection before rerunning the installed fault phases. Do not regenerate the transaction per phase, rewrite receipts, or weaken preconditions.
 
 - Repository-Context Source Resolution (2026-09-02): Compiler identity v6 removes the last absolute checkout digest from compiler provenance and records the stable `sealed_managed_fingerprints_and_active_generation_v1` repository-context policy instead. The transaction still seals the complete write-set hash, managed before-fingerprints, active generation, runtime source bytes, transaction bytes, and compiler receipt; changed repository content still rejects before writing. A copied sealed transaction now validates under a relocated repo root, while runtime mutation and managed-source drift controls remain fail-closed. Focused provenance, repository-write-set, and recovery tests pass `65/65`; complete Greenfield runtime and install suites pass `614/614` and `459/459`. Immutable installed SIGKILL, conflict, fsync rollback, same-hash retry, and readback proof remain required before closing CB-325.
+
+- Exact Installed V13 Clone Reopen (2026-09-03): Clean immutable dist-v13 at
+  `154d0730789829442e9776f2f8f855939e3def52` crossed authoring, staging, and
+  the injected SIGKILL boundary, then the recovery invocation stopped because
+  the cloned launcher classified its runtime as untrusted. The recovery harness
+  used default `copytree` behavior, which dereferenced the seed's active-runtime
+  symlink into a directory named `current`; the launcher therefore could not
+  resolve the version-keyed trust record. This is a proof-clone defect, not a
+  product-runtime or semantic-model defect. The phase-local clone now preserves
+  symlinks, validates that the seed's active runtime is exactly one managed
+  version, and rebinds `current` to the copied phase-local version before any
+  fault execution. An external runtime target still fails closed. Focused
+  recovery proof passes `20/20`, complete Greenfield runtime passes `618/618`,
+  and install/release passes `460/460`. The corrected source harness reaches
+  installed model authoring; immutable fault-phase proof remains required.

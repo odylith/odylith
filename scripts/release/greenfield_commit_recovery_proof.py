@@ -740,8 +740,30 @@ def _phase_repo_and_transaction(
     if seed is None:
         _install_repo(repo_root=repo_root, install_script=install_script, env=env)
         return repo_root, _compile_transaction(repo_root=repo_root, env=env, case=case)
-    shutil.copytree(seed.repo_root, repo_root)
+    _clone_recovery_seed_repo(seed_repo=seed.repo_root, repo_root=repo_root)
     return repo_root, _transaction_for_phase(seed=seed)
+
+
+def _clone_recovery_seed_repo(*, seed_repo: Path, repo_root: Path) -> None:
+    """Copy one installed seed while keeping its managed runtime phase-local."""
+
+    seed_runtime_root = seed_repo / ".odylith/runtime"
+    seed_versions_root = seed_runtime_root / "versions"
+    seed_current = seed_runtime_root / "current"
+    if not seed_current.is_symlink():
+        raise RuntimeError("installed recovery seed does not have an active runtime symlink")
+    try:
+        active_relative = seed_current.resolve(strict=True).relative_to(seed_versions_root.resolve(strict=True))
+    except (OSError, ValueError) as exc:
+        raise RuntimeError("installed recovery seed active runtime is outside its managed versions") from exc
+    if len(active_relative.parts) != 1:
+        raise RuntimeError("installed recovery seed active runtime is not one managed version")
+
+    shutil.copytree(seed_repo, repo_root, symlinks=True)
+    cloned_runtime_root = repo_root / ".odylith/runtime"
+    cloned_current = cloned_runtime_root / "current"
+    cloned_current.unlink()
+    cloned_current.symlink_to(Path("versions") / active_relative, target_is_directory=True)
 
 
 def _transaction_for_phase(*, seed: _RecoverySeed) -> _CompiledRecoveryTransaction:

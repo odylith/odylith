@@ -192,6 +192,10 @@ def test_installed_release_env_removes_maintainer_source_path(monkeypatch) -> No
 def test_recovery_phases_reuse_one_sealed_transaction(tmp_path: Path, monkeypatch) -> None:
     module = _module()
     seed_root = tmp_path / "seed"
+    seed_version_root = seed_root / ".odylith/runtime/versions/0.1.15"
+    seed_version_root.mkdir(parents=True)
+    seed_current = seed_root / ".odylith/runtime/current"
+    seed_current.symlink_to(seed_version_root, target_is_directory=True)
     transaction_path = seed_root / ".odylith/runtime/greenfield/pending/hash/product-create-transaction.v1.json"
     transaction_path.parent.mkdir(parents=True)
     transaction_path.write_text("{}\n", encoding="utf-8")
@@ -231,6 +235,28 @@ def test_recovery_phases_reuse_one_sealed_transaction(tmp_path: Path, monkeypatc
 
     assert (repo_root / transaction.transaction_file).read_text(encoding="utf-8") == "{}\n"
     assert transaction.product_facts_hash == "c" * 64
+    cloned_current = repo_root / ".odylith/runtime/current"
+    assert cloned_current.is_symlink()
+    assert cloned_current.readlink() == Path("versions/0.1.15")
+    assert cloned_current.resolve() == repo_root / ".odylith/runtime/versions/0.1.15"
+
+
+def test_recovery_seed_clone_rejects_runtime_outside_managed_versions(tmp_path: Path) -> None:
+    module = _module()
+    seed_root = tmp_path / "seed"
+    outside_runtime = tmp_path / "outside-runtime"
+    outside_runtime.mkdir()
+    seed_current = seed_root / ".odylith/runtime/current"
+    seed_current.parent.mkdir(parents=True)
+    seed_current.symlink_to(outside_runtime, target_is_directory=True)
+
+    try:
+        module._clone_recovery_seed_repo(seed_repo=seed_root, repo_root=tmp_path / "phase")  # noqa: SLF001
+    except RuntimeError as exc:
+        assert str(exc) == "installed recovery seed active runtime is outside its managed versions"
+    else:
+        raise AssertionError("external recovery runtime must fail closed")
+    assert not (tmp_path / "phase").exists()
 
 
 def test_runtime_identity_requires_the_managed_installed_runtime(tmp_path: Path, monkeypatch) -> None:

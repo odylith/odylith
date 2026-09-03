@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import pytest
 
+from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
+    build_authored_greenfield_proposal,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GreenfieldModelAuthoringError,
     author_greenfield_intent,
@@ -82,6 +85,15 @@ def test_title_alias_canonicalizes_to_its_internal_system_owner(tmp_path) -> Non
     component = semantics["component_responsibility_relations"][0]
     assert component["owner_system_path"] == "/internal_systems/0"
     assert component["owner_system_quote"] == "Harbor Desk"
+    proposal = build_authored_greenfield_proposal(
+        observed_source={},
+        release_selector="",
+        confirmed_intent=candidate,
+    )
+    assert proposal["components"][0]["label"] == "Harbor Desk"
+    for workstream in proposal["backlog"]:
+        refs = workstream["authored_workstream_semantics"]
+        assert "/internal_systems/0" in [*refs["fact_refs"], *refs["shared_fact_refs"]]
 
 
 def test_two_indistinguishable_internal_system_paths_fail_closed() -> None:

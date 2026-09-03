@@ -63,6 +63,8 @@
 - Related Incidents/Bugs: CB-303, CB-326, B-142
 
 - Code References: - src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py
+- src/odylith/runtime/domain_intelligence/greenfield_authored_backlog.py
+- tests/unit/runtime/test_greenfield_product_owner_identity.py
 
 - Source Resolution (2026-09-03): Authored-semantics v10 now owns one shared
   product-owner projection resolver. When the product title and exactly one
@@ -76,3 +78,20 @@
   case authored four grounded events in `26.465s`. No prompt-only warning,
   regex, retry, response rewrite, extra model call, or post-confirm work was
   added. Immutable installed recovery and the public matrix remain open.
+
+- Exact Installed V13 Downstream Reopen (2026-09-03): After the recovery clone
+  correction, the same immutable v13 candidate reached its one installed model
+  call and then failed closed with `model-authored workstream has an uncited
+  impacted component`. The direct graph and sealed semantics had already
+  canonicalized the exact title/internal-system alias, but Radar independently
+  rematched the rendered component label against both source paths and required
+  exactly one match. That downstream reinterpretation reintroduced the same
+  duplicate-owner failure class. Radar now consumes the shared canonical owner
+  map produced from title and internal-system facts; it no longer maintains a
+  competing quote-match rule. The title-alias regression now builds the complete
+  proposal and proves every backlog workstream cites `/internal_systems/0`.
+  Focused owner, backlog, and recovery proof passes `35/35`; complete Greenfield
+  runtime passes `618/618`; install/release passes `460/460`. No regex, prompt
+  warning, retry, response rewrite, second model call, or post-confirm work was
+  added. A rebuilt immutable recovery proof and public `60/90/120` matrix remain
+  required.

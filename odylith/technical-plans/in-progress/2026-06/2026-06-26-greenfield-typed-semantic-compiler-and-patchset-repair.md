@@ -4286,3 +4286,17 @@ above.
       call on the same public case authored four grounded events in `26.465s`.
       Freeze these bytes, rerun immutable installed recovery, and only then run
       the public `60/90/120` matrix. The protected holdout remains untouched.
+    - 2026-09-03 v13 recovery-clone and downstream-owner reopen: clean dist-v13
+      crossed authoring, staging, and SIGKILL injection, then the cloned launcher
+      rejected its copied runtime because default `copytree` dereferenced the
+      active-version link into a directory named `current`. Preserve symlinks,
+      require one seed runtime under managed `versions`, and rebind `current` to
+      the phase-local copy. The corrected harness then reached the one installed
+      model call and exposed an adjacent copy of the title/internal-system alias
+      rule in Radar component citation. Feed Radar the same canonical owner map
+      used by direct and sealed semantics, and prove the alias through complete
+      proposal/backlog projection. Focused proof passes `35/35`, full Greenfield
+      runtime passes `618/618`, and install/release passes `460/460`. Add no
+      regex, retry, response rewrite, additional model call, or post-confirm
+      work. Rebuild once and require the full recovery gate before the unchanged
+      public matrix. The protected holdout remains untouched.

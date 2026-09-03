@@ -32,6 +32,9 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:start -->
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-09-02-greenfield-recovery-proof-bound-compiler-identity-to-absolute-install-path.md`, `odylith/casebook/bugs/2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_backlog.py`
+- **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_semantics.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `tests/unit/runtime/test_greenfield_model_intent_authoring.py`
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
@@ -45,12 +48,21 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py`, `src/odylith/runtime/domain_intelligence/greenfield_create_contract.py`, `tests/unit/runtime/test_greenfield_transaction_provenance.py`
-- **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-09-03: Extended canonical product-owner identity through Radar and kept recovery clones trust-valid. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-325`, `CB-327`; Diagram: D-043)
+  The installed recovery harness preserves the active-version symlink and
+  rebinds it to a phase-local managed runtime, rejecting targets outside the
+  seed's version store. Radar consumes the same canonical title/internal-system
+  owner map as direct and sealed semantics instead of independently rematching
+  component labels. The alias regression now builds the complete proposal and
+  verifies every backlog owner citation. Focused, complete runtime, and
+  install/release proof passes `35/35`, `618/618`, and `460/460`. No regex,
+  retry, response rewriting, extra model call, or post-confirm interpretation
+  was introduced. Rebuilt immutable recovery and public matrix proof remain
+  open.
 
 - 2026-09-03: Unified Greenfield product-owner identity across authored and sealed semantics. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-327`; Diagram: D-043)
   Authored-semantics v10 provides the single product-owner projection contract
