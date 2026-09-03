@@ -6,6 +6,7 @@ Last updated (UTC): 2026-09-03
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-328 | 2026-09-03 | Protected greenfield holdout targets a superseded evaluator contract | P1 | domain-intelligence-greenfield | Open | [2026-09-03-protected-greenfield-holdout-targets-a-superseded-evaluator-contract.md](2026-09-03-protected-greenfield-holdout-targets-a-superseded-evaluator-contract.md) |
 | CB-327 | 2026-09-03 | Greenfield rejects a product title that aliases its internal system | P1 | domain-intelligence | FixedPendingRelease | [2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md](2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md) |
 | CB-326 | 2026-09-03 | Greenfield flat fact arrays permit invalid singular cardinality | P1 | domain-intelligence | FixedPendingRelease | [2026-09-03-greenfield-flat-fact-arrays-permit-invalid-singular-cardinality.md](2026-09-03-greenfield-flat-fact-arrays-permit-invalid-singular-cardinality.md) |
 | CB-325 | 2026-09-02 | Greenfield recovery proof bound compiler identity to absolute install path | P1 | domain-intelligence-greenfield | FixedPendingRelease | [2026-09-02-greenfield-recovery-proof-bound-compiler-identity-to-absolute-install-path.md](2026-09-02-greenfield-recovery-proof-bound-compiler-identity-to-absolute-install-path.md) |

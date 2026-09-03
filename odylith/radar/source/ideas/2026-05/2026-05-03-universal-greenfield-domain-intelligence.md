@@ -2872,6 +2872,21 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   one-shot execution of the untouched protected revision-6 evaluation package
   remain the next release gate.
 
+- 2026-09-03 protected evaluation contract rejection: approved access closed
+  the two independent-review P1s inside the revision-6 package, and its
+  standalone eight-case custody validator passes with zero errors. The product
+  release preflight still rejects the package because its intent-authoring v2
+  and custom manifest/corpus schemas do not match intent-authoring v19,
+  evaluation-splits v4, or final-holdout v4. Eight cases also cannot satisfy
+  the frozen minimum of four independent observations for each of three
+  complexity bands and three pinned model profiles. CB-328 owns this release
+  evidence defect. The one-shot ledger remains absent and the winning candidate
+  remains frozen. Replace the package directly with independently authored,
+  current-contract evidence; do not bridge the stale schema, lower floors, or
+  change production behavior. B-142 remains in implementation until pure
+  contract and leakage preflight pass and that replacement holdout completes
+  its single installed run.
+
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.
   The active release contract is standard post-confirm under 60 seconds without

@@ -4317,3 +4317,18 @@ above.
       B-142 in progress, do not tune against protected data, and require explicit
       approval before correcting and executing the untouched protected
       revision-6 evaluation package once.
+    - 2026-09-03 protected evaluation contract rejection: after approval, the
+      package-local corrections removed non-model-selected supporting spans
+      from scoring and separated one mixed normal/recovery event; the corrected
+      eight-case package passes its own offline validator with zero errors. The
+      live release evaluator rejects it before product execution because it
+      targets intent-authoring v2 and custom protected schemas rather than
+      intent-authoring v19, evaluation-splits v4, and final-holdout v4. It also
+      cannot meet the frozen four-sample minimum for each published complexity
+      band and model profile. Record this as CB-328, preserve the absent
+      one-shot ledger, and keep candidate `62bcdd8147e47874e984483b48fb1fb0a20ca413`
+      frozen. The next admissible step is a fresh independently authored and
+      reviewed current-contract package that passes pure contract, leakage,
+      slice, hash, and ledger preflight. Do not add an evaluator adapter stack,
+      reduce floors, count disclosed public cases as blind evidence, or change
+      production behavior before that gate.

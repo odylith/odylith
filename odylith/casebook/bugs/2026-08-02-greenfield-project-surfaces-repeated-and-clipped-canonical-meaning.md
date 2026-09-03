@@ -278,3 +278,22 @@
   arbitrary-input or release completion. CB-303 remains open pending approved
   correction and one-shot execution of the untouched protected revision-6
   evaluation package, followed by final release judgment.
+
+- Protected Evaluation Contract Rejection (2026-09-03): Approved protected
+  access resolved the independent review's two package-local P1 findings
+  without changing production behavior: three supporting-evidence spans were
+  removed from scored custody, and one fused accept-or-return event was split
+  into explicit normal and recovery relations. The corrected eight-case
+  package passes its standalone offline validator with zero errors. The actual
+  release-contract preflight nevertheless rejects it before product execution:
+  it declares intent-authoring v2 and a custom protected-holdout schema, while
+  the frozen candidate uses intent-authoring v19 and the gate requires
+  evaluation-splits v4, final-holdout v4 structural annotations, frozen floors,
+  a tracked corpus, and at least four observations in every published
+  complexity-band and model-profile slice. Running it would claim and then
+  interrupt the one-shot ledger, so the ledger remains absent. CB-328 owns the
+  evaluation-package failure. Keep candidate `62bcdd8147e47874e984483b48fb1fb0a20ca413`
+  frozen; do not add a compatibility stack, weaken the floors, or tune
+  production against protected evidence. CB-303 remains open until a fresh
+  independently authored current-contract package passes pure preflight and
+  then the single installed release run.
