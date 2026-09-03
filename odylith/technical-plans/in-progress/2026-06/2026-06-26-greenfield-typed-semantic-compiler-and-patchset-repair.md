@@ -4213,3 +4213,26 @@ above.
       all `612` Greenfield runtime and `459` install tests. Freeze these bytes,
       rerun isolated installed recovery first, and only then rerun the unchanged
       public `60/90/120` matrix. The protected holdout remains untouched.
+    - 2026-09-02 exact v10 recovery-provenance reopen: clean immutable candidate
+      `f26925486` reached the installed SIGKILL phase but rejected its copied
+      seed before fault injection because compiler provenance still bound
+      `repo_root_fingerprint` to the absolute checkout path. Runtime-source
+      identity v5 fixed only the parallel code-fingerprint field. The losing
+      absolute-path mechanism adds no repository-state protection: the sealed
+      write set already verifies managed before-fingerprints and active
+      generation identity at the write boundary. Replace the path digest with
+      one stable repository-context policy marker, retain every content and
+      generation precondition, bump compiler identity, and add relocation plus
+      true-drift controls. Rebuild and rerun the isolated fault proof before the
+      public matrix; keep the protected holdout untouched.
+    - 2026-09-02 recovery repository-context source resolution: compiler
+      identity v6 removes the final absolute checkout digest from provenance and
+      replaces it with the stable
+      `sealed_managed_fingerprints_and_active_generation_v1` policy marker.
+      Repository safety remains owned by the sealed write-set hash, exact
+      managed before-fingerprints, active generation, transaction and receipt
+      bytes, and runtime-source identity. Focused relocation and true-drift
+      proof passes `65/65`; complete Greenfield runtime and install proof passes
+      `614/614` and `459/459`. Freeze these bytes into a new immutable candidate
+      and rerun the isolated recovery proof before the public matrix. The
+      protected holdout remains untouched.

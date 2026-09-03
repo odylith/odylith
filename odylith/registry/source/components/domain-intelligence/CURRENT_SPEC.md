@@ -32,6 +32,9 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:start -->
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py`, `src/odylith/runtime/domain_intelligence/greenfield_create_contract.py`, `src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py`, `tests/unit/runtime/test_greenfield_transaction_provenance.py`
+- **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_authored_semantics.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`, `tests/unit/runtime/test_greenfield_model_intent_authoring.py`
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
@@ -45,12 +48,18 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-08-10 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_component_owned_state.py`, `tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py`
-- **2026-08-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_canonical_meaning.py`, `tests/integration/runtime/test_greenfield_component_contract_preconfirm.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-09-02: Made Greenfield repository provenance relocatable without weakening state preconditions. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-325`; Diagram: D-043)
+  Compiler identity v6 replaces the absolute checkout digest with the stable
+  `sealed_managed_fingerprints_and_active_generation_v1` policy marker. The
+  write boundary still verifies the sealed write-set hash, managed before-state,
+  active generation, transaction and receipt bytes, and runtime-source bytes.
+  Focused relocation and true-drift proof passes `65/65`; complete Greenfield
+  runtime and install suites pass `614/614` and `459/459`. Immutable installed
+  fault and retry proof remains required.
 
 - 2026-09-02: Unified terminal-result evidence across the direct graph and sealed semantics. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   Intent-authoring v18 and authored-semantics v9 share one typed terminal-source

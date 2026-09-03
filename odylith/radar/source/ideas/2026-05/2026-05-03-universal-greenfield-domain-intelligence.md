@@ -2769,6 +2769,29 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   post-confirm work was added. B-142 remains in implementation pending rebuilt
   immutable recovery and the unchanged public `60/90/120` matrix.
 
+- 2026-09-02 exact v10 recovery-provenance reopen: immutable candidate
+  `f26925486` crossed authoring and staging, then the isolated SIGKILL phase
+  failed closed before injection because `repo_root_fingerprint` still hashed
+  the absolute checkout path. No governed write occurred. Runtime identity v5
+  removed one location dependency, but this adjacent provenance field retained
+  it. Replace the path digest with a stable repository-context policy marker;
+  preserve the sealed managed-file fingerprints, active-generation identity,
+  transaction hash, receipt, and runtime-byte guards. Bump compiler identity
+  and prove relocated success plus real repository-state drift rejection. Do
+  not reauthor per phase or weaken fail-closed preconditions. B-142 remains in
+  implementation before the unchanged public `60/90/120` matrix.
+
+- 2026-09-02 recovery repository-context source correction: compiler identity
+  v6 removes the remaining absolute checkout digest and records one stable
+  repository-context policy. Safety remains content-bound through the sealed
+  write-set hash, managed before-fingerprints, active generation, transaction
+  bytes, compiler receipt, and runtime-byte identity. Relocated transaction
+  admission and real drift controls pass in the focused `65/65` proof; the
+  complete Greenfield runtime and install suites pass `614/614` and `459/459`.
+  No receipt rewrite, per-phase reauthoring, or precondition weakening was
+  added. B-142 remains in implementation pending immutable installed recovery
+  and then the unchanged public `60/90/120` matrix.
+
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.
   The active release contract is standard post-confirm under 60 seconds without

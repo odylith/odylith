@@ -38,6 +38,9 @@ from odylith.runtime.domain_intelligence.greenfield_create_contract import (
 from odylith.runtime.domain_intelligence.greenfield_create_contract import (
     PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION,
 )
+from odylith.runtime.domain_intelligence.greenfield_create_contract import (
+    PRODUCT_CREATE_TRANSACTION_REPOSITORY_CONTEXT_POLICY,
+)
 from odylith.runtime.domain_intelligence.greenfield_create_contract import PRODUCT_CREATE_TRANSACTION_VERSION
 from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_ALLOWED_OPERATIONS
 from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_FORBIDDEN_OPERATIONS
@@ -176,7 +179,6 @@ def build_product_create_transaction(
         intent_authority=authority,
         quality_manifest=quality_manifest,
         compiler_provenance=build_product_create_transaction_provenance(
-            repo_root=repo_root,
             quality_manifest=quality_manifest,
         ),
         transaction_hash="",
@@ -411,7 +413,6 @@ def _require_proposal_intent_authority_binding(
 
 def build_product_create_transaction_provenance(
     *,
-    repo_root: Path,
     quality_manifest: Mapping[str, Any],
 ) -> dict[str, Any]:
     return {
@@ -419,7 +420,7 @@ def build_product_create_transaction_provenance(
         "transaction_version": PRODUCT_CREATE_TRANSACTION_VERSION,
         "phase": "pre_confirm_compile",
         "commit_policy": PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY,
-        "repo_root_fingerprint": product_create_transaction_repo_fingerprint(repo_root),
+        "repository_context_policy": PRODUCT_CREATE_TRANSACTION_REPOSITORY_CONTEXT_POLICY,
         "quality_manifest_version": str(quality_manifest.get("version", "")).strip(),
         "quality_manifest_engine": str(quality_manifest.get("engine", "")).strip(),
         "compiler_identity": product_create_transaction_compiler_identity(),
@@ -432,21 +433,13 @@ def product_create_transaction_compiler_identity() -> dict[str, Any]:
     return build_product_create_transaction_compiler_identity()
 
 
-def product_create_transaction_repo_fingerprint(repo_root: Path) -> str:
-    root = Path(repo_root).expanduser().resolve()
-    return hashlib.sha256(str(root).encode("utf-8")).hexdigest()
-
-
 def require_product_create_transaction_compiler_provenance(
     transaction: ProductCreateTransaction,
-    *,
-    repo_root: Path,
 ) -> None:
     provenance = transaction.compiler_provenance if isinstance(transaction.compiler_provenance, Mapping) else {}
     require_product_create_transaction_compiler_provenance_payload(
         provenance,
         quality_manifest=transaction.quality_manifest,
-        repo_root=repo_root,
     )
 
 
@@ -675,7 +668,6 @@ __all__ = [
     "product_create_transaction_from_dict",
     "product_create_transaction_receipt_path",
     "product_create_transaction_hash",
-    "product_create_transaction_repo_fingerprint",
     "product_create_transaction_to_dict",
     "require_product_create_transaction_quality_approved",
     "require_product_create_transaction_compiler_provenance",

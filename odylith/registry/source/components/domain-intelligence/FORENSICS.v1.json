@@ -8,12 +8,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 550,
-    "mapped_workstream_evidence_count": 458,
+    "explicit_event_count": 551,
+    "mapped_workstream_evidence_count": 459,
     "recent_path_match_count": 0,
-    "spec_history_event_count": 298,
+    "spec_history_event_count": 299,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 550
+    "timeline_event_count": 551
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,6 +21,44 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 4,
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_create_contract.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
+        "tests/unit/runtime/test_greenfield_transaction_provenance.py"
+      ],
+      "confidence": "high",
+      "event_index": 1157,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
+      "ts_iso": "2026-09-02T17:23:26-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 4,
       "artifacts": [

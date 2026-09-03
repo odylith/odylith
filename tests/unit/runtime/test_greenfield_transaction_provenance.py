@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 from typing import Any
@@ -25,6 +26,9 @@ from odylith.runtime.domain_intelligence.greenfield_commit_transaction import (
 from odylith.runtime.domain_intelligence.greenfield_commit_transaction import load_sealed_product_create_commit
 from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_ALLOWED_OPERATIONS
 from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_FORBIDDEN_OPERATIONS
+from odylith.runtime.domain_intelligence.greenfield_create_contract import (
+    PRODUCT_CREATE_TRANSACTION_REPOSITORY_CONTEXT_POLICY,
+)
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
     PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION,
 )
@@ -110,10 +114,36 @@ def test_product_create_transaction_provenance_carries_compiler_identity(tmp_pat
     transaction = _transaction(tmp_path)
 
     assert transaction.compiler_provenance["compiler_identity"] == product_create_transaction_compiler_identity()
+    assert transaction.compiler_provenance["repository_context_policy"] == (
+        PRODUCT_CREATE_TRANSACTION_REPOSITORY_CONTEXT_POLICY
+    )
+    assert "repo_root_fingerprint" not in transaction.compiler_provenance
     assert (
         transaction.compiler_provenance["compiler_identity"]["version"]
         == PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION
     )
+
+
+def test_compiler_provenance_is_stable_when_the_sealed_repo_is_relocated(
+    tmp_path: Path,
+) -> None:
+    seed = tmp_path / "seed"
+    seed.mkdir()
+    transaction = _transaction(seed)
+    transaction_path = seed / "product-create-transaction.v1.json"
+    greenfield_create_transaction.write_compiled_product_create_transaction_file(
+        transaction_path,
+        transaction,
+    )
+    relocated = tmp_path / "relocated"
+    shutil.copytree(seed, relocated)
+
+    sealed = load_sealed_product_create_commit(
+        relocated / transaction_path.name,
+        repo_root=relocated,
+    )
+
+    assert sealed.transaction_hash == transaction.transaction_hash
 
 
 def test_compiler_identity_fingerprints_only_postconfirm_runtime() -> None:

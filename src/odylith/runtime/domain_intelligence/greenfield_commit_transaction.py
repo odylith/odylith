@@ -22,6 +22,9 @@ from odylith.runtime.domain_intelligence.greenfield_create_contract import (
 from odylith.runtime.domain_intelligence.greenfield_create_contract import (
     PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION,
 )
+from odylith.runtime.domain_intelligence.greenfield_create_contract import (
+    PRODUCT_CREATE_TRANSACTION_REPOSITORY_CONTEXT_POLICY,
+)
 from odylith.runtime.domain_intelligence.greenfield_create_contract import PRODUCT_CREATE_TRANSACTION_VERSION
 from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_ALLOWED_OPERATIONS
 from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_FORBIDDEN_OPERATIONS
@@ -208,7 +211,6 @@ def load_sealed_product_create_commit(
         require_product_create_transaction_compiler_provenance_payload(
             compiler_provenance,
             quality_manifest=commit_manifest_preview,
-            repo_root=repo_root,
         )
     sealed = SealedProductCreateCommit(
         version=PRODUCT_CREATE_TRANSACTION_VERSION,
@@ -270,17 +272,15 @@ def require_product_create_transaction_compiler_provenance_payload(
     provenance: Mapping[str, Any],
     *,
     quality_manifest: Mapping[str, Any],
-    repo_root: Path,
 ) -> None:
     """Validate compiler provenance before the transaction enters the write boundary."""
 
-    root = Path(repo_root).expanduser().resolve()
     expected = {
         "compiler": PRODUCT_CREATE_TRANSACTION_COMPILER,
         "transaction_version": PRODUCT_CREATE_TRANSACTION_VERSION,
         "phase": "pre_confirm_compile",
         "commit_policy": PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY,
-        "repo_root_fingerprint": hashlib.sha256(str(root).encode("utf-8")).hexdigest(),
+        "repository_context_policy": PRODUCT_CREATE_TRANSACTION_REPOSITORY_CONTEXT_POLICY,
         "quality_manifest_version": str(quality_manifest.get("version", "")).strip(),
         "quality_manifest_engine": str(quality_manifest.get("engine", "")).strip(),
     }
