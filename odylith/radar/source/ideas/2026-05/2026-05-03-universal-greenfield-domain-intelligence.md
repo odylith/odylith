@@ -2792,6 +2792,30 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   added. B-142 remains in implementation pending immutable installed recovery
   and then the unchanged public `60/90/120` matrix.
 
+- 2026-09-03 typed-fact cardinality reopen: immutable dist-v11 crossed the
+  corrected recovery provenance boundary, then the public standard-tier case
+  failed before transaction staging because the one-pass model emitted more
+  than one citation for a scalar intent field. `CB-326` identifies the owning
+  abstraction: one heterogeneous fact array cannot express scalar versus
+  repeated cardinality, so prompt prose and a downstream rejection still share
+  the contract. Replace that array with one closed typed fact object whose
+  scalar keys accept one citation or null and whose repeated keys accept
+  bounded ordered citation arrays. Remove the superseded flat contract; do not
+  add regex semantics, response rewriting, a retry, or another model call.
+  B-142 remains in implementation until the rebuilt installed recovery proof
+  and unchanged public `60/90/120` matrix pass.
+
+- 2026-09-03 typed-fact cardinality source correction: intent-authoring v19
+  makes scalar multiplicity unrepresentable with a closed fact object while
+  keeping bounded arrays for repeated facts. It removes the superseded flat
+  response path and its post-hoc singular-field rejection. Aggregate citation
+  limits, exact byte custody, one-pass model ownership, and fail-closed writes
+  remain intact; no regex, retry, response repair, or case exception was added.
+  Focused authoring/custody proof passes `140/140`, complete Greenfield runtime
+  passes `616/616`, and install/release passes `459/459`. B-142 remains in
+  implementation pending immutable installed recovery and the unchanged public
+  `60/90/120` matrix.
+
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.
   The active release contract is standard post-confirm under 60 seconds without

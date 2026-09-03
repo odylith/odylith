@@ -32,6 +32,9 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:start -->
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-09-03-greenfield-flat-fact-arrays-permit-invalid-singular-cardinality.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`, `tests/unit/runtime/greenfield_model_authoring_fixtures.py`, `tests/unit/runtime/test_greenfield_model_intent_authoring.py`
+- **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py`, `src/odylith/runtime/domain_intelligence/greenfield_create_contract.py`, `src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py`, `tests/unit/runtime/test_greenfield_transaction_provenance.py`
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
@@ -45,12 +48,20 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_component_spec.py`, `src/odylith/runtime/domain_intelligence/proposal_tribunal.py`
-- **2026-08-10 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_component_owned_state.py`, `tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-09-03: Encoded Greenfield source-fact cardinality in the model response schema. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-326`; Diagram: D-043)
+  Intent-authoring v19 replaces the heterogeneous flat fact array with one
+  closed typed object. Scalar keys accept one exact citation or null; repeated
+  keys accept bounded ordered citation arrays, and deterministic custody still
+  enforces the aggregate citation envelope. The retired flat response and its
+  downstream singular-field rejection are removed in the same change. The
+  semantic boundary remains one model call with exact quote verification and
+  no regex, retry, response rewriting, or post-confirm interpretation. Focused,
+  complete runtime, and install/release proof passes `140/140`, `616/616`, and
+  `459/459`; immutable installed recovery and public matrix proof remain open.
 
 - 2026-09-02: Made Greenfield repository provenance relocatable without weakening state preconditions. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-325`; Diagram: D-043)
   Compiler identity v6 replaces the absolute checkout digest with the stable

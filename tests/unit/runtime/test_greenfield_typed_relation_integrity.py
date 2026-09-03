@@ -425,11 +425,7 @@ def _repeated_event_case() -> tuple[str, dict[str, object]]:
         ],
         terminal_component_owner="Retry Console",
     )
-    path_facts = [
-        row
-        for row in response["facts"]
-        if row["field"] == "first_path"
-    ]
+    path_facts = response["facts"]["first_path"]
     path_facts[1]["occurrence"] = 2
     return prompt, response
 

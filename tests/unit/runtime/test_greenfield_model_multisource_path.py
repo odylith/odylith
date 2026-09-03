@@ -229,10 +229,10 @@ def test_two_document_dispersed_path_materializes_exact_typed_package(
     assert candidate["product_intent_authority"]["material_fields"]["first_path"][
         "source_span_ids"
     ] == [
-        "authoring:first_path:1:8",
-        "authoring:first_path:2:9",
-        "authoring:first_path:3:10",
-        "authoring:first_path:4:11",
+        "authoring:first_path:1:4",
+        "authoring:first_path:2:5",
+        "authoring:first_path:3:6",
+        "authoring:first_path:4:7",
     ]
     evidence_ledger = json.loads(
         (tmp_path / ".odylith/runtime/greenfield/candidate-evidence.v1.json").read_text(
@@ -313,7 +313,7 @@ def test_authoring_derives_context_custody_without_model_restatement() -> None:
 def test_authoring_canonicalizes_a_unique_segment_occurrence() -> None:
     prompt, edit_evidence, intent, segments, relations = _case()
     response = _response(intent=intent, segments=segments, relations=relations)
-    path_fact = next(row for row in response["facts"] if row["field"] == "first_path")
+    path_fact = response["facts"]["first_path"][0]
     path_fact["occurrence"] = 2
     result = author_greenfield_intent(
         evidence_text=combined_prompt_evidence_source(

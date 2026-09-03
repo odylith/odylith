@@ -42,12 +42,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 644,
-    "mapped_workstream_evidence_count": 560,
+    "explicit_event_count": 645,
+    "mapped_workstream_evidence_count": 561,
     "recent_path_match_count": 0,
     "spec_history_event_count": 34,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 644
+    "timeline_event_count": 645
   },
   "name": "Compass",
   "path_prefixes": [
@@ -57,6 +57,44 @@
   ],
   "spec_ref": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 4,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-09-03-greenfield-flat-fact-arrays-permit-invalid-singular-cardinality.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py",
+        "tests/unit/runtime/greenfield_model_authoring_fixtures.py",
+        "tests/unit/runtime/test_greenfield_model_intent_authoring.py"
+      ],
+      "confidence": "high",
+      "event_index": 1158,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
+      "ts_iso": "2026-09-02T17:54:24-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 4,
       "artifacts": [

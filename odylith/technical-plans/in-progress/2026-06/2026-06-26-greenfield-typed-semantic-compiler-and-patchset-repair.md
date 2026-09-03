@@ -4236,3 +4236,28 @@ above.
       `614/614` and `459/459`. Freeze these bytes into a new immutable candidate
       and rerun the isolated recovery proof before the public matrix. The
       protected holdout remains untouched.
+    - 2026-09-03 typed-fact cardinality reopen: immutable dist-v11 reached the
+      public standard-tier authoring call with the corrected recovery
+      provenance, but no transaction was staged because the flat `facts` array
+      contained multiple citations for one scalar intent field. `CB-326` owns
+      this failure class. Replace the mixed array with one schema-enforced fact
+      object: scalar keys admit one exact citation or null, repeated keys admit
+      bounded ordered arrays, and clarification uses the typed empty sentinel.
+      Delete the old flat-array validator and fixture shape in the same change.
+      Preserve the single semantic model pass, exact quote custody, fail-closed
+      writes, and the exact `60/90/120` profiles; do not add retries, regexes,
+      response repair, or case-specific exceptions. Rebuild only after focused,
+      complete runtime, and install proof passes, then rerun isolated recovery
+      before the unchanged public matrix. The protected holdout remains
+      untouched.
+    - 2026-09-03 typed-fact cardinality source resolution: intent-authoring v19
+      replaces the heterogeneous fact list with one closed typed object. Each
+      scalar key accepts one exact citation or null, each repeated key accepts
+      a bounded ordered array, and deterministic compilation retains the total
+      256-citation gate. The flat response contract and post-hoc scalar
+      multiplicity branch are deleted together. Focused authoring/custody proof
+      passes `140/140`, complete Greenfield runtime passes `616/616`, and
+      install/release passes `459/459`; compilation, diff, and regex-boundary
+      checks pass. Freeze and rebuild these bytes, rerun isolated installed
+      recovery, and only then run the unchanged public `60/90/120` matrix. The
+      protected holdout remains untouched.

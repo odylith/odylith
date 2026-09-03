@@ -404,9 +404,14 @@ def test_edit_file_reader_rejects_invalid_utf8(monkeypatch, tmp_path) -> None:  
 
 def test_authoring_schema_and_operating_receipt_use_the_same_caps() -> None:
     schema_properties = greenfield_model_intent_authoring._AUTHORING_SCHEMA["properties"]
+    typed_facts = schema_properties["facts"]["anyOf"][0]
 
     assert tuple(greenfield_model_intent_authoring._LIST_FIELDS) == AUTHORED_LIST_FIELDS
-    assert schema_properties["facts"]["maxItems"] == MAX_AUTHORED_CITATIONS
+    assert all(
+        typed_facts["properties"][field]["maxItems"] == MAX_AUTHORED_LIST_ITEMS
+        for field in greenfield_model_intent_authoring._REPEATED_SOURCE_FIELDS
+    )
+    assert MAX_AUTHORED_CITATIONS == 256
     assert schema_properties["assumptions"]["maxItems"] == MAX_AUTHORED_LIST_ITEMS
     assert schema_properties["ambiguities"]["maxItems"] == MAX_AUTHORED_LIST_ITEMS
     assert MAX_AUTHORED_LIST_ITEMS == 32

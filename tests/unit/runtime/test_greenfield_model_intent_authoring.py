@@ -600,11 +600,9 @@ def test_authoring_collapses_exact_duplicate_typed_fact_rows() -> None:
     source = _source()
     response = _response(source)
     facts = response["facts"]
-    assert isinstance(facts, list)
-    path_fact_index = next(
-        index for index, fact in enumerate(facts) if fact["field"] == "first_path"
-    )
-    facts.insert(path_fact_index + 1, dict(facts[path_fact_index]))
+    assert isinstance(facts, dict)
+    path_facts = facts["first_path"]
+    path_facts.insert(1, dict(path_facts[0]))
 
     result = author_greenfield_intent(
         evidence_text=source,
@@ -622,7 +620,7 @@ def test_authoring_accepts_an_explicit_repeated_quote_occurrence_without_first_m
     source = f"Harbor Desk. {_source()}"
     response = _response(source)
     second_start = source.encode("utf-8").find(b"Harbor Desk", 1)
-    response["facts"][0]["occurrence"] = 2  # type: ignore[index]
+    response["facts"]["title"]["occurrence"] = 2  # type: ignore[index]
 
     result = author_greenfield_intent(
         evidence_text=source,
@@ -637,7 +635,7 @@ def test_authoring_accepts_an_explicit_repeated_quote_occurrence_without_first_m
 def test_authoring_normalizes_impossible_occurrence_to_first_exact_match() -> None:
     source = f"Harbor Desk. {_source()}"
     response = _response(source)
-    response["facts"][0]["occurrence"] = source.count("Harbor Desk") + 1  # type: ignore[index]
+    response["facts"]["title"]["occurrence"] = source.count("Harbor Desk") + 1  # type: ignore[index]
 
     result = author_greenfield_intent(
         evidence_text=source,
@@ -669,6 +667,24 @@ def test_authoring_prompt_requires_every_transaction_material_fact() -> None:
         assert field in provider.last_request_system_prompt
     assert "owner_fact_quote" in provider.last_request_system_prompt
     assert "internal_systems fact or the selected title fact" in provider.last_request_system_prompt
+
+
+def test_authoring_schema_encodes_scalar_and_repeated_fact_cardinality() -> None:
+    source = _source()
+    provider = StructuredAuthoringProvider(_response(source))
+
+    author_greenfield_intent(
+        evidence_text=source,
+        provider=provider,
+        clock=lambda: 0.0,
+    )
+
+    typed_facts = provider.last_request_output_schema["properties"]["facts"]["anyOf"][0]
+    assert typed_facts["additionalProperties"] is False
+    assert typed_facts["properties"]["state_object"]["anyOf"][0]["type"] == "object"
+    assert typed_facts["properties"]["state_object"]["anyOf"][1] == {"type": "null"}
+    assert typed_facts["properties"]["first_path"]["type"] == "array"
+    assert typed_facts["properties"]["human_actors"]["type"] == "array"
 
 
 def test_authoring_derives_atomic_custody_without_a_second_model_semantic_payload() -> None:
@@ -716,8 +732,7 @@ def test_authoring_rejects_the_retired_model_atomic_payload() -> None:
 def test_authoring_rejects_a_source_quote_that_is_not_present() -> None:
     source = _source()
     response = _response(source)
-    response["facts"][0] = {  # type: ignore[index]
-        "field": "title",
+    response["facts"]["title"] = {  # type: ignore[index]
         "quote": "Not in evidence",
         "occurrence": 1,
     }
@@ -730,31 +745,42 @@ def test_authoring_rejects_a_source_quote_that_is_not_present() -> None:
         )
 
 
-def test_authoring_rejects_fragment_stitching_for_a_singular_field() -> None:
+def test_authoring_rejects_the_retired_flat_fact_array() -> None:
     source = _source()
     response = _response(source)
-    facts = [
-        row
-        for row in response["facts"]  # type: ignore[union-attr]
-        if row["field"] != "state_object"
+    response["facts"] = [
+        {"field": "state_object", "quote": "berth", "occurrence": 1},
+        {"field": "state_object", "quote": "occupancy", "occurrence": 1},
     ]
-    facts.extend(
-        [
-            {
-                "field": "state_object",
-                "quote": "berth",
-                "occurrence": 1,
-            },
-            {
-                "field": "state_object",
-                "quote": "occupancy",
-                "occurrence": 1,
-            },
-        ]
-    )
-    response["facts"] = facts
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="singular field"):
+    with pytest.raises(GreenfieldModelAuthoringError, match="invalid source citations"):
+        author_greenfield_intent(
+            evidence_text=source,
+            provider=StructuredAuthoringProvider(response),
+            clock=lambda: 0.0,
+        )
+
+
+def test_authoring_rejects_typed_facts_over_the_total_citation_cap() -> None:
+    source = _source()
+    response = _response(source)
+    facts = response["facts"]
+    assert isinstance(facts, dict)
+    citation = dict(facts["human_actors"][0])
+    for field in (
+        "first_path",
+        "success_metrics",
+        "evidence_requirements",
+        "operational_constraints",
+        "component_responsibilities",
+        "human_actors",
+        "external_systems",
+        "internal_systems",
+        "non_goals",
+    ):
+        facts[field] = [dict(citation) for _ in range(32)]
+
+    with pytest.raises(GreenfieldModelAuthoringError, match="invalid source citations"):
         author_greenfield_intent(
             evidence_text=source,
             provider=StructuredAuthoringProvider(response),
@@ -807,12 +833,8 @@ def test_authoring_rejects_a_component_owner_that_is_not_a_product_system_fact()
     source = _source()
     response = _response(source)
     facts = response["facts"]
-    assert isinstance(facts, list)
-    human_fact_quote = next(
-        fact["quote"]
-        for fact in facts
-        if fact["field"] == "human_actors"
-    )
+    assert isinstance(facts, dict)
+    human_fact_quote = facts["human_actors"][0]["quote"]
     response["components"][0]["owner_fact_quote"] = human_fact_quote  # type: ignore[index]
 
     with pytest.raises(GreenfieldModelAuthoringError, match="unbound component owner"):

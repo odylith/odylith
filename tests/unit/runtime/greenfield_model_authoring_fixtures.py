@@ -8,6 +8,8 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
+    _REPEATED_SOURCE_FIELDS,
+    _SINGULAR_SOURCE_FIELDS,
 )
 
 
@@ -22,6 +24,9 @@ class StructuredAuthoringProvider:
 
     def generate_structured(self, *, request: object) -> Mapping[str, Any] | None:
         self.last_request_system_prompt = str(getattr(request, "system_prompt", ""))
+        self.last_request_output_schema = copy.deepcopy(
+            getattr(request, "output_schema", {})
+        )
         self.last_request_model = str(getattr(request, "model", ""))
         self.last_request_reasoning_effort = str(getattr(request, "reasoning_effort", ""))
         self.calls += 1
@@ -47,7 +52,11 @@ def authored_response(
         if first_path_segments is not None
         else [str(row.get("event_quote") or "").strip() for row in source_relations]
     )
-    facts: list[dict[str, Any]] = []
+    facts: dict[str, Any] = {
+        **{field: None for field in _SINGULAR_SOURCE_FIELDS},
+        **{field: [] for field in _REPEATED_SOURCE_FIELDS},
+    }
+    selected_facts: list[dict[str, Any]] = []
     fact_indexes: dict[str, int] = {}
     first_path_fact_indexes: list[int] = []
     for field, value in intent.items():
@@ -62,9 +71,14 @@ def authored_response(
             quote = str(row).strip()
             if not quote:
                 continue
-            fact_index = len(facts) + 1
+            fact_index = len(selected_facts) + 1
             projection_path = f"/{field}" if not isinstance(value, list) else f"/{field}/{row_index}"
-            facts.append({"field": field, "quote": quote, "occurrence": 1})
+            citation = {"quote": quote, "occurrence": 1}
+            if field in _SINGULAR_SOURCE_FIELDS:
+                facts[field] = citation
+            else:
+                facts[field].append(citation)
+            selected_facts.append({"field": field, **citation})
             fact_indexes[projection_path] = fact_index
             if field == "first_path":
                 first_path_fact_indexes.append(fact_index)
@@ -80,7 +94,7 @@ def authored_response(
     )
     terminal = _terminal_row(
         relations=source_relations,
-        facts=facts,
+        facts=selected_facts,
         evidence_text=evidence_text,
     )
     components = _component_responsibility_relation_rows(
@@ -116,7 +130,7 @@ def clarification_response(
     return {
         "version": GREENFIELD_INTENT_AUTHORING_VERSION,
         "status": "clarification_required",
-        "facts": [],
+        "facts": None,
         "events": [],
         "terminal": {
             "event_order": 0,
