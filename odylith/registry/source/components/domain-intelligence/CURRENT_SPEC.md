@@ -52,6 +52,27 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-09-04: Qualified v30 on the unchanged flood source discriminator. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-303`, `CB-329`; Diagram: D-043)
+  One deep model call completed in `49.80s`, chose `city staff` as the direct
+  customer, preserved five independently executable human actions with exact
+  actor/action/target custody, retained the outer product capability as component
+  ownership, and emitted three useful Atlas diagrams without D-004. Exact
+  commit-only publication took `1.06s` for `83` sealed writes and passed
+  readback. The mechanism remains provisional until an immutable installed build
+  passes all public latency, quality, browser, recovery, and review gates.
+
+- 2026-09-04: Rejected v29 and bounded v30 to event fidelity plus artifact eligibility. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-303`, `CB-329`; Diagram: D-043)
+  Immutable public evidence proved the transaction kernel and `28/28` browser
+  states but rejected a graph that collapsed five human actions into one broad
+  product event and emitted an ambiguity-only self-nested boundary view. The
+  replacement keeps one source-cited model author and deterministic custody,
+  adds exact model-authored event action and event-actor quotes with immediate
+  identical actor carry, and admits a boundary artifact only for distinct
+  component, external-system, or non-goal evidence. The release evaluator must
+  accept either a canonical Mermaid edge or distinct typed containment, never a
+  generic edge quota. The unchanged flood case is the falsification gate before
+  any rebuilt public matrix.
+
 - 2026-09-03: Replaced event-only target containment with one source-bound typed target contract. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   A target remains optional and model-selected, but it is accepted only when it
   is an exact event substring or an exact selected fact co-contained with the

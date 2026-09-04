@@ -232,7 +232,13 @@ def _registry_findings(
 def _atlas_findings(*, artifacts: Sequence[RenderedArtifact], proposal: Mapping[str, Any]) -> list[PackageEvidenceFinding]:
     findings: list[PackageEvidenceFinding] = []
     diagrams = [artifact for artifact in artifacts if artifact.surface == "Atlas Mermaid"]
-    expected_diagrams = len(mapping_rows(proposal.get("diagrams")))
+    diagram_rows = tuple(mapping_rows(proposal.get("diagrams")))
+    expected_diagrams = len(diagram_rows)
+    rows_by_name = {
+        f"{normalize_string(row.get('slug'))}.mmd": row
+        for row in diagram_rows
+        if normalize_string(row.get("slug"))
+    }
     if len(diagrams) != expected_diagrams:
         findings.append(
             _finding(
@@ -242,12 +248,49 @@ def _atlas_findings(*, artifacts: Sequence[RenderedArtifact], proposal: Mapping[
             )
         )
     for artifact in diagrams:
-        labels = visible_mermaid_label_quality_texts(artifact.text)
+        labels = {
+            normalize_string(label).casefold()
+            for label in visible_mermaid_label_quality_texts(artifact.text)
+            if normalize_string(label)
+        }
+        diagram_row = rows_by_name.get(artifact.name, {})
         if len(labels) < 2:
-            findings.append(_finding("architect", f"{artifact.identity} has too few visible topology labels"))
-        if not parse_mermaid_graph(artifact.text).edges:
-            findings.append(_finding("architect", f"{artifact.identity} has no visible topology edge"))
+            findings.append(
+                _finding(
+                    "architect",
+                    f"{artifact.identity} does not expose two distinct typed concepts",
+                )
+            )
+        if (
+            not parse_mermaid_graph(artifact.text).edges
+            and not _has_distinct_typed_containment(diagram_row)
+        ):
+            findings.append(
+                _finding(
+                    "architect",
+                    f"{artifact.identity} has neither a typed edge nor a distinct containment relation",
+                )
+            )
     return findings
+
+
+def _has_distinct_typed_containment(diagram: Mapping[str, Any]) -> bool:
+    if normalize_string(diagram.get("projection_origin")) != AUTHORED_PROJECTION_ORIGIN:
+        return False
+    boxes = tuple(mapping_rows(diagram.get("diagram_boxes")))
+    container_labels = {
+        normalize_string(box.get("label")).casefold()
+        for box in boxes
+        if normalize_string(box.get("role")).casefold() in {"container", "product boundary"}
+        and normalize_string(box.get("label"))
+    }
+    child_labels = {
+        normalize_string(box.get("label")).casefold()
+        for box in boxes
+        if normalize_string(box.get("role")).casefold() not in {"container", "product boundary"}
+        and normalize_string(box.get("label"))
+    }
+    return any(child != container for container in container_labels for child in child_labels)
 
 
 def _next_step_findings(package: Any) -> list[PackageEvidenceFinding]:

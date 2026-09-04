@@ -64,3 +64,18 @@ def test_multiple_non_goals_earn_a_boundary_workstream_without_duplicate_views()
         "state_evidence",
         "component_boundaries",
     )
+
+
+def test_ambiguity_without_boundary_evidence_does_not_invent_a_boundary_view() -> None:
+    plan = plan_greenfield_artifact_depth(
+        actor_count=1,
+        internal_system_count=1,
+        external_system_count=0,
+        ambiguity_count=3,
+        non_goal_count=0,
+        evidence_requirement_count=1,
+        operational_constraint_count=1,
+    )
+
+    assert plan.workstream_roles == ("project",)
+    assert plan.diagram_roles == ("context", "sequence", "state_evidence")

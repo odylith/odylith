@@ -100,9 +100,7 @@ def test_model_authored_intent_reaches_staged_product_intent_without_parser_reco
     assert receipt["tier"] == "rescue"
     assert receipt["authoring_version"] == GREENFIELD_INTENT_AUTHORING_VERSION
     assert receipt["semantic_model_call_count"] == 1
-    assert candidate["authored_semantics"]["first_path_relations"][0]["action_verb_quote"] == (
-        "Dock attendant Ivo enters a vessel tag"
-    )
+    assert candidate["authored_semantics"]["first_path_relations"][0]["action_verb_quote"] == "enters"
     assert "model_authoring" not in candidate
     assert candidate["product_intent_authority"]["material_fields"]["first_path"]["source_span_ids"] == [
         "authoring:first_path:1:4",
@@ -205,9 +203,7 @@ def test_edit_evidence_reauthors_one_new_typed_candidate_with_one_model_call(tmp
             "the berth map shows the reviewed placement",
         )
     )
-    assert candidate["authored_semantics"]["first_path_relations"][0]["action_verb_quote"] == (
-        "Dock attendant Ivo scans a vessel tag"
-    )
+    assert candidate["authored_semantics"]["first_path_relations"][0]["action_verb_quote"] == "scans"
     assert candidate["product_intent_authority"]["source_format"] == "operator_prompt_with_edit_evidence"
     assert provider.calls == 1
 
@@ -439,9 +435,9 @@ def test_model_authored_project_seals_one_package_with_justified_boundary(tmp_pa
         if event["source_kind"] == "accepted_first_path"
     ]
     assert [(event["actor"], event["action"]) for event in accepted_events] == [
-        ("Dock attendant Ivo", "Dock attendant Ivo enters a vessel tag"),
-        ("Berth map", "the product records berth occupancy"),
-        ("Berth map", "the berth map shows the placement"),
+        ("Dock attendant Ivo", "enters"),
+        ("the product", "records"),
+        ("the berth map", "shows"),
     ]
     assert transaction_path.is_file()
 
@@ -711,6 +707,8 @@ def test_authoring_schema_structurally_separates_complete_authored_and_clarifica
     assert authored_properties["events"]["minItems"] == 1
     assert set(authored_properties["events"]["items"]["properties"]) == {
         "actor_fact_quote",
+        "actor_quote",
+        "action_quote",
         "target_quote",
         "recovery_path",
     }
@@ -881,12 +879,12 @@ def test_authoring_rejects_typed_facts_over_the_total_citation_cap() -> None:
         )
 
 
-def test_authoring_rejects_the_retired_redundant_action_field() -> None:
+def test_authoring_rejects_an_action_quote_outside_its_event() -> None:
     source = _source()
     response = _response(source)
     model_event_rows(response)[0]["action_quote"] = "deletes"
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="invalid first-path events"):
+    with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path event"):
         author_greenfield_intent(
             evidence_text=source,
             provider=StructuredAuthoringProvider(response),

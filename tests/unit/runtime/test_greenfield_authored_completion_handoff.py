@@ -55,8 +55,8 @@ def _typed_relation(
 def test_authored_handoff_preserves_verified_fields_without_legacy_reconstruction(
 ) -> None:
     first_path = (
-        "Dock attendant Ivo enters a vessel tag, the product records berth occupancy, "
-        "and the berth map shows the placement with the complete source-owned retention receipt"
+        "Dock attendant Ivo enters a vessel tag, Harbor Desk records berth occupancy, "
+        "and Harbor Desk shows the placement with the complete source-owned retention receipt"
     )
     proof_boundary = "Verify the placement and retention receipt"
     success_metrics = [
@@ -80,7 +80,7 @@ def test_authored_handoff_preserves_verified_fields_without_legacy_reconstructio
         ),
         _typed_relation(
             path=first_path,
-            event="the product records berth occupancy",
+            event="Harbor Desk records berth occupancy",
             order=2,
             actor_kind="product",
             actor_quote="Harbor Desk",
@@ -90,7 +90,7 @@ def test_authored_handoff_preserves_verified_fields_without_legacy_reconstructio
         _typed_relation(
             path=first_path,
             event=(
-                "the berth map shows the placement with the complete source-owned retention receipt"
+                "Harbor Desk shows the placement with the complete source-owned retention receipt"
             ),
             order=3,
             actor_kind="product",

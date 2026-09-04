@@ -4469,3 +4469,32 @@ above.
       and build immutable bytes, then require public `14/14` plus three
       independent reviews. Do not consume a new blind holdout until every
       public gate is green.
+    - 2026-09-04 v29 immutable rejection and v30 bounded replacement: clean
+      wheel `2c7bcd38317938ddba15a0b8668c0c1a25271818786759a35905b827b4e9ac4d`
+      failed the first public case after an in-budget `70.411s` deep authoring
+      call and clean commit-only publication. It collapsed five executable
+      city-staff actions into one product-owned capability event, then emitted
+      an ambiguity-driven Component Boundary View containing the product inside
+      an identically named component. Preserve the one-call direct graph and
+      transaction kernel. Restore only source-exact event action and event-actor
+      choices, restrict omitted actors to immediate identical carry, keep outer
+      product capability in component ownership, and make boundary artifacts
+      conditional on distinct typed boundary evidence. Replace the evaluator's
+      universal edge quota with typed edge-or-distinct-containment judgment.
+      First prove the unchanged flood discriminator; then run focused/full
+      source proof before another immutable public campaign. Add no regex,
+      lexical rule set, retry cascade, second model call, or post-confirm repair.
+
+## V30 Source Qualification Result (2026-09-04)
+
+- The flood falsification case now produces five ordered human events with exact
+  event-actor, action, and target custody in `49.80s`; the coordinating product
+  capability remains component-owned and D-004 is absent.
+- Commit-only publication remains unchanged and completed in `1.06s` with `83`
+  sealed writes plus verified readback. A thin request produced one no-write
+  clarification in `13.64s`.
+- Source qualification is green (`1,525/1,525` focused contracts). Freeze only
+  after governance projection and checkpoint review, then prove the same bytes
+  through the complete immutable public matrix. Do not change the mechanism in
+  response to a release-evaluator defect; reject it only for repeated product
+  failures or regressions against the fixed outcome.

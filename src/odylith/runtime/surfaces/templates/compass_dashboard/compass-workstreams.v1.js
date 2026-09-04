@@ -372,6 +372,7 @@
 
     function renderCurrentWorkstreams(payload, state, events, transactions, navigationState) {
       const scopedRows = scopeWorkstreams(payload, state);
+      const hasProgramLanes = executionWavePrograms(payload).length > 0;
       const representedIds = state.workstream ? new Set() : compassGovernanceRepresentedWorkstreamIds(payload);
       const rows = state.workstream
         ? scopedRows
@@ -737,6 +738,9 @@
       };
 
       const renderWaveSummaryCell = (item) => {
+        if (!hasProgramLanes) {
+          return `<span class="muted">${item.releaseLabel ? "Release target" : "Workstream"}</span>`;
+        }
         if (!item.waveSpanLabel) {
           return '<span class="muted">-</span>';
         }
@@ -752,7 +756,7 @@
         const isSelected = item.ideaId === initiallyExpandedId;
         const radarHref = radarWorkstreamHref(item.ideaId);
         const idMarkup = rowsAreProgramCovered
-          ? `<a class="chip-link ws-covered-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-covered-ws-id="${escapeHtml(item.ideaId)}"${workstreamTooltipAttrs(item.ideaId, workstreamTitles, `Open radar for ${item.ideaId}; also covered by program/release lanes`)}>${escapeHtml(item.ideaId)}</a>`
+          ? `<a class="chip-link ws-covered-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-covered-ws-id="${escapeHtml(item.ideaId)}"${workstreamTooltipAttrs(item.ideaId, workstreamTitles, hasProgramLanes ? `Open radar for ${item.ideaId}; also covered by program and release lanes` : `Open radar for ${item.ideaId}; also covered by a release target`)}>${escapeHtml(item.ideaId)}</a>`
           : `<a class="ws-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-ws-id="${escapeHtml(item.ideaId)}"${workstreamTooltipAttrs(item.ideaId, workstreamTitles, `Open radar for ${item.ideaId}`)}>${escapeHtml(item.ideaId)}</a>`;
         return `
         <tr ${renderSummaryRowAttrs(item, "ws-row-title", isSelected)}>
@@ -775,8 +779,8 @@
 
       const representedPreviewNote = rowsAreProgramCovered
         ? `
-          <p class="muted represented-workstreams-note">Program and release lanes already organize these active workstreams; the table below keeps their status visible as a compact detail preview.</p>
-          <p class="muted">Direct Radar links live in the Program and Release Target lanes above.</p>
+          <p class="muted represented-workstreams-note">${hasProgramLanes ? "Program and release lanes" : "Release targets"} already organize these active workstreams; the table below keeps their status visible as a compact detail preview.</p>
+          <p class="muted">Direct Radar links live in the ${hasProgramLanes ? "Program and Release Target lanes" : "Release Targets"} above.</p>
           ${scopedRows.length > renderRows.length ? `<p class="muted">Showing ${renderRows.length} of ${scopedRows.length} covered active workstreams.</p>` : ""}
         `
         : "";
@@ -795,7 +799,7 @@
             <thead>
               <tr>
                 <th class="ws-col-id">ID</th>
-                <th class="ws-col-wave">Wave</th>
+                <th class="ws-col-wave">${hasProgramLanes ? "Wave" : "Plan"}</th>
                 <th class="ws-col-phase">Phase</th>
                 <th class="ws-col-live">Live</th>
                 <th class="ws-col-progress">Progress</th>

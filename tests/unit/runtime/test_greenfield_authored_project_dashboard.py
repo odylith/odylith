@@ -253,8 +253,8 @@ def _pronoun_proposal() -> dict[str, object]:
             "source_end_byte": len(first_event.encode("utf-8")),
             "event_start_byte": 0,
             "event_end_byte": len(first_event.encode("utf-8")),
-            "actor_quote": "Registry Custodian",
-            "actor_is_carried": True,
+            "actor_quote": "She",
+            "actor_is_carried": False,
             "actor_fact_path": "/human_actors/0",
             "actor_fact_quote": "Registry Custodian",
             "event_quote": first_event,
@@ -440,6 +440,30 @@ def test_authored_dashboard_bypasses_legacy_projection_and_preserves_exact_facts
     assert FIRST_PATH in prompts[0]["prompt"]
     assert "QuOrates" in prompts[1]["prompt"]
     assert prompts[3]["verification_commands"] == ["verify-Ω --APIv7"]
+
+
+def test_authored_dashboard_labels_assumptions_without_promoting_them_to_blockers(
+    tmp_path: Path,
+) -> None:
+    proposal = _proposal()
+    proposal["assumptions"] = [
+        "The product title is the sole component owner until source names a subsystem."
+    ]
+
+    payload = preview_project_dashboard_payload(
+        root=tmp_path,
+        proposal=proposal,
+        accepted_project_preview=_accepted_preview(),
+        source_launch_context={
+            "start_workstream_id": "B-701",
+            "verification_commands": ["verify-Ω --APIv7"],
+        },
+    )
+
+    assert payload["open_label"] == "Assumptions"
+    assert payload["open"] == proposal["assumptions"]
+    assert payload["unknown"] == []
+    assert payload["blockers"] == []
 
 
 def test_authored_dashboard_validates_contracts_independently_of_visible_prompt_copy(

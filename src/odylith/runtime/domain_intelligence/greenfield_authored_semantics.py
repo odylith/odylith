@@ -90,8 +90,8 @@ COMPONENT_RESPONSIBILITY_SOURCES = ("accepted_fact", "terminal_visible_result")
 MAX_FIRST_PATH_RELATIONS = 24
 MAX_COMPONENT_RESPONSIBILITY_RELATIONS = 32
 FIRST_PATH_ACTOR_BINDING_FIELDS = (
-    "actor_kind", "actor_quote", "actor_fact_path",
-    "actor_fact_quote", "owner_system_path", "owner_system_quote",
+    "actor_kind", "actor_fact_path", "actor_fact_quote",
+    "owner_system_path", "owner_system_quote",
 )
 
 
@@ -208,14 +208,29 @@ def validate_first_path_relations(
             actor_values=actor_values,
             owner_values=owner_values,
         )
-        actor_is_explicit = actor_fact_quote in event_quote
+        actor_is_surface_explicit = actor_quote in event_quote
         if (
             path_bytes[event_start:event_end] != event_quote.encode("utf-8")
-            or actor_quote != actor_fact_quote
-            or actor_is_carried == actor_is_explicit
+            or actor_is_carried == actor_is_surface_explicit
+            or (
+                actor_is_carried
+                and actor_quote != actor_fact_quote
+            )
             or action_verb_quote not in event_quote
         ):
             raise GreenfieldAuthoredSemanticsError("Greenfield authoring returned ungrounded first-path relations")
+        previous_binding = rows[-1] if rows else None
+        if (
+            actor_is_carried
+            and (
+                previous_binding is None
+                or first_path_actor_binding_identity(previous_binding)
+                != first_path_actor_binding_identity(raw)
+            )
+        ):
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield authoring returned an ungrounded first-path actor"
+            )
         if not event_target_is_source_bound(
             event_quote=event_quote,
             target_quote=target_quote,
@@ -325,10 +340,6 @@ def require_first_path_actor_binding(
     if actor_values.get(actor_fact_path) != (actor_kind, actor_fact_quote):
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring returned an unbound first-path actor fact"
-        )
-    if actor_quote != actor_fact_quote:
-        raise GreenfieldAuthoredSemanticsError(
-            "Greenfield authoring returned an actor outside its typed fact"
         )
     if actor_kind != "product":
         if owner_system_path or owner_system_quote:

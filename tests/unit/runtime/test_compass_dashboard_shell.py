@@ -183,7 +183,8 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert '<a class="ws-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-ws-id="${escapeHtml(item.ideaId)}"' in workstreams_js
     assert '<a class="chip-link ws-covered-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-covered-ws-id="${escapeHtml(item.ideaId)}"' in workstreams_js
     assert 'data-covered-ws-id' in workstreams_js
-    assert 'Open radar for ${item.ideaId}; also covered by program/release lanes' in workstreams_js
+    assert 'Open radar for ${item.ideaId}; also covered by program and release lanes' in workstreams_js
+    assert 'Open radar for ${item.ideaId}; also covered by a release target' in workstreams_js
     assert '<span class="chip execution-wave-chip-link" data-ws-id="${escapeHtml(item.ideaId)}"' not in workstreams_js
     assert 'workstreamTooltipAttrs(item.ideaId, workstreamTitles, `Open radar for ${item.ideaId}`)' in workstreams_js
     assert 'const componentHref = `../index.html?tab=registry&component=${encodeURIComponent(item.component_id)}`;' in workstreams_js
@@ -208,7 +209,8 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert "const rows = scopedRows;" not in workstreams_js
     assert "const representedPreviewLimit = 6;" in workstreams_js
     assert "represented-workstreams-note" in workstreams_js
-    assert "Program and release lanes already organize these active workstreams" in workstreams_js
+    assert '"Program and release lanes" : "Release targets"' in workstreams_js
+    assert '"Wave" : "Plan"' in workstreams_js
     assert "Covered workstreams below are a compact detail preview" not in workstreams_js
     assert "function numericProgressOrNull(value)" in workstreams_js
     assert '${item.releaseLabel ? `<span class="chip subtle">${escapeHtml(item.releaseLabel)}</span>` : ""}' in workstreams_js
@@ -296,7 +298,7 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert "font-variant-numeric: tabular-nums;" in base_template
     assert "No active workstreams yet. Create or open one from Radar, then Compass will summarize it here." in workstreams_js
     assert "No additional current workstreams. Program and release lanes already cover the active work." not in workstreams_js
-    assert "Program and release lanes already organize these active workstreams" in workstreams_js
+    assert '"Program and release lanes" : "Release targets"' in workstreams_js
     assert "All current workstreams are already represented in Programs or Release Targets." not in workstreams_js
     assert "No active workstreams in this scope." in workstreams_js
     assert "`Open radar for ${token}`" in waves_js

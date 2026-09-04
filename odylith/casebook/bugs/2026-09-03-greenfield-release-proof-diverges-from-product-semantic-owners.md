@@ -115,3 +115,29 @@
   authored-projection proof passes `130/130`; the final combined source gate
   passes `3,790/3,790`. CB-329 remains open until the immutable public matrix
   and independent adjudicators agree on every case.
+
+- V29 Atlas Admission Reopen (2026-09-04): The same immutable flood package
+  passed pre-confirm quality and validation, then public package evidence
+  rejected its Component Boundary View for one repeated product label and no
+  relationship. The boundary artifact existed only because a non-material
+  ambiguity was counted as topology; it rendered the product inside an
+  identically named product component. This is a product admission gap. The
+  release evaluator also imposed a generic edge and two-label quota on every
+  diagram even though distinct subgraph containment can be a valid relationship.
+  V30 removes ambiguity as a boundary-artifact trigger and judges Atlas utility
+  from typed diagram roles: a boundary view requires a distinct component,
+  external dependency, or non-goal; an edge-free view is acceptable only when
+  its authored boxes prove a distinct containment relation. Prediction: the
+  unchanged flood package omits D-004, while real multi-component and external
+  boundaries retain it and nodes-only diagrams without typed containment still
+  fail. Campaign recovery and the unexecuted 60/90 tiers remain unproved because
+  the losing run was deliberately stopped.
+
+- V30 Atlas Admission Source Result (2026-09-04): The unchanged flood
+  discriminator now stages D-001 through D-003 only. Ambiguity no longer
+  manufactures D-004, while typed-containment controls retain a legitimate
+  edge-free boundary and reject self-nesting or untyped nodes. The canonical
+  package and commit gates passed, and the exact Compass no-program projection
+  now says Release Targets and Plan rather than Program and Wave. This resolves
+  the source-level admission defect; immutable installed browser and scorer
+  parity remain required before closing the release-proof defect.

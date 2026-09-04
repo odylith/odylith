@@ -3038,3 +3038,39 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   independent reviews. Commission a newly blind holdout only after all public
   evidence is green. Do not add another prompt layer, regex rule, retry, or
   post-confirm interpretation if v29 fails.
+
+## V29 Rejection And V30 Bounded Comparison (2026-09-04)
+
+- Reject immutable v29 wheel `2c7bcd38317938ddba15a0b8668c0c1a25271818786759a35905b827b4e9ac4d`.
+  Its first public case stayed inside the deep 120-second envelope and proved
+  sealed commit-only custody plus `28/28` browser states, but canonical meaning
+  collapsed five executable human actions into one broad product event and an
+  ambiguity-only predicate emitted a redundant Component Boundary View.
+- Retain the winning parts: one model-authored source-cited graph, exact typed
+  custody, deterministic projection, exact CONFIRM/EDIT/REJECT, and commit-only
+  publication. Replace only the failed event and artifact-eligibility contracts:
+  require model-authored exact action and event-actor quotes, immediate identical
+  actor carry, and boundary views backed by distinct typed boundary evidence.
+- Falsify v30 first on the unchanged flood discriminator. It must preserve the
+  outer product capability as component ownership, yield the complete ordered
+  city-staff workflow and consent-state linkage, omit the redundant boundary
+  diagram, and pass source quality with one call. Only then rebuild immutable
+  bytes and restart the unchanged public `14/14`, `60/90/120`, browser, readback,
+  recovery, and three-review gate. Do not commission a blind holdout early.
+
+## V30 Source Qualification (2026-09-04)
+
+- The unchanged flood discriminator passed in one `49.80s` deep authoring call:
+  direct customer `city staff`, five source-ordered human events, five exact
+  action/object bindings, the broad product capability retained as component
+  ownership, and no redundant D-004. Exact hash-bound publication took `1.06s`
+  for `83` sealed writes and passed readback.
+- A thin ecommerce request returned the required one-question, no-write material
+  clarification in `13.64s`. Focused Greenfield and Compass contracts pass
+  `1,525/1,525`; deterministic diff inspection finds no added semantic regex,
+  phrase matcher, keyword rule, retry, or second model call.
+- Keep v30 provisional. The next decision gate is one immutable installed build
+  against all fourteen unchanged public cases, exact `60/90/120` tier budgets,
+  package quality, normal/empty/degraded desktop and mobile browser evidence,
+  readback, recovery, and three independent reviews. Commission a new blind
+  holdout only after that gate is entirely green.

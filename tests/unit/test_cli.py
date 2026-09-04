@@ -10,7 +10,12 @@ import pytest
 
 from odylith import cli
 from odylith.runtime.common import casebook_metadata
+from odylith.runtime.domain_intelligence import greenfield_proposals_cli
 from odylith.runtime.governance import bug_authoring
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    StructuredAuthoringProvider,
+    clarification_response,
+)
 
 
 class _TTYStream:
@@ -393,7 +398,23 @@ def test_greenfield_create_help_forwards_commit_only_backend_flags(capsys) -> No
     assert "--repair-tier" not in output
 
 
-def test_greenfield_propose_command_is_provider_free(tmp_path: Path, capsys) -> None:
+def test_greenfield_propose_command_returns_one_model_authored_clarification(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    provider = StructuredAuthoringProvider(
+        clarification_response(
+            question="unused test metadata",
+            material_dimension="first_path",
+            evidence_quotes=("Build an ecommerce site",),
+        )
+    )
+    monkeypatch.setattr(
+        greenfield_proposals_cli,
+        "_greenfield_authoring_provider",
+        lambda **_kwargs: (provider, "test-model", "low"),
+    )
     rc = cli.main(
         [
             "greenfield",
@@ -409,13 +430,15 @@ def test_greenfield_propose_command_is_provider_free(tmp_path: Path, capsys) -> 
 
     payload = json.loads(capsys.readouterr().out)
     assert rc == 0
-    assert payload == {
-        "mode": "clarification_required",
-        "clarification": {
-            "question": "What is the first complete task the product should help a person finish, and what result should they see?",
-            "required_fields": ["first_path"],
-        },
-    }
+    assert payload["mode"] == "clarification_required"
+    clarification = payload["clarification"]
+    assert clarification["question"] == (
+        "Who uses this product first, what complete task do they finish, "
+        "and what result do they see?"
+    )
+    assert clarification["required_fields"] == ["first_path"]
+    assert clarification["consistency_assessment"]["status"] == "material_ambiguity"
+    assert provider.calls == 1
     assert not (tmp_path / ".odylith/runtime/greenfield").exists()
     assert "provider_calls" not in payload
     assert "host_reasoning_task" not in payload

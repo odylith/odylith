@@ -254,7 +254,8 @@ def test_product_led_path_keeps_review_recipient_without_inventing_human_event()
 
 def test_event_rejects_target_that_is_only_adjacent_in_a_selected_fact() -> None:
     event = (
-        "coordinates referral intake, guardian consent, therapist assignment, "
+        "pediatric therapy agency practice workspace coordinates referral intake, "
+        "guardian consent, therapist assignment, "
         "care-plan readiness, visit evidence, and exception review"
     )
     target = "children served across multiple schools"
@@ -340,7 +341,7 @@ def test_coordinated_events_derive_actor_presence_from_one_typed_fact_edge() -> 
 
     assert [row["actor_is_carried"] for row in result.first_path_relations] == [
         False,
-        True,
+        False,
         True,
     ]
     assert validate_first_path_relations(
@@ -366,30 +367,20 @@ def test_coordinated_events_derive_actor_presence_from_one_typed_fact_edge() -> 
 
 
 @pytest.mark.parametrize("relation_index", [0, 1])
-def test_typed_actor_fact_is_authoritative_without_event_surface_reparsing(
+def test_absent_actor_cannot_start_or_switch_a_carried_actor_chain(
     relation_index: int,
 ) -> None:
-    source, response, intent = _carried_human_actor_response()
+    source, response, _intent = _carried_human_actor_response()
     relation = model_event_rows(response)[relation_index]
     relation["actor_fact_quote"] = "Mara"
+    relation["actor_quote"] = "Mara"
 
-    result = author_greenfield_intent(
-        evidence_text=source,
-        provider=StructuredAuthoringProvider(response),
-        clock=lambda: 0.0,
-    )
-
-    assert result.first_path_relations[relation_index]["actor_quote"] == "Mara"
-    assert result.first_path_relations[relation_index]["actor_fact_quote"] == "Mara"
-    assert result.first_path_relations[relation_index]["actor_is_carried"] is True
-    assert validate_first_path_relations(
-        result.first_path_relations,
-        first_path=str(result.intent["first_path"]),
-        human_actors=intent["human_actors"],
-        external_systems=intent["external_systems"],
-        internal_systems=intent["internal_systems"],
-        product_title=str(intent["title"]),
-    ) == result.first_path_relations
+    with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path actor"):
+        author_greenfield_intent(
+            evidence_text=source,
+            provider=StructuredAuthoringProvider(response),
+            clock=lambda: 0.0,
+        )
 
 
 def test_materialization_preserves_exact_event_fact_bytes(tmp_path) -> None:  # type: ignore[no-untyped-def]
@@ -449,8 +440,8 @@ def test_verified_authoring_spans_become_the_product_intent_custody_source() -> 
             for link in row["projection_links"]
         )
     }
-    assert action_values == set(_AUTHORED_FIRST_PATH.splitlines())
-    first_event = _AUTHORED_FIRST_PATH.splitlines()[0]
+    assert action_values == {"enters", "records", "shows"}
+    first_event = "enters"
     action_atom = next(
         row
         for row in authority["atomic_facts"]
@@ -468,8 +459,9 @@ def test_verified_authoring_spans_become_the_product_intent_custody_source() -> 
         "field": "first_path",
         "path": "/first_path",
         "value_sha256": hashlib.sha256(_AUTHORED_FIRST_PATH.encode("utf-8")).hexdigest(),
-        "projection_start_byte": 0,
-        "projection_end_byte": len(first_event.encode("utf-8")),
+        "projection_start_byte": _AUTHORED_FIRST_PATH.index(first_event),
+        "projection_end_byte": _AUTHORED_FIRST_PATH.index(first_event)
+        + len(first_event.encode("utf-8")),
         "relation_order": 1,
         "relation_role": "action_verb_quote",
     } in action_atom["projection_links"]

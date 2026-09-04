@@ -31,7 +31,6 @@ def plan_greenfield_artifact_depth(
     separate_boundary = (
         internal_system_count > 1
         or external_system_count > 0
-        or ambiguity_count > 0
         or non_goal_count > 0
     )
     separate_proof = evidence_requirement_count > 1 or operational_constraint_count > 1

@@ -1118,7 +1118,7 @@ def _unavailable_brief_message(
     if token == "skipped_not_worth_calling":
         return "Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
     if token == "provider_deferred":
-        return "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        return "Compass is showing current local runtime facts while the optional narrated brief is being prepared."
     if token == "rate_limited":
         return "Compass hit narration provider capacity while warming this brief. It will retry on backoff."
     if token == "credits_exhausted":
@@ -1157,7 +1157,7 @@ def _unavailable_brief_title(
     if token == "skipped_not_worth_calling":
         return "Brief reused last validated narration"
     if token == "provider_deferred":
-        return "Fresh brief still warming"
+        return "Narrated brief is being prepared"
     if token == "rate_limited":
         return "Brief is waiting on provider capacity"
     if token == "credits_exhausted":

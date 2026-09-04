@@ -43,7 +43,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v29"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v30"
 GREENFIELD_MODEL_PROOF_FD_ENV = "ODYLITH_GREENFIELD_MODEL_PROOF_FD"
 
 _TEXT_FIELDS = (
@@ -697,19 +697,31 @@ FACTS
   answers that field. product_view must express an envisioned direction or design,
   not a product-type label or title fragment. Leave an optional field null instead
   of reusing product_story or first_path as filler.
+- customer is the actor or group that directly uses the product or receives its
+  primary value. Prefer the direct user over a downstream subject unless the source
+  explicitly identifies a purchaser or customer.
 - external_systems contains only a named system, service, authority, organization,
   or data source the product exchanges with, hands off to, or depends on. A location,
   audience, customer, person, state object, constraint, artifact, or product label is
   not an external system.
 
 RELATION GRAPH
-- first_path contains only complete, non-overlapping action clauses in source order.
-  A stage, artifact, role, or status label alone is not an event. When one governing
-  action applies to a coordinated list, keep the governed clause as one event.
-  Requirements, preservation obligations, constraints, and non-goals are not events.
-- Emit exactly one event per first_path citation. actor_fact_quote exactly equals the
-  selected human_actors, internal_systems, external_systems, or title fact that
-  performs it. Do not invent or reorder actions to force a human start.
+- first_path contains one complete, non-overlapping source clause per independently
+  executable action and direct object, in source order. A stage, artifact, role, or
+  status label alone is not an event. Preserve every source-stated action required
+  for the first useful path; do not collapse a sequence into one broad capability or
+  split an action from its object. Requirements, preservation obligations,
+  constraints, and non-goals are not events.
+- When a product capability enables or coordinates human work, keep the outer
+  capability as component responsibility and model the source-stated human actions
+  as events. Emit exactly one event per first_path citation.
+- actor_fact_quote exactly equals the selected human_actors, internal_systems,
+  external_systems, or title fact that performs the action. actor_quote is the exact
+  event substring naming that same actor. When a coordinated continuation omits its
+  subject, repeat actor_fact_quote as actor_quote; this carry is valid only from the
+  immediately preceding event's identical typed actor. action_quote is the exact
+  event substring naming the action. Do not invent or reorder actions to force a
+  human start.
 - target_quote is empty or an exact substring of that same event. Never attach a
   target because it appears only in another fact.
 - The terminal object describes the final event's result and follows its schema even

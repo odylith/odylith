@@ -410,3 +410,33 @@
   rerun passes `3,790/3,790` in `275.35s`. CB-303 remains open until the
   immutable installed public `14/14` matrix, independent review, and a newly
   commissioned blind holdout pass.
+
+- V29 Public Rejection And V30 Hypothesis (2026-09-04): Immutable wheel
+  `2c7bcd38317938ddba15a0b8668c0c1a25271818786759a35905b827b4e9ac4d`
+  is rejected by the first public case. Flood shelter completed one deep
+  authoring call in `70.411s` and commit-only publication in `1.654s`, with
+  clean provenance, exact sealed-byte readback, and all `28` browser cells
+  passing. The authored graph nevertheless collapsed five independently
+  executable city-staff actions into one product-owned `helps ...` event,
+  typed the staff as its target, and lost the action/object and state-event
+  relationships needed by Registry and Atlas. Independent semantic review
+  classifies this as P1 canonical-meaning loss. V30 is a bounded contract
+  correction: the sole model author must cite one exact action phrase and one
+  exact event actor phrase per event, may carry an actor only from the
+  immediately preceding identical typed actor, and must keep an outer product
+  capability as component responsibility while preserving embedded human
+  actions as the first path. Prediction: the unchanged flood case yields five
+  ordered human events with distinct targets and consent-state linkage, without
+  a parser, regex, phrase list, retry, second model call, or post-confirm repair.
+
+- V30 Source Discriminator Result (2026-09-04): The unchanged flood request
+  passed the v30 prediction. One deep authoring call completed in `49.80s`,
+  selected `city staff` as the direct customer, preserved all five city-staff
+  actions as ordered typed events with exact action and target spans, retained
+  the outer `helps ...` capability as component ownership, and staged three
+  useful Atlas diagrams without D-004. Exact commit-only publication completed
+  in `1.06s` with `83` sealed writes and passed readback. A separate thin
+  ecommerce request returned one no-write material clarification in `13.64s`.
+  Focused Greenfield/Compass proof passes `1,525/1,525`. V30 is a qualified
+  source candidate, not a winner, until one immutable build passes the unchanged
+  public `14/14`, `60/90/120`, browser, recovery, and independent-review gate.

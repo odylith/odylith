@@ -83,6 +83,8 @@ def test_model_relation_ownership_is_real_and_regex_free() -> None:
     assert greenfield_model_direct_evidence_graph.MODEL_EVENT_FIELDS == frozenset(
         {
             "actor_fact_quote",
+            "actor_quote",
+            "action_quote",
             "target_quote",
             "recovery_path",
         }
@@ -351,7 +353,7 @@ def test_authoring_rejects_events_reordered_against_composite_path() -> None:
     prompt, edit_evidence, intent, segments, relations = _case()
     reordered = [relations[1], relations[0], *relations[2:]]
     response = _response(intent=intent, segments=segments, relations=reordered)
-    with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path event"):
+    with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path"):
         author_greenfield_intent(
             evidence_text=combined_prompt_evidence_source(
                 prompt=prompt,

@@ -185,14 +185,21 @@ def _relation_rows(
             selected_segment_index = matches[0]
         if selected_segment_index < 0 or selected_segment_index >= len(first_path_fact_indexes):
             raise ValueError("authored fixture relation references an unknown first_path segment")
+        actor_fact_quote = _actor_fact_quote(
+            relation,
+            actor_kind=actor_kind,
+            actor_quote=actor_quote,
+            fact_indexes=fact_indexes,
+            intent=intent,
+        )
         rows.append(
             {
-                "actor_fact_quote": _actor_fact_quote(
-                    relation,
-                    actor_kind=actor_kind,
-                    actor_quote=actor_quote,
-                    fact_indexes=fact_indexes,
-                    intent=intent,
+                "actor_fact_quote": actor_fact_quote,
+                "actor_quote": (
+                    actor_quote if actor_quote in event_quote else actor_fact_quote
+                ),
+                "action_quote": str(
+                    relation.get("action_verb_quote") or event_quote
                 ),
                 "target_quote": target_quote,
                 "recovery_path": bool(relation.get("recovery_path")),

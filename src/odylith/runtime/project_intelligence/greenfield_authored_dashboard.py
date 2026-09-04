@@ -95,8 +95,14 @@ def build_authored_greenfield_payload(
         context=_mapping(proposal.get("_source_launch") or proposal.get("source_launch")),
     )
     open_items = _unique([*questions, *assumptions])
+    if questions and assumptions:
+        open_label = "Open questions and assumptions"
+    elif assumptions:
+        open_label = "Assumptions"
+    else:
+        open_label = "Open questions"
     known = _unique([product_story, first_path, visible_result, proof_boundary])
-    unknown = open_items
+    unknown = questions
     sections = ["product_story"]
     if actors:
         sections.append("participants")
@@ -117,7 +123,7 @@ def build_authored_greenfield_payload(
         ],
         "focus_label": "Accepted focus" if accepted_project else "Proposed focus",
         "focus": first_path,
-        "open_label": "Open questions",
+        "open_label": open_label,
         "open": open_items or ["No authored open question."],
         "product_story_title": "Product Story",
         "product_story_note": "",
@@ -229,7 +235,7 @@ def build_authored_greenfield_payload(
         "known": known,
         "unknown": unknown,
         "confidence": "Medium",
-        "blockers": [(item, "Open", "authored intent") for item in unknown[:4]],
+        "blockers": [(item, "Open", "authored intent") for item in questions[:4]],
         "sections": sections,
         "work_state_kicker": "Status now",
         "state_title": "Where does this stand?",

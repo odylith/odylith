@@ -137,7 +137,8 @@ def test_typed_product_owner_edge_is_authoritative_without_name_reparsing() -> N
 
     result = _author(evidence, response)
 
-    assert result.first_path_relations[2]["actor_quote"] == "berth map"
+    assert result.first_path_relations[2]["actor_quote"] == "Harbor Registry"
+    assert result.first_path_relations[2]["actor_fact_quote"] == "berth map"
     assert result.first_path_relations[2]["owner_system_quote"] == "berth map"
 
 
@@ -224,7 +225,7 @@ def test_product_pronoun_uses_an_explicit_selected_actor_fact() -> None:
 
     result = _author(prompt, response)
 
-    assert result.first_path_relations[2]["actor_quote"] == "Review Engine"
+    assert result.first_path_relations[2]["actor_quote"] == "It"
     assert result.first_path_relations[2]["actor_fact_path"] == "/internal_systems/0"
     assert result.first_path_relations[2]["actor_fact_quote"] == "Review Engine"
 
@@ -313,13 +314,16 @@ def test_coordinated_clauses_preserve_carried_actors_and_every_action() -> None:
         "Permit Relay",
     ]
     assert [row["action_verb_quote"] for row in result.first_path_relations] == [
-        *events,
+        "uploads",
+        "reviews",
+        "stores",
+        "shows",
     ]
     assert [
         row["quote"]
         for row in result.atomic_claims
         if row["relation_role"] == "action_verb_quote"
-    ] == list(events)
+    ] == ["uploads", "reviews", "stores", "shows"]
 
 
 def test_sealed_separate_source_context_rejects_an_unknown_event_order() -> None:
