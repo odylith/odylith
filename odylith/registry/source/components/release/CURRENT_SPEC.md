@@ -1,5 +1,5 @@
 # Release
-Last updated: 2026-09-02
+Last updated: 2026-09-03
 
 
 ## Purpose
@@ -460,76 +460,37 @@ governed subsystem.
   repair loop strings. A second fresh repo must run confirmed
   `odylith greenfield create` so the one-command shortcut cannot drift from the
   explicit propose/apply path.
-- The shared release proof lane must run the installed greenfield release matrix
-  after local release smoke and persist the matrix payload as
-  `greenfield-post-confirm-matrix.v1.json` in the dist directory. The standard
-  leg must cover at least ten high-variance domains, including retained escaped
-  regressions from prior installed audits, stay under the 60 second
-  standard budget for every create, write complete governed records, pass all
-  expert lenses, satisfy strict case-required domain-anchor coverage, and score
-  10/10 across the release matrix dimensions. The matrix must also run
-  persisted-artifact custody checks: Project implementation prompts must be
-  scored from generated `odylith/tooling-payload.v1.js` readback, persisted
-  project-brief Markdown must be structurally checked, and generated-domain
-  terms actually present in readback artifacts must be rescanned against
-  protected platform source and dist custody. Required domain-coverage anchors
-  that are already native to platform custody must be resolved through one
-  selected-vocabulary baseline scan and reused during per-case readback; the
-  matrix must not rescan source or runtime archives once per generated term or
-  once per case when a single generated-readback vocabulary scan can preserve
-  case attribution.
-  The matrix must parse persisted governed readback, not count arbitrary
-  nonempty files. Release proof requires valid release catalogs/events, program
-  wave records with generated workstream coverage, Compass source/runtime
-  records with meaningful payload, generated surface payload globals, and
-  persisted source-launch readback. Missing readback blocks the owning quality
-  dimension before any 10/10 claim.
-  The matrix must also run per-case headless generated browser state proof for
-  the Project shell pane, Radar, Registry, Atlas, Compass, Casebook, and
-  tooling-shell surfaces. That browser lane must cover normal shell routes,
-  Project prompt-card readback,
-  invalid-query recovery, and Casebook empty/filter fallback, must provision
-  Playwright Chromium through the maintained proof wrapper, and must fail
-  closed if Playwright or Chromium remains unavailable in the proof environment.
-  The exact matrix interpreter must import Playwright and launch Chromium before
-  a one-shot semantic holdout ledger is claimed. Campaign interruption must set
-  the shared shard stop signal, terminate the active process group, remove its
-  temporary project root, and terminalize a claimed holdout as `interrupted`;
-  no child process or reusable `claimed` ledger may survive cancellation.
-  The matrix must include rescue smoke by default when post-confirm repair behavior
-  changes. That smoke must
-  run the packaged CLI in `--repair-tier auto`, inject one exact-token internal
-  typed final-gate finding, prove auto-escalation from standard to the 90 second
-  rescue budget, write the expected governed records, return a passed final
-  manifest, and record the repaired semantic issue code. The release harness
-  must keep standard matrix creates free of the internal probe token and must
-  apply that token only to the rescue-smoke create subprocess. Source-local
-  rescue tests, opt-in-only smoke, synthetic installed-engine probes, local
-  release smoke alone, a standalone matrix target that the release lane does not
-  invoke, and probe-env leakage into the wrong matrix leg do not substitute for
-  this installed release proof. The rescue-smoke result is wiring proof only.
-  Release proof must also include a separate host-planned structured rescue leg
-  when natural rescue quality is claimed: the leg must emit a typed semantic or
-  artifact-plan PatchSet with no deterministic replacement fact, call an
-  explicit reasoning provider, preserve the patch-plan or provider-failure
-  summary in the final clean manifest as `last_repair_patchset_request`, avoid the
-  deterministic rescue-probe issue code, finish under the 90 second rescue
-  budget, and write the same governed record floor as the standard matrix.
-  Provider-planned operations are the preferred proof. If the provider times
-  out, natural rescue quality may still pass only when the PatchSet operation
-  names a schema-owned semantic or artifact-plan target, the accepted proposal
-  already carries an exact source-owned value for that target, the manifest
-  records `structured_patch_fallback.status=applied` with provider-failure
-  metadata, the semantic-patch ledger records the applied or idempotent fact,
-  and the final post-confirm quality gate passes before governed writes.
-  Empty replacement facts without an executable provider plan or source-anchored
-  fallback, missing `last_repair_patchset_request`, missing semantic-patch
-  ledger evidence, or a clean standard matrix plus synthetic rescue smoke is
-  not enough to claim natural rescue quality.
-  Explicit empty-list replacement facts are valid only when the PatchSet target
-  is a list-valued semantic field and the structured plan records a provider
-  decision ledger; a blank, absent, or prose-only replacement fact remains a
-  release blocker.
+- The shared Greenfield release proof lane must run an installed, immutable
+  candidate after local release smoke and retain its matrix payload outside any
+  disposable generated repository. Every commit-capable request inside the
+  declared operating envelope must pass exact proposal budgets: standard within
+  `60s`, rescue within `90s`, and explicit deep/premium work within `120s`.
+  These are separate one-call reasoning profiles, never a sequential retry or
+  repair cascade. Material ambiguity must return one focused clarification
+  before candidate, transaction, subprocess, or prompt-side persistence.
+  `CONFIRM` must remain commit-only: receipt/hash/precondition verification,
+  sealed-byte publication, rollback, and readback only, with no model call,
+  semantic interpretation, content generation, or prose repair.
+  Release acceptance is strict and separate from finite-sample confidence:
+  exact product laws remain zero-tolerance while confidence bounds describe
+  evidence strength and cannot override acceptance. Evaluators must call the
+  canonical product owners for Atlas topology, typed relation order, semantic
+  snapshots, and governed-write scope instead of maintaining parallel parsers.
+  Persisted readback, raw generated artifacts, logs, and screenshots must remain
+  hash-valid through independent adjudication for every terminal v3 outcome.
+  Each claim receives a unique run id; stale or mismatched evidence cannot
+  terminalize a newer claim. Release-scope execution requires an explicit
+  external evidence directory before it can mutate output or telemetry.
+  Campaign interruption must stop the process group and seal truthful
+  interruption evidence; if that evidence cannot be sealed, the ledger stays
+  claimed and the run fails closed.
+  Browser proof must exercise Project, Radar, Registry, Atlas, Compass,
+  Casebook, and the tooling shell across normal, empty/fallback, and
+  degraded/invalid-recovery states at desktop and 430px mobile widths. The
+  fixed matrix contains 28 required cells and rejects missing cells, document
+  or pane overflow, clipped/hidden text, stale payload binding, malformed
+  content, and any rendered typed fact whose count, order, or value differs
+  from the same generated repository's authored facts.
 - The local release asset builder, standalone greenfield matrix target, and
   shared release proof lane must run the platform domain-leakage guard against
   current runtime/source guidance, release tooling, and built release assets
@@ -624,6 +585,9 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/casebook/bugs/2026-09-02-greenfield-recovery-proof-bound-compiler-identity-to-absolute-install-path.md`, `odylith/casebook/bugs/2026-09-03-greenfield-flat-fact-arrays-permit-invalid-singular-cardinality.md`, `odylith/casebook/bugs/2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md`, plus 2 more
@@ -639,9 +603,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-08-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_prompt_evidence_interpretation.py`, `tests/fixtures/greenfield-release-corpus/retired-ba25-final-holdout-regressions.v1.json`
-- **2026-08-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-04-final-holdout-ledger-revision-is-not-bound-to-distribution-provenance.md`, `odylith/casebook/bugs/2026-08-04-semantic-release-recovery-selection-requires-source-audit-binding.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
 <!-- registry-requirements:end -->
 
 ## Feature History

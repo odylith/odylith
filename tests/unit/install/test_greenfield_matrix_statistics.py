@@ -14,6 +14,8 @@ if str(SCRIPTS_ROOT) not in sys.path:
 from greenfield_matrix_statistics import outcome_statistics
 from greenfield_matrix_statistics import release_slice_minimum_sample_contract
 from greenfield_matrix_statistics import release_slice_minimum_sample_contract_issues
+from greenfield_matrix_statistics import release_statistical_confidence_contract
+from greenfield_matrix_statistics import release_statistical_confidence_contract_issues
 from greenfield_matrix_statistics import wilson_interval
 from greenfield_matrix_types import GreenfieldArtifactCounts
 from greenfield_matrix_types import GreenfieldMatrixResult
@@ -109,6 +111,8 @@ def test_release_statistics_use_sealed_slices_instead_of_spoofable_tags() -> Non
     report = outcome_statistics(cases=cases, results=results, release=True)
 
     assert report["status"] == "passed"
+    assert report["acceptance_passed"] is True
+    assert report["confidence_passed"] is True
     assert report["release_evidence_issues"] == []
     assert report["release_coverage_issues"] == []
     assert report["release_minimum_samples"] == release_slice_minimum_sample_contract()
@@ -195,6 +199,33 @@ def test_release_slice_minimum_contract_rejects_narrowed_counts() -> None:
     assert release_slice_minimum_sample_contract_issues(contract) == [
         "release slice minimum samples must match the published contract"
     ]
+
+
+@pytest.mark.parametrize(
+    ("field", "threshold", "expected_evidence"),
+    (
+        ("overall_case_success", 0.52, "perfect evidence reaches 0.510109"),
+        (
+            "unnecessary_question_rate_ceiling",
+            0.48,
+            "zero failures reach 0.489891",
+        ),
+    ),
+)
+def test_confidence_preflight_rejects_thresholds_impossible_at_declared_minima(
+    field: str,
+    threshold: float,
+    expected_evidence: str,
+) -> None:
+    contract = release_statistical_confidence_contract()
+    contract[field] = threshold
+
+    issues = release_statistical_confidence_contract_issues(
+        contract,
+        minimum_samples=release_slice_minimum_sample_contract(),
+    )
+
+    assert any(field in issue and expected_evidence in issue for issue in issues)
 
 
 def test_release_statistics_reject_unknown_or_narrowed_slice_contracts() -> None:

@@ -31,6 +31,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     StructuredAuthoringProvider,
     authored_response,
+    model_event_rows,
 )
 
 
@@ -40,15 +41,34 @@ def test_model_relation_ownership_is_real_and_regex_free() -> None:
         greenfield_model_direct_evidence_graph,
         greenfield_model_intent_authoring,
     )
-    for owner in owners:
-        tree = ast.parse(inspect.getsource(owner))
-        imported_roots = {
-            alias.name.split(".", 1)[0]
-            for node in ast.walk(tree)
-            if isinstance(node, (ast.Import, ast.ImportFrom))
-            for alias in node.names
-        }
-        assert "re" not in imported_roots
+    package = "odylith.runtime.domain_intelligence"
+    source_root = Path(inspect.getsourcefile(greenfield_authored_semantics) or "").parent
+    local_modules = {
+        f"{package}.{path.stem}": path
+        for path in source_root.glob("*.py")
+    }
+    pending = [owner.__name__ for owner in owners]
+    checked: set[str] = set()
+    while pending:
+        module_name = pending.pop()
+        if module_name in checked:
+            continue
+        checked.add(module_name)
+        tree = ast.parse(local_modules[module_name].read_text(encoding="utf-8"))
+        imports: set[str] = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                imports.update(alias.name for alias in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                imports.add(node.module)
+                if node.module == package:
+                    imports.update(f"{package}.{alias.name}" for alias in node.names)
+        assert "re" not in imports, module_name
+        pending.extend(
+            imported
+            for imported in imports
+            if imported in local_modules and imported not in checked
+        )
 
     sealed_owner_functions = {
         node.name
@@ -63,23 +83,20 @@ def test_model_relation_ownership_is_real_and_regex_free() -> None:
     assert greenfield_model_direct_evidence_graph.MODEL_EVENT_FIELDS == frozenset(
         {
             "actor_fact_quote",
-            "actor_quote",
-            "action_quote",
             "target_quote",
             "recovery_path",
         }
     )
+    assert greenfield_model_direct_evidence_graph.MODEL_EVENT_SCHEMA["minItems"] == 1
     assert set(
-        greenfield_model_direct_evidence_graph.MODEL_EVENT_SCHEMA["items"][
-            "properties"
-        ]
+        greenfield_model_direct_evidence_graph.MODEL_EVENT_SCHEMA["items"]["properties"]
     ) == greenfield_model_direct_evidence_graph.MODEL_EVENT_FIELDS
 
 
 def test_model_event_contract_rejects_restatement_of_derived_custody() -> None:
     prompt, edit_evidence, intent, segments, relations = _case()
     response = _response(intent=intent, segments=segments, relations=relations)
-    response["events"][0]["event_quote"] = "restated event"  # type: ignore[index]
+    model_event_rows(response)[0]["event_quote"] = "restated event"
 
     with pytest.raises(GreenfieldModelAuthoringError, match="invalid first-path events"):
         author_greenfield_intent(
@@ -313,7 +330,7 @@ def test_authoring_derives_context_custody_without_model_restatement() -> None:
 def test_authoring_canonicalizes_a_unique_segment_occurrence() -> None:
     prompt, edit_evidence, intent, segments, relations = _case()
     response = _response(intent=intent, segments=segments, relations=relations)
-    path_fact = response["facts"]["first_path"][0]
+    path_fact = response["result"]["facts"]["first_path"][0]
     path_fact["occurrence"] = 2
     result = author_greenfield_intent(
         evidence_text=combined_prompt_evidence_source(
@@ -334,7 +351,7 @@ def test_authoring_rejects_events_reordered_against_composite_path() -> None:
     prompt, edit_evidence, intent, segments, relations = _case()
     reordered = [relations[1], relations[0], *relations[2:]]
     response = _response(intent=intent, segments=segments, relations=reordered)
-    with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path actor"):
+    with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path event"):
         author_greenfield_intent(
             evidence_text=combined_prompt_evidence_source(
                 prompt=prompt,

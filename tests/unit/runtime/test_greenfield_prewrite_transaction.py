@@ -48,6 +48,9 @@ def test_greenfield_apply_prewrite_component_and_diagram_phases_stay_dedicated()
     assert "greenfield_apply_components.preview_prewrite_components" in parent_source
     assert "greenfield_apply_diagrams.render_prewrite_atlas_sources" in parent_source
     assert "greenfield_apply_diagrams.allocated_diagram_ids" in parent_source
+    assert parent_source.count("seal_staged_greenfield_create(") == 1
+    assert "greenfield_source_casing" not in parent_source
+    assert "proposal_with_component_brief_gate" not in parent_source
     for moved in (
         "def render_prewrite_component_specs",
         "def preview_prewrite_components",
@@ -92,6 +95,25 @@ def test_prewrite_safety_evidence_records_dry_run_preview_before_commit() -> Non
 
 def _proposal(tmp_path: Path) -> dict[str, object]:
     return _canonical_model_authored_greenfield_fixture(tmp_path)
+
+
+def test_greenfield_prewrite_rejects_unsealed_proposal_before_staging(
+    tmp_path: Path,
+) -> None:
+    with pytest.raises(
+        ValueError,
+        match="prewrite accepts only sealed model-authored proposals",
+    ):
+        greenfield_apply_prewrite.build_prewrite_completion_package(
+            root=tmp_path,
+            proposal={},
+            release_selector="0.0.1",
+            backlog_args=(),
+            validation_gate={"status": "passed"},
+            release_assignment_note="unused",
+        )
+
+    assert list(tmp_path.iterdir()) == []
 
 
 def test_greenfield_prewrite_builds_complete_authored_surface_package(
@@ -168,7 +190,7 @@ def _disable_refreshes(monkeypatch: pytest.MonkeyPatch) -> None:
         lambda **_kwargs: {"status": "passed", "test_refresh_stub": True},
     )
     monkeypatch.setattr(
-        greenfield_component_commit.component_authoring.owned_surface_refresh,
+        greenfield_component_commit.component_compiled_commit.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )

@@ -25,6 +25,7 @@ from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
 )
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
+from odylith.runtime.surfaces.atlas_diagram_intelligence import parse_mermaid_graph
 from greenfield_matrix_governed_readback import governed_readback_findings
 
 
@@ -244,7 +245,7 @@ def _atlas_findings(*, artifacts: Sequence[RenderedArtifact], proposal: Mapping[
         labels = visible_mermaid_label_quality_texts(artifact.text)
         if len(labels) < 2:
             findings.append(_finding("architect", f"{artifact.identity} has too few visible topology labels"))
-        if not any(operator in artifact.text for operator in ("-->", "-->>", ".->", "==>", "->>")):
+        if not parse_mermaid_graph(artifact.text).edges:
             findings.append(_finding("architect", f"{artifact.identity} has no visible topology edge"))
     return findings
 

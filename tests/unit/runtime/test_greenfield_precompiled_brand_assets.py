@@ -31,7 +31,7 @@ def _disable_refreshes(monkeypatch: pytest.MonkeyPatch) -> None:
         lambda **_kwargs: {"status": "passed", "test_refresh_stub": True},
     )
     monkeypatch.setattr(
-        greenfield_component_commit.component_authoring.owned_surface_refresh,
+        greenfield_component_commit.component_compiled_commit.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )

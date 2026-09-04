@@ -20,6 +20,9 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
     canonical_product_owner_projection_values,
 )
+from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
+    missing_source_fact_notice,
+)
 
 
 AUTHORED_WORKSTREAM_ROLES = ("project", "workflow", "boundary", "proof")
@@ -201,6 +204,7 @@ def _backlog_row(
         ranking_basis=first_slice,
     )
     semantic_record = dict(semantic_contract)
+    semantic_record["evidence_gaps"] = _strings(projection.get("evidence_gaps"))
     semantic_record["rendered_field_refs"] = rendered_field_refs
     row = {
         "title": _required_text(projection.get("title"), "workstream title"),
@@ -276,16 +280,33 @@ def _role_projection(
 
     if role == "project":
         story_refs = _exact_refs(visible_fact_refs, "/product_story")
-        problem_refs = _exact_refs(visible_fact_refs, "/problem") or story_refs
-        customer_refs = customer_context_refs
-        opportunity_refs = _exact_refs(visible_fact_refs, "/opportunity") or story_refs
-        view_refs = _exact_refs(
-            visible_fact_refs,
-            "/product_view",
-            "/state_object",
-            "/first_path",
+        path_refs = _exact_refs(visible_fact_refs, "/first_path")
+        problem_refs = _distinct_fact_refs(
+            fact_values,
+            _exact_refs(visible_fact_refs, "/problem"),
+            [*story_refs, *path_refs],
         )
-        outcome_refs = _exact_refs(visible_fact_refs, "/product_view") or view_refs
+        customer_refs = customer_context_refs
+        opportunity_refs = _distinct_fact_refs(
+            fact_values,
+            _exact_refs(visible_fact_refs, "/opportunity"),
+            [*story_refs, *path_refs],
+        )
+        view_refs = _distinct_fact_refs(
+            fact_values,
+            _exact_refs(visible_fact_refs, "/product_view"),
+            [*story_refs, *path_refs],
+        )
+        evidence_gaps = [
+            field
+            for field, refs in (
+                ("problem", problem_refs),
+                ("opportunity", opportunity_refs),
+                ("product_view", view_refs),
+            )
+            if not refs
+        ]
+        outcome_refs = view_refs or _exact_refs(visible_fact_refs, "/proof_boundary")
         metric_refs = [
             *_prefix_refs(visible_fact_refs, "/success_metrics/"),
             *_exact_refs(visible_fact_refs, "/proof_boundary"),
@@ -314,10 +335,25 @@ def _role_projection(
         )
         return {
             "title": f"Deliver {title}",
-            "problem": _labeled_values("Problem", fact_values, problem_refs),
+            "problem": _labeled_values(
+                "Problem",
+                fact_values,
+                problem_refs,
+                empty=missing_source_fact_notice("the user problem"),
+            ),
             "customer": _first_value(fact_values, customer_refs),
-            "opportunity": _labeled_values("Opportunity", fact_values, opportunity_refs),
-            "product_view": _labeled_values("Product view", fact_values, view_refs),
+            "opportunity": _labeled_values(
+                "Opportunity",
+                fact_values,
+                opportunity_refs,
+                empty=missing_source_fact_notice("an opportunity"),
+            ),
+            "product_view": _labeled_values(
+                "Product view",
+                fact_values,
+                view_refs,
+                empty=missing_source_fact_notice("a distinct product view"),
+            ),
             "success_metrics": _values_for_refs(fact_values, metric_refs),
             "recommended_first_slice": first_slice,
             "component_focus": component_ids,
@@ -326,7 +362,8 @@ def _role_projection(
             "validation": _values_for_refs(fact_values, validation_refs),
             "deferred_scope": _values_for_refs(fact_values, deferred_refs),
             "scope": _values_for_refs(fact_values, scope_refs),
-            "ordering_why_now": _joined_values(fact_values, opportunity_refs),
+            "ordering_why_now": _joined_values(fact_values, opportunity_refs)
+            or missing_source_fact_notice("an opportunity"),
             "ordering_expected_outcome": _joined_values(
                 fact_values,
                 outcome_refs,
@@ -346,14 +383,12 @@ def _role_projection(
                 "ordering_why_now": opportunity_refs,
                 "ordering_expected_outcome": outcome_refs,
             },
+            "evidence_gaps": evidence_gaps,
         }
     if role == "workflow":
         actor_refs = _prefix_refs(fact_refs, "/human_actors/")
         path_refs = _exact_refs(fact_refs, "/first_path")
-        opportunity_refs = _exact_refs(fact_refs, "/opportunity") or _exact_refs(
-            visible_fact_refs,
-            "/product_story",
-        )
+        opportunity_refs = _exact_refs(fact_refs, "/opportunity")
         event_refs = _prefix_refs(relation_refs, "/authored_semantics/first_path_relations/")
         events = _values_for_refs(relation_values, event_refs)
         final_event_refs = event_refs[-1:]
@@ -365,6 +400,7 @@ def _role_projection(
                 "Workflow opportunity",
                 fact_values,
                 opportunity_refs,
+                empty=missing_source_fact_notice("a workflow-specific opportunity"),
             ),
             "product_view": _labeled_values("Ordered workflow events", relation_values, event_refs),
             "success_metrics": _values_for_refs(relation_values, final_event_refs),
@@ -375,7 +411,8 @@ def _role_projection(
             "validation": events,
             "deferred_scope": [],
             "scope": events,
-            "ordering_why_now": _joined_values(fact_values, opportunity_refs),
+            "ordering_why_now": _joined_values(fact_values, opportunity_refs)
+            or missing_source_fact_notice("a workflow-specific opportunity"),
             "ordering_expected_outcome": _joined_values(relation_values, final_event_refs),
             "field_refs": {
                 "title": title_refs,
@@ -392,6 +429,7 @@ def _role_projection(
                 "ordering_why_now": opportunity_refs,
                 "ordering_expected_outcome": final_event_refs,
             },
+            "evidence_gaps": [] if opportunity_refs else ["opportunity"],
         }
     if role == "boundary":
         external_refs = _prefix_refs(fact_refs, "/external_systems/")
@@ -586,6 +624,12 @@ def _validated_rendered_field_refs(
         if not isinstance(field, str) or len(values) != len(refs) or not set(values) <= allowed:
             raise ValueError("model-authored workstream rendered an unowned semantic ref")
         rendered[field] = values
+    evidence_gaps = _strings(projection.get("evidence_gaps"))
+    allowed_gaps = {"problem", "opportunity", "product_view"}
+    if len(evidence_gaps) != len(set(evidence_gaps)) or not set(evidence_gaps) <= allowed_gaps:
+        raise ValueError("model-authored workstream has invalid evidence-gap ownership")
+    if any(rendered.get(field) for field in evidence_gaps):
+        raise ValueError("model-authored evidence gap cannot claim a source fact")
     required_fields = (
         "title",
         "problem",
@@ -597,7 +641,11 @@ def _validated_rendered_field_refs(
         "validation",
         "radar_sections.Impacted Components",
     )
-    missing_fields = [field for field in required_fields if not rendered.get(field)]
+    missing_fields = [
+        field
+        for field in required_fields
+        if not rendered.get(field) and field not in evidence_gaps
+    ]
     if missing_fields:
         role = _text(semantic_contract.get("role")) or "unknown"
         raise ValueError(
@@ -930,6 +978,25 @@ def _exact_refs(refs: Sequence[str], *paths: str) -> list[str]:
 
 def _prefix_refs(refs: Sequence[str], *prefixes: str) -> list[str]:
     return [ref for ref in refs if ref.startswith(prefixes)]
+
+
+def _distinct_fact_refs(
+    values: Mapping[str, str],
+    candidate_refs: Sequence[str],
+    excluded_refs: Sequence[str],
+) -> list[str]:
+    """Keep a semantic slot only when its accepted value is not reused filler."""
+
+    excluded_values = {
+        values[ref]
+        for ref in excluded_refs
+        if ref in values and values[ref]
+    }
+    return [
+        ref
+        for ref in candidate_refs
+        if ref in values and values[ref] and values[ref] not in excluded_values
+    ]
 
 
 def _first_value(values: Mapping[str, str], refs: Sequence[str]) -> str:

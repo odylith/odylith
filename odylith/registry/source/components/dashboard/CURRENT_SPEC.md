@@ -5,7 +5,7 @@
   benchmark proof, and release-gate indicators may surface when useful, but
   passing checks should stay quiet and no dashboard claim should imply shipped
   behavior before pinned dogfood and benchmark proof exist.
-Last updated: 2026-09-02
+Last updated: 2026-09-03
 
 
 ## Purpose
@@ -390,6 +390,9 @@ artifacts to that header.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/casebook/bugs/2026-09-02-greenfield-recovery-proof-bound-compiler-identity-to-absolute-install-path.md`, `odylith/casebook/bugs/2026-09-03-greenfield-flat-fact-arrays-permit-invalid-singular-cardinality.md`, `odylith/casebook/bugs/2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md`, plus 2 more
@@ -405,9 +408,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-08-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_prompt_evidence_interpretation.py`, `tests/fixtures/greenfield-release-corpus/retired-ba25-final-holdout-regressions.v1.json`
-- **2026-08-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-04-final-holdout-ledger-revision-is-not-bound-to-distribution-provenance.md`, `odylith/casebook/bugs/2026-08-04-semantic-release-recovery-selection-requires-source-audit-binding.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
 <!-- registry-requirements:end -->
 
 ## Feature History

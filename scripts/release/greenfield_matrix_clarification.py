@@ -10,16 +10,31 @@ import re
 import time
 from typing import Any
 
+from greenfield_matrix_quality_scoring import INDEPENDENT_SEMANTIC_LENS_DIMENSIONS
 from greenfield_matrix_quality_scoring import QUALITY_SCORE_DIMENSIONS
+from greenfield_matrix_quality_scoring import UNSCORED_QUALITY_SCORE
 from greenfield_matrix_types import GreenfieldQualityVerdict
+from odylith.runtime.domain_intelligence.greenfield_pending_transaction_store import (
+    GREENFIELD_PENDING_TRANSACTION_ROOT,
+    GREENFIELD_RUNTIME_ROOT,
+)
+from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
+    consistency_source_span_receipts_valid,
+)
+from odylith.runtime.domain_intelligence.greenfield_repository_write_set import (
+    GREENFIELD_REPOSITORY_WRITE_PATHS,
+)
 
 
 CLARIFICATION_REQUIRED_EXPECTATION = "clarification_required"
 FOCUSED_FIRST_PATH_QUESTION = (
     "What is the first complete task the product should help a person finish, and what result should they see?"
 )
-_NO_WRITE_ROOTS = (Path(".odylith/runtime/greenfield"), Path("odylith"))
-_STAGED_TRANSACTION_ROOT = Path(".odylith/runtime/greenfield/pending")
+_NO_WRITE_ROOTS = tuple(
+    Path(value)
+    for value in (*GREENFIELD_REPOSITORY_WRITE_PATHS, GREENFIELD_RUNTIME_ROOT)
+)
+_STAGED_TRANSACTION_ROOT = Path(GREENFIELD_PENDING_TRANSACTION_ROOT)
 _FIELD_ID_RE = re.compile(r"[a-z][a-z0-9_]*")
 MATERIAL_QUESTION_FIELDS = frozenset(
     {
@@ -100,8 +115,6 @@ def clarification_contract_issues(
         issues.append("clarification proposal could not complete the installed write audit")
     if execution.write_attempts:
         issues.append("clarification proposal attempted repository writes: " + ", ".join(execution.write_attempts))
-    if execution.subprocess_attempts:
-        issues.append("clarification proposal attempted a child process: " + ", ".join(execution.subprocess_attempts))
     if execution.returncode != 0:
         issues.append(f"clarification proposal exited with code {execution.returncode}")
     if str(payload.get("mode") or "").strip() != CLARIFICATION_REQUIRED_EXPECTATION:
@@ -150,12 +163,21 @@ def clarification_contract_issues(
     )
     if consistency_status == "consistent" and consistency_spans:
         issues.append("consistent clarification must not claim conflicting source spans")
+    elif consistency_status == "material_ambiguity" and (
+        not consistency_source_span_receipts_valid(
+            consistency_spans,
+            minimum=1,
+        )
+    ):
+        issues.append("material ambiguity clarification requires at least one valid source-bound span")
     elif consistency_status == "material_contradiction" and (
-        len(consistency_spans) < 2
-        or any(not isinstance(span, Mapping) for span in consistency_spans)
+        not consistency_source_span_receipts_valid(
+            consistency_spans,
+            minimum=2,
+        )
     ):
         issues.append("material contradiction clarification requires at least two source-bound spans")
-    elif consistency_status not in {"consistent", "material_contradiction"}:
+    elif consistency_status not in {"consistent", "material_ambiguity", "material_contradiction"}:
         issues.append("clarification consistency_assessment has an unsupported status")
     required_fields = tuple(str(field).strip() for field in expected_fields if str(field).strip())
     if not required_fields:
@@ -193,8 +215,15 @@ def clarification_quality_verdict(issues: Sequence[str]) -> GreenfieldQualityVer
     return GreenfieldQualityVerdict(
         passed=passed,
         issues=tuple(issues),
-        lenses={lens: passed for lens in ("product_manager", "architect", "engineer", "domain_expert")},
-        scores={dimension: score for dimension in QUALITY_SCORE_DIMENSIONS},
+        lenses={lens: False for lens in INDEPENDENT_SEMANTIC_LENS_DIMENSIONS},
+        scores={
+            dimension: (
+                UNSCORED_QUALITY_SCORE
+                if dimension in INDEPENDENT_SEMANTIC_LENS_DIMENSIONS
+                else score
+            )
+            for dimension in QUALITY_SCORE_DIMENSIONS
+        },
         score=score,
         score_explanation=(
             "clarification-required pre-confirm contract verified without a transaction or governed write"

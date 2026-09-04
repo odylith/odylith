@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Callable, Mapping, Sequence
+from contextlib import nullcontext
 from dataclasses import dataclass, replace
 import hashlib
 import json
@@ -78,6 +79,17 @@ from greenfield_matrix_preflight import matrix_preflight_failures  # noqa: E402
 from greenfield_matrix_package_evidence import package_evidence_findings  # noqa: E402
 from greenfield_matrix_proof_scope import commit_manifest_summary  # noqa: E402
 from greenfield_matrix_proof_scope import temp_cleanup_proof  # noqa: E402
+from greenfield_matrix_release_artifacts import RetainedEvidenceCase  # noqa: E402
+from greenfield_matrix_release_artifacts import begin_retained_case_evidence  # noqa: E402
+from greenfield_matrix_release_artifacts import finalize_retained_case_evidence  # noqa: E402
+from greenfield_matrix_release_artifacts import prepare_retained_evidence_output_dir  # noqa: E402
+from greenfield_matrix_release_artifacts import record_retained_case_json  # noqa: E402
+from greenfield_matrix_release_artifacts import record_retained_case_text  # noqa: E402
+from greenfield_matrix_release_artifacts import retained_case_evidence_fd  # noqa: E402
+from greenfield_matrix_release_artifacts import retained_evidence_manifest_path  # noqa: E402
+from greenfield_matrix_release_artifacts import retained_evidence_manifest_issues  # noqa: E402
+from greenfield_matrix_release_artifacts import validate_retained_evidence_output_dir  # noqa: E402
+from greenfield_matrix_release_artifacts import write_retained_evidence_manifest  # noqa: E402
 from greenfield_matrix_run_lease import acquire_matrix_run_lease  # noqa: E402
 from greenfield_matrix_run_lease import write_matrix_payload  # noqa: E402
 from greenfield_semantic_release_score import evaluate_semantic_release  # noqa: E402
@@ -93,6 +105,8 @@ from greenfield_preconfirm_matrix_cases import case_expectation  # noqa: E402
 from greenfield_preconfirm_matrix_cases import default_cases  # noqa: E402
 from greenfield_process import CommandLifecycleObserverError  # noqa: E402
 from greenfield_process import command_lifecycle_observer  # noqa: E402
+
+GREENFIELD_MODEL_PROOF_FD_ENV = "ODYLITH_GREENFIELD_MODEL_PROOF_FD"
 from greenfield_process import run_command_with_group_timeout as _run  # noqa: E402
 from greenfield_matrix_types import GreenfieldArtifactCounts  # noqa: E402
 from greenfield_matrix_types import GreenfieldMatrixResult  # noqa: E402
@@ -149,13 +163,15 @@ class _FinalHoldoutRun:
     implementation_revision: str
     distribution_provenance_sha256: str
     claimed: bool = False
+    run_id: str = ""
 
     def claim(self) -> None:
-        claim_final_holdout_run(
+        claimed = claim_final_holdout_run(
             ledger_path=self.ledger_path,
             implementation_revision=self.implementation_revision,
             distribution_provenance_sha256=self.distribution_provenance_sha256,
         )
+        self.run_id = str(claimed["run_id"])
         self.claimed = True
         bind_final_holdout_inputs(
             ledger_path=self.ledger_path,
@@ -169,12 +185,19 @@ class _FinalHoldoutRun:
             },
         )
 
-    def complete(self, *, result_path: Path, outcome: str) -> None:
+    def complete(
+        self,
+        *,
+        result_path: Path,
+        outcome: str,
+        retained_evidence_manifest: Path | None = None,
+    ) -> None:
         if self.claimed:
             complete_final_holdout_run(
                 ledger_path=self.ledger_path,
                 result_path=result_path,
                 outcome=outcome,
+                retained_evidence_manifest=retained_evidence_manifest,
             )
             self.claimed = False
 
@@ -200,6 +223,8 @@ def run_matrix(
     release_audit_repo_root: Path | None = None,
     semantic_annotations_file: str = "",
     evaluation_split_manifest: str = "",
+    evidence_output_dir: Path | None = None,
+    retained_evidence_run_id: str = "",
     before_product_execution: Callable[[], None] | None = None,
 ) -> tuple[GreenfieldMatrixResult, ...]:
     """Run the real installed greenfield create path for each matrix case."""
@@ -238,6 +263,16 @@ def run_matrix(
         ),
         semantic_annotations_file=semantic_annotations_file,
         evaluation_split_manifest=evaluation_split_manifest,
+    )
+    if campaign_config.proof_tier == "release" and evidence_output_dir is None:
+        raise RuntimeError("release proof requires --evidence-output-dir")
+    retained_evidence_root = (
+        prepare_retained_evidence_output_dir(
+            output_dir=Path(evidence_output_dir),
+            temp_parent=Path(temp_parent),
+        )
+        if evidence_output_dir is not None
+        else None
     )
     telemetry = MatrixTelemetryWriter(campaign_config.telemetry_jsonl)
     attempt_ledger = MatrixAttemptLedger(attempt_ledger_jsonl)
@@ -317,6 +352,13 @@ def run_matrix(
             status="failed",
             stopped_reason=reason,
         )
+        _retain_unexecuted_results(
+            evidence_root=retained_evidence_root,
+            cases=selected_cases,
+            results=results,
+            repo_root=Path(temp_parent),
+            run_id=retained_evidence_run_id,
+        )
         return tuple(results)
     if before_product_execution is not None:
         before_product_execution()
@@ -380,11 +422,26 @@ def run_matrix(
                     status="failed",
                     stopped_reason="seed-install-failed",
                 )
+                _retain_unexecuted_results(
+                    evidence_root=retained_evidence_root,
+                    cases=selected_cases,
+                    results=results,
+                    repo_root=seed_repo,
+                    run_id=retained_evidence_run_id,
+                )
                 return tuple(results)
         for index, case in enumerate(selected_cases, start=1):
             telemetry.emit("case_started", case_started_event(case=case, index=index, total=len(selected_cases)))
             attempt_ledger.record_started(case=case, index=index, total=len(selected_cases))
             repo_root = run_root / f"odylith-sim-{case.slug}-{uuid.uuid4().hex[:8]}"
+            retained_case = (
+                begin_retained_case_evidence(
+                    evidence_root=retained_evidence_root,
+                    case_id=_retained_case_id(case),
+                )
+                if retained_evidence_root is not None
+                else None
+            )
             try:
                 if seed_repo is not None:
                     with command_lifecycle_observer(_matrix_command_observer(telemetry)):
@@ -402,6 +459,7 @@ def run_matrix(
                         install_mode=install_mode,
                         require_write_audit=True,
                         include_lexical_custody_proof=not semantic_release_requested,
+                        retained_case=retained_case,
                     )
                 if not semantic_release_requested:
                     result = _with_case_platform_leakage_issues(result=result, release_dir=release_dir)
@@ -433,6 +491,25 @@ def run_matrix(
                 status="failed" if reason else "running",
                 stopped_reason=reason,
             )
+            if retained_case is not None:
+                try:
+                    finalize_retained_case_evidence(
+                        case=retained_case,
+                        repo_root=repo_root,
+                        result_payload=result.to_dict(),
+                    )
+                except RuntimeError as exc:
+                    result = _result_with_retained_evidence_issue(result, str(exc))
+                    results[-1] = result
+                    reason = "retained-evidence-failed"
+                    _flush_incremental_matrix_payload(
+                        output_json=incremental_output_json,
+                        cases=selected_cases,
+                        results=results,
+                        config=campaign_config,
+                        status="failed",
+                        stopped_reason=reason,
+                    )
             try:
                 _cleanup_repo_before_next(repo_root)
             except RuntimeError as exc:
@@ -477,6 +554,12 @@ def run_matrix(
         server.shutdown()
         server.server_close()
         _cleanup_run_root(run_root)
+    if retained_evidence_root is not None:
+        write_retained_evidence_manifest(
+            root=retained_evidence_root,
+            expected_case_ids=tuple(_retained_case_id(case) for case in selected_cases[: len(results)]),
+            run_id=retained_evidence_run_id,
+        )
     return tuple(results)
 
 
@@ -615,6 +698,86 @@ def _result_with_cleanup_issue(result: GreenfieldMatrixResult, detail: str) -> G
         status="failed",
         quality=quality,
         failure_detail=command_excerpt(detail, limit=1200),
+    )
+
+
+def _result_with_retained_evidence_issue(result: GreenfieldMatrixResult, detail: str) -> GreenfieldMatrixResult:
+    issue = f"retained evidence failed before temp cleanup: {command_excerpt(detail, limit=800)}"
+    quality = replace(
+        result.quality,
+        passed=False,
+        issues=tuple(dict.fromkeys((*result.quality.issues, issue))),
+        score=0,
+        score_explanation=("release evidence was not durably retained",),
+    )
+    return replace(
+        result,
+        status="failed",
+        quality=quality,
+        failure_detail=command_excerpt(detail, limit=1200),
+    )
+
+
+def _record_retained_execution(
+    *,
+    retained_case: RetainedEvidenceCase,
+    proposal_payload: Mapping[str, Any],
+    dry_run_receipt: Mapping[str, Any],
+    create_payload: Mapping[str, Any],
+    raw_streams: Mapping[str, str],
+) -> None:
+    for name in (
+        "input.prompt",
+        "input.edit-evidence",
+        "propose.stdout",
+        "propose.stderr",
+        "create.stdout",
+        "create.stderr",
+    ):
+        record_retained_case_text(
+            retained_case,
+            f"commands/{name}",
+            str(raw_streams.get(name) or ""),
+        )
+    record_retained_case_json(retained_case, "semantic/proposal-payload.v1.json", dict(proposal_payload))
+    if dry_run_receipt:
+        record_retained_case_json(retained_case, "semantic/dry-run-receipt.v2.json", dict(dry_run_receipt))
+    if create_payload:
+        record_retained_case_json(retained_case, "semantic/create-payload.v1.json", dict(create_payload))
+
+
+def _retained_case_id(case: GreenfieldMatrixCase) -> str:
+    return str(case.case_id or case.slug).strip()
+
+
+def _retain_unexecuted_results(
+    *,
+    evidence_root: Path | None,
+    cases: Sequence[GreenfieldMatrixCase],
+    results: Sequence[GreenfieldMatrixResult],
+    repo_root: Path,
+    run_id: str = "",
+) -> None:
+    if evidence_root is None:
+        return
+    case_ids: list[str] = []
+    seen: dict[str, int] = {}
+    for index, result in enumerate(results):
+        case = cases[min(index, len(cases) - 1)]
+        base = _retained_case_id(case)
+        seen[base] = seen.get(base, 0) + 1
+        case_id = base if seen[base] == 1 else f"{base}-{seen[base]}"
+        retained_case = begin_retained_case_evidence(evidence_root=evidence_root, case_id=case_id)
+        finalize_retained_case_evidence(
+            case=retained_case,
+            repo_root=repo_root,
+            result_payload=result.to_dict(),
+        )
+        case_ids.append(case_id)
+    write_retained_evidence_manifest(
+        root=evidence_root,
+        expected_case_ids=case_ids,
+        run_id=run_id,
     )
 
 
@@ -880,6 +1043,7 @@ def _run_case(
     install_mode: str = "full",
     require_write_audit: bool = True,
     include_lexical_custody_proof: bool = True,
+    retained_case: RetainedEvidenceCase | None = None,
 ) -> GreenfieldMatrixResult:
     case = assign_model_profiles((case,))[0]
     profile = case_model_profile(case)
@@ -908,17 +1072,23 @@ def _run_case(
             install_script=install_script,
             version=version,
             install_mode=install_mode,
+            retained_case=retained_case,
         )
         return replace(
             result,
             evidence=dict(result.evidence),
         )
+    raw_streams: dict[str, str] = {}
+    raw_streams["input.prompt"] = case.prompt
+    raw_streams["input.edit-evidence"] = str(case.confirmed_intent_markdown or "")
     execution = _run_compiled_greenfield_create_with_receipt(
         repo_root=repo_root,
         env=env,
         prompt=case.prompt,
         edit_evidence=str(case.confirmed_intent_markdown or ""),
         repair_tier=profile_contract.repair_tier,
+        raw_streams=raw_streams,
+        retained_case=retained_case,
     )
     create = execution.create
     proposal_seconds = execution.proposal_seconds
@@ -956,7 +1126,12 @@ def _run_case(
     )
     browser_surface_proof_attempted = bool(include_browser_proof and create.returncode == 0)
     browser_surface_issues = (
-        browser_surface_proof_issues(repo_root=repo_root) if browser_surface_proof_attempted else ()
+        browser_surface_proof_issues(
+            repo_root=repo_root,
+            screenshot_output_dir=(retained_case.staging_root / "browser" if retained_case else None),
+        )
+        if browser_surface_proof_attempted
+        else ()
     )
     receipt_issues = dry_run_commit_issues(
         receipt=execution.dry_run_receipt,
@@ -1012,6 +1187,14 @@ def _run_case(
         "post_confirm_navigation_issues": list(navigation_issues),
     }
     evidence["model_profile"] = profile_evidence
+    if retained_case is not None:
+        _record_retained_execution(
+            retained_case=retained_case,
+            proposal_payload=execution.proposal_payload,
+            dry_run_receipt=execution.dry_run_receipt,
+            create_payload=payload,
+            raw_streams=raw_streams,
+        )
     return GreenfieldMatrixResult(
         name=case.name,
         status="passed" if quality.passed else "failed",
@@ -1057,26 +1240,38 @@ def _run_expected_clarification_case(
     install_script: Path,
     version: str,
     install_mode: str,
+    retained_case: RetainedEvidenceCase | None = None,
 ) -> GreenfieldMatrixResult:
     audit = begin_installed_write_audit(repo_root=repo_root)
+    raw_streams: dict[str, str] = {}
+    raw_streams["input.prompt"] = case.prompt
+    raw_streams["input.edit-evidence"] = str(case.confirmed_intent_markdown or "")
+
+    def invoke_proposal() -> Any:
+        proposed = _run_greenfield_propose(
+            repo_root=repo_root,
+            env={**env, **audit.environment()},
+            prompt=case.prompt,
+            edit_evidence=str(case.confirmed_intent_markdown or ""),
+            timeout=timeout,
+            repair_tier=repair_tier,
+            command=(
+                audit.command(
+                    runtime_python=repo_root / ".odylith/runtime/current/bin/python",
+                    arguments=(),
+                )
+            ),
+            pass_fds=audit.pass_fds,
+            retained_case=retained_case,
+        )
+        raw_streams["propose.stdout"] = str(getattr(proposed, "stdout", "") or "")
+        raw_streams["propose.stderr"] = str(getattr(proposed, "stderr", "") or "")
+        return proposed
+
     try:
         execution = run_expected_clarification(
             repo_root=repo_root,
-            invoke=lambda: _run_greenfield_propose(
-                repo_root=repo_root,
-                env={**env, **audit.environment()},
-                prompt=case.prompt,
-                edit_evidence=str(case.confirmed_intent_markdown or ""),
-                timeout=timeout,
-                repair_tier=repair_tier,
-                command=(
-                    audit.command(
-                        runtime_python=repo_root / ".odylith/runtime/current/bin/python",
-                        arguments=(),
-                    )
-                ),
-                pass_fds=audit.pass_fds,
-            ),
+            invoke=invoke_proposal,
             parse_payload=_parse_json_object,
         )
     finally:
@@ -1144,6 +1339,14 @@ def _run_expected_clarification_case(
         "write_audit_error": execution.write_audit_error,
     }
     evidence["model_profile"] = profile_evidence
+    if retained_case is not None:
+        _record_retained_execution(
+            retained_case=retained_case,
+            proposal_payload=payload,
+            dry_run_receipt={},
+            create_payload={},
+            raw_streams=raw_streams,
+        )
     return GreenfieldMatrixResult(
         name=case.name,
         status="passed" if quality.passed else "failed",
@@ -1185,6 +1388,8 @@ def _run_compiled_greenfield_create_with_receipt(
     prompt: str,
     edit_evidence: str = "",
     repair_tier: str = "auto",
+    raw_streams: dict[str, str] | None = None,
+    retained_case: RetainedEvidenceCase | None = None,
 ) -> CompiledCreateExecution:
     profile_id = model_profile_id_for_repair_tier(repair_tier)
     configured_profile_id = str(env.get("ODYLITH_GREENFIELD_MODEL_PROFILE") or "").strip()
@@ -1199,9 +1404,13 @@ def _run_compiled_greenfield_create_with_receipt(
         edit_evidence=edit_evidence,
         timeout=proposal_timeout,
         repair_tier=repair_tier,
+        retained_case=retained_case,
     )
+    if raw_streams is not None:
+        raw_streams["propose.stdout"] = str(getattr(proposed, "stdout", "") or "")
+        raw_streams["propose.stderr"] = str(getattr(proposed, "stderr", "") or "")
     proposal_seconds = round(time.perf_counter() - proposal_started, 3)
-    return commit_precompiled_transaction(
+    execution = commit_precompiled_transaction(
         repo_root=repo_root,
         proposed=proposed,
         proposal_seconds=proposal_seconds,
@@ -1212,6 +1421,10 @@ def _run_compiled_greenfield_create_with_receipt(
             timeout=60,
         ),
     )
+    if raw_streams is not None:
+        raw_streams["create.stdout"] = str(getattr(execution.create, "stdout", "") or "")
+        raw_streams["create.stderr"] = str(getattr(execution.create, "stderr", "") or "")
+    return execution
 
 
 def _run_greenfield_propose(
@@ -1224,6 +1437,7 @@ def _run_greenfield_propose(
     repair_tier: str = "",
     command: Sequence[str] | None = None,
     pass_fds: tuple[int, ...] = (),
+    retained_case: RetainedEvidenceCase | None = None,
 ) -> Any:
     propose_command = list(command) if command is not None else ["./.odylith/bin/odylith"]
     propose_command.extend(
@@ -1233,15 +1447,29 @@ def _run_greenfield_propose(
             repair_tier=repair_tier,
         )
     )
-    run_kwargs: dict[str, Any] = {
-        "cwd": repo_root,
-        "env": env,
-        "command": propose_command,
-        "timeout": timeout,
-    }
-    if pass_fds:
-        run_kwargs["pass_fds"] = pass_fds
-    return _run(**run_kwargs)
+    capture = (
+        retained_case_evidence_fd(
+            retained_case,
+            "semantic/model-authoring-observation.v1.json",
+        )
+        if retained_case is not None
+        else nullcontext(None)
+    )
+    with capture as proof_fd:
+        proposal_env = dict(env)
+        inherited_fds = pass_fds
+        if proof_fd is not None:
+            proposal_env[GREENFIELD_MODEL_PROOF_FD_ENV] = str(proof_fd)
+            inherited_fds = (*pass_fds, proof_fd)
+        run_kwargs: dict[str, Any] = {
+            "cwd": repo_root,
+            "env": proposal_env,
+            "command": propose_command,
+            "timeout": timeout,
+        }
+        if inherited_fds:
+            run_kwargs["pass_fds"] = inherited_fds
+        return _run(**run_kwargs)
 
 
 def _greenfield_propose_arguments(
@@ -1939,6 +2167,11 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         help="Optional path where the full matrix proof payload should be persisted.",
     )
     parser.add_argument(
+        "--evidence-output-dir",
+        default="",
+        help="External immutable evidence directory required for release proof; it must be outside --temp-parent.",
+    )
+    parser.add_argument(
         "--semantic-annotations-file",
         default="",
         help="Optional blinded atomic-annotation file for deterministic semantic release scoring.",
@@ -2085,6 +2318,7 @@ def _final_holdout_run_from_args(
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
+    evidence_output_token = str(getattr(args, "evidence_output_dir", "") or "").strip()
     release_audit_repo_root = (
         Path(str(args.release_audit_repo_root)).expanduser()
         if str(args.release_audit_repo_root or "").strip()
@@ -2137,6 +2371,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         semantic_annotations_file=str(args.semantic_annotations_file or ""),
         evaluation_split_manifest=str(args.evaluation_split_manifest or ""),
     )
+    if campaign_config.proof_tier == "release" and not evidence_output_token:
+        raise RuntimeError("release proof requires --evidence-output-dir")
+    if evidence_output_token:
+        validate_retained_evidence_output_dir(
+            output_dir=Path(evidence_output_token),
+            temp_parent=Path(args.temp_parent),
+        )
     final_holdout_run = _final_holdout_run_from_args(args, sealed_input_root=sealed_input_root)
     if final_holdout_run is not None:
         install_script = Path(args.dist_dir).expanduser().resolve() / "install.sh"
@@ -2205,6 +2446,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 output_path=output_path,
                 lease=lease,
                 finalize_lease=True,
+                retained_evidence_run_id=(
+                    final_holdout_run.run_id if final_holdout_run is not None else ""
+                ),
             )
             if final_holdout_run is not None and final_holdout_run.claimed:
                 if output_path is None or not output_path.is_file():
@@ -2212,6 +2456,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 final_holdout_run.complete(
                     result_path=output_path,
                     outcome="passed" if return_code == 0 else "failed",
+                    retained_evidence_manifest=retained_evidence_manifest_path(
+                        Path(evidence_output_token)
+                    ),
                 )
             return return_code
         except BaseException as error:
@@ -2225,7 +2472,13 @@ def main(argv: Sequence[str] | None = None) -> int:
                         "error_type": type(error).__name__,
                     },
                 )
-                final_holdout_run.complete(result_path=interrupted, outcome="interrupted")
+                retained_manifest = retained_evidence_manifest_path(Path(evidence_output_token))
+                if retained_manifest.is_file():
+                    final_holdout_run.complete(
+                        result_path=interrupted,
+                        outcome="interrupted",
+                        retained_evidence_manifest=retained_manifest,
+                    )
             raise
     finally:
         if not lease.released:
@@ -2245,6 +2498,7 @@ def _execute_matrix_campaign(
     lease: Any,
     finalize_lease: bool = False,
     before_product_execution: Callable[[], None] | None = None,
+    retained_evidence_run_id: str = "",
 ) -> int:
     """Run one fully isolated proof campaign under its output lease."""
 
@@ -2297,6 +2551,12 @@ def _execute_matrix_campaign(
             release_audit_repo_root=release_audit_repo_root,
             semantic_annotations_file=str(getattr(args, "semantic_annotations_file", "") or ""),
             evaluation_split_manifest=str(getattr(args, "evaluation_split_manifest", "") or ""),
+            evidence_output_dir=(
+                Path(str(getattr(args, "evidence_output_dir", ""))).expanduser().resolve()
+                if str(getattr(args, "evidence_output_dir", "") or "").strip()
+                else None
+            ),
+            retained_evidence_run_id=retained_evidence_run_id,
             before_product_execution=before_product_execution,
         )
         commit_recovery = (
@@ -2333,6 +2593,32 @@ def _execute_matrix_campaign(
             if campaign_config.proof_tier == "release"
             else {"status": "not_requested", "issues": []}
         )
+    evidence_output_token = str(getattr(args, "evidence_output_dir", "") or "").strip()
+    retained_evidence_required = campaign_config.proof_tier == "release" and hasattr(args, "evidence_output_dir")
+    retained_manifest = (
+        retained_evidence_manifest_path(Path(evidence_output_token))
+        if evidence_output_token
+        else None
+    )
+    retained_issues = (
+        retained_evidence_manifest_issues(
+            retained_manifest,
+            expected_case_ids=tuple(_retained_case_id(case) for case in profiled_cases),
+            expected_run_id=retained_evidence_run_id,
+        )
+        if retained_manifest is not None
+        else ("release proof did not retain external evidence",)
+        if retained_evidence_required
+        else ()
+    )
+    retained_evidence = {
+        "status": "passed" if retained_manifest is not None and not retained_issues else "not_requested"
+        if retained_manifest is None and not retained_evidence_required
+        else "failed",
+        "manifest": str(retained_manifest) if retained_manifest is not None else "",
+        "manifest_sha256": _sha256_file(retained_manifest) if retained_manifest is not None else "",
+        "issues": list(retained_issues),
+    }
     browser_proof = browser_proof_summary(results, include_browser_proof=bool(args.include_browser_proof))
     platform_leakage_proof = _platform_leakage_proof_summary(results)
     cleanup_proof = temp_cleanup_proof(temp_parent)
@@ -2394,6 +2680,10 @@ def _execute_matrix_campaign(
         and bool(metamorphic_output.get("passed"))
         and semantic_release_passed
         and (
+            not retained_evidence_required
+            or retained_evidence.get("status") == "passed"
+        )
+        and (
             campaign_config.proof_tier != "release"
             or onboarding_quality_scorecard.get("status") == "passed"
         )
@@ -2448,6 +2738,7 @@ def _execute_matrix_campaign(
         "model_profile_proof": profile_proof,
         "unavailable_provider_proof": unavailable_provider,
         "semantic_release": semantic_release,
+        "retained_evidence": retained_evidence,
         "proof_run": lease.to_dict(),
     }
     if commit_recovery is not None:

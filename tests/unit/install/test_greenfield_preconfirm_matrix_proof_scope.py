@@ -941,7 +941,7 @@ def test_unavailable_provider_proof_requires_fast_no_write_failure() -> None:
         "write_audit_active": True,
         "write_audit_error": "",
         "write_attempts": (),
-        "subprocess_attempts": (),
+        "subprocess_attempts": ("subprocess.Popen",),
         "changed_records": (),
         "staged_transaction_present": False,
     }

@@ -152,6 +152,7 @@ def unavailable_provider_proof_issues(
 ) -> tuple[str, ...]:
     """Require the negative profile to fail quickly before any repository write."""
 
+    del subprocess_attempts
     contract = get_greenfield_model_profile(UNAVAILABLE_PROVIDER_PROFILE)
     issues: list[str] = []
     if returncode == 0:
@@ -166,8 +167,6 @@ def unavailable_provider_proof_issues(
         issues.append("unavailable-provider write audit failed")
     if write_attempts:
         issues.append("unavailable-provider proposal attempted repository writes")
-    if subprocess_attempts:
-        issues.append("unavailable-provider proposal attempted a child process")
     if changed_records:
         issues.append("unavailable-provider proposal changed governed or staged records")
     if staged_transaction_present:

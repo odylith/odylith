@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import (
     sealed_authored_projection,
 )
@@ -29,7 +30,6 @@ from odylith.runtime.domain_intelligence.greenfield_preconfirm_semantic_alignmen
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_semantic_alignment import (
     semantic_workstream_alignment_issues as _semantic_workstream_alignment_issues,
 )
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 
 
 def completion_review_findings(
@@ -99,7 +99,7 @@ def package_review_findings(
             *(
                 _package_issue_finding(issue)
                 for issue in package_issues
-                if clean_text(issue) and clean_text(issue) not in typed_messages
+                if normalize_string(issue) and normalize_string(issue) not in typed_messages
             ),
             *typed_findings,
         ]
@@ -107,7 +107,7 @@ def package_review_findings(
 
 
 def _package_issue_finding(message: str) -> GreenfieldReviewFinding:
-    text = clean_text(message)
+    text = normalize_string(message)
     if text.startswith("compiled surface refresh proof did not pass"):
         return review_finding(
             code="surface_refresh_proof",
@@ -191,7 +191,7 @@ def _extend_semantic_findings(
 ) -> None:
     checks = (
         (
-            _semantic_model_shape_issues(semantic, include_lexical_alignment=False),
+            _semantic_model_shape_issues(semantic),
             "semantic_model",
             "proposal.semantic_model",
             "SemanticModelIR",

@@ -15,6 +15,7 @@ that already failed, and capture new mechanism-level learning.
 
 ```bash
 ./.odylith/bin/odylith atlas scaffold --repo-root . --diagram-id D-123 --slug example-flow --title "Example Flow" --kind flowchart --owner platform --summary "Describe the real implementation flow." --backlog odylith/radar/source/ideas/2026-03/example.md --plan odylith/technical-plans/in-progress/example.md --doc odylith/registry/source/components/atlas/CURRENT_SPEC.md --code path/to/example.py --create-source-if-missing
+./.odylith/bin/odylith atlas update --repo-root . --diagram-id D-123 --summary "Describe the current implementation flow." --code path/to/current-owner.py --watch path/to/current-owner.py --review-date YYYY-MM-DD
 ./.odylith/bin/odylith atlas auto-update --repo-root . --from-git-working-tree --fail-on-stale
 ./.odylith/bin/odylith atlas render --repo-root . --fail-on-stale
 ./.odylith/bin/odylith atlas install-autosync-hook --repo-root .

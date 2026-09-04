@@ -2887,11 +2887,62 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   contract and leakage preflight pass and that replacement holdout completes
   its single installed run.
 
+## Current-Contract Protected Holdout Adjudication (2026-09-03)
+
+- A blind 21-case final-holdout v4 package passed independent review and pure
+  release preflight, then ran exactly once against immutable dist-v14. The
+  standard, rescue, and deep maxima remained inside `60/90/120`; recovery,
+  unavailable-provider behavior, and cleanup passed. Release quality did not.
+- CB-315 owns the reproduced clarification-before-write breach. CB-323 retains
+  the two direct-evidence graph completeness failures. CB-329 owns the
+  release-only snapshot omission, duplicate evaluator semantics, and missing
+  retained proof. CB-328 is fixed
+  pending release because the stale-package class was replaced by a valid
+  current-contract package.
+- The next bounded wave must move ownership, not add rules: one pure
+  clarification decision before persistence; structurally complete terminal
+  and component relations; a release snapshot that carries every canonical
+  projection;
+  product-parser reuse for Atlas; governed-write-only observation; strict
+  point acceptance separated from achievable confidence reporting; and raw
+  artifact retention through adjudication. The disclosed corpus is regression
+  evidence only. No new blind holdout may start until focused regressions and
+  unchanged public `60/90/120` proof are green.
+
 ## Test Strategy
+- The v21 replacement makes authored and clarification responses structurally
+  exclusive, makes the first event explicitly human-owned, and removes
+  redundant actor/action restatement. Standard `terra/high` and rescue
+  `sol/high` pass the three bounded live probes in `40.259s`, `5.686s`, and
+  `56.592s`; focused, complete runtime, install/release, mirror/Atlas, and
+  semantic-regex proof pass `211`, `633`, `507`, `48`, and `4` tests. Treat
+  this as candidate evidence only. The next decision is the frozen installed
+  14-case public matrix with exact `60/90/120`, raw response retention,
+  recovery/readback, and 28 browser-state cells per accepted package. A public
+  failure rejects the mechanism; a full pass permits one newly blind holdout.
+- The current convergence checkpoint replaces the parser/repair mechanism with
+  one v20 source-cited typed graph and deletes 30 obsolete modules / 4,927
+  lines. An executed public proposal trace reports zero semantic regex callers;
+  the combined source gate passes 1,171 tests, the maintained fast/lifecycle
+  targets pass 445/208, and the full desktop/mobile browser-state contract
+  passes 28/28 with zero clipping or overflow. This evidence freezes the
+  mechanism pending immutable installed proof; do not add another parser,
+  vocabulary, retry, repair tier, second model call, or post-confirm semantics.
+- The 2,518-line generated shell stylesheet has one bounded five-line mobile
+  wrapping exception in this release. After the Greenfield release gate closes,
+  B-142 must extract coherent shell layout ownership below the red-zone limit
+  before unrelated stylesheet growth; this decomposition must preserve the
+  source/generated/bundle parity contract and rerun the 28-cell browser matrix.
 - Historical under-30 timing notes above are standard-path evidence snapshots.
   The active release contract is standard post-confirm under 60 seconds without
   host rescue, rescue under 90 seconds with one targeted semantic or plan patch,
   and 120 seconds only for explicit premium/deep repair or CI simulation.
+- The v20 immutable public candidate is a losing mechanism at `4/14`: deep
+  passed `4/4`, while standard and rescue passed `0/10` inside `60/90` seconds.
+  The next bounded wave replaces the flat authored/clarification response shape
+  and redundant actor-surface obligation, adds externally retained raw
+  adjudication evidence, then reruns the same public gate. The blind holdout
+  remains unspent until that public matrix passes every case.
 - Run focused unit tests for domain intelligence, host routing, component
   authoring, CLI dispatch, show capabilities, and Compass transaction filtering
   with the active Python interpreter, for example `python -m pytest -q
@@ -2912,3 +2963,78 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
 - Should a future signed domain-pack marketplace augment host reasoning with
   curated evidence, examples, and validators after v0.1.14 ships the open-world
   host-reasoned baseline?
+
+## V21 Rejection And V22 Ordered-Event Convergence (2026-09-03)
+
+- Reject immutable v21 wheel
+  `727e28500619a2912f6b61d59726698aafc385f15195a6d608d0b212483b6868`.
+  The public campaign stopped at `1/3` completed cases after pediatric agency
+  exposed a disconnected State and Evidence view and semiconductor custody
+  failed pre-staging under the forced human-start contract. Browser rendering,
+  latency, and commit-only behavior were not the cause.
+- V22 removes the human-start/following split and represents the selected
+  first path as one ordered list of identical typed actor/target/recovery
+  edges. Product-led workflows remain product-led; selected human users stay
+  visible as typed facts without requiring an invented human action. Exact
+  target containment, source custody, terminal result, component ownership,
+  one-call authorship, and all transaction laws remain fixed.
+- State and Evidence now draws a dotted result-to-proof edge only when the
+  exact accepted visible result is contained in the accepted proof boundary;
+  unrelated facts remain unconnected rather than gaining a fictional causal
+  edge. Focused proof passes `74/74`, Greenfield runtime `636/636`, and
+  install/release `507/507`. Live standard security and rescue semiconductor
+  proposals stage successfully; the thin assay request returns the required
+  single clarification without staging.
+- The next admissible step is one governance-synced immutable rebuild followed
+  by the complete public `14/14` `60/90/120`, quality, browser, readback, and
+  recovery gate. A repeated independent failure rejects v22. A full pass alone
+  permits commissioning one new blind holdout.
+
+## V22 Rejection And V23 Source-Bound Target Candidate (2026-09-03)
+
+- Reject v22 as a winning mechanism. After Flood passed the complete installed
+  path at `10/10` in `56.711s`, Pediatric failed pre-staging in `44.015s` when
+  its one model response selected `children served across multiple schools` as
+  an exact Customer fact and as the event target, while the narrower aligned
+  event fact did not repeat that target. The selected Product Story contained
+  both exact facts. This same public case had passed an independent v22 run, so
+  strict target-in-event containment creates a recurring nondeterministic false
+  negative. Semiconductor then passed in `42.814s`; the campaign stopped
+  because `14/14` was already impossible.
+- A bounded comparison rejected retaining strict event-only target containment
+  and rejected deleting event targets, which would erase component
+  `event_targets` and proposal/Tribunal `target_entity` meaning. V23 retains one
+  optional typed target and accepts it only when it is either an exact event
+  substring or an exact selected fact co-contained with the event by another
+  selected fact. The same predicate owns direct compilation, sealed validation,
+  atomic custody, and release scoring. It performs no tokenization, regex
+  interpretation, phrase matching, retry, repair, or additional model call.
+- The exact retained pediatric response now compiles with its target atom bound
+  to `/customer`; invented targets and selected-but-unrelated targets still fail
+  closed. A fresh one-call pediatric rescue proposal staged in `45.56s`, inside
+  the non-negotiable 90-second budget. Focused target proof passes `96/96`, the
+  complete Greenfield runtime suite passes `638/638`, and the installed-lane
+  Greenfield suite passes `509/509`.
+- V23 is not yet a winner. Freeze one immutable build and require the unchanged
+  public `14/14` `60/90/120`, `10/10`, browser, readback, and recovery gate.
+  Only that full pass permits commissioning a newly blind holdout.
+
+## V23 Rejection And V29 Qualification Gate (2026-09-04)
+
+- Reject v23. Its public run completed eleven in-budget packages, but review
+  proved adjacent target acceptance, false location dependency, repeated
+  missing-field prose, unearned expert scores, and a conditional confirmation
+  path. These are independent P1 classes even though the campaign's stopping
+  assay result was itself an evaluator false negative.
+- V29 deletes cross-fact target co-containment, uses an exact non-regex decision
+  protocol, renders absent source facts as explicit gaps, centralizes evaluator
+  receipt semantics, and replaces the accumulated authoring instructions with
+  one shorter typed contract. A fresh pediatric rescue transaction passed the
+  known discriminator in `48.79s`; semantic-retirement proof passes `80/80` and
+  the focused post-broad-gate corrections pass `31/31`.
+- The complete frozen source suite passes `3,790/3,790` in `275.35s`. The next
+  gate is deliberately unchanged: build immutable bytes, then require public
+  `14/14` quality, `60/90/120` latency, browser, readback, recovery, and three
+  independent reviews. Commission a newly blind holdout only after all public
+  evidence is green. Do not add another prompt layer, regex rule, retry, or
+  post-confirm interpretation if v29 fails.

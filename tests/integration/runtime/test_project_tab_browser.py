@@ -29,7 +29,7 @@ def _write_greenfield_project_page(tmp_path: Path, monkeypatch) -> Path:  # noqa
     _seed_empty_governance_repo(tmp_path)
     stub_preconfirm_surface_refresh(monkeypatch)
     monkeypatch.setattr(
-        greenfield_component_commit.component_authoring.owned_surface_refresh,
+        greenfield_component_commit.component_compiled_commit.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )
@@ -305,15 +305,30 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
         """(node) => {
             const narrativeParagraphs = Array.from(node.querySelectorAll(":scope > p"));
             const list = node.querySelector(".project-story-records");
-            const contract = node.querySelector(".project-story-contract-card p");
+            const contract = node.querySelector(".project-story-contract-body");
             const rows = Array.from(node.querySelectorAll(".project-story-contract-card"));
-            const bodies = rows.map((row) => String(row.querySelector("p")?.innerText || "").trim());
+            const bodies = rows.map(
+              (row) => String(row.querySelector(".project-story-contract-body")?.innerText || "").trim()
+            );
             return {
               narrativeParagraphCount: narrativeParagraphs.length,
               listFontSize: list ? window.getComputedStyle(list).fontSize : "",
               contractFontSize: contract ? window.getComputedStyle(contract).fontSize : "",
               rowCount: rows.length,
               distinctBodyCount: new Set(bodies.map((body) => body.toLocaleLowerCase())).size,
+              focusEventCount: node.ownerDocument.querySelectorAll(
+                '[data-authored-fact-list="focus"] [data-authored-fact-item]'
+              ).length,
+              firstPathEventCount: node.querySelectorAll(
+                '[data-authored-fact-list="first_path"] [data-authored-fact-item]'
+              ).length,
+              actorEventCount: node.ownerDocument.querySelectorAll(
+                '[data-authored-fact-list="actor"] [data-authored-fact-item]'
+              ).length,
+              capabilityCount: node.querySelectorAll(
+                '[data-authored-fact-list="owned_capabilities"] [data-authored-fact-item]'
+              ).length,
+              boundaryGroupCount: node.querySelectorAll("[data-authored-boundary-group]").length,
               semanticSlots: rows.map((row) => String(row.dataset.semanticSlot || "")),
               rowLefts: rows.map((row) => Math.round(row.getBoundingClientRect().left)),
               rowTops: rows.map((row) => Math.round(row.getBoundingClientRect().top)),
@@ -323,10 +338,15 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
         }"""
     )
     assert story_layout["narrativeParagraphCount"] == 0
-    assert story_layout["listFontSize"] == ""
+    assert story_layout["listFontSize"] == "14px"
     assert story_layout["contractFontSize"] == "14px"
     assert story_layout["rowCount"] == 5
     assert story_layout["distinctBodyCount"] == 5
+    assert story_layout["focusEventCount"] >= 1
+    assert story_layout["firstPathEventCount"] == story_layout["focusEventCount"]
+    assert story_layout["actorEventCount"] >= 1
+    assert story_layout["capabilityCount"] >= 1
+    assert story_layout["boundaryGroupCount"] >= 1
     assert story_layout["semanticSlots"] == [
         "user_problem",
         "first_path",

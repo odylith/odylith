@@ -84,6 +84,9 @@ grounding.
   Git pre-commit autosync hook installer.
 - `src/odylith/runtime/surfaces/scaffold_mermaid_diagram.py`
   Catalog and source scaffolding helper.
+- `src/odylith/runtime/surfaces/update_mermaid_diagram.py`
+  Existing-entry catalog writer that preserves omitted metadata and rejects
+  unknown diagram ids or repo-escaping paths before a write.
 - `src/odylith/runtime/surfaces/assets/mermaid_render_config.json`
   Shared Mermaid render theme for diagram-internal typography, semantic state
   colors, neutral containers, white canvas, and subdued connector shape.
@@ -157,6 +160,16 @@ asks for topology before the rest of the governance stack exists. These entries
 carry `link_state: atlas_first_draft` and must still have components plus
 non-empty `change_watch_paths`; later Registry/Radar/plan work should tighten
 the same catalog entry instead of forcing a new diagram.
+
+### Existing-entry updates
+`update_mermaid_diagram.py` changes one existing catalog entry by diagram id.
+Only fields named on the command line are replaced; omitted authored and
+derived fields remain intact. Repeated component and path flags replace their
+corresponding lists as a unit. The writer rejects unknown or duplicate ids,
+malformed catalog rows, invalid review dates, missing paths, absolute paths,
+and paths that escape the repository before it writes. It reuses the scaffold
+entry builder and the governed artifact Tribunal, invalidates obsolete watch
+fingerprints when watch ownership changes, and refreshes Atlas after success.
 
 Starter flowcharts use Atlas's visual grammar inside the Mermaid source:
 subgraph lanes where they clarify placement, the shared semantic `classDef`
@@ -287,6 +300,7 @@ diagram dump.
 - `odylith atlas render --repo-root . --check-only`
 - `odylith atlas auto-update --repo-root . --dry-run`
 - `odylith atlas scaffold --help`
+- `odylith atlas update --help`
 - `odylith sync --repo-root . --check-only`
 
 ## Scope Signal Ladder Contract
@@ -324,6 +338,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-09-03: Added a fail-closed `odylith atlas update` writer for existing catalog entries. The command preserves omitted fields, replaces only explicit metadata, rejects unknown ids and unsafe paths, and removes the hand-edit escape hatch that left stale change-watch ownership in D-043, D-045, and D-046. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-329`)
 - 2026-07-07: Cleaned generic Atlas evidence-node explanation copy. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-220`)
   `atlas_box_explanations.py` now describes evidence/log/record nodes as
   keeping review evidence instead of producing `record records` or

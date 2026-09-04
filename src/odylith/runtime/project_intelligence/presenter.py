@@ -7,6 +7,11 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.project_intelligence.authored_fact_presenter import (
+    render_authored_actor_cards,
+    render_authored_focus,
+    render_product_story_contract,
+)
 from odylith.runtime.project_intelligence.deeplinks import deeplink_title_context
 from odylith.runtime.project_intelligence.deeplinks import inline_deeplink_html as _deeplink_html
 from odylith.runtime.project_intelligence.narration import table_columns as _default_table_columns
@@ -501,7 +506,7 @@ def _prose_lines(value: object) -> str:
     return '<div class="project-prose-lines">' + "".join(f"<p>{_d(line)}</p>" for line in lines) + "</div>"
 
 
-def _product_story(value: object) -> str:
+def _product_story(value: object, *, project: Mapping[str, Any]) -> str:
     story = value if isinstance(value, Mapping) else {}
     headline = story.get("headline")
     standfirst = story.get("standfirst")
@@ -525,6 +530,7 @@ def _product_story(value: object) -> str:
         paragraphs=paragraphs,
         release_contract=release_contract,
         supporting_records=supporting_records,
+        project=project,
     )
 
 
@@ -534,8 +540,13 @@ def _product_story_narrative(
     paragraphs: Sequence[str],
     release_contract: Sequence[Mapping[str, Any]],
     supporting_records: Sequence[str],
+    project: Mapping[str, Any],
 ) -> str:
-    contract_html = _product_story_contract(release_contract)
+    contract_html = render_product_story_contract(
+        release_contract,
+        project=project,
+        render_text=_d,
+    )
     if contract_html:
         return (
             '<article class="project-story-narrative project-story-card-stack">'
@@ -561,30 +572,6 @@ def _product_story_narrative(
         f"{headline_html}{first_html}{contract_html}{remaining_html}{records_html}"
         "</article>"
     )
-
-
-def _product_story_contract(rows: Sequence[Mapping[str, Any]]) -> str:
-    items = [
-        (
-            str(row.get("label") or "").strip(),
-            str(row.get("body") or "").strip(),
-            str(row.get("semantic_slot") or "").strip(),
-        )
-        for row in rows
-        if str(row.get("label") or row.get("body") or "").strip()
-    ]
-    if not items:
-        return ""
-    cells = "".join(
-        f'<article class="project-story-contract-card" role="listitem" data-semantic-slot="{_e(semantic_slot)}">'
-        f"<h3>{_d(label)}</h3>"
-        f"<p>{_d(body)}</p>"
-        "</article>"
-        for label, body, semantic_slot in items
-    )
-    return f'<div class="project-story-contract" role="list">{cells}</div>'
-
-
 def _render_blank_actions(items: object) -> str:
     rows: list[str] = []
     for row in _mappings(items):
@@ -777,7 +764,7 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
     product_story_html = (
         f"""      <section class="project-panel project-product-story">
         <div class="project-panel-head"><h2>{_d(project.get("product_story_title"))}</h2>{f'<p>{_d(project.get("product_story_note"))}</p>' if str(project.get("product_story_note") or "").strip() else ''}</div>
-        {_product_story(project.get("product_story"))}
+        {_product_story(project.get("product_story"), project=project)}
       </section>
 """
         if _enabled(project, "product_story")
@@ -797,8 +784,18 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
         if _enabled(project, "risks") and risk_cards
         else ""
     )
+    authored_actor_cards = render_authored_actor_cards(
+        project.get("actors") or project.get("participants"),
+        project=project,
+        render_text=_d,
+    )
+    actor_cards = (
+        authored_actor_cards
+        if authored_actor_cards is not None
+        else _cards(project.get("actors") or project.get("participants"), "project-actor-card")
+    )
     participants_html = (
-        f"""      <section class="project-panel project-participants"><div class="project-panel-head"><h2>{_d(project.get("participants_title"))}</h2><p>{_d(project.get("participants_note"))}</p></div><div class="project-card-grid project-actor-grid">{_cards(project.get("actors") or project.get("participants"), "project-actor-card")}</div></section>
+        f"""      <section class="project-panel project-participants"><div class="project-panel-head"><h2>{_d(project.get("participants_title"))}</h2><p>{_d(project.get("participants_note"))}</p></div><div class="project-card-grid project-actor-grid">{actor_cards}</div></section>
 """
         if _enabled(project, "participants")
         else ""
@@ -849,7 +846,7 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
         <div class="project-chips">{chips}</div>
       </div>
       <aside class="project-hero-rail">
-        <section class="project-focus-card"><p>{_d(_hero_rail_label(project.get("focus_label"), title=project.get("title"), fallback="Current focus"))}</p><h2>{_d(project.get("focus"))}</h2></section>
+        <section class="project-focus-card"><p>{_d(_hero_rail_label(project.get("focus_label"), title=project.get("title"), fallback="Current focus"))}</p>{render_authored_focus(project, render_text=_d)}</section>
         <section class="project-open-card"><p>{_d(_hero_rail_label(project.get("open_label"), title=project.get("title"), fallback="Open questions"))}</p>{_compact_bullets(project.get("open"))}</section>
       </aside>
     </div>

@@ -141,6 +141,7 @@ For the common governance authoring fast paths, use:
 ./.odylith/bin/odylith backlog create --help
 ./.odylith/bin/odylith component register --help
 ./.odylith/bin/odylith atlas scaffold --help
+./.odylith/bin/odylith atlas update --help
 ./.odylith/bin/odylith compass log --help
 ```
 

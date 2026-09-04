@@ -9,8 +9,8 @@ from typing import Any
 
 from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.domain_intelligence import greenfield_traceability
-from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
-from odylith.runtime.governance import component_authoring
+from odylith.runtime.domain_intelligence.greenfield_completion_types import GreenfieldCompletionPackage
+from odylith.runtime.governance import component_compiled_commit
 
 
 def precompiled_component_handoffs(
@@ -117,43 +117,6 @@ def compiled_component_registry_entry_issues(*, key: str, preview: Mapping[str, 
     return issues
 
 
-def register_component_from_authoring_input(
-    *,
-    root: Path,
-    authoring_input: Mapping[str, Any],
-) -> Any:
-    return component_authoring.register_component(
-        repo_root=root,
-        component_id=str(authoring_input.get("component_id", "")).strip(),
-        label=str(authoring_input.get("label", "")).strip(),
-        path=str(authoring_input.get("path", "")).strip(),
-        kind=str(authoring_input.get("kind", "service")).strip() or "service",
-        category=str(authoring_input.get("category", "application")).strip() or "application",
-        qualification=str(authoring_input.get("qualification", "candidate")).strip() or "candidate",
-        owner=str(authoring_input.get("owner", "repo")).strip() or "repo",
-        status=str(authoring_input.get("status", "planned")).strip() or "planned",
-        product_layer=str(authoring_input.get("product_layer", "application")).strip() or "application",
-        sources=string_tuple(authoring_input.get("sources")) or ("user_intent",),
-        workstreams=string_tuple(authoring_input.get("workstreams")),
-        diagrams=string_tuple(authoring_input.get("diagrams")),
-        responsibility=str(authoring_input.get("responsibility", "")).strip(),
-        boundary=str(authoring_input.get("boundary", "")).strip(),
-        dependencies=string_tuple(authoring_input.get("dependencies")),
-        interfaces=string_tuple(authoring_input.get("interfaces")),
-        validation=string_tuple(authoring_input.get("validation")),
-        risks=string_tuple(authoring_input.get("risks")),
-        implementation_handoff=authoring_input.get("implementation_handoff")
-        if isinstance(authoring_input.get("implementation_handoff"), Mapping)
-        else None,
-        component_contract=authoring_input.get("component_contract")
-        if isinstance(authoring_input.get("component_contract"), Mapping)
-        else None,
-        dry_run=False,
-        update_existing=True,
-        refresh=False,
-    )
-
-
 def materialize_compiled_component_from_preview(
     *,
     root: Path,
@@ -170,7 +133,7 @@ def materialize_compiled_component_from_preview(
         component_id = str(authoring_input.get("component_id", "")).strip() or label or "<unknown component>"
         raise ValueError(f"compiled component spec missing for {component_id}")
     validation_gate = preview.get("validation_gate") if isinstance(preview.get("validation_gate"), Mapping) else None
-    return component_authoring.materialize_compiled_component(
+    return component_compiled_commit.materialize_compiled_component(
         repo_root=root,
         registry_entry=registry_entry,
         spec_text=rendered,
@@ -277,13 +240,11 @@ __all__ = [
     "compiled_component_previews_for_rows",
     "compiled_component_registry_entry_issues",
     "json_ready_mapping",
-    "legacy_component_authoring_input",
     "materialize_compiled_component_from_preview",
     "precompiled_component_authoring_inputs",
     "precompiled_component_handoffs",
     "precompiled_component_previews",
     "raise_for_compiled_component_registry_readback",
-    "register_component_from_authoring_input",
     "string_tuple",
     "write_repaired_component_spec",
 ]

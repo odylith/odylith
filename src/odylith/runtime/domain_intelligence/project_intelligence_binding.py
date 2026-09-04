@@ -8,13 +8,13 @@ from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.common.value_coercion import mapping_copy
+from odylith.runtime.common.value_coercion import normalize_string as clean_text
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
     AUTHORED_SEMANTICS_KEY,
     AUTHORED_SEMANTICS_VERSION,
     first_path_relations_from_intent,
 )
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 
 PROJECT_INTELLIGENCE_BINDING_KEY = "project_intelligence_binding"
 ARTIFACT_DERIVATION_KEY = "artifact_derivation"

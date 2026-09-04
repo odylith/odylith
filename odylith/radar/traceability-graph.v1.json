@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "d2e02ba683cdb68c3596e879054f56d56873d93d0bb77b2915590c38bd481fe8",
+    "digest": "58d0eac63f4b84aab4290a78c2a0b0922c68ca172ebc1c33aeb53191973b9055",
     "file_count": 315,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -10888,7 +10888,6 @@
         "D-004",
         "D-040",
         "D-041",
-        "D-043",
         "D-044",
         "D-046",
         "D-005",
@@ -10910,7 +10909,8 @@
         "D-030",
         "D-036",
         "D-039",
-        "D-038"
+        "D-038",
+        "D-043"
       ],
       "sources": [
         "manifest",
@@ -11158,7 +11158,6 @@
         "D-009",
         "D-038",
         "D-040",
-        "D-043",
         "D-002",
         "D-003",
         "D-007",
@@ -11188,7 +11187,8 @@
         "D-039",
         "D-037",
         "D-041",
-        "D-042"
+        "D-042",
+        "D-043"
       ],
       "sources": [
         "manifest",
@@ -11380,7 +11380,6 @@
       "diagrams": [
         "D-043",
         "D-045",
-        "D-046",
         "D-047"
       ],
       "sources": [
@@ -12227,7 +12226,6 @@
         "D-005",
         "D-006",
         "D-036",
-        "D-043",
         "D-044",
         "D-002",
         "D-003",
@@ -12255,7 +12253,8 @@
         "D-038",
         "D-037",
         "D-041",
-        "D-042"
+        "D-042",
+        "D-043"
       ],
       "sources": [
         "manifest",
@@ -12309,7 +12308,6 @@
         "D-013",
         "D-018",
         "D-036",
-        "D-043",
         "D-002",
         "D-003",
         "D-006",
@@ -12333,7 +12331,8 @@
         "D-028",
         "D-029",
         "D-039",
-        "D-038"
+        "D-038",
+        "D-043"
       ],
       "sources": [
         "manifest",
@@ -13711,17 +13710,8 @@
       ],
       "component_names": [
         "Domain Intelligence",
-        "Tribunal visible actor projection",
-        "ArtifactPlanIR projection contract",
-        "Typed findings",
-        "Tribunal patch planner",
-        "Radar",
-        "Registry",
-        "Registry forensics custody",
-        "Atlas",
-        "Compass",
-        "Release proof",
-        "Legacy issue blockers"
+        "Greenfield transaction boundary",
+        "Release proof"
       ],
       "related_component_ids": []
     },
@@ -13768,7 +13758,8 @@
       ],
       "component_names": [
         "Domain Intelligence",
-        "Generated Copy Quality"
+        "Deterministic projection consumers",
+        "Transaction custody"
       ],
       "related_component_ids": []
     },
@@ -13784,9 +13775,9 @@
         "B-142"
       ],
       "component_names": [
-        "Domain Intelligence",
+        "Greenfield transaction boundary",
         "Atlas",
-        "Generated Flowchart Assets"
+        "Release proof"
       ],
       "related_component_ids": []
     },
@@ -21680,11 +21671,6 @@
     },
     {
       "source": "component:domain-intelligence",
-      "target": "diagram:D-046",
-      "edge_type": "component_diagram"
-    },
-    {
-      "source": "component:domain-intelligence",
       "target": "diagram:D-047",
       "edge_type": "component_diagram"
     },
@@ -24939,7 +24925,7 @@
     },
     "connectivity": {
       "spine_node_count": 262,
-      "structural_edge_count": 1714,
+      "structural_edge_count": 1713,
       "connected_component_count": 3,
       "largest_component_size": 260,
       "isolated_node_count": 2,
@@ -24958,11 +24944,11 @@
     "execution_program_count": 5,
     "execution_wave_count": 30,
     "node_count": 354,
-    "edge_count": 1819,
+    "edge_count": 1818,
     "warning_count": 7,
     "warning_item_count": 7,
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-09-03 16:34:47Z"
+  "generated_utc": "2026-09-04 19:56:04Z"
 }

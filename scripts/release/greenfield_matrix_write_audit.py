@@ -9,9 +9,18 @@ import os
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.domain_intelligence.greenfield_pending_transaction_store import (
+    GREENFIELD_RUNTIME_ROOT,
+)
+from odylith.runtime.domain_intelligence.greenfield_repository_write_set import (
+    GREENFIELD_REPOSITORY_WRITE_PATHS,
+)
+
 
 AUDIT_ROOT_ENV = "ODYLITH_GREENFIELD_WRITE_AUDIT_ROOT"
 AUDIT_FD_ENV = "ODYLITH_GREENFIELD_WRITE_AUDIT_FD"
+AUDIT_MUTATION_ROOTS_ENV = "ODYLITH_GREENFIELD_WRITE_AUDIT_MUTATION_ROOTS"
+_GREENFIELD_MUTATION_ROOTS = (*GREENFIELD_REPOSITORY_WRITE_PATHS, GREENFIELD_RUNTIME_ROOT)
 
 
 @dataclass(frozen=True)
@@ -37,6 +46,7 @@ class InstalledWriteAudit:
         return {
             AUDIT_ROOT_ENV: str(self.repo_root),
             AUDIT_FD_ENV: str(self.write_fd),
+            AUDIT_MUTATION_ROOTS_ENV: json.dumps(_GREENFIELD_MUTATION_ROOTS),
         }
 
     @property
@@ -118,7 +128,19 @@ def _read_trace(raw_trace: bytes) -> WriteAuditEvidence:
         for record in records
         if record.get("kind") == "subprocess"
     )
-    return WriteAuditEvidence(active=True, write_attempts=writes, subprocess_attempts=subprocesses)
+    audit_errors = tuple(
+        _record_summary(record)
+        for record in records
+        if record.get("kind") == "error"
+    )
+    return WriteAuditEvidence(
+        active=not audit_errors,
+        write_attempts=writes,
+        subprocess_attempts=subprocesses,
+        error=("installed write audit could not resolve a write target: " + ", ".join(audit_errors))
+        if audit_errors
+        else "",
+    )
 
 
 def _record_summary(record: Mapping[str, Any]) -> str:
@@ -131,14 +153,31 @@ AUDIT_PREAMBLE = r'''
 import json
 import os
 from pathlib import Path
+import stat
 import sys
+import threading
+
+try:
+    import fcntl
+except ImportError:
+    fcntl = None
+
+sys.dont_write_bytecode = True
 
 _root = Path(os.environ["ODYLITH_GREENFIELD_WRITE_AUDIT_ROOT"]).resolve()
+_cwd = Path.cwd().resolve()
 _audit_fd = int(os.environ["ODYLITH_GREENFIELD_WRITE_AUDIT_FD"])
+_mutation_roots = tuple(
+    Path(value).as_posix().rstrip("/")
+    for value in json.loads(os.environ["ODYLITH_GREENFIELD_WRITE_AUDIT_MUTATION_ROOTS"])
+)
 _write_flags = os.O_WRONLY | os.O_RDWR | os.O_APPEND | os.O_CREAT | os.O_TRUNC | os.O_EXCL
 _audit_write = os.write
 _audit_json_dumps = json.dumps
 _audit_fsdecode = os.fsdecode
+_audit_os_open = os.open
+_audit_readlink = os.readlink
+_open_context = threading.local()
 
 
 def _emit(kind, event, path=""):
@@ -148,37 +187,97 @@ def _emit(kind, event, path=""):
     _audit_write(_audit_fd, (_audit_json_dumps(record, sort_keys=True) + "\n").encode("utf-8"))
 
 
+def _relative_to_root(candidate):
+    try:
+        return candidate.relative_to(_root).as_posix()
+    except ValueError:
+        return None
+
+
+def _owned_mutation_path(candidate):
+    lexical = Path(os.path.abspath(candidate))
+    for concrete in (lexical.resolve(strict=False), lexical):
+        relative = _relative_to_root(concrete)
+        if relative is not None and any(
+            relative == root or relative.startswith(root + "/")
+            for root in _mutation_roots
+        ):
+            return relative
+    return None
+
+
+def _directory_fd_path(directory_fd):
+    if directory_fd in (None, -1):
+        return _cwd
+    if not isinstance(directory_fd, int):
+        return None
+    if fcntl is not None and hasattr(fcntl, "F_GETPATH"):
+        try:
+            raw_path = fcntl.fcntl(directory_fd, fcntl.F_GETPATH, bytes(1024))
+            return Path(raw_path.split(b"\0", 1)[0].decode()).resolve(strict=False)
+        except (OSError, UnicodeDecodeError, ValueError):
+            pass
+    for descriptor_root in (Path("/proc/self/fd"), Path("/dev/fd")):
+        descriptor = descriptor_root / str(directory_fd)
+        try:
+            target = Path(_audit_readlink(descriptor))
+            if not target.is_absolute():
+                target = descriptor.parent / target
+            return target.resolve(strict=False)
+        except (OSError, RuntimeError, ValueError):
+            continue
+    return None
+
+
 def _resolved_path(value, directory_fd=None):
     if isinstance(value, int):
-        return None
+        try:
+            descriptor_mode = os.fstat(value).st_mode
+        except OSError:
+            return "unresolved-fd"
+        if not (stat.S_ISREG(descriptor_mode) or stat.S_ISDIR(descriptor_mode)):
+            return None
+        target = _directory_fd_path(value)
+        return _owned_mutation_path(target) if target is not None else "unresolved-fd"
     try:
         candidate = Path(_audit_fsdecode(value))
     except (TypeError, ValueError):
         return None
     if not candidate.is_absolute():
-        if directory_fd not in (None, -1):
-            return "dir-fd"
-        return "relative-path"
-    try:
-        resolved = candidate.resolve(strict=False)
-        return resolved.relative_to(_root).as_posix()
-    except ValueError:
-        return None
+        directory = _directory_fd_path(directory_fd)
+        if directory is None:
+            return "unresolved-dir-fd"
+        candidate = directory / candidate
+    return _owned_mutation_path(candidate)
 
 
 def _record_path(event, value, directory_fd=None):
     path = _resolved_path(value, directory_fd)
-    if path is not None:
+    if path in {"unresolved-fd", "unresolved-dir-fd"}:
+        _emit("error", event, path)
+    elif path is not None:
         _emit("write", event, path)
+
+
+def _audited_os_open(path, flags, mode=0o777, *, dir_fd=None):
+    previous = getattr(_open_context, "directory_fd", None)
+    _open_context.directory_fd = dir_fd
+    try:
+        return _audit_os_open(path, flags, mode, dir_fd=dir_fd)
+    finally:
+        _open_context.directory_fd = previous
 
 
 def _audit(event, arguments):
     if event == "open":
         path, _mode, flags = arguments
         if isinstance(flags, int) and flags & _write_flags:
-            _record_path(event, path, "unknown-relative-dir-fd")
+            _record_path(event, path, getattr(_open_context, "directory_fd", None))
         return
-    if event in {"os.remove", "os.rmdir", "os.mkdir", "os.chmod", "os.chown", "os.utime"}:
+    if event in {"os.remove", "os.rmdir"}:
+        _record_path(event, arguments[0], arguments[1] if len(arguments) > 1 else None)
+        return
+    if event in {"os.mkdir", "os.chmod", "os.chown", "os.utime"}:
         _record_path(event, arguments[0], arguments[-1] if len(arguments) > 2 else None)
         return
     if event in {"os.rename", "os.replace"}:
@@ -193,14 +292,14 @@ def _audit(event, arguments):
         _record_path(event, arguments[1], arguments[2] if len(arguments) > 2 else None)
         return
     if event == "os.truncate":
-        _emit("write", event, "fd")
+        _record_path(event, arguments[0])
         return
     if event in {"subprocess.Popen", "os.system", "os.posix_spawn", "os.exec"}:
         _emit("subprocess", event)
 
 
-sys.dont_write_bytecode = True
 sys.addaudithook(_audit)
+os.open = _audited_os_open
 _emit("ready", "ready")
 '''
 
@@ -223,6 +322,7 @@ __all__ = [
     "AUDIT_CLI_WRAPPER",
     "AUDIT_PREAMBLE",
     "AUDIT_FD_ENV",
+    "AUDIT_MUTATION_ROOTS_ENV",
     "AUDIT_ROOT_ENV",
     "InstalledWriteAudit",
     "WriteAuditEvidence",

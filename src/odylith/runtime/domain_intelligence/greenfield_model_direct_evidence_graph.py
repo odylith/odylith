@@ -8,7 +8,7 @@ overlap. It never infers product meaning from words or repairs model output.
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
@@ -18,12 +18,11 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     MAX_FIRST_PATH_RELATIONS,
     GreenfieldAuthoredSemanticsError,
     canonical_product_owner_projection_values,
-    first_path_actor_binding_identity,
     overlapping_first_path_event_orders,
-    require_first_path_actor_binding,
 )
 from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
     TERMINAL_RESULT_FACT_FIELDS,
+    event_target_is_source_bound,
 )
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     MAX_AUTHORED_FIELD_VALUE_CHARS,
@@ -33,18 +32,12 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 MODEL_EVENT_FIELDS = frozenset(
     {
         "actor_fact_quote",
-        "actor_quote",
-        "action_quote",
         "target_quote",
         "recovery_path",
     }
 )
-MODEL_TERMINAL_FIELDS = frozenset(
-    {"event_order", "result_quote", "result_occurrence"}
-)
-MODEL_COMPONENT_FIELDS = frozenset(
-    {"responsibility_fact_quote", "owner_fact_quote"}
-)
+MODEL_TERMINAL_FIELDS = frozenset({"result_quote", "result_occurrence"})
+MODEL_COMPONENT_FIELDS = frozenset({"owner_fact_quote"})
 _CONTEXT_KIND_BY_FIELD = {
     "state_object": "state_object",
     "external_systems": "external_system",
@@ -114,6 +107,7 @@ def _derive_events(
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring returned invalid first-path events"
         )
+    event_rows = tuple(value)
     path_facts = tuple(
         fact
         for fact in selected_facts
@@ -121,24 +115,18 @@ def _derive_events(
     )
     if (
         not path_facts
-        or len(path_facts) != len(value)
+        or len(path_facts) != len(event_rows)
         or "\n".join(str(fact.get("quote") or "") for fact in path_facts)
         != first_path
     ):
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring must select exactly one first-path fact per event"
         )
-    actor_values = _selected_actor_projection_values(selected_facts)
     owner_facts = _selected_product_owner_facts(selected_facts)
-    owner_values = {
-        str(fact.get("projection_path") or ""): quote
-        for quote, fact in owner_facts.items()
-    }
     rows: list[dict[str, Any]] = []
     seen_source_events: set[tuple[int, int]] = set()
-    human_seen = False
     for expected_order, (raw, selected_fact) in enumerate(
-        zip(value, path_facts, strict=True), start=1
+        zip(event_rows, path_facts, strict=True), start=1
     ):
         if not isinstance(raw, Mapping) or set(raw) != MODEL_EVENT_FIELDS:
             raise GreenfieldAuthoredSemanticsError(
@@ -162,7 +150,6 @@ def _derive_events(
                 "Greenfield authoring returned overlapping first-path events"
             )
 
-        actor_quote = _required_quote(raw.get("actor_quote"))
         actor_kind, actor_fact_path, actor_fact_quote = _event_actor_fact(
             actor_fact_quote=raw.get("actor_fact_quote"),
             selected_facts=selected_facts,
@@ -174,17 +161,8 @@ def _derive_events(
         else:
             owner_system_path = ""
             owner_system_quote = ""
-        require_first_path_actor_binding(
-            actor_kind=actor_kind,
-            actor_quote=actor_quote,
-            actor_fact_path=actor_fact_path,
-            actor_fact_quote=actor_fact_quote,
-            owner_system_path=owner_system_path,
-            owner_system_quote=owner_system_quote,
-            actor_values=actor_values,
-            owner_values=owner_values,
-        )
-        actor_explicit = actor_quote in event_quote
+        actor_quote = actor_fact_quote
+        actor_explicit = actor_fact_quote in event_quote
         actor_carried = not actor_explicit
         actor_binding = {
             "actor_kind": actor_kind,
@@ -194,31 +172,19 @@ def _derive_events(
             "owner_system_path": owner_system_path,
             "owner_system_quote": owner_system_quote,
         }
-        previous_binding = rows[-1] if rows else None
-        if (
-            actor_carried
-            and (
-                previous_binding is None
-                or first_path_actor_binding_identity(previous_binding)
-                != first_path_actor_binding_identity(actor_binding)
-            )
-        ):
-            raise GreenfieldAuthoredSemanticsError(
-                "Greenfield authoring returned an ungrounded first-path actor"
-            )
-        action_quote = _required_quote(raw.get("action_quote"))
-        target_quote = _optional_quote(raw.get("target_quote"))
         recovery_path = raw.get("recovery_path")
+        target_quote = _event_target_quote(
+            raw.get("target_quote"),
+            event_quote=event_quote,
+            selected_facts=selected_facts,
+        )
         if (
             actor_kind not in FIRST_PATH_ACTOR_KINDS
-            or action_quote not in event_quote
-            or (target_quote and target_quote not in event_quote)
             or not isinstance(recovery_path, bool)
         ):
             raise GreenfieldAuthoredSemanticsError(
                 "Greenfield authoring returned an ungrounded first-path event"
             )
-        human_seen = human_seen or actor_kind == "human"
         rows.append(
             {
                 "order": expected_order,
@@ -229,25 +195,17 @@ def _derive_events(
                 **actor_binding,
                 "actor_is_carried": actor_carried,
                 "event_quote": event_quote,
-                "action_verb_quote": action_quote,
+                "action_verb_quote": event_quote,
                 "target_quote": target_quote,
                 "visible_result_quote": "",
                 "recovery_path": recovery_path,
             }
         )
         seen_source_events.add((source_start, source_end))
-    if (
-        not human_seen
-        or rows[0]["actor_kind"] != "human"
-    ):
-        raise GreenfieldAuthoredSemanticsError(
-            "Greenfield authoring did not type one complete human-first path"
-        )
     terminal_fact = _terminal_result_fact(
         terminal,
         selected_facts=selected_facts,
         evidence_text=evidence_text,
-        event_count=len(rows),
     )
     rows[-1]["visible_result_quote"] = terminal_fact["terminal_result_quote"]
     return tuple(rows), terminal_fact
@@ -258,7 +216,6 @@ def _terminal_result_fact(
     *,
     selected_facts: Sequence[Mapping[str, Any]],
     evidence_text: str,
-    event_count: int,
 ) -> dict[str, Any]:
     if not isinstance(value, Mapping) or set(value) != MODEL_TERMINAL_FIELDS:
         raise GreenfieldAuthoredSemanticsError(
@@ -266,10 +223,7 @@ def _terminal_result_fact(
     )
     result_quote = _required_quote(value.get("result_quote"))
     result_occurrence = value.get("result_occurrence")
-    if (
-        value.get("event_order") != event_count
-        or not _positive_index(result_occurrence)
-    ):
+    if not _positive_index(result_occurrence):
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring returned an invalid terminal result"
         )
@@ -378,29 +332,32 @@ def _derive_component_relations(
         for fact in selected_facts
         if str(fact.get("field") or "") == "component_responsibilities"
     )
-    responsibilities = _unique_facts_by_quote(responsibility_facts)
-    rows_by_fact_index: dict[int, dict[str, Any]] = {}
-    terminal_rows: list[dict[str, Any]] = []
-    for raw in value:
+    if responsibility_facts and len(value) != len(responsibility_facts):
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring left component responsibilities without owners"
+        )
+    if not responsibility_facts and len(value) != 1:
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring did not establish one viable component owner"
+        )
+    rows: list[dict[str, Any]] = []
+    aligned_facts: Sequence[Mapping[str, Any] | None] = (
+        responsibility_facts if responsibility_facts else (None,)
+    )
+    for raw, responsibility_fact in zip(value, aligned_facts, strict=True):
         if not isinstance(raw, Mapping) or set(raw) != MODEL_COMPONENT_FIELDS:
             raise GreenfieldAuthoredSemanticsError(
                 "Greenfield authoring returned invalid component ownership"
             )
         owner_fact = owner_facts.get(str(raw.get("owner_fact_quote") or ""))
-        responsibility_quote = str(raw.get("responsibility_fact_quote") or "")
-        responsibility_fact = responsibilities.get(responsibility_quote)
         if owner_fact is None:
             raise GreenfieldAuthoredSemanticsError(
                 "Greenfield authoring returned an unbound component owner"
             )
         owner_path = str(owner_fact.get("projection_path") or "")
         owner_quote = str(owner_fact.get("quote") or "")
-        if not responsibility_quote:
-            if responsibility_facts:
-                raise GreenfieldAuthoredSemanticsError(
-                    "Greenfield authoring omitted a selected component responsibility"
-                )
-            terminal_rows.append(
+        if responsibility_fact is None:
+            rows.append(
                 {
                     "responsibility_path": str(
                         terminal_result_fact.get("projection_path") or ""
@@ -415,15 +372,7 @@ def _derive_component_relations(
                 }
             )
             continue
-        if responsibility_fact is None:
-            raise GreenfieldAuthoredSemanticsError(
-                "Greenfield authoring returned an unbound component responsibility"
-            )
-        fact_index = _positive_index(responsibility_fact.get("fact_index"))
-        if fact_index in rows_by_fact_index:
-            raise GreenfieldAuthoredSemanticsError(
-                "Greenfield authoring duplicated component ownership"
-            )
+        responsibility_quote = str(responsibility_fact.get("quote") or "")
         overlaps = overlapping_first_path_event_orders(
             source_start=responsibility_fact.get("source_start_byte"),
             source_end=responsibility_fact.get("source_end_byte"),
@@ -441,32 +390,19 @@ def _derive_component_relations(
             raise GreenfieldAuthoredSemanticsError(
                 "Greenfield authoring assigned contradictory component owners"
             )
-        rows_by_fact_index[fact_index] = {
-            "responsibility_path": str(
-                responsibility_fact.get("projection_path") or ""
-            ),
-            "responsibility_quote": responsibility_quote,
-            "owner_system_path": owner_path,
-            "owner_system_quote": owner_quote,
-            "first_path_event_order": event_order,
-            "responsibility_source": "accepted_fact",
-        }
-    expected_indexes = {
-        _positive_index(fact.get("fact_index")) for fact in responsibility_facts
-    }
-    if responsibility_facts:
-        if terminal_rows or set(rows_by_fact_index) != expected_indexes:
-            raise GreenfieldAuthoredSemanticsError(
-                "Greenfield authoring left component responsibilities without owners"
-            )
-        return tuple(
-            rows_by_fact_index[index] for index in sorted(expected_indexes)
+        rows.append(
+            {
+                "responsibility_path": str(
+                    responsibility_fact.get("projection_path") or ""
+                ),
+                "responsibility_quote": responsibility_quote,
+                "owner_system_path": owner_path,
+                "owner_system_quote": owner_quote,
+                "first_path_event_order": event_order,
+                "responsibility_source": "accepted_fact",
+            }
         )
-    if len(terminal_rows) != 1 or rows_by_fact_index:
-        raise GreenfieldAuthoredSemanticsError(
-            "Greenfield authoring did not establish one viable component owner"
-        )
-    return tuple(terminal_rows)
+    return tuple(rows)
 
 
 def _event_actor_fact(
@@ -504,33 +440,21 @@ def _event_actor_fact(
     return actor_kind, path, quote
 
 
-def _selected_actor_projection_values(
+def _event_target_quote(
+    value: Any,
+    *,
+    event_quote: str,
     selected_facts: Sequence[Mapping[str, Any]],
-) -> dict[str, tuple[str, str]]:
-    kind_by_field = {
-        "human_actors": "human",
-        "external_systems": "external_system",
-        "internal_systems": "product",
-        "title": "product",
-    }
-    values: dict[str, tuple[str, str]] = {}
-    for fact in selected_facts:
-        field = str(fact.get("field") or "")
-        kind = kind_by_field.get(field)
-        if kind is None:
-            continue
-        path = str(fact.get("projection_path") or "")
-        quote = str(fact.get("quote") or "")
-        if (
-            not _canonical_actor_path(field=field, path=path)
-            or not quote
-            or path in values
-        ):
-            raise GreenfieldAuthoredSemanticsError(
-                "Greenfield authoring returned an invalid actor identity"
-            )
-        values[path] = (kind, quote)
-    return values
+) -> str:
+    target_quote = _optional_quote(value)
+    if not event_target_is_source_bound(
+        event_quote=event_quote,
+        target_quote=target_quote,
+    ):
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring returned an ungrounded first-path event"
+        )
+    return target_quote
 
 
 def _selected_product_owner_facts(
@@ -571,20 +495,6 @@ def _selected_product_owner_facts(
         quote: facts_by_path[path]
         for path, quote in owner_values.items()
     }
-
-
-def _unique_facts_by_quote(
-    facts: Iterable[Mapping[str, Any]],
-) -> dict[str, Mapping[str, Any]]:
-    result: dict[str, Mapping[str, Any]] = {}
-    for fact in facts:
-        quote = str(fact.get("quote") or "")
-        if not quote or quote in result:
-            raise GreenfieldAuthoredSemanticsError(
-                "Greenfield authoring returned ambiguous exact fact labels"
-            )
-        result[quote] = fact
-    return result
 
 
 def _canonical_actor_path(*, field: str, path: str) -> bool:
@@ -689,31 +599,42 @@ def _quote_schema(*, required: bool = False) -> dict[str, Any]:
     return schema
 
 
-MODEL_EVENT_SCHEMA: dict[str, Any] = _array_schema(
-    {
-        "type": "object",
-        "additionalProperties": False,
-        "required": sorted(MODEL_EVENT_FIELDS),
-        "properties": {
-            "actor_fact_quote": _quote_schema(required=True),
-            "actor_quote": _quote_schema(required=True),
-            "action_quote": _quote_schema(required=True),
-            "target_quote": _quote_schema(),
-            "recovery_path": {"type": "boolean"},
-        },
-    },
-    maximum=MAX_FIRST_PATH_RELATIONS,
-)
-
-MODEL_TERMINAL_SCHEMA: dict[str, Any] = {
+_EVENT_SCHEMA: dict[str, Any] = {
     "type": "object",
     "additionalProperties": False,
-    "required": sorted(MODEL_TERMINAL_FIELDS),
+    "required": sorted(MODEL_EVENT_FIELDS),
     "properties": {
-        "event_order": {"type": "integer", "minimum": 0},
-        "result_quote": _quote_schema(),
-        "result_occurrence": {"type": "integer", "minimum": 0},
+        "actor_fact_quote": _quote_schema(required=True),
+        "target_quote": _quote_schema(),
+        "recovery_path": {"type": "boolean"},
     },
+}
+
+MODEL_EVENT_SCHEMA: dict[str, Any] = {
+    **_array_schema(_EVENT_SCHEMA, maximum=MAX_FIRST_PATH_RELATIONS),
+    "minItems": 1,
+}
+
+MODEL_TERMINAL_SCHEMA: dict[str, Any] = {
+    "anyOf": [
+        {
+            "type": "object",
+            "additionalProperties": False,
+            "required": sorted(MODEL_TERMINAL_FIELDS),
+            "properties": {
+                "result_quote": {
+                    **_quote_schema(required=True),
+                    "description": (
+                        "One exact source phrase naming the observable output or reviewable "
+                        "state produced by the completed path. An action, workflow stage, "
+                        "goal, or product label is not a result."
+                    ),
+                },
+                "result_occurrence": {"type": "integer", "minimum": 1},
+            },
+        },
+        {"type": "null"},
+    ]
 }
 
 MODEL_COMPONENT_SCHEMA: dict[str, Any] = _array_schema(
@@ -722,7 +643,6 @@ MODEL_COMPONENT_SCHEMA: dict[str, Any] = _array_schema(
         "additionalProperties": False,
         "required": sorted(MODEL_COMPONENT_FIELDS),
         "properties": {
-            "responsibility_fact_quote": _quote_schema(),
             "owner_fact_quote": _quote_schema(required=True),
         },
     },

@@ -37,6 +37,9 @@ from odylith.runtime.domain_intelligence.greenfield_command_text import shell_qu
 from odylith.runtime.domain_intelligence.greenfield_intent_shaping_prompt import (
     accepted_intent_shaping_prompt,
 )
+from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
+    missing_source_fact_notice,
+)
 from odylith.runtime.domain_intelligence.project_intelligence_binding import (
     PROJECT_INTELLIGENCE_BINDING_KEY,
 )
@@ -558,9 +561,18 @@ def _project_brief(
     evidence_requirements: Sequence[str],
     command_prompt: str,
 ) -> dict[str, Any]:
+    problem_statement = problem or missing_source_fact_notice("the user problem")
     sections = [
         _brief_section("Product outcome", product_story, "The accepted product outcome."),
-        _brief_section("User problem", problem or product_story, "The source-stated reason for the product."),
+        _brief_section(
+            "User problem",
+            problem_statement,
+            (
+                "The source-stated user problem."
+                if problem
+                else "Explicit evidence gap; no user problem was inferred."
+            ),
+        ),
         _brief_section("First path", first_path, "The accepted first complete user path."),
         _brief_section("Visible result", visible_result, "The terminal result typed in the first-path relation."),
         _brief_section("Proof", proof_boundary, "The accepted release proof boundary."),
@@ -575,7 +587,7 @@ def _project_brief(
         "schema_version": "odylith.greenfield.project_brief.v1",
         "projection_origin": AUTHORED_PROJECTION_ORIGIN,
         "operational_constraints": list(operational_constraints),
-        "purpose": problem or product_story,
+        "purpose": problem_statement,
         "operating_principle": product_story,
         "project_outcome": visible_result,
         "blueprint_sections": sections,

@@ -16,6 +16,9 @@ from odylith.runtime.domain_intelligence import greenfield_create_lifecycle
 from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    product_facts_payload,
+)
 
 
 DRY_RUN_RECEIPT_VERSION = "odylith.greenfield.matrix.dry-run-receipt.v2"
@@ -26,28 +29,6 @@ POST_CONFIRM_NAVIGATION = {
     "atlas": "odylith/index.html?tab=atlas",
     "compass": "odylith/index.html?tab=compass&date=live",
 }
-SEMANTIC_FACT_KEYS = (
-    "product_story",
-    "state_object",
-    "first_path",
-    "proof_boundary",
-    "problem",
-    "customer",
-    "opportunity",
-    "product_view",
-    "success_metrics",
-    "component_responsibilities",
-    "human_actors",
-    "external_systems",
-    "internal_systems",
-    "assumptions",
-    "ambiguities",
-    "non_goals",
-    "evidence_requirements",
-    "operational_constraints",
-)
-
-
 @dataclass(frozen=True)
 class CompiledCreateExecution:
     """The commit result and immutable transaction facts captured before that commit."""
@@ -416,11 +397,10 @@ def _semantic_snapshot(transaction: Mapping[str, Any]) -> dict[str, Any]:
     proposal = _mapping(transaction.get("proposal"))
     intent = _mapping(proposal.get("intent"))
     authored_semantics = intent.get("authored_semantics")
-    facts = {
-        key: intent[key]
-        for key in SEMANTIC_FACT_KEYS
-        if key in intent and _has_semantic_value(intent.get(key))
-    }
+    try:
+        facts = product_facts_payload(intent)
+    except ValueError:
+        return {}
     if not all(key in facts for key in ("product_story", "state_object", "first_path", "proof_boundary")):
         return {}
     authority = _mapping(transaction.get("intent_authority"))
@@ -454,14 +434,6 @@ def _semantic_snapshot(transaction: Mapping[str, Any]) -> dict[str, Any]:
         # the matrix never recomputes an operating-envelope classification.
         "operating_envelope": copy.deepcopy(operating_envelope),
     }
-
-
-def _has_semantic_value(value: Any) -> bool:
-    if isinstance(value, str):
-        return bool(value.strip())
-    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        return bool(value)
-    return isinstance(value, Mapping) and bool(value)
 
 
 def _active_generation_issues(
@@ -594,7 +566,6 @@ def _is_sha256(value: str) -> bool:
 
 __all__ = [
     "DRY_RUN_RECEIPT_VERSION",
-    "SEMANTIC_FACT_KEYS",
     "CompiledCreateExecution",
     "commit_precompiled_transaction",
     "dry_run_commit_issues",

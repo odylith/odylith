@@ -21,6 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     StructuredAuthoringProvider,
     authored_response,
+    model_event_rows,
 )
 
 
@@ -129,14 +130,15 @@ def _author(
     return result
 
 
-def test_named_product_event_rejects_another_selected_product_owner() -> None:
+def test_typed_product_owner_edge_is_authoritative_without_name_reparsing() -> None:
     evidence, _intent, response = _harbor_case()
-    relations = response["events"]
-    assert isinstance(relations, list)
+    relations = model_event_rows(response)
     relations[2]["actor_fact_quote"] = "berth map"
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="exact selected actor fact"):
-        _author(evidence, response)
+    result = _author(evidence, response)
+
+    assert result.first_path_relations[2]["actor_quote"] == "berth map"
+    assert result.first_path_relations[2]["owner_system_quote"] == "berth map"
 
 
 def test_named_product_event_accepts_its_exact_selected_owner() -> None:
@@ -150,9 +152,8 @@ def test_named_product_event_accepts_its_exact_selected_owner() -> None:
 
 def test_external_event_actor_must_reference_a_selected_external_fact() -> None:
     evidence, _intent, response = _harbor_case()
-    relations = response["events"]
-    assert isinstance(relations, list)
-    relations[1]["actor_fact_quote"] = "Harbor Relay"
+    relations = model_event_rows(response)
+    relations[1]["actor_fact_quote"] = "Absent Harbor Relay"
 
     with pytest.raises(GreenfieldModelAuthoringError, match="actor fact"):
         _author(evidence, response)
@@ -223,7 +224,7 @@ def test_product_pronoun_uses_an_explicit_selected_actor_fact() -> None:
 
     result = _author(prompt, response)
 
-    assert result.first_path_relations[2]["actor_quote"] == "It"
+    assert result.first_path_relations[2]["actor_quote"] == "Review Engine"
     assert result.first_path_relations[2]["actor_fact_path"] == "/internal_systems/0"
     assert result.first_path_relations[2]["actor_fact_quote"] == "Review Engine"
 
@@ -312,16 +313,13 @@ def test_coordinated_clauses_preserve_carried_actors_and_every_action() -> None:
         "Permit Relay",
     ]
     assert [row["action_verb_quote"] for row in result.first_path_relations] == [
-        "uploads",
-        "reviews",
-        "stores",
-        "shows",
+        *events,
     ]
     assert [
         row["quote"]
         for row in result.atomic_claims
         if row["relation_role"] == "action_verb_quote"
-    ] == ["uploads", "reviews", "stores", "shows"]
+    ] == list(events)
 
 
 def test_sealed_separate_source_context_rejects_an_unknown_event_order() -> None:
@@ -425,7 +423,7 @@ def _repeated_event_case() -> tuple[str, dict[str, object]]:
         ],
         terminal_component_owner="Retry Console",
     )
-    path_facts = response["facts"]["first_path"]
+    path_facts = response["result"]["facts"]["first_path"]
     path_facts[1]["occurrence"] = 2
     return prompt, response
 

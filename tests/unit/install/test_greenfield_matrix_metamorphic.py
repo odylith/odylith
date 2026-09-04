@@ -150,6 +150,23 @@ def test_metamorphic_output_accepts_required_clarification_without_a_transaction
     assert evaluation["complete_group_count"] == 1
 
 
+def test_metamorphic_output_keeps_clarification_subprocess_as_diagnostic_evidence() -> None:
+    committed_case, clarification_case = _clarification_pair_cases()
+
+    evaluation = evaluate_metamorphic_outputs(
+        cases=(committed_case, clarification_case),
+        results=(
+            _result(committed_case),
+            _clarification_result(
+                clarification_case,
+                subprocess_attempts=("subprocess.Popen",),
+            ),
+        ),
+    )
+
+    assert evaluation["status"] == "passed"
+
+
 def test_metamorphic_output_rejects_clarification_without_a_frozen_oracle() -> None:
     committed_case, clarification_case = _clarification_pair_cases()
     clarification_case = replace(
@@ -246,6 +263,7 @@ def test_metamorphic_output_rejects_clarification_with_write_artifacts() -> None
             _clarification_result(
                 clarification_case,
                 changed_records=("odylith/radar/source/workstreams.v1.json",),
+                write_attempts=("open:odylith/radar/source/workstreams.v1.json",),
                 preconfirm_dry_run=True,
                 commit_manifest=True,
             ),
@@ -254,6 +272,7 @@ def test_metamorphic_output_rejects_clarification_with_write_artifacts() -> None
 
     assert evaluation["status"] == "failed"
     assert any("changed governed records before clarification" in issue for issue in evaluation["issues"])
+    assert any("attempted repository writes before clarification" in issue for issue in evaluation["issues"])
     assert any("created a dry-run receipt before clarification" in issue for issue in evaluation["issues"])
     assert any("produced a commit manifest before clarification" in issue for issue in evaluation["issues"])
 

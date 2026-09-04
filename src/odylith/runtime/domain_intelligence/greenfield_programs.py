@@ -6,7 +6,9 @@ import re
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine.types import slugify
-from odylith.runtime.domain_intelligence.greenfield_text import text_values
+from odylith.runtime.domain_intelligence.greenfield_scalar_values import (
+    nested_text_values as text_values,
+)
 
 DEFAULT_GREENFIELD_RELEASE_SELECTOR = "0.0.1"
 

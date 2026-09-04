@@ -92,6 +92,8 @@ def authored_response(
         fact_indexes=fact_indexes,
         intent=intent,
     )
+    if not relation_rows:
+        raise ValueError("authored fixture requires one event")
     terminal = _terminal_row(
         relations=source_relations,
         facts=selected_facts,
@@ -105,15 +107,16 @@ def authored_response(
     )
     return {
         "version": GREENFIELD_INTENT_AUTHORING_VERSION,
-        "status": "authored",
-        "facts": facts,
-        "events": relation_rows,
-        "terminal": terminal,
-        "components": components,
-        "assumptions": list(intent.get("assumptions") or []),
-        "ambiguities": list(intent.get("ambiguities") or []),
-        "consistency": {"status": "consistent", "conflicting_quotes": []},
-        "clarification": None,
+        "result": {
+            "status": "authored",
+            "facts": facts,
+            "events": relation_rows,
+            "terminal": terminal,
+            "components": components,
+            "assumptions": list(intent.get("assumptions") or []),
+            "ambiguities": list(intent.get("ambiguities") or []),
+            "consistency": {"status": "consistent", "evidence_quotes": []},
+        },
     }
 
 
@@ -121,31 +124,35 @@ def clarification_response(
     *,
     question: str,
     material_dimension: str,
-    consistency_status: str = "consistent",
-    conflicting_quotes: Sequence[str] = (),
+    evidence_quotes: Sequence[str],
+    consistency_status: str = "material_ambiguity",
 ) -> dict[str, Any]:
     """Return a clarification response; the question remains test-only metadata."""
 
     del question
     return {
         "version": GREENFIELD_INTENT_AUTHORING_VERSION,
-        "status": "clarification_required",
-        "facts": None,
-        "events": [],
-        "terminal": {
-            "event_order": 0,
-            "result_quote": "",
-            "result_occurrence": 0,
+        "result": {
+            "status": "clarification_required",
+            "consistency": {
+                "status": consistency_status,
+                "evidence_quotes": [str(quote) for quote in evidence_quotes],
+            },
+            "clarification": {"material_dimension": material_dimension},
         },
-        "components": [],
-        "assumptions": [],
-        "ambiguities": [],
-        "consistency": {
-            "status": consistency_status,
-            "conflicting_quotes": [str(quote) for quote in conflicting_quotes],
-        },
-        "clarification": {"material_dimension": material_dimension},
     }
+
+
+def model_event_rows(response: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """Return mutable fixture event rows in their authored order."""
+
+    result = response.get("result")
+    events = result.get("events") if isinstance(result, Mapping) else None
+    if not isinstance(events, list) or not all(
+        isinstance(row, dict) for row in events
+    ):
+        raise ValueError("authored fixture response has no event graph")
+    return events
 
 
 def _relation_rows(
@@ -160,7 +167,6 @@ def _relation_rows(
     for relation in relations:
         event_quote = str(relation.get("event_quote") or "")
         actor_quote = str(relation.get("actor_quote") or "")
-        action_quote = str(relation.get("action_verb_quote") or "")
         target_quote = str(relation.get("target_quote") or "")
         actor_kind = str(relation.get("actor_kind") or "")
         segment_index = relation.get("segment_index")
@@ -188,8 +194,6 @@ def _relation_rows(
                     fact_indexes=fact_indexes,
                     intent=intent,
                 ),
-                "actor_quote": actor_quote,
-                "action_quote": action_quote,
                 "target_quote": target_quote,
                 "recovery_path": bool(relation.get("recovery_path")),
             }
@@ -210,7 +214,7 @@ def _terminal_row(
     ]
     if not visible_rows:
         raise ValueError("authored fixture requires one terminal visible result")
-    event_order, result_quote = visible_rows[-1]
+    _, result_quote = visible_rows[-1]
     proof_fact = next(
         (
             fact
@@ -242,7 +246,6 @@ def _terminal_row(
             fact_start + local_start,
         )
     return {
-        "event_order": event_order,
         "result_quote": result_quote,
         "result_occurrence": result_occurrence,
     }
@@ -321,7 +324,6 @@ def _component_responsibility_relation_rows(
             )
         return [
             {
-                "responsibility_fact_quote": "",
                 "owner_fact_quote": _owner_fact_quote(
                     owner=terminal_owner,
                     intent=intent,
@@ -353,7 +355,6 @@ def _component_responsibility_relation_rows(
             raise ValueError("authored fixture component responsibility owner is not a selected fact")
         rows.append(
             {
-                "responsibility_fact_quote": responsibilities[index],
                 "owner_fact_quote": owner_fact_quote,
             }
         )

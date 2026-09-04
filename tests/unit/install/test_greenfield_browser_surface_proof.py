@@ -24,10 +24,32 @@ def _module():
     return _load_module(SCRIPTS_ROOT / "greenfield_browser_surface_proof.py", "greenfield_browser_surface_proof")
 
 
+def _authored_contract_module():
+    return _load_module(
+        SCRIPTS_ROOT / "greenfield_browser_authored_contract.py",
+        "greenfield_browser_authored_contract",
+    )
+
+
 def test_browser_surface_proof_scope_is_generated_state_matrix() -> None:
     module = _module()
 
     assert module.BROWSER_SURFACE_PROOF_SCOPE == "per_case_headless_generated_surface_state_matrix"
+    assert set(module.BROWSER_VIEWPORTS) == {"desktop", "mobile"}
+    assert {
+        surface for _viewport, surface, _state in module.BROWSER_REQUIRED_COVERAGE
+    } == {"project", "radar", "registry", "casebook", "atlas", "compass", "shell"}
+    assert ("mobile", "casebook", "empty") in module.BROWSER_REQUIRED_COVERAGE
+    assert ("mobile", "shell", "invalid-recovery") in module.BROWSER_REQUIRED_COVERAGE
+
+
+def test_browser_surface_proof_fails_closed_when_a_required_cell_is_skipped() -> None:
+    module = _module()
+    skipped = ("mobile", "registry", "normal")
+
+    issues = module._missing_coverage_issues(set(module.BROWSER_REQUIRED_COVERAGE) - {skipped})
+
+    assert issues == ("browser surface proof skipped required coverage cell: mobile/registry/normal",)
 
 
 def test_browser_surface_proof_expected_abort_filter_stays_local_and_narrow() -> None:
@@ -58,11 +80,70 @@ def test_browser_surface_proof_expected_abort_filter_stays_local_and_narrow() ->
         error_text="net::ERR_ABORTED",
         resource_type="document",
     )
+
+
+def test_browser_state_screenshot_is_captured_with_and_without_assertion_issues(tmp_path: Path) -> None:
+    module = _module()
+
+    clean_page = _FakePage()
+    covered = set()
+    _, clean_issues = module._new_page(
+        _FakeContext(clean_page),
+        issue_prefix="clean state",
+        screenshot_output_dir=tmp_path / "clean",
+        coverage_cells=(("desktop", "project", "normal"), ("desktop", "shell", "normal")),
+        covered=covered,
+    )
+    assert clean_issues() == ()
+    assert (tmp_path / "clean/desktop-project-normal.png").read_bytes() == b"png"
+    assert (tmp_path / "clean/desktop-shell-normal.png").read_bytes() == b"png"
+    assert covered == {("desktop", "project", "normal"), ("desktop", "shell", "normal")}
+
+    failed_page = _FakePage()
+    _, failed_issues = module._new_page(
+        _FakeContext(failed_page),
+        issue_prefix="failed state",
+        screenshot_output_dir=tmp_path / "failed",
+        screenshot_name="invalid-route",
+    )
+    failed_page.handlers["pageerror"]("assertion failed")
+    assert "failed state page error: assertion failed" in failed_issues()
+    assert (tmp_path / "failed/invalid-route.png").read_bytes() == b"png"
     assert not module._is_expected_local_abort(
         url="http://127.0.0.1:12345/odylith/radar/radar.html",
         error_text="net::ERR_FAILED",
         resource_type="document",
     )
+
+    duplicate_cell = ("mobile", "atlas", "normal")
+    duplicate_dir = tmp_path / "duplicate"
+    duplicate_dir.mkdir()
+    (duplicate_dir / "mobile-atlas-normal.png").write_bytes(b"existing")
+    duplicate_covered = set()
+    _, duplicate_issues = module._new_page(
+        _FakeContext(_FakePage()),
+        issue_prefix="duplicate state",
+        screenshot_output_dir=duplicate_dir,
+        coverage_cells=(duplicate_cell,),
+        covered=duplicate_covered,
+    )
+    assert "duplicate state screenshot capture failed: RuntimeError: browser screenshot already exists: mobile-atlas-normal" in duplicate_issues()
+    assert duplicate_cell not in duplicate_covered
+
+
+def test_browser_layout_assertions_reject_overflow_clipping_and_missing_copy() -> None:
+    module = _module()
+
+    assert module._layout_assertion_issues(
+        label="registry", horizontal_overflow=4, clipped_text_count=0, visible_copy_length=12
+    ) == ()
+    issues = module._layout_assertion_issues(
+        label="registry", horizontal_overflow=20, clipped_text_count=2, visible_copy_length=0
+    )
+
+    assert "browser surface registry overflows the viewport horizontally" in issues
+    assert "browser surface registry clips visible status or content copy" in issues
+    assert "browser surface registry does not expose meaningful visible copy" in issues
 
 
 def test_atlas_state_assertion_requires_generated_diagram_state() -> None:
@@ -141,6 +222,26 @@ def test_project_state_assertion_requires_persisted_prompt_state() -> None:
     assert "browser surface project rendered fewer than five implementation prompt cards" in issues
     assert "browser surface project rendered the blank project state after commit-only create" in issues
     assert "browser surface project clips visible text" in issues
+
+
+class _FakeContext:
+    def __init__(self, page: "_FakePage") -> None:
+        self.page = page
+
+    def new_page(self):  # noqa: ANN201
+        return self.page
+
+
+class _FakePage:
+    def __init__(self) -> None:
+        self.handlers = {}
+
+    def on(self, event: str, callback) -> None:  # noqa: ANN001
+        self.handlers[event] = callback
+
+    def screenshot(self, *, path: str, full_page: bool) -> None:
+        assert full_page is True
+        Path(path).write_bytes(b"png")
 
 
 def test_project_state_assertion_rejects_wrong_semantic_story_slot() -> None:
@@ -278,3 +379,107 @@ def test_project_state_assertion_rejects_confusable_uppercase_story_label() -> N
 
     assert "greenfield Project Product Story card has an unexpected semantic label: `PROOFS`" in issues
     assert "greenfield Project Product Story is missing its `Proof` card" in issues
+
+
+def test_story_row_parity_defers_structured_card_bodies_to_typed_node_proof() -> None:
+    module = _module()
+    payload_rows = [
+        {"label": "User Problem", "semantic_slot": "user_problem", "body": "A source fact."},
+        {"label": "First Path", "semantic_slot": "first_path", "body": "Signal amber\nRecord receipt"},
+        {"label": "Product Boundary", "semantic_slot": "product_boundary", "body": "Product-owned systems:\nFerry desk"},
+        {"label": "Owned Capabilities", "semantic_slot": "owned_capabilities", "body": "Ferry desk: signal amber; record receipt"},
+        {"label": "Proof", "semantic_slot": "proof", "body": "A reviewed receipt."},
+    ]
+    rendered_rows = [dict(row) for row in payload_rows]
+    rendered_rows[1]["body"] = "1. Signal amber\n2. Record receipt"
+    rendered_rows[3]["body"] = "Ferry desk: signal amber\nFerry desk: record receipt"
+
+    assert module.story_rows_match_payload(
+        rendered_rows,
+        payload_rows,
+        structured_slots=("first_path", "product_boundary", "owned_capabilities"),
+    )
+    rendered_rows[-1]["body"] = "A different proof claim."
+    assert not module.story_rows_match_payload(
+        rendered_rows,
+        payload_rows,
+        structured_slots=("first_path", "product_boundary", "owned_capabilities"),
+    )
+
+
+def test_authored_structure_requires_direct_typed_node_parity() -> None:
+    module = _authored_contract_module()
+    facts = {
+        "first_path_relations": [
+            {
+                "order": 1,
+                "event_quote": "Keeper signals amber ferry",
+                "actor_kind": "human",
+                "actor_fact_quote": "Keeper",
+            },
+            {
+                "order": 2,
+                "event_quote": "Relay writes blue receipt",
+                "actor_kind": "product",
+                "actor_fact_quote": "Relay",
+            },
+        ],
+        "human_actors": ["Keeper"],
+        "internal_systems": ["Relay", "Audit Console"],
+        "component_responsibility_relations": [
+            {
+                "owner_system_quote": "Relay",
+                "responsibility_quote": "Own blue-receipt custody.",
+            }
+        ],
+        "external_systems": ["North Archive"],
+        "non_goals": ["Do not claim live settlement."],
+    }
+    events = [
+        {"order": 1, "text": "Keeper signals amber ferry"},
+        {"order": 2, "text": "Relay writes blue receipt"},
+    ]
+    rendered = {
+        "focus": events,
+        "first_path": events,
+        "actors": [{"actor": "Keeper", "events": events[:1]}],
+        "capabilities": [
+            {"owner": "Relay", "responsibility": "Own blue-receipt custody."}
+        ],
+        "boundary_groups": [
+            {"key": "product_owned_systems", "items": ["Relay", "Audit Console"]},
+            {"key": "external_systems", "items": ["North Archive"]},
+            {"key": "non_goals", "items": ["Do not claim live settlement."]},
+        ],
+    }
+
+    assert module.authored_structure_issues(rendered, facts) == ()
+
+    collapsed = dict(rendered)
+    collapsed["first_path"] = [
+        {"order": 0, "text": "Keeper signals amber ferry Relay writes blue receipt"}
+    ]
+    assert module.authored_structure_issues(collapsed, facts) == (
+        "browser surface project first path does not preserve typed event nodes",
+    )
+
+
+def test_project_state_assertion_fails_closed_when_authored_nodes_are_missing() -> None:
+    module = _module()
+
+    issues = module._project_state_assertion_issues(
+        payload_origin=module.AUTHORED_PROJECTION_ORIGIN,
+        payload_prompt_count=5,
+        empty_payload_prompts=0,
+        rendered_prompt_count=5,
+        has_prompt_grid=True,
+        has_blank_state=False,
+        has_implementation_prompts=True,
+        max_prompt_overflow=0,
+        pane_overflow=0,
+        authored_structure={},
+        payload_authored_facts={"first_path_relations": []},
+    )
+
+    assert "browser surface project focus does not preserve typed event nodes" in issues
+    assert "browser surface project first path does not preserve typed event nodes" in issues

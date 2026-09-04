@@ -1,157 +1,73 @@
 flowchart LR
-    subgraph intent_lane["Source And Accepted First-Path Facts"]
+    subgraph source_lane["Source evidence"]
       direction TB
-      source_evidence_units["Source evidence units<br/>retain original text, hashes,<br/>and auditable span provenance"]
-      product_claim_spans["Accepted product-claim spans<br/>stay distinct from supporting evidence;<br/>every material fact requires source custody"]
-      accepted_path["Accepted first path<br/>operator-confirmed behavior"]
-      editorial_framing_guard["First-path editorial framing guard<br/>removes inline smallest-version<br/>and whole-product meta clauses<br/>before semantic projection"]
-      ingress_cleanup["Confirmed-text ingress cleanup<br/>dedupe adjacent words once<br/>before semantic projection"]
-      title_boundary_custody["Title-boundary custody<br/>canonical project titles collapse<br/>duplicate lexical and compound-prefix<br/>boundaries before projection fan-out"]
-      evidence_anchor_custody["Prompt-grounded evidence anchor custody<br/>canonicalize duplicate source words;<br/>treat hyphen/slash compounds as<br/>multi-part anchors before requirements,<br/>EvaluationSemantics, and projections"]
-      prompt_material_custody["Prompt material custody<br/>internally synthesized confirmations only<br/>restore lost source steps;<br/>operator edits stay authoritative"]
-      actor_roles["Shared actor-role owner<br/>role nouns normalized once<br/>for recovery, fragments, and signatures"]
-      actor_participation["Role-aware actor participation<br/>supporting actors need direct phrase<br/>or role-compatible path evidence;<br/>domain-object overlap is insufficient"]
-      artifact_context_actor_filter["Artifact-context actor filter<br/>approval and review artifacts<br/>do not become people"]
-      actor_recovery["Actor recovery owner<br/>finite action leads stay actions,<br/>not plural actor subjects"]
-      actor_path_role["Actor path-role owner<br/>accepted-path descriptions,<br/>partial actor-list augmentation,<br/>exact and containment dedupe only;<br/>same-tail roles stay distinct"]
-      subject_carry_guard["Explicit subject-carry guard<br/>one-word human actors stay actors,<br/>visible result objects do not<br/>become sibling subjects"]
-      purpose_context["Purpose-context owner<br/>semicolon-led accepted context<br/>carries into first actionable step"]
-      action_boundary["Action-boundary owner<br/>ordinary leading actions stay actions,<br/>finite sibling actions split events"]
-      coordinated_action_guard["Coordinated-action guard<br/>requires a real second action;<br/>comma-separated noun tails<br/>cannot complete a first path"]
-      shared_event_resolver["Shared first-path actor/action resolver<br/>receives the complete accepted human actor set;<br/>pronouns retain the current human actor;<br/>system/product events are marked non-human"]
-      action_result_nominalizer["Action-result nominalizer<br/>actor-role nouns beat leading<br/>action-shaped words when later<br/>owned actions carry the result"]
-      actor_led_open_action["Actor-led open-action owner<br/>plausible actor plus open action<br/>when material-action grammar has<br/>no recognized action"]
-      requirement_control["Requirement-control owner<br/>workflow/product/path must clauses<br/>become constraints, not actors,<br/>when material path actions remain"]
-      semantic_contract["SemanticModelIR first-path contract<br/>events, visible result,<br/>proof obligations"]
-      external_boundary["External boundary facts<br/>explicit system rows,<br/>inferred interaction,<br/>or deferred fixture/manual boundary"]
-      sequence_owner["Sequence step owner<br/>keeps connector-led object tails,<br/>evidence noun compounds,<br/>and distinctive terminal event terms"]
-      tail_custody["Action-complement and object-list custody<br/>semantic tail fallback restores<br/>accepted event terms before compact labels"]
-      visible_result_owner["Visible-result owner<br/>terminal event nominalization,<br/>material object lists,<br/>reviewable outcomes, and source priority<br/>outrank proof-boundary fallback;<br/>storage evidence stays supporting"]
-      result_list_disambiguation["Result-list noun disambiguation<br/>review/evidence/proof lists stay<br/>visible results, not actor actions"]
-      review_result_owner["Review-result owner<br/>terminal review/read/view result steps<br/>can own visible outcome"]
-      modal_owner["Modal actor owner<br/>plural actors keep can<br/>plus base action"]
-      product_view_copy["Product-view copy owner<br/>uses actor-led action parts<br/>before homonym fallback"]
+      request["Original request and EDIT evidence<br/>Exact text retained as untrusted input"]
+      source_units["Source units and occurrence ids<br/>Stable citation targets"]
+      model_author["One host-model author<br/>Interprets the whole request once"]
     end
 
-    subgraph prose_lane["Generated Prose Shape"]
+    subgraph graph_lane["Canonical typed meaning"]
       direction TB
-      shape_checks["Prose-shape checks<br/>actor-led capability drift,<br/>clause-local gerund actor splice,<br/>title-compound user-role allowance"]
-      gerund_owner["Gerund action owner<br/>bounded proof-action phrasing"]
-      actor_role_head_guard["Actor-role head guard<br/>shared role nouns only,<br/>object words do not become actors"]
-      structural_filter["Structural-copy filter<br/>ids, paths, slugs,<br/>versions, URLs"]
-      repetition_gate["Semantic repetition gate<br/>allows sanctioned canonical facts,<br/>rejects unowned repeated tails<br/>and emits occurrence metadata<br/>for repeated package prose"]
+      facts["Source-cited facts<br/>Story, state, actors, systems,<br/>responsibilities, risks, and proof"]
+      events["Ordered event bindings<br/>Selected actor fact, source-bound target,<br/>and recovery meaning"]
+      terminal["Terminal result binding<br/>Exact selected output citation"]
+      custody["Deterministic custody compiler<br/>Byte spans, actor kind, action fact,<br/>target binding, event order, and final result"]
+      completeness{"Material facts and<br/>relations complete?"}
+      clarify["Clarification required<br/>Missing or conflicting material meaning<br/>stops before persistence"]
+      canonical["Canonical direct-evidence graph<br/>Single semantic owner"]
     end
 
-    subgraph projection_lane["Surface Projections"]
+    subgraph consumer_lane["Deterministic consumers"]
       direction TB
-      radar_projection["Radar title/action and brief projection<br/>selects one resolved human event;<br/>system/product events cannot title<br/>human workstreams"]
-      state_boundary_titles["State-boundary title owner<br/>compact review/action focus,<br/>no changes-it pronoun tail,<br/>no duplicate clarity word"]
-      actor_choice_copy["Project-brief actor choices<br/>neutral participant wording,<br/>curated readiness actions keep<br/>middle and terminal path steps"]
-      atlas_projection["Atlas event projection<br/>sequence and flow labels"]
-      mermaid_label_custody["Mermaid label custody<br/>visible line breaks avoid<br/>dangling connector words;<br/>header/body labels do not repeat<br/>fixed result wrappers"]
-      atlas_catalog_copy["Atlas catalog copy custody<br/>leading product articles normalize once;<br/>state and release guides remain<br/>grammatical before quality scoring"]
-      label_action_grammar["Shared action grammar for labels<br/>coordinated finite actions become<br/>imperative base actions before render"]
-      atlas_coverage["Atlas coverage owner<br/>FirstPathContract checked through<br/>structured projection facts,<br/>not verbatim capability prose"]
-      next_step_prompts["Project next-step prompts<br/>accepted first path preserved,<br/>no Radar slice echo"]
-      overlap_projection["Next-step overlap projection<br/>raw path, capability,<br/>visible result, events only"]
-      artifact_units["ArtifactQualityUnit collector<br/>keeps metadata, commands,<br/>prompt fields, Mermaid labels,<br/>and free prose separate"]
-      mermaid_label_gate["Mermaid label quality gate<br/>rejects mixed finite/base action labels;<br/>preserves noun coordinations"]
-      mermaid_source_units["Mermaid source custody<br/>source fields become visible-label units<br/>before prose quality checks"]
-      canonical_facts["Canonical projection facts<br/>full events, sequence-step variants,<br/>and compact tails carry semantic node,<br/>source path, projection id, sanctioned surfaces"]
-      tribunal_actors["Tribunal visible actors<br/>actor_source provenance,<br/>typed operator evidence,<br/>role-specific generated labels,<br/>shared label custody,<br/>persisted readback checked"]
-      evaluation_readback["Scientific evaluation readback<br/>typed IR-derived obligations:<br/>method/protocol, baseline/comparison,<br/>uncertainty/tolerance, reproducibility"]
-      package_findings["Typed package findings<br/>source path, projection id,<br/>repair owner,<br/>occurrence paths and counts"]
+      project["Project story and first path"]
+      radar["Radar outcomes and work"]
+      registry["Registry ownership contracts"]
+      atlas["Atlas event and boundary topology"]
+      compass["Compass decisions and proof"]
+      evaluator["Release evaluator<br/>Reads the same typed relations<br/>and product-owned Mermaid parser"]
     end
 
-    subgraph repair_lane["Repair Custody"]
+    subgraph transaction_lane["Persistence law"]
       direction TB
-      semantic_plan_patch["Semantic or plan patch<br/>source fact repair only"]
-      source_address["ProjectionSourceAddress<br/>plan patches require exact<br/>ArtifactPlanIR field, row field,<br/>or owned list fact;<br/>broad roots fail closed"]
-      projection_repair_targets["Projection-source repair targets<br/>preview leaves resolve to<br/>SemanticModelIR or ArtifactPlanIR"]
-      dashboard_rerender["Project dashboard rerender<br/>source previews rebuild dashboard,<br/>not rendered body patches"]
-      package_inspection["Read-only package inspection<br/>duplicate words, dangling tails,<br/>and cross-artifact repetition stay source-owned<br/>until SemanticModelIR or ArtifactPlanIR is repaired"]
-      final_gate["Final package gate<br/>same validators, no lowered bar"]
-      quality_debt["Completion-priority quality debt<br/>typed non-critical projection debt<br/>after repair/rerender no-progress<br/>or late persisted-copy quality"]
-      debt_manifest["Explicit debt manifest<br/>passed_with_quality_debt,<br/>final-write debt ledger,<br/>no clean premium claim"]
-      governed_write["Governed writes<br/>only after manifest passes"]
+      seal["Sealed transaction<br/>Exact projections and source custody"]
+      confirm["CONFIRM is commit-only<br/>No semantic reinterpretation"]
+      readback["Readback must equal<br/>the reviewed transaction"]
     end
 
-    source_evidence_units --> product_claim_spans --> accepted_path
-    accepted_path --> editorial_framing_guard
-    editorial_framing_guard --> ingress_cleanup
-    ingress_cleanup --> title_boundary_custody
-    title_boundary_custody --> evidence_anchor_custody
-    evidence_anchor_custody --> prompt_material_custody
-    prompt_material_custody --> actor_roles
-    actor_roles --> actor_participation
-    actor_participation --> artifact_context_actor_filter
-    artifact_context_actor_filter --> actor_recovery
-    actor_recovery --> actor_path_role
-    actor_path_role --> subject_carry_guard
-    subject_carry_guard --> purpose_context
-    purpose_context --> action_boundary --> coordinated_action_guard
-    coordinated_action_guard --> action_result_nominalizer
-    coordinated_action_guard --> shared_event_resolver
-    action_result_nominalizer --> actor_led_open_action
-    actor_led_open_action --> requirement_control
-    requirement_control --> semantic_contract
-    shared_event_resolver --> semantic_contract
-    semantic_contract --> evaluation_readback
-    semantic_contract --> external_boundary
-    external_boundary --> sequence_owner
-    sequence_owner --> tail_custody
-    tail_custody --> visible_result_owner
-    visible_result_owner --> result_list_disambiguation
-    result_list_disambiguation --> review_result_owner
-    review_result_owner --> modal_owner
-    modal_owner --> product_view_copy
-    product_view_copy --> radar_projection
-    shared_event_resolver -. "same human actor/action event" .-> radar_projection
-    modal_owner --> atlas_projection
-    modal_owner --> next_step_prompts
-    radar_projection --> state_boundary_titles
-    state_boundary_titles --> actor_choice_copy
-    radar_projection --> shape_checks
-    atlas_projection --> mermaid_label_custody --> atlas_catalog_copy
-    atlas_catalog_copy --> label_action_grammar
-    label_action_grammar --> atlas_coverage
-    atlas_coverage --> shape_checks
-    actor_choice_copy --> artifact_units
-    next_step_prompts --> overlap_projection
-    overlap_projection --> artifact_units
-    artifact_units --> mermaid_label_gate
-    mermaid_label_gate --> mermaid_source_units
-    mermaid_source_units --> canonical_facts
-    canonical_facts --> tribunal_actors
-    tribunal_actors --> shape_checks
-    shape_checks --> gerund_owner
-    gerund_owner --> actor_role_head_guard
-    actor_role_head_guard --> structural_filter
-    structural_filter --> repetition_gate
-    canonical_facts --> repetition_gate
-    repetition_gate --> package_findings
-    evaluation_readback --> package_findings
-    package_findings --> projection_repair_targets
-    projection_repair_targets --> source_address
-    source_address --> semantic_plan_patch
-    semantic_plan_patch --> dashboard_rerender
-    package_findings --> package_inspection
-    dashboard_rerender --> final_gate
-    package_inspection --> final_gate
-    final_gate -- "typed projection debt only" --> quality_debt --> debt_manifest --> governed_write
-    final_gate --> governed_write
+    request --> source_units --> model_author
+    model_author --> facts
+    model_author --> events
+    model_author --> terminal
+    facts --> custody
+    events --> custody
+    terminal --> custody --> completeness
+    completeness -- "no" --> clarify
+    completeness -- "yes" --> canonical
+    canonical --> project
+    canonical --> radar
+    canonical --> registry
+    canonical --> atlas
+    canonical --> compass
+    canonical --> evaluator
+    project --> seal
+    radar --> seal
+    registry --> seal
+    atlas --> seal
+    compass --> seal
+    seal --> confirm --> readback
+    readback -. "semantic parity" .-> evaluator
 
-    classDef intent fill:#EFF6FF,stroke:#BFD7FE,color:#132033,stroke-width:1px;
-    classDef prose fill:#F8FAFC,stroke:#CBD5E1,color:#132033,stroke-width:1px;
-    classDef projection fill:#ECFDFB,stroke:#A7E9E3,color:#132033,stroke-width:1px;
-    classDef repair fill:#FFF7ED,stroke:#FDBA74,color:#132033,stroke-width:1px;
-    class source_evidence_units,product_claim_spans,accepted_path,editorial_framing_guard,ingress_cleanup,title_boundary_custody,evidence_anchor_custody,prompt_material_custody,actor_roles,actor_participation,artifact_context_actor_filter,actor_recovery,actor_path_role,subject_carry_guard,purpose_context,action_boundary,coordinated_action_guard,shared_event_resolver,action_result_nominalizer,actor_led_open_action,requirement_control,semantic_contract,external_boundary,sequence_owner,tail_custody,visible_result_owner,result_list_disambiguation,review_result_owner,modal_owner,product_view_copy intent;
-    class shape_checks,gerund_owner,actor_role_head_guard,structural_filter,repetition_gate prose;
-    class radar_projection,state_boundary_titles,actor_choice_copy,atlas_projection,mermaid_label_custody,atlas_catalog_copy,label_action_grammar,atlas_coverage,next_step_prompts,overlap_projection,artifact_units,mermaid_label_gate,mermaid_source_units,canonical_facts,tribunal_actors,evaluation_readback,package_findings projection;
-    class semantic_plan_patch,source_address,projection_repair_targets,dashboard_rerender,package_inspection,final_gate,quality_debt,debt_manifest,governed_write repair;
+    classDef primary fill:#EFF6FF,stroke:#BFD7FE,color:#132033,stroke-width:1px;
+    classDef semantic fill:#ECFDFB,stroke:#A7E9E3,color:#132033,stroke-width:1px;
+    classDef governance fill:#F5F3FF,stroke:#DDD6FE,color:#132033,stroke-width:1px;
+    classDef constraint fill:#FFF8E6,stroke:#F6D98B,color:#132033,stroke-width:1px;
+    class request,source_units,model_author primary;
+    class facts,events,terminal,custody,canonical,project,radar,registry,atlas,compass,evaluator semantic;
+    class seal,confirm,readback governance;
+    class completeness,clarify constraint;
 
-    style intent_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
-    style prose_lane fill:#FBFDFF,stroke:#CBD5E1,stroke-width:1px,color:#293D52
-    style projection_lane fill:#F8FFFE,stroke:#A7E9E3,stroke-width:1px,color:#293D52
-    style repair_lane fill:#FFFBF5,stroke:#FDBA74,stroke-width:1px,color:#293D52
+    style source_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
+    style graph_lane fill:#F8FFFE,stroke:#A7E9E3,stroke-width:1px,color:#293D52
+    style consumer_lane fill:#F8FFFE,stroke:#A7E9E3,stroke-width:1px,color:#293D52
+    style transaction_lane fill:#FCFBFF,stroke:#DDD6FE,stroke-width:1px,color:#293D52
     linkStyle default stroke:#9FB2C8,stroke-width:1.25px

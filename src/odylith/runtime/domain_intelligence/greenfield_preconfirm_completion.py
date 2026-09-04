@@ -11,6 +11,7 @@ from collections.abc import Mapping
 from collections.abc import Sequence
 from typing import Any
 
+from odylith.runtime.common.value_coercion import normalize_string as clean_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import (
     sealed_authored_projection,
 )
@@ -51,8 +52,9 @@ from odylith.runtime.domain_intelligence.greenfield_completion_types import (
 from odylith.runtime.domain_intelligence.greenfield_completion_types import (
     GreenfieldCompletionReport,
 )
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text
-from odylith.runtime.domain_intelligence.greenfield_text import unique_text
+from odylith.runtime.domain_intelligence.greenfield_scalar_values import (
+    unique_text_values as unique_text,
+)
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 
 

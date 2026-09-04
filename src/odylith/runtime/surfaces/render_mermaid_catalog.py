@@ -14,19 +14,18 @@ import datetime as dt
 from dataclasses import replace
 import json
 from pathlib import Path
-import re
 from typing import Any, Callable, Mapping, Sequence
 
 from odylith.runtime.domain_intelligence import greenfield_authored_atlas_view
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance.delivery import scope_signal_ladder
 from odylith.runtime.surfaces import atlas_detail_layout
+from odylith.runtime.surfaces import atlas_render_metadata
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import dashboard_shell_links
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import dashboard_surface_bundle
-from odylith.runtime.surfaces import display_text
 from odylith.runtime.governance import delivery_intelligence_engine  # Backward-compatible test monkeypatch surface.
 from odylith.runtime.surfaces import generated_surface_cleanup
 from odylith.runtime.surfaces import source_bundle_mirror
@@ -40,58 +39,13 @@ from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.governance import traceability_ui_lookup
 
 
-_SVG_VIEWBOX_RE = re.compile(r"viewBox\s*=\s*['\"]([^'\"]+)['\"]", re.IGNORECASE)
-_WORKSTREAM_ID_RE = re.compile(r"^B-\d{3,}$")
-_DIAGRAM_ID_RE = re.compile(r"^D-(\d{3,})$")
-_DIAGRAM_COMPACT_RE = re.compile(r"^D(\d{3,})$")
 _ATLAS_RENDER_GUARD_NAMESPACE = "generated-refresh-guards"
 _ATLAS_RENDER_GUARD_KEY = "atlas-render"
 
 
-def _display_text(value: Any) -> str:
-    return display_text.strip_inline_markdown_emphasis(value)
-
-
-def _display_row(row: Mapping[str, Any], fields: Sequence[str]) -> dict[str, Any]:
-    cleaned = dict(row)
-    for field in fields:
-        if field in cleaned:
-            cleaned[field] = _display_text(cleaned.get(field, ""))
-    return cleaned
-
-
-def _display_rows(rows: Sequence[Mapping[str, Any]], fields: Sequence[str]) -> list[dict[str, Any]]:
-    return [_display_row(row, fields) for row in rows if isinstance(row, Mapping)]
-
-
-def _extract_svg_viewbox_dimensions(svg_path: Path) -> tuple[float, float] | None:
-    """Best-effort extraction of SVG viewBox width/height."""
-
-    if not svg_path.is_file():
-        return None
-    try:
-        text = svg_path.read_text(encoding="utf-8")
-    except OSError:
-        return None
-
-    match = _SVG_VIEWBOX_RE.search(text)
-    if match is None:
-        return None
-    raw = str(match.group(1)).strip()
-    if not raw:
-        return None
-
-    parts = [token for token in re.split(r"[\s,]+", raw) if token]
-    if len(parts) != 4:
-        return None
-    try:
-        width = float(parts[2])
-        height = float(parts[3])
-    except ValueError:
-        return None
-    if width <= 0 or height <= 0:
-        return None
-    return width, height
+_display_text = atlas_render_metadata.clean_display_text
+_display_rows = atlas_render_metadata.clean_display_rows
+_extract_svg_viewbox_dimensions = atlas_render_metadata.svg_viewbox_dimensions
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -408,23 +362,16 @@ def _newest_watch_path(
 
 
 def _normalize_workstream_id(value: str) -> str:
-    token = str(value or "").strip().upper()
-    if _WORKSTREAM_ID_RE.fullmatch(token):
-        return token
-    return ""
+    return component_registry.normalize_workstream_id(value)
 
 
 def _normalize_diagram_id(value: str) -> str:
     token = str(value or "").strip().upper()
     if token.startswith("DIAGRAM:"):
         token = token[len("DIAGRAM:") :].strip()
-    matched = _DIAGRAM_ID_RE.fullmatch(token)
-    if matched is not None:
-        return f"D-{matched.group(1)}"
-    compact = _DIAGRAM_COMPACT_RE.fullmatch(token)
-    if compact is not None:
-        return f"D-{compact.group(1)}"
-    return ""
+    if token.startswith("D") and not token.startswith("D-"):
+        token = f"D-{token[1:]}"
+    return component_registry.normalize_diagram_id(token)
 
 
 def _load_catalog(

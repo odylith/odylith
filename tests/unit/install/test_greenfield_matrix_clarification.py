@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import sys
 from dataclasses import replace
@@ -38,6 +39,13 @@ def test_clarification_quality_verdict_preserves_one_complete_summary_line() -> 
     assert verdict.score_explanation == (
         "clarification-required pre-confirm contract verified without a transaction or governed write",
     )
+    assert verdict.lenses == {
+        "product_manager": False,
+        "architect": False,
+        "engineer": False,
+        "domain_expert": False,
+    }
+    assert all(verdict.scores[lens] == -1 for lens in verdict.lenses)
 
 
 def test_matrix_summary_renders_the_clarification_verdict_once(capsys) -> None:  # noqa: ANN001
@@ -109,6 +117,34 @@ def test_typed_clarification_accepts_the_expected_material_fields() -> None:
     ) == ()
 
 
+def test_typed_clarification_keeps_model_subprocess_as_diagnostic_evidence() -> None:
+    execution = _clarification_execution(
+        question="What result should the operator see?",
+        required_fields=("visible_result",),
+    )
+
+    assert clarification_contract_issues(
+        replace(execution, subprocess_attempts=("subprocess.Popen",)),
+        expected_fields=("visible_result",),
+        expected_question="What result should the operator see?",
+        expected_model_profile_id=STANDARD_PROFILE_ID,
+    ) == ()
+
+
+def test_typed_clarification_still_rejects_governed_write_attempts() -> None:
+    execution = _clarification_execution(
+        question="What result should the operator see?",
+        required_fields=("visible_result",),
+    )
+
+    issues = clarification_contract_issues(
+        replace(execution, write_attempts=("open:odylith/radar/source/workstreams.v1.json",)),
+        expected_fields=("visible_result",),
+    )
+
+    assert any("attempted repository writes" in issue for issue in issues)
+
+
 def test_typed_clarification_rejects_a_different_selected_profile() -> None:
     execution = _clarification_execution(
         question="What result should the operator see?",
@@ -143,6 +179,61 @@ def test_typed_clarification_rejects_unbound_material_contradiction() -> None:
     )
 
     assert "material contradiction clarification requires at least two source-bound spans" in issues
+
+
+def _consistency_span(text: str, *, row_index: int = 1, start: int = 9) -> dict[str, object]:
+    return {
+        "span_id": f"authoring:consistency:{row_index}",
+        "section_key": "ambiguities",
+        "row_index": row_index,
+        "classification": "supporting_evidence",
+        "text": text,
+        "source_start_byte": start,
+        "source_end_byte": start + len(text.encode("utf-8")),
+        "quote_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+    }
+
+
+def test_typed_clarification_accepts_source_bound_material_ambiguity() -> None:
+    execution = _clarification_execution(
+        question="Which system should own the stated responsibility?",
+        required_fields=("product_boundary",),
+    )
+    payload = dict(execution.payload)
+    clarification = dict(payload["clarification"])
+    clarification["consistency_assessment"] = {
+        "status": "material_ambiguity",
+        "source_spans": [_consistency_span("two possible responsibility owners")],
+    }
+    payload["clarification"] = clarification
+
+    assert clarification_contract_issues(
+        replace(execution, payload=payload),
+        expected_fields=("product_boundary",),
+    ) == ()
+
+
+def test_typed_clarification_rejects_unbound_material_ambiguity() -> None:
+    execution = _clarification_execution(
+        question="Which system should own the stated responsibility?",
+        required_fields=("product_boundary",),
+    )
+    payload = dict(execution.payload)
+    clarification = dict(payload["clarification"])
+    invalid_span = _consistency_span("two possible responsibility owners")
+    invalid_span["quote_sha256"] = "0" * 64
+    clarification["consistency_assessment"] = {
+        "status": "material_ambiguity",
+        "source_spans": [invalid_span],
+    }
+    payload["clarification"] = clarification
+
+    issues = clarification_contract_issues(
+        replace(execution, payload=payload),
+        expected_fields=("product_boundary",),
+    )
+
+    assert "material ambiguity clarification requires at least one valid source-bound span" in issues
 
 
 def test_typed_clarification_requires_exact_field_ids() -> None:

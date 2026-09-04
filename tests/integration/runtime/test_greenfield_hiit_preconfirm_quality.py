@@ -85,12 +85,12 @@ def test_hiit_greenfield_create_projects_model_authored_path_and_quality_under_s
         release_workstream_ids=transaction_package["release_workstream_ids"],
     )
     assert [event["action"] for event in first_path["events"]] == [
-        "chooses",
-        "starts",
-        "drives",
-        "keeps",
-        "marks",
-        "saves",
+        "A trainee chooses a workout",
+        "starts it",
+        "the timer drives each work and rest interval with audio and on-screen cues",
+        "keeps the screen awake",
+        "marks the session complete",
+        "saves the session to history with date, workout, and total time",
     ]
     assert first_path["actor"] == "trainee"
     assert first_path["visible_result"] == "session to history with date, workout, and total time"

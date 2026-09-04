@@ -233,6 +233,11 @@
   .toolbar-repo-name {
     font-size: 16px;
     letter-spacing: 0.16em;
+    line-height: 1.3;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+    white-space: normal;
   }
   .brand-banner {
     max-width: min(100%, 236px);

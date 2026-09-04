@@ -16,6 +16,9 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
     build_project_handoff_step_contract,
 )
+from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
+    missing_source_fact_notice,
+)
 from odylith.runtime.project_intelligence.product_story_contract import (
     PRODUCT_STORY_CARD_SLOTS,
 )
@@ -121,7 +124,8 @@ def build_authored_greenfield_payload(
         "product_story": _product_story(
             title=title,
             product_story=product_story,
-            problem=_first_text(intent, "problem") or product_story,
+            problem=_first_text(intent, "problem")
+            or missing_source_fact_notice("the user problem"),
             first_path=first_path,
             proof_boundary=proof_boundary,
             visible_result=visible_result,
@@ -282,13 +286,13 @@ def _product_story(
     capabilities = authored_component_capabilities(components)
     bodies = {
         "User Problem": problem,
-        "First Path": first_path,
+        "First Path": "\n".join(event_quotes),
         "Product Boundary": authored_product_boundary(
             components=components,
             external_systems=external_systems,
             non_goals=non_goals,
         ),
-        "Owned Capabilities": "; ".join(capabilities),
+        "Owned Capabilities": "\n".join(capabilities),
         "Proof": proof_boundary,
     }
     return {
@@ -362,12 +366,12 @@ def authored_product_boundary(
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield dashboard requires an authored product boundary"
         )
-    rows = [f"Product-owned systems: {'; '.join(labels)}."]
+    rows = ["Product-owned systems:", *labels]
     if external_systems:
-        rows.append(f"External systems: {'; '.join(external_systems)}.")
+        rows.extend(("External systems:", *external_systems))
     if non_goals:
-        rows.append(f"Excluded from the first release: {'; '.join(non_goals)}.")
-    return " ".join(rows)
+        rows.extend(("Excluded from the first release:", *non_goals))
+    return "\n".join(rows)
 
 
 def _actor_body(actor: str, rows: Sequence[tuple[str, str, str]]) -> str:

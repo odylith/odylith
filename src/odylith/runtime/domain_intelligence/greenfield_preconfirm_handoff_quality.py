@@ -10,6 +10,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.common.value_coercion import normalize_string as clean_text
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
     authored_projection_relations,
@@ -26,7 +27,9 @@ from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
     project_handoff_step_contract_issues,
 )
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text, text_values
+from odylith.runtime.domain_intelligence.greenfield_scalar_values import (
+    nested_text_values as text_values,
+)
 from odylith.runtime.project_intelligence.greenfield_authored_dashboard import (
     authored_actor_rows,
     authored_component_capabilities,
@@ -131,7 +134,7 @@ def _authored_project_dashboard_contract_issues(
             external_systems=_exact_rows(intent.get("external_systems")),
             non_goals=_exact_rows(intent.get("non_goals")),
         ),
-        "owned_capabilities": "; ".join(authored_component_capabilities(components)),
+        "owned_capabilities": "\n".join(authored_component_capabilities(components)),
     }
     for slot, expected in expected_cards.items():
         if cards.get(slot) != expected:

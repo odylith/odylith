@@ -1,6 +1,6 @@
 - Bug ID: CB-328
 
-- Status: Open
+- Status: FixedPendingRelease
 
 - Created: 2026-09-03
 
@@ -69,3 +69,5 @@
 - Code References: - scripts/release/greenfield_evaluation_contract.py
 - scripts/release/greenfield_final_holdout_guard.py
 - src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py
+
+- Current-Contract Replacement Verification (2026-09-03): A fresh blind author produced final-holdout v4 package `68f8a2570f74dbd4d9b721b33da75a92365d7383ca76255db7c5eb93c0d36742` with 21 cases, balanced standard/rescue/deep profiles and bounded/moderate/high complexity, all required evidence styles, and 732 source-bound atomic annotations. Independent review accepted the corrected package with zero P0-P3 findings. Evaluation-splits v4 manifest `24c0d147fb1c86486ae0458a6d384e7f9a6d3dc600f38ff72debc580c5fe69af` then passed pure structural, leakage, slice, hash, immutable-distribution, snapshot, browser-launch, and absent-ledger preflight before the one-shot run. This closes the stale-package failure owned by CB-328. The replacement holdout ran once and disclosed separate product and evaluator failures; CB-315 and CB-323 retain the product-contract regressions, CB-303 retains end-to-end Greenfield quality, and CB-329 owns release-evaluator divergence. The consumed ledger and disclosed corpus are immutable regression evidence and cannot be reused as fresh release proof.

@@ -16,7 +16,6 @@ from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_authored_atlas_view
 from odylith.runtime.domain_intelligence import greenfield_confirmed_text
 from odylith.runtime.domain_intelligence import greenfield_deferral_predicates
-from odylith.runtime.domain_intelligence import greenfield_source_casing
 from odylith.runtime.domain_intelligence import greenfield_text
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
@@ -30,7 +29,11 @@ from tests.unit.runtime.test_greenfield_authored_lexical_isolation import (
 )
 
 
-def _authored_diagrams() -> list[dict[str, Any]]:
+def _authored_diagrams(
+    *,
+    visible_result: str = "the berth map shows the placement",
+    proof_boundary: str = "Verify the placement and retention receipt",
+) -> list[dict[str, Any]]:
     return greenfield_authored_atlas_view.build_authored_atlas_diagrams(
         title="Harbor Desk",
         diagram_slugs={
@@ -43,8 +46,8 @@ def _authored_diagrams() -> list[dict[str, Any]]:
         external_systems=("Harbor Ledger",),
         non_goals=("Do not manage vessel scheduling",),
         state_object="berth occupancy",
-        visible_result="the berth map shows the placement",
-        proof_boundary="Verify the placement and retention receipt",
+        visible_result=visible_result,
+        proof_boundary=proof_boundary,
         components=(
             {
                 "component_id": "berth-map",
@@ -166,6 +169,27 @@ def test_authored_atlas_depth_is_four_distinct_semantic_views_not_a_count_floor(
     assert "result --> proof" not in source_by_slug["harbor-desk-state"]
     assert "external1 -.-> component1" in source_by_slug["harbor-desk-boundaries"]
     assert "product -.-> non_goal1" in source_by_slug["harbor-desk-boundaries"]
+
+
+def test_state_view_links_result_to_proof_only_for_exact_source_containment() -> None:
+    contained = _authored_diagrams(
+        visible_result="exception review",
+        proof_boundary="care-plan readiness, visit evidence, and exception review",
+    )
+    separate = _authored_diagrams(
+        visible_result="exception review",
+        proof_boundary="care-plan readiness and visit evidence",
+    )
+    contained_source = next(
+        row["mermaid_source"] for row in contained if row["slug"] == "harbor-desk-state"
+    )
+    separate_source = next(
+        row["mermaid_source"] for row in separate if row["slug"] == "harbor-desk-state"
+    )
+
+    assert "result -. exact source containment .-> proof" in contained_source
+    assert "result -. exact source containment .-> proof" not in separate_source
+    assert "result --> proof" not in contained_source
 
 
 @pytest.mark.parametrize(
@@ -342,12 +366,6 @@ def test_public_authored_propose_never_calls_legacy_semantic_rule_families(
         greenfield_confirmed_text,
         "capitalize_sentence_start_preserving_source_terms",
     )
-    for source_casing_name in (
-        "proposal_source_casing_text",
-        "restore_source_casing_in_public_copy",
-        "package_with_source_casing",
-    ):
-        trap("source_casing", greenfield_source_casing, source_casing_name)
     trap("connector", greenfield_confirmed_text, "normalize_connector_sequence")
     trap("action_target", greenfield_text, "normalize_action_target_language")
 

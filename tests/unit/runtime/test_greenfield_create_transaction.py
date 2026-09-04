@@ -1698,7 +1698,12 @@ def test_compiled_write_uses_exact_precompiled_component_bytes(
     assert not hasattr(greenfield_component_commit, "component_authoring_responsibility")
     assert not hasattr(greenfield_component_commit, "component_dependency_lines")
     assert not hasattr(greenfield_component_commit, "component_risk_lines")
-    monkeypatch.setattr(greenfield_component_commit.component_authoring, "register_component", forbidden)
+    assert not hasattr(greenfield_component_commit, "component_authoring")
+    monkeypatch.setattr(
+        greenfield_component_commit.component_compiled_commit,
+        "materialize_compiled_component",
+        forbidden,
+    )
 
     result = greenfield_compiled_write.write_compiled_greenfield_package(
         root=tmp_path,

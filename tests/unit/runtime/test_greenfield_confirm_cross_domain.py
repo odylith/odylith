@@ -390,7 +390,7 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
         render_preconfirm_surfaces,
     )
     monkeypatch.setattr(
-        greenfield_component_commit.component_authoring.owned_surface_refresh,
+        greenfield_component_commit.component_compiled_commit.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )

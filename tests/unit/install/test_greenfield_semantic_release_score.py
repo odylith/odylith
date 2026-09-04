@@ -17,6 +17,7 @@ import greenfield_semantic_release_score as score_module
 from greenfield_matrix_corpus_provenance import GreenfieldCaseProvenance
 from greenfield_matrix_statistics import release_slice_contract
 from greenfield_matrix_statistics import release_slice_minimum_sample_contract
+from greenfield_matrix_statistics import release_statistical_confidence_contract
 from greenfield_matrix_types import GreenfieldArtifactCounts
 from greenfield_matrix_types import GreenfieldMatrixResult
 from greenfield_matrix_types import GreenfieldQualityVerdict
@@ -40,6 +41,15 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 
 
+TEST_CONFIDENCE = {
+    **release_statistical_confidence_contract(),
+    "atomic_semantic_fidelity": 0.2,
+    "relation_fidelity": 0.2,
+    "clarification_identity": 0.2,
+    "unnecessary_question_rate_ceiling": 0.8,
+    "overall_case_success": 0.2,
+    "worst_slice_success": 0.2,
+}
 FLOORS = {
     "atomic_semantic_fidelity": 0.2,
     "relation_fidelity": 0.2,
@@ -48,6 +58,17 @@ FLOORS = {
     "overall_case_success": 0.2,
     "worst_slice_success": 0.2,
     "release_slice_minimum_samples": release_slice_minimum_sample_contract(),
+    "statistical_confidence": TEST_CONFIDENCE,
+}
+EXACT_RELEASE_FLOORS = {
+    "atomic_semantic_fidelity": 1.0,
+    "relation_fidelity": 1.0,
+    "clarification_identity": 1.0,
+    "unnecessary_question_rate_ceiling": 0.0,
+    "overall_case_success": 1.0,
+    "worst_slice_success": 1.0,
+    "release_slice_minimum_samples": release_slice_minimum_sample_contract(),
+    "statistical_confidence": release_statistical_confidence_contract(),
 }
 FIRST_PATH = (
     "Operator submits one signed permit to Registry API and reviews the accepted permit receipt"
@@ -81,48 +102,6 @@ def test_structural_release_passes_exact_commit_and_clarification() -> None:
     assert report["metrics"]["clarification_identity"]["rate"] == 1.0
     assert report["overall_case_success"]["confidence_interval_95"]["method"] == "wilson"
     assert len(report["normalized_semantic_digests"]["commit"]) == 64
-
-
-def test_interval_bearing_floors_use_wilson_lower_bound_not_perfect_point_estimate() -> None:
-    case = _case("small-perfect", expectation="transaction_committed")
-
-    report = score_module.evaluate_semantic_release(
-        cases=(case,),
-        annotations={case.case_id: _commit_annotation()},
-        results=(_commit_result(case),),
-        floors={**FLOORS, "overall_case_success": 0.21},
-        _include_model_profiles=False,
-        _allow_not_applicable_metrics=True,
-    )
-
-    check = next(
-        row for row in report["floor_checks"]
-        if row["name"] == "overall_case_success"
-    )
-    assert report["overall_case_success"]["rate"] == 1.0
-    assert check["observed"] == 0.206549
-    assert check["status"] == "failed"
-
-
-def test_interval_bearing_ceiling_uses_wilson_upper_bound() -> None:
-    case = _case("small-zero", expectation="transaction_committed")
-
-    report = score_module.evaluate_semantic_release(
-        cases=(case,),
-        annotations={case.case_id: _commit_annotation()},
-        results=(_commit_result(case),),
-        floors={**FLOORS, "unnecessary_question_rate_ceiling": 0.79},
-        _include_model_profiles=False,
-        _allow_not_applicable_metrics=True,
-    )
-
-    check = next(
-        row for row in report["floor_checks"]
-        if row["name"] == "unnecessary_question_rate"
-    )
-    assert report["metrics"]["unnecessary_question_rate"]["rate"] == 0.0
-    assert check["observed"] == 0.793451
-    assert check["status"] == "failed"
 
 
 def test_structural_release_accepts_the_runtime_authored_atomic_schema(
@@ -512,7 +491,11 @@ def test_worst_complexity_slice_failure_cannot_hide_behind_aggregate() -> None:
         for row in report["slices"]
         if row["dimension"] == "complexity_band" and row["value"] == "moderate"
     )
-    worst_check = next(row for row in report["floor_checks"] if row["name"] == "worst_slice_success")
+    worst_check = next(
+        row
+        for row in report["acceptance_checks"]
+        if row["name"] == "worst_slice_success"
+    )
     assert report["overall_case_success"]["rate"] == 0.5
     assert moderate_slice["point_estimate"] == 0.0
     assert worst_check["status"] == "failed"
@@ -1247,8 +1230,8 @@ def _rich_relation_bundle(
     context_specs = (
         ("state_object", "/state_object", "prior state", 2),
         ("external_system", "/external_systems/0", "Registry API", 2),
-        ("external_system", "/external_systems/1", "Archive API", 0),
-        ("operational_constraint", "/operational_constraints/0", "Retain the accepted receipt", 3),
+        ("external_system", "/external_systems/1", "Archive API", 2),
+        ("operational_constraint", "/operational_constraints/0", "Retain the accepted receipt", 0),
     )
     semantic_contexts: list[dict[str, object]] = []
     expected_contexts: list[dict[str, object]] = []

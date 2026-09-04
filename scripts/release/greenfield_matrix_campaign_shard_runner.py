@@ -39,6 +39,9 @@ from greenfield_matrix_corpus_provenance import load_release_audit_file  # noqa:
 from greenfield_matrix_failure_response import write_synthetic_shard_payload  # noqa: E402
 from greenfield_final_holdout_guard import complete_final_holdout_run  # noqa: E402
 from greenfield_final_holdout_guard import read_final_holdout_run  # noqa: E402
+from greenfield_matrix_release_artifacts import retained_evidence_manifest_issues  # noqa: E402
+from greenfield_matrix_release_artifacts import seal_interrupted_retained_evidence  # noqa: E402
+from greenfield_matrix_release_artifacts import sha256_file  # noqa: E402
 
 
 @dataclass(frozen=True)
@@ -60,6 +63,7 @@ class CampaignShard:
     final_holdout_run_ledger: Path | None = None
     implementation_revision: str = ""
     distribution_provenance_file: Path | None = None
+    evidence_output_dir: Path | None = None
 
     @property
     def name(self) -> str:
@@ -464,6 +468,7 @@ def _run_shard(
         _terminalize_reaped_semantic_child(
             shard=shard,
             result_path=telemetry_dir / f"{shard.name}.interrupted.v2.json",
+            temp_parent=shard_temp_parent,
         )
         try:
             temp_parent_cleaner(shard_temp_parent)
@@ -958,6 +963,8 @@ def _matrix_command(
         command.extend(["--implementation-revision", shard.implementation_revision])
     if shard.distribution_provenance_file is not None:
         command.extend(["--distribution-provenance-file", str(shard.distribution_provenance_file)])
+    if shard.evidence_output_dir is not None:
+        command.extend(["--evidence-output-dir", str(shard.evidence_output_dir)])
     if shard.proof_tier == "discovery" and shard.required_stressors:
         command.append("--allow-partial-stressor-coverage")
     return command
@@ -1083,12 +1090,18 @@ def _is_complete_semantic_release(shards: Sequence[CampaignShard]) -> bool:
         and shard.final_holdout_run_ledger is not None
         and shard.release_input_snapshot_root is not None
         and shard.distribution_provenance_file is not None
+        and shard.evidence_output_dir is not None
         and len(revision) == 40
         and all(character in "0123456789abcdef" for character in revision)
     )
 
 
-def _terminalize_reaped_semantic_child(*, shard: CampaignShard, result_path: Path) -> bool:
+def _terminalize_reaped_semantic_child(
+    *,
+    shard: CampaignShard,
+    result_path: Path,
+    temp_parent: Path,
+) -> bool:
     """Terminalize a claimed ledger only after the shard process has been reaped."""
 
     if not _is_complete_semantic_release((shard,)) or shard.final_holdout_run_ledger is None:
@@ -1114,11 +1127,23 @@ def _terminalize_reaped_semantic_child(*, shard: CampaignShard, result_path: Pat
         + "\n",
         encoding="utf-8",
     )
-    complete_final_holdout_run(
-        ledger_path=shard.final_holdout_run_ledger,
-        result_path=path,
-        outcome="interrupted",
-    )
+    try:
+        if shard.evidence_output_dir is None:
+            raise RuntimeError("semantic release interruption has no external evidence root")
+        manifest = seal_interrupted_retained_evidence(
+            output_dir=shard.evidence_output_dir,
+            result_path=path,
+            temp_parent=temp_parent,
+            run_id=str(ledger.get("run_id") or ""),
+        )
+        complete_final_holdout_run(
+            ledger_path=shard.final_holdout_run_ledger,
+            result_path=path,
+            outcome="interrupted",
+            retained_evidence_manifest=manifest,
+        )
+    except (OSError, RuntimeError, json.JSONDecodeError, ValueError):
+        return False
     return True
 
 
@@ -1131,9 +1156,27 @@ def _semantic_holdout_lifecycle_issue(*, shard: CampaignShard, shard_passed: boo
         return "semantic release child did not persist its exclusive final-holdout ledger"
     status = str(ledger.get("status") or "")
     if status not in {"passed", "failed", "interrupted"}:
+        if status == "claimed":
+            return "semantic release child could not terminalize because retained evidence was not safely sealed"
         return "semantic release child left a non-terminal final-holdout ledger"
     if shard_passed and status != "passed":
         return f"semantic release shard passed while its final-holdout outcome was {status}"
+    retained = ledger.get("retained_evidence")
+    retained = retained if isinstance(retained, dict) else {}
+    manifest_path = Path(str(retained.get("manifest_path") or ""))
+    expected_hash = str(retained.get("manifest_sha256") or "")
+    if not manifest_path.is_file():
+        return f"semantic release child {status} without intact retained evidence"
+    retained_issues = retained_evidence_manifest_issues(
+        manifest_path,
+        require_passed_cases=status == "passed",
+    )
+    if (
+        retained_issues
+        or not _read_json(manifest_path).get("case_ids")
+        or sha256_file(manifest_path) != expected_hash
+    ):
+        return f"semantic release child {status} without intact retained evidence"
     return ""
 
 

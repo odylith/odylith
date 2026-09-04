@@ -77,7 +77,7 @@ commits the reviewed bytes; `EDIT <hash> <corrections>` rebuilds them from new e
 | Say this | What happens |
 |---|---|
 | **"Create a diagram for the checkout flow"** | Creates catalog entry and optional Mermaid source. `odylith atlas scaffold --slug checkout-flow --title "Checkout Flow" --kind flowchart` |
-| **"Update diagram D-017"** | Spawns the atlas-diagrammer subagent to edit the `.mmd` source with rendered-artifact discipline. |
+| **"Update diagram D-017"** | Updates only the supplied metadata on the existing catalog entry, then rerenders Atlas. Omitted fields stay unchanged. `odylith atlas update --diagram-id D-017 --summary "..." --code path/to/current-owner.py --watch path/to/current-owner.py` |
 | **"Render the Atlas diagrams"** | Validates the Mermaid catalog and checks diagram freshness. `odylith atlas render` |
 | **"Auto-update impacted diagrams"** | Refreshes diagrams based on change-watch metadata. `odylith atlas auto-update` |
 | **"Which diagrams are stale?"** | Reads the Atlas catalog for diagrams whose change-watch paths have been modified since last review. |

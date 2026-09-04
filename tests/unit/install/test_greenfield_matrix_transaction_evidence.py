@@ -12,6 +12,9 @@ from odylith.runtime.domain_intelligence import greenfield_create_lifecycle
 from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    product_facts_payload,
+)
 from tests.greenfield_matrix_campaign_test_support import SCRIPTS_ROOT
 
 
@@ -48,6 +51,13 @@ def test_commit_precompiled_transaction_validates_receipt_before_invoking_create
     assert execution.dry_run_receipt["transaction_hash"] == transaction_hash
     assert execution.dry_run_receipt["semantic_snapshot"]["facts"]["first_path"] == (
         "An operator records one decision and reviews the accepted receipt."
+    )
+    transaction = json.loads(_transaction_path.read_text(encoding="utf-8"))
+    assert execution.dry_run_receipt["semantic_snapshot"]["facts"] == product_facts_payload(
+        transaction["proposal"]["intent"]
+    )
+    assert execution.dry_run_receipt["semantic_snapshot"]["facts"]["title"] == (
+        "Decision Workspace"
     )
     assert execution.dry_run_receipt["semantic_snapshot"]["atomic_facts"][0]["normalized_value"] == "Operator"
     assert execution.dry_run_receipt["semantic_snapshot"]["atomic_custody_sha256"] == ATOMIC_CUSTODY_SHA256
@@ -652,6 +662,7 @@ def _write_transaction(
         "quality_manifest": {"status": "passed", "validation_status": "passed"},
         "proposal": {
             "intent": {
+                "title": "Decision Workspace",
                 "product_story": "Decision Workspace helps an operator review one governed outcome.",
                 "state_object": "A decision record tracks its evidence, status, and accepted receipt.",
                 "first_path": "An operator records one decision and reviews the accepted receipt.",

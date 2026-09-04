@@ -253,7 +253,8 @@ def _pronoun_proposal() -> dict[str, object]:
             "source_end_byte": len(first_event.encode("utf-8")),
             "event_start_byte": 0,
             "event_end_byte": len(first_event.encode("utf-8")),
-            "actor_quote": "She",
+            "actor_quote": "Registry Custodian",
+            "actor_is_carried": True,
             "actor_fact_path": "/human_actors/0",
             "actor_fact_quote": "Registry Custodian",
             "event_quote": first_event,
@@ -392,8 +393,8 @@ def test_authored_dashboard_bypasses_legacy_projection_and_preserves_exact_facts
         "Meridian Engine: Meridian Engine vitrifies the Æther packet into Ω-Receipt."
     )
     assert cards["product_boundary"] == (
-        "Product-owned systems: Meridian Engine. External systems: APIv7 Archive. "
-        "Excluded from the first release: Batch Æther migration."
+        "Product-owned systems:\nMeridian Engine\nExternal systems:\nAPIv7 Archive\n"
+        "Excluded from the first release:\nBatch Æther migration"
     )
     assert payload["risk_items"] == []
     assert payload["risk_classes"] == []
@@ -486,7 +487,67 @@ def test_authored_dashboard_validates_contracts_independently_of_visible_prompt_
     assert "model-authored Project handoff step 2 drifted from intent.title" in issues
 
 
-def test_authored_dashboard_uses_canonical_actor_fact_for_pronoun_events(
+def test_authored_dashboard_checks_exact_capability_view_value_without_punctuation_repair(
+    tmp_path: Path,
+) -> None:
+    proposal = _proposal()
+    payload = preview_project_dashboard_payload(
+        root=tmp_path,
+        proposal=proposal,
+        accepted_project_preview=_accepted_preview(),
+        source_launch_context={
+            "start_workstream_id": "B-701",
+            "verification_commands": ["verify-Ω --APIv7"],
+        },
+    )
+
+    capability_card = next(
+        row
+        for row in payload["product_story"]["release_contract"]
+        if row["semantic_slot"] == "owned_capabilities"
+    )
+    assert capability_card["body"] == (
+        "Meridian Engine: Meridian Engine vitrifies the Æther packet into Ω-Receipt."
+    )
+
+    capability_card["body"] = capability_card["body"].replace(":", ";", 1)
+    issues = project_dashboard_preview_issues(
+        _completion_package(proposal=proposal, dashboard=payload),
+        payload,
+        model_authored=True,
+    )
+
+    assert "model-authored Project dashboard drifted from typed owned_capabilities" in issues
+
+
+def test_authored_dashboard_keeps_missing_problem_visible_instead_of_reusing_story(
+    tmp_path: Path,
+) -> None:
+    proposal = _proposal()
+    intent = deepcopy(proposal["intent"])
+    assert isinstance(intent, dict)
+    intent["problem"] = ""
+    proposal["intent"] = intent
+
+    payload = preview_project_dashboard_payload(
+        root=tmp_path,
+        proposal=proposal,
+        accepted_project_preview=_accepted_preview(),
+        source_launch_context={},
+    )
+    cards = {
+        row["semantic_slot"]: row["body"]
+        for row in payload["product_story"]["release_contract"]
+    }
+
+    assert cards["user_problem"] == (
+        "The source does not state the user problem. "
+        "Validate this gap before implementation."
+    )
+    assert cards["user_problem"] != PRODUCT_STORY
+
+
+def test_authored_dashboard_uses_canonical_actor_fact_for_aliased_events(
     tmp_path: Path,
 ) -> None:
     proposal = _pronoun_proposal()
@@ -622,7 +683,7 @@ def test_authored_dashboard_projects_title_owned_capability_without_empty_cards(
     }
 
     assert cards["owned_capabilities"] == "Harbor Desk: the placement"
-    assert cards["product_boundary"] == "Product-owned systems: Harbor Desk."
+    assert cards["product_boundary"] == "Product-owned systems:\nHarbor Desk"
     assert all(cards.values())
 
 

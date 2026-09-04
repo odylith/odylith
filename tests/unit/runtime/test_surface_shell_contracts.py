@@ -72,6 +72,25 @@ def test_shell_index_declares_all_surface_tabs_and_frames() -> None:
 
 
 @pytest.mark.parametrize(
+    "path",
+    (
+        "src/odylith/runtime/surfaces/templates/tooling_dashboard/style.css",
+        "odylith/index.html",
+        "src/odylith/bundle/assets/odylith/index.html",
+    ),
+)
+def test_tooling_shell_mobile_repository_name_wraps_without_truncation(path: str) -> None:
+    stylesheet = _read(path)
+    mobile_rules = stylesheet.split("@media (max-width: 900px)", 1)[1]
+    repo_name_rule = mobile_rules.split(".toolbar-repo-name {", 1)[1].split("}", 1)[0]
+
+    assert "overflow: visible;" in repo_name_rule
+    assert "overflow-wrap: anywhere;" in repo_name_rule
+    assert "text-overflow: clip;" in repo_name_rule
+    assert "white-space: normal;" in repo_name_rule
+
+
+@pytest.mark.parametrize(
     ("path", "tab", "frame_id", "payload_id", "payload_src", "app_src", "query_targets"),
     (
         (

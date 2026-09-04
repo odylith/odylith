@@ -44,6 +44,12 @@ QUALITY_SCORE_DIMENSIONS = (
     "engineer",
     "domain_expert",
 )
+INDEPENDENT_SEMANTIC_LENS_DIMENSIONS = (
+    "product_manager",
+    "architect",
+    "engineer",
+    "domain_expert",
+)
 
 
 def build_quality_verdict(
@@ -103,9 +109,7 @@ def build_quality_verdict(
         manifest=manifest,
         create_returncode=create_returncode,
     )
-    for lens, passed in lenses.items():
-        if not passed:
-            issues.append(f"{lens} release-matrix lens failed")
+    issues.extend(_quality_lens_issues(manifest_lenses=manifest_lenses, lenses=lenses))
     scores = _quality_scores(
         manifest=manifest,
         counts=counts,
@@ -121,7 +125,7 @@ def build_quality_verdict(
         browser_surface_issues=browser_surface_issues,
         confirmation_ux_issues=confirmation_ux_issues,
     )
-    unscored_dimensions = _unscored_dimensions(scores)
+    unscored_dimensions = _automated_unscored_dimensions(scores)
     if unscored_dimensions:
         issues.append(
             "release-quality evidence is unproven for unscored dimension(s): "
@@ -137,7 +141,7 @@ def build_quality_verdict(
         external_issues=external_issues,
     )
     return GreenfieldQualityVerdict(
-        passed=not unique_issues and all(lenses.values()) and final_score == 10,
+        passed=not unique_issues and final_score == 10,
         issues=unique_issues,
         lenses=lenses,
         scores=scores,
@@ -302,24 +306,23 @@ def _quality_lenses(
     create_returncode: int,
 ) -> dict[str, bool]:
     del counts
-    structural_validation = _typed_structural_validation_passed(manifest)
     return {
         "product_manager": (
-            (_lens_passed(manifest_lenses, "product_manager") or structural_validation)
+            _lens_passed(manifest_lenses, "product_manager")
             and not evidence_blocks_dimension(evidence_findings, "product_manager")
         ),
         "architect": (
-            (_lens_passed(manifest_lenses, "architect") or structural_validation)
+            _lens_passed(manifest_lenses, "architect")
             and not evidence_blocks_dimension(evidence_findings, "architect")
         ),
         "engineer": (
-            (_lens_passed(manifest_lenses, "engineer") or structural_validation)
+            _lens_passed(manifest_lenses, "engineer")
             and not evidence_blocks_dimension(evidence_findings, "engineer")
             and create_returncode == 0
             and write_committed(manifest)
         ),
         "domain_expert": (
-            (_lens_passed(manifest_lenses, "domain_expert") or structural_validation)
+            _lens_passed(manifest_lenses, "domain_expert")
             and not evidence_blocks_dimension(evidence_findings, "domain_expert")
         ),
     }
@@ -393,10 +396,14 @@ def _quality_scores(
             create_returncode=create_returncode,
             confirmation_ux_issues=confirmation_ux_issues,
         ),
-        "product_manager": 10 if lenses.get("product_manager") else 0,
-        "architect": 10 if lenses.get("architect") else 0,
-        "engineer": 10 if lenses.get("engineer") else 0,
-        "domain_expert": 10 if lenses.get("domain_expert") else 0,
+        **{
+            lens: _independent_lens_score(
+                manifest_lenses=_manifest_lenses(manifest),
+                lens=lens,
+                passed=bool(lenses.get(lens)),
+            )
+            for lens in INDEPENDENT_SEMANTIC_LENS_DIMENSIONS
+        },
     }
 
 
@@ -507,7 +514,7 @@ def _final_quality_score(
 ) -> int:
     if create_returncode != 0 or not write_committed(manifest) or any(str(issue).strip() for issue in external_issues):
         return 0
-    if _unscored_dimensions(scores):
+    if _automated_unscored_dimensions(scores):
         return 0
     scored_dimensions = [
         int(scores.get(dimension, 0))
@@ -526,6 +533,8 @@ def _final_quality_score(
 
 def _score_basis(scores: Mapping[str, int]) -> str:
     unscored_dimensions = _unscored_dimensions(scores)
+    if any(dimension in unscored_dimensions for dimension in INDEPENDENT_SEMANTIC_LENS_DIMENSIONS):
+        return "automated_contract_independent_semantic_review_required"
     if unscored_dimensions == ("browser_surface_proof",):
         return "volume_discovery_without_browser_surface_proof"
     if unscored_dimensions:
@@ -556,16 +565,28 @@ def _score_explanation(
         explanations.append(f"Project implementation prompt findings cap release score at 4; findings={len(tuple(prompt_issues))}")
     if _manifest_issues(manifest):
         explanations.append("manifest or transaction issues cap release score at 4")
-    unscored_dimensions = _unscored_dimensions(scores)
-    if unscored_dimensions:
+    automated_unscored_dimensions = _automated_unscored_dimensions(scores)
+    if automated_unscored_dimensions:
         explanations.append(
             "release-quality score is unproven because positive evidence is missing for: "
-            + ", ".join(unscored_dimensions)
+            + ", ".join(automated_unscored_dimensions)
         )
+        return tuple(explanations)
+    independent_unscored_dimensions = tuple(
+        dimension
+        for dimension in INDEPENDENT_SEMANTIC_LENS_DIMENSIONS
+        if int(scores.get(dimension, UNSCORED_QUALITY_SCORE)) < 0
+    )
+    if independent_unscored_dimensions:
+        explanations.append(
+            "automated contract passed; independent semantic review remains required for: "
+            + ", ".join(independent_unscored_dimensions)
+        )
+        explanations.extend(_passing_score_evidence(counts, prompt_issues, lenses))
         return tuple(explanations)
     scored_values = [int(value) for value in scores.values() if int(value) >= 0]
     if score == 10 and scored_values and all(value == 10 for value in scored_values):
-        explanations.append("all brutal release-quality dimensions scored 10")
+        explanations.append("all automated and independently evidenced dimensions scored 10")
         explanations.extend(_passing_score_evidence(counts, prompt_issues, lenses))
         return tuple(explanations)
     weakest = [dimension for dimension, value in scores.items() if int(value) == score]
@@ -582,13 +603,51 @@ def _unscored_dimensions(scores: Mapping[str, int]) -> tuple[str, ...]:
     )
 
 
+def _automated_unscored_dimensions(scores: Mapping[str, int]) -> tuple[str, ...]:
+    """Return gaps owned by the automated per-case contract."""
+
+    return tuple(
+        dimension
+        for dimension in _unscored_dimensions(scores)
+        if dimension not in INDEPENDENT_SEMANTIC_LENS_DIMENSIONS
+    )
+
+
+def _lens_evidence_claimed(lenses: Mapping[str, Any], name: str) -> bool:
+    status = str(mapping_copy(lenses.get(name)).get("status", "")).strip().casefold()
+    return status not in {"", "not_applicable", "unproven"}
+
+
+def _independent_lens_score(
+    *,
+    manifest_lenses: Mapping[str, Any],
+    lens: str,
+    passed: bool,
+) -> int:
+    if not _lens_evidence_claimed(manifest_lenses, lens):
+        return UNSCORED_QUALITY_SCORE
+    return 10 if passed else 0
+
+
+def _quality_lens_issues(
+    *,
+    manifest_lenses: Mapping[str, Any],
+    lenses: Mapping[str, bool],
+) -> tuple[str, ...]:
+    return tuple(
+        f"{lens} release-matrix lens failed"
+        for lens, passed in lenses.items()
+        if _lens_evidence_claimed(manifest_lenses, lens) and not passed
+    )
+
+
 def _passing_score_evidence(
     counts: GreenfieldArtifactCounts,
     prompt_issues: Sequence[str],
     lenses: Mapping[str, bool],
 ) -> tuple[str, ...]:
     passed_lenses = ", ".join(name for name, passed in lenses.items() if passed)
-    return (
+    evidence = [
         "completion evidence: "
         f"{counts.radar_workstreams} Radar workstreams, "
         f"{counts.registry_component_specs} Registry specs, "
@@ -603,8 +662,10 @@ def _passing_score_evidence(
         f"{counts.trace_workstreams} trace workstreams, "
         f"{counts.project_implementation_prompts} Project implementation prompts, "
         f"{len(tuple(prompt_issues))} prompt findings",
-        f"expert-lens evidence: {passed_lenses} passed",
-    )
+    ]
+    if passed_lenses:
+        evidence.append(f"expert-lens evidence: {passed_lenses} passed")
+    return tuple(evidence)
 
 
 def _manifest_issues(

@@ -21,6 +21,8 @@ from greenfield_matrix_statistics import release_slice_coverage_issues
 from greenfield_matrix_statistics import release_slice_evidence
 from greenfield_matrix_statistics import release_slice_minimum_sample_contract
 from greenfield_matrix_statistics import release_slice_minimum_sample_contract_issues
+from greenfield_matrix_statistics import release_statistical_confidence_contract_issues
+from greenfield_matrix_statistics import threshold_check
 from greenfield_matrix_statistics import wilson_interval
 from greenfield_matrix_types import GreenfieldMatrixResult
 from greenfield_relation_fidelity import RELATION_FAMILIES
@@ -28,7 +30,7 @@ from greenfield_relation_fidelity import annotation_relation_evidence
 from greenfield_relation_fidelity import snapshot_relation_evidence
 
 
-SEMANTIC_RELEASE_SCORE_VERSION = "odylith.greenfield.semantic-release-score.v5"
+SEMANTIC_RELEASE_SCORE_VERSION = "odylith.greenfield.semantic-release-score.v6"
 NORMALIZED_SEMANTIC_DIGEST_VERSION = "odylith.greenfield.normalized-semantics.v1"
 _SCORED_ROLE = "scored"
 _REFERENCE_ROLE = "reference_only"
@@ -98,6 +100,16 @@ def evaluate_semantic_release(
     worst_slice = min(
         slices,
         key=lambda row: (
+            float(row["point_estimate"]),
+            float(row["confidence_interval_95"]["lower"]),
+            str(row["dimension"]),
+            str(row["value"]),
+        ),
+        default={},
+    )
+    least_confident_slice = min(
+        slices,
+        key=lambda row: (
             float(row["confidence_interval_95"]["lower"]),
             float(row["point_estimate"]),
             str(row["dimension"]),
@@ -109,6 +121,16 @@ def evaluate_semantic_release(
     worst_relation_slice = min(
         relation_slices,
         key=lambda row: (
+            float(row["point_estimate"]),
+            float(row["confidence_interval_95"]["lower"]),
+            str(row["dimension"]),
+            str(row["value"]),
+        ),
+        default={},
+    )
+    least_confident_relation_slice = min(
+        relation_slices,
+        key=lambda row: (
             float(row["confidence_interval_95"]["lower"]),
             float(row["point_estimate"]),
             str(row["dimension"]),
@@ -116,7 +138,8 @@ def evaluate_semantic_release(
         ),
         default={},
     )
-    checks = _floor_checks(
+    relation_family_metrics = _relation_family_metrics(case_outcomes)
+    acceptance_checks = _acceptance_checks(
         floors=floors,
         metrics=metrics,
         overall=overall,
@@ -126,12 +149,27 @@ def evaluate_semantic_release(
         p1_findings=p1_findings,
         allow_not_applicable_metrics=_allow_not_applicable_metrics,
     )
+    confidence_contract = _mapping(floors.get("statistical_confidence"))
+    confidence_contract_issues = release_statistical_confidence_contract_issues(
+        confidence_contract,
+        minimum_samples=_mapping(floors.get("release_slice_minimum_samples")),
+    )
+    confidence_checks = _confidence_checks(
+        confidence=confidence_contract,
+        metrics=metrics,
+        relation_family_metrics=relation_family_metrics,
+        overall=overall,
+        least_confident_slice=least_confident_slice,
+        least_confident_relation_slice=least_confident_relation_slice,
+        allow_not_applicable_metrics=_allow_not_applicable_metrics,
+    )
     issues = [
         str(check["issue"])
-        for check in checks
+        for check in (*acceptance_checks, *confidence_checks)
         if check["status"] in {"failed", "unproven"}
         and str(check.get("issue") or "").strip()
     ]
+    issues.extend(confidence_contract_issues)
     if missing_case_ids:
         issues.append("semantic release results are incomplete")
     if set(annotations) != set(case_ids):
@@ -206,17 +244,22 @@ def evaluate_semantic_release(
         "duplicate_result_ids": duplicate_result_ids,
         "metrics": metrics,
         "relation_sample_count": int(relation_metric["sample_count"]),
-        "relation_fidelity_by_family": _relation_family_metrics(case_outcomes),
+        "relation_fidelity_by_family": relation_family_metrics,
         "relation_slices": relation_slices,
         "worst_relation_slice": worst_relation_slice,
+        "least_confident_relation_slice": least_confident_relation_slice,
         "overall_case_success": overall,
         "worst_slice": worst_slice,
+        "least_confident_slice": least_confident_slice,
         "slices": slices,
         "p0_count": len(p0_findings),
         "p0_findings": p0_findings,
         "p1_count": len(p1_findings),
         "p1_findings": p1_findings,
-        "floor_checks": checks,
+        "acceptance_checks": acceptance_checks,
+        "confidence_contract": confidence_contract,
+        "confidence_contract_issues": confidence_contract_issues,
+        "confidence_checks": confidence_checks,
         "issues": list(dict.fromkeys(issues)),
         "release_required_slices": required_slices,
         "release_minimum_samples": (
@@ -569,7 +612,7 @@ def _links_key(value: Any) -> str:
     return json.dumps(rows, sort_keys=True, separators=(",", ":"))
 
 
-def _floor_checks(
+def _acceptance_checks(
     *,
     floors: Mapping[str, Any],
     metrics: Mapping[str, Mapping[str, Any]],
@@ -590,7 +633,7 @@ def _floor_checks(
     ]
     for name in ("atomic_semantic_fidelity", "relation_fidelity", "clarification_identity"):
         checks.append(
-            _metric_floor_check(
+            _acceptance_metric_floor_check(
                 name,
                 metrics[name],
                 floors.get(name),
@@ -600,7 +643,7 @@ def _floor_checks(
             )
         )
     checks.append(
-        _metric_ceiling_check(
+        _acceptance_metric_ceiling_check(
             "unnecessary_question_rate",
             metrics["unnecessary_question_rate"],
             floors.get("unnecessary_question_rate_ceiling"),
@@ -608,17 +651,17 @@ def _floor_checks(
         )
     )
     checks.append(
-        _metric_floor_check(
+        _acceptance_metric_floor_check(
             "overall_case_success",
             overall,
             floors.get("overall_case_success"),
         )
     )
     checks.append(
-        _check_threshold(
+        threshold_check(
             "worst_slice_success",
             observed=(
-                _mapping(worst_slice.get("confidence_interval_95")).get("lower")
+                worst_slice.get("point_estimate")
                 if worst_slice
                 else None
             ),
@@ -627,10 +670,10 @@ def _floor_checks(
         )
     )
     checks.append(
-        _check_threshold(
+        threshold_check(
             "worst_relation_slice_fidelity",
             observed=(
-                _mapping(worst_relation_slice.get("confidence_interval_95")).get("lower")
+                worst_relation_slice.get("point_estimate")
                 if worst_relation_slice
                 else None
             ),
@@ -638,6 +681,79 @@ def _floor_checks(
             direction="floor",
         )
     )
+    return checks
+
+
+def _confidence_checks(
+    *,
+    confidence: Mapping[str, Any],
+    metrics: Mapping[str, Mapping[str, Any]],
+    relation_family_metrics: Mapping[str, Mapping[str, Any]],
+    overall: Mapping[str, Any],
+    least_confident_slice: Mapping[str, Any],
+    least_confident_relation_slice: Mapping[str, Any],
+    allow_not_applicable_metrics: bool,
+) -> list[dict[str, Any]]:
+    checks: list[dict[str, Any]] = []
+    for name in ("atomic_semantic_fidelity", "relation_fidelity", "clarification_identity"):
+        checks.append(
+            _confidence_metric_floor_check(
+                name,
+                metrics[name],
+                confidence.get(name),
+                allow_not_applicable=(
+                    allow_not_applicable_metrics and name != "relation_fidelity"
+                ),
+            )
+        )
+    checks.append(
+        _confidence_metric_ceiling_check(
+            "unnecessary_question_rate",
+            metrics["unnecessary_question_rate"],
+            confidence.get("unnecessary_question_rate_ceiling"),
+            allow_not_applicable=allow_not_applicable_metrics,
+        )
+    )
+    checks.append(
+        _confidence_metric_floor_check(
+            "overall_case_success",
+            overall,
+            confidence.get("overall_case_success"),
+        )
+    )
+    checks.append(
+        threshold_check(
+            "worst_slice_success",
+            observed=(
+                _mapping(least_confident_slice.get("confidence_interval_95")).get("lower")
+                if least_confident_slice
+                else None
+            ),
+            expected=confidence.get("worst_slice_success"),
+            direction="floor",
+        )
+    )
+    checks.append(
+        threshold_check(
+            "worst_relation_slice_fidelity",
+            observed=(
+                _mapping(least_confident_relation_slice.get("confidence_interval_95")).get("lower")
+                if least_confident_relation_slice
+                else None
+            ),
+            expected=confidence.get("relation_fidelity"),
+            direction="floor",
+        )
+    )
+    for family, metric in sorted(relation_family_metrics.items()):
+        checks.append(
+            _confidence_metric_floor_check(
+                f"relation_fidelity:{family}",
+                metric,
+                confidence.get("relation_fidelity"),
+                allow_not_applicable=True,
+            )
+        )
     return checks
 
 
@@ -682,18 +798,53 @@ def _model_profile_reports(
                 "metrics": report["metrics"],
                 "overall_case_success": report["overall_case_success"],
                 "worst_slice": report["worst_slice"],
+                "least_confident_slice": report["least_confident_slice"],
                 "worst_relation_slice": report["worst_relation_slice"],
+                "least_confident_relation_slice": report[
+                    "least_confident_relation_slice"
+                ],
                 "relation_slices": report["relation_slices"],
                 "p0_count": report["p0_count"],
                 "p1_count": report["p1_count"],
-                "floor_checks": report["floor_checks"],
+                "acceptance_checks": report["acceptance_checks"],
+                "confidence_contract": report["confidence_contract"],
+                "confidence_contract_issues": report[
+                    "confidence_contract_issues"
+                ],
+                "confidence_checks": report["confidence_checks"],
                 "issues": report["issues"],
             }
         )
     return reports
 
 
-def _metric_floor_check(
+def _acceptance_metric_floor_check(
+    name: str,
+    metric: Mapping[str, Any],
+    expected: Any,
+    *,
+    allow_not_applicable: bool = False,
+) -> dict[str, Any]:
+    if allow_not_applicable and metric.get("status") == "not_applicable":
+        return _not_applicable_check(name, expected)
+    observed = metric.get("rate") if metric.get("status") == "measured" else None
+    return threshold_check(name, observed=observed, expected=expected, direction="floor")
+
+
+def _acceptance_metric_ceiling_check(
+    name: str,
+    metric: Mapping[str, Any],
+    expected: Any,
+    *,
+    allow_not_applicable: bool = False,
+) -> dict[str, Any]:
+    if allow_not_applicable and metric.get("status") == "not_applicable":
+        return _not_applicable_check(name, expected)
+    observed = metric.get("rate") if metric.get("status") == "measured" else None
+    return threshold_check(name, observed=observed, expected=expected, direction="ceiling")
+
+
+def _confidence_metric_floor_check(
     name: str,
     metric: Mapping[str, Any],
     expected: Any,
@@ -707,10 +858,10 @@ def _metric_floor_check(
         if metric.get("status") == "measured"
         else None
     )
-    return _check_threshold(name, observed=observed, expected=expected, direction="floor")
+    return threshold_check(name, observed=observed, expected=expected, direction="floor")
 
 
-def _metric_ceiling_check(
+def _confidence_metric_ceiling_check(
     name: str,
     metric: Mapping[str, Any],
     expected: Any,
@@ -724,35 +875,7 @@ def _metric_ceiling_check(
         if metric.get("status") == "measured"
         else None
     )
-    return _check_threshold(name, observed=observed, expected=expected, direction="ceiling")
-
-
-def _check_threshold(name: str, *, observed: Any, expected: Any, direction: str) -> dict[str, Any]:
-    if not isinstance(expected, (int, float)) or isinstance(expected, bool):
-        return {
-            "name": name,
-            "status": "unproven",
-            "observed": observed,
-            "expected": expected,
-            "issue": f"{name} has no frozen threshold",
-        }
-    if not isinstance(observed, (int, float)) or isinstance(observed, bool):
-        return {
-            "name": name,
-            "status": "unproven",
-            "observed": observed,
-            "expected": expected,
-            "issue": f"{name} is unproven (0 of 0 is not a pass)",
-        }
-    passed = observed >= expected if direction == "floor" else observed <= expected
-    symbol = ">=" if direction == "floor" else "<="
-    return {
-        "name": name,
-        "status": "passed" if passed else "failed",
-        "observed": observed,
-        "expected": expected,
-        "issue": "" if passed else f"{name} {observed:.6f} does not satisfy {symbol} {expected:.6f}",
-    }
+    return threshold_check(name, observed=observed, expected=expected, direction="ceiling")
 
 
 def _not_applicable_check(name: str, expected: Any) -> dict[str, Any]:

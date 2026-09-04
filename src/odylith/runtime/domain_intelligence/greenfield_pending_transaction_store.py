@@ -18,6 +18,8 @@ if TYPE_CHECKING:
 
 
 PENDING_TRANSACTION_FILENAME = "product-create-transaction.v1.json"
+GREENFIELD_RUNTIME_ROOT = ".odylith/runtime/greenfield"
+GREENFIELD_PENDING_TRANSACTION_ROOT = f"{GREENFIELD_RUNTIME_ROOT}/pending"
 _DIGEST = re.compile(r"[0-9a-f]{64}")
 
 
@@ -25,7 +27,7 @@ def pending_transaction_directory(repo_root: Path, transaction_hash: str) -> Pat
     digest = _require_digest(transaction_hash)
     return (
         Path(repo_root).expanduser().resolve()
-        / ".odylith/runtime/greenfield/pending"
+        / GREENFIELD_PENDING_TRANSACTION_ROOT
         / digest
     )
 
@@ -112,6 +114,8 @@ def _require_digest(value: object) -> str:
 
 
 __all__ = [
+    "GREENFIELD_PENDING_TRANSACTION_ROOT",
+    "GREENFIELD_RUNTIME_ROOT",
     "PENDING_TRANSACTION_FILENAME",
     "discard_pending_transaction",
     "pending_transaction_directory",

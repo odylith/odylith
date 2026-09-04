@@ -374,7 +374,7 @@ def test_boundary_free_authored_project_keeps_one_complete_row_and_three_views(
     assert "/first_path" in semantics["fact_refs"]
     assert "Berth requests are hard to review." in project["problem"]
     assert "Dock attendants receive a reviewable berth receipt." in project["radar_sections"]["Scope"]
-    assert proposal["intent"]["first_path"] in project["product_view"]
+    assert "Harbor Desk records one berth request and shows its receipt." in project["product_view"]
     assert any("signed berth receipt" in metric for metric in project["success_metrics"])
     _assert_owned_rendering(proposal)
     assert all(
@@ -614,13 +614,44 @@ def test_direct_evidence_graph_material_facts_compile_complete_project_and_workf
             "Supervisor releases the batch",
         )
     )
-    assert product_story in project["problem"]
+    assert project["problem"] == (
+        "The source does not state the user problem. "
+        "Validate this gap before implementation."
+    )
     assert project["customer"] == "Donor"
-    assert product_story in project["opportunity"]
-    assert project["recommended_first_slice"] in project["product_view"]
+    assert project["opportunity"] == (
+        "The source does not state an opportunity. "
+        "Validate this gap before implementation."
+    )
+    assert project["product_view"] == (
+        "The source does not state a distinct product view. "
+        "Validate this gap before implementation."
+    )
+    assert project["authored_workstream_semantics"]["evidence_gaps"] == [
+        "problem",
+        "opportunity",
+        "product_view",
+    ]
+    assert not project["authored_workstream_semantics"]["rendered_field_refs"][
+        "problem"
+    ]
+    brief_sections = {
+        section["section"]: section["must_capture"]
+        for section in proposal["project_brief"]["blueprint_sections"]
+    }
+    assert brief_sections["User problem"] == (
+        "The source does not state the user problem. "
+        "Validate this gap before implementation."
+    )
     assert project["success_metrics"] == [proof_boundary]
     assert workflow["customer"] == "Donor"
-    assert product_story in workflow["opportunity"]
+    assert workflow["opportunity"] == (
+        "The source does not state a workflow-specific opportunity. "
+        "Validate this gap before implementation."
+    )
+    assert workflow["authored_workstream_semantics"]["evidence_gaps"] == [
+        "opportunity"
+    ]
     assert backlog["boundary"]["customer"] == "Donor"
     assert backlog["proof"]["customer"] == "Donor"
     project_semantics = project["authored_workstream_semantics"]

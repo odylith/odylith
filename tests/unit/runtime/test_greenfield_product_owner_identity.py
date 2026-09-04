@@ -108,7 +108,7 @@ def test_two_indistinguishable_internal_system_paths_fail_closed() -> None:
         evidence_text=source,
         component_responsibility_owners=["Berth map"],
     )
-    response["facts"]["internal_systems"][1]["occurrence"] = 2  # type: ignore[index]
+    response["result"]["facts"]["internal_systems"][1]["occurrence"] = 2  # type: ignore[index]
 
     with pytest.raises(
         GreenfieldModelAuthoringError,

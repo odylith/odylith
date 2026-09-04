@@ -140,6 +140,7 @@ _ATLAS_COMMAND_MODULES = {
     "render": "odylith.runtime.surfaces.render_mermaid_catalog",
     "auto-update": "odylith.runtime.surfaces.auto_update_mermaid_diagrams",
     "scaffold": "odylith.runtime.surfaces.scaffold_mermaid_diagram",
+    "update": "odylith.runtime.surfaces.update_mermaid_diagram",
     "install-autosync-hook": "odylith.runtime.surfaces.install_mermaid_autosync_hook",
 }
 _CLAUDE_HOST_COMMAND_MODULES = {
@@ -2828,6 +2829,16 @@ def _cmd_atlas_scaffold(args: argparse.Namespace) -> int:
     )
 
 
+def _cmd_atlas_update(args: argparse.Namespace) -> int:
+    blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
+    if blocked:
+        return blocked
+    return _run_module_main(
+        _ATLAS_COMMAND_MODULES["update"],
+        ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded),
+    )
+
+
 def _cmd_atlas_install_autosync_hook(args: argparse.Namespace) -> int:
     blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
     if blocked:
@@ -3559,6 +3570,12 @@ def build_parser() -> argparse.ArgumentParser:
     atlas_scaffold = atlas_subparsers.add_parser("scaffold", help="Scaffold one Atlas diagram metadata entry and source.")
     atlas_scaffold.add_argument("--repo-root", default=".", help="Consumer repository root.")
     atlas_scaffold.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+    atlas_update = atlas_subparsers.add_parser(
+        "update",
+        help="Update one existing Atlas diagram catalog entry.",
+    )
+    atlas_update.add_argument("--repo-root", default=".", help="Consumer repository root.")
+    atlas_update.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
     atlas_hook = atlas_subparsers.add_parser(
         "install-autosync-hook",
         help="Install the optional Atlas auto-sync pre-commit hook.",
@@ -3938,7 +3955,11 @@ def _dispatch_main(argv: list[str] | None = None) -> int:
                     codex_command=tokens[1],
                 )
             )
-        if tokens[0] == "atlas" and len(tokens) >= 2 and tokens[1] in {"refresh", "render", "auto-update", "scaffold", "install-autosync-hook"}:
+        if (
+            tokens[0] == "atlas"
+            and len(tokens) >= 2
+            and (tokens[1] == "refresh" or tokens[1] in _ATLAS_COMMAND_MODULES)
+        ):
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             atlas_command = tokens[1]
             if atlas_command == "refresh":
@@ -3966,6 +3987,8 @@ def _dispatch_main(argv: list[str] | None = None) -> int:
                 return _cmd_atlas_auto_update(argparse.Namespace(repo_root=repo_root, forwarded=forwarded))
             if atlas_command == "scaffold":
                 return _cmd_atlas_scaffold(argparse.Namespace(repo_root=repo_root, forwarded=forwarded))
+            if atlas_command == "update":
+                return _cmd_atlas_update(argparse.Namespace(repo_root=repo_root, forwarded=forwarded))
             return _cmd_atlas_install_autosync_hook(argparse.Namespace(repo_root=repo_root, forwarded=forwarded))
 
     parser = build_parser()
@@ -4080,6 +4103,8 @@ def _dispatch_main(argv: list[str] | None = None) -> int:
         return _cmd_atlas_auto_update(args)
     if args.command == "atlas" and args.atlas_command == "scaffold":
         return _cmd_atlas_scaffold(args)
+    if args.command == "atlas" and args.atlas_command == "update":
+        return _cmd_atlas_update(args)
     if args.command == "atlas" and args.atlas_command == "install-autosync-hook":
         return _cmd_atlas_install_autosync_hook(args)
     if args.command == "claude" and args.claude_command in _CLAUDE_HOST_COMMAND_MODULES:

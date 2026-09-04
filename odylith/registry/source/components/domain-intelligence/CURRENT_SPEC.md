@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-09-02
+Last updated: 2026-09-03
 
 
 ## Overview
@@ -30,6 +30,15 @@ or prose repair runs after confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-03 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_intent_fact_values.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `tests/unit/runtime/test_greenfield_model_path_custody.py`
+- **2026-09-03 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`
+- **2026-09-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/casebook/bugs/2026-09-02-greenfield-recovery-proof-bound-compiler-identity-to-absolute-install-path.md`, `odylith/casebook/bugs/2026-09-03-greenfield-flat-fact-arrays-permit-invalid-singular-cardinality.md`, `odylith/casebook/bugs/2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md`, plus 2 more
@@ -39,18 +48,22 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_semantics.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `tests/unit/runtime/test_greenfield_model_intent_authoring.py`
-- **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-09-03-greenfield-flat-fact-arrays-permit-invalid-singular-cardinality.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`, `tests/unit/runtime/greenfield_model_authoring_fixtures.py`, `tests/unit/runtime/test_greenfield_model_intent_authoring.py`
-- **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py`, `src/odylith/runtime/domain_intelligence/greenfield_create_contract.py`, `src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py`, `tests/unit/runtime/test_greenfield_transaction_provenance.py`
-- **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_authored_semantics.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`, `tests/unit/runtime/test_greenfield_model_intent_authoring.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-09-03: Replaced event-only target containment with one source-bound typed target contract. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  A target remains optional and model-selected, but it is accepted only when it
+  is an exact event substring or an exact selected fact co-contained with the
+  event by another selected fact. Direct compilation, sealed validation,
+  atomic custody, and release scoring reuse the same deterministic predicate.
+  This preserves Registry component `event_targets` and proposal/Tribunal
+  `target_entity` meaning without parsing prose or adding regex, phrase rules,
+  retries, repairs, or a second model call. The exact retained Pediatric v22
+  failure now compiles, negative controls remain fail-closed, a fresh rescue
+  proposal stages in `45.56s`, and focused/runtime/install proof passes
+  `96/96`, `638/638`, and `509/509`. Immutable public `14/14` proof remains
+  required before this v23 candidate can be called a winner.
 
 - 2026-09-03: Proved the direct-evidence mechanism across the immutable public operating envelope. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-303`, `CB-325`, `CB-326`, `CB-327`; Diagram: D-043)
   Clean dist-v14 from candidate
@@ -3303,52 +3316,30 @@ This section captures synchronized requirement and contract signals derived from
   installed matrix, lifecycle/recovery/host-parity, browser-state, and untouched
   one-shot holdout proof remain required.
 
-- Greenfield direct-evidence graph contract: one pre-confirm structured model
-  call owns selected source facts, ordered typed actor/action events, the exact
-  terminal result, and component ownership. Domain Intelligence adds only
-  deterministic byte custody, immediate actor-carry validation, exact-overlap
-  context and responsibility links, and sealed atomic claims; it does not infer
-  canonical meaning with regexes, retry the authoring call, or repair model prose.
-  Intent-authoring v15 removes model-authored component event orders and the
-  redundant terminal proof-fact list. Intent-authoring v18 and authored-semantics
-  v9 share the terminal-source field contract: the result quote plus occurrence
-  must lie inside a selected Product Story, Opportunity, Product View, Success
-  Metric, First Path, or Proof Boundary fact. Custody binds the narrowest
-  containing fact and uses authored fact order only when exact spans tie. A
-  terminal result may therefore remain source-exact in a selected output or
-  proof fact even when it is not repeated in the final event. The old 828-line
-  relation compiler is removed.
-  Public source evidence currently passes standard, rescue, and deep model
-  validation in `37.463s`, `44.556s`, and `87.369s`; a fresh v15 standard call
-  passes in `29.524s`; complete Greenfield runtime/install proof passes
-  `594/594` and `432/432`; and normal, compact, blank, and degraded Project
-  browser proof passes `4/4`. Installed `60/90/120`, transaction, recovery,
-  browser/readback, human-quality, and protected-holdout proof remain release
-  requirements.
-- Intent-authoring v16 aligns the one-call response obligation with the sealed
-  transaction materiality gate: every authored graph must select exact
-  `product_story`, `state_object`, `first_path`, `proof_boundary`, and
-  `human_actors` facts. Component owners must equal a selected
-  `internal_systems` or title fact. The model still chooses meaning and exact
-  quote text; deterministic custody owns coordinates and normalizes only an
-  impossible ordinal to the first identical byte match, so model counting
-  cannot veto a grounded claim. The first v15 immutable public matrix failed
-  closed `0/3` before confirmation; the corrected v16 source discriminators
-  pass standard, rescue, and deep in `36.362s`, `30.353s`, and `60.315s`, with
-  widened safety proof at `153/153`. Installed release proof remains pending.
-- Intent-authoring v17 removes four redundant model obligations exposed by the
-  v8 public matrix. The model no longer restates an event's exact text, ordinal,
-  actor kind, or carry bit after selecting exact ordered `first_path` facts.
-  Each selected path fact is the event span; Domain Intelligence derives order
-  and byte coordinates, derives actor kind from the selected actor-fact field,
-  and derives carry from exact surface presence plus the immediately preceding
-  actor binding. The model remains the sole semantic author for source-fact
-  selection, actor identity and surface, action/target roles, recovery meaning,
-  terminal result, and component ownership. This contract has no semantic
-  regex, prose parser, retry, fallback tier, or post-confirm work. Fresh proof
-  passes `81/81` focused tests, `610/610` Greenfield runtime tests, and
-  `459/459` install/release tests. Installed matrix and recovery proof remain
-  pending.
+- Greenfield intent-authoring v20 consolidates the direct-evidence graph and
+  makes the pre-persistence decision boundary explicit
+  without adding another parser. The one model-authored graph must classify an
+  exactly source-cited material unknown or omission as `material_ambiguity` and
+  return the existing typed clarification sentinel before graph derivation or
+  staging. Clarifications carry no terminal object. Authored graphs select only
+  a terminal result phrase and occurrence; Domain Intelligence derives its
+  placement from the final ordered event. Component rows select only product
+  owners and align positionally with the already ordered selected
+  responsibility facts. Count mismatches, conflicting event owners, invalid
+  result custody, and unresolved material evidence fail closed. The superseded
+  terminal-order, responsibility-restatement, and conflict-only evidence fields
+  are rejected rather than adapted. This remains one source-cited model call,
+  deterministic exact custody, no semantic regex, no retry cascade, and no
+  post-confirm interpretation. Thirty obsolete parser/repair modules and 4,927
+  lines are deleted; an executed public-proposal trace finds no semantic regex
+  caller. Structured Project rendering now projects exact typed Focus, actor
+  event, First Path, capability, and product-boundary nodes instead of joining
+  them into prose. The full source gate passes `1,171` tests, maintained fast
+  and lifecycle runners pass `445` and `208`, the Chromium contract passes all
+  `28/28` desktop/mobile state cells with zero clipping or overflow, and an
+  independent review reports no P0/P1. Exact installed `60/90/120`, immutable
+  candidate, recovery/readback, and newly blind one-shot holdout proof remain
+  mandatory before release closure.
 - Authored-workstream-semantics v4 keeps evidence ownership exclusive while
   making visibility explicit: the
   integrative project workstream cites canonical facts owned by specialized
@@ -3362,6 +3353,25 @@ This section captures synchronized requirement and contract signals derived from
   exclusivity as a `0/3` installed compiler failure after in-budget model calls;
   all three recorded responses now compile completion-ready and the
   authored/model suite passes `122/122`. Rebuilt installed proof is pending.
+
+## Greenfield V29 Semantic Ownership
+
+- One pinned host-model call owns the complete source-cited product graph. Its
+  compact typed contract distinguishes product outcome, work item, action
+  clause, dependency, proof boundary, visible result, and component owner.
+- Deterministic code owns exact citation custody, relation alignment, actor
+  carry state, projection, transaction integrity, confirmation, and readback.
+  It does not reinterpret product prose.
+- Event targets must be exact substrings of their own event. Cross-fact
+  co-containment is not semantic proof and is no longer accepted.
+- Missing Problem, Opportunity, or distinct Product View remains missing and is
+  rendered as an explicit evidence gap. Product Story is never reused as
+  semantic filler.
+- CONFIRM and REJECT use an exact hash-bound token protocol. EDIT alone accepts
+  trailing evidence and creates a new pre-confirm authoring transaction.
+- Canonical Greenfield semantic boundaries do not import regex or parser-era
+  helpers. The release evaluator reuses product-owned typed receipt contracts
+  and never promotes structural validation into independent expert approval.
 
 ## Research Basis
 

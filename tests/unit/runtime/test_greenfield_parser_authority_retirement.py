@@ -14,6 +14,10 @@ DOMAIN_INTELLIGENCE = ROOT / "src/odylith/runtime/domain_intelligence"
 
 _RETIRED_MODULES = (
     "greenfield_canonical_meaning",
+    "greenfield_atlas_semantic_coverage",
+    "greenfield_component_kinds",
+    "greenfield_component_term_constants",
+    "greenfield_component_term_index",
     "greenfield_confirmed_completion",
     "greenfield_confirmed_intent",
     "greenfield_confirmed_intent_completion",
@@ -25,15 +29,23 @@ _RETIRED_MODULES = (
     "greenfield_confirmed_intent_sections",
     "greenfield_confirmed_intent_validation",
     "greenfield_confirmed_prompt_source",
+    "greenfield_confirmed_system_rows",
     "greenfield_confirmed_title_repair",
+    "greenfield_gerund_actions",
     "greenfield_prompt_evidence_interpretation",
     "greenfield_preconfirm_patchset",
     "greenfield_preconfirm_repair",
     "greenfield_preconfirm_repair_context",
     "greenfield_preconfirm_rescue_planner",
     "greenfield_prewrite_projection_rerender",
+    "greenfield_quality_lens_repair",
     "greenfield_recovered_intent_context",
+    "greenfield_release_scope_limits",
+    "greenfield_semantic_projection_surfaces",
+    "greenfield_sequence_terminal_labels",
+    "greenfield_source_casing",
     "greenfield_structured_first_path",
+    "greenfield_transfer_phrases",
 )
 _RETIRED_ACTIVE_TOWER_PREFIXES = (
     "greenfield_first_path_",
@@ -70,6 +82,23 @@ _CANONICAL_SEMANTIC_BOUNDARY_PATHS = (
     DOMAIN_INTELLIGENCE / "proposal_tribunal.py",
     ROOT / "src/odylith/runtime/project_intelligence/greenfield_authored_dashboard.py",
 )
+_DETACHED_AUTHORED_PRECONFIRM_PATHS = (
+    DOMAIN_INTELLIGENCE / "greenfield_apply_prewrite.py",
+    DOMAIN_INTELLIGENCE / "greenfield_preconfirm_completion.py",
+    DOMAIN_INTELLIGENCE / "greenfield_preconfirm_findings.py",
+    DOMAIN_INTELLIGENCE / "greenfield_preconfirm_handoff_quality.py",
+    DOMAIN_INTELLIGENCE / "greenfield_preconfirm_package_findings.py",
+    DOMAIN_INTELLIGENCE / "greenfield_preconfirm_package_hygiene.py",
+    DOMAIN_INTELLIGENCE / "greenfield_preconfirm_semantic_alignment.py",
+    DOMAIN_INTELLIGENCE / "greenfield_programs.py",
+    DOMAIN_INTELLIGENCE / "project_intelligence_binding.py",
+    DOMAIN_INTELLIGENCE / "proposal_validation.py",
+)
+_PARSER_ERA_IMPORTS = {
+    "greenfield_domain_term_index",
+    "greenfield_source_casing",
+    "greenfield_text",
+}
 
 
 def test_relation_free_parser_authority_files_and_source_edges_are_absent() -> None:
@@ -150,6 +179,65 @@ if loaded:
         retired=_RETIRED_MODULES,
         retired_prefixes=_RETIRED_ACTIVE_TOWER_PREFIXES,
     )
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = str(ROOT / "src")
+
+    result = subprocess.run(
+        [sys.executable, "-c", probe],
+        cwd=ROOT,
+        env=environment,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr or result.stdout
+
+
+def test_authored_preconfirm_owners_do_not_import_parser_era_helpers() -> None:
+    stale_edges: dict[str, list[str]] = {}
+    for path in _DETACHED_AUTHORED_PRECONFIRM_PATHS:
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        imported: set[str] = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                imported.update(alias.name.rsplit(".", 1)[-1] for alias in node.names)
+            elif isinstance(node, ast.ImportFrom):
+                if node.module == "odylith.runtime.domain_intelligence":
+                    imported.update(alias.name for alias in node.names)
+                elif node.module:
+                    imported.add(node.module.rsplit(".", 1)[-1])
+        stale = sorted(imported.intersection(_PARSER_ERA_IMPORTS))
+        if stale:
+            stale_edges[str(path.relative_to(ROOT))] = stale
+    assert stale_edges == {}
+
+    scalar_owner = DOMAIN_INTELLIGENCE / "greenfield_scalar_values.py"
+    scalar_tree = ast.parse(
+        scalar_owner.read_text(encoding="utf-8"),
+        filename=str(scalar_owner),
+    )
+    assert not any(
+        (isinstance(node, ast.Import) and any(alias.name == "re" for alias in node.names))
+        or (isinstance(node, ast.ImportFrom) and node.module == "re")
+        for node in ast.walk(scalar_tree)
+    )
+
+
+def test_importing_authored_preconfirm_engine_cannot_load_parser_era_helpers() -> None:
+    probe = """
+import sys
+import odylith.runtime.domain_intelligence.greenfield_preconfirm_engine
+
+forbidden = {forbidden!r}
+loaded = sorted(
+    module
+    for module in sys.modules
+    if module.rsplit(".", 1)[-1] in forbidden
+)
+if loaded:
+    raise SystemExit(f"parser-era Greenfield helper modules loaded: {{loaded}}")
+""".format(forbidden=_PARSER_ERA_IMPORTS)
     environment = dict(os.environ)
     environment["PYTHONPATH"] = str(ROOT / "src")
 

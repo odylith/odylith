@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import Mapping
 import json
 from pathlib import Path
-import re
 from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_create_commit
@@ -17,7 +16,23 @@ from odylith.runtime.domain_intelligence import greenfield_repository_lock
 HOST_CONFIRMATION_CALLBACK_VERSION = "odylith.greenfield.host-confirmation-callback.v1"
 SUPPORTED_HOSTS = frozenset({"codex", "claude"})
 PENDING_ROOT_RELATIVE_PATH = Path(".odylith/runtime/greenfield/pending")
-_DECISION_PATTERN = re.compile(r"^(CONFIRM|EDIT|REJECT)\s+([0-9a-f]{64})(?:\s+(.+))?$", re.DOTALL)
+_DECISION_COMMANDS = frozenset({"CONFIRM", "EDIT", "REJECT"})
+_LOWER_HEX = frozenset("0123456789abcdef")
+
+
+def _parse_decision(command_text: str) -> tuple[str, str, str | None] | None:
+    """Parse the three-token protocol without interpreting user prose."""
+
+    command, separator, payload = command_text.partition(" ")
+    if not separator or command not in _DECISION_COMMANDS:
+        return None
+    transaction_hash, evidence_separator, edit_evidence = payload.partition(" ")
+    if len(transaction_hash) != 64 or not set(transaction_hash) <= _LOWER_HEX:
+        return None
+    if command != "EDIT" and evidence_separator:
+        return None
+    evidence = edit_evidence if evidence_separator else None
+    return command, transaction_hash, evidence
 
 
 def maybe_handle_greenfield_decision(
@@ -33,8 +48,8 @@ def maybe_handle_greenfield_decision(
         return None
     root = Path(repo_root).expanduser().resolve()
     command_text = str(prompt or "").strip()
-    match = _DECISION_PATTERN.fullmatch(command_text)
-    if match is None:
+    parsed = _parse_decision(command_text)
+    if parsed is None:
         if command_text in {"CONFIRM", "EDIT", "REJECT"} and _has_pending_transactions(root):
             return _decision(
                 status="DECISION_HASH_REQUIRED",
@@ -47,7 +62,7 @@ def maybe_handle_greenfield_decision(
                 developer_context="Do not infer a pending package from a mutable current pointer. Ask for the exact displayed command.",
             )
         return None
-    command, transaction_hash, edit_evidence = match.groups()
+    command, transaction_hash, edit_evidence = parsed
     try:
         transaction_path = greenfield_pending_transaction_store.resolve_pending_transaction(
             repo_root=root,

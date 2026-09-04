@@ -1,182 +1,66 @@
-flowchart LR
-    subgraph accepted_lane["Candidate intent lane"]
-      direction TB
-      visible_intent["Product intent hypothesis<br/>story, state object,<br/>first path, actors, proof boundary"]
-      confirmable_stdout["Candidate intent projection<br/>no command committed,<br/>no host instructions or CLI envelope"]
-      source_guard["Intent source boundary guard<br/>Original user intent block only,<br/>no host guidance or CLI envelope"]
-      operating_envelope["Declared Greenfield operating envelope<br/>one bounded product package,<br/>supported evidence format and host,<br/>bounded actors and system topology"]
-      intent_section_parser["Confirmed-intent section parser<br/>heading sections and inline label-value rows<br/>become structured intent fields<br/>before semantic projection"]
-      prose_boundary_guard["Confirmed prose-boundary guard<br/>long sentence body remains body<br/>even when it names a canonical field;<br/>only explicit headings open sections"]
-      prompt_recovery["Prompt-source recovery owner<br/>direct product containers,<br/>helper-relative actor/action clauses,<br/>actor-led gerund paths,<br/>semicolon purpose context,<br/>source punctuation preserved<br/>before generic fallback"]
-      editorial_framing_guard["First-path editorial framing guard<br/>inline smallest-version and whole-product<br/>meta clauses leave product facts<br/>before first-path projection"]
-      source_claim_custody["Source evidence and claim-span custody<br/>raw prompts remain evidence only;<br/>typed facts require exact structural equality;<br/>bounded interpretations keep hashed evidence spans"]
-      confirmed_ir["ConfirmedIntentIR<br/>section IDs, source-unit provenance,<br/>accepted claim-span IDs, hash,<br/>grammatical object phrases"]
-      accepted_path_projection["Accepted path projection custody<br/>action/object lists stay intact;<br/>generic user roles do not mine object tails;<br/>state labels are not inline headings"]
-      non_goal_owner["Non-goal derivation owner<br/>proof, assumption, and ambiguity exclusions<br/>outside the completion parent"]
-      sparse_systems["Sparse system topology<br/>terse/generated rows gain proof or state owner,<br/>rich explicit rows stay unpadded"]
-      public_system_copy["Public system-row copy<br/>compiler labels stripped before<br/>Registry component prose"]
+flowchart TB
+    subgraph evidence_lane["Evidence and interpretation"]
+      direction LR
+      request["Greenfield request and EDIT evidence<br/>Untrusted input with exact source custody"]
+      model_pass["One model-authored semantic pass<br/>Source-cited facts and typed relations"]
+      typed_graph["Canonical direct-evidence graph<br/>No downstream prose reparsing"]
+      ambiguity{"Material meaning complete?"}
+      clarify["One focused clarification<br/>No transaction or governed write"]
+      request --> model_pass --> typed_graph --> ambiguity
+      ambiguity -- "no" --> clarify
     end
 
-    subgraph standard_lane["Standard path under 60s"]
-      direction TB
-      apply_input["Typed apply-semantic input<br/>source paths, provenance,<br/>trust explicit first_path.events.N results<br/>before synthetic accepted-result fallback"]
-      intent_visible_result["Structured visible-result source<br/>product-view declaration first,<br/>state-object fallback second,<br/>proof-boundary fallback last"]
-      compiler["Deterministic semantic compiler<br/>provider-free common path<br/>first-path event results outrank proof-boundary candidates"]
-      semantic_ir["SemanticModelIR<br/>first-path contract,<br/>ontology, event graph,<br/>proof obligations"]
-      evaluation_semantics["EvaluationSemanticsIR<br/>scientific, research, model,<br/>simulation, prediction, and evaluation depth<br/>source evidence, method boundary,<br/>baseline, uncertainty, reproducibility,<br/>excluded claims"]
-      actor_role_owner["Shared actor-role owner<br/>role nouns feed recovery,<br/>fragments, and actor signatures"]
-      artifact_actor_filter["Actor artifact-context filter<br/>approval and review artifacts<br/>stay objects, not actors"]
-      actor_path_role["Actor path-role owner<br/>accepted-path descriptions,<br/>partial actor-list augmentation,<br/>duplicate suffix-label rejection"]
-      shared_event_resolver["Shared actor/action event resolver<br/>complete accepted human actor set;<br/>pronouns retain the current human actor;<br/>explicit system/product events are non-human"]
-      external_boundary["External boundary semantics<br/>explicit systems, inferred first-path boundary,<br/>or typed deferred manual/fixture boundary"]
-      sequence_owner["First-path sequence owner<br/>modal actor chains,<br/>connector-led object tails,<br/>evidence noun compounds,<br/>distinctive terminal event terms"]
-      subject_carry_guard["Carried-subject guard<br/>explicit subjects seed carry<br/>for coordinated sibling actions<br/>ordinary action verbs stay actions"]
-      result_language["Result-language owner<br/>quoted/bounded visible results,<br/>result-object modifiers,<br/>grammatical item order"]
-      visible_result_priority["Visible-result priority owner<br/>material object lists and reviewable outcomes<br/>beat proof-boundary fallback;<br/>storage evidence stays supporting"]
-      prose_shape_guard["Clause-local prose-shape guard<br/>shared actor-role heads only,<br/>valid gerund action lists and<br/>title-compound user roles pass"]
-      artifact_plan["ArtifactPlanIR<br/>sanctioned projection fields"]
-      release_scope["Release-scope classifier<br/>affirmative proof and evidence support<br/>survives unrelated negative scope tails"]
-      canonical_facts["CanonicalProjectionFactIR<br/>source layer, semantic node,<br/>source path, repair owner,<br/>allowed projection IDs,<br/>sequence-step and supporting-tail variants"]
-      projection_contract["Projection contract owner<br/>roots, aliases,<br/>envelope paths,<br/>affected projections"]
-      semantic_patch_targets["Semantic patch target registry<br/>operation kind, canonical path,<br/>source mirrors, affected projections,<br/>completion posture"]
-      registry_contract_custody["Registry contract semantic custody<br/>ready semantic contracts win;<br/>profiles are fallback or supplemental proof;<br/>source phrase surfaces and proof order preserved"]
-      semantic_result_custody["Confirmed visible-result custody<br/>one selected semantic fact feeds backlog,<br/>project brief, project intelligence,<br/>component risks, and completion text;<br/>synthetic proof-floor rows stay subordinate"]
-      projections["Context-starved projections<br/>Radar, Registry, Atlas,<br/>Compass, release proof<br/>Atlas terminal labels keep event terms<br/>before long result wrappers"]
-      confirmed_diagram_projection["Confirmed Atlas projection refresh<br/>diagrams rerender from current SemanticModelIR<br/>before package scoring"]
-      atlas_label_custody["Atlas header/body label custody<br/>fixed wrappers do not repeat<br/>semantic result body terms"]
-      state_boundary_titles["Radar title/action projection<br/>one resolved human actor/action pair;<br/>system-owned events cannot title<br/>human workstreams"]
-      next_steps["Operator next steps<br/>governed start workstream,<br/>readiness gates preserve curated middle and terminal actions,<br/>validation commands"]
-      project_dashboard["Project dashboard preview<br/>fragment-safe source-launch prompts<br/>persisted into tooling payload"]
-      project_story_slots["Typed Product Story slots<br/>problem, first path, boundary,<br/>capabilities, and proof keep distinct<br/>label-to-slot identity through rendered DOM"]
-      draft_set["ArtifactDraftSet<br/>human-visible governed drafts"]
-      source_casing_custody["Source-casing custody<br/>accepted acronym and mixed-case tokens<br/>restored in visible copy only;<br/>IDs, paths, component refs stay structural"]
-      control_plane_homonyms["Control-plane homonym custody<br/>Odylith surface names are blocked<br/>unless grounded in structured<br/>accepted product intent"]
-      artifact_units["ArtifactQualityUnit stream<br/>projection id, source path,<br/>surface role, text kind,<br/>semantic node"]
-      visible_actor_projection["Tribunal visible actor projection<br/>actor_source provenance,<br/>typed operator evidence,<br/>explicit many-hat allowance,<br/>role-specific generated labels,<br/>shared label custody"]
-      validators["Deterministic validators<br/>schema, traceability,<br/>grammar, typed canonical repetition,<br/>source-owned package repetition,<br/>topology, Project prompt quality,<br/>typed generated-copy units,<br/>complete-sentence terminal integrity"]
-      project_browser_states["Project browser state proof<br/>accepted, blank, and degraded<br/>desktop and mobile widths;<br/>no overflow, clamp, or hidden text"]
-      expert_lenses["Expert-lens review<br/>PM, architect, engineer,<br/>domain reviewer typed owner contract<br/>coverage over accepted systems,<br/>including deferred topology"]
-      persisted_readback["Persisted artifact readback<br/>create payload and accepted-project preview<br/>must agree before scoring"]
-      governed_readback["Governed record readback<br/>release catalogs/events,<br/>Radar and Registry records,<br/>Compass records,<br/>surface payload globals,<br/>persisted source-launch;<br/>no Greenfield program or wave"]
-      evidence_readback["Independent package evidence<br/>project brief, Radar sections,<br/>Registry proof contracts,<br/>Atlas topology labels,<br/>prewrite safety,<br/>Project prompts from persisted payload,<br/>declared sentinel plus distinctive-anchor readback,<br/>guidance/catalog Markdown excluded"]
-      typed_findings["Source-owned typed findings<br/>target layer, target path,<br/>semantic node, occurrence metadata,<br/>no proposal-repair lane"]
-      source_addresses["ProjectionSourceAddress<br/>executable ArtifactPlanIR facts only:<br/>dict field, row index plus field,<br/>or owned list fact;<br/>preview roots are blockers"]
-      projection_targets["Projection-source repair targets<br/>rendered preview leaf maps to<br/>SemanticModelIR or ArtifactPlanIR fact"]
-      mermaid_source_units["Mermaid source text units<br/>visible labels checked,<br/>graph syntax excluded from prose gates"]
-      legacy_blockers["Legacy/raw issue strings<br/>diagnostic blockers only,<br/>no repair authority"]
-      final_manifest{"Final manifest passes?"}
+    subgraph projection_lane["Deterministic package construction"]
+      direction LR
+      custody["Custody and invariant validation<br/>Citations, ownership, event order,<br/>responsibilities, and terminal result"]
+      projections["Deterministic projections<br/>Project, Radar, Registry, Atlas,<br/>Compass, and release proof"]
+      quality["End-to-end quality gate<br/>Semantic fidelity, readability,<br/>topology, safety, and recoverability"]
+      timing["Proposal timing gate<br/>Standard at 60 seconds<br/>Rescue at 90; deep at 120"]
+      custody --> projections --> quality --> timing
     end
 
-    subgraph rescue_lane["Bounded rescue path up to 90s"]
-      direction TB
-      repairable["Repairable typed findings"]
-      patchset["PatchSet request<br/>operation ID, kind, owner,<br/>target path, affected projections"]
-      executable_target{"Executable PatchSet target?"}
-      deterministic_source_patch["Deterministic source patch facts<br/>localized component-contract path,<br/>accepted assumptions plus proof boundary,<br/>row source sentence,<br/>no host call"]
-      rescue_budget{"Rescue budget remains?"}
-      tribunal_planner["Structured Tribunal patch planner<br/>host fills replacement facts only"]
-      provider_adapter["Reasoning provider adapter<br/>explicit model,<br/>medium-effort PatchSet planning,<br/>bounded provider slice"]
-      strict_schema["Strict patch-plan schema<br/>fact envelope, ledger,<br/>proof delta,<br/>explicit list-clear support"]
-      custody_check["Patch-plan custody validator<br/>reject moved targets,<br/>invented paths, missing facts;<br/>admit typed semantic list clears"]
-      repair_manifest["Repair evidence custody<br/>last_repair_patchset_request<br/>safe host-ledger text<br/>survives final clean pass"]
-      semantic_apply["SemanticModelIR patch executor<br/>operation-kind targets,<br/>exact paths, explicit list clears,<br/>safe host-adjudication ledger"]
-      plan_apply["ArtifactPlanIR patch executor<br/>proposal-target reroute,<br/>projection facts only"]
-      semantic_mirror_sync["Semantic mirror sync<br/>component contract fields update<br/>SemanticModelIR component refs atomically"]
-      scope_ledger["Patch application ledger<br/>explicit affected projections,<br/>full-prewrite posture"]
-      dashboard_rerender["Project dashboard scoped rerender<br/>rebuilt from proposal,<br/>accepted-project preview,<br/>and source-launch context"]
-      projection_rerender["Projection rerender finding<br/>corrupted rendered scope only<br/>no host semantic patch"]
-      package_inspection["Read-only package inspection<br/>generated-copy and package-repetition findings<br/>route to source facts or ArtifactPlanIR;<br/>rendered drafts are not repair substrates"]
-      rerender["Scoped prewrite rerender<br/>named package previews,<br/>same gates, no lowered bar"]
+    subgraph transaction_lane["Reviewed transaction boundary"]
+      direction LR
+      sealed["Sealed ProductCreateTransaction<br/>Exact after-image, provenance,<br/>preconditions, and hash"]
+      decision["One operator decision<br/>CONFIRM, EDIT, or REJECT the hash"]
+      confirm["Commit-only CONFIRM<br/>Verify and write sealed bytes;<br/>no model, parser, generation, or repair"]
+      publish["Atomic publication and readback<br/>Committed Project and governance routes"]
+      recovery["Recovery boundary<br/>Rollback snapshot, journal,<br/>interrupt cleanup, and safe retry"]
+      sealed --> decision --> confirm --> publish
+      confirm -. "failure or interruption" .-> recovery
     end
 
-    subgraph write_lane["Precompiled transaction and commit-only boundary"]
-      direction TB
-      surface_custody["Pre-confirm rendered surface custody<br/>Radar, Registry, Atlas, Compass, Casebook,<br/>Project shell and bundle mirrors"]
-      portable_catalog_links["Portable Atlas link custody<br/>related_backlog paths are repo-relative;<br/>root and symlink escapes fail before confirm"]
-      transaction_quality["Pre-confirm quality tribunal<br/>all package and artifact contracts pass;<br/>no unresolved quality debt"]
-      acceptance_identity["Pre-confirm acceptance identity<br/>coherent prior accepted-project, brief, and Compass evidence;<br/>reuse its timestamp only for exact semantics after narrow<br/>target/current-stage path rebasing; otherwise keep fresh on<br/>malformed or inconsistent evidence, untrusted paths, or command drift"]
-      compiled_memory_previews["Compiled acceptance previews<br/>accepted project, project brief, and Compass event<br/>consumed without reconstruction"]
-      report_envelope["Pre-confirm reporting envelope<br/>backlog, components, and diagrams<br/>are list-shaped sealed result fields"]
-      transaction_seal["ProductCreateTransaction seal<br/>complete managed after-image, modes and deletes,<br/>repo fingerprints, active-generation precondition,<br/>result preview"]
-      snapshot_manifest["Durable rollback snapshot manifest<br/>exact affected paths, present/missing state,<br/>modes and SHA-256 fingerprints"]
-      compiler_receipt["Detached compiler receipt<br/>transaction file digest, runtime identity,<br/>exact post-confirm source inventory,<br/>and transaction hash"]
-      pending_package["Immutable pending package<br/>pending / transaction hash;<br/>transaction and receipt appear together"]
-      transaction_ready["Creation-ready confirmation view<br/>CONFIRM hash, EDIT hash, or REJECT hash"]
-      commit_verify["Commit-only verification<br/>receipt, transaction hash, compiler identity,<br/>unchanged repo preconditions"]
-      immutable_generation["Transaction-addressed generation<br/>full repository after-image materialized<br/>from sealed bytes only"]
-      generation_readback["Immutable generation readback<br/>manifest, write-set hash,<br/>tree fingerprints"]
-      writes["Compatibility tree projection<br/>sealed write set only;<br/>no parsing, repair, or artifact generation"]
-      atomic_cleanup["Interrupt-safe atomic writes<br/>BaseException removes the temp sibling<br/>before rollback evaluates final paths"]
-      readback["Compatibility tree readback<br/>after fingerprints must match<br/>before publication"]
-      active_pointer["Active-generation pointer switch<br/>compare-and-switch from<br/>the pre-confirm identity"]
-      published_verify["Published generation verification<br/>pointer, manifest, immutable tree,<br/>and compatibility readback agree"]
-      journal_close["Durable journal close<br/>published receipt retained for<br/>same-hash retry and recovery"]
-      canonical_reader["Canonical current-view resolver<br/>shared repository lock,<br/>active generation while fingerprints match,<br/>uncertain drift fails unavailable"]
-      reviewed_receipt["Exact reviewed-generation route<br/>transaction-addressed immutable receipt<br/>remains available after later writes"]
-      later_writer["Supported later CLI writer<br/>exclusive managed-path lock;<br/>unknown commands default to writer"]
-      supersession["Successful-writer supersession<br/>zero exit plus changed managed readback;<br/>failed and no-op writers keep active generation"]
-      rollback["Affected-path rollback guard<br/>SIGINT and SIGTERM included;<br/>failed rollback preserves recovery snapshot"]
-      recovery_required["Post-publication recovery state<br/>never roll back an observed pointer;<br/>preserve generation and journal"]
-      blockers["No-write pre-confirm blocker<br/>or post-confirm environment/invariant failure"]
-      post_confirm_handoff["Post-confirm governance handoff<br/>Project route plus Radar, Registry,<br/>Atlas, and Compass routes;<br/>no second confirmation"]
-      matrix_scorer["Hardened matrix scorer<br/>grounded anchor preflight,<br/>persisted governed readback,<br/>public artifact readback,<br/>Project shell payload readback,<br/>browser proof as premium blocker,<br/>runtime custody excluded"]
-      release_matrix["Installed release proof<br/>13-case standard matrix,<br/>optional external case-file variance,<br/>per-case generated browser state proof,<br/>Project tab DOM and payload proof,<br/>independent artifact readback scoring,<br/>generated-term leakage rescan,<br/>persisted matrix JSON with manifest summaries,<br/>failed-create blocker excerpts,<br/>persisted temp-cleanup proof,<br/>plus rescue wiring smoke"]
-      natural_rescue_proof["Natural structured rescue proof<br/>explicit provider,<br/>non-probe repaired issue,<br/>safe planned Tribunal patch summary,<br/>typed clear operation allowed,<br/>90s budget gate"]
-      selected_case_leakage["Release domain leakage custody<br/>declared case sentinels,<br/>filtered distinctive anchors,<br/>historical sentinels,<br/>and generated readback<br/>scan protected source, shipped guidance,<br/>wheel, and runtime archives;<br/>top-level proof JSON stays evidence"]
-      registry_forensics_custody["Registry forensics custody<br/>component sidecars keep generic summaries,<br/>workstream scope, component IDs,<br/>and artifact counts only<br/>raw scenario prose stays in evidence surfaces"]
+    subgraph proof_lane["Release evidence"]
+      direction LR
+      owners["Product semantic owners<br/>Canonical graph and Mermaid parser"]
+      evaluator["Evaluator adapters<br/>Reuse product owners;<br/>no parallel semantic rules"]
+      acceptance["Strict acceptance<br/>Perfect product laws and<br/>60, 90, 120 second ceilings"]
+      confidence["Confidence report<br/>Intervals stay separate<br/>from hard acceptance"]
+      retained["Retained raw and browser proof<br/>Captured before temporary cleanup"]
+      drift{"Utility improved without<br/>new failure, latency, or complexity?"}
+      replace["Replace the losing mechanism<br/>Keep outcomes and invariants fixed"]
+      owners --> evaluator --> acceptance --> confidence --> retained --> drift
+      drift -- "no" --> replace
     end
 
-    visible_intent --> confirmable_stdout --> source_guard --> operating_envelope --> intent_section_parser --> prose_boundary_guard --> prompt_recovery --> editorial_framing_guard --> source_claim_custody --> confirmed_ir --> accepted_path_projection --> non_goal_owner --> sparse_systems --> public_system_copy
-    public_system_copy --> apply_input --> intent_visible_result --> compiler --> actor_role_owner --> artifact_actor_filter --> actor_path_role --> shared_event_resolver --> semantic_ir --> evaluation_semantics --> external_boundary --> sequence_owner --> subject_carry_guard --> result_language --> visible_result_priority --> prose_shape_guard --> artifact_plan --> release_scope --> canonical_facts --> projection_contract --> semantic_patch_targets --> registry_contract_custody --> semantic_result_custody --> projections --> confirmed_diagram_projection --> atlas_label_custody --> state_boundary_titles --> next_steps --> project_dashboard --> project_story_slots --> draft_set
-    shared_event_resolver -. "same resolved human event" .-> state_boundary_titles
-    draft_set --> source_casing_custody --> control_plane_homonyms --> artifact_units --> mermaid_source_units --> visible_actor_projection --> validators --> project_browser_states --> expert_lenses --> persisted_readback --> governed_readback --> evidence_readback --> typed_findings --> source_addresses --> projection_targets --> final_manifest
-    typed_findings -- "untyped or legacy-only evidence" --> legacy_blockers --> blockers
-    final_manifest -- "pass" --> surface_custody --> portable_catalog_links --> transaction_quality --> acceptance_identity --> compiled_memory_previews --> report_envelope --> transaction_seal --> compiler_receipt --> pending_package --> transaction_ready --> commit_verify --> snapshot_manifest --> immutable_generation --> generation_readback --> writes --> atomic_cleanup --> readback --> active_pointer --> published_verify --> journal_close --> canonical_reader --> post_confirm_handoff --> reviewed_receipt --> matrix_scorer --> release_matrix --> natural_rescue_proof --> selected_case_leakage --> registry_forensics_custody
-    final_manifest -- "quality debt remains" --> blockers
-    final_manifest -- "rendered scope drift" --> projection_rerender --> rerender
-    final_manifest -- "repairable typed failure" --> repairable --> projection_targets --> source_addresses --> patchset --> executable_target
-    executable_target -- "localized exact source fact" --> deterministic_source_patch --> plan_apply
-    executable_target -- "host reasoning needed" --> rescue_budget
-    rescue_budget -- "yes" --> tribunal_planner --> provider_adapter --> strict_schema --> custody_check --> repair_manifest
-    repair_manifest --> semantic_apply
-    custody_check --> plan_apply
-    custody_check --> package_inspection
-    source_addresses -. "no broad roots, preview summaries,<br/>or substring-derived targets" .-> patchset
-    semantic_patch_targets -. "registered operation kinds,<br/>source mirrors, and projection scope" .-> patchset
-    semantic_patch_targets -. "registered semantic paths" .-> semantic_apply
-    projection_contract -. "sanctioned roots + envelopes" .-> source_addresses
-    projection_contract -. "sanctioned roots + envelopes" .-> plan_apply
-    projection_contract -. "dependency scope" .-> scope_ledger
-    semantic_apply --> dashboard_rerender
-    plan_apply --> semantic_mirror_sync --> scope_ledger --> dashboard_rerender
-    dashboard_rerender --> rerender
-    package_inspection --> rerender
-    executable_target -- "no" --> blockers
-    rerender --> validators
-    rescue_budget -- "no" --> blockers
-    final_manifest -- "non-repairable" --> blockers
-    immutable_generation -- "before pointer failure" --> rollback --> blockers
-    writes -- "before pointer failure" --> rollback
-    readback -- "before pointer drift" --> rollback
-    active_pointer -- "not visible" --> rollback
-    active_pointer -- "visible, journal interrupted" --> published_verify
-    published_verify -- "drift after publication" --> recovery_required --> blockers
-    canonical_reader -- "later managed command" --> later_writer --> supersession
-    supersession -- "changed success" --> canonical_reader
-    supersession -- "failed or no-op" --> canonical_reader
-    rollback --> blockers
+    ambiguity -- "yes" --> custody
+    timing --> sealed
+    quality --> evaluator
+    publish --> retained
 
-    classDef intent fill:#EFF6FF,stroke:#BFD7FE,color:#132033,stroke-width:1.2px;
-    classDef standard fill:#F8FAFC,stroke:#CBD5E1,color:#132033,stroke-width:1.2px;
-    classDef rescue fill:#FFF7ED,stroke:#FDBA74,color:#132033,stroke-width:1.2px;
-    classDef write fill:#F0FDF4,stroke:#86EFAC,color:#132033,stroke-width:1.2px;
-    class visible_intent,confirmable_stdout,source_guard,operating_envelope,intent_section_parser,prose_boundary_guard,prompt_recovery,editorial_framing_guard,source_claim_custody,confirmed_ir,non_goal_owner,sparse_systems,public_system_copy intent;
-    class apply_input,intent_visible_result,compiler,semantic_ir,evaluation_semantics,actor_role_owner,artifact_actor_filter,actor_path_role,shared_event_resolver,external_boundary,sequence_owner,subject_carry_guard,result_language,visible_result_priority,prose_shape_guard,artifact_plan,release_scope,canonical_facts,projection_contract,semantic_patch_targets,registry_contract_custody,semantic_result_custody,projections,confirmed_diagram_projection,atlas_label_custody,state_boundary_titles,next_steps,project_dashboard,project_story_slots,draft_set,source_casing_custody,control_plane_homonyms,artifact_units,mermaid_source_units,visible_actor_projection,validators,project_browser_states,expert_lenses,persisted_readback,governed_readback,evidence_readback,typed_findings,source_addresses,projection_targets,legacy_blockers,final_manifest standard;
-    class repairable,patchset,executable_target,deterministic_source_patch,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,repair_manifest,semantic_apply,plan_apply,semantic_mirror_sync,scope_ledger,dashboard_rerender,projection_rerender,package_inspection,rerender rescue;
-    class surface_custody,portable_catalog_links,transaction_quality,acceptance_identity,compiled_memory_previews,report_envelope,transaction_seal,compiler_receipt,pending_package,transaction_ready,commit_verify,snapshot_manifest,immutable_generation,generation_readback,writes,atomic_cleanup,readback,active_pointer,published_verify,journal_close,canonical_reader,reviewed_receipt,later_writer,supersession,rollback,recovery_required,blockers,post_confirm_handoff,matrix_scorer,release_matrix,natural_rescue_proof,selected_case_leakage,registry_forensics_custody write;
+    classDef primary fill:#EFF6FF,stroke:#BFD7FE,color:#132033,stroke-width:1px;
+    classDef execution fill:#ECFDFB,stroke:#A7E9E3,color:#132033,stroke-width:1px;
+    classDef governance fill:#F5F3FF,stroke:#DDD6FE,color:#132033,stroke-width:1px;
+    classDef constraint fill:#FFF8E6,stroke:#F6D98B,color:#132033,stroke-width:1px;
+    classDef invalid fill:#FFF1F0,stroke:#F7B4AE,color:#132033,stroke-width:1px;
+    class request,model_pass,typed_graph primary;
+    class custody,projections,quality,timing execution;
+    class sealed,decision,confirm,publish,recovery,owners,evaluator,acceptance,confidence,retained governance;
+    class ambiguity,drift constraint;
+    class clarify,replace invalid;
 
-    style accepted_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
-    style standard_lane fill:#FBFDFF,stroke:#CBD5E1,stroke-width:1px,color:#293D52
-    style rescue_lane fill:#FFFBF5,stroke:#FDBA74,stroke-width:1px,color:#293D52
-    style write_lane fill:#F8FFF9,stroke:#86EFAC,stroke-width:1px,color:#293D52
+    style evidence_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
+    style projection_lane fill:#F8FFFE,stroke:#A7E9E3,stroke-width:1px,color:#293D52
+    style transaction_lane fill:#FCFBFF,stroke:#DDD6FE,stroke-width:1px,color:#293D52
+    style proof_lane fill:#FFFCF3,stroke:#F6D98B,stroke-width:1px,color:#293D52
     linkStyle default stroke:#9FB2C8,stroke-width:1.25px

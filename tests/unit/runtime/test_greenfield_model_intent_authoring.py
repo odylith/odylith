@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import inspect
 import json
+import os
 
 import pytest
 
@@ -13,7 +14,6 @@ from odylith.runtime.domain_intelligence import (
     greenfield_preconfirm_engine,
     greenfield_proposals,
     greenfield_proposals_cli,
-    greenfield_source_casing,
     greenfield_traceability,
 )
 from odylith.runtime.domain_intelligence import greenfield_preconfirm_handoff_quality
@@ -26,6 +26,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
+    GREENFIELD_MODEL_PROOF_FD_ENV,
     GreenfieldAuthoringClarification,
     GreenfieldModelAuthoringError,
     author_greenfield_intent,
@@ -51,6 +52,7 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     StructuredAuthoringProvider,
     authored_response,
     clarification_response,
+    model_event_rows,
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import (
     _AUTHORED_FIRST_PATH,
@@ -98,7 +100,9 @@ def test_model_authored_intent_reaches_staged_product_intent_without_parser_reco
     assert receipt["tier"] == "rescue"
     assert receipt["authoring_version"] == GREENFIELD_INTENT_AUTHORING_VERSION
     assert receipt["semantic_model_call_count"] == 1
-    assert candidate["authored_semantics"]["first_path_relations"][0]["action_verb_quote"] == "enters"
+    assert candidate["authored_semantics"]["first_path_relations"][0]["action_verb_quote"] == (
+        "Dock attendant Ivo enters a vessel tag"
+    )
     assert "model_authoring" not in candidate
     assert candidate["product_intent_authority"]["material_fields"]["first_path"]["source_span_ids"] == [
         "authoring:first_path:1:4",
@@ -201,7 +205,9 @@ def test_edit_evidence_reauthors_one_new_typed_candidate_with_one_model_call(tmp
             "the berth map shows the reviewed placement",
         )
     )
-    assert candidate["authored_semantics"]["first_path_relations"][0]["action_verb_quote"] == "scans"
+    assert candidate["authored_semantics"]["first_path_relations"][0]["action_verb_quote"] == (
+        "Dock attendant Ivo scans a vessel tag"
+    )
     assert candidate["product_intent_authority"]["source_format"] == "operator_prompt_with_edit_evidence"
     assert provider.calls == 1
 
@@ -433,9 +439,9 @@ def test_model_authored_project_seals_one_package_with_justified_boundary(tmp_pa
         if event["source_kind"] == "accepted_first_path"
     ]
     assert [(event["actor"], event["action"]) for event in accepted_events] == [
-        ("Dock attendant Ivo", "enters"),
-        ("the product", "records"),
-        ("the berth map", "shows"),
+        ("Dock attendant Ivo", "Dock attendant Ivo enters a vessel tag"),
+        ("Berth map", "the product records berth occupancy"),
+        ("Berth map", "the berth map shows the placement"),
     ]
     assert transaction_path.is_file()
 
@@ -511,12 +517,6 @@ def test_public_authored_propose_bypasses_the_legacy_completion_cascade(
         if hasattr(greenfield_traceability, name):
             monkeypatch.setattr(greenfield_traceability, name, forbidden)
     for name in (
-        "proposal_source_casing_text",
-        "restore_source_casing_in_public_copy",
-        "package_with_source_casing",
-    ):
-        monkeypatch.setattr(greenfield_source_casing, name, forbidden)
-    for name in (
         "_first_path_summary",
         "_first_release_requirement_sentence",
         "_preview_safe_fragment",
@@ -549,6 +549,7 @@ def test_public_propose_cli_returns_one_model_question_without_a_transaction(
         clarification_response(
             question="What result should the dock attendant see after the first task?",
             material_dimension="visible_result",
+            evidence_quotes=("Create Harbor Desk",),
         )
     )
     monkeypatch.setattr(
@@ -599,7 +600,7 @@ def test_authoring_calculates_citation_hashes_from_the_exact_source_bytes() -> N
 def test_authoring_collapses_exact_duplicate_typed_fact_rows() -> None:
     source = _source()
     response = _response(source)
-    facts = response["facts"]
+    facts = response["result"]["facts"]
     assert isinstance(facts, dict)
     path_facts = facts["first_path"]
     path_facts.insert(1, dict(path_facts[0]))
@@ -620,7 +621,7 @@ def test_authoring_accepts_an_explicit_repeated_quote_occurrence_without_first_m
     source = f"Harbor Desk. {_source()}"
     response = _response(source)
     second_start = source.encode("utf-8").find(b"Harbor Desk", 1)
-    response["facts"]["title"]["occurrence"] = 2  # type: ignore[index]
+    response["result"]["facts"]["title"]["occurrence"] = 2  # type: ignore[index]
 
     result = author_greenfield_intent(
         evidence_text=source,
@@ -635,7 +636,7 @@ def test_authoring_accepts_an_explicit_repeated_quote_occurrence_without_first_m
 def test_authoring_normalizes_impossible_occurrence_to_first_exact_match() -> None:
     source = f"Harbor Desk. {_source()}"
     response = _response(source)
-    response["facts"]["title"]["occurrence"] = source.count("Harbor Desk") + 1  # type: ignore[index]
+    response["result"]["facts"]["title"]["occurrence"] = source.count("Harbor Desk") + 1  # type: ignore[index]
 
     result = author_greenfield_intent(
         evidence_text=source,
@@ -656,6 +657,7 @@ def test_authoring_prompt_requires_every_transaction_material_fact() -> None:
         provider=provider,
         clock=lambda: 0.0,
     )
+    prompt = " ".join(provider.last_request_system_prompt.split())
 
     for field in (
         "product_story",
@@ -664,12 +666,19 @@ def test_authoring_prompt_requires_every_transaction_material_fact() -> None:
         "proof_boundary",
         "human_actors",
     ):
-        assert field in provider.last_request_system_prompt
-    assert "owner_fact_quote" in provider.last_request_system_prompt
-    assert "internal_systems fact or the selected title fact" in provider.last_request_system_prompt
+        assert field in prompt
+    assert "owner_fact_quote" in prompt
+    assert "internal_systems fact or title" in prompt
+    assert "A location, audience, customer" in prompt
+    assert "product_story is the shortest complete source span" in prompt
+    assert "exclude meta-instructions about authoring" in prompt
+    assert "target because it appears only in another fact" in prompt
+    assert "stage, artifact, role, or status label alone is not an event" in prompt
+    assert "not a product-type label or title fragment" in prompt
+    assert "Leave an optional field null instead of reusing product_story" in prompt
 
 
-def test_authoring_schema_encodes_scalar_and_repeated_fact_cardinality() -> None:
+def test_authoring_schema_structurally_separates_complete_authored_and_clarification_results() -> None:
     source = _source()
     provider = StructuredAuthoringProvider(_response(source))
 
@@ -679,12 +688,66 @@ def test_authoring_schema_encodes_scalar_and_repeated_fact_cardinality() -> None
         clock=lambda: 0.0,
     )
 
-    typed_facts = provider.last_request_output_schema["properties"]["facts"]["anyOf"][0]
+    result_branches = provider.last_request_output_schema["properties"]["result"]["anyOf"]
+    authored_branch, clarification_branch = result_branches
+    typed_facts = authored_branch["properties"]["facts"]
     assert typed_facts["additionalProperties"] is False
-    assert typed_facts["properties"]["state_object"]["anyOf"][0]["type"] == "object"
-    assert typed_facts["properties"]["state_object"]["anyOf"][1] == {"type": "null"}
+    assert typed_facts["properties"]["state_object"]["type"] == "object"
+    assert "never a workflow sequence" in typed_facts["properties"]["state_object"][
+        "description"
+    ]
+    assert "never an activity, workflow stage" in typed_facts["properties"][
+        "proof_boundary"
+    ]["description"]
     assert typed_facts["properties"]["first_path"]["type"] == "array"
+    assert typed_facts["properties"]["first_path"]["minItems"] == 1
     assert typed_facts["properties"]["human_actors"]["type"] == "array"
+    assert typed_facts["properties"]["human_actors"]["minItems"] == 1
+    authored_properties = authored_branch["properties"]
+    terminal = authored_properties["terminal"]
+    assert set(terminal["properties"]) == {"result_quote", "result_occurrence"}
+    assert "workflow stage" in terminal["properties"]["result_quote"]["description"]
+    assert authored_properties["events"]["type"] == "array"
+    assert authored_properties["events"]["minItems"] == 1
+    assert set(authored_properties["events"]["items"]["properties"]) == {
+        "actor_fact_quote",
+        "target_quote",
+        "recovery_path",
+    }
+    assert authored_properties["components"]["minItems"] == 1
+    component = authored_properties["components"]["items"]
+    assert set(component["properties"]) == {"owner_fact_quote"}
+    assert "clarification" not in authored_properties
+    assert set(clarification_branch["properties"]) == {
+        "status",
+        "consistency",
+        "clarification",
+    }
+    assert "facts" not in clarification_branch["properties"]
+
+
+def test_authoring_rejects_superseded_terminal_and_component_link_fields() -> None:
+    source = _source()
+    response = _response(source)
+    response["result"]["terminal"]["event_order"] = len(model_event_rows(response))  # type: ignore[index]
+
+    with pytest.raises(GreenfieldModelAuthoringError, match="invalid terminal result"):
+        author_greenfield_intent(
+            evidence_text=source,
+            provider=StructuredAuthoringProvider(response),
+            clock=lambda: 0.0,
+        )
+
+    response = _response(source)
+    response["result"]["components"][0]["responsibility_fact_quote"] = (  # type: ignore[index]
+        "Record berth occupancy"
+    )
+    with pytest.raises(GreenfieldModelAuthoringError, match="invalid component ownership"):
+        author_greenfield_intent(
+            evidence_text=source,
+            provider=StructuredAuthoringProvider(response),
+            clock=lambda: 0.0,
+        )
 
 
 def test_authoring_derives_atomic_custody_without_a_second_model_semantic_payload() -> None:
@@ -729,10 +792,40 @@ def test_authoring_rejects_the_retired_model_atomic_payload() -> None:
         )
 
 
+def test_release_proof_descriptor_retains_raw_response_before_rejection(
+    tmp_path, monkeypatch
+) -> None:  # type: ignore[no-untyped-def]
+    source = _source()
+    response = _response(source)
+    response["result"]["clarification"] = {
+        "material_dimension": "product_boundary"
+    }
+    observation = tmp_path / "model-observation.json"
+    descriptor = os.open(observation, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    monkeypatch.setenv(GREENFIELD_MODEL_PROOF_FD_ENV, str(descriptor))
+    try:
+        with pytest.raises(GreenfieldModelAuthoringError, match="unsupported authored contract"):
+            author_greenfield_intent(
+                evidence_text=source,
+                provider=StructuredAuthoringProvider(response),
+                clock=lambda: 0.0,
+            )
+    finally:
+        os.close(descriptor)
+
+    retained = json.loads(observation.read_text(encoding="utf-8"))
+    assert retained["authoring_version"] == GREENFIELD_INTENT_AUTHORING_VERSION
+    assert retained["request"] == {
+        "version": GREENFIELD_INTENT_AUTHORING_VERSION,
+        "evidence": source,
+    }
+    assert retained["response"] == response
+
+
 def test_authoring_rejects_a_source_quote_that_is_not_present() -> None:
     source = _source()
     response = _response(source)
-    response["facts"]["title"] = {  # type: ignore[index]
+    response["result"]["facts"]["title"] = {  # type: ignore[index]
         "quote": "Not in evidence",
         "occurrence": 1,
     }
@@ -748,7 +841,7 @@ def test_authoring_rejects_a_source_quote_that_is_not_present() -> None:
 def test_authoring_rejects_the_retired_flat_fact_array() -> None:
     source = _source()
     response = _response(source)
-    response["facts"] = [
+    response["result"]["facts"] = [
         {"field": "state_object", "quote": "berth", "occurrence": 1},
         {"field": "state_object", "quote": "occupancy", "occurrence": 1},
     ]
@@ -764,7 +857,7 @@ def test_authoring_rejects_the_retired_flat_fact_array() -> None:
 def test_authoring_rejects_typed_facts_over_the_total_citation_cap() -> None:
     source = _source()
     response = _response(source)
-    facts = response["facts"]
+    facts = response["result"]["facts"]
     assert isinstance(facts, dict)
     citation = dict(facts["human_actors"][0])
     for field in (
@@ -788,12 +881,12 @@ def test_authoring_rejects_typed_facts_over_the_total_citation_cap() -> None:
         )
 
 
-def test_authoring_rejects_an_action_relation_not_present_in_the_accepted_path() -> None:
+def test_authoring_rejects_the_retired_redundant_action_field() -> None:
     source = _source()
     response = _response(source)
-    response["events"][0]["action_quote"] = "deletes"  # type: ignore[index]
+    model_event_rows(response)[0]["action_quote"] = "deletes"
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path event"):
+    with pytest.raises(GreenfieldModelAuthoringError, match="invalid first-path events"):
         author_greenfield_intent(
             evidence_text=source,
             provider=StructuredAuthoringProvider(response),
@@ -804,7 +897,7 @@ def test_authoring_rejects_an_action_relation_not_present_in_the_accepted_path()
 def test_authoring_rejects_a_missing_component_responsibility_owner() -> None:
     source = _source()
     response = _response(source)
-    response["components"] = []
+    response["result"]["components"] = []
 
     with pytest.raises(GreenfieldModelAuthoringError, match="invalid component ownership"):
         author_greenfield_intent(
@@ -814,14 +907,14 @@ def test_authoring_rejects_a_missing_component_responsibility_owner() -> None:
         )
 
 
-def test_authoring_rejects_a_duplicate_component_responsibility_owner() -> None:
+def test_authoring_rejects_more_owner_rows_than_selected_responsibilities() -> None:
     source = _source()
     response = _response(source)
-    relations = response["components"]
+    relations = response["result"]["components"]
     assert isinstance(relations, list)
     relations.append(dict(relations[0]))
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="duplicated component ownership"):
+    with pytest.raises(GreenfieldModelAuthoringError, match="responsibilities without owners"):
         author_greenfield_intent(
             evidence_text=source,
             provider=StructuredAuthoringProvider(response),
@@ -832,10 +925,10 @@ def test_authoring_rejects_a_duplicate_component_responsibility_owner() -> None:
 def test_authoring_rejects_a_component_owner_that_is_not_a_product_system_fact() -> None:
     source = _source()
     response = _response(source)
-    facts = response["facts"]
+    facts = response["result"]["facts"]
     assert isinstance(facts, dict)
     human_fact_quote = facts["human_actors"][0]["quote"]
-    response["components"][0]["owner_fact_quote"] = human_fact_quote  # type: ignore[index]
+    response["result"]["components"][0]["owner_fact_quote"] = human_fact_quote  # type: ignore[index]
 
     with pytest.raises(GreenfieldModelAuthoringError, match="unbound component owner"):
         author_greenfield_intent(
@@ -845,7 +938,7 @@ def test_authoring_rejects_a_component_owner_that_is_not_a_product_system_fact()
         )
 
 
-def test_authoring_canonicalizes_component_owner_rows_to_responsibility_order() -> None:
+def test_authoring_aligns_component_owner_rows_to_responsibility_order() -> None:
     intent = {
         **_TEXT_FIELDS,
         **_LIST_FIELDS,
@@ -862,8 +955,6 @@ def test_authoring_canonicalizes_component_owner_rows_to_responsibility_order() 
         evidence_text=source,
         component_responsibility_owners=["Berth map", "Berth map"],
     )
-    response["components"].reverse()
-
     result = author_greenfield_intent(
         evidence_text=source,
         provider=StructuredAuthoringProvider(response),
@@ -1064,7 +1155,7 @@ def test_authoring_rejects_a_repeated_owner_on_one_typed_product_event() -> None
         ],
     )
 
-    component_relations = response["components"]
+    component_relations = response["result"]["components"]
     assert isinstance(component_relations, list)
     component_relations[0]["owner_fact_quote"] = "Review Board"
 
@@ -1212,7 +1303,7 @@ def test_human_only_path_cannot_reach_staging_without_component_viability() -> N
         evidence_text=source,
         terminal_component_owner="Permit Relay",
     )
-    response["components"] = []
+    response["result"]["components"] = []
 
     with pytest.raises(GreenfieldModelAuthoringError, match="invalid component ownership"):
         author_greenfield_intent(
@@ -1255,8 +1346,6 @@ def test_component_relation_order_is_unicode_and_domain_neutral() -> None:
         evidence_text=source,
         component_responsibility_owners=["Sąsaja", "航路"],
     )
-    response["components"].reverse()
-
     result = author_greenfield_intent(
         evidence_text=source,
         provider=StructuredAuthoringProvider(response),
@@ -1266,6 +1355,9 @@ def test_component_relation_order_is_unicode_and_domain_neutral() -> None:
     assert [
         row["responsibility_quote"] for row in result.component_responsibility_relations
     ] == ["Žurnalo įrašas", "航路記録"]
+    assert [
+        row["owner_system_quote"] for row in result.component_responsibility_relations
+    ] == ["Sąsaja", "航路"]
 
 
 def test_authoring_preserves_model_owned_roles_without_a_lexical_post_filter() -> None:
@@ -1342,6 +1434,7 @@ def test_authoring_keeps_one_material_question_separate_from_any_package() -> No
     response = clarification_response(
         question="What visible result should the first user see after completing the task?",
         material_dimension="visible_result",
+        evidence_quotes=("A project needs a clear outcome.",),
     )
 
     result = author_greenfield_intent(
@@ -1360,6 +1453,9 @@ def test_component_ownership_clarification_is_one_plain_question_without_staging
     response = clarification_response(
         question="ignored model wording",
         material_dimension="component_ownership",
+        evidence_quotes=(
+            "Create a comparison product with two possible responsibility owners.",
+        ),
     )
 
     with pytest.raises(GreenfieldClarificationRequired) as exc_info:
@@ -1375,6 +1471,11 @@ def test_component_ownership_clarification_is_one_plain_question_without_staging
         "Which product-owned system should own the stated responsibility?"
     )
     assert exc_info.value.required_fields == ("component_ownership",)
+    assessment = exc_info.value.authoring_receipt["consistency_assessment"]
+    assert assessment["status"] == "material_ambiguity"
+    assert [row["text"] for row in assessment["source_spans"]] == [
+        "Create a comparison product with two possible responsibility owners."
+    ]
     assert not (tmp_path / ".odylith/runtime/greenfield").exists()
 
 
@@ -1388,7 +1489,7 @@ def test_source_bound_material_contradiction_returns_one_no_write_clarification(
         question="ignored model wording",
         material_dimension="operational_constraints",
         consistency_status="material_contradiction",
-        conflicting_quotes=(first_claim, second_claim),
+        evidence_quotes=(first_claim, second_claim),
     )
 
     with pytest.raises(GreenfieldClarificationRequired) as exc_info:
@@ -1415,10 +1516,10 @@ def test_source_bound_nonmaterial_conflict_increases_sealed_ambiguity(
     source = f"{_source()} {second_claim}."
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
     response = _response(staged_evidence)
-    response["ambiguities"] = ["The evidence gives two retention periods that require later resolution."]
-    response["consistency"] = {
+    response["result"]["ambiguities"] = ["The evidence gives two retention periods that require later resolution."]
+    response["result"]["consistency"] = {
         "status": "non_material_ambiguity",
-        "conflicting_quotes": [first_claim, second_claim],
+        "evidence_quotes": [first_claim, second_claim],
     }
 
     candidate = materialize_model_authored_intent(

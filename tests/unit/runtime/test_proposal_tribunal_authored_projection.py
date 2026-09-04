@@ -109,10 +109,40 @@ def test_authored_typed_projection_passes_structural_tribunal() -> None:
     assert all(value.startswith("checked ") for value in decision.dimensions.values())
     assert decision.visible_actors == (
         {
+            "stable_role": "beneficiary_advocate",
+            "visible_actor": "Project beneficiary advocate",
+            "actor_source": "governance_role",
+            "responsibility": "Protects the person or team receiving the value.",
+        },
+        {
             "stable_role": "domain_operator",
             "visible_actor": "Dock attendant",
             "actor_source": "explicit_intent_actor",
             "responsibility": "Dock attendant records berth occupancy and sees receipt",
+        },
+        {
+            "stable_role": "risk_owner",
+            "visible_actor": "Project risk reviewer",
+            "actor_source": "governance_role",
+            "responsibility": "Owns loss, harm, compliance, safety, or operational exposure.",
+        },
+        {
+            "stable_role": "evidence_owner",
+            "visible_actor": "Project proof reviewer",
+            "actor_source": "governance_role",
+            "responsibility": "Decides what proof is strong enough to trust.",
+        },
+        {
+            "stable_role": "implementation_owner",
+            "visible_actor": "Project implementation owner",
+            "actor_source": "governance_role",
+            "responsibility": "Owns source paths, interfaces, and build sequence.",
+        },
+        {
+            "stable_role": "release_owner",
+            "visible_actor": "Project release owner",
+            "actor_source": "governance_role",
+            "responsibility": "Owns release boundary, rollback, and promotion readiness.",
         },
     )
     assert proposal["security_compliance"] == {}

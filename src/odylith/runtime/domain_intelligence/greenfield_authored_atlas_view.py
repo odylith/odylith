@@ -114,7 +114,8 @@ def build_authored_atlas_diagrams(
             ),
             "read_guide": (
                 "Read the source-bound state-to-event association, then treat the visible result "
-                "and proof boundary as separate accepted facts; no transition is inferred."
+                "and proof boundary as accepted facts. A dotted result-to-proof edge appears only "
+                "when the exact visible-result text is contained by the proof boundary."
             ),
             "source": state_source,
             "boxes": state_boxes,
@@ -544,6 +545,8 @@ def _state_view(
                 f"{event_quote}",
             ),
         )
+    if visible_result in proof_boundary:
+        lines.append("  result -. exact source containment .-> proof")
     return _styled_mermaid(lines), boxes
 
 

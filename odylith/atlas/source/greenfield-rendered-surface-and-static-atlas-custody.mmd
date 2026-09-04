@@ -1,89 +1,56 @@
 flowchart LR
-    subgraph write_lane["Post-Confirm Write Boundary"]
+    subgraph transaction_lane["Commit-only creation"]
       direction TB
-      final_manifest["Final greenfield manifest<br/>semantic, package, and lens gates"]
-      prewrite_safety["Prewrite safety evidence<br/>program, release target,<br/>assignment, validation dry-runs"]
-      governed_write["Governed records written<br/>Radar, Registry, Atlas,<br/>Compass, release proof"]
-      rollback_guard["Rollback guard<br/>source truth plus managed<br/>surface assets restored on failure"]
-      dashboard_refresh["Surface refresh orchestration<br/>readable views after source truth"]
-      brand_assets["Managed brand assets<br/>lockup, icons, manifest<br/>seeded before browser proof"]
+      reviewed["Reviewed ProductCreateTransaction<br/>Hash-bound exact after-image"]
+      preconditions["Receipt and precondition check<br/>Repository state must still match"]
+      write["Atomic transaction write<br/>No model, parser, generation,<br/>or prose repair after CONFIRM"]
+      recovery["Rollback and recovery custody<br/>Snapshot, journal, interrupt cleanup,<br/>and same-hash retry"]
+      readback["Exact governed readback<br/>Published bytes match reviewed bytes"]
     end
 
-    subgraph atlas_lane["Atlas Render Custody"]
+    subgraph surface_lane["Generated product surfaces"]
       direction TB
-      catalog_truth["Atlas catalog truth<br/>source MMD, links,<br/>watch fingerprints"]
-      mermaid_worker["Mermaid worker render<br/>preferred SVG and PNG path"]
-      static_renderer["Static generated-flowchart renderer<br/>browserless fallback for<br/>Odylith-generated flowcharts"]
-      rendered_assets["Rendered Atlas assets<br/>SVG, PNG, payload entries"]
-      freshness_gate["Freshness gate<br/>all diagrams fresh,<br/>no stale watched truth"]
+      projections["Deterministic projections<br/>Project, Radar, Registry,<br/>Atlas, Compass, and release proof"]
+      atlas_source["Atlas Mermaid source<br/>Topology truth"]
+      atlas_render["Atlas render owners<br/>Browser renderer or supported<br/>static flowchart renderer"]
+      surfaces["Readable HTML, payloads,<br/>SVG, and PNG artifacts"]
+      browser["Browser proof<br/>Normal, empty or fallback,<br/>and degraded or error states"]
     end
 
-    subgraph surface_lane["Generated Surface Package"]
+    subgraph evidence_lane["Release-proof custody"]
       direction TB
-      matrix_seed["Seeded matrix install<br/>one runtime seed per batch,<br/>cloned mutable repo per case"]
-      rendered_package["Rendered package collector<br/>Radar, Registry, Atlas,<br/>Compass, Casebook, Project"]
-      typed_units["Typed artifact-quality units<br/>projection id, source path,<br/>surface role, text kind"]
-      projection_surface_scan["Recursive projection surface scan<br/>project brief, accepted project,<br/>dashboard, operator prompts"]
-      structural_metadata["Structural metadata boundary<br/>repo identity and paths are not<br/>public copy repair targets"]
-      source_address_gate["Source-address gate<br/>repairable findings require exact<br/>SemanticModelIR or ArtifactPlanIR fact"]
-      governed_readback["Governed readback parser<br/>release catalogs/events,<br/>program waves,<br/>Compass records,<br/>surface payload globals,<br/>persisted source-launch"]
-      evidence_readback["Independent package evidence<br/>brief depth, Radar sections,<br/>Registry proof text,<br/>Atlas labels, prewrite safety,<br/>Project prompts from persisted payload,<br/>declared sentinel plus distinctive-anchor readback,<br/>guidance/catalog Markdown excluded"]
-      retained_evidence["Retained case evidence<br/>prompt and intent hashes,<br/>artifact inventory, excerpts,<br/>full-text grounding,<br/>quality findings, browser state,<br/>manifest summary"]
-      cleanup_proof["Per-case cleanup proof<br/>temp project deleted after<br/>evidence capture"]
-      surface_health["Surface health checks<br/>HTML, payload, routes,<br/>asset references"]
-      browser_state["Generated browser state proof<br/>Project tab and governed shell tabs,<br/>normal, fallback,<br/>invalid-query recovery"]
-      hard_score["Brutal release score<br/>weakest dimension wins"]
+      product_parser["Product semantic owners<br/>Typed graph validator and<br/>Mermaid graph parser"]
+      evaluator["Evaluator adapters<br/>Reuse product owners instead of<br/>duplicating phrase or arrow rules"]
+      strict_gate["Strict product gates<br/>Perfect laws and 60, 90, 120<br/>second proposal ceilings"]
+      confidence["Separate confidence report<br/>Intervals explain evidence strength<br/>without weakening hard gates"]
+      retain["Retained case package<br/>Raw generated files, logs,<br/>screenshots, DOM, and manifests"]
+      cleanup["Temporary project cleanup<br/>Only after retained evidence is sealed"]
+      release{"All quality, safety,<br/>latency, and evidence gates pass?"}
+      blocker["No release claim<br/>Failure stays attributable"]
     end
 
-    subgraph blocker_lane["Fail-Closed Outcomes"]
-      direction TB
-      exact_blockers["Exact blockers<br/>missing assets, stale diagrams,<br/>unattempted browser proof"]
-      no_release_claim["No release claim<br/>until installed matrix proves<br/>the generated package"]
-      proof_checkpoint["Compass proof checkpoint<br/>validated evidence only"]
-    end
+    reviewed --> preconditions --> write --> readback
+    write -. "failure or interruption" .-> recovery
+    recovery -. "restore or safe retry" .-> write
+    readback --> projections --> atlas_source --> atlas_render --> surfaces --> browser
+    product_parser --> evaluator
+    projections --> evaluator
+    browser --> evaluator --> strict_gate --> confidence --> retain --> cleanup --> release
+    release -- "no" --> blocker
+    release -- "yes" --> reviewed
 
-    final_manifest --> governed_write
-    final_manifest --> prewrite_safety
-    prewrite_safety --> governed_write
-    governed_write --> rollback_guard
-    rollback_guard --> dashboard_refresh
-    dashboard_refresh --> brand_assets
-    brand_assets --> surface_health
-    dashboard_refresh --> catalog_truth
-    catalog_truth --> mermaid_worker
-    mermaid_worker --> rendered_assets
-    mermaid_worker --> static_renderer
-    static_renderer --> rendered_assets
-    rendered_assets --> freshness_gate
-    freshness_gate --> matrix_seed
-    matrix_seed --> rendered_package
-    rendered_package --> typed_units
-    typed_units --> projection_surface_scan
-    projection_surface_scan --> structural_metadata
-    structural_metadata --> source_address_gate
-    source_address_gate --> governed_readback
-    governed_readback --> evidence_readback
-    evidence_readback --> retained_evidence
-    retained_evidence --> cleanup_proof
-    cleanup_proof --> surface_health
-    surface_health --> browser_state
-    browser_state --> hard_score
-    hard_score --> proof_checkpoint
-    freshness_gate --> exact_blockers
-    surface_health --> exact_blockers
-    exact_blockers --> no_release_claim
+    classDef primary fill:#EFF6FF,stroke:#BFD7FE,color:#132033,stroke-width:1px;
+    classDef execution fill:#ECFDFB,stroke:#A7E9E3,color:#132033,stroke-width:1px;
+    classDef governance fill:#F5F3FF,stroke:#DDD6FE,color:#132033,stroke-width:1px;
+    classDef constraint fill:#FFF8E6,stroke:#F6D98B,color:#132033,stroke-width:1px;
+    classDef invalid fill:#FFF1F0,stroke:#F7B4AE,color:#132033,stroke-width:1px;
+    class reviewed,preconditions,write,recovery,readback primary;
+    class projections,atlas_source,atlas_render,surfaces,browser execution;
+    class product_parser,evaluator,strict_gate,confidence,retain,cleanup governance;
+    class release constraint;
+    class blocker invalid;
 
-    classDef write fill:#EFF6FF,stroke:#BFD7FE,color:#132033,stroke-width:1px;
-    classDef atlas fill:#F5F3FF,stroke:#DDD6FE,color:#132033,stroke-width:1px;
-    classDef surface fill:#ECFDFB,stroke:#A7E9E3,color:#132033,stroke-width:1px;
-    classDef blocker fill:#FFF1F0,stroke:#F7B4AE,color:#132033,stroke-width:1px;
-    class final_manifest,prewrite_safety,governed_write,rollback_guard,dashboard_refresh,brand_assets write;
-    class catalog_truth,mermaid_worker,static_renderer,rendered_assets,freshness_gate atlas;
-    class matrix_seed,rendered_package,typed_units,projection_surface_scan,structural_metadata,source_address_gate,governed_readback,evidence_readback,retained_evidence,cleanup_proof,surface_health,browser_state,hard_score surface;
-    class exact_blockers,no_release_claim,proof_checkpoint blocker;
-
-    style write_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
-    style atlas_lane fill:#FCFBFF,stroke:#DDD6FE,stroke-width:1px,color:#293D52
+    style transaction_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
     style surface_lane fill:#F8FFFE,stroke:#A7E9E3,stroke-width:1px,color:#293D52
-    style blocker_lane fill:#FFF8F7,stroke:#F7B4AE,stroke-width:1px,color:#293D52
+    style evidence_lane fill:#FCFBFF,stroke:#DDD6FE,stroke-width:1px,color:#293D52
     linkStyle default stroke:#9FB2C8,stroke-width:1.25px

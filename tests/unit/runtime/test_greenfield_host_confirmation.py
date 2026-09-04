@@ -276,10 +276,38 @@ def test_codex_and_claude_hooks_short_circuit_to_identical_confirmation_payload(
     assert commits[0] == commits[1]
 
 
-def test_decision_callback_is_exact_and_proposal_only_for_unknown_hosts(tmp_path: Path) -> None:
+def test_decision_callback_is_exact_and_proposal_only_for_unknown_hosts(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     _transaction_path, _receipt, transaction_hash = _stage_pending_transaction(tmp_path)
 
+    def forbidden_decision(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("conditional CONFIRM or REJECT must not reach a mutation handler")
+
+    monkeypatch.setattr(
+        greenfield_host_confirmation,
+        "_confirm_pending_transaction",
+        forbidden_decision,
+    )
+    monkeypatch.setattr(
+        greenfield_host_confirmation,
+        "_reject_pending_transaction",
+        forbidden_decision,
+    )
+
     for prompt in ("confirm", "CONFIRM please", "EDIT correction", "REJECT now"):
+        assert greenfield_host_confirmation.maybe_handle_greenfield_decision(
+            repo_root=tmp_path,
+            host_family="codex",
+            prompt=prompt,
+        ) is None
+    for prompt in (
+        f"CONFIRM {transaction_hash} but do not publish yet",
+        f"CONFIRM {transaction_hash} only if the dependency is removed",
+        f"REJECT {transaction_hash} only after a replacement exists",
+        f"REJECT {transaction_hash} with this explanation",
+    ):
         assert greenfield_host_confirmation.maybe_handle_greenfield_decision(
             repo_root=tmp_path,
             host_family="codex",

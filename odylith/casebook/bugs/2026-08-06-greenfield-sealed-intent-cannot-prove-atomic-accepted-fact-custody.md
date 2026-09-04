@@ -76,3 +76,44 @@
 - Fresh Blind Holdout Custody Follow-Up (2026-08-08): Source replay isolated the five missing systems to two domain-neutral evidence frames the external-boundary parser did not own: `use <named system>` and `<names> is/are external source/system`. The repair reads those frames with token grammar, rejects explicit negation and generic product/service subjects, and keeps dependency declarations outside human actors and the first path. Pasted evidence labels and compact `Confirmed direction` identity text now remain evidence framing rather than product title or workflow steps. The atomic ledger also preserves each coordinated subject in a shared required predicate, while prohibited shared predicates cannot promote either noun to accepted truth. All five named systems from the four failed cases now appear as exact `accepted_fact` dependencies with source refs. The combined atomic, envelope, external-boundary, prompt-source, workflow-custody, and disclosed-corpus pack passed 314 tests in 412.23 seconds. This is regression evidence only; a new exact distribution and untouched holdout remain required.
 
 - Adversarial Custody Closure (2026-08-09): Review found that comma, `or`, and Oxford-comma declarations could still lose subjects, capitalized human roles could be misclassified as systems, and a compact `Confirmed direction` heading produced no operator-evidence spans. Shared declaration parsing now preserves every affirmed subject and rejects prohibited predicates; human-role grammar remains outside the system boundary. Compact confirmation content stays under the operator-evidence section, so materiality passes from source-backed bounded interpretation and exact actor, action, state, output, constraint, non-goal, and dependency atoms retain accepted source refs. The first source-only classifier revision also erased SkyTrace's `screening state`; the final rule excludes only terminal supplier clauses and preserves system-owned state transitions. The complete custody, envelope, workflow, and disclosed-holdout pack passed 329 tests in 492.20 seconds, including the corrected orbit counterexample. This remains regression evidence only; release still requires a new exact distribution and untouched holdout.
+
+- Current-Contract Protected Holdout Reopen (2026-09-03): Initial independent adjudication suspected a sealed-product snapshot contradiction because atomic facts referenced canonical paths such as `/title` while the scored `facts` object omitted the projected value. Bounded call-path inspection localized that omission to the release-only `SEMANTIC_FACT_KEYS` snapshot builder; the product proposal already retained its title. CB-329 therefore owns this evaluator defect and the contaminated `0/0` custody result. The same run still exposed two genuine pre-transaction direct-graph failures: one invalid terminal result and one omitted selected component responsibility. Their repair must remove redundant model obligations or make the selected typed relation structurally complete; it must not add phrase rules, response repair, retries, or post-confirm interpretation.
+
+- Direct-Graph Source Resolution (2026-09-03): Intent-authoring v20 removes
+  redundant terminal order and component responsibility restatement from the
+  model response. The model selects the exact terminal phrase and ordered
+  responsibility facts; deterministic custody derives terminal placement and
+  positionally binds component owners to those facts. Conflicting owners,
+  invalid terminal custody, or cardinality mismatch fail closed. The evaluator
+  snapshot now retains every canonical field and shares the product relation
+  contract. This adds no semantic regex, prose reparser, retry, second model
+  call, or post-confirm interpretation. CB-323 remains in progress until exact
+  installed public and newly blind proof pass.
+
+- Immutable Public-Candidate Reopen (2026-09-03): Exact installed candidate
+  `5539fbf7244920541a61827b07839244a857faa8ec12e587b101a286a2cc3b1f`
+  failed the maintained 14-case public matrix at `4/14`. The deep
+  `gpt-5.6-sol/high` profile passed `4/4` in `47.010-53.766s`, while standard
+  `gpt-5.6-sol/low` and rescue `gpt-5.6-terra/medium` passed `0/10` despite
+  staying inside the exact `60/90` budgets. Ten failures clustered around a
+  flat output schema that allowed authored and clarification branches to mix,
+  required canonical facts whose values were not structurally non-empty, and
+  redundant event-local actor wording that could reject an otherwise typed
+  actor-fact relation. One action citation also failed exact custody. The
+  losing candidate is retained as regression evidence and will not support a
+  release claim. The bounded replacement is a structurally exclusive result
+  union with non-empty authored minima, plus a smaller event relation whose
+  actor identity comes only from its selected typed fact. No phrase rules,
+  regex semantics, retries, repair cascade, second model call, or post-confirm
+  interpretation are permitted.
+
+- Profile Alternative Selection (2026-09-03): A real v21 standard smoke made
+  the new structurally exclusive contract executable in `38.797s`, but the
+  low-reasoning author misclassified `external` as a human actor. That output
+  is rejected as semantic evidence even though structural gates accepted it.
+  The same immutable v20 campaign already showed the bounded alternative:
+  `gpt-5.6-sol/high` passed `4/4` at a worst `53.766s`, while low and medium
+  profiles passed `0/10`. The next candidate therefore uses the proven high
+  reasoner for standard, rescue, and deep, with distinct pre-call deadlines
+  inside the unchanged `60/90/120` consumer budgets. This replaces weak-model
+  routing; it does not add retries or parallel authors.

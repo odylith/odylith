@@ -297,3 +297,116 @@
   production against protected evidence. CB-303 remains open until a fresh
   independently authored current-contract package passes pure preflight and
   then the single installed release run.
+
+- Current-Contract Protected Holdout Result (2026-09-03): The replacement final-holdout v4 package passed blind authorship, independent review, structural/leakage/slice/hash preflight, immutable-distribution binding, and absent-ledger checks, then ran exactly once. All proposal attempts remained inside the non-negotiable budgets: standard max `56.789s`, rescue max `67.062s`, and deep max `105.292s`. Recovery, provider-unavailable fail-closed behavior, and temporary cleanup passed. The run still failed release quality: GFH19-014 crossed the clarification-before-write boundary, one direct evidence graph returned an invalid terminal result, and one omitted a selected component responsibility. Bounded call-path inspection then localized the missing `/title` atomic rebind to the release snapshot builder rather than the sealed product transaction. Independent adjudication also proved that Atlas edge recognition, relation ordering, clarification write observation, finite-sample confidence math, and raw evidence retention diverged from product truth; CB-329 owns those evaluator defects. The one-shot ledger is terminal failed/disclosed and the corpus is retired to regression. Convergence now requires one bounded ownership wave, disclosed-regression and public proof, then a newly blinded holdout—never a rerun or protected-case patch.
+
+- Structured Project UX Resolution (2026-09-03): Project Intelligence now
+  renders exact authored Focus, actor-event, First Path, capability, internal
+  system, external system, and non-goal nodes from the sealed typed projection.
+  It no longer flattens those facts into punctuation-damaged prose. A separate
+  legacy scalar fallback remains for non-authored projects and performs no
+  sentence splitting or semantic repair. The fixed 28-cell Chromium matrix
+  passes normal, empty/fallback, and degraded/invalid-recovery states at desktop
+  and 430px mobile widths with zero document overflow, pane overflow, hidden
+  text, clipping, or payload mismatch; independent review found no P0/P1. The
+  five-line mobile repository-name wrap repair touches the 2,518-line generated
+  shell stylesheet under a bounded safety exception. B-142 owns post-release
+  decomposition of that stylesheet; this release slice must not expand it.
+
+- V21 Bounded Mechanism Checkpoint (2026-09-03): The v20 `4/14` public failure
+  is replaced in source by a schema-exclusive authored-or-clarification result,
+  a structurally human-started event graph, canonical actor-fact ownership, and
+  event facts that are themselves the typed action. The model no longer has to
+  restate actor or action text, and raw request/response evidence can be retained
+  outside the consumer write boundary. A standard `gpt-5.6-sol/high` probe
+  exceeded its 55-second model window, so that profile is rejected for the
+  60-second lane; standard `gpt-5.6-terra/high` instead produced the previously
+  failing security-disclosure graph in `40.259s` and the material assay
+  clarification in `5.686s`. Rescue `gpt-5.6-sol/high` produced the independent
+  semiconductor custody graph in `56.592s`. All three use one model call and no
+  repair path. Focused proof passes `211/211`, complete Greenfield runtime
+  passes `633/633`, install/release passes `507/507`, source/bundle/Atlas parity
+  passes `48/48`, and the executed semantic-regex audit passes `4/4` with zero
+  semantic regex callers. This is a credible candidate, not closure: freeze the
+  tree, require the unchanged immutable installed `14/14` public matrix with
+  per-case browser/readback/recovery evidence, and commission a new blind
+  holdout only after that gate. If the public gate fails, reject v21 rather than
+  adding lexical rules, prompt layers, retries, or post-call repair.
+
+- V21 Immutable Rejection And V22 Source Resolution (2026-09-03): Immutable
+  wheel `727e28500619a2912f6b61d59726698aafc385f15195a6d608d0b212483b6868`
+  was rejected after two independent failures made `14/14` impossible. Flood
+  shelter passed `10/10` in `59.253s`; pediatric agency completed in `64.727s`
+  with all 28 browser cells clean but its State and Evidence view exposed three
+  disconnected accepted facts; semiconductor custody then failed before
+  staging in `63.011s` because the forced `human_start` paired `engineering
+  review` with a target outside that event. The campaign stopped at `1/3`
+  rather than spending eleven more cases on a losing mechanism. V22 removes
+  the false human-first invariant and the special human-start/following schema:
+  one ordered event list now follows selected source facts exactly, while users
+  remain separate typed facts and target containment remains fail-closed.
+  Authored-semantics v11 removes the duplicate downstream human-path
+  requirement. The Atlas view adds only a dotted result-to-proof edge when the
+  exact visible-result text is contained by the accepted proof boundary. The
+  formerly failing semiconductor request now stages a product-led four-event
+  transaction in one rescue call; security disclosure stages in one standard
+  call, and the thin assay request returns one no-write clarification. Focused
+  mechanism proof passes `74/74`, complete Greenfield runtime passes `636/636`,
+  and install/release passes `507/507`. This is source resolution, not a winning
+  candidate: rebuild immutable bytes and require the unchanged full public
+  `14/14` budget, quality, browser, readback, and recovery gate before any new
+  blind holdout.
+
+- V22 Public Rejection And V23 Target-Binding Resolution (2026-09-03): The
+  installed v22 campaign passed Flood at `10/10` in `56.711s`, then Pediatric
+  failed before staging in `44.015s`. Its retained one-call response chose
+  `children served across multiple schools` as both an exact selected Customer
+  fact and the event target; the narrower aligned event fact omitted it, while
+  the exact selected Product Story contained both event and target. Because the
+  same public case passed an independent v22 call, strict target-in-event
+  containment is a recurring stochastic false-negative class. Semiconductor
+  passed in `42.814s`; the campaign stopped once `14/14` was impossible. A
+  bounded comparison rejected both the strict rule and deleting target meaning.
+  V23 preserves the downstream target contract but accepts it only as an exact
+  event substring or exact selected fact co-contained with the event by another
+  selected fact. Compilation, sealed validation, atomic custody, and release
+  scoring reuse that one structural predicate; no semantic regex, phrase list,
+  retry, repair, or second model call exists. The exact retained failure now
+  compiles with atomic custody at `/customer`; invented and unrelated-selected
+  targets remain rejected. Fresh Pediatric rescue stages in `45.56s`; focused,
+  runtime, and install proof passes `96/96`, `638/638`, and `509/509`. CB-303
+  remains open until one immutable v23 build passes the full public `14/14`
+  `60/90/120`, quality, browser, readback, and recovery gate and then one newly
+  blind holdout.
+
+- V23 Rejection And V29 Source Candidate (2026-09-04): The installed v23
+  public campaign completed eleven packages inside their assigned `60/90/120`
+  budgets and stopped when the assay clarification was rejected by an
+  evaluator that did not recognize the product's source-bound
+  `material_ambiguity` result. V23 is rejected independently of that scorer
+  defect. Phase-boundary review found three product P1 classes: a target could
+  be accepted merely because a longer selected story contained both event and
+  target; a service location could be promoted to an external dependency; and
+  Project Brief/Radar fallbacks repeated Product Story as missing semantic
+  fields. Transaction review also found that conditional text after CONFIRM or
+  REJECT could reach mutation handlers. The losing target co-containment path
+  is deleted. Targets must now be inside their exact event; external systems
+  remain model-owned semantic relations; absent Problem, Opportunity, and
+  distinct Product View render explicit evidence gaps; and confirmation uses
+  an exact token protocol with no regex parser.
+- Bounded pediatric comparisons rejected v28 after a stricter but noisy
+  contract asked an unnecessary clarification. V29 replaces the accumulated
+  instruction tower with one 497-word typed authoring contract, down from 729
+  words, while retaining one source-cited model graph and deterministic
+  custody. A fresh rescue transaction then selected one governed coordination
+  action, `referral` as the work item, `visit evidence` as proof and visible
+  result, no school dependency, explicit assumptions, and visible missing-fact
+  notices in `48.79s`. Retirement/hygiene proof passes `80/80` with no regex
+  importer on canonical semantic boundaries. The initial broad source gate
+  passed `3,787/3,790`; its three failures were an existing Atlas hot-file
+  breach and two stale expectations. The Atlas owner is now below its pinned
+  limit through one small XML metadata module and canonical ID normalization,
+  and all focused corrections pass `31/31`. The frozen post-refresh source
+  rerun passes `3,790/3,790` in `275.35s`. CB-303 remains open until the
+  immutable installed public `14/14` matrix, independent review, and a newly
+  commissioned blind holdout pass.

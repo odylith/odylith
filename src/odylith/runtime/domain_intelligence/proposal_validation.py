@@ -14,7 +14,9 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
     authored_projection_parity_issues,
 )
-from odylith.runtime.domain_intelligence.greenfield_text import word_count
+from odylith.runtime.domain_intelligence.greenfield_scalar_values import (
+    scalar_word_count as word_count,
+)
 from odylith.runtime.domain_intelligence.project_intelligence_binding import project_intelligence_binding_issues
 
 

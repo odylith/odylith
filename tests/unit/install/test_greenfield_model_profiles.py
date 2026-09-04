@@ -115,12 +115,12 @@ def test_profile_registry_pins_proven_standard_rescue_and_deep_requests() -> Non
     with pytest.raises(ValueError, match="unsupported Greenfield repair tier"):
         normalize_greenfield_model_repair_tier("adaptive")
     standard = get_greenfield_model_profile(STANDARD_PROFILE_ID)
-    assert standard.model == "gpt-5.6-sol"
-    assert standard.reasoning_effort == "low"
+    assert standard.model == "gpt-5.6-terra"
+    assert standard.reasoning_effort == "high"
     assert standard.lower_capability is False
     rescue = get_greenfield_model_profile(RESCUE_PROFILE_ID)
-    assert rescue.model == "gpt-5.6-terra"
-    assert rescue.reasoning_effort == "medium"
+    assert rescue.model == "gpt-5.6-sol"
+    assert rescue.reasoning_effort == "high"
     assert rescue.lower_capability is False
     assert get_greenfield_model_profile(DEEP_PROFILE_ID).model == "gpt-5.6-sol"
     assert UNAVAILABLE_PROVIDER_PROFILE not in supported_greenfield_model_profile_ids()
@@ -145,12 +145,12 @@ def test_profile_environments_pin_provider_model_effort_and_shared_tier_windows(
 
     assert "ODYLITH_REASONING_API_KEY" not in standard
     assert standard["ODYLITH_REASONING_PROVIDER"] == "codex-cli"
-    assert standard["ODYLITH_REASONING_MODEL"] == "gpt-5.6-sol"
-    assert standard["ODYLITH_REASONING_CODEX_REASONING_EFFORT"] == "low"
-    assert standard["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "45"
-    assert rescue["ODYLITH_REASONING_MODEL"] == "gpt-5.6-terra"
-    assert rescue["ODYLITH_REASONING_CODEX_REASONING_EFFORT"] == "medium"
-    assert rescue["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "75"
+    assert standard["ODYLITH_REASONING_MODEL"] == "gpt-5.6-terra"
+    assert standard["ODYLITH_REASONING_CODEX_REASONING_EFFORT"] == "high"
+    assert standard["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "55"
+    assert rescue["ODYLITH_REASONING_MODEL"] == "gpt-5.6-sol"
+    assert rescue["ODYLITH_REASONING_CODEX_REASONING_EFFORT"] == "high"
+    assert rescue["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "80"
     assert deep["ODYLITH_REASONING_MODEL"] == "gpt-5.6-sol"
     assert deep["ODYLITH_REASONING_CODEX_REASONING_EFFORT"] == "high"
     assert deep["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "105"
@@ -167,9 +167,9 @@ def test_profile_evidence_requires_sealed_observation_parity() -> None:
     observed = {
         "profile_id": STANDARD_PROFILE_ID,
         "provider": "codex-cli",
-        "model": "gpt-5.6-sol",
-        "reasoning_effort": "low",
-        "effective_timeout_seconds": 44.5,
+        "model": "gpt-5.6-terra",
+        "reasoning_effort": "high",
+        "effective_timeout_seconds": 54.5,
         "authoring_tier": "standard",
     }
 

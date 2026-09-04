@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 import datetime as dt
 from pathlib import Path
 from typing import Any
@@ -32,11 +32,10 @@ from odylith.runtime.domain_intelligence.greenfield_prewrite_stale_cleanup impor
 from odylith.runtime.domain_intelligence import greenfield_prewrite_transaction_seal
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_release_commit
-from odylith.runtime.domain_intelligence import greenfield_source_casing
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence import greenfield_traceability_commit
-from odylith.runtime.domain_intelligence.greenfield_authored_semantics import authored_projection_relations
-from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import sealed_authored_projection
+from odylith.runtime.domain_intelligence.greenfield_completion_types import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.proposal_memory import build_greenfield_acceptance_event_preview
 from odylith.runtime.domain_intelligence.proposal_memory import build_accepted_project_source_payload
@@ -73,22 +72,11 @@ def build_prewrite_completion_package(
 ) -> GreenfieldPrewriteBuild:
     """Render the full confirmed-create package in a staged repo before writes."""
 
-    authored_projection = bool(authored_projection_relations(proposal))
-    source_text = (
-        ""
-        if authored_projection
-        else greenfield_source_casing.proposal_source_casing_text(proposal)
-    )
+    if not sealed_authored_projection(proposal):
+        raise ValueError("Greenfield prewrite accepts only sealed model-authored proposals")
     accepted_at = _compiled_acceptance_timestamp()
     baseline_writes = greenfield_create_baseline.precompiled_greenfield_create_baseline_writes(root)
     brand_asset_writes = brand_assets.precompiled_brand_asset_writes(repo_root=root)
-    if source_text:
-        restored_proposal = greenfield_source_casing.restore_source_casing_in_public_copy(
-            proposal,
-            source_text=source_text,
-        )
-        if isinstance(restored_proposal, Mapping):
-            proposal = restored_proposal
     backlog_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
     previous_greenfield_ids = accepted_greenfield_workstream_ids(root)
     with staged_greenfield_prewrite_root(root) as prewrite_root:
@@ -212,7 +200,7 @@ def build_prewrite_completion_package(
             release_assignment_result=preview_release_assignment,
             release_selector=release_selector,
         )
-        package_proposal = dict(proposal) if authored_projection else proposal_with_component_brief_gate(proposal)
+        package_proposal = dict(proposal)
         project_brief = package_proposal.get("project_brief") if isinstance(package_proposal.get("project_brief"), Mapping) else {}
         next_steps_preview = greenfield_experience.build_next_steps(
             proposal=package_proposal,
@@ -331,43 +319,6 @@ def build_prewrite_completion_package(
             repository_write_set=transaction_seal.repository_write_set,
             commit_result_preview=transaction_seal.commit_result_preview,
         )
-        if not authored_projection:
-            package = greenfield_source_casing.package_with_source_casing(package)
-        source_cased_seal = greenfield_prewrite_transaction_seal.seal_staged_greenfield_create(
-            greenfield_prewrite_transaction_seal.GreenfieldPrewriteSealRequest(
-                prewrite_root=prewrite_root,
-                target_root=root,
-                proposal=package.proposal,
-                validation_gate=package.tribunal_preview,
-                staged_backlog_result=staged_backlog_result,
-                target_backlog_result=package.backlog_result,
-                staged_component_registry_preview=package.component_registry_preview,
-                rendered_component_specs=package.rendered_component_specs,
-                diagram_rows=diagram_rows,
-                diagram_ids=package.atlas_diagram_ids,
-                staged_traceability_plan=staged_traceability_plan,
-                rendered_atlas_sources=package.rendered_atlas_sources,
-                atlas_review_date=package.atlas_review_date,
-                compiled_atlas_catalog_rows=package.atlas_catalog_rows,
-                accepted_project_preview=package.accepted_project_preview,
-                project_brief_record_text=package.project_brief_record_text,
-                compass_memory_preview=package.compass_memory_preview,
-                next_steps_preview=package.next_steps_preview,
-                prewrite_safety_preview=package.prewrite_safety_preview,
-                staged_release_bootstrap=staged_release_bootstrap,
-                staged_release_targeting={
-                    **dict(package.release_assignment_result or {}),
-                    "workstream_ids": list(package.release_workstream_ids),
-                },
-                brand_asset_count=len(brand_asset_writes),
-            )
-        )
-        package = replace(
-            package,
-            surface_refresh_preview=source_cased_seal.surface_refresh_preview,
-            repository_write_set=source_cased_seal.repository_write_set,
-            commit_result_preview=source_cased_seal.commit_result_preview,
-        )
         return GreenfieldPrewriteBuild(
             backlog_result=package.backlog_result or backlog_result,
             package=package,
@@ -404,34 +355,6 @@ def prewrite_safety_evidence(
 
 def _safety_evidence_subset(source: Mapping[str, Any], *, keys: Sequence[str]) -> dict[str, Any]:
     return {key: source[key] for key in keys if key in source}
-
-
-def proposal_with_component_brief_gate(proposal: Mapping[str, Any]) -> dict[str, Any]:
-    result = dict(proposal)
-    labels = [
-        str(row.get("label", "")).strip()
-        for row in greenfield_apply_components.first_release_component_rows(result)
-        if str(row.get("label", "")).strip()
-    ]
-    if not labels:
-        return result
-    brief = dict(result.get("project_brief")) if isinstance(result.get("project_brief"), Mapping) else {}
-    gates = [str(item).strip() for item in brief.get("coding_readiness_gates", []) if str(item).strip()] if isinstance(brief.get("coding_readiness_gates"), list) else []
-    summary = ", ".join(labels)
-    gate = f"The first-release components come from product systems named in the accepted product direction: {summary}."
-    replaced = False
-    updated: list[str] = []
-    for item in gates:
-        if "components come from product systems named in the accepted product direction" in item.casefold():
-            updated.append(gate)
-            replaced = True
-        else:
-            updated.append(item)
-    if not replaced:
-        updated.append(gate)
-    brief["coding_readiness_gates"] = updated
-    result["project_brief"] = brief
-    return result
 
 
 def remap_prewrite_backlog_result(

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -133,6 +134,10 @@ def test_installed_generation_observation_rejects_tampered_after_image(tmp_path:
             str(transaction_file),
         ],
         cwd=repo,
+        env={
+            **os.environ,
+            "PYTHONPATH": str(REPO_ROOT / "src"),
+        },
         text=True,
         capture_output=True,
         check=True,

@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -128,3 +129,88 @@ def test_authored_structural_validation_replaces_legacy_prose_lenses_only_when_a
     assert "pre-confirm quality lens report did not pass" in scoring._manifest_issues(  # noqa: SLF001
         manifest
     )
+
+
+def test_authored_structural_validation_does_not_promote_unproven_semantic_lenses() -> None:
+    scoring = _scoring_module()
+    manifest = _authored_structural_manifest()
+
+    lenses = scoring._quality_lenses(  # noqa: SLF001
+        manifest_lenses={},
+        evidence_findings=(),
+        counts=scoring.GreenfieldArtifactCounts(),
+        manifest=manifest,
+        create_returncode=0,
+    )
+
+    assert lenses == {
+        "product_manager": False,
+        "architect": False,
+        "engineer": False,
+        "domain_expert": False,
+    }
+    assert {
+        lens: scoring._independent_lens_score(  # noqa: SLF001
+            manifest_lenses={},
+            lens=lens,
+            passed=lenses[lens],
+        )
+        for lens in scoring.INDEPENDENT_SEMANTIC_LENS_DIMENSIONS
+    } == {lens: scoring.UNSCORED_QUALITY_SCORE for lens in lenses}
+
+
+def test_claimed_semantic_lens_failure_remains_a_failed_score() -> None:
+    scoring = _scoring_module()
+    manifest_lenses = {"product_manager": {"status": "passed"}}
+    lenses = scoring._quality_lenses(  # noqa: SLF001
+        manifest_lenses=manifest_lenses,
+        evidence_findings=(
+            SimpleNamespace(
+                dimension="product_manager",
+                message="independent review found a product utility defect",
+            ),
+        ),
+        counts=scoring.GreenfieldArtifactCounts(),
+        manifest=_authored_structural_manifest(),
+        create_returncode=0,
+    )
+
+    assert scoring._independent_lens_score(  # noqa: SLF001
+        manifest_lenses=manifest_lenses,
+        lens="product_manager",
+        passed=lenses["product_manager"],
+    ) == 0
+    assert scoring._quality_lens_issues(  # noqa: SLF001
+        manifest_lenses=manifest_lenses,
+        lenses=lenses,
+    ) == ("product_manager release-matrix lens failed",)
+
+
+def test_unscored_independent_lenses_do_not_claim_release_quality() -> None:
+    scoring = _scoring_module()
+    scores = {dimension: 10 for dimension in scoring.QUALITY_SCORE_DIMENSIONS}
+    scores.update({lens: scoring.UNSCORED_QUALITY_SCORE for lens in scoring.INDEPENDENT_SEMANTIC_LENS_DIMENSIONS})
+
+    assert scoring._automated_unscored_dimensions(scores) == ()  # noqa: SLF001
+    assert scoring._score_basis(scores) == (  # noqa: SLF001
+        "automated_contract_independent_semantic_review_required"
+    )
+    assert scoring._final_quality_score(  # noqa: SLF001
+        scores=scores,
+        manifest=_authored_structural_manifest(),
+        create_returncode=0,
+        rendered_issues=(),
+        prompt_issues=(),
+    ) == 10
+    explanation = scoring._score_explanation(  # noqa: SLF001
+        score=10,
+        scores=scores,
+        counts=scoring.GreenfieldArtifactCounts(),
+        rendered_issues=(),
+        prompt_issues=(),
+        manifest=_authored_structural_manifest(),
+        create_returncode=0,
+        lenses={lens: False for lens in scoring.INDEPENDENT_SEMANTIC_LENS_DIMENSIONS},
+    )
+    assert explanation[0].startswith("automated contract passed; independent semantic review remains required")
+    assert all("all release-quality dimensions" not in line for line in explanation)

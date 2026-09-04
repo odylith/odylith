@@ -29,6 +29,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     StructuredAuthoringProvider,
     authored_response,
+    model_event_rows,
 )
 
 _TEXT_FIELDS = {
@@ -202,7 +203,133 @@ def test_authoring_accepts_only_byte_verified_source_citations() -> None:
     assert provider.calls == 1
 
 
-def test_coordinated_events_preserve_one_explicit_typed_actor_carry() -> None:
+def test_product_led_path_keeps_review_recipient_without_inventing_human_event() -> None:
+    event = "The berth map prepares release readiness proof"
+    proof = "release readiness proof for Engineering reviewer Mara"
+    intent = {
+        **_TEXT_FIELDS,
+        **_LIST_FIELDS,
+        "product_story": event,
+        "first_path": event,
+        "proof_boundary": proof,
+        "human_actors": ["Engineering reviewer Mara"],
+        "internal_systems": ["Berth map"],
+        "success_metrics": ["release readiness proof"],
+    }
+    source = ". ".join(
+        str(row)
+        for value in intent.values()
+        for row in (value if isinstance(value, list) else [value])
+        if str(row)
+    ) + "."
+    response = authored_response(
+        intent,
+        evidence_text=source,
+        component_responsibility_owners=["Berth map"],
+        first_path_relations=[
+            {
+                "actor_kind": "product",
+                "actor_quote": "The berth map",
+                "owner_system_quote": "Berth map",
+                "event_quote": event,
+                "target_quote": "release readiness proof",
+                "visible_result_quote": "release readiness proof",
+                "recovery_path": False,
+            },
+        ],
+    )
+
+    result = author_greenfield_intent(
+        evidence_text=source,
+        provider=StructuredAuthoringProvider(response),
+        clock=lambda: 0.0,
+    )
+
+    assert [row["actor_kind"] for row in result.first_path_relations] == ["product"]
+    assert [row["event_quote"] for row in result.first_path_relations] == [event]
+    assert result.intent["human_actors"] == ["Engineering reviewer Mara"]
+    assert result.intent["proof_boundary"] == proof
+    assert result.intent["assumptions"] == []
+
+
+def test_event_rejects_target_that_is_only_adjacent_in_a_selected_fact() -> None:
+    event = (
+        "coordinates referral intake, guardian consent, therapist assignment, "
+        "care-plan readiness, visit evidence, and exception review"
+    )
+    target = "children served across multiple schools"
+    product_story = f"A pediatric therapy agency practice workspace {event} for {target}"
+    intent = {
+        **_TEXT_FIELDS,
+        **_LIST_FIELDS,
+        "title": "pediatric therapy agency practice workspace",
+        "product_story": product_story,
+        "first_path": event,
+        "customer": target,
+        "human_actors": ["therapy agency staff"],
+        "internal_systems": [],
+        "component_responsibilities": [],
+    }
+    source = ". ".join(
+        str(row)
+        for value in intent.values()
+        for row in (value if isinstance(value, list) else [value])
+        if str(row)
+    ) + "."
+    response = authored_response(
+        intent,
+        evidence_text=source,
+        terminal_component_owner=str(intent["title"]),
+        first_path_relations=[
+            {
+                "actor_kind": "product",
+                "actor_quote": str(intent["title"]),
+                "owner_system_quote": str(intent["title"]),
+                "event_quote": event,
+                "target_quote": target,
+                "visible_result_quote": "visit evidence",
+                "recovery_path": False,
+            }
+        ],
+    )
+
+    with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path event"):
+        author_greenfield_intent(
+            evidence_text=source,
+            provider=StructuredAuthoringProvider(response),
+            clock=lambda: 0.0,
+        )
+
+
+def test_event_target_stays_fail_closed_after_ordered_event_simplification() -> None:
+    source = _source()
+    response = _response(source)
+    model_event_rows(response)[0]["target_quote"] = "release readiness proof"
+
+    with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path event"):
+        author_greenfield_intent(
+            evidence_text=source,
+            provider=StructuredAuthoringProvider(response),
+            clock=lambda: 0.0,
+        )
+
+
+def test_selected_target_without_event_co_containment_stays_fail_closed() -> None:
+    source = _source()
+    response = _response(source)
+    model_event_rows(response)[0]["target_quote"] = (
+        "Source evidence preserves berth history"
+    )
+
+    with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path event"):
+        author_greenfield_intent(
+            evidence_text=source,
+            provider=StructuredAuthoringProvider(response),
+            clock=lambda: 0.0,
+        )
+
+
+def test_coordinated_events_derive_actor_presence_from_one_typed_fact_edge() -> None:
     source, response, intent = _carried_human_actor_response()
 
     result = author_greenfield_intent(
@@ -213,7 +340,7 @@ def test_coordinated_events_preserve_one_explicit_typed_actor_carry() -> None:
 
     assert [row["actor_is_carried"] for row in result.first_path_relations] == [
         False,
-        False,
+        True,
         True,
     ]
     assert validate_first_path_relations(
@@ -239,20 +366,30 @@ def test_coordinated_events_preserve_one_explicit_typed_actor_carry() -> None:
 
 
 @pytest.mark.parametrize("relation_index", [0, 1])
-def test_actor_carry_cannot_start_a_path_or_change_to_an_unspoken_actor(
+def test_typed_actor_fact_is_authoritative_without_event_surface_reparsing(
     relation_index: int,
 ) -> None:
-    source, response, _intent = _carried_human_actor_response()
-    relation = response["events"][relation_index]
-    relation["actor_quote"] = "Mara"
+    source, response, intent = _carried_human_actor_response()
+    relation = model_event_rows(response)[relation_index]
     relation["actor_fact_quote"] = "Mara"
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path actor"):
-        author_greenfield_intent(
-            evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
-            clock=lambda: 0.0,
-        )
+    result = author_greenfield_intent(
+        evidence_text=source,
+        provider=StructuredAuthoringProvider(response),
+        clock=lambda: 0.0,
+    )
+
+    assert result.first_path_relations[relation_index]["actor_quote"] == "Mara"
+    assert result.first_path_relations[relation_index]["actor_fact_quote"] == "Mara"
+    assert result.first_path_relations[relation_index]["actor_is_carried"] is True
+    assert validate_first_path_relations(
+        result.first_path_relations,
+        first_path=str(result.intent["first_path"]),
+        human_actors=intent["human_actors"],
+        external_systems=intent["external_systems"],
+        internal_systems=intent["internal_systems"],
+        product_title=str(intent["title"]),
+    ) == result.first_path_relations
 
 
 def test_materialization_preserves_exact_event_fact_bytes(tmp_path) -> None:  # type: ignore[no-untyped-def]
@@ -304,27 +441,38 @@ def test_verified_authoring_spans_become_the_product_intent_custody_source() -> 
         "authoring:first_path:3:6",
     ]
     assert authority["atomic_facts"]
+    action_values = {
+        row["normalized_value"]
+        for row in authority["atomic_facts"]
+        if any(
+            link["relation_role"] == "action_verb_quote"
+            for link in row["projection_links"]
+        )
+    }
+    assert action_values == set(_AUTHORED_FIRST_PATH.splitlines())
+    first_event = _AUTHORED_FIRST_PATH.splitlines()[0]
     action_atom = next(
         row
         for row in authority["atomic_facts"]
-        if row["projection_links"][0]["relation_role"] == "action_verb_quote"
+        if row["normalized_value"] == first_event
+        and any(
+            link["relation_role"] == "action_verb_quote"
+            for link in row["projection_links"]
+        )
     )
-    assert action_atom["normalized_value"] == "enters"
     assert action_atom["categories"] == ["actions"]
     assert action_atom["polarity"] == "affirmed"
     assert action_atom["entailment_relationship"] == "exact_source_span"
     assert action_atom["source_span_refs"][0]["source_start_byte"] >= 0
-    assert action_atom["projection_links"] == [
-        {
-            "field": "first_path",
-            "path": "/first_path",
-            "value_sha256": hashlib.sha256(_AUTHORED_FIRST_PATH.encode("utf-8")).hexdigest(),
-            "projection_start_byte": len("Dock attendant Ivo ".encode("utf-8")),
-            "projection_end_byte": len("Dock attendant Ivo enters".encode("utf-8")),
-            "relation_order": 1,
-            "relation_role": "action_verb_quote",
-        }
-    ]
+    assert {
+        "field": "first_path",
+        "path": "/first_path",
+        "value_sha256": hashlib.sha256(_AUTHORED_FIRST_PATH.encode("utf-8")).hexdigest(),
+        "projection_start_byte": 0,
+        "projection_end_byte": len(first_event.encode("utf-8")),
+        "relation_order": 1,
+        "relation_role": "action_verb_quote",
+    } in action_atom["projection_links"]
 
 
 def test_envelope_rejects_relation_rebound_to_a_duplicate_source_occurrence() -> None:

@@ -125,7 +125,7 @@ def test_create_confirm_cli_commits_transaction_without_post_confirm_generation(
     monkeypatch.setattr(greenfield_traceability_commit, "rebase_compiled_traceability_plan", forbidden)
     monkeypatch.setattr(proposal_memory, "record_compiled_greenfield_acceptance", forbidden)
     monkeypatch.setattr(
-        greenfield_component_commit.component_authoring.owned_surface_refresh,
+        greenfield_component_commit.component_compiled_commit.owned_surface_refresh,
         "raise_for_failed_refresh",
         forbidden,
     )

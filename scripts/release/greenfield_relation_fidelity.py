@@ -18,8 +18,14 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     FIRST_PATH_CONTEXT_KINDS,
     FIRST_PATH_CONTEXT_RELATION_FIELDS,
     FIRST_PATH_RELATION_FIELDS,
+    GreenfieldAuthoredSemanticsError,
     authored_relation_set_sha256,
     combined_prompt_evidence_source,
+    expected_first_path_context_event_order,
+)
+from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
+    event_target_is_source_bound,
+    intent_terminal_result_values,
 )
 
 
@@ -135,7 +141,7 @@ def annotation_relation_evidence(
     contexts, context_issues = _annotation_context_keys(
         value.get("context_relations"),
         source_bytes=source_bytes,
-        event_orders=frozenset(event_by_order),
+        first_path_relations=_mapping_rows(value.get("first_path_events")) or (),
         projection_identities=projection_identities,
     )
     issues.extend(context_issues)
@@ -221,16 +227,11 @@ def snapshot_relation_evidence(
         facts=facts,
         source_bytes=source_bytes,
     )
-    event_by_order = {
-        int(key[1]): key
-        for key in event_keys
-        if isinstance(key[1], int) and not isinstance(key[1], bool)
-    }
     context_keys, context_issues = _snapshot_context_keys(
         contexts,
         facts=facts,
         source_bytes=source_bytes,
-        event_orders=frozenset(event_by_order),
+        first_path_relations=events,
     )
     selected_contexts = _snapshot_context_facts(facts)
     context_issues = (
@@ -392,7 +393,7 @@ def _annotation_context_keys(
     value: Any,
     *,
     source_bytes: bytes,
-    event_orders: frozenset[int],
+    first_path_relations: Sequence[Mapping[str, Any]],
     projection_identities: frozenset[tuple[str, str]],
 ) -> tuple[tuple[tuple[Any, ...], ...], tuple[str, ...]]:
     rows = _mapping_rows(value)
@@ -416,9 +417,10 @@ def _annotation_context_keys(
             issues.append(f"{label} context fact identity is not atom-grounded")
         if not _source_hash_matches(source_bytes, source_range, fact_sha):
             issues.append(f"{label} context source custody is invalid")
-        if event_order is None or (
-            event_order != 0 and event_order not in event_orders
-        ) or (kind == "state_object" and event_order == 0):
+        if event_order is None or event_order != _product_context_event_order(
+            source_range=source_range,
+            first_path_relations=first_path_relations,
+        ):
             issues.append(f"{label} event linkage is invalid")
         keys.append(
             (
@@ -520,6 +522,7 @@ def _snapshot_event_keys(
         event_quote = str(row.get("event_quote") or "")
         actor_kind = str(row.get("actor_kind") or "")
         actor_quote = str(row.get("actor_quote") or "")
+        actor_is_carried = row.get("actor_is_carried")
         actor_fact_path = str(row.get("actor_fact_path") or "")
         actor_fact_quote = str(row.get("actor_fact_quote") or "")
         owner_path = str(row.get("owner_system_path") or "")
@@ -540,10 +543,19 @@ def _snapshot_event_keys(
             issues.append(f"{label} projection range does not contain its exact event")
         else:
             cursor = projection_range[1]
-        if actor_kind not in FIRST_PATH_ACTOR_KINDS or not actor_quote or actor_quote not in event_quote:
-            issues.append(f"{label} actor is not an exact typed event quote")
-        if not action_quote or action_quote not in event_quote or (target_quote and target_quote not in event_quote):
+        if (
+            actor_kind not in FIRST_PATH_ACTOR_KINDS
+            or not actor_quote
+            or not isinstance(actor_is_carried, bool)
+        ):
+            issues.append(f"{label} actor identity is invalid")
+        if not action_quote or action_quote not in event_quote:
             issues.append(f"{label} action is not exactly grounded in its event")
+        if not event_target_is_source_bound(
+            event_quote=event_quote,
+            target_quote=target_quote,
+        ):
+            issues.append(f"{label} target is not exactly grounded in its event")
         if not isinstance(recovery_path, bool):
             issues.append(f"{label} recovery_path is not boolean")
         if (
@@ -551,6 +563,12 @@ def _snapshot_event_keys(
             or _projection_value(facts, actor_fact_path) != actor_fact_quote
         ):
             issues.append(f"{label} actor fact does not match its exact selected fact")
+        if (
+            actor_quote != actor_fact_quote
+            or isinstance(actor_is_carried, bool)
+            and actor_is_carried == (actor_fact_quote in event_quote)
+        ):
+            issues.append(f"{label} actor carry state does not match its selected fact")
         if actor_kind == "product":
             if (
                 owner_path != actor_fact_path
@@ -560,8 +578,10 @@ def _snapshot_event_keys(
                 issues.append(f"{label} product owner is not bound to its exact selected fact")
         elif owner_path or owner_quote:
             issues.append(f"{label} non-product event declares a product owner")
-        if visible_quote and visible_quote not in event_quote:
-            issues.append(f"{label} visible result is not an exact event quote")
+        if visible_quote and not any(
+            visible_quote in fact for fact in intent_terminal_result_values(facts)
+        ):
+            issues.append(f"{label} visible result is not bound to an eligible source fact")
         keys.append(
             (
                 "event",
@@ -593,7 +613,7 @@ def _snapshot_context_keys(
     *,
     facts: Mapping[str, Any],
     source_bytes: bytes,
-    event_orders: frozenset[int],
+    first_path_relations: Sequence[Mapping[str, Any]],
 ) -> tuple[tuple[tuple[Any, ...], ...], tuple[str, ...]]:
     issues: list[str] = []
     keys: list[tuple[Any, ...]] = []
@@ -613,9 +633,10 @@ def _snapshot_context_keys(
             issues.append(f"{label} does not match its exact selected fact")
         if not _exact_slice(source_bytes, source_range, quote):
             issues.append(f"{label} does not match its exact source range")
-        if event_order is None or (
-            event_order and event_order not in event_orders
-        ) or (kind == "state_object" and event_order == 0):
+        if event_order is None or event_order != _product_context_event_order(
+            source_range=source_range,
+            first_path_relations=first_path_relations,
+        ):
             issues.append(f"{label} has an invalid event linkage")
         keys.append(
             (
@@ -630,6 +651,23 @@ def _snapshot_context_keys(
     if len(keys) != len(set(keys)):
         issues.append("sealed context relation identities are duplicated")
     return tuple(keys), tuple(issues)
+
+
+def _product_context_event_order(
+    *,
+    source_range: tuple[int, int] | None,
+    first_path_relations: Sequence[Mapping[str, Any]],
+) -> int | None:
+    if source_range is None:
+        return None
+    try:
+        return expected_first_path_context_event_order(
+            source_start=source_range[0],
+            source_end=source_range[1],
+            first_path_relations=first_path_relations,
+        )
+    except GreenfieldAuthoredSemanticsError:
+        return None
 
 
 def _snapshot_component_keys(

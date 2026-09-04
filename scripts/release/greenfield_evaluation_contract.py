@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections import Counter
+from collections import Counter, defaultdict
 from collections.abc import Mapping, Sequence
 import hashlib
 import json
@@ -19,12 +19,17 @@ from greenfield_matrix_statistics import expected_case_source_complexity
 from greenfield_matrix_statistics import release_slice_contract
 from greenfield_matrix_statistics import release_slice_minimum_sample_contract
 from greenfield_matrix_statistics import release_slice_minimum_sample_contract_issues
+from greenfield_matrix_statistics import release_statistical_confidence_contract
+from greenfield_matrix_statistics import release_statistical_confidence_contract_issues
+from greenfield_matrix_statistics import release_statistical_confidence_sample_minimum
 from greenfield_model_profiles import MODEL_PROFILES
 from greenfield_model_profiles import MODEL_PROFILE_ASSIGNMENT_SEED
 from greenfield_model_profiles import MODEL_PROFILE_ASSIGNMENT_VERSION
 from greenfield_model_profiles import assign_model_profiles
+from greenfield_model_profiles import case_model_profile
 from greenfield_model_profiles import profile_coverage
 from greenfield_model_profiles import profile_counts
+from greenfield_relation_fidelity import RELATION_FAMILIES
 from greenfield_relation_fidelity import annotation_relation_evidence
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     combined_prompt_evidence_source,
@@ -36,9 +41,9 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 
 
-EVALUATION_SPLIT_VERSION = "odylith.greenfield.evaluation-splits.v4"
-FINAL_HOLDOUT_VERSION = "odylith.greenfield.final-holdout.v4"
-STRUCTURAL_FLOORS_VERSION = "odylith.greenfield.structural-floors.v3"
+EVALUATION_SPLIT_VERSION = "odylith.greenfield.evaluation-splits.v5"
+FINAL_HOLDOUT_VERSION = "odylith.greenfield.final-holdout.v5"
+STRUCTURAL_FLOORS_VERSION = "odylith.greenfield.structural-floors.v4"
 ATOMIC_CATEGORIES = (
     "actors",
     "actions",
@@ -66,7 +71,18 @@ _FROZEN_METRIC_FLOOR_KEYS = frozenset(
         "worst_slice_success",
     }
 )
-_FROZEN_FLOOR_KEYS = _FROZEN_METRIC_FLOOR_KEYS | {"release_slice_minimum_samples"}
+_FROZEN_FLOOR_KEYS = _FROZEN_METRIC_FLOOR_KEYS | {
+    "release_slice_minimum_samples",
+    "statistical_confidence",
+}
+_FROZEN_ACCEPTANCE_THRESHOLDS = {
+    "atomic_semantic_fidelity": 1.0,
+    "relation_fidelity": 1.0,
+    "clarification_identity": 1.0,
+    "unnecessary_question_rate_ceiling": 0.0,
+    "overall_case_success": 1.0,
+    "worst_slice_success": 1.0,
+}
 _LINEAGE_KEYS = frozenset({"semantic_family", "template_family"})
 _RELATION_ROLES = frozenset(
     {
@@ -219,6 +235,13 @@ def evaluate_frozen_evaluation_contract(
                     f"final holdout has {observed} sample(s) for {dimension} `{value}`; "
                     f"requires at least {minimum}"
                 )
+    profile_confidence_sample_minimum = release_statistical_confidence_sample_minimum()
+    profile_confidence_issues = profile_confidence_sample_issues(
+        cases=assigned_holdout_cases,
+        annotations=annotations,
+        minimum=profile_confidence_sample_minimum,
+    )
+    issues.extend(profile_confidence_issues)
     frozen_floors = _mapping(manifest.get("frozen_floors"))
     issues.extend(_frozen_floor_issues(frozen_floors))
     issues.extend(
@@ -258,8 +281,17 @@ def evaluate_frozen_evaluation_contract(
                     if str(case.metamorphic_group or "").strip()
                 }
             ),
+            "confidence_sample_minimum": profile_confidence_sample_minimum,
+            "confidence_sample_issues": profile_confidence_issues,
         },
         "frozen_floors": dict(frozen_floors),
+        "acceptance_thresholds": {
+            name: frozen_floors.get(name)
+            for name in sorted(_FROZEN_METRIC_FLOOR_KEYS)
+        },
+        "statistical_confidence": _mapping(
+            frozen_floors.get("statistical_confidence")
+        ),
         "profiles": dict(profiles),
         "required_release_slices": {
             dimension: list(values)
@@ -352,7 +384,7 @@ def validate_atomic_annotations(
             "relation_fidelity",
         }
         if set(raw) != expected_keys:
-            issues.append(f"annotation `{case_id}` must use only the frozen v4 structural fields")
+            issues.append(f"annotation `{case_id}` must use only the frozen structural fields")
         if raw.get("split") != "final_holdout":
             issues.append(f"annotation `{case_id}` must declare split `final_holdout`")
         expected_hash = hashlib.sha256(case.prompt.encode("utf-8")).hexdigest()
@@ -638,10 +670,110 @@ def _validate_expected_clarification(
         issues.append(f"annotation `{case_id}` expected clarification question is invalid")
 
 
+def profile_confidence_sample_issues(
+    *,
+    cases: Sequence[GreenfieldMatrixCase],
+    annotations: Mapping[str, Mapping[str, Any]],
+    minimum: int,
+) -> list[str]:
+    """Ensure every profile-level confidence denominator can reach its gate."""
+
+    if minimum <= 0:
+        return ["model-profile confidence has no positive sample minimum"]
+    active_outcomes = {
+        str(annotation.get("expected_outcome") or "")
+        for annotation in annotations.values()
+        if str(annotation.get("expected_outcome") or "") in EXPECTED_OUTCOMES
+    }
+    outcome_counts: dict[str, Counter[str]] = defaultdict(Counter)
+    slice_counts: dict[str, Counter[tuple[str, str]]] = defaultdict(Counter)
+    atomic_counts: Counter[str] = Counter()
+    relation_counts: dict[str, Counter[str]] = defaultdict(Counter)
+    for case in cases:
+        case_id = _case_id(case)
+        annotation = annotations.get(case_id)
+        if annotation is None:
+            continue
+        profile = case_model_profile(case)
+        outcome = str(annotation.get("expected_outcome") or "")
+        outcome_counts[profile][outcome] += 1
+        provenance = getattr(case, "provenance", None)
+        profile_slices = {
+            "input_style": str(case.input_style or "unspecified"),
+            "expectation": str(case.expectation or "transaction_committed"),
+            "source_family": str(
+                getattr(provenance, "source_family", "") or "unspecified"
+            ),
+            "complexity_band": greenfield_complexity_band(
+                _mapping(annotation.get("complexity"))
+            ),
+            "evidence_format": expected_case_evidence_format(case),
+            "model_profile": profile,
+        }
+        for dimension, value in profile_slices.items():
+            slice_counts[profile][(dimension, value)] += 1
+        if outcome != "commit":
+            continue
+        atoms = annotation.get("atoms")
+        atom_rows = (
+            tuple(item for item in atoms if isinstance(item, Mapping))
+            if _is_sequence(atoms)
+            else ()
+        )
+        atomic_counts[profile] += sum(
+            1 for item in atom_rows if item.get("evaluation_role") == "scored"
+        )
+        relations = annotation_relation_evidence(
+            case=case,
+            value=annotation.get("relation_fidelity"),
+            atom_rows=atom_rows,
+        )
+        for family in RELATION_FAMILIES:
+            relation_counts[profile][family] += max(
+                len(relations.keys.get(family, ())),
+                int(relations.minimum_samples.get(family, 0)),
+            )
+
+    issues: list[str] = []
+    for profile in MODEL_PROFILES:
+        total = sum(outcome_counts[profile].values())
+        if total < minimum:
+            issues.append(
+                f"model profile `{profile}` has {total} total observation(s); "
+                f"confidence requires at least {minimum}"
+            )
+        for outcome in sorted(active_outcomes):
+            observed = int(outcome_counts[profile][outcome])
+            if observed < minimum:
+                issues.append(
+                    f"model profile `{profile}` has {observed} `{outcome}` observation(s); "
+                    f"confidence requires at least {minimum}"
+                )
+        observed_atoms = int(atomic_counts[profile])
+        if "commit" in active_outcomes and observed_atoms < minimum:
+            issues.append(
+                f"model profile `{profile}` has {observed_atoms} scored atomic observation(s); "
+                f"confidence requires at least {minimum}"
+            )
+        for (dimension, value), observed in sorted(slice_counts[profile].items()):
+            if observed < minimum:
+                issues.append(
+                    f"model profile `{profile}` has {observed} sample(s) for "
+                    f"{dimension} `{value}`; confidence requires at least {minimum}"
+                )
+        for family, observed in sorted(relation_counts[profile].items()):
+            if observed and observed < minimum:
+                issues.append(
+                    f"model profile `{profile}` has {observed} `{family}` relation sample(s); "
+                    f"confidence requires at least {minimum}"
+                )
+    return issues
+
+
 def _frozen_floor_issues(value: Mapping[str, Any]) -> tuple[str, ...]:
     expected_keys = {"version", *_FROZEN_FLOOR_KEYS}
     if set(value) != expected_keys:
-        return ("frozen_floors must use only the v3 structural floor fields",)
+        return ("frozen_floors must use only the v4 acceptance and confidence fields",)
     issues: list[str] = []
     if value.get("version") != STRUCTURAL_FLOORS_VERSION:
         issues.append(f"frozen_floors must declare {STRUCTURAL_FLOORS_VERSION}")
@@ -653,11 +785,26 @@ def _frozen_floor_issues(value: Mapping[str, Any]) -> tuple[str, ...]:
             or not 0.0 <= float(threshold) <= 1.0
         ):
             issues.append(f"frozen_floors `{name}` must be a number from 0 through 1")
+        elif float(threshold) != _FROZEN_ACCEPTANCE_THRESHOLDS[name]:
+            issues.append(
+                f"frozen_floors `{name}` must preserve the exact "
+                f"{_FROZEN_ACCEPTANCE_THRESHOLDS[name]:.1f} acceptance threshold"
+            )
+    minimum_samples = value.get("release_slice_minimum_samples")
     issues.extend(
         release_slice_minimum_sample_contract_issues(
-            value.get("release_slice_minimum_samples")
+            minimum_samples
         )
     )
+    confidence = value.get("statistical_confidence")
+    issues.extend(
+        release_statistical_confidence_contract_issues(
+            confidence,
+            minimum_samples=minimum_samples if isinstance(minimum_samples, Mapping) else None,
+        )
+    )
+    if isinstance(confidence, Mapping) and dict(confidence) != release_statistical_confidence_contract():
+        issues.append("statistical confidence must match the published release contract")
     return tuple(issues)
 
 
@@ -868,5 +1015,6 @@ __all__ = [
     "assign_tracked_splits",
     "cross_split_membership_issues",
     "evaluate_frozen_evaluation_contract",
+    "profile_confidence_sample_issues",
     "validate_atomic_annotations",
 ]

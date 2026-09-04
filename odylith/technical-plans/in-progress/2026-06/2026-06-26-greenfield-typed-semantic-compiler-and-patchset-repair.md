@@ -4332,3 +4332,140 @@ above.
       slice, hash, and ledger preflight. Do not add an evaluator adapter stack,
       reduce floors, count disclosed public cases as blind evidence, or change
       production behavior before that gate.
+    - 2026-09-03 current-contract protected-run adjudication: blind package
+      `68f8a2570f74dbd4d9b721b33da75a92365d7383ca76255db7c5eb93c0d36742`
+      passed independent review and pure v4 preflight, then consumed its
+      one-shot ledger and failed. The exact `60/90/120` latency contract,
+      recovery, provider-unavailable, and cleanup gates passed. Product truth
+      still failed at three product owners: material clarification crossed
+      staging in GFH19-014; one direct graph returned an invalid terminal
+      result; and one omitted a selected component responsibility. Bounded
+      call-path inspection subsequently localized the missing `/title` atomic
+      rebind to the release-only snapshot builder, not the sealed product
+      transaction. Independent
+      adjudication also separated evaluator-owned failures: an Atlas arrow
+      whitelist disagreed with the product parser, relation scoring rejected
+      runtime-valid state-object order zero and zeroed whole families, the
+      write observer treated cleanup/subprocess activity as governed writes,
+      Wilson bounds were compared to unattainable perfect finite-sample
+      thresholds, and raw artifacts were cleaned before adjudication. CB-315
+      and CB-323 own the product recurrence; CB-329 owns the release snapshot
+      omission and other evaluator divergence.
+      Retire this corpus to regression. The next wave is restricted to one
+      pre-write clarification decision, one complete shared semantic contract,
+      canonical parser reuse, governed-write observation, achievable
+      confidence reporting separate from strict product acceptance, and raw
+      evidence retention. Delete superseded duplicate owners; add no semantic
+      regex, phrase list, prompt tower, retry cascade, second model call, or
+      post-confirm interpretation. Require disclosed-regression and public
+      proof before commissioning a newly blinded holdout.
+    - 2026-09-03 v20 convergence checkpoint: one source-cited typed graph now
+      owns material clarification, terminal selection, ordered actor/action
+      events, and component responsibility binding. Deterministic code owns
+      byte custody and transaction laws only. The losing parser/repair regime
+      is being removed rather than wrapped: 30 obsolete modules and 4,927 lines
+      are deleted, and an executed public proposal trace reports zero semantic
+      regex callers. Exact typed authored facts now render directly into Project
+      DOM nodes; the 28-cell desktop/mobile normal, empty/fallback, and
+      degraded/invalid matrix passes without clipping, overflow, or semantic
+      mismatch. Retained release evidence is mandatory for passed, failed, and
+      interrupted v3 outcomes and is bound to a unique claim run id. Combined
+      source proof passes 1,171 tests; maintained fast/lifecycle targets pass
+      445/208; independent review reports no P0/P1. Freeze this mechanism and
+      proceed only through immutable installed `60/90/120`, recovery/readback,
+      then one newly blind holdout. The 2,518-line shell stylesheet receives a
+      narrow five-line release-safety exception; B-142 owns post-release
+      decomposition before any unrelated style growth.
+    - 2026-09-03 v20 immutable public result: candidate wheel
+      `5539fbf7244920541a61827b07839244a857faa8ec12e587b101a286a2cc3b1f`
+      is rejected at `4/14`. Deep passed `4/4`; standard and rescue passed
+      `0/10` inside their declared budgets. Safety, recovery, retained evidence,
+      cleanup, and reached browser cases passed, so this wave does not reopen
+      commit or rendering architecture. Replace only the authoring response
+      contract: make authored versus clarification structurally exclusive,
+      require non-empty canonical fact/event/component minima in the authored
+      branch, remove redundant event-local actor wording in favor of the typed
+      actor-fact edge, and retain raw model/request evidence externally for
+      failed-case adjudication. Run focused source proof before rebuilding a new
+      immutable public candidate. Do not commission another blind holdout until
+      the public `60/90/120` matrix is fully green.
+    - 2026-09-03 bounded profile comparison: v21 made the prior failing public
+      standard case structurally executable in `38.797s`, but low reasoning
+      produced a semantically invalid human actor. Treat that as a failed
+      mechanism, not a passing fixture. Promote the already measured
+      `gpt-5.6-sol/high` author across standard, rescue, and deep while retaining
+      one call and the exact `60/90/120` consumer ceilings. The immutable v20
+      evidence predicts higher fidelity because this profile passed `4/4` with
+      a `53.766s` worst proposal; falsify that prediction on three formerly
+      failing public cases before running the complete matrix.
+    - 2026-09-03 v21 bounded replacement result: the all-`sol/high` prediction
+      is falsified for the standard lane because a real call exceeded its
+      55-second model window. Standard now pins `gpt-5.6-terra/high`; rescue and
+      deep retain `gpt-5.6-sol/high`. The exclusive authored-or-clarification
+      schema, human-start/following event structure, canonical actor edge, and
+      non-redundant action fact pass three independent live public probes:
+      security disclosure authored in `40.259s`, assay correctly requested one
+      no-package clarification in `5.686s`, and semiconductor custody authored
+      on rescue in `56.592s`. Focused, runtime, install/release, mirror/Atlas,
+      and semantic-regex gates pass `211`, `633`, `507`, `48`, and `4` tests;
+      executed proposal tracing finds zero semantic regex authority. Freeze
+      these bytes and proceed to an immutable installed public `14/14` run with
+      complete retained model, transaction, recovery, and 28-cell browser
+      evidence. Do not commission the new blind holdout unless all public cases
+      pass. Reject v21 on a repeated public failure instead of adding another
+      rule, retry, repair, or prompt layer.
+    - 2026-09-03 v21 immutable rejection and v22 ordered-event replacement:
+      immutable wheel
+      `727e28500619a2912f6b61d59726698aafc385f15195a6d608d0b212483b6868`
+      stopped at `1/3` completed public cases. Pediatric agency exposed a real
+      disconnected State and Evidence view despite clean browser rendering;
+      semiconductor custody failed before staging because the schema forced a
+      human-first event not present in the product-led source. V22 removes the
+      human-start/following split and uses one ordered event list with a common
+      actor/target/recovery shape. Human users remain selected facts but no
+      invented human action is required. Exact target containment remains
+      fail-closed, authored-semantics v11 removes the duplicate downstream
+      human-path rule, and Atlas adds only a dotted result-to-proof edge for
+      exact source containment. The formerly failing semiconductor request and
+      an independent security request now stage in one call; the thin assay
+      request correctly returns one no-write clarification. Focused,
+      Greenfield runtime, and install gates pass `74`, `636`, and `507` tests.
+      Rebuild immutable bytes and require the complete public `14/14` gate
+      before commissioning any new blind holdout. Add no regex, phrase list,
+      retry, repair path, or second model call.
+    - 2026-09-03 v22 public rejection and v23 target-binding comparison: Flood
+      passed the installed v22 path at `10/10` in `56.711s`, but Pediatric
+      failed pre-staging in `44.015s` when the model selected an exact Customer
+      target that was co-contained with the aligned event by Product Story but
+      was not repeated inside the narrower event fact. Pediatric had passed a
+      prior independent v22 call, establishing a stochastic false-negative
+      class rather than a fixture defect. Semiconductor passed in `42.814s`;
+      stop the campaign because `14/14` was already impossible. Reject strict
+      event-only containment; also reject target deletion because downstream
+      Registry component, proposal, and Tribunal surfaces consume that typed
+      meaning. V23 accepts a target only as an exact event substring or an exact
+      selected fact co-contained with the event by another selected fact. One
+      shared deterministic predicate now governs compilation, sealed
+      validation, atomic custody, and release scoring. The exact retained
+      failure compiles, invented and unrelated-selected targets fail closed, a
+      fresh Pediatric rescue call stages in `45.56s`, and focused/runtime/install
+      proof passes `96`, `638`, and `509` tests. Freeze and rerun the complete
+      immutable public gate; no blind holdout before `14/14`.
+    - 2026-09-04 v23 rejection and v29 bounded replacement: the installed v23
+      campaign completed eleven in-budget packages before a valid assay
+      material-ambiguity clarification hit an evaluator contract mismatch.
+      Independent review still rejects v23 for adjacent target acceptance,
+      location-as-dependency drift, repeated missing-field prose, unearned
+      expert scores, and conditional confirmation parsing. V29 deletes the
+      cross-fact target mechanism, makes CONFIRM/REJECT exact token protocols,
+      renders missing semantic fields as visible gaps, and replaces the
+      729-word accumulated authoring instruction block with one 497-word typed
+      contract. A fresh pediatric rescue transaction passes the discriminator
+      in `48.79s` with one source-bound action, `visit evidence` as proof/result,
+      and no false school dependency. Canonical semantic boundaries remain
+      regex-free (`80/80` retirement/hygiene proof). The initial broad gate
+      passed `3,787/3,790`; all three classified corrections pass `31/31`, and
+      the final frozen source rerun passes `3,790/3,790` in `275.35s`. Commit
+      and build immutable bytes, then require public `14/14` plus three
+      independent reviews. Do not consume a new blind holdout until every
+      public gate is green.

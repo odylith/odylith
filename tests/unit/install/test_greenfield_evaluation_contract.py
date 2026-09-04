@@ -21,12 +21,14 @@ from greenfield_evaluation_contract import STRUCTURAL_FLOORS_VERSION
 from greenfield_evaluation_contract import assign_tracked_splits
 from greenfield_evaluation_contract import cross_split_membership_issues
 from greenfield_evaluation_contract import evaluate_frozen_evaluation_contract
+from greenfield_evaluation_contract import profile_confidence_sample_issues
 from greenfield_evaluation_contract import validate_atomic_annotations
 from greenfield_model_profiles import MODEL_PROFILES
 from greenfield_model_profiles import MODEL_PROFILE_ASSIGNMENT_SEED
 from greenfield_model_profiles import MODEL_PROFILE_ASSIGNMENT_VERSION
 from greenfield_matrix_statistics import release_slice_contract
 from greenfield_matrix_statistics import release_slice_minimum_sample_contract
+from greenfield_matrix_statistics import release_statistical_confidence_contract
 from greenfield_relation_fidelity import RELATION_FIDELITY_ANNOTATION_VERSION
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     combined_prompt_evidence_source,
@@ -277,6 +279,7 @@ def _floors() -> dict[str, object]:
         "overall_case_success": 1.0,
         "worst_slice_success": 1.0,
         "release_slice_minimum_samples": release_slice_minimum_sample_contract(),
+        "statistical_confidence": release_statistical_confidence_contract(),
     }
 
 
@@ -512,7 +515,7 @@ def test_exact_prompt_identity_crossing_is_rejected_without_a_similarity_thresho
     )
 
 
-def test_frozen_contract_verifies_v4_structure_lineage_samples_and_floors(tmp_path: Path) -> None:
+def test_frozen_contract_verifies_v5_acceptance_confidence_and_samples(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     corpus_path = repo_root / "tests/fixtures/corpus.json"
     corpus_path.parent.mkdir(parents=True)
@@ -529,22 +532,26 @@ def test_frozen_contract_verifies_v4_structure_lineage_samples_and_floors(tmp_pa
     }
     corpus_path.write_text(json.dumps(corpus), encoding="utf-8")
     holdout_cases = tuple(
-        _case(
-            f"holdout-{index}",
-            f"Desk {index} supports this path: Operator records governed result {index}.",
-            edit_evidence=(
-                f"Keep governed result {index} reviewable."
-                if index % 2 == 0
-                else ""
+        replace(
+            _case(
+                f"holdout-{index}",
+                f"Desk {index} supports this path: Operator records governed result {index}.",
+                edit_evidence=(
+                    f"Keep governed result {index} reviewable."
+                    if index % 2 == 0
+                    else ""
+                ),
             ),
+            tags=(f"model-profile:{MODEL_PROFILES[(index - 1) // 12]}",),
         )
-        for index in range(1, 13)
+        for index in range(1, 37)
     )
     annotations = [_annotation(case) for case in holdout_cases]
     for index, annotation in enumerate(annotations):
-        if 4 <= index < 8:
+        profile_index = index % 12
+        if 4 <= profile_index < 8:
             annotation["complexity"].update({"actors": 5, "safety_boundaries": 3})
-        elif index >= 8:
+        elif profile_index >= 8:
             annotation["complexity"].update(
                 {
                     "actors": 17,
@@ -564,6 +571,7 @@ def test_frozen_contract_verifies_v4_structure_lineage_samples_and_floors(tmp_pa
                 "prompt": case.prompt,
                 "required_terms": [case.prompt.split()[0]],
                 "leakage_terms": [case.prompt.split()[-1].rstrip(".")],
+                "tags": list(case.tags),
                 **(
                     {"confirmed_intent_markdown": case.confirmed_intent_markdown}
                     if case.confirmed_intent_markdown
@@ -600,8 +608,8 @@ def test_frozen_contract_verifies_v4_structure_lineage_samples_and_floors(tmp_pa
         "final_holdout": {
             "sha256": hashlib.sha256(holdout_path.read_bytes()).hexdigest(),
             "byte_size": holdout_path.stat().st_size,
-            "case_count": 12,
-            "annotation_count": 12,
+            "case_count": 36,
+            "annotation_count": 36,
             "claim_class": "blinded-independent-synthetic-holdout",
             "lineage": {
                 case.case_id: {
@@ -632,7 +640,83 @@ def test_frozen_contract_verifies_v4_structure_lineage_samples_and_floors(tmp_pa
 
     assert report["passed"] is True
     assert report["tracked"]["case_count"] == 1
-    assert report["final_holdout"]["annotation_count"] == 12
+    assert report["final_holdout"]["annotation_count"] == 36
+    assert report["final_holdout"]["confidence_sample_issues"] == []
+    assert report["acceptance_thresholds"]["overall_case_success"] == 1.0
+    assert report["statistical_confidence"]["overall_case_success"] == 0.5
+
+    manifest["version"] = "odylith.greenfield.evaluation-splits.v4"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    retired_v4 = evaluate_frozen_evaluation_contract(
+        repo_root=repo_root,
+        manifest_path=manifest_path,
+        final_holdout_path=holdout_path,
+    )
+    assert retired_v4["passed"] is False
+    assert EVALUATION_SPLIT_VERSION in " ".join(retired_v4["issues"])
+
+    manifest["version"] = EVALUATION_SPLIT_VERSION
+    manifest["frozen_floors"]["overall_case_success"] = 0.99
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    softened = evaluate_frozen_evaluation_contract(
+        repo_root=repo_root,
+        manifest_path=manifest_path,
+        final_holdout_path=holdout_path,
+    )
+    assert softened["passed"] is False
+    assert "exact 1.0 acceptance threshold" in " ".join(softened["issues"])
+
+
+def test_profile_confidence_preflight_rejects_sparse_metric_denominators() -> None:
+    commit_cases = tuple(
+        replace(
+            _case(
+                f"sparse-commit-{index}",
+                f"Desk {index} supports this path: Operator records result {index}.",
+            ),
+            tags=(f"model-profile:{profile}",),
+        )
+        for index, profile in enumerate(MODEL_PROFILES, start=1)
+    )
+    clarify_cases = tuple(
+        replace(
+            _case(
+                f"sparse-clarify-{index}",
+                f"Desk {index} supports this path: Operator records result {index}.",
+            ),
+            expectation="clarification_required",
+            tags=(f"model-profile:{profile}",),
+        )
+        for index, profile in enumerate(MODEL_PROFILES, start=1)
+    )
+    cases = (*commit_cases, *clarify_cases)
+    annotations = {
+        **{case.case_id: _annotation(case) for case in commit_cases},
+        **{
+            case.case_id: _clarification_annotation(case)
+            for case in clarify_cases
+        },
+    }
+
+    issues = profile_confidence_sample_issues(
+        cases=cases,
+        annotations=annotations,
+        minimum=4,
+    )
+
+    assert any(
+        "1 `commit` observation(s)" in issue
+        for issue in issues
+    )
+    assert any(
+        "1 `clarify` observation(s)" in issue
+        for issue in issues
+    )
+    assert any(
+        "1 `component_responsibility_relations` relation sample(s)" in issue
+        for issue in issues
+    )
+    assert not any("`context_relations` relation sample" in issue for issue in issues)
 
 
 def test_frozen_contract_rejects_v1_and_non_structural_floors(tmp_path: Path) -> None:
@@ -729,7 +813,7 @@ def test_frozen_contract_rejects_v1_and_non_structural_floors(tmp_path: Path) ->
     assert report["passed"] is False
     assert EVALUATION_SPLIT_VERSION in " ".join(report["issues"])
     assert FINAL_HOLDOUT_VERSION in " ".join(report["issues"])
-    assert "structural floor fields" in " ".join(report["issues"])
+    assert "acceptance and confidence fields" in " ".join(report["issues"])
 
 
 @pytest.mark.parametrize(

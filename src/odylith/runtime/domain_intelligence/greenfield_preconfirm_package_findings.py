@@ -5,12 +5,12 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
+from odylith.runtime.common.value_coercion import normalize_string as clean_text
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_review import (
     GreenfieldReviewFinding,
     dedupe_review_findings,
     review_finding,
 )
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 
 
 def package_artifact_findings(

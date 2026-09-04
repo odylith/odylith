@@ -43,6 +43,7 @@ from greenfield_matrix_corpus_provenance import load_release_audit_file  # noqa:
 from greenfield_matrix_failure_response import campaign_failure_clusters  # noqa: E402
 from greenfield_matrix_failure_response import failure_response_plan  # noqa: E402
 from greenfield_matrix_release_artifacts import repo_artifact_path  # noqa: E402
+from greenfield_matrix_release_artifacts import prepare_retained_evidence_output_dir  # noqa: E402
 from greenfield_matrix_release_artifacts import sha256_file  # noqa: E402
 from greenfield_matrix_release_artifacts import write_release_proof_input_snapshot_manifest  # noqa: E402
 from greenfield_matrix_stressors import required_stressors_from_values  # noqa: E402
@@ -88,6 +89,7 @@ def run_campaign(
     evaluation_split_manifest: Path | None = None,
     final_holdout_run_ledger: Path | None = None,
     implementation_revision: str = "",
+    evidence_output_dir: Path | None = None,
     progress_jsonl: Path | None = None,
     progress_json: Path | None = None,
     failed_subset_replay_dir: Path | None = None,
@@ -96,6 +98,8 @@ def run_campaign(
     """Run campaign tiers in order and stop before later tiers after failure evidence."""
 
     started = time.perf_counter()
+    if release_case_files and evidence_output_dir is None:
+        raise RuntimeError("release proof requires an external evidence output directory")
     output_dir = Path(output_dir).expanduser().resolve()
     telemetry_dir = Path(telemetry_dir).expanduser().resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -103,6 +107,12 @@ def run_campaign(
     distribution_provenance: dict[str, str] | None = None
     distribution_provenance_path: Path | None = None
     semantic_release_requested = semantic_annotations_file is not None or evaluation_split_manifest is not None
+    retained_evidence_root = None
+    if release_case_files:
+        retained_evidence_root = prepare_retained_evidence_output_dir(
+            output_dir=evidence_output_dir,
+            temp_parent=temp_parent,
+        )
     if semantic_release_requested:
         if final_holdout_run_ledger is None:
             raise RuntimeError("semantic release proof requires a one-shot final holdout run ledger")
@@ -214,6 +224,7 @@ def run_campaign(
             final_holdout_run_ledger=final_holdout_run_ledger,
             implementation_revision=implementation_revision,
             distribution_provenance_file=distribution_provenance_path,
+            evidence_output_dir=retained_evidence_root,
         ),
     )
     selected_shard_count = sum(len(shards) for shards in tiers)
@@ -404,6 +415,7 @@ def _release_tier(
     final_holdout_run_ledger: Path | None = None,
     implementation_revision: str = "",
     distribution_provenance_file: Path | None = None,
+    evidence_output_dir: Path | None = None,
 ) -> tuple[CampaignShard, ...]:
     return tuple(
         CampaignShard(
@@ -444,6 +456,11 @@ def _release_tier(
             distribution_provenance_file=(
                 Path(distribution_provenance_file).expanduser().resolve()
                 if distribution_provenance_file
+                else None
+            ),
+            evidence_output_dir=(
+                Path(evidence_output_dir).expanduser().resolve() / f"{name}-{Path(case_file).stem}"
+                if evidence_output_dir
                 else None
             ),
         )
@@ -713,6 +730,11 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     parser.add_argument("--final-holdout-run-ledger", default="")
     parser.add_argument("--implementation-revision", default="")
     parser.add_argument(
+        "--evidence-output-dir",
+        default="",
+        help="External immutable evidence root required when a release-proof tier is selected.",
+    )
+    parser.add_argument(
         "--discovery-max-workers",
         type=int,
         default=0,
@@ -756,6 +778,8 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
+    if args.release_case_file and not str(args.evidence_output_dir or "").strip():
+        raise RuntimeError("release proof requires --evidence-output-dir")
     payload = run_campaign(
         dist_dir=Path(args.dist_dir),
         version=str(args.version),
@@ -790,6 +814,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         if str(args.final_holdout_run_ledger or "").strip()
         else None,
         implementation_revision=str(args.implementation_revision or ""),
+        evidence_output_dir=Path(str(args.evidence_output_dir)).expanduser().resolve()
+        if str(args.evidence_output_dir or "").strip()
+        else None,
         progress_jsonl=Path(str(args.progress_jsonl)).expanduser().resolve()
         if str(args.progress_jsonl or "").strip()
         else None,
