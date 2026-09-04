@@ -3394,6 +3394,25 @@ This section captures synchronized requirement and contract signals derived from
   helpers. The release evaluator reuses product-owned typed receipt contracts
   and never promotes structural validation into independent expert approval.
 
+## Greenfield V31 Standard Profile
+
+- Standard Greenfield authoring pins exactly one
+  `greenfield-standard-gpt-5.6-terra-medium-v6` request inside the fixed
+  60-second consumer budget and 55-second model window. Rescue and deep remain
+  explicit pre-call Sol-high profiles inside the fixed 90/120-second budgets.
+- The profile selector has no fallback ladder, retry, elapsed-time promotion,
+  or second model call. Typed source-cited meaning remains owned by the sole
+  authoring response; deterministic code owns exact custody, validation,
+  projections, transaction integrity, confirmation, and readback.
+- The V30 standard high profile is superseded after a zero-response public
+  timeout. Terra medium stages that exact request in `29.410s` and an
+  independent standard stress request in `36.689s` without losing event,
+  customer, evidence, scope, state, or result fidelity. Focused source proof
+  passes `96/96`; the complete Greenfield runtime, integration, and install
+  source gate passes `1,123/1,123`; live/bundle shell parity, hygiene, and
+  Compass normal/fallback/degraded browser proof passes `130/130`. Immutable
+  installed public proof remains pending.
+
 ## Research Basis
 
 The v0.1.15 runtime deliberately avoids a hardcoded domain catalog and

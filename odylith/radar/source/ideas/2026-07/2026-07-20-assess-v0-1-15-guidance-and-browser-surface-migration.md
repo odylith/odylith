@@ -61,7 +61,7 @@ supersedes:
 superseded_by:
 
 ## Problem
-The v0.1.15 release changes managed guidance, browser-rendered governance surfaces, and install-managed assets. Existing consumer installs need an explicit assessment before promotion. Evidence markers: `migration-observer:0.1.15:guidance-and-skills:1dbd05321562`; `migration-observer:0.1.15:guidance-and-skills:5cf1c66e46da`; `migration-observer:0.1.15:browser-surfaces:e400b39b824e`; `migration-observer:0.1.15:browser-surfaces:835aaa4f49de`; `migration-observer:0.1.15:browser-surfaces:9a4db93486ab`; `migration-observer:0.1.15:browser-surfaces:e64341855d69`; `migration-observer:0.1.15:browser-surfaces:28bfbc30ae65`; `migration-observer:0.1.15:install-managed-assets:352b7f58e4df`; `migration-observer:0.1.15:install-managed-assets:fae6b20b969f`; `migration-observer:0.1.15:install-managed-assets:46796f8138f3`; `migration-observer:0.1.15:install-managed-assets:87c9b491c829`.
+The v0.1.15 release changes managed guidance, browser-rendered governance surfaces, and install-managed assets. Existing consumer installs need an explicit assessment before promotion. Evidence markers: `migration-observer:0.1.15:guidance-and-skills:1dbd05321562`; `migration-observer:0.1.15:guidance-and-skills:5cf1c66e46da`; `migration-observer:0.1.15:browser-surfaces:e400b39b824e`; `migration-observer:0.1.15:browser-surfaces:835aaa4f49de`; `migration-observer:0.1.15:browser-surfaces:9a4db93486ab`; `migration-observer:0.1.15:browser-surfaces:e64341855d69`; `migration-observer:0.1.15:browser-surfaces:28bfbc30ae65`; `migration-observer:0.1.15:browser-surfaces:068dac56194b`; `migration-observer:0.1.15:browser-surfaces:341c9fc14c4e`; `migration-observer:0.1.15:public-docs-and-release-guidance:b91b6c7e0995`; `migration-observer:0.1.15:install-managed-assets:352b7f58e4df`; `migration-observer:0.1.15:install-managed-assets:fae6b20b969f`; `migration-observer:0.1.15:install-managed-assets:46796f8138f3`; `migration-observer:0.1.15:install-managed-assets:87c9b491c829`.
 
 ## Customer
 Odylith operators upgrading managed guidance, skill, Atlas, and Casebook browser surfaces.
@@ -89,7 +89,7 @@ Assess the final changed-path set, bind the exact fingerprints to this record, a
 - Release migration gate and the completed installed Greenfield release campaign.
 
 ## Success Metrics
-All three final observer markers resolve to this finished assessment; `odylith release migration-gate --repo-root . --target-version 0.1.15` passes; consumer-owned source remains unchanged while managed runtime, guidance, and generated assets refresh through normal recovery paths.
+All final observer markers resolve to this finished assessment; `odylith release migration-gate --repo-root . --target-version 0.1.15` passes; consumer-owned source remains unchanged while managed runtime, guidance, and generated assets refresh through normal recovery paths.
 
 ## Validation
 - Recalculate the migration gate against the final dirty path set.
@@ -112,7 +112,11 @@ Assess the changed guidance and browser surfaces, record compatibility and rollb
 - No new consumer command or source schema. Existing managed refresh paths remain the interface.
 
 ## Migration/Compatibility
-- Existing consumer-owned governance source stays in place. The current Compass change only selects existing release-target language when no program lanes exist; it changes no stored schema or runtime state. Managed guidance, runtime, and generated browser assets refresh normally; rollback returns the managed runtime and assets without source-data migration.
+- Existing consumer-owned governance source stays in place. The Greenfield
+  profile documentation and regenerated governance views change no stored
+  consumer schema or source truth. Managed guidance, runtime, public docs, and
+  generated browser assets refresh normally; rollback returns the managed
+  runtime and assets without source-data migration.
 
 ## Test Strategy
 - The migration gate validates the completed marker binding. The installed Greenfield campaign validates the affected managed runtime and release assets end to end.

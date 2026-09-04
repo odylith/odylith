@@ -4498,3 +4498,48 @@ above.
   through the complete immutable public matrix. Do not change the mechanism in
   response to a release-evaluator defect; reject it only for repeated product
   failures or regressions against the fixed outcome.
+
+## V30 Public Rejection And V31 Bounded Alternative (2026-09-04)
+
+- Immutable V30 completed six public packages at hard `10/10`, but the seventh
+  standard request failed before staging at `56.377s`. The zero-byte retained
+  authoring observation and absent transaction show that the sole
+  `gpt-5.6-terra/high` call reached its `55s` deadline without a usable
+  response. No semantic compiler, evaluator, confirmation, or commit-only path
+  participated in the failure.
+- Falsifiable V31 prediction: reducing the standard profile to
+  `gpt-5.6-terra/medium` will stage the exact package-supply-chain request with
+  the complete source-ordered action set and at least `10s` consumer-budget
+  margin, while an independent standard stress case preserves the V30 event,
+  provenance, diagram, and Project-quality invariants.
+- Compare only single-call profiles. If Terra medium misses latency or semantic
+  quality, test one faster supported profile under the same evidence. Retain
+  exactly one winner and delete the losing configuration. A retry, reasoning
+  ladder, prompt cascade, regex/phrase rule, second model call, or post-confirm
+  repair is out of scope and would violate the fixed mechanism laws.
+- After focused source proof, build V31 once and restart the unchanged public
+  `14/14` gate from case one. The new blind holdout remains sealed until public
+  quality, `60/90/120`, normal/empty/degraded desktop/mobile browser, recovery,
+  readback, and all three independent reviews are green.
+
+## V31 Source Profile Decision (2026-09-04)
+
+- Accept Terra medium as the sole standard-profile candidate. The exact failed
+  package-supply-chain request stages in `29.410s` with five source-ordered
+  actor/action/target relations, exception-state linkage, approval result, and
+  release-readiness proof. Hash-bound commit-only publication completes in
+  `1.3s`, writes the `60` sealed bytes, and verifies readback without model,
+  generation, repair, or prose interpretation after CONFIRM.
+- The independent security-embargo case stages in `36.689s`, improving on the
+  V30 `56.242s` result while preserving its five events, maintainer customer,
+  evidence requirements, non-goal, and advisory-readiness result. Both cases
+  retain one semantic call. The observed margins falsify the need for a Luna or
+  second-profile comparison at this gate.
+- Replace the old standard profile with
+  `greenfield-standard-gpt-5.6-terra-medium-v6`; do not leave Terra high as an
+  alternate path. Profile, authoring, path-custody, and operating-envelope
+  proof passes `96/96`; the complete Greenfield runtime, integration, and
+  install source gate passes `1,123/1,123` in `141.13s`. Live/bundle surface
+  parity, hygiene, and Compass normal/fallback/degraded browser regression proof
+  passes `130/130`. Proceed through the immutable build and a fresh public
+  campaign from case one; keep the blind holdout sealed.

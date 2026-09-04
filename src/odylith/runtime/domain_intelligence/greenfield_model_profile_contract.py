@@ -11,9 +11,9 @@ from dataclasses import dataclass
 from types import MappingProxyType
 
 
-GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v5"
+GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v6"
 
-STANDARD_PROFILE_ID = "greenfield-standard-gpt-5.6-terra-high-v5"
+STANDARD_PROFILE_ID = "greenfield-standard-gpt-5.6-terra-medium-v6"
 RESCUE_PROFILE_ID = "greenfield-rescue-gpt-5.6-sol-high-v5"
 DEEP_PROFILE_ID = "greenfield-deep-gpt-5.6-sol-high-v5"
 UNAVAILABLE_PROVIDER_PROFILE_ID = "greenfield-unavailable-provider-no-write-v1"
@@ -41,7 +41,7 @@ _PROFILES = MappingProxyType(
             repair_tier="standard",
             provider="codex-cli",
             model="gpt-5.6-terra",
-            reasoning_effort="high",
+            reasoning_effort="medium",
             consumer_budget_seconds=60.0,
             model_timeout_seconds=55.0,
         ),

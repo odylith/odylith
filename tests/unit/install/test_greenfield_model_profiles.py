@@ -116,7 +116,7 @@ def test_profile_registry_pins_proven_standard_rescue_and_deep_requests() -> Non
         normalize_greenfield_model_repair_tier("adaptive")
     standard = get_greenfield_model_profile(STANDARD_PROFILE_ID)
     assert standard.model == "gpt-5.6-terra"
-    assert standard.reasoning_effort == "high"
+    assert standard.reasoning_effort == "medium"
     assert standard.lower_capability is False
     rescue = get_greenfield_model_profile(RESCUE_PROFILE_ID)
     assert rescue.model == "gpt-5.6-sol"
@@ -146,7 +146,7 @@ def test_profile_environments_pin_provider_model_effort_and_shared_tier_windows(
     assert "ODYLITH_REASONING_API_KEY" not in standard
     assert standard["ODYLITH_REASONING_PROVIDER"] == "codex-cli"
     assert standard["ODYLITH_REASONING_MODEL"] == "gpt-5.6-terra"
-    assert standard["ODYLITH_REASONING_CODEX_REASONING_EFFORT"] == "high"
+    assert standard["ODYLITH_REASONING_CODEX_REASONING_EFFORT"] == "medium"
     assert standard["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "55"
     assert rescue["ODYLITH_REASONING_MODEL"] == "gpt-5.6-sol"
     assert rescue["ODYLITH_REASONING_CODEX_REASONING_EFFORT"] == "high"
@@ -168,7 +168,7 @@ def test_profile_evidence_requires_sealed_observation_parity() -> None:
         "profile_id": STANDARD_PROFILE_ID,
         "provider": "codex-cli",
         "model": "gpt-5.6-terra",
-        "reasoning_effort": "high",
+        "reasoning_effort": "medium",
         "effective_timeout_seconds": 54.5,
         "authoring_tier": "standard",
     }

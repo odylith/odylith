@@ -1908,6 +1908,42 @@
 
 - Related Incidents/Bugs: CB-208
 
+- Immutable V30 Public Reopening (2026-09-04): Clean wheel
+  `d3804d736b9dab468fb352455dbc87aa30c131068e945c593822cfb8e0a23d2d`
+  passed the first six public cases at hard `10/10`, including complete
+  source-cited packages, exact commit-only publication, browser proof, and
+  `48.056-56.242s` proposal times. The seventh case, package supply chain
+  exception desk, returned the generic fail-closed no-write error in `56.377s`.
+  Its retained `model-authoring-observation.v1.json` is zero bytes and no
+  ProductCreateTransaction was staged. The configured standard profile was
+  `gpt-5.6-terra` at `high` reasoning with a `55s` model deadline inside the
+  fixed `60s` consumer budget. This is a model-profile envelope failure, not
+  evidence for another parser, semantic rule, retry, or post-confirm repair.
+  Reject V30 and stop its campaign at `6/7` completed (`7/14` attempted).
+  Compare bounded single-call profiles on the exact retained failure and an
+  independent standard stress case; retain only the fastest profile that
+  preserves typed semantic quality with credible budget margin. Do not inspect
+  or commission a blind holdout until a rebuilt immutable public `14/14` gate
+  and independent review are green.
+
+- V31 Bounded Profile Result (2026-09-04): The same Terra model and typed
+  authoring contract at medium reasoning staged the exact failed package supply
+  chain request in `29.410s` end to end, preserving five ordered actions and
+  targets, package-manager review, exception state and approval result, and
+  release-readiness proof. Exact commit-only publication completed in `1.3s`
+  with one semantic model call, `60` sealed writes, and verified readback. An
+  independent open-source security embargo stress request that took `56.242s`
+  under V30 Terra high staged in `36.689s`, preserving all five events,
+  maintainer customer, evidence, non-goal, and advisory-readiness result. Terra
+  medium wins this bounded source comparison; do not retain or test a second
+  alternative without contrary evidence. Focused model-profile, authoring,
+  path-custody, and operating-envelope proof passes `96/96`; the complete
+  Greenfield runtime, integration, and install source gate passes
+  `1,123/1,123` in `141.13s`. Live/bundle shell parity, hygiene, and Compass
+  normal/fallback/degraded browser regression proof passes `130/130`.
+  Immutable installed public proof remains required before this bug can advance
+  toward closure.
+
 - Code References: - src/odylith/runtime/domain_intelligence
 - src/odylith/runtime/domain_intelligence/artifact_tribunal_actors.py
 - src/odylith/runtime/reasoning/tribunal_lens.py

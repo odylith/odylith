@@ -3074,3 +3074,43 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   package quality, normal/empty/degraded desktop and mobile browser evidence,
   readback, recovery, and three independent reviews. Commission a new blind
   holdout only after that gate is entirely green.
+
+## V30 Immutable Rejection And V31 Profile Gate (2026-09-04)
+
+- Reject immutable v30 wheel
+  `d3804d736b9dab468fb352455dbc87aa30c131068e945c593822cfb8e0a23d2d`.
+  Six public cases passed at hard `10/10` with one model call, complete
+  packages, browser proof, and proposal times of `48.056-56.242s`; the seventh
+  standard case failed closed at `56.377s` before staging. Its authoring
+  observation is zero bytes, which localizes the failure to the
+  `gpt-5.6-terra/high` `55s` response envelope rather than graph compilation.
+- Preserve the V30 semantic and transaction mechanisms. V31 is a bounded
+  one-variable model-profile comparison: first test `gpt-5.6-terra/medium`,
+  then a faster single-call profile only if needed, on the exact failed request
+  and one independent standard stress request. Predict materially lower latency
+  with unchanged source-cited event completeness. Remove the losing profile;
+  add no retry, cascade, parser, phrase rule, or second call.
+- Rebuild immutable bytes only after the winning profile passes source quality
+  and focused contracts. Restart the public campaign from case one and require
+  `14/14`, exact `60/90/120` budgets, browser, recovery, readback, and three
+  independent reviews before commissioning a newly blind holdout.
+
+## V31 Source Profile Selection (2026-09-04)
+
+- `gpt-5.6-terra/medium` wins the bounded single-call comparison. The exact V30
+  failure stages a complete five-event transaction in `29.410s`, versus V30's
+  zero-response failure at `56.377s`; exact commit-only publication takes
+  `1.3s`, writes `60` sealed files, and passes readback. The independent
+  open-source security embargo stress case stages in `36.689s`, versus
+  `56.242s` on Terra high, without losing its five events, customer, evidence,
+  non-goal, or visible result.
+- Pin `greenfield-standard-gpt-5.6-terra-medium-v6`; delete the superseded
+  standard high profile instead of retaining a ladder. Rescue and deep remain
+  the explicit preselected Sol-high `90/120` profiles. Focused profile,
+  authoring, custody, and envelope proof passes `96/96`; the complete
+  Greenfield runtime, integration, and install source gate passes
+  `1,123/1,123` in `141.13s`. Live/bundle surface parity, hygiene, and Compass
+  normal/fallback/degraded browser regression proof passes `130/130`.
+- This is source qualification, not release proof. Build one clean immutable
+  V31 distribution and restart the unchanged public campaign from case one.
+  The blind holdout remains sealed.

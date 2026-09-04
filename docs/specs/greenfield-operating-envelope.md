@@ -46,7 +46,7 @@ callback and visibility contract.
 
 Release evaluation covers three pinned successful profiles:
 
-- `greenfield-standard-gpt-5.6-terra-high-v5`: the default and `auto` path, with
+- `greenfield-standard-gpt-5.6-terra-medium-v6`: the default and `auto` path, with
   one 60-second end-to-end consumer budget and a 55-second model window.
 - `greenfield-rescue-gpt-5.6-sol-high-v5`: the explicit rescue path, with one
   90-second end-to-end consumer budget and an 80-second model window.
@@ -55,10 +55,10 @@ Release evaluation covers three pinned successful profiles:
 
 The selected profile is fixed before the model request. Elapsed time or a failed
 attempt never relabels or extends a standard request into rescue or deep. All
-three use high reasoning; standard uses the faster Terra author while rescue
-and deep use Sol. The tiers preserve semantic capability while fitting their
-fixed elapsed-time envelopes. These are bounded provider-request profiles, not
-claims about every provider model.
+Standard uses medium reasoning on the faster Terra author; rescue and deep use
+high reasoning on Sol. The tiers preserve semantic capability while fitting
+their fixed elapsed-time envelopes. These are bounded provider-request
+profiles, not claims about every provider model.
 Host-model output is candidate evidence only. Every profile must clarify or fail
 safely instead of inventing product truth. Provider unavailability is separately
 proven as a fast, no-write environment outcome and is not a supported-success
