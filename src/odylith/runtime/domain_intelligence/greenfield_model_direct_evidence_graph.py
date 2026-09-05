@@ -18,7 +18,6 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     MAX_FIRST_PATH_RELATIONS,
     GreenfieldAuthoredSemanticsError,
     canonical_product_owner_projection_values,
-    first_path_actor_binding_identity,
     overlapping_first_path_event_orders,
 )
 from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
@@ -33,7 +32,6 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 MODEL_EVENT_FIELDS = frozenset(
     {
         "actor_fact_quote",
-        "actor_quote",
         "action_quote",
         "target_quote",
     }
@@ -251,30 +249,13 @@ def _derive_events(
         else:
             owner_system_path = ""
             owner_system_quote = ""
-        actor_quote = _required_quote(raw.get("actor_quote"))
-        actor_explicit = actor_quote in event_quote
-        actor_carried = not actor_explicit
         actor_binding = {
             "actor_kind": actor_kind,
-            "actor_quote": actor_quote,
             "actor_fact_path": actor_fact_path,
             "actor_fact_quote": actor_fact_quote,
             "owner_system_path": owner_system_path,
             "owner_system_quote": owner_system_quote,
         }
-        previous_binding = rows[-1] if rows else None
-        if (
-            actor_carried
-            and (
-                actor_quote != actor_fact_quote
-                or previous_binding is None
-                or first_path_actor_binding_identity(previous_binding)
-                != first_path_actor_binding_identity(actor_binding)
-            )
-        ):
-            raise GreenfieldAuthoredSemanticsError(
-                "Greenfield authoring returned an ungrounded first-path actor"
-            )
         action_quote = _required_quote(raw.get("action_quote"))
         target_quote = _event_target_quote(
             raw.get("target_quote"),
@@ -296,7 +277,6 @@ def _derive_events(
                 "event_start_byte": event_start,
                 "event_end_byte": event_end,
                 **actor_binding,
-                "actor_is_carried": actor_carried,
                 "event_quote": event_quote,
                 "action_verb_quote": action_quote,
                 "target_quote": target_quote,
@@ -721,7 +701,6 @@ _EVENT_SCHEMA: dict[str, Any] = {
     "required": sorted(MODEL_EVENT_FIELDS),
     "properties": {
         "actor_fact_quote": _quote_schema(required=True),
-        "actor_quote": _quote_schema(required=True),
         "action_quote": _quote_schema(required=True),
         "target_quote": _quote_schema(),
     },

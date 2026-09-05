@@ -429,8 +429,6 @@ def _typed_semantic_snapshot(
             "event_start_byte": 0,
             "event_end_byte": len(path_bytes),
             "actor_kind": "human",
-            "actor_quote": actor,
-            "actor_is_carried": False,
             "actor_fact_path": "/human_actors/0",
             "actor_fact_quote": actor,
             "owner_system_path": "",

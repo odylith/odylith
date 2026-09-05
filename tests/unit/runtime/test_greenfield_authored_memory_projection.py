@@ -32,7 +32,7 @@ def _relation(
     order: int,
     event: str,
     actor_kind: str,
-    actor: str,
+    actor_fact_quote: str,
     action: str,
     target: str,
     visible_result: str = "",
@@ -47,14 +47,10 @@ def _relation(
         "event_start_byte": start,
         "event_end_byte": start + len(event_bytes),
         "actor_kind": actor_kind,
-        "actor_quote": actor,
-        "actor_is_carried": False,
         "actor_fact_path": (
             "/internal_systems/0" if actor_kind == "product" else "/human_actors/0"
         ),
-        "actor_fact_quote": (
-            "Meridian Engine" if actor_kind == "product" else "Registry Custodian"
-        ),
+        "actor_fact_quote": actor_fact_quote,
         "owner_system_path": "/internal_systems/0" if actor_kind == "product" else "",
         "owner_system_quote": "Meridian Engine" if actor_kind == "product" else "",
         "event_quote": event,
@@ -70,7 +66,7 @@ def _proposal() -> dict[str, object]:
             order=1,
             event=EVENT_ONE,
             actor_kind="human",
-            actor="Registry Custodian",
+            actor_fact_quote="Registry Custodian",
             action="QuOrates",
             target="one Æther packet",
         ),
@@ -78,7 +74,7 @@ def _proposal() -> dict[str, object]:
             order=2,
             event=EVENT_TWO,
             actor_kind="product",
-            actor="Meridian Engine",
+            actor_fact_quote="Meridian Engine",
             action="vitrifies",
             target="it",
             visible_result="Ω-Receipt",

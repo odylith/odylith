@@ -56,7 +56,7 @@ def authored_fact_view(project: Mapping[str, Any]) -> AuthoredFactView | None:
         order = raw_event.get("order")
         text = raw_event.get("event_quote")
         actor_kind = raw_event.get("actor_kind")
-        actor = raw_event.get("actor_fact_quote") or raw_event.get("actor_quote")
+        actor = raw_event.get("actor_fact_quote")
         if order != expected_order or not all(
             isinstance(value, str) and value.strip() for value in (text, actor_kind, actor)
         ):

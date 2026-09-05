@@ -70,7 +70,7 @@ _INTENT: dict[str, Any] = {
 _RELATIONS = (
     {
         "actor_kind": "human",
-        "actor_quote": "Dock attendant Ivo",
+        "actor_fact_quote": "Dock attendant Ivo",
         "event_quote": "Dock attendant Ivo enters a vessel tag",
         "action_verb_quote": "enters",
         "target_quote": "a vessel tag",
@@ -78,7 +78,7 @@ _RELATIONS = (
     },
     {
         "actor_kind": "product",
-        "actor_quote": "Berth map",
+        "actor_fact_quote": "Berth map",
         "owner_system_quote": "Berth map",
         "event_quote": "Berth map records berth occupancy",
         "action_verb_quote": "records",
@@ -87,7 +87,7 @@ _RELATIONS = (
     },
     {
         "actor_kind": "product",
-        "actor_quote": "Berth map",
+        "actor_fact_quote": "Berth map",
         "owner_system_quote": "Berth map",
         "event_quote": "Berth map shows the placement",
         "action_verb_quote": "shows",

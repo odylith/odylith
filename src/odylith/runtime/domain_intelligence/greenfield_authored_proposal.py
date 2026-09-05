@@ -469,7 +469,7 @@ def _semantic_model(
     events = [
         {
             "index": index,
-            "actor": _text(row.get("actor_quote")),
+            "actor": _text(row.get("actor_fact_quote")),
             "owner_system": _text(row.get("owner_system_quote")),
             "action": _text(row.get("action_verb_quote")),
             "target_entity": _text(row.get("target_quote")),
@@ -509,9 +509,9 @@ def _semantic_model(
         for row in backlog
     ]
     return {
-        "schema_version": "odylith.greenfield.semantic_model.v2",
+        "schema_version": "odylith.greenfield.semantic_model.v3",
         "first_path_contract": {
-            "actor": _text(first_event.get("actor_quote")),
+            "actor": _text(first_event.get("actor_fact_quote")),
             "action": _text(first_event.get("action_verb_quote")),
             "entity": state_object,
             "mutation": "",

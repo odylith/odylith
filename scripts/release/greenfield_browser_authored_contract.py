@@ -79,7 +79,7 @@ def authored_structure_issues(rendered: Any, authored_facts: Any) -> tuple[str, 
             expected
             for expected, source in zip(expected_events, event_rows, strict=True)
             if source.get("actor_kind") == "human"
-            and (source.get("actor_fact_quote") or source.get("actor_quote")) == actor
+            and source.get("actor_fact_quote") == actor
         ]
         if actor_events:
             expected_actors.append({"actor": actor, "events": actor_events})

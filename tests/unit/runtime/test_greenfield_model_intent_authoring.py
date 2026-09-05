@@ -153,7 +153,7 @@ def test_edit_evidence_reauthors_one_new_typed_candidate_with_source_review(tmp_
             first_path_relations=[
                 {
                     "actor_kind": "human",
-                    "actor_quote": "Dock attendant Ivo",
+                    "actor_fact_quote": "Dock attendant Ivo",
                     "event_quote": "Dock attendant Ivo scans a vessel tag",
                     "action_verb_quote": "scans",
                     "target_quote": "a vessel tag",
@@ -161,7 +161,7 @@ def test_edit_evidence_reauthors_one_new_typed_candidate_with_source_review(tmp_
                 },
                 {
                     "actor_kind": "product",
-                    "actor_quote": "the product",
+                    "actor_fact_quote": "Berth map",
                     "owner_system_quote": "Berth map",
                     "event_quote": "the product records berth occupancy",
                     "action_verb_quote": "records",
@@ -170,7 +170,7 @@ def test_edit_evidence_reauthors_one_new_typed_candidate_with_source_review(tmp_
                 },
                 {
                     "actor_kind": "product",
-                    "actor_quote": "the berth map",
+                    "actor_fact_quote": "Berth map",
                     "owner_system_quote": "Berth map",
                     "event_quote": "the berth map shows the reviewed placement",
                     "action_verb_quote": "shows",
@@ -247,7 +247,7 @@ def test_model_authored_multi_component_events_bind_to_exact_source_owned_system
         first_path_relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Applicant Nia",
+                "actor_fact_quote": "Applicant Nia",
                 "event_quote": "Applicant Nia submits a permit packet.",
                 "action_verb_quote": "submits",
                 "target_quote": "a permit packet",
@@ -255,7 +255,7 @@ def test_model_authored_multi_component_events_bind_to_exact_source_owned_system
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Intake Desk",
+                "actor_fact_quote": "Intake Desk",
                 "owner_system_quote": "Intake Desk",
                 "event_quote": "Intake Desk records the permit application.",
                 "action_verb_quote": "records",
@@ -264,7 +264,7 @@ def test_model_authored_multi_component_events_bind_to_exact_source_owned_system
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Review Board",
+                "actor_fact_quote": "Review Board",
                 "owner_system_quote": "Review Board",
                 "event_quote": "Review Board approves the permit application.",
                 "action_verb_quote": "approves",
@@ -273,7 +273,7 @@ def test_model_authored_multi_component_events_bind_to_exact_source_owned_system
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Review Board",
+                "actor_fact_quote": "Review Board",
                 "owner_system_quote": "Review Board",
                 "event_quote": "Review Board shows Applicant Nia the approval receipt",
                 "action_verb_quote": "shows",
@@ -447,8 +447,8 @@ def test_model_authored_project_seals_one_package_with_justified_boundary(tmp_pa
     ]
     assert [(event["actor"], event["action"]) for event in accepted_events] == [
         ("Dock attendant Ivo", "enters"),
-        ("the product", "records"),
-        ("the berth map", "shows"),
+        ("Berth map", "records"),
+        ("Berth map", "shows"),
     ]
     assert transaction_path.is_file()
 
@@ -726,7 +726,6 @@ def test_authoring_schema_structurally_separates_complete_authored_and_clarifica
     assert authored_properties["events"]["minItems"] == 1
     assert set(authored_properties["events"]["items"]["properties"]) == {
         "actor_fact_quote",
-        "actor_quote",
         "action_quote",
         "target_quote",
     }
@@ -771,6 +770,15 @@ def test_authoring_rejects_superseded_terminal_and_component_link_fields() -> No
             clock=lambda: 0.0,
         )
 
+    response = _response(source)
+    model_event_rows(response)[0]["actor_quote"] = "Dock attendant Ivo"
+    with pytest.raises(GreenfieldModelAuthoringError, match="invalid first-path events"):
+        author_greenfield_intent(
+            evidence_text=source,
+            provider=StructuredAuthoringProvider(response),
+            clock=lambda: 0.0,
+        )
+
 
 def test_authoring_derives_atomic_custody_without_a_second_model_semantic_payload() -> None:
     source = _source()
@@ -792,7 +800,7 @@ def test_authoring_derives_atomic_custody_without_a_second_model_semantic_payloa
         (relation["order"], role)
         for relation in result.first_path_relations
         for role in (
-            "actor_quote",
+            "actor_fact_quote",
             "action_verb_quote",
             "target_quote",
             "visible_result_quote",
@@ -1179,7 +1187,7 @@ def test_authoring_derives_the_exact_event_link_for_an_overlapping_responsibilit
         first_path_relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Applicant Nia",
+                "actor_fact_quote": "Applicant Nia",
                 "event_quote": "Applicant Nia submits a permit packet",
                 "action_verb_quote": "submits",
                 "target_quote": "a permit packet",
@@ -1187,7 +1195,7 @@ def test_authoring_derives_the_exact_event_link_for_an_overlapping_responsibilit
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Intake Desk",
+                "actor_fact_quote": "Intake Desk",
                 "owner_system_quote": "Intake Desk",
                 "event_quote": product_event,
                 "action_verb_quote": "records",
@@ -1234,7 +1242,7 @@ def test_authoring_rejects_a_repeated_owner_on_one_typed_product_event() -> None
         first_path_relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Applicant Nia",
+                "actor_fact_quote": "Applicant Nia",
                 "event_quote": "Applicant Nia submits a permit packet",
                 "action_verb_quote": "submits",
                 "target_quote": "a permit packet",
@@ -1242,7 +1250,7 @@ def test_authoring_rejects_a_repeated_owner_on_one_typed_product_event() -> None
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Intake Desk",
+                "actor_fact_quote": "Intake Desk",
                 "owner_system_quote": "Intake Desk",
                 "event_quote": product_event,
                 "action_verb_quote": "records",
@@ -1295,7 +1303,7 @@ def test_product_owned_terminal_result_uses_the_typed_event_owner() -> None:
                 first_path_relations=[
                     {
                         "actor_kind": "human",
-                        "actor_quote": "Applicant Nia",
+                        "actor_fact_quote": "Applicant Nia",
                         "event_quote": "Applicant Nia enters one item",
                         "action_verb_quote": "enters",
                         "target_quote": "one item",
@@ -1303,7 +1311,7 @@ def test_product_owned_terminal_result_uses_the_typed_event_owner() -> None:
                     },
                     {
                         "actor_kind": "product",
-                        "actor_quote": "Permit Relay",
+                        "actor_fact_quote": "Permit Relay",
                         "owner_system_quote": "Permit Relay",
                         "event_quote": "Permit Relay shows it listed",
                         "action_verb_quote": "shows",

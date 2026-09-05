@@ -36,7 +36,7 @@ def _authored_proposal(tmp_path: Path) -> dict[str, object]:
     relations = (
         {
             "actor_kind": "human",
-            "actor_quote": "Planner",
+            "actor_fact_quote": "Planner",
             "event_quote": first_event,
             "action_verb_quote": "submits",
             "target_quote": "berth request",
@@ -44,7 +44,7 @@ def _authored_proposal(tmp_path: Path) -> dict[str, object]:
         },
         {
             "actor_kind": "product",
-            "actor_quote": "Berth map",
+            "actor_fact_quote": "Berth map",
             "owner_system_quote": "Berth map",
             "event_quote": second_event,
             "action_verb_quote": "records",

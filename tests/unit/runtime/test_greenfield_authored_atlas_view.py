@@ -33,6 +33,7 @@ def _authored_diagrams(
     *,
     title: str = "Harbor Desk",
     component_label: str = "Berth map",
+    components: tuple[dict[str, Any], ...] | None = None,
     visible_result: str = "the berth map shows the placement",
     proof_boundary: str = "Verify the placement and retention receipt",
 ) -> list[dict[str, Any]]:
@@ -50,7 +51,7 @@ def _authored_diagrams(
         state_object="berth occupancy",
         visible_result=visible_result,
         proof_boundary=proof_boundary,
-        components=(
+        components=components or (
             {
                 "component_id": "berth-map",
                 "label": component_label,
@@ -63,7 +64,6 @@ def _authored_diagrams(
             {
                 "order": 1,
                 "actor_kind": "human",
-                "actor_quote": "Dock attendant Ivo",
                 "actor_fact_quote": "Dock attendant Ivo",
                 "event_quote": "Dock attendant Ivo enters a vessel tag",
                 "owner_system_quote": "",
@@ -71,7 +71,6 @@ def _authored_diagrams(
             {
                 "order": 2,
                 "actor_kind": "product",
-                "actor_quote": "the product",
                 "actor_fact_quote": "Berth map",
                 "event_quote": "the product records berth occupancy",
                 "owner_system_quote": "Berth map",
@@ -79,7 +78,6 @@ def _authored_diagrams(
             {
                 "order": 3,
                 "actor_kind": "product",
-                "actor_quote": "the berth map",
                 "actor_fact_quote": "Berth map",
                 "event_quote": "the berth map shows the placement",
                 "owner_system_quote": "Berth map",
@@ -112,6 +110,50 @@ def test_context_view_represents_a_sole_title_owned_product_once() -> None:
         for box in context["diagram_boxes"]
         if box["label"] == "Harbor Desk"
     ] == [("product", "Harbor Desk", "Product boundary")]
+
+
+def test_boundary_view_represents_a_sole_title_owned_product_once() -> None:
+    rows = _authored_diagrams(component_label="Harbor Desk")
+    boundary = next(row for row in rows if row["slug"] == "harbor-desk-boundaries")
+    source = boundary["mermaid_source"]
+
+    assert source.count('["Harbor Desk"]') == 1
+    assert 'subgraph product["Harbor Desk"]' not in source
+    assert 'product["Harbor Desk"]' in source
+    assert "component1" not in source
+    assert "external1 -.-> product" in source
+    assert "product -.-> non_goal1" in source
+    assert [
+        (box["node_id"], box["label"], box["role"])
+        for box in boundary["diagram_boxes"]
+        if box["label"] == "Harbor Desk"
+    ] == [("product", "Harbor Desk", "Product boundary")]
+
+
+def test_distinct_multiple_components_keep_containment_and_typed_external_target() -> None:
+    components = (
+        {
+            "component_id": "berth-map",
+            "label": "Berth map",
+            "responsibility": "Record berth occupancy",
+            "dependencies": ["Harbor Ledger"],
+        },
+        {
+            "component_id": "receipt-vault",
+            "label": "Receipt vault",
+            "responsibility": "Retain placement receipts",
+            "dependencies": [],
+        },
+    )
+    rows = _authored_diagrams(components=components)
+
+    for slug in ("harbor-desk-context", "harbor-desk-boundaries"):
+        source = next(row["mermaid_source"] for row in rows if row["slug"] == slug)
+        assert 'subgraph product["Harbor Desk"]' in source
+        assert 'component1["Berth map"]' in source
+        assert 'component2["Receipt vault"]' in source
+        assert "external1 -.-> component1" in source
+        assert "external1 -.-> product" not in source
 
 
 def _traceability_plan() -> SimpleNamespace:

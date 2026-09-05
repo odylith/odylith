@@ -118,7 +118,7 @@ def _authored_supplier_proposal(repo_root: Path) -> tuple[dict[str, Any], dict[s
         first_path_relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Supplier Risk Analyst",
+                "actor_fact_quote": "Supplier Risk Analyst",
                 "event_quote": "Supplier Risk Analyst records one supplier risk case",
                 "action_verb_quote": "records",
                 "target_quote": "one supplier risk case",
@@ -126,7 +126,7 @@ def _authored_supplier_proposal(repo_root: Path) -> tuple[dict[str, Any], dict[s
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Supplier Review Service",
+                "actor_fact_quote": "Supplier Review Service",
                 "owner_system_quote": "Supplier Review Service",
                 "event_quote": "Supplier Review Service presents the supplier evidence",
                 "action_verb_quote": "presents",
@@ -135,7 +135,7 @@ def _authored_supplier_proposal(repo_root: Path) -> tuple[dict[str, Any], dict[s
             },
             {
                 "actor_kind": "human",
-                "actor_quote": "Supplier Risk Analyst",
+                "actor_fact_quote": "Supplier Risk Analyst",
                 "event_quote": "Supplier Risk Analyst reviews the evidence",
                 "action_verb_quote": "reviews",
                 "target_quote": "the evidence",
@@ -143,7 +143,7 @@ def _authored_supplier_proposal(repo_root: Path) -> tuple[dict[str, Any], dict[s
             },
             {
                 "actor_kind": "human",
-                "actor_quote": "Supplier Risk Analyst",
+                "actor_fact_quote": "Supplier Risk Analyst",
                 "event_quote": "Supplier Risk Analyst records a decision",
                 "action_verb_quote": "records",
                 "target_quote": "a decision",
@@ -151,7 +151,7 @@ def _authored_supplier_proposal(repo_root: Path) -> tuple[dict[str, Any], dict[s
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Supplier Review Service",
+                "actor_fact_quote": "Supplier Review Service",
                 "owner_system_quote": "Supplier Review Service",
                 "event_quote": "Supplier Review Service shows a reviewable risk receipt",
                 "action_verb_quote": "shows",

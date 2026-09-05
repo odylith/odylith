@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-09-04
+Last updated: 2026-09-05
 
 
 ## Overview
@@ -31,6 +31,9 @@ or prose repair runs after confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_view.py`
 - **2026-09-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_backlog.py`, `tests/unit/runtime/test_greenfield_authored_radar_rationale.py`
@@ -46,9 +49,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-03 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_intent_fact_values.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `tests/unit/runtime/test_greenfield_model_path_custody.py`
-- **2026-09-03 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -3430,8 +3430,10 @@ This section captures synchronized requirement and contract signals derived from
   still need owned/shared custody; source validity and the fact-or-assumption
   contract remain upstream obligations. The obsolete downstream equality veto
   is removed rather than supplemented with field-specific exceptions.
-- Human participants are optional when the source describes only product or
-  external-system work. Every event still requires its exact source-bound actor.
+- Human participants are optional when no person or human role is source-stated.
+  Explicit recipients may be outside the first path; every event still requires
+  its exact source-bound performing actor. Activities and output-purpose modifiers
+  are not participants, and projections cannot infer a human from either.
   An inferred customer is a labeled assumption, not an accepted participant or
   Atlas node. Radar consumes the canonical customer fact or assumption instead
   of choosing the first human. Empty-human confirmation views state the absence.
@@ -3441,22 +3443,31 @@ This section captures synchronized requirement and contract signals derived from
   resolver. The compact authoring contract separates source facts from useful
   provisional decisions and keeps the initial actor with its action citation.
 - Pre-confirm authoring permits at most two calls. Every otherwise-valid authored
-  candidate receives one source-claim review of product_story and component groups,
+  candidate receives one source-claim review of product_story, component groups,
+  and human selections using the same exact-citation schema as the author,
   capped at 20 seconds within the original remaining model window. Clarifications
   remain one call. The whole candidate validates again before becoming canonical;
-  other fields remain unchanged. Source coordinates and actor types reject
+  other fields, including event bindings, remain unchanged. Source coordinates and actor types reject
   contradictory ownership; they never infer a replacement owner or extend a quote.
   A second failure cannot start another call. Actual call counts and both candidate
   responses remain observable; no generic repair framework, tier promotion, or
   post-confirm interpretation is introduced.
-- Product Intent envelope/authority v9 and authored-workstream-semantics v5
+- Product Intent envelope/authority v10 and authored-workstream-semantics v5
   preserve the targeted assumption reference and hash its exact text and role.
   Earlier staged formats require rebuilding before confirmation; there is no
   compatibility reinterpretation or post-confirm repair.
-- Authored-semantics v12 removes the unsupported semantic recovery boolean and
+- Authored-semantics v13 uses the selected source-cited actor fact as the sole
+  event actor identity. Surface actor quotes and carry flags are removed, not
+  maintained as a compatibility path. Semantic-model v3 and Tribunal projections
+  use that same fact; atomic-ledger v3 event actor links cite the selected fact,
+  never an action span. Custody-ledger v7 and commit-only version checks require
+  a pre-confirm rebuild for older staged formats without semantic migration.
+- The authored relation contract removes the unsupported semantic recovery boolean and
   component Recovery events projection. Failure tracking and actual restoration
   stay ordinary source-cited actions. Transaction recovery remains unchanged.
-- Context views do not nest a title-owned component inside the same product.
+- Context and component-boundary views share one product-boundary projection;
+  neither nests a sole title-owned component inside the same product. Distinct
+  components, external dependency edges, and accepted non-goal boundaries remain.
   A First Path Sequence requires at least two typed events. Browser proof must
   visit every emitted diagram on desktop and mobile, capture full-page mobile
   content, and exercise actual asset failure with readable fallback.

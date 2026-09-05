@@ -113,21 +113,21 @@ def _machine_response(
     *,
     evidence_text: str,
     actor_kind: str,
-    actor_quote: str,
+    actor_fact_quote: str,
     owners: list[str],
 ) -> dict[str, Any]:
     event = str(intent["first_path"])
     visible_result = str(intent["proof_boundary"])
     relation = {
         "actor_kind": actor_kind,
-        "actor_quote": actor_quote,
+        "actor_fact_quote": actor_fact_quote,
         "event_quote": event,
         "action_verb_quote": "records" if actor_kind == "product" else "publishes",
         "target_quote": f"a {visible_result}",
         "visible_result_quote": visible_result,
     }
     if actor_kind == "product":
-        relation["owner_system_quote"] = actor_quote
+        relation["owner_system_quote"] = actor_fact_quote
     return authored_response(
         intent,
         evidence_text=evidence_text,
@@ -147,7 +147,7 @@ def test_product_only_path_builds_complete_source_bound_proposal_without_a_fake_
             intent,
             evidence_text=evidence,
             actor_kind="product",
-            actor_quote="Receipt Engine",
+            actor_fact_quote="Receipt Engine",
             owners=["Receipt Engine", "Health Archive"],
         )
     )
@@ -212,7 +212,7 @@ def test_product_only_proposal_accepts_omission_but_rejects_malformed_present_hu
                 intent,
                 evidence_text=evidence,
                 actor_kind="product",
-                actor_quote="Receipt Engine",
+                actor_fact_quote="Receipt Engine",
                 owners=["Receipt Engine", "Health Archive"],
             )
         ),
@@ -235,7 +235,7 @@ def test_external_only_path_retains_exact_external_actor_custody() -> None:
             intent,
             evidence_text=source,
             actor_kind="external_system",
-            actor_quote="Telemetry Gateway",
+            actor_fact_quote="Telemetry Gateway",
             owners=["Receipt Archive"],
         )
     )
@@ -279,7 +279,7 @@ def test_each_event_actor_kind_requires_one_selected_typed_actor_fact(
             intent,
             evidence_text=source,
             actor_kind=actor_kind,
-            actor_quote=(
+            actor_fact_quote=(
                 "Receipt Engine" if actor_kind == "product" else "Telemetry Gateway"
             ),
             owners=(

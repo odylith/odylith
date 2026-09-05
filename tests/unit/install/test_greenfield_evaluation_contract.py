@@ -92,7 +92,7 @@ def _atom(
     path: str = "/human_actors/0",
     projection_value: str | None = None,
     relation_order: int = 1,
-    relation_role: str = "actor_quote",
+    relation_role: str = "actor_fact_quote",
     category: str = "actors",
 ) -> dict[str, object]:
     encoded_prompt = combined_prompt_evidence_source(
@@ -225,7 +225,6 @@ def _annotation(case: GreenfieldMatrixCase) -> dict[str, object]:
                     "event_end_byte": len(first_path.encode("utf-8")),
                     "event_sha256": event_sha,
                     "actor_kind": "human",
-                    "actor_sha256": actor_sha,
                     "actor_fact_path": "/human_actors/0",
                     "actor_fact_sha256": actor_sha,
                     "product_owner_path": "",
@@ -310,6 +309,19 @@ def test_atomic_annotations_require_exact_source_byte_spans_and_hashes() -> None
     annotation["atoms"][0]["source"]["start_byte"] = 1
     _annotations, issues = validate_atomic_annotations(cases=(case,), rows=[annotation])
     assert any("quote_sha256" in issue or "UTF-8" in issue for issue in issues)
+
+
+def test_atomic_annotations_reject_retired_actor_surface_role() -> None:
+    case = _case(
+        "case-1",
+        "Review Desk supports this path: Operator records one decision.",
+    )
+    annotation = _annotation(case)
+    annotation["atoms"][0]["projection_links"][0]["relation_role"] = "actor_quote"
+
+    _annotations, issues = validate_atomic_annotations(cases=(case,), rows=[annotation])
+
+    assert any("invalid structural fields" in issue for issue in issues)
 
 
 def test_atomic_annotations_reject_spoofed_source_byte_complexity() -> None:

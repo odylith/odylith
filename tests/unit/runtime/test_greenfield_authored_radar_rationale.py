@@ -74,7 +74,7 @@ def _authored_proposal(
     relations = (
         {
             "actor_kind": "human",
-            "actor_quote": "Dock attendant",
+            "actor_fact_quote": "Dock attendant",
             "owner_system_quote": "",
             "event_quote": first_path,
             "action_verb_quote": "records",

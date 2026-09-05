@@ -130,7 +130,7 @@ def test_structural_release_accepts_the_runtime_authored_atomic_schema(
         "projection_end_byte": len(quote_bytes),
         "projection_value_sha256": hashlib.sha256(quote_bytes).hexdigest(),
         "relation_order": 1,
-        "relation_role": "actor_quote",
+        "relation_role": "actor_fact_quote",
     }
     spans: list[dict[str, object]] = []
     append_atomic_source_spans(spans, authored_atomic_claims=[claim])
@@ -648,7 +648,7 @@ def _expected_atom(
     source_occurrence: int = 0,
     projection_occurrence: int = 0,
     relation_order: int = 1,
-    relation_role: str = "actor_quote",
+    relation_role: str = "actor_fact_quote",
     category: str = "actors",
 ) -> dict[str, object]:
     start, end, digest = _span(prompt, quote, occurrence=source_occurrence)
@@ -689,7 +689,7 @@ def _actual_atom(
     source_occurrence: int = 0,
     projection_occurrence: int = 0,
     relation_order: int = 1,
-    relation_role: str = "actor_quote",
+    relation_role: str = "actor_fact_quote",
     category: str = "actors",
 ) -> dict[str, object]:
     start, end, digest = _span(prompt, quote, occurrence=source_occurrence)
@@ -831,7 +831,6 @@ def _relation_annotation(prompt: str) -> dict[str, object]:
                 "event_end_byte": len(FIRST_PATH.encode("utf-8")),
                 "event_sha256": event_sha,
                 "actor_kind": "human",
-                "actor_sha256": hashlib.sha256(b"Operator").hexdigest(),
                 "actor_fact_path": "/human_actors/0",
                 "actor_fact_sha256": hashlib.sha256(b"Operator").hexdigest(),
                 "product_owner_path": "",
@@ -955,8 +954,6 @@ def _authored_semantics(
             "event_start_byte": 0,
             "event_end_byte": len(first_path.encode("utf-8")),
             "actor_kind": "human",
-            "actor_quote": actor,
-            "actor_is_carried": False,
             "actor_fact_path": "/human_actors/0",
             "actor_fact_quote": actor,
             "owner_system_path": "",
@@ -1132,10 +1129,10 @@ def _rich_relation_bundle(
         "component_responsibilities": ["Record the accepted receipt"],
     }
     atom_specs = (
-        ("Reviewer", "scored", "human_actors", "/human_actors/0", None, 1, "actor_quote", "actors"),
-        ("Registry API", "reference_only", "external_systems", "/external_systems/0", None, 2, "actor_quote", "dependencies"),
+        ("Reviewer", "scored", "human_actors", "/human_actors/0", None, 1, "actor_fact_quote", "actors"),
+        ("Registry API", "reference_only", "external_systems", "/external_systems/0", None, 2, "actor_fact_quote", "dependencies"),
         ("Archive API", "reference_only", "external_systems", "/external_systems/1", None, 0, "", "dependencies"),
-        ("Record Engine", "reference_only", "internal_systems", "/internal_systems/0", None, 3, "actor_quote", "dependencies"),
+        ("Record Engine", "reference_only", "internal_systems", "/internal_systems/0", None, 3, "actor_fact_quote", "dependencies"),
         ("Backup Engine", "reference_only", "internal_systems", "/internal_systems/1", None, 0, "", "dependencies"),
         ("prior state", "reference_only", "state_object", "/state_object", None, 0, "", "states"),
         ("Retain the accepted receipt", "reference_only", "operational_constraints", "/operational_constraints/0", None, 0, "", "constraints"),
@@ -1192,8 +1189,6 @@ def _rich_relation_bundle(
                 "event_start_byte": event_start,
                 "event_end_byte": event_end,
                 "actor_kind": actor_kind,
-                "actor_quote": actor,
-                "actor_is_carried": False,
                 "actor_fact_path": actor_path,
                 "actor_fact_quote": actor,
                 "owner_system_path": owner_path,
@@ -1213,7 +1208,6 @@ def _rich_relation_bundle(
                 "event_end_byte": event_end,
                 "event_sha256": event_sha,
                 "actor_kind": actor_kind,
-                "actor_sha256": _sha(actor),
                 "actor_fact_path": actor_path,
                 "actor_fact_sha256": _sha(actor),
                 "product_owner_path": owner_path,
@@ -1332,8 +1326,6 @@ def _repeated_relation_evidence() -> tuple[GreenfieldMatrixCase, dict[str, objec
                 "event_start_byte": projection_start,
                 "event_end_byte": projection_start + len(event.encode("utf-8")),
                 "actor_kind": "human",
-                "actor_quote": "Operator",
-                "actor_is_carried": False,
                 "actor_fact_path": "/human_actors/0",
                 "actor_fact_quote": "Operator",
                 "owner_system_path": "",
@@ -1353,7 +1345,6 @@ def _repeated_relation_evidence() -> tuple[GreenfieldMatrixCase, dict[str, objec
                 "event_end_byte": projection_start + len(event.encode("utf-8")),
                 "event_sha256": _sha(event),
                 "actor_kind": "human",
-                "actor_sha256": _sha("Operator"),
                 "actor_fact_path": "/human_actors/0",
                 "actor_fact_sha256": _sha("Operator"),
                 "product_owner_path": "",

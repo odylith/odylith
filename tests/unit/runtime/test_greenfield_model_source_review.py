@@ -47,12 +47,29 @@ def _conflicting_response():
     return response
 
 
-def _review_response():
-    result = _response(_source())["result"]
+def _review_response(response=None, *, human_actors=None):
+    result = (response or _response(_source()))["result"]
     return {
         "product_story": result["facts"]["product_story"],
         "components": result["components"],
+        "human_actors": (
+            result["facts"]["human_actors"]
+            if human_actors is None
+            else human_actors
+        ),
     }
+
+
+def _reviewed_people_response():
+    source = _source() + " Review recipient Mara. for review visibility."
+    response = _response(source)
+    response["result"]["facts"]["human_actors"].extend(
+        [
+            {"quote": "Review recipient Mara", "occurrence": 1},
+            {"quote": "for review visibility", "occurrence": 1},
+        ]
+    )
+    return source, response
 
 
 def _provider(monkeypatch, responses, durations):
@@ -100,14 +117,89 @@ def test_structurally_valid_authoring_still_gets_one_source_claim_review(monkeyp
     assert len(provider.requests) == result.semantic_model_call_count == 2
 
 
-def test_author_and_reviewer_share_the_nonempty_component_contract(monkeypatch):
+def test_author_and_reviewer_share_component_and_human_contracts(monkeypatch):
     provider, clock = _provider(monkeypatch, [_response(_source()), _review_response()], [10.0, 5.0])
     author_greenfield_intent(evidence_text=_source(), provider=provider, clock=clock)
     author, reviewer = provider.requests
     authored_schema = author.output_schema["properties"]["result"]["anyOf"][0]
     components = authored_schema["properties"]["components"]
+    human_actors = authored_schema["properties"]["facts"]["properties"]["human_actors"]
     assert reviewer.output_schema["properties"]["components"] is components
+    assert reviewer.output_schema["properties"]["human_actors"] is human_actors
     assert components["minItems"] == 1
+
+
+def test_review_removes_only_explicitly_returned_unused_human_fact(monkeypatch):
+    source, initial = _reviewed_people_response()
+    initial_copy = deepcopy(initial)
+    performing, recipient, _purpose_fragment = initial["result"]["facts"]["human_actors"]
+    review = _review_response(initial, human_actors=[performing, recipient])
+    provider, clock = _provider(monkeypatch, [initial, review], [20.0, 5.0])
+
+    result = author_greenfield_intent(evidence_text=source, provider=provider, clock=clock)
+
+    assert result.intent["human_actors"] == ["Dock attendant Ivo", "Review recipient Mara"]
+    assert result.first_path_relations[0]["actor_fact_quote"] == "Dock attendant Ivo"
+    assert result.intent["customer"] == "Dock attendants"
+    assert result.intent["product_story"] == (
+        initial["result"]["facts"]["product_story"]["quote"]
+    )
+    assert result.intent["component_responsibilities"] == ["Record berth occupancy"]
+    assert [
+        (
+            row["actor_fact_quote"],
+            row["action_verb_quote"],
+            row["target_quote"],
+        )
+        for row in result.first_path_relations
+    ] == [
+        (
+            row["actor_fact_quote"],
+            row["action_quote"],
+            row["target_quote"],
+        )
+        for row in initial["result"]["events"]
+    ]
+    assert result.first_path_relations[-1]["visible_result_quote"] == (
+        "the berth map shows the placement"
+    )
+    assert result.semantic_model_call_count == len(provider.requests) == 2
+    assert provider.requests[1].prompt_payload["candidate"] == initial_copy["result"]
+    assert initial == initial_copy
+
+
+def test_review_cannot_remove_a_human_still_used_by_an_event(monkeypatch):
+    source, initial = _reviewed_people_response()
+    recipient = initial["result"]["facts"]["human_actors"][1]
+    review = _review_response(initial, human_actors=[recipient])
+    provider, clock = _provider(monkeypatch, [initial, review], [20.0, 5.0])
+
+    with pytest.raises(GreenfieldModelAuthoringError):
+        author_greenfield_intent(evidence_text=source, provider=provider, clock=clock)
+
+    assert len(provider.requests) == 2
+
+
+@pytest.mark.parametrize(
+    "human_actors",
+    [
+        "Dock attendant Ivo",
+        [{"quote": "Dock attendant Ivo"}],
+        [{"quote": "Dock attendant Ivo", "occurrence": 0}],
+        [{"quote": "Invented reviewer", "occurrence": 1}],
+    ],
+)
+def test_review_rejects_malformed_or_out_of_source_human_facts(
+    monkeypatch, human_actors,
+):
+    initial = _response(_source())
+    review = _review_response(initial, human_actors=human_actors)
+    provider, clock = _provider(monkeypatch, [initial, review], [20.0, 5.0])
+
+    with pytest.raises(GreenfieldModelAuthoringError):
+        author_greenfield_intent(evidence_text=_source(), provider=provider, clock=clock)
+
+    assert len(provider.requests) == 2
 
 
 def test_review_cannot_erase_valid_components_or_silently_accept_the_original(monkeypatch):
@@ -184,6 +276,7 @@ def test_proof_retains_initial_response_exact_review_and_final_candidate(tmp_pat
     assert retained["source_review"]["elapsed_seconds"] == 7.0
     expected = deepcopy(initial)
     expected["result"]["components"] = review["components"]
+    expected["result"]["facts"]["human_actors"] = review["human_actors"]
     assert retained["response"] == expected
 
 

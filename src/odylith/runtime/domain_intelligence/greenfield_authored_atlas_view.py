@@ -384,50 +384,13 @@ def _context_view(
                 f"Accepted human actor in the first product path: {actor}",
             )
         )
-    component_rows = [
-        (
-            _required_string(component.get("label"), "component label"),
-            _required_string(component.get("responsibility"), "component responsibility"),
-        )
-        for component in components
-    ]
-    sole_title_product = (
-        len(component_rows) == 1
-        and " ".join(component_rows[0][0].split()).casefold()
-        == " ".join(title.split()).casefold()
+    product_lines, product_boxes, component_targets = _product_boundary_projection(
+        title=title,
+        components=components,
     )
     lines.append("  end")
-    lines.append(
-        f'  product["{_mermaid_label(title)}"]'
-        if sole_title_product
-        else f'  subgraph product["{_mermaid_label(title)}"]'
-    )
-    boxes.append(
-        _box(
-            "product",
-            title,
-            "Product boundary",
-            (
-                f"Candidate product boundary and sole product-owned component for {title}."
-                if sole_title_product
-                else f"Contains the candidate product-owned components for {title}."
-            ),
-        )
-    )
-    for index, (label, responsibility) in enumerate(component_rows, start=1):
-        if sole_title_product:
-            continue
-        lines.append(f'    component{index}["{_mermaid_label(label)}"]')
-        boxes.append(
-            _box(
-                f"component{index}",
-                label,
-                "Product-owned component",
-                f"Accepted responsibility: {responsibility}",
-            )
-        )
-    if not sole_title_product:
-        lines.append("  end")
+    lines.extend(product_lines)
+    boxes.extend(product_boxes)
     if externals:
         lines.append('  subgraph external_systems["Accepted external systems"]')
         boxes.append(
@@ -455,11 +418,7 @@ def _context_view(
         externals=externals,
         components=components,
     ):
-        target = (
-            f"component{component_index}"
-            if component_index and not sole_title_product
-            else "product"
-        )
+        target = component_targets[component_index - 1] if component_index else "product"
         lines.append(f"  external{external_index} -.-> {target}")
     return _styled_mermaid(lines), boxes
 
@@ -581,31 +540,13 @@ def _boundary_view(
     non_goals: Sequence[str],
     context_relations: Sequence[Mapping[str, Any]],
 ) -> tuple[str, list[dict[str, str]]]:
-    lines = ["flowchart TB", f'  subgraph product["{_mermaid_label(title)}"]']
-    boxes = [
-        _box(
-            "product",
-            title,
-            "Product boundary",
-            f"Contains the candidate product-owned components for {title}.",
-        )
-    ]
-    for index, component in enumerate(components, start=1):
-        label = _required_string(component.get("label"), "component label")
-        responsibility = _required_string(
-            component.get("responsibility"),
-            "component responsibility",
-        )
-        lines.append(f'    component{index}["{_mermaid_label(label)}"]')
-        boxes.append(
-            _box(
-                f"component{index}",
-                label,
-                "Product-owned component",
-                f"Accepted responsibility: {responsibility}",
-            )
-        )
-    lines.append("  end")
+    product_lines, product_boxes, component_targets = _product_boundary_projection(
+        title=title,
+        components=components,
+    )
+    lines = ["flowchart TB"]
+    lines.extend(product_lines)
+    boxes = list(product_boxes)
     if externals:
         lines.append('  subgraph external_systems["Accepted external systems"]')
         boxes.append(
@@ -660,11 +601,64 @@ def _boundary_view(
         external = externals[external_index - 1]
         if external not in linked_external_quotes:
             raise ValueError("authored Atlas external edge lacks a typed context relation")
-        target = f"component{component_index}" if component_index else "product"
+        target = component_targets[component_index - 1] if component_index else "product"
         lines.append(f"  external{external_index} -.-> {target}")
     for index, _non_goal in enumerate(non_goals, start=1):
         lines.append(f"  product -.-> non_goal{index}")
     return _styled_mermaid(lines), boxes
+
+
+def _product_boundary_projection(
+    *,
+    title: str,
+    components: Sequence[Mapping[str, Any]],
+) -> tuple[list[str], list[dict[str, str]], tuple[str, ...]]:
+    rows = tuple(
+        (
+            _required_string(component.get("label"), "component label"),
+            _required_string(component.get("responsibility"), "component responsibility"),
+        )
+        for component in components
+    )
+    title_key = " ".join(title.split()).casefold()
+    sole_title_product = (
+        len(rows) == 1 and " ".join(rows[0][0].split()).casefold() == title_key
+    )
+    lines = [
+        f'  product["{_mermaid_label(title)}"]'
+        if sole_title_product
+        else f'  subgraph product["{_mermaid_label(title)}"]'
+    ]
+    boxes = [
+        _box(
+            "product",
+            title,
+            "Product boundary",
+            (
+                f"Candidate product boundary and sole product-owned component for {title}."
+                if sole_title_product
+                else f"Contains the candidate product-owned components for {title}."
+            ),
+        )
+    ]
+    component_targets: list[str] = []
+    for index, (label, responsibility) in enumerate(rows, start=1):
+        target = "product" if sole_title_product else f"component{index}"
+        component_targets.append(target)
+        if sole_title_product:
+            continue
+        lines.append(f'    {target}["{_mermaid_label(label)}"]')
+        boxes.append(
+            _box(
+                target,
+                label,
+                "Product-owned component",
+                f"Accepted responsibility: {responsibility}",
+            )
+        )
+    if not sole_title_product:
+        lines.append("  end")
+    return lines, boxes, tuple(component_targets)
 
 
 def _external_component_edges(

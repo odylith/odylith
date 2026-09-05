@@ -54,7 +54,7 @@ def test_title_alias_canonicalizes_to_its_internal_system_owner(tmp_path) -> Non
         first_path_relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Dock attendant Ivo",
+                "actor_fact_quote": "Dock attendant Ivo",
                 "event_quote": "Dock attendant Ivo enters a vessel tag",
                 "action_verb_quote": "enters",
                 "target_quote": "a vessel tag",
@@ -62,7 +62,7 @@ def test_title_alias_canonicalizes_to_its_internal_system_owner(tmp_path) -> Non
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Harbor Desk",
+                "actor_fact_quote": "Harbor Desk",
                 "owner_system_quote": "Harbor Desk",
                 "event_quote": "Harbor Desk shows the placement",
                 "action_verb_quote": "shows",

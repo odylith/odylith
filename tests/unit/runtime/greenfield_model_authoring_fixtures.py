@@ -42,6 +42,7 @@ class StructuredAuthoringProvider:
                 {
                     "product_story": facts.get("product_story"),
                     "components": candidate.get("components"),
+                    "human_actors": facts.get("human_actors"),
                 }
             )
         return copy.deepcopy(dict(self.response)) if self.response is not None else None
@@ -180,7 +181,9 @@ def _relation_rows(
     rows: list[dict[str, Any]] = []
     for relation in relations:
         event_quote = str(relation.get("event_quote") or "")
-        actor_quote = str(relation.get("actor_quote") or "")
+        # Legacy-looking surface text is accepted only as fixture ergonomics for
+        # choosing an already-selected human/external fact; it is never emitted.
+        test_surface_actor_quote = str(relation.get("actor_quote") or "")
         target_quote = str(relation.get("target_quote") or "")
         actor_kind = str(relation.get("actor_kind") or "")
         segment_index = relation.get("segment_index")
@@ -202,16 +205,13 @@ def _relation_rows(
         actor_fact_quote = _actor_fact_quote(
             relation,
             actor_kind=actor_kind,
-            actor_quote=actor_quote,
+            test_surface_actor_quote=test_surface_actor_quote,
             fact_indexes=fact_indexes,
             intent=intent,
         )
         rows.append(
             {
                 "actor_fact_quote": actor_fact_quote,
-                "actor_quote": (
-                    actor_quote if actor_quote in event_quote else actor_fact_quote
-                ),
                 "action_quote": str(
                     relation.get("action_verb_quote") or event_quote
                 ),
@@ -275,7 +275,7 @@ def _actor_fact_quote(
     relation: Mapping[str, Any],
     *,
     actor_kind: str,
-    actor_quote: str,
+    test_surface_actor_quote: str,
     fact_indexes: Mapping[str, int],
     intent: Mapping[str, Any],
 ) -> str:
@@ -292,7 +292,9 @@ def _actor_fact_quote(
     }.get(actor_kind)
     if field is None:
         raise ValueError(f"unknown authored fixture actor_kind: {actor_kind}")
-    selected_quote = str(relation.get("actor_fact_quote") or actor_quote)
+    selected_quote = str(
+        relation.get("actor_fact_quote") or test_surface_actor_quote
+    )
     rows = [str(row) for row in intent.get(field, []) if str(row)]
     matches = [index for index, row in enumerate(rows) if row == selected_quote]
     if len(matches) != 1:
@@ -419,7 +421,7 @@ def _default_first_path_relations(intent: Mapping[str, Any]) -> tuple[dict[str, 
     return (
         {
             "actor_kind": "human",
-            "actor_quote": human_actor,
+            "actor_fact_quote": human_actor,
             "event_quote": first_path,
             "action_verb_quote": first_path,
             "target_quote": "",

@@ -53,7 +53,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v37"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v40"
 GREENFIELD_MODEL_PROOF_FD_ENV = "ODYLITH_GREENFIELD_MODEL_PROOF_FD"
 MAX_GREENFIELD_SEMANTIC_CALLS = 2
 
@@ -271,6 +271,7 @@ def author_greenfield_intent(
                 profile_id=profile.profile_id, remaining_seconds=remaining,
                 observation=review_observation,
                 product_story_schema=_CITATION_SCHEMA,
+                human_actors_schema=_AUTHORED_FACTS_SCHEMA["properties"]["human_actors"],
             )
         except GreenfieldAuthoredSemanticsError as exc:
             raise GreenfieldModelAuthoringError(f"{exc}; no records were created.") from exc
@@ -804,8 +805,9 @@ Keep every required source-stated action. When a product enables human work, pre
 the human actions as events and the enclosing capability as product responsibility.
 Constraints and non-goals remain facts, not extra workflow events.
 actor_fact_quote selects the performing human_actors, internal_systems,
-external_systems or title fact. actor_quote names that same actor inside the event;
-only a subject-omitting continuation repeats the previous actor_fact_quote instead.
+external_systems or title fact for every event. Resolve aliases and omitted subjects
+to that same selected actor fact; change it only when the source changes performer.
+Keep the original actor wording in the exact event citation, not a second actor field.
 action_quote and nonempty target_quote must occur within that event. terminal cites
 the final event's visible result according to its schema.
 Group each owner's exact responsibility citations under one owner_fact_quote, which
@@ -911,9 +913,10 @@ _AUTHORED_FACTS_SCHEMA: dict[str, Any] = {
         "human_actors": {
             **_TYPED_FACTS_SCHEMA["properties"]["human_actors"],
             "description": (
-                "Source-stated people or human roles. Use an empty list when the "
-                "source assigns work only to product or external systems. An "
-                "activity, artifact, or output purpose is not a human participant."
+                "Source-stated people or human roles participating in the product, "
+                "including explicit output recipients outside the first path. Use "
+                "an empty list when no human participant is stated. An activity, "
+                "artifact, or output-purpose modifier is not a human participant."
             ),
         },
         "customer": {

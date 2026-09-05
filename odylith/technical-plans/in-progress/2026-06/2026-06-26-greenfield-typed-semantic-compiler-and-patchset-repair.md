@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-06-26
 
-Updated: 2026-09-04
+Updated: 2026-09-05
 
 Backlog: B-142
 
@@ -28,7 +28,7 @@ guarantee, relabel model timeouts as successful requests, or weaken a failed gat
   response shape, and internal repair. The goal requires bounded calls and
   internal recovery of repairable quality defects; it does not require exactly
   one call. Earlier sections calling these choices fixed mechanism laws are
-  superseded by this contract. The bounded v37 correction below is the current
+  superseded by this contract. The bounded v40 simplification below is the current
   mechanism candidate, not a new goal requirement.
 - Change only an owner implicated by observed failures. Compare one bounded
   alternative against the retained failure and an independent/equivalent control;
@@ -92,6 +92,63 @@ unchanged. The bounded desktop/mobile Project/Radar/Atlas review has no P0/P1,
 including diagram fallback/error states. Commit and rebuild this correction;
 the earlier 4,497-test full gate remains historical evidence before this one-file
 correction, and only the new installed run can qualify the new distribution.
+
+The new installed run (`43ce49b58`) is rejected by independent review: the third
+case again publishes an activity-purpose fragment as a human actor. Five automated
+passes do not overrule this P1. Flood and pediatric have independent no-P0/P1
+reviews; the interrupted run and all raw evidence remain retained. V37 is not a
+winning mechanism. The bounded comparison concerns source ownership of human
+selections. Independent adjudication rejects graph-use enforcement because an
+explicit output recipient may perform no first-path event. V38 instead gives the
+existing second review the shared human-selection schema. It may correct the
+complete human array; event bindings and other protected fields remain immutable
+and the whole candidate revalidates. The exact failed semantic payload, with only
+its wire-version tag transposed, passes one new live review in 8.986 seconds inside
+its original 10.254 seconds remaining. The false human is removed; all five product
+events are byte-identical. This is retained-candidate review proof, not a fresh
+request or installed qualification. Preserve explicit off-path recipients and
+performing humans; reject dangling event references. Keep the citation-veto
+deletion, transaction laws, call count, and 60/90/120 tiers fixed; do not expand
+into advisory repetition findings.
+
+V38 closes the false-human discriminator and preserves an explicit recipient in
+a fresh standard request (`43.932s` including commit), but a fresh semiconductor
+candidate has contradictory surface actor quotes. It is not committed. A bounded
+whole-candidate reviewer exceeds its original 20-second window on the first
+comparison and is rejected before implementation. V40 therefore removes the
+redundant actor_quote/actor_is_carried mechanism rather than widening review or
+adding syntax rules. Each event has one source-cited typed actor fact; original
+event/action/target/result text and custody remain unchanged. Event actor atoms,
+semantic-model and Tribunal projections, and proof readers use that same identity.
+Closed versions reject earlier staged formats; no semantic conversion runs after
+confirmation. Validate explicit aliases, omitted subjects, actor changes, external
+ownership, unselected actors, and the two retained failures before another build.
+Keep the existing bounded story/component/human review and 60/90/120 limits.
+Retain all failed evidence and unchanged quality floors; the protected final
+population remains unopened and must use the current annotation contract.
+
+V40 fresh semiconductor has independent complete-package no-P0/P1 review with a
+55.270-second rescue proposal and verified 83-write commit. Fresh flood takes
+75.638 seconds including commit under deep120; independent semantic, source-byte,
+hash, and exact sealed-file review finds no P0/P1.
+A new two-human standard control takes 44.719 seconds including commit and keeps
+both human identities and ordered actions, but its boundary diagram repeats the
+sole product as a nested component. The older context-only correction left a
+second projection owner active. Share product-boundary rendering across both
+views, retain non-goals/external edges/distinct components, and prove a newly
+sealed replay of the exact accepted model response. Do not widen semantic review,
+add a classifier, or edit the failed sealed package. Only after independent review
+and the full source gate may this candidate enter another immutable installed gate.
+
+V40 source qualification is now complete: the shared boundary projection closes
+the new two-human control's P1 in independently reviewed desktop/mobile normal,
+PNG-fallback, and explicit asset-error states. The frozen full source gate passes
+4,518 tests in 444.86 seconds. Git recovery after the external volume disappeared
+preserved the exact pre-test working diff and restored the same pushed base; no
+source requalification is needed for that metadata-only repair. Save the stable
+checkpoint, build immutable bytes, and run the unchanged installed public 14-case
+plus recovery/browser/profile gate. Do not alter the mechanism absent a diagnosed
+gate failure or consume the final untouched population before those gates pass.
 
 Atlas renderer size exception: the existing oversized `render_mermaid_catalog.py`
 owns the client script that overwrote the generated-only failure-state fix.

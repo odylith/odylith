@@ -60,7 +60,7 @@ def _materialized_authored_intent(tmp_path: Path) -> dict[str, Any]:
     relations = [
         {
             "actor_kind": "human",
-            "actor_quote": "Dock attendant Ivo",
+            "actor_fact_quote": "Dock attendant Ivo",
             "event_quote": "Dock attendant Ivo enters a vessel tag",
             "action_verb_quote": "enters",
             "target_quote": "a vessel tag",
@@ -68,7 +68,7 @@ def _materialized_authored_intent(tmp_path: Path) -> dict[str, Any]:
         },
         {
             "actor_kind": "product",
-            "actor_quote": "the berth recorder",
+            "actor_fact_quote": "Berth recorder",
             "owner_system_quote": "Berth recorder",
             "event_quote": "the berth recorder records berth occupancy",
             "action_verb_quote": "records",
@@ -77,7 +77,7 @@ def _materialized_authored_intent(tmp_path: Path) -> dict[str, Any]:
         },
         {
             "actor_kind": "product",
-            "actor_quote": "the berth map",
+            "actor_fact_quote": "Berth map",
             "owner_system_quote": "Berth map",
             "event_quote": "the berth map shows the placement",
             "action_verb_quote": "shows",

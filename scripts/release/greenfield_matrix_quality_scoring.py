@@ -845,7 +845,7 @@ def _typed_structural_validation_passed(manifest: Mapping[str, Any]) -> bool:
         and str(lens_report.get("reason", "")).strip() == "typed_structural_validation"
         and str(semantic_compiler.get("status", "")).strip() == "passed"
         and str(semantic_compiler.get("version", "")).strip()
-        == "odylith.greenfield.authored-semantic-validation.v2"
+        == "odylith.greenfield.authored-semantic-validation.v3"
         and str(semantic_compiler.get("semantic_owner", "")).strip()
         == "validated_model_authored_intent"
         and semantic_compiler.get("post_authoring_interpretation_calls") == 0

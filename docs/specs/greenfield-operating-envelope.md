@@ -70,11 +70,12 @@ clarification with no writes, separately from unavailable-provider behavior.
 No other model earns a proof claim without its own observed request evidence.
 
 Pre-confirm authoring permits at most two model calls: initial intent authoring,
-then one source-claim review of the product story and component ownership for
+then one source-claim review of the product story, component ownership, and human selections for
 every otherwise-valid authored candidate. Clarifications need only the first call.
 The review shares the original model window and is capped at 20 seconds; it cannot
 extend the consumer deadline or change the chosen profile. The complete candidate
-must pass custody and semantic validation again. Other fields remain unchanged,
+must pass custody and semantic validation again. Explicit recipients need not perform
+a first-path action. Other fields, including event bindings, remain unchanged,
 and a failed review never starts another call. Receipts record the actual call
 count; release proof retains both candidates and the exact review response.
 
@@ -114,11 +115,17 @@ one concise, useful provisional statement. Canonical assumptions carry an
 `applies_to` target and `statement`; their text and role are hash-bound but never
 become accepted source facts. Required decision fields render these statements
 with an explicit Assumption label, not repeated gap notices. Product Intent
-envelope and authority v9 reject earlier staged formats without reinterpretation.
+envelope and authority v10 reject earlier staged formats without reinterpretation.
 Product-only and external-system workflows need no invented human participant.
 Every event still binds to a source-cited typed actor. A provisional customer stays
 an explicitly labeled assumption, never a human actor, dependency, or accepted fact;
 projections do not infer a customer from the first participant.
+Authored semantics v13 stores one actor identity per event: the selected actor fact.
+Aliases, pronouns, and omitted subjects remain in the original event text; they do
+not create a second actor field or a grammatical carry state. Event-actor atomic
+links in ledger v3 cite the selected fact directly, not a substring of the action.
+The custody ledger v7 and current sealed-format checks reject older formats rather
+than translating their meaning during confirmation.
 Failure tracking and restoration remain source-cited actions; an ungrounded
 recovery classification is not part of the authored event contract.
 

@@ -14,7 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 )
 
 
-ATOMIC_FACT_LEDGER_VERSION = "odylith.product-intent-atomic-facts.v2"
+ATOMIC_FACT_LEDGER_VERSION = "odylith.product-intent-atomic-facts.v3"
 ATOMIC_CATEGORY_FIELDS = {
     "actors": ("human_actors", "customer"),
     "actions": ("first_path", "internal_systems", "component_responsibilities"),

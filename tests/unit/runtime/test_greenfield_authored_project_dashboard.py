@@ -80,8 +80,6 @@ def _proposal() -> dict[str, object]:
             "event_start_byte": first_start,
             "event_end_byte": first_end,
             "actor_kind": "human",
-            "actor_quote": "Registry Custodian",
-            "actor_is_carried": False,
             "actor_fact_path": "/human_actors/0",
             "actor_fact_quote": "Registry Custodian",
             "owner_system_path": "",
@@ -98,8 +96,6 @@ def _proposal() -> dict[str, object]:
             "event_start_byte": second_start,
             "event_end_byte": second_end,
             "actor_kind": "product",
-            "actor_quote": "Meridian Engine",
-            "actor_is_carried": False,
             "actor_fact_path": "/internal_systems/0",
             "actor_fact_quote": "Meridian Engine",
             "owner_system_path": "/internal_systems/0",
@@ -251,8 +247,6 @@ def _pronoun_proposal() -> dict[str, object]:
             "source_end_byte": len(first_event.encode("utf-8")),
             "event_start_byte": 0,
             "event_end_byte": len(first_event.encode("utf-8")),
-            "actor_quote": "She",
-            "actor_is_carried": False,
             "actor_fact_path": "/human_actors/0",
             "actor_fact_quote": "Registry Custodian",
             "event_quote": first_event,
@@ -642,7 +636,7 @@ def test_authored_dashboard_projects_title_owned_capability_without_empty_cards(
     relations = (
         {
             "actor_kind": "human",
-            "actor_quote": "Dock attendant Ivo",
+            "actor_fact_quote": "Dock attendant Ivo",
             "event_quote": "Dock attendant Ivo enters a vessel tag",
             "action_verb_quote": "enters",
             "target_quote": "vessel tag",
@@ -650,7 +644,7 @@ def test_authored_dashboard_projects_title_owned_capability_without_empty_cards(
         },
         {
             "actor_kind": "product",
-            "actor_quote": "Harbor Desk",
+            "actor_fact_quote": "Harbor Desk",
             "owner_system_quote": "Harbor Desk",
             "event_quote": "Harbor Desk records berth occupancy",
             "action_verb_quote": "records",
@@ -659,7 +653,7 @@ def test_authored_dashboard_projects_title_owned_capability_without_empty_cards(
         },
         {
             "actor_kind": "product",
-            "actor_quote": "Harbor Desk",
+            "actor_fact_quote": "Harbor Desk",
             "owner_system_quote": "Harbor Desk",
             "event_quote": "Harbor Desk shows the placement",
             "action_verb_quote": "shows",

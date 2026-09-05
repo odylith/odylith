@@ -213,7 +213,7 @@ def _authored_visible_actors(
             1,
             {
                 "stable_role": "domain_operator",
-                "visible_actor": str(human_relation.get("actor_quote") or ""),
+                "visible_actor": str(human_relation.get("actor_fact_quote") or ""),
                 "actor_source": "explicit_intent_actor",
                 "responsibility": str(human_relation.get("event_quote") or ""),
             },
@@ -293,7 +293,7 @@ def _authored_events(relations: Sequence[Mapping[str, Any]]) -> list[dict[str, A
     return [
         {
             "index": index,
-            "actor": row.get("actor_quote"),
+            "actor": row.get("actor_fact_quote"),
             "owner_system": row.get("owner_system_quote"),
             "action": row.get("action_verb_quote"),
             "target_entity": row.get("target_quote"),

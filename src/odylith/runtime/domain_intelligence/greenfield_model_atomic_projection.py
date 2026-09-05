@@ -40,7 +40,6 @@ _FACT_ATOM_POLICY = {
     "non_goals": ("non_goals", "prohibited"),
 }
 _RELATION_ATOM_CATEGORY = {
-    "actor_quote": "actors",
     "action_verb_quote": "actions",
     "target_quote": "states",
     "visible_result_quote": "outputs",
@@ -64,10 +63,20 @@ def derive_model_atomic_claims(
     }
     rows = [_whole_fact_claim(intent=intent, fact=fact) for fact in facts]
     for relation in first_path_relations:
-        event = str(relation.get("event_quote") or "")
         for role in AUTHORED_RELATION_ROLES:
             quote = str(relation.get(role) or "")
             if not quote:
+                continue
+            if role == "actor_fact_quote":
+                rows.append(
+                    _event_actor_claim(
+                        intent=intent,
+                        relation=relation,
+                        actor_fact=facts_by_path.get(
+                            str(relation.get("actor_fact_path") or "")
+                        ),
+                    )
+                )
                 continue
             if role == "visible_result_quote":
                 rows.append(
@@ -75,17 +84,6 @@ def derive_model_atomic_claims(
                         intent=intent,
                         relation=relation,
                         terminal_result_fact=terminal_result_fact,
-                    )
-                )
-                continue
-            if role == "actor_quote" and quote not in event:
-                rows.append(
-                    _implicit_actor_claim(
-                        intent=intent,
-                        relation=relation,
-                        actor_fact=facts_by_path.get(
-                            str(relation.get("actor_fact_path") or "")
-                        ),
                     )
                 )
                 continue
@@ -195,7 +193,7 @@ def _path_relation_claim(
     )
 
 
-def _implicit_actor_claim(
+def _event_actor_claim(
     *,
     intent: Mapping[str, Any],
     relation: Mapping[str, Any],
@@ -204,7 +202,6 @@ def _implicit_actor_claim(
     actor_fact_quote = str(relation.get("actor_fact_quote") or "")
     if (
         actor_fact is None
-        or relation.get("actor_is_carried") is not True
         or actor_fact_quote != str(actor_fact.get("quote") or "")
     ):
         raise GreenfieldAuthoredSemanticsError(
@@ -219,7 +216,7 @@ def _implicit_actor_claim(
         source_start=_integer(actor_fact.get("source_start_byte")),
         projection_start=_integer(actor_fact.get("projection_start_byte")),
         relation_order=_integer(relation.get("order")),
-        relation_role="actor_quote",
+        relation_role="actor_fact_quote",
     )
 
 

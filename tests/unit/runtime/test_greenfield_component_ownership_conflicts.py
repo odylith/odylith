@@ -5,9 +5,6 @@ from typing import Any
 
 import pytest
 
-from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
-    GreenfieldAuthoredSemanticsError,
-)
 from odylith.runtime.domain_intelligence.greenfield_model_direct_evidence_graph import (
     GreenfieldComponentOwnershipError,
     derive_model_relations,
@@ -43,7 +40,6 @@ def _derive(
     evidence: str,
     event_quote: str,
     actor_fact_quote: str,
-    actor_quote: str,
     action_quote: str,
     target_quote: str,
     owner_fact_quote: str,
@@ -60,7 +56,6 @@ def _derive(
         events=(
             {
                 "actor_fact_quote": actor_fact_quote,
-                "actor_quote": actor_quote,
                 "action_quote": action_quote,
                 "target_quote": target_quote,
             },
@@ -110,7 +105,6 @@ def test_product_event_responsibility_keeps_its_selected_product_owner() -> None
         evidence=evidence,
         event_quote=event,
         actor_fact_quote="Relay Console",
-        actor_quote="Relay Console",
         action_quote="stores",
         target_quote="approved packet",
         owner_fact_quote="Relay Console",
@@ -165,7 +159,6 @@ def test_outer_product_capability_may_encompass_a_human_event() -> None:
         evidence=evidence,
         event_quote=event,
         actor_fact_quote="city staff",
-        actor_quote="city staff",
         action_quote="route",
         target_quote="residents",
         owner_fact_quote="Floodline",
@@ -244,7 +237,6 @@ def test_non_product_event_is_not_a_product_component_responsibility(
             evidence=evidence,
             event_quote=event,
             actor_fact_quote=actor,
-            actor_quote=actor,
             action_quote=action,
             target_quote=target,
             owner_fact_quote=title,
@@ -291,7 +283,6 @@ def test_product_event_rejects_a_different_selected_component_owner() -> None:
             evidence=evidence,
             event_quote=event,
             actor_fact_quote="Berth Map",
-            actor_quote="Berth Map",
             action_quote="stores",
             target_quote="approved berth state",
             owner_fact_quote="Harbor Desk",
@@ -301,7 +292,7 @@ def test_product_event_rejects_a_different_selected_component_owner() -> None:
         )
 
 
-def test_initial_carried_actor_remains_an_untyped_authored_semantics_failure() -> None:
+def test_actor_fact_is_selected_without_interpreting_event_text() -> None:
     evidence = "Analyst Ana uses Relay Console. Later, submits a case."
     event = "submits a case"
     facts = (
@@ -328,21 +319,20 @@ def test_initial_carried_actor_remains_an_untyped_authored_semantics_failure() -
         ),
     )
 
-    with pytest.raises(
-        GreenfieldAuthoredSemanticsError,
-        match="ungrounded first-path actor",
-    ) as exc_info:
-        _derive(
-            evidence=evidence,
-            event_quote=event,
-            actor_fact_quote="Analyst Ana",
-            actor_quote="Analyst Ana",
-            action_quote="submits",
-            target_quote="case",
-            owner_fact_quote="Relay Console",
-            responsibility_quote="",
-            terminal_quote="case",
-            selected_facts=facts,
-        )
+    result = _derive(
+        evidence=evidence,
+        event_quote=event,
+        actor_fact_quote="Analyst Ana",
+        action_quote="submits",
+        target_quote="case",
+        owner_fact_quote="Relay Console",
+        responsibility_quote="",
+        terminal_quote="case",
+        selected_facts=facts,
+    )
 
-    assert type(exc_info.value) is GreenfieldAuthoredSemanticsError
+    relation = result.first_path_relations[0]
+    assert relation["actor_kind"] == "human"
+    assert relation["actor_fact_path"] == "/human_actors/0"
+    assert relation["actor_fact_quote"] == "Analyst Ana"
+    assert relation["event_quote"] == event

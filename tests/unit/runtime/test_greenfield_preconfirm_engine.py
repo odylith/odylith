@@ -255,7 +255,7 @@ def test_authored_package_passes_in_one_validation_pass(
     assert "repaired_issue_codes" not in result.manifest
     assert "patchset_request" not in result.manifest
     assert result.manifest["semantic_compiler"] == {
-        "version": "odylith.greenfield.authored-semantic-validation.v2",
+        "version": "odylith.greenfield.authored-semantic-validation.v3",
         "status": "passed",
         "semantic_owner": "validated_model_authored_intent",
         "post_authoring_interpretation_calls": 0,

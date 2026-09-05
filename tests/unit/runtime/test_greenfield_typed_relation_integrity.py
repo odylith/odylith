@@ -77,7 +77,7 @@ def _harbor_case() -> tuple[str, dict[str, object], dict[str, object]]:
         first_path_relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Dock attendant Ivo",
+                "actor_fact_quote": "Dock attendant Ivo",
                 "event_quote": segments[0],
                 "action_verb_quote": "submits",
                 "target_quote": "a berth request",
@@ -85,7 +85,7 @@ def _harbor_case() -> tuple[str, dict[str, object], dict[str, object]]:
             },
             {
                 "actor_kind": "external_system",
-                "actor_quote": "Tide Authority API",
+                "actor_fact_quote": "Tide Authority API",
                 "event_quote": segments[1],
                 "action_verb_quote": "supplies",
                 "target_quote": "clearance",
@@ -93,7 +93,7 @@ def _harbor_case() -> tuple[str, dict[str, object], dict[str, object]]:
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Harbor Registry",
+                "actor_fact_quote": "Harbor Registry",
                 "owner_system_quote": "Harbor Registry",
                 "event_quote": segments[2],
                 "action_verb_quote": "records",
@@ -102,7 +102,7 @@ def _harbor_case() -> tuple[str, dict[str, object], dict[str, object]]:
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "The berth map",
+                "actor_fact_quote": "berth map",
                 "owner_system_quote": "berth map",
                 "event_quote": segments[3],
                 "action_verb_quote": "shows",
@@ -146,7 +146,6 @@ def test_typed_product_owner_edge_is_authoritative_without_name_reparsing() -> N
 
     result = _author(evidence, response)
 
-    assert result.first_path_relations[2]["actor_quote"] == "Harbor Registry"
     assert result.first_path_relations[2]["actor_fact_quote"] == "berth map"
     assert result.first_path_relations[2]["owner_system_quote"] == "berth map"
 
@@ -218,7 +217,7 @@ def test_product_pronoun_uses_an_explicit_selected_actor_fact() -> None:
         first_path_relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Analyst Aya",
+                "actor_fact_quote": "Analyst Aya",
                 "event_quote": segments[0],
                 "action_verb_quote": "submits",
                 "target_quote": "a case",
@@ -226,7 +225,7 @@ def test_product_pronoun_uses_an_explicit_selected_actor_fact() -> None:
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Review Engine",
+                "actor_fact_quote": "Review Engine",
                 "owner_system_quote": "Review Engine",
                 "event_quote": segments[1],
                 "action_verb_quote": "receives",
@@ -235,7 +234,7 @@ def test_product_pronoun_uses_an_explicit_selected_actor_fact() -> None:
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "It",
+                "actor_fact_quote": "Review Engine",
                 "owner_system_quote": "Review Engine",
                 "event_quote": segments[2],
                 "action_verb_quote": "shows",
@@ -248,12 +247,11 @@ def test_product_pronoun_uses_an_explicit_selected_actor_fact() -> None:
 
     result = _author(prompt, response)
 
-    assert result.first_path_relations[2]["actor_quote"] == "It"
     assert result.first_path_relations[2]["actor_fact_path"] == "/internal_systems/0"
     assert result.first_path_relations[2]["actor_fact_quote"] == "Review Engine"
 
 
-def test_coordinated_clauses_preserve_carried_actors_and_every_action() -> None:
+def test_coordinated_clauses_preserve_actor_facts_and_every_action() -> None:
     first_path = (
         "Contractor Lina uploads a permit packet, reviews the extracted address, "
         "then Permit Relay stores the approved packet and shows Lina an accepted receipt"
@@ -288,7 +286,7 @@ def test_coordinated_clauses_preserve_carried_actors_and_every_action() -> None:
         first_path_relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Contractor Lina",
+                "actor_fact_quote": "Contractor Lina",
                 "event_quote": events[0],
                 "action_verb_quote": "uploads",
                 "target_quote": "a permit packet",
@@ -296,7 +294,7 @@ def test_coordinated_clauses_preserve_carried_actors_and_every_action() -> None:
             },
             {
                 "actor_kind": "human",
-                "actor_quote": "Contractor Lina",
+                "actor_fact_quote": "Contractor Lina",
                 "event_quote": events[1],
                 "action_verb_quote": "reviews",
                 "target_quote": "the extracted address",
@@ -304,7 +302,7 @@ def test_coordinated_clauses_preserve_carried_actors_and_every_action() -> None:
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Permit Relay",
+                "actor_fact_quote": "Permit Relay",
                 "owner_system_quote": "Permit Relay",
                 "event_quote": events[2],
                 "action_verb_quote": "stores",
@@ -313,7 +311,7 @@ def test_coordinated_clauses_preserve_carried_actors_and_every_action() -> None:
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Permit Relay",
+                "actor_fact_quote": "Permit Relay",
                 "owner_system_quote": "Permit Relay",
                 "event_quote": events[3],
                 "action_verb_quote": "shows",
@@ -326,7 +324,7 @@ def test_coordinated_clauses_preserve_carried_actors_and_every_action() -> None:
 
     result = _author(evidence, response)
 
-    assert [row["actor_quote"] for row in result.first_path_relations] == [
+    assert [row["actor_fact_quote"] for row in result.first_path_relations] == [
         "Contractor Lina",
         "Contractor Lina",
         "Permit Relay",
@@ -432,7 +430,7 @@ def _repeated_event_case() -> tuple[str, dict[str, object]]:
             {
                 "segment_index": 0,
                 "actor_kind": "human",
-                "actor_quote": "Operator Ada",
+                "actor_fact_quote": "Operator Ada",
                 "event_quote": repeated,
                 "action_verb_quote": "submits",
                 "target_quote": "request",
@@ -441,7 +439,7 @@ def _repeated_event_case() -> tuple[str, dict[str, object]]:
             {
                 "segment_index": 1,
                 "actor_kind": "human",
-                "actor_quote": "Operator Ada",
+                "actor_fact_quote": "Operator Ada",
                 "event_quote": repeated,
                 "action_verb_quote": "submits",
                 "target_quote": "request",
@@ -450,7 +448,7 @@ def _repeated_event_case() -> tuple[str, dict[str, object]]:
             {
                 "segment_index": 2,
                 "actor_kind": "product",
-                "actor_quote": "Retry Console",
+                "actor_fact_quote": "Retry Console",
                 "owner_system_quote": "Retry Console",
                 "event_quote": terminal,
                 "action_verb_quote": "shows",
@@ -606,7 +604,7 @@ def test_utf8_multiactor_path_preserves_meaning_when_source_order_differs() -> N
         first_path_relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Analyst Zoë",
+                "actor_fact_quote": "Analyst Zoë",
                 "event_quote": segments[0],
                 "action_verb_quote": "submits",
                 "target_quote": "dossier",
@@ -614,7 +612,7 @@ def test_utf8_multiactor_path_preserves_meaning_when_source_order_differs() -> N
             },
             {
                 "actor_kind": "external_system",
-                "actor_quote": "Æther API",
+                "actor_fact_quote": "Æther API",
                 "event_quote": segments[1],
                 "action_verb_quote": "supplies",
                 "target_quote": "attestation",
@@ -622,7 +620,7 @@ def test_utf8_multiactor_path_preserves_meaning_when_source_order_differs() -> N
             },
             {
                 "actor_kind": "human",
-                "actor_quote": "Reviewer Béla",
+                "actor_fact_quote": "Reviewer Béla",
                 "event_quote": segments[2],
                 "action_verb_quote": "approves",
                 "target_quote": "dossier",
@@ -630,7 +628,7 @@ def test_utf8_multiactor_path_preserves_meaning_when_source_order_differs() -> N
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Café Console",
+                "actor_fact_quote": "Café Console",
                 "owner_system_quote": "Café Console",
                 "event_quote": segments[3],
                 "action_verb_quote": "shows",
@@ -644,7 +642,7 @@ def test_utf8_multiactor_path_preserves_meaning_when_source_order_differs() -> N
     result = _author(evidence, response)
 
     assert result.intent["human_actors"] == ["Analyst Zoë", "Reviewer Béla"]
-    assert result.first_path_relations[1]["actor_quote"] == "Æther API"
+    assert result.first_path_relations[1]["actor_fact_quote"] == "Æther API"
     assert result.first_path_relations[2]["source_start_byte"] < result.first_path_relations[1][
         "source_start_byte"
     ]

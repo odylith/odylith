@@ -80,7 +80,7 @@ def _response(source: str) -> dict[str, object]:
             {
                 "order": 1,
                 "actor_kind": "human",
-                "actor_quote": "Dock attendant Ivo",
+                "actor_fact_quote": "Dock attendant Ivo",
                 "event_quote": "Dock attendant Ivo enters a vessel tag",
                 "action_verb_quote": "enters",
                 "target_quote": "a vessel tag",
@@ -89,7 +89,6 @@ def _response(source: str) -> dict[str, object]:
             {
                 "order": 2,
                 "actor_kind": "product",
-                "actor_quote": "the product",
                 "owner_system_quote": "Berth map",
                 "event_quote": "the product records berth occupancy",
                 "action_verb_quote": "records",
@@ -99,7 +98,6 @@ def _response(source: str) -> dict[str, object]:
             {
                 "order": 3,
                 "actor_kind": "product",
-                "actor_quote": "the berth map",
                 "owner_system_quote": "Berth map",
                 "event_quote": "the berth map shows the placement",
                 "action_verb_quote": "shows",
@@ -135,7 +133,6 @@ def _carried_human_actor_response() -> tuple[str, dict[str, Any], dict[str, Any]
         first_path_relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "A dock attendant Ivo",
                 "actor_fact_quote": "dock attendant Ivo",
                 "event_quote": "A dock attendant Ivo enters a vessel tag",
                 "action_verb_quote": "enters",
@@ -144,7 +141,6 @@ def _carried_human_actor_response() -> tuple[str, dict[str, Any], dict[str, Any]
             },
             {
                 "actor_kind": "human",
-                "actor_quote": "the attendant",
                 "actor_fact_quote": "dock attendant Ivo",
                 "event_quote": "the attendant checks its status",
                 "action_verb_quote": "checks",
@@ -153,7 +149,6 @@ def _carried_human_actor_response() -> tuple[str, dict[str, Any], dict[str, Any]
             },
             {
                 "actor_kind": "human",
-                "actor_quote": "the attendant",
                 "actor_fact_quote": "dock attendant Ivo",
                 "event_quote": "sees the berth placement",
                 "action_verb_quote": "sees",
@@ -179,7 +174,7 @@ def test_authoring_accepts_only_byte_verified_source_citations() -> None:
     )
 
     assert result.intent["first_path"] == _AUTHORED_FIRST_PATH
-    assert result.first_path_relations[0]["actor_quote"] == "Dock attendant Ivo"
+    assert result.first_path_relations[0]["actor_fact_quote"] == "Dock attendant Ivo"
     assert result.first_path_relations[1]["owner_system_path"] == "/internal_systems/0"
     assert result.first_path_relations[-1]["visible_result_quote"] == "the berth map shows the placement"
     assert result.component_responsibility_relations == (
@@ -223,7 +218,6 @@ def test_product_led_path_keeps_review_recipient_without_inventing_human_event()
         first_path_relations=[
             {
                 "actor_kind": "product",
-                "actor_quote": "The berth map",
                 "owner_system_quote": "Berth map",
                 "event_quote": event,
                 "target_quote": "release readiness proof",
@@ -277,7 +271,6 @@ def test_event_rejects_target_that_is_only_adjacent_in_a_selected_fact() -> None
         first_path_relations=[
             {
                 "actor_kind": "product",
-                "actor_quote": str(intent["title"]),
                 "owner_system_quote": str(intent["title"]),
                 "event_quote": event,
                 "target_quote": target,
@@ -331,11 +324,15 @@ def test_coordinated_events_derive_actor_presence_from_one_typed_fact_edge() -> 
         clock=lambda: 0.0,
     )
 
-    assert [row["actor_is_carried"] for row in result.first_path_relations] == [
-        False,
-        False,
-        True,
+    assert [row["actor_fact_quote"] for row in result.first_path_relations] == [
+        "dock attendant Ivo",
+        "dock attendant Ivo",
+        "dock attendant Ivo",
     ]
+    assert all(
+        "actor_quote" not in row and "actor_is_carried" not in row
+        for row in result.first_path_relations
+    )
     assert validate_first_path_relations(
         result.first_path_relations,
         first_path=str(result.intent["first_path"]),
@@ -345,9 +342,107 @@ def test_coordinated_events_derive_actor_presence_from_one_typed_fact_edge() -> 
         product_title=str(intent["title"]),
     ) == result.first_path_relations
 
+
+def test_two_human_actor_changes_use_selected_facts_across_sentences() -> None:
+    events = (
+        "Analyst Aya submits a wafer lot",
+        "Reviewer Béla approves release readiness proof",
+    )
+    first_path = "\n".join(events)
+    intent = {
+        **_TEXT_FIELDS,
+        **_LIST_FIELDS,
+        "title": "Review Desk",
+        "product_story": first_path,
+        "state_object": "wafer lot",
+        "first_path": first_path,
+        "proof_boundary": "release readiness proof",
+        "success_metrics": ["release readiness proof"],
+        "component_responsibilities": [],
+        "human_actors": ["Analyst Aya", "Reviewer Béla"],
+        "external_systems": [],
+        "internal_systems": [],
+    }
+    source = ". ".join(
+        str(row)
+        for value in intent.values()
+        for row in (value if isinstance(value, list) else [value])
+        if str(row)
+    ) + "."
+    response = authored_response(
+        intent,
+        evidence_text=source,
+        first_path_segments=events,
+        first_path_relations=[
+            {
+                "actor_kind": "human",
+                "actor_fact_quote": "Analyst Aya",
+                "event_quote": events[0],
+                "action_verb_quote": "submits",
+                "target_quote": "a wafer lot",
+                "visible_result_quote": "",
+            },
+            {
+                "actor_kind": "human",
+                "actor_fact_quote": "Reviewer Béla",
+                "event_quote": events[1],
+                "action_verb_quote": "approves",
+                "target_quote": "release readiness proof",
+                "visible_result_quote": "release readiness proof",
+            },
+        ],
+        terminal_component_owner="Review Desk",
+    )
+
+    result = author_greenfield_intent(
+        evidence_text=source,
+        provider=StructuredAuthoringProvider(response),
+        clock=lambda: 0.0,
+    )
+
+    assert [row["actor_fact_quote"] for row in result.first_path_relations] == [
+        "Analyst Aya",
+        "Reviewer Béla",
+    ]
+    assert [row["event_quote"] for row in result.first_path_relations] == list(events)
+    assert [row["action_verb_quote"] for row in result.first_path_relations] == [
+        "submits",
+        "approves",
+    ]
+
+
+@pytest.mark.parametrize("relation_index", [0, 1])
+def test_unselected_actor_fact_cannot_start_or_switch_an_actor_chain(
+    relation_index: int,
+) -> None:
+    source, response, _intent = _carried_human_actor_response()
+    relation = model_event_rows(response)[relation_index]
+    relation["actor_fact_quote"] = "Absent Mara"
+
+    with pytest.raises(GreenfieldModelAuthoringError, match="unbound first-path actor fact"):
+        author_greenfield_intent(
+            evidence_text=source,
+            provider=StructuredAuthoringProvider(response),
+            clock=lambda: 0.0,
+        )
+
+
+@pytest.mark.parametrize("retired_field", ["actor_quote", "actor_is_carried"])
+def test_canonical_relation_rejects_retired_surface_actor_fields(
+    retired_field: str,
+) -> None:
+    source, response, intent = _carried_human_actor_response()
+    result = author_greenfield_intent(
+        evidence_text=source,
+        provider=StructuredAuthoringProvider(response),
+        clock=lambda: 0.0,
+    )
     tampered = [dict(row) for row in result.first_path_relations]
-    tampered[2]["actor_is_carried"] = False
-    with pytest.raises(GreenfieldAuthoredSemanticsError, match="ungrounded first-path relations"):
+    tampered[0][retired_field] = (
+        "dock attendant Ivo" if retired_field == "actor_quote" else False
+    )
+
+    with pytest.raises(GreenfieldAuthoredSemanticsError, match="invalid first-path relations"):
         validate_first_path_relations(
             tampered,
             first_path=str(result.intent["first_path"]),
@@ -355,23 +450,6 @@ def test_coordinated_events_derive_actor_presence_from_one_typed_fact_edge() -> 
             external_systems=intent["external_systems"],
             internal_systems=intent["internal_systems"],
             product_title=str(intent["title"]),
-        )
-
-
-@pytest.mark.parametrize("relation_index", [0, 1])
-def test_absent_actor_cannot_start_or_switch_a_carried_actor_chain(
-    relation_index: int,
-) -> None:
-    source, response, _intent = _carried_human_actor_response()
-    relation = model_event_rows(response)[relation_index]
-    relation["actor_fact_quote"] = "Mara"
-    relation["actor_quote"] = "Mara"
-
-    with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path actor"):
-        author_greenfield_intent(
-            evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
-            clock=lambda: 0.0,
         )
 
 

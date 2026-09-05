@@ -65,7 +65,7 @@ def _first_path_relations() -> list[dict[str, Any]]:
     return [
         {
             "actor_kind": "human",
-            "actor_quote": "Dock attendant Ivo",
+            "actor_fact_quote": "Dock attendant Ivo",
             "event_quote": "Dock attendant Ivo enters a vessel tag",
             "action_verb_quote": "enters",
             "target_quote": "a vessel tag",
@@ -73,7 +73,7 @@ def _first_path_relations() -> list[dict[str, Any]]:
         },
         {
             "actor_kind": "product",
-            "actor_quote": "the product",
+            "actor_fact_quote": "Berth map",
             "owner_system_quote": "Berth map",
             "event_quote": "the product records berth occupancy",
             "action_verb_quote": "records",
@@ -82,7 +82,7 @@ def _first_path_relations() -> list[dict[str, Any]]:
         },
         {
             "actor_kind": "product",
-            "actor_quote": "the berth map",
+            "actor_fact_quote": "Berth map",
             "owner_system_quote": "Berth map",
             "event_quote": "the berth map shows the placement",
             "action_verb_quote": "shows",
@@ -267,7 +267,7 @@ def test_public_authored_deep_tier_stays_structural_and_seals_exact_unicode_cust
     assert manifest["budget_seconds"] == 120.0
     assert manifest["rescue_activated"] is True
     assert manifest["semantic_compiler"] == {
-        "version": "odylith.greenfield.authored-semantic-validation.v2",
+        "version": "odylith.greenfield.authored-semantic-validation.v3",
         "status": "passed",
         "semantic_owner": "validated_model_authored_intent",
         "post_authoring_interpretation_calls": 0,

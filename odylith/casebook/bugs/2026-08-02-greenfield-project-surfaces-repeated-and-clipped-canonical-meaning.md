@@ -706,6 +706,138 @@
   Bare-probe absent Casebook/base-runtime assets are not clean-install proof;
   retain that boundary and rebuild the exact candidate for the public gate.
 
+- V37 Installed Participant Rejection (2026-09-04): Source `43ce49b58` and wheel
+  `d8217927a3cfac126ee24f514bcbd8d27d2675eafca987ff85942ff471585957`
+  pass five automated public cases before independent review rejects case three,
+  semiconductor. Flood (`90.292s` proposal, `1.931s` commit) and pediatric
+  (`73.567s`, `2.057s`) have independent no-P0/P1 artifact/browser review.
+  Semiconductor (`85.195s`, `1.729s`) preserves five product-owned events but
+  publishes `engineering`, selected from `for engineering review`, as an accepted
+  human in Project, Atlas, and accepted-project truth. Optional humans removed the
+  forced minimum but did not eliminate semantic misclassification. The existing
+  reviewer cannot correct this field. Automated success is not semantic acceptance.
+  The run was interrupted with SIGINT/exit 130 during case six installation;
+  no matching child remained. Port and security-disclosure automated results are
+  retained but have no independent adjudication. Recovery was not reached.
+  Evidence and terminal adjudication remain under
+  `/private/tmp/odylith-greenfield-v37-citation-evidence.vwGkwT`.
+  Before another implementation, compare a structural actor-use requirement with
+  bounded source-review ownership of human selections. A source-stated participant
+  need not perform an action on the first path, so do not equate graph absence with
+  semantic falsity. Preserve legitimate off-path participants and typed event
+  custody; add no lexical blacklist, third call, deadline extension, or general
+  repair framework. Retain the independently justified citation-veto deletion.
+  Independent adjudication rejects graph-use enforcement: the existing product-led
+  recipient control keeps a named reviewer without inventing a human workflow
+  event. Select only extension of the existing review to the complete human array,
+  sharing the author's citation schema. Other fields, including events, remain
+  immutable and the whole candidate revalidates. Prediction: the retained false
+  human disappears while all five product events remain byte-identical; explicit
+  off-path recipients and performing humans survive. Deleting a referenced actor
+  must fail existing custody validation, never trigger inferred event repair.
+
+- V38 Bounded Evidence And Rejection (2026-09-04): The exact retained false-human
+  candidate passes one new review in `8.986s` inside its original `10.254s` window;
+  only the human list changes and independent adjudication finds no P0/P1 in that
+  correction. A fresh explicit-recipient control completes in `43.932s` including
+  commit, under standard 60 seconds. It preserves the named reviewer, three product
+  events, and its non-goal; independent artifact and 10-cell normal desktop/mobile
+  browser review finds no P0/P1. Evidence is under
+  `/private/tmp/odylith-greenfield-v38-human-review.y8e6Dv`, with captures under
+  `/private/tmp/odylith-v38-recipient-browser.Nt47P9`. These are source-local controls,
+  not clean-installed or degraded-state proof. Focused source/custody/retirement
+  checks pass 57 tests; the new review tests have a two-test failing-before proof.
+  Fresh semiconductor nevertheless produces a different P1 in `67.842s` under
+  rescue90: four action words are cited as explicit actors despite the correct
+  title-owned typed actor. The uncommitted transaction
+  `0fecb52de0d958ead872865b435a31d39afe73707a2ffca071ae9af0cc407067`
+  is rejected, with raw evidence under the v33 discriminator's
+  `v38-human-review-semiconductor` directory. The compiler's substring test proves
+  location, not the selected semantic role; atomic actor claims and the semantic
+  event model inherit that contradiction even though visible owner projections
+  contain it. The reviewer cannot correct event fields. More schema prose repeats
+  an already violated instruction; removing actor_quote requires broader canonical
+  and custody migration. Compare replacement of the field-limited reviewer with
+  one full-candidate review under the existing shared authored-result schema:
+  return null if sound, otherwise the complete minimally corrected candidate.
+  Keep full custody validation, two calls, and the original remaining time. Test
+  both retained failures and valid off-path/product/human controls. Reject the
+  replacement if it misses latency or damages valid meaning; do not add another
+  per-defect reviewer field, regex, patch protocol, or third call.
+  The whole-candidate review is rejected on its first bounded comparison: the
+  retained bad-actor candidate exhausts `20.019s` against the original 20-second
+  allowance, with a real provider timeout. No implementation or further control
+  calls follow that failed prediction. Evidence:
+  `/private/tmp/odylith-greenfield-v39-whole-review.sUgRWz/actor/result.json`.
+  Reassess removal of the redundant surface actor identity rather than extending
+  the deadline or layering a new repair protocol around it. The selected typed
+  actor fact already owns identity; preserve exact source facts and event/action/
+  target custody while determining the complete canonical/atomic projection impact.
+  Independent semantic adjudication approves that removal: actor continuity is
+  repeated typed identity, not a grammatical carry flag. Aliases and pronouns stay
+  in the exact event text, while actor facts remain separately source-cited. V40
+  removes actor_quote/actor_is_carried from wire/canonical relations and projects
+  event actor atoms from the selected actor fact, never an action substring.
+  Preserve explicit name/alias/omitted-subject workflows, human-to-product and
+  human-to-human changes, product/external ownership, and rejection of unselected
+  actor facts. Update all semantic consumers and proof readers; keep the bounded
+  story/component/human review, without the rejected holistic-review mechanism.
+
+- V40 Source Evidence And Projection Recurrence (2026-09-04): Fresh semiconductor
+  preserves five product-owned actions and no invented human, with independent
+  complete-package no-P0/P1 review. Proposal takes `55.270s` under rescue90;
+  83 sealed writes pass readback. Only the internal `0.198s` commit kernel was
+  timed, not independent CLI commit latency. Fresh flood completes proposal and
+  commit in `75.638s` under deep120 with 83 writes and readback. Independent review
+  finds no P0/P1, verifies all 33 atomic facts and five event spans, recomputes
+  transaction and authority hashes, and matches all 83 sealed files and modes.
+  A new two-human control completes in `44.719s`
+  including commit under standard60 and correctly changes actor from Coordinator
+  Lena to Custodian Omar. Its independent browser review rejects D-004: the sole
+  title-owned component nests inside an identically named product box. The existing
+  context-view correction was not shared with the boundary-view owner; non-goal
+  evidence legitimately selects that second view and exposes duplicated ownership.
+  Evidence remains under `/private/tmp/odylith-greenfield-v40-single-actor.ADe2wA`,
+  transaction `b7f933928d3f2199d5140452ba8900125a5491a665336d9134ef6c0b58b24bc2`.
+  Semiconductor and flood evidence remain in the v33 discriminator directory's
+  `v40-single-actor-semiconductor` and `v40-single-actor-flood` children.
+  Correct the shared product-boundary projection, preserving distinct components,
+  non-goals, and typed external edges. Do not add a second predicate, suppress a
+  justified diagram, call a model to repair presentation, or modify sealed bytes.
+  Replay the exact retained response into a new transaction for rendered proof.
+  This is not full source, installed, recovery, or untouched-holdout qualification.
+  The shared renderer now owns node/container emission, component boxes, and typed
+  dependency target mapping for both views; production LOC falls from 794 to 788.
+  All 14 focused Atlas controls pass. The exact retained author/reviewer responses
+  compile and commit without live model calls into new transaction
+  `22cdc5610eeadec0ec5956419b1bd8ef66b200434fe4f549f1940946eccc81dd`:
+  87 sealed writes, four diagrams, two workstreams, CLOSED/readback passed. Source
+  fingerprint `bc6297ee9159f2606df63034b837b767a6479079d62d58f251423d1eab536688`
+  is unchanged during replay. Evidence:
+  `/private/tmp/odylith-greenfield-v40-boundary-replay.yMYPQC`. Corrected browser
+  adjudication remains pending; this replay is not a new latency observation.
+
+- V40 Source Qualification (2026-09-05): Independent replay browser adjudication
+  closes the sole-title boundary P1. Desktop/mobile normal, SVG-to-PNG fallback,
+  and both-assets-fail states pass across all four emitted diagrams; both human
+  identities and the payment non-goal remain visible. Consumer-tree and sealed
+  transaction hashes are unchanged by review. Captures remain under the replay's
+  `independent-browser.1zJ6Wq` directory. The boundary regression fails against
+  the previous source with `2 != 1` title nodes and passes with the shared owner.
+  The frozen complete runtime/install unit, pre-confirm HIIT, and Compass browser
+  integration gate passes `4,518/4,518` in `444.86s`. JUnit evidence:
+  `/private/tmp/odylith-greenfield-v40-source-gate.nfiRbG/junit.xml`, SHA-256
+  `b95d22253a19492ec436b854ba6c4686ace8c2ef03ed83814a11242dd0812779`.
+  The external repository volume became unavailable after validation. Git metadata
+  was recovered from the exact pushed base `43ce49b58` onto internal storage;
+  the before/after binary diff with nine-character object IDs hashes identically
+  to `cef6efa04bbc0153b370df549050058cca3ed42df6c486560d5555952d272ccd`.
+  No working source or external-volume bytes were changed by recovery. Preserve
+  the recovery receipt at `/private/tmp/odylith-greenfield-git-recovery.EfZYiQ`.
+  V40 is source-qualified only. Commit/push, build one immutable distribution,
+  then require the unchanged 14-case installed/browser/recovery/profile gate and
+  independent adjudication. Final holdout remains closed.
+
 - V29 Public Rejection And V30 Hypothesis (2026-09-04): Immutable wheel
   `2c7bcd38317938ddba15a0b8668c0c1a25271818786759a35905b827b4e9ac4d`
   is rejected by the first public case. Flood shelter completed one deep

@@ -291,7 +291,7 @@ def require_product_create_transaction_quality_approved(
     )
     model_authoring_approved = not authored_projection or (
         str(semantic_compiler.get("version", "")).strip()
-        == "odylith.greenfield.authored-semantic-validation.v2"
+        == "odylith.greenfield.authored-semantic-validation.v3"
         and str(semantic_compiler.get("status", "")).strip() == "passed"
         and str(model_authoring.get("authoring_version", "")).strip()
         == GREENFIELD_INTENT_AUTHORING_VERSION

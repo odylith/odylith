@@ -57,7 +57,7 @@ def _authored_structural_manifest() -> dict[str, object]:
                 "reason": "typed_structural_validation",
             },
             "semantic_compiler": {
-                "version": "odylith.greenfield.authored-semantic-validation.v2",
+                "version": "odylith.greenfield.authored-semantic-validation.v3",
                 "status": "passed",
                 "semantic_owner": "validated_model_authored_intent",
                 "post_authoring_interpretation_calls": 0,

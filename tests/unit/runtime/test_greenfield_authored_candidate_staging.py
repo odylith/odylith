@@ -76,7 +76,7 @@ def _authored_stage_inputs(repo_root: Path) -> tuple[dict[str, object], dict[str
                 first_path_relations=[
                     {
                         "actor_kind": "human",
-                        "actor_quote": actor,
+                        "actor_fact_quote": actor,
                         "event_quote": first_event,
                         "action_verb_quote": "records",
                         "target_quote": "café evidence AND OR provenance",
@@ -84,7 +84,7 @@ def _authored_stage_inputs(repo_root: Path) -> tuple[dict[str, object], dict[str
                     },
                     {
                         "actor_kind": "product",
-                        "actor_quote": "Evidence Ledger",
+                        "actor_fact_quote": "Evidence Ledger",
                         "owner_system_quote": "Evidence Ledger",
                         "event_quote": visible_event,
                         "action_verb_quote": "shows",

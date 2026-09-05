@@ -91,7 +91,7 @@ def _simple_proposal(tmp_path: Path) -> dict[str, Any]:
         relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Dock attendant",
+                "actor_fact_quote": "Dock attendant",
                 "event_quote": "Dock attendant enters a berth request",
                 "action_verb_quote": "enters",
                 "target_quote": "berth request",
@@ -99,7 +99,7 @@ def _simple_proposal(tmp_path: Path) -> dict[str, Any]:
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Intake Board",
+                "actor_fact_quote": "Intake Board",
                 "owner_system_quote": "Intake Board",
                 "event_quote": "Intake Board records the berth request",
                 "action_verb_quote": "records",
@@ -108,7 +108,7 @@ def _simple_proposal(tmp_path: Path) -> dict[str, Any]:
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Intake Board",
+                "actor_fact_quote": "Intake Board",
                 "owner_system_quote": "Intake Board",
                 "event_quote": "Intake Board shows a signed berth receipt",
                 "action_verb_quote": "shows",
@@ -166,7 +166,7 @@ def _structured_proposal(tmp_path: Path) -> dict[str, Any]:
         relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Dock attendant",
+                "actor_fact_quote": "Dock attendant",
                 "event_quote": "Dock attendant submits a cargo request",
                 "action_verb_quote": "submits",
                 "target_quote": "cargo request",
@@ -174,7 +174,7 @@ def _structured_proposal(tmp_path: Path) -> dict[str, Any]:
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Intake Router",
+                "actor_fact_quote": "Intake Router",
                 "owner_system_quote": "Intake Router",
                 "event_quote": "Intake Router records the cargo request",
                 "action_verb_quote": "records",
@@ -183,7 +183,7 @@ def _structured_proposal(tmp_path: Path) -> dict[str, Any]:
             },
             {
                 "actor_kind": "human",
-                "actor_quote": "Harbor reviewer",
+                "actor_fact_quote": "Harbor reviewer",
                 "event_quote": "Harbor reviewer approves the cargo request",
                 "action_verb_quote": "approves",
                 "target_quote": "cargo request",
@@ -191,7 +191,7 @@ def _structured_proposal(tmp_path: Path) -> dict[str, Any]:
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Receipt Ledger",
+                "actor_fact_quote": "Receipt Ledger",
                 "owner_system_quote": "Receipt Ledger",
                 "event_quote": "Receipt Ledger publishes a signed cargo receipt",
                 "action_verb_quote": "publishes",
@@ -393,7 +393,7 @@ def test_one_typed_event_omits_unjustified_sequence_and_backlog_link(
         relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Dock attendant",
+                "actor_fact_quote": "Dock attendant",
                 "event_quote": "Dock attendant records a request",
                 "action_verb_quote": "records",
                 "target_quote": "request",
@@ -605,7 +605,7 @@ def test_direct_evidence_graph_material_facts_compile_complete_project_and_workf
         relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Donor",
+                "actor_fact_quote": "Donor",
                 "event_quote": "Donor registers a batch",
                 "action_verb_quote": "registers",
                 "target_quote": "a batch",
@@ -613,7 +613,7 @@ def test_direct_evidence_graph_material_facts_compile_complete_project_and_workf
             },
             {
                 "actor_kind": "human",
-                "actor_quote": "Volunteer",
+                "actor_fact_quote": "Volunteer",
                 "event_quote": "Volunteer inspects the batch",
                 "action_verb_quote": "inspects",
                 "target_quote": "the batch",
@@ -621,7 +621,7 @@ def test_direct_evidence_graph_material_facts_compile_complete_project_and_workf
             },
             {
                 "actor_kind": "human",
-                "actor_quote": "Supervisor",
+                "actor_fact_quote": "Supervisor",
                 "event_quote": "Supervisor releases the batch",
                 "action_verb_quote": "releases",
                 "target_quote": "the batch",
@@ -724,7 +724,7 @@ def test_authored_service_readiness_keeps_nonapproval_as_a_safety_boundary(
         relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Coordinator",
+                "actor_fact_quote": "Coordinator",
                 "event_quote": "Coordinator records service capacity evidence",
                 "action_verb_quote": "records",
                 "target_quote": "service capacity evidence",
@@ -732,7 +732,7 @@ def test_authored_service_readiness_keeps_nonapproval_as_a_safety_boundary(
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Readiness Ledger",
+                "actor_fact_quote": "Readiness Ledger",
                 "owner_system_quote": "Readiness Ledger",
                 "event_quote": "Readiness Ledger records review status",
                 "action_verb_quote": "records",
@@ -741,7 +741,7 @@ def test_authored_service_readiness_keeps_nonapproval_as_a_safety_boundary(
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Readiness Board",
+                "actor_fact_quote": "Readiness Board",
                 "owner_system_quote": "Readiness Board",
                 "event_quote": "Readiness Board shows a reviewable readiness report",
                 "action_verb_quote": "shows",
@@ -810,7 +810,7 @@ def test_authored_solar_path_keeps_user_outcome_distinct_from_meta_proof(
         relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Homeowner",
+                "actor_fact_quote": "Homeowner",
                 "event_quote": "Homeowner connects a solar inverter and battery",
                 "action_verb_quote": "connects",
                 "target_quote": "solar inverter and battery",
@@ -818,7 +818,7 @@ def test_authored_solar_path_keeps_user_outcome_distinct_from_meta_proof(
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Forecast Engine",
+                "actor_fact_quote": "Forecast Engine",
                 "owner_system_quote": "Forecast Engine",
                 "event_quote": "Forecast Engine computes a forecast-driven dispatch schedule",
                 "action_verb_quote": "computes",
@@ -827,7 +827,7 @@ def test_authored_solar_path_keeps_user_outcome_distinct_from_meta_proof(
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Plan Board",
+                "actor_fact_quote": "Plan Board",
                 "owner_system_quote": "Plan Board",
                 "event_quote": f"Plan Board shows {visible_result}",
                 "action_verb_quote": "shows",
@@ -892,7 +892,7 @@ def test_authored_ocean_reproducibility_stays_proof_not_component_identity(
         relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Marine scientist",
+                "actor_fact_quote": "Marine scientist",
                 "event_quote": "Marine scientist creates a calibration review case",
                 "action_verb_quote": "creates",
                 "target_quote": "calibration review case",
@@ -900,7 +900,7 @@ def test_authored_ocean_reproducibility_stays_proof_not_component_identity(
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Calibration Ledger",
+                "actor_fact_quote": "Calibration Ledger",
                 "owner_system_quote": "Calibration Ledger",
                 "event_quote": "Calibration Ledger records the drift estimate and correction decision",
                 "action_verb_quote": "records",
@@ -909,7 +909,7 @@ def test_authored_ocean_reproducibility_stays_proof_not_component_identity(
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Publication Gate",
+                "actor_fact_quote": "Publication Gate",
                 "owner_system_quote": "Publication Gate",
                 "event_quote": "Publication Gate exports a calibrated data packet",
                 "action_verb_quote": "exports",
@@ -967,7 +967,7 @@ def test_authored_health_tracking_retains_safety_and_first_path_outcome(
         relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Journal user",
+                "actor_fact_quote": "Journal user",
                 "event_quote": "Journal user records a health episode",
                 "action_verb_quote": "records",
                 "target_quote": "health episode",
@@ -975,7 +975,7 @@ def test_authored_health_tracking_retains_safety_and_first_path_outcome(
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Episode Ledger",
+                "actor_fact_quote": "Episode Ledger",
                 "owner_system_quote": "Episode Ledger",
                 "event_quote": "Episode Ledger records symptoms and relief attempts",
                 "action_verb_quote": "records",
@@ -984,7 +984,7 @@ def test_authored_health_tracking_retains_safety_and_first_path_outcome(
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Trend Board",
+                "actor_fact_quote": "Trend Board",
                 "owner_system_quote": "Trend Board",
                 "event_quote": f"Trend Board shows a {visible_result}",
                 "action_verb_quote": "shows",
@@ -1043,7 +1043,7 @@ def test_authored_robotic_safety_projects_the_reviewed_recovery_status(
         relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Floor operator",
+                "actor_fact_quote": "Floor operator",
                 "event_quote": "Floor operator reports a blocked aisle",
                 "action_verb_quote": "reports",
                 "target_quote": "blocked aisle",
@@ -1051,7 +1051,7 @@ def test_authored_robotic_safety_projects_the_reviewed_recovery_status(
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Safety Ledger",
+                "actor_fact_quote": "Safety Ledger",
                 "owner_system_quote": "Safety Ledger",
                 "event_quote": "Safety Ledger records the stop decision and corrective action",
                 "action_verb_quote": "records",
@@ -1060,7 +1060,7 @@ def test_authored_robotic_safety_projects_the_reviewed_recovery_status(
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Recovery Board",
+                "actor_fact_quote": "Recovery Board",
                 "owner_system_quote": "Recovery Board",
                 "event_quote": f"Recovery Board shows {visible_result}",
                 "action_verb_quote": "shows",
@@ -1117,7 +1117,7 @@ def test_authored_service_goal_components_cannot_acquire_cross_domain_templates(
         relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Coordinator",
+                "actor_fact_quote": "Coordinator",
                 "event_quote": "Coordinator completes onboarding and acknowledgement",
                 "action_verb_quote": "completes",
                 "target_quote": "onboarding and acknowledgement",
@@ -1125,7 +1125,7 @@ def test_authored_service_goal_components_cannot_acquire_cross_domain_templates(
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Goal Planner",
+                "actor_fact_quote": "Goal Planner",
                 "owner_system_quote": "Goal Planner",
                 "event_quote": "Goal Planner records a starting plan target",
                 "action_verb_quote": "records",
@@ -1134,7 +1134,7 @@ def test_authored_service_goal_components_cannot_acquire_cross_domain_templates(
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Progress Ledger",
+                "actor_fact_quote": "Progress Ledger",
                 "owner_system_quote": "Progress Ledger",
                 "event_quote": "Progress Ledger records seven days of progress",
                 "action_verb_quote": "records",
@@ -1143,7 +1143,7 @@ def test_authored_service_goal_components_cannot_acquire_cross_domain_templates(
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Reminder Board",
+                "actor_fact_quote": "Reminder Board",
                 "owner_system_quote": "Reminder Board",
                 "event_quote": "Reminder Board shows an adjusted plan target and one follow-up reminder",
                 "action_verb_quote": "shows",
@@ -1163,7 +1163,7 @@ def test_authored_service_goal_components_cannot_acquire_cross_domain_templates(
 def test_sparse_depth_keeps_facts_in_project_without_filler_rows(tmp_path: Path) -> None:
     human_event = {
         "actor_kind": "human",
-        "actor_quote": "Dock attendant",
+        "actor_fact_quote": "Dock attendant",
         "event_quote": "Dock attendant submits a request",
         "action_verb_quote": "submits",
         "target_quote": "request",
@@ -1171,7 +1171,7 @@ def test_sparse_depth_keeps_facts_in_project_without_filler_rows(tmp_path: Path)
     }
     intake_event = {
         "actor_kind": "product",
-        "actor_quote": "Intake Board",
+        "actor_fact_quote": "Intake Board",
         "owner_system_quote": "Intake Board",
         "event_quote": "Intake Board records the request",
         "action_verb_quote": "records",
@@ -1180,7 +1180,7 @@ def test_sparse_depth_keeps_facts_in_project_without_filler_rows(tmp_path: Path)
     }
     receipt_event = {
         "actor_kind": "product",
-        "actor_quote": "Receipt Ledger",
+        "actor_fact_quote": "Receipt Ledger",
         "owner_system_quote": "Receipt Ledger",
         "event_quote": "Receipt Ledger publishes a signed request receipt",
         "action_verb_quote": "publishes",
@@ -1189,7 +1189,7 @@ def test_sparse_depth_keeps_facts_in_project_without_filler_rows(tmp_path: Path)
     }
     intake_result_event = {
         **receipt_event,
-        "actor_quote": "Intake Board",
+        "actor_fact_quote": "Intake Board",
         "owner_system_quote": "Intake Board",
         "event_quote": "Intake Board publishes a signed request receipt",
     }

@@ -433,7 +433,7 @@ def approved_authored_quality_manifest_fixture(**overrides: Any) -> dict[str, An
             "prewrite_clean_before_commit": True,
         },
         "semantic_compiler": {
-            "version": "odylith.greenfield.authored-semantic-validation.v2",
+            "version": "odylith.greenfield.authored-semantic-validation.v3",
             "status": "passed",
             "semantic_owner": "validated_model_authored_intent",
             "post_authoring_interpretation_calls": 0,
@@ -621,7 +621,7 @@ def canonical_model_authored_intent_fixture(
     relations = [
         {
             "actor_kind": "human",
-            "actor_quote": "Shopper",
+            "actor_fact_quote": "Shopper",
             "event_quote": "Shopper opens Storefront and adds one product to the cart",
             "action_verb_quote": "opens",
             "target_quote": "Storefront",
@@ -629,7 +629,7 @@ def canonical_model_authored_intent_fixture(
         },
         {
             "actor_kind": "product",
-            "actor_quote": "Storefront",
+            "actor_fact_quote": "Storefront",
             "owner_system_quote": "Storefront",
             "event_quote": "Storefront sends the cart to Checkout Orchestrator",
             "action_verb_quote": "sends",
@@ -638,7 +638,7 @@ def canonical_model_authored_intent_fixture(
         },
         {
             "actor_kind": "product",
-            "actor_quote": "Checkout Orchestrator",
+            "actor_fact_quote": "Checkout Orchestrator",
             "owner_system_quote": "Checkout Orchestrator",
             "event_quote": (
                 "Checkout Orchestrator requests a sandbox payment from Payment Sandbox"
@@ -649,7 +649,7 @@ def canonical_model_authored_intent_fixture(
         },
         {
             "actor_kind": "external_system",
-            "actor_quote": "Payment Sandbox",
+            "actor_fact_quote": "Payment Sandbox",
             "event_quote": "Payment Sandbox returns a failed payment response",
             "action_verb_quote": "returns",
             "target_quote": "a failed payment response",
@@ -657,7 +657,7 @@ def canonical_model_authored_intent_fixture(
         },
         {
             "actor_kind": "human",
-            "actor_quote": "Shopper",
+            "actor_fact_quote": "Shopper",
             "event_quote": "Shopper retries checkout",
             "action_verb_quote": "retries",
             "target_quote": "checkout",
@@ -665,7 +665,7 @@ def canonical_model_authored_intent_fixture(
         },
         {
             "actor_kind": "product",
-            "actor_quote": "Checkout Orchestrator",
+            "actor_fact_quote": "Checkout Orchestrator",
             "owner_system_quote": "Checkout Orchestrator",
             "event_quote": (
                 "Checkout Orchestrator creates an order draft and shows recovery status"

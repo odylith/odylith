@@ -499,7 +499,7 @@ def _normalized_semantic_digest(annotation: Mapping[str, Any]) -> str:
             visible_id = role_ids.get((order, "visible_result_quote"), "")
             if (
                 order <= 0
-                or actor_id != role_ids.get((order, "actor_quote"), "")
+                or actor_id != role_ids.get((order, "actor_fact_quote"), "")
                 or not action_id
                 or bool(row.get("target_sha256")) != bool(target_id)
                 or bool(row.get("visible_result_sha256")) != bool(visible_id)

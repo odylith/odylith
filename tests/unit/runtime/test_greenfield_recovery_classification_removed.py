@@ -72,13 +72,13 @@ def test_failure_tracking_and_restoration_remain_exact_actions_without_recovery_
         events=(
             {
                 "actor_fact_quote": title,
-                "actor_quote": title,
+                "actor_fact_quote": title,
                 "action_quote": "records",
                 "target_quote": "failed runs",
             },
             {
                 "actor_fact_quote": title,
-                "actor_quote": title,
+                "actor_fact_quote": title,
                 "action_quote": "restores",
                 "target_quote": "service",
             },

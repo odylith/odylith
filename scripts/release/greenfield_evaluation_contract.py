@@ -42,7 +42,7 @@ from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 
 
 EVALUATION_SPLIT_VERSION = "odylith.greenfield.evaluation-splits.v5"
-FINAL_HOLDOUT_VERSION = "odylith.greenfield.final-holdout.v5"
+FINAL_HOLDOUT_VERSION = "odylith.greenfield.final-holdout.v6"
 STRUCTURAL_FLOORS_VERSION = "odylith.greenfield.structural-floors.v4"
 ATOMIC_CATEGORIES = (
     "actors",
@@ -86,7 +86,7 @@ _FROZEN_ACCEPTANCE_THRESHOLDS = {
 _LINEAGE_KEYS = frozenset({"semantic_family", "template_family"})
 _RELATION_ROLES = frozenset(
     {
-        "actor_quote",
+        "actor_fact_quote",
         "action_verb_quote",
         "target_quote",
         "visible_result_quote",

@@ -41,7 +41,7 @@ from tests.unit.runtime.greenfield_proposal_fixtures import approved_authored_qu
 def _approved_quality_manifest() -> dict[str, Any]:
     return approved_authored_quality_manifest_fixture(
         semantic_compiler={
-            "version": "odylith.greenfield.authored-semantic-validation.v2",
+            "version": "odylith.greenfield.authored-semantic-validation.v3",
             "status": "passed",
             "semantic_owner": "validated_model_authored_intent",
             "post_authoring_interpretation_calls": 0,
@@ -88,7 +88,7 @@ def test_product_create_transaction_carries_confirmed_intent_authority_block(tmp
     payload = product_create_transaction_to_dict(transaction)
 
     persisted = payload["intent_authority"]
-    assert persisted["version"] == "odylith.product-intent-authority.v9"
+    assert persisted["version"] == "odylith.product-intent-authority.v10"
     assert persisted["origin"] == "verified_typed_envelope"
     assert persisted["decision"] == "confirmed_intent_accepted"
     assert persisted["fact_authority"] == "product_facts"
@@ -100,7 +100,7 @@ def test_product_create_transaction_carries_confirmed_intent_authority_block(tmp
     assert persisted["source_format"] == "operator_prompt"
     assert persisted["materiality_status"] == "passed"
     assert persisted["material_custody_sha256"]
-    assert persisted["atomic_ledger_version"] == "odylith.product-intent-atomic-facts.v2"
+    assert persisted["atomic_ledger_version"] == "odylith.product-intent-atomic-facts.v3"
     assert persisted["atomic_facts"]
     assert persisted["atomic_custody_sha256"] == atomic_fact_ledger_hash(persisted["atomic_facts"])
     assert persisted["operating_envelope"]["status"] == "supported"
@@ -137,7 +137,7 @@ def test_serialized_authored_transaction_contains_only_sealed_component_relation
     quality_manifest = {
         **_approved_quality_manifest(),
         "semantic_compiler": {
-            "version": "odylith.greenfield.authored-semantic-validation.v2",
+            "version": "odylith.greenfield.authored-semantic-validation.v3",
             "status": "passed",
             "semantic_owner": "validated_model_authored_intent",
             "post_authoring_interpretation_calls": 0,
@@ -211,11 +211,12 @@ def test_product_create_transaction_rejects_v4_authority_for_sealed_retry(tmp_pa
 
 
 @pytest.mark.parametrize(
-    ("authority_version", "envelope_version", "ledger_version"),
+    ("authority_version", "envelope_version", "ledger_version", "atomic_version"),
     (
-        (6, 6, 5),
-        (7, 7, 6),
-        (8, 8, 6),
+        (6, 6, 5, None),
+        (7, 7, 6, None),
+        (8, 8, 6, None),
+        (9, 9, 6, 2),
     ),
 )
 def test_product_create_transaction_rejects_legacy_authority_without_reinterpretation(
@@ -223,6 +224,7 @@ def test_product_create_transaction_rejects_legacy_authority_without_reinterpret
     authority_version: int,
     envelope_version: int,
     ledger_version: int,
+    atomic_version: int | None,
 ) -> None:
     _path, _facts, authority = _recorded_authority(tmp_path)
     legacy = {
@@ -231,6 +233,10 @@ def test_product_create_transaction_rejects_legacy_authority_without_reinterpret
         "envelope_schema_version": f"odylith.product-intent-envelope.v{envelope_version}",
         "ledger_version": f"odylith.product-intent-custody-ledger.v{ledger_version}",
     }
+    if atomic_version is not None:
+        legacy["atomic_ledger_version"] = (
+            f"odylith.product-intent-atomic-facts.v{atomic_version}"
+        )
     legacy["authority_snapshot_sha256"] = product_intent_authority_snapshot_hash(legacy)
 
     with pytest.raises(ValueError, match="unsupported version; rebuild the proposal before confirmation"):

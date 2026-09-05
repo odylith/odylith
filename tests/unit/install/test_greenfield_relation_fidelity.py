@@ -14,7 +14,11 @@ from greenfield_relation_fidelity import _snapshot_context_keys
 from greenfield_relation_fidelity import _snapshot_event_keys
 from greenfield_relation_fidelity import snapshot_relation_evidence
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    GreenfieldAuthoredSemanticsError,
     combined_prompt_evidence_source,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_atomic_projection import (
+    derive_model_atomic_claims,
 )
 
 
@@ -76,6 +80,22 @@ def test_relation_fidelity_reports_exact_family_and_worst_slice_evidence() -> No
     }
 
 
+def test_relation_fidelity_rejects_retired_actor_annotation_contract() -> None:
+    case, annotation, _result = _rich_relation_bundle("relations-retired-annotation")
+    relation = annotation["relation_fidelity"]
+    relation["version"] = "odylith.greenfield.relation-fidelity-annotation.v2"
+
+    evidence = annotation_relation_evidence(
+        case=case,
+        value=relation,
+        atom_rows=annotation["atoms"],
+    )
+
+    assert evidence.issues == (
+        "relation_fidelity must declare odylith.greenfield.relation-fidelity-annotation.v3",
+    )
+
+
 def test_snapshot_rejects_target_only_adjacent_in_selected_fact() -> None:
     case, _annotation, result = _rich_relation_bundle("relations-bound-target")
     snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
@@ -101,16 +121,14 @@ def test_snapshot_rejects_target_only_adjacent_in_selected_fact() -> None:
     )
 
 
-def test_snapshot_accepts_carried_actor_and_terminal_result_from_source_fact() -> None:
-    case, _annotation, result = _rich_relation_bundle("relations-carried-actor")
+def test_snapshot_accepts_selected_actor_and_terminal_result_from_source_fact() -> None:
+    case, _annotation, result = _rich_relation_bundle("relations-selected-actor")
     snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
     facts = snapshot["facts"]
     relations = snapshot["authored_semantics"]["first_path_relations"]
     relations[1].update(
         {
             "actor_kind": "human",
-            "actor_quote": "Reviewer",
-            "actor_is_carried": True,
             "actor_fact_path": "/human_actors/0",
             "actor_fact_quote": "Reviewer",
         }
@@ -129,11 +147,11 @@ def test_snapshot_accepts_carried_actor_and_terminal_result_from_source_fact() -
     assert issues == ()
 
 
-def test_snapshot_rejects_false_carried_actor_marker() -> None:
-    case, _annotation, result = _rich_relation_bundle("relations-false-carried-actor")
+def test_snapshot_rejects_retired_actor_surface_fields() -> None:
+    case, _annotation, result = _rich_relation_bundle("relations-retired-actor-surface")
     snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
     relations = snapshot["authored_semantics"]["first_path_relations"]
-    relations[0]["actor_is_carried"] = True
+    relations[0]["actor_quote"] = "Reviewer"
 
     _keys, issues = _snapshot_event_keys(
         relations,
@@ -144,9 +162,58 @@ def test_snapshot_rejects_false_carried_actor_marker() -> None:
         ).encode("utf-8"),
     )
 
-    assert issues == (
-        "sealed first_path_relations[1] actor carry state does not match its selected fact",
+    assert issues == ("sealed first_path_relations[1] has an invalid closed schema",)
+
+
+def test_event_actor_atom_uses_only_its_selected_actor_fact() -> None:
+    actor = {
+        "field": "human_actors",
+        "quote": "Reviewer",
+        "projection_path": "/human_actors/0",
+        "source_start_byte": 0,
+        "projection_start_byte": 0,
+    }
+    path = {
+        "field": "first_path",
+        "quote": "records one receipt",
+        "projection_path": "/first_path",
+        "source_start_byte": 9,
+        "source_end_byte": 28,
+        "projection_start_byte": 0,
+    }
+    relation = {
+        "order": 1,
+        "source_start_byte": 9,
+        "event_start_byte": 0,
+        "actor_fact_path": "/human_actors/0",
+        "actor_fact_quote": "Reviewer",
+        "event_quote": "records one receipt",
+        "action_verb_quote": "records",
+        "target_quote": "one receipt",
+        "visible_result_quote": "",
+    }
+
+    claims = derive_model_atomic_claims(
+        intent={"human_actors": ["Reviewer"], "first_path": "records one receipt"},
+        selected_facts=(actor, path),
+        first_path_relations=(relation,),
+        terminal_result_fact={},
     )
+
+    event_actor = next(row for row in claims if row["relation_role"] == "actor_fact_quote")
+    assert (event_actor["quote"], event_actor["projection_path"]) == (
+        "Reviewer",
+        "/human_actors/0",
+    )
+    assert (event_actor["source_start_byte"], event_actor["relation_order"]) == (0, 1)
+    damaged = dict(relation, actor_fact_quote="Invented actor")
+    with pytest.raises(GreenfieldAuthoredSemanticsError, match="ungrounded atomic actor"):
+        derive_model_atomic_claims(
+            intent={"human_actors": ["Reviewer"], "first_path": "records one receipt"},
+            selected_facts=(actor, path),
+            first_path_relations=(damaged,),
+            terminal_result_fact={},
+        )
 
 
 def test_snapshot_rejects_removed_recovery_classification() -> None:
@@ -182,7 +249,6 @@ def test_relation_fidelity_rejects_structurally_valid_wrong_relations(
         event = semantics["first_path_relations"][2]
         event.update(
             {
-                "actor_quote": "Backup Engine",
                 "actor_fact_path": "/internal_systems/1",
                 "actor_fact_quote": "Backup Engine",
                 "owner_system_path": "/internal_systems/1",
@@ -198,7 +264,6 @@ def test_relation_fidelity_rejects_structurally_valid_wrong_relations(
     elif damage == "wrong_external_actor":
         semantics["first_path_relations"][1].update(
             {
-                "actor_quote": "Archive API",
                 "actor_fact_path": "/external_systems/1",
                 "actor_fact_quote": "Archive API",
             }

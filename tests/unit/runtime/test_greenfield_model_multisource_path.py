@@ -83,7 +83,6 @@ def test_model_relation_ownership_is_real_and_regex_free() -> None:
     assert greenfield_model_direct_evidence_graph.MODEL_EVENT_FIELDS == frozenset(
         {
             "actor_fact_quote",
-            "actor_quote",
             "action_quote",
             "target_quote",
         }
@@ -150,7 +149,7 @@ def _case() -> tuple[str, str, dict[str, object], list[str], list[dict[str, obje
     relations: list[dict[str, object]] = [
         {
             "actor_kind": "human",
-            "actor_quote": "Dock attendant Ivo",
+            "actor_fact_quote": "Dock attendant Ivo",
             "event_quote": segments[0],
             "action_verb_quote": "submits",
             "target_quote": "a berth request",
@@ -158,7 +157,7 @@ def _case() -> tuple[str, str, dict[str, object], list[str], list[dict[str, obje
         },
         {
             "actor_kind": "external_system",
-            "actor_quote": "Tide Authority API",
+            "actor_fact_quote": "Tide Authority API",
             "event_quote": segments[1],
             "action_verb_quote": "supplies",
             "target_quote": "clearance",
@@ -166,7 +165,6 @@ def _case() -> tuple[str, str, dict[str, object], list[str], list[dict[str, obje
         },
         {
             "actor_kind": "product",
-            "actor_quote": "Harbor Registry",
             "owner_system_quote": "Harbor Registry",
             "event_quote": segments[2],
             "action_verb_quote": "records",
@@ -175,7 +173,6 @@ def _case() -> tuple[str, str, dict[str, object], list[str], list[dict[str, obje
         },
         {
             "actor_kind": "product",
-            "actor_quote": "The berth map",
             "owner_system_quote": "berth map",
             "event_quote": segments[3],
             "action_verb_quote": "shows",

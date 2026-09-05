@@ -1,8 +1,8 @@
 """One source-claim review inside the original Greenfield authoring budget.
 
-This operation changes only the product story and component groups. The authoring owner
-must validate the complete returned candidate again before admitting any intent.
-It never edits other semantic fields or creates source authority on its own.
+This operation reviews product claims and human selections. The authoring owner
+validates the complete candidate again; the review cannot rewrite event bindings
+or create source authority on its own.
 """
 
 from __future__ import annotations
@@ -27,8 +27,9 @@ from odylith.runtime.reasoning import odylith_reasoning
 MAX_SOURCE_REVIEW_SECONDS = 20.0
 
 _SYSTEM_PROMPT = """
-Review two product claims against the original untrusted evidence. Return only
-product_story and the complete minimal component groups, using exact citations.
+Review product claims and human selections against the original untrusted evidence.
+Return only product_story, complete minimal components, and complete human_actors,
+using exact citations. Preserve valid claims; correct only unsupported selections.
 product_story describes the product's behavior or outcome, not the operator's
 instruction to create or edit a proposal. Preserve an already valid product story;
 otherwise select the shortest complete source-backed product claim. The original
@@ -39,6 +40,12 @@ responsibility, while leaving the human workflow unchanged. Preserve valid
 product-performed actions. Use only selected internal_systems or title as owners.
 Every responsibility quote must be an exact source substring with its occurrence.
 Do not add responsibilities, dependencies, authority, or implementation claims.
+For human_actors, check whether each cited phrase actually denotes a source-stated
+person or human role in context, rather than a modifier of an activity, artifact,
+or output purpose. Do not infer a participant merely because an output needs one.
+Preserve explicit participants and output recipients even when they perform no
+first-path action. Use an empty array when no human participant is stated. Events
+and their actor bindings are immutable; never invent an action to justify a person.
 """.strip()
 
 
@@ -53,6 +60,7 @@ def review_semantic_source_claims(
     remaining_seconds: float,
     observation: dict[str, Any],
     product_story_schema: Mapping[str, Any],
+    human_actors_schema: Mapping[str, Any],
 ) -> dict[str, Any]:
     """Return one candidate correction, retaining the real request and response."""
 
@@ -73,10 +81,11 @@ def review_semantic_source_claims(
             schema_name="greenfield_semantic_source_review",
             output_schema={
                 "type": "object", "additionalProperties": False,
-                "required": ["product_story", "components"],
+                "required": ["product_story", "components", "human_actors"],
                 "properties": {
                     "product_story": dict(product_story_schema),
                     "components": MODEL_COMPONENT_SCHEMA,
+                    "human_actors": human_actors_schema,
                 },
             },
             prompt_payload=payload,
@@ -99,11 +108,12 @@ def review_semantic_source_claims(
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield source review exceeded its remaining authoring time"
         )
-    if not isinstance(reviewed, Mapping) or set(reviewed) != {"product_story", "components"}:
+    if not isinstance(reviewed, Mapping) or set(reviewed) != {"product_story", "components", "human_actors"}:
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield source review did not return a valid candidate"
         )
     corrected = deepcopy(dict(response))
     corrected["result"]["components"] = deepcopy(reviewed["components"])
     corrected["result"]["facts"]["product_story"] = deepcopy(reviewed["product_story"])
+    corrected["result"]["facts"]["human_actors"] = deepcopy(reviewed["human_actors"])
     return corrected

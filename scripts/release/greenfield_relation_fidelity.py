@@ -29,7 +29,7 @@ from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
 )
 
 
-RELATION_FIDELITY_ANNOTATION_VERSION = "odylith.greenfield.relation-fidelity-annotation.v2"
+RELATION_FIDELITY_ANNOTATION_VERSION = "odylith.greenfield.relation-fidelity-annotation.v3"
 RELATION_FAMILIES = (
     "first_path_events",
     "context_relations",
@@ -53,7 +53,6 @@ _EVENT_FIELDS = frozenset(
         "event_end_byte",
         "event_sha256",
         "actor_kind",
-        "actor_sha256",
         "actor_fact_path",
         "actor_fact_sha256",
         "product_owner_path",
@@ -64,9 +63,9 @@ _EVENT_FIELDS = frozenset(
     }
 )
 _EVENT_ACTOR_KIND_INDEX = 7
-_EVENT_OWNER_PATH_INDEX = 11
-_EVENT_OWNER_SHA_INDEX = 12
-_EVENT_VISIBLE_SHA_INDEX = 15
+_EVENT_OWNER_PATH_INDEX = 10
+_EVENT_OWNER_SHA_INDEX = 11
+_EVENT_VISIBLE_SHA_INDEX = 14
 _CONTEXT_FIELDS = frozenset(
     {
         "context_kind",
@@ -301,7 +300,6 @@ def _annotation_event_keys(
         projection_range = _range(row.get("event_start_byte"), row.get("event_end_byte"))
         event_sha = str(row.get("event_sha256") or "")
         actor_kind = str(row.get("actor_kind") or "")
-        actor_sha = str(row.get("actor_sha256") or "")
         actor_path = str(row.get("actor_fact_path") or "")
         actor_fact_sha = str(row.get("actor_fact_sha256") or "")
         owner_path = str(row.get("product_owner_path") or "")
@@ -325,14 +323,14 @@ def _annotation_event_keys(
             projection_cursor = projection_range[1]
         if actor_kind not in FIRST_PATH_ACTOR_KINDS:
             issues.append(f"{label} actor_kind is invalid")
-        if not is_sha256(actor_sha):
-            issues.append(f"{label} actor_sha256 is invalid")
         if not _actor_path_matches_kind(actor_path, actor_kind):
             issues.append(f"{label} actor fact path is invalid for its actor kind")
         if (actor_path, actor_fact_sha) not in projection_identities:
             issues.append(f"{label} actor fact identity is not atom-grounded")
-        if role_hashes.get((index, "actor_quote"), frozenset()) != frozenset({actor_sha}):
-            issues.append(f"{label} actor quote is not atom-grounded at its event order")
+        if role_hashes.get((index, "actor_fact_quote"), frozenset()) != frozenset(
+            {actor_fact_sha}
+        ):
+            issues.append(f"{label} actor fact is not atom-grounded at its event order")
         if actor_kind == "product":
             if (
                 owner_path != actor_path or owner_sha != actor_fact_sha
@@ -369,7 +367,6 @@ def _annotation_event_keys(
                 *(projection_range or (-1, -1)),
                 event_sha,
                 actor_kind,
-                actor_sha,
                 actor_path,
                 actor_fact_sha,
                 owner_path,
@@ -516,8 +513,6 @@ def _snapshot_event_keys(
         projection_range = _range(row.get("event_start_byte"), row.get("event_end_byte"))
         event_quote = str(row.get("event_quote") or "")
         actor_kind = str(row.get("actor_kind") or "")
-        actor_quote = str(row.get("actor_quote") or "")
-        actor_is_carried = row.get("actor_is_carried")
         actor_fact_path = str(row.get("actor_fact_path") or "")
         actor_fact_quote = str(row.get("actor_fact_quote") or "")
         owner_path = str(row.get("owner_system_path") or "")
@@ -537,11 +532,7 @@ def _snapshot_event_keys(
             issues.append(f"{label} projection range does not contain its exact event")
         else:
             cursor = projection_range[1]
-        if (
-            actor_kind not in FIRST_PATH_ACTOR_KINDS
-            or not actor_quote
-            or not isinstance(actor_is_carried, bool)
-        ):
+        if actor_kind not in FIRST_PATH_ACTOR_KINDS:
             issues.append(f"{label} actor identity is invalid")
         if not action_quote or action_quote not in event_quote:
             issues.append(f"{label} action is not exactly grounded in its event")
@@ -555,12 +546,6 @@ def _snapshot_event_keys(
             or _projection_value(facts, actor_fact_path) != actor_fact_quote
         ):
             issues.append(f"{label} actor fact does not match its exact selected fact")
-        if (
-            actor_quote != actor_fact_quote
-            or isinstance(actor_is_carried, bool)
-            and actor_is_carried == (actor_fact_quote in event_quote)
-        ):
-            issues.append(f"{label} actor carry state does not match its selected fact")
         if actor_kind == "product":
             if (
                 owner_path != actor_fact_path
@@ -582,7 +567,6 @@ def _snapshot_event_keys(
                 *(projection_range or (-1, -1)),
                 _sha256(event_quote),
                 actor_kind,
-                _sha256(actor_quote),
                 actor_fact_path,
                 _sha256(actor_fact_quote) if actor_fact_quote else "",
                 owner_path,

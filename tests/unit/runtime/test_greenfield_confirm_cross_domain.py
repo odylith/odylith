@@ -360,7 +360,7 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
             first_path_relations=[
                 {
                     "actor_kind": "human",
-                    "actor_quote": actor,
+                    "actor_fact_quote": actor,
                     "event_quote": intent["first_path"],
                     "action_verb_quote": action,
                     "target_quote": target,

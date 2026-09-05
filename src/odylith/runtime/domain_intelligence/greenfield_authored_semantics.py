@@ -16,7 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
 from odylith.runtime.governance.artifact_tribunal import _bind_verified_source_custody
 
 AUTHORED_SEMANTICS_KEY = "authored_semantics"
-AUTHORED_SEMANTICS_VERSION = "odylith.greenfield.authored-semantics.v12"
+AUTHORED_SEMANTICS_VERSION = "odylith.greenfield.authored-semantics.v13"
 AUTHORED_RELATION_SET_SHA256_KEY = "authored_relation_set_sha256"
 AUTHORED_PROJECTION_ORIGIN = "model_authored_typed_intent"
 AUTHORED_SEMANTIC_ROOT = f"intent.{AUTHORED_SEMANTICS_KEY}"
@@ -34,7 +34,7 @@ ATOMIC_FACT_CATEGORIES = (
 )
 ATOMIC_POLARITIES = ("affirmed", "required", "prohibited")
 AUTHORED_RELATION_ROLES = (
-    "actor_quote",
+    "actor_fact_quote",
     "action_verb_quote",
     "target_quote",
     "visible_result_quote",
@@ -47,8 +47,6 @@ FIRST_PATH_RELATION_FIELDS = frozenset(
         "event_start_byte",
         "event_end_byte",
         "actor_kind",
-        "actor_quote",
-        "actor_is_carried",
         "actor_fact_path",
         "actor_fact_quote",
         "owner_system_path",
@@ -88,19 +86,10 @@ FIRST_PATH_CONTEXT_KINDS = (
 COMPONENT_RESPONSIBILITY_SOURCES = ("accepted_fact", "terminal_visible_result")
 MAX_FIRST_PATH_RELATIONS = 24
 MAX_COMPONENT_RESPONSIBILITY_RELATIONS = 32
-FIRST_PATH_ACTOR_BINDING_FIELDS = (
-    "actor_kind", "actor_fact_path", "actor_fact_quote",
-    "owner_system_path", "owner_system_quote",
-)
 
 
 class GreenfieldAuthoredSemanticsError(ValueError):
     """The model's typed relations are not grounded in accepted source facts."""
-
-
-def first_path_actor_binding_identity(value: Mapping[str, Any]) -> tuple[str, ...]:
-    """Return the exact typed entity and owner binding carried between events."""
-    return tuple(str(value.get(field) or "") for field in FIRST_PATH_ACTOR_BINDING_FIELDS)
 
 
 def combined_prompt_evidence_source(*, prompt: str, edit_evidence: str) -> str:
@@ -158,8 +147,6 @@ def validate_first_path_relations(
         event_start = raw.get("event_start_byte")
         event_end = raw.get("event_end_byte")
         actor_kind = str(raw.get("actor_kind") or "")
-        actor_quote = str(raw.get("actor_quote") or "")
-        actor_is_carried = raw.get("actor_is_carried")
         actor_fact_path = str(raw.get("actor_fact_path") or "")
         actor_fact_quote = str(raw.get("actor_fact_quote") or "")
         owner_system_path = str(raw.get("owner_system_path") or "")
@@ -184,8 +171,6 @@ def validate_first_path_relations(
             or event_end <= event_start
             or event_end > len(path_bytes)
             or actor_kind not in FIRST_PATH_ACTOR_KINDS
-            or not actor_quote
-            or not isinstance(actor_is_carried, bool)
             or not event_quote
             or any(
                 source_start < seen_end and seen_start < source_end
@@ -197,7 +182,6 @@ def validate_first_path_relations(
             raise GreenfieldAuthoredSemanticsError("Greenfield authoring returned invalid first-path relations")
         require_first_path_actor_binding(
             actor_kind=actor_kind,
-            actor_quote=actor_quote,
             actor_fact_path=actor_fact_path,
             actor_fact_quote=actor_fact_quote,
             owner_system_path=owner_system_path,
@@ -205,29 +189,11 @@ def validate_first_path_relations(
             actor_values=actor_values,
             owner_values=owner_values,
         )
-        actor_is_surface_explicit = actor_quote in event_quote
         if (
             path_bytes[event_start:event_end] != event_quote.encode("utf-8")
-            or actor_is_carried == actor_is_surface_explicit
-            or (
-                actor_is_carried
-                and actor_quote != actor_fact_quote
-            )
             or action_verb_quote not in event_quote
         ):
             raise GreenfieldAuthoredSemanticsError("Greenfield authoring returned ungrounded first-path relations")
-        previous_binding = rows[-1] if rows else None
-        if (
-            actor_is_carried
-            and (
-                previous_binding is None
-                or first_path_actor_binding_identity(previous_binding)
-                != first_path_actor_binding_identity(raw)
-            )
-        ):
-            raise GreenfieldAuthoredSemanticsError(
-                "Greenfield authoring returned an ungrounded first-path actor"
-            )
         if not event_target_is_source_bound(
             event_quote=event_quote,
             target_quote=target_quote,
@@ -252,8 +218,6 @@ def validate_first_path_relations(
                 "event_start_byte": event_start,
                 "event_end_byte": event_end,
                 "actor_kind": actor_kind,
-                "actor_quote": actor_quote,
-                "actor_is_carried": actor_is_carried,
                 "actor_fact_path": actor_fact_path,
                 "actor_fact_quote": actor_fact_quote,
                 "owner_system_path": owner_system_path,
@@ -323,7 +287,6 @@ def _actor_projection_values(
 def require_first_path_actor_binding(
     *,
     actor_kind: str,
-    actor_quote: str,
     actor_fact_path: str,
     actor_fact_quote: str,
     owner_system_path: str,
@@ -1121,8 +1084,6 @@ FIRST_PATH_RELATION_SCHEMA: dict[str, Any] = {
             "event_start_byte": {"type": "integer", "minimum": 0},
             "event_end_byte": {"type": "integer", "minimum": 1},
             "actor_kind": {"type": "string", "enum": list(FIRST_PATH_ACTOR_KINDS)},
-            "actor_quote": {"type": "string"},
-            "actor_is_carried": {"type": "boolean"},
             "actor_fact_path": {"type": "string"},
             "actor_fact_quote": {"type": "string"},
             "owner_system_path": {"type": "string"},
@@ -1167,7 +1128,6 @@ __all__ = [
     "COMPONENT_RESPONSIBILITY_RELATION_FIELDS",
     "FIRST_PATH_CONTEXT_RELATION_FIELDS",
     "FIRST_PATH_CONTEXT_RELATION_SCHEMA",
-    "FIRST_PATH_ACTOR_BINDING_FIELDS",
     "FIRST_PATH_RELATION_SCHEMA",
     "GREENFIELD_PRECONFIRM_STAGING_MARKER",
     "GreenfieldAuthoredSemanticsError",
@@ -1182,7 +1142,6 @@ __all__ = [
     "component_responsibility_relations_from_intent",
     "expected_first_path_context_event_order",
     "first_path_context_relations_from_intent",
-    "first_path_actor_binding_identity",
     "first_path_relations_from_intent",
     "overlapping_first_path_event_orders",
     "require_first_path_actor_binding",

@@ -61,7 +61,7 @@ def _author_terminal_intent(
                 first_path_relations=[
                     {
                         "actor_kind": "human",
-                        "actor_quote": "Coordinator Nia",
+                        "actor_fact_quote": "Coordinator Nia",
                         "event_quote": "Coordinator Nia records each donation",
                         "action_verb_quote": "records",
                         "target_quote": "each donation",
@@ -69,7 +69,7 @@ def _author_terminal_intent(
                     },
                     {
                         "actor_kind": "product",
-                        "actor_quote": "Pickup Relay",
+                        "actor_fact_quote": "Pickup Relay",
                         "owner_system_quote": "Pickup Relay",
                         "event_quote": "Pickup Relay releases each batch",
                         "action_verb_quote": "releases",
