@@ -53,7 +53,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v40"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v42"
 GREENFIELD_MODEL_PROOF_FD_ENV = "ODYLITH_GREENFIELD_MODEL_PROOF_FD"
 MAX_GREENFIELD_SEMANTIC_CALLS = 2
 
@@ -231,11 +231,31 @@ def author_greenfield_intent(
         effective_timeout_seconds=budget_seconds,
     )
     if not isinstance(response, Mapping):
+        failure_code = provider_metadata.get("code") or "invalid_response"
+        _emit_release_proof_observation(
+            evidence_text=text,
+            response=response,
+            call_count=1,
+            failure={
+                "stage": "initial_authoring",
+                "profile_id": profile.profile_id,
+                "effective_timeout_seconds": budget_seconds,
+                "elapsed_seconds": elapsed_seconds,
+                "response_shape": type(response).__name__,
+                "provider": {
+                    "provider": provider_metadata["provider"],
+                    "model": provider_metadata["model"],
+                    "reasoning_effort": provider_metadata["reasoning_effort"],
+                    "code": failure_code,
+                },
+            },
+        )
         raise GreenfieldModelAuthoringError(
             "A verified source-cited Greenfield package could not be produced; no records were created."
         )
     initial_response = response
     review_observation: dict[str, Any] = {}
+    validation_error = ""
     call_count = 1
     validation_context = {
         "evidence_text": text,
@@ -255,6 +275,7 @@ def author_greenfield_intent(
         except GreenfieldModelAuthoringError as exc:
             if not isinstance(exc.__cause__, GreenfieldComponentOwnershipError):
                 raise
+            validation_error = str(exc.__cause__)
         else:
             if isinstance(candidate, GreenfieldAuthoringClarification):
                 return candidate
@@ -270,8 +291,8 @@ def author_greenfield_intent(
                 model=request_model, reasoning_effort=request_effort,
                 profile_id=profile.profile_id, remaining_seconds=remaining,
                 observation=review_observation,
-                product_story_schema=_CITATION_SCHEMA,
-                human_actors_schema=_AUTHORED_FACTS_SCHEMA["properties"]["human_actors"],
+                fact_schemas=_AUTHORED_FACTS_SCHEMA["properties"],
+                validation_error=validation_error,
             )
         except GreenfieldAuthoredSemanticsError as exc:
             raise GreenfieldModelAuthoringError(f"{exc}; no records were created.") from exc
@@ -435,9 +456,10 @@ def _validated_clarification(response: Mapping[str, Any]) -> tuple[str, ...]:
 
 
 def _emit_release_proof_observation(
-    *, evidence_text: str, response: Mapping[str, Any], call_count: int,
+    *, evidence_text: str, response: Any, call_count: int,
     initial_response: Mapping[str, Any] | None = None,
     source_review: Mapping[str, Any] | None = None,
+    failure: Mapping[str, Any] | None = None,
 ) -> None:
     """Write exact pre-validation evidence only to a parent-granted proof FD."""
 
@@ -458,10 +480,13 @@ def _emit_release_proof_observation(
         "version": "odylith.greenfield.model-proof-observation.v2",
         "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
         "request": _authoring_payload(evidence_text),
-        "response": dict(response),
         "semantic_model_call_count": call_count,
     }
-    if initial_response is not None:
+    if failure is not None:
+        payload["failure"] = dict(failure)
+    else:
+        payload["response"] = dict(response)
+    if initial_response is not None and failure is None:
         payload["initial_response"] = dict(initial_response)
         payload["source_review"] = dict(source_review or {})
     encoded = (json.dumps(payload, sort_keys=True, ensure_ascii=False) + "\n").encode(
@@ -791,9 +816,6 @@ Select title, product_story, state_object, proof_boundary, human_actors and firs
 according to their schema. product_story is the shortest complete source span about
 product behavior or outcome, excluding the operator's request to create a proposal.
 customer is the direct user or primary beneficiary, not merely a downstream subject.
-external_systems are named systems, services, authorities, organizations or data
-sources the product actually exchanges with or depends on; location and audience
-alone do not establish a dependency.
 
 FIRST PATH AND OWNERSHIP
 Select one non-overlapping first_path citation per independently executable action,
@@ -917,6 +939,15 @@ _AUTHORED_FACTS_SCHEMA: dict[str, Any] = {
                 "including explicit output recipients outside the first path. Use "
                 "an empty list when no human participant is stated. An activity, "
                 "artifact, or output-purpose modifier is not a human participant."
+            ),
+        },
+        "external_systems": {
+            **_TYPED_FACTS_SCHEMA["properties"]["external_systems"],
+            "description": (
+                "Only an explicitly source-stated operational exchange or dependency between this "
+                "product and a named external system, service, authority, organization, or data "
+                "source. Merely naming task data, an output recipient, or a reviewer does not "
+                "establish that connection."
             ),
         },
         "customer": {

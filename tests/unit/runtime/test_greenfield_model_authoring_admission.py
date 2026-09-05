@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from typing import Any
 
 import pytest
@@ -11,6 +12,8 @@ from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
     build_authored_greenfield_proposal,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+    GREENFIELD_INTENT_AUTHORING_VERSION,
+    GREENFIELD_MODEL_PROOF_FD_ENV,
     GreenfieldAuthoringClarification,
     GreenfieldModelAuthoringError,
     author_greenfield_intent,
@@ -456,3 +459,84 @@ def test_source_bound_nonmaterial_conflict_increases_sealed_ambiguity(
         if span["span_id"].startswith("authoring:consistency:")
     ]
     assert [span["text"] for span in consistency_spans] == [first_claim, second_claim]
+
+
+@pytest.mark.parametrize(
+    ("failure_code", "diagnostic_detail"),
+    (
+        ("timeout", "Codex CLI exceeded 80.0s."),
+        ("unavailable", "Codex CLI is unavailable."),
+        ("transport_error", "Provider connection reset during authoring."),
+        ("invalid_response", "invalid provider output " * 20),
+    ),
+)
+def test_initial_non_mapping_response_retains_bounded_failure_observation(
+    tmp_path,
+    monkeypatch,
+    failure_code: str,
+    diagnostic_detail: str,
+) -> None:  # type: ignore[no-untyped-def]
+    provider = StructuredAuthoringProvider(None)
+    provider.last_failure_code = failure_code
+    provider.last_failure_detail = diagnostic_detail
+    observation = tmp_path / "model-failure-observation.json"
+    descriptor = os.open(observation, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    monkeypatch.setenv(GREENFIELD_MODEL_PROOF_FD_ENV, str(descriptor))
+    ticks = iter((0.0, 81.805))
+    try:
+        with pytest.raises(GreenfieldModelAuthoringError) as exc_info:
+            author_greenfield_intent(
+                evidence_text="Create a source-cited project.",
+                provider=provider,
+                model_profile_id=RESCUE_PROFILE_ID,
+                timeout_seconds=80.0,
+                clock=lambda: next(ticks),
+            )
+    finally:
+        os.close(descriptor)
+
+    assert str(exc_info.value) == (
+        "A verified source-cited Greenfield package could not be produced; "
+        "no records were created."
+    )
+    retained = json.loads(observation.read_text(encoding="utf-8"))
+    assert retained["authoring_version"] == GREENFIELD_INTENT_AUTHORING_VERSION
+    assert retained["semantic_model_call_count"] == 1
+    assert "response" not in retained
+    assert retained["failure"] == {
+        "stage": "initial_authoring",
+        "profile_id": RESCUE_PROFILE_ID,
+        "effective_timeout_seconds": 80.0,
+        "elapsed_seconds": pytest.approx(81.805),
+        "response_shape": "NoneType",
+        "provider": {
+            "provider": "codex-cli",
+            "code": failure_code,
+            "model": "gpt-5.6-sol",
+            "reasoning_effort": "high",
+        },
+    }
+    assert diagnostic_detail not in observation.read_text(encoding="utf-8")
+    assert provider.calls == 1
+
+
+def test_initial_non_mapping_response_without_proof_fd_keeps_public_error_exact(
+    monkeypatch,
+) -> None:
+    monkeypatch.delenv(GREENFIELD_MODEL_PROOF_FD_ENV, raising=False)
+    provider = StructuredAuthoringProvider(None)
+    provider.last_failure_code = "unavailable"
+    provider.last_failure_detail = "Codex CLI is unavailable."
+
+    with pytest.raises(GreenfieldModelAuthoringError) as exc_info:
+        author_greenfield_intent(
+            evidence_text="Create a source-cited project.",
+            provider=provider,
+            clock=lambda: 0.0,
+        )
+
+    assert str(exc_info.value) == (
+        "A verified source-cited Greenfield package could not be produced; "
+        "no records were created."
+    )
+    assert provider.calls == 1

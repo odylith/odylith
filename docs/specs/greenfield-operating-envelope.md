@@ -70,14 +70,27 @@ clarification with no writes, separately from unavailable-provider behavior.
 No other model earns a proof claim without its own observed request evidence.
 
 Pre-confirm authoring permits at most two model calls: initial intent authoring,
-then one source-claim review of the product story, component ownership, and human selections for
-every otherwise-valid authored candidate. Clarifications need only the first call.
+then one source-claim review for every otherwise-valid authored candidate.
+Clarifications need only the first call. Authoring v42 uses sparse whole-fact
+corrections and optional complete assumption
+or component replacements. The review reuses each existing fact's exact value schema;
+an empty correction list and null replacements preserve the candidate unchanged.
 The review shares the original model window and is capped at 20 seconds; it cannot
 extend the consumer deadline or change the chosen profile. The complete candidate
 must pass custody and semantic validation again. Explicit recipients need not perform
-a first-path action. Other fields, including event bindings, remain unchanged,
+a first-path action. Events, first path, terminal, consistency, and ambiguity fields
+remain unchanged. Unknown, duplicate, or protected correction fields are rejected,
 and a failed review never starts another call. Receipts record the actual call
 count; release proof retains both candidates and the exact review response.
+An initial non-structured provider failure retains its categorical code, profile,
+timing and response shape through the existing private proof channel, never raw
+failed output or provider diagnostic text. Public failure wording stays unchanged.
+External-system admission and component ownership are defined on their existing
+shared schema properties: an external dependency requires a source-stated product
+exchange or operational dependency, and human-enabled work retains its enclosing
+product capability as component responsibility. Output recipients, reviewers and
+task data alone do not establish an external dependency. No schema shape, model
+stage, profile or deadline changes with these descriptions.
 
 ## Filesystem contract
 

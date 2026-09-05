@@ -838,6 +838,288 @@
   then require the unchanged 14-case installed/browser/recovery/profile gate and
   independent adjudication. Final holdout remains closed.
 
+- V40 Installed Rejection And Diagnostic Boundary (2026-09-05): Pushed checkpoint
+  `40486206c0c06999b6dc88ec90c71b1b7f2efcea` builds wheel
+  `8cbe4272380bbe7a9576010fa64b3ce0e70c7eca971a1604b9de2b8358ae9f7d`.
+  The unchanged public gate stops after two cases: flood completes in `70.544s`
+  including commit under deep120 with independent complete-package no-P0/P1
+  review; pediatric returns no package in `81.805s` under rescue90. Neither a
+  deadline-compliant refusal nor the source suite makes that a successful case.
+  Independent diagnosis locates the pediatric failure before semantic validation:
+  the initial provider returned a non-Mapping value. An 80-second timeout is
+  strongly suggested by elapsed time but is not proven. Already-computed provider
+  failure metadata is discarded before the proof-emission finally block; the
+  retained observation is zero bytes. Preserve the generic safe public failure
+  and capture bounded metadata through the existing parent-granted proof FD on
+  that same path. Add no model call, retry, alternate profile, or new schema.
+  The automatic recovery setup separately fails in `33.868s` with a non-product
+  event assigned as component responsibility. No recovery injection was reached.
+  Do not group this semantic rejection with the initial-provider failure or guess
+  which candidate failed without raw evidence. Simulation cleanup passed; failed
+  results and retained artifacts remain under
+  `/private/tmp/odylith-greenfield-v40-public14-evidence.YEmLtP`.
+  Keep the single actor identity and shared diagram owner. Capture each exact
+  failing path with bounded diagnostics before considering another mechanism
+  change or immutable public run. Final holdout remains unopened.
+  Initial failure capture now uses the existing writer only: four failure classes
+  fail before the change and all 21 focused admission/proof tests pass afterward.
+  Successful observations and public error text remain unchanged. One captured
+  apprenticeship attempt reproduces the rejection in `38.065s`: initial and final
+  components both list the five human action fragments, while the accepted product
+  story already contains the correct enclosing product capability. The review
+  preserves the bad components in `14.240s`; it adds legitimate apprentices and
+  workforce-board participants. These raw candidates are retained at the v33
+  discriminator's `v40-diagnosis-apprenticeship` child. This proves both stages
+  failed in the new diagnostic attempt, not in the uncaptured installed attempt.
+  Compare one existing-review invocation with only the actual validator rejection
+  added to its input; keep the same system prompt, response schema, Terra/medium,
+  exact initial candidate, and original 20-second review allowance. Reject that
+  alternative if it preserves the error, harms valid meaning, or exceeds the cap.
+  No full-campaign retry or new semantic schema is justified yet.
+  The same-profile pediatric diagnostic completes and commits in `77.058s`
+  (`75.646s` proposal plus `1.413s` CLI commit), with 80 writes and readback,
+  hash `d8a20caf254493a5d9f751717f7433c9aac1f461c4008bf9363ab330a47fb001`.
+  Evidence is in the v33 discriminator's `v40-diagnosis-pediatric` child.
+  Independent package review is pending; this success neither identifies the
+  original provider cause nor cancels the failed installed attempt.
+
+- V40 Bounded Ownership Feedback (2026-09-05): One retained-candidate comparison
+  adds only the actual ownership rejection to the existing review input. The same
+  Terra/medium review finishes in `9.419s`, replacing five misassigned human
+  actions with the source's enclosing product capability; every event and actor
+  binding stays unchanged. Current whole-candidate validation accepts the result.
+  Independent review confirms that apprentices remain faithfully represented as
+  the registration target rather than requiring a second human-actor entry. Its
+  separate Product View completeness concern remains under adjudication against
+  differentiated package utility, not a requirement to repeat the whole workflow
+  in every field. Evidence:
+  `/private/tmp/odylith-v40-apprenticeship-validation-error.tu0hbw/comparison-evidence.v1.json`.
+  Adopt only the six-line error-input change, preserving the prompt, output schema,
+  valid-candidate input, two-call ceiling, review cap, and fixed profiles. Three
+  regression assertions fail before the change; all 41 source-review/admission
+  tests pass afterward. Next discriminator is one fresh apprenticeship standard60
+  package plus an independent valid control, with frozen source and no retries.
+  Pediatric independent review finds no P0/P1 in the committed package or two
+  rendered Atlas images. Responsive browser layout was not re-proven in that
+  diagnostic; installed and full browser qualification remain open.
+  Re-adjudication withdraws the prototype Product View P1: the focused experience
+  is useful alongside the complete path, and no material loss is demonstrated.
+  Do not expand the review schema to make every field repeat the full workflow.
+  Independent code review finds a real diagnostic defect: provider detail may be
+  raw failed stdout/stderr. Remove that field entirely from the new failure
+  observation; retain categorical code, profile, model, effort, response shape,
+  and timing. Four negative disclosure controls fail before removal.
+  Removal passes all 41 focused controls and independent closure. Broader authoring,
+  custody, and admission proof passes 97 tests. Fresh apprenticeship stages in
+  `44.472s` and commits 86 sealed writes in `1.072s`; raw review shows the error
+  input corrects ownership in `8.050s`. One invalid harness invocation used an
+  unsupported create option before the successful commit and is retained as such.
+  Complete-package adjudication nevertheless rejects this candidate: Opportunity
+  is an isolated publishing action, and workforce board is both a human recipient
+  and an unsupported external dependency. Radar lists a false dependency, Atlas
+  duplicates the board, and Registry denies that dependency. These are canonical
+  classification/decision defects, not presentation-only fixes. Evidence is under
+  the v33 discriminator's `v40-feedback-apprenticeship` child.
+  The independent standard security control stages in `58.699s` and commits 83
+  sealed writes in `1.071s`, totaling `59.770s` with only `0.230s` remaining. Its
+  ordinary review has no error-input key and removes two inferred humans; package
+  review is pending. Keep the original 60-second limit and preserve this margin risk.
+  The narrow review's fixed three-field ownership now repeatedly leaves other
+  semantic errors untouched. Compare a sparse whole-fact correction response, not
+  another field-specific prompt/rule or full-candidate echo. Reuse existing fact,
+  assumption and component value contracts; keep first-path events immutable and
+  revalidate the whole candidate. Valid candidates return no edits. The model may
+  replace only explicitly named existing fact fields, assumptions or components;
+  this is not a general patch engine. Prediction: one existing-budget review fixes
+  the ownership, false dependency and unsupported opportunity together, while an
+  independent valid control preserves meaning with no extra call. V39's full echo
+  exceeded 20 seconds and remains rejected. Compare sparse output in temporary
+  tooling before changing production; do not start a full gate or open the holdout.
+  Security-control independent readback verifies all 83 sealed file hashes.
+  After full-context adjudication its proposed safety P1 is withdrawn: statements
+  about no accepted/source-custodied risk do not certify a future application as
+  risk-free. The package preserves embargo decisions, custody, legal signoff,
+  readiness and the explicit non-goal; it grants no production/release authority.
+  Access, authorization and retention design remain important downstream work,
+  not new Greenfield gates absent a changed first outcome or unsafe accepted claim.
+  The control has no observed P0/P1; browser qualification is still separate.
+  The sparse review comparison completes in `13.917s` of the same 20-second cap.
+  It corrects component ownership, removes the false external dependency and
+  false mentor participant, and pairs the cleared Opportunity with a typed useful
+  assumption. All five events, first path, terminal and consistency remain equal.
+  Independent zero-model authored projection confirms the material harms are gone:
+  Radar has no false dependency and the complete path/sequence still names the
+  board recipient. Omission from the glance-level human inventory is advisory,
+  not loss of the review requirement; retain that presentation gap honestly.
+  Evidence: `/private/tmp/odylith-v40-sparse-review.N7BD9i`.
+  With the exact same prompt/schema, the accepted final security candidate returns
+  an exact no-op in `11.312s` of its original `12.691s` review cap; whole validation
+  passes, no error-input key is supplied, and all four assumptions/source facts
+  remain unchanged. Evidence:
+  `/private/tmp/odylith-v40-sparse-security-control.wnUdpA`.
+  These are retained-candidate comparisons, not fresh total-latency observations.
+  Adopt the sparse response as v41 and remove the three-field response entirely.
+  Reuse each existing fact value schema, preserve immutable event/path/terminal
+  branches, reject duplicate or unknown corrections, and keep full-candidate
+  validation and original two-call/deadline rules. Require fresh integrated
+  package/timing controls before source and immutable installed qualification.
+  V41's first fresh integrated apprenticeship request fails in `55.334s`: the
+  initial medium-effort draft consumes `41.339s`, leaving `13.661s`; the sparse
+  review times out at `13.675s` and no package is staged. This is a real timing
+  rejection, not a semantic pass or a reason to extend standard60. The retained
+  review failure is explicitly classified as timeout. Evidence is under the v33
+  discriminator's `v41-sparse-apprenticeship` child. Independent production review
+  finds no structural bypass or protected-field mutation in the v41 integration.
+  The next bounded comparison changes only the shared Terra reasoning effort from
+  medium to low, using a distinctly declared temporary profile with the same
+  55-second total model window, 20-second review cap and 60-second consumer budget.
+  Keep both prompts/schemas, validation, two calls, and commit-only behavior fixed.
+  Official GPT-5.6 guidance supports comparing one lower effort for latency;
+  capability claims still require observed product quality, not documentation.
+  Prediction: the exact failed request yields a faithful complete package with
+  at least ten seconds consumer margin. Reject the configuration if it harms
+  first-path/actor fidelity, source safety, output quality, or the original budget.
+  Test in temporary tooling before changing shipped profile definitions; do not
+  add per-call profile roles or another schema/repair mechanism for this comparison.
+  The low/low configuration is rejected: proposal plus exact commit finishes in
+  `48.485s`, but the review preserves employer-requirements and workforce-board
+  external-system classifications and an unsupported mentor participant. Evidence:
+  `/private/tmp/odylith-v41-terra-low-integrated.dXbAA3`.
+  A separately declared low-draft/medium-review prototype is also rejected:
+  `24.494s` authoring, `19.649s` review, and `50.596s` including commit leave
+  `9.404s` consumer margin, but no fact corrections remove the false board
+  dependency or mentor participant. Radar and Atlas demonstrate the resulting
+  unsupported topology. Exact-string differences in story punctuation or proof
+  wording are not separate material defects. Evidence:
+  `/private/tmp/odylith-v41-terra-low-medium-integrated.cqfNmP`.
+  Each prototype used one fresh attempt, two calls, unchanged prompts/schemas,
+  frozen source, and the original limits. Neither is adopted; in particular,
+  add no stage-profile machinery for the losing mixed configuration.
+  The final configuration comparison for this wave is one honestly declared
+  Sol/medium shared profile, retaining v41's same two calls and original
+  standard60/model55/review20 budgets. Prediction: complete faithful source roles
+  and differentiated package utility with at least five seconds consumer margin.
+  Official model documentation confirms medium is supported, not that it meets
+  Greenfield quality or timing. If this comparison fails, stop effort/model
+  tuning for this review approach and reconsider its source-audit ownership.
+  Do not add prompts, field-specific exceptions, retries, or extend the deadline.
+  Sol/medium also fails: its sole initial call times out at `55.015s`, CLI returns
+  in `55.045s`, no review runs, and no transaction or package exists. Evidence:
+  `/private/tmp/odylith-v41-sol-medium-integrated.BClKOl`. This closes the declared
+  configuration comparison without a winner. Do not retry or adopt another
+  configuration in this family.
+  Next ownership hypothesis: replace draft-then-correct with source-frame-first
+  authoring. One call owns existing non-workflow facts, assumptions and materiality;
+  the second owns only first-path citations, events, terminal and components,
+  using the fixed source frame. No field has two model owners, no correction
+  operation or third call exists, and the existing whole-candidate validator and
+  commit kernel remain unchanged. First compare an isolated temporary prototype
+  using the existing Terra/medium profile, shared 55-second model window and
+  60-second consumer deadline. Prediction: the same discriminator produces faithful
+  roles, complete human workflow and useful decisions with at least five seconds
+  consumer margin. Reuse existing value schemas; add no canonical formats or
+  production code before measured semantic and timing evidence supports adoption.
+  The source-frame-first prototype is rejected: source-frame and workflow calls
+  take `26.945s` and `15.893s`; CLI exits in `42.867s` before staging because the
+  workflow still assigns human event fragments as product responsibilities.
+  The source frame also retains the false external-system and mentor roles.
+  Evidence: `/private/tmp/odylith-v41-frame-first.B4l9E6`. This falsifies review
+  anchoring alone as the explanation; neither the split nor a new profile is
+  adopted. No commit or generated package exists. The independent temporary-driver
+  audit also identifies two boundaries to preserve: never seal an experimental
+  call graph as ordinary v41 provenance, and validate the selected provider before
+  sending evidence. The failed attempt used the expected Codex/Terra profile, but
+  its driver checked provider parity only afterward. Do not reuse that driver for
+  release evidence or another attempt without honest identity and pre-call checks.
+  Pause model experiments while checking the shared role definitions and ownership
+  guard against source entailment and actual consumer harm. Do not weaken the
+  guard merely to accept human-action fragments or grow another repair loop.
+  Independent contract diagnosis confirms no source loss and a sound ownership
+  guard. The external-system admission wording is broader than its dependency
+  projections, while external-system and component schema properties carry only
+  shapes and no role definitions. Human-modifier errors persist despite their
+  existing schema definition and remain a model-reliability concern. Compare one
+  retained failing review with relational admission meanings on the existing
+  external-system and component properties: require an explicit product exchange
+  or operational dependency, and a product-owned capability/result rather than a
+  contained human event. Change descriptions only; preserve schema shapes, the
+  original candidate, reviewer, profile, 20-second allowance and full validator.
+  No staging or commit is allowed for this schema-description diagnostic. Require
+  correction of the actual harms and preservation of an explicit-exchange positive
+  control before considering adoption. If the errors persist, stop reshaping this
+  contract; it has not demonstrated sufficient model reliability.
+
+  Description-only comparison corrects the false external dependency and human
+  event ownership in `16.166s`; all five coordinator events remain intact.
+  Evidence: `/private/tmp/odylith-v41-schema-admission.ijFFhj`. A separate static
+  positive control preserves dispatcher Mara and the explicit Tide API dependency
+  in `19.425s`, with a more complete dependency citation; evidence:
+  `/private/tmp/odylith-v41-schema-admission-control.xx3KVk`. Neither stages or
+  commits a transaction, so neither proves end-to-end latency or rendered quality.
+  Independent semantic review supports one fresh integrated candidate. V42 adopts
+  only those exact existing-property descriptions, removes the superseded external
+  definition, and preserves all shapes, calls, profiles, validation and budgets.
+  Production review prompt/schema exactly match the tested contract. Qualification
+  remains open. Correct the earlier standalone mentor-P1 interpretation: the source
+  grounds mentor signoff provenance, but gives mentor no workflow event, customer
+  status, permission, ownership or authority. That inventory ambiguity is advisory;
+  it does not erase the separately demonstrated false dependency and ownership harms.
+
+  Fresh v42 normal-profile evidence is retained at
+  `/private/tmp/odylith-v42-integrated.zv8YUh`: apprenticeship commits in `55.073s`
+  with `83` sealed writes, complete five-event coordinator workflow, the enclosing
+  product capability and no external dependency; explicit Tide API integration
+  commits in `45.692s` with `87` writes, two product events, the genuine dependency,
+  dispatcher recipient, all four source-stated decisions, proof and non-goal.
+  Independent review finds no P0/P1 in either full generated package. Both initial
+  candidates are preserved unchanged by source review (`9.438s` and `7.579s`).
+  The sparse assay request returns one material first-path question in `8.585s`,
+  one model call and no governed records. Equivalent source order commits in
+  `41.331s`; independent drift review finds no P0/P1. All use the same frozen source
+  fingerprint `36198b54342e2e5fed8ab5ab2eb27fdf9d7c0100e2f98b1501a2289178ce4ad3`.
+  Focused tests pass `241` disjoint checks. Independent core browser review passes
+  `12` requested desktop/mobile normal/fallback/error cells with `18` PNGs at
+  `/private/tmp/v42-apprenticeship-core-browser.4t8rPJ`; no P0/P1 is observed.
+  This limited bare-source scope excludes Casebook/context/version installer
+  assets, Compass/shell, invalid-route states and clean-installed qualification.
+  Performance confidence remains bounded by apprenticeship's `4.927s` margin;
+  no repeated-run, installed or untouched-population claim is made.
+
+  Equivalent-source adjudication initially called the missing Atlas state/event
+  edge P1. The finding is withdrawn after checking the owning contract:
+  `_derive_context_relations` records exact byte overlap, not a semantic transition,
+  and `_state_view` explicitly labels that optional edge `exact source overlap`.
+  Reordering moves the selected occurrence-1 state citation into an earlier view
+  sentence, so the overlap witness truthfully changes from event 2 to no event.
+  Both product actions, state, terminal result, proof, dependency, non-goal, decisions
+  and exact custody remain intact; no concrete implementation or outcome harm is
+  identified. Optional visual richness and the additional general `Dispatchers`
+  participant remain advisory. Do not impose graph equality as a release gate or
+  introduce a semantic-transition schema to resolve a citation-display difference.
+  V42 proceeds to the frozen full source gate without another mechanism change.
+  The gate passes `4,534` tests in `421.35s` with identical tracked working-diff
+  SHA-256 before and after (`2049ca797d2406fb3861d8d39925452034fc18d40149abd901517bf5f40aefa3`).
+  Evidence: `/private/tmp/odylith-v42-source-gate.GZCdpq`; JUnit SHA-256
+  `9ae7a2ce6ae532cb7b9c08312306693e2f5dc68f4dbeccbd56f639ba5f35fc18`.
+  Preserve this source-qualified checkpoint and use one immutable build for the
+  unchanged installed public/recovery/browser/profile gate. No completion or
+  untouched-holdout claim is made.
+
+- V40 Bare-Source Browser Diagnostics (2026-09-05): The supported Python 3.13.3
+  interpreter passes Chromium preflight. Canonical desktop/mobile matrices retain
+  48 PNGs each for the historical accepted security and pediatric packages, at
+  `/private/tmp/v40-security-browser-proof.SwaX8A` and
+  `/private/tmp/v40-pediatric-browser-proof.RIJwsK`. Project, Radar, Registry and
+  Atlas are readable; diagram PNG fallback and explicit asset-error states work.
+  Both complete matrices fail Casebook normal/empty/recovery cells with HTTP 404.
+  The probe creates a bare git root and never installs Odylith; missing Casebook
+  and context/version assets belong to the installed baseline, not the sealed
+  package change set. The v40 full-installed flood matrix separately passed these
+  cells. Do not claim the bare-source matrices passed or treat them as a current
+  installed-runtime P1. Preserve the failure evidence and require full installed
+  qualification. Security's empty actor container is an advisory clarity issue;
+  it fabricates no participant and does not justify a new semantic architecture.
+
 - V29 Public Rejection And V30 Hypothesis (2026-09-04): Immutable wheel
   `2c7bcd38317938ddba15a0b8668c0c1a25271818786759a35905b827b4e9ac4d`
   is rejected by the first public case. Flood shelter completed one deep

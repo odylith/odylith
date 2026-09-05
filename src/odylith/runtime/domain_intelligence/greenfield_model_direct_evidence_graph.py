@@ -740,19 +740,33 @@ MODEL_COMPONENT_SCHEMA: dict[str, Any] = {
             "additionalProperties": False,
             "required": sorted(MODEL_COMPONENT_FIELDS),
             "properties": {
-                "owner_fact_quote": _quote_schema(required=True),
-                "responsibilities": _array_schema(
-                    {
-                        "type": "object",
-                        "additionalProperties": False,
-                        "required": sorted(MODEL_COMPONENT_RESPONSIBILITY_FIELDS),
-                        "properties": {
-                            "quote": _quote_schema(required=True),
-                            "occurrence": {"type": "integer", "minimum": 1},
+                "owner_fact_quote": {
+                    **_quote_schema(required=True),
+                    "description": (
+                        "The selected product or internal-system fact that owns this capability or result; "
+                        "never a human performer or external participant."
+                    ),
+                },
+                "responsibilities": {
+                    **_array_schema(
+                        {
+                            "type": "object",
+                            "additionalProperties": False,
+                            "required": sorted(MODEL_COMPONENT_RESPONSIBILITY_FIELDS),
+                            "properties": {
+                                "quote": _quote_schema(required=True),
+                                "occurrence": {"type": "integer", "minimum": 1},
+                            },
                         },
-                    },
-                    maximum=MAX_COMPONENT_RESPONSIBILITY_RELATIONS,
-                ),
+                        maximum=MAX_COMPONENT_RESPONSIBILITY_RELATIONS,
+                    ),
+                    "description": (
+                        "Exact complete source clauses expressing the selected product owner's own "
+                        "capability or result. For a product that enables human work, cite the enclosing "
+                        "product capability, not its individual human-action spans. Those actions remain "
+                        "human-owned workflow events."
+                    ),
+                },
             },
         },
         maximum=MAX_COMPONENT_RESPONSIBILITY_RELATIONS,

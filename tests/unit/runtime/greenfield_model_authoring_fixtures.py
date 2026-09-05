@@ -33,16 +33,11 @@ class StructuredAuthoringProvider:
         self.requests.append(request)
         self.calls += 1
         if str(getattr(request, "schema_name", "")) == "greenfield_semantic_source_review":
-            payload = getattr(request, "prompt_payload", {})
-            candidate = payload.get("candidate") if isinstance(payload, Mapping) else None
-            facts = candidate.get("facts") if isinstance(candidate, Mapping) else None
-            if not isinstance(candidate, Mapping) or not isinstance(facts, Mapping):
-                return None
             return copy.deepcopy(
                 {
-                    "product_story": facts.get("product_story"),
-                    "components": candidate.get("components"),
-                    "human_actors": facts.get("human_actors"),
+                    "fact_corrections": [],
+                    "assumptions": None,
+                    "components": None,
                 }
             )
         return copy.deepcopy(dict(self.response)) if self.response is not None else None

@@ -28,8 +28,8 @@ guarantee, relabel model timeouts as successful requests, or weaken a failed gat
   response shape, and internal repair. The goal requires bounded calls and
   internal recovery of repairable quality defects; it does not require exactly
   one call. Earlier sections calling these choices fixed mechanism laws are
-  superseded by this contract. The bounded v40 simplification below is the current
-  mechanism candidate, not a new goal requirement.
+  superseded by this contract. The bounded candidate described below is a
+  mechanism hypothesis, not a new goal requirement.
 - Change only an owner implicated by observed failures. Compare one bounded
   alternative against the retained failure and an independent/equivalent control;
   inspect consumer output before a full suite or distribution build. Reject a
@@ -149,6 +149,100 @@ source requalification is needed for that metadata-only repair. Save the stable
 checkpoint, build immutable bytes, and run the unchanged installed public 14-case
 plus recovery/browser/profile gate. Do not alter the mechanism absent a diagnosed
 gate failure or consume the final untouched population before those gates pass.
+
+The first v40 immutable gate is rejected: installed flood passes in 70.544 seconds
+with independent no-P0/P1 review; pediatric returns no package in 81.805 seconds
+before any semantic validation, and its empty observation omits the provider
+failure cause. Automatic recovery setup separately rejects a non-product event
+used as component responsibility before any injected crash. The next work is
+bounded diagnosis, not another architecture: retain initial failure metadata at
+the existing proof FD, capture the two failed paths, and compare only an owner
+actually implicated by that evidence. Do not extend rescue90, count no-package
+as success, consume the holdout, or rerun the full campaign without clean controls.
+
+The captured failure isolates a missing feedback edge: the existing reviewer was
+not told that component validation had rejected human actions as product ownership.
+Passing that actual error fixes the retained case in 9.419 seconds and a fresh
+apprenticeship case in 45.543 seconds including commit. Source/admission/custody
+controls pass 97 tests. Failure observations now retain categorical metadata without
+raw failed provider output. An independent standard security control commits in
+59.770 seconds with no observed P0/P1, but only 0.230 seconds of margin.
+The apprenticeship package still has two independently observed P1s: a review
+recipient becomes a false external dependency, and Opportunity repeats an action
+instead of a source-supported benefit or useful assumption. Stop field-by-field
+review expansion. Compare one sparse correction response over existing facts,
+assumptions and components; keep events/first path/terminal immutable and validate
+the whole candidate afterward. This temporary comparison must correct the failures
+together within the existing review allowance and preserve an independent control.
+Do not repeat V39's full-candidate echo, add another call, extend a tier, or retain
+both review paths. Full qualification remains closed until this discriminator is
+clean. Reviewer findings must identify actual source/consumer harm in full context;
+missing optional implementation depth is not a new release gate.
+
+V41 removes the old field-limited review response. The shared-schema sparse review
+corrects all material failures on the retained candidate and preserves an accepted
+security control exactly; 219 focused/dependent tests and independent integration
+review pass. Fresh qualification is not clean: medium/medium exhausts its 55-second
+model window, while temporary low/low and low/medium configurations finish in
+48.485 and 50.596 seconds including commit but retain false semantic roles in the
+generated package. Reject both configurations and add no mixed-stage machinery.
+One final model-only comparison uses Sol medium for both existing calls under the
+unchanged 60/55/20-second limits. It must preserve complete source roles and useful
+package decisions with at least five seconds consumer margin. If it fails, stop
+configuration tuning and reconsider the reviewer ownership rather than accumulate
+exceptions. Shipped profiles are unchanged; full source/installed qualification
+and the untouched final population remain closed.
+
+The final Sol/medium configuration comparison times out on its initial call
+(`55.045s` CLI, no package). Configuration tuning is closed without adoption.
+Compare a temporary source-frame-first partition next: facts/assumptions/materiality
+have one model owner, followed by an event/component owner bound to those facts.
+Keep canonical value schemas, full validation, two calls, Terra medium, model55,
+consumer60 and commit-only publication unchanged. Require material role fidelity,
+the complete human workflow, useful decisions and five seconds consumer margin
+before considering production changes. The failing draft/correct path is not
+replaced on architectural preference alone.
+
+The source-frame-first partition also fails: its 42.867-second attempt preserves
+false external roles and assigns human event fragments to the product. It stages
+nothing and is rejected without production adoption. A narrower contract mismatch
+is now isolated: external-system and component schema properties lack the admission
+meaning expected by their projections. Description-only retained review corrects
+the dependency and ownership errors in 16.166 seconds, and a 19.425-second positive
+control preserves an explicit external integration and human recipient. Independent
+review supports one fresh integrated candidate, not qualification. V42 adopts only
+those tested descriptions on existing shared properties and removes the superseded
+external-system prompt definition. No new fields, calls, profiles, deadlines or
+parser rules. The mentor provenance entry is advisory, not a standalone P1; actual
+dependency and ownership errors remain blocking. Fresh standard60 semantic/time
+controls must pass before source/installed qualification or the untouched population.
+
+Fresh v42 standard controls at `/private/tmp/odylith-v42-integrated.zv8YUh` now
+commit apprenticeship in 55.073 seconds (83 writes) and the explicit-integration
+control in 45.692 seconds (87 writes). Independent semantic review finds no P0/P1
+in either complete package. The sparse review preserves both initial candidates
+unchanged; neither initial candidate repeats the original admission errors.
+The material-clarification control returns one focused first-path question in
+8.585 seconds with one model call and no governed writes. A reordered equivalent
+integration source commits in 41.331 seconds (87 writes); independent review finds
+no P0/P1. Its extra general dispatcher participant is advisory. The omitted Atlas
+edge is a truthful change in exact citation-overlap evidence, not loss of an action,
+state transition, or product obligation; the initial P1 interpretation was withdrawn
+after reading the canonical field and renderer contracts. All four attempts share frozen source fingerprint
+`36198b54342e2e5fed8ab5ab2eb27fdf9d7c0100e2f98b1501a2289178ce4ad3`.
+Focused tests pass 241 disjoint checks. The apprenticeship core browser scope
+passes 12 desktop/mobile normal/fallback/error cells with 18 retained PNGs and no
+independently observed P0/P1, at `/private/tmp/v42-apprenticeship-core-browser.4t8rPJ`.
+These are source-local controls, not installed qualification; the bare consumer
+does not include installer-owned Casebook/context/version baseline assets.
+Freeze v42 for the unchanged full source gate, followed by one immutable installed
+public/recovery/browser/profile gate if it passes. Do not add typed transitions or
+change source selection merely to equalize optional citation-overlap diagrams.
+The frozen full source gate now passes 4,534 tests in 421.35 seconds. The tracked
+working diff stays identical before/after; JUnit and run identity are retained at
+`/private/tmp/odylith-v42-source-gate.GZCdpq`. V42 is source-qualified, not an
+installed winner. Save the checkpoint and build one immutable distribution for
+the unchanged 14-case public gate plus recovery, browser and profile proof.
 
 Atlas renderer size exception: the existing oversized `render_mermaid_catalog.py`
 owns the client script that overwrote the generated-only failure-state fix.

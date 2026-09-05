@@ -31,6 +31,9 @@ or prose repair runs after confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_source_review.py`, `tests/unit/runtime/test_greenfield_model_source_review.py`
 - **2026-09-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_view.py`
@@ -46,9 +49,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`
-- **2026-09-03 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_intent_fact_values.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `tests/unit/runtime/test_greenfield_model_path_custody.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -3442,16 +3442,27 @@ This section captures synchronized requirement and contract signals derived from
   Canonical facts and relations retain their exact custody and existing owner
   resolver. The compact authoring contract separates source facts from useful
   provisional decisions and keeps the initial actor with its action citation.
-- Pre-confirm authoring permits at most two calls. Every otherwise-valid authored
-  candidate receives one source-claim review of product_story, component groups,
-  and human selections using the same exact-citation schema as the author,
+- Pre-confirm authoring v42 permits at most two calls. Every otherwise-valid authored
+  candidate receives one source-claim review using sparse whole-fact corrections
+  and optional complete assumption/component replacements. Per-field value schemas
+  are shared with the author; the previous three-field response is removed,
   capped at 20 seconds within the original remaining model window. Clarifications
   remain one call. The whole candidate validates again before becoming canonical;
-  other fields, including event bindings, remain unchanged. Source coordinates and actor types reject
+  events, first path, terminal, consistency and ambiguities remain unchanged.
+  Empty corrections and null replacements are an exact candidate no-op; unknown,
+  duplicate and protected field edits are rejected. Source coordinates and actor types reject
   contradictory ownership; they never infer a replacement owner or extend a quote.
   A second failure cannot start another call. Actual call counts and both candidate
   responses remain observable; no generic repair framework, tier promotion, or
   post-confirm interpretation is introduced.
+  Initial non-structured provider failures retain categorical metadata and timing
+  through the existing private proof channel, without raw failed output or provider
+  detail. The public failure text and single-call failure path remain unchanged.
+  Existing shared schema properties now own external-system admission and component
+  ownership descriptions. External dependencies require source-stated product
+  exchange or operational dependence; recipient, reviewer and task-data mentions
+  alone do not qualify. Product responsibilities cite the enclosing product-owned
+  capability, not contained human events. Shapes, profiles and budgets are unchanged.
 - Product Intent envelope/authority v10 and authored-workstream-semantics v5
   preserve the targeted assumption reference and hash its exact text and role.
   Earlier staged formats require rebuilding before confirmation; there is no

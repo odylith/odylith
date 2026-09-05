@@ -676,7 +676,7 @@ def test_authoring_prompt_requires_every_transaction_material_fact() -> None:
         assert field in prompt
     assert "owner_fact_quote" in prompt
     assert "internal_systems fact or title" in prompt
-    assert "location and audience alone do not establish a dependency" in prompt
+    assert "explicitly source-stated operational exchange" in str(provider.requests[0].output_schema)
     assert "product_story is the shortest complete source span" in prompt
     assert "excluding the operator's request to create a proposal" in prompt
     assert "target_quote must occur within that event" in prompt
