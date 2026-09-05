@@ -33,6 +33,9 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:start -->
 - **2026-09-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_backlog.py`, `tests/unit/runtime/test_greenfield_authored_radar_rationale.py`
+- **2026-09-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_assumptions.py`, `src/odylith/runtime/domain_intelligence/greenfield_authored_backlog.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`
 - **2026-09-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
@@ -46,9 +49,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-03 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`
-- **2026-09-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -3424,6 +3424,12 @@ This section captures synchronized requirement and contract signals derived from
   provisional custody. Problem, Customer, Opportunity, and Product View each have exactly
   one cited fact or one assumption; consumed decision assumptions are not
   repeated in the generic assumptions list.
+- Radar preserves explicit canonical decision references even when two semantic
+  slots cite the same source span. Byte equality is not authority to erase a
+  fact, invent an assumption, or reject the package. Required rendered references
+  still need owned/shared custody; source validity and the fact-or-assumption
+  contract remain upstream obligations. The obsolete downstream equality veto
+  is removed rather than supplemented with field-specific exceptions.
 - Human participants are optional when the source describes only product or
   external-system work. Every event still requires its exact source-bound actor.
   An inferred customer is a labeled assumption, not an accepted participant or

@@ -669,6 +669,43 @@
   does not establish installed generalization, all model-profile floors, or final
   holdout quality. Keep this case open until those existing gates pass.
 
+- V37 Installed Citation Rejection (2026-09-04): Pushed source `60d7abc59`
+  builds immutable wheel
+  `e06305f5613d056d762f167908d590a1c2d618d16bdc73423db54efcc762e0de`.
+  The first unchanged public case, flood under its preselected deep profile,
+  fails before confirmation in `53.599s`: `product_view` is uncited. The retained
+  two-call response actually cites a complete Product View equal to Product
+  Story. Radar's downstream `_distinct_fact_refs` silently removes that accepted
+  pointer because of byte equality, and its required-field validator then rejects
+  it. This stale V29 projection veto conflicts with canonical decision ownership;
+  do not turn it into another model call, vocabulary rule, or missing-fact filler.
+  Compare direct canonical-pointer projection against this exact retained failure
+  and independent equal-value/assumption controls, then independently inspect
+  whether the complete rendered package has material repetition. The public run
+  stops at `0/1` of 14, with no governed flood writes. Installed SIGKILL, fsync,
+  operator-conflict preservation, and same-hash recovery proof pass separately;
+  they do not close semantic or browser quality. Evidence is retained under
+  `/private/tmp/odylith-greenfield-v37-public14-evidence.U09mc3`. The protected
+  holdout remains untouched.
+- The bounded correction removes `_distinct_fact_refs` and selects explicit
+  Problem, Opportunity, and Product View pointers directly. It changes one
+  production file by `+3/-35` lines, with no authoring schema, prompt, reviewer,
+  model call, time-tier, or transaction-kernel change. Three generic regressions
+  fail before the correction and pass after it; missing/dual decisions and
+  unowned references remain rejected. Focused proof passes `262` tests and the
+  complete Greenfield runtime/install regression set passes `1,195` in `125.94s`.
+  Replaying the exact original initial/review responses reproduces the failure
+  before the correction and stages/commits `83` sealed writes with readback after
+  it. This is retained-response proof, not a fresh model result. Replay evidence:
+  `/private/tmp/odylith-greenfield-v37-citation-replay.USmmx6`; transaction
+  `60fe8d1056529c57f03e0bb1ee7d3dff08b7582575442caf0d65e4ae56e4f37c`.
+  Independent rendered review finds no P0/P1 on Project, Radar, and all three
+  Atlas views at desktop/mobile sizes, including SVG fallback and explicit
+  asset failure. Repetition across labeled Product View/Expected Outcome roles
+  is advisory. Captures remain under `/private/tmp/odylith-v37-replay-browser.gyApPH`.
+  Bare-probe absent Casebook/base-runtime assets are not clean-install proof;
+  retain that boundary and rebuild the exact candidate for the public gate.
+
 - V29 Public Rejection And V30 Hypothesis (2026-09-04): Immutable wheel
   `2c7bcd38317938ddba15a0b8668c0c1a25271818786759a35905b827b4e9ac4d`
   is rejected by the first public case. Flood shelter completed one deep

@@ -286,23 +286,10 @@ def _role_projection(
 
     if role == "project":
         story_refs = _exact_refs(visible_fact_refs, "/product_story")
-        path_refs = _exact_refs(visible_fact_refs, "/first_path")
-        problem_refs = _distinct_fact_refs(
-            fact_values,
-            _exact_refs(visible_fact_refs, "/problem"),
-            [*story_refs, *path_refs],
-        )
+        problem_refs = _exact_refs(visible_fact_refs, "/problem")
         customer_refs = customer_context_refs
-        opportunity_refs = _distinct_fact_refs(
-            fact_values,
-            _exact_refs(visible_fact_refs, "/opportunity"),
-            [*story_refs, *path_refs],
-        )
-        view_refs = _distinct_fact_refs(
-            fact_values,
-            _exact_refs(visible_fact_refs, "/product_view"),
-            [*story_refs, *path_refs],
-        )
+        opportunity_refs = _exact_refs(visible_fact_refs, "/opportunity")
+        view_refs = _exact_refs(visible_fact_refs, "/product_view")
         for field, refs in (("problem", problem_refs), ("opportunity", opportunity_refs), ("product_view", view_refs)):
             if not refs and assumption_refs.get(field) in visible_fact_refs:
                 refs.append(assumption_refs[field])
@@ -970,25 +957,6 @@ def _exact_refs(refs: Sequence[str], *paths: str) -> list[str]:
 
 def _prefix_refs(refs: Sequence[str], *prefixes: str) -> list[str]:
     return [ref for ref in refs if ref.startswith(prefixes)]
-
-
-def _distinct_fact_refs(
-    values: Mapping[str, str],
-    candidate_refs: Sequence[str],
-    excluded_refs: Sequence[str],
-) -> list[str]:
-    """Keep a semantic slot only when its accepted value is not reused filler."""
-
-    excluded_values = {
-        values[ref]
-        for ref in excluded_refs
-        if ref in values and values[ref]
-    }
-    return [
-        ref
-        for ref in candidate_refs
-        if ref in values and values[ref] and values[ref] not in excluded_values
-    ]
 
 
 def _first_value(values: Mapping[str, str], refs: Sequence[str]) -> str:

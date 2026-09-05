@@ -76,6 +76,23 @@ raising its cap. Preserve this stable checkpoint, then build one immutable local
 distribution for the unchanged public 14-case clean-install, browser, recovery,
 and model-profile gate. The final untouched holdout remains closed.
 
+That immutable installed gate rejects v37 on its first flood case in 53.599
+seconds: a complete accepted Product View equals Product Story, and Radar's
+stale value-equality filter deletes its pointer before requiring the citation.
+The correction under evaluation is removal of that downstream semantic veto,
+not another author/reviewer schema or call. First replay the exact retained
+response and independent citation controls, then inspect actual rendered
+repetition before another fresh installed attempt. Separate installed recovery
+proof passes; public semantic/browser/model-profile quality remains unproven.
+The isolated veto removal now passes 1,195 Greenfield runtime/install regressions
+in 125.94 seconds, plus 262 focused checks. The exact failed response replays to
+83 committed sealed writes with readback; three generic citation controls fail
+before and pass after. Keep authoring v37, both model calls, schemas and budgets
+unchanged. The bounded desktop/mobile Project/Radar/Atlas review has no P0/P1,
+including diagram fallback/error states. Commit and rebuild this correction;
+the earlier 4,497-test full gate remains historical evidence before this one-file
+correction, and only the new installed run can qualify the new distribution.
+
 Atlas renderer size exception: the existing oversized `render_mermaid_catalog.py`
 owns the client script that overwrote the generated-only failure-state fix.
 The viewer asset lifecycle now has one 39-line template owner; the renderer drops
