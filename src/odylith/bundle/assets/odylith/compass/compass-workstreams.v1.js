@@ -521,7 +521,10 @@
         const scopedAreaFiles = scopedFileSplit.source.length ? scopedFileSplit.source : scopedFiles;
         const scopedAreas = focusAreaSummary(scopedAreaFiles);
         const scopedSignalSummary = buildSignalSummary(scopedKindCounts);
-        const hasScopedImplementationSignal = Boolean(scopedKindCounts.implementation || scopedKindCounts.decision || scopedKindCounts.statement);
+        const hasScopedImplementationSignal = (
+          !timelineSummaryGovernanceOnly({ events: strictScopedEvents })
+          && Boolean(scopedKindCounts.implementation || scopedKindCounts.decision || scopedKindCounts.statement)
+        );
         const implementationFocusParts = [];
         if (hasStrictScopeLink && scopedAreas.length) {
           implementationFocusParts.push(`implementing ${joinWithAnd(scopedAreas)}`);

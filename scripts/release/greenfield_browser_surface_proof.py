@@ -10,7 +10,14 @@ from urllib.parse import urlparse
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
 )
+from greenfield_browser_authored_contract import (
+    atlas_degraded_state_assertion_issues as _atlas_degraded_state_assertion_issues,
+    atlas_diagram_coverage_issues as _atlas_diagram_coverage_issues,
+    atlas_error_state_assertion_issues as _atlas_error_state_assertion_issues,
+    atlas_state_assertion_issues as _atlas_state_assertion_issues,
+)
 from greenfield_browser_authored_contract import authored_structure_issues, story_rows_match_payload
+from greenfield_browser_capture import capture_state_screenshot as _capture_state_screenshot
 from local_release_smoke import _serve_directory
 
 BROWSER_SURFACE_PROOF_SCOPE = "per_case_headless_generated_surface_state_matrix"
@@ -31,7 +38,7 @@ BROWSER_REQUIRED_SURFACE_STATES = {
     "radar": ("normal", "invalid-recovery"),
     "registry": ("normal", "invalid-recovery"),
     "casebook": ("normal", "empty", "invalid-recovery"),
-    "atlas": ("normal", "invalid-recovery"),
+    "atlas": ("normal", "degraded", "error", "invalid-recovery"),
     "compass": ("normal", "invalid-recovery"),
     "shell": ("normal", "invalid-recovery"),
 }
@@ -161,6 +168,29 @@ def _viewport_surface_issues(
             screenshot_output_dir=screenshot_output_dir,
             coverage_cell=(viewport, "atlas", "normal"),
             covered=covered,
+        )
+    )
+    issues.extend(
+        _atlas_generated_state_issues(
+            context=context,
+            base_url=base_url,
+            timeout_ms=timeout_ms,
+            screenshot_output_dir=screenshot_output_dir,
+            coverage_cell=(viewport, "atlas", "error"),
+            covered=covered,
+            degrade_svg=True,
+            fail_png=True,
+        )
+    )
+    issues.extend(
+        _atlas_generated_state_issues(
+            context=context,
+            base_url=base_url,
+            timeout_ms=timeout_ms,
+            screenshot_output_dir=screenshot_output_dir,
+            coverage_cell=(viewport, "atlas", "degraded"),
+            covered=covered,
+            degrade_svg=True,
         )
     )
     issues.extend(
@@ -766,6 +796,9 @@ def _atlas_generated_state_issues(
     screenshot_output_dir: Path | None = None,
     coverage_cell: tuple[str, str, str] = ("desktop", "atlas", "normal"),
     covered: set[tuple[str, str, str]] | None = None,
+    degrade_svg: bool = False,
+    fail_png: bool = False,
+    initial_diagram: str = "",
 ) -> tuple[str, ...]:
     page, runtime_issues = _new_page(
         context,
@@ -776,7 +809,24 @@ def _atlas_generated_state_issues(
     )
     issues: list[str] = []
     try:
-        response = page.goto(f"{base_url}/odylith/index.html?tab=atlas", wait_until="domcontentloaded")
+        if degrade_svg:
+            page.route(
+                "**/odylith/atlas/source/*.svg",
+                lambda route: route.fulfill(
+                    status=200,
+                    content_type="image/svg+xml",
+                    body="<svg",
+                ),
+            )
+        if fail_png:
+            page.route(
+                "**/odylith/atlas/source/*.png",
+                lambda route: route.fulfill(status=200, content_type="image/png", body="broken"),
+            )
+        selected = f"&diagram={quote(initial_diagram)}" if initial_diagram else ""
+        response = page.goto(
+            f"{base_url}/odylith/index.html?tab=atlas{selected}", wait_until="domcontentloaded"
+        )
         if response is None or not response.ok:
             issues.append("browser surface atlas generated state did not load shell route")
             return tuple(issues)
@@ -785,34 +835,86 @@ def _atlas_generated_state_issues(
         if frame is None:
             issues.append("browser surface atlas generated state did not expose iframe content")
             return tuple(issues)
-        frame.locator("button[data-diagram]").first.wait_for(timeout=timeout_ms)
-        frame.locator(".diagram-item.active button[data-diagram]").first.wait_for(timeout=timeout_ms)
-        frame.locator("#viewerImage[src]").first.wait_for(timeout=timeout_ms)
-        frame.wait_for_function(
-            """() => {
-                const image = document.querySelector("#viewerImage");
-                return Boolean(image && image.getAttribute("src") && image.complete);
-            }""",
-            timeout=timeout_ms,
-        )
-        active_button = frame.locator(".diagram-item.active button[data-diagram]").first
-        image_state = frame.locator("#viewerImage").first.evaluate(
-            """(image) => ({
-                loaded: Boolean(image.complete && (image.naturalWidth || image.naturalHeight)),
-                src: String(image.currentSrc || image.src || "")
-            })"""
-        )
-        issues.extend(
-            _atlas_state_assertion_issues(
-                diagram_count=frame.locator("button[data-diagram]").count(),
-                stat_total_text=str(frame.locator("#statTotal").inner_text(timeout=timeout_ms)),
-                active_diagram=str(active_button.get_attribute("data-diagram") or ""),
-                displayed_diagram=str(frame.locator("#diagramId").inner_text(timeout=timeout_ms)),
-                displayed_title=str(frame.locator("#diagramTitle").inner_text(timeout=timeout_ms)),
-                image_src=str(image_state.get("src", "") if isinstance(image_state, dict) else ""),
-                image_loaded=bool(image_state.get("loaded", False) if isinstance(image_state, dict) else False),
+        buttons = frame.locator("button[data-diagram]")
+        buttons.first.wait_for(timeout=timeout_ms)
+        if initial_diagram:
+            recovered = str(frame.locator("#diagramId").inner_text(timeout=timeout_ms)).strip()
+            if not recovered or recovered.upper() == initial_diagram.upper():
+                issues.append("browser surface atlas invalid diagram did not recover to a valid diagram")
+        diagram_count = buttons.count()
+        expected_diagrams: list[str] = []
+        visited_diagrams: list[str] = []
+        for index in range(diagram_count):
+            button = buttons.nth(index)
+            expected = str(button.get_attribute("data-diagram") or "").strip()
+            expected_diagrams.append(expected)
+            button.click()
+            frame.wait_for_function(
+                """(diagramId) => String(document.querySelector("#diagramId")?.textContent || "").trim().toUpperCase() === diagramId.toUpperCase()""",
+                arg=expected,
+                timeout=timeout_ms,
             )
-        )
+            active_button = frame.locator(".diagram-item.active button[data-diagram]").first
+            displayed = str(frame.locator("#diagramId").inner_text(timeout=timeout_ms)).strip()
+            visited_diagrams.append(displayed)
+            if fail_png:
+                error = frame.locator("#viewerAssetError").first
+                error.wait_for(state="visible", timeout=timeout_ms)
+                error_state = error.evaluate(
+                    """(alert) => ({
+                        role: alert.getAttribute("role") || "",
+                        text: alert.textContent || "",
+                        visible: !alert.hidden,
+                        imageHidden: Boolean(document.querySelector("#viewerImage")?.hidden)
+                    })"""
+                )
+                issues.extend(
+                    _atlas_error_state_assertion_issues(
+                        alert_text=str(error_state.get("text", "")),
+                        alert_role=str(error_state.get("role", "")),
+                        alert_visible=bool(error_state.get("visible", False)),
+                        image_hidden=bool(error_state.get("imageHidden", False)),
+                    )
+                )
+                continue
+            frame.wait_for_function(
+                """() => {
+                    const image = document.querySelector("#viewerImage");
+                    return Boolean(image && image.complete && (image.naturalWidth || image.naturalHeight));
+                }""",
+                timeout=timeout_ms,
+            )
+            image_state = frame.locator("#viewerImage").first.evaluate(
+                """(image) => ({
+                    fallbackApplied: image.dataset.fallbackApplied === "1",
+                    loaded: Boolean(image.complete && (image.naturalWidth || image.naturalHeight)),
+                    src: String(image.currentSrc || image.src || "")
+                })"""
+            )
+            issues.extend(
+                _atlas_state_assertion_issues(
+                    diagram_count=diagram_count,
+                    stat_total_text=str(frame.locator("#statTotal").inner_text(timeout=timeout_ms)),
+                    active_diagram=str(active_button.get_attribute("data-diagram") or ""),
+                    displayed_diagram=displayed,
+                    displayed_title=str(frame.locator("#diagramTitle").inner_text(timeout=timeout_ms)),
+                    image_src=str(image_state.get("src", "") if isinstance(image_state, dict) else ""),
+                    image_loaded=bool(image_state.get("loaded", False) if isinstance(image_state, dict) else False),
+                )
+            )
+            if degrade_svg:
+                issues.extend(
+                    _atlas_degraded_state_assertion_issues(
+                        image_src=str(image_state.get("src", "") if isinstance(image_state, dict) else ""),
+                        image_loaded=bool(image_state.get("loaded", False) if isinstance(image_state, dict) else False),
+                        fallback_applied=bool(
+                            image_state.get("fallbackApplied", False)
+                            if isinstance(image_state, dict)
+                            else False
+                        ),
+                    )
+                )
+        issues.extend(_atlas_diagram_coverage_issues(expected_diagrams, visited_diagrams))
         issues.extend(_layout_issues(page.locator("body"), label="tooling shell"))
         issues.extend(_layout_issues(frame.locator("body"), label="atlas"))
     except Exception as exc:
@@ -832,42 +934,15 @@ def _atlas_invalid_route_issues(
     coverage_cell: tuple[str, str, str] = ("desktop", "atlas", "invalid-recovery"),
     covered: set[tuple[str, str, str]] | None = None,
 ) -> tuple[str, ...]:
-    page, runtime_issues = _new_page(
-        context,
-        issue_prefix="browser surface atlas invalid diagram",
+    return _atlas_generated_state_issues(
+        context=context,
+        base_url=base_url,
+        timeout_ms=timeout_ms,
         screenshot_output_dir=screenshot_output_dir,
-        coverage_cells=(coverage_cell,),
+        coverage_cell=coverage_cell,
         covered=covered,
+        initial_diagram="D-999999",
     )
-    issues: list[str] = []
-    invalid_diagram = "D-999999"
-    try:
-        response = page.goto(
-            f"{base_url}/odylith/index.html?tab=atlas&diagram={invalid_diagram}",
-            wait_until="domcontentloaded",
-        )
-        if response is None or not response.ok:
-            issues.append("browser surface atlas invalid diagram did not load invalid route")
-            return tuple(issues)
-        _dismiss_shell_obstructions(page)
-        frame = _content_frame(page=page, frame_selector="#frame-atlas", timeout_ms=timeout_ms)
-        if frame is None:
-            issues.append("browser surface atlas invalid diagram did not expose iframe content")
-            return tuple(issues)
-        frame.locator("button[data-diagram]").first.wait_for(timeout=timeout_ms)
-        frame.locator("#diagramId").wait_for(timeout=timeout_ms)
-        displayed = str(frame.locator("#diagramId").inner_text(timeout=timeout_ms)).strip()
-        if not displayed or displayed.upper() == invalid_diagram:
-            issues.append("browser surface atlas invalid diagram did not recover to a valid diagram")
-        frame.locator("#viewerImage[src]").first.wait_for(timeout=timeout_ms)
-        issues.extend(_layout_issues(page.locator("body"), label="tooling shell"))
-        issues.extend(_layout_issues(frame.locator("body"), label="atlas"))
-    except Exception as exc:
-        issues.append(f"browser surface atlas invalid diagram failed recovery render: {type(exc).__name__}: {exc}")
-    finally:
-        issues.extend(runtime_issues())
-        page.close()
-    return tuple(issues)
 
 
 def _compass_invalid_route_issues(
@@ -1025,50 +1100,6 @@ def _dismiss_shell_obstructions(page: Any) -> None:
             control.first.click()
 
 
-def _atlas_state_assertion_issues(
-    *,
-    diagram_count: int,
-    stat_total_text: str,
-    active_diagram: str,
-    displayed_diagram: str,
-    displayed_title: str,
-    image_src: str,
-    image_loaded: bool,
-) -> tuple[str, ...]:
-    issues: list[str] = []
-    if diagram_count <= 0:
-        issues.append("browser surface atlas rendered no generated diagram buttons")
-    stat_total = _non_negative_int(stat_total_text)
-    if stat_total <= 0:
-        issues.append("browser surface atlas rendered no generated diagram count")
-    elif diagram_count > 0 and stat_total != diagram_count:
-        issues.append("browser surface atlas generated diagram count disagrees with rendered list")
-    active = str(active_diagram or "").strip()
-    displayed = str(displayed_diagram or "").strip()
-    if not active:
-        issues.append("browser surface atlas has no active generated diagram")
-    if not displayed:
-        issues.append("browser surface atlas did not hydrate the selected diagram id")
-    elif active and displayed.upper() != active.upper():
-        issues.append("browser surface atlas selected diagram id disagrees with active list state")
-    if len(str(displayed_title or "").strip().split()) < 2:
-        issues.append("browser surface atlas did not hydrate a meaningful generated diagram title")
-    parsed = urlparse(str(image_src or ""))
-    if "/odylith/atlas/source/" not in (parsed.path or "") or not (parsed.path or "").endswith((".svg", ".png")):
-        issues.append("browser surface atlas viewer did not load a generated diagram asset")
-    if not image_loaded:
-        issues.append("browser surface atlas generated diagram asset did not finish loading")
-    return tuple(issues)
-
-
-def _non_negative_int(value: str) -> int:
-    try:
-        number = int(str(value or "").strip())
-    except ValueError:
-        return 0
-    return max(0, number)
-
-
 def _new_page(
     context: Any,
     *,
@@ -1114,22 +1145,6 @@ def _new_page(
         return tuple(issues)
 
     return page, _runtime_issues
-
-
-def _capture_state_screenshot(*, page: Any, output_dir: Path, state_name: str) -> Path:
-    token = str(state_name or "").strip().casefold()
-    if not token or any(not (char.isalnum() or char == "-") for char in token):
-        raise RuntimeError("browser screenshot state name is unsafe")
-    directory = Path(output_dir).expanduser()
-    if directory.is_symlink():
-        raise RuntimeError("browser screenshot output is unsafe")
-    directory.mkdir(parents=True, exist_ok=True)
-    directory = directory.resolve()
-    target = directory / f"{token}.png"
-    if target.exists() or target.is_symlink():
-        raise RuntimeError(f"browser screenshot already exists: {token}")
-    page.screenshot(path=str(target), full_page=True)
-    return target
 
 
 def _record_request_failure(request: Any, failed_requests: list[str]) -> None:

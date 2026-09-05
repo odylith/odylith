@@ -21,6 +21,7 @@ class StructuredAuthoringProvider:
     def __init__(self, response: Mapping[str, Any] | None) -> None:
         self.response = response
         self.calls = 0
+        self.requests: list[object] = []
 
     def generate_structured(self, *, request: object) -> Mapping[str, Any] | None:
         self.last_request_system_prompt = str(getattr(request, "system_prompt", ""))
@@ -29,7 +30,20 @@ class StructuredAuthoringProvider:
         )
         self.last_request_model = str(getattr(request, "model", ""))
         self.last_request_reasoning_effort = str(getattr(request, "reasoning_effort", ""))
+        self.requests.append(request)
         self.calls += 1
+        if str(getattr(request, "schema_name", "")) == "greenfield_semantic_source_review":
+            payload = getattr(request, "prompt_payload", {})
+            candidate = payload.get("candidate") if isinstance(payload, Mapping) else None
+            facts = candidate.get("facts") if isinstance(candidate, Mapping) else None
+            if not isinstance(candidate, Mapping) or not isinstance(facts, Mapping):
+                return None
+            return copy.deepcopy(
+                {
+                    "product_story": facts.get("product_story"),
+                    "components": candidate.get("components"),
+                }
+            )
         return copy.deepcopy(dict(self.response)) if self.response is not None else None
 
 
@@ -60,7 +74,7 @@ def authored_response(
     fact_indexes: dict[str, int] = {}
     first_path_fact_indexes: list[int] = []
     for field, value in intent.items():
-        if field in {"assumptions", "ambiguities"}:
+        if field in {"assumptions", "ambiguities", "component_responsibilities"}:
             continue
         rows = (
             path_segments
@@ -202,7 +216,6 @@ def _relation_rows(
                     relation.get("action_verb_quote") or event_quote
                 ),
                 "target_quote": target_quote,
-                "recovery_path": bool(relation.get("recovery_path")),
             }
         )
     return rows
@@ -337,6 +350,7 @@ def _component_responsibility_relation_rows(
                     systems=systems,
                     fact_indexes=fact_indexes,
                 ),
+                "responsibilities": [],
             }
         ]
     if owners is None:
@@ -348,22 +362,30 @@ def _component_responsibility_relation_rows(
         raise ValueError("authored fixture must bind every component responsibility exactly once")
     rows: list[dict[str, Any]] = []
     for index, owner in enumerate(owner_values):
-        responsibility_fact_index = fact_indexes.get(
-            f"/component_responsibilities/{index}",
-            0,
-        )
         owner_fact_quote = _owner_fact_quote(
             owner=owner,
             intent=intent,
             systems=systems,
             fact_indexes=fact_indexes,
         )
-        if not responsibility_fact_index or not owner_fact_quote:
+        if not owner_fact_quote:
             raise ValueError("authored fixture component responsibility owner is not a selected fact")
-        rows.append(
-            {
+        group = next(
+            (
+                row
+                for row in rows
+                if row["owner_fact_quote"] == owner_fact_quote
+            ),
+            None,
+        )
+        if group is None:
+            group = {
                 "owner_fact_quote": owner_fact_quote,
+                "responsibilities": [],
             }
+            rows.append(group)
+        group["responsibilities"].append(
+            {"quote": responsibilities[index], "occurrence": 1}
         )
     return rows
 
@@ -402,7 +424,6 @@ def _default_first_path_relations(intent: Mapping[str, Any]) -> tuple[dict[str, 
             "action_verb_quote": first_path,
             "target_quote": "",
             "visible_result_quote": first_path,
-            "recovery_path": False,
         },
     )
 

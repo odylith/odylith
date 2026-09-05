@@ -66,7 +66,6 @@ def _author_terminal_intent(
                         "action_verb_quote": "records",
                         "target_quote": "each donation",
                         "visible_result_quote": "",
-                        "recovery_path": False,
                     },
                     {
                         "actor_kind": "product",
@@ -76,7 +75,6 @@ def _author_terminal_intent(
                         "action_verb_quote": "releases",
                         "target_quote": "each batch",
                         "visible_result_quote": result_quote,
-                        "recovery_path": False,
                     },
                 ],
             )

@@ -1,14 +1,15 @@
 """Stage one source-cited model-authored Greenfield intent before confirmation.
 
-This is the shipped prompt-to-intent owner. It accepts one structured model
-result, verifies and seals its cited evidence through the Product Intent
-envelope, and stages the candidate for deterministic package compilation. It
-contains no lexical semantic fallback.
+This is the shipped prompt-to-intent owner. It accepts one fully validated
+canonical model result, verifies and seals its cited evidence through the
+Product Intent envelope, and stages the candidate for deterministic package
+compilation. It contains no lexical semantic fallback.
 """
 
 from __future__ import annotations
 
 from collections.abc import Mapping
+from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -228,7 +229,7 @@ def _authoring_receipt(
     )
     return {
         "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
-        "semantic_model_call_count": 1,
+        "semantic_model_call_count": getattr(authored, "semantic_model_call_count", 1),
         "tier": authored.tier,
         "elapsed_seconds": authored.elapsed_seconds,
         "model_profile": model_profile,
@@ -240,13 +241,7 @@ def _authoring_receipt(
 
 
 def _preserve_model_authored_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
-    copied: dict[str, Any] = {}
-    for key, value in intent.items():
-        if isinstance(value, list):
-            copied[key] = [str(item) for item in value]
-        else:
-            copied[key] = str(value or "")
-    return copied
+    return deepcopy(dict(intent))
 
 
 def _without_edit_command(value: str) -> str:

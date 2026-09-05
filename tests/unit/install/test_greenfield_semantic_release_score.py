@@ -841,7 +841,6 @@ def _relation_annotation(prompt: str) -> dict[str, object]:
                 "visible_result_sha256": hashlib.sha256(
                     b"accepted permit receipt"
                 ).hexdigest(),
-                "recovery_path": False,
             }
         ],
         "context_relations": [],
@@ -966,7 +965,6 @@ def _authored_semantics(
             "action_verb_quote": "submits",
             "target_quote": "one signed permit",
             "visible_result_quote": visible_result,
-            "recovery_path": False,
         }
     ]
     components = [
@@ -1204,7 +1202,6 @@ def _rich_relation_bundle(
                 "action_verb_quote": action,
                 "target_quote": target,
                 "visible_result_quote": visible,
-                "recovery_path": False,
             }
         )
         expected_events.append(
@@ -1224,7 +1221,6 @@ def _rich_relation_bundle(
                 "action_verb_sha256": _sha(action),
                 "target_sha256": _sha(target) if target else "",
                 "visible_result_sha256": _sha(visible) if visible else "",
-                "recovery_path": False,
             }
         )
     context_specs = (
@@ -1346,7 +1342,6 @@ def _repeated_relation_evidence() -> tuple[GreenfieldMatrixCase, dict[str, objec
                 "action_verb_quote": "records",
                 "target_quote": "one receipt",
                 "visible_result_quote": visible,
-                "recovery_path": False,
             }
         )
         expected_events.append(
@@ -1366,7 +1361,6 @@ def _repeated_relation_evidence() -> tuple[GreenfieldMatrixCase, dict[str, objec
                 "action_verb_sha256": _sha("records"),
                 "target_sha256": _sha("one receipt"),
                 "visible_result_sha256": _sha(visible) if visible else "",
-                "recovery_path": False,
             }
         )
     semantics = {

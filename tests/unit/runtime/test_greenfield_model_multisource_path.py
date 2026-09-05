@@ -86,7 +86,6 @@ def test_model_relation_ownership_is_real_and_regex_free() -> None:
             "actor_quote",
             "action_quote",
             "target_quote",
-            "recovery_path",
         }
     )
     assert greenfield_model_direct_evidence_graph.MODEL_EVENT_SCHEMA["minItems"] == 1
@@ -156,7 +155,6 @@ def _case() -> tuple[str, str, dict[str, object], list[str], list[dict[str, obje
             "action_verb_quote": "submits",
             "target_quote": "a berth request",
             "visible_result_quote": "",
-            "recovery_path": False,
         },
         {
             "actor_kind": "external_system",
@@ -165,7 +163,6 @@ def _case() -> tuple[str, str, dict[str, object], list[str], list[dict[str, obje
             "action_verb_quote": "supplies",
             "target_quote": "clearance",
             "visible_result_quote": "",
-            "recovery_path": False,
         },
         {
             "actor_kind": "product",
@@ -175,7 +172,6 @@ def _case() -> tuple[str, str, dict[str, object], list[str], list[dict[str, obje
             "action_verb_quote": "records",
             "target_quote": "approved berth state",
             "visible_result_quote": "",
-            "recovery_path": False,
         },
         {
             "actor_kind": "product",
@@ -185,7 +181,6 @@ def _case() -> tuple[str, str, dict[str, object], list[str], list[dict[str, obje
             "action_verb_quote": "shows",
             "target_quote": "the approved placement",
             "visible_result_quote": segments[3],
-            "recovery_path": False,
         },
     ]
     return prompt, edit_evidence, intent, segments, relations
@@ -225,7 +220,7 @@ def test_two_document_dispersed_path_materializes_exact_typed_package(
         authoring_provider=provider,
     )
 
-    assert provider.calls == 1
+    assert provider.calls == 2
     assert candidate["first_path"] == "\n".join(segments)
     sealed_relations = candidate["authored_semantics"]["first_path_relations"]
     for row in sealed_relations:

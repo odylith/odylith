@@ -16,7 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
 from odylith.runtime.governance.artifact_tribunal import _bind_verified_source_custody
 
 AUTHORED_SEMANTICS_KEY = "authored_semantics"
-AUTHORED_SEMANTICS_VERSION = "odylith.greenfield.authored-semantics.v11"
+AUTHORED_SEMANTICS_VERSION = "odylith.greenfield.authored-semantics.v12"
 AUTHORED_RELATION_SET_SHA256_KEY = "authored_relation_set_sha256"
 AUTHORED_PROJECTION_ORIGIN = "model_authored_typed_intent"
 AUTHORED_SEMANTIC_ROOT = f"intent.{AUTHORED_SEMANTICS_KEY}"
@@ -57,7 +57,6 @@ FIRST_PATH_RELATION_FIELDS = frozenset(
         "action_verb_quote",
         "target_quote",
         "visible_result_quote",
-        "recovery_path",
     }
 )
 FIRST_PATH_CONTEXT_RELATION_FIELDS = frozenset(
@@ -169,7 +168,6 @@ def validate_first_path_relations(
         action_verb_quote = str(raw.get("action_verb_quote") or "")
         target_quote = str(raw.get("target_quote") or "")
         visible_result_quote = str(raw.get("visible_result_quote") or "")
-        recovery_path = raw.get("recovery_path")
         if (
             order != expected_order
             or not isinstance(source_start, int)
@@ -195,7 +193,6 @@ def validate_first_path_relations(
             )
             or (event_start, event_end) in seen_projection_events
             or not action_verb_quote
-            or not isinstance(recovery_path, bool)
         ):
             raise GreenfieldAuthoredSemanticsError("Greenfield authoring returned invalid first-path relations")
         require_first_path_actor_binding(
@@ -265,7 +262,6 @@ def validate_first_path_relations(
                 "action_verb_quote": action_verb_quote,
                 "target_quote": target_quote,
                 "visible_result_quote": visible_result_quote,
-                "recovery_path": recovery_path,
             }
         )
     if not visible_seen:
@@ -550,13 +546,6 @@ def authored_component_relation_facts(
                         if str(event.get("visible_result_quote") or "")
                     )
                 ),
-                "recovery_events": list(
-                    dict.fromkeys(
-                        str(event.get("event_quote") or "")
-                        for event in events
-                        if bool(event.get("recovery_path")) and str(event.get("event_quote") or "")
-                    )
-                ),
             }
         )
     return tuple(rows)
@@ -799,7 +788,7 @@ def _authored_relations_from_intent(
     relations = semantics.get("first_path_relations")
     if not isinstance(relations, Sequence) or isinstance(relations, (str, bytes, bytearray)):
         raise GreenfieldAuthoredSemanticsError("Greenfield authored semantics are malformed")
-    actor_values = intent.get("human_actors")
+    actor_values = intent.get("human_actors", ())
     if not isinstance(actor_values, Sequence) or isinstance(actor_values, (str, bytes, bytearray)):
         raise GreenfieldAuthoredSemanticsError("Greenfield authored semantics are missing typed human actors")
     first_path_relations = validate_first_path_relations(
@@ -1142,7 +1131,6 @@ FIRST_PATH_RELATION_SCHEMA: dict[str, Any] = {
             "action_verb_quote": {"type": "string"},
             "target_quote": {"type": "string"},
             "visible_result_quote": {"type": "string"},
-            "recovery_path": {"type": "boolean"},
         },
     },
 }

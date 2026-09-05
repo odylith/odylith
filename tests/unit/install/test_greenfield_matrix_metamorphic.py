@@ -439,7 +439,6 @@ def _typed_semantic_snapshot(
             "action_verb_quote": action,
             "target_quote": target,
             "visible_result_quote": visible_result,
-            "recovery_path": False,
         }
     ]
     contexts = [

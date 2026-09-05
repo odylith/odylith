@@ -41,7 +41,6 @@ def _authored_proposal(tmp_path: Path) -> dict[str, object]:
             "action_verb_quote": "submits",
             "target_quote": "berth request",
             "visible_result_quote": "",
-            "recovery_path": False,
         },
         {
             "actor_kind": "product",
@@ -51,7 +50,6 @@ def _authored_proposal(tmp_path: Path) -> dict[str, object]:
             "action_verb_quote": "records",
             "target_quote": "assigned berth",
             "visible_result_quote": "Berth 7",
-            "recovery_path": False,
         },
     )
     proof_boundary = "A planner can replay the recorded assignment and verify Berth 7."
@@ -161,7 +159,6 @@ def test_authored_component_spec_is_structural_and_bypasses_legacy_owners(
     assert "### Owner-bound events" in spec
     assert "### Event targets" in spec
     assert "### Visible results" in spec
-    assert "### Recovery events" in spec
     assert "### State context" in spec
     assert "### External dependencies" in spec
     assert "### Operational constraints" in spec
@@ -172,7 +169,6 @@ def test_authored_component_spec_is_structural_and_bypasses_legacy_owners(
     assert "> assigned berth" in spec
     assert "> Harbor Ledger" in spec
     assert "> Retain the recorded berth assignment." in spec
-    assert "> No source-custodied recovery event was authored for this component." in spec
     assert "- Workstream: `B-001`" in spec
     assert "- Diagram: `D-001`" in spec
     assert set(authoring_input["component_contract"]) == {
@@ -181,7 +177,6 @@ def test_authored_component_spec_is_structural_and_bypasses_legacy_owners(
         "owner_bound_events",
         "event_targets",
         "visible_results",
-        "recovery_events",
         "state_context",
         "external_dependencies",
         "operational_constraints",
@@ -235,9 +230,9 @@ def test_authored_component_projection_rejects_mutated_relation_authority(tmp_pa
     intent = mutated["intent"]
     assert isinstance(intent, dict)
     relations = intent["authored_semantics"]["first_path_relations"]
-    relations[1]["recovery_path"] = True
+    relations[1]["unsupported_classification"] = "recovery"
 
-    with pytest.raises(ValueError, match="do not match sealed Product Intent authority"):
+    with pytest.raises(ValueError, match="invalid first-path relations"):
         greenfield_apply_components.render_prewrite_component_specs(
             root=tmp_path,
             proposal=mutated,

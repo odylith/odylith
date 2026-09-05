@@ -57,10 +57,12 @@ def _authored_structural_manifest() -> dict[str, object]:
                 "reason": "typed_structural_validation",
             },
             "semantic_compiler": {
+                "version": "odylith.greenfield.authored-semantic-validation.v2",
                 "status": "passed",
-                "semantic_owner": "single_model_authoring_response",
+                "semantic_owner": "validated_model_authored_intent",
                 "post_authoring_interpretation_calls": 0,
             },
+            "model_authoring": {"semantic_model_call_count": 1},
         }
     )
     return manifest
@@ -114,12 +116,18 @@ def test_write_transaction_custody_rejects_manifest_or_receipt_product_intent_dr
     assert "write transaction Product Intent facts hash does not match the create payload summary" in receipt_issues
 
 
-def test_authored_structural_validation_replaces_legacy_prose_lenses_only_when_authenticated() -> None:
+def test_authored_structural_validation_accepts_one_or_two_calls_only_when_authenticated() -> None:
     scoring = _scoring_module()
     manifest = _authored_structural_manifest()
 
     assert scoring._typed_structural_validation_passed(manifest) is True  # noqa: SLF001
     assert scoring._manifest_issues(manifest) == ()  # noqa: SLF001
+
+    model_authoring = manifest["model_authoring"]
+    assert isinstance(model_authoring, dict)
+    model_authoring["semantic_model_call_count"] = 2
+
+    assert scoring._typed_structural_validation_passed(manifest) is True  # noqa: SLF001
 
     semantic_compiler = manifest["semantic_compiler"]
     assert isinstance(semantic_compiler, dict)
@@ -129,6 +137,18 @@ def test_authored_structural_validation_replaces_legacy_prose_lenses_only_when_a
     assert "pre-confirm quality lens report did not pass" in scoring._manifest_issues(  # noqa: SLF001
         manifest
     )
+
+
+def test_authored_structural_validation_rejects_invalid_semantic_call_counts() -> None:
+    scoring = _scoring_module()
+
+    for invalid_count in (True, 0, 3):
+        manifest = _authored_structural_manifest()
+        model_authoring = manifest["model_authoring"]
+        assert isinstance(model_authoring, dict)
+        model_authoring["semantic_model_call_count"] = invalid_count
+
+        assert scoring._typed_structural_validation_passed(manifest) is False  # noqa: SLF001
 
 
 def test_authored_structural_validation_does_not_promote_unproven_semantic_lenses() -> None:

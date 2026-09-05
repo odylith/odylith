@@ -115,6 +115,13 @@ const payload = window["__ODYLITH_MERMAID_DATA__"] || {};
     const stageEl = document.getElementById("viewerStage");
     const imageEl = document.getElementById("viewerImage");
     const zoomReadoutEl = document.getElementById("zoomReadout");
+    const imageErrorEl = document.createElement("div");
+    imageErrorEl.id = "viewerAssetError";
+    imageErrorEl.className = "alert";
+    imageErrorEl.setAttribute("role", "alert");
+    imageErrorEl.setAttribute("aria-live", "assertive");
+    imageErrorEl.hidden = true;
+    stageEl.appendChild(imageErrorEl);
 
     let activeList = allDiagrams.slice();
     let activeIndex = 0;
@@ -913,14 +920,29 @@ initSharedQuickTooltips();
       summaryEl.textContent = diagram.summary;
       readGuideEl.textContent = diagramReadGuide(diagram);
 
-      imageEl.onload = () => applyInitialView(diagram);
+      imageEl.onload = () => {
+        imageEl.hidden = false;
+        imageErrorEl.hidden = true;
+        imageErrorEl.classList.remove("visible");
+        imageErrorEl.textContent = "";
+        applyInitialView(diagram);
+      };
       imageEl.onerror = () => {
         const fallback = String(diagram.source_png_href || "").trim();
-        if (!fallback) return;
-        if (imageEl.dataset.fallbackApplied === "1") return;
+        if (!fallback || imageEl.dataset.fallbackApplied === "1") {
+          imageEl.hidden = true;
+          imageErrorEl.textContent = "Diagram preview unavailable. Use Prev or Next above to open another diagram, or review the diagram summary and source links below.";
+          imageErrorEl.hidden = false;
+          imageErrorEl.classList.add("visible");
+          return;
+        }
         imageEl.dataset.fallbackApplied = "1";
         imageEl.src = fallback;
       };
+      imageEl.hidden = false;
+      imageErrorEl.hidden = true;
+      imageErrorEl.classList.remove("visible");
+      imageErrorEl.textContent = "";
       imageEl.dataset.fallbackApplied = "";
       applyImageBoxSizing(diagram);
       imageEl.src = diagram.source_svg_href;

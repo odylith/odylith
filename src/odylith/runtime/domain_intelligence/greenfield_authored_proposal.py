@@ -37,8 +37,9 @@ from odylith.runtime.domain_intelligence.greenfield_command_text import shell_qu
 from odylith.runtime.domain_intelligence.greenfield_intent_shaping_prompt import (
     accepted_intent_shaping_prompt,
 )
-from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
-    missing_source_fact_notice,
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
+    assumption_rows,
+    decision_copy,
 )
 from odylith.runtime.domain_intelligence.project_intelligence_binding import (
     PROJECT_INTELLIGENCE_BINDING_KEY,
@@ -94,13 +95,14 @@ def build_authored_greenfield_proposal(
     internal_systems = _strings(confirmed_intent.get("internal_systems"))
     external_systems = _strings(confirmed_intent.get("external_systems"))
     non_goals = _strings(confirmed_intent.get("non_goals"))
-    assumptions = _strings(confirmed_intent.get("assumptions"))
+    assumptions = assumption_rows(confirmed_intent.get("assumptions", []))
     ambiguities = _strings(confirmed_intent.get("ambiguities"))
     operational_constraints = _strings(confirmed_intent.get("operational_constraints"))
     evidence_requirements = _strings(confirmed_intent.get("evidence_requirements"))
     success_metrics = _strings(confirmed_intent.get("success_metrics"))
     artifact_depth = plan_greenfield_artifact_depth(
         actor_count=len(_unique(human_actors)),
+        event_count=len(relations),
         internal_system_count=len(_unique(internal_systems)),
         external_system_count=len(_unique(external_systems)),
         ambiguity_count=len(_unique(ambiguities)),
@@ -147,7 +149,10 @@ def build_authored_greenfield_proposal(
         relations=relations,
         context_relations=first_path_context_relations,
         component_responsibility_relations=component_responsibility_relations,
-        diagram_slugs=all_diagram_slugs,
+        diagram_slugs={
+            role: all_diagram_slugs[role]
+            for role in artifact_depth.diagram_roles
+        },
         workstream_roles=artifact_depth.workstream_roles,
     )
     diagram_roles = artifact_depth.diagram_roles
@@ -217,7 +222,10 @@ def build_authored_greenfield_proposal(
             "write_guardrail": "No product records are written until CONFIRM publishes the sealed transaction.",
             "next_best_action": "Review the sealed project package and choose CONFIRM, EDIT, or REJECT.",
         },
-        "assumptions": _assumption_rows([*assumptions, *ambiguities]),
+        "assumptions": _assumption_rows([
+            *assumptions,
+            *({"applies_to": "general", "statement": value} for value in ambiguities),
+        ]),
         "open_questions": [],
         "risks": [],
         "security_compliance": {},
@@ -225,7 +233,7 @@ def build_authored_greenfield_proposal(
         "project_brief": _project_brief(
             title=title,
             product_story=product_story,
-            problem=_text(confirmed_intent.get("problem")),
+            problem=decision_copy(confirmed_intent, "problem"),
             first_path=first_path,
             visible_result=visible_result,
             proof_boundary=proof_boundary,
@@ -467,14 +475,12 @@ def _semantic_model(
             "target_entity": _text(row.get("target_quote")),
             "mutation": _text(row.get("event_quote")),
             "visible_result": bool(_text(row.get("visible_result_quote"))),
-            "recovery_path": bool(row.get("recovery_path")),
             "text": _text(row.get("event_quote")),
             "source_kind": "accepted_first_path",
         }
         for index, row in enumerate(relations, start=1)
     ]
     first_event = relations[0]
-    recovery = next((_text(row.get("event_quote")) for row in relations if bool(row.get("recovery_path"))), "")
     component_refs = []
     for component in components:
         contract = component.get("component_contract") if isinstance(component.get("component_contract"), Mapping) else {}
@@ -490,7 +496,6 @@ def _semantic_model(
                 "owner_bound_events": _strings(contract.get("owner_bound_events")),
                 "event_targets": _strings(contract.get("event_targets")),
                 "visible_results": _strings(contract.get("visible_results")),
-                "recovery_events": _strings(contract.get("recovery_events")),
             }
         )
     workstreams = [
@@ -504,7 +509,7 @@ def _semantic_model(
         for row in backlog
     ]
     return {
-        "schema_version": "odylith.greenfield.semantic_model.v1",
+        "schema_version": "odylith.greenfield.semantic_model.v2",
         "first_path_contract": {
             "actor": _text(first_event.get("actor_quote")),
             "action": _text(first_event.get("action_verb_quote")),
@@ -513,7 +518,6 @@ def _semantic_model(
             "required_fields": [],
             "persistence": "",
             "visible_result": visible_result,
-            "recovery_path": recovery,
             "deferred_scope": [],
             "capability": first_path,
             "raw_path": first_path,
@@ -561,17 +565,13 @@ def _project_brief(
     evidence_requirements: Sequence[str],
     command_prompt: str,
 ) -> dict[str, Any]:
-    problem_statement = problem or missing_source_fact_notice("the user problem")
+    problem_statement = problem
     sections = [
         _brief_section("Product outcome", product_story, "The accepted product outcome."),
         _brief_section(
             "User problem",
             problem_statement,
-            (
-                "The source-stated user problem."
-                if problem
-                else "Explicit evidence gap; no user problem was inferred."
-            ),
+            "The source-stated need or an explicitly provisional decision assumption.",
         ),
         _brief_section("First path", first_path, "The accepted first complete user path."),
         _brief_section("Visible result", visible_result, "The terminal result typed in the first-path relation."),
@@ -685,15 +685,16 @@ def _release_plan(
     }
 
 
-def _assumption_rows(values: Sequence[str]) -> list[dict[str, str]]:
+def _assumption_rows(values: Sequence[Mapping[str, str]]) -> list[dict[str, str]]:
     return [
         {
             "id": f"A-{index:03d}",
-            "assumption": value,
+            "assumption": value["statement"],
+            "applies_to": value["applies_to"],
             "impact": "Advisory only; it is not accepted product truth.",
             "validate_with": "Additional source evidence is required before acceptance.",
         }
-        for index, value in enumerate(_unique(values), start=1)
+        for index, value in enumerate(assumption_rows(values), start=1)
     ]
 
 

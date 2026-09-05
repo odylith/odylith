@@ -1,6 +1,6 @@
 # Bug Index
 
-Last updated (UTC): 2026-09-04
+Last updated (UTC): 2026-09-05
 
 ## Open Bugs
 
@@ -9,7 +9,7 @@ Last updated (UTC): 2026-09-04
 | CB-328 | 2026-09-03 | Protected greenfield holdout targets a superseded evaluator contract | P1 | domain-intelligence-greenfield | FixedPendingRelease | [2026-09-03-protected-greenfield-holdout-targets-a-superseded-evaluator-contract.md](2026-09-03-protected-greenfield-holdout-targets-a-superseded-evaluator-contract.md) |
 | CB-329 | 2026-09-03 | Greenfield release proof diverges from product semantic owners | P1 | domain-intelligence-greenfield | Open | [2026-09-03-greenfield-release-proof-diverges-from-product-semantic-owners.md](2026-09-03-greenfield-release-proof-diverges-from-product-semantic-owners.md) |
 | CB-327 | 2026-09-03 | Greenfield rejects a product title that aliases its internal system | P1 | domain-intelligence | FixedPendingRelease | [2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md](2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md) |
-| CB-326 | 2026-09-03 | Greenfield flat fact arrays permit invalid singular cardinality | P1 | domain-intelligence | FixedPendingRelease | [2026-09-03-greenfield-flat-fact-arrays-permit-invalid-singular-cardinality.md](2026-09-03-greenfield-flat-fact-arrays-permit-invalid-singular-cardinality.md) |
+| CB-326 | 2026-09-03 | Greenfield flat fact arrays permit invalid singular cardinality | P1 | domain-intelligence | InProgress | [2026-09-03-greenfield-flat-fact-arrays-permit-invalid-singular-cardinality.md](2026-09-03-greenfield-flat-fact-arrays-permit-invalid-singular-cardinality.md) |
 | CB-325 | 2026-09-02 | Greenfield recovery proof bound compiler identity to absolute install path | P1 | domain-intelligence-greenfield | FixedPendingRelease | [2026-09-02-greenfield-recovery-proof-bound-compiler-identity-to-absolute-install-path.md](2026-09-02-greenfield-recovery-proof-bound-compiler-identity-to-absolute-install-path.md) |
 | CB-324 | 2026-08-09 | Source metadata bypassed product intent custody and triggered generic fallback | P1 | domain-intelligence-greenfield | FixedPendingRelease | [2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md](2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md) |
 | CB-323 | 2026-08-06 | Greenfield sealed intent cannot prove atomic accepted fact custody | P0 | domain-intelligence | InProgress | [2026-08-06-greenfield-sealed-intent-cannot-prove-atomic-accepted-fact-custody.md](2026-08-06-greenfield-sealed-intent-cannot-prove-atomic-accepted-fact-custody.md) |

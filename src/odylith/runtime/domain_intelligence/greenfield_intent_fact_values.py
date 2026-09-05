@@ -44,7 +44,13 @@ def intent_text_at_path(intent: Mapping[str, Any], path: str) -> str:
     ):
         return ""
     index = int(parts[1])
-    return value[index] if index < len(value) and isinstance(value[index], str) else ""
+    if index >= len(value):
+        return ""
+    row = value[index]
+    if parts[0] == "assumptions" and isinstance(row, Mapping):
+        statement = row.get("statement")
+        return statement if isinstance(statement, str) else ""
+    return row if isinstance(row, str) else ""
 
 
 def intent_text_rows(value: Any) -> tuple[str, ...]:
@@ -73,12 +79,6 @@ def event_target_is_source_bound(*, event_quote: str, target_quote: str) -> bool
     """Accept only a target quoted inside its exact source-bound event."""
 
     return not target_quote or target_quote in event_quote
-
-
-def missing_source_fact_notice(subject: str) -> str:
-    """Render an explicit evidence gap without inventing product meaning."""
-
-    return f"The source does not state {subject}. Validate this gap before implementation."
 
 
 def consistency_source_span_receipts_valid(
@@ -133,5 +133,4 @@ __all__ = [
     "intent_terminal_result_values",
     "intent_text_at_path",
     "intent_text_rows",
-    "missing_source_fact_notice",
 ]

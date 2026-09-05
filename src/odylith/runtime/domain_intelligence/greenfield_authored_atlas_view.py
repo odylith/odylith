@@ -384,21 +384,39 @@ def _context_view(
                 f"Accepted human actor in the first product path: {actor}",
             )
         )
-    lines.extend(["  end", f'  subgraph product["{_mermaid_label(title)}"]'])
+    component_rows = [
+        (
+            _required_string(component.get("label"), "component label"),
+            _required_string(component.get("responsibility"), "component responsibility"),
+        )
+        for component in components
+    ]
+    sole_title_product = (
+        len(component_rows) == 1
+        and " ".join(component_rows[0][0].split()).casefold()
+        == " ".join(title.split()).casefold()
+    )
+    lines.append("  end")
+    lines.append(
+        f'  product["{_mermaid_label(title)}"]'
+        if sole_title_product
+        else f'  subgraph product["{_mermaid_label(title)}"]'
+    )
     boxes.append(
         _box(
             "product",
             title,
             "Product boundary",
-            f"Contains the candidate product-owned components for {title}.",
+            (
+                f"Candidate product boundary and sole product-owned component for {title}."
+                if sole_title_product
+                else f"Contains the candidate product-owned components for {title}."
+            ),
         )
     )
-    for index, component in enumerate(components, start=1):
-        label = _required_string(component.get("label"), "component label")
-        responsibility = _required_string(
-            component.get("responsibility"),
-            "component responsibility",
-        )
+    for index, (label, responsibility) in enumerate(component_rows, start=1):
+        if sole_title_product:
+            continue
         lines.append(f'    component{index}["{_mermaid_label(label)}"]')
         boxes.append(
             _box(
@@ -408,7 +426,8 @@ def _context_view(
                 f"Accepted responsibility: {responsibility}",
             )
         )
-    lines.append("  end")
+    if not sole_title_product:
+        lines.append("  end")
     if externals:
         lines.append('  subgraph external_systems["Accepted external systems"]')
         boxes.append(
@@ -436,7 +455,11 @@ def _context_view(
         externals=externals,
         components=components,
     ):
-        target = f"component{component_index}" if component_index else "product"
+        target = (
+            f"component{component_index}"
+            if component_index and not sole_title_product
+            else "product"
+        )
         lines.append(f"  external{external_index} -.-> {target}")
     return _styled_mermaid(lines), boxes
 

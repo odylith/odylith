@@ -35,7 +35,7 @@ _RELATION_REGRESSION_FIXTURE = json.loads(
 _RELATION_FAILURE_CASES = tuple(
     (row["mutation"], set(row["expected_categories"]))
     for row in _RELATION_REGRESSION_FIXTURE["cases"]
-    if row["expected_outcome"] == "reject"
+    if row["expected_outcome"] == "reject" and row["mutation"] != "wrong_recovery_path"
 )
 
 
@@ -149,6 +149,24 @@ def test_snapshot_rejects_false_carried_actor_marker() -> None:
     )
 
 
+def test_snapshot_rejects_removed_recovery_classification() -> None:
+    case, _annotation, result = _rich_relation_bundle("relations-removed-recovery")
+    snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
+    relations = snapshot["authored_semantics"]["first_path_relations"]
+    relations[0]["recovery_path"] = True
+
+    _keys, issues = _snapshot_event_keys(
+        relations,
+        facts=snapshot["facts"],
+        source_bytes=combined_prompt_evidence_source(
+            prompt=case.prompt,
+            edit_evidence=str(case.confirmed_intent_markdown or ""),
+        ).encode("utf-8"),
+    )
+
+    assert issues == ("sealed first_path_relations[1] has an invalid closed schema",)
+
+
 @pytest.mark.parametrize(
     ("damage", "expected_categories"),
     _RELATION_FAILURE_CASES,
@@ -200,8 +218,6 @@ def test_relation_fidelity_rejects_structurally_valid_wrong_relations(
         semantics["first_path_relations"][2]["action_verb_quote"] = "show"
     elif damage == "wrong_target":
         semantics["first_path_relations"][2]["target_quote"] = "accepted receipt"
-    elif damage == "wrong_recovery_path":
-        semantics["first_path_relations"][2]["recovery_path"] = True
     elif damage == "mutual_context_omission":
         semantics["first_path_context_relations"] = []
         annotation["relation_fidelity"]["context_relations"] = []

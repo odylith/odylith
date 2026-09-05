@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from typing import Any
+from urllib.parse import urlparse
 
 
 def story_rows_match_payload(
@@ -123,4 +124,101 @@ def authored_structure_issues(rendered: Any, authored_facts: Any) -> tuple[str, 
     return tuple(issues)
 
 
-__all__ = ["authored_structure_issues", "story_rows_match_payload"]
+def atlas_state_assertion_issues(
+    *,
+    diagram_count: int,
+    stat_total_text: str,
+    active_diagram: str,
+    displayed_diagram: str,
+    displayed_title: str,
+    image_src: str,
+    image_loaded: bool,
+) -> tuple[str, ...]:
+    """Require one selected Atlas item to be a loaded generated diagram."""
+
+    issues: list[str] = []
+    if diagram_count <= 0:
+        issues.append("browser surface atlas rendered no generated diagram buttons")
+    try:
+        stat_total = max(0, int(str(stat_total_text or "").strip()))
+    except ValueError:
+        stat_total = 0
+    if stat_total <= 0:
+        issues.append("browser surface atlas rendered no generated diagram count")
+    elif diagram_count > 0 and stat_total != diagram_count:
+        issues.append("browser surface atlas generated diagram count disagrees with rendered list")
+    active = str(active_diagram or "").strip()
+    displayed = str(displayed_diagram or "").strip()
+    if not active:
+        issues.append("browser surface atlas has no active generated diagram")
+    if not displayed:
+        issues.append("browser surface atlas did not hydrate the selected diagram id")
+    elif active and displayed.upper() != active.upper():
+        issues.append("browser surface atlas selected diagram id disagrees with active list state")
+    if len(str(displayed_title or "").strip().split()) < 2:
+        issues.append("browser surface atlas did not hydrate a meaningful generated diagram title")
+    parsed = urlparse(str(image_src or ""))
+    if "/odylith/atlas/source/" not in (parsed.path or "") or not (parsed.path or "").endswith(
+        (".svg", ".png")
+    ):
+        issues.append("browser surface atlas viewer did not load a generated diagram asset")
+    if not image_loaded:
+        issues.append("browser surface atlas generated diagram asset did not finish loading")
+    return tuple(issues)
+
+
+def atlas_diagram_coverage_issues(
+    expected_diagrams: Iterable[str],
+    visited_diagrams: Iterable[str],
+) -> tuple[str, ...]:
+    expected = tuple(str(value or "").strip() for value in expected_diagrams)
+    visited = tuple(str(value or "").strip() for value in visited_diagrams)
+    if expected and expected == visited and all(expected):
+        return ()
+    return ("browser surface atlas did not visit every emitted diagram in list order",)
+
+
+def atlas_degraded_state_assertion_issues(
+    *,
+    image_src: str,
+    image_loaded: bool,
+    fallback_applied: bool,
+) -> tuple[str, ...]:
+    parsed = urlparse(str(image_src or ""))
+    if (
+        image_loaded
+        and fallback_applied
+        and "/odylith/atlas/source/" in (parsed.path or "")
+        and (parsed.path or "").endswith(".png")
+    ):
+        return ()
+    return ("browser surface atlas degraded SVG did not recover with its readable PNG asset",)
+
+
+def atlas_error_state_assertion_issues(
+    *,
+    alert_text: str,
+    alert_role: str,
+    alert_visible: bool,
+    image_hidden: bool,
+) -> tuple[str, ...]:
+    expected_actions = ("prev", "next", "summary", "source links")
+    normalized = str(alert_text or "").strip().casefold()
+    if (
+        alert_visible
+        and image_hidden
+        and str(alert_role or "").strip().casefold() == "alert"
+        and all(action in normalized for action in expected_actions)
+    ):
+        return ()
+    return ("browser surface atlas asset failure does not expose accessible recovery guidance",)
+
+
+__all__ = [
+    "atlas_degraded_state_assertion_issues",
+    "atlas_diagram_coverage_issues",
+    "atlas_error_state_assertion_issues",
+    "atlas_state_assertion_issues",
+    "authored_structure_issues",
+    "story_rows_match_payload",
+]

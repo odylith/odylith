@@ -9,6 +9,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import assumption_rows
+
 from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
     ATOMIC_FACT_LEDGER_VERSION,
     append_atomic_source_spans,
@@ -149,6 +151,11 @@ def product_facts_payload(intent: Mapping[str, Any]) -> dict[str, Any]:
         if key not in intent:
             continue
         value = intent.get(key)
+        if key == "assumptions":
+            rows = assumption_rows(value)
+            if rows:
+                payload[key] = rows
+            continue
         if key in LIST_FACT_KEYS:
             rows = _exact_string_rows(value)
             if rows:
@@ -760,7 +767,7 @@ def _has_fact_value(value: Any) -> bool:
     if isinstance(value, str):
         return bool(value)
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        return any(isinstance(row, str) and bool(row) for row in value)
+        return any(bool(row) for row in value)
     return value is not None
 
 

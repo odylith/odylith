@@ -61,7 +61,6 @@ _EVENT_FIELDS = frozenset(
         "action_verb_sha256",
         "target_sha256",
         "visible_result_sha256",
-        "recovery_path",
     }
 )
 _EVENT_ACTOR_KIND_INDEX = 7
@@ -310,7 +309,6 @@ def _annotation_event_keys(
         action_sha = str(row.get("action_verb_sha256") or "")
         target_sha = str(row.get("target_sha256") or "")
         visible_sha = str(row.get("visible_result_sha256") or "")
-        recovery_path = row.get("recovery_path")
         if order != index:
             issues.append(f"{label} order must be contiguous and one-based")
         if not _source_hash_matches(source_bytes, source_range, event_sha):
@@ -363,8 +361,6 @@ def _annotation_event_keys(
                 issues.append(f"{label} visible result is not atom-grounded")
         elif role_hashes.get((index, "visible_result_quote"), frozenset()):
             issues.append(f"{label} omits an atom-grounded visible result")
-        if not isinstance(recovery_path, bool):
-            issues.append(f"{label} recovery_path must be boolean")
         keys.append(
             (
                 "event",
@@ -381,7 +377,6 @@ def _annotation_event_keys(
                 action_sha,
                 target_sha,
                 visible_sha,
-                recovery_path,
             )
         )
     if len(keys) != len(set(keys)):
@@ -530,7 +525,6 @@ def _snapshot_event_keys(
         action_quote = str(row.get("action_verb_quote") or "")
         target_quote = str(row.get("target_quote") or "")
         visible_quote = str(row.get("visible_result_quote") or "")
-        recovery_path = row.get("recovery_path")
         if order != index:
             issues.append(f"{label} order is not contiguous and one-based")
         if not _exact_slice(source_bytes, source_range, event_quote):
@@ -556,8 +550,6 @@ def _snapshot_event_keys(
             target_quote=target_quote,
         ):
             issues.append(f"{label} target is not exactly grounded in its event")
-        if not isinstance(recovery_path, bool):
-            issues.append(f"{label} recovery_path is not boolean")
         if (
             not _actor_path_matches_kind(actor_fact_path, actor_kind)
             or _projection_value(facts, actor_fact_path) != actor_fact_quote
@@ -598,7 +590,6 @@ def _snapshot_event_keys(
                 _sha256(action_quote) if action_quote else "",
                 _sha256(target_quote) if target_quote else "",
                 _sha256(visible_quote) if visible_quote else "",
-                recovery_path,
             )
         )
     if not keys:

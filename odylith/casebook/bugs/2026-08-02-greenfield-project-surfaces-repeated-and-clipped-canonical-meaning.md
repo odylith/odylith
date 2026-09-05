@@ -411,6 +411,264 @@
   immutable installed public `14/14` matrix, independent review, and a newly
   commissioned blind holdout pass.
 
+- V31 Independent Reopening (2026-09-04): Source-cited action decomposition
+  and omission of unjustified component-boundary diagrams now pass independent
+  review. However, all three reviewed installed packages publish Problem,
+  Opportunity, and Product View as repeated instructions to validate a missing
+  source fact. The V29 gap-notice replacement is honest but insufficient for
+  useful required Radar decisions. Replace this mechanism with explicit,
+  source-derived conservative assumptions under the existing assumption custody
+  boundary; never elevate them to accepted facts or repeat Product Story as
+  filler. Semiconductor also labels tracking failed stress runs as a recovery
+  event without evidence of recovery. Preserve actual source actions while
+  eliminating unsupported recovery classification. The immutable V31 public
+  campaign is stopped after four automated passes; those scores do not close
+  these P1 findings. Evidence remains in
+  `/private/tmp/odylith-greenfield-v31-public.jaNSNn/public-evidence` and
+  `/private/tmp/odylith-greenfield-v31-resume.IiDeiF/evidence`. Require bounded
+  positive, negative, equivalent-source and rendered-quality comparison before
+  another full installed campaign. Do not add semantic regex, phrase rules,
+  retry cascades, a second model call, or post-confirm repair.
+
+- V31 browser review also finds same-title product/component self-containment,
+  an unearned one-event sequence, and incomplete proof from default-diagram and
+  viewport-only checks. Collapse exact title-owned context, omit sequence when
+  fewer than two events exist, and inspect every emitted diagram with full-page
+  mobile captures. Actual SVG failure must exercise the PNG fallback; failure
+  of both assets must expose a clear accessible error rather than only a broken
+  image. These are presentation and proof corrections, not new semantic owners.
+  The implementation handoff also omits a proof fragment only when its exact
+  bytes already occur in the accepted first path; distinct proof remains visible.
+
+- The bounded assumption review catches a confirmation-equivalence defect:
+  flattening typed rows hides `applies_to`, although that target changes the
+  sealed hash and governed destination. The text preview and shaping view now
+  label each target. A swapped-target regression requires both a changed hash
+  and changed human-visible preview. All seven focused assumption checks pass;
+  this closes the mechanical visibility flaw, not generated semantic quality.
+
+- The first fresh v32 source comparison stages the unchanged semiconductor
+  request in 51.364 seconds under rescue, with five exact actions and no false
+  recovery field. Reject its human quality: Product View is only the platform
+  name and Opportunity is only an action fragment. The three optional decision
+  selectors had generic citation schemas despite distinct semantic jobs; the
+  compact prompt also lost the prior title-versus-experience distinction.
+  Put those definitions at the three schema fields, retain null plus targeted
+  assumption when source does not answer them, and exclude extraction narration
+  from general product assumptions. This is one bounded authoring-contract
+  correction, not a downstream lexical repair. Evidence transaction:
+  `/private/tmp/odylith-greenfield-v32-source.EfRGyu/semiconductor/.odylith/runtime/greenfield/pending/021a05a73fc3cdc0b70f31b63f961ec58029f8ecf1dcecb712a75ab1a1d95394/product-create-transaction.v1.json`.
+
+- The same-source, same-rescue v32 field-contract attempt receives no model
+  response and exits in 80.510 seconds at the pinned 80-second model deadline,
+  with no transaction staged. Preserve it as a failure, not a semantic result.
+  Compare the corrected contract on the existing standard Terra-medium profile
+  inside 60 seconds; do not extend rescue or retry within a consumer request.
+  Confirmation review also requires explicit labels for source-stated Problem,
+  Customer, Opportunity, and Product View, not only targeted assumptions.
+
+- The standard Terra-medium comparison returns in 44.883 seconds but fails
+  before staging on parallel responsibility/owner cardinality (CB-326). Its
+  retained response also repeats absent-evidence notices in Problem and
+  Opportunity assumptions despite the compact instruction against them. This
+  falsifies the claim that field definitions alone solved useful conservative
+  completion. Preserve both the structural and human-quality failures. Do not
+  count a later ownership-only fix as a quality win or introduce phrase filters.
+  The operator's achievable-convergence instruction and source-goal audit make
+  one-call and quote-only restrictions provisional; useful pre-preview repair is
+  allowed only as a bounded, evidence-justified alternative inside 60/90/120,
+  never as post-confirm work or an unbounded retry cascade.
+
+- V33 Narrow Discriminator (2026-09-04): The unchanged semiconductor request
+  returns in 40.885 seconds under standard. The model now groups five exact
+  responsibilities under one owner, advancing past CB-326, but selects the first
+  event without its explicit source actor. Existing actor-carry validation
+  rejects that first event before preview. Decision assumptions still describe
+  absent evidence and extraction choices rather than useful provisional product
+  decisions. Retained source-frozen response and report:
+  `/private/tmp/odylith-greenfield-v33-discriminator.w1ucuP/grouped-semiconductor`.
+  This candidate remains rejected; do not weaken the actor guard, hand-repair the
+  response, or count source-valid responsibilities as end-to-end success.
+  Compare a compact outcome-led authoring instruction with explicit source-clause
+  selection and decision roles before considering an additional model pass.
+  This comparison must replace instructions, not append another exception list,
+  and must keep the same structured wire, models, guards, and deadlines.
+
+- V34 Source Advancement (2026-09-04): The outcome-led authoring contract
+  stages the same standard request in 30.866 seconds and its Markdown-equivalent
+  control in 43.839 seconds. Both preserve five ordered actions, exact product
+  ownership and source custody, engineering as the accepted beneficiary, and
+  release-readiness proof; both provide three useful explicitly provisional
+  decisions instead of missing-evidence notices. The unchanged guard still
+  rejects the retained malformed initial event and an unrelated-actor control.
+  Commit-only publication of the first package succeeds with 83 sealed writes
+  and verified readback. These are bounded source results, not release approval.
+  Reading the committed Radar finds one projection wording defect: after
+  decision assumptions are consumed above, its empty generic section incorrectly
+  says there are no explicit assumptions. Say there are no additional assumptions
+  without duplicating their text. Independent cross-domain, browser, full-source,
+  immutable installed and holdout gates remain open.
+
+- V34 Rendered Proof Boundary (2026-09-04): A bare, uninstalled source test
+  repository cannot satisfy the full installed browser matrix: it has no base
+  Casebook or runtime-state assets. Independently, the Atlas both-assets error
+  fix was incorrectly made only in generated JavaScript and its bundle mirror.
+  The owning inline client in `render_mermaid_catalog.py` regenerated the old
+  behavior. Correct that producer and prove newly rendered output; retained
+  screenshots or edited mirrors are not source closure. Independent review also
+  finds Compass `active_implementation` flags on a governance-only acceptance;
+  trace its metadata and consumer consequence before treating it as resolved.
+  The full source run is deliberately stopped at 368 passing and five failing
+  tests: all five still require the now-unjustified one-event sequence diagram.
+  Replace that stale quota with exact context/state/boundary roles and absence
+  of a one-event sequence; the focused cross-domain file then passes 6/6.
+
+- V34 Independent Gate (2026-09-04): The flood standard control stages in
+  31.564 seconds but independent review rejects its ownership: the five city-staff
+  actions are correctly human events, yet the component claims those same actions
+  as product-owned responsibilities instead of its source-stated enabling
+  capability. Product View similarity is advisory for this compact source, not a
+  new hard blocker. Stop tuning the instruction as if the two semiconductor passes
+  proved generalization. Compare one narrowly scoped, bounded pre-confirm
+  ownership review on the retained failure and the valid product-owned control,
+  using only remaining time from the original 60-second tier. This is an
+  experiment, not an implemented retry path, release-floor relaxation, or
+  permission to change source meaning after confirmation.
+- Compass trace confirms a separate P1: its loader drops explicit governance
+  category and user-intent evidence metadata; downstream focus and timeline views
+  then label the decision as implementation. Preserve and consume the typed
+  metadata end to end, with governance-only, actual-implementation and mixed-event
+  controls. Keep decision events valid in other contexts; do not add a
+  Greenfield-specific phrase classifier.
+
+- V35 Bounded Ownership Comparison (2026-09-04): A real component-only review
+  corrects the retained flood candidate to its exact outer enabling capability in
+  6.200 seconds, preserving all five human events. The same review preserves all
+  five valid semiconductor product actions in 6.954 seconds. These are retained
+  candidate experiments, not fresh complete requests or release passes. The
+  production candidate permits one correction only after a typed source-bound
+  ownership conflict, inside the original remaining model window and a 20-second
+  review cap. Complete candidate validation, exact custody, fixed tiers, and the
+  post-confirm boundary remain unchanged. Keep failed and corrected responses in
+  proof evidence; reject a repeated failure rather than adding another retry.
+
+- V35 Fresh Request Proof (2026-09-04): Identical source bytes
+  `ad9ec5d6c7ebc0884ae11b7600c308422b90beedd6ea5d9935aaa4bfbedaeb38`
+  stage flood in 46.764 seconds with two observed calls, including an 8.625-second
+  ownership correction. All five human actions remain intact and one exact outer
+  capability belongs to the product. The valid semiconductor control stages in
+  46.588 seconds with one call and all five product-owned actions; it pays no
+  correction-call cost. Both remain standard, below 60 seconds. Flood commits
+  83 sealed writes and reaches CLOSED with verified readback. These are source
+  discriminators, not clean-install or independent release approval.
+  The full source gate reports 1,148 passes and 53 failures: most are one stale
+  shared semantic-receipt fixture; two other fixtures still omit the declared
+  case expectation or use string assumptions. Migrate those fixture contracts,
+  retain all transaction assertions, and rerun before checkpointing. Do not
+  relax production validation to accept retired receipts or assumption shapes.
+- Compass bounded correction passes 65 focused checks including actual browser
+  labels and source/package parity. Explicit governance-only transactions remain
+  decisions without implementation focus; ordinary decisions, true implementation,
+  and mixed transactions preserve their prior implementation behavior.
+- V35 Independent Adjudication (2026-09-04): Both reviewers close the prior
+  ownership defect on the exact flood output; Compass governance classification
+  is also correct in committed runtime evidence. One reviewer classifies the
+  retained invocation wording as advisory and another as P1. Maintainer
+  adjudication treats it as P1 because Project home, Brief outcome, and Radar
+  Scope repeatedly claim that the product outcome is to create a proposal, and
+  the replay evidence carries that instruction forward. The five-step workflow
+  remains correct, so this is not P0. V35 is not ready for immutable public proof.
+  Compare a bounded semantic-source review with elimination of the redundant
+  broad narrative owner; reject lexical invocation stripping and downstream
+  surface-specific reinterpretation. No additional third call, broader runtime
+  retry framework, or softened release floor is permitted.
+- V36 Hypothesis (2026-09-04): The current instruction already excludes proposal
+  invocation, so appending another instruction is not independent enforcement.
+  Removing product_story only from downstream views would hide bad canonical
+  selection and spread replacement decisions across many consumers. Replace the
+  v35 conditional ownership-only review with one mandatory source-claim review of
+  product_story and component groups; preserve all other fields and the original
+  two-call/time ceilings. The retained flood comparison corrects both claims in
+  8.860 seconds. The control times out at the deliberately conservative 8.412-second
+  allowance, which double-reserves projection headroom already included in its
+  prior complete duration. Retain that failed experiment and require actual
+  full-path timing; do not claim v36 qualifies from a composed estimate.
+- V36 Fresh Control Rejection (2026-09-04): Frozen source
+  `fecfba5a0c678355022f94f932a24f87bea6cc7b4bb92c639cdb9f16cda89f81`
+  completes flood shelter in 38.238 seconds with two calls, commits 83 sealed
+  writes, and passes independent committed-artifact and rendered-diagram review
+  with no open P0/P1. The semiconductor positive control fails in 54.107 seconds:
+  its initial complete product story and five product-owned responsibilities are
+  replaced by a title-only story and an empty component list during the mandatory
+  review (12.774 seconds of a 13.973-second allowance). Complete revalidation
+  rejects the review and creates no records. The review schema permits an empty
+  list that the authoring schema and runtime reject. This is a product failure,
+  not a successful latency observation. Retain both raw candidates and the review
+  in `/private/tmp/odylith-greenfield-v33-discriminator.w1ucuP/source-review-semiconductor/`.
+  V36 is rejected for promotion pending a bounded preservation/contract correction
+  and fresh evidence; no third call, automatic acceptance of the initial candidate,
+  relaxed custody, or additional release gate is authorized by this result.
+- V36 Bounded Schema Correction (2026-09-04): Independent adjudication selects
+  only shared-schema parity for the next discriminator: move the existing
+  nonempty component requirement into MODEL_COMPONENT_SCHEMA and remove the
+  author-only override. No new response protocol or retry is added. A failing
+  schema-identity regression turns green; all 16 source-review tests pass,
+  including rejection of an empty review without silently accepting the original.
+  The exact semiconductor rerun must also preserve the complete product story
+  and five actions inside 60 seconds. Merely returning a nonempty component group
+  is insufficient; a repeated story reduction rejects the mandatory review.
+- V36 Shared-Schema Result And V37 Owner Correction (2026-09-04): Frozen source
+  `64691cb51af24fd661558c2efc54dc0bededa4caa5b8fba63e66a1b88887cc0c`
+  passes fresh flood in 38.277 seconds and semiconductor in 47.511 seconds,
+  including two calls. Both commit 83 sealed writes with verified readback. The
+  complete stories and all five correctly owned events survive review. Independent
+  review closes flood but finds one semiconductor P1: the activity `engineering
+  review` becomes an accepted human/customer and a false Atlas participant.
+  Authoring schema, runtime admission, and material authority all unconditionally
+  require a human even for product-only source workflows. V37 removes that
+  unsupported requirement while keeping every event source-bound to its typed
+  human, product, or external actor. Reuse targeted assumptions for a provisional
+  Customer; remove Radar's first-human Customer inference so the model owns the
+  customer decision explicitly. No additional review field, call, lexical
+  classifier, or repair mechanism is added. Predictions: the exact semiconductor
+  source has no invented participant and a visibly assumed customer, with five
+  product actions, complete story and proof intact within 60 seconds; flood keeps
+  its real humans. Product-only, external-only, missing-customer, dual-customer,
+  and invalid actor-reference tests precede fresh model evidence.
+  The frozen broad baseline passes 4,485 tests and fails one real hygiene guard:
+  the Atlas degraded-asset correction grew its existing renderer by 14 lines.
+  Retain that behavior but fix ownership/size rather than raising the pinned cap.
+- V37 Source Qualification (2026-09-04): Frozen source
+  `aa33acc41785a34b56d8f4c198feaa62bffe3ff5f3a01da21e95e2316d4f36b5`
+  completes the unchanged flood proposal in 44.189 seconds and semiconductor in
+  35.053 seconds, each with two calls. Both commit 83 sealed writes and pass
+  readback; semiconductor commit-only publication is separately measured at
+  1.12 seconds. Independent review finds no P0/P1 in either committed package:
+  flood preserves city staff and five human actions; semiconductor has no accepted
+  human/customer fact, labels its customer assumption, and preserves five product
+  actions and the release-readiness proof. The consumed customer assumption is
+  not duplicated in generic Radar assumptions. An empty accepted-human container
+  in the semiconductor context image is advisory only, not a new release gate.
+  Retained evidence roots are `optional-humans-final-flood` and
+  `optional-humans-final-semiconductor` under the v33 discriminator root. A prior
+  v37 authoring attempt also passed at 53.432 seconds before the two-line shared
+  decision-field consumption fix; do not attribute the timing difference to that
+  projection edit. Focused machine-only/external-only and source-review proof
+  passes 39 tests; independent patch audit finds no custody hole. Atlas's viewer
+  asset lifecycle now has one 39-line owner, the renderer falls to 3,358 lines
+  under its unchanged 3,363 cap, and rendered bytes remain identical. Its focused
+  hygiene/render boundary passes 201 tests. Consolidate this candidate through
+  the full source gate, immutable installed public matrix, and independent release
+  review before opening an untouched holdout; do not start another mechanism wave.
+
+- V37 Complete Source Gate (2026-09-04): On the frozen candidate after governed
+  refresh, all runtime and install unit tests plus HIIT pre-confirm and Compass
+  browser integration pass: `4,497 passed in 534.12s`. The prior Atlas size failure
+  is resolved under the unchanged cap. No source edits occurred during the run.
+  This qualifies the stable checkpoint and immutable installed public gate; it
+  does not establish installed generalization, all model-profile floors, or final
+  holdout quality. Keep this case open until those existing gates pass.
+
 - V29 Public Rejection And V30 Hypothesis (2026-09-04): Immutable wheel
   `2c7bcd38317938ddba15a0b8668c0c1a25271818786759a35905b827b4e9ac4d`
   is rejected by the first public case. Flood shelter completed one deep

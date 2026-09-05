@@ -233,7 +233,6 @@ def _annotation(case: GreenfieldMatrixCase) -> dict[str, object]:
                     "action_verb_sha256": action_sha,
                     "target_sha256": "",
                     "visible_result_sha256": event_sha,
-                    "recovery_path": False,
                 }
             ],
             "context_relations": [],

@@ -52,6 +52,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
+    MAX_GREENFIELD_SEMANTIC_CALLS,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     get_greenfield_model_profile,
@@ -277,7 +278,7 @@ def require_product_create_transaction_quality_approved(
     raw_model_authoring = manifest.get("model_authoring")
     model_authoring = raw_model_authoring if isinstance(raw_model_authoring, Mapping) else {}
     manifest_claims_authored = str(semantic_compiler.get("semantic_owner", "")).strip() == (
-        "single_model_authoring_response"
+        "validated_model_authored_intent"
     )
     authored_projection = (
         manifest_claims_authored
@@ -290,11 +291,13 @@ def require_product_create_transaction_quality_approved(
     )
     model_authoring_approved = not authored_projection or (
         str(semantic_compiler.get("version", "")).strip()
-        == "odylith.greenfield.authored-semantic-validation.v1"
+        == "odylith.greenfield.authored-semantic-validation.v2"
         and str(semantic_compiler.get("status", "")).strip() == "passed"
         and str(model_authoring.get("authoring_version", "")).strip()
         == GREENFIELD_INTENT_AUTHORING_VERSION
-        and model_authoring.get("semantic_model_call_count") == 1
+        and _semantic_model_call_count_approved(
+            model_authoring.get("semantic_model_call_count")
+        )
         and _model_authoring_profile_approved(
             model_authoring,
             requested_repair_tier=requested_tier,
@@ -316,6 +319,10 @@ def require_product_create_transaction_quality_approved(
         "pre-confirm ProductCreateTransaction quality manifest is not approved; "
         "repair or clarify before showing CONFIRM"
     )
+
+
+def _semantic_model_call_count_approved(value: Any) -> bool:
+    return type(value) is int and 1 <= value <= MAX_GREENFIELD_SEMANTIC_CALLS
 
 
 def _model_authoring_profile_approved(

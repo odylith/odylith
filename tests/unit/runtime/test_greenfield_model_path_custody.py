@@ -85,7 +85,6 @@ def _response(source: str) -> dict[str, object]:
                 "action_verb_quote": "enters",
                 "target_quote": "a vessel tag",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "order": 2,
@@ -96,7 +95,6 @@ def _response(source: str) -> dict[str, object]:
                 "action_verb_quote": "records",
                 "target_quote": "berth occupancy",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "order": 3,
@@ -107,7 +105,6 @@ def _response(source: str) -> dict[str, object]:
                 "action_verb_quote": "shows",
                 "target_quote": "the placement",
                 "visible_result_quote": "the berth map shows the placement",
-                "recovery_path": False,
             },
         ],
     )
@@ -144,7 +141,6 @@ def _carried_human_actor_response() -> tuple[str, dict[str, Any], dict[str, Any]
                 "action_verb_quote": "enters",
                 "target_quote": "a vessel tag",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "human",
@@ -154,7 +150,6 @@ def _carried_human_actor_response() -> tuple[str, dict[str, Any], dict[str, Any]
                 "action_verb_quote": "checks",
                 "target_quote": "its status",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "human",
@@ -164,7 +159,6 @@ def _carried_human_actor_response() -> tuple[str, dict[str, Any], dict[str, Any]
                 "action_verb_quote": "sees",
                 "target_quote": "the berth placement",
                 "visible_result_quote": "the berth placement",
-                "recovery_path": False,
             },
         ],
     )
@@ -174,7 +168,7 @@ def _carried_human_actor_response() -> tuple[str, dict[str, Any], dict[str, Any]
 def test_authoring_accepts_only_byte_verified_source_citations() -> None:
     source = _source()
     provider = StructuredAuthoringProvider(_response(source))
-    ticks = iter((0.0, 4.0))
+    ticks = iter((0.0, 4.0, 4.0, 4.0))
 
     result = author_greenfield_intent(
         evidence_text=source,
@@ -200,7 +194,7 @@ def test_authoring_accepts_only_byte_verified_source_citations() -> None:
     )
     assert result.tier == "rescue"
     assert len(result.source_spans) == 19
-    assert provider.calls == 1
+    assert provider.calls == 2
 
 
 def test_product_led_path_keeps_review_recipient_without_inventing_human_event() -> None:
@@ -234,7 +228,6 @@ def test_product_led_path_keeps_review_recipient_without_inventing_human_event()
                 "event_quote": event,
                 "target_quote": "release readiness proof",
                 "visible_result_quote": "release readiness proof",
-                "recovery_path": False,
             },
         ],
     )
@@ -289,7 +282,6 @@ def test_event_rejects_target_that_is_only_adjacent_in_a_selected_fact() -> None
                 "event_quote": event,
                 "target_quote": target,
                 "visible_result_quote": "visit evidence",
-                "recovery_path": False,
             }
         ],
     )

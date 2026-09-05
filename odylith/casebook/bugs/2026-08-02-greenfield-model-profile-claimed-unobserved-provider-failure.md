@@ -50,6 +50,19 @@
 
 - Agent Guardrails: Do not treat environment configuration, test labels, or intended posture as observed runtime proof.
 
+- V31 Independent Reopening (2026-09-04): The immutable candidate at
+  `a1e163f25cf133c3c26b4fde0dc80a6a0393441e` still reports
+  `real_installed_gpt-5.6-luna-medium_authored_preconfirm` even though its only
+  successful profiles are Terra medium and Sol high. Only the missing-provider
+  profile is marked lower-capability; it does not execute semantic authoring.
+  Independent recomputation verified all 306 retained sealed files in the first
+  three public cases and their single-call, commit-only receipts, but those
+  successes cannot prove lower-capability semantic safety. Derive proof claims
+  from observed requests and require a real lower-profile clarification control;
+  keep provider-unavailable no-write evidence separate. The existing standard
+  Terra medium member is the bounded lower-capability candidate relative to Sol
+  high; no extra production model or retry lane is justified.
+
 - Preflight Checks: Confirm every claimed model profile has balanced case coverage and every degraded-provider claim has observed failure and fallback evidence.
 
 - Regression Tests Added: Profile assignment/environment tests; aggregate-masking profile score test; release rejection without observed provider failure; manifest predicate test.

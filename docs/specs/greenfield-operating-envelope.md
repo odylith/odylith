@@ -54,7 +54,7 @@ Release evaluation covers three pinned successful profiles:
   120-second end-to-end consumer budget and a 105-second model window.
 
 The selected profile is fixed before the model request. Elapsed time or a failed
-attempt never relabels or extends a standard request into rescue or deep. All
+attempt never relabels or extends a standard request into rescue or deep.
 Standard uses medium reasoning on the faster Terra author; rescue and deep use
 high reasoning on Sol. The tiers preserve semantic capability while fitting
 their fixed elapsed-time envelopes. These are bounded provider-request
@@ -63,6 +63,20 @@ Host-model output is candidate evidence only. Every profile must clarify or fail
 safely instead of inventing product truth. Provider unavailability is separately
 proven as a fast, no-write environment outcome and is not a supported-success
 profile.
+
+The standard Terra profile is the supported lower-capability member. Release
+proof requires its observed committed positive case and a source-bound material
+clarification with no writes, separately from unavailable-provider behavior.
+No other model earns a proof claim without its own observed request evidence.
+
+Pre-confirm authoring permits at most two model calls: initial intent authoring,
+then one source-claim review of the product story and component ownership for
+every otherwise-valid authored candidate. Clarifications need only the first call.
+The review shares the original model window and is capped at 20 seconds; it cannot
+extend the consumer deadline or change the chosen profile. The complete candidate
+must pass custody and semantic validation again. Other fields remain unchanged,
+and a failed review never starts another call. Receipts record the actual call
+count; release proof retains both candidates and the exact review response.
 
 ## Filesystem contract
 
@@ -94,6 +108,19 @@ Accepted facts retain source spans and entailment receipts. Conservative
 completion is labeled as an assumption or bounded interpretation. One focused
 question is allowed only for unresolved material ambiguity; non-material gaps do
 not become Product Intent failures.
+
+Problem, Customer, Opportunity, and Product View each use either a distinct cited fact or
+one concise, useful provisional statement. Canonical assumptions carry an
+`applies_to` target and `statement`; their text and role are hash-bound but never
+become accepted source facts. Required decision fields render these statements
+with an explicit Assumption label, not repeated gap notices. Product Intent
+envelope and authority v9 reject earlier staged formats without reinterpretation.
+Product-only and external-system workflows need no invented human participant.
+Every event still binds to a source-cited typed actor. A provisional customer stays
+an explicitly labeled assumption, never a human actor, dependency, or accepted fact;
+projections do not infer a customer from the first participant.
+Failure tracking and restoration remain source-cited actions; an ungrounded
+recovery classification is not part of the authored event contract.
 
 ## Post-confirm boundary
 

@@ -26,8 +26,8 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 
 
 PRODUCT_INTENT_AUTHORITY_KEY = "product_intent_authority"
-PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v7"
-PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION = "odylith.product-intent-envelope.v7"
+PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v9"
+PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION = "odylith.product-intent-envelope.v9"
 PRODUCT_INTENT_LEDGER_VERSION = "odylith.product-intent-custody-ledger.v6"
 _AUTHORITY_VERSION_CONTRACTS = {
     PRODUCT_INTENT_AUTHORITY_VERSION: (
@@ -67,7 +67,6 @@ MATERIAL_FACT_KEYS = (
     "state_object",
     "first_path",
     "proof_boundary",
-    "human_actors",
 )
 TYPED_SOURCE_FORMATS = frozenset(
     {

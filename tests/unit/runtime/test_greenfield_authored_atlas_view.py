@@ -31,11 +31,13 @@ from tests.unit.runtime.test_greenfield_authored_lexical_isolation import (
 
 def _authored_diagrams(
     *,
+    title: str = "Harbor Desk",
+    component_label: str = "Berth map",
     visible_result: str = "the berth map shows the placement",
     proof_boundary: str = "Verify the placement and retention receipt",
 ) -> list[dict[str, Any]]:
     return greenfield_authored_atlas_view.build_authored_atlas_diagrams(
-        title="Harbor Desk",
+        title=title,
         diagram_slugs={
             "context": "harbor-desk-context",
             "sequence": "harbor-desk-sequence",
@@ -51,7 +53,7 @@ def _authored_diagrams(
         components=(
             {
                 "component_id": "berth-map",
-                "label": "Berth map",
+                "label": component_label,
                 "responsibility": "Record berth occupancy",
                 "dependencies": ["Harbor Ledger"],
             },
@@ -96,6 +98,20 @@ def _authored_diagrams(
             },
         ),
     )
+
+
+def test_context_view_represents_a_sole_title_owned_product_once() -> None:
+    rows = _authored_diagrams(component_label="Harbor Desk")
+    context = next(row for row in rows if row["slug"] == "harbor-desk-context")
+
+    assert context["mermaid_source"].count('["Harbor Desk"]') == 1
+    assert 'subgraph product["Harbor Desk"]' not in context["mermaid_source"]
+    assert "component1" not in context["mermaid_source"]
+    assert [
+        (box["node_id"], box["label"], box["role"])
+        for box in context["diagram_boxes"]
+        if box["label"] == "Harbor Desk"
+    ] == [("product", "Harbor Desk", "Product boundary")]
 
 
 def _traceability_plan() -> SimpleNamespace:
@@ -377,7 +393,7 @@ def test_public_authored_propose_never_calls_legacy_semantic_rule_families(
     )
 
     assert rc == 0, payload
-    assert provider.calls == 1
+    assert provider.calls == 2
     assert family_calls["terminal_deferral"] == 0
     assert family_calls["source_casing"] == 0
     assert family_calls["connector"] == 0

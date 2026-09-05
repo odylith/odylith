@@ -81,7 +81,6 @@ def _authored_stage_inputs(repo_root: Path) -> tuple[dict[str, object], dict[str
                         "action_verb_quote": "records",
                         "target_quote": "café evidence AND OR provenance",
                         "visible_result_quote": "",
-                        "recovery_path": False,
                     },
                     {
                         "actor_kind": "product",
@@ -91,7 +90,6 @@ def _authored_stage_inputs(repo_root: Path) -> tuple[dict[str, object], dict[str
                         "action_verb_quote": "shows",
                         "target_quote": "the receipt",
                         "visible_result_quote": visible_event,
-                        "recovery_path": False,
                     },
                 ],
             )

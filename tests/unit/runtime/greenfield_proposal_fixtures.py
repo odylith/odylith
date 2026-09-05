@@ -433,9 +433,9 @@ def approved_authored_quality_manifest_fixture(**overrides: Any) -> dict[str, An
             "prewrite_clean_before_commit": True,
         },
         "semantic_compiler": {
-            "version": "odylith.greenfield.authored-semantic-validation.v1",
+            "version": "odylith.greenfield.authored-semantic-validation.v2",
             "status": "passed",
-            "semantic_owner": "single_model_authoring_response",
+            "semantic_owner": "validated_model_authored_intent",
             "post_authoring_interpretation_calls": 0,
         },
         "model_authoring": {
@@ -610,7 +610,7 @@ def canonical_model_authored_intent_fixture(
         "external_systems": ["Payment Sandbox"],
         "internal_systems": ["Storefront", "Checkout Orchestrator", "Catalog Boundary"],
         "assumptions": [
-            "The first release uses a sandbox payment response.",
+            {"applies_to": "general", "statement": "The first release uses a sandbox payment response."},
         ],
         "ambiguities": [],
         "non_goals": [
@@ -626,7 +626,6 @@ def canonical_model_authored_intent_fixture(
             "action_verb_quote": "opens",
             "target_quote": "Storefront",
             "visible_result_quote": "",
-            "recovery_path": False,
         },
         {
             "actor_kind": "product",
@@ -636,7 +635,6 @@ def canonical_model_authored_intent_fixture(
             "action_verb_quote": "sends",
             "target_quote": "the cart",
             "visible_result_quote": "",
-            "recovery_path": False,
         },
         {
             "actor_kind": "product",
@@ -648,7 +646,6 @@ def canonical_model_authored_intent_fixture(
             "action_verb_quote": "requests",
             "target_quote": "a sandbox payment",
             "visible_result_quote": "",
-            "recovery_path": False,
         },
         {
             "actor_kind": "external_system",
@@ -657,7 +654,6 @@ def canonical_model_authored_intent_fixture(
             "action_verb_quote": "returns",
             "target_quote": "a failed payment response",
             "visible_result_quote": "",
-            "recovery_path": True,
         },
         {
             "actor_kind": "human",
@@ -666,7 +662,6 @@ def canonical_model_authored_intent_fixture(
             "action_verb_quote": "retries",
             "target_quote": "checkout",
             "visible_result_quote": "",
-            "recovery_path": True,
         },
         {
             "actor_kind": "product",
@@ -678,7 +673,6 @@ def canonical_model_authored_intent_fixture(
             "action_verb_quote": "creates",
             "target_quote": "an order draft",
             "visible_result_quote": "recovery status",
-            "recovery_path": True,
         },
     ]
     return materialize_typed_intent_fixture(

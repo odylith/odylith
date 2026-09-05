@@ -13,6 +13,11 @@ from typing import Any
 from odylith.runtime.domain_intelligence.greenfield_artifact_depth import (
     diagram_roles_for_workstream_roles,
 )
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
+    DECISION_FIELDS,
+    assumption_statements,
+    assumption_targets,
+)
 from odylith.runtime.domain_intelligence.greenfield_authored_radar_ordering import (
     build_authored_ordering_decision,
 )
@@ -20,14 +25,11 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
     canonical_product_owner_projection_values,
 )
-from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
-    missing_source_fact_notice,
-)
 
 
 AUTHORED_WORKSTREAM_ROLES = ("project", "workflow", "boundary", "proof")
 AUTHORED_WORKSTREAM_SEMANTICS_KEY = "authored_workstream_semantics"
-AUTHORED_WORKSTREAM_SEMANTICS_VERSION = "odylith.greenfield.authored-workstream-semantics.v4"
+AUTHORED_WORKSTREAM_SEMANTICS_VERSION = "odylith.greenfield.authored-workstream-semantics.v5"
 _DIAGRAM_ROLES_BY_WORKSTREAM = {
     "project": ("context", "sequence", "state_evidence", "component_boundaries"),
     "workflow": ("context", "sequence"),
@@ -55,7 +57,7 @@ def build_authored_backlog(
     evidence_requirements: Sequence[str],
     non_goals: Sequence[str],
     operational_constraints: Sequence[str],
-    assumptions: Sequence[str],
+    assumptions: Sequence[Mapping[str, str]],
     ambiguities: Sequence[str],
     components: Sequence[Mapping[str, Any]],
     relations: Sequence[Mapping[str, Any]],
@@ -108,7 +110,7 @@ def build_authored_backlog(
     ) or component_ids
     proof_components = _components_with_contract_values(
         components,
-        fields=("visible_results", "recovery_events"),
+        fields=("visible_results",),
     ) or component_ids
     component_focus_by_role = {
         "project": component_ids,
@@ -136,12 +138,13 @@ def build_authored_backlog(
         component_fact_refs_by_role=component_fact_refs_by_role,
         evidence_requirement_count=len(evidence_requirements),
         operational_constraint_count=len(operational_constraints),
+        decision_assumption_refs=assumption_targets(assumptions),
     )
     roles = tuple(contracts)
     selected_diagram_roles = diagram_roles_for_workstream_roles(candidate_roles)
     selected_diagram_slugs = {
         role: _required_text(diagram_slugs.get(role), f"{role} diagram slug")
-        for role in selected_diagram_roles
+        for role in selected_diagram_roles if role in diagram_slugs
     }
     shared = {
         "title": title,
@@ -150,6 +153,7 @@ def build_authored_backlog(
         "product_owner_values": product_owner_values,
         "fact_values": fact_values,
         "relation_values": relation_values,
+        "decision_assumption_refs": assumption_targets(assumptions),
         "workflow_components": workflow_components,
         "proof_components": proof_components,
     }
@@ -204,7 +208,6 @@ def _backlog_row(
         ranking_basis=first_slice,
     )
     semantic_record = dict(semantic_contract)
-    semantic_record["evidence_gaps"] = _strings(projection.get("evidence_gaps"))
     semantic_record["rendered_field_refs"] = rendered_field_refs
     row = {
         "title": _required_text(projection.get("title"), "workstream title"),
@@ -241,7 +244,7 @@ def _backlog_row(
         row=row,
         scope=_strings(projection["scope"]),
         non_goals=_values_for_prefix(fact_values, owned_refs, "/non_goals/"),
-        assumptions=_values_for_prefix(fact_values, owned_refs, "/assumptions/"),
+        assumptions=_values_for_refs(fact_values, rendered_field_refs["radar_sections.Assumptions"]),
         ambiguities=_values_for_prefix(fact_values, owned_refs, "/ambiguities/"),
         operational_constraints=_values_for_prefix(
             fact_values,
@@ -273,10 +276,13 @@ def _role_projection(
     shared_fact_refs = _strings(semantic_contract.get("shared_fact_refs"))
     visible_fact_refs = _unique([*fact_refs, *shared_fact_refs])
     title_refs = _exact_refs(visible_fact_refs, "/title")
-    customer_context_refs = _exact_refs(visible_fact_refs, "/customer") or _prefix_refs(
-        visible_fact_refs,
-        "/human_actors/",
-    )[:1]
+    assumption_refs = facts["decision_assumption_refs"]
+    customer_context_refs = _exact_refs(visible_fact_refs, "/customer") or _exact_refs(
+        visible_fact_refs, assumption_refs.get("customer", ""),
+    )
+    customer_value = _first_value(fact_values, customer_context_refs)
+    if any(ref.startswith("/assumptions/") for ref in customer_context_refs):
+        customer_value = f"Assumption — {customer_value}"
 
     if role == "project":
         story_refs = _exact_refs(visible_fact_refs, "/product_story")
@@ -297,15 +303,9 @@ def _role_projection(
             _exact_refs(visible_fact_refs, "/product_view"),
             [*story_refs, *path_refs],
         )
-        evidence_gaps = [
-            field
-            for field, refs in (
-                ("problem", problem_refs),
-                ("opportunity", opportunity_refs),
-                ("product_view", view_refs),
-            )
-            if not refs
-        ]
+        for field, refs in (("problem", problem_refs), ("opportunity", opportunity_refs), ("product_view", view_refs)):
+            if not refs and assumption_refs.get(field) in visible_fact_refs:
+                refs.append(assumption_refs[field])
         outcome_refs = view_refs or _exact_refs(visible_fact_refs, "/proof_boundary")
         metric_refs = [
             *_prefix_refs(visible_fact_refs, "/success_metrics/"),
@@ -336,23 +336,20 @@ def _role_projection(
         return {
             "title": f"Deliver {title}",
             "problem": _labeled_values(
-                "Problem",
+                "Assumption" if any(ref.startswith("/assumptions/") for ref in problem_refs) else "Problem",
                 fact_values,
                 problem_refs,
-                empty=missing_source_fact_notice("the user problem"),
             ),
-            "customer": _first_value(fact_values, customer_refs),
+            "customer": customer_value,
             "opportunity": _labeled_values(
-                "Opportunity",
+                "Assumption" if any(ref.startswith("/assumptions/") for ref in opportunity_refs) else "Opportunity",
                 fact_values,
                 opportunity_refs,
-                empty=missing_source_fact_notice("an opportunity"),
             ),
             "product_view": _labeled_values(
-                "Product view",
+                "Assumption" if any(ref.startswith("/assumptions/") for ref in view_refs) else "Product view",
                 fact_values,
                 view_refs,
-                empty=missing_source_fact_notice("a distinct product view"),
             ),
             "success_metrics": _values_for_refs(fact_values, metric_refs),
             "recommended_first_slice": first_slice,
@@ -362,8 +359,7 @@ def _role_projection(
             "validation": _values_for_refs(fact_values, validation_refs),
             "deferred_scope": _values_for_refs(fact_values, deferred_refs),
             "scope": _values_for_refs(fact_values, scope_refs),
-            "ordering_why_now": _joined_values(fact_values, opportunity_refs)
-            or missing_source_fact_notice("an opportunity"),
+            "ordering_why_now": _joined_values(fact_values, opportunity_refs),
             "ordering_expected_outcome": _joined_values(
                 fact_values,
                 outcome_refs,
@@ -383,24 +379,25 @@ def _role_projection(
                 "ordering_why_now": opportunity_refs,
                 "ordering_expected_outcome": outcome_refs,
             },
-            "evidence_gaps": evidence_gaps,
         }
     if role == "workflow":
         actor_refs = _prefix_refs(fact_refs, "/human_actors/")
         path_refs = _exact_refs(fact_refs, "/first_path")
-        opportunity_refs = _exact_refs(fact_refs, "/opportunity")
+        opportunity_refs = _exact_refs(visible_fact_refs, "/opportunity")
+        assumption_ref = facts["decision_assumption_refs"].get("opportunity")
+        if not opportunity_refs and assumption_ref in visible_fact_refs:
+            opportunity_refs = [assumption_ref]
         event_refs = _prefix_refs(relation_refs, "/authored_semantics/first_path_relations/")
         events = _values_for_refs(relation_values, event_refs)
         final_event_refs = event_refs[-1:]
         return {
             "title": f"Run {title} first path",
             "problem": _labeled_values("Handoff participants", fact_values, actor_refs),
-            "customer": _first_value(fact_values, customer_context_refs),
+            "customer": customer_value,
             "opportunity": _labeled_values(
-                "Workflow opportunity",
+                "Assumption" if assumption_ref in opportunity_refs else "Workflow opportunity",
                 fact_values,
                 opportunity_refs,
-                empty=missing_source_fact_notice("a workflow-specific opportunity"),
             ),
             "product_view": _labeled_values("Ordered workflow events", relation_values, event_refs),
             "success_metrics": _values_for_refs(relation_values, final_event_refs),
@@ -411,8 +408,7 @@ def _role_projection(
             "validation": events,
             "deferred_scope": [],
             "scope": events,
-            "ordering_why_now": _joined_values(fact_values, opportunity_refs)
-            or missing_source_fact_notice("a workflow-specific opportunity"),
+            "ordering_why_now": _joined_values(fact_values, opportunity_refs),
             "ordering_expected_outcome": _joined_values(relation_values, final_event_refs),
             "field_refs": {
                 "title": title_refs,
@@ -429,7 +425,6 @@ def _role_projection(
                 "ordering_why_now": opportunity_refs,
                 "ordering_expected_outcome": final_event_refs,
             },
-            "evidence_gaps": [] if opportunity_refs else ["opportunity"],
         }
     if role == "boundary":
         external_refs = _prefix_refs(fact_refs, "/external_systems/")
@@ -448,7 +443,7 @@ def _role_projection(
                 fact_values,
                 exclusion_refs,
             ),
-            "customer": _first_value(fact_values, customer_context_refs),
+            "customer": customer_value,
             "opportunity": _labeled_values(
                 "External boundary dependencies",
                 fact_values,
@@ -517,7 +512,7 @@ def _role_projection(
                 fact_values,
                 constraint_refs,
             ),
-            "customer": _first_value(fact_values, customer_context_refs),
+            "customer": customer_value,
             "opportunity": _labeled_values(
                 "Required release evidence",
                 fact_values,
@@ -595,7 +590,10 @@ def _radar_rendered_field_refs(
             "radar_sections.Impacted Components": component_refs,
             "radar_sections.Test Strategy": refs.get("validation", []),
             "radar_sections.Open Questions": _prefix_refs(fact_refs, "/ambiguities/"),
-            "radar_sections.Assumptions": _prefix_refs(fact_refs, "/assumptions/"),
+            "radar_sections.Assumptions": [
+                ref for ref in _prefix_refs(fact_refs, "/assumptions/")
+                if not any(ref in refs.get(field, []) for field in DECISION_FIELDS)
+            ],
             "radar_sections.Operational Constraints": _prefix_refs(
                 fact_refs,
                 "/operational_constraints/",
@@ -624,12 +622,6 @@ def _validated_rendered_field_refs(
         if not isinstance(field, str) or len(values) != len(refs) or not set(values) <= allowed:
             raise ValueError("model-authored workstream rendered an unowned semantic ref")
         rendered[field] = values
-    evidence_gaps = _strings(projection.get("evidence_gaps"))
-    allowed_gaps = {"problem", "opportunity", "product_view"}
-    if len(evidence_gaps) != len(set(evidence_gaps)) or not set(evidence_gaps) <= allowed_gaps:
-        raise ValueError("model-authored workstream has invalid evidence-gap ownership")
-    if any(rendered.get(field) for field in evidence_gaps):
-        raise ValueError("model-authored evidence gap cannot claim a source fact")
     required_fields = (
         "title",
         "problem",
@@ -644,7 +636,7 @@ def _validated_rendered_field_refs(
     missing_fields = [
         field
         for field in required_fields
-        if not rendered.get(field) and field not in evidence_gaps
+        if not rendered.get(field)
     ]
     if missing_fields:
         role = _text(semantic_contract.get("role")) or "unknown"
@@ -699,7 +691,7 @@ def _radar_sections(
         ),
         "Assumptions": _bullet_block(
             assumptions,
-            empty=_not_applicable_section(role, "explicit assumption"),
+            empty="No additional assumptions.",
         ),
         "Operational Constraints": _bullet_block(
             operational_constraints,
@@ -730,7 +722,7 @@ def _fact_values(
     evidence_requirements: Sequence[str],
     non_goals: Sequence[str],
     operational_constraints: Sequence[str],
-    assumptions: Sequence[str],
+    assumptions: Sequence[Mapping[str, str]],
     ambiguities: Sequence[str],
     component_responsibility_relations: Sequence[Mapping[str, Any]],
 ) -> dict[str, str]:
@@ -756,7 +748,7 @@ def _fact_values(
         ("evidence_requirements", evidence_requirements),
         ("non_goals", non_goals),
         ("operational_constraints", operational_constraints),
-        ("assumptions", assumptions),
+        ("assumptions", assumption_statements(assumptions)),
         ("ambiguities", ambiguities),
     ):
         for index, value in enumerate(rows):
@@ -808,6 +800,7 @@ def _workstream_semantic_contracts(
     component_fact_refs_by_role: Mapping[str, Sequence[str]],
     evidence_requirement_count: int,
     operational_constraint_count: int,
+    decision_assumption_refs: Mapping[str, str],
 ) -> dict[str, dict[str, Any]]:
     role_refs: dict[str, tuple[list[str], list[str]]] = {}
 
@@ -944,17 +937,16 @@ def _workstream_semantic_contracts(
                 ref for ref in fact_values if ref not in fact_refs
             )
         else:
-            customer_refs = _exact_refs(fact_values, "/customer") or _prefix_refs(
-                fact_values,
-                "/human_actors/",
-            )[:1]
+            customer_refs = _exact_refs(fact_values, "/customer") or _exact_refs(
+                fact_values, decision_assumption_refs.get("customer", ""),
+            )
             shared_fact_refs = [
                 "/title",
                 *customer_refs,
                 *shared_fact_refs,
             ]
             if role == "workflow" and not _exact_refs(fact_refs, "/opportunity"):
-                shared_fact_refs.extend(_exact_refs(fact_values, "/product_story"))
+                shared_fact_refs.extend(_known_refs([decision_assumption_refs.get("opportunity", "")], fact_values))
         contracts[role] = {
             "version": AUTHORED_WORKSTREAM_SEMANTICS_VERSION,
             "role": role,

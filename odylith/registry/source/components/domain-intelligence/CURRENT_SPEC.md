@@ -1,11 +1,12 @@
 # Domain Intelligence
-Last updated: 2026-09-03
+Last updated: 2026-09-04
 
 
 ## Overview
 
 Domain Intelligence owns the Greenfield evidence-to-transaction boundary. One
-pinned authoring-model response selects source-cited facts and typed relations;
+pinned model authors source-cited facts and typed relations, with one bounded
+pre-confirm source-claim review inside the original time window;
 deterministic code verifies exact custody, projects the complete governed package,
 and validates it before confirmation. Each pending package is immutable and
 hash-addressed, and accepted bytes publish as one transaction-addressed generation.
@@ -30,6 +31,15 @@ or prose repair runs after confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_assumptions.py`, `src/odylith/runtime/domain_intelligence/greenfield_authored_backlog.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`
+- **2026-09-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `sha256:4751479046c0d628a6aa19a0cf24f5f650fff3be2719c2055621658a33ef180f`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_profile_contract.py`
+- **2026-09-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`
 - **2026-09-03 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_intent_fact_values.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `tests/unit/runtime/test_greenfield_model_path_custody.py`
@@ -39,15 +49,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`
-- **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/casebook/bugs/2026-09-02-greenfield-recovery-proof-bound-compiler-identity-to-absolute-install-path.md`, `odylith/casebook/bugs/2026-09-03-greenfield-flat-fact-arrays-permit-invalid-singular-cardinality.md`, `odylith/casebook/bugs/2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md`, plus 2 more
-- **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-09-02-greenfield-recovery-proof-bound-compiler-identity-to-absolute-install-path.md`, `odylith/casebook/bugs/2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_backlog.py`
-- **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_semantics.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `tests/unit/runtime/test_greenfield_model_intent_authoring.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -3375,7 +3376,7 @@ This section captures synchronized requirement and contract signals derived from
   all three recorded responses now compile completion-ready and the
   authored/model suite passes `122/122`. Rebuilt installed proof is pending.
 
-## Greenfield V29 Semantic Ownership
+## Historical Greenfield V29 Semantic Ownership (superseded by current research basis)
 
 - One pinned host-model call owns the complete source-cited product graph. Its
   compact typed contract distinguishes product outcome, work item, action
@@ -3385,16 +3386,17 @@ This section captures synchronized requirement and contract signals derived from
   It does not reinterpret product prose.
 - Event targets must be exact substrings of their own event. Cross-fact
   co-containment is not semantic proof and is no longer accepted.
-- Missing Problem, Opportunity, or distinct Product View remains missing and is
-  rendered as an explicit evidence gap. Product Story is never reused as
-  semantic filler.
+- Missing Problem, Opportunity, or distinct Product View remains absent from
+  accepted facts. The author supplies one conservative, differentiated decision
+  assumption, visibly labeled in the required field. Product Story and gap
+  notices are never reused as semantic filler.
 - CONFIRM and REJECT use an exact hash-bound token protocol. EDIT alone accepts
   trailing evidence and creates a new pre-confirm authoring transaction.
 - Canonical Greenfield semantic boundaries do not import regex or parser-era
   helpers. The release evaluator reuses product-owned typed receipt contracts
   and never promotes structural validation into independent expert approval.
 
-## Greenfield V31 Standard Profile
+## Historical Greenfield V31 Standard Profile (single-call policy superseded)
 
 - Standard Greenfield authoring pins exactly one
   `greenfield-standard-gpt-5.6-terra-medium-v6` request inside the fixed
@@ -3414,6 +3416,56 @@ This section captures synchronized requirement and contract signals derived from
   installed public proof remains pending.
 
 ## Research Basis
+
+### Current bounded correction after V31 independent rejection
+
+- Intent-authoring v37 owns typed assumptions (`applies_to`, `statement`).
+  `greenfield_authored_assumptions.py` validates their target and preserves their
+  provisional custody. Problem, Customer, Opportunity, and Product View each have exactly
+  one cited fact or one assumption; consumed decision assumptions are not
+  repeated in the generic assumptions list.
+- Human participants are optional when the source describes only product or
+  external-system work. Every event still requires its exact source-bound actor.
+  An inferred customer is a labeled assumption, not an accepted participant or
+  Atlas node. Radar consumes the canonical customer fact or assumption instead
+  of choosing the first human. Empty-human confirmation views state the absence.
+- The model wire groups responsibility citations beside their component owner;
+  it no longer requires synchronized component and responsibility arrays.
+  Canonical facts and relations retain their exact custody and existing owner
+  resolver. The compact authoring contract separates source facts from useful
+  provisional decisions and keeps the initial actor with its action citation.
+- Pre-confirm authoring permits at most two calls. Every otherwise-valid authored
+  candidate receives one source-claim review of product_story and component groups,
+  capped at 20 seconds within the original remaining model window. Clarifications
+  remain one call. The whole candidate validates again before becoming canonical;
+  other fields remain unchanged. Source coordinates and actor types reject
+  contradictory ownership; they never infer a replacement owner or extend a quote.
+  A second failure cannot start another call. Actual call counts and both candidate
+  responses remain observable; no generic repair framework, tier promotion, or
+  post-confirm interpretation is introduced.
+- Product Intent envelope/authority v9 and authored-workstream-semantics v5
+  preserve the targeted assumption reference and hash its exact text and role.
+  Earlier staged formats require rebuilding before confirmation; there is no
+  compatibility reinterpretation or post-confirm repair.
+- Authored-semantics v12 removes the unsupported semantic recovery boolean and
+  component Recovery events projection. Failure tracking and actual restoration
+  stay ordinary source-cited actions. Transaction recovery remains unchanged.
+- Context views do not nest a title-owned component inside the same product.
+  A First Path Sequence requires at least two typed events. Browser proof must
+  visit every emitted diagram on desktop and mobile, capture full-page mobile
+  content, and exercise actual asset failure with readable fallback.
+- Release model claims derive only from sealed observed requests. The existing
+  standard Terra profile is the supported lower-capability member and requires
+  both a committed positive and source-bound clarification/no-write evidence.
+  The unsupported literal Luna claim is removed. All 60/90/120 deadlines remain
+  fixed. The bounded source review uses that same profile and remaining
+  deadline, not a fallback model, phrase rule, or alternate projection path.
+- V31's four automated installed passes do not constitute independent quality
+  approval. Focused source corrections require fresh generated-package review,
+  complete immutable public proof, and independent review before a new blind
+  holdout. CB-303 and CB-306 remain evidence owners for these open gates.
+
+### Model-owned semantic basis
 
 The v0.1.15 runtime deliberately avoids a hardcoded domain catalog and
 domain-vocabulary rules. User requests can span any product, science, math,

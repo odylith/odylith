@@ -18,6 +18,7 @@ class GreenfieldArtifactDepthPlan:
 def plan_greenfield_artifact_depth(
     *,
     actor_count: int,
+    event_count: int,
     internal_system_count: int,
     external_system_count: int,
     ambiguity_count: int,
@@ -46,15 +47,25 @@ def plan_greenfield_artifact_depth(
     return GreenfieldArtifactDepthPlan(
         complexity_band="simple" if workstream_roles == ["project"] else "structured",
         workstream_roles=tuple(workstream_roles),
-        diagram_roles=diagram_roles_for_workstream_roles(workstream_roles),
+        diagram_roles=diagram_roles_for_workstream_roles(
+            workstream_roles,
+            event_count=event_count,
+        ),
     )
 
 
-def diagram_roles_for_workstream_roles(workstream_roles: Sequence[str]) -> tuple[str, ...]:
+def diagram_roles_for_workstream_roles(
+    workstream_roles: Sequence[str],
+    *,
+    event_count: int | None = None,
+) -> tuple[str, ...]:
     """Return existing Atlas views justified by typed artifact-depth evidence."""
 
     roles = set(workstream_roles)
-    diagrams = ["context", "sequence", "state_evidence"]
+    diagrams = ["context"]
+    if event_count is None or event_count >= 2:
+        diagrams.append("sequence")
+    diagrams.append("state_evidence")
     if "boundary" in roles:
         diagrams.append("component_boundaries")
     return tuple(diagrams)

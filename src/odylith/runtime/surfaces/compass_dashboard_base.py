@@ -1027,6 +1027,8 @@ def _load_agent_stream_events(
         transaction_seq = int(transaction_seq_raw) if isinstance(transaction_seq_raw, int) and transaction_seq_raw >= 0 else None
         context = " ".join(str(payload.get("context", "")).split()).strip()
         headline_hint = " ".join(str(payload.get("headline_hint", "")).split()).strip()
+        evidence_tier = " ".join(str(payload.get("evidence_tier", "")).split()).strip()
+        work_category = " ".join(str(payload.get("work_category", "")).split()).strip()
         boundary = str(payload.get("transaction_boundary", "")).strip().lower()
         if boundary not in {"start", "end"}:
             boundary = ""
@@ -1051,6 +1053,8 @@ def _load_agent_stream_events(
                 "transaction_seq": transaction_seq,
                 "context": context,
                 "headline_hint": headline_hint,
+                "evidence_tier": evidence_tier,
+                "work_category": work_category,
                 "transaction_boundary": boundary,
             }
         )

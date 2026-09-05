@@ -39,7 +39,14 @@ from tests.unit.runtime.greenfield_proposal_fixtures import approved_authored_qu
 
 
 def _approved_quality_manifest() -> dict[str, Any]:
-    return approved_authored_quality_manifest_fixture()
+    return approved_authored_quality_manifest_fixture(
+        semantic_compiler={
+            "version": "odylith.greenfield.authored-semantic-validation.v2",
+            "status": "passed",
+            "semantic_owner": "validated_model_authored_intent",
+            "post_authoring_interpretation_calls": 0,
+        }
+    )
 
 
 def _recorded_authority(tmp_path: Path) -> tuple[Path, dict[str, Any], dict[str, Any]]:
@@ -81,7 +88,7 @@ def test_product_create_transaction_carries_confirmed_intent_authority_block(tmp
     payload = product_create_transaction_to_dict(transaction)
 
     persisted = payload["intent_authority"]
-    assert persisted["version"] == "odylith.product-intent-authority.v7"
+    assert persisted["version"] == "odylith.product-intent-authority.v9"
     assert persisted["origin"] == "verified_typed_envelope"
     assert persisted["decision"] == "confirmed_intent_accepted"
     assert persisted["fact_authority"] == "product_facts"
@@ -130,9 +137,9 @@ def test_serialized_authored_transaction_contains_only_sealed_component_relation
     quality_manifest = {
         **_approved_quality_manifest(),
         "semantic_compiler": {
-            "version": "odylith.greenfield.authored-semantic-validation.v1",
+            "version": "odylith.greenfield.authored-semantic-validation.v2",
             "status": "passed",
-            "semantic_owner": "single_model_authoring_response",
+            "semantic_owner": "validated_model_authored_intent",
             "post_authoring_interpretation_calls": 0,
         },
         "model_authoring": {
@@ -203,15 +210,26 @@ def test_product_create_transaction_rejects_v4_authority_for_sealed_retry(tmp_pa
         _transaction(tmp_path, authority=legacy)
 
 
-def test_product_create_transaction_rejects_v6_authority_without_owner_inference(
+@pytest.mark.parametrize(
+    ("authority_version", "envelope_version", "ledger_version"),
+    (
+        (6, 6, 5),
+        (7, 7, 6),
+        (8, 8, 6),
+    ),
+)
+def test_product_create_transaction_rejects_legacy_authority_without_reinterpretation(
     tmp_path: Path,
+    authority_version: int,
+    envelope_version: int,
+    ledger_version: int,
 ) -> None:
     _path, _facts, authority = _recorded_authority(tmp_path)
     legacy = {
         **authority,
-        "version": "odylith.product-intent-authority.v6",
-        "envelope_schema_version": "odylith.product-intent-envelope.v6",
-        "ledger_version": "odylith.product-intent-custody-ledger.v5",
+        "version": f"odylith.product-intent-authority.v{authority_version}",
+        "envelope_schema_version": f"odylith.product-intent-envelope.v{envelope_version}",
+        "ledger_version": f"odylith.product-intent-custody-ledger.v{ledger_version}",
     }
     legacy["authority_snapshot_sha256"] = product_intent_authority_snapshot_hash(legacy)
 
@@ -306,7 +324,7 @@ def test_product_create_transaction_rejects_material_fact_without_resolvable_spa
 def test_product_create_transaction_rejects_tampered_material_evidence_text(tmp_path: Path) -> None:
     _path, _facts, authority = _recorded_authority(tmp_path)
     material_fields = json.loads(json.dumps(authority["material_fields"]))
-    material_fields["human_actors"]["source_span_refs"][0]["evidence_text"] = "tampered evidence"
+    material_fields["first_path"]["source_span_refs"][0]["evidence_text"] = "tampered evidence"
     mutated = {
         **authority,
         "material_fields": material_fields,

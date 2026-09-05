@@ -261,6 +261,13 @@ def _atlas_findings(*, artifacts: Sequence[RenderedArtifact], proposal: Mapping[
                     f"{artifact.identity} does not expose two distinct typed concepts",
                 )
             )
+        if _has_self_nested_product_component(diagram_row):
+            findings.append(
+                _finding(
+                    "architect",
+                    f"{artifact.identity} repeats the product boundary as an identically named child component",
+                )
+            )
         if (
             not parse_mermaid_graph(artifact.text).edges
             and not _has_distinct_typed_containment(diagram_row)
@@ -272,6 +279,25 @@ def _atlas_findings(*, artifacts: Sequence[RenderedArtifact], proposal: Mapping[
                 )
             )
     return findings
+
+
+def _has_self_nested_product_component(diagram: Mapping[str, Any]) -> bool:
+    if normalize_string(diagram.get("projection_origin")) != AUTHORED_PROJECTION_ORIGIN:
+        return False
+    boxes = tuple(mapping_rows(diagram.get("diagram_boxes")))
+    product_labels = {
+        normalize_string(box.get("label")).casefold()
+        for box in boxes
+        if normalize_string(box.get("role")).casefold() == "product boundary"
+        and normalize_string(box.get("label"))
+    }
+    component_labels = {
+        normalize_string(box.get("label")).casefold()
+        for box in boxes
+        if normalize_string(box.get("role")).casefold() == "product-owned component"
+        and normalize_string(box.get("label"))
+    }
+    return bool(product_labels & component_labels)
 
 
 def _has_distinct_typed_containment(diagram: Mapping[str, Any]) -> bool:

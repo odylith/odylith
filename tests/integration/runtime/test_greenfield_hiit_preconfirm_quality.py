@@ -43,7 +43,7 @@ def test_hiit_greenfield_create_projects_model_authored_path_and_quality_under_s
     elapsed = time.perf_counter() - started
 
     assert rc == 0
-    assert provider.calls == 1
+    assert provider.calls == 2
     accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
     proposal = accepted["proposal"]
     first_path = proposal["semantic_model"]["first_path_contract"]
@@ -161,7 +161,10 @@ def _hiit_authoring_provider(prompt: str) -> StructuredAuthoringProvider:
             "Workout builder",
         ],
         "assumptions": [
-            "Release 0.0.1 starts with preset interval workouts before complex custom programming."
+            {
+                "applies_to": "general",
+                "statement": "Release 0.0.1 starts with preset interval workouts before complex custom programming.",
+            }
         ],
         "ambiguities": [],
         "non_goals": [],

@@ -48,7 +48,6 @@ def _typed_relation(
         "action_verb_quote": action_verb_quote,
         "target_quote": target_quote,
         "visible_result_quote": visible_result_quote,
-        "recovery_path": False,
     }
 
 

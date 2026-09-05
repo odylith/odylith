@@ -516,7 +516,9 @@ def test_summary_and_timeline_assets_preserve_risk_and_component_spec_context() 
     assert 'sections.push({ title: "Intent", items: intentItems });' in timeline_js
     assert 'sections.push({ title: "Summary of Change", items: summarySectionItems });' in timeline_js
     assert 'sections.push({ title: "Context", items: contextItems });' not in timeline_js
+    assert "function timelineSummaryGovernanceOnly(transaction)" in timeline_js
+    assert 'title: timelineSummaryGovernanceOnly(transaction) ? "Governance decision" : "Implemented"' in timeline_js
     intent_idx = timeline_js.index('sections.push({ title: "Intent", items: intentItems });')
     summary_idx = timeline_js.index('sections.push({ title: "Summary of Change", items: summarySectionItems });')
-    implemented_idx = timeline_js.index('sections.push({ title: "Implemented", items: implementedItems });')
+    implemented_idx = timeline_js.index('title: timelineSummaryGovernanceOnly(transaction) ? "Governance decision" : "Implemented"')
     assert intent_idx < summary_idx < implemented_idx

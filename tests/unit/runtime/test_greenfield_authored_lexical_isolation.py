@@ -70,7 +70,6 @@ def _first_path_relations() -> list[dict[str, Any]]:
             "action_verb_quote": "enters",
             "target_quote": "a vessel tag",
             "visible_result_quote": "",
-            "recovery_path": False,
         },
         {
             "actor_kind": "product",
@@ -80,7 +79,6 @@ def _first_path_relations() -> list[dict[str, Any]]:
             "action_verb_quote": "records",
             "target_quote": "berth occupancy",
             "visible_result_quote": "",
-            "recovery_path": False,
         },
         {
             "actor_kind": "product",
@@ -90,7 +88,6 @@ def _first_path_relations() -> list[dict[str, Any]]:
             "action_verb_quote": "shows",
             "target_quote": "the placement",
             "visible_result_quote": "the berth map shows the placement",
-            "recovery_path": False,
         },
     ]
 
@@ -142,7 +139,7 @@ def test_public_authored_propose_seals_exact_non_latin_customer(
     )
 
     assert rc == 0, payload
-    assert provider.calls == 1
+    assert provider.calls == 2
     assert payload["intent_hypothesis"]["customer"] == "港務員"
     assert payload["mode"] == "product_create_transaction"
     transaction_path = tmp_path / payload["transaction_file"]
@@ -163,7 +160,7 @@ def test_public_authored_rescue_tier_seals_the_90_second_budget(
     author_greenfield_intent = greenfield_model_intent_authoring.author_greenfield_intent
 
     def author_after_standard_window(**kwargs: Any) -> Any:
-        ticks = iter((0.0, 55.0))
+        ticks = iter((0.0, 55.0, 55.0, 55.0))
         return author_greenfield_intent(**kwargs, clock=lambda: next(ticks))
 
     monkeypatch.setattr(
@@ -180,7 +177,7 @@ def test_public_authored_rescue_tier_seals_the_90_second_budget(
     )
 
     assert rc == 0, payload
-    assert provider.calls == 1
+    assert provider.calls == 2
     transaction = json.loads((tmp_path / payload["transaction_file"]).read_text(encoding="utf-8"))
     manifest = transaction["quality_manifest"]
     assert manifest["requested_repair_tier"] == "rescue"
@@ -188,7 +185,7 @@ def test_public_authored_rescue_tier_seals_the_90_second_budget(
     assert manifest["budget_seconds"] == 90.0
     assert manifest["rescue_activated"] is True
     assert manifest["model_authoring"]["tier"] == "rescue"
-    assert manifest["model_authoring"]["semantic_model_call_count"] == 1
+    assert manifest["model_authoring"]["semantic_model_call_count"] == 2
 
 
 def test_public_authored_propose_seals_exact_non_latin_product_title(
@@ -210,7 +207,7 @@ def test_public_authored_propose_seals_exact_non_latin_product_title(
     )
 
     assert rc == 0, payload
-    assert provider.calls == 1
+    assert provider.calls == 2
     assert payload["intent_hypothesis"]["title"] == "港務台"
     transaction_path = tmp_path / payload["transaction_file"]
     transaction = json.loads(transaction_path.read_text(encoding="utf-8"))
@@ -238,7 +235,7 @@ def test_public_authored_propose_seals_exact_repeated_brand_without_rewriting(
     )
 
     assert rc == 0, payload
-    assert provider.calls == 1
+    assert provider.calls == 2
     assert payload["intent_hypothesis"]["title"] == "Miu Miu"
     transaction_path = tmp_path / payload["transaction_file"]
     transaction = json.loads(transaction_path.read_text(encoding="utf-8"))
@@ -262,7 +259,7 @@ def test_public_authored_deep_tier_stays_structural_and_seals_exact_unicode_cust
     )
 
     assert rc == 0, payload
-    assert provider.calls == 1
+    assert provider.calls == 2
     transaction = json.loads((tmp_path / payload["transaction_file"]).read_text(encoding="utf-8"))
     manifest = transaction["quality_manifest"]
     assert manifest["requested_repair_tier"] == "deep"
@@ -270,9 +267,9 @@ def test_public_authored_deep_tier_stays_structural_and_seals_exact_unicode_cust
     assert manifest["budget_seconds"] == 120.0
     assert manifest["rescue_activated"] is True
     assert manifest["semantic_compiler"] == {
-        "version": "odylith.greenfield.authored-semantic-validation.v1",
+        "version": "odylith.greenfield.authored-semantic-validation.v2",
         "status": "passed",
-        "semantic_owner": "single_model_authoring_response",
+        "semantic_owner": "validated_model_authored_intent",
         "post_authoring_interpretation_calls": 0,
     }
     unicode_atom = next(

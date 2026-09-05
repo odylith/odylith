@@ -299,7 +299,6 @@ def _authored_events(relations: Sequence[Mapping[str, Any]]) -> list[dict[str, A
             "target_entity": row.get("target_quote"),
             "mutation": row.get("event_quote"),
             "visible_result": bool(row.get("visible_result_quote")),
-            "recovery_path": row.get("recovery_path"),
             "text": row.get("event_quote"),
             "source_kind": "accepted_first_path",
         }

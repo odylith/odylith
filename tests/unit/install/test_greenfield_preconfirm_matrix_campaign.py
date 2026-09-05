@@ -67,7 +67,7 @@ def _result(module, *, name: str, passed: bool = True):
             score_explanation=("campaign test verdict",),
         ),
         evidence={
-            "case": {"id": name},
+            "case": {"id": name, "expectation": "transaction_committed"},
             "model_profile": {
                 "profile_id": profile_id,
                 "status": "passed",

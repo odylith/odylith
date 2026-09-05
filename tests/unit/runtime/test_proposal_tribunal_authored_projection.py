@@ -39,7 +39,6 @@ def _authored_proposal() -> dict[str, object]:
         "action_verb_quote": "records",
         "target_quote": "berth occupancy",
         "visible_result_quote": "sees receipt",
-        "recovery_path": False,
     }
     intent = {
         "title": "Harbor Desk",
@@ -153,7 +152,6 @@ def test_authored_typed_projection_passes_structural_tribunal() -> None:
         "owner_bound_events",
         "event_targets",
         "visible_results",
-        "recovery_events",
         "state_context",
         "external_dependencies",
         "operational_constraints",
@@ -189,9 +187,6 @@ def test_authored_typed_projection_passes_structural_tribunal() -> None:
         ),
         lambda proposal: proposal["components"][0]["component_contract"].update(
             {"visible_results": ["Fabricated result"]}
-        ),
-        lambda proposal: proposal["components"][0]["component_contract"].update(
-            {"recovery_events": ["Fabricated recovery"]}
         ),
         lambda proposal: proposal["backlog"].append(dict(proposal["backlog"][0])),
     ),

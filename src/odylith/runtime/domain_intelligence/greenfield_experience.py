@@ -353,9 +353,11 @@ def _implementation_prompt(
 ) -> str:
     title_text = title or "the first targeted workstream"
     first_path_text = str(first_path or "").strip()
+    release_requirements_text = str(release_requirements or "").strip()
+    if release_requirements_text and release_requirements_text in first_path_text:
+        release_requirements_text = ""
     if first_path_text and first_path_text[-1] not in ".!?":
         first_path_text = f"{first_path_text}."
-    release_requirements_text = str(release_requirements or "").strip()
     if release_requirements_text and release_requirements_text[-1] not in ".!?":
         release_requirements_text = f"{release_requirements_text}."
     return (

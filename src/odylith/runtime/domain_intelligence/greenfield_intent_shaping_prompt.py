@@ -5,6 +5,8 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import assumption_preview_values
+
 
 _SCALAR_FACTS = (
     ("title", "Product"),
@@ -42,6 +44,8 @@ def accepted_intent_shaping_prompt(
             rows.append(f"{label}: {value}")
     for key, label in _LIST_FACTS:
         values = confirmed_intent.get(key)
+        if key == "assumptions":
+            values = assumption_preview_values(values or [])
         if not isinstance(values, Sequence) or isinstance(values, (str, bytes)):
             continue
         text = "; ".join(

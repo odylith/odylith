@@ -75,7 +75,6 @@ _RELATIONS = (
         "action_verb_quote": "enters",
         "target_quote": "a vessel tag",
         "visible_result_quote": "",
-        "recovery_path": False,
     },
     {
         "actor_kind": "product",
@@ -85,7 +84,6 @@ _RELATIONS = (
         "action_verb_quote": "records",
         "target_quote": "berth occupancy",
         "visible_result_quote": "",
-        "recovery_path": False,
     },
     {
         "actor_kind": "product",
@@ -95,7 +93,6 @@ _RELATIONS = (
         "action_verb_quote": "shows",
         "target_quote": "the placement",
         "visible_result_quote": "Berth map shows the placement",
-        "recovery_path": False,
     },
 )
 
@@ -250,6 +247,24 @@ def test_envelope_rejects_source_digest_or_span_rebinding() -> None:
             source_format="operator_prompt",
             authored_source_spans=rebound_projection,
             authored_atomic_claims=result.atomic_claims,
+            authored_source_sha256=result.source_sha256,
+        )
+
+
+def test_optional_human_fact_still_requires_exact_atomic_source_custody() -> None:
+    source, result, intent = _authored_inputs()
+    claims = copy.deepcopy(list(result.atomic_claims))
+    human_claim = next(claim for claim in claims if claim["field"] == "human_actors")
+    human_claim["source_start_byte"] += 1
+    human_claim["source_end_byte"] += 1
+
+    with pytest.raises(ValueError, match="atomic source custody does not match"):
+        build_product_intent_envelope(
+            intent,
+            source_text=source,
+            source_format="operator_prompt",
+            authored_source_spans=result.source_spans,
+            authored_atomic_claims=claims,
             authored_source_sha256=result.source_sha256,
         )
 

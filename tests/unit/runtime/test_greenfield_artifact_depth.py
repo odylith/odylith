@@ -8,6 +8,7 @@ from odylith.runtime.domain_intelligence.greenfield_artifact_depth import (
 def test_one_actor_and_one_system_without_boundary_evidence_stay_simple() -> None:
     plan = plan_greenfield_artifact_depth(
         actor_count=1,
+        event_count=3,
         internal_system_count=1,
         external_system_count=0,
         ambiguity_count=0,
@@ -28,6 +29,7 @@ def test_one_actor_and_one_system_without_boundary_evidence_stay_simple() -> Non
 def test_distinct_actors_systems_boundaries_and_proof_earn_deeper_artifacts() -> None:
     plan = plan_greenfield_artifact_depth(
         actor_count=4,
+        event_count=4,
         internal_system_count=4,
         external_system_count=3,
         ambiguity_count=2,
@@ -49,6 +51,7 @@ def test_distinct_actors_systems_boundaries_and_proof_earn_deeper_artifacts() ->
 def test_multiple_non_goals_earn_a_boundary_workstream_without_duplicate_views() -> None:
     plan = plan_greenfield_artifact_depth(
         actor_count=1,
+        event_count=3,
         internal_system_count=1,
         external_system_count=0,
         ambiguity_count=0,
@@ -69,6 +72,7 @@ def test_multiple_non_goals_earn_a_boundary_workstream_without_duplicate_views()
 def test_ambiguity_without_boundary_evidence_does_not_invent_a_boundary_view() -> None:
     plan = plan_greenfield_artifact_depth(
         actor_count=1,
+        event_count=3,
         internal_system_count=1,
         external_system_count=0,
         ambiguity_count=3,
@@ -79,3 +83,18 @@ def test_ambiguity_without_boundary_evidence_does_not_invent_a_boundary_view() -
 
     assert plan.workstream_roles == ("project",)
     assert plan.diagram_roles == ("context", "sequence", "state_evidence")
+
+
+def test_one_typed_event_does_not_invent_a_sequence_view() -> None:
+    plan = plan_greenfield_artifact_depth(
+        actor_count=1,
+        event_count=1,
+        internal_system_count=1,
+        external_system_count=0,
+        ambiguity_count=0,
+        non_goal_count=0,
+        evidence_requirement_count=1,
+        operational_constraint_count=1,
+    )
+
+    assert plan.diagram_roles == ("context", "state_evidence")

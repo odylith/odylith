@@ -67,9 +67,14 @@ _RETIRED_MECHANISM_MODULES = (
 )
 _CANONICAL_SEMANTIC_BOUNDARY_PATHS = (
     DOMAIN_INTELLIGENCE / "greenfield_apply_components.py",
+    DOMAIN_INTELLIGENCE / "greenfield_authored_assumptions.py",
+    DOMAIN_INTELLIGENCE / "greenfield_authored_atlas_view.py",
+    DOMAIN_INTELLIGENCE / "greenfield_authored_backlog.py",
+    DOMAIN_INTELLIGENCE / "greenfield_authored_proposal.py",
     DOMAIN_INTELLIGENCE / "greenfield_authored_semantics.py",
     DOMAIN_INTELLIGENCE / "greenfield_create_transaction.py",
     DOMAIN_INTELLIGENCE / "greenfield_model_atomic_projection.py",
+    DOMAIN_INTELLIGENCE / "greenfield_model_direct_evidence_graph.py",
     DOMAIN_INTELLIGENCE / "greenfield_model_intent_authoring.py",
     DOMAIN_INTELLIGENCE / "greenfield_model_intent_materialization.py",
     DOMAIN_INTELLIGENCE / "greenfield_preconfirm_engine.py",

@@ -59,7 +59,6 @@ def test_title_alias_canonicalizes_to_its_internal_system_owner(tmp_path) -> Non
                 "action_verb_quote": "enters",
                 "target_quote": "a vessel tag",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -69,7 +68,6 @@ def test_title_alias_canonicalizes_to_its_internal_system_owner(tmp_path) -> Non
                 "action_verb_quote": "shows",
                 "target_quote": "the placement",
                 "visible_result_quote": "Harbor Desk shows the placement",
-                "recovery_path": False,
             },
         ],
     )

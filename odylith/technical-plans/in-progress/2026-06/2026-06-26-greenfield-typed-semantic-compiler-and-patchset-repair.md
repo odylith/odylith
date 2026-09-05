@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-06-26
 
-Updated: 2026-09-03
+Updated: 2026-09-04
 
 Backlog: B-142
 
@@ -11,7 +11,80 @@ must turn imperfect initial evidence into a coherent governed project without
 writing unconfirmed artifacts or needing product interpretation, quality repair,
 or generated content after confirmation.
 
-## Current Product Contract (2026-07-29)
+## Current Convergence Contract (2026-09-04)
+
+The operator explicitly requires an achievable, finite release goal without
+overengineering. Release claims cover the published operating envelope and the
+frozen evaluation population, not perfect interpretation of every possible input.
+The original goal already distinguishes probabilistic semantic quality from
+deterministic transaction laws. Do not convert a passing corpus into a universal
+guarantee, relabel model timeouts as successful requests, or weaken a failed gate.
+
+- Fixed: the selected 60/90/120-second end-to-end budget, source custody and
+  semantic entailment, useful differentiated complete outputs, at most one
+  material question, explicit assumptions, exact sealed-byte confirmation, and
+  zero post-confirm semantic/model/generation/repair work.
+- Provisional: one pre-confirm call, quote-only decision wording, model roles,
+  response shape, and internal repair. The goal requires bounded calls and
+  internal recovery of repairable quality defects; it does not require exactly
+  one call. Earlier sections calling these choices fixed mechanism laws are
+  superseded by this contract. The bounded v37 correction below is the current
+  mechanism candidate, not a new goal requirement.
+- Change only an owner implicated by observed failures. Compare one bounded
+  alternative against the retained failure and an independent/equivalent control;
+  inspect consumer output before a full suite or distribution build. Reject a
+  candidate that misses fidelity, quality, or the original time tier. Delete the
+  losing path instead of keeping alternatives or introducing a repair framework.
+- Finish when the existing source, immutable installed public, transaction and
+  recovery, desktop/mobile browser, independent P0/P1 review, and untouched
+  holdout gates pass their frozen floors, followed by committed/pushed evidence
+  and terminal cleanup. Do not expand into platform extraction, new governance
+  hierarchies, or unrelated feature work.
+
+Current narrow correction: v36's shared nonempty component contract passes fresh
+flood in 38.277 seconds and semiconductor in 47.511 seconds, preserving complete
+stories and five actor-owned actions. Both commit 83 sealed writes with readback.
+Independent review closes flood but rejects semiconductor's invented human:
+the schema, admission check, and materiality contract required a human even though
+all source actions belong to the product. V37 removes that artificial requirement
+and reuses targeted assumptions for a provisional Customer. Radar consumes that
+explicit decision instead of inferring the Customer from the first human.
+
+The current mechanism remains one source-cited author plus one review of exactly
+product_story and components, capped at 20 seconds inside the original model
+window. The full candidate validates again; every event retains source-bound actor
+custody. No new reviewer field, call, regex, retry framework, or post-confirm work
+is added. Product-only, external-only, and invalid-actor/customer controls precede
+fresh semiconductor/flood package review. Then freeze for complete source and
+immutable installed proof. CB-303 retains all failed experiments and raw evidence.
+The broad v36 baseline passes 4,485 tests with one Atlas renderer size failure;
+correct that ownership without weakening the size guard or degraded-asset behavior.
+
+V37 now passes the narrow source discriminator: the same frozen source produces the unchanged
+flood and semiconductor proposals in 44.189 and 35.053 seconds, both with two
+calls, 83 committed sealed writes, and verified readback. Semiconductor commit-only
+publication takes 1.12 seconds. Independent committed-artifact/diagram review has
+no open P0/P1 on either case. Product-only and external-only behavior, customer
+assumption custody, and invalid actor references have focused proof. Freeze this
+mechanism for full source and immutable installed validation; do not add new
+architecture or promote the source qualification to a release/generalization claim.
+
+The frozen post-v37 complete source gate passes 4,497 tests in 534.12 seconds:
+all runtime and install unit tests, HIIT pre-confirm integration, and the Compass
+browser regression matrix. The earlier Atlas size failure is closed without
+raising its cap. Preserve this stable checkpoint, then build one immutable local
+distribution for the unchanged public 14-case clean-install, browser, recovery,
+and model-profile gate. The final untouched holdout remains closed.
+
+Atlas renderer size exception: the existing oversized `render_mermaid_catalog.py`
+owns the client script that overwrote the generated-only failure-state fix.
+The viewer asset lifecycle now has one 39-line template owner; the renderer drops
+from 3,377 to 3,358 lines under the unchanged 3,363 cap, and generated bytes stay
+identical. Focused hygiene/render proof passes 201 tests. B-142 retains the broader
+client-template decomposition obligation before unrelated renderer feature growth;
+do not broaden this convergence pass into a new Atlas framework.
+
+## Product Contract Baseline (2026-07-29)
 
 Greenfield is not a generic mutation platform or an open-ended semantic rescue
 engine. Its bounded contract is:
@@ -81,11 +154,14 @@ above.
 
 ## Latency Budget
 
-- Standard path: under 60 seconds, no host repair needed.
-- Rescue path: up to 90 seconds only when a final semantic or quality gate
-  fails and a targeted host-model semantic or plan patch can likely fix it.
-- Premium/deep repair and CI simulation: 120 seconds only when explicitly
-  selected. This is not the normal operator path.
+- Standard: 60 seconds end to end.
+- Explicit rescue: 90 seconds end to end.
+- Explicit deep: 120 seconds end to end.
+
+Select the tier before authoring. A failed or slow standard attempt never
+acquires a rescue/deep extension. Any future bounded pre-confirm repair must fit
+the original selected tier, total-call cap, and cost limit; it is not permission
+for retries until success. Current runtime profiles remain unchanged.
 
 ## Non-Goals
 
@@ -4543,3 +4619,26 @@ above.
   parity, hygiene, and Compass normal/fallback/degraded browser regression proof
   passes `130/130`. Proceed through the immutable build and a fresh public
   campaign from case one; keep the blind holdout sealed.
+
+## V31 Independent Rejection (2026-09-04)
+
+- The paused ledger contains three completed passes; resumption preserves their
+  exact case identities and original profile assignments. Port berth completes
+  in 43.830 seconds with commit-only publication in 2.172 seconds, bringing
+  automated public evidence to four passes. Stop the campaign when independent
+  review identifies the recurring P1 failures below.
+- CB-303: required Radar decisions cannot be repeated missing-fact placeholders.
+  Use conservative, explicitly labeled model assumptions tied to supplied
+  evidence without admitting them as source facts. Preserve the source-backed
+  decision path when distinct facts exist. Preserve failed-run tracking as an
+  action without asserting unsupported recovery meaning.
+- CB-306: remove the stale Luna proof claim. Require observed standard Terra
+  semantic safety controls, separately from missing-provider behavior, while
+  preserving the existing profiles and exact 60/90/120 budgets.
+- Falsifiable bounded gate: missing optional problem/opportunity/view evidence
+  yields useful differentiated assumptions, explicit facts retain custody,
+  tracking a failure does not invent recovery, and an explicit recovery action
+  survives. Negative and equivalent-source controls must preserve these results.
+  Inspect the generated human-visible package before broader validation. Keep
+  source frozen during each live comparison and commission no blind holdout
+  until all independent P0/P1 findings and the complete public gate are clear.

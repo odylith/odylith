@@ -55,7 +55,20 @@ def _harbor_case() -> tuple[str, dict[str, object], dict[str, object]]:
         "human_actors": ["Dock attendant Ivo"],
         "external_systems": ["Tide Authority API"],
         "internal_systems": ["Harbor Registry", "berth map"],
-        "assumptions": [],
+        "assumptions": [
+            {
+                "applies_to": "problem",
+                "statement": "Dock attendants need berth requests to retain reviewable clearance and placement evidence.",
+            },
+            {
+                "applies_to": "customer",
+                "statement": "Dock attendants are the primary beneficiaries of the approved placement.",
+            },
+            {
+                "applies_to": "product_view",
+                "statement": "Harbor Relay gives dock attendants one reviewable path from request through approved placement.",
+            },
+        ],
         "ambiguities": [],
     }
     response = authored_response(
@@ -69,7 +82,6 @@ def _harbor_case() -> tuple[str, dict[str, object], dict[str, object]]:
                 "action_verb_quote": "submits",
                 "target_quote": "a berth request",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "external_system",
@@ -78,7 +90,6 @@ def _harbor_case() -> tuple[str, dict[str, object], dict[str, object]]:
                 "action_verb_quote": "supplies",
                 "target_quote": "clearance",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -88,7 +99,6 @@ def _harbor_case() -> tuple[str, dict[str, object], dict[str, object]]:
                 "action_verb_quote": "records",
                 "target_quote": "approved berth state",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -98,7 +108,6 @@ def _harbor_case() -> tuple[str, dict[str, object], dict[str, object]]:
                 "action_verb_quote": "shows",
                 "target_quote": "the approved placement",
                 "visible_result_quote": segments[3],
-                "recovery_path": False,
             },
         ],
         terminal_component_owner="berth map",
@@ -183,7 +192,24 @@ def test_product_pronoun_uses_an_explicit_selected_actor_fact() -> None:
         "success_metrics": [segments[2]],
         "human_actors": ["Analyst Aya"],
         "internal_systems": ["Review Engine"],
-        "assumptions": [],
+        "assumptions": [
+            {
+                "applies_to": "problem",
+                "statement": "Analysts need submitted cases to retain a reviewable receipt.",
+            },
+            {
+                "applies_to": "customer",
+                "statement": "Analysts are the primary beneficiaries of the case receipt.",
+            },
+            {
+                "applies_to": "opportunity",
+                "statement": "A visible case receipt can make intake status easier to verify.",
+            },
+            {
+                "applies_to": "product_view",
+                "statement": "Relay Console lets analysts submit a case and see its receipt.",
+            },
+        ],
         "ambiguities": [],
     }
     response = authored_response(
@@ -197,7 +223,6 @@ def test_product_pronoun_uses_an_explicit_selected_actor_fact() -> None:
                 "action_verb_quote": "submits",
                 "target_quote": "a case",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -207,7 +232,6 @@ def test_product_pronoun_uses_an_explicit_selected_actor_fact() -> None:
                 "action_verb_quote": "receives",
                 "target_quote": "it",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -217,7 +241,6 @@ def test_product_pronoun_uses_an_explicit_selected_actor_fact() -> None:
                 "action_verb_quote": "shows",
                 "target_quote": "a receipt",
                 "visible_result_quote": segments[2],
-                "recovery_path": False,
             },
         ],
         terminal_component_owner="Review Engine",
@@ -270,7 +293,6 @@ def test_coordinated_clauses_preserve_carried_actors_and_every_action() -> None:
                 "action_verb_quote": "uploads",
                 "target_quote": "a permit packet",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "human",
@@ -279,7 +301,6 @@ def test_coordinated_clauses_preserve_carried_actors_and_every_action() -> None:
                 "action_verb_quote": "reviews",
                 "target_quote": "the extracted address",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -289,7 +310,6 @@ def test_coordinated_clauses_preserve_carried_actors_and_every_action() -> None:
                 "action_verb_quote": "stores",
                 "target_quote": "the approved packet",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -299,7 +319,6 @@ def test_coordinated_clauses_preserve_carried_actors_and_every_action() -> None:
                 "action_verb_quote": "shows",
                 "target_quote": "an accepted receipt",
                 "visible_result_quote": events[3],
-                "recovery_path": False,
             },
         ],
         component_responsibility_owners=["Permit Relay", "Permit Relay"],
@@ -382,7 +401,24 @@ def _repeated_event_case() -> tuple[str, dict[str, object]]:
         "proof_boundary": terminal,
         "success_metrics": [terminal],
         "human_actors": ["Operator Ada"],
-        "assumptions": [],
+        "assumptions": [
+            {
+                "applies_to": "problem",
+                "statement": "Operators need repeated submissions to preserve reviewable work.",
+            },
+            {
+                "applies_to": "customer",
+                "statement": "Operators are the primary beneficiaries of the retry receipt.",
+            },
+            {
+                "applies_to": "opportunity",
+                "statement": "A visible receipt can make retry outcomes easier to verify.",
+            },
+            {
+                "applies_to": "product_view",
+                "statement": "Retry Console lets operators resubmit work and see the resulting receipt.",
+            },
+        ],
         "ambiguities": [],
     }
     prompt = (
@@ -401,7 +437,6 @@ def _repeated_event_case() -> tuple[str, dict[str, object]]:
                 "action_verb_quote": "submits",
                 "target_quote": "request",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "segment_index": 1,
@@ -411,7 +446,6 @@ def _repeated_event_case() -> tuple[str, dict[str, object]]:
                 "action_verb_quote": "submits",
                 "target_quote": "request",
                 "visible_result_quote": "",
-                "recovery_path": True,
             },
             {
                 "segment_index": 2,
@@ -422,7 +456,6 @@ def _repeated_event_case() -> tuple[str, dict[str, object]]:
                 "action_verb_quote": "shows",
                 "target_quote": "receipt",
                 "visible_result_quote": terminal,
-                "recovery_path": False,
             },
         ],
         terminal_component_owner="Retry Console",
@@ -547,7 +580,24 @@ def test_utf8_multiactor_path_preserves_meaning_when_source_order_differs() -> N
         "human_actors": ["Analyst Zoë", "Reviewer Béla"],
         "external_systems": ["Æther API"],
         "internal_systems": ["Café Console"],
-        "assumptions": [],
+        "assumptions": [
+            {
+                "applies_to": "problem",
+                "statement": "Reviewers need dossier evidence to remain reviewable across submission, attestation, and approval.",
+            },
+            {
+                "applies_to": "customer",
+                "statement": "Dossier reviewers are the primary beneficiaries of the review receipt.",
+            },
+            {
+                "applies_to": "opportunity",
+                "statement": "A visible receipt can make the completed dossier path easier to verify.",
+            },
+            {
+                "applies_to": "product_view",
+                "statement": "Café Relay lets analysts and reviewers follow a dossier through to a visible receipt.",
+            },
+        ],
         "ambiguities": [],
     }
     response = authored_response(
@@ -561,7 +611,6 @@ def test_utf8_multiactor_path_preserves_meaning_when_source_order_differs() -> N
                 "action_verb_quote": "submits",
                 "target_quote": "dossier",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "external_system",
@@ -570,7 +619,6 @@ def test_utf8_multiactor_path_preserves_meaning_when_source_order_differs() -> N
                 "action_verb_quote": "supplies",
                 "target_quote": "attestation",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "human",
@@ -579,7 +627,6 @@ def test_utf8_multiactor_path_preserves_meaning_when_source_order_differs() -> N
                 "action_verb_quote": "approves",
                 "target_quote": "dossier",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -589,7 +636,6 @@ def test_utf8_multiactor_path_preserves_meaning_when_source_order_differs() -> N
                 "action_verb_quote": "shows",
                 "target_quote": "réceipt",
                 "visible_result_quote": segments[3],
-                "recovery_path": False,
             },
         ],
         terminal_component_owner="Café Console",

@@ -4,6 +4,8 @@ import importlib.util
 import sys
 from pathlib import Path
 
+import pytest
+
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS_ROOT = REPO_ROOT / "scripts" / "release"
@@ -40,6 +42,8 @@ def test_browser_surface_proof_scope_is_generated_state_matrix() -> None:
         surface for _viewport, surface, _state in module.BROWSER_REQUIRED_COVERAGE
     } == {"project", "radar", "registry", "casebook", "atlas", "compass", "shell"}
     assert ("mobile", "casebook", "empty") in module.BROWSER_REQUIRED_COVERAGE
+    assert ("mobile", "atlas", "degraded") in module.BROWSER_REQUIRED_COVERAGE
+    assert ("mobile", "atlas", "error") in module.BROWSER_REQUIRED_COVERAGE
     assert ("mobile", "shell", "invalid-recovery") in module.BROWSER_REQUIRED_COVERAGE
 
 
@@ -180,6 +184,55 @@ def test_atlas_state_assertion_rejects_heading_only_or_unloaded_state() -> None:
     assert "browser surface atlas generated diagram asset did not finish loading" in issues
 
 
+def test_atlas_proof_requires_every_emitted_diagram_in_list_order() -> None:
+    module = _module()
+
+    assert module._atlas_diagram_coverage_issues(
+        ("D-001", "D-002", "D-003"),
+        ("D-001", "D-002", "D-003"),
+    ) == ()
+    assert module._atlas_diagram_coverage_issues(
+        ("D-001", "D-002", "D-003"),
+        ("D-001", "D-003"),
+    ) == ("browser surface atlas did not visit every emitted diagram in list order",)
+
+
+def test_atlas_degraded_state_requires_loaded_png_fallback() -> None:
+    module = _module()
+
+    assert module._atlas_degraded_state_assertion_issues(
+        image_src="http://127.0.0.1:8123/odylith/atlas/source/context.png",
+        image_loaded=True,
+        fallback_applied=True,
+    ) == ()
+    assert module._atlas_degraded_state_assertion_issues(
+        image_src="http://127.0.0.1:8123/odylith/atlas/source/context.png",
+        image_loaded=False,
+        fallback_applied=True,
+    ) == ("browser surface atlas degraded SVG did not recover with its readable PNG asset",)
+
+
+def test_atlas_asset_error_requires_accessible_recovery_and_no_broken_image() -> None:
+    module = _module()
+    message = (
+        "Diagram preview unavailable. Use Prev or Next above to open another diagram, "
+        "or review the diagram summary and source links below."
+    )
+
+    assert module._atlas_error_state_assertion_issues(
+        alert_text=message,
+        alert_role="alert",
+        alert_visible=True,
+        image_hidden=True,
+    ) == ()
+    assert module._atlas_error_state_assertion_issues(
+        alert_text=message,
+        alert_role="alert",
+        alert_visible=False,
+        image_hidden=False,
+    ) == ("browser surface atlas asset failure does not expose accessible recovery guidance",)
+
+
 def test_project_state_assertion_requires_persisted_prompt_state() -> None:
     module = _module()
 
@@ -233,15 +286,56 @@ class _FakeContext:
 
 
 class _FakePage:
-    def __init__(self) -> None:
+    def __init__(self, *, capture_extent: dict[str, int] | None = None) -> None:
         self.handlers = {}
+        self.capture_extent = capture_extent or {
+            "contentHeight": 932,
+            "viewportHeight": 932,
+            "captureHeight": 932,
+        }
 
     def on(self, event: str, callback) -> None:  # noqa: ANN001
         self.handlers[event] = callback
 
     def screenshot(self, *, path: str, full_page: bool) -> None:
-        assert full_page is True
+        assert isinstance(full_page, bool)
         Path(path).write_bytes(b"png")
+
+    def evaluate(self, _source: str) -> dict[str, int]:
+        return self.capture_extent
+
+
+def test_mobile_screenshot_capture_requires_below_fold_document_extent(tmp_path: Path) -> None:
+    module = _module()
+    expanded = _FakePage(
+        capture_extent={
+            "contentHeight": 1400,
+            "viewportHeight": 932,
+            "captureHeight": 1510,
+        }
+    )
+
+    target = module._capture_state_screenshot(
+        page=expanded,
+        output_dir=tmp_path / "expanded",
+        state_name="mobile-atlas-normal",
+    )
+
+    assert target.read_bytes() == b"png"
+    assert (tmp_path / "expanded/mobile-atlas-normal-viewport.png").read_bytes() == b"png"
+    clipped = _FakePage(
+        capture_extent={
+            "contentHeight": 1400,
+            "viewportHeight": 932,
+            "captureHeight": 932,
+        }
+    )
+    with pytest.raises(RuntimeError, match="did not expand to below-fold content"):
+        module._capture_state_screenshot(
+            page=clipped,
+            output_dir=tmp_path / "clipped",
+            state_name="mobile-atlas-normal",
+        )
 
 
 def test_project_state_assertion_rejects_wrong_semantic_story_slot() -> None:

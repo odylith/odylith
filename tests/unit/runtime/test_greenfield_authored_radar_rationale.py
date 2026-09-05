@@ -65,7 +65,6 @@ def _authored_proposal(tmp_path: Path, *, non_goals: list[str]) -> dict[str, obj
             "action_verb_quote": "records",
             "target_quote": "berth occupancy",
             "visible_result_quote": "sees a signed berth receipt",
-            "recovery_path": False,
         },
     )
     prompt = "\n".join(

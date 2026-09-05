@@ -31,20 +31,9 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import pr
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import write_compiled_product_create_transaction_file
-from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
-    GREENFIELD_INTENT_AUTHORING_VERSION,
-)
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
-    DEEP_PROFILE_ID,
-    RESCUE_PROFILE_ID,
-    STANDARD_PROFILE_ID,
-    get_greenfield_model_profile,
-)
-from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_ENGINE_VERSION
-from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_QUALITY_MANIFEST_VERSION
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
@@ -52,6 +41,7 @@ from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.surfaces import brand_assets
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
+from tests.unit.runtime.greenfield_proposal_fixtures import approved_authored_quality_manifest_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import materialize_typed_intent_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_package_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_transaction
@@ -116,7 +106,9 @@ def _authored_supplier_proposal(repo_root: Path) -> tuple[dict[str, Any], dict[s
         "human_actors": ["Supplier Risk Analyst"],
         "external_systems": [],
         "internal_systems": ["Supplier Review Service"],
-        "assumptions": ["The first release supports one reviewer role."],
+        "assumptions": [
+            {"applies_to": "general", "statement": "The first release supports one reviewer role."}
+        ],
         "ambiguities": [],
         "non_goals": ["Do not automate supplier approval decisions."],
     }
@@ -131,7 +123,6 @@ def _authored_supplier_proposal(repo_root: Path) -> tuple[dict[str, Any], dict[s
                 "action_verb_quote": "records",
                 "target_quote": "one supplier risk case",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -141,7 +132,6 @@ def _authored_supplier_proposal(repo_root: Path) -> tuple[dict[str, Any], dict[s
                 "action_verb_quote": "presents",
                 "target_quote": "the supplier evidence",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "human",
@@ -150,7 +140,6 @@ def _authored_supplier_proposal(repo_root: Path) -> tuple[dict[str, Any], dict[s
                 "action_verb_quote": "reviews",
                 "target_quote": "the evidence",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "human",
@@ -159,7 +148,6 @@ def _authored_supplier_proposal(repo_root: Path) -> tuple[dict[str, Any], dict[s
                 "action_verb_quote": "records",
                 "target_quote": "a decision",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -169,7 +157,6 @@ def _authored_supplier_proposal(repo_root: Path) -> tuple[dict[str, Any], dict[s
                 "action_verb_quote": "shows",
                 "target_quote": "a reviewable risk receipt",
                 "visible_result_quote": "a reviewable risk receipt",
-                "recovery_path": False,
             },
         ],
         component_responsibility_owners=["Supplier Review Service"],
@@ -406,189 +393,6 @@ def _write_compass_memory_event(root: Path, event: Mapping[str, Any]) -> Path:
     return stream_path
 
 
-def _approved_quality_manifest(**overrides: Any) -> dict[str, Any]:
-    manifest: dict[str, Any] = {
-        "version": PRECONFIRM_QUALITY_MANIFEST_VERSION,
-        "engine": PRECONFIRM_ENGINE_VERSION,
-        "status": "passed",
-        "validation_status": "passed",
-        "issue_count": 0,
-        "hard_blocker": None,
-        "requested_repair_tier": "auto",
-        "repair_tier": "standard",
-        "budget_seconds": 60.0,
-        "elapsed_seconds": 12.3,
-        "write_transaction": {
-            "status": "not_started",
-            "rollback_guard": "enabled",
-            "prewrite_clean_before_commit": True,
-        },
-        "semantic_compiler": {
-            "version": "odylith.greenfield.authored-semantic-validation.v1",
-            "status": "passed",
-            "semantic_owner": "single_model_authoring_response",
-            "post_authoring_interpretation_calls": 0,
-        },
-        "model_authoring": _approved_model_authoring(
-            STANDARD_PROFILE_ID,
-            elapsed_seconds=12.0,
-        ),
-    }
-    manifest.update(overrides)
-    return manifest
-
-
-def _approved_model_authoring(profile_id: str, *, elapsed_seconds: float) -> dict[str, Any]:
-    profile = get_greenfield_model_profile(profile_id)
-    return {
-        "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
-        "semantic_model_call_count": 1,
-        "tier": profile.repair_tier,
-        "elapsed_seconds": elapsed_seconds,
-        "model_profile": {
-            "profile_id": profile.profile_id,
-            "provider": profile.provider,
-            "model": profile.model,
-            "reasoning_effort": profile.reasoning_effort,
-            "effective_timeout_seconds": profile.model_timeout_seconds,
-            "authoring_tier": profile.repair_tier,
-        },
-    }
-
-
-def test_quality_approval_accepts_one_model_call_and_zero_reinterpretation() -> None:
-    greenfield_create_transaction.require_product_create_transaction_quality_approved(
-        _approved_quality_manifest(
-            semantic_compiler={
-                "version": "odylith.greenfield.authored-semantic-validation.v1",
-                "status": "passed",
-                "semantic_owner": "single_model_authoring_response",
-                "post_authoring_interpretation_calls": 0,
-            },
-            model_authoring=_approved_model_authoring(
-                STANDARD_PROFILE_ID,
-                elapsed_seconds=12.0,
-            ),
-        )
-    )
-
-
-def test_quality_approval_accepts_explicit_deep_profile() -> None:
-    greenfield_create_transaction.require_product_create_transaction_quality_approved(
-        _approved_quality_manifest(
-            requested_repair_tier="deep",
-            repair_tier="deep",
-            budget_seconds=120.0,
-            semantic_compiler={
-                "version": "odylith.greenfield.authored-semantic-validation.v1",
-                "status": "passed",
-                "semantic_owner": "single_model_authoring_response",
-                "post_authoring_interpretation_calls": 0,
-            },
-            model_authoring=_approved_model_authoring(
-                DEEP_PROFILE_ID,
-                elapsed_seconds=100.0,
-            ),
-        )
-    )
-
-
-def test_quality_approval_accepts_explicit_rescue_profile() -> None:
-    greenfield_create_transaction.require_product_create_transaction_quality_approved(
-        _approved_quality_manifest(
-            requested_repair_tier="rescue",
-            repair_tier="rescue",
-            budget_seconds=90.0,
-            semantic_compiler={
-                "version": "odylith.greenfield.authored-semantic-validation.v1",
-                "status": "passed",
-                "semantic_owner": "single_model_authoring_response",
-                "post_authoring_interpretation_calls": 0,
-            },
-            model_authoring=_approved_model_authoring(
-                RESCUE_PROFILE_ID,
-                elapsed_seconds=80.0,
-            ),
-        )
-    )
-
-
-def test_quality_approval_rejects_default_route_relabelled_as_rescue() -> None:
-    with pytest.raises(ValueError, match="quality manifest is not approved"):
-        greenfield_create_transaction.require_product_create_transaction_quality_approved(
-            _approved_quality_manifest(
-                requested_repair_tier="auto",
-                repair_tier="rescue",
-                budget_seconds=90.0,
-                semantic_compiler={
-                    "version": "odylith.greenfield.authored-semantic-validation.v1",
-                    "status": "passed",
-                    "semantic_owner": "single_model_authoring_response",
-                    "post_authoring_interpretation_calls": 0,
-                },
-                model_authoring=_approved_model_authoring(
-                    RESCUE_PROFILE_ID,
-                    elapsed_seconds=50.0,
-                ),
-            )
-        )
-
-
-def test_quality_approval_rejects_profile_tier_relabeling() -> None:
-    receipt = _approved_model_authoring(DEEP_PROFILE_ID, elapsed_seconds=12.0)
-    receipt["tier"] = "standard"
-
-    with pytest.raises(ValueError, match="quality manifest is not approved"):
-        greenfield_create_transaction.require_product_create_transaction_quality_approved(
-            _approved_quality_manifest(
-                requested_repair_tier="deep",
-                repair_tier="deep",
-                budget_seconds=120.0,
-                semantic_compiler={
-                    "version": "odylith.greenfield.authored-semantic-validation.v1",
-                    "status": "passed",
-                    "semantic_owner": "single_model_authoring_response",
-                    "post_authoring_interpretation_calls": 0,
-                },
-                model_authoring=receipt,
-            )
-        )
-
-
-@pytest.mark.parametrize(
-    "retired_version",
-    (
-        "odylith.greenfield.model-intent-authoring.v1",
-        "odylith.greenfield.intent-authoring.v4",
-        "odylith.greenfield.intent-authoring.v5",
-    ),
-)
-def test_quality_approval_rejects_retired_model_authoring_versions(
-    retired_version: str,
-) -> None:
-    with pytest.raises(
-        ValueError,
-        match="pre-confirm ProductCreateTransaction quality manifest is not approved",
-    ):
-        greenfield_create_transaction.require_product_create_transaction_quality_approved(
-            _approved_quality_manifest(
-                semantic_compiler={
-                    "version": "odylith.greenfield.authored-semantic-validation.v1",
-                    "status": "passed",
-                    "semantic_owner": "single_model_authoring_response",
-                    "post_authoring_interpretation_calls": 0,
-                },
-                model_authoring={
-                    "authoring_version": retired_version,
-                    "semantic_model_call_count": 1,
-                    "tier": "standard",
-                    "elapsed_seconds": 12.0,
-                },
-            ),
-            authored_projection_verified=True,
-        )
-
-
 def _valid_idea_file_text(*, idea_id: str, title: str) -> str:
     sections = {
         section: f"{title} keeps the first release path concrete and reviewable."
@@ -635,7 +439,7 @@ def _transaction(repo_root: Path | None = None) -> Any:
         prewrite_package=package,
         backlog_result=package.backlog_result or {},
         intent_authority=authority,
-        quality_manifest=_approved_quality_manifest(),
+        quality_manifest=approved_authored_quality_manifest_fixture(),
         repo_root=root,
     )
 
@@ -916,7 +720,7 @@ def test_product_create_transaction_json_round_trips_traceability_diagram_links(
         prewrite_package=package,
         backlog_result=package.backlog_result or {},
         intent_authority=authority,
-        quality_manifest=_approved_quality_manifest(),
+        quality_manifest=approved_authored_quality_manifest_fixture(),
         repo_root=root,
     )
 
@@ -1119,102 +923,6 @@ def test_commit_product_create_transaction_rejects_missing_confirm_before_hash_o
             transaction_hash="not-the-compiled-hash",
             confirm=False,
             started_at=0.0,
-        )
-
-
-@pytest.mark.parametrize(
-    "quality_manifest",
-    (
-        {"status": "failed", "validation_status": "passed", "issue_count": 0},
-        {"status": "passed", "validation_status": "failed", "issue_count": 0},
-        {"status": "passed", "validation_status": "passed", "issue_count": 0, "hard_blocker": "component spec"},
-        {"status": "passed", "validation_status": "passed", "issue_count": 1},
-        _approved_quality_manifest(version=""),
-        _approved_quality_manifest(engine=""),
-        _approved_quality_manifest(write_transaction={"status": "committed", "rollback_guard": "enabled"}),
-        _approved_quality_manifest(
-            write_transaction={
-                "status": "not_started",
-                "rollback_guard": "disabled",
-                "prewrite_clean_before_commit": True,
-            }
-        ),
-        _approved_quality_manifest(
-            write_transaction={
-                "status": "not_started",
-                "rollback_guard": "enabled",
-                "prewrite_clean_before_commit": False,
-            }
-        ),
-        _approved_quality_manifest(
-            write_transaction={
-                "status": "not_started",
-                "rollback_guard": "enabled",
-                "prewrite_clean_before_commit": True,
-                "commit_only": True,
-            }
-        ),
-        _approved_quality_manifest(elapsed_seconds=60.0),
-        _approved_quality_manifest(budget_seconds=90.0),
-        _approved_quality_manifest(
-            requested_repair_tier="auto",
-            repair_tier="rescue",
-            budget_seconds=90.0,
-        ),
-        _approved_quality_manifest(
-            requested_repair_tier="auto",
-            repair_tier="deep",
-            budget_seconds=120.0,
-        ),
-        _approved_quality_manifest(
-            semantic_compiler={
-                "semantic_owner": "single_model_authoring_response",
-                "post_authoring_interpretation_calls": 0,
-            }
-        ),
-        _approved_quality_manifest(
-            semantic_compiler={
-                "version": "odylith.greenfield.authored-semantic-validation.v1",
-                "status": "passed",
-                "semantic_owner": "single_model_authoring_response",
-                "post_authoring_interpretation_calls": 0,
-            },
-            model_authoring={
-                "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
-                "semantic_model_call_count": 1,
-                "tier": "standard",
-            },
-        ),
-        _approved_quality_manifest(
-            semantic_compiler={
-                "version": "odylith.greenfield.authored-semantic-validation.v1",
-                "status": "passed",
-                "semantic_owner": "single_model_authoring_response",
-                "post_authoring_interpretation_calls": 0,
-            },
-            model_authoring={
-                "authoring_version": "odylith.greenfield.intent-authoring.v4",
-                "semantic_model_call_count": 1,
-                "tier": "standard",
-            },
-        ),
-    ),
-)
-def test_build_product_create_transaction_rejects_unapproved_manifest_before_confirmation(
-    tmp_path: Path,
-    quality_manifest: Mapping[str, Any],
-) -> None:
-    base = _transaction(repo_root=tmp_path)
-    with pytest.raises(ValueError, match="pre-confirm ProductCreateTransaction quality manifest is not approved"):
-        build_product_create_transaction(
-            proposal=base.proposal,
-            release_selector=base.release_selector,
-            validation_gate=base.validation_gate,
-            prewrite_package=base.prewrite_package,
-            backlog_result=base.backlog_result,
-            intent_authority=base.intent_authority,
-            quality_manifest=quality_manifest,
-            repo_root=tmp_path,
         )
 
 
@@ -1549,7 +1257,7 @@ def test_product_create_transaction_rejects_incomplete_compiled_package_before_c
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-            quality_manifest=_approved_quality_manifest(),
+            quality_manifest=approved_authored_quality_manifest_fixture(),
             repo_root=tmp_path,
         )
 
@@ -1569,7 +1277,7 @@ def test_product_create_transaction_rejects_drift_between_reviewed_and_compiled_
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-            quality_manifest=_approved_quality_manifest(),
+            quality_manifest=approved_authored_quality_manifest_fixture(),
             repo_root=tmp_path,
         )
 
@@ -1607,7 +1315,7 @@ def test_product_create_transaction_rejects_missing_surface_refresh_proof_before
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-            quality_manifest=_approved_quality_manifest(),
+            quality_manifest=approved_authored_quality_manifest_fixture(),
             repo_root=tmp_path,
         )
 
@@ -1626,7 +1334,7 @@ def test_product_create_transaction_rejects_missing_compiled_atlas_catalog_rows_
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-            quality_manifest=_approved_quality_manifest(),
+            quality_manifest=approved_authored_quality_manifest_fixture(),
             repo_root=tmp_path,
         )
 
@@ -1643,7 +1351,7 @@ def test_product_create_transaction_rejects_missing_compiled_traceability_before
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-            quality_manifest=_approved_quality_manifest(),
+            quality_manifest=approved_authored_quality_manifest_fixture(),
             repo_root=tmp_path,
         )
 
@@ -1664,7 +1372,7 @@ def test_product_create_transaction_rejects_compiled_traceability_without_diagra
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-            quality_manifest=_approved_quality_manifest(),
+            quality_manifest=approved_authored_quality_manifest_fixture(),
             repo_root=tmp_path,
         )
 

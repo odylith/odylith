@@ -9,11 +9,12 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from odylith.install.fs import atomic_write_text
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import assumption_preview_values
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_SEMANTICS_KEY,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
-    LIST_FACT_KEYS,
+    product_facts_payload,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     PRODUCT_FACT_KEYS,
@@ -121,12 +122,21 @@ def render_candidate_intent_markdown(intent: Mapping[str, Any]) -> str:
     """Render the human view of the typed candidate; Markdown remains non-authoritative."""
 
     title = _text_fact(intent, "title", default="Greenfield Project")
+    decisions = [
+        f"- {label}: {_text_fact(intent, field)}"
+        for field, label in (
+            ("problem", "Problem"), ("customer", "Customer"),
+            ("opportunity", "Opportunity"), ("product_view", "Product view"),
+        )
+        if _text_fact(intent, field)
+    ]
     lines = [
         f"# {title} - Product Intent Confirmation",
         "",
         "## Product story",
         _text_fact(intent, "product_story"),
         "",
+        *(["## Source-stated decisions", *decisions, ""] if decisions else []),
         "## State object",
         _text_fact(intent, "state_object"),
         "",
@@ -140,7 +150,7 @@ def render_candidate_intent_markdown(intent: Mapping[str, Any]) -> str:
         ),
         "",
         "## Human actors",
-        *_bullet_lines(intent.get("human_actors"), empty_text="Primary user: completes the first proof path."),
+        *_bullet_lines(intent.get("human_actors"), empty_text="No human participants are stated in the source."),
         "",
         "## External systems",
         *_bullet_lines(
@@ -153,7 +163,7 @@ def render_candidate_intent_markdown(intent: Mapping[str, Any]) -> str:
         "",
         "## Critical assumptions",
         *_bullet_lines(
-            intent.get("assumptions"),
+            assumption_preview_values(intent.get("assumptions", [])),
             empty_text="Release 0.0.1 proves one complete path before broader automation.",
         ),
         "",
@@ -223,24 +233,7 @@ def _verified_stage_facts(
 
 
 def _exact_product_facts(value: Mapping[str, Any]) -> dict[str, Any]:
-    facts: dict[str, Any] = {}
-    for key in PRODUCT_FACT_KEYS:
-        if key not in value:
-            continue
-        raw = value.get(key)
-        if key in LIST_FACT_KEYS:
-            if not isinstance(raw, list) or any(
-                not isinstance(row, str) or not row for row in raw
-            ):
-                raise ValueError(f"typed candidate {key} must be an exact string list")
-            if raw:
-                facts[key] = copy.deepcopy(raw)
-            continue
-        if not isinstance(raw, str):
-            raise ValueError(f"typed candidate {key} must be an exact string")
-        if raw:
-            facts[key] = raw
-    return facts
+    return copy.deepcopy(product_facts_payload(value))
 
 
 def _candidate_payloads(

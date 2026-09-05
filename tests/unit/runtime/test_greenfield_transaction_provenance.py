@@ -742,8 +742,8 @@ def test_commit_rejects_compiler_identity_drift_before_the_write_boundary(
 @pytest.mark.parametrize(
     ("field", "retired_value"),
     (
-        ("version", "odylith.product-intent-authority.v6"),
-        ("envelope_schema_version", "odylith.product-intent-envelope.v6"),
+        ("version", "odylith.product-intent-authority.v8"),
+        ("envelope_schema_version", "odylith.product-intent-envelope.v8"),
         ("ledger_version", "odylith.product-intent-custody-ledger.v5"),
         ("atomic_ledger_version", "odylith.product-intent-atomic-facts.v1"),
     ),

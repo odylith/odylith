@@ -44,6 +44,7 @@ _PROFILES = MappingProxyType(
             reasoning_effort="medium",
             consumer_budget_seconds=60.0,
             model_timeout_seconds=55.0,
+            lower_capability=True,
         ),
         RESCUE_PROFILE_ID: GreenfieldModelProfile(
             profile_id=RESCUE_PROFILE_ID,
@@ -71,7 +72,6 @@ _PROFILES = MappingProxyType(
             reasoning_effort="high",
             consumer_budget_seconds=90.0,
             model_timeout_seconds=1.0,
-            lower_capability=True,
             supported_success=False,
         ),
     }

@@ -36,17 +36,21 @@ MODEL_EVENT_FIELDS = frozenset(
         "actor_quote",
         "action_quote",
         "target_quote",
-        "recovery_path",
     }
 )
 MODEL_TERMINAL_FIELDS = frozenset({"result_quote", "result_occurrence"})
-MODEL_COMPONENT_FIELDS = frozenset({"owner_fact_quote"})
+MODEL_COMPONENT_FIELDS = frozenset({"owner_fact_quote", "responsibilities"})
+MODEL_COMPONENT_RESPONSIBILITY_FIELDS = frozenset({"quote", "occurrence"})
 _CONTEXT_KIND_BY_FIELD = {
     "state_object": "state_object",
     "external_systems": "external_system",
     "operational_constraints": "operational_constraint",
 }
 _CONTEXT_FIELD_ORDER = tuple(_CONTEXT_KIND_BY_FIELD)
+
+
+class GreenfieldComponentOwnershipError(GreenfieldAuthoredSemanticsError):
+    """A source-bound responsibility conflicts with its typed event owner."""
 
 
 @dataclass(frozen=True)
@@ -91,6 +95,89 @@ def derive_model_relations(
         ),
         terminal_result_fact=terminal_fact,
     )
+
+
+def model_component_responsibility_rows(value: Any) -> tuple[dict[str, Any], ...]:
+    """Flatten structurally owner-bound model citations without changing meaning."""
+
+    if (
+        not isinstance(value, Sequence)
+        or isinstance(value, (str, bytes, bytearray))
+        or not value
+        or len(value) > MAX_COMPONENT_RESPONSIBILITY_RELATIONS
+    ):
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring returned invalid component ownership"
+        )
+    rows: list[dict[str, Any]] = []
+    empty_group_count = 0
+    owner_fact_quotes: set[str] = set()
+    for raw in value:
+        if not isinstance(raw, Mapping) or set(raw) != MODEL_COMPONENT_FIELDS:
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield authoring returned invalid component ownership"
+            )
+        owner_fact_quote = _required_quote(raw.get("owner_fact_quote"))
+        if owner_fact_quote in owner_fact_quotes:
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield authoring returned invalid component ownership"
+            )
+        owner_fact_quotes.add(owner_fact_quote)
+        responsibilities = raw.get("responsibilities")
+        if (
+            not isinstance(responsibilities, Sequence)
+            or isinstance(responsibilities, (str, bytes, bytearray))
+            or len(responsibilities) > MAX_COMPONENT_RESPONSIBILITY_RELATIONS
+        ):
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield authoring returned invalid component ownership"
+            )
+        if not responsibilities:
+            empty_group_count += 1
+            rows.append(
+                {
+                    "owner_fact_quote": owner_fact_quote,
+                    "responsibility_quote": "",
+                    "responsibility_occurrence": 0,
+                }
+            )
+            continue
+        for responsibility in responsibilities:
+            if (
+                not isinstance(responsibility, Mapping)
+                or set(responsibility) != MODEL_COMPONENT_RESPONSIBILITY_FIELDS
+            ):
+                raise GreenfieldAuthoredSemanticsError(
+                    "Greenfield authoring returned invalid component ownership"
+                )
+            rows.append(
+                {
+                    "owner_fact_quote": owner_fact_quote,
+                    "responsibility_quote": _required_quote(
+                        responsibility.get("quote")
+                    ),
+                    "responsibility_occurrence": _positive_index(
+                        responsibility.get("occurrence")
+                    ),
+                }
+            )
+    responsibility_count = sum(
+        bool(row["responsibility_quote"])
+        for row in rows
+    )
+    if (
+        len(rows) > MAX_COMPONENT_RESPONSIBILITY_RELATIONS
+        or (responsibility_count and empty_group_count)
+        or (not responsibility_count and (len(value) != 1 or len(rows) != 1))
+        or any(
+            row["responsibility_quote"] and not row["responsibility_occurrence"]
+            for row in rows
+        )
+    ):
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring returned invalid component ownership"
+        )
+    return tuple(rows)
 
 
 def _derive_events(
@@ -189,7 +276,6 @@ def _derive_events(
                 "Greenfield authoring returned an ungrounded first-path actor"
             )
         action_quote = _required_quote(raw.get("action_quote"))
-        recovery_path = raw.get("recovery_path")
         target_quote = _event_target_quote(
             raw.get("target_quote"),
             event_quote=event_quote,
@@ -198,7 +284,6 @@ def _derive_events(
         if (
             actor_kind not in FIRST_PATH_ACTOR_KINDS
             or action_quote not in event_quote
-            or not isinstance(recovery_path, bool)
         ):
             raise GreenfieldAuthoredSemanticsError(
                 "Greenfield authoring returned an ungrounded first-path event"
@@ -216,7 +301,6 @@ def _derive_events(
                 "action_verb_quote": action_quote,
                 "target_quote": target_quote,
                 "visible_result_quote": "",
-                "recovery_path": recovery_path,
             }
         )
         seen_source_events.add((source_start, source_end))
@@ -335,26 +419,20 @@ def _derive_component_relations(
     first_path_relations: Sequence[Mapping[str, Any]],
     terminal_result_fact: Mapping[str, Any],
 ) -> tuple[dict[str, Any], ...]:
-    if (
-        not isinstance(value, Sequence)
-        or isinstance(value, (str, bytes, bytearray))
-        or not value
-        or len(value) > MAX_COMPONENT_RESPONSIBILITY_RELATIONS
-    ):
-        raise GreenfieldAuthoredSemanticsError(
-            "Greenfield authoring returned invalid component ownership"
-        )
+    model_rows = model_component_responsibility_rows(value)
     owner_facts = _selected_product_owner_facts(selected_facts)
     responsibility_facts = tuple(
         fact
         for fact in selected_facts
         if str(fact.get("field") or "") == "component_responsibilities"
     )
-    if responsibility_facts and len(value) != len(responsibility_facts):
+    if responsibility_facts and len(model_rows) != len(responsibility_facts):
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring left component responsibilities without owners"
         )
-    if not responsibility_facts and len(value) != 1:
+    if not responsibility_facts and (
+        len(model_rows) != 1 or model_rows[0]["responsibility_quote"]
+    ):
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring did not establish one viable component owner"
         )
@@ -362,11 +440,7 @@ def _derive_component_relations(
     aligned_facts: Sequence[Mapping[str, Any] | None] = (
         responsibility_facts if responsibility_facts else (None,)
     )
-    for raw, responsibility_fact in zip(value, aligned_facts, strict=True):
-        if not isinstance(raw, Mapping) or set(raw) != MODEL_COMPONENT_FIELDS:
-            raise GreenfieldAuthoredSemanticsError(
-                "Greenfield authoring returned invalid component ownership"
-            )
+    for raw, responsibility_fact in zip(model_rows, aligned_facts, strict=True):
         owner_fact = owner_facts.get(str(raw.get("owner_fact_quote") or ""))
         if owner_fact is None:
             raise GreenfieldAuthoredSemanticsError(
@@ -391,6 +465,10 @@ def _derive_component_relations(
             )
             continue
         responsibility_quote = str(responsibility_fact.get("quote") or "")
+        if responsibility_quote != raw["responsibility_quote"]:
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield authoring left component responsibilities without owners"
+            )
         overlaps = overlapping_first_path_event_orders(
             source_start=responsibility_fact.get("source_start_byte"),
             source_end=responsibility_fact.get("source_end_byte"),
@@ -400,12 +478,32 @@ def _derive_component_relations(
         linked_event = (
             first_path_relations[event_order - 1] if event_order else None
         )
+        responsibility_start = _nonnegative_int(
+            responsibility_fact.get("source_start_byte")
+        )
+        responsibility_end = _positive_int(
+            responsibility_fact.get("source_end_byte")
+        )
+        responsibility_is_event_bound = (
+            linked_event is not None
+            and _nonnegative_int(linked_event.get("source_start_byte"))
+            <= responsibility_start
+            and responsibility_end
+            <= _positive_int(linked_event.get("source_end_byte"))
+        )
+        if (
+            responsibility_is_event_bound
+            and str(linked_event.get("actor_kind") or "") != "product"
+        ):
+            raise GreenfieldComponentOwnershipError(
+                "Greenfield authoring assigned a non-product event as a component responsibility"
+            )
         if (
             linked_event is not None
             and str(linked_event.get("actor_kind") or "") == "product"
             and str(linked_event.get("owner_system_path") or "") != owner_path
         ):
-            raise GreenfieldAuthoredSemanticsError(
+            raise GreenfieldComponentOwnershipError(
                 "Greenfield authoring assigned contradictory component owners"
             )
         rows.append(
@@ -626,7 +724,6 @@ _EVENT_SCHEMA: dict[str, Any] = {
         "actor_quote": _quote_schema(required=True),
         "action_quote": _quote_schema(required=True),
         "target_quote": _quote_schema(),
-        "recovery_path": {"type": "boolean"},
     },
 }
 
@@ -657,17 +754,32 @@ MODEL_TERMINAL_SCHEMA: dict[str, Any] = {
     ]
 }
 
-MODEL_COMPONENT_SCHEMA: dict[str, Any] = _array_schema(
-    {
-        "type": "object",
-        "additionalProperties": False,
-        "required": sorted(MODEL_COMPONENT_FIELDS),
-        "properties": {
-            "owner_fact_quote": _quote_schema(required=True),
+MODEL_COMPONENT_SCHEMA: dict[str, Any] = {
+    **_array_schema(
+        {
+            "type": "object",
+            "additionalProperties": False,
+            "required": sorted(MODEL_COMPONENT_FIELDS),
+            "properties": {
+                "owner_fact_quote": _quote_schema(required=True),
+                "responsibilities": _array_schema(
+                    {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "required": sorted(MODEL_COMPONENT_RESPONSIBILITY_FIELDS),
+                        "properties": {
+                            "quote": _quote_schema(required=True),
+                            "occurrence": {"type": "integer", "minimum": 1},
+                        },
+                    },
+                    maximum=MAX_COMPONENT_RESPONSIBILITY_RELATIONS,
+                ),
+            },
         },
-    },
-    maximum=MAX_COMPONENT_RESPONSIBILITY_RELATIONS,
-)
+        maximum=MAX_COMPONENT_RESPONSIBILITY_RELATIONS,
+    ),
+    "minItems": 1,
+}
 
 
 __all__ = [
@@ -675,5 +787,7 @@ __all__ = [
     "MODEL_EVENT_SCHEMA",
     "MODEL_TERMINAL_SCHEMA",
     "DerivedModelRelations",
+    "GreenfieldComponentOwnershipError",
     "derive_model_relations",
+    "model_component_responsibility_rows",
 ]

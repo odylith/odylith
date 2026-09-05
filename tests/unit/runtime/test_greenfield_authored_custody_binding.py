@@ -65,7 +65,6 @@ def _materialized_authored_intent(tmp_path: Path) -> dict[str, Any]:
             "action_verb_quote": "enters",
             "target_quote": "a vessel tag",
             "visible_result_quote": "",
-            "recovery_path": False,
         },
         {
             "actor_kind": "product",
@@ -75,7 +74,6 @@ def _materialized_authored_intent(tmp_path: Path) -> dict[str, Any]:
             "action_verb_quote": "records",
             "target_quote": "berth occupancy",
             "visible_result_quote": "",
-            "recovery_path": False,
         },
         {
             "actor_kind": "product",
@@ -85,7 +83,6 @@ def _materialized_authored_intent(tmp_path: Path) -> dict[str, Any]:
             "action_verb_quote": "shows",
             "target_quote": "the placement",
             "visible_result_quote": "the berth map shows the placement",
-            "recovery_path": False,
         },
     ]
     source = ". ".join(
@@ -292,15 +289,15 @@ def test_proposal_construction_rejects_older_authored_semantics_without_inferenc
         )
 
 
-@pytest.mark.parametrize("mutation", ("recovery", "omission"))
+@pytest.mark.parametrize("mutation", ("removed_classification", "omission"))
 def test_transaction_compilation_rejects_mutated_relation_set(
     tmp_path: Path,
     mutation: str,
 ) -> None:
     candidate = _materialized_authored_intent(tmp_path)
     mutated, relations = _mutated_relations(candidate)
-    if mutation == "recovery":
-        relations[0]["recovery_path"] = True
+    if mutation == "removed_classification":
+        relations[0]["unsupported_classification"] = "recovery"
     else:
         del relations[1]
         relations[1]["order"] = 2
@@ -310,7 +307,11 @@ def test_transaction_compilation_rejects_mutated_relation_set(
         PRODUCT_INTENT_AUTHORITY_KEY: candidate[PRODUCT_INTENT_AUTHORITY_KEY],
     }
 
-    expected_error = "do not match sealed Product Intent authority"
+    expected_error = (
+        "invalid first-path relations"
+        if mutation == "removed_classification"
+        else "do not match sealed Product Intent authority"
+    )
     with pytest.raises(GreenfieldAuthoredSemanticsError, match=expected_error):
         greenfield_proposals.compile_greenfield_create_transaction(
             repo_root=tmp_path,

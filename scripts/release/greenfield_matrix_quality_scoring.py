@@ -19,6 +19,9 @@ from odylith.runtime.domain_intelligence.artifact_tribunal_actors import (
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
 )
+from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+    MAX_GREENFIELD_SEMANTIC_CALLS,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     get_greenfield_model_profile,
@@ -832,6 +835,8 @@ def _typed_structural_validation_passed(manifest: Mapping[str, Any]) -> bool:
 
     lens_report = mapping_copy(manifest.get("quality_lenses"))
     semantic_compiler = mapping_copy(manifest.get("semantic_compiler"))
+    model_authoring = mapping_copy(manifest.get("model_authoring"))
+    semantic_model_call_count = model_authoring.get("semantic_model_call_count")
     return (
         str(manifest.get("status", "")).strip() == "passed"
         and str(manifest.get("validation_status", "")).strip() == "passed"
@@ -839,9 +844,13 @@ def _typed_structural_validation_passed(manifest: Mapping[str, Any]) -> bool:
         and str(lens_report.get("status", "")).strip() == "not_applicable"
         and str(lens_report.get("reason", "")).strip() == "typed_structural_validation"
         and str(semantic_compiler.get("status", "")).strip() == "passed"
+        and str(semantic_compiler.get("version", "")).strip()
+        == "odylith.greenfield.authored-semantic-validation.v2"
         and str(semantic_compiler.get("semantic_owner", "")).strip()
-        == "single_model_authoring_response"
+        == "validated_model_authored_intent"
         and semantic_compiler.get("post_authoring_interpretation_calls") == 0
+        and type(semantic_model_call_count) is int
+        and 1 <= semantic_model_call_count <= MAX_GREENFIELD_SEMANTIC_CALLS
     )
 
 

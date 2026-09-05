@@ -32,7 +32,6 @@ _AUTHORED_COMPONENT_CONTRACT_FIELDS = frozenset(
         "owner_bound_events",
         "event_targets",
         "visible_results",
-        "recovery_events",
         "state_context",
         "external_dependencies",
         "operational_constraints",
@@ -212,7 +211,6 @@ def build_authored_component_spec(row: Mapping[str, Any]) -> str:
     owner_bound_events = _contract_facts(contract, "owner_bound_events", component_id=component_id)
     event_targets = _contract_facts(contract, "event_targets", component_id=component_id)
     visible_results = _contract_facts(contract, "visible_results", component_id=component_id)
-    recovery_events = _contract_facts(contract, "recovery_events", component_id=component_id)
     state_context = _contract_facts(contract, "state_context", component_id=component_id)
     external_dependencies = _contract_facts(
         contract,
@@ -266,10 +264,6 @@ def build_authored_component_spec(row: Mapping[str, Any]) -> str:
             "### Visible results",
             "",
             _relation_facts(visible_results, relation_label="visible result"),
-            "",
-            "### Recovery events",
-            "",
-            _relation_facts(recovery_events, relation_label="recovery event"),
             "",
             "### State context",
             "",
@@ -372,7 +366,6 @@ def _authored_component_contract(
         "owner_bound_events",
         "event_targets",
         "visible_results",
-        "recovery_events",
         "state_context",
         "external_dependencies",
         "operational_constraints",

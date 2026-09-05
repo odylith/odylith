@@ -90,7 +90,6 @@ def _proposal() -> dict[str, object]:
             "action_verb_quote": "QuOrates",
             "target_quote": "Æther packet",
             "visible_result_quote": "",
-            "recovery_path": False,
         },
         {
             "order": 2,
@@ -109,7 +108,6 @@ def _proposal() -> dict[str, object]:
             "action_verb_quote": "vitrifies",
             "target_quote": "Æther packet",
             "visible_result_quote": "Ω-Receipt",
-            "recovery_path": False,
         },
     )
     return {
@@ -446,8 +444,9 @@ def test_authored_dashboard_labels_assumptions_without_promoting_them_to_blocker
     tmp_path: Path,
 ) -> None:
     proposal = _proposal()
+    assumption = "The product title is the sole component owner until source names a subsystem."
     proposal["assumptions"] = [
-        "The product title is the sole component owner until source names a subsystem."
+        {"applies_to": "general", "assumption": assumption}
     ]
 
     payload = preview_project_dashboard_payload(
@@ -461,7 +460,7 @@ def test_authored_dashboard_labels_assumptions_without_promoting_them_to_blocker
     )
 
     assert payload["open_label"] == "Assumptions"
-    assert payload["open"] == proposal["assumptions"]
+    assert payload["open"] == [assumption]
     assert payload["unknown"] == []
     assert payload["blockers"] == []
 
@@ -544,14 +543,17 @@ def test_authored_dashboard_checks_exact_capability_view_value_without_punctuati
     assert "model-authored Project dashboard drifted from typed owned_capabilities" in issues
 
 
-def test_authored_dashboard_keeps_missing_problem_visible_instead_of_reusing_story(
+def test_authored_dashboard_labels_provisional_problem_without_repeating_it(
     tmp_path: Path,
 ) -> None:
     proposal = _proposal()
     intent = deepcopy(proposal["intent"])
     assert isinstance(intent, dict)
     intent["problem"] = ""
+    assumption = "Operators need a consistent way to preserve the packet receipt."
+    intent["assumptions"] = [{"applies_to": "problem", "statement": assumption}]
     proposal["intent"] = intent
+    proposal["assumptions"] = [{"applies_to": "problem", "assumption": assumption}]
 
     payload = preview_project_dashboard_payload(
         root=tmp_path,
@@ -564,11 +566,9 @@ def test_authored_dashboard_keeps_missing_problem_visible_instead_of_reusing_sto
         for row in payload["product_story"]["release_contract"]
     }
 
-    assert cards["user_problem"] == (
-        "The source does not state the user problem. "
-        "Validate this gap before implementation."
-    )
+    assert cards["user_problem"] == f"Assumption — {assumption}"
     assert cards["user_problem"] != PRODUCT_STORY
+    assert assumption not in payload["open"]
 
 
 def test_authored_dashboard_uses_canonical_actor_fact_for_aliased_events(
@@ -647,7 +647,6 @@ def test_authored_dashboard_projects_title_owned_capability_without_empty_cards(
             "action_verb_quote": "enters",
             "target_quote": "vessel tag",
             "visible_result_quote": "",
-            "recovery_path": False,
         },
         {
             "actor_kind": "product",
@@ -657,7 +656,6 @@ def test_authored_dashboard_projects_title_owned_capability_without_empty_cards(
             "action_verb_quote": "records",
             "target_quote": "berth occupancy",
             "visible_result_quote": "",
-            "recovery_path": False,
         },
         {
             "actor_kind": "product",
@@ -667,7 +665,6 @@ def test_authored_dashboard_projects_title_owned_capability_without_empty_cards(
             "action_verb_quote": "shows",
             "target_quote": "placement",
             "visible_result_quote": "the placement",
-            "recovery_path": False,
         },
     )
     source = ". ".join(

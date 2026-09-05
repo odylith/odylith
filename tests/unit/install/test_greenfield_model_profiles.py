@@ -117,12 +117,13 @@ def test_profile_registry_pins_proven_standard_rescue_and_deep_requests() -> Non
     standard = get_greenfield_model_profile(STANDARD_PROFILE_ID)
     assert standard.model == "gpt-5.6-terra"
     assert standard.reasoning_effort == "medium"
-    assert standard.lower_capability is False
+    assert standard.lower_capability is True
     rescue = get_greenfield_model_profile(RESCUE_PROFILE_ID)
     assert rescue.model == "gpt-5.6-sol"
     assert rescue.reasoning_effort == "high"
     assert rescue.lower_capability is False
     assert get_greenfield_model_profile(DEEP_PROFILE_ID).model == "gpt-5.6-sol"
+    assert get_greenfield_model_profile(UNAVAILABLE_PROVIDER_PROFILE).lower_capability is False
     assert UNAVAILABLE_PROVIDER_PROFILE not in supported_greenfield_model_profile_ids()
 
 

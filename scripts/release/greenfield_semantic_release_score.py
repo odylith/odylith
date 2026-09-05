@@ -508,7 +508,7 @@ def _normalized_semantic_digest(annotation: Mapping[str, Any]) -> str:
                 return ""
             events.append((
                 order, str(row.get("actor_kind") or ""), actor_id, owner_id,
-                action_id, target_id, visible_id, row.get("recovery_path"),
+                action_id, target_id, visible_id,
             ))
         contexts = [
             (

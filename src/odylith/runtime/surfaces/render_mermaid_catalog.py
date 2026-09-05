@@ -21,6 +21,7 @@ from odylith.runtime.governance import component_registry_intelligence as compon
 from odylith.runtime.governance.delivery import scope_signal_ladder
 from odylith.runtime.surfaces import atlas_detail_layout
 from odylith.runtime.surfaces import atlas_render_metadata
+from odylith.runtime.surfaces import atlas_viewer_asset_runtime
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import dashboard_shell_links
 from odylith.runtime.surfaces import dashboard_ui_primitives
@@ -1974,6 +1975,7 @@ def _render_html(
     const stageEl = document.getElementById("viewerStage");
     const imageEl = document.getElementById("viewerImage");
     const zoomReadoutEl = document.getElementById("zoomReadout");
+__ODYLITH_ATLAS_VIEWER_ASSET_INITIALIZATION__
 
     let activeList = allDiagrams.slice();
     let activeIndex = 0;
@@ -2609,8 +2611,7 @@ def _render_html(
       historicalWorkstreamSummaryEl.textContent = "";
       staleAlertEl.classList.remove("visible");
       staleAlertEl.textContent = "";
-      imageEl.removeAttribute("src");
-      imageEl.dataset.fallbackApplied = "";
+__ODYLITH_ATLAS_VIEWER_ASSET_CLEAR__
     }
 
     function applyMeta(diagram) {
@@ -2628,17 +2629,7 @@ def _render_html(
       summaryEl.textContent = diagram.summary;
       readGuideEl.textContent = diagramReadGuide(diagram);
 
-      imageEl.onload = () => applyInitialView(diagram);
-      imageEl.onerror = () => {
-        const fallback = String(diagram.source_png_href || "").trim();
-        if (!fallback) return;
-        if (imageEl.dataset.fallbackApplied === "1") return;
-        imageEl.dataset.fallbackApplied = "1";
-        imageEl.src = fallback;
-      };
-      imageEl.dataset.fallbackApplied = "";
-      applyImageBoxSizing(diagram);
-      imageEl.src = diagram.source_svg_href;
+__ODYLITH_ATLAS_VIEWER_ASSET_LOAD__
 
       renderSourceLinks(diagram);
       renderDiagramBoxes(diagram);
@@ -3095,6 +3086,18 @@ def _render_html(
         .replace(
             "__ODYLITH_ATLAS_DETAIL_RUNTIME_HELPERS__",
             atlas_detail_layout.DETAIL_RUNTIME_HELPERS_JS.strip("\n"),
+        )
+        .replace(
+            "__ODYLITH_ATLAS_VIEWER_ASSET_INITIALIZATION__",
+            atlas_viewer_asset_runtime.VIEWER_ASSET_INITIALIZATION_JS.strip("\n"),
+        )
+        .replace(
+            "__ODYLITH_ATLAS_VIEWER_ASSET_CLEAR__",
+            atlas_viewer_asset_runtime.VIEWER_ASSET_CLEAR_JS.strip("\n"),
+        )
+        .replace(
+            "__ODYLITH_ATLAS_VIEWER_ASSET_LOAD__",
+            atlas_viewer_asset_runtime.VIEWER_ASSET_LOAD_JS.strip("\n"),
         )
         .replace("__ODYLITH_ATLAS_ARTIFACT_LABEL_TYPOGRAPHY__", artifact_label_css)
         .replace("__ODYLITH_ATLAS_DIAGRAM_BOX_ROLE_LABEL__", diagram_box_role_label_css)

@@ -114,8 +114,8 @@ def run_greenfield_preconfirm_engine(
 ) -> GreenfieldPreconfirmEngineResult:
     """Validate one exact authored package without reparsing, repair, or rerender.
 
-    The one model-authoring call, custody staging, package compilation, and this
-    gate share the selected 60/90/120-second consumer budget.
+    The bounded model-authoring calls, custody staging, package compilation, and
+    this gate share the selected 60/90/120-second consumer budget.
     """
 
     if not sealed_authored_projection(proposal):
@@ -277,9 +277,9 @@ def build_greenfield_preconfirm_manifest(
             "reason": "typed_structural_validation",
         },
         "semantic_compiler": {
-            "version": "odylith.greenfield.authored-semantic-validation.v1",
+            "version": "odylith.greenfield.authored-semantic-validation.v2",
             "status": "passed",
-            "semantic_owner": "single_model_authoring_response",
+            "semantic_owner": "validated_model_authored_intent",
             "post_authoring_interpretation_calls": 0,
         },
         "write_transaction": {

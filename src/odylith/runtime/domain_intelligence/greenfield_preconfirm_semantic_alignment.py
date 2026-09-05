@@ -24,7 +24,7 @@ def semantic_model_shape_issues(semantic: Mapping[str, Any]) -> list[str]:
         for key in required
         if not isinstance(semantic.get(key), (Mapping, list))
     ]
-    if normalize_string(semantic.get("schema_version")) != "odylith.greenfield.semantic_model.v1":
+    if normalize_string(semantic.get("schema_version")) != "odylith.greenfield.semantic_model.v2":
         issues.append("GreenfieldSemanticModel schema_version is missing or unsupported")
     first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
     events = first_path.get("events") if isinstance(first_path, Mapping) else None
@@ -78,7 +78,6 @@ def semantic_component_alignment_issues(proposal: Mapping[str, Any], semantic: M
             "owner_bound_events",
             "event_targets",
             "visible_results",
-            "recovery_events",
         ):
             if model.get(key) != contract.get(key):
                 issues.append(

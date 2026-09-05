@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+from odylith.runtime.surfaces import compass_dashboard_base
 from odylith.runtime.surfaces import compass_dashboard_runtime as runtime
 from odylith.runtime.surfaces import compass_runtime_payload_runtime
 from odylith.runtime.surfaces import compass_standup_brief_narrator
@@ -31,6 +32,103 @@ def _payload(*, generated_utc: str) -> dict[str, object]:
             "dates": [],
         },
     }
+
+
+def test_agent_stream_preserves_greenfield_governance_metadata(tmp_path: Path) -> None:
+    stream_path = tmp_path / "odylith" / "compass" / "runtime" / "agent-stream.v1.jsonl"
+    stream_path.parent.mkdir(parents=True)
+    stream_path.write_text(
+        json.dumps(
+            {
+                "kind": "decision",
+                "summary": "Accepted the sealed model-authored Greenfield package.",
+                "ts_iso": "2026-09-04T12:00:00Z",
+                "workstreams": ["B-001"],
+                "artifacts": ["odylith/radar/source/ideas/2026-09/example.md"],
+                "source": "domain-intelligence",
+                "evidence_tier": "user_intent",
+                "work_category": "governance",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    events = compass_dashboard_base._load_agent_stream_events(  # noqa: SLF001
+        repo_root=tmp_path,
+        stream_path=stream_path,
+        ws_path_index={},
+    )
+
+    assert len(events) == 1
+    assert events[0]["kind"] == "decision"
+    assert events[0]["evidence_tier"] == "user_intent"
+    assert events[0]["work_category"] == "governance"
+
+
+@pytest.mark.parametrize(
+    ("events", "expected_signal", "expected_mode"),
+    (
+        pytest.param(
+            [{"kind": "decision", "source": "domain-intelligence", "work_category": "governance"}],
+            False,
+            "active_non_implementation",
+            id="governance-only-decision",
+        ),
+        pytest.param(
+            [{"kind": "decision", "source": "assistant", "work_category": "architecture"}],
+            True,
+            "active_implementation",
+            id="general-decision",
+        ),
+        pytest.param(
+            [{"kind": "implementation", "source": "assistant", "work_category": "implementation"}],
+            True,
+            "active_implementation",
+            id="true-implementation",
+        ),
+        pytest.param(
+            [
+                {"kind": "decision", "source": "domain-intelligence", "work_category": "governance"},
+                {"kind": "implementation", "source": "assistant", "work_category": "implementation"},
+            ],
+            True,
+            "active_implementation",
+            id="mixed-governance-and-implementation",
+        ),
+    ),
+)
+def test_execution_focus_excludes_only_explicit_governance_only_events(
+    events: list[dict[str, str]],
+    expected_signal: bool,
+    expected_mode: str,
+) -> None:
+    timestamp = "2026-09-04T12:00:00+00:00"
+    transaction = {
+        "id": "txn:test",
+        "transaction_id": "txn:test",
+        "session_id": "",
+        "start_ts_iso": timestamp,
+        "end_ts_iso": timestamp,
+        "headline": "Focused classification control",
+        "context": "explicit classification evidence",
+        "event_count": len(events),
+        "files_count": 1,
+        "workstreams": ["B-001"],
+        "files": ["odylith/radar/source/ideas/2026-09/example.md"],
+        "events": events,
+    }
+
+    focus = runtime._build_execution_focus_payload(  # noqa: SLF001
+        transactions=[transaction],
+        now=dt.datetime.fromisoformat(timestamp),
+    )["global"]
+
+    assert focus["has_implementation_signal"] is expected_signal
+    assert focus["selection_mode"] == expected_mode
+    assert focus["has_live_implementation"] is expected_signal
+    assert focus["has_recent_implementation"] is expected_signal
+    assert bool(focus["latest_implementation_iso"]) is expected_signal
 
 
 def test_default_traceability_warning_filter_accepts_operator_warning() -> None:

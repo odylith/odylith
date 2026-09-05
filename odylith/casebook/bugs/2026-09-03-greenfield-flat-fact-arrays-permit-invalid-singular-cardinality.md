@@ -1,6 +1,6 @@
 - Bug ID: CB-326
 
-- Status: FixedPendingRelease
+- Status: InProgress
 
 - Created: 2026-09-03
 
@@ -96,3 +96,26 @@
   Browser proof passes `3/3`, cleanup passes, and the matrix reports no failure
   cluster. CB-326 is fixed pending release. No regex, retry, response rewrite,
   or post-confirm interpretation was introduced.
+
+- Reopened Ownership Cardinality Variant (2026-09-04): A fresh standard
+  Terra-medium semiconductor development request returned in 44.883 seconds
+  with five exact responsibility citations and one product owner. The compiler
+  rejected it before staging because two model-visible arrays had to have equal
+  length. One component owning five responsibilities is valid product meaning;
+  representing ownership through synchronized array positions is the defect.
+  This is not the product-title alias issue in CB-327. The source-frozen attempt
+  is retained at
+  `/private/tmp/odylith-greenfield-v32-source.EfRGyu/semiconductor-standard`.
+  Replace the model wire with owner groups containing their responsibility
+  citations, deterministically flatten into the existing canonical facts and
+  relations, and remove the parallel-array wire. Preserve the shared exact owner
+  resolver, contradictory-owner rejection, citation limits, and no post-confirm
+  interpretation. Do not broadcast a missing owner, infer one from prose, or
+  support both response formats. Focused structural proof and fresh complete
+  package quality are required before closure.
+
+- Goal Alignment (2026-09-04): One model call and exact-quote rendering were
+  selected mechanisms, not original goal invariants. The original contract
+  permits bounded pre-confirm repair and entailed concise copy within the fixed
+  60/90/120 budgets. The ownership correction does not add a call or relax
+  source custody; no new repair mechanism is approved merely by this note.

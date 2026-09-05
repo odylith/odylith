@@ -239,7 +239,7 @@ def test_authored_package_passes_in_one_validation_pass(
         proposal_ready=True,
         model_authoring_receipt={
             "authoring_version": "odylith.greenfield.model-intent-authoring.v1",
-            "semantic_model_call_count": 1,
+            "semantic_model_call_count": 2,
             "tier": "standard",
             "elapsed_seconds": 12.0,
         },
@@ -255,11 +255,12 @@ def test_authored_package_passes_in_one_validation_pass(
     assert "repaired_issue_codes" not in result.manifest
     assert "patchset_request" not in result.manifest
     assert result.manifest["semantic_compiler"] == {
-        "version": "odylith.greenfield.authored-semantic-validation.v1",
+        "version": "odylith.greenfield.authored-semantic-validation.v2",
         "status": "passed",
-        "semantic_owner": "single_model_authoring_response",
+        "semantic_owner": "validated_model_authored_intent",
         "post_authoring_interpretation_calls": 0,
     }
+    assert result.manifest["model_authoring"]["semantic_model_call_count"] == 2
 
 
 def test_authored_quality_failure_is_immediate_and_unrepaired(

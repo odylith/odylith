@@ -663,7 +663,15 @@
       return "";
     }
 
+    function timelineSummaryGovernanceOnly(transaction) {
+      const eventRows = Array.isArray(transaction && transaction.events) ? transaction.events : [];
+      return eventRows.length > 0 && eventRows.every((row) => (
+        String(row && row.work_category ? row.work_category : "").trim().toLowerCase() === "governance"
+      ));
+    }
+
     function timelineSummaryImplementedNarrative(transaction, workstreamLookup = {}) {
+      if (timelineSummaryGovernanceOnly(transaction)) return "";
       const primary = timelineSummaryDerivedTitleContext(transaction, workstreamLookup);
       const title = String(primary.title || "").trim();
       const key = timelineSummaryTitlePatternKey(title);
@@ -995,7 +1003,10 @@
       }
       const implementedItems = timelineSummaryDedupNarrativeItems(implementedInputs, 4);
       if (implementedItems.length) {
-        sections.push({ title: "Implemented", items: implementedItems });
+        sections.push({
+          title: timelineSummaryGovernanceOnly(transaction) ? "Governance decision" : "Implemented",
+          items: implementedItems,
+        });
       }
       return sections;
     }

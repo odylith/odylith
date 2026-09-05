@@ -365,7 +365,6 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
                     "action_verb_quote": action,
                     "target_quote": target,
                     "visible_result_quote": visible_result,
-                    "recovery_path": False,
                 }
             ],
             component_responsibility_owners=intent["internal_systems"],
@@ -412,7 +411,7 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
     )
 
     assert rc == 0, output
-    assert provider.calls == 1
+    assert provider.calls == 2
     assert "- validation gate: passed" in output
     accepted = json.loads(
         (tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8")
@@ -430,7 +429,11 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
     assert isinstance(accepted["proposal"]["semantic_model"], dict)
     assert len(list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))) >= 2
     assert len(registry["components"]) == len(intent["component_responsibilities"])
-    assert len(list((tmp_path / "odylith/atlas/source").glob("*.mmd"))) >= 4
+    diagram_names = [path.name for path in (tmp_path / "odylith/atlas/source").glob("*.mmd")]
+    assert len(diagram_names) == 3
+    assert all(not name.endswith("-first-path.mmd") for name in diagram_names)
+    for role in ("system-context", "state-evidence", "component-boundaries"):
+        assert any(name.endswith(f"-{role}.mmd") for name in diagram_names)
     assert release_events
     assert compass_events and json.loads(compass_events[-1])["kind"] == "decision"
     rendered = _rendered_greenfield_text(tmp_path)

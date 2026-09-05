@@ -91,6 +91,7 @@ def test_atlas_evidence_rejects_self_nested_authored_boundary() -> None:
             '  subgraph product["Shelter intake"]\n'
             '    component["Shelter intake"]\n'
             '  end\n'
+            '  actor["Intake coordinator"] --> product\n'
         ),
     )
     findings = _atlas_findings(
@@ -113,6 +114,12 @@ def test_atlas_evidence_rejects_self_nested_authored_boundary() -> None:
                             "role": "Product-owned component",
                             "description": "Candidate component.",
                         },
+                        {
+                            "node_id": "actor",
+                            "label": "Intake coordinator",
+                            "role": "Human actor",
+                            "description": "Accepted actor.",
+                        },
                     ],
                 }
             ]
@@ -120,5 +127,6 @@ def test_atlas_evidence_rejects_self_nested_authored_boundary() -> None:
     )
 
     messages = [finding.message for finding in findings]
-    assert any("two distinct typed concepts" in message for message in messages)
-    assert any("neither a typed edge nor a distinct containment" in message for message in messages)
+    assert messages == [
+        "Atlas Mermaid `component-boundaries.mmd` repeats the product boundary as an identically named child component"
+    ]

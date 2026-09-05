@@ -96,7 +96,6 @@ def _simple_proposal(tmp_path: Path) -> dict[str, Any]:
                 "action_verb_quote": "enters",
                 "target_quote": "berth request",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -106,7 +105,6 @@ def _simple_proposal(tmp_path: Path) -> dict[str, Any]:
                 "action_verb_quote": "records",
                 "target_quote": "berth request",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -116,7 +114,6 @@ def _simple_proposal(tmp_path: Path) -> dict[str, Any]:
                 "action_verb_quote": "shows",
                 "target_quote": "signed berth receipt",
                 "visible_result_quote": "signed berth receipt",
-                "recovery_path": False,
             },
         ],
         responsibility_owners=["Intake Board"],
@@ -174,7 +171,6 @@ def _structured_proposal(tmp_path: Path) -> dict[str, Any]:
                 "action_verb_quote": "submits",
                 "target_quote": "cargo request",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -184,7 +180,6 @@ def _structured_proposal(tmp_path: Path) -> dict[str, Any]:
                 "action_verb_quote": "records",
                 "target_quote": "cargo request",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "human",
@@ -193,7 +188,6 @@ def _structured_proposal(tmp_path: Path) -> dict[str, Any]:
                 "action_verb_quote": "approves",
                 "target_quote": "cargo request",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -203,7 +197,6 @@ def _structured_proposal(tmp_path: Path) -> dict[str, Any]:
                 "action_verb_quote": "publishes",
                 "target_quote": "signed cargo receipt",
                 "visible_result_quote": "signed cargo receipt",
-                "recovery_path": False,
             },
         ],
         responsibility_owners=["Intake Router", "Receipt Ledger"],
@@ -284,6 +277,10 @@ def _semantic_values(proposal: dict[str, Any]) -> dict[str, str]:
                 for index, value in enumerate(intent.get(field, []))
             }
         )
+    values.update({
+        f"/assumptions/{index}": row["statement"]
+        for index, row in enumerate(intent.get("assumptions", []))
+    })
     semantics = intent["authored_semantics"]
     for field, quote_field in (
         ("first_path_relations", "event_quote"),
@@ -380,6 +377,39 @@ def test_boundary_free_authored_project_keeps_one_complete_row_and_three_views(
     assert all(
         row["related_workstream_titles"] == ["Deliver Harbor Desk"]
         for row in proposal["diagrams"]
+    )
+
+
+def test_one_typed_event_omits_unjustified_sequence_and_backlog_link(
+    tmp_path: Path,
+) -> None:
+    proposal = _sparse_proposal(
+        tmp_path,
+        internal_systems=["Sparse Relay"],
+        external_systems=[],
+        evidence_requirements=["Retain the request receipt."],
+        operational_constraints=["Keep the request reviewable."],
+        component_responsibilities=["Record the request."],
+        relations=[
+            {
+                "actor_kind": "human",
+                "actor_quote": "Dock attendant",
+                "event_quote": "Dock attendant records a request",
+                "action_verb_quote": "records",
+                "target_quote": "request",
+                "visible_result_quote": "request receipt",
+            }
+        ],
+        responsibility_owners=["Sparse Relay"],
+    )
+
+    assert [row["title"] for row in proposal["diagrams"]] == [
+        "System Context View",
+        "State and Evidence View",
+    ]
+    assert all(
+        "-first-path" not in slug
+        for slug in proposal["backlog"][0]["related_diagram_slugs"]
     )
 
 
@@ -533,6 +563,12 @@ def test_direct_evidence_graph_material_facts_compile_complete_project_and_workf
     )
     product_story = "Create a governed community exchange."
     proof_boundary = "Supervisor releases the batch."
+    decisions = {
+        "problem": "Participants need to keep batch registration, inspection, and release connected.",
+        "customer": "Community exchange participants are the primary beneficiaries of the batch history.",
+        "opportunity": "A reviewable batch history can carry inspection evidence into the release decision.",
+        "product_view": "Participants should follow each batch from donation through inspection to release.",
+    }
     intent = {
         "title": "Community Exchange",
         "product_story": product_story,
@@ -556,7 +592,10 @@ def test_direct_evidence_graph_material_facts_compile_complete_project_and_workf
         "human_actors": ["Donor", "Volunteer", "Supervisor"],
         "external_systems": ["Safety Registry"],
         "internal_systems": [],
-        "assumptions": [],
+        "assumptions": [
+            {"applies_to": field, "statement": statement}
+            for field, statement in decisions.items()
+        ],
         "ambiguities": [],
         "non_goals": ["Do not override a safety hold."],
     }
@@ -571,7 +610,6 @@ def test_direct_evidence_graph_material_facts_compile_complete_project_and_workf
                 "action_verb_quote": "registers",
                 "target_quote": "a batch",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "human",
@@ -580,7 +618,6 @@ def test_direct_evidence_graph_material_facts_compile_complete_project_and_workf
                 "action_verb_quote": "inspects",
                 "target_quote": "the batch",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "human",
@@ -589,7 +626,6 @@ def test_direct_evidence_graph_material_facts_compile_complete_project_and_workf
                 "action_verb_quote": "releases",
                 "target_quote": "the batch",
                 "visible_result_quote": "releases the batch",
-                "recovery_path": False,
             },
         ],
         responsibility_owners=["Community Exchange"],
@@ -614,46 +650,29 @@ def test_direct_evidence_graph_material_facts_compile_complete_project_and_workf
             "Supervisor releases the batch",
         )
     )
-    assert project["problem"] == (
-        "The source does not state the user problem. "
-        "Validate this gap before implementation."
-    )
-    assert project["customer"] == "Donor"
-    assert project["opportunity"] == (
-        "The source does not state an opportunity. "
-        "Validate this gap before implementation."
-    )
-    assert project["product_view"] == (
-        "The source does not state a distinct product view. "
-        "Validate this gap before implementation."
-    )
-    assert project["authored_workstream_semantics"]["evidence_gaps"] == [
-        "problem",
-        "opportunity",
-        "product_view",
-    ]
-    assert not project["authored_workstream_semantics"]["rendered_field_refs"][
+    for field, statement in decisions.items():
+        assert "Assumption" in project[field]
+        assert statement in project[field]
+    assert decisions["customer"] in project["customer"]
+    assert "evidence_gaps" not in project["authored_workstream_semantics"]
+    assert project["authored_workstream_semantics"]["rendered_field_refs"][
         "problem"
-    ]
+    ] == ["/assumptions/0"]
     brief_sections = {
         section["section"]: section["must_capture"]
         for section in proposal["project_brief"]["blueprint_sections"]
     }
-    assert brief_sections["User problem"] == (
-        "The source does not state the user problem. "
-        "Validate this gap before implementation."
-    )
+    assert brief_sections["User problem"] == f"Assumption — {decisions['problem']}"
     assert project["success_metrics"] == [proof_boundary]
-    assert workflow["customer"] == "Donor"
-    assert workflow["opportunity"] == (
-        "The source does not state a workflow-specific opportunity. "
-        "Validate this gap before implementation."
-    )
-    assert workflow["authored_workstream_semantics"]["evidence_gaps"] == [
-        "opportunity"
-    ]
-    assert backlog["boundary"]["customer"] == "Donor"
-    assert backlog["proof"]["customer"] == "Donor"
+    assert decisions["customer"] in workflow["customer"]
+    assert workflow["opportunity"] == f"Assumption: {decisions['opportunity']}"
+    assert "evidence_gaps" not in workflow["authored_workstream_semantics"]
+    for role in ("workflow", "boundary", "proof"):
+        assert "Assumption" in backlog[role]["customer"]
+        assert decisions["customer"] in backlog[role]["customer"]
+        semantics = backlog[role]["authored_workstream_semantics"]
+        assert semantics["rendered_field_refs"]["customer"] == ["/assumptions/1"]
+        assert "/assumptions/1" in semantics["shared_fact_refs"]
     project_semantics = project["authored_workstream_semantics"]
     assert {
         "/first_path",
@@ -710,7 +729,6 @@ def test_authored_service_readiness_keeps_nonapproval_as_a_safety_boundary(
                 "action_verb_quote": "records",
                 "target_quote": "service capacity evidence",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -720,7 +738,6 @@ def test_authored_service_readiness_keeps_nonapproval_as_a_safety_boundary(
                 "action_verb_quote": "records",
                 "target_quote": "review status",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -730,7 +747,6 @@ def test_authored_service_readiness_keeps_nonapproval_as_a_safety_boundary(
                 "action_verb_quote": "shows",
                 "target_quote": "reviewable readiness report",
                 "visible_result_quote": "reviewable readiness report",
-                "recovery_path": False,
             },
         ],
         responsibility_owners=["Readiness Ledger", "Readiness Board"],
@@ -799,7 +815,6 @@ def test_authored_solar_path_keeps_user_outcome_distinct_from_meta_proof(
                 "action_verb_quote": "connects",
                 "target_quote": "solar inverter and battery",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -809,7 +824,6 @@ def test_authored_solar_path_keeps_user_outcome_distinct_from_meta_proof(
                 "action_verb_quote": "computes",
                 "target_quote": "forecast-driven dispatch schedule",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -819,7 +833,6 @@ def test_authored_solar_path_keeps_user_outcome_distinct_from_meta_proof(
                 "action_verb_quote": "shows",
                 "target_quote": visible_result,
                 "visible_result_quote": visible_result,
-                "recovery_path": False,
             },
         ],
         responsibility_owners=["Forecast Engine", "Plan Board"],
@@ -884,7 +897,6 @@ def test_authored_ocean_reproducibility_stays_proof_not_component_identity(
                 "action_verb_quote": "creates",
                 "target_quote": "calibration review case",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -894,7 +906,6 @@ def test_authored_ocean_reproducibility_stays_proof_not_component_identity(
                 "action_verb_quote": "records",
                 "target_quote": "drift estimate and correction decision",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -904,7 +915,6 @@ def test_authored_ocean_reproducibility_stays_proof_not_component_identity(
                 "action_verb_quote": "exports",
                 "target_quote": "calibrated data packet",
                 "visible_result_quote": "calibrated data packet",
-                "recovery_path": False,
             },
         ],
         responsibility_owners=["Calibration Ledger", "Publication Gate"],
@@ -962,7 +972,6 @@ def test_authored_health_tracking_retains_safety_and_first_path_outcome(
                 "action_verb_quote": "records",
                 "target_quote": "health episode",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -972,7 +981,6 @@ def test_authored_health_tracking_retains_safety_and_first_path_outcome(
                 "action_verb_quote": "records",
                 "target_quote": "symptoms and relief attempts",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -982,7 +990,6 @@ def test_authored_health_tracking_retains_safety_and_first_path_outcome(
                 "action_verb_quote": "shows",
                 "target_quote": visible_result,
                 "visible_result_quote": visible_result,
-                "recovery_path": False,
             },
         ],
         responsibility_owners=["Episode Ledger", "Trend Board"],
@@ -1041,7 +1048,6 @@ def test_authored_robotic_safety_projects_the_reviewed_recovery_status(
                 "action_verb_quote": "reports",
                 "target_quote": "blocked aisle",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -1051,7 +1057,6 @@ def test_authored_robotic_safety_projects_the_reviewed_recovery_status(
                 "action_verb_quote": "records",
                 "target_quote": "stop decision and corrective action",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -1061,7 +1066,6 @@ def test_authored_robotic_safety_projects_the_reviewed_recovery_status(
                 "action_verb_quote": "shows",
                 "target_quote": visible_result,
                 "visible_result_quote": visible_result,
-                "recovery_path": True,
             },
         ],
         responsibility_owners=["Safety Ledger", "Recovery Board"],
@@ -1118,7 +1122,6 @@ def test_authored_service_goal_components_cannot_acquire_cross_domain_templates(
                 "action_verb_quote": "completes",
                 "target_quote": "onboarding and acknowledgement",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -1128,7 +1131,6 @@ def test_authored_service_goal_components_cannot_acquire_cross_domain_templates(
                 "action_verb_quote": "records",
                 "target_quote": "starting plan target",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -1138,7 +1140,6 @@ def test_authored_service_goal_components_cannot_acquire_cross_domain_templates(
                 "action_verb_quote": "records",
                 "target_quote": "seven days of progress",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
@@ -1148,7 +1149,6 @@ def test_authored_service_goal_components_cannot_acquire_cross_domain_templates(
                 "action_verb_quote": "shows",
                 "target_quote": "adjusted plan target and one follow-up reminder",
                 "visible_result_quote": "adjusted plan target and one follow-up reminder",
-                "recovery_path": False,
             },
         ],
         responsibility_owners=["Goal Planner", "Progress Ledger", "Reminder Board"],
@@ -1168,7 +1168,6 @@ def test_sparse_depth_keeps_facts_in_project_without_filler_rows(tmp_path: Path)
         "action_verb_quote": "submits",
         "target_quote": "request",
         "visible_result_quote": "",
-        "recovery_path": False,
     }
     intake_event = {
         "actor_kind": "product",
@@ -1178,7 +1177,6 @@ def test_sparse_depth_keeps_facts_in_project_without_filler_rows(tmp_path: Path)
         "action_verb_quote": "records",
         "target_quote": "request",
         "visible_result_quote": "",
-        "recovery_path": False,
     }
     receipt_event = {
         "actor_kind": "product",
@@ -1188,7 +1186,6 @@ def test_sparse_depth_keeps_facts_in_project_without_filler_rows(tmp_path: Path)
         "action_verb_quote": "publishes",
         "target_quote": "signed request receipt",
         "visible_result_quote": "signed request receipt",
-        "recovery_path": False,
     }
     intake_result_event = {
         **receipt_event,

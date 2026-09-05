@@ -16,8 +16,8 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
     build_project_handoff_step_contract,
 )
-from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
-    missing_source_fact_notice,
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
+    decision_copy,
 )
 from odylith.runtime.project_intelligence.product_story_contract import (
     PRODUCT_STORY_CARD_SLOTS,
@@ -68,7 +68,7 @@ def build_authored_greenfield_payload(
     release = _first_text(release_plan, "label", "selector") or "first proposed release"
     validation = _statement_values(proposal.get("validation_strategy"))
     assumptions = _statement_values(
-        proposal.get("assumptions"),
+        [row for row in _mapping_rows(proposal.get("assumptions")) if row.get("applies_to") != "problem"],
         keys=("statement", "assumption"),
     )
     questions = _statement_values(
@@ -130,8 +130,7 @@ def build_authored_greenfield_payload(
         "product_story": _product_story(
             title=title,
             product_story=product_story,
-            problem=_first_text(intent, "problem")
-            or missing_source_fact_notice("the user problem"),
+            problem=decision_copy(intent, "problem"),
             first_path=first_path,
             proof_boundary=proof_boundary,
             visible_result=visible_result,

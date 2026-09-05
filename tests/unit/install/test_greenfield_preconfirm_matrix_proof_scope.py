@@ -94,7 +94,11 @@ def _passing_matrix_result(module, *, manifest_summary: dict[str, object] | None
         browser_surface_proof_attempted=True,
         commit_manifest_summary=manifest_summary or {},
         evidence={
-            "case": {"id": "matrix-case"},
+            "case": {
+                "id": "matrix-case",
+                "expectation": "transaction_committed",
+                "prompt_sha256": "a" * 64,
+            },
             "model_profile": {
                 "profile_id": profile_id,
                 "status": "passed",
@@ -119,7 +123,11 @@ def _passing_profile_result(module, profile_id: str, proposal_seconds: float) ->
         name=profile_id,
         proposal_seconds=proposal_seconds,
         evidence={
-            "case": {"id": profile_id},
+            "case": {
+                "id": profile_id,
+                "expectation": "transaction_committed",
+                "prompt_sha256": "a" * 64,
+            },
             "model_profile": {
                 "profile_id": profile_id,
                 "status": "passed",
@@ -132,6 +140,47 @@ def _passing_profile_result(module, profile_id: str, proposal_seconds: float) ->
                     "effective_timeout_seconds": profile.model_timeout_seconds,
                     "authoring_tier": profile.repair_tier,
                 },
+            },
+        },
+    )
+
+
+def _passing_clarification_profile_result(module, profile_id: str, proposal_seconds: float) -> object:
+    expected_field = "first_path"
+    expected_question = "Who uses this product first, and what complete result do they see?"
+    result = _passing_profile_result(module, profile_id, proposal_seconds)
+    return replace(
+        result,
+        name=f"{profile_id}-clarification",
+        quality=replace(
+            result.quality,
+            score_basis="clarification_required_no_write_contract",
+        ),
+        evidence={
+            **dict(result.evidence or {}),
+            "case": {
+                "id": f"{profile_id}-clarification",
+                "expectation": "clarification_required",
+                "prompt_sha256": "b" * 64,
+                "expected_clarification": {
+                    "field": expected_field,
+                    "question": expected_question,
+                },
+            },
+            "clarification": {
+                "mode": "clarification_required",
+                "question": expected_question,
+                "required_fields": [expected_field],
+                "returncode": 0,
+            },
+            "no_write": {
+                "before_record_count": 83,
+                "after_record_count": 83,
+                "changed_records": [],
+                "staged_transaction_present": False,
+                "write_audit_active": True,
+                "write_attempts": [],
+                "write_audit_error": "",
             },
         },
     )
@@ -883,18 +932,114 @@ def test_model_profile_release_proof_requires_all_tiers_under_strict_budgets() -
         )
     )
 
-    proof = module.model_profile_release_proof(results, require_complete=True)
+    positives_only = module.model_profile_release_proof(results, require_complete=True)
+    assert positives_only["status"] == "failed"
+    assert positives_only["lower_capability_scope"]["status"] == "unproven"
+    assert any("clarification/no-write control" in issue for issue in positives_only["issues"])
+
+    lower_profile_id = module.model_profile_id_for_repair_tier("standard")
+    clarification = _passing_clarification_profile_result(module, lower_profile_id, 20.0)
+    complete_results = (*results, clarification)
+    proof = module.model_profile_release_proof(complete_results, require_complete=True)
     assert proof["status"] == "passed"
-    standard_profile_id = module.model_profile_id_for_repair_tier("standard")
-    assert proof["profiles"][standard_profile_id]["lower_capability"] is False
-    assert module.model_profile_release_proof(results[:-1], require_complete=True)["status"] == "failed"
+    assert proof["profiles"][lower_profile_id]["lower_capability"] is True
+    assert proof["profiles"][lower_profile_id]["committed_positive_case_count"] == 1
+    assert proof["profiles"][lower_profile_id]["clarification_no_write_control_count"] == 1
+    assert proof["lower_capability_scope"]["status"] == "passed"
+    assert proof["lower_capability_scope"]["observed_profiles"][0]["model"] == "gpt-5.6-terra"
+    assert module.model_profile_release_proof(
+        (*results[:-1], clarification),
+        require_complete=True,
+    )["status"] == "failed"
     breached = replace(
         results[0],
         proposal_seconds=module.get_greenfield_model_profile(
             module.model_profile_id_for_repair_tier("standard")
         ).consumer_budget_seconds,
     )
-    assert module.model_profile_release_proof((breached, *results[1:]), require_complete=True)["status"] == "failed"
+    assert module.model_profile_release_proof(
+        (breached, *results[1:], clarification),
+        require_complete=True,
+    )["status"] == "failed"
+
+
+def test_model_profile_release_proof_reports_missing_lower_profile_as_unproven() -> None:
+    module = _module()
+    results = tuple(
+        _passing_profile_result(
+            module,
+            module.model_profile_id_for_repair_tier(tier),
+            20.0,
+        )
+        for tier in ("rescue", "deep")
+    )
+
+    proof = module.model_profile_release_proof(results, require_complete=False)
+
+    assert proof["status"] == "passed"
+    assert proof["coverage_status"] == "incomplete"
+    assert proof["lower_capability_scope"] == {
+        "status": "unproven",
+        "observed_profiles": [],
+        "requirement": "installed_committed_positive_and_source_bound_clarification_no_write",
+    }
+    assert module.model_profile_release_proof(results, require_complete=True)["status"] == "failed"
+
+
+def test_model_profile_release_proof_ignores_forged_lower_metadata_and_missing_provider() -> None:
+    module = _module()
+    rescue_id = module.model_profile_id_for_repair_tier("rescue")
+    forged = _passing_profile_result(module, rescue_id, 20.0)
+    evidence = dict(forged.evidence or {})
+    evidence["model_profile"] = {**evidence["model_profile"], "lower_capability": True}
+
+    forged_proof = module.model_profile_release_proof(
+        (replace(forged, evidence=evidence),),
+        require_complete=False,
+    )
+    assert forged_proof["status"] == "passed"
+    assert forged_proof["coverage_status"] == "incomplete"
+    assert forged_proof["lower_capability_scope"]["observed_profiles"] == []
+
+    unavailable = replace(
+        forged,
+        evidence={
+            **dict(forged.evidence or {}),
+            "model_profile": {
+                **dict(forged.evidence["model_profile"]),
+                "profile_id": module.UNAVAILABLE_PROVIDER_PROFILE,
+                "observed": {
+                    **dict(forged.evidence["model_profile"]["observed"]),
+                    "profile_id": module.UNAVAILABLE_PROVIDER_PROFILE,
+                },
+            },
+        },
+    )
+    unavailable_proof = module.model_profile_release_proof(
+        (unavailable,),
+        require_complete=False,
+    )
+    assert unavailable_proof["status"] == "failed"
+    assert unavailable_proof["lower_capability_scope"]["observed_profiles"] == []
+
+
+def test_model_profile_release_proof_rejects_unbound_or_writeful_lower_control() -> None:
+    module = _module()
+    standard_id = module.model_profile_id_for_repair_tier("standard")
+    positive = _passing_profile_result(module, standard_id, 20.0)
+    control = _passing_clarification_profile_result(module, standard_id, 20.0)
+    evidence = dict(control.evidence or {})
+    evidence["case"] = {**evidence["case"], "prompt_sha256": "not-source-bound"}
+    evidence["no_write"] = {**evidence["no_write"], "write_attempts": ["open"]}
+
+    proof = module.model_profile_release_proof(
+        (positive, replace(control, evidence=evidence)),
+        require_complete=False,
+    )
+
+    assert proof["status"] == "failed"
+    assert proof["lower_capability_scope"]["status"] == "unproven"
+    assert any("source-bound no-write proof" in issue for issue in proof["issues"])
 
 
 def test_model_profile_release_proof_rejects_elapsed_tier_relabeling() -> None:
