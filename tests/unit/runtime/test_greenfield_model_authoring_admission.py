@@ -195,8 +195,9 @@ def test_product_only_path_builds_complete_source_bound_proposal_without_a_fake_
     context = next(
         row for row in proposal["diagrams"] if row["slug"].endswith("system-context")
     )
-    assert not any(box["role"] == "Human actor" for box in context["diagram_boxes"])
+    assert not any(box["role"] in {"Participant", "First-path actor"} for box in context["diagram_boxes"])
     assert "actor1" not in context["mermaid_source"]
+    assert proposal["project_intelligence"]["operators"] == []
 
 
 @pytest.mark.parametrize("malformed_humans", (None, "invented operator"))

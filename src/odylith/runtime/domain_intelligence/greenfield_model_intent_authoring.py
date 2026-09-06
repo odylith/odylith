@@ -53,7 +53,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v47"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v48"
 GREENFIELD_MODEL_PROOF_FD_ENV = "ODYLITH_GREENFIELD_MODEL_PROOF_FD"
 MAX_GREENFIELD_SEMANTIC_CALLS = 2
 

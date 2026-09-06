@@ -36,6 +36,7 @@ def _authored_diagrams(
     components: tuple[dict[str, Any], ...] | None = None,
     visible_result: str = "the berth map shows the placement",
     proof_boundary: str = "Verify the placement and retention receipt",
+    human_actors: tuple[str, ...] = ("Dock attendant Ivo",),
 ) -> list[dict[str, Any]]:
     return greenfield_authored_atlas_view.build_authored_atlas_diagrams(
         title=title,
@@ -45,7 +46,7 @@ def _authored_diagrams(
             "state_evidence": "harbor-desk-state",
             "component_boundaries": "harbor-desk-boundaries",
         },
-        human_actors=("Dock attendant Ivo",),
+        human_actors=human_actors,
         external_systems=("Harbor Ledger",),
         non_goals=("Do not manage vessel scheduling",),
         state_object="berth occupancy",
@@ -95,6 +96,27 @@ def _authored_diagrams(
                 "first_path_event_order": 0,
             },
         ),
+    )
+
+
+def test_context_distinguishes_performers_from_contextual_participants() -> None:
+    rows = _authored_diagrams(human_actors=("Dock attendant Ivo", "Field Ombud"))
+    context = next(row for row in rows if row["slug"] == "harbor-desk-context")
+    boxes = {row["node_id"]: row for row in context["diagram_boxes"]}
+
+    assert boxes["actor1"]["role"] == "First-path actor"
+    assert boxes["actor2"]["role"] == "Participant"
+    assert boxes["actor2"]["description"] == (
+        "Named in project evidence; no first-path action is assigned."
+    )
+    assert "actor1 --> product" not in context["mermaid_source"]
+    assert "actor2 --> product" not in context["mermaid_source"]
+    sequence = next(row for row in rows if row["slug"] == "harbor-desk-sequence")
+    assert sequence == next(
+        row for row in _authored_diagrams() if row["slug"] == "harbor-desk-sequence"
+    )
+    greenfield_authored_atlas_view.validate_authored_atlas_view(
+        context, source_text=context["mermaid_source"]
     )
 
 
@@ -219,7 +241,7 @@ def test_authored_atlas_depth_is_four_distinct_semantic_views_not_a_count_floor(
     assert len({row["summary"] for row in rows}) == 4
     assert len({row["mermaid_source"] for row in rows}) == 4
     source_by_slug = {row["slug"]: row["mermaid_source"] for row in rows}
-    assert "actor1 --> product" in source_by_slug["harbor-desk-context"]
+    assert "actor1 --> product" not in source_by_slug["harbor-desk-context"]
     assert "actor1 --> component1" not in source_by_slug["harbor-desk-context"]
     assert "external1 -.-> component1" in source_by_slug["harbor-desk-context"]
     assert "state -. exact source overlap .-> state_event" in source_by_slug["harbor-desk-state"]

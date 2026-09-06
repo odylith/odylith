@@ -7,6 +7,8 @@ import sys
 from dataclasses import replace
 from pathlib import Path
 
+import pytest
+
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS_ROOT = REPO_ROOT / "scripts" / "release"
@@ -445,20 +447,30 @@ def test_run_matrix_flushes_failed_incremental_payload_before_cleanup_abort(
     assert "forced cleanup failure" in incremental_payload["results"][0]["failure_detail"]
 
 
-def test_main_persists_campaign_summary_for_discovery_runs(tmp_path: Path, monkeypatch, capsys) -> None:
+@pytest.mark.parametrize("profile_status, expected_exit", [("passed", 0), ("failed", 1)])
+def test_main_persists_campaign_summary_for_discovery_runs(
+    tmp_path: Path, monkeypatch, capsys, profile_status: str, expected_exit: int,
+) -> None:
     module = _module()
     dist_dir = tmp_path / "dist"
     _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
     matrix_kwargs: dict[str, object] = {}
     execution_order: list[str] = []
     telemetry_path = tmp_path / "progress.jsonl"
+    matrix_result = _result(module, name="matrix case")
+    profile_calls: list[tuple[object, bool]] = []
 
     def fake_run_matrix(**kwargs):
         execution_order.append("matrix")
         matrix_kwargs.update(kwargs)
-        return (_result(module, name="matrix case"),)
+        return (matrix_result,)
+
+    def fake_profile_proof(results, *, require_complete):
+        profile_calls.append((results, require_complete))
+        return {"status": profile_status, "issues": [] if profile_status == "passed" else ["unproven"]}
 
     monkeypatch.setattr(module, "run_matrix", fake_run_matrix)
+    monkeypatch.setattr(module, "model_profile_release_proof", fake_profile_proof)
     def fake_commit_recovery(**kwargs):
         execution_order.append("commit_recovery")
         module._run(
@@ -493,7 +505,9 @@ def test_main_persists_campaign_summary_for_discovery_runs(tmp_path: Path, monke
     )
     payload = json.loads(capsys.readouterr().out)
 
-    assert exit_code == 0
+    assert exit_code == expected_exit
+    assert profile_calls == [((matrix_result,), False)]
+    assert payload["model_profile_proof"]["status"] == profile_status
     assert matrix_kwargs["proof_tier"] == "discovery"
     assert matrix_kwargs["campaign_phase"] == "60-case-regression"
     assert matrix_kwargs["stop_after_failures"] == 2

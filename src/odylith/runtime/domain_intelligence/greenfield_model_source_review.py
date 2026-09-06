@@ -75,6 +75,14 @@ words. Any correction must select the intended quote and occurrence in the full
 original evidence; do not silently reinterpret a bound source location.
 """.rstrip()
 
+_MATERIALITY_NOTE = (
+    "Preserve a defensible, role-correct, consumer-usable source-grounded choice "
+    "when an alternative would also be valid. Correct material meaning, custody "
+    "and usefulness defects; do not revise a candidate solely to prefer a different "
+    "valid participant inventory, evidence selection or provisional decision. "
+    "A semantically sound usable package should return no corrections."
+)
+
 
 def _review_contract(
     authored_schemas: Mapping[str, Any],
@@ -98,7 +106,7 @@ def _review_contract(
     }
     prompt = _SYSTEM_PROMPT + "\n" + "\n".join(
         f"- {name}: {value}" for name, value in definitions.items() if value
-    ) + _RESOLVED_CITATIONS_NOTE
+    ) + _RESOLVED_CITATIONS_NOTE + "\n\n" + _MATERIALITY_NOTE
     correction_schema = {
         "type": "object",
         "additionalProperties": False,

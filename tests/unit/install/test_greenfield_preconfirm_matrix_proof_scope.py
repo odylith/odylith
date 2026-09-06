@@ -51,6 +51,26 @@ def _write(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def _write_supplement(
+    path: Path,
+    *,
+    case_id: str,
+    tags: tuple[str, ...],
+    include_leakage: bool = True,
+) -> Path:
+    row = {
+        "case_id": case_id,
+        "name": "museum conservation queue",
+        "prompt": "Create a greenfield proposal for museum conservation queue review.",
+        "required_terms": ["museum", "conservation", "queue"],
+        "tags": list(tags),
+    }
+    if include_leakage:
+        row["leakage_terms"] = ["museum conservation queue"]
+    _write(path, json.dumps({"version": "odylith.greenfield.matrix.case-file.v1", "cases": [row]}))
+    return path
+
+
 def _full_counts(module) -> object:
     return module.GreenfieldArtifactCounts(
         radar_workstreams=4,
@@ -384,6 +404,158 @@ def test_main_uses_external_case_files_instead_of_default_catalog(
     assert len(cases) == 1
     assert cases[0].name == "museum conservation queue"
     assert cases[0].leakage_terms == ("museum conservation queue",)
+
+
+def test_include_default_cases_preserves_native_assignments_before_appending_supplement(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    module = _module()
+    rescue = module.model_profile_id_for_repair_tier("rescue")
+    case_file = _write_supplement(
+        tmp_path / "supplement.json",
+        case_id="supplemental-museum-clarification",
+        tags=(f"model-profile:{rescue}",),
+    )
+    captured: dict[str, object] = {}
+    monkeypatch.setattr(module, "_execute_matrix_campaign", lambda **kwargs: captured.update(kwargs) or 0)
+
+    assert module.main(
+        [
+            "--dist-dir", str(tmp_path / "dist"), "--temp-parent", str(tmp_path),
+            "--case-file", str(case_file), "--include-default-cases",
+        ]
+    ) == 0
+
+    native = module.assign_model_profiles(module.default_cases())
+    selected = tuple(captured["selected_cases"])
+    assert selected[: len(native)] == native
+    assert module.assign_model_profiles(selected) == selected
+    assert tuple(captured["planned_cases"]) == selected
+    assert module.case_model_profile(selected[-1]) == rescue
+
+
+@pytest.mark.parametrize("case_args", ((), ("--case-file", "")))
+def test_include_default_cases_requires_a_nonempty_case_file_before_acquiring_a_lease(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    case_args: tuple[str, ...],
+) -> None:
+    module = _module()
+    monkeypatch.setattr(module, "acquire_matrix_run_lease", lambda **_kwargs: pytest.fail("lease acquired"))
+
+    with pytest.raises(RuntimeError, match="at least one --case-file is required"):
+        module.main(["--dist-dir", str(tmp_path / "dist"), "--include-default-cases", *case_args])
+
+
+@pytest.mark.parametrize(
+    "profile_mode",
+    ("absent", "unknown", "multiple"),
+)
+def test_include_default_cases_requires_one_supported_explicit_profile(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    profile_mode: str,
+) -> None:
+    module = _module()
+    profiles = tuple(module.model_profile_id_for_repair_tier(tier) for tier in ("standard", "rescue"))
+    tags = {
+        "absent": (),
+        "unknown": ("model-profile:unknown",),
+        "multiple": tuple(f"model-profile:{profile}" for profile in profiles[:2]),
+    }[profile_mode]
+    case_file = _write_supplement(tmp_path / "supplement.json", case_id="supplement", tags=tags)
+    monkeypatch.setattr(module, "_execute_matrix_campaign", lambda **_kwargs: pytest.fail("executed"))
+
+    with pytest.raises(RuntimeError, match="exactly one supported explicit model profile"):
+        module.main(
+            [
+                "--dist-dir", str(tmp_path / "dist"), "--temp-parent", str(tmp_path),
+                "--case-file", str(case_file), "--include-default-cases",
+            ]
+        )
+
+
+@pytest.mark.parametrize(
+    "case_ids",
+    (("FLOOD-SHELTER-INTAKE",), ("supplement-duplicate", "SUPPLEMENT-DUPLICATE")),
+)
+def test_include_default_cases_rejects_normalized_duplicate_ids_before_execution(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    case_ids: tuple[str, ...],
+) -> None:
+    module = _module()
+    profile = module.model_profile_id_for_repair_tier("rescue")
+    paths = tuple(
+        _write_supplement(
+            tmp_path / f"supplement-{index}.json",
+            case_id=case_id,
+            tags=(f"model-profile:{profile}",),
+        )
+        for index, case_id in enumerate(case_ids)
+    )
+    monkeypatch.setattr(module, "_execute_matrix_campaign", lambda **_kwargs: pytest.fail("executed"))
+    arguments = ["--dist-dir", str(tmp_path / "dist"), "--temp-parent", str(tmp_path)]
+    for path in paths:
+        arguments.extend(("--case-file", str(path)))
+
+    with pytest.raises(RuntimeError, match="duplicate case IDs"):
+        module.main([*arguments, "--include-default-cases"])
+
+
+def test_include_default_cases_keeps_strict_lexical_controls(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    module = _module()
+    profile = module.model_profile_id_for_repair_tier("rescue")
+    case_file = _write_supplement(
+        tmp_path / "supplement.json",
+        case_id="supplement",
+        tags=(f"model-profile:{profile}",),
+        include_leakage=False,
+    )
+    monkeypatch.setattr(module, "_execute_matrix_campaign", lambda **_kwargs: pytest.fail("executed"))
+
+    with pytest.raises(RuntimeError, match="must define leakage_terms"):
+        module.main(
+            [
+                "--dist-dir", str(tmp_path / "dist"), "--temp-parent", str(tmp_path),
+                "--case-file", str(case_file), "--include-default-cases",
+            ]
+        )
+
+
+@pytest.mark.parametrize(
+    "protected_args",
+    (
+        ("--proof-tier", "release"),
+        ("--release-audit-file", "audit.json"),
+        ("--release-audit-repo-root", "sealed"),
+        ("--sealed-release-input-root", "sealed"),
+        ("--semantic-annotations-file", "annotations.json"),
+        ("--evaluation-split-manifest", "splits.json"),
+        ("--final-holdout-run-ledger", "ledger.json"),
+        ("--implementation-revision", "a" * 40),
+        ("--distribution-provenance-file", "provenance.json"),
+    ),
+)
+def test_include_default_cases_rejects_release_inputs_before_lease_or_claim(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    protected_args: tuple[str, str],
+) -> None:
+    module = _module()
+    monkeypatch.setattr(module, "acquire_matrix_run_lease", lambda **_kwargs: pytest.fail("lease acquired"))
+
+    with pytest.raises(RuntimeError, match="invalid --include-default-cases policy"):
+        module.main(
+            [
+                "--dist-dir", str(tmp_path / "dist"), "--case-file", str(tmp_path / "unused.json"),
+                "--include-default-cases", *protected_args,
+            ]
+        )
 
 
 def test_case_file_rejects_missing_leakage_terms_before_simulation(tmp_path: Path) -> None:

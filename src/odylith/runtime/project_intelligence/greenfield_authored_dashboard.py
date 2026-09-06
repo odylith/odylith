@@ -160,7 +160,7 @@ def build_authored_greenfield_payload(
         "actors": actors,
         "participants": actors,
         "participants_title": "Who participates?",
-        "participants_note": "Human actors typed in the model-authored product intent.",
+        "participants_note": "Source-stated people; only assigned first-path actions are shown.",
         "jobs": jobs,
         "jobs_title": f"What is proposed for {release}?",
         "jobs_note": "Model-authored workstreams allocated to the first release.",
@@ -331,9 +331,9 @@ def authored_actor_rows(
         ]
         rows.append(
             (
-                "Human actor",
+                "Human actor" if events else "Participant",
                 actor,
-                "\n".join(events) or "Named in the model-authored product intent.",
+                "\n".join(events) or "Named in project evidence; no first-path action is assigned.",
             )
         )
     return rows

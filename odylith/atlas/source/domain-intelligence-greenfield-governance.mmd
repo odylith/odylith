@@ -2,7 +2,7 @@ flowchart TB
     subgraph evidence_lane["Evidence and interpretation"]
       direction LR
       request["Greenfield request and EDIT evidence<br/>Untrusted input with exact source custody"]
-      model_pass["One model-authored semantic pass<br/>Source-cited facts and typed relations"]
+      model_pass["Bounded source author and review<br/>At most two pre-confirm calls"]
       typed_graph["Canonical direct-evidence graph<br/>No downstream prose reparsing"]
       ambiguity{"Material meaning complete?"}
       clarify["One focused clarification<br/>No transaction or governed write"]
@@ -13,7 +13,7 @@ flowchart TB
     subgraph projection_lane["Deterministic package construction"]
       direction LR
       custody["Custody and invariant validation<br/>Citations, ownership, event order,<br/>responsibilities, and terminal result"]
-      projections["Deterministic projections<br/>Project, Radar, Registry, Atlas,<br/>Compass, and release proof"]
+      projections["Deterministic projections<br/>Typed action ownership, contextual participants,<br/>and distinct governed surfaces"]
       quality["End-to-end quality gate<br/>Semantic fidelity, readability,<br/>topology, safety, and recoverability"]
       timing["Proposal timing gate<br/>Standard at 60 seconds<br/>Rescue at 90; deep at 120"]
       custody --> projections --> quality --> timing

@@ -79,11 +79,14 @@ No other model earns a proof claim without its own observed request evidence.
 Pre-confirm authoring permits at most two model calls: initial intent authoring,
 then one source review for every otherwise-valid authored candidate. Initial
 clarification needs one call; review may instead select the same existing
-clarification outcome after two calls. Authoring v47 returns either a sparse
+clarification outcome after two calls. Authoring v48 returns either a sparse
 whole-field correction result derived from the authored schema or that shared
 clarification result. Initial authored status is provisional, not source authority;
 review owns semantic admission as well as correction. Status is not a patch path.
-An empty correction list preserves the candidate exactly. The previous fact
+An empty correction list preserves the candidate exactly. Review preserves a
+defensible, role-correct, consumer-usable source-grounded choice when alternatives
+are also valid. It corrects material meaning, custody and usefulness defects, not
+advisory preferences between valid representations. The previous fact
 whitelist and three-part response are removed. Review can use all unused time
 within the original shared model window, but cannot extend the consumer deadline
 or change the selected profile. The complete corrected candidate must pass custody
@@ -117,6 +120,11 @@ clarification JSON can repeat the bounded input; no lossy excerpt or whitespace
 matching mechanism is introduced.
 Clarification receipts retain the actual one- or two-call count from authoring;
 they do not default a reviewed clarification to one call.
+Participant inventory does not assign human actions or product access. Project
+labels people without a typed first-path action as participants, and its operator
+projection includes only typed human performers. Atlas retains all contextual
+people without inferring person-to-product interaction edges; performer descriptions
+and the sequence view come from the existing typed event relations.
 An initial overrun fails without starting review;
 a smaller caller-supplied model window still preserves its review reservation.
 An initial non-structured provider failure retains its categorical code, profile,

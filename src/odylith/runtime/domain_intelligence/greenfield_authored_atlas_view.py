@@ -70,6 +70,7 @@ def build_authored_atlas_diagrams(
         actors=human_actors,
         externals=external_systems,
         components=components,
+        relations=relations,
     )
     sequence_source, sequence_boxes = _sequence_view(relations)
     state_source, state_boxes = _state_view(
@@ -89,10 +90,10 @@ def build_authored_atlas_diagrams(
     specs = {
         "context": {
             "title": "System Context View",
-            "summary": f"Accepted actors, named systems, and candidate product-owned boundaries for {title}.",
+            "summary": f"People in product context, named systems, and candidate product-owned boundaries for {title}.",
             "read_guide": (
-                "Read the accepted human actors into the product boundary, treat components as "
-                "candidate ownership, and keep accepted external systems outside that boundary."
+                "People are source-stated participants, not necessarily product users. First-path "
+                "actors have typed actions; this context inventory does not imply interaction."
             ),
             "source": context_source,
             "boxes": context_boxes,
@@ -364,14 +365,18 @@ def _context_view(
     actors: Sequence[str],
     externals: Sequence[str],
     components: Sequence[Mapping[str, Any]],
+    relations: Sequence[Mapping[str, Any]],
 ) -> tuple[str, list[dict[str, str]]]:
-    lines = ["flowchart LR", '  subgraph people["Accepted human actors"]']
+    performers = {
+        row.get("actor_fact_quote") for row in relations if row.get("actor_kind") == "human"
+    }
+    lines = ["flowchart LR", '  subgraph people["People in product context"]']
     boxes = [
         _box(
             "people",
-            "Accepted human actors",
+            "People in product context",
             "Container",
-            "Groups the accepted human actors in the first product path.",
+            "Source-stated people, including participants without a first-path action.",
         )
     ]
     for index, actor in enumerate(actors, start=1):
@@ -380,8 +385,10 @@ def _context_view(
             _box(
                 f"actor{index}",
                 actor,
-                "Human actor",
-                f"Accepted human actor in the first product path: {actor}",
+                "First-path actor" if actor in performers else "Participant",
+                f"Performs source-stated first-path actions: {actor}"
+                if actor in performers
+                else "Named in project evidence; no first-path action is assigned.",
             )
         )
     product_lines, product_boxes, component_targets = _product_boundary_projection(
@@ -412,8 +419,6 @@ def _context_view(
                 )
             )
         lines.append("  end")
-    for actor_index, _actor in enumerate(actors, start=1):
-        lines.append(f"  actor{actor_index} --> product")
     for external_index, component_index in _external_component_edges(
         externals=externals,
         components=components,

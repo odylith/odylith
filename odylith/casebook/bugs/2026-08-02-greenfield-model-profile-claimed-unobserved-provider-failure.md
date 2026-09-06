@@ -102,6 +102,32 @@
   metadata tests, and the shared role proof preserve this distinction without
   expanding the public six-field profile observation or adding model calls.
 
+- V48 Proof Integration Boundary (2026-09-05): Frozen full source proof returns
+  4,603 passes and one campaign-summary unit failure in422.85 seconds. Its mocked
+  passed result omits private model-role evidence, which the real aggregate
+  correctly rejects. Test campaign orchestration against both passing and failing
+  profile-proof dependencies; retain strict missing/forged-role aggregate tests.
+  Public14 still lacks a rescue clarification, and repeated case files replace
+  defaults rather than append. The smallest correction is an explicit discovery
+  composition option in the existing CLI: pin native assignments before appending
+  strict explicit-profile supplements; reject duplicate IDs and protected
+  release/holdout inputs. Do not create a report merger, relax native checks,
+  change tiers, or treat individual incomplete reports as complete coverage.
+  The never-run rescue supplement needs a new version with the current canonical
+  question, while preserving its original bytes and first-path expectation.
+  The bounded correction passes83 profile/scope tests and12 campaign tests;
+  independent review confirms unchanged rejection of missing/forged role evidence
+  and correct propagation of passing/failing profile-proof dependencies. The
+  existing command now supports discovery-only composition with native assignment
+  equality and strict explicit-profile input. Supplement v2 hash is retained in
+  B-142 before execution. This earns a new frozen source gate, not installed or
+  complete model-profile qualification.
+  A new frozen full gate then passes all4,623 tests in426.49 seconds with no
+  tracked mutation; proof is retained at
+  `/private/tmp/odylith-v48-source-qualified.emGLho/run-contract.json`. Installed
+  profile coverage still requires the immutable public14 plus explicit rescue
+  control campaign; the source pass does not close this case.
+
 - Regression Tests Added: Profile assignment/environment tests; aggregate-masking profile score test; release rejection without observed provider failure; manifest predicate test.
 
 - Code References: - scripts/release/greenfield_model_profiles.py

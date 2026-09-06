@@ -41,7 +41,95 @@ guarantee, relabel model timeouts as successful requests, or weaken a failed gat
   and terminal cleanup. Do not expand into platform extraction, new governance
   hierarchies, or unrelated feature work.
 
-Active candidate (2026-09-05): v47 replaces the correction-only review outcome
+Active candidate (2026-09-05): v48 adds only the independently tested reviewer
+materiality instruction. It preserves sound, role-correct, consumer-usable choices
+while retaining mandatory correction/clarification of material defects. The sound
+pediatric candidate is preserved exactly in23.428/30s; prefix custody is corrected
+in13.343/25s without losing any of five actions, and false thin admission becomes
+first_path clarification in7.160/25s. All three reviewer-only controls pass
+independent P0/P1 review. Evidence:
+`/private/tmp/odylith-v47-review-materiality.tAZlVj`.
+This earns integration, not qualification. Models, schemas, calls, original
+60/90/120 budgets and transaction behavior stay unchanged. Require fresh complete
+rescue and standard requests before full source and installed release gates.
+The prior v47 development checkpoint is committed and pushed as
+`dddcac5911318382c28599793e6304f84f401f22`, with310 focused tests passing and the
+rescue latency failure explicitly retained; it is not a release-qualified winner.
+Fresh v48 normal requests pass timing and independent canonical/package review:
+rescue46.037/90s with80 writes, standard47.800/60s with83 writes; all role-proof
+checks pass. Standard/rescue missingness and contradiction controls independently
+pass in5.983/60,5.518/90,6.476/60s, one call and zero project files each. Source:
+`abba424bde70de771ea01157aa90b2c252b7a7c455b921511833303bd40efa36`.
+Browser review then exposes a P1 projection overclaim despite24 mechanically clean
+cells/36 PNGs: Atlas describes non-performing participants as first-path actors
+and draws generic person-to-product interaction arrows; Project calls all parties
+human actors and project intelligence promotes the whole inventory to operators.
+Both independent reviewers agree the canonical guardian/therapist inventory is
+defensible; the false performer/interaction claim belongs to projection, not
+source extraction. Retain failed sealed packages. Do not change v48 authoring,
+models, schemas or timing. Correct only Project and Atlas projections using the
+existing typed human-event relations; retain all contextual participants and
+source actions, remove inferred interaction edges, and restrict operator output
+to actual performers. Require generic performer/nonperformer/alias controls plus
+freshly compiled/rendered complete packages before resuming larger qualification.
+Browser evidence: `/private/tmp/v48-pediatric-rescue-core-browser.JWFyFc`, report
+SHA `361a560b7df4f0526fe18021eb31cd98979fb9df12b11f70b5a0604b01927a9c`.
+
+The bounded projection correction now passes 54 focused tests and independent
+code, complete-package semantic, and core-browser reviews with no P0/P1. Fresh
+rescue completes in 57.137/90 seconds with 80 sealed writes; standard completes
+in 44.524/60 with 83. Both read back successfully and their private role/timing
+receipts pass. Source fingerprint:
+`3c0a4db25d1f688edcac5c5203a03656ae58c05716f4a380ce9f96d4802334c2`.
+Evidence roots are `v48-pediatric-projection` and `v48-apprenticeship-projection`
+under `/private/tmp/odylith-v47-integrated.gRQqXl`. Contextual people remain visible;
+only typed performers become operators or first-path actors. No inferred
+person-to-product edges remain, and typed action sequences are unchanged.
+Each core-browser review passes 12 desktop/mobile cells with 18 PNGs:
+`/private/tmp/v48-pediatric-projection-core-browser.Lh1EEv/browser-proof-report.md`
+(SHA `1634155ecfc0f6993b7d2b007c1e8d78552554fe2e8c72910d22db344c61521b`) and
+`/private/tmp/v48-apprenticeship-projection-core-browser.UF361Q/browser-proof-report.md`
+(SHA `a1dafd7ec47df03475adcb2c69ef2a51fba748c5c4198727c91a6637d8c0571b`).
+Servers and browsers are closed. This earns the frozen full source gate, not an
+installed/full-shell/empty-state or release claim. Keep the existing public,
+profile, recovery and untouched holdout gates; add no new mechanism or evaluator.
+
+The frozen full source gate returns 4,603 passed and one failed in422.85 seconds;
+tracked diff remains exactly unchanged. Evidence:
+`/private/tmp/odylith-v48-source-gate.FWIj2W/run-contract.json`.
+The campaign-summary unit test supplies a synthetic passed result without private
+model-stage evidence; the strict aggregate correctly rejects it. Scope that test
+to campaign orchestration with both passing and failing profile-proof dependencies;
+retain separate real-validator rejection tests. Do not relax aggregate evidence.
+Qualification also needs the already-planned rescue clarification supplement.
+There is no supported retained-report merger. Add only an explicit discovery-only
+case-composition option to the existing CLI: assign the unchanged public fourteen
+first, then append strictly loaded, explicitly profiled controls; reject duplicate
+identities and any release/holdout input before execution. Preserve ordinary
+case-file replacement and every native lexical check. Version the unrun rescue
+supplement to the current canonical first-path question before execution, retaining
+its old unrun bytes. No new evaluator, schema, provider or product mechanism.
+This proof-only correction passes83 profile/scope tests and12 campaign tests,
+including both profile-proof terminal outcomes and five unchanged strict
+missing/forged-stage negatives. Independent review finds no weakening.
+The command adds no module or report merger; native assignment equality and later
+reassignment stability are tested, as are duplicate, lexical, empty-input and
+protected-input rejection. The new unrun supplement is
+`/private/tmp/v44-rescue-clarification-case-file.MEWVkE/rescue-clarification-supplement.v2.json`,
+SHA `666ccd7fc3f0b47ae133997d1b4add95a717dde76c4616861de9de5ea156dc47`.
+It retains rescue-v8, first_path and the identical public source; it is profile
+coverage, not independent generalization. Freeze again for full source proof.
+The second frozen gate passes all4,623 tests in426.49 seconds, with tracked diff
+SHA `fd70946064c95ff425cfc2e8a01a02487c4b7e9eedf896ae624c8f580b605ab8`
+unchanged. Retained proof:
+`/private/tmp/odylith-v48-source-qualified.emGLho/run-contract.json`, JUnit SHA
+`62b28326595310f64b4df191161b0a4a71289a5723fdb8fd51557f591e37b84f`.
+This qualifies a stable source checkpoint and one immutable installed campaign;
+it does not establish installed public/profile/recovery/full-browser or holdout
+success. Preserve the failed first run. No further runtime/test edits are planned
+before the existing public14 plus explicit rescue control gate.
+
+Retained v47 evidence: v47 replaces the correction-only review outcome
 with corrections or the exact existing material clarification schema. V46's first
 thin-input control incorrectly authored a package; independent review identified
 the protected authored discriminator as a semantic-admission ownership defect.
@@ -104,6 +192,20 @@ Next inspect request bulk for a lossless encoding improvement, not a new semanti
 schema. Any candidate must preserve the complete contract, pass the retained
 failure and a negative control under fixed caps, then pass fresh end-to-end proof.
 Higher-credit Fast mode was documented but is not enabled or part of this profile.
+Measured request encoding is not adopted as a latency fix: replacing 14 repeated
+citation schemas by one local reference would save 2,080 of 25,662 application
+bytes (8.11%), with no measured latency benefit. No compaction layer is added.
+Independent adjudication classifies all three edits from the 38.630s trace as
+advisory alternatives: customer lens, evidence selection and participant inventory.
+This is unnecessary review churn, not proof of the earlier timeout's cause.
+Compare one instruction-only alternative preserving defensible, role-correct,
+consumer-usable choices while still correcting material meaning/custody/usefulness
+defects. Reviewer-only controls are the retained sound pediatric candidate
+(existing rescue Sol-high role, fixed 30s), known prefix-custody defect and false
+thin-input admission (existing standard Sol-medium role, 25s each). Stop at first
+timing or semantic failure. Require preservation plus correction/clarification of
+both negatives and independent review before production changes. Do not change
+models, schemas, profile deadlines, call counts or transaction behavior.
 Prior v45 positive proof cannot qualify v47. The current contract is in
 `docs/specs/greenfield-operating-envelope.md`.
 

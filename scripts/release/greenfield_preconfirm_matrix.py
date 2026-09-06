@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 from collections.abc import Callable, Mapping, Sequence
 from contextlib import nullcontext
 from dataclasses import dataclass, replace
@@ -2081,6 +2082,14 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--include-default-cases",
+        action="store_true",
+        help=(
+            "Append strictly loaded, explicit-profile supplemental case files after the independently assigned "
+            "default catalog. Discovery only; release and holdout inputs are rejected."
+        ),
+    )
+    parser.add_argument(
         "--include-commit-recovery-proof",
         action="store_true",
         help="Prove installed SIGKILL recovery, exact same-hash retry, and fsync rollback.",
@@ -2332,6 +2341,7 @@ def _final_holdout_run_from_args(
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
+    include_default_cases = bool(getattr(args, "include_default_cases", False))
     evidence_output_token = str(getattr(args, "evidence_output_dir", "") or "").strip()
     release_audit_repo_root = (
         Path(str(args.release_audit_repo_root)).expanduser()
@@ -2352,6 +2362,29 @@ def main(argv: Sequence[str] | None = None) -> int:
         stop_after_cluster_failures=positive_int(args.stop_after_cluster_failures),
         required_stressors=required_stressors,
     )
+    if include_default_cases:
+        violations = []
+        if not any(str(value or "").strip() for value in (args.case_file or ())):
+            violations.append("at least one --case-file is required")
+        if campaign_config.proof_tier != "discovery":
+            violations.append("--proof-tier release is not supported")
+        release_inputs = tuple(
+            name
+            for name in (
+                "release_audit_file",
+                "release_audit_repo_root",
+                "sealed_release_input_root",
+                "semantic_annotations_file",
+                "evaluation_split_manifest",
+                "final_holdout_run_ledger",
+                "implementation_revision",
+                "distribution_provenance_file",
+            )
+            if str(getattr(args, name, "") or "").strip()
+        )
+        violations.extend(f"--{name.replace('_', '-')} cannot be combined" for name in release_inputs)
+        if violations:
+            raise RuntimeError("invalid --include-default-cases policy: " + "; ".join(violations))
     sealed_input_root = str(args.sealed_release_input_root or "").strip()
     if not sealed_input_root:
         # Missing proof flags are actionable before a caller has named sealed inputs.
@@ -2415,9 +2448,29 @@ def main(argv: Sequence[str] | None = None) -> int:
                 final_holdout_run.claim()
             selected_cases = _load_cli_case_files(
                 args.case_file or (),
-                enforce_lexical_controls=final_holdout_run is None,
+                enforce_lexical_controls=(
+                    True if include_default_cases else final_holdout_run is None
+                ),
             )
-            planned_cases = selected_cases or default_cases()
+            if include_default_cases:
+                try:
+                    tuple(case_model_profile(case) for case in selected_cases)
+                except ValueError as error:
+                    raise RuntimeError(
+                        "--include-default-cases supplements require exactly one supported explicit model profile"
+                    ) from error
+                planned_cases = (*assign_model_profiles(default_cases()), *selected_cases)
+                identities = tuple(_retained_case_id(case).casefold() for case in planned_cases)
+                duplicates = sorted(
+                    identity for identity, count in Counter(identities).items() if count > 1
+                )
+                if duplicates:
+                    raise RuntimeError(
+                        "--include-default-cases has duplicate case IDs: " + ", ".join(duplicates)
+                    )
+                selected_cases = planned_cases
+            else:
+                planned_cases = selected_cases or default_cases()
             release_audits = (
                 load_release_audit_file(
                     Path(str(args.release_audit_file)),

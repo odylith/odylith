@@ -367,9 +367,9 @@ def test_authored_dashboard_bypasses_legacy_projection_and_preserves_exact_facts
             "Registry Custodian QuOrates one Æther packet.",
         ),
         (
-            "Human actor",
+            "Participant",
             "Field Ombud",
-            "Named in the model-authored product intent.",
+            "Named in project evidence; no first-path action is assigned.",
         ),
     ]
     assert payload["scenario_details"] == [
@@ -626,7 +626,7 @@ def test_authored_dashboard_projects_title_owned_capability_without_empty_cards(
         "evidence_requirements": ["Replay the recorded placement."],
         "operational_constraints": [],
         "component_responsibilities": [],
-        "human_actors": ["Dock attendant Ivo"],
+        "human_actors": ["Dock attendant Ivo", "Port observer"],
         "external_systems": [],
         "internal_systems": [],
         "assumptions": [],
@@ -700,6 +700,12 @@ def test_authored_dashboard_projects_title_owned_capability_without_empty_cards(
     assert cards["owned_capabilities"] == "Harbor Desk: the placement"
     assert cards["product_boundary"] == "Product-owned systems:\nHarbor Desk"
     assert all(cards.values())
+    assert proposal["intent"]["human_actors"] == ["Dock attendant Ivo", "Port observer"]
+    assert proposal["project_intelligence"]["operators"] == ["Dock attendant Ivo"]
+    assert payload["participants"][1] == (
+        "Participant", "Port observer",
+        "Named in project evidence; no first-path action is assigned.",
+    )
 
 
 def test_authored_dashboard_fails_closed_before_legacy_fallback(

@@ -1328,6 +1328,68 @@
   avoidable request duplication before changing another mechanism; no effort grid,
   larger deadline, extra call, or paid service-tier change is adopted.
 
+- V47 Advisory Review Churn (2026-09-05): Independent adjudication of the retained
+  38.630s review finds all three edits advisory: a valid organizational customer
+  becomes a valid beneficiary, the proof inventory is narrowed, and an already
+  represented beneficiary is added to participant inventory. No P0/P1 is repaired.
+  Compare only an instruction making defensible, role-correct, consumer-usable
+  choices stable while keeping mandatory correction of material defects. Prove
+  the sound pediatric candidate under30s and both prefix-custody and false thin
+  admission negatives under25s; stop on first failure. This does not establish
+  latency causality. Repeated-schema compression saves only2,080/25,662 application
+  bytes with no speed proof, so no serializer/compaction mechanism is introduced.
+
+- V48 Bounded Materiality Result (2026-09-05): All three instruction-only controls
+  pass independent review: sound pediatric preservation23.428/30s, prefix custody
+  correction13.343/25s, false thin admission to clarification7.160/25s. The prefix
+  repair preserves all five actions and corrects only the two wrong embedded-word
+  occurrences; the thin result binds the complete153-byte source. Integrate only
+  that instruction, retaining all models, schemas, deadlines and transaction laws.
+  Evidence: `/private/tmp/odylith-v47-review-materiality.tAZlVj`.
+  These are reviewer-only controls, not end-to-end latency or release proof.
+
+- V48 Participant Projection Resolution (2026-09-05): Only the existing Atlas,
+  Project and operator projection owners change. Canonical people remain intact;
+  exact validated human-event relations alone assign performer/operator status.
+  Atlas removes inferred person-to-product arrows without changing the typed
+  sequence. All 54 focused tests pass, with no P0/P1 in independent code,
+  complete-package semantic or core-browser review. Fresh rescue57.137/90 and
+  standard44.524/60 both publish and read back their sealed 80/83 writes, with
+  valid private role/timing receipts at source fingerprint
+  `3c0a4db25d1f688edcac5c5203a03656ae58c05716f4a380ce9f96d4802334c2`.
+  Evidence: `/private/tmp/odylith-v47-integrated.gRQqXl/v48-pediatric-projection`
+  and sibling `v48-apprenticeship-projection`. Browser reports at
+  `/private/tmp/v48-pediatric-projection-core-browser.Lh1EEv` and
+  `/private/tmp/v48-apprenticeship-projection-core-browser.UF361Q` each pass
+  12 cells with18 PNGs; all browser/server resources are closed. Their report
+  hashes and proof boundaries are retained in B-142. The old failed packages
+  remain untouched. No schema, parser, provider, extra call, deadline or
+  post-confirm change is introduced. This closes the local projection P1;
+  CB-303 stays open for the unchanged full source and installed release gates.
+
+- V48 Frozen Source Qualification (2026-09-05): After the bounded proof-tooling
+  integration, all4,623 runtime/install unit and HIIT/Compass-browser integration
+  tests pass in426.49 seconds. The tracked working diff is unchanged throughout;
+  evidence is `/private/tmp/odylith-v48-source-qualified.emGLho/run-contract.json`.
+  This closes source qualification only. The two fresh complete-package/core
+  browser reviews remain clean, but immutable installed public/profile/recovery,
+  full browser and untouched holdout proof must still pass before closure.
+
+- V48 Participant Projection Reopen (2026-09-05): Fresh rescue46.037/90 and
+  standard47.800/60 requests pass independent canonical/package review and exact
+  publication/readback. Three fresh clarification controls pass with zero writes.
+  Browser mechanics pass24 cells/36 PNGs, but pediatric Atlas explicitly describes
+  guardian and therapist as actors in the first product path and draws unsupported
+  person-to-product arrows. Project also labels nonperformers Human Actor, while
+  project_intelligence.operators copies the entire participant inventory. Both
+  independent reviewers confirm these source-stated parties are valid contextual
+  participants; the P1 is projection overclaim, not canonical invention. Correct
+  those three projections from existing typed event relations without new schema,
+  semantic inference, model calls or post-confirm repair. Preserve all parties,
+  actual actions and failed packages; require fresh pre-confirm compilation and
+  browser proof. Evidence: `/private/tmp/v48-pediatric-rescue-core-browser.JWFyFc`,
+  report SHA361a560b7df4f0526fe18021eb31cd98979fb9df12b11f70b5a0604b01927a9c.
+
 - V47 Contradiction Presentation Failure (2026-09-05): Fresh standard and rescue
   thin-input controls pass in 5.578/60 and 6.425/90 seconds. The independent Fern
   Desk contradiction safely clarifies in 7.775/60 with exact opposing requirements,

@@ -256,7 +256,7 @@ def build_authored_greenfield_proposal(
             state_object=state_object,
             visible_result=visible_result,
             proof_boundary=proof_boundary,
-            human_actors=human_actors,
+            relations=relations,
             internal_systems=internal_systems,
             external_systems=external_systems,
             operational_constraints=operational_constraints,
@@ -622,7 +622,7 @@ def _project_intelligence(
     state_object: str,
     visible_result: str,
     proof_boundary: str,
-    human_actors: Sequence[str],
+    relations: Sequence[Mapping[str, Any]],
     internal_systems: Sequence[str],
     external_systems: Sequence[str],
     operational_constraints: Sequence[str],
@@ -643,7 +643,10 @@ def _project_intelligence(
         "scope": [first_path],
         "ontology": _unique([title, state_object, *internal_systems, *external_systems]),
         "state": [state_object],
-        "operators": list(human_actors),
+        "operators": _unique([
+            _required_text(row, "actor_fact_quote")
+            for row in relations if row.get("actor_kind") == "human"
+        ]),
         "constraints": list(operational_constraints),
         "source_of_truth_map": [],
         "evidence": _unique([proof_boundary, *evidence_requirements]),

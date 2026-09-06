@@ -5,7 +5,7 @@
   benchmark proof, and release-gate indicators may surface when useful, but
   passing checks should stay quiet and no dashboard claim should imply shipped
   behavior before pinned dogfood and benchmark proof exist.
-Last updated: 2026-09-04
+Last updated: 2026-09-05
 
 
 ## Purpose
@@ -390,6 +390,9 @@ artifacts to that header.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-model-profile-claimed-unobserved-provider-failure.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `tests/unit/install/test_greenfield_preconfirm_matrix_campaign.py`
 - **2026-09-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`
@@ -405,9 +408,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_greenfield_browser_surface_proof.py`, `tests/unit/install/test_greenfield_matrix_product_intent_custody.py`
-- **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_component_spec.py`, `src/odylith/runtime/domain_intelligence/proposal_tribunal.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

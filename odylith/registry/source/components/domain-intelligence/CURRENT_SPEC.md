@@ -31,24 +31,24 @@ or prose repair runs after confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-09-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_source_review.py`, `tests/unit/runtime/test_greenfield_model_source_review.py`
 - **2026-09-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_view.py`
+- **2026-09-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_view.py`, `src/odylith/runtime/domain_intelligence/greenfield_authored_proposal.py`, plus 1 more
+- **2026-09-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_source_review.py`
+- **2026-09-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_source_review.py`, `tests/unit/runtime/test_greenfield_model_source_review.py`
 - **2026-09-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_backlog.py`, `tests/unit/runtime/test_greenfield_authored_radar_rationale.py`
 - **2026-09-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_assumptions.py`, `src/odylith/runtime/domain_intelligence/greenfield_authored_backlog.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`
-- **2026-09-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `sha256:4751479046c0d628a6aa19a0cf24f5f650fff3be2719c2055621658a33ef180f`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_profile_contract.py`
-- **2026-09-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -3442,7 +3442,7 @@ This section captures synchronized requirement and contract signals derived from
   Canonical facts and relations retain their exact custody and existing owner
   resolver. The compact authoring contract separates source facts from useful
   provisional decisions and keeps the initial actor with its action citation.
-- Pre-confirm authoring v47 permits at most two calls. Every otherwise-valid authored
+- Pre-confirm authoring v48 permits at most two calls. Every otherwise-valid authored
   candidate receives one source review that returns sparse whole-field corrections
   or the exact existing clarification outcome. The existing authored result
   properties own all correction value schemas. Initial authored status is
@@ -3453,6 +3453,12 @@ This section captures synchronized requirement and contract signals derived from
   clarification needs two with both actual roles retained and validated. The whole
   outcome validates again before becoming canonical. Empty corrections
   are an exact candidate no-op; unknown, duplicate and protected paths are rejected.
+  Review preserves defensible, role-correct, consumer-usable source-grounded choices
+  rather than preferring another valid representation; material meaning, custody
+  and usefulness defects still require correction or clarification.
+  Project and Atlas distinguish contextual participants from typed human event
+  performers. Only performers enter project-intelligence operators; participant
+  presence does not create product interaction arrows or assigned actions.
   Review input includes the literal resolver's actual citation byte offsets and
   64-character surrounding source context. This is a read-only binding view, not
   new semantic evidence or a second parser. Repeated quote bytes do not establish
@@ -3518,6 +3524,10 @@ This section captures synchronized requirement and contract signals derived from
   The unsupported literal Luna claim is removed. All 60/90/120 deadlines remain
   fixed. The bounded source review uses the same preselected composite profile
   and remaining deadline, not a fallback, phrase rule, or alternate projection path.
+  Installed discovery may append explicit-profile controls only after assigning
+  the unchanged default cases independently. Strict supplemental input checks,
+  duplicate-ID rejection and exclusion of protected release/holdout inputs preserve
+  attributable coverage; discovery composition never becomes a release claim.
 - V31's four automated installed passes do not constitute independent quality
   approval. Focused source corrections require fresh generated-package review,
   complete immutable public proof, and independent review before a new blind

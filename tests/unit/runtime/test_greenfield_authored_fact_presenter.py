@@ -18,7 +18,7 @@ def _project() -> dict[str, object]:
         "focus": "\n".join(EVENTS),
         "actors": [
             ("Human actor", "Quartz Keeper", "\n".join((EVENTS[0], EVENTS[2]))),
-            ("Human actor", "Silent Reviewer", "Named in the model-authored product intent."),
+            ("Participant", "Silent Reviewer", "Named in project evidence; no first-path action is assigned."),
         ],
         "authored_facts": {
             "first_path_relations": [
@@ -118,7 +118,7 @@ def test_authored_fact_presenter_renders_repeated_nodes_in_exact_order() -> None
     assert actors.count('data-authored-fact-list="actor"') == 1
     assert actors.count("data-authored-fact-item") == 2
     assert actors.index(EVENTS[0]) < actors.index(EVENTS[2])
-    assert "Named in the model-authored product intent." in actors
+    assert "Named in project evidence; no first-path action is assigned." in actors
     assert story.count('data-authored-fact-list="first_path"') == 1
     assert story.count('data-authored-fact-list="owned_capabilities"') == 1
     assert story.count("data-authored-boundary-group") == 3

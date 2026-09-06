@@ -193,6 +193,9 @@ def test_admission_meaning_lives_on_the_shared_source_schema_properties(monkeypa
     assert "enclosing product capability" in component["responsibilities"]["description"]
     assert "resolved_citations is the compiler's read-only binding view" in reviewed.system_prompt
     assert "Occurrences count literal substring matches" in reviewed.system_prompt
+    assert "Preserve a defensible, role-correct, consumer-usable source-grounded choice" in reviewed.system_prompt
+    assert "Correct material meaning, custody and usefulness defects" in reviewed.system_prompt
+    assert "A semantically sound usable package should return no corrections." in reviewed.system_prompt
 
 
 def test_source_review_requires_resolved_citations(monkeypatch):
