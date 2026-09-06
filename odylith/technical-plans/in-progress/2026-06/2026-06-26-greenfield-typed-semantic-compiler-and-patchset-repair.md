@@ -13,6 +13,88 @@ or generated content after confirmation.
 
 ## Current Convergence Contract (2026-09-04)
 
+### Required package depth and current blocker (2026-09-05)
+
+The operator now explicitly requires 4–5 actionable Radar workstreams, 4–5
+candidate Registry components, and at least five detailed Atlas diagrams for a
+complete Greenfield proposal. This supersedes treating smaller artifact sets as
+sufficient completion evidence. The original source-fidelity, visible-assumption,
+bounded-input and 60/90/120-second requirements remain fixed. Component count does
+not require separate services or deployments: proposed logical ownership must be
+useful and reviewable without pretending that an implementation already exists.
+Counts are necessary, not sufficient; repeated tasks, empty component contracts,
+and decorative diagrams do not satisfy the requirement. Material clarification
+remains a distinct no-write outcome, not a completed governance package.
+
+The source-qualified and pushed v48 checkpoint is
+`8d4afc082d9f879d118839103b57523f7642ee79`, not a release-qualified winner.
+Its first immutable installed case completes in 105.588/120 seconds, with exact
+publication/readback, passing browser mechanics, passing crash/retry/fsync/conflict
+recovery and terminal simulation cleanup. The campaign stops after that one case,
+with fourteen cases unattempted. It fails the existing Atlas connectivity check.
+Evidence: `/private/tmp/odylith-v48-public15-evidence.0XPNDS/result.json`.
+Do not repair this by fabricating interaction arrows or exempting a named fixture.
+
+Package inspection also exposes a product-depth limitation independent of that
+check. The count-based artifact selector offers at most four fixed Radar roles and
+four Atlas views. The Radar projector narrows those further through fixed role
+conditions. Components group only source-named product/system owners; the accepted
+enclosing capability does not provide an explicit provisional component design.
+In the retained installed package, all five human actions survive but one Registry
+paragraph owns the whole product and its event, state and result sections are
+empty. Existing perfect structural depth/usefulness scores do not establish
+consumer quality. This is CB-303, not permission to weaken its actor-custody laws.
+
+Next bounded comparison: retain the current package as baseline and compare one
+compact, pre-confirm provisional planning contract against direct package authoring.
+Prefer reuse of existing source facts, event identities, assumption custody,
+review and transaction sealing. A design proposal may organize supported behavior;
+it must not create an accepted actor, external dependency, safety authority or
+source-stated responsibility. Keep actual human action ownership unchanged.
+Require useful deliverables, candidate responsibilities/interfaces/proof and five
+distinct diagram questions, with all cross-surface relationships attributable to
+the reviewed plan. Do not add semantic regex, a second planning owner, a third call,
+a profile ladder or a new framework. Reject an alternative that cannot meet the
+same timing and semantic controls; do not preserve two production interpretations.
+
+Before production adoption, compare a rich request, a small coherent request,
+equivalent wording, and a material-ambiguity negative. Verify the full retained
+consumer package and actual timing, not schema acceptance or manually authored
+examples. Independent review and all existing later release gates remain required.
+The protected holdout remains closed. No new runtime mechanism is qualified by
+this diagnosis or the operator's new counts.
+
+The independent semantic reviewer recommends a single explicitly provisional plan
+with component responsibilities/supporting event indexes/verification, workstream
+deliverables/component references/dependencies/verification, and component exchange
+contracts. Separate input/output lists would duplicate those exchanges and are
+rejected. Existing assumptions cannot hold relationships without prose reparsing;
+direct model-authored Markdown/Mermaid would duplicate meaning across surfaces and
+is also rejected. This is an ownership recommendation, not semantic or latency proof.
+
+The first unsealed discriminator adds that compact plan to the unchanged source
+authoring response and existing two-call deep profile. It fails its initial
+85-second cap in 85.016 seconds with a null response and provider code `timeout`.
+No second call, proposal publication, runtime patch, profile change or holdout
+access occurs. Stop this additive candidate; do not repeat it or extend its cap.
+No generated plan exists, so its semantic quality and the cause of the timeout
+are unproven. This does not establish that every bounded planning mechanism is
+infeasible. The source input is the public request text rather than the installed
+evidence wrapper; this is a development discriminator, not a paired installed
+latency measurement or an end-to-end qualification.
+Evidence: `/private/tmp/odylith-greenfield-planning-comparison.ijzGCG/`;
+driver SHA `cab257c6825ee37e6ca33876ee087b024efd04684af55733a57d4e56fb0add6b`,
+contract SHA `6d8d97c17c809ee313854b5ba74c2ce1dacb6e7b9fbeea772f2639055804b365`,
+result SHA `edc60436f137efa3a043b5070a0e9dedca155636adec52fe7bec4ebe3280fc40`.
+The retained installed baseline's actual model stages are 64.944 seconds initial
+and 30.238 seconds review; its 105.588-second total is not spare generation time.
+Any next alternative must replace work or demonstrably improve its allocation,
+not append another stage. No model grid, fallback ladder or evaluator exemption.
+All 24 focused artifact-depth, assumption, ownership-conflict and package-evidence
+tests still pass on unchanged runtime code, demonstrating preserved baseline laws,
+not satisfaction of the new package requirement. Preserve this diagnosed
+checkpoint and refresh its owned governance surfaces before more implementation.
+
 The operator explicitly requires an achievable, finite release goal without
 overengineering. Release claims cover the published operating envelope and the
 frozen evaluation population, not perfect interpretation of every possible input.

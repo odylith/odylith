@@ -1462,6 +1462,42 @@
   ordered human events with distinct targets and consent-state linkage, without
   a parser, regex, phrase list, retry, second model call, or post-confirm repair.
 
+- V48 Installed Depth Reopening (2026-09-05): The clean pushed checkpoint
+  `8d4afc082d9f879d118839103b57523f7642ee79` completes its first installed
+  public request in 105.588/120 seconds. Publication/readback, browser mechanics,
+  injected recovery and terminal cleanup pass, but the campaign stops at one
+  failed case because its context inventory lacks a typed edge or distinct
+  containment. All fourteen remaining cases are unattempted. Source-qualified
+  does not mean installed-qualified. Preserve the sealed evidence at
+  `/private/tmp/odylith-v48-public15-evidence.0XPNDS`; no false interaction arrow
+  or fixture-specific evaluator exemption is justified.
+  Direct package inspection identifies a separate utility defect: five preserved
+  human actions collapse into one Radar workstream and one product-wide Registry
+  responsibility. The Registry event/state/result sections are empty. Three
+  inventory/sequence views do not supply a detailed proposed architecture.
+  Fixed role/count selection and source-owner-only component grouping cannot
+  express a justified provisional delivery/component plan. Earlier structural
+  scores of ten do not prove that missing utility. Preserve human performers and
+  canonical facts; do not restore the rejected human-action-as-product-owner
+  mechanism. Compare bounded explicit design proposals, labeled as proposals,
+  against the current mechanism before integrating a replacement.
+  The operator now requires 4–5 useful Radar workstreams, 4–5 candidate Registry
+  components and five or more detailed Atlas diagrams within the unchanged
+  60/90/120 deadlines. No duplicated filler, invented accepted facts, additional
+  model-call cascade or compulsory distributed deployment is authorized by those
+  counts. CB-303 remains open; production planning and independent quality/time
+  proof are not yet implemented or qualified.
+  Independent design review recommends one provisional plan over direct artifact
+  authoring or encoding relationships in assumption prose. The first unsealed
+  additive-plan discriminator then times out at 85.016/85 seconds on deep-v8's
+  initial Sol/high call, returning null with provider code `timeout`. It makes no
+  second call or publication and changes no production mechanism. Stop and retain
+  it at `/private/tmp/odylith-greenfield-planning-comparison.ijzGCG/`; do not
+  infer semantic failure or a causal latency explanation from absent output.
+  Further work must improve allocation or replace work inside the original budget,
+  not repeat this additive attempt, append a stage or weaken quality. Focused
+  unchanged-runtime contracts pass24 tests; that is preservation, not a planning win.
+
 - V30 Source Discriminator Result (2026-09-04): The unchanged flood request
   passed the v30 prediction. One deep authoring call completed in `49.80s`,
   selected `city staff` as the direct customer, preserved all five city-staff
