@@ -81,6 +81,70 @@ def _passing_quality(module) -> object:
     )
 
 
+def _clarification_result() -> dict[str, object]:
+    return {
+        "status": "clarification_required",
+        "consistency": {
+            "status": "material_ambiguity",
+            "evidence_quotes": [],
+        },
+        "clarification": {"material_dimension": "first_path"},
+    }
+
+
+def _stage_observation(
+    profile_id: str,
+    *,
+    clarification: bool = False,
+    reviewed: bool = False,
+) -> dict[str, object]:
+    from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import GREENFIELD_INTENT_AUTHORING_VERSION
+    from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import get_greenfield_model_profile
+
+    profile = get_greenfield_model_profile(profile_id)
+    initial = {
+        "profile_id": profile_id, "request_role": "initial_authoring",
+        "model": profile.model, "reasoning_effort": profile.reasoning_effort,
+        "timeout_seconds": profile.model_timeout_seconds - profile.source_review_reserve_seconds,
+        "elapsed_seconds": 5.0,
+        "provider": {
+            "provider": profile.provider, "model": profile.model,
+            "reasoning_effort": profile.reasoning_effort,
+        },
+    }
+    response_result = _clarification_result() if clarification else {"status": "authored"}
+    has_review = not clarification or reviewed
+    observation = {
+        "version": "odylith.greenfield.model-proof-observation.v2",
+        "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
+        "semantic_model_call_count": 2 if has_review else 1,
+        "response": {
+            "version": GREENFIELD_INTENT_AUTHORING_VERSION,
+            "result": response_result,
+        },
+        "initial_authoring": initial,
+    }
+    if has_review:
+        observation["initial_response"] = {
+            "version": GREENFIELD_INTENT_AUTHORING_VERSION,
+            "result": {"status": "authored"},
+        }
+        observation["source_review"] = {
+            "profile_id": profile_id, "request_role": "source_review",
+            "model": profile.source_review_model,
+            "reasoning_effort": profile.source_review_reasoning_effort,
+            "timeout_seconds": profile.model_timeout_seconds - 5.0, "elapsed_seconds": 5.0,
+            "provider": {
+                "provider": profile.provider, "model": profile.source_review_model,
+                "reasoning_effort": profile.source_review_reasoning_effort,
+            },
+            "response": {
+                "result": response_result if clarification else {"corrections": []},
+            },
+        }
+    return observation
+
+
 def _passing_matrix_result(module, *, manifest_summary: dict[str, object] | None = None) -> object:
     profile_id = module.model_profile_id_for_repair_tier("standard")
     profile = module.get_greenfield_model_profile(profile_id)
@@ -101,6 +165,7 @@ def _passing_matrix_result(module, *, manifest_summary: dict[str, object] | None
             },
             "model_profile": {
                 "profile_id": profile_id,
+                "stage_observation": _stage_observation(profile_id),
                 "status": "passed",
                 "issues": [],
                 "observed": {
@@ -130,6 +195,7 @@ def _passing_profile_result(module, profile_id: str, proposal_seconds: float) ->
             },
             "model_profile": {
                 "profile_id": profile_id,
+                "stage_observation": _stage_observation(profile_id),
                 "status": "passed",
                 "issues": [],
                 "observed": {
@@ -145,7 +211,13 @@ def _passing_profile_result(module, profile_id: str, proposal_seconds: float) ->
     )
 
 
-def _passing_clarification_profile_result(module, profile_id: str, proposal_seconds: float) -> object:
+def _passing_clarification_profile_result(
+    module,
+    profile_id: str,
+    proposal_seconds: float,
+    *,
+    reviewed: bool = False,
+) -> object:
     expected_field = "first_path"
     expected_question = "Who uses this product first, and what complete result do they see?"
     result = _passing_profile_result(module, profile_id, proposal_seconds)
@@ -158,6 +230,14 @@ def _passing_clarification_profile_result(module, profile_id: str, proposal_seco
         ),
         evidence={
             **dict(result.evidence or {}),
+            "model_profile": {
+                **result.evidence["model_profile"],
+                "stage_observation": _stage_observation(
+                    profile_id,
+                    clarification=True,
+                    reviewed=reviewed,
+                ),
+            },
             "case": {
                 "id": f"{profile_id}-clarification",
                 "expectation": "clarification_required",
@@ -938,17 +1018,21 @@ def test_model_profile_release_proof_requires_all_tiers_under_strict_budgets() -
     assert any("clarification/no-write control" in issue for issue in positives_only["issues"])
 
     lower_profile_id = module.model_profile_id_for_repair_tier("standard")
-    clarification = _passing_clarification_profile_result(module, lower_profile_id, 20.0)
-    complete_results = (*results, clarification)
+    clarifications = tuple(
+        _passing_clarification_profile_result(module, module.model_profile_id_for_repair_tier(tier), 20.0)
+        for tier in ("standard", "rescue")
+    )
+    complete_results = (*results, *clarifications)
     proof = module.model_profile_release_proof(complete_results, require_complete=True)
     assert proof["status"] == "passed"
     assert proof["profiles"][lower_profile_id]["lower_capability"] is True
     assert proof["profiles"][lower_profile_id]["committed_positive_case_count"] == 1
     assert proof["profiles"][lower_profile_id]["clarification_no_write_control_count"] == 1
     assert proof["lower_capability_scope"]["status"] == "passed"
+    assert len(proof["lower_capability_scope"]["observed_profiles"]) == 2
     assert proof["lower_capability_scope"]["observed_profiles"][0]["model"] == "gpt-5.6-terra"
     assert module.model_profile_release_proof(
-        (*results[:-1], clarification),
+        (*results[:-1], *clarifications),
         require_complete=True,
     )["status"] == "failed"
     breached = replace(
@@ -958,9 +1042,29 @@ def test_model_profile_release_proof_requires_all_tiers_under_strict_budgets() -
         ).consumer_budget_seconds,
     )
     assert module.model_profile_release_proof(
-        (breached, *results[1:], clarification),
+        (breached, *results[1:], *clarifications),
         require_complete=True,
     )["status"] == "failed"
+
+
+def test_model_profile_release_proof_accepts_review_demoted_clarification() -> None:
+    module = _module()
+    profile_id = module.model_profile_id_for_repair_tier("standard")
+    results = (
+        _passing_profile_result(module, profile_id, 20.0),
+        _passing_clarification_profile_result(
+            module,
+            profile_id,
+            20.0,
+            reviewed=True,
+        ),
+    )
+
+    proof = module.model_profile_release_proof(results, require_complete=False)
+
+    assert proof["status"] == "passed"
+    assert proof["profiles"][profile_id]["committed_positive_case_count"] == 1
+    assert proof["profiles"][profile_id]["clarification_no_write_control_count"] == 1
 
 
 def test_model_profile_release_proof_reports_missing_lower_profile_as_unproven() -> None:
@@ -971,7 +1075,7 @@ def test_model_profile_release_proof_reports_missing_lower_profile_as_unproven()
             module.model_profile_id_for_repair_tier(tier),
             20.0,
         )
-        for tier in ("rescue", "deep")
+        for tier in ("deep",)
     )
 
     proof = module.model_profile_release_proof(results, require_complete=False)
@@ -981,15 +1085,44 @@ def test_model_profile_release_proof_reports_missing_lower_profile_as_unproven()
     assert proof["lower_capability_scope"] == {
         "status": "unproven",
         "observed_profiles": [],
+        "role": "initial_authoring",
         "requirement": "installed_committed_positive_and_source_bound_clarification_no_write",
     }
     assert module.model_profile_release_proof(results, require_complete=True)["status"] == "failed"
 
 
+@pytest.mark.parametrize("mutation", ["missing", "review_model", "review_timeout", "outcome"])
+def test_model_profile_aggregate_rechecks_private_roles_despite_passed_label(mutation: str) -> None:
+    module = _module()
+    profile_id = module.model_profile_id_for_repair_tier("standard")
+    result = _passing_profile_result(module, profile_id, 20.0)
+    evidence = dict(result.evidence)
+    profile_evidence = dict(evidence["model_profile"])
+    stages = _stage_observation(profile_id)
+    if mutation == "missing":
+        stages = {}
+    elif mutation == "review_model":
+        stages["source_review"]["provider"]["model"] = "gpt-5.6-terra"
+    elif mutation == "review_timeout":
+        stages["source_review"]["timeout_seconds"] = 55.0
+    else:
+        stages = _stage_observation(profile_id, clarification=True)
+    profile_evidence["stage_observation"] = stages
+    evidence["model_profile"] = profile_evidence
+
+    proof = module.model_profile_release_proof(
+        (replace(result, evidence=evidence),), require_complete=False,
+    )
+
+    assert profile_evidence["status"] == "passed"
+    assert proof["status"] == "failed"
+    assert proof["profiles"][profile_id]["committed_positive_case_count"] == 0
+
+
 def test_model_profile_release_proof_ignores_forged_lower_metadata_and_missing_provider() -> None:
     module = _module()
-    rescue_id = module.model_profile_id_for_repair_tier("rescue")
-    forged = _passing_profile_result(module, rescue_id, 20.0)
+    deep_id = module.model_profile_id_for_repair_tier("deep")
+    forged = _passing_profile_result(module, deep_id, 20.0)
     evidence = dict(forged.evidence or {})
     evidence["model_profile"] = {**evidence["model_profile"], "lower_capability": True}
 

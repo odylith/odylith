@@ -44,44 +44,81 @@ transaction hash to the same commit-only confirmation callback. Other hosts may
 render proposals but cannot offer governed writes until they prove the same hash
 callback and visibility contract.
 
-Release evaluation covers three pinned successful profiles:
+Release evaluation covers three pinned candidate success profiles; their identity
+does not itself establish qualification:
 
-- `greenfield-standard-gpt-5.6-terra-medium-v6`: the default and `auto` path, with
-  one 60-second end-to-end consumer budget and a 55-second model window.
-- `greenfield-rescue-gpt-5.6-sol-high-v5`: the explicit rescue path, with one
-  90-second end-to-end consumer budget and an 80-second model window.
-- `greenfield-deep-gpt-5.6-sol-high-v5`: the explicit deep path, with one
-  120-second end-to-end consumer budget and a 105-second model window.
+- `greenfield-standard-terra-low-sol-medium-review-v10`: the default and `auto`
+  path, with one 60-second consumer budget, a 55-second model window and a
+  30-second initial-author cap, reserving 25 seconds for review.
+- `greenfield-rescue-terra-medium-sol-high-review-v8`: the explicit rescue path, with one
+  90-second end-to-end consumer budget and an 80-second model window. Initial
+  authoring is capped at 60 seconds, reserving 20 seconds for source review.
+- `greenfield-deep-sol-high-v8`: the explicit deep path, with one
+  120-second consumer budget, a 105-second model window and an 85-second
+  initial-author cap, reserving 20 seconds for review.
 
 The selected profile is fixed before the model request. Elapsed time or a failed
 attempt never relabels or extends a standard request into rescue or deep.
-Standard uses medium reasoning on the faster Terra author; rescue and deep use
-high reasoning on Sol. The tiers preserve semantic capability while fitting
-their fixed elapsed-time envelopes. These are bounded provider-request
-profiles, not claims about every provider model.
+Standard uses Terra low, rescue uses Terra medium, and deep uses Sol high for
+initial authoring.
+Standard uses Sol medium for mandatory source review; rescue and deep use Sol high.
+These roles are selected
+before call one, not dynamically promoted after a failure. These are bounded
+composite request profiles, not claims about every provider model.
 Host-model output is candidate evidence only. Every profile must clarify or fail
 safely instead of inventing product truth. Provider unavailability is separately
 proven as a fast, no-write environment outcome and is not a supported-success
 profile.
 
-The standard Terra profile is the supported lower-capability member. Release
-proof requires its observed committed positive case and a source-bound material
+Standard and rescue have lower-capability initial authors relative to all-Sol
+deep; this does not claim that their reviewer is lower-capability. Release
+proof requires each profile's observed committed positive case and a source-bound material
 clarification with no writes, separately from unavailable-provider behavior.
 No other model earns a proof claim without its own observed request evidence.
 
 Pre-confirm authoring permits at most two model calls: initial intent authoring,
-then one source-claim review for every otherwise-valid authored candidate.
-Clarifications need only the first call. Authoring v42 uses sparse whole-fact
-corrections and optional complete assumption
-or component replacements. The review reuses each existing fact's exact value schema;
-an empty correction list and null replacements preserve the candidate unchanged.
-The review shares the original model window and is capped at 20 seconds; it cannot
-extend the consumer deadline or change the chosen profile. The complete candidate
-must pass custody and semantic validation again. Explicit recipients need not perform
-a first-path action. Events, first path, terminal, consistency, and ambiguity fields
-remain unchanged. Unknown, duplicate, or protected correction fields are rejected,
+then one source review for every otherwise-valid authored candidate. Initial
+clarification needs one call; review may instead select the same existing
+clarification outcome after two calls. Authoring v47 returns either a sparse
+whole-field correction result derived from the authored schema or that shared
+clarification result. Initial authored status is provisional, not source authority;
+review owns semantic admission as well as correction. Status is not a patch path.
+An empty correction list preserves the candidate exactly. The previous fact
+whitelist and three-part response are removed. Review can use all unused time
+within the original shared model window, but cannot extend the consumer deadline
+or change the selected profile. The complete corrected candidate must pass custody
+and semantic validation again. Explicit recipients need not perform a first-path
+action. Unknown, duplicate, or protected correction paths are rejected,
 and a failed review never starts another call. Receipts record the actual call
-count; release proof retains both candidates and the exact review response.
+count; release proof retains the initial candidate, final outcome and exact review
+response for both reviewed correction and clarification outcomes.
+The reviewer sees the compiler's actual literal citation bindings, byte offsets,
+and nearby source text. Identical quote bytes at a different location do not prove
+the selected role. This read-only view adds no semantic parser or automatic
+word-boundary repair. An impossible ordinal can normalize only when the quote has
+one exact location; ambiguous repeated matches fail closed before review.
+The sealed model observation describes the initial author; the versioned composite
+profile identity binds both roles. Private proof retains each actual request's
+model, effort, provider, cap and elapsed time, separately from the shared window.
+Release evidence validates both roles rather than treating the author as the reviewer.
+Missing-information clarification uses empty model `evidence_quotes`; the compiler
+binds the exact complete admitted input, including its byte range and hash. This
+records examined-source custody, not proof that information is absent. Contradictions
+still require two to four exact distinct model-selected source citations. Ambiguity
+cannot accept nonempty model quotes or substitute for contradictory evidence.
+The existing clarification dimension schema distinguishes an unstated usable
+actor/task/result (`first_path`) from unclear product responsibility or scope
+(`product_boundary`). Missing-information questions retain their canonical wording.
+For a contradiction, the question asks which conflicting requirement should apply;
+the human view presents the existing validated opposing source spans immediately
+before it. JSON retains those same spans beside the question. Neither view infers,
+truncates, or recomposes the conflicting claims. Full-source
+clarification JSON can repeat the bounded input; no lossy excerpt or whitespace
+matching mechanism is introduced.
+Clarification receipts retain the actual one- or two-call count from authoring;
+they do not default a reviewed clarification to one call.
+An initial overrun fails without starting review;
+a smaller caller-supplied model window still preserves its review reservation.
 An initial non-structured provider failure retains its categorical code, profile,
 timing and response shape through the existing private proof channel, never raw
 failed output or provider diagnostic text. Public failure wording stays unchanged.

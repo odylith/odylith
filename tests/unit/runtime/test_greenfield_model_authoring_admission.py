@@ -349,7 +349,7 @@ def test_authoring_keeps_one_material_question_separate_from_any_package() -> No
     response = clarification_response(
         question="What visible result should the first user see after completing the task?",
         material_dimension="visible_result",
-        evidence_quotes=("A project needs a clear outcome.",),
+        evidence_quotes=(),
     )
 
     result = author_greenfield_intent(
@@ -365,17 +365,16 @@ def test_authoring_keeps_one_material_question_separate_from_any_package() -> No
 def test_component_ownership_clarification_is_one_plain_question_without_staging(
     tmp_path,
 ) -> None:  # type: ignore[no-untyped-def]
+    prompt = "Create a comparison product with two possible responsibility owners."
     response = clarification_response(
         question="ignored model wording",
         material_dimension="component_ownership",
-        evidence_quotes=(
-            "Create a comparison product with two possible responsibility owners.",
-        ),
+        evidence_quotes=(),
     )
 
     with pytest.raises(GreenfieldClarificationRequired) as exc_info:
         materialize_model_authored_intent(
-            prompt="Create a comparison product with two possible responsibility owners.",
+            prompt=prompt,
             repo_root=tmp_path,
             authoring_provider=StructuredAuthoringProvider(response),
             authoring_timeout_seconds=84,
@@ -389,7 +388,7 @@ def test_component_ownership_clarification_is_one_plain_question_without_staging
     assessment = exc_info.value.authoring_receipt["consistency_assessment"]
     assert assessment["status"] == "material_ambiguity"
     assert [row["text"] for row in assessment["source_spans"]] == [
-        "Create a comparison product with two possible responsibility owners."
+        combined_prompt_evidence_source(prompt=prompt, edit_evidence="")
     ]
     assert not (tmp_path / ".odylith/runtime/greenfield").exists()
 
@@ -464,7 +463,7 @@ def test_source_bound_nonmaterial_conflict_increases_sealed_ambiguity(
 @pytest.mark.parametrize(
     ("failure_code", "diagnostic_detail"),
     (
-        ("timeout", "Codex CLI exceeded 80.0s."),
+        ("timeout", "Codex CLI exceeded 60.0s."),
         ("unavailable", "Codex CLI is unavailable."),
         ("transport_error", "Provider connection reset during authoring."),
         ("invalid_response", "invalid provider output " * 20),
@@ -482,7 +481,7 @@ def test_initial_non_mapping_response_retains_bounded_failure_observation(
     observation = tmp_path / "model-failure-observation.json"
     descriptor = os.open(observation, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     monkeypatch.setenv(GREENFIELD_MODEL_PROOF_FD_ENV, str(descriptor))
-    ticks = iter((0.0, 81.805))
+    ticks = iter((0.0, 61.805))
     try:
         with pytest.raises(GreenfieldModelAuthoringError) as exc_info:
             author_greenfield_intent(
@@ -506,14 +505,14 @@ def test_initial_non_mapping_response_retains_bounded_failure_observation(
     assert retained["failure"] == {
         "stage": "initial_authoring",
         "profile_id": RESCUE_PROFILE_ID,
-        "effective_timeout_seconds": 80.0,
-        "elapsed_seconds": pytest.approx(81.805),
+        "effective_timeout_seconds": 60.0,
+        "elapsed_seconds": pytest.approx(61.805),
         "response_shape": "NoneType",
         "provider": {
             "provider": "codex-cli",
             "code": failure_code,
-            "model": "gpt-5.6-sol",
-            "reasoning_effort": "high",
+            "model": "gpt-5.6-terra",
+            "reasoning_effort": "medium",
         },
     }
     assert diagnostic_detail not in observation.read_text(encoding="utf-8")

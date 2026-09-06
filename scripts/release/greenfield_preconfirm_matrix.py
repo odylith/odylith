@@ -1103,6 +1103,7 @@ def _run_case(
             proposal=_as_mapping(getattr(package, "proposal", None)),
             create_payload=payload,
         ),
+        stage_observation=_retained_model_stage_observation(retained_case),
     )
     counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
     surface_issues = rendered_surface_health_issues(repo_root=repo_root)
@@ -1303,6 +1304,7 @@ def _run_expected_clarification_case(
         profile_id,
         env,
         observed=sealed_model_profile_observation(create_payload=payload),
+        stage_observation=_retained_model_stage_observation(retained_case),
     )
     issues.extend(str(issue) for issue in profile_evidence.get("issues", ()))
     quality = clarification_quality_verdict(issues)
@@ -1972,6 +1974,18 @@ def _read_json_mapping(path: Path) -> Mapping[str, Any]:
     except json.JSONDecodeError:
         return {}
     return payload if isinstance(payload, Mapping) else {}
+
+
+def _retained_model_stage_observation(
+    retained_case: RetainedEvidenceCase | None,
+) -> Mapping[str, Any]:
+    if retained_case is None:
+        return {}
+    return _read_json_mapping(
+        retained_case.staging_root
+        / "semantic"
+        / "model-authoring-observation.v1.json"
+    )
 
 
 def _parse_json_object(value: str) -> Mapping[str, Any]:

@@ -6,6 +6,7 @@ from collections import defaultdict
 from collections.abc import Mapping, Sequence
 from dataclasses import replace
 import hashlib
+import math
 from pathlib import Path
 from typing import Any
 
@@ -20,6 +21,9 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
     get_greenfield_model_profile,
     greenfield_model_profile_observation_issues,
     supported_greenfield_model_profile_ids,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+    GREENFIELD_INTENT_AUTHORING_VERSION,
 )
 
 
@@ -42,6 +46,7 @@ _PROFILE_ENV_KEYS = (
     "ODYLITH_REASONING_CLAUDE_BIN",
     "ODYLITH_REASONING_CLAUDE_REASONING_EFFORT",
 )
+_TIME_TOLERANCE_SECONDS = 1e-6
 
 
 def assign_model_profiles(cases: Sequence[GreenfieldMatrixCase]) -> tuple[GreenfieldMatrixCase, ...]:
@@ -141,8 +146,9 @@ def model_profile_evidence(
     environ: Mapping[str, str],
     *,
     observed: Mapping[str, Any] | None = None,
+    stage_observation: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Bind configured profile identity to sealed observed request metadata."""
+    """Bind configured and retained request evidence to one composite profile."""
 
     contract = get_greenfield_model_profile(profile)
     configured = {
@@ -181,6 +187,17 @@ def model_profile_evidence(
         )
     elif profile != UNAVAILABLE_PROVIDER_PROFILE:
         issues.append("sealed model profile observation is missing")
+    stage_summary = (
+        _model_stage_observation_evidence(
+            profile,
+            sealed_observation=observation,
+            stage_observation=dict(stage_observation or {}),
+        )
+        if profile != UNAVAILABLE_PROVIDER_PROFILE
+        else None
+    )
+    if stage_summary is not None:
+        issues.extend(str(issue) for issue in stage_summary["issues"])
     return {
         "contract_version": GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION,
         "assignment_version": MODEL_PROFILE_ASSIGNMENT_VERSION,
@@ -189,8 +206,23 @@ def model_profile_evidence(
         "consumer_budget_seconds": contract.consumer_budget_seconds,
         "lower_capability": contract.lower_capability,
         "semantic_authority": "typed_evidence_and_preconfirm_tribunal",
+        "sealed_request_role": "initial_authoring",
+        "lower_capability_scope": (
+            "initial_authoring" if contract.lower_capability else "not_applicable"
+        ),
+        "expected_source_review": {
+            "provider": contract.provider,
+            "model": contract.source_review_model,
+            "reasoning_effort": contract.source_review_reasoning_effort,
+        },
         "configured": configured,
         "observed": observation,
+        "stage_observation": (
+            dict(stage_observation or {})
+            if profile != UNAVAILABLE_PROVIDER_PROFILE
+            else None
+        ),
+        "stage_observation_summary": stage_summary,
         "status": (
             "passed"
             if observation and not issues
@@ -205,6 +237,170 @@ def model_profile_evidence(
             if profile == UNAVAILABLE_PROVIDER_PROFILE
             else "not_applicable"
         ),
+    }
+
+
+def model_stage_observation_issues(
+    profile: str,
+    *,
+    observed: Mapping[str, Any],
+    stage_observation: Mapping[str, Any],
+) -> tuple[str, ...]:
+    """Return fail-closed issues for one retained composite request observation."""
+
+    return tuple(
+        str(issue)
+        for issue in _model_stage_observation_evidence(
+            profile,
+            sealed_observation=observed,
+            stage_observation=stage_observation,
+        )["issues"]
+    )
+
+
+def _model_stage_observation_evidence(
+    profile: str,
+    *,
+    sealed_observation: Mapping[str, Any],
+    stage_observation: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Validate sanitized per-call proof against one sealed shared model window."""
+
+    contract = get_greenfield_model_profile(profile)
+    retained = dict(stage_observation or {})
+    issues: list[str] = []
+    if not retained:
+        issues.append("retained model authoring observation is missing")
+    if str(retained.get("version") or "") != "odylith.greenfield.model-proof-observation.v2":
+        issues.append("retained model authoring observation version is invalid")
+    if str(retained.get("authoring_version") or "") != GREENFIELD_INTENT_AUTHORING_VERSION:
+        issues.append("retained model authoring version is invalid")
+
+    response = _mapping(retained.get("response"))
+    result = _mapping(response.get("result"))
+    response_kind = str(result.get("status") or "")
+    if str(response.get("version") or "") != GREENFIELD_INTENT_AUTHORING_VERSION:
+        issues.append("retained model response version is invalid")
+    if response_kind not in {"authored", "clarification_required"}:
+        issues.append("retained model response kind is invalid")
+
+    call_count = retained.get("semantic_model_call_count")
+    if type(call_count) is not int:  # bool is not an admissible call count.
+        issues.append("retained semantic model call count is invalid")
+        normalized_call_count = 0
+    else:
+        normalized_call_count = call_count
+
+    sealed_timeout = _positive_float(sealed_observation.get("effective_timeout_seconds"))
+    if sealed_timeout is None:
+        issues.append("sealed shared model window is invalid")
+
+    initial = _mapping(retained.get("initial_authoring"))
+    if not initial:
+        issues.append("retained initial authoring observation is missing")
+    initial_summary = _request_role_summary(initial)
+    issues.extend(
+        _request_role_issues(
+            profile,
+            request_role="initial_authoring",
+            observation=initial,
+        )
+    )
+    initial_timeout = _positive_float(initial.get("timeout_seconds"))
+    initial_elapsed = _positive_float(initial.get("elapsed_seconds"))
+    if initial_timeout is None:
+        issues.append("retained initial authoring timeout is invalid")
+    if initial_elapsed is None:
+        issues.append("retained initial authoring elapsed time is invalid")
+    if sealed_timeout is not None and initial_timeout is not None:
+        expected_initial_timeout = sealed_timeout - contract.source_review_reserve_seconds
+        if expected_initial_timeout <= 0.0 or not _same_seconds(
+            initial_timeout, expected_initial_timeout
+        ):
+            issues.append("retained initial authoring timeout does not preserve the review reserve")
+    if (
+        initial_timeout is not None
+        and initial_elapsed is not None
+        and initial_elapsed > initial_timeout + _TIME_TOLERANCE_SECONDS
+    ):
+        issues.append("retained initial authoring elapsed time exceeds its timeout")
+
+    source_review = _mapping(retained.get("source_review"))
+    request_roles: dict[str, Any] = {"initial_authoring": initial_summary}
+    if response_kind == "authored":
+        if normalized_call_count != 2:
+            issues.append("authored model response must record exactly two semantic calls")
+    elif response_kind == "clarification_required" and normalized_call_count not in {1, 2}:
+        issues.append("clarification model response must record one or two semantic calls")
+
+    has_review = response_kind == "authored" or normalized_call_count == 2
+    if has_review:
+        initial_response = _mapping(retained.get("initial_response"))
+        initial_result = _mapping(initial_response.get("result"))
+        if not initial_response:
+            issues.append("reviewed model response is missing its initial candidate")
+        elif (
+            str(initial_response.get("version") or "")
+            != GREENFIELD_INTENT_AUTHORING_VERSION
+            or str(initial_result.get("status") or "") != "authored"
+        ):
+            issues.append("retained initial candidate is not an authored response")
+        if not source_review:
+            issues.append("reviewed model response is missing its source review")
+        review_summary = _request_role_summary(source_review)
+        request_roles["source_review"] = review_summary
+        issues.extend(
+            _request_role_issues(
+                profile,
+                request_role="source_review",
+                observation=source_review,
+            )
+        )
+        review_timeout = _positive_float(source_review.get("timeout_seconds"))
+        review_elapsed = _positive_float(source_review.get("elapsed_seconds"))
+        if review_timeout is None:
+            issues.append("retained source review timeout is invalid")
+        if review_elapsed is None:
+            issues.append("retained source review elapsed time is invalid")
+        if (
+            review_timeout is not None
+            and review_elapsed is not None
+            and review_elapsed > review_timeout + _TIME_TOLERANCE_SECONDS
+        ):
+            issues.append("retained source review elapsed time exceeds its timeout")
+        if sealed_timeout is not None and initial_elapsed is not None and review_timeout is not None:
+            remaining = sealed_timeout - initial_elapsed
+            if review_timeout > remaining + _TIME_TOLERANCE_SECONDS:
+                issues.append("retained source review timeout exceeds the remaining shared window")
+        if sealed_timeout is not None and initial_elapsed is not None and review_elapsed is not None:
+            if initial_elapsed + review_elapsed > sealed_timeout + _TIME_TOLERANCE_SECONDS:
+                issues.append("retained semantic calls exceed the sealed shared model window")
+
+        review_response = _mapping(source_review.get("response"))
+        review_result = _mapping(review_response.get("result"))
+        if set(review_response) != {"result"} or not review_result:
+            issues.append("retained source review decision is invalid")
+        elif response_kind == "authored":
+            if set(review_result) != {"corrections"} or not isinstance(
+                review_result.get("corrections"), list
+            ):
+                issues.append("authored source review decision is invalid")
+        elif review_result != result:
+            issues.append("clarification source review decision does not match the final response")
+    elif response_kind == "clarification_required" and normalized_call_count == 1:
+        if "source_review" in retained:
+            issues.append("one-call clarification must not record a source review")
+        if "initial_response" in retained:
+            issues.append("one-call clarification must not record an intermediate candidate")
+
+    return {
+        "observation_version": str(retained.get("version") or ""),
+        "authoring_version": str(retained.get("authoring_version") or ""),
+        "response_kind": response_kind,
+        "semantic_model_call_count": normalized_call_count,
+        "request_roles": request_roles,
+        "status": "passed" if not issues else "failed",
+        "issues": issues,
     }
 
 
@@ -264,6 +460,79 @@ def _float_value(value: Any) -> float:
         return 0.0
 
 
+def _mapping(value: Any) -> dict[str, Any]:
+    return dict(value) if isinstance(value, Mapping) else {}
+
+
+def _positive_float(value: Any) -> float | None:
+    if isinstance(value, bool):
+        return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    return number if math.isfinite(number) and number > 0.0 else None
+
+
+def _same_seconds(left: float, right: float) -> bool:
+    return math.isclose(
+        left,
+        right,
+        rel_tol=0.0,
+        abs_tol=_TIME_TOLERANCE_SECONDS,
+    )
+
+
+def _request_role_issues(
+    profile: str,
+    *,
+    request_role: str,
+    observation: Mapping[str, Any],
+) -> tuple[str, ...]:
+    issues: list[str] = []
+    if str(observation.get("profile_id") or "") != profile:
+        issues.append(f"retained {request_role} profile identity is invalid")
+    if str(observation.get("request_role") or "") != request_role:
+        issues.append(f"retained {request_role} request role is invalid")
+    provider = _mapping(observation.get("provider"))
+    if not provider:
+        issues.append(f"retained {request_role} provider metadata is missing")
+    if str(provider.get("code") or "").strip():
+        issues.append(f"retained {request_role} provider metadata records a failure")
+    model = str(observation.get("model") or "")
+    effort = str(observation.get("reasoning_effort") or "")
+    if model != str(provider.get("model") or ""):
+        issues.append(f"retained {request_role} model conflicts with provider metadata")
+    if effort.casefold() != str(provider.get("reasoning_effort") or "").casefold():
+        issues.append(
+            f"retained {request_role} reasoning effort conflicts with provider metadata"
+        )
+    issues.extend(
+        greenfield_model_profile_observation_issues(
+            profile_id=profile,
+            provider=str(provider.get("provider") or ""),
+            model=model,
+            reasoning_effort=effort,
+            effective_timeout_seconds=observation.get("timeout_seconds"),
+            request_role=request_role,
+        )
+    )
+    return tuple(issues)
+
+
+def _request_role_summary(observation: Mapping[str, Any]) -> dict[str, Any]:
+    provider = _mapping(observation.get("provider"))
+    return {
+        "profile_id": str(observation.get("profile_id") or ""),
+        "request_role": str(observation.get("request_role") or ""),
+        "provider": str(provider.get("provider") or ""),
+        "model": str(observation.get("model") or ""),
+        "reasoning_effort": str(observation.get("reasoning_effort") or ""),
+        "timeout_seconds": _float_value(observation.get("timeout_seconds")),
+        "elapsed_seconds": _float_value(observation.get("elapsed_seconds")),
+    }
+
+
 __all__ = [
     "MODEL_PROFILES",
     "MODEL_PROFILE_ASSIGNMENT_SEED",
@@ -276,6 +545,7 @@ __all__ = [
     "case_model_profile",
     "model_profile_environment",
     "model_profile_evidence",
+    "model_stage_observation_issues",
     "profile_coverage",
     "profile_counts",
 ]

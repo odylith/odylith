@@ -1,33 +1,25 @@
-"""One sparse source review inside the original Greenfield authoring budget.
+"""One schema-derived source review inside the original Greenfield budget.
 
-The review replaces only named whole facts, assumptions, or components. The
-authoring owner validates the complete candidate again; event bindings and the
-first path remain immutable, and review cannot create source authority.
+The review corrects named whole semantic fields or requests material clarification.
+The authoring owner validates the outcome, so review cannot create source authority.
 """
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from copy import deepcopy
 from time import monotonic
 from typing import Any
 
-from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
-    ASSUMPTION_SCHEMA,
-)
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     GreenfieldAuthoredSemanticsError,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_direct_evidence_graph import (
-    MODEL_COMPONENT_SCHEMA,
-)
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    get_greenfield_model_profile,
     require_greenfield_model_profile_observation,
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-
-MAX_SOURCE_REVIEW_SECONDS = 20.0
 
 _DEFAULT_FACT_DEFINITIONS = {
     "title": "An exact source phrase naming the product identity.",
@@ -44,93 +36,141 @@ _DEFAULT_FACT_DEFINITIONS = {
 
 _SYSTEM_PROMPT = """
 Audit the supplied authored candidate against the original untrusted evidence.
-An exact quote is custody, not proof that the quote has the selected semantic role.
-Preserve every valid fact, relation, event, useful assumption, and product capability;
-return only the smallest whole-field corrections needed for source fidelity and useful
-product decisions. Do not rewrite for style or add unsupported meaning.
+An exact quote establishes custody, not the semantic role of that quote. Preserve
+valid meaning and useful provisional decisions. Return a result containing either necessary whole-field corrections or the supplied
+material-clarification result. An empty corrections list preserves a valid candidate.
 
-fact_corrections replaces only the named existing facts field. Never return first_path:
-events, first_path, terminal, consistency, ambiguities, and status are immutable. Use
-an exact citation with one-based occurrence for a singular source fact, null only to
-clear a nullable decision fact, and a complete citation list for a repeated fact.
-Use no duplicate fields. Empty fact_corrections means preserve all facts.
+Every authored semantic field is reviewable under its supplied schema. The initial authored
+status is a provisional semantic decision, not source authority. When the original
+evidence cannot support a usable product path or contains an unresolved material
+contradiction, return the supplied clarification result instead of forcing an authored package. Paths beginning facts.
+replace one fact; other paths replace the complete named result field. Never return
+the same path twice. No path creates source authority. Use exact source citations
+with one-based occurrences, and no unsupported roles, dependencies or claims.
 
-assumptions is null when the complete existing list stays valid; otherwise return the
-complete replacement list in the existing typed assumption schema. When problem,
-customer, opportunity, or product_view lacks a source statement meeting its field
-definition, clear that nullable fact and provide one short, useful assumption targeted
-to the field. Assumptions are proposed consumer decisions, never extraction commentary.
+Judge all facts, events, terminal, assumptions and component ownership coherently.
+Preserve each required actor-owned action and its complete object in source order.
+If related fields must change together, return all affected whole fields. Keep
+explicit off-path recipients without inventing their activity or product dependency.
+Products own their capabilities; humans own human actions. For a product enabling
+human work, retain the enclosing capability as product responsibility.
 
-components is null when the existing groups stay valid; otherwise return the complete
-minimal replacement groups. Products own stated capabilities and humans own human
-actions. When a product lets or enables people to work, retain the human events but cite
-the enclosing product capability as product responsibility. Do not infer an owner,
-dependency, authority, event, or implementation claim.
+For problem, customer, opportunity and product_view, use a valid source fact or
+clear it and supply one short useful targeted assumption. Assumptions are labeled
+provisional product decisions, not claimed source facts or extraction commentary.
 
-Judge the candidate coherently across all facts. Field definitions:
-{field_definitions}
-
-Return exactly fact_corrections, assumptions, and components in the supplied schema.
+All replacements are validated together against the complete original authoring
+contract before admission. Return only the result in the supplied schema.
+Fact meanings:
 """.strip()
 
+_RESOLVED_CITATIONS_NOTE = """
 
-def _review_contract(fact_schemas: Mapping[str, Any]) -> tuple[str, dict[str, Any]]:
-    editable = {field: schema for field, schema in fact_schemas.items() if field != "first_path"}
+resolved_citations is the compiler's read-only binding view for the current
+candidate, not new source evidence. It shows the exact selected source location
+and surrounding source text. Judge whether that occurrence supports the selected
+semantic role. Identical quote bytes at another location do not establish that.
+Occurrences count literal substring matches, including matches embedded in larger
+words. Any correction must select the intended quote and occurrence in the full
+original evidence; do not silently reinterpret a bound source location.
+""".rstrip()
+
+
+def _review_contract(
+    authored_schemas: Mapping[str, Any],
+    clarification_schema: Mapping[str, Any],
+) -> tuple[str, dict[str, Any], dict[str, Any]]:
+    fields: dict[str, Any] = {}
+    for name, schema in authored_schemas.items():
+        if name == "status":
+            continue
+        if name == "facts":
+            fields.update(
+                (f"facts.{field}", value)
+                for field, value in schema["properties"].items()
+            )
+        else:
+            fields[name] = schema
     definitions = {
-        **_DEFAULT_FACT_DEFINITIONS,
-        **{
-            field: str(schema["description"])
-            for field, schema in editable.items() if schema.get("description")
-        },
+        field: schema.get("description")
+        or _DEFAULT_FACT_DEFINITIONS.get(field, "")
+        for field, schema in authored_schemas["facts"]["properties"].items()
     }
-    prompt = _SYSTEM_PROMPT.format(
-        field_definitions="\n".join(f"- {field}: {definitions[field]}" for field in editable)
-    )
-    schema = {
-        "type": "object", "additionalProperties": False,
-        "required": ["fact_corrections", "assumptions", "components"],
+    prompt = _SYSTEM_PROMPT + "\n" + "\n".join(
+        f"- {name}: {value}" for name, value in definitions.items() if value
+    ) + _RESOLVED_CITATIONS_NOTE
+    correction_schema = {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["corrections"],
         "properties": {
-            "fact_corrections": {
-                "type": "array", "maxItems": len(editable),
-                "items": {"anyOf": [
-                    {
-                        "type": "object", "additionalProperties": False,
-                        "required": ["field", "value"],
-                        "properties": {
-                            "field": {"type": "string", "const": field},
-                            "value": value_schema,
-                        },
-                    }
-                    for field, value_schema in editable.items()
-                ]},
-            },
-            "assumptions": {"anyOf": [ASSUMPTION_SCHEMA, {"type": "null"}]},
-            "components": {"anyOf": [MODEL_COMPONENT_SCHEMA, {"type": "null"}]},
+            "corrections": {
+                "type": "array",
+                "maxItems": len(fields),
+                "items": {
+                    "anyOf": [
+                        {
+                            "type": "object",
+                            "additionalProperties": False,
+                            "required": ["path", "value"],
+                            "properties": {
+                                "path": {"type": "string", "const": path},
+                                "value": value,
+                            },
+                        }
+                        for path, value in fields.items()
+                    ]
+                },
+            }
         },
     }
-    return prompt, schema
+    schema = {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["result"],
+        "properties": {
+            "result": {"anyOf": [correction_schema, clarification_schema]},
+        },
+    }
+    return prompt, schema, fields
 
 
 def _apply_review(
-    response: Mapping[str, Any], reviewed: Any, *, fact_schemas: Mapping[str, Any],
+    response: Mapping[str, Any], reviewed: Any, *, fields: Mapping[str, Any]
 ) -> dict[str, Any]:
-    if not isinstance(reviewed, Mapping) or set(reviewed) != {
-        "fact_corrections", "assumptions", "components",
-    } or not isinstance(reviewed["fact_corrections"], list):
-        raise GreenfieldAuthoredSemanticsError("Greenfield source review did not return a valid candidate")
+    if (
+        not isinstance(reviewed, Mapping)
+        or set(reviewed) != {"result"}
+        or not isinstance(reviewed["result"], Mapping)
+    ):
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield source review did not return a valid candidate"
+        )
+    result = reviewed["result"]
+    if result.get("status") == "clarification_required":
+        return {"version": response["version"], "result": deepcopy(dict(result))}
+    if set(result) != {"corrections"} or not isinstance(result["corrections"], list):
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield source review did not return a valid candidate"
+        )
     corrected = deepcopy(dict(response))
     seen: set[str] = set()
-    for row in reviewed["fact_corrections"]:
-        if not isinstance(row, Mapping) or set(row) != {"field", "value"}:
-            raise GreenfieldAuthoredSemanticsError("Greenfield source review returned an invalid fact correction")
-        field = row["field"]
-        if not isinstance(field, str) or field not in fact_schemas or field == "first_path" or field in seen:
-            raise GreenfieldAuthoredSemanticsError("Greenfield source review returned an unknown, protected, or duplicate fact")
-        seen.add(field)
-        corrected["result"]["facts"][field] = deepcopy(row["value"])
-    for field in ("assumptions", "components"):
-        if reviewed[field] is not None:
-            corrected["result"][field] = deepcopy(reviewed[field])
+    for row in result["corrections"]:
+        if not isinstance(row, Mapping) or set(row) != {"path", "value"}:
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield source review returned an invalid correction"
+            )
+        path = row["path"]
+        if not isinstance(path, str) or path not in fields or path in seen:
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield source review returned an unknown or duplicate schema path"
+            )
+        seen.add(path)
+        keys = path.split(".")
+        owner = corrected["result"]
+        for key in keys[:-1]:
+            owner = owner[key]
+        owner[keys[-1]] = deepcopy(row["value"])
     return corrected
 
 
@@ -139,33 +179,53 @@ def review_semantic_source_claims(
     *,
     evidence_text: str,
     provider: odylith_reasoning.ReasoningProvider,
-    model: str,
-    reasoning_effort: str,
     profile_id: str,
     remaining_seconds: float,
     observation: dict[str, Any],
-    fact_schemas: Mapping[str, Any],
+    authored_schemas: Mapping[str, Any],
+    clarification_schema: Mapping[str, Any],
+    resolved_citations: Sequence[Mapping[str, Any]],
     validation_error: str = "",
 ) -> dict[str, Any]:
-    """Return one candidate correction, retaining the real request and response."""
+    """Return corrections or clarification, retaining the real request and response."""
 
-    timeout = min(MAX_SOURCE_REVIEW_SECONDS, remaining_seconds)
+    timeout = float(remaining_seconds)
     if timeout < 1.0:
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield source review has no remaining authoring time"
         )
-    payload = {"evidence": evidence_text, "candidate": deepcopy(response["result"])}
+    profile = get_greenfield_model_profile(profile_id)
+    model = profile.source_review_model
+    reasoning_effort = profile.source_review_reasoning_effort
+    payload = {
+        "evidence": evidence_text,
+        "candidate": deepcopy(response["result"]),
+        "resolved_citations": deepcopy(list(resolved_citations)),
+    }
     if validation_error:
         payload["validation_error"] = validation_error
+    prompt, output_schema, fields = _review_contract(authored_schemas, clarification_schema)
     observation.update(
-        request=payload, timeout_seconds=timeout, model=model,
+        request=payload,
+        timeout_seconds=timeout,
+        model=model,
         reasoning_effort=reasoning_effort,
+        profile_id=profile.profile_id,
+        request_role="source_review",
     )
-    system_prompt, output_schema = _review_contract(fact_schemas)
+    provider_before_call = odylith_reasoning.provider_failure_metadata(provider)
+    require_greenfield_model_profile_observation(
+        profile_id=profile.profile_id,
+        provider=provider_before_call.get("provider", ""),
+        model=model,
+        reasoning_effort=reasoning_effort,
+        effective_timeout_seconds=timeout,
+        request_role="source_review",
+    )
     started = monotonic()
     reviewed = provider.generate_structured(
         request=odylith_reasoning.StructuredReasoningRequest(
-            system_prompt=system_prompt,
+            system_prompt=prompt,
             schema_name="greenfield_semantic_source_review",
             output_schema=output_schema,
             prompt_payload=payload,
@@ -176,16 +236,21 @@ def review_semantic_source_claims(
     )
     elapsed = max(0.0, monotonic() - started)
     metadata = odylith_reasoning.provider_failure_metadata(provider)
+    metadata["model"] = metadata.get("model") or model
+    metadata["reasoning_effort"] = (
+        metadata.get("reasoning_effort") or reasoning_effort
+    )
     observation.update(response=deepcopy(reviewed), elapsed_seconds=elapsed, provider=metadata)
     require_greenfield_model_profile_observation(
-        profile_id=profile_id,
+        profile_id=profile.profile_id,
         provider=metadata.get("provider", ""),
-        model=metadata.get("model") or model,
-        reasoning_effort=metadata.get("reasoning_effort") or reasoning_effort,
+        model=metadata.get("model", ""),
+        reasoning_effort=metadata.get("reasoning_effort", ""),
         effective_timeout_seconds=timeout,
+        request_role="source_review",
     )
     if elapsed > timeout:
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield source review exceeded its remaining authoring time"
         )
-    return _apply_review(response, reviewed, fact_schemas=fact_schemas)
+    return _apply_review(response, reviewed, fields=fields)

@@ -338,7 +338,11 @@ def test_authoring_canonicalizes_a_unique_segment_occurrence() -> None:
     path_span = next(
         span for span in result.source_spans if span["section_key"] == "first_path"
     )
+    source = combined_prompt_evidence_source(prompt=prompt, edit_evidence=edit_evidence)
+    expected_start = source.encode("utf-8").find(path_fact["quote"].encode("utf-8"))
     assert path_span["text"] == path_fact["quote"]
+    assert path_span["source_start_byte"] == expected_start
+    assert path_span["source_end_byte"] == expected_start + len(path_fact["quote"].encode("utf-8"))
 
 
 def test_authoring_rejects_events_reordered_against_composite_path() -> None:

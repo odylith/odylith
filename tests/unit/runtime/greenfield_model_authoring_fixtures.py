@@ -33,13 +33,7 @@ class StructuredAuthoringProvider:
         self.requests.append(request)
         self.calls += 1
         if str(getattr(request, "schema_name", "")) == "greenfield_semantic_source_review":
-            return copy.deepcopy(
-                {
-                    "fact_corrections": [],
-                    "assumptions": None,
-                    "components": None,
-                }
-            )
+            return {"result": {"corrections": []}}
         return copy.deepcopy(dict(self.response)) if self.response is not None else None
 
 

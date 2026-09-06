@@ -1105,6 +1105,268 @@
   unchanged installed public/recovery/browser/profile gate. No completion or
   untouched-holdout claim is made.
 
+- V42 Installed Review-Starvation Rejection (2026-09-05): Pushed source
+  `5884c843487beff7a10f8f33489fc67843cfc3c6` builds immutable wheel
+  `6b124b8e9f3e8580e89037d24858f95a10e6da1c8b81a14bc77e637bff66691b`,
+  with all 87 fixture-leakage checks passing. The public14 gate passes flood in
+  `63.845s` including commit under deep120, with independent no-P0/P1 semantic
+  and complete browser review (48 screenshots, manifest hashes verified).
+  Pediatric returns no package in `81.410s` under rescue90: the initial author
+  consumes approximately `70.617s` of model80 and its required Sol/high review
+  times out at `9.398664s` against `9.382743s` remaining. Unlike the v40 missing
+  diagnostic, both raw candidates, exact review request and categorical timeout
+  now survive in evidence. The initial candidate independently has no P0/P1;
+  no semantic or staged package acceptance is inferred from that diagnosis.
+  Installed SIGKILL recovery, same-hash retries, operator mutation preservation,
+  fsync rollback/retry and terminal cleanup all pass. The run remains rejected;
+  final holdout stays closed. Evidence:
+  `/private/tmp/odylith-v42-public14-evidence.ckA1jV`.
+  Do not repeat v35 conditional ownership-only review or fail open to the initial
+  candidate after a timeout. A full 20-second review reservation would truncate
+  this observed draft at 60 seconds. Compare only one lower-cost review role,
+  preserving current schema meanings, exact remaining allowance, whole validation
+  and all 60/90/120 consumer limits. Earlier low-cost role reviews failed before
+  schema-owned admission, so require correction of structurally-valid false-story,
+  false-dependency and wrong-opportunity controls as well as the accepted draft.
+  Keep the diagnostic unsealed and outside production until both controls pass.
+
+- V42 Review-Role Rejection (2026-09-05): The single Terra/low replacement also
+  returns no response in the retained 9.382743-second window (9.403 seconds
+  observed). No negative control was exercised and no quality improvement is
+  established. Evidence: `/private/tmp/odylith-v42-review-role.550rnd`. Reject
+  the substitution, with no production changes. The next unsealed discriminator
+  compares the already source-proven Terra/medium author and reviewer under
+  rescue90/model80 with explicit initial60/review20 budget ownership. Require the
+  exact pediatric source plus structurally-valid semantic-negative correction and
+  independent review before considering integration. No timeout extension,
+  conditional review, fallback acceptance, new schemas, or model ladder.
+
+- V43 Bounded Rescue Budget Candidate (2026-09-05): The temporary Terra/medium
+  author+reviewer completes the exact pediatric source in 43.425 seconds with
+  initial36.167/60 and review7.172/20. Independent review finds no P0/P1. A separate
+  structurally-valid three-error apprenticeship control is corrected in
+  12.730/20 seconds, preserving all five coordinator events and product ownership.
+  Evidence: `/private/tmp/odylith-v42-budget-owner.ne7vkv`. No staged or installed
+  success is inferred. V43 now replaces the old rescue profile with Terra medium
+  and explicit initial60/review20 ownership inside unchanged consumer90/model80.
+  Source-private observations record the actual initial cap and elapsed time;
+  initial overruns fail before review. Standard/deep, schema shapes, semantic
+  prompts, max-two calls and commit-only publication remain unchanged. Require
+  fresh complete packages, clarification/no-write and focused profile/time proof
+  before repeating any expensive qualification gate.
+
+- V43 Integrated Terminal-Role Rejection (2026-09-05): Pediatric commits in
+  48.756 seconds but independent review finds a P1: `exception review` is an
+  activity promoted to terminal output in Project, Registry, canonical outputs
+  and Atlas. The separate `visit evidence` proof does not entail that result.
+  Custody passes, so deterministic validation cannot resolve the role error;
+  the source-review whitelist expressly prevents terminal correction. Preserve
+  the measured budget improvement but reject quality qualification. The fresh
+  apprenticeship package independently has no P0/P1 at 49.424 seconds, retaining
+  all five coordinator events and coherent result/proof. Evidence:
+  `/private/tmp/odylith-v42-integrated.zv8YUh/v43-pediatric` and `v43-apprenticeship`.
+  This repeats the incomplete-review-ownership class previously exposed by human
+  and external-system fields. Next compare one schema-derived sparse correction
+  contract covering all authored semantic fields, not one more special-case field.
+  Keep whole validation, review20, max-two calls and zero post-confirm meaning
+  work; require failed, positive and semantic-negative controls before adoption.
+
+- V43 Sparse-All-Fields Review Timing Rejection (2026-09-05): The first unsealed
+  schema-derived review returns no response in 20 seconds (20.020 observed), so
+  it has no semantic verdict and is not adopted. Evidence:
+  `/private/tmp/odylith-v43-schema-review.rSiJUv/pediatric-terminal`. The internal
+  20-second ceiling is provisional, unlike consumer60/90/120. Compare one new
+  predeclared 49-second retained review under unused shared-model-window capacity;
+  preserve the rejected attempt, max-two calls and all consumer deadlines. This
+  is a new allocation experiment, not an extension or successful retry of the
+  failed request. Full semantic and fresh integrated controls remain required.
+
+- V43 Wider Reviewer Preservation Rejection (2026-09-05): Giving the prototype
+  unused model-window time fixes the actual terminal error in 34.742 seconds,
+  but independent controls expose P1 preservation regressions. A valid positive
+  candidate gets its need/benefit assumptions rewritten as capability statements
+  (12.187 seconds). The three-error negative is repaired, but the explicit board
+  review recipient is removed and the sound Problem is weakened (22.643 seconds).
+  Evidence: `/private/tmp/odylith-v43-schema-review.rSiJUv`. Reject the Terra-medium
+  wider reviewer; leave production review unchanged. Compare only the existing
+  Sol-high role as a stronger reviewer on this same bounded contract and existing
+  shared deadline. Require positive preservation first, then correction controls;
+  no extra provider call, timeout extension or lexical role rules.
+
+- V44 Bounded Reviewer Selection (2026-09-05): Sol-high passes independent review
+  on all three unchanged schema-derived controls: accepted multi-actor candidate
+  preservation (11.409 seconds), three-error correction (23.777 seconds), and
+  pediatric terminal repair (22.500 seconds). No P0/P1 is found. Evidence:
+  `/private/tmp/odylith-v43-sol-review.Yx4OiW`. These unsealed calls earn one
+  integrated candidate, not qualification. Remove the field-limited reviewer and
+  its independent ceiling; reuse all authored value schemas for sparse whole-field
+  corrections, followed by full validation. Preselect faster-author/stronger-review
+  composite profiles rather than switching roles after failure. Keep two calls,
+  original consumer60/90/120, exact confirmation and no semantic regex/keyword
+  repairs. Require fresh complete packages, standard latency and semantic safety
+  controls before an immutable build. Prior failed candidates remain rejected.
+
+- V44 Standard Latency Rejection (2026-09-05): The first fresh standard request
+  fails safely in 55.282 seconds, without staging or commit. Initial authoring is
+  30.178/40 seconds; mandatory Sol-high review times out at 24.839 against 24.820
+  remaining. Evidence: `/private/tmp/odylith-v44-integrated.P3aT9G/apprenticeship-standard`.
+  Unsealed reviewer success did not prove standard end-to-end latency. Reject the
+  configuration, preserve the failed attempt, and keep qualification closed.
+  Compare only lower-cost Terra-low drafting under initial30/review-reserve25
+  inside unchanged model55, keeping the tested Sol-high reviewer and all-field
+  contract. The older low-draft failures belong to the removed weak whitelist
+  reviewer; a fresh full candidate must independently prove preservation and
+  correction plus model time below 50 seconds. No production switch until earned.
+
+- V44 Resolved-Citation Review Gap (2026-09-05): The unsealed fast-draft
+  comparison validates in 38.425 seconds but is rejected on P1 custody, not
+  person-as-state semantics. Independent reviewers agree that apprentices can
+  be a governed subject entity distinct from the performing coordinators.
+  Actual state and beneficiary citations select occurrence1, bytes44-55 inside
+  `apprenticeship`, rather than occurrence2 at bytes128-139 in `register apprentices`.
+  The reviewer sees quote/ordinal and full source but not the actual resolved
+  binding, and preserves/adds the non-entailing citations. Evidence:
+  `/private/tmp/odylith-v44-fast-draft.pkfAQG`. Stop configuration tuning and
+  compare a compiler-resolved binding view inside the existing review request.
+  Preserve literal custody, output schema, final validation, two-call ceiling and
+  60/90/120. A semantic model must choose the correction; do not add lexical
+  boundary heuristics or silently rewrite an ordinal. The older v16 impossible-
+  ordinal normalization also merits a bounded audit: identical quote bytes do
+  not establish identical contextual meaning. Do not treat that fallback as
+  semantic evidence. Current candidate and full qualification remain rejected.
+
+- V45 Binding-View Integration Decision (2026-09-05): Both bounded Sol-high
+  reviewer controls pass independent P0/P1 review. The actual prefix-collision
+  negative repairs wrong source locations in 28.629 seconds; the retained clean
+  candidate is preserved in 21.659 seconds apart from sound proof-boundary
+  narrowing. Evidence: `/private/tmp/odylith-v44-resolved-review.nkfAL2`.
+  The first wrapper preflight made zero actual calls, as the retained audit
+  corrects; it is excluded. Reviewer-only results are not complete-package timing.
+  Integrate the literal resolver's read-only binding view and exact tested prompt
+  instruction. Remove the unsafe repeated-match impossible-ordinal fallback;
+  unique exact-location normalization remains, ambiguity fails closed. Standard
+  adopts the bounded Terra-low/Sol-high v9 candidate under initial30/reserve25,
+  model55/consumer60; rescue/deep remain unchanged. No semantic regex, inferred
+  boundary, extra call, new repair mechanism or deadline extension. Require fresh
+  complete consumer controls before expensive qualification; no winner claimed.
+
+- V45 Fresh Standard Rejection (2026-09-05): The integrated standard request
+  fails in 55.302 seconds, without staging or commit. Initial Terra-low drafting
+  is 22.349/30 seconds; Sol-high review with actual citation context times out at
+  32.676 against 32.649 remaining and returns no structured response. Evidence:
+  `/private/tmp/odylith-v45-integrated.AbXfnC/apprenticeship-standard`, frozen
+  source `972acbfa68ea833b0e1172f3ecc5a4aaa11ad2dfd3d3339d177417aa9f0e5141`.
+  The 246 focused test passes do not qualify this configuration. Stop the larger
+  campaign, retain mandatory review and the 60-second tier, and audit the actual
+  provider path plus prior failures before one bounded review-cost alternative.
+  No package-quality or almost-finished inference follows from a null response.
+  Follow-up audit finds one subprocess, no Odylith retries, and correct shared
+  budget accounting; internal CLI/model timing remains unknown. Independent
+  adjudication finds no P0/P1 in the retained initial draft. A single unsealed
+  Sol-medium reviewer comparison is therefore declared: unchanged v45 prompt,
+  schema, binding input and final validation, under25 seconds each for the actual
+  clean draft and prefix-collision negative. Both must preserve/correct meaning
+  before any production switch. Earlier Sol-medium failed on authoring, not this
+  review role. A subsequent fresh standard package must finish within55 seconds;
+  any failed control ends this configuration family without another effort ladder.
+
+- V45 Standard-V10 Package Proof And Clarification Blocker (2026-09-05):
+  Fresh standard and rescue complete in46.170/60 and45.069/90 seconds, committing
+  83 and80 sealed writes with readback. Both packages independently pass P0/P1
+  review and actual private-role/timing validation. Standard core browser proof
+  passes12 cells/18 PNGs with no P0/P1. Evidence:
+  `/private/tmp/odylith-v45-integrated.AbXfnC/{apprenticeship-standard-v10,pediatric-rescue-v10}`
+  and `/private/tmp/v45-apprenticeship-core-browser.rrEiOc`.
+  The same frozen source fails separate clarification controls: standard asks
+  product_boundary rather than the frozen first_path gap (7.164s), while rescue
+  selects first_path but rejects its whole-prompt quote with an appended space
+  (6.450s). No package writes occur. This is an absence/clarification contract
+  defect, not evidence to retune the now-clean authored-package roles. Diagnose
+  whether absence should use compiler-owned whole-source custody instead of model
+  recopying, while contradictory claims retain exact citations. Preserve the
+  expected workflow question, source fidelity, one call and original budgets.
+  Release and untouched-holdout qualification remain closed.
+
+- V46 Clarification Ownership Decision (2026-09-05): Independent diagnosis
+  confirms that the old bare dimension enum permitted the standard boundary
+  choice without defining how it differs from a missing workflow; the frozen
+  first_path question is still required. For missing information, stop asking
+  the model to recopy input as proof. Require empty model evidence_quotes for
+  material_ambiguity and bind the entire admitted source deterministically as
+  examined evidence. Exact source text, offsets and hash remain authoritative;
+  they do not positively entail absence. Keep contradictory claims at2–4 exact
+  distinct source citations and reject nonempty ambiguity quotes. Define the two
+  existing dimensions on their schema property, with no example vocabulary or
+  source-parsing rules. Preserve the now-clean package roles, calls and60/90/120.
+  Full-source clarification JSON can repeat the bounded input; no lossy excerpt
+  mechanism is introduced. Require fresh clarification/contradiction controls and
+  full packages before qualification; do not count earlier source proof asv46.
+
+- V47 Source Gate and Rescue Timing Rejection (2026-09-05): The corrected
+  clarification view independently passes standard/rescue thin and contradictory
+  inputs in 6.134/60, 6.780/90 and 6.530/60 with zero project files. Apprenticeship
+  passes complete-package quality in 51.515/60, 83 sealed writes and readback;
+  core browser proof passes 12 cells/18 PNGs without P0/P1. The subsequent pediatric
+  rescue request fails at 80.282s without staging: sound initial candidate31.109s,
+  null Sol-high reviewer48.912/48.889s. Independent review finds no P0/P1 in the
+  initial candidate, so this failure earns no new semantic schema or parser.
+  An exact-request same-cap diagnostic with documented --json events completes in
+  38.630s without tool calls; backend time allocation remains unknown. The failed
+  production attempt is not relabeled. Compare only existing Sol-medium review on
+  this candidate plus the known prefix-custody negative, each25s, before any profile
+  change. Source evidence: `/private/tmp/odylith-v47-integrated.gRQqXl`; trace:
+  `/private/tmp/odylith-v47-review-trace.EPoQZk`; core browser:
+  `/private/tmp/v47-apprenticeship-core-browser.zBTGSX`.
+
+- V47 Medium Reviewer Rejection (2026-09-05): The single prospective Sol-medium
+  control times out with no response at 25.014/25 seconds on the semantically sound
+  pediatric initial candidate. Stop on this first failure; do not run the planned
+  prefix negative or change the rescue profile. Source remains unchanged and no
+  publication is attempted. Evidence:
+  `/private/tmp/odylith-v47-rescue-medium.0jkRjX/pediatric-preservation`.
+  This rejects that bounded latency alternative, not the source semantics. Inspect
+  avoidable request duplication before changing another mechanism; no effort grid,
+  larger deadline, extra call, or paid service-tier change is adopted.
+
+- V47 Contradiction Presentation Failure (2026-09-05): Fresh standard and rescue
+  thin-input controls pass in 5.578/60 and 6.425/90 seconds. The independent Fern
+  Desk contradiction safely clarifies in 7.775/60 with exact opposing requirements,
+  but asks only for the product boundary. Independent review identifies one P1:
+  a user can answer general scope without resolving notice behavior. Materialization
+  drops the validated consistency context when rendering only field labels; human
+  CLI also omits the existing contradictory source spans. Fix that view/handoff
+  owner, not model semantics. Compare verbatim opposing claims plus one choice
+  question against this case, a retention-policy conflict, and unchanged thin-input
+  clarification. No new question model, schema fields, or source interpretation.
+  Evidence: `/private/tmp/odylith-v47-integrated.gRQqXl/contradiction-standard`.
+  Remaining complete-package controls are stopped until this utility gate passes.
+
+- V47 Bounded Review Admission (2026-09-05): Independent review passed both
+  controls at `/private/tmp/odylith-v46-review-admission.taDLWn`: the retained
+  thin negative becomes existing first_path clarification in 8.181/25 seconds;
+  the complete apprenticeship candidate is preserved exactly in 11.998/25.
+  V47 reuses the existing clarification schema as the alternative to sparse
+  corrections, removing protected initial authored status. Every result goes
+  through the existing full validator. This adds no model call, new semantic
+  shape, tier promotion, deadline extension, or post-confirm behavior. Runtime
+  focused proof passes 131 tests. Integrated no-staging clarification, exact
+  contradictory source sides and complete-package quality/time remain required;
+  reviewer-only controls do not establish production qualification.
+
+- V46 Thin-Input Admission Rejection (2026-09-05): The first frozen assay
+  clarification control instead stages an authored package in56.488s. Initial
+  authoring uses the operator's building request as its event; mandatory review
+  changes that to the topic noun prediction and keeps authored status. The review
+  contract forbids changing that status and offers no material-question outcome.
+  The diagnostic driver also auto-confirms80 writes in the isolated test consumer
+  (total57.350/60); no user project is affected. Retained evidence:
+  `/private/tmp/odylith-v46-integrated.aOU3hc/clarification-standard`.
+  Rejectv46, stop remaining controls/build/holdout, and independently adjudicate
+  the admission-owner gap before another change. The driver is now guarded against
+  auto-confirming a clarification-expectation case; original failed evidence is
+  preserved. Do not patch topic words, relax the frozen question expectation,
+  add an effort ladder or treat elapsed-time success as a product-quality pass.
+
 - V40 Bare-Source Browser Diagnostics (2026-09-05): The supported Python 3.13.3
   interpreter passes Chromium preflight. Canonical desktop/mobile matrices retain
   48 PNGs each for the historical accepted security and pediatric packages, at

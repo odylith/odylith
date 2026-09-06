@@ -3442,15 +3442,23 @@ This section captures synchronized requirement and contract signals derived from
   Canonical facts and relations retain their exact custody and existing owner
   resolver. The compact authoring contract separates source facts from useful
   provisional decisions and keeps the initial actor with its action citation.
-- Pre-confirm authoring v42 permits at most two calls. Every otherwise-valid authored
-  candidate receives one source-claim review using sparse whole-fact corrections
-  and optional complete assumption/component replacements. Per-field value schemas
-  are shared with the author; the previous three-field response is removed,
-  capped at 20 seconds within the original remaining model window. Clarifications
-  remain one call. The whole candidate validates again before becoming canonical;
-  events, first path, terminal, consistency and ambiguities remain unchanged.
-  Empty corrections and null replacements are an exact candidate no-op; unknown,
-  duplicate and protected field edits are rejected. Source coordinates and actor types reject
+- Pre-confirm authoring v47 permits at most two calls. Every otherwise-valid authored
+  candidate receives one source review that returns sparse whole-field corrections
+  or the exact existing clarification outcome. The existing authored result
+  properties own all correction value schemas. Initial authored status is
+  provisional, not source authority; review owns admission as well as correction,
+  and status is not a patch path. The old fact whitelist, three-part
+  response and independent 20-second review ceiling are removed. Review uses the
+  original remaining model window. Initial clarification needs one call; review
+  clarification needs two with both actual roles retained and validated. The whole
+  outcome validates again before becoming canonical. Empty corrections
+  are an exact candidate no-op; unknown, duplicate and protected paths are rejected.
+  Review input includes the literal resolver's actual citation byte offsets and
+  64-character surrounding source context. This is a read-only binding view, not
+  new semantic evidence or a second parser. Repeated quote bytes do not establish
+  identical contextual meaning. Impossible ordinals normalize only for a uniquely
+  located quote; ambiguous repeated matches fail closed before review.
+  Source coordinates and actor types reject
   contradictory ownership; they never infer a replacement owner or extend a quote.
   A second failure cannot start another call. Actual call counts and both candidate
   responses remain observable; no generic repair framework, tier promotion, or
@@ -3462,7 +3470,28 @@ This section captures synchronized requirement and contract signals derived from
   ownership descriptions. External dependencies require source-stated product
   exchange or operational dependence; recipient, reviewer and task-data mentions
   alone do not qualify. Product responsibilities cite the enclosing product-owned
-  capability, not contained human events. Shapes, profiles and budgets are unchanged.
+  capability, not contained human events. Canonical semantic shapes remain unchanged.
+  Composite standard v10 binds a Terra-low author to a Sol-medium reviewer. Rescue v8
+  retains Terra-medium/Sol-high and deep v8 retains all-Sol-high. Original consumer
+  60/90/120 and shared model55/80/105 windows remain unchanged. Initial caps are
+  30/60/85, reserving 25/20/20 seconds; early completion leaves the entire unused
+  shared window available to review. An initial overrun fails without review or
+  acceptance. Private proof retains both actual roles and stage timing; the
+  sealed six-field observation represents the initial author and the composite
+  profile identity binds both roles. Superseded profile identities are removed,
+  with no fallback or compatibility reinterpretation. This is a development
+  candidate, not installed qualification.
+  Missing-information clarification requires empty model evidence quotes and binds
+  the complete admitted source deterministically as examined evidence. Exact text,
+  byte range and hash are preserved; this is custody, not positive entailment of
+  absence. Contradiction retains two-to-four exact distinct source citations.
+  Nonempty ambiguity quotes fail closed. Existing dimension descriptions separate
+  a missing usable workflow from unclear product responsibility/scope; the canonical
+  missing-information question wording is unchanged. Contradiction rendering keeps
+  the validated source claims visible and asks which should apply; it does not
+  reinterpret the claims from field labels. JSON carries the same existing spans.
+  Clarification receipts retain actual one- or two-call counts. Both stages reuse the same clarification
+  schema and validator; review adds no third call, fallback or deadline extension.
 - Product Intent envelope/authority v10 and authored-workstream-semantics v5
   preserve the targeted assumption reference and hash its exact text and role.
   Earlier staged formats require rebuilding before confirmation; there is no
@@ -3482,12 +3511,13 @@ This section captures synchronized requirement and contract signals derived from
   A First Path Sequence requires at least two typed events. Browser proof must
   visit every emitted diagram on desktop and mobile, capture full-page mobile
   content, and exercise actual asset failure with readable fallback.
-- Release model claims derive only from sealed observed requests. The existing
-  standard Terra profile is the supported lower-capability member and requires
-  both a committed positive and source-bound clarification/no-write evidence.
+- Release model claims bind sealed initial-author observations and retained actual
+  role/timing evidence. Standard and rescue have lower-capability initial authors
+  relative to all-Sol deep, not lower-capability reviewers;
+  each requires committed positive and source-bound clarification/no-write evidence.
   The unsupported literal Luna claim is removed. All 60/90/120 deadlines remain
-  fixed. The bounded source review uses that same profile and remaining
-  deadline, not a fallback model, phrase rule, or alternate projection path.
+  fixed. The bounded source review uses the same preselected composite profile
+  and remaining deadline, not a fallback, phrase rule, or alternate projection path.
 - V31's four automated installed passes do not constitute independent quality
   approval. Focused source corrections require fresh generated-package review,
   complete immutable public proof, and independent review before a new blind

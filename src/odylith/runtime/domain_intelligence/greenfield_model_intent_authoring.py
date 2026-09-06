@@ -53,7 +53,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v42"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v47"
 GREENFIELD_MODEL_PROOF_FD_ENV = "ODYLITH_GREENFIELD_MODEL_PROOF_FD"
 MAX_GREENFIELD_SEMANTIC_CALLS = 2
 
@@ -137,6 +137,7 @@ class GreenfieldAuthoringClarification:
     effective_timeout_seconds: float
     consistency_status: str
     consistency_source_spans: tuple[dict[str, Any], ...]
+    semantic_model_call_count: int = 1
 
 
 @dataclass(frozen=True)
@@ -197,13 +198,18 @@ def author_greenfield_intent(
         timeout_seconds,
         maximum_seconds=profile.model_timeout_seconds,
     )
+    initial_budget_seconds = budget_seconds - profile.source_review_reserve_seconds
+    if initial_budget_seconds < 1.0:
+        raise GreenfieldModelAuthoringError(
+            "Greenfield authoring has no time before its reserved source review; no records were created."
+        )
     provider_before_call = odylith_reasoning.provider_failure_metadata(provider)
     require_greenfield_model_profile_observation(
         profile_id=profile.profile_id,
         provider=provider_before_call.get("provider", ""),
         model=request_model,
         reasoning_effort=request_effort,
-        effective_timeout_seconds=budget_seconds,
+        effective_timeout_seconds=initial_budget_seconds,
     )
     started = clock()
     response = provider.generate_structured(
@@ -214,7 +220,7 @@ def author_greenfield_intent(
             prompt_payload=_authoring_payload(text),
             model=request_model,
             reasoning_effort=request_effort,
-            timeout_seconds=budget_seconds,
+            timeout_seconds=initial_budget_seconds,
         )
     )
     elapsed_seconds = max(0.0, clock() - started)
@@ -228,7 +234,7 @@ def author_greenfield_intent(
         provider=provider_metadata.get("provider", ""),
         model=provider_metadata.get("model", ""),
         reasoning_effort=provider_metadata.get("reasoning_effort", ""),
-        effective_timeout_seconds=budget_seconds,
+        effective_timeout_seconds=initial_budget_seconds,
     )
     if not isinstance(response, Mapping):
         failure_code = provider_metadata.get("code") or "invalid_response"
@@ -239,7 +245,7 @@ def author_greenfield_intent(
             failure={
                 "stage": "initial_authoring",
                 "profile_id": profile.profile_id,
-                "effective_timeout_seconds": budget_seconds,
+                "effective_timeout_seconds": initial_budget_seconds,
                 "elapsed_seconds": elapsed_seconds,
                 "response_shape": type(response).__name__,
                 "provider": {
@@ -254,6 +260,7 @@ def author_greenfield_intent(
             "A verified source-cited Greenfield package could not be produced; no records were created."
         )
     initial_response = response
+    initial_elapsed_seconds = elapsed_seconds
     review_observation: dict[str, Any] = {}
     validation_error = ""
     call_count = 1
@@ -264,7 +271,7 @@ def author_greenfield_intent(
         "effective_timeout_seconds": budget_seconds,
     }
     try:
-        if elapsed_seconds > budget_seconds:
+        if elapsed_seconds > initial_budget_seconds:
             raise GreenfieldModelAuthoringError(
                 "Greenfield authoring exceeded its declared time window; no records were created."
             )
@@ -279,6 +286,10 @@ def author_greenfield_intent(
         else:
             if isinstance(candidate, GreenfieldAuthoringClarification):
                 return candidate
+        resolved_citations = _resolved_candidate_citations(
+            response=response,
+            evidence_text=text,
+        )
         remaining = budget_seconds - max(0.0, clock() - started)
         if remaining < 1.0:
             raise GreenfieldModelAuthoringError(
@@ -288,10 +299,11 @@ def author_greenfield_intent(
         try:
             response = review_semantic_source_claims(
                 response, evidence_text=text, provider=provider,
-                model=request_model, reasoning_effort=request_effort,
                 profile_id=profile.profile_id, remaining_seconds=remaining,
                 observation=review_observation,
-                fact_schemas=_AUTHORED_FACTS_SCHEMA["properties"],
+                authored_schemas=_AUTHORED_RESULT_SCHEMA["properties"],
+                clarification_schema=_CLARIFICATION_RESULT_SCHEMA,
+                resolved_citations=resolved_citations,
                 validation_error=validation_error,
             )
         except GreenfieldAuthoredSemanticsError as exc:
@@ -310,6 +322,15 @@ def author_greenfield_intent(
             evidence_text=text, response=response, call_count=call_count,
             initial_response=initial_response if call_count == 2 else None,
             source_review=review_observation,
+            initial_authoring={
+                "profile_id": profile.profile_id,
+                "request_role": "initial_authoring",
+                "timeout_seconds": initial_budget_seconds,
+                "elapsed_seconds": initial_elapsed_seconds,
+                "model": request_model,
+                "reasoning_effort": request_effort,
+                "provider": provider_metadata,
+            },
         )
 
 
@@ -358,6 +379,7 @@ def _validated_authoring_response(
             effective_timeout_seconds=effective_timeout_seconds,
             consistency_status=consistency_status,
             consistency_source_spans=consistency_spans,
+            semantic_model_call_count=semantic_model_call_count,
         )
     if status != "authored":
         raise GreenfieldModelAuthoringError(
@@ -459,6 +481,7 @@ def _emit_release_proof_observation(
     *, evidence_text: str, response: Any, call_count: int,
     initial_response: Mapping[str, Any] | None = None,
     source_review: Mapping[str, Any] | None = None,
+    initial_authoring: Mapping[str, Any] | None = None,
     failure: Mapping[str, Any] | None = None,
 ) -> None:
     """Write exact pre-validation evidence only to a parent-granted proof FD."""
@@ -486,6 +509,8 @@ def _emit_release_proof_observation(
         payload["failure"] = dict(failure)
     else:
         payload["response"] = dict(response)
+    if initial_authoring is not None:
+        payload["initial_authoring"] = dict(initial_authoring)
     if initial_response is not None and failure is None:
         payload["initial_response"] = dict(initial_response)
         payload["source_review"] = dict(source_review or {})
@@ -510,7 +535,7 @@ def _validated_consistency_assessment(
     *,
     evidence_text: str,
 ) -> tuple[str, tuple[dict[str, Any], ...]]:
-    """Validate model-reported consistency through exact source citations."""
+    """Bind missingness to all evidence and contradictions to their exact sides."""
 
     if not isinstance(value, Mapping) or set(value) != {"status", "evidence_quotes"}:
         raise GreenfieldModelAuthoringError(
@@ -530,13 +555,29 @@ def _validated_consistency_assessment(
                 "Greenfield authoring attached evidence citations to a consistent assessment; no records were created."
             )
         return status, ()
-    minimum_quotes = 1 if status == "material_ambiguity" else 2
-    if not minimum_quotes <= len(quotes) <= 4:
+    evidence_bytes = evidence_text.encode("utf-8")
+    if status == "material_ambiguity":
+        if quotes:
+            raise GreenfieldModelAuthoringError(
+                "Greenfield authoring attached copied evidence to a missing-information ambiguity; no records were created."
+            )
+        return status, (
+            {
+                "span_id": "authoring:consistency:1",
+                "section_key": "ambiguities",
+                "row_index": 1,
+                "classification": "supporting_evidence",
+                "text": evidence_text,
+                "source_start_byte": 0,
+                "source_end_byte": len(evidence_bytes),
+                "quote_sha256": hashlib.sha256(evidence_bytes).hexdigest(),
+            },
+        )
+    if not 2 <= len(quotes) <= 4:
         raise GreenfieldModelAuthoringError(
             "Greenfield authoring did not source-bind its unresolved evidence assessment; no records were created."
         )
 
-    evidence_bytes = evidence_text.encode("utf-8")
     spans: list[dict[str, Any]] = []
     seen: set[tuple[int, int]] = set()
     for index, raw in enumerate(quotes, start=1):
@@ -724,29 +765,80 @@ def _exact_quote(value: Any) -> str:
 def _exact_occurrence_start(haystack: bytes, needle: bytes, occurrence: Any) -> int:
     """Resolve an exact byte quote without making model arithmetic semantic.
 
-    A valid occurrence still selects among repeated identical quotes. When the
-    requested ordinal exceeds the available matches, deterministic custody uses
-    the first exact match because identical quote bytes preserve the authored
-    claim while model counting must not become semantic authority.
+    A valid occurrence selects among repeated quotes. An impossible ordinal may
+    normalize only when one exact source match leaves no contextual choice.
     """
 
     count = _positive_occurrence(occurrence)
     if count == 0 or not needle:
         raise GreenfieldModelAuthoringError("Greenfield authoring returned invalid source citations; no records were created.")
+    matches: list[int] = []
     cursor = 0
-    first = -1
-    for _ in range(count):
+    while True:
         found = haystack.find(needle, cursor)
         if found < 0:
-            if first >= 0:
-                return first
-            raise GreenfieldModelAuthoringError(
-                "Greenfield authoring cited a quote occurrence that is not present; no records were created."
-            )
-        if first < 0:
-            first = found
+            break
+        matches.append(found)
         cursor = found + 1
-    return found
+    if count <= len(matches):
+        return matches[count - 1]
+    if len(matches) == 1:
+        return matches[0]
+    raise GreenfieldModelAuthoringError(
+        "Greenfield authoring cited a quote occurrence that is not present; no records were created."
+    )
+
+
+def _resolved_candidate_citations(
+    *,
+    response: Mapping[str, Any],
+    evidence_text: str,
+) -> list[dict[str, Any]]:
+    """Expose literal candidate bindings to review without granting authority."""
+
+    result = response.get("result")
+    if not isinstance(result, Mapping):
+        raise GreenfieldModelAuthoringError(
+            "Greenfield authoring returned invalid source citations; no records were created."
+        )
+    source = evidence_text.encode("utf-8")
+    rows: list[dict[str, Any]] = []
+
+    def visit(value: Any, path: str) -> None:
+        if isinstance(value, Mapping):
+            keys = set(value)
+            citation_keys = None
+            if keys == {"quote", "occurrence"}:
+                citation_keys = ("quote", "occurrence")
+            elif keys == {"result_quote", "result_occurrence"}:
+                citation_keys = ("result_quote", "result_occurrence")
+            if citation_keys is not None:
+                quote = _exact_quote(value.get(citation_keys[0]))
+                occurrence = value.get(citation_keys[1])
+                quote_bytes = quote.encode("utf-8")
+                start = _exact_occurrence_start(source, quote_bytes, occurrence)
+                end = start + len(quote_bytes)
+                rows.append(
+                    {
+                        "path": path,
+                        "quote": quote,
+                        "occurrence": occurrence,
+                        "source_start_byte": start,
+                        "source_end_byte": end,
+                        "before": source[:start].decode("utf-8")[-64:],
+                        "after": source[end:].decode("utf-8")[:64],
+                    }
+                )
+                return
+            for key, child in value.items():
+                escaped = str(key).replace("~", "~0").replace("/", "~1")
+                visit(child, f"{path}/{escaped}")
+        elif isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+            for index, child in enumerate(value):
+                visit(child, f"{path}/{index}")
+
+    visit(result, "")
+    return rows
 
 
 def _advisory_rows(value: Any) -> list[str]:
@@ -842,8 +934,10 @@ Return authored when there is a product, usable action/path and observable resul
 reviewable state. Missing implementation or performer names alone need no question.
 Return clarification_required only when a missing or conflicting choice changes the
 user, usable path, result, product/dependency boundary, safety or proof obligation.
-Cite the exact material evidence, including both sides of a contradiction. Otherwise
-report consistent with no conflict quotes; provisional choices are not contradictions.
+For missing-information material_ambiguity, return evidence_quotes=[]; deterministic
+code binds the complete supplied evidence. For material_contradiction, cite at least
+two exact conflicting sides. Otherwise report consistent with no conflict quotes;
+provisional choices are not contradictions.
 
 Before returning, check source fidelity, complete actor/action citations and the
 usefulness of all four product decisions. Return only the closed JSON response.
@@ -978,6 +1072,11 @@ def _consistency_schema(*, statuses: Sequence[str]) -> dict[str, Any]:
             "evidence_quotes": {
                 "type": "array",
                 "maxItems": 4,
+                "description": (
+                    "Use an empty array for consistent or material_ambiguity; the compiler "
+                    "binds missingness to the complete evidence. For non_material_ambiguity "
+                    "or material_contradiction, return two to four exact source excerpts."
+                ),
                 "items": {
                     "type": "string",
                     "maxLength": MAX_AUTHORED_FIELD_VALUE_CHARS,
@@ -1031,6 +1130,12 @@ _CLARIFICATION_RESULT_SCHEMA: dict[str, Any] = {
                 "material_dimension": {
                     "type": "string",
                     "enum": sorted(_MATERIAL_DIMENSIONS),
+                    "description": (
+                        "Use first_path when a usable actor, task, or result is missing. "
+                        "Use product_boundary only for a competing or unclear product "
+                        "responsibility or scope limit; otherwise select the matching "
+                        "material dimension."
+                    ),
                 },
             },
         },

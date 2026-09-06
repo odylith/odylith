@@ -143,7 +143,9 @@ def materialize_model_authored_intent(
     )
     receipt = _authoring_receipt(authored)
     if isinstance(authored, GreenfieldAuthoringClarification):
-        clarification = material_clarification_for_fields(authored.required_fields)
+        clarification = material_clarification_for_fields(
+            authored.required_fields, consistency_status=authored.consistency_status,
+        )
         if authoring_receipt is not None:
             authoring_receipt.clear()
             authoring_receipt.update(receipt)
@@ -229,7 +231,7 @@ def _authoring_receipt(
     )
     return {
         "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
-        "semantic_model_call_count": getattr(authored, "semantic_model_call_count", 1),
+        "semantic_model_call_count": authored.semantic_model_call_count,
         "tier": authored.tier,
         "elapsed_seconds": authored.elapsed_seconds,
         "model_profile": model_profile,

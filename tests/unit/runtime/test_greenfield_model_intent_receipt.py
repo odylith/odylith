@@ -55,7 +55,8 @@ def test_authoring_receipt_preserves_the_validated_intent_call_count() -> None:
     assert _authoring_receipt(authored)["semantic_model_call_count"] == 2
 
 
-def test_clarification_receipt_defaults_to_the_single_observed_call() -> None:
+@pytest.mark.parametrize("call_count", [1, 2])
+def test_clarification_receipt_preserves_the_observed_call_count(call_count) -> None:
     clarification = GreenfieldAuthoringClarification(
         required_fields=("first_path",),
         elapsed_seconds=12.0,
@@ -69,9 +70,10 @@ def test_clarification_receipt_defaults_to_the_single_observed_call() -> None:
         effective_timeout_seconds=55.0,
         consistency_status="material_ambiguity",
         consistency_source_spans=(),
+        semantic_model_call_count=call_count,
     )
 
-    assert _authoring_receipt(clarification)["semantic_model_call_count"] == 1
+    assert _authoring_receipt(clarification)["semantic_model_call_count"] == call_count
 
 
 def _approved_model_authoring(

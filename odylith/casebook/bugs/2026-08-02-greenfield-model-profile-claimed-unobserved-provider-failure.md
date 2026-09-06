@@ -65,6 +65,43 @@
 
 - Preflight Checks: Confirm every claimed model profile has balanced case coverage and every degraded-provider claim has observed failure and fallback evidence.
 
+- V43 Private Timing And Rescue Coverage Gaps (2026-09-05): Independent review
+  finds two release-proof gaps before qualification. Rescue is now truthfully
+  Terra/medium and lower-capability, so it needs its own installed committed and
+  clarification/no-write evidence. The unchanged public fourteen contain only
+  a standard-assigned clarification; append a separately labeled rescue control
+  through the existing case-file route without changing or reassigning those
+  public cases. Do not aggregate standard and rescue or mislabel rescue as higher
+  capability. Also, the private initial-cap/review observation must be read from
+  retained evidence and cross-checked against the sealed profile and shared
+  window. The existing six-field envelope alone does not prove stage timing.
+  Use the existing case and clarification readers plus model_profile_evidence;
+  no canonical schema or new evaluator framework is needed. These remain open
+  until the final selected review schedule is exercised and authenticated. Current
+  semantic-terminal rejection already prevents any qualification attempt.
+
+- V44 Composite Role Proof (2026-09-05): The selected candidate explicitly pins
+  Terra-medium initial authors and Sol-high reviewers on standard/rescue, with
+  Sol-high in both deep roles. New profile v8 identities bind the composition
+  before call one. Lower capability refers to the initial-author role relative
+  to all-Sol deep; do not claim every call is lower-capability or that a corrected
+  candidate proves Terra alone was safe. The goal does not require a fourth
+  production profile. The six-field sealed observation continues to describe
+  the initial author, while retained private evidence must validate each actual
+  role, model, effort, cap, elapsed time and call count. A forged passed summary
+  must not bypass aggregate validation. Initial caps 40/60/85 reserve review
+  15/20/20 inside unchanged model55/80/105; review may use all unused shared time.
+  Each lower-author profile still needs its own real source-bound clarification
+  and positive evidence, separately from unavailable-provider behavior.
+
+- V47 Clarification Call Custody (2026-09-05): Reviewer-selected clarification can
+  use two calls. Private role proof already records both, but the clarification
+  dataclass lacked that count and materialization defaulted its receipt to one.
+  Carry the existing actual count on both typed authoring outcomes and remove
+  the receipt fallback. One- and two-call receipt tests, reviewed clarification
+  metadata tests, and the shared role proof preserve this distinction without
+  expanding the public six-field profile observation or adding model calls.
+
 - Regression Tests Added: Profile assignment/environment tests; aggregate-masking profile score test; release rejection without observed provider failure; manifest predicate test.
 
 - Code References: - scripts/release/greenfield_model_profiles.py

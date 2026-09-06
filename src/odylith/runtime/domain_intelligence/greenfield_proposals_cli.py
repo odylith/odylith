@@ -280,6 +280,10 @@ def _print_greenfield_clarification(exc: GreenfieldClarificationRequired, *, as_
         print(json.dumps({"mode": "clarification_required", "clarification": clarification}, indent=2, sort_keys=True))
         return
     print("Odylith needs one product decision.")
+    if isinstance(consistency, Mapping) and consistency.get("status") == "material_contradiction":
+        print("Conflicting requirements from your request:")
+        for span in consistency["source_spans"]:
+            print(f"- {json.dumps(span['text'], ensure_ascii=False)}")
     print(exc.question)
     print("Reply with one plain-language sentence. No transaction or governed records were created.")
 

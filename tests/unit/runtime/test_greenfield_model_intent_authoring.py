@@ -556,7 +556,7 @@ def test_public_propose_cli_returns_one_model_question_without_a_transaction(
         clarification_response(
             question="What result should the dock attendant see after the first task?",
             material_dimension="visible_result",
-            evidence_quotes=("Create Harbor Desk",),
+            evidence_quotes=(),
         )
     )
     monkeypatch.setattr(
@@ -640,19 +640,15 @@ def test_authoring_accepts_an_explicit_repeated_quote_occurrence_without_first_m
     assert result.atomic_claims[0]["source_start_byte"] == second_start
 
 
-def test_authoring_normalizes_impossible_occurrence_to_first_exact_match() -> None:
+def test_authoring_rejects_impossible_repeated_occurrence_without_first_match_rebinding() -> None:
     source = f"Harbor Desk. {_source()}"
     response = _response(source)
     response["result"]["facts"]["title"]["occurrence"] = source.count("Harbor Desk") + 1  # type: ignore[index]
+    provider = StructuredAuthoringProvider(response)
 
-    result = author_greenfield_intent(
-        evidence_text=source,
-        provider=StructuredAuthoringProvider(response),
-        clock=lambda: 0.0,
-    )
-
-    assert result.source_spans[0]["source_start_byte"] == 0
-    assert result.atomic_claims[0]["source_start_byte"] == 0
+    with pytest.raises(GreenfieldModelAuthoringError, match="quote occurrence that is not present"):
+        author_greenfield_intent(evidence_text=source, provider=provider, clock=lambda: 0.0)
+    assert provider.calls == 1
 
 
 def test_authoring_prompt_requires_every_transaction_material_fact() -> None:

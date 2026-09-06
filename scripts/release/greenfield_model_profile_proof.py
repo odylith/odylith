@@ -7,13 +7,14 @@ from typing import Any
 
 from greenfield_model_profiles import MODEL_PROFILES
 from greenfield_model_profiles import UNAVAILABLE_PROVIDER_PROFILE
+from greenfield_model_profiles import model_stage_observation_issues
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     get_greenfield_model_profile,
     greenfield_model_profile_observation_issues,
 )
 
 
-MODEL_PROFILE_PROOF_VERSION = "odylith.greenfield.installed-model-profile-proof.v1"
+MODEL_PROFILE_PROOF_VERSION = "odylith.greenfield.installed-model-profile-proof.v2"
 UNAVAILABLE_PROVIDER_FAILURE_TEXT = "model authoring is unavailable"
 TRANSACTION_COMMITTED_EXPECTATION = "transaction_committed"
 CLARIFICATION_REQUIRED_EXPECTATION = "clarification_required"
@@ -97,7 +98,9 @@ def model_profile_release_proof(
             validation_issues.append(f"model profile `{profile_id}` lacks a passed terminal matrix result")
         validation_issues.extend(
             f"model profile `{profile_id}` {issue}"
-            for issue in _profile_observation_issues(profile_evidence, profile_id)
+            for issue in _profile_observation_issues(
+                profile_evidence, profile_id, expectation=_result_expectation(result)
+            )
         )
         if not bool(getattr(getattr(result, "quality", None), "passed", False)):
             validation_issues.append(f"model profile `{profile_id}` has a semantic or product-quality failure")
@@ -159,8 +162,11 @@ def model_profile_release_proof(
             "provider": contract.provider,
             "model": contract.model,
             "reasoning_effort": contract.reasoning_effort,
+            "source_review_model": contract.source_review_model,
+            "source_review_reasoning_effort": contract.source_review_reasoning_effort,
             "consumer_budget_seconds": contract.consumer_budget_seconds,
             "lower_capability": contract.lower_capability,
+            "lower_capability_role": "initial_authoring" if contract.lower_capability else "not_applicable",
             "case_count": len(profile_results),
             "committed_positive_case_count": sum(
                 _result_proves_committed_case(result, profile_id)
@@ -244,7 +250,9 @@ def _result_proves_profile(result: Any, profile_id: str) -> bool:
         str(getattr(result, "status", "") or "").strip() == "passed"
         and bool(getattr(getattr(result, "quality", None), "passed", False))
         and str(profile_evidence.get("status") or "") == "passed"
-        and not _profile_observation_issues(profile_evidence, profile_id)
+        and not _profile_observation_issues(
+            profile_evidence, profile_id, expectation=_result_expectation(result)
+        )
         and 0.0
         < _float_value(getattr(result, "proposal_seconds", 0.0))
         < contract.consumer_budget_seconds
@@ -359,6 +367,7 @@ def _lower_capability_scope(
     return {
         "status": "passed" if complete else "unproven",
         "observed_profiles": observed_profiles,
+        "role": "initial_authoring",
         "requirement": "installed_committed_positive_and_source_bound_clarification_no_write",
     }
 
@@ -366,6 +375,8 @@ def _lower_capability_scope(
 def _profile_observation_issues(
     profile_evidence: Mapping[str, Any],
     profile_id: str,
+    *,
+    expectation: str,
 ) -> tuple[str, ...]:
     observed = _mapping(profile_evidence.get("observed"))
     if set(observed) != {
@@ -389,6 +400,16 @@ def _profile_observation_issues(
             authoring_tier=str(observed.get("authoring_tier") or ""),
         )
     )
+    stages = _mapping(profile_evidence.get("stage_observation"))
+    issues.extend(model_stage_observation_issues(
+        profile_id, observed=observed, stage_observation=stages,
+    ))
+    expected_status = (
+        "authored" if expectation == TRANSACTION_COMMITTED_EXPECTATION
+        else "clarification_required"
+    )
+    if _nested_mapping(stages, "response", "result").get("status") != expected_status:
+        issues.append("retained model response does not match the declared case outcome")
     return tuple(issues)
 
 
