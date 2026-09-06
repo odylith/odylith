@@ -1497,6 +1497,17 @@
   Further work must improve allocation or replace work inside the original budget,
   not repeat this additive attempt, append a stage or weaken quality. Focused
   unchanged-runtime contracts pass24 tests; that is preservation, not a planning win.
+  Subsequent representation review rejects citation pooling: it saves583 of3,083
+  minified response bytes but introduces reference-misbinding risk; there is no
+  measured latency benefit. The same provisional-plan candidate under existing
+  standard roles is unproved, not rejected on quality: its local CLI initialization
+  fails in0.028s because the sandbox prevents state/database writes. The null-output
+  schema error in the diagnostic is secondary to that environment failure.
+  Retain `flood-shelter-intake-standard/initial.json` under the same evidence root
+  (SHA `2adea4e8054bbd7e9ab7b2e7e5f123ff8d40edafaecba043317a2b025da2b8fc`).
+  A scoped permission request for the identical test is rejected before launch over
+  model-service data egress. Explicit approval is required; no transport workaround,
+  timing-cap change, generated package, production patch or holdout run occurs.
 
 - V30 Source Discriminator Result (2026-09-04): The unchanged flood request
   passed the v30 prediction. One deep authoring call completed in `49.80s`,

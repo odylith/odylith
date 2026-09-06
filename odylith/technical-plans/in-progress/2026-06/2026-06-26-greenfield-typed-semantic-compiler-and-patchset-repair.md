@@ -95,6 +95,32 @@ tests still pass on unchanged runtime code, demonstrating preserved baseline law
 not satisfaction of the new package requirement. Preserve this diagnosed
 checkpoint and refresh its owned governance surfaces before more implementation.
 
+The next representation review rejects citation pooling as an unearned expansion.
+The retained initial response is 3,083 minified bytes; pooling its 33 quote uses
+into 20 references saves only 583 bytes (18.91%). The plan's schema-valid response
+floor is already 836 bytes before meaningful text or exchanges. These are wire
+measurements, not latency proof. Preserve locally self-describing source citations
+and the existing reviewer rather than introducing cross-reference misbinding risk.
+The next discriminator changes only computation allocation: the same provisional
+plan with existing standard Terra/low authoring and Sol/medium review, initial cap
+30 seconds, shared model window 55 seconds, consumer budget 60 seconds. No retry
+ladder, deeper-tier promotion or production adoption is permitted by this proposal.
+
+That standard attempt cannot assess the mechanism: the provider returns null in
+0.028 seconds because the sandbox prevents local CLI state/database initialization.
+The diagnostic then reports a schema error against null; the retained provider
+metadata establishes an environment failure, not semantic failure or a timeout.
+Evidence: `flood-shelter-intake-standard` under the retained planning comparison;
+contract SHA `3bec2ca7a6ea827ee6d1a5ca517686019f36845b2b05d78826fdaf62397391c7`,
+initial-result SHA `2adea4e8054bbd7e9ab7b2e7e5f123ff8d40edafaecba043317a2b025da2b8fc`.
+A separately retained, identical-driver rerun is rejected before process launch
+by the permission reviewer because model-service data egress needs explicit
+authorization. Do not bypass it through another transport, provider or relocated
+CLI state. Obtain approval for the test evidence, instructions/schema and generated
+candidate payload before the single bounded run. The standard candidate remains
+unproved; source-qualified v48 remains the last implemented mechanism, with its
+installed depth failure and all later gates still open.
+
 The operator explicitly requires an achievable, finite release goal without
 overengineering. Release claims cover the published operating envelope and the
 frozen evaluation population, not perfect interpretation of every possible input.
