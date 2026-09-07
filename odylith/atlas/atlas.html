@@ -557,7 +557,7 @@
       background: #ffffff;
       overflow: hidden;
       display: grid;
-      grid-template-rows: auto 1fr;
+      grid-template-rows: auto auto minmax(560px, 1fr);
       min-height: 660px;
     }
 
@@ -594,6 +594,11 @@
       --chip-link-text-hover: #0b645f;
     }
 
+    .viewer-shell .tool-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
     .viewer-stage {
       position: relative;
       overflow: hidden;
@@ -605,6 +610,17 @@
 
     .viewer-stage.dragging {
       cursor: grabbing;
+    }
+
+    .viewer-stage:focus {
+      outline: 3px solid #0369a1;
+      outline-offset: -3px;
+    }
+
+    .viewer-instructions {
+      margin: 0;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
     }
 
     .viewer-image {
@@ -1334,7 +1350,7 @@
             <span id="zoomReadout" class="meta-pill">Zoom 100%</span>
             <span class="meta-pill">Pinch: zoom</span>
             <span class="meta-pill">Drag: pan</span>
-            <span class="meta-pill">Shortcuts: + - 0 f ↑ ↓</span>
+            <span class="meta-pill">Shortcuts: + - 0 f</span>
           </div>
           <div class="viewer-toolbar-right">
             <button id="prevDiagram" class="tool-btn" type="button">Prev</button>
@@ -1342,10 +1358,11 @@
             <button id="zoomIn" class="tool-btn" type="button">Zoom +</button>
             <button id="zoomOut" class="tool-btn" type="button">Zoom -</button>
             <button id="fit" class="tool-btn" type="button">Fit</button>
-            <button id="reset" class="tool-btn" type="button">Reset</button>
+            <button id="reset" class="tool-btn" type="button">Read at 100%</button>
           </div>
         </div>
-        <div id="viewerStage" class="viewer-stage">
+        <p id="viewerInstructions" class="viewer-instructions">Tab to diagram: arrows pan; Shift pans farther. +/− zoom; 0 reads at 100%; F fits. Outside diagram, ↑/↓ select.</p>
+        <div id="viewerStage" class="viewer-stage" tabindex="0" role="region" aria-labelledby="diagramTitle" aria-describedby="viewerInstructions">
           <img id="viewerImage" class="viewer-image" alt="diagram visualization" draggable="false" />
         </div>
       </section>
@@ -1455,7 +1472,7 @@
   }
 })();
 </script>
-  <script id="catalogData" src="mermaid-payload.v1.js?v=7fceae4d6e33"></script>
-  <script src="mermaid-app.v1.js?v=7fceae4d6e33"></script>
+  <script id="catalogData" src="mermaid-payload.v1.js?v=94e2274fb7f8"></script>
+  <script src="mermaid-app.v1.js?v=94e2274fb7f8"></script>
 </body>
 </html>

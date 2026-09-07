@@ -12,7 +12,7 @@ from tests.integration.runtime.surface_browser_test_support import (
 )
 
 
-def _viewer_html() -> str:
+def _viewer_html(*, width: int = 300, height: int = 100, count: int = 5) -> str:
     return renderer._render_html(
         diagrams=[{
             "diagram_id": f"D-{index:03}", "slug": f"selection-{index}",
@@ -23,11 +23,11 @@ def _viewer_html() -> str:
             "last_reviewed_utc": "2026-09-07", "review_age_days": 0, "freshness": "fresh",
             "source_svg_href": f"/selection-{index}.svg",
             "source_png_href": f"/selection-{index}.png",
-            "svg_viewbox_width": 300, "svg_viewbox_height": 100,
+            "svg_viewbox_width": width, "svg_viewbox_height": height,
             "initial_view_fit_factor": 1,
             "components": [{"name": "Record service", "description": "Validates submitted records."}],
-        } for index in range(1, 6)],
-        stats={"total": 5, "fresh": 5, "stale": 0}, max_review_age_days=21,
+        } for index in range(1, count + 1)],
+        stats={"total": count, "fresh": count, "stale": 0}, max_review_age_days=21,
         tooltip_lookup={}, generated_utc="2026-09-07T00:00:00Z",
         brand_head_html="", tooling_base_href="/odylith/index.html",
     )

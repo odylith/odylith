@@ -315,10 +315,10 @@ def test_render_mermaid_catalog_sizes_image_box_from_diagram_dimensions() -> Non
         tooling_base_href="../index.html",
     )
 
-    assert "function applyImageBoxSizing(diagram)" in html
-    assert 'imageEl.style.width = `${dims.width}px`;' in html
-    assert 'imageEl.style.height = `${dims.height}px`;' in html
-    assert "applyImageBoxSizing(diagram);" in html
+    assert "function applyImageBoxSizing()" in html
+    assert 'imageEl.style.width = dims ? `${dims.width}px` : "";' in html
+    assert 'imageEl.style.height = dims ? `${dims.height}px` : "";' in html
+    assert "applyImageBoxSizing();" in html
 
 
 def test_render_mermaid_catalog_omits_empty_placeholder_copy() -> None:

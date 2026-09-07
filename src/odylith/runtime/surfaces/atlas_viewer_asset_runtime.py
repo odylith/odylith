@@ -21,6 +21,7 @@ VIEWER_ASSET_INITIALIZATION_JS = r"""    const imageErrorEl = document.createEle
     });"""
 
 VIEWER_ASSET_CLEAR_JS = r"""      imageEl.removeAttribute("src");
+      viewport.clear();
       imageEl.dataset.fallbackApplied = "";"""
 
 VIEWER_ASSET_LOAD_JS = r"""      imageEl.onload = () => {
@@ -28,12 +29,13 @@ VIEWER_ASSET_LOAD_JS = r"""      imageEl.onload = () => {
         imageErrorEl.hidden = true;
         imageErrorEl.classList.remove("visible");
         imageErrorEl.textContent = "";
-        applyInitialView(diagram);
+        viewport.imageLoaded();
       };
       imageEl.onerror = () => {
         const fallback = String(diagram.source_png_href || "").trim();
         if (!fallback || imageEl.dataset.fallbackApplied === "1") {
           imageEl.hidden = true;
+          viewport.clear();
           imageErrorEl.textContent = "Diagram preview unavailable. Use Prev or Next to open another diagram, or review the diagram summary and source links on this page.";
           imageErrorEl.hidden = false;
           imageErrorEl.classList.add("visible");
@@ -47,5 +49,5 @@ VIEWER_ASSET_LOAD_JS = r"""      imageEl.onload = () => {
       imageErrorEl.classList.remove("visible");
       imageErrorEl.textContent = "";
       imageEl.dataset.fallbackApplied = "";
-      applyImageBoxSizing(diagram);
+      viewport.setDiagram(diagram);
       imageEl.src = diagram.source_svg_href;"""

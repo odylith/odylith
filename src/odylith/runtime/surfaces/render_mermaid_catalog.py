@@ -22,6 +22,7 @@ from odylith.runtime.governance.delivery import scope_signal_ladder
 from odylith.runtime.surfaces import atlas_detail_layout
 from odylith.runtime.surfaces import atlas_render_metadata
 from odylith.runtime.surfaces import atlas_viewer_asset_runtime
+from odylith.runtime.surfaces import atlas_viewer_viewport_runtime
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import dashboard_shell_links
 from odylith.runtime.surfaces import dashboard_ui_primitives
@@ -1650,7 +1651,7 @@ def _render_html(
       background: #ffffff;
       overflow: hidden;
       display: grid;
-      grid-template-rows: auto 1fr;
+      grid-template-rows: auto auto minmax(560px, 1fr);
       min-height: 660px;
     }
 
@@ -1687,6 +1688,11 @@ def _render_html(
       --chip-link-text-hover: #0b645f;
     }
 
+    .viewer-shell .tool-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
     .viewer-stage {
       position: relative;
       overflow: hidden;
@@ -1698,6 +1704,17 @@ def _render_html(
 
     .viewer-stage.dragging {
       cursor: grabbing;
+    }
+
+    .viewer-stage:focus {
+      outline: 3px solid #0369a1;
+      outline-offset: -3px;
+    }
+
+    .viewer-instructions {
+      margin: 0;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
     }
 
     .viewer-image {
@@ -1886,7 +1903,7 @@ def _render_html(
             <span id="zoomReadout" class="meta-pill">Zoom 100%</span>
             <span class="meta-pill">Pinch: zoom</span>
             <span class="meta-pill">Drag: pan</span>
-            <span class="meta-pill">Shortcuts: + - 0 f ↑ ↓</span>
+            <span class="meta-pill">Shortcuts: + - 0 f</span>
           </div>
           <div class="viewer-toolbar-right">
             <button id="prevDiagram" class="tool-btn" type="button">Prev</button>
@@ -1894,10 +1911,11 @@ def _render_html(
             <button id="zoomIn" class="tool-btn" type="button">Zoom +</button>
             <button id="zoomOut" class="tool-btn" type="button">Zoom -</button>
             <button id="fit" class="tool-btn" type="button">Fit</button>
-            <button id="reset" class="tool-btn" type="button">Reset</button>
+            <button id="reset" class="tool-btn" type="button">Read at 100%</button>
           </div>
         </div>
-        <div id="viewerStage" class="viewer-stage">
+        <p id="viewerInstructions" class="viewer-instructions">Tab to diagram: arrows pan; Shift pans farther. +/− zoom; 0 reads at 100%; F fits. Outside diagram, ↑/↓ select.</p>
+        <div id="viewerStage" class="viewer-stage" tabindex="0" role="region" aria-labelledby="diagramTitle" aria-describedby="viewerInstructions">
           <img id="viewerImage" class="viewer-image" alt="diagram visualization" draggable="false" />
         </div>
       </section>
@@ -1975,6 +1993,16 @@ def _render_html(
     const stageEl = document.getElementById("viewerStage");
     const imageEl = document.getElementById("viewerImage");
     const zoomReadoutEl = document.getElementById("zoomReadout");
+__ODYLITH_ATLAS_VIEWPORT_RUNTIME__
+    const viewport = createAtlasViewport({
+      stageEl, imageEl, zoomReadoutEl,
+      controls: {
+        zoomIn: document.getElementById("zoomIn"),
+        zoomOut: document.getElementById("zoomOut"),
+        fit: document.getElementById("fit"),
+        reset: document.getElementById("reset"),
+      },
+    });
 __ODYLITH_ATLAS_VIEWER_ASSET_INITIALIZATION__
 
     let activeList = allDiagrams.slice();
@@ -1986,18 +2014,6 @@ __ODYLITH_ATLAS_VIEWER_ASSET_INITIALIZATION__
     let workstreamFilter = "all";
     let activeDiagram = null;
 
-    let scale = 1;
-    let offsetX = 0;
-    let offsetY = 0;
-    let dragging = false;
-    let dragStartX = 0;
-    let dragStartY = 0;
-    let panPointerId = null;
-    let pinchState = null;
-    const activePointers = new Map();
-
-    const MIN_SCALE = 0.05;
-    const MAX_SCALE = 5;
     const WORKSTREAM_ID_RE = /^B-\\d{3,}$/;
     const DIAGRAM_ID_RE = /^D-\\d{3,}$/;
     const DIAGRAM_COMPACT_RE = /^D(\\d{3,})$/;
@@ -2201,123 +2217,6 @@ __ODYLITH_ATLAS_VIEWER_ASSET_INITIALIZATION__
 
     function clamp(value, low, high) {
       return Math.min(high, Math.max(low, value));
-    }
-
-    function applyTransform() {
-      imageEl.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) scale(${scale})`;
-      zoomReadoutEl.textContent = `Zoom ${Math.round(scale * 100)}%`;
-    }
-
-    function resetView() {
-      scale = 1;
-      offsetX = 0;
-      offsetY = 0;
-      applyTransform();
-    }
-
-    function diagramDimensions(diagram) {
-      const vbw = Number(diagram && diagram.svg_viewbox_width ? diagram.svg_viewbox_width : 0);
-      const vbh = Number(diagram && diagram.svg_viewbox_height ? diagram.svg_viewbox_height : 0);
-      if (Number.isFinite(vbw) && Number.isFinite(vbh) && vbw > 0 && vbh > 0) {
-        return { width: vbw, height: vbh };
-      }
-      const iw = imageEl.naturalWidth || 0;
-      const ih = imageEl.naturalHeight || 0;
-      if (!iw || !ih) {
-        return null;
-      }
-      return { width: iw, height: ih };
-    }
-
-    function applyImageBoxSizing(diagram) {
-      const dims = diagramDimensions(diagram);
-      if (!dims) {
-        imageEl.style.width = "";
-        imageEl.style.height = "";
-        return;
-      }
-      // SVGs that declare percentage sizing report tiny intrinsic dimensions in
-      // <img>. Keep the image box aligned with Atlas's viewBox-based fit math.
-      imageEl.style.width = `${dims.width}px`;
-      imageEl.style.height = `${dims.height}px`;
-    }
-
-    function computedFitScale(diagram) {
-      const dims = diagramDimensions(diagram);
-      if (!dims) {
-        return null;
-      }
-      const padding = stageFitPadding();
-      const sw = Math.max(1, (stageEl.clientWidth || 1) - padding * 2);
-      const sh = Math.max(1, (stageEl.clientHeight || 1) - padding * 2);
-      return Math.min(sw / dims.width, sh / dims.height);
-    }
-
-    function stageFitPadding() {
-      const shortSide = Math.min(stageEl.clientWidth || 0, stageEl.clientHeight || 0);
-      if (!shortSide) {
-        return 18;
-      }
-      return clamp(shortSide * 0.045, 18, 54);
-    }
-
-    function applyInitialView(diagram) {
-      const dims = diagramDimensions(diagram);
-      if (!dims) {
-        resetView();
-        return;
-      }
-      const rawFitScale = computedFitScale(diagram);
-      if (rawFitScale === null) {
-        resetView();
-        return;
-      }
-
-      // Start near the full-bounds fit with a small safety margin so diagrams
-      // feel snug on first paint without clipping at the edges.
-      let initialFactor = 1.0;
-      const MIN_INITIAL_FIT_FACTOR = 0.94;
-
-      const rawOverrideFactor = Number(diagram && diagram.initial_view_fit_factor ? diagram.initial_view_fit_factor : 0);
-      if (Number.isFinite(rawOverrideFactor) && rawOverrideFactor > 0) {
-        initialFactor = clamp(rawOverrideFactor, MIN_INITIAL_FIT_FACTOR, initialFactor);
-      }
-
-      const target = rawFitScale * initialFactor;
-      scale = clamp(target, MIN_SCALE, 1);
-      offsetX = 0;
-      offsetY = 0;
-      applyTransform();
-    }
-
-    function fitView() {
-      const rawFitScale = computedFitScale(activeDiagram);
-      if (rawFitScale === null) {
-        resetView();
-        return;
-      }
-      scale = clamp(rawFitScale, MIN_SCALE, MAX_SCALE);
-      offsetX = 0;
-      offsetY = 0;
-      applyTransform();
-    }
-
-    function zoomBy(factor, centerX, centerY) {
-      zoomTo(scale * factor, centerX, centerY);
-    }
-
-    function zoomTo(targetScale, centerX, centerY) {
-      const oldScale = scale;
-      const newScale = clamp(targetScale, MIN_SCALE, MAX_SCALE);
-      if (newScale === oldScale) {
-        return;
-      }
-      const px = centerX - stageEl.clientWidth / 2;
-      const py = centerY - stageEl.clientHeight / 2;
-      offsetX = px - ((px - offsetX) / oldScale) * newScale;
-      offsetY = py - ((py - offsetY) / oldScale) * newScale;
-      scale = newScale;
-      applyTransform();
     }
 
     function clearNode(node) {
@@ -2785,45 +2684,6 @@ __ODYLITH_ATLAS_VIEWER_ASSET_LOAD__
       setActive(clamp(activeIndex + delta, 0, activeList.length - 1));
     }
 
-    function pointerRecord(event) {
-      return {
-        x: event.clientX,
-        y: event.clientY,
-        type: event.pointerType,
-      };
-    }
-
-    function touchPointers() {
-      return [...activePointers.values()].filter((item) => item.type === "touch");
-    }
-
-    function distance(a, b) {
-      const dx = a.x - b.x;
-      const dy = a.y - b.y;
-      return Math.sqrt((dx * dx) + (dy * dy));
-    }
-
-    function center(a, b) {
-      return {
-        x: (a.x + b.x) / 2,
-        y: (a.y + b.y) / 2,
-      };
-    }
-
-    function beginPan(event) {
-      dragging = true;
-      panPointerId = event.pointerId;
-      dragStartX = event.clientX - offsetX;
-      dragStartY = event.clientY - offsetY;
-      stageEl.classList.add("dragging");
-    }
-
-    function endPan() {
-      dragging = false;
-      panPointerId = null;
-      stageEl.classList.remove("dragging");
-    }
-
     document.querySelectorAll("[data-freshness]").forEach((chip) => {
       chip.addEventListener("click", () => {
         freshnessFilter = chip.getAttribute("data-freshness") || "all";
@@ -2864,126 +2724,20 @@ __ODYLITH_ATLAS_VIEWER_ASSET_LOAD__
       syncAtlasNavigation();
     });
 
-    document.getElementById("zoomIn").addEventListener("click", () => {
-      zoomBy(1.14, stageEl.clientWidth / 2, stageEl.clientHeight / 2);
-    });
-
-    document.getElementById("zoomOut").addEventListener("click", () => {
-      zoomBy(0.88, stageEl.clientWidth / 2, stageEl.clientHeight / 2);
-    });
-
-    document.getElementById("fit").addEventListener("click", fitView);
-    document.getElementById("reset").addEventListener("click", resetView);
     document.getElementById("prevDiagram").addEventListener("click", () => moveSelection(-1));
     document.getElementById("nextDiagram").addEventListener("click", () => moveSelection(1));
 
-    stageEl.addEventListener("pointerdown", (event) => {
-      activePointers.set(event.pointerId, pointerRecord(event));
-      stageEl.setPointerCapture(event.pointerId);
-
-      const touches = touchPointers();
-      if (touches.length >= 2) {
-        endPan();
-        const a = touches[0];
-        const b = touches[1];
-        pinchState = {
-          startDistance: Math.max(1, distance(a, b)),
-          startScale: scale,
-        };
-        return;
-      }
-
-      if (!pinchState) {
-        beginPan(event);
-      }
-    });
-
-    stageEl.addEventListener("pointermove", (event) => {
-      if (activePointers.has(event.pointerId)) {
-        activePointers.set(event.pointerId, pointerRecord(event));
-      }
-
-      const touches = touchPointers();
-      if (touches.length >= 2) {
-        if (!pinchState) {
-          const a = touches[0];
-          const b = touches[1];
-          pinchState = {
-            startDistance: Math.max(1, distance(a, b)),
-            startScale: scale,
-          };
-        }
-        const a = touches[0];
-        const b = touches[1];
-        const rect = stageEl.getBoundingClientRect();
-        const midpoint = center(a, b);
-        const ratio = distance(a, b) / Math.max(1, pinchState.startDistance);
-        zoomTo(pinchState.startScale * ratio, midpoint.x - rect.left, midpoint.y - rect.top);
-        return;
-      }
-
-      if (pinchState) {
-        pinchState = null;
-      }
-
-      if (dragging && event.pointerId === panPointerId) {
-        offsetX = event.clientX - dragStartX;
-        offsetY = event.clientY - dragStartY;
-        applyTransform();
-      }
-    });
-
-    function stopPointer(event) {
-      activePointers.delete(event.pointerId);
-      if (event.pointerId === panPointerId) {
-        endPan();
-      }
-
-      if (touchPointers().length < 2) {
-        pinchState = null;
-      }
-
-      try {
-        stageEl.releasePointerCapture(event.pointerId);
-      } catch (err) {
-        // no-op
-      }
-    }
-
-    stageEl.addEventListener("pointerup", stopPointer);
-    stageEl.addEventListener("pointercancel", stopPointer);
-
-    // Desktop trackpad pinch commonly arrives as wheel+ctrlKey.
-    // Accept only that path; plain wheel scrolling must not zoom.
-    stageEl.addEventListener("wheel", (event) => {
-      if (!event.ctrlKey) {
-        return;
-      }
-      event.preventDefault();
-      const rect = stageEl.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      zoomBy(event.deltaY < 0 ? 1.08 : 0.92, x, y);
-    }, { passive: false });
-
     window.addEventListener("keydown", (event) => {
+      if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey) return;
+      const target = event.target;
+      if (target instanceof Element && (target.closest("input, textarea, select") || target.isContentEditable)) return;
       const key = event.key;
-      if (key === "+" || key === "=") {
-        zoomBy(1.14, stageEl.clientWidth / 2, stageEl.clientHeight / 2);
-      } else if (key === "-") {
-        zoomBy(0.88, stageEl.clientWidth / 2, stageEl.clientHeight / 2);
-      } else if (key === "0") {
-        resetView();
-      } else if (key.toLowerCase() === "f") {
-        fitView();
-      } else if (key === "ArrowUp") {
+      if (key === "ArrowUp") {
         moveSelection(-1);
       } else if (key === "ArrowDown") {
         moveSelection(1);
       }
     });
-
-    window.addEventListener("resize", () => fitView());
 
     let sidebarCollapsed = false;
     try {
@@ -3030,6 +2784,10 @@ __ODYLITH_ATLAS_VIEWER_ASSET_LOAD__
         .replace(
             "__ODYLITH_ATLAS_DETAIL_RUNTIME_HELPERS__",
             atlas_detail_layout.DETAIL_RUNTIME_HELPERS_JS.strip("\n"),
+        )
+        .replace(
+            "__ODYLITH_ATLAS_VIEWPORT_RUNTIME__",
+            atlas_viewer_viewport_runtime.VIEWPORT_RUNTIME_JS.strip("\n"),
         )
         .replace(
             "__ODYLITH_ATLAS_VIEWER_ASSET_INITIALIZATION__",

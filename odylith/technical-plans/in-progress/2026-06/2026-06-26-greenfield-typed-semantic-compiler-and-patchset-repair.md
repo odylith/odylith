@@ -10,6 +10,41 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Atlas reading and semantic authority boundary (2026-09-07)
+
+Keep the full-diagram overview and make native-size reading an explicit Atlas
+viewer action. One viewport owner must own transforms, image sizing, pointer,
+pinch and keyboard input. When the stage is focused, arrow keys pan without
+switching diagrams; filter entry must not change the viewport. Empty/error
+states disable unavailable reading actions and retain recovery navigation.
+The oversized catalog renderer must shrink rather than accumulate another input
+path. Freeze the dashboard header, sealed diagram content and 60/90/120 budgets.
+Require desktop/mobile normal, fallback and error controls plus the broader
+surface matrix and install checks. Initial eight red controls are retained in
+`/private/tmp/odylith-atlas-reading-proof.BD4j5N/baseline.xml`.
+
+Implemented in one viewport owner, removing 242 lines from the catalog renderer
+with net 28 lines across the three runtime files. The first passing controls
+missed iframe visibility and disabled appearance; screenshot review drove eight
+further red cases before explicit Read reveal and scoped disabled styling.
+Final frozen proof: 74 focused controls, 1139 runtime checks and 1116 install/
+dashboard browser checks. The two broad suites contain 2255 checks; the focused
+suite overlaps runtime and is not an additional unique count. A fresh synthetic
+consumer passes 32 seven-surface state cells and 113 exact sealed/readback files;
+20 native desktop/mobile journeys cover five actual SVGs and five PNG fallbacks.
+Independent review approves this bounded reading correction. Diagnostic elapsed
+time is not consumer SLA proof; semantics, full accessibility and release gates
+remain open. Evidence and recoverable consumer cleanup are recorded in
+`/private/tmp/odylith-atlas-reading-proof.BD4j5N/review.md`.
+
+Separately, current semantic authority review finds no new evidence-backed
+replacement for the wrong-role acceptance gap under the present constraints.
+The operator has been asked whether semantic reliability may use an independently
+adjudicated release floor or requires independent runtime semantic verification.
+No change to that requirement or to source admission is authorized by this note.
+Keep CB-303 and semantic qualification open; do not spend another model call on
+the previously rejected paths.
+
 ### Flat-workstream handoff correction (2026-09-07)
 
 CB-303 records a concrete consumer handoff mismatch: allocation position invents

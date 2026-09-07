@@ -49,6 +49,19 @@ grounding.
 
 ## Runtime Contract
 
+The viewport owner preserves the initial full-bounds overview and provides an
+explicit Read at 100% action that reveals and focuses the labelled stage.
+Arrow keys pan only while the stage owns focus; filter entry cannot zoom or
+switch diagrams, and selecting the already-ready diagram preserves reading
+position. Unavailable images visibly disable reading actions while preserving
+recovery navigation. The 2026-09-07 source-local checkpoint passes 74 focused
+controls, 1139 runtime checks and 1116 install/dashboard browser checks, plus a
+32-cell seven-surface synthetic consumer matrix with 113 exact published files.
+Twenty native desktop/mobile journeys verify five actual SVGs and five PNG
+fallbacks. These results establish bounded reading behavior, not complete
+accessibility, semantic quality or consumer latency. Diagram semantics and the
+frozen dashboard header remain unchanged.
+
 Authored Greenfield diagrams preserve their existing authority marker when
 selected for rendering. Both native Mermaid routes can render their exact labels
 and topology; if both fail, the authored job fails closed. The emergency static
@@ -65,7 +78,8 @@ The three proposed-design views still require nonempty component descriptions.
 The sealed Atlas validator owns this distinction through proposal validation
 and publication; a generic component-count gate must not reinterpret it.
 The v50 human-only and live-flood replay controls preserve this separation across
-desktop/mobile surfaces. Tiny mobile initial-fit diagrams and long KPI stacks
+desktop/mobile surfaces. Small initial-fit diagrams remain intentional overviews;
+explicit native-size reading is verified separately. Long mobile KPI stacks
 remain usability debt, not functional-pass exemptions.
 
 At the existing stacked-layout breakpoint, explicit catalog activation reveals
@@ -100,6 +114,9 @@ complete Greenfield semantic qualification.
 ### Owning modules
 - `src/odylith/runtime/surfaces/render_mermaid_catalog.py`
   Atlas renderer.
+- `src/odylith/runtime/surfaces/atlas_viewer_viewport_runtime.py`
+  Sole viewport owner for image sizing, transforms, readiness and pointer,
+  pinch, wheel and focus-scoped keyboard input.
 - `src/odylith/runtime/surfaces/atlas_detail_layout.py`
   Atlas detail-pane contract for diagram explanation, read guidance, component
   cards, and linked engineering context layout.
@@ -356,6 +373,12 @@ too low-signal for default promotion.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/registry/source/components/atlas/CURRENT_SPEC.md`
+- **2026-09-07 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/surfaces/render_mermaid_catalog.py`
 - **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `sha256:54a42d7ec1a2fb0bbfacf5bd84e0a653a1c55c219136385a6b85a20277d60060`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_design_views.py`, `src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py`
@@ -366,12 +389,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-30 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `odylith/registry/source/components/atlas/CURRENT_SPEC.md`, `src/odylith/runtime/surfaces/atlas_box_explanations.py`, `src/odylith/runtime/surfaces/atlas_box_terms.py`, plus 1 more
-- **2026-06-30 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/atlas/CURRENT_SPEC.md`, `odylith/registry/source/components/dashboard/CURRENT_SPEC.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, plus 1 more
-- **2026-06-28 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md`, `odylith/registry/source/components/atlas/CURRENT_SPEC.md`, `src/odylith/runtime/surfaces/render_mermaid_catalog.py`, plus 1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
