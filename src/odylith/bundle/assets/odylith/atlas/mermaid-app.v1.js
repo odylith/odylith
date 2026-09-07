@@ -123,6 +123,18 @@ const payload = window["__ODYLITH_MERMAID_DATA__"] || {};
     imageErrorEl.hidden = true;
     stageEl.appendChild(imageErrorEl);
 
+    const viewerShellEl = stageEl.closest(".viewer-shell");
+    viewerShellEl.tabIndex = -1;
+    viewerShellEl.setAttribute("aria-labelledby", "diagramTitle");
+    // Only explicit catalog activation hands off from the stacked list to its viewer.
+    // Focusing the shell keeps Prev/Next first in the subsequent keyboard tab order.
+    listEl.addEventListener("click", (event) => {
+      if (!event.target.closest("button[data-diagram]")) return;
+      if (!window.matchMedia("(max-width: 1180px)").matches) return;
+      viewerShellEl.focus({ preventScroll: true });
+      viewerShellEl.scrollIntoView({ block: "start", inline: "nearest", behavior: "instant" });
+    });
+
     let activeList = allDiagrams.slice();
     let activeIndex = 0;
     let selectedDiagramId = "";
@@ -875,7 +887,7 @@ initSharedQuickTooltips();
         const fallback = String(diagram.source_png_href || "").trim();
         if (!fallback || imageEl.dataset.fallbackApplied === "1") {
           imageEl.hidden = true;
-          imageErrorEl.textContent = "Diagram preview unavailable. Use Prev or Next above to open another diagram, or review the diagram summary and source links below.";
+          imageErrorEl.textContent = "Diagram preview unavailable. Use Prev or Next to open another diagram, or review the diagram summary and source links on this page.";
           imageErrorEl.hidden = false;
           imageErrorEl.classList.add("visible");
           return;

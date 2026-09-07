@@ -65,8 +65,20 @@ The three proposed-design views still require nonempty component descriptions.
 The sealed Atlas validator owns this distinction through proposal validation
 and publication; a generic component-count gate must not reinterpret it.
 The v50 human-only and live-flood replay controls preserve this separation across
-desktop/mobile surfaces. Tiny mobile initial-fit diagrams, long KPI stacks and
-below-fold error feedback remain usability debt, not functional-pass exemptions.
+desktop/mobile surfaces. Tiny mobile initial-fit diagrams and long KPI stacks
+remain usability debt, not functional-pass exemptions.
+
+At the existing stacked-layout breakpoint, explicit catalog activation reveals
+and focuses the named viewer shell. Keyboard Tab then reaches Prev/Next first.
+Asset loading, SVG-to-PNG fallback, terminal failure, initial render and filter
+recomputation do not independently scroll or take focus. Desktop activation and
+the frozen dashboard header retain their existing behavior. Recovery copy uses
+direction-neutral source-link guidance. The asset runtime owns this handoff;
+generated Atlas assets are never hand-patched. The 2026-09-07 source-local proof
+passes 147 focused checks, 1006 install unit checks and a fresh 32-cell native
+package matrix with 113 exact sealed/readback files. This closes the explicit
+mobile selection/error discoverability finding, not full accessibility or
+complete Greenfield semantic qualification.
 
 ### Source truth
 - `odylith/atlas/source/catalog/diagrams.v1.json`

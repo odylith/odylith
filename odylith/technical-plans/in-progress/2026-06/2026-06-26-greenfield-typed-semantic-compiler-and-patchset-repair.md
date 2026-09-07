@@ -12,6 +12,20 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ### Continuous experience gate (2026-09-06)
 
+Bounded Atlas UX checkpoint (2026-09-07): explicit catalog activation in the
+stacked layout now reveals and focuses the named viewer shell, putting Prev/Next
+first in keyboard tab order. Initial load, filtering, Prev/Next, desktop selection
+and the frozen outer header retain their scroll/focus/layout contracts. The four
+failing baseline controls now pass; 147 focused renderer/browser checks and all
+1006 install unit checks pass. Independent review approves the bounded change.
+A fresh unchanged v50 response replay passes all 32 seven-surface cells and exact
+113-file readback with source and whole consumer bytes unchanged. Its 60.708-second
+diagnostic includes baseline creation and browser checks; it is not a consumer
+request timing measurement. No author call, response repair, semantic change or
+holdout access occurred. Mobile initial-fit text, KPI-first density and the
+previously recorded untested states remain open. Evidence:
+`/private/tmp/odylith-atlas-selection-ux.FIhrmE/`.
+
 Optional source ownership checkpoint (2026-09-07): source-local v50 removes the
 obsolete mandatory capability inventory and terminal-to-product fallback.
 Explicit source capabilities and typed product events keep their owners;
