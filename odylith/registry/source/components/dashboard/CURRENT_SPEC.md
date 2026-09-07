@@ -32,6 +32,11 @@ demonstrated this on a fresh installed repo. Each child owns its useful empty
 state; Dashboard owns the shared Project route, not a second record interpreter.
 The header remains frozen. Mobile KPI density and broader accessibility remain
 separate open obligations, not implied successes of the empty-state correction.
+The exact 4ca2f3d5 local distribution also passes 28 installed empty/invalid-route
+cells and six Project recoveries without changing installed or governed bytes.
+Screenshot review still finds the mobile Registry Diagnostics chip overlapping
+its empty heading. Keep that defect visible; installed automation alone does not
+close human-quality, positive creation, accessibility or 60/90/120 qualification.
 
 ### Dashboard owns
 - Shell-level routing and query-param deep links.

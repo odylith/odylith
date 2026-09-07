@@ -29,7 +29,7 @@ or treat the automated route pass as human-quality acceptance. Evidence lives in
 `/private/tmp/odylith-installed-checkpoint.tefox7/installed-empty-browser-reviewed/`
 and the retained earlier diagnostic screenshots.
 
-The correction is now in progress with red browser controls: Atlas four,
+The correction began with red browser controls: Atlas four,
 Casebook four, and Radar/Registry eight failures; Compass has six red fact and
 narration controls while its source-backed estimates remain green. The diagnosed
 owners are Atlas selection lifecycle, Compass no-workstream facts, Casebook list
@@ -41,9 +41,21 @@ Final source-local proof passes 28 empty/invalid route cells, six Project
 recoveries and independent desktop/mobile review of all seven surfaces. A fresh
 four-workstream, four-component, five-diagram synthetic package passes 32 browser
 state cells and 113 exact sealed/published files. Its diagnostic 35.080 seconds
-is not model-authoring or consumer SLA evidence. CB-330 is FixedPendingRelease,
-with exact new-distribution installation still pending. The retained installed
-4ce8cd2f screenshots remain baseline evidence.
+is not model-authoring or consumer SLA evidence. CB-330 is FixedPendingRelease.
+The retained installed 4ce8cd2f screenshots remain baseline evidence.
+
+Exact clean 4ca2f3d5 now builds and fresh-installs the complete local 0.1.15
+distribution. Fourteen changed surface modules match isolated installed bytes;
+audited author-unavailable refusal has zero write or subprocess attempts and no
+changed records or staged transaction. Actual installed browser automation passes
+28 empty/invalid-route cells and six Project recoveries with unchanged installed
+and governed bytes. Screenshot review still finds the mobile Registry Diagnostics
+chip overlapping its empty heading, so this is not complete UX acceptance.
+Positive installed creation, recovery, host parity, semantic quality and consumer
+latency remain separate open gates. Proof: `/private/tmp/odylith-empty-state-installed.BLYtlC/`.
+Six terminal or rejected prior test fixtures were moved whole to recoverable
+Trash storage; their reports and screenshots remain in place with an exact path
+mapping in `/private/tmp/odylith-empty-state-proof.kJuowo/cleanup-completed.md`.
 
 The first visually reviewed isolated run had 28 passing DOM cells but still
 invented stale progress with no workstream or event. Freshness admission now
@@ -113,13 +125,24 @@ time is not consumer SLA proof; semantics, full accessibility and release gates
 remain open. Evidence and recoverable consumer cleanup are recorded in
 `/private/tmp/odylith-atlas-reading-proof.BD4j5N/review.md`.
 
-Separately, current semantic authority review finds no new evidence-backed
-replacement for the wrong-role acceptance gap under the present constraints.
-The operator has been asked whether semantic reliability may use an independently
-adjudicated release floor or requires independent runtime semantic verification.
-No change to that requirement or to source admission is authorized by this note.
-Keep CB-303 and semantic qualification open; do not spend another model call on
-the previously rejected paths.
+The subsequent goal audit corrects the earlier authority-choice framing. Both
+goal attachments already require exact source support and correct semantic role
+for accepted facts, alongside independent qualification of probabilistic model
+quality. This is not an outstanding operator-permission choice, nor a mandate
+for a separate NLI model, reviewer call or universal semantic oracle. Current
+source still promotes model-selected quotations into product claims and accepted
+facts without independent role evidence. Keep the known CB-303 invocation-as-story
+P1 and semantic qualification open; an aggregate score cannot waive that defect.
+The retained invocation-negative and genuine-purpose-positive pair now reproduce
+the gap on exact installed 4ca2f3d5: both seal and pass quality; the request to
+create a proposal incorrectly becomes accepted Project purpose. Genuine purpose
+is preserved by the positive control. All 458 loaded modules match the wheel;
+two fixture responses make zero live provider calls, no network attempt and no
+CONFIRM or governed-record publication. This is an admission diagnostic, not
+live-model frequency or SLA evidence. A successor must first reject the negative
+and retain the positive. Do not repeat rejected story-elimination,
+capability-promotion or NLI paths. The two pending diagnostic fixtures are
+preserved under `/private/tmp/odylith-empty-state-installed.BLYtlC/semantic-controls/`.
 
 ### Flat-workstream handoff correction (2026-09-07)
 
