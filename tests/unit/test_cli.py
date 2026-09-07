@@ -407,7 +407,7 @@ def test_greenfield_propose_command_returns_one_model_authored_clarification(
         clarification_response(
             question="unused test metadata",
             material_dimension="first_path",
-            evidence_quotes=("Build an ecommerce site",),
+            evidence_quotes=(),
         )
     )
     monkeypatch.setattr(

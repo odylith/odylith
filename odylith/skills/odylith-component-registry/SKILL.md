@@ -22,6 +22,7 @@ that already failed, and capture new mechanism-level learning.
 ## Canonical Commands
 
 ```bash
+./.odylith/bin/odylith component update-description --repo-root . --id <existing-component-id> --what-it-is "<grounded description>" --dry-run
 ./.odylith/bin/odylith governance sync-component-spec-requirements --repo-root . --component <component_id_or_alias>
 ./.odylith/bin/odylith governance sync-component-spec-requirements --repo-root . --check-only
 ./.odylith/bin/odylith validate component-registry --repo-root . --policy-mode enforce-critical --enforce-deep-skills
@@ -31,6 +32,10 @@ that already failed, and capture new mechanism-level learning.
 
 ## Rules
 
+- Use `component update-description` to correct an existing inventory description;
+  omit `--dry-run` to apply it and refresh Registry. This command preserves the
+  component's other metadata and `CURRENT_SPEC.md`; do not re-register a component
+  merely to change its description.
 - Search the existing component inventory first and extend, reopen, or deepen an existing component before adding a duplicate entry.
 - Keep the component registry deeply linked to Radar, Atlas, Compass, and local component specs.
 - Prefer the sync pipeline over hand-editing generated Registry artifacts.

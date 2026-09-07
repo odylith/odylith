@@ -1117,7 +1117,7 @@
       ],
       "owner": "product",
       "status": "active",
-      "what_it_is": "Provider-free runtime that turns untrusted Greenfield evidence into typed product facts and a confirmation-gated project package with Radar workstreams, Registry components, Atlas topology, assumptions, risks, validation obligations, deterministic Tribunal gating, parseable JSON output, and final surface refresh.",
+      "what_it_is": "Model-assisted Greenfield runtime that turns untrusted project evidence into source-cited intent, stages Radar, Registry and Atlas proposals, and publishes only the exact package reviewed before confirmation.",
       "why_tracked": "Owns the consumer-lane boundary between missing source evidence and useful greenfield guidance, so every supported host routes broad project intents through one low-latency Odylith runtime path instead of refusing or inventing source-backed truth.",
       "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
       "sources": [
@@ -1136,19 +1136,19 @@
       "path_prefixes": [
         "src/odylith/runtime/governed_harness/"
       ],
-  "workstreams": [
-    "B-118",
-    "B-119",
-    "B-120",
-    "B-121",
-    "B-122",
-    "B-123",
-    "B-124",
-    "B-125"
-  ],
-  "diagrams": [
-    "D-044"
-  ],
+      "workstreams": [
+        "B-118",
+        "B-119",
+        "B-120",
+        "B-121",
+        "B-122",
+        "B-123",
+        "B-124",
+        "B-125"
+      ],
+      "diagrams": [
+        "D-044"
+      ],
       "owner": "product",
       "status": "active",
       "what_it_is": "Product-owned turn control layer that emits Turn Gate decisions, evidence reports, execution capsules, tool/stop gate decisions, and receipts for normal consumer prompts, host adapters, and benchmark measurement.",

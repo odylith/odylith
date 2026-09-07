@@ -262,6 +262,23 @@ _HANDLER_CASES = [
         and list(getattr(args, "forwarded", [])) == ["--id", "registry-refresh"],
     },
     {
+        "path": ("component", "update-description"),
+        "argv": lambda root: [
+            "component",
+            "update-description",
+            f"--repo-root={root}",
+            "--id",
+            "registry-refresh",
+            "--what-it-is",
+            "Current description.",
+        ],
+        "handler": "_cmd_component",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "component_command", "") == "update-description"
+        and list(getattr(args, "forwarded", []))
+        == ["--id", "registry-refresh", "--what-it-is", "Current description."],
+    },
+    {
         "path": ("bug", "capture"),
         "argv": lambda root: ["bug", "capture", f"--repo-root={root}", "--title", "Fixture bug"],
         "handler": "_cmd_bug",
@@ -387,6 +404,12 @@ _HANDLER_CASES = [
         "path": ("atlas", "scaffold"),
         "argv": lambda root: ["atlas", "scaffold", f"--repo-root={root}"],
         "handler": "_cmd_atlas_scaffold",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root),
+    },
+    {
+        "path": ("atlas", "update"),
+        "argv": lambda root: ["atlas", "update", f"--repo-root={root}"],
+        "handler": "_cmd_atlas_update",
         "check": lambda args, root: getattr(args, "repo_root", "") == str(root),
     },
     {

@@ -1617,6 +1617,17 @@
   before/after tracked-diff SHA
   `a97bce57c9bff460422c0693fb96860baec8dae588cd4a4e151bfae3d07589ca`.
 
+- Mechanism-versus-invariant correction (2026-09-06): The original goals require
+  independent phase/release adjudication, not a second runtime model call for
+  every proposal. Treating v48's reviewer as non-replaceable excluded a legitimate
+  bounded alternative. Its observed corrections remain mandatory regression
+  evidence: ownership transfer, invented people, terminal-role errors, occurrence
+  collisions, false dependencies, invocation leakage, thin-input admission and
+  contradiction handling. Compare one complete author inside unchanged 55/60
+  standard bounds without changing production or calling byte custody entailment.
+  Stop on the first missed reviewer-caught defect; independent release evaluation
+  remains required. No model/schema compaction sweep is justified by wire counts.
+
 - Cross-Surface Experience Checkpoint (2026-09-06): The operator requires UX
   checks across Project, Radar, Registry, Atlas, Casebook, Compass and shell
   throughout building, including desktop/mobile normal and recovery states.
@@ -1640,6 +1651,49 @@
   accessibility, loading, exhaustive state permutations and installed parity
   remain unproved. Passing functional tests do not clear this UX finding or the
   complete-package 60/90/120 gate. This record remains open.
+
+- Single-author comparison and Registry correction (2026-09-06): One Terra/low
+  call produced a structurally valid 4/5/5 draft in 38.064 seconds (38.492-second
+  frozen driver), with all source spans and freeze receipts independently checked.
+  Two reviewers agree on P1 contextual-participant loss: displaced residents are
+  exact targets/state but absent from `human_actors` and the participant view.
+  Structural custody is not semantic completeness. The unsealed package renderer
+  also hides the proposed Opportunity/assumptions, a separate P1 visibility defect.
+  Reporting-input wording is P2 after adjudication: do not invent an exhaustive
+  direct-exchange requirement for a logical design. Six prototype browser states
+  pass, but neither semantic nor consumer quality is cleared. Stop this candidate
+  without retry or production adoption; evidence is retained in
+  `/private/tmp/odylith-greenfield-single-author.KWkJsD/`.
+  The live Registry description now truthfully says model-assisted, via the new
+  exact-ID `component update-description` command. Readback proves only that
+  inventory field changed; all 30 entries' remaining metadata and the current
+  spec bytes were preserved (spec SHA
+  `426e2bfa0932d577e6c6b875c807a887367fffb270d3edb97cf76e07378bb78f`).
+  The command owns no re-registration or spec rewrite and refreshes Registry once.
+  CLI help remains read-only on main; mutation guards remain active. The focused
+  component/CLI/audit/hygiene gate passes 245 tests without exclusions. Two other
+  broad CLI failures require explicit baseline attribution, not silent exclusion.
+  Retain the final frozen dashboard/readback, CLI and installation evidence at
+  `/private/tmp/odylith-component-description-checkpoint.FdtsSg/`; the terminal
+  reports there define the exact checked states, counts and remaining gaps.
+  Independent review then caught a P1 in the new command: resolving the expected
+  Registry path before atomic write erased in-repo symlinks and redirected writes
+  to unrelated JSON. Eight new controls reproduce the failure at the file and each
+  parent segment, for real writes and dry runs. Reject every symlink in that fixed
+  path before reading, keep its unresolved path for the existing atomic writer,
+  and prove target/spec preservation. Do not generalize this into a new filesystem
+  framework or claim hostile concurrent-directory-swap protection. The migration
+  test is current-tree assessment drift, not a pre-existing failure; only the
+  clarification fixture failure was reproduced identically at baseline HEAD.
+  That public CLI fixture now supplies the existing contract's empty ambiguity
+  quote list; no runtime validator or expected outcome was weakened. The existing
+  copied-quote rejection test runs alongside it to preserve the negative control.
+  The fixed lexical-path refusal passes all 28 updater tests, including the eight
+  new in-repo symlink cases; independent re-review finds no remaining P0/P1 in this
+  bounded command. The clarification contract and negative controls pass 25 tests.
+  B-145 assesses this additive command and normal managed-asset refresh without a
+  schema/data migration. This is source-local checkpoint proof, not Greenfield
+  consumer timing, host parity, release readiness or closure of this open bug.
 
 - V30 Source Discriminator Result (2026-09-04): The unchanged flood request
   passed the v30 prediction. One deep authoring call completed in `49.80s`,

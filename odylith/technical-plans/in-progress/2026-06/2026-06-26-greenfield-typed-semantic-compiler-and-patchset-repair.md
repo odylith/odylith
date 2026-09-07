@@ -28,7 +28,45 @@ The package-depth, source-custody and fixed 60/90/120 gates remain unchanged.
 
 ### Required package depth and current blocker (2026-09-05)
 
-Current wave (2026-09-06, package replay and context projection): the retained
+Comparison result (2026-09-06): one Terra/low call completed in 38.064 seconds;
+the frozen driver took 38.492 seconds and produced four Radar drafts, five
+Registry drafts and five diagrams. Exact citations and all freeze receipts pass.
+Independent review nevertheless finds P1 participant loss: displaced residents
+survive as targets/state but disappear from the contextual participant inventory.
+The temporary package view also omits the proposed Opportunity/assumptions, a
+separate P1 projection defect. Reporting-input wording is P2 underspecification,
+not an exhaustive-topology gate. Six prototype desktop/mobile normal, empty and
+render-error states pass; this does not clear the human-quality defects.
+Evidence: `/private/tmp/odylith-greenfield-single-author.KWkJsD/`.
+The comparison stops here without retry, adoption or timing-qualified consumer
+success. Preserve the source/design separation and these failure classes for the
+next bounded decision; do not add a resident-specific rule or repair this fixture.
+Production v48 and the full 60/90/120, package-depth and release gates are unchanged.
+The Registry copy correction is implemented through the exact-ID update owner;
+28 updater tests prove metadata/spec preservation and symlink refusal. Complete
+checkpoint CLI/install and all-surface experience receipts are retained at
+`/private/tmp/odylith-component-description-checkpoint.FdtsSg/`; consult terminal
+reports for their exact outcome and coverage, not the candidate's browser preview.
+
+Declared comparison (2026-09-06): re-reading both original goals corrects a
+mechanism constraint that had been treated as a product invariant. Independent
+phase/release adjudication and entailed source facts are mandatory; a second
+model call on every consumer request is not. V48 review has caught real defects
+and remains production behavior, but its role may be replaced only with evidence.
+Compare one complete source-plus-proposed-plan author with deterministic custody
+and independent offline semantic/product review, inside the unchanged standard
+55-second model / 60-second consumer bounds. Keep Terra/low, source schema and the
+existing separate proposed-plan shape; no model sweep, retry or tier promotion.
+This challenges the runtime review role, not the requirement for semantic truth.
+Stop on the first timeout, custody failure or reviewer-caught P0/P1. A successful
+model-stage result only earns normal-package integration and the existing
+positive, negative, equivalent-source, browser, transaction and release gates.
+Source/proposed authority must stay separate; no sealed package is claimed from
+the temporary draft. Protected holdouts stay closed. In parallel, close the
+Registry copy P1 with an exact existing-component description-update command,
+preserving other metadata and the already-correct spec rather than re-registering.
+
+Last checkpoint (2026-09-06, package replay and context projection): the retained
 validated source plus the separate v2 proposed plan produces five Radar drafts,
 five logical Registry drafts and five Atlas views, versus the current 1/1/3.
 Six desktop/mobile normal, empty and Mermaid-failure replay states pass; all five

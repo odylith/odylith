@@ -181,7 +181,7 @@ _GREENFIELD_COMMANDS = (
 )
 _GREENFIELD_COMMAND_NAMES = frozenset(command for command, _help_text in _GREENFIELD_COMMANDS)
 _CAPABILITY_INVENTORY_MODULE = "odylith.runtime.analysis_engine.capability_inventory"
-_COMPONENT_AUTHORING_MODULE = "odylith.runtime.governance.component_authoring"
+_COMPONENT_CLI_MODULE = "odylith.runtime.governance.component_cli"
 _BUG_AUTHORING_MODULE = "odylith.runtime.governance.bug_authoring"
 _GITHUB_ISSUE_PIPELINE_MODULE = "odylith.runtime.governance.github_issue_cli"
 _CASEBOOK_RELEASE_CLOSEOUT_MODULE = "odylith.runtime.governance.casebook_release_closeout"
@@ -2418,12 +2418,13 @@ def _cmd_capabilities(args: argparse.Namespace) -> int:
 
 
 def _cmd_component(args: argparse.Namespace) -> int:
-    blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
+    blocked = 0 if _help_requested(args.forwarded) else _guard_product_repo_main_branch(repo_root=args.repo_root)
     if blocked:
         return blocked
-    return _run_module_main(
-        _COMPONENT_AUTHORING_MODULE,
-        ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded),
+    return _module_attr(_COMPONENT_CLI_MODULE, "dispatch")(
+        repo_root=args.repo_root,
+        command=args.component_command,
+        forwarded=args.forwarded,
     )
 
 
@@ -3368,14 +3369,7 @@ def build_parser() -> argparse.ArgumentParser:
     capabilities.add_argument("--json", action="store_true", help="Emit structured JSON.")
     capabilities.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
 
-    component = subparsers.add_parser("component", help="Create and maintain Registry component records.")
-    component_subparsers = component.add_subparsers(dest="component_command", required=True)
-    component_register = component_subparsers.add_parser(
-        "register",
-        help="Register a new component in the Odylith registry and scaffold its CURRENT_SPEC.md.",
-    )
-    component_register.add_argument("--repo-root", default=".", help="Consumer repository root.")
-    component_register.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+    _module_attr(_COMPONENT_CLI_MODULE, "configure_parser")(subparsers)
 
     registry_surface = subparsers.add_parser("registry", help="Refresh Registry without widening into full sync.")
     registry_subparsers = registry_surface.add_subparsers(dest="registry_command", required=True)
@@ -3717,16 +3711,14 @@ def _dispatch_main(argv: list[str] | None = None) -> int:
                 args = parser.parse_args(tokens)
                 return _cmd_capabilities(args)
             return _cmd_capabilities(argparse.Namespace(repo_root=repo_root, forwarded=forwarded, json=False))
-        if tokens[0] == "component" and len(tokens) >= 2 and tokens[1] == "register":
+        if (
+            tokens[0] == "component"
+            and len(tokens) >= 2
+            and _module_attr(_COMPONENT_CLI_MODULE, "is_command")(tokens[1])
+        ):
             repo_root, forwarded = _extract_repo_root(tokens[2:])
-            if _help_requested(forwarded):
-                return _forward_backend_help(
-                    module_name=_COMPONENT_AUTHORING_MODULE,
-                    repo_root=repo_root,
-                    forwarded=forwarded,
-                )
             return _cmd_component(
-                argparse.Namespace(repo_root=repo_root, component_command="register", forwarded=forwarded)
+                argparse.Namespace(repo_root=repo_root, component_command=tokens[1], forwarded=forwarded)
             )
         if tokens[0] == "bug" and len(tokens) >= 2 and tokens[1] == "capture":
             repo_root, forwarded = _extract_repo_root(tokens[2:])

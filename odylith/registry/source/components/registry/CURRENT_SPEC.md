@@ -41,6 +41,15 @@ only by workstream.
 - Registry treats component specs as living contracts, not static documentation.
 
 ## Runtime Contract
+### Existing-component description updates
+`odylith component update-description --id <id> --what-it-is "<description>"`
+changes only an existing inventory description, preserves all other metadata and
+`CURRENT_SPEC.md`, and refreshes Registry once. `--dry-run` neither writes nor
+refreshes. Unknown/duplicate IDs, blank input, malformed inventory and symlinks in
+the fixed manifest path fail before writing. Help remains read-only on main;
+mutations retain the product-main guard. The Component CLI family owns dispatch
+in `component_cli.py`; `component_description_update.py` owns the narrow update.
+
 ### Source truth
 - `odylith/registry/source/component_registry.v1.json`
   Canonical component manifest.

@@ -123,3 +123,51 @@ Assess the changed guidance and browser surfaces, record compatibility and rollb
 
 ## Open Questions
 - None. The final observed path set is assessed and does not require a source-data migration.
+
+## 2026-09-06 Component Description Command Assessment
+
+Assessment target: `0.1.15`.
+
+Completed observer bindings:
+
+- `migration-observer:0.1.15:guidance-and-skills:60b71660d9e2`
+- `migration-observer:0.1.15:operator-cli-contracts:5b0adb1088a6`
+- `migration-observer:0.1.15:public-docs-and-release-guidance:a7fb30006fce`
+- `migration-observer:0.1.15:browser-surfaces:c62a1bfb74ab`
+- `migration-observer:0.1.15:install-managed-assets:192ba5971da9`
+
+The current operator change preserves `odylith component register` and adds the
+explicit `odylith component update-description` command and help route. The new
+command updates only `what_it_is` for one exact existing component when an
+operator invokes it. It validates the Registry shape and unique component IDs,
+refuses every symlink segment in the fixed lexical Registry path before reading
+or writing, preserves the existing file mode, uses the shared atomic writer, and
+then invokes the normal Registry refresh. It changes no Registry schema, source
+parser, component identity, ownership field, or install-time source migration.
+
+The related operator documentation and component-registry skill plus its managed
+bundle mirror describe the additive command. Existing installs receive those
+runtime and guidance changes through normal install, upgrade, reinstall, or
+doctor refresh. Those paths continue to preserve consumer-owned Radar, Registry,
+Atlas, Casebook, Compass, and plan source. Only an explicit description-update
+invocation changes a consumer Registry source record, and that change remains an
+ordinary reviewable repository edit.
+
+The browser and install-managed fingerprints also bind the already assessed
+current governance-source and generated-surface settlement. They require normal
+dashboard/runtime refresh for derived views and managed bundle assets, not a
+stored-data migration. Rollback may restore the prior managed runtime, guidance,
+and generated assets without rewriting consumer-owned source. This assessment
+does not claim release readiness or adoption; it closes only the migration impact
+identified by the exact observer fingerprints above.
+
+### Terminal selective-sync settlement
+
+- `migration-observer:0.1.15:browser-surfaces:a1d51d35b860`
+
+This terminal browser marker binds the selective-sync result after the same
+source assessment and generated Atlas, Casebook, Compass, Radar, and Registry
+views settled. It introduces no additional command, schema, source-data
+migration, or runtime behavior. Existing consumer-owned governance source
+remains preserved; normal Radar/dashboard refresh and managed-asset replacement
+are sufficient for the derived surfaces represented by this fingerprint.

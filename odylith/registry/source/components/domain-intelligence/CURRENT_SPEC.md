@@ -3472,7 +3472,14 @@ This section captures synchronized requirement and contract signals derived from
   normal, empty/fallback and degraded/error coverage and explicit gaps. Rendered
   meaning and usability are judged separately from functional assertions.
   The 2026-09-06 audit found stale "Provider-free runtime" inventory copy despite
-  this model-based contract; its governed update-path gap remains open in CB-303.
+  this model-based contract. An exact-ID description-update command now corrects
+  it without re-registering the component or rewriting its spec/other metadata.
+  A separate single-author 4/5/5 draft completed its model stage within 55 seconds
+  but failed independent participant-completeness review; the temporary package
+  also hid provisional assumptions. Neither draft quality nor consumer timing is
+  qualified. Independent phase/release adjudication and source entailment remain
+  fixed; a second runtime review call is a replaceable mechanism, not a user law.
+  Production v48 review is unchanged while its replacement remains unproved.
   Review input includes the literal resolver's actual citation byte offsets and
   64-character surrounding source context. This is a read-only binding view, not
   new semantic evidence or a second parser. Repeated quote bytes do not establish

@@ -57,6 +57,7 @@ commits the reviewed bytes; `EDIT <hash> <corrections>` rebuilds them from new e
 | Say this | What happens |
 |---|---|
 | **"Register a component for the payments service"** | Creates a registry entry and scaffolds `CURRENT_SPEC.md`. `odylith component register --id payments --path src/payments --label "Payments"` |
+| **"Correct the payments component description"** | Updates only the existing component's inventory description and refreshes Registry; other metadata and `CURRENT_SPEC.md` stay unchanged. `odylith component update-description --id payments --what-it-is "..."` supports `--dry-run`. |
 | **"Update the component spec for payments"** | Spawns the registry-scribe subagent to edit the living spec with implementation evidence. |
 | **"What components exist?"** | Reads the component registry manifest. `odylith context <component-id>` for a specific dossier. |
 | **"Sync the component specs"** | Folds Compass requirement evidence into per-component living specs. `odylith governance sync-component-spec-requirements` |
