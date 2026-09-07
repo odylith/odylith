@@ -44,6 +44,7 @@ def _author_terminal_intent(
     intent: dict[str, object],
     *,
     result_quote: str,
+    terminal_override: dict[str, object] | None = None,
 ):  # type: ignore[no-untyped-def]
     source = ". ".join(
         str(row)
@@ -51,33 +52,34 @@ def _author_terminal_intent(
         for row in (value if isinstance(value, list) else [value])
         if str(row)
     )
+    response = authored_response(
+        intent,
+        evidence_text=source,
+        first_path_relations=[
+            {
+                "actor_kind": "human",
+                "actor_fact_quote": "Coordinator Nia",
+                "event_quote": "Coordinator Nia records each donation",
+                "action_verb_quote": "records",
+                "target_quote": "each donation",
+                "visible_result_quote": "",
+            },
+            {
+                "actor_kind": "product",
+                "actor_fact_quote": "Pickup Relay",
+                "owner_system_quote": "Pickup Relay",
+                "event_quote": "Pickup Relay releases each batch",
+                "action_verb_quote": "releases",
+                "target_quote": "each batch",
+                "visible_result_quote": result_quote,
+            },
+        ],
+    )
+    if terminal_override is not None:
+        response["result"]["terminal"].update(terminal_override)
     result = author_greenfield_intent(
         evidence_text=source,
-        provider=StructuredAuthoringProvider(
-            authored_response(
-                intent,
-                evidence_text=source,
-                first_path_relations=[
-                    {
-                        "actor_kind": "human",
-                        "actor_fact_quote": "Coordinator Nia",
-                        "event_quote": "Coordinator Nia records each donation",
-                        "action_verb_quote": "records",
-                        "target_quote": "each donation",
-                        "visible_result_quote": "",
-                    },
-                    {
-                        "actor_kind": "product",
-                        "actor_fact_quote": "Pickup Relay",
-                        "owner_system_quote": "Pickup Relay",
-                        "event_quote": "Pickup Relay releases each batch",
-                        "action_verb_quote": "releases",
-                        "target_quote": "each batch",
-                        "visible_result_quote": result_quote,
-                    },
-                ],
-            )
-        ),
+        provider=StructuredAuthoringProvider(response),
         clock=lambda: 0.0,
     )
     return result, source
@@ -151,4 +153,11 @@ def test_terminal_result_rejects_a_selected_non_output_fact() -> None:
         GreenfieldModelAuthoringError,
         match="terminal result outside its selected facts",
     ):
-        _author_terminal_intent(intent, result_quote=result_quote)
+        _author_terminal_intent(
+            intent,
+            result_quote="released donation batch",
+            terminal_override={
+                "result_fact": {"field": "problem", "row": 1},
+                "result_quote": result_quote,
+            },
+        )

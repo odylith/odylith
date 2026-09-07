@@ -219,7 +219,7 @@ def test_proof_preserves_the_exact_only_candidate_without_review_metadata(tmp_pa
     retained = json.loads(path.read_text())
     assert retained["response"] == response
     assert retained["semantic_model_call_count"] == 1
-    assert retained["authoring_version"] == "odylith.greenfield.intent-authoring.v51"
+    assert retained["authoring_version"] == "odylith.greenfield.intent-authoring.v52"
     assert retained["initial_authoring"]["timeout_seconds"] == 80.0
     assert retained["initial_authoring"]["elapsed_seconds"] == 36.0
     assert "source_review" not in retained
@@ -236,6 +236,21 @@ def test_source_binding_preserves_explicit_unicode_occurrences_without_auto_repa
     start = source.encode().index(b"Dock attendant Ivo", len("🧭 Dock attendant Ivo".encode()))
     assert span["source_start_byte"] == start
     assert source.encode()[span["source_start_byte"]:span["source_end_byte"]] == b"Dock attendant Ivo"
+    assert provider.calls == 1
+
+
+def test_fixture_terminal_occurrence_is_local_to_its_explicit_raw_fact_row():
+    terminal = _response(_source())["result"]["terminal"]
+    source = f"Earlier label: {terminal['result_quote']}. {_source()}"
+    response = _response(source)
+    assert response["result"]["terminal"] == terminal
+    assert terminal["result_occurrence"] == 1
+    reference = terminal["result_fact"]
+    raw = response["result"]["facts"][reference["field"]]
+    fact = raw[reference["row"] - 1] if isinstance(raw, list) else raw
+    assert terminal["result_quote"] in fact["quote"]
+    provider = StructuredAuthoringProvider(response)
+    author.author_greenfield_intent(evidence_text=source, provider=provider, clock=lambda: 0.0)
     assert provider.calls == 1
 
 

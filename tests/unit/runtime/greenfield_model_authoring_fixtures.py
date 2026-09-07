@@ -6,6 +6,9 @@ import copy
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
+    TERMINAL_RESULT_FACT_FIELDS,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
     _REPEATED_SOURCE_FIELDS,
@@ -79,9 +82,11 @@ def authored_response(
             citation = {"quote": quote, "occurrence": 1}
             if field in _SINGULAR_SOURCE_FIELDS:
                 facts[field] = citation
+                source_field_row = 1
             else:
                 facts[field].append(citation)
-            selected_facts.append({"field": field, **citation})
+                source_field_row = len(facts[field])
+            selected_facts.append({"field": field, "row": source_field_row, **citation})
             fact_indexes[projection_path] = fact_index
             if field == "first_path":
                 first_path_fact_indexes.append(fact_index)
@@ -277,7 +282,8 @@ def _terminal_row(
         (
             fact
             for fact in facts
-            if result_quote in str(fact.get("quote") or "")
+            if fact["field"] in TERMINAL_RESULT_FACT_FIELDS
+            and result_quote in str(fact.get("quote") or "")
         ),
         None,
     )
@@ -285,28 +291,17 @@ def _terminal_row(
         raise ValueError(
             "authored fixture terminal result requires a selected proof fact"
         )
-    result_occurrence = 1
     if evidence_text:
-        evidence = evidence_text.encode("utf-8")
-        proof_quote = str(proof_fact["quote"]).encode("utf-8")
-        result = result_quote.encode("utf-8")
-        fact_start = _nth_start(
-            evidence,
-            proof_quote,
+        _nth_start(
+            evidence_text.encode("utf-8"),
+            str(proof_fact["quote"]).encode("utf-8"),
             int(proof_fact["occurrence"]),
-        )
-        local_start = proof_quote.find(result)
-        if local_start < 0:
-            raise ValueError("authored fixture result is outside its proof fact")
-        result_occurrence = _occurrence_at_offset(
-            evidence,
-            result,
-            fact_start + local_start,
         )
     return {
         "event_order": event_order,
+        "result_fact": {"field": proof_fact["field"], "row": proof_fact["row"]},
         "result_quote": result_quote,
-        "result_occurrence": result_occurrence,
+        "result_occurrence": 1,
     }
 
 
@@ -467,18 +462,3 @@ def _nth_start(source: bytes, quote: bytes, occurrence: int) -> int:
             raise ValueError("authored fixture quote occurrence is not present")
         cursor = found + 1
     return found
-
-
-def _occurrence_at_offset(source: bytes, quote: bytes, offset: int) -> int:
-    starts: list[int] = []
-    cursor = 0
-    while True:
-        found = source.find(quote, cursor)
-        if found < 0:
-            break
-        starts.append(found)
-        cursor = found + 1
-    try:
-        return starts.index(offset) + 1
-    except ValueError as exc:
-        raise ValueError("authored fixture result offset is not source grounded") from exc

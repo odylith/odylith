@@ -19,11 +19,13 @@ def _fact(
     source_start: int,
     projection_path: str,
     projection_start: int,
+    source_field_row: int = 1,
 ) -> dict[str, object]:
     length = len(quote.encode("utf-8"))
     return {
         "fact_index": fact_index,
         "field": field,
+        "source_field_rows": [source_field_row],
         "quote": quote,
         "source_start_byte": source_start,
         "source_end_byte": source_start + length,
@@ -65,6 +67,7 @@ def test_failure_tracking_and_restoration_remain_exact_actions_without_recovery_
             source_start=restoration_source_start,
             projection_path="/first_path",
             projection_start=restoration_projection_start,
+            source_field_row=2,
         ),
     )
 
@@ -81,7 +84,10 @@ def test_failure_tracking_and_restoration_remain_exact_actions_without_recovery_
                 "target_quote": "service",
             },
         ),
-        terminal={"result_quote": "service", "result_occurrence": 1, "event_order": 2},
+        terminal={
+            "result_fact": {"field": "first_path", "row": 2},
+            "result_quote": "service", "result_occurrence": 1, "event_order": 2,
+        },
         components=(),
         selected_facts=selected_facts,
         first_path=first_path,

@@ -602,6 +602,8 @@ def test_authoring_collapses_exact_duplicate_typed_fact_rows() -> None:
     assert isinstance(facts, dict)
     path_facts = facts["first_path"]
     path_facts.insert(1, dict(path_facts[0]))
+    assert response["result"]["terminal"]["result_fact"] == {"field": "first_path", "row": 3}
+    response["result"]["terminal"]["result_fact"]["row"] = 4
 
     result = author_greenfield_intent(
         evidence_text=source,
@@ -707,10 +709,18 @@ def test_authoring_schema_structurally_separates_complete_authored_and_clarifica
     assert "minItems" not in typed_facts["properties"]["human_actors"]
     authored_properties = authored_branch["properties"]
     terminal = authored_properties["terminal"]
-    assert set(terminal["properties"]) == {"event_order", "result_quote", "result_occurrence"}
-    assert "event_order" in terminal["required"]
+    assert set(terminal["properties"]) == {"event_order", "result_fact", "result_quote", "result_occurrence"}
+    assert set(terminal["required"]) == set(terminal["properties"])
+    result_fact = terminal["properties"]["result_fact"]
+    assert result_fact["additionalProperties"] is False
+    assert set(result_fact["required"]) == set(result_fact["properties"]) == {"field", "row"}
+    assert result_fact["properties"]["row"]["minimum"] == 1
+    assert set(result_fact["properties"]["field"]["enum"]) == {
+        "first_path", "product_story", "opportunity", "product_view", "success_metrics", "proof_boundary",
+    }
     assert terminal["properties"]["event_order"]["type"] == "integer"
     assert "workflow stage" in terminal["properties"]["result_quote"]["description"]
+    assert "inside the selected fact quote, not the source document" in terminal["properties"]["result_occurrence"]["description"]
     assert authored_properties["events"]["type"] == "array"
     assert authored_properties["events"]["minItems"] == 1
     assert set(authored_properties["events"]["items"]["properties"]) == {

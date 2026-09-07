@@ -36,7 +36,7 @@ MODEL_EVENT_FIELDS = frozenset(
         "target_quote",
     }
 )
-MODEL_TERMINAL_FIELDS = frozenset({"result_quote", "result_occurrence", "event_order"})
+MODEL_TERMINAL_FIELDS = frozenset({"result_fact", "result_quote", "result_occurrence", "event_order"})
 MODEL_COMPONENT_FIELDS = frozenset({"owner_fact_quote", "responsibilities"})
 MODEL_COMPONENT_RESPONSIBILITY_FIELDS = frozenset({"quote", "occurrence"})
 _CONTEXT_KIND_BY_FIELD = {
@@ -283,48 +283,48 @@ def _terminal_result_fact(
     if not isinstance(value, Mapping) or set(value) != MODEL_TERMINAL_FIELDS:
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring returned an invalid terminal result"
-    )
-    result_quote = _required_quote(value.get("result_quote"))
-    result_occurrence = value.get("result_occurrence")
-    if not _positive_index(result_occurrence):
-        raise GreenfieldAuthoredSemanticsError(
-            "Greenfield authoring returned an invalid terminal result"
         )
-    evidence = evidence_text.encode("utf-8")
-    result_start = _exact_occurrence_start(
-        evidence,
-        result_quote.encode("utf-8"),
-        result_occurrence,
-    )
-    result_end = result_start + len(result_quote.encode("utf-8"))
-    containing_facts = [
-        fact
-        for fact in selected_facts
-        if str(fact.get("field") or "") in TERMINAL_RESULT_FACT_FIELDS
-        and _nonnegative_int(fact.get("source_start_byte")) <= result_start
-        and result_end <= _positive_int(fact.get("source_end_byte"))
-    ]
-    exact_facts = [
-        fact
-        for fact in containing_facts
-        if str(fact.get("quote") or "") == result_quote
-    ]
-    candidates = exact_facts or containing_facts
-    if not candidates:
+    result_quote = _required_quote(value.get("result_quote"))
+    result_occurrence = _positive_index(value.get("result_occurrence"))
+    reference = value.get("result_fact")
+    if (
+        not isinstance(reference, Mapping)
+        or set(reference) != {"field", "row"}
+        or reference.get("field") not in TERMINAL_RESULT_FACT_FIELDS
+        or not _positive_index(reference.get("row"))
+        or not result_occurrence
+    ):
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring returned a terminal result outside its selected facts"
         )
-    result_fact = min(
-        candidates,
-        key=lambda fact: (
-            _positive_int(fact.get("source_end_byte"))
-            - _nonnegative_int(fact.get("source_start_byte")),
-            _positive_int(fact.get("fact_index")),
-        ),
-    )
-    local_start = result_start - _nonnegative_int(
-        result_fact.get("source_start_byte")
-    )
+    candidates = [
+        fact
+        for fact in selected_facts
+        if fact.get("field") == reference["field"]
+        and reference["row"] in fact.get("source_field_rows", ())
+    ]
+    if len(candidates) != 1:
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring returned a terminal result outside its selected facts"
+        )
+    result_fact = candidates[0]
+    result_bytes = result_quote.encode("utf-8")
+    starts = _occurrence_starts(_required_quote(result_fact.get("quote")).encode("utf-8"), result_bytes)
+    # Never rescue an invalid local ordinal with a unique or global match.
+    if result_occurrence > len(starts):
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring returned a terminal result outside its selected facts"
+        )
+    local_start = starts[result_occurrence - 1]
+    result_start = _nonnegative_int(result_fact.get("source_start_byte")) + local_start
+    result_end = result_start + len(result_bytes)
+    if (
+        result_end > _positive_int(result_fact.get("source_end_byte"))
+        or evidence_text.encode("utf-8")[result_start:result_end] != result_bytes
+    ):
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring returned a terminal result outside its selected facts"
+        )
     projection_start = (
         _nonnegative_int(result_fact.get("projection_start_byte")) + local_start
     )
@@ -335,7 +335,7 @@ def _terminal_result_fact(
         "terminal_result_source_end_byte": result_end,
         "terminal_result_projection_start_byte": projection_start,
         "terminal_result_projection_end_byte": projection_start
-        + len(result_quote.encode("utf-8")),
+        + len(result_bytes),
     }
 
 
@@ -673,6 +673,16 @@ MODEL_TERMINAL_SCHEMA: dict[str, Any] = {
             "additionalProperties": False,
             "required": sorted(MODEL_TERMINAL_FIELDS),
             "properties": {
+                "result_fact": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["field", "row"],
+                    "properties": {
+                        "field": {"type": "string", "enum": list(TERMINAL_RESULT_FACT_FIELDS)},
+                        "row": {"type": "integer", "minimum": 1},
+                    },
+                    "description": "Existing facts field and one-based raw row containing the result; scalar facts use row 1.",
+                },
                 "result_quote": {
                     **_quote_schema(required=True),
                     "description": (
@@ -681,7 +691,10 @@ MODEL_TERMINAL_SCHEMA: dict[str, Any] = {
                         "goal, or product label is not a result."
                     ),
                 },
-                "result_occurrence": {"type": "integer", "minimum": 1},
+                "result_occurrence": {
+                    "type": "integer", "minimum": 1,
+                    "description": "One-based occurrence inside the selected fact quote, not the source document.",
+                },
                 "event_order": {
                     "type": "integer", "minimum": 1, "maximum": MAX_FIRST_PATH_RELATIONS,
                     "description": "One-based source-event identity that produces this result, regardless of its position in the evidence.",

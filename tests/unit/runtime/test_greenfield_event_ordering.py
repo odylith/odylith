@@ -203,7 +203,10 @@ def _authored_input():
                 {"actor_fact_quote": "bénévoles", "action_quote": action, "target_quote": target}
                 for action, target in (("publient", "la liste prête"), ("vérifient", "les demandes"), ("enregistrent", "les demandes"))
             ],
-            "terminal": {"result_quote": "liste prête", "result_occurrence": 1, "event_order": 1},
+            "terminal": {
+                "result_fact": {"field": "proof_boundary", "row": 1},
+                "result_quote": "liste prête", "result_occurrence": 1, "event_order": 1,
+            },
             "components": [], "ambiguities": [],
             "assumptions": [
                 {"applies_to": field, "statement": statement}

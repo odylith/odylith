@@ -57,7 +57,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v51"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v52"
 GREENFIELD_MODEL_PROOF_FD_ENV = "ODYLITH_GREENFIELD_MODEL_PROOF_FD"
 MAX_GREENFIELD_SEMANTIC_CALLS = 1
 
@@ -601,7 +601,7 @@ def _intent_from_typed_source_spans(
 
     if not isinstance(value, Mapping) or set(value) != set(_SOURCE_FACT_FIELDS):
         raise GreenfieldModelAuthoringError("Greenfield authoring returned invalid source citations; no records were created.")
-    typed_citations: list[tuple[str, Mapping[str, Any]]] = []
+    typed_citations: list[tuple[str, int, Mapping[str, Any]]] = []
     for field in _SOURCE_FACT_FIELDS:
         raw_value = value.get(field)
         if field in _SINGULAR_SOURCE_FIELDS:
@@ -614,26 +614,27 @@ def _intent_from_typed_source_spans(
             rows = raw_value
         else:
             raise GreenfieldModelAuthoringError("Greenfield authoring returned invalid source citations; no records were created.")
-        for raw in rows:
+        for source_field_row, raw in enumerate(rows, start=1):
             if not isinstance(raw, Mapping):
                 raise GreenfieldModelAuthoringError("Greenfield authoring returned invalid source citations; no records were created.")
-            typed_citations.append((field, raw))
+            typed_citations.append((field, source_field_row, raw))
     typed_citations.extend(
         (
             "component_responsibilities",
+            source_field_row,
             {
                 "quote": row["responsibility_quote"],
                 "occurrence": row["responsibility_occurrence"],
             },
         )
-        for row in component_rows
+        for source_field_row, row in enumerate(component_rows, start=1)
         if row["responsibility_quote"]
     )
     if len(typed_citations) > MAX_AUTHORED_CITATIONS:
         raise GreenfieldModelAuthoringError("Greenfield authoring returned invalid source citations; no records were created.")
     evidence = evidence_text.encode("utf-8")
     spans: list[dict[str, Any]] = []
-    seen: set[tuple[str, int, int, int]] = set()
+    seen: dict[tuple[str, int, int], dict[str, Any]] = {}
     intent: dict[str, Any] = {field: "" for field in _TEXT_FIELDS}
     intent.update({field: [] for field in _LIST_FIELDS})
     try:
@@ -642,7 +643,7 @@ def _intent_from_typed_source_spans(
         raise GreenfieldModelAuthoringError(str(exc)) from exc
     intent["ambiguities"] = _advisory_rows(ambiguities)
     selected_facts: list[dict[str, Any]] = []
-    for citation_index, (field, raw) in enumerate(typed_citations, start=1):
+    for citation_index, (field, source_field_row, raw) in enumerate(typed_citations, start=1):
         citation = _mapping(raw)
         if set(citation) != {"quote", "occurrence"}:
             raise GreenfieldModelAuthoringError("Greenfield authoring returned invalid source citations; no records were created.")
@@ -657,10 +658,11 @@ def _intent_from_typed_source_spans(
         quoted_bytes = quote.encode("utf-8")
         start = _exact_occurrence_start(evidence, quoted_bytes, occurrence)
         end = start + len(quoted_bytes)
-        key = (field, 0, start, end)
+        key = (field, start, end)
         if key in seen and field != "operational_constraints":
+            # Duplicate collapse must not renumber model-authored references.
+            seen[key]["source_field_rows"].append(source_field_row)
             continue
-        seen.add(key)
         projection_start = 0
         if field == "first_path":
             existing_path = str(intent[field])
@@ -691,6 +693,7 @@ def _intent_from_typed_source_spans(
             {
                 "fact_index": citation_index,
                 "field": field,
+                "source_field_rows": [source_field_row],
                 "quote": quote,
                 "source_start_byte": start,
                 "source_end_byte": end,
@@ -699,6 +702,7 @@ def _intent_from_typed_source_spans(
                 "projection_end_byte": projection_start + len(quoted_bytes),
             }
         )
+        seen[key] = selected_facts[-1]
         spans.append(
             {
                 "span_id": f"authoring:{field}:{row_index}:{citation_index}",
@@ -873,6 +877,11 @@ Keep the original actor wording in the exact event citation, not a second actor 
 action_quote and nonempty target_quote must occur within that event. terminal cites
 the visible result and explicitly selects the event that produces it; that event may
 appear anywhere in the source action list.
+terminal.result_fact selects its existing facts field and one-based row (row 1
+for a scalar fact). result_quote must occur within that selected fact's quote.
+result_occurrence counts only within that quote, not across the source document.
+The selected fact owns global source custody; the result inherits it. A result
+may come from a proof or story fact without occurring inside its producer event.
 source_precedence contains only source-stated ordering requirements, not a proposed
 workflow. Each edge names before_event, after_event and the one-based constraint_index
 of its exact existing facts.operational_constraints citation. Select the whole source

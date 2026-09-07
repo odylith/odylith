@@ -12,6 +12,35 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ### Source-first ownership comparison (2026-09-07)
 
+v52 result: the existing-owner terminal replacement passes independent custody
+review. One actual 5-task/5-component/5-diagram proposal stages in 44.982 seconds,
+with one 38.908-second author call, but fails the unchanged source-quality gate:
+matching-before-publication is missing as a required edge and survives only as
+proposed sequence. Canonical surfaces and all five handoffs inherit the omission.
+Do not confirm or retry this package. Keep the bounded custody improvement and
+the full-package rejection separate. The next mechanism decision belongs to
+source-constraint coverage, not downstream reconstruction from design, another
+keyword rule, or the already rejected three-disposition reviewer. Review existing
+source-first evidence before choosing a bounded comparison; no new architecture
+is adopted by this note. Frozen runtime proof has 4025 passes and one initially
+stale Registry forensic check; owned refresh settles it and all 96 Registry,
+source/bundle and sync checks pass. Install proof has 1075 passes, and offline preview proof
+32 matrix + 20 diagram reading + 30 handoff/selection checks. Refresh governed
+metadata and rerun its owning checks before commit. Diagram quality is uneven;
+simple context and dense support views are not highest-quality qualification.
+No goal or deadline narrowing.
+Evidence: `/private/tmp/odylith-v52-terminal-reference.BTfmyS/semantic-review.md`.
+
+Integration slice: replace the existing terminal resolver and author schema with
+the accepted selected-fact reference, not the experimental source-first pipeline.
+Preserve raw field-row aliases through exact source-fact duplicate collapse so
+later rows cannot shift and identical duplicates need no extra rejection.
+Characterize strict local occurrences, Unicode bytes, invalid roles/references,
+non-event proof/story results and sealed downstream behavior. Keep the one-call
+profile and all deadlines fixed; no compatibility adapter or reviewer stage.
+Runtime, installed, complete-package quality and browser proof must distinguish
+this source-local v52 integration from the earlier two source-only observations.
+
 Boundary result: both actual terminal-reference source controls pass independent
 review in 30.741 and 24.790 seconds, preserving all five coordinator actions,
 four required edges and exact result custody. Retain this candidate for a focused

@@ -26,6 +26,7 @@ def _fact(
     return {
         "fact_index": fact_index,
         "field": field,
+        "source_field_rows": [1],
         "quote": quote,
         "source_start_byte": source_start,
         "source_end_byte": source_start + len(quote_bytes),
@@ -46,6 +47,7 @@ def _derive(
     responsibility_quote: str,
     terminal_quote: str,
     selected_facts: Sequence[Mapping[str, Any]],
+    terminal_field: str = "first_path",
 ):
     responsibilities = (
         ({"quote": responsibility_quote, "occurrence": 1},)
@@ -60,7 +62,10 @@ def _derive(
                 "target_quote": target_quote,
             },
         ),
-        terminal={"result_quote": terminal_quote, "result_occurrence": 1, "event_order": 1},
+        terminal={
+            "result_fact": {"field": terminal_field, "row": 1},
+            "result_quote": terminal_quote, "result_occurrence": 1, "event_order": 1,
+        },
         components=(
             {
                 "owner_fact_quote": owner_fact_quote,
@@ -164,6 +169,7 @@ def test_outer_product_capability_may_encompass_a_human_event() -> None:
         owner_fact_quote="Floodline",
         responsibility_quote=capability,
         terminal_quote="visible capacity guidance",
+        terminal_field="product_story",
         selected_facts=facts,
     )
 
