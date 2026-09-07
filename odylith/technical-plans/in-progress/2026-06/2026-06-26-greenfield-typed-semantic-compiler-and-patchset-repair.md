@@ -12,6 +12,35 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ### Source-first ownership comparison (2026-09-07)
 
+Source-authority result: all three frozen controls pass root and independent
+review in 14.183, 9.095 and 13.047 seconds, with three actual calls and all 111
+dependency hashes unchanged. The reviewer admits accepted source meaning and
+correctly denies the actual lost prerequisite and invocation-as-story. This
+qualifies only those component controls. Because excluded proposed decisions
+can contain unsafe choices, source admission cannot authorize joining/sealing.
+Keep production unchanged and resolve that remaining authority obligation before
+a complete source-first joined-package comparison; do not add a fourth role,
+reuse the old full-packet join gate, or spend another run on isolated source
+success. The original actual package remains rejected and CB-303 Open/P0.
+Evidence: `/private/tmp/odylith-source-authority-review.KqkwhW/review.md`.
+
+Current bounded decision: correct CB-303's source-constraint loss severity to P0
+under the fixed goal; preserve historical P1 labels as historical evidence.
+Source-first results support a hypothesis, not an accepted replacement. Before
+another source/designer run, compare source-only reviewer authority on three
+retained controls: the wrongly denied source positive, actual v52 constraint
+omission and invocation-as-story negative. Preserve accepted fields and evidence
+exactly; exclude proposed decisions and their generation instructions from this
+role. Keep the binary prompt/schema, model and 20-second cap unchanged. Any
+wrong verdict or timeout ends this candidate, without retry or tuning. Passing
+cannot judge excluded design safety or authorize joining/sealing; the next useful
+authoring gate would be a complete joined package, not another source-only
+success. No production mechanism, profile, header or 60/90/120 change.
+The initial no-call preflight omitted a substantive customer-role prohibition
+and lacked explicit post-return timing enforcement; preserve that rejected
+contract and use the corrected frozen successor without changing live controls.
+Contract: `/private/tmp/odylith-source-authority-review.KqkwhW/acceptance.md`.
+
 v52 result: the existing-owner terminal replacement passes independent custody
 review. One actual 5-task/5-component/5-diagram proposal stages in 44.982 seconds,
 with one 38.908-second author call, but fails the unchanged source-quality gate:
