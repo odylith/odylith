@@ -218,6 +218,44 @@ def _allocated_workstream_dependencies(
     }
 
 
+def allocated_workstreams(
+    *, proposal: Mapping[str, Any], created_backlog: Sequence[Mapping[str, Any]],
+) -> tuple[CreatedWorkstream, ...]:
+    """Validate exact design-key allocations and preserve canonical design order."""
+
+    workstreams = _created_workstreams(proposal=proposal, created_backlog=created_backlog)
+    dependencies = _allocated_workstream_dependencies(proposal=proposal, workstreams=workstreams)
+    by_id = {workstream.idea_id: workstream for workstream in workstreams}
+    return tuple(by_id[idea_id] for idea_id in dependencies)
+
+
+def first_executable_workstream(
+    *, proposal: Mapping[str, Any], created_backlog: Sequence[Mapping[str, Any]],
+    first_release_workstreams: Sequence[str],
+) -> CreatedWorkstream:
+    """Select a dependency-free workstream from a closed, allocated release.
+
+    Independent roots retain canonical design order as a deterministic tie-break;
+    neither allocation numbers nor source-event order imply delivery priority.
+    """
+
+    workstreams = _created_workstreams(proposal=proposal, created_backlog=created_backlog)
+    dependencies = _allocated_workstream_dependencies(proposal=proposal, workstreams=workstreams)
+    release_ids = tuple(str(item).strip().upper() for item in first_release_workstreams)
+    if not release_ids or len(set(release_ids)) != len(release_ids) or any(
+        idea_id not in dependencies for idea_id in release_ids
+    ):
+        raise ValueError("Greenfield first release must contain unique allocated workstreams")
+    release_set = set(release_ids)
+    if any(not set(dependencies[idea_id]) <= release_set for idea_id in release_ids):
+        raise ValueError("Greenfield first release has a prerequisite outside its release scope")
+    by_id = {workstream.idea_id: workstream for workstream in workstreams}
+    return next(
+        by_id[idea_id] for idea_id, prerequisites in dependencies.items()
+        if idea_id in release_set and not prerequisites
+    )
+
+
 def _created_workstreams(
     *,
     proposal: Mapping[str, Any],
@@ -225,13 +263,16 @@ def _created_workstreams(
 ) -> tuple[CreatedWorkstream, ...]:
     rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
     workstreams: list[CreatedWorkstream] = []
-    for index, created in enumerate(created_backlog):
-        row = rows[index] if index < len(rows) else {}
+    rows_by_title = {str(row.get("title", "")): row for row in rows}
+    if len(rows_by_title) != len(rows):
+        raise ValueError("Greenfield workstream allocation has duplicate proposal titles")
+    for created in created_backlog:
+        row = rows_by_title.get(str(created.get("title", "")), {})
         idea_id = str(created.get("idea_id", "")).strip().upper()
         title = str(created.get("title", "")).strip() or str(row.get("title", "")).strip()
         raw_path = str(created.get("idea_path", "")).strip()
-        if not idea_id or not raw_path:
-            continue
+        if not idea_id or not raw_path or not row:
+            raise ValueError("Greenfield workstream allocation is missing its exact record binding")
         workstreams.append(
             CreatedWorkstream(
                 idea_id=idea_id,

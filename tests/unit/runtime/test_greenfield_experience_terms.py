@@ -18,7 +18,8 @@ def test_implementation_handoff_preserves_exact_authored_release_requirements(
 ) -> None:
     proposal = _canonical_model_authored_greenfield_fixture(tmp_path)
     created = [
-        {"idea_id": f"B-{index:03d}", "title": str(row["title"])}
+        {"idea_id": f"B-{index:03d}", "title": str(row["title"]),
+         "idea_path": str(tmp_path / f"workstream-{index}.md")}
         for index, row in enumerate(proposal["backlog"], start=1)
     ]
     workstream_ids = [str(row["idea_id"]) for row in created]
@@ -39,12 +40,14 @@ def test_implementation_handoff_preserves_exact_authored_release_requirements(
 
 
 @pytest.mark.parametrize("proof", ["Ω-Receipt", "Ω-Receipt with the operator signature"])
-def test_implementation_handoff_omits_only_exactly_contained_proof_copy(proof: str) -> None:
+def test_implementation_handoff_preserves_proof_under_separate_scope_labels(proof: str) -> None:
     first_path = "The operator records Ω-Receipt"
     prompt = _implementation_prompt(
-        start_id="B-701", title="Receipt capture", first_path=first_path,
-        release_requirements=proof,
+        target={"workstream_id": "B-701", "workstream_title": "Receipt capture",
+                "deliverable": "Record Ω-Receipt", "verification": "Read Ω-Receipt"},
+        first_path=first_path, release_requirements=proof,
     )
     assert first_path in prompt
     assert proof in prompt
-    assert prompt.count(proof) == 1
+    assert f"Release proof boundary:\n{proof}" in prompt
+    assert "Selected workstream deliverable:\nRecord Ω-Receipt" in prompt

@@ -1,7 +1,6 @@
 """Keep source citation identity separate from a proposed executable first run."""
 
 from copy import deepcopy
-from types import SimpleNamespace
 
 import pytest
 
@@ -18,7 +17,6 @@ from odylith.runtime.domain_intelligence.greenfield_candidate_intent_stage impor
     candidate_intent_stage_paths,
 )
 from odylith.runtime.domain_intelligence.greenfield_experience import (
-    build_component_handoffs,
     build_next_steps,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
@@ -118,7 +116,7 @@ def test_post_result_action_survives_authoring_custody_and_all_projections(tmp_p
     for owner, contract in (("components", "component_contract"), ("backlog", "provisional_workstream_contract")):
         supported = [event["event_quote"] for row in proposal[owner] for event in row[contract]["supporting_events"]]
         assert events[2]["event_quote"] in supported
-    created = [{"idea_id": f"B-{index:03d}", "title": row["title"]}
+    created = [{"idea_id": f"B-{index:03d}", "title": row["title"], "idea_path": str(tmp_path / f"workstream-{index}.md")}
                for index, row in enumerate(proposal["backlog"], 1)]
     handoff = build_next_steps(proposal=proposal, backlog_result={"created": created},
         first_release_workstreams=tuple(row["idea_id"] for row in created), release_selector="0.0.1")
@@ -219,10 +217,10 @@ def test_atlas_proposes_order_but_registry_and_radar_keep_source_support_ids(ord
                 assert support["event_quote"] == events[support["order"] - 1]["event_quote"]
 
 
-def test_implementation_handoffs_follow_the_same_proposed_walk(ordered_package):
+def test_implementation_handoffs_follow_the_same_proposed_walk(ordered_package, tmp_path):
     _, candidate, proposal, _ = ordered_package
     proposed = authored_first_run_text(candidate)
-    created = [{"idea_id": f"B-{index:03d}", "title": row["title"]}
+    created = [{"idea_id": f"B-{index:03d}", "title": row["title"], "idea_path": str(tmp_path / f"workstream-{index}.md")}
                for index, row in enumerate(proposal["backlog"], 1)]
     workstreams = tuple(row["idea_id"] for row in created)
     handoff = build_next_steps(
@@ -231,13 +229,6 @@ def test_implementation_handoffs_follow_the_same_proposed_walk(ordered_package):
     )
     assert proposed in handoff["implementation_prompt"]
     assert handoff["coding_readiness_contract"]["source_facts"]["accepted_first_path"] == proposed
-    components = build_component_handoffs(
-        proposal=proposal, backlog_result={"created": created}, first_release_workstreams=workstreams,
-        traceability_plan=SimpleNamespace(component_workstreams={
-            row["component_id"]: workstreams for row in proposal["components"]
-        }), release_selector="0.0.1",
-    )
-    assert all(row["accepted_first_path"] == proposed for row in components.values())
 
 
 def test_shared_fixture_never_derives_source_precedence_from_delivery_dependencies():

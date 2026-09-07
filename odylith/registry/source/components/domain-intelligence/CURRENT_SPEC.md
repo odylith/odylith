@@ -54,7 +54,7 @@ One permutation does not prove support for mutually exclusive branches, loops or
 all concurrency. Those generalization limits remain unqualified, not silently
 excluded from the product goal.
 
-Project handoff v2 keeps operational constraints and non-goals in distinct
+Project handoff v3 keeps operational constraints and non-goals in distinct
 source-bound fields and distinct, exact-copy prompt sections. Preconfirm checks
 both bindings and the copied scope content against canonical intent. Required
 operations must never become excluded work. Authored proposals no longer expose
@@ -67,8 +67,18 @@ The correction passes 1034 Greenfield runtime and 1036 install/browser checks,
 plus a fresh synthetic native 32-cell matrix and exact 113-file readback. Actual
 desktop/mobile selection retains both scope categories and source line breaks;
 the owning handoff style uses pre-wrap without header or layout changes.
-Flat-workstream next-step hierarchy and implementation-scope guidance remain a
-separate open defect; complete semantic and release qualification remain pending.
+Flat-workstream handoff now uses canonical allocations and explicit release
+membership, validates prerequisite closure, and selects a dependency-free task in
+canonical design order. The positional/alias fallback and dead component-handoff
+builder are removed. Handoff v3 binds the selected ID, title, component references,
+deliverable and verification separately from full release context. One shared
+scope block leads copyable Project prompts; preconfirm checks canonical bindings
+and exact visible copy. Readiness also keeps required and excluded facts distinct.
+Final proof passes 1085 Greenfield and 1035 install/Project browser tests, plus
+32 native synthetic surface cells and exact 113-file readback. Ten actual copy
+checks and Radar navigation pass across two widths. The runtime change removes
+a net 219 lines. This does not resolve semantic-role admission, general live
+quality, mobile readability or installed-release qualification.
 
 Atlas display values use one native Mermaid decimal-entity encoder, not HTML
 escaping or downstream prose repair. Entity/markup-looking input remains literal
@@ -122,6 +132,9 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`
 - **2026-09-07 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_event_ordering.py`
@@ -137,9 +150,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_view.py`, `tests/unit/runtime/test_greenfield_authored_atlas_view.py`
-- **2026-09-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_view.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

@@ -10,6 +10,40 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Flat-workstream handoff correction (2026-09-07)
+
+CB-303 records a concrete consumer handoff mismatch: allocation position invents
+a project umbrella, skips a valid standalone workstream, and conflates one coding
+slice with the whole release. Replace that positional owner with the existing
+typed workstream dependencies and allocation bindings. Keep the Project brief
+project-wide and make the selected first task's scope explicit across CLI,
+Project, Registry and preconfirm checks. Delete the old hierarchy selection;
+do not add a planning engine, model call or semantic prose rules. Validate flat
+and reordered dependencies, invalid bindings, full-release versus first-task
+scope, and the desktop/mobile governance matrix before accepting the correction.
+This P2 correction does not close the separate P1 semantic-role admission gap.
+The 60/90/120 limits and complete-package quality bar remain unchanged.
+
+The correction is implemented and independently reviewed. Handoff v3 binds one
+canonical dependency-free task across Project, CLI and preconfirm checks; exact
+release membership replaces positional and alias/slug fallback selection. Dead
+component-handoff code is removed. Shared task scope leads every copyable Project
+prompt and cannot disagree with an independently reconstructed canonical target.
+The runtime is a net 219 lines smaller. Final proof passes 1085 Greenfield and
+1035 install/Project browser tests, 32 native seven-surface cells and exact
+113-file readback. The earlier 19 incomplete-fixture failures are corrected with
+canonical allocations, not skipped. Forward dependencies select B-004 instead
+of first-allocated B-001; all four release tasks remain separate. Ten selected-copy
+checks and exact Radar navigation pass at both widths. Evidence:
+`/private/tmp/odylith-flat-handoff-final.GZmPFj/review.md`.
+
+No fresh Greenfield provider call or holdout access occurred. The semantic review
+rejects deleting product_story: it can uniquely carry product purpose, so the
+change would move or hide inference rather than solve role admission. The P1,
+mobile density/Atlas fit, complete live quality and installed-release gates remain
+open. Do not confuse a 68.121-second synthetic compile-and-browser diagnostic with
+consumer request latency or acceptance of the previously rejected live package.
+
 ### Event-order authority candidate (2026-09-07)
 
 The bounded external comparison accepts source-event identities plus exact-cited

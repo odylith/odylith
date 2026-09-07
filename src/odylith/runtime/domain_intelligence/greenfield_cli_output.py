@@ -67,22 +67,20 @@ def _print_created_surfaces(result: Mapping[str, Any]) -> None:
 
 
 def _print_next_steps(next_steps: Mapping[str, Any]) -> None:
-    project_id = str(next_steps.get("project_workstream_id", "")).strip()
-    project_title = str(next_steps.get("project_workstream_title", "")).strip()
+    project_title = str(next_steps.get("project_title", "")).strip()
     start_id = str(next_steps.get("start_workstream_id", "")).strip()
     start_title = str(next_steps.get("start_workstream_title", "")).strip()
     next_release = str(next_steps.get("release_selector", "")).strip()
-    project_prompt = str(next_steps.get("project_first_prompt", "")).strip()
-    if project_id:
-        print(f"- project-first workstream: {project_id} {project_title}".rstrip())
+    project_prompt = str(next_steps.get("project_review_prompt", "")).strip()
+    if project_title:
+        print(f"- project: {project_title}")
         print("- project story: odylith/index.html?tab=project")
-        print(f"- workstream detail: odylith/radar/radar.html?view=plan&workstream={project_id}")
         print("- project gate: review direction choices and readiness gates before opening a technical plan; do not edit source from this closeout")
     if project_prompt:
         print(f"- next project prompt: {project_prompt}")
     if start_id:
-        print(f"- future first implementation lane after gates: {start_id} {start_title}".rstrip())
-        print(f"- child lane: odylith/radar/radar.html?view=plan&workstream={start_id}")
+        print(f"- first dependency-free workstream after gates: {start_id} {start_title}".rstrip())
+        print(f"- workstream detail: odylith/radar/radar.html?view=plan&workstream={start_id}")
     if next_release:
         print(f"- first release: {next_release}")
     choices = next_steps.get("customization_options", [])
@@ -105,8 +103,13 @@ def _print_next_steps(next_steps: Mapping[str, Any]) -> None:
             print(f"  {index}. {step}")
     gates = next_steps.get("validation_gates", [])
     if isinstance(gates, list) and gates:
-        print("- proof to name in the child plan:")
+        print("- selected workstream proof to name in the plan:")
         for gate in gates[:6]:
+            print(f"  - {gate}")
+    release_gates = next_steps.get("release_validation_gates", [])
+    if isinstance(release_gates, list) and release_gates:
+        print("- release-wide proof (not a claim that the first workstream completes the release):")
+        for gate in release_gates:
             print(f"  - {gate}")
     commands = next_steps.get("verification_commands", [])
     if isinstance(commands, list) and commands:

@@ -30,8 +30,13 @@ def test_handoff_keeps_required_operations_separate_from_excluded_scope(
         step_id=step_id, project_title="Receipt Desk", accepted_first_path="Publish the receipt.",
         first_release_workstream_refs=("B-042",), proof_boundary="A reviewer sees the receipt.",
         operational_constraints=constraints, excluded_scope=non_goals,
+        implementation_target={
+            "workstream_id": "B-042", "workstream_title": "Receipt capture",
+            "deliverable": "Publish the receipt.", "verification": "A reviewer sees the receipt.",
+            "component_refs": ("receipt",),
+        },
     )
-    assert contract["schema_version"] == "odylith.greenfield.project-handoff-step.v2"
+    assert contract["schema_version"] == "odylith.greenfield.project-handoff-step.v3"
     assert contract["fact_bindings"]["operational_constraints"] == constraints
     assert contract["fact_bindings"]["excluded_scope"] == non_goals
     assert "preserve_operational_constraints" in contract["required_actions"]
@@ -142,17 +147,17 @@ def test_coding_readiness_contract_has_exact_gate_policies_and_deterministic_ren
             "and test toolchain before source planning."
         ),
         (
-            "Bind B-042 Dock Console Slice to an explicit source boundary and target files while "
-            "preserving the accepted first path exactly: Dock attendant Ivo opens "
+            "Bind B-042 Dock Console Slice to its own source boundary and target files. "
+            "Preserve this first run as release context, not the scope of this one workstream: Dock attendant Ivo opens "
             "**`berth-α`** and records the reviewed placement."
         ),
         (
-            "Preserve the authored operating and scope boundary during planning and source edits: "
-            "Latency ≤ 60 s; Do **not** schedule vessels"
+            "Operational constraints — preserve these requirements:\nLatency ≤ 60 s\n\n"
+            "Excluded scope — preserve these exclusions:\nDo **not** schedule vessels"
         ),
         (
-            "Require validation evidence before governed records refresh.\n"
-            "Authored proof boundary:\n"
+            "Prove the selected workstream before refreshing its records; withhold release readiness until release-wide proof passes.\n"
+            "Release-wide proof boundary:\n"
             "Reviewer sees the signed café receipt\n"
             "Evidence requirements:\n"
             "Keep `audit.md`; **Retain receipt**"
@@ -183,7 +188,7 @@ def test_coding_readiness_renderer_preserves_authored_terminal_punctuation_once(
     assert contract["source_facts"]["proof_boundary"] == proof_boundary
     proof_gate = render_coding_readiness_gates(contract)[-1]
     assert (
-        f"Authored proof boundary:\n{proof_boundary}\nEvidence requirements:"
+        f"Release-wide proof boundary:\n{proof_boundary}\nEvidence requirements:"
         in proof_gate
     )
     assert f"{proof_boundary}." not in proof_gate

@@ -22,6 +22,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
 from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
     build_project_handoff_step_contract,
     render_project_handoff_scope,
+    render_selected_workstream_scope,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
     decision_copy,
@@ -99,9 +100,7 @@ def build_authored_greenfield_payload(
         first_path=first_path,
         proof_boundary=proof_boundary,
         visible_result=visible_result,
-        event_quotes=event_quotes,
         components=components,
-        jobs=jobs,
         operational_constraints=operational_constraints,
         excluded_scope=non_goals,
         context=_mapping(proposal.get("_source_launch") or proposal.get("source_launch")),
@@ -421,9 +420,10 @@ def _job_rows(
 ) -> list[tuple[str, str, str, str]]:
     created = _mapping(accepted.get("created"))
     created_rows = _mapping_rows(created.get("workstreams"))
+    created_by_title = {_first_text(row, "title"): row for row in created_rows}
     rows: list[tuple[str, str, str, str]] = []
-    for index, item in enumerate(backlog[:6]):
-        created_row = created_rows[index] if index < len(created_rows) else {}
+    for item in backlog:
+        created_row = created_by_title.get(_first_text(item, "title"), {})
         title = _first_text(item, "title", "name") or "Authored workstream"
         body = _first_text(
             item,
@@ -505,24 +505,23 @@ def _source_launch(
     first_path: str,
     proof_boundary: str,
     visible_result: str,
-    event_quotes: Sequence[str],
     components: Sequence[Mapping[str, Any]],
-    jobs: Sequence[tuple[str, str, str, str]],
     operational_constraints: Sequence[str],
     excluded_scope: Sequence[str],
     context: Mapping[str, Any],
 ) -> dict[str, Any]:
-    event_sequence = " | ".join(event_quotes)
     component_ids = [
         value
         for row in components
         if (value := _first_text(row, "component_id", "id"))
     ]
-    job_ids = [row[3] for row in jobs if len(row) >= 4 and row[3]]
-    target = _first_text(context, "start_workstream_id", "project_workstream_id")
+    target = _mapping(context.get("implementation_target"))
+    workstream_refs = _text_values(context.get("first_release_workstream_ids"))
     verification_commands = _text_values(context.get("verification_commands"))
-    component_text = ", ".join(component_ids) or "the authored component boundary"
-    job_text = ", ".join(job_ids) or target or "the authored first workstream"
+    release_context = (
+        f"Release context — not the scope of this one workstream:\n{first_path}\n\n"
+        f"Release proof boundary:\n{proof_boundary}\n\nRelease visible result:\n{visible_result}"
+    )
     prompts = [
         {
             "step_id": "choose_language",
@@ -530,7 +529,7 @@ def _source_launch(
             "when": "Use this before creating the first source-editable plan.",
             "prompt": (
                 f"Choose and record the implementation language and runtime for {title}. "
-                f"Preserve this proposed walkthrough and its exact source actions: {first_path}"
+                f"Use the selected workstream as the first implementation scope.\n\n{release_context}"
             ),
             "result": "The implementation runtime is explicit before source planning.",
             "stop": "Stop after the language and runtime are recorded.",
@@ -540,8 +539,8 @@ def _source_launch(
             "label": "Open first implementation plan",
             "when": "Use this after the implementation runtime is explicit.",
             "prompt": (
-                f"Create the first implementation plan for {title} and {job_text}. "
-                f"Preserve this proposed first-run order and its exact source actions: {event_sequence}"
+                "Create the first implementation plan for the selected workstream.\n"
+                f"Keep the plan bounded to this workstream.\n\n{release_context}"
             ),
             "result": "The first source boundary and its proof obligations are planned.",
             "stop": "Stop before source edits until the plan is accepted.",
@@ -551,48 +550,50 @@ def _source_launch(
             "label": "Implement first runnable slice",
             "when": "Use this only after the first implementation plan is accepted.",
             "prompt": (
-                f"Implement the smallest runnable slice for {title}. Keep component IDs {component_text}. "
-                f"Preserve this proposed walkthrough and its exact source actions: {first_path}"
+                "Implement the selected workstream using its bound component IDs.\n"
+                f"Do not implement other release workstreams in this slice.\n\n{release_context}"
             ),
-            "result": "The smallest authored path exists as runnable source.",
-            "stop": "Stop when the authored path is runnable and no excluded scope was added.",
+            "result": "The selected workstream deliverable exists as runnable source.",
+            "stop": "Stop when the selected deliverable is implemented and no excluded scope was added.",
         },
         {
             "step_id": "prove_behavior",
             "label": "Run authored proof",
             "when": "Use this after the first runnable slice exists.",
             "prompt": (
-                f"Validate {title} against this authored proof boundary: {proof_boundary}. "
-                f"Confirm this terminal visible result exactly: {visible_result}. "
-                "Run every verification command bound to this typed handoff step."
+                "Validate the selected workstream against its selected verification.\n\n"
+                "Run every verification command bound to this handoff. Record remaining release "
+                f"proof without claiming it has passed.\n\n{release_context}"
             ),
             "verification_commands": list(verification_commands),
-            "result": "The authored path has reviewer-visible validation evidence.",
-            "stop": "Stop if the proof boundary or terminal visible result is not satisfied.",
+            "result": "The selected workstream has reviewer-visible validation evidence.",
+            "stop": "Stop if the selected workstream verification is not satisfied.",
         },
         {
             "step_id": "refresh_governance",
             "label": "Refresh governed records",
             "when": "Use this only after the authored proof passes.",
             "prompt": (
-                f"Refresh governed project records for {title}. Preserve component IDs {component_text} "
-                f"and workstream IDs {job_text}."
+                "Refresh governed records for the selected workstream and its bound components. "
+                f"Preserve the full release membership: {', '.join(workstream_refs)}. "
+                "Keep unimplemented workstreams open and withhold release readiness."
             ),
             "result": "Governed records reflect the validated source implementation.",
             "stop": "Stop after refreshed records validate against the implemented source.",
         },
     ]
-    workstream_refs = _unique([*job_ids, target])
     scope_copy = render_project_handoff_scope(
         operational_constraints=operational_constraints, excluded_scope=excluded_scope,
     )
     for row in prompts:
-        row["prompt"] = f"{row['prompt']}\n\n{scope_copy}"
+        selected_copy = render_selected_workstream_scope(target) if target else ""
+        row["prompt"] = f"{selected_copy}\n\n{row['prompt']}\n\n{scope_copy}"
         row["contract"] = build_project_handoff_step_contract(
             step_id=str(row["step_id"]),
             project_title=title,
             accepted_first_path=first_path,
             first_release_workstream_refs=workstream_refs,
+            implementation_target=target,
             proof_boundary=proof_boundary,
             visible_result=visible_result,
             operational_constraints=operational_constraints,
@@ -602,7 +603,7 @@ def _source_launch(
         )
     return {
         "title": "First source creation sequence",
-        "note": "This sequence carries the proposed first run and its exact source actions into implementation work.",
+        "note": "Plan and prove the first dependency-free workstream; the complete first run remains release context.",
         "steps": [row["label"] for row in prompts],
         "prompts": prompts,
     }
@@ -617,9 +618,10 @@ def _governance_titles(
     titles: dict[str, str] = {}
     created = _mapping(accepted.get("created"))
     created_workstreams = _mapping_rows(created.get("workstreams"))
+    created_by_title = {_first_text(row, "title"): row for row in created_workstreams}
     created_diagrams = _sequence(created.get("diagrams"))
-    for index, row in enumerate(backlog):
-        created_row = created_workstreams[index] if index < len(created_workstreams) else {}
+    for row in backlog:
+        created_row = created_by_title.get(_first_text(row, "title"), {})
         reference = _first_text(row, "idea_id", "workstream_id", "id") or _first_text(
             created_row,
             "idea_id",

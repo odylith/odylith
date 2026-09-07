@@ -1,215 +1,57 @@
-"""Contract proof for direct model-authored completion handoff projection."""
+"""Contract proof for canonical selected-slice and release-context handoffs."""
 
 from __future__ import annotations
 
-from types import SimpleNamespace
+from pathlib import Path
 
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_experience
-from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
-    AUTHORED_PROJECTION_ORIGIN,
-    GreenfieldAuthoredSemanticsError,
-    authored_semantics_mapping,
-)
-from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
-    render_coding_readiness_gates,
-)
-from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    structural_design_fixture,
-)
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import authored_first_run_text
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import GreenfieldAuthoredSemanticsError
+from odylith.runtime.domain_intelligence.greenfield_handoff_contract import render_coding_readiness_gates
+from tests.unit.runtime.greenfield_proposal_fixtures import _canonical_model_authored_greenfield_fixture
 
 
-def _typed_relation(
-    *,
-    path: str,
-    event: str,
-    order: int,
-    actor_kind: str,
-    actor_fact_quote: str,
-    action_verb_quote: str,
-    target_quote: str,
-    visible_result_quote: str = "",
-) -> dict[str, object]:
-    path_bytes = path.encode("utf-8")
-    event_bytes = event.encode("utf-8")
-    event_start = path_bytes.index(event_bytes)
-    return {
-        "order": order,
-        "source_start_byte": event_start,
-        "source_end_byte": event_start + len(event_bytes),
-        "event_start_byte": event_start,
-        "event_end_byte": event_start + len(event_bytes),
-        "actor_kind": actor_kind,
-        "actor_fact_path": "/title" if actor_kind == "product" else "/human_actors/0",
-        "actor_fact_quote": actor_fact_quote,
-        "owner_system_path": "/title" if actor_kind == "product" else "",
-        "owner_system_quote": "Harbor Desk" if actor_kind == "product" else "",
-        "event_quote": event,
-        "action_verb_quote": action_verb_quote,
-        "target_quote": target_quote,
-        "visible_result_quote": visible_result_quote,
-    }
-
-
-def test_authored_handoff_preserves_verified_fields_without_legacy_reconstruction(
-) -> None:
-    first_path = (
-        "Dock attendant Ivo enters a vessel tag, Harbor Desk records berth occupancy, "
-        "and Harbor Desk shows the placement with the complete source-owned retention receipt"
-    )
-    proof_boundary = "Verify the placement and retention receipt"
-    success_metrics = [
-        "Berth placement stays visible",
-        "Retention receipt stays source-owned",
-        "Replay preserves the accepted placement",
-        "Missing tags remain blocked",
-        "Invalid tags return a reviewable result",
-        "Handoff evidence names the berth",
-        "Operator review preserves **APIv7** exactly",
+def test_authored_handoff_preserves_verified_fields_without_legacy_reconstruction(tmp_path: Path) -> None:
+    proposal = _canonical_model_authored_greenfield_fixture(tmp_path)
+    created = [
+        {"idea_id": f"B-{index:03d}", "title": row["title"],
+         "idea_path": str(tmp_path / f"workstream-{index}.md")}
+        for index, row in enumerate(proposal["backlog"], 1)
     ]
-    relations = (
-        _typed_relation(
-            path=first_path,
-            event="Dock attendant Ivo enters a vessel tag",
-            order=1,
-            actor_kind="human",
-            actor_fact_quote="Dock attendant Ivo",
-            action_verb_quote="enters",
-            target_quote="a vessel tag",
-        ),
-        _typed_relation(
-            path=first_path,
-            event="Harbor Desk records berth occupancy",
-            order=2,
-            actor_kind="product",
-            actor_fact_quote="Harbor Desk",
-            action_verb_quote="records",
-            target_quote="berth occupancy",
-        ),
-        _typed_relation(
-            path=first_path,
-            event=(
-                "Harbor Desk shows the placement with the complete source-owned retention receipt"
-            ),
-            order=3,
-            actor_kind="product",
-            actor_fact_quote="Harbor Desk",
-            action_verb_quote="shows",
-            target_quote="the placement",
-            visible_result_quote=(
-                "the placement with the complete source-owned retention receipt"
-            ),
-        ),
+    handoff = greenfield_experience.build_next_steps(
+        proposal=proposal, backlog_result={"created": created},
+        first_release_workstreams=tuple(row["idea_id"] for row in created),
+        release_selector="0.0.1",
     )
-    proposal = {
-        "projection_origin": AUTHORED_PROJECTION_ORIGIN,
-        "intent": {
-            "title": "Harbor Desk",
-            "first_path": first_path,
-            "proof_boundary": proof_boundary,
-            "human_actors": ["Dock attendant Ivo"],
-            "internal_systems": [],
-            "evidence_requirements": ["Source evidence preserves berth history"],
-            "operational_constraints": [],
-            "non_goals": [],
-            "success_metrics": success_metrics,
-            "authored_semantics": authored_semantics_mapping(
-                relations,
-                provisional_design=structural_design_fixture((1, 2, 3)),
-            ),
-        },
-        "project_brief": {
-            "customization_options": [],
-            "coding_readiness_gates": [proof_boundary, "Source evidence preserves berth history"],
-        },
-        "backlog": [
-            {
-                "title": "Deliver Harbor Desk",
-                "recommended_first_slice": first_path,
-                "validation": [proof_boundary],
-                "success_metrics": ["The berth map shows the placement"],
-            }
-        ],
-    }
-    backlog_result = {
-        "created": [{"idea_id": "B-001", "title": "Deliver Harbor Desk"}],
-    }
-
+    intent = proposal["intent"]
+    selected = intent["authored_semantics"]["provisional_design"]["workstreams"][0]
+    proposed_run = authored_first_run_text(intent)
+    assert proposed_run in handoff["implementation_prompt"]
+    assert intent["proof_boundary"] in handoff["implementation_prompt"]
+    assert selected["deliverable"] in handoff["implementation_prompt"]
+    assert selected["verification"] in handoff["implementation_prompt"]
+    readiness = handoff["coding_readiness_contract"]
+    assert readiness["source_facts"]["accepted_first_path"] == proposed_run
+    assert readiness["source_facts"]["proof_boundary"] == intent["proof_boundary"]
+    assert readiness["source_facts"]["evidence_requirements"] == tuple(intent["evidence_requirements"])
+    assert handoff["coding_readiness_gates"] == render_coding_readiness_gates(readiness)
+    assert selected["verification"] in handoff["validation_gates"]
+    assert intent["proof_boundary"] in handoff["release_validation_gates"]
+    assert handoff["project_title"] == intent["title"]
+    assert handoff["start_workstream_id"] == "B-001"
     for name in (
-        "_first_path_summary",
-        "_first_release_requirement_sentence",
-        "_preview_safe_fragment",
-        "_semantic_anchor_gate",
+        "_first_path_summary", "_first_release_requirement_sentence", "_preview_safe_fragment",
+        "_semantic_anchor_gate", "build_component_handoffs", "_project_context",
+        "_candidate_start_ids", "_project_first_prompt", "_proposal_row_for_created_id",
     ):
         assert not hasattr(greenfield_experience, name)
-
-    handoff = greenfield_experience.build_next_steps(
-        proposal=proposal,
-        backlog_result=backlog_result,
-        first_release_workstreams=("B-001",),
-        release_selector="0.0.1",
-    )
-
-    proposed_first_run = "Proposed first run:\n" + "\n".join(row["event_quote"] for row in relations)
-    assert proposed_first_run in handoff["implementation_prompt"]
-    assert proposal["intent"]["first_path"] == first_path
-    assert proof_boundary in handoff["implementation_prompt"]
-    readiness_contract = handoff["coding_readiness_contract"]
-    assert readiness_contract["source_facts"]["accepted_first_path"] == proposed_first_run
-    assert readiness_contract["source_facts"]["proof_boundary"] == proof_boundary
-    assert readiness_contract["source_facts"]["evidence_requirements"] == (
-        "Source evidence preserves berth history",
-    )
-    assert handoff["coding_readiness_gates"] == render_coding_readiness_gates(
-        readiness_contract
-    )
-    assert handoff["validation_gates"] == [
-        proof_boundary,
-        *success_metrics,
-        "The berth map shows the placement",
-    ]
-
-    proposal["components"] = [
-        {
-            "component_id": "harbor-desk",
-            "label": "Harbor Desk",
-            "component_contract": {
-                "owner_system": "Harbor Desk",
-                "responsibility_facts": [
-                    "the placement with the complete source-owned retention receipt"
-                ],
-            },
-        }
-    ]
-    component_handoff = greenfield_experience.build_component_handoffs(
-        proposal=proposal,
-        backlog_result=backlog_result,
-        first_release_workstreams=("B-001",),
-        traceability_plan=SimpleNamespace(
-            component_workstreams={"harbor-desk": ("B-001",)}
-        ),
-        release_selector="0.0.1",
-    )["harbor-desk"]
-    assert component_handoff["accepted_first_path"] == proposed_first_run
-    assert component_handoff["proof_boundary"] == proof_boundary
-    assert component_handoff["first_slice"] == first_path
-    assert component_handoff["success_metrics"] == success_metrics
-    assert component_handoff["validation_gates"] == [
-        proof_boundary,
-        "The berth map shows the placement",
-        *success_metrics,
-    ]
-    assert component_handoff["component_contract"] == proposal["components"][0][
-        "component_contract"
-    ]
 
 
 def test_authored_handoff_rejects_relation_free_proposals() -> None:
     with pytest.raises(GreenfieldAuthoredSemanticsError):
         greenfield_experience.build_next_steps(
-            proposal={"intent": {"title": "Legacy"}},
-            backlog_result={"created": []},
-            first_release_workstreams=(),
-            release_selector="0.0.1",
+            proposal={"intent": {"title": "Legacy"}}, backlog_result={"created": []},
+            first_release_workstreams=(), release_selector="0.0.1",
         )

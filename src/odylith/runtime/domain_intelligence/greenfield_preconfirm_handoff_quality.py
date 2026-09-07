@@ -31,8 +31,10 @@ from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
     coding_readiness_contract_issues,
     project_handoff_step_contract_issues,
     render_project_handoff_scope,
+    render_selected_workstream_scope,
 )
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
+from odylith.runtime.domain_intelligence.greenfield_traceability import first_executable_workstream
 from odylith.runtime.domain_intelligence.greenfield_scalar_values import (
     nested_text_values as text_values,
 )
@@ -180,6 +182,10 @@ def _authored_project_dashboard_contract_issues(
     expected_scope_copy = render_project_handoff_scope(
         operational_constraints=expected_constraints, excluded_scope=expected_excluded_scope,
     )
+    try:
+        expected_target = _canonical_implementation_target(package)
+    except ValueError as exc:
+        return [*issues, f"model-authored Project handoff has invalid canonical implementation target: {exc}"]
     for index, (prompt, expected_step_id) in enumerate(
         zip(prompts, PROJECT_HANDOFF_STEP_SEQUENCE, strict=True),
         start=1,
@@ -197,6 +203,10 @@ def _authored_project_dashboard_contract_issues(
             continue
         if bindings.get("project_title") != intent.get("title"):
             issues.append(f"model-authored Project handoff step {index} drifted from intent.title")
+        if not _implementation_target_matches(bindings.get("implementation_target"), expected_target):
+            issues.append(f"model-authored Project handoff step {index} drifted from canonical implementation target")
+        if not isinstance(prompt.get("prompt"), str) or prompt["prompt"].count(render_selected_workstream_scope(expected_target)) != 1:
+            issues.append(f"model-authored Project handoff step {index} lost its exact selected implementation scope copy")
         if bindings.get("accepted_first_path") != authored_first_run_text(intent):
             issues.append(f"model-authored Project handoff step {index} drifted from the proposed first run")
         if bindings.get("proof_boundary") != intent.get("proof_boundary"):
@@ -213,15 +223,13 @@ def _authored_project_dashboard_contract_issues(
             issues.append(f"model-authored Project handoff step {index} drifted from component ids")
         if _exact_rows(bindings.get("verification_commands")) != expected_commands:
             issues.append(f"model-authored Project handoff step {index} drifted from verification commands")
-        workstream_refs = {
-            clean_text(item).upper()
-            for item in _exact_rows(bindings.get("first_release_workstream_refs"))
-            if clean_text(item)
-        }
+        workstream_refs = _exact_rows(bindings.get("first_release_workstream_refs"))
+        if workstream_refs != tuple(package.release_workstream_ids):
+            issues.append(f"model-authored Project handoff step {index} drifted from exact release membership")
         if expected_step_id != "choose_language":
             if start_id not in workstream_refs:
                 issues.append(f"model-authored Project handoff step {index} lost its start workstream")
-            if created_ids and not workstream_refs.issubset(created_ids):
+            if created_ids and not set(workstream_refs).issubset(created_ids):
                 issues.append(f"model-authored Project handoff step {index} contains an unallocated workstream")
     return issues
 
@@ -241,13 +249,26 @@ def next_steps_preview_issues(
         if clean_text(row.get("idea_id"))
     }
     start_id = clean_text(next_steps_preview.get("start_workstream_id")).upper()
-    project_id = clean_text(next_steps_preview.get("project_workstream_id")).upper()
     if not start_id:
         issues.append("operator next-steps preview must identify the first implementation workstream")
     elif created_ids and start_id not in created_ids:
         issues.append("operator next-steps preview start workstream drifted from Radar prewrite output")
-    if project_id and created_ids and project_id not in created_ids:
-        issues.append("operator next-steps preview project workstream drifted from Radar prewrite output")
+    if not semantic_checks:
+        try:
+            expected_target = _canonical_implementation_target(package)
+            if (
+                not _implementation_target_matches(next_steps_preview.get("implementation_target"), expected_target)
+                or start_id != expected_target["workstream_id"]
+                or next_steps_preview.get("start_workstream_title") != expected_target["workstream_title"]
+            ):
+                issues.append("operator next-steps preview drifted from canonical implementation target")
+            visible_prompt = next_steps_preview.get("implementation_prompt")
+            if not isinstance(visible_prompt, str) or visible_prompt.count(render_selected_workstream_scope(expected_target)) != 1:
+                issues.append("operator next-steps preview lost its exact selected implementation scope copy")
+        except ValueError as exc:
+            issues.append(f"operator next-steps preview has invalid canonical implementation target: {exc}")
+        if _exact_rows(next_steps_preview.get("first_release_workstream_ids")) != tuple(package.release_workstream_ids):
+            issues.append("operator next-steps preview drifted from exact release membership")
     if clean_text(next_steps_preview.get("release_selector")) != clean_text(package.release_selector):
         issues.append("operator next-steps preview release selector drifted from requested release")
     _require_preview_text(
@@ -281,6 +302,27 @@ def next_steps_preview_issues(
     if semantic_checks:
         issues.append("operator next-steps preview requires the authored coding-readiness contract")
     return issues
+
+
+def _canonical_implementation_target(package: GreenfieldCompletionPackage) -> dict[str, Any]:
+    selected = first_executable_workstream(
+        proposal=package.proposal,
+        created_backlog=mapping_rows((package.backlog_result or {}).get("created")),
+        first_release_workstreams=package.release_workstream_ids,
+    )
+    design = selected.row["provisional_workstream_contract"]["provisional_workstream"]
+    return {
+        "workstream_id": selected.idea_id, "workstream_title": design["title"],
+        "deliverable": design["deliverable"], "verification": design["verification"],
+        "component_refs": tuple(design["component_keys"]),
+    }
+
+
+def _implementation_target_matches(value: Any, expected: Mapping[str, Any]) -> bool:
+    return isinstance(value, Mapping) and set(value) == set(expected) and all(
+        _exact_rows(value[key]) == expected[key] if key == "component_refs" else value[key] == expected[key]
+        for key in expected
+    )
 
 
 def _require_preview_text(

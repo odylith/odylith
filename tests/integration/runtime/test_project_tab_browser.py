@@ -29,6 +29,7 @@ from tests.unit.runtime.test_greenfield_authored_project_dashboard import (
     _accepted_preview,
     _handoff_scope_proposal,
     _result_first_proposal,
+    _source_launch_context,
 )
 
 
@@ -444,11 +445,12 @@ def test_project_handoff_scope_is_visible_and_copyable_at_both_widths(tmp_path: 
     )
     payloads = {}
     for name, constraints, non_goals in cases:
+        proposal = _handoff_scope_proposal(constraints=constraints, non_goals=non_goals)
         payload = preview_project_dashboard_payload(
             root=tmp_path,
-            proposal=_handoff_scope_proposal(constraints=constraints, non_goals=non_goals),
-            accepted_project_preview=_accepted_preview(),
-            source_launch_context={"start_workstream_id": "B-701"},
+            proposal=proposal,
+            accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
+            source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
         )
         payloads[name] = payload
         _write_project_page(tmp_path / f"{name}.html", payload)
@@ -482,6 +484,7 @@ def test_project_handoff_scope_is_visible_and_copyable_at_both_widths(tmp_path: 
                               return selection.toString();
                             }""")
                             assert copied_text == handoff["prompt"]
+                            assert copied_text.startswith("Selected workstream: B-701")
                             assert copied_text.endswith(expected_block)
                         _assert_project_sections_do_not_overflow(page, [".project-host-handoff"])
                         page.evaluate("window.getSelection().removeAllRanges()")
@@ -496,8 +499,8 @@ def test_project_handoff_scope_is_visible_and_copyable_at_both_widths(tmp_path: 
 def test_project_tab_result_first_source_renders_labeled_proposed_order_at_both_widths(tmp_path: Path) -> None:
     proposal = _result_first_proposal()
     payload = preview_project_dashboard_payload(
-        root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(),
-        source_launch_context={"start_workstream_id": "B-701"},
+        root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
+        source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
     )
     _write_project_page(tmp_path / "index.html", payload)
     expected_events = PROPOSED_FIRST_RUN.splitlines()[1:]

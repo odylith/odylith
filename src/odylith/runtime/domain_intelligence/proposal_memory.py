@@ -194,14 +194,16 @@ def _source_launch_payload(
 ) -> dict[str, Any]:
     source = value if isinstance(value, Mapping) else {}
     allowed = (
-        "project_workstream_id",
-        "project_workstream_title",
+        "project_title",
+        "first_release_workstream_ids",
+        "implementation_target",
         "start_workstream_id",
         "start_workstream_title",
         "release_selector",
         "implementation_prompt",
         "coding_readiness_gates",
         "validation_gates",
+        "release_validation_gates",
         "verification_commands",
         "coding_readiness_contract",
     )

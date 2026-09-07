@@ -22,9 +22,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     product_intent_authority_snapshot_hash,
 )
 from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import atomic_fact_ledger_hash
-from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
-    AUTHORED_PROJECTION_ORIGIN,
-)
+from odylith.runtime.domain_intelligence.greenfield_authored_proposal import build_authored_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
 )
@@ -125,14 +123,11 @@ def test_serialized_authored_transaction_contains_only_sealed_component_relation
         for key, value in candidate.items()
         if key != PRODUCT_INTENT_AUTHORITY_KEY
     }
-    proposal = {
-        "projection_origin": AUTHORED_PROJECTION_ORIGIN,
-        "intent": intent,
-        PRODUCT_INTENT_AUTHORITY_KEY: authority,
-        "backlog": [],
-        "components": [],
-        "diagrams": [],
-    }
+    proposal = build_authored_greenfield_proposal(
+        observed_source={"source_posture": "operator prompt evidence"},
+        release_selector="0.0.1", confirmed_intent=intent,
+    )
+    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = authority
     package = compiled_greenfield_package_fixture(proposal, repo_root=tmp_path)
     quality_manifest = {
         **_approved_quality_manifest(),

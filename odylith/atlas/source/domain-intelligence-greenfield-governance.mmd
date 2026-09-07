@@ -13,7 +13,7 @@ flowchart TB
     subgraph projection_lane["Deterministic package construction"]
       direction LR
       custody["Custody and invariant validation<br/>Stable source IDs and explicit result producer<br/>No chronology from source-list position"]
-      projections["Deterministic source and design projections<br/>4–5 Radar, 4–5 Registry, five Atlas views<br/>Required constraints and exclusions stay distinct"]
+      projections["Deterministic source and design projections<br/>4–5 Radar, 4–5 Registry, five Atlas views<br/>Exact release membership and dependency-ready task"]
       quality["Pre-confirm custody and structural gates<br/>Semantic-role admission P1 remains open"]
       timing["Proposal timing gate<br/>Standard at 60 seconds<br/>Rescue at 90; deep at 120"]
       custody --> projections --> quality --> timing

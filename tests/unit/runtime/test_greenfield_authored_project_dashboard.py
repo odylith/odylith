@@ -19,6 +19,7 @@ from odylith.runtime.domain_intelligence.greenfield_completion_types import (
 from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
     PROJECT_HANDOFF_STEP_SCHEMA_VERSION,
     project_handoff_step_contract_issues,
+    render_selected_workstream_scope,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
     build_authored_greenfield_proposal,
@@ -32,6 +33,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_handoff_quality import (
     project_dashboard_preview_issues,
 )
+from odylith.runtime.domain_intelligence.greenfield_experience import build_next_steps
 from odylith.runtime.project_intelligence import greenfield
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     StructuredAuthoringProvider,
@@ -70,7 +72,7 @@ def _event_span(event: str) -> tuple[int, int]:
 
 
 def _proposal() -> dict[str, object]:
-    """Isolated renderer fixture; not a full-package quality/cardinality proof."""
+    """Unusual source semantics projected through the real canonical package builder."""
     first_event = "Registry Custodian QuOrates one Æther packet."
     second_event = "Meridian Engine vitrifies the Æther packet into Ω-Receipt."
     first_start, first_end = _event_span(first_event)
@@ -112,121 +114,87 @@ def _proposal() -> dict[str, object]:
             "visible_result_quote": "Ω-Receipt",
         },
     )
-    return {
-        "schema_version": "odylith.greenfield.proposal.v1",
-        "mode": "host_reasoned_greenfield_proposal",
-        "projection_origin": AUTHORED_PROJECTION_ORIGIN,
-        "intent": {
-            "title": "eXact Ω Forge",
-            "product_story": PRODUCT_STORY,
-            "problem": "APIv7 evidence loses exact custody during manual relay.",
-            "customer": "Registry Custodian",
-            "opportunity": "Preserve one reviewable evidence transfer.",
-            "product_view": "A source-custodied Æther transfer product.",
-            "first_path": FIRST_PATH,
-            "state_object": "Æther packet",
-            "proof_boundary": PROOF_BOUNDARY,
-            "human_actors": ["Registry Custodian", "Field Ombud"],
-            "internal_systems": ["Meridian Engine"],
-            "external_systems": ["APIv7 Archive"],
-            "non_goals": ["Batch Æther migration"],
-            "operational_constraints": ["Preserve APIv7 casing"],
-            "evidence_requirements": ["Replay the two exact event quotes"],
-            "success_metrics": ["One Ω-Receipt is visible"],
-            "authored_semantics": authored_semantics_mapping(
-                relations,
-                provisional_design=structural_design_fixture((1, 2)),
-                first_path_context_relations=(
-                    {
-                        "context_kind": "state_object",
-                        "fact_path": "/state_object",
-                        "fact_quote": "Æther packet",
-                        "source_start_byte": state_start,
-                        "source_end_byte": state_start + len("Æther packet".encode("utf-8")),
-                        "first_path_event_order": 2,
-                    },
-                    {
-                        "context_kind": "external_system",
-                        "fact_path": "/external_systems/0",
-                        "fact_quote": "APIv7 Archive",
-                        "source_start_byte": independent_context_start,
-                        "source_end_byte": external_context_end,
-                        "first_path_event_order": 0,
-                    },
-                    {
-                        "context_kind": "operational_constraint",
-                        "fact_path": "/operational_constraints/0",
-                        "fact_quote": "Preserve APIv7 casing",
-                        "source_start_byte": external_context_end + 1,
-                        "source_end_byte": external_context_end
-                        + 1
-                        + len("Preserve APIv7 casing".encode("utf-8")),
-                        "first_path_event_order": 0,
-                    },
-                ),
+    intent = {
+        "title": "eXact Ω Forge",
+        "product_story": PRODUCT_STORY,
+        "problem": "APIv7 evidence loses exact custody during manual relay.",
+        "customer": "Registry Custodian",
+        "opportunity": "Preserve one reviewable evidence transfer.",
+        "product_view": "A source-custodied Æther transfer product.",
+        "first_path": FIRST_PATH,
+        "state_object": "Æther packet",
+        "proof_boundary": PROOF_BOUNDARY,
+        "human_actors": ["Registry Custodian", "Field Ombud"],
+        "internal_systems": ["Meridian Engine"],
+        "external_systems": ["APIv7 Archive"],
+        "non_goals": ["Batch Æther migration"],
+        "operational_constraints": ["Preserve APIv7 casing"],
+        "evidence_requirements": ["Replay the two exact event quotes"],
+        "success_metrics": ["One Ω-Receipt is visible"],
+        "authored_semantics": authored_semantics_mapping(
+            relations,
+            provisional_design=structural_design_fixture((1, 2)),
+            first_path_context_relations=(
+                {
+                    "context_kind": "state_object",
+                    "fact_path": "/state_object",
+                    "fact_quote": "Æther packet",
+                    "source_start_byte": state_start,
+                    "source_end_byte": state_start + len("Æther packet".encode("utf-8")),
+                    "first_path_event_order": 2,
+                },
+                {
+                    "context_kind": "external_system",
+                    "fact_path": "/external_systems/0",
+                    "fact_quote": "APIv7 Archive",
+                    "source_start_byte": independent_context_start,
+                    "source_end_byte": external_context_end,
+                    "first_path_event_order": 0,
+                },
+                {
+                    "context_kind": "operational_constraint",
+                    "fact_path": "/operational_constraints/0",
+                    "fact_quote": "Preserve APIv7 casing",
+                    "source_start_byte": external_context_end + 1,
+                    "source_end_byte": external_context_end
+                    + 1
+                    + len("Preserve APIv7 casing".encode("utf-8")),
+                    "first_path_event_order": 0,
+                },
             ),
-        },
-        "observed_source": {"source_posture": "operator prompt evidence"},
-        "classification": {"method": "model_authored_typed_intent"},
-        "assumptions": [],
-        "open_questions": [],
-        "risks": [],
-        "validation_strategy": [PROOF_BOUNDARY],
-        "project_brief": {"purpose": PRODUCT_STORY},
-        "project_intelligence": {
-            "projection_origin": AUTHORED_PROJECTION_ORIGIN,
-            "purpose": PRODUCT_STORY,
-        },
-        "release_plan": {
-            "selector": "0.0.1",
-            "label": "eXact Ω Forge 0.0.1",
-            "strategy": PROOF_BOUNDARY,
-        },
-        "backlog": [
-            {
-                "idea_id": "B-701",
-                "title": "Preserve Æther custody",
-                "problem": "APIv7 evidence loses exact custody during manual relay.",
-                "product_view": "A source-custodied Æther transfer product.",
-                "recommended_first_slice": FIRST_PATH,
-                "evidence_tier": "user_intent",
-                "authority_kind": "provisional_design",
-                "projection_origin": AUTHORED_PROJECTION_ORIGIN,
-            }
-        ],
-        "components": [
-            {
-                "component_id": "meridian-engine",
-                "label": "Meridian Engine",
-                "responsibility": "Meridian Engine vitrifies the Æther packet into Ω-Receipt.",
-                "authority_kind": "provisional_design",
-                "projection_origin": AUTHORED_PROJECTION_ORIGIN,
-            }
-        ],
-        "diagrams": [
-            {
-                "diagram_id": "D-701",
-                "title": "Æther custody sequence",
-                "projection_origin": AUTHORED_PROJECTION_ORIGIN,
-            }
-        ],
+        ),
     }
+    return build_authored_greenfield_proposal(
+        observed_source={"source_posture": "operator prompt evidence"},
+        release_selector="0.0.1", confirmed_intent=intent,
+    )
 
 
-def _accepted_preview() -> dict[str, object]:
+def _accepted_preview(*, proposal: dict[str, object], root: Path) -> dict[str, object]:
     return {
         "accepted_at": "2026-08-31T12:00:00Z",
         "origin": "greenfield",
         "evidence_tier": "user_intent",
         "created": {
             "workstreams": [
-                {"idea_id": "B-701", "title": "Preserve Æther custody"}
+                {"idea_id": f"B-{index:03d}", "title": row["title"],
+                 "idea_path": str(root / f"workstream-{index}.md")}
+                for index, row in enumerate(proposal["backlog"], 701)
             ],
-            "diagrams": ["D-701"],
+            "diagrams": [f"D-{index:03d}" for index, _ in enumerate(proposal["diagrams"], 701)],
         },
         "source_path": "odylith/runtime/source/accepted-project.v1.json",
         "validation_gate": {"status": "pass"},
     }
+
+
+def _source_launch_context(*, proposal: dict[str, object], root: Path) -> dict[str, object]:
+    created = _accepted_preview(proposal=proposal, root=root)["created"]["workstreams"]
+    return build_next_steps(
+        proposal=proposal, backlog_result={"created": created},
+        first_release_workstreams=tuple(row["idea_id"] for row in created),
+        release_selector="0.0.1",
+    )
 
 
 def _handoff_scope_proposal(*, constraints: tuple[str, ...], non_goals: tuple[str, ...]) -> dict[str, object]:
@@ -363,15 +331,16 @@ def _completion_package(
     *,
     proposal: dict[str, object],
     dashboard: dict[str, object],
+    root: Path,
 ) -> GreenfieldCompletionPackage:
+    accepted = _accepted_preview(proposal=proposal, root=root)
+    created = accepted["created"]["workstreams"]
     return GreenfieldCompletionPackage(
         proposal=proposal,
-        backlog_result={"created": [{"idea_id": "B-701"}]},
+        backlog_result={"created": created},
+        release_workstream_ids=tuple(row["idea_id"] for row in created),
         project_dashboard_preview=dashboard,
-        next_steps_preview={
-            "start_workstream_id": "B-701",
-            "verification_commands": ["verify-Ω --APIv7"],
-        },
+        next_steps_preview=_source_launch_context(proposal=proposal, root=root),
     )
 
 
@@ -413,15 +382,13 @@ def test_authored_dashboard_bypasses_legacy_projection_and_preserves_exact_facts
     tmp_path: Path,
 ) -> None:
     _assert_legacy_greenfield_owners_retired()
+    proposal = _proposal()
 
     payload = preview_project_dashboard_payload(
         root=tmp_path,
-        proposal=_proposal(),
-        accepted_project_preview=_accepted_preview(),
-        source_launch_context={
-            "start_workstream_id": "B-701",
-            "verification_commands": ["verify-Ω --APIv7"],
-        },
+        proposal=proposal,
+        accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
+        source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
     )
 
     assert payload["title"] == "eXact Ω Forge"
@@ -449,20 +416,22 @@ def test_authored_dashboard_bypasses_legacy_projection_and_preserves_exact_facts
         row["semantic_slot"]: row["body"]
         for row in payload["product_story"]["release_contract"]
     }
-    assert cards["owned_capabilities"] == (
-        "Proposed capabilities:\n"
-        "Meridian Engine: Meridian Engine vitrifies the Æther packet into Ω-Receipt."
-    )
+    design = proposal["intent"]["authored_semantics"]["provisional_design"]
+    assert cards["owned_capabilities"] == "\n".join([
+        "Proposed capabilities:",
+        *(f"{row['name']}: {row['responsibility']}" for row in design["components"]),
+    ])
     assert cards["product_boundary"] == (
-        "Proposed logical components (not deployment commitments):\nMeridian Engine\n"
+        "Proposed logical components (not deployment commitments):\n"
+        + "\n".join(row["name"] for row in design["components"]) + "\n"
         "Source-stated systems:\nMeridian Engine\nExternal systems:\nAPIv7 Archive\n"
         "Excluded from the first release:\nBatch Æther migration"
     )
     assert payload["risk_items"] == []
     assert payload["risk_classes"] == []
     assert payload["governance_titles"] == {
-        "B-701": "Preserve Æther custody",
-        "D-701": "Æther custody sequence",
+        **{f"B-{index:03d}": row["title"] for index, row in enumerate(proposal["backlog"], 701)},
+        **{f"D-{index:03d}": row["title"] for index, row in enumerate(proposal["diagrams"], 701)},
     }
     assert payload["projection"]["origin"] == AUTHORED_PROJECTION_ORIGIN
     assert payload["authored_facts"]["first_path"] == FIRST_PATH
@@ -485,13 +454,14 @@ def test_authored_dashboard_bypasses_legacy_projection_and_preserves_exact_facts
     expected_bindings = {
         "project_title": "eXact Ω Forge",
         "accepted_first_path": PROPOSED_FIRST_RUN,
-        "first_release_workstream_refs": ("B-701",),
+        "first_release_workstream_refs": ("B-701", "B-702", "B-703", "B-704"),
+        "implementation_target": _source_launch_context(proposal=proposal, root=tmp_path)["implementation_target"],
         "proof_boundary": PROOF_BOUNDARY,
         "visible_result": "Ω-Receipt",
         "operational_constraints": ("Preserve APIv7 casing",),
         "excluded_scope": ("Batch Æther migration",),
-        "component_refs": ("meridian-engine",),
-        "verification_commands": ("verify-Ω --APIv7",),
+        "component_refs": tuple(row["key"] for row in design["components"]),
+        "verification_commands": tuple(_source_launch_context(proposal=proposal, root=tmp_path)["verification_commands"]),
     }
     for row, expected_step_id in zip(prompts, EXPECTED_HANDOFF_STEPS, strict=True):
         contract = row["contract"]
@@ -500,13 +470,14 @@ def test_authored_dashboard_bypasses_legacy_projection_and_preserves_exact_facts
         assert contract["semantic_authority"] == "typed_canonical_intent"
         assert contract["projection_policy"] == "structural_copy_only"
         assert contract["fact_bindings"] == expected_bindings
+        assert row["prompt"].startswith(render_selected_workstream_scope(expected_bindings["implementation_target"]))
         assert project_handoff_step_contract_issues(
             contract,
             expected_step_id=expected_step_id,
         ) == ()
     assert PROPOSED_FIRST_RUN in prompts[0]["prompt"]
     assert "QuOrates" in prompts[1]["prompt"]
-    assert prompts[3]["verification_commands"] == ["verify-Ω --APIv7"]
+    assert prompts[3]["verification_commands"] == list(expected_bindings["verification_commands"])
 
 
 @pytest.mark.parametrize("constraints,non_goals", [
@@ -521,8 +492,8 @@ def test_authored_handoff_exposes_operating_requirements_and_only_non_goals_as_e
 ) -> None:
     proposal = _handoff_scope_proposal(constraints=constraints, non_goals=non_goals)
     payload = preview_project_dashboard_payload(
-        root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(),
-        source_launch_context={"start_workstream_id": "B-701", "verification_commands": ["verify-Ω --APIv7"]},
+        root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
+        source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
     )
     expected_scope = (
         "Operational constraints — preserve these requirements:\n"
@@ -536,7 +507,7 @@ def test_authored_handoff_exposes_operating_requirements_and_only_non_goals_as_e
         assert bindings["excluded_scope"] == non_goals
         assert handoff["prompt"].endswith(expected_scope)
     assert project_dashboard_preview_issues(
-        _completion_package(proposal=proposal, dashboard=payload), payload, model_authored=True,
+        _completion_package(proposal=proposal, dashboard=payload, root=tmp_path), payload, model_authored=True,
     ) == []
 
 
@@ -548,10 +519,10 @@ def test_authored_handoff_preconfirm_rejects_lost_or_swapped_scope_categories(
 ) -> None:
     proposal = _proposal()
     payload = preview_project_dashboard_payload(
-        root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(),
-        source_launch_context={"start_workstream_id": "B-701", "verification_commands": ["verify-Ω --APIv7"]},
+        root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
+        source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
     )
-    package = _completion_package(proposal=proposal, dashboard=payload)
+    package = _completion_package(proposal=proposal, dashboard=payload, root=tmp_path)
     assert project_dashboard_preview_issues(package, payload, model_authored=True) == []
     handoff = payload["host_handoff_prompts"][1]
     bindings = handoff["contract"]["fact_bindings"]
@@ -587,11 +558,8 @@ def test_authored_dashboard_labels_assumptions_without_promoting_them_to_blocker
     payload = preview_project_dashboard_payload(
         root=tmp_path,
         proposal=proposal,
-        accepted_project_preview=_accepted_preview(),
-        source_launch_context={
-            "start_workstream_id": "B-701",
-            "verification_commands": ["verify-Ω --APIv7"],
-        },
+        accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
+        source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
     )
 
     assert payload["open_label"] == "Assumptions"
@@ -606,8 +574,8 @@ def test_authored_dashboard_separates_proposed_walkthrough_from_result_first_sou
     proposal = _result_first_proposal()
     source_intent = deepcopy(proposal["intent"])
     payload = preview_project_dashboard_payload(
-        root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(),
-        source_launch_context={"start_workstream_id": "B-701"},
+        root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
+        source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
     )
 
     assert payload["focus"] == PROPOSED_FIRST_RUN
@@ -675,10 +643,8 @@ def test_authored_dashboard_preserves_archive_after_the_published_result(tmp_pat
         release_selector="0.0.1", confirmed_intent=authored,
     )
     payload = preview_project_dashboard_payload(
-        root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(),
-        source_launch_context={
-            "start_workstream_id": "B-701", "verification_commands": ["verify-Ω --APIv7"],
-        },
+        root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
+        source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
     )
     proposed_run = "Proposed first run:\n" + "\n".join(events)
     assert payload["focus"] == proposed_run
@@ -691,7 +657,7 @@ def test_authored_dashboard_preserves_archive_after_the_published_result(tmp_pat
     assert cards["first_path"] == proposed_run
     for handoff in payload["host_handoff_prompts"]:
         assert handoff["contract"]["fact_bindings"]["accepted_first_path"] == proposed_run
-    package = _completion_package(proposal=proposal, dashboard=payload)
+    package = _completion_package(proposal=proposal, dashboard=payload, root=tmp_path)
     assert project_dashboard_preview_issues(package, payload, model_authored=True) == []
 
 
@@ -701,12 +667,10 @@ def test_authored_dashboard_preconfirm_rejects_order_authority_drift(
 ) -> None:
     proposal = _result_first_proposal()
     payload = preview_project_dashboard_payload(
-        root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(),
-        source_launch_context={
-            "start_workstream_id": "B-701", "verification_commands": ["verify-Ω --APIv7"],
-        },
+        root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
+        source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
     )
-    package = _completion_package(proposal=proposal, dashboard=payload)
+    package = _completion_package(proposal=proposal, dashboard=payload, root=tmp_path)
     assert project_dashboard_preview_issues(package, payload, model_authored=True) == []
     if mutation == "source_precedence":
         payload["authored_facts"]["source_precedence"] = [
@@ -727,15 +691,13 @@ def test_authored_dashboard_same_actor_cards_follow_proposed_order_and_preconfir
 ) -> None:
     proposal = _result_first_proposal(include_actor_review=True)
     payload = preview_project_dashboard_payload(
-        root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(),
-        source_launch_context={
-            "start_workstream_id": "B-701", "verification_commands": ["verify-Ω --APIv7"],
-        },
+        root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
+        source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
     )
     expected = "Registry Custodian QuOrates one Æther packet.\nRegistry Custodian reviews Ω-Receipt."
     assert payload["actors"][0][2] == expected
     assert payload["product_story"]["actors"][0]["body"] == expected
-    package = _completion_package(proposal=proposal, dashboard=payload)
+    package = _completion_package(proposal=proposal, dashboard=payload, root=tmp_path)
     assert project_dashboard_preview_issues(package, payload, model_authored=True) == []
     source_actor_order = "\n".join(
         row["event_quote"] for row in payload["authored_facts"]["first_path_relations"]
@@ -755,11 +717,8 @@ def test_authored_dashboard_validates_contracts_independently_of_introductory_pr
     payload = preview_project_dashboard_payload(
         root=tmp_path,
         proposal=proposal,
-        accepted_project_preview=_accepted_preview(),
-        source_launch_context={
-            "start_workstream_id": "B-701",
-            "verification_commands": ["verify-Ω --APIv7"],
-        },
+        accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
+        source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
     )
     prompts = payload["host_handoff_prompts"]
     assert isinstance(prompts, list)
@@ -767,6 +726,7 @@ def test_authored_dashboard_validates_contracts_independently_of_introductory_pr
         row["label"] = f"Reworded visible phase {index}"
         row["when"] = "Use this visible explanation whenever the typed gate permits it."
         row["prompt"] = (
+            render_selected_workstream_scope(row["contract"]["fact_bindings"]["implementation_target"]) + "\n\n"
             "Follow the attached typed action and fact bindings.\n\n"
             "Operational constraints — preserve these requirements:\nPreserve APIv7 casing\n\n"
             "Excluded scope — preserve these exclusions:\nBatch Æther migration"
@@ -774,7 +734,7 @@ def test_authored_dashboard_validates_contracts_independently_of_introductory_pr
         row["result"] = "The structurally declared output is produced."
         row["stop"] = "Honor the structurally declared stop policy."
 
-    package = _completion_package(proposal=proposal, dashboard=payload)
+    package = _completion_package(proposal=proposal, dashboard=payload, root=tmp_path)
 
     assert project_dashboard_preview_issues(
         package,
@@ -789,7 +749,7 @@ def test_authored_dashboard_validates_contracts_independently_of_introductory_pr
     corrupted_contract["fact_bindings"]["project_title"] = "Reinterpreted project"
 
     issues = project_dashboard_preview_issues(
-        _completion_package(proposal=proposal, dashboard=corrupted),
+        _completion_package(proposal=proposal, dashboard=corrupted, root=tmp_path),
         corrupted,
         model_authored=True,
     )
@@ -804,11 +764,8 @@ def test_authored_dashboard_checks_exact_capability_view_value_without_punctuati
     payload = preview_project_dashboard_payload(
         root=tmp_path,
         proposal=proposal,
-        accepted_project_preview=_accepted_preview(),
-        source_launch_context={
-            "start_workstream_id": "B-701",
-            "verification_commands": ["verify-Ω --APIv7"],
-        },
+        accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
+        source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
     )
 
     capability_card = next(
@@ -816,14 +773,15 @@ def test_authored_dashboard_checks_exact_capability_view_value_without_punctuati
         for row in payload["product_story"]["release_contract"]
         if row["semantic_slot"] == "owned_capabilities"
     )
-    assert capability_card["body"] == (
-        "Proposed capabilities:\n"
-        "Meridian Engine: Meridian Engine vitrifies the Æther packet into Ω-Receipt."
-    )
+    design = proposal["intent"]["authored_semantics"]["provisional_design"]
+    assert capability_card["body"] == "\n".join([
+        "Proposed capabilities:",
+        *(f"{row['name']}: {row['responsibility']}" for row in design["components"]),
+    ])
 
     capability_card["body"] = capability_card["body"].replace(":", ";", 1)
     issues = project_dashboard_preview_issues(
-        _completion_package(proposal=proposal, dashboard=payload),
+        _completion_package(proposal=proposal, dashboard=payload, root=tmp_path),
         payload,
         model_authored=True,
     )
@@ -846,8 +804,8 @@ def test_authored_dashboard_labels_provisional_problem_without_repeating_it(
     payload = preview_project_dashboard_payload(
         root=tmp_path,
         proposal=proposal,
-        accepted_project_preview=_accepted_preview(),
-        source_launch_context={},
+        accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
+        source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
     )
     cards = {
         row["semantic_slot"]: row["body"]
@@ -866,11 +824,8 @@ def test_authored_dashboard_uses_canonical_actor_fact_for_aliased_events(
     payload = preview_project_dashboard_payload(
         root=tmp_path,
         proposal=proposal,
-        accepted_project_preview=_accepted_preview(),
-        source_launch_context={
-            "start_workstream_id": "B-701",
-            "verification_commands": ["verify-Ω --APIv7"],
-        },
+        accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
+        source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
     )
 
     assert payload["actors"][0] == (
@@ -878,7 +833,7 @@ def test_authored_dashboard_uses_canonical_actor_fact_for_aliased_events(
         "Registry Custodian",
         "She QuOrates one Æther packet.",
     )
-    package = _completion_package(proposal=proposal, dashboard=payload)
+    package = _completion_package(proposal=proposal, dashboard=payload, root=tmp_path)
     assert project_dashboard_preview_issues(
         package,
         payload,
@@ -891,7 +846,7 @@ def test_authored_dashboard_uses_canonical_actor_fact_for_aliased_events(
     )
     assert "model-authored Project dashboard drifted from typed actor identities" in (
         project_dashboard_preview_issues(
-            _completion_package(proposal=proposal, dashboard=corrupted),
+            _completion_package(proposal=proposal, dashboard=corrupted, root=tmp_path),
             corrupted,
             model_authored=True,
         )
