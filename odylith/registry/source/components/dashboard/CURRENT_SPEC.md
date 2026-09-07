@@ -37,6 +37,11 @@ cells and six Project recoveries without changing installed or governed bytes.
 Screenshot review still finds the mobile Registry Diagnostics chip overlapping
 its empty heading. Keep that defect visible; installed automation alone does not
 close human-quality, positive creation, accessibility or 60/90/120 qualification.
+The subsequent source-local Registry correction restores unobstructed mobile
+headings and complete horizontal spec-prose bounds while preserving local table
+scrolling. Its browser and independent visual evidence do not update the earlier
+installed baseline or qualify touch/keyboard accessibility. Registry owns this
+layout; the dashboard header and shared sticky primitive remain unchanged.
 
 ### Dashboard owns
 - Shell-level routing and query-param deep links.

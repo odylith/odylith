@@ -24,6 +24,21 @@ timeline only accept the latest selection revision, including repeated selection
 of the same component. Populated detail and forensic rendering retain their
 existing owners. CB-330 browser proof covers both source states at both widths.
 
+### Specification reading boundary
+`registry_spec_reading_ui.py` owns the Current Spec disclosure, prose and table
+layout. Shrinkable grid tracks and local token wrapping keep prose within the
+disclosure; wide tables retain their own horizontal scroll container. Registry's
+mobile filters use normal flow so Diagnostics cannot obscure the reading area;
+desktop sticky behavior and the shared header stay unchanged. The Registry
+refresh fingerprint includes the extracted reading owner so later style changes
+cannot reuse stale generated HTML.
+
+Browser proof checks paragraph Range bounds inside clipping ancestors, mobile
+heading hit-testing, normal and runtime-fallback detail, local table scrolling
+and filter/Project recovery. A clean outer-page width is insufficient. Source-local
+proof does not imply installed-release, touch/keyboard or complete copy-fidelity
+qualification.
+
 ### Registry owns
 - The canonical component manifest.
 - Component-to-workstream, component-to-diagram, and component-to-spec linkage.
@@ -84,6 +99,8 @@ in `component_cli.py`; `component_description_update.py` owns the narrow update.
   Inventory normalization, event mapping, forensic coverage, and report model.
 - `src/odylith/runtime/surfaces/render_registry_dashboard.py`
   Registry renderer.
+- `src/odylith/runtime/surfaces/registry_spec_reading_ui.py`
+  Specification disclosure, prose and table reading layout.
 - `src/odylith/runtime/governance/sync_component_spec_requirements.py`
   Requirements-trace sync into living specs.
 - `src/odylith/runtime/governance/validate_component_registry_contract.py`

@@ -10,7 +10,43 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Source-first ownership comparison (2026-09-07)
+
+The installed Harbor pair remains a localized purpose-role discriminator, not a
+whole-source positive: both responses omit the explicit records-before-shows
+constraint and source-precedence edge. Stop the proposed reviewer-only 20-second
+retry before any provider call. A larger cap alone is not a new mechanism. Retain
+the original failed 10-second attempt and unchanged controls.
+
+One external source-first run now passes independent source/design adjudication:
+source authoring takes 24.806 seconds, then read-only verdict 16.065 and design
+19.623 run concurrently. The actual model critical path is 44.459 seconds with
+three calls, frozen source and one unchanged packet identity across both roles
+and the guarded join. All five human-owned actions, household scope, four cited
+edges and publication identity survive; five proposed components/workstreams
+deliver usable behavior. Ten no-provider ownership/harness controls pass.
+
+This earns the retained negative and equivalent-source gate, not production
+adoption or complete consumer timing. Verification remains mostly happy-path and
+reference-centric. Require wrong-role rejection without losing valid purpose,
+actor/dependency, constraints and non-path capability preservation before the
+candidate displaces the current owner. Complete sealed packages, installed
+creation/recovery/host parity and seven-surface UX still need proof within the
+unchanged 60/90/120 limits. No production profile, call-count contract, transaction
+or holdout changes are made. Evidence: `/private/tmp/odylith-source-first-ownership.8PtR5k/review.md`.
+
 ### Fresh installed empty-state UX (2026-09-07)
+
+The residual Registry reading correction now passes 20 desktop/mobile browser
+controls and independent visual review: mobile filters no longer cover the empty
+heading, and spec prose stays within its disclosure while tables scroll locally.
+The broader frozen surface suite passes 270 checks. An actual-source cache control
+then reproduces missing invalidation for the extracted spec-reading owner. The
+existing Registry refresh fingerprint now includes that owner, and all 16 focused
+cache/owned-refresh controls pass after the correction.
+The installed baseline remains unchanged; source-local proof is not a fresh
+installed-release or complete accessibility claim. The dashboard header stays
+frozen. Evidence: `/private/tmp/odylith-registry-reading-proof.Lw8Pja/`.
 
 The exact 4ce8cd2f install passes 16 desktop/mobile route and layout cells with
 unchanged governed bytes, but independent screenshot review rejects the empty

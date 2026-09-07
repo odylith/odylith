@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from odylith.runtime.governance import surface_refresh_fingerprint_dag
+from odylith.runtime.surfaces import registry_spec_reading_ui
 
 
 def _seed_registry_fingerprint_repo(repo_root: Path) -> Path:
@@ -105,6 +106,23 @@ def test_registry_surface_input_fingerprint_includes_renderer_helper_source(tmp_
     )
 
     assert updated != baseline
+
+
+def test_registry_spec_reading_source_invalidates_cached_surface(tmp_path: Path) -> None:
+    source = Path(registry_spec_reading_ui.__file__).resolve()
+    relative = Path("src/odylith/runtime/surfaces") / source.name
+    owner = tmp_path / relative
+    owner.parent.mkdir(parents=True)
+    owner.write_bytes(source.read_bytes())
+    output = tmp_path / "odylith/registry/registry.html"
+    output.parent.mkdir(parents=True)
+    output.write_text("<html>retained Registry output</html>", encoding="utf-8")
+    kwargs = dict(repo_root=tmp_path, surface="registry", atlas_sync=False,
+                  outputs=["odylith/registry/registry.html"])
+    surface_refresh_fingerprint_dag.record_surface_refresh(**kwargs)
+    assert surface_refresh_fingerprint_dag.can_reuse_surface_refresh(**kwargs)[0]
+    owner.write_bytes(owner.read_bytes() + b"\n# source dependency control\n")
+    assert not surface_refresh_fingerprint_dag.can_reuse_surface_refresh(**kwargs)[0]
 
 
 def test_all_governance_surface_dags_react_to_owned_inputs(tmp_path: Path) -> None:

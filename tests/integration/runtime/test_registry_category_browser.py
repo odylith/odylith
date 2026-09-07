@@ -17,6 +17,60 @@ from tests.integration.runtime.surface_browser_test_support import (
 from tests.unit.runtime.test_component_registry_categories import _seed_application_registry
 
 
+def _assert_spec_reading_accessible(page, registry, *, width: int, with_table: bool, screenshot_name: str) -> None:  # noqa: ANN001
+    registry.locator(".spec-expand > summary").click()
+    doc = registry.locator(".spec-doc")
+    paragraph = doc.get_by_text("Readers must see every word of this ordinary specification paragraph.", exact=True)
+    paragraph.scroll_into_view_if_needed()
+    geometry = doc.evaluate("""doc => {
+        const disclosure = doc.closest('.spec-expand');
+        const clip = disclosure.getBoundingClientRect();
+        const prose = [...doc.querySelectorAll('p')];
+        return {
+            clientWidth: disclosure.clientWidth, scrollWidth: disclosure.scrollWidth,
+            clipLeft: clip.left + disclosure.clientLeft,
+            clipRight: clip.left + disclosure.clientLeft + disclosure.clientWidth,
+            textRects: prose.flatMap(node => {
+                const range = document.createRange(); range.selectNodeContents(node);
+                return [...range.getClientRects()].map(rect => ({left: rect.left, right: rect.right}));
+            }),
+        };
+    }""")
+    screenshot = _failure_screenshot_path(screenshot_name)
+    if screenshot is not None:
+        screenshot.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(screenshot))
+    assert geometry["textRects"]
+    assert all(geometry["clipLeft"] - 1 <= rect["left"] and rect["right"] <= geometry["clipRight"] + 1
+               for rect in geometry["textRects"]), geometry
+    assert geometry["scrollWidth"] <= geometry["clientWidth"] + 1, geometry
+    if with_table:
+        scroller = doc.locator(".spec-table-scroll")
+        assert scroller.evaluate("node => getComputedStyle(node).overflowX") == "auto"
+        if width == 430:
+            assert scroller.evaluate("node => node.scrollWidth > node.clientWidth")
+            scroller.evaluate("node => { node.scrollLeft = node.scrollWidth; }")
+            assert scroller.evaluate("node => node.scrollLeft > 0")
+            assert scroller.evaluate("""node => {
+                const clip = node.getBoundingClientRect();
+                const last = node.querySelector('tr:last-child td:last-child').getBoundingClientRect();
+                return last.right <= clip.right;
+            }""")
+            scroller.scroll_into_view_if_needed()
+            assert scroller.evaluate("""node => {
+                const range = document.createRange();
+                range.selectNodeContents(node.querySelector('tr:last-child td:last-child'));
+                const clip = node.getBoundingClientRect();
+                node.scrollLeft += range.getBoundingClientRect().left - clip.left - 10;
+                return [...range.getClientRects()].every(rect => rect.left >= clip.left && rect.right <= clip.right);
+            }""")
+            if screenshot is not None:
+                page.screenshot(path=str(screenshot.with_stem(screenshot.stem + "-table-reading")))
+    else:
+        assert doc.locator(".spec-table-scroll").count() == 0
+    registry.locator(".spec-expand > summary").click()
+
+
 def _assert_topology_paragraph_accessible(page, registry, *, screenshot_name: str) -> None:  # noqa: ANN001
     paragraph = registry.locator(".context-row").filter(
         has=registry.get_by_text("Forensic Coverage", exact=True),
@@ -63,12 +117,22 @@ def _assert_topology_paragraph_accessible(page, registry, *, screenshot_name: st
 
 @pytest.mark.parametrize("viewport", [{"width": 1440, "height": 1100}, {"width": 430, "height": 932}])
 @pytest.mark.parametrize("runtime_unavailable", [False, True])
+@pytest.mark.parametrize("with_table", [False, True])
 def test_registry_category_labels_survive_filter_empty_and_runtime_fallback(
-    tmp_path: Path, viewport: dict[str, int], runtime_unavailable: bool,
+    tmp_path: Path, viewport: dict[str, int], runtime_unavailable: bool, with_table: bool,
 ) -> None:
     ensure_customer_bootstrap(repo_root=tmp_path, version=__version__)
     manifest = _seed_application_registry(tmp_path)
     source_bytes = manifest.read_bytes()
+    spec = tmp_path / "odylith/registry/source/components/radar/CURRENT_SPEC.md"
+    reading = (
+        "\n## Reading boundary\n\nReaders must see every word of this ordinary specification paragraph.\n\n"
+        + "Evidence identifier: `" + "retained_evidence_identifier_" * 8 + "`.\n"
+    )
+    if with_table:
+        reading += "\n| Boundary | Evidence |\n| --- | --- |\n| Intake | receipt |\n"
+    spec.write_text(spec.read_text() + reading, encoding="utf-8")
+    spec_bytes = spec.read_bytes()
     assert renderer.main(["--repo-root", str(tmp_path), "--runtime-mode", "standalone"]) == 0
     assert render_tooling_dashboard.main(["--repo-root", str(tmp_path), "--runtime-mode", "standalone"]) == 0
     payload_script = (tmp_path / "odylith/registry/registry-payload.v1.js").read_text(encoding="utf-8")
@@ -116,6 +180,10 @@ def test_registry_category_labels_survive_filter_empty_and_runtime_fallback(
                     page, registry,
                     screenshot_name=f"registry-topology-{viewport['width']}-{'fallback' if runtime_unavailable else 'normal'}",
                 )
+                _assert_spec_reading_accessible(
+                    page, registry, width=viewport["width"], with_table=with_table,
+                    screenshot_name=f"registry-spec-{viewport['width']}-{'fallback' if runtime_unavailable else 'normal'}-{'table' if with_table else 'prose'}",
+                )
 
                 registry.locator("#search").fill("no-match-category-proof")
                 assert registry.locator("button[data-component]").count() == 0
@@ -138,3 +206,4 @@ def test_registry_category_labels_survive_filter_empty_and_runtime_fallback(
             finally:
                 context.close()
     assert manifest.read_bytes() == source_bytes
+    assert spec.read_bytes() == spec_bytes
