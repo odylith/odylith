@@ -322,6 +322,11 @@ Last updated (UTC): 2026-09-07
 | CB-023 | 2026-03-31 | Product repo doctor repair rewrites root agents to stale managed block | P1 | `src/odylith/install/agents.py`,
   `src/odylith/install/manager.py`, root `AGENTS.md`, maintainer
   `release-candidate` workflow, product-repo repair contract. | Open | [2026-03-31-product-repo-doctor-repair-rewrites-root-agents-to-stale-managed-block.md](2026-03-31-product-repo-doctor-repair-rewrites-root-agents-to-stale-managed-block.md) |
+| CB-019 | 2026-03-29 | Compass runtime freshness regressed brief risk and timeline trust | P1 | `src/odylith/runtime/surfaces/render_compass_dashboard.py`,
+  `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`,
+  `src/odylith/runtime/context_engine/odylith_context_engine_store.py`,
+  `src/odylith/runtime/context_engine/surface_projection_fingerprint.py`,
+  Compass runtime freshness contract, shell UX/browser proof lane. | Open | [2026-03-29-compass-runtime-freshness-regressed-brief-risk-and-timeline-trust.md](2026-03-29-compass-runtime-freshness-regressed-brief-risk-and-timeline-trust.md) |
 | CB-016 | 2026-03-28 | Release preflight fails when dist contains stale wheel | P1 | `bin/release-preflight`, release asset publisher,
   maintainer release proof lane, release asset staging contract. | Open | [2026-03-28-release-preflight-fails-when-dist-contains-stale-wheel.md](2026-03-28-release-preflight-fails-when-dist-contains-stale-wheel.md) |
 | CB-015 | 2026-03-28 | Release download cache and runtime restage lose atomicity on failure | P1 | `src/odylith/install/release_assets.py`,
@@ -702,11 +707,6 @@ Last updated (UTC): 2026-09-07
   `src/odylith/runtime/surfaces/compass_dashboard_runtime.py`,
   `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`, Compass
   standup-brief cache contract, shared local-provider selection path. | Closed | [2026-03-29-compass-standup-brief-fails-to-use-local-provider-and-stays-deterministic.md](2026-03-29-compass-standup-brief-fails-to-use-local-provider-and-stays-deterministic.md) |
-| CB-019 | 2026-03-29 | Compass runtime freshness regressed brief risk and timeline trust | P1 | `src/odylith/runtime/surfaces/render_compass_dashboard.py`,
-  `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`,
-  `src/odylith/runtime/context_engine/odylith_context_engine_store.py`,
-  `src/odylith/runtime/context_engine/surface_projection_fingerprint.py`,
-  Compass runtime freshness contract, shell UX/browser proof lane. | Closed | [2026-03-29-compass-runtime-freshness-regressed-brief-risk-and-timeline-trust.md](2026-03-29-compass-runtime-freshness-regressed-brief-risk-and-timeline-trust.md) |
 | CB-018 | 2026-03-29 | Compass live self host risk was hidden by utc date and kpi omission | P1 | `src/odylith/runtime/surfaces/compass_dashboard_shell.py`,
   `src/odylith/runtime/surfaces/compass_dashboard_runtime.py`, Compass live KPI
   render path, self-host posture risk rows, browser smoke coverage. | Closed | [2026-03-29-compass-live-self-host-risk-was-hidden-by-utc-date-and-kpi-omission.md](2026-03-29-compass-live-self-host-risk-was-hidden-by-utc-date-and-kpi-omission.md) |

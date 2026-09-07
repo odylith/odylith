@@ -1,4 +1,7 @@
 - Bug ID: CB-019
+- Post-Record Status Readback (2026-09-07): After selective sync reported success, a separate four-cell browser check failed both Casebook cells: canonical source and the regenerated index say Open/P1 while the rendered list/detail still say Closed/P1. New narrative fields are present, so this is mixed source/projected metadata rather than an entirely old detail file. Direct source projection reads Open; load_bug_snapshot prefers runtime-row Status and overwrites freshly parsed source Status. The sync's Compass warmup precedes Casebook index normalization; stale warmed-row reuse is the bounded suspect, not yet a proven root-cause fix. A canonical forced owned-surface refresh is the next recovery check, not a source-code correction or permission to edit generated status. Both Compass timeline cells pass; its new unavailable-current state now discloses historical reuse with the older September 6 21:48 timestamp. This does not erase the prior false-freshness observation. Failed proof is retained at /private/tmp/odylith-compass-reopen-readback.8QbZNV/review.md.
+- Reopened Evidence (2026-09-07): Continuous Greenfield UX review reproduces fresh-looking stale brief presentation. The 24h and 48h Standup Brief sections are byte-equivalent as decoded JSON to committed HEAD, but generated_utc moves from 2026-09-07T13:28:10Z to 18:33:30Z, exact cache mode becomes fallback, and fingerprints become salient-prefixed. The browser labels the old optimistic checkpoint/approximately-12-day-ETA text Generated 11:33 beside the truthful 11:32 author-timeout timeline. Root and independent screenshots confirm this presentation defect; it does not establish that the whole feature was falsely declared complete. Evidence: /private/tmp/odylith-stage-stop-ux.P3J2Nz/review.md. All 22 current route/reading/failure-discovery controls pass with unchanged served bytes, which does not clear summary quality.
+- Current Diagnosis (2026-09-07): compass_window_summary_support.py admits global and scoped prior prose by a reduced reuse fingerprint plus section validation, then compass_standup_runtime_reuse.reuse_ready_brief passes the current refresh timestamp into a newly ready fallback brief. The existing narrator already owns exact-substrate cache admission and preserves cached generation time. This is a competing freshness owner, not grounds to regenerate narration until the screenshot looks better. No correction has been implemented or verified. Preserve the historical CB-154 last-readable-brief requirement: any retained historical narrative must remain visibly historical rather than acquiring current authority. Compare that behavior with the current Registry exact-cache/unavailable contract before retiring the non-exact owner; do not add regex/prose repairs or redesign the frozen dashboard header.
 
 - Type: Product
 
@@ -9,7 +12,7 @@
 
 
 
-- Status: Closed
+- Status: Open
 
 - Created: 2026-03-29
 

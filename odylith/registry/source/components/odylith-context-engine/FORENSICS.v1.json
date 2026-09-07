@@ -43,12 +43,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 198,
-    "mapped_workstream_evidence_count": 143,
+    "explicit_event_count": 200,
+    "mapped_workstream_evidence_count": 145,
     "recent_path_match_count": 0,
     "spec_history_event_count": 1,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 198
+    "timeline_event_count": 200
   },
   "name": "Odylith Context Engine",
   "path_prefixes": [
@@ -57,6 +57,79 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-03-29-compass-runtime-freshness-regressed-brief-risk-and-timeline-trust.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md"
+      ],
+      "confidence": "high",
+      "event_index": 1259,
+      "explicit_components": [
+        "briefs-voice-contract",
+        "casebook",
+        "compass",
+        "dashboard",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "briefs-voice-contract",
+        "casebook",
+        "compass",
+        "dashboard",
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-09-07T11:50:30-07:00",
+      "workstreams": [
+        "B-025"
+      ]
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-03-29-compass-runtime-freshness-regressed-brief-risk-and-timeline-trust.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md"
+      ],
+      "confidence": "high",
+      "event_index": 1258,
+      "explicit_components": [
+        "atlas",
+        "briefs-voice-contract",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "briefs-voice-contract",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-09-07T11:41:28-07:00",
+      "workstreams": [
+        "B-025",
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 2,
       "artifacts": [

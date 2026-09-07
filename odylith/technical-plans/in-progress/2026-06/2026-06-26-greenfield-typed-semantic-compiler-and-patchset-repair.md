@@ -12,7 +12,53 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ### Source-first ownership comparison (2026-09-07)
 
-Current decision: do not adopt the pinned source-first allocation. Its next
+Current decision: the successor pipeline does not clear its equivalent-source
+model-stage gate. One actual source-only Terra/low call times out at an effective
+29.898 seconds; role time is 29.922 seconds and adapter time 29.924 seconds,
+inside the absolute 30-second stop. No packet exists, so design and the
+single-witness reviewer were not called. Exact evidence/prompt/schema and frozen
+input/source identity are verified by root and independent review. Preserve the
+independently equivalent-source annotation and three reviewer-control passes
+below, but do not infer semantic
+drift, a formatting cause, or an end-to-end reviewer result from no response.
+No retry, cap/profile change, production integration or holdout access follows.
+Stop this pinned pipeline's qualification. Before another live campaign, diagnose
+the source-author availability/latency owner and make a bounded falsifiable
+mechanism decision; do not turn the same allocation into a retry/profile sweep.
+All consumer 60/90/120, complete-package/UX and release gates remain fixed/open.
+Evidence: `/private/tmp/odylith-equivalent-source-stage.nYLAfl/review.md`.
+
+Independent timing review measures only 1.773 ms of pre-dispatch setup for the
+failed author; CLI startup, transport, backend waiting and generation remain
+undifferentiated. The actual stdin grows by only 59 UTF-8 bytes with unchanged
+prompt/schema/profile; that establishes no cause. Do not redesign the source
+graph or add an observability framework from this evidence alone. Details:
+`/private/tmp/odylith-equivalent-source-stage.nYLAfl/latency-evidence.md`.
+
+Fresh seven-surface desktop/mobile readback again passes 14 normal route cells,
+four spec-reading controls and four failure-discovery cells. It strengthens the
+Compass caveat into a confirmed freshness defect: identical older brief sections
+are presented with a new Generated 11:33 label beside the current failed gate.
+CB-019 is reopened under the existing B-025 freshness plan; no separate UX
+architecture or Greenfield workstream is created. This is not full UX acceptance
+and the newer governance-record refresh is outside that frozen browser window.
+Evidence: `/private/tmp/odylith-stage-stop-ux.P3J2Nz/review.md`.
+
+The single-witness successor now passes three independently adjudicated
+component controls at the same Sol/medium 20-second cap: isolated invocation
+denial in 10.377 seconds, matched valid-purpose acceptance in 13.839 seconds and
+denial of the exact retained Harbor negative in 7.114 seconds. Harbor is denied
+for unsupported recording ownership; the isolated pair supplies purpose-role
+evidence. Only denial enumeration changes; affirmative semantic coverage stays
+complete. The prior timeout's cause remains unknown, and these observations do
+not establish an accuracy rate or causal speed improvement. Four no-provider
+adapter controls pass. No production change or deadline relaxation occurred.
+This earned the separately frozen equivalent-source model-stage comparison above,
+which failed before reviewer dispatch; it did not earn integration or complete
+package/SLA proof. Remaining semantic controls stay open.
+Evidence: `/private/tmp/odylith-admission-witness.zqZ1kN/review.md`.
+
+Prior exhaustive-verdict allocation: do not adopt that candidate. Its next
 required retained-negative control returned no verdict: one Sol/medium call
 timed out at an effective 19.895-second allowance; the adapter stopped in
 19.922 seconds inside the absolute 20-second limit. Root and independent review

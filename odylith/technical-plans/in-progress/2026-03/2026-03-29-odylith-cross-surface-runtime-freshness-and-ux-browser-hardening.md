@@ -2,13 +2,49 @@ Status: In progress
 
 Created: 2026-03-29
 
-Updated: 2026-04-17
+Updated: 2026-09-07
 
 Backlog: B-025
 
 Goal: Restore trustworthy live Compass and shell behavior by hardening runtime
 freshness, removing stale brief reuse, and widening headless browser proof
 across the UX/UI, including cross-surface filter and search semantics.
+
+## Current freshness defect (2026-09-07)
+
+CB-019 is reopened by the Greenfield continuous UX pass. Both window briefs
+retain identical older sections while the reduced-fingerprint reuse path stamps
+the new refresh time; the browser shows Generated 11:33 beside the latest failed
+authoring gate. The 14 normal routes, four actual spec-reading controls and four
+failure-discovery cells pass; that does not clear the misleading summary.
+Evidence: `/private/tmp/odylith-stage-stop-ux.P3J2Nz/review.md`.
+
+The bounded correction belongs to the existing global/scoped reuse and narrator
+admission seam. First characterize changed-substrate rejection, exact reuse,
+original generation-time preservation, and historical-brief/provider-unavailable
+presentation; retain the CB-154 last-readable-brief concern without presenting
+history as current. Compare the existing exact-substrate owner with the reduced
+reuse path and remove the losing authority. No provider retry, prose rewrite,
+new freshness framework, frozen-header redesign or broad refactor is justified.
+Require source-local behavior, structural ownership inventory and desktop/mobile
+normal, historical/fallback and degraded/error browser evidence before claiming
+this corrected. The defect is diagnosed, not fixed or release-qualified.
+
+The subsequent post-record readback also fails Casebook's metadata consistency:
+source/index Open/P1 but rendered list/detail Closed/P1, despite fresh narrative.
+Direct source projection is correct; runtime rows overwrite source status in the
+snapshot join. Preserve the failed four-cell receipt and test canonical forced
+owned refresh as recovery before selecting any source correction. A successful
+recovery would not fix the selective-sync invalidation/ordering suspect or
+qualify recurrence prevention. The latest Compass view labels historical reuse
+explicitly; this is distinct from the earlier falsely refreshed timestamp.
+Evidence: `/private/tmp/odylith-compass-reopen-readback.8QbZNV/review.md`.
+
+The canonical forced Casebook refresh then completes in 6.2 seconds with no
+runtime fallback: rendered CB-019 and its fields both read Open/P1, the new
+failure note survives, and open-case count rises from 232 to 233. This is
+owned-surface recovery, not a fix for the stale-row recurrence. Preserve the
+failed browser receipt and require a separate final readback after settlement.
 
 Current architecture rule:
 - local code selects, compresses, diffs, validates, and caches
