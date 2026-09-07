@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-09-07T11:26:29Z",
+  "generated_utc": "2026-09-07T11:48:57Z",
   "release_summary": {
     "catalog": [
       {
@@ -325,19 +325,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 12,
-            "local_change_count": 2,
-            "file_touch_count": 173
+            "commit_count": 13,
+            "local_change_count": 1,
+            "file_touch_count": 174
           },
           "48h": {
-            "commit_count": 18,
-            "local_change_count": 2,
-            "file_touch_count": 516
+            "commit_count": 19,
+            "local_change_count": 1,
+            "file_touch_count": 517
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-09-07T04:25:50-07:00",
+          "last_activity_iso": "2026-09-07T04:48:55-07:00",
           "age_days": 73,
           "eta_days": 12,
           "eta_confidence": "high"
@@ -782,19 +782,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 12,
+            "commit_count": 13,
             "local_change_count": 1,
-            "file_touch_count": 167
+            "file_touch_count": 169
           },
           "48h": {
-            "commit_count": 18,
+            "commit_count": 19,
             "local_change_count": 1,
-            "file_touch_count": 220
+            "file_touch_count": 222
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-09-07T04:25:49-07:00",
+          "last_activity_iso": "2026-09-07T04:48:39-07:00",
           "age_days": 163,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -953,19 +953,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 166
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 168
           },
           "48h": {
-            "commit_count": 6,
-            "local_change_count": 1,
-            "file_touch_count": 182
+            "commit_count": 7,
+            "local_change_count": 0,
+            "file_touch_count": 184
           }
         },
         "timeline": {
           "start_date": "2026-03-29",
-          "last_activity_iso": "2026-09-07T04:25:49-07:00",
+          "last_activity_iso": "2026-09-07T04:28:08-07:00",
           "age_days": 162,
           "eta_days": 23,
           "eta_confidence": "high"
@@ -981,7 +981,7 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 53,
+            "index": 55,
             "band": "Medium"
           },
           "48h": {
@@ -1132,19 +1132,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 166
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 168
           },
           "48h": {
-            "commit_count": 6,
-            "local_change_count": 1,
-            "file_touch_count": 185
+            "commit_count": 7,
+            "local_change_count": 0,
+            "file_touch_count": 187
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-09-07T04:25:49-07:00",
+          "last_activity_iso": "2026-09-07T04:28:08-07:00",
           "age_days": 151,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1160,7 +1160,7 @@
         "cost": {
           "base_index": 71,
           "24h": {
-            "index": 89,
+            "index": 91,
             "band": "High"
           },
           "48h": {
@@ -1371,19 +1371,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 166
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 168
           },
           "48h": {
-            "commit_count": 6,
-            "local_change_count": 1,
-            "file_touch_count": 192
+            "commit_count": 7,
+            "local_change_count": 0,
+            "file_touch_count": 194
           }
         },
         "timeline": {
           "start_date": "2026-03-26",
-          "last_activity_iso": "2026-09-07T04:25:49-07:00",
+          "last_activity_iso": "2026-09-07T04:28:08-07:00",
           "age_days": 165,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1399,7 +1399,7 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 73,
+            "index": 75,
             "band": "High"
           },
           "48h": {
@@ -1531,19 +1531,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 166
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 168
           },
           "48h": {
-            "commit_count": 6,
-            "local_change_count": 1,
-            "file_touch_count": 192
+            "commit_count": 7,
+            "local_change_count": 0,
+            "file_touch_count": 194
           }
         },
         "timeline": {
           "start_date": "2026-03-30",
-          "last_activity_iso": "2026-09-07T04:25:49-07:00",
+          "last_activity_iso": "2026-09-07T04:28:08-07:00",
           "age_days": 161,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1559,7 +1559,7 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 53,
+            "index": 55,
             "band": "Medium"
           },
           "48h": {
@@ -1743,19 +1743,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 166
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 168
           },
           "48h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 190
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 192
           }
         },
         "timeline": {
           "start_date": "2026-03-30",
-          "last_activity_iso": "2026-09-07T04:25:49-07:00",
+          "last_activity_iso": "2026-09-07T04:28:08-07:00",
           "age_days": 161,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1771,11 +1771,11 @@
         "cost": {
           "base_index": 27,
           "24h": {
-            "index": 45,
+            "index": 47,
             "band": "Medium"
           },
           "48h": {
-            "index": 45,
+            "index": 47,
             "band": "Medium"
           }
         },
@@ -1963,19 +1963,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 166
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 168
           },
           "48h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 186
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 188
           }
         },
         "timeline": {
           "start_date": "2026-04-07",
-          "last_activity_iso": "2026-09-07T04:25:49-07:00",
+          "last_activity_iso": "2026-09-07T04:28:08-07:00",
           "age_days": 153,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1991,11 +1991,11 @@
         "cost": {
           "base_index": 27,
           "24h": {
-            "index": 45,
+            "index": 47,
             "band": "Medium"
           },
           "48h": {
-            "index": 45,
+            "index": 47,
             "band": "Medium"
           }
         },
@@ -2191,19 +2191,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 166
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 168
           },
           "48h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 186
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 188
           }
         },
         "timeline": {
           "start_date": "2026-04-07",
-          "last_activity_iso": "2026-09-07T04:25:49-07:00",
+          "last_activity_iso": "2026-09-07T04:28:08-07:00",
           "age_days": 153,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -2219,11 +2219,11 @@
         "cost": {
           "base_index": 27,
           "24h": {
-            "index": 45,
+            "index": 47,
             "band": "Medium"
           },
           "48h": {
-            "index": 45,
+            "index": 47,
             "band": "Medium"
           }
         },
@@ -3376,19 +3376,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 1,
-            "file_touch_count": 154
+            "commit_count": 5,
+            "local_change_count": 0,
+            "file_touch_count": 156
           },
           "48h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 190
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 192
           }
         },
         "timeline": {
           "start_date": "2026-04-17",
-          "last_activity_iso": "2026-09-07T04:25:49-07:00",
+          "last_activity_iso": "2026-09-07T04:28:08-07:00",
           "age_days": 143,
           "eta_days": null,
           "eta_confidence": "low"
@@ -3404,7 +3404,7 @@
         "cost": {
           "base_index": 84,
           "24h": {
-            "index": 99,
+            "index": 100,
             "band": "High"
           },
           "48h": {
@@ -3563,19 +3563,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 1,
-            "file_touch_count": 154
+            "commit_count": 5,
+            "local_change_count": 0,
+            "file_touch_count": 156
           },
           "48h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 194
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 196
           }
         },
         "timeline": {
           "start_date": "2026-04-17",
-          "last_activity_iso": "2026-09-07T04:25:49-07:00",
+          "last_activity_iso": "2026-09-07T04:28:08-07:00",
           "age_days": 143,
           "eta_days": null,
           "eta_confidence": "low"
@@ -3591,11 +3591,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 50,
+            "index": 52,
             "band": "Medium"
           },
           "48h": {
-            "index": 53,
+            "index": 55,
             "band": "Medium"
           }
         },
@@ -30211,19 +30211,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 12,
-            "local_change_count": 2,
-            "file_touch_count": 173
+            "commit_count": 13,
+            "local_change_count": 1,
+            "file_touch_count": 174
           },
           "48h": {
-            "commit_count": 18,
-            "local_change_count": 2,
-            "file_touch_count": 516
+            "commit_count": 19,
+            "local_change_count": 1,
+            "file_touch_count": 517
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-09-07T04:25:50-07:00",
+          "last_activity_iso": "2026-09-07T04:48:55-07:00",
           "age_days": 73,
           "eta_days": 12,
           "eta_confidence": "high"
@@ -30668,19 +30668,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 12,
+            "commit_count": 13,
             "local_change_count": 1,
-            "file_touch_count": 167
+            "file_touch_count": 169
           },
           "48h": {
-            "commit_count": 18,
+            "commit_count": 19,
             "local_change_count": 1,
-            "file_touch_count": 220
+            "file_touch_count": 222
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-09-07T04:25:49-07:00",
+          "last_activity_iso": "2026-09-07T04:48:39-07:00",
           "age_days": 163,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -30839,19 +30839,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 166
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 168
           },
           "48h": {
-            "commit_count": 6,
-            "local_change_count": 1,
-            "file_touch_count": 182
+            "commit_count": 7,
+            "local_change_count": 0,
+            "file_touch_count": 184
           }
         },
         "timeline": {
           "start_date": "2026-03-29",
-          "last_activity_iso": "2026-09-07T04:25:49-07:00",
+          "last_activity_iso": "2026-09-07T04:28:08-07:00",
           "age_days": 162,
           "eta_days": 23,
           "eta_confidence": "high"
@@ -30867,7 +30867,7 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 53,
+            "index": 55,
             "band": "Medium"
           },
           "48h": {
@@ -31018,19 +31018,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 166
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 168
           },
           "48h": {
-            "commit_count": 6,
-            "local_change_count": 1,
-            "file_touch_count": 185
+            "commit_count": 7,
+            "local_change_count": 0,
+            "file_touch_count": 187
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-09-07T04:25:49-07:00",
+          "last_activity_iso": "2026-09-07T04:28:08-07:00",
           "age_days": 151,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -31046,7 +31046,7 @@
         "cost": {
           "base_index": 71,
           "24h": {
-            "index": 89,
+            "index": 91,
             "band": "High"
           },
           "48h": {
@@ -31257,19 +31257,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 166
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 168
           },
           "48h": {
-            "commit_count": 6,
-            "local_change_count": 1,
-            "file_touch_count": 192
+            "commit_count": 7,
+            "local_change_count": 0,
+            "file_touch_count": 194
           }
         },
         "timeline": {
           "start_date": "2026-03-26",
-          "last_activity_iso": "2026-09-07T04:25:49-07:00",
+          "last_activity_iso": "2026-09-07T04:28:08-07:00",
           "age_days": 165,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -31285,7 +31285,7 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 73,
+            "index": 75,
             "band": "High"
           },
           "48h": {
@@ -31417,19 +31417,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 166
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 168
           },
           "48h": {
-            "commit_count": 6,
-            "local_change_count": 1,
-            "file_touch_count": 192
+            "commit_count": 7,
+            "local_change_count": 0,
+            "file_touch_count": 194
           }
         },
         "timeline": {
           "start_date": "2026-03-30",
-          "last_activity_iso": "2026-09-07T04:25:49-07:00",
+          "last_activity_iso": "2026-09-07T04:28:08-07:00",
           "age_days": 161,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -31445,7 +31445,7 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 53,
+            "index": 55,
             "band": "Medium"
           },
           "48h": {
@@ -31629,19 +31629,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 166
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 168
           },
           "48h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 190
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 192
           }
         },
         "timeline": {
           "start_date": "2026-03-30",
-          "last_activity_iso": "2026-09-07T04:25:49-07:00",
+          "last_activity_iso": "2026-09-07T04:28:08-07:00",
           "age_days": 161,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -31657,11 +31657,11 @@
         "cost": {
           "base_index": 27,
           "24h": {
-            "index": 45,
+            "index": 47,
             "band": "Medium"
           },
           "48h": {
-            "index": 45,
+            "index": 47,
             "band": "Medium"
           }
         },
@@ -31849,19 +31849,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 166
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 168
           },
           "48h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 186
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 188
           }
         },
         "timeline": {
           "start_date": "2026-04-07",
-          "last_activity_iso": "2026-09-07T04:25:49-07:00",
+          "last_activity_iso": "2026-09-07T04:28:08-07:00",
           "age_days": 153,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -31877,11 +31877,11 @@
         "cost": {
           "base_index": 27,
           "24h": {
-            "index": 45,
+            "index": 47,
             "band": "Medium"
           },
           "48h": {
-            "index": 45,
+            "index": 47,
             "band": "Medium"
           }
         },
@@ -32077,19 +32077,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 166
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 168
           },
           "48h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 186
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 188
           }
         },
         "timeline": {
           "start_date": "2026-04-07",
-          "last_activity_iso": "2026-09-07T04:25:49-07:00",
+          "last_activity_iso": "2026-09-07T04:28:08-07:00",
           "age_days": 153,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -32105,11 +32105,11 @@
         "cost": {
           "base_index": 27,
           "24h": {
-            "index": 45,
+            "index": 47,
             "band": "Medium"
           },
           "48h": {
-            "index": 45,
+            "index": 47,
             "band": "Medium"
           }
         },
@@ -33436,19 +33436,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 1,
-            "file_touch_count": 154
+            "commit_count": 5,
+            "local_change_count": 0,
+            "file_touch_count": 156
           },
           "48h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 190
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 192
           }
         },
         "timeline": {
           "start_date": "2026-04-17",
-          "last_activity_iso": "2026-09-07T04:25:49-07:00",
+          "last_activity_iso": "2026-09-07T04:28:08-07:00",
           "age_days": 143,
           "eta_days": null,
           "eta_confidence": "low"
@@ -33464,7 +33464,7 @@
         "cost": {
           "base_index": 84,
           "24h": {
-            "index": 99,
+            "index": 100,
             "band": "High"
           },
           "48h": {
@@ -33623,19 +33623,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 1,
-            "file_touch_count": 154
+            "commit_count": 5,
+            "local_change_count": 0,
+            "file_touch_count": 156
           },
           "48h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 194
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 196
           }
         },
         "timeline": {
           "start_date": "2026-04-17",
-          "last_activity_iso": "2026-09-07T04:25:49-07:00",
+          "last_activity_iso": "2026-09-07T04:28:08-07:00",
           "age_days": 143,
           "eta_days": null,
           "eta_confidence": "low"
@@ -33651,11 +33651,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 50,
+            "index": 52,
             "band": "Medium"
           },
           "48h": {
-            "index": 53,
+            "index": 55,
             "band": "Medium"
           }
         },
@@ -60098,19 +60098,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 12,
-          "local_change_count": 2,
-          "file_touch_count": 173
+          "commit_count": 13,
+          "local_change_count": 1,
+          "file_touch_count": 174
         },
         "48h": {
-          "commit_count": 18,
-          "local_change_count": 2,
-          "file_touch_count": 516
+          "commit_count": 19,
+          "local_change_count": 1,
+          "file_touch_count": 517
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-09-07T04:25:50-07:00",
+        "last_activity_iso": "2026-09-07T04:48:55-07:00",
         "age_days": 73,
         "eta_days": 12,
         "eta_confidence": "high"
@@ -60555,19 +60555,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 12,
+          "commit_count": 13,
           "local_change_count": 1,
-          "file_touch_count": 167
+          "file_touch_count": 169
         },
         "48h": {
-          "commit_count": 18,
+          "commit_count": 19,
           "local_change_count": 1,
-          "file_touch_count": 220
+          "file_touch_count": 222
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-09-07T04:25:49-07:00",
+        "last_activity_iso": "2026-09-07T04:48:39-07:00",
         "age_days": 163,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -60726,19 +60726,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 166
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 168
         },
         "48h": {
-          "commit_count": 6,
-          "local_change_count": 1,
-          "file_touch_count": 182
+          "commit_count": 7,
+          "local_change_count": 0,
+          "file_touch_count": 184
         }
       },
       "timeline": {
         "start_date": "2026-03-29",
-        "last_activity_iso": "2026-09-07T04:25:49-07:00",
+        "last_activity_iso": "2026-09-07T04:28:08-07:00",
         "age_days": 162,
         "eta_days": 23,
         "eta_confidence": "high"
@@ -60754,7 +60754,7 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 53,
+          "index": 55,
           "band": "Medium"
         },
         "48h": {
@@ -60905,19 +60905,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 166
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 168
         },
         "48h": {
-          "commit_count": 6,
-          "local_change_count": 1,
-          "file_touch_count": 185
+          "commit_count": 7,
+          "local_change_count": 0,
+          "file_touch_count": 187
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-09-07T04:25:49-07:00",
+        "last_activity_iso": "2026-09-07T04:28:08-07:00",
         "age_days": 151,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -60933,7 +60933,7 @@
       "cost": {
         "base_index": 71,
         "24h": {
-          "index": 89,
+          "index": 91,
           "band": "High"
         },
         "48h": {
@@ -61144,19 +61144,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 166
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 168
         },
         "48h": {
-          "commit_count": 6,
-          "local_change_count": 1,
-          "file_touch_count": 192
+          "commit_count": 7,
+          "local_change_count": 0,
+          "file_touch_count": 194
         }
       },
       "timeline": {
         "start_date": "2026-03-26",
-        "last_activity_iso": "2026-09-07T04:25:49-07:00",
+        "last_activity_iso": "2026-09-07T04:28:08-07:00",
         "age_days": 165,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -61172,7 +61172,7 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 73,
+          "index": 75,
           "band": "High"
         },
         "48h": {
@@ -61304,19 +61304,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 166
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 168
         },
         "48h": {
-          "commit_count": 6,
-          "local_change_count": 1,
-          "file_touch_count": 192
+          "commit_count": 7,
+          "local_change_count": 0,
+          "file_touch_count": 194
         }
       },
       "timeline": {
         "start_date": "2026-03-30",
-        "last_activity_iso": "2026-09-07T04:25:49-07:00",
+        "last_activity_iso": "2026-09-07T04:28:08-07:00",
         "age_days": 161,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -61332,7 +61332,7 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 53,
+          "index": 55,
           "band": "Medium"
         },
         "48h": {
@@ -61516,19 +61516,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 166
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 168
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 190
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 192
         }
       },
       "timeline": {
         "start_date": "2026-03-30",
-        "last_activity_iso": "2026-09-07T04:25:49-07:00",
+        "last_activity_iso": "2026-09-07T04:28:08-07:00",
         "age_days": 161,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -61544,11 +61544,11 @@
       "cost": {
         "base_index": 27,
         "24h": {
-          "index": 45,
+          "index": 47,
           "band": "Medium"
         },
         "48h": {
-          "index": 45,
+          "index": 47,
           "band": "Medium"
         }
       },
@@ -61736,19 +61736,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 166
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 168
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 186
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 188
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-09-07T04:25:49-07:00",
+        "last_activity_iso": "2026-09-07T04:28:08-07:00",
         "age_days": 153,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -61764,11 +61764,11 @@
       "cost": {
         "base_index": 27,
         "24h": {
-          "index": 45,
+          "index": 47,
           "band": "Medium"
         },
         "48h": {
-          "index": 45,
+          "index": 47,
           "band": "Medium"
         }
       },
@@ -61964,19 +61964,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 166
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 168
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 186
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 188
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-09-07T04:25:49-07:00",
+        "last_activity_iso": "2026-09-07T04:28:08-07:00",
         "age_days": 153,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -61992,11 +61992,11 @@
       "cost": {
         "base_index": 27,
         "24h": {
-          "index": 45,
+          "index": 47,
           "band": "Medium"
         },
         "48h": {
-          "index": 45,
+          "index": 47,
           "band": "Medium"
         }
       },
@@ -63323,19 +63323,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 1,
-          "file_touch_count": 154
+          "commit_count": 5,
+          "local_change_count": 0,
+          "file_touch_count": 156
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 190
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 192
         }
       },
       "timeline": {
         "start_date": "2026-04-17",
-        "last_activity_iso": "2026-09-07T04:25:49-07:00",
+        "last_activity_iso": "2026-09-07T04:28:08-07:00",
         "age_days": 143,
         "eta_days": null,
         "eta_confidence": "low"
@@ -63351,7 +63351,7 @@
       "cost": {
         "base_index": 84,
         "24h": {
-          "index": 99,
+          "index": 100,
           "band": "High"
         },
         "48h": {
@@ -63510,19 +63510,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 1,
-          "file_touch_count": 154
+          "commit_count": 5,
+          "local_change_count": 0,
+          "file_touch_count": 156
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 194
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 196
         }
       },
       "timeline": {
         "start_date": "2026-04-17",
-        "last_activity_iso": "2026-09-07T04:25:49-07:00",
+        "last_activity_iso": "2026-09-07T04:28:08-07:00",
         "age_days": 143,
         "eta_days": null,
         "eta_confidence": "low"
@@ -63538,11 +63538,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 50,
+          "index": 52,
           "band": "Medium"
         },
         "48h": {
-          "index": 53,
+          "index": 55,
           "band": "Medium"
         }
       },
@@ -90355,19 +90355,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 166
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 168
         },
         "48h": {
-          "commit_count": 6,
-          "local_change_count": 1,
-          "file_touch_count": 182
+          "commit_count": 7,
+          "local_change_count": 0,
+          "file_touch_count": 184
         }
       },
       "timeline": {
         "start_date": "2026-03-29",
-        "last_activity_iso": "2026-09-07T04:25:49-07:00",
+        "last_activity_iso": "2026-09-07T04:28:08-07:00",
         "age_days": 162,
         "eta_days": 23,
         "eta_confidence": "high"
@@ -90383,7 +90383,7 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 53,
+          "index": 55,
           "band": "Medium"
         },
         "48h": {
@@ -91785,19 +91785,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 166
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 168
         },
         "48h": {
-          "commit_count": 6,
-          "local_change_count": 1,
-          "file_touch_count": 185
+          "commit_count": 7,
+          "local_change_count": 0,
+          "file_touch_count": 187
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-09-07T04:25:49-07:00",
+        "last_activity_iso": "2026-09-07T04:28:08-07:00",
         "age_days": 151,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -91813,7 +91813,7 @@
       "cost": {
         "base_index": 71,
         "24h": {
-          "index": 89,
+          "index": 91,
           "band": "High"
         },
         "48h": {
@@ -94716,19 +94716,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 12,
-          "local_change_count": 2,
-          "file_touch_count": 173
+          "commit_count": 13,
+          "local_change_count": 1,
+          "file_touch_count": 174
         },
         "48h": {
-          "commit_count": 18,
-          "local_change_count": 2,
-          "file_touch_count": 516
+          "commit_count": 19,
+          "local_change_count": 1,
+          "file_touch_count": 517
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-09-07T04:25:50-07:00",
+        "last_activity_iso": "2026-09-07T04:48:55-07:00",
         "age_days": 73,
         "eta_days": 12,
         "eta_confidence": "high"
@@ -95008,19 +95008,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 166
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 168
         },
         "48h": {
-          "commit_count": 6,
-          "local_change_count": 1,
-          "file_touch_count": 192
+          "commit_count": 7,
+          "local_change_count": 0,
+          "file_touch_count": 194
         }
       },
       "timeline": {
         "start_date": "2026-03-26",
-        "last_activity_iso": "2026-09-07T04:25:49-07:00",
+        "last_activity_iso": "2026-09-07T04:28:08-07:00",
         "age_days": 165,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -95036,7 +95036,7 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 73,
+          "index": 75,
           "band": "High"
         },
         "48h": {
@@ -95683,19 +95683,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 12,
+          "commit_count": 13,
           "local_change_count": 1,
-          "file_touch_count": 167
+          "file_touch_count": 169
         },
         "48h": {
-          "commit_count": 18,
+          "commit_count": 19,
           "local_change_count": 1,
-          "file_touch_count": 220
+          "file_touch_count": 222
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-09-07T04:25:49-07:00",
+        "last_activity_iso": "2026-09-07T04:48:39-07:00",
         "age_days": 163,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -98824,19 +98824,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 166
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 168
         },
         "48h": {
-          "commit_count": 6,
-          "local_change_count": 1,
-          "file_touch_count": 192
+          "commit_count": 7,
+          "local_change_count": 0,
+          "file_touch_count": 194
         }
       },
       "timeline": {
         "start_date": "2026-03-30",
-        "last_activity_iso": "2026-09-07T04:25:49-07:00",
+        "last_activity_iso": "2026-09-07T04:28:08-07:00",
         "age_days": 161,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -98852,7 +98852,7 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 53,
+          "index": 55,
           "band": "Medium"
         },
         "48h": {
@@ -99508,19 +99508,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 166
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 168
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 190
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 192
         }
       },
       "timeline": {
         "start_date": "2026-03-30",
-        "last_activity_iso": "2026-09-07T04:25:49-07:00",
+        "last_activity_iso": "2026-09-07T04:28:08-07:00",
         "age_days": 161,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -99536,11 +99536,11 @@
       "cost": {
         "base_index": 27,
         "24h": {
-          "index": 45,
+          "index": 47,
           "band": "Medium"
         },
         "48h": {
-          "index": 45,
+          "index": 47,
           "band": "Medium"
         }
       },
@@ -103108,19 +103108,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 166
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 168
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 186
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 188
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-09-07T04:25:49-07:00",
+        "last_activity_iso": "2026-09-07T04:28:08-07:00",
         "age_days": 153,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -103136,11 +103136,11 @@
       "cost": {
         "base_index": 27,
         "24h": {
-          "index": 45,
+          "index": 47,
           "band": "Medium"
         },
         "48h": {
-          "index": 45,
+          "index": 47,
           "band": "Medium"
         }
       },
@@ -103336,19 +103336,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 166
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 168
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 186
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 188
         }
       },
       "timeline": {
         "start_date": "2026-04-07",
-        "last_activity_iso": "2026-09-07T04:25:49-07:00",
+        "last_activity_iso": "2026-09-07T04:28:08-07:00",
         "age_days": 153,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -103364,11 +103364,11 @@
       "cost": {
         "base_index": 27,
         "24h": {
-          "index": 45,
+          "index": 47,
           "band": "Medium"
         },
         "48h": {
-          "index": 45,
+          "index": 47,
           "band": "Medium"
         }
       },
@@ -113366,19 +113366,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 1,
-          "file_touch_count": 154
+          "commit_count": 5,
+          "local_change_count": 0,
+          "file_touch_count": 156
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 190
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 192
         }
       },
       "timeline": {
         "start_date": "2026-04-17",
-        "last_activity_iso": "2026-09-07T04:25:49-07:00",
+        "last_activity_iso": "2026-09-07T04:28:08-07:00",
         "age_days": 143,
         "eta_days": null,
         "eta_confidence": "low"
@@ -113394,7 +113394,7 @@
       "cost": {
         "base_index": 84,
         "24h": {
-          "index": 99,
+          "index": 100,
           "band": "High"
         },
         "48h": {
@@ -114865,19 +114865,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 1,
-          "file_touch_count": 154
+          "commit_count": 5,
+          "local_change_count": 0,
+          "file_touch_count": 156
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 194
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 196
         }
       },
       "timeline": {
         "start_date": "2026-04-17",
-        "last_activity_iso": "2026-09-07T04:25:49-07:00",
+        "last_activity_iso": "2026-09-07T04:28:08-07:00",
         "age_days": 143,
         "eta_days": null,
         "eta_confidence": "low"
@@ -114893,11 +114893,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 50,
+          "index": 52,
           "band": "Medium"
         },
         "48h": {
-          "index": 53,
+          "index": 55,
           "band": "Medium"
         }
       },

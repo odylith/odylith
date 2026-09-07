@@ -10,6 +10,33 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Event-order authority candidate (2026-09-07)
+
+The bounded external comparison accepts source-event identities plus exact-cited
+precedence and one explicitly proposed first-run walkthrough. Source precedence
+alone would stop false arrows but leave capability-list requests without a useful
+first path. Delivery prerequisites are not runtime ordering evidence. Eighteen
+structural controls pass before one new Terra/low author call completes in 36.396
+seconds. Independent raw-response review confirms four exact prerequisites,
+independent preparations, publication bound to document event 1 and proposed
+path [2,3,5,4,1], with coherent five-component/five-workstream design. Complete
+behavior and household scope remain despite two noncritical copy/citation issues.
+Evidence: `/private/tmp/odylith-event-order-authority.qTFzOp/review.md`.
+
+This is feasibility, not production adoption or whole-consumer latency proof.
+Implement one ownership replacement across author/derivation, semantic mapping
+and custody, materialization/atomic result linkage, proposal/Atlas, preconfirm
+alignment and experience/readiness handoff. Preserve existing source-support
+identifiers in Registry and Radar. Remove inferred adjacency and result-last
+assumptions; never introduce another downstream sequence generator. Before
+adoption, prove unordered and equivalent-source controls, explicit/reverse and
+partial precedence, result placement, negative integrity, native sealed/readback
+transactions and source/design agreement across all projections. Run fresh
+desktop/mobile normal and applicable empty/fallback/error checks for Project,
+Radar, Registry, Atlas, Casebook, Compass and dashboard shell. No retry, schema
+migration or profile change was performed by the experiment; 60/90/120, useful
+4-5/4-5/5+ depth, other semantic/design blockers and final holdout gates remain.
+
 ### Continuous experience gate (2026-09-06)
 
 Bounded Atlas UX checkpoint (2026-09-07): explicit catalog activation in the
