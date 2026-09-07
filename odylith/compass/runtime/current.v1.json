@@ -1,7 +1,7 @@
 {
   "version": "v1",
-  "generated_utc": "2026-09-07T04:48:45Z",
-  "now_local_iso": "2026-09-06T21:48:45-07:00",
+  "generated_utc": "2026-09-07T05:21:30Z",
+  "now_local_iso": "2026-09-06T22:21:30-07:00",
   "time_context": {
     "timezone": "America/Los_Angeles",
     "label": "San Francisco"
@@ -22,7 +22,7 @@
   },
   "kpis": {
     "24h": {
-      "commits": 4,
+      "commits": 5,
       "local_changes": 1,
       "touched_workstreams": 2,
       "active_workstreams": 26,
@@ -31,7 +31,7 @@
       "active_touched_workstreams": 1
     },
     "48h": {
-      "commits": 10,
+      "commits": 11,
       "local_changes": 1,
       "touched_workstreams": 2,
       "active_workstreams": 26,
@@ -934,7 +934,7 @@
     "24h": {
       "schema_version": "v25",
       "status": "ready",
-      "source": "provider",
+      "source": "cache",
       "fingerprint": "6e4d706ad74f387f516565d2a5d3345016f06a095cc1489e8a5e458637eee1fa",
       "generated_utc": "2026-09-07T04:48:45Z",
       "sections": [
@@ -1057,13 +1057,14 @@
       },
       "substrate_fingerprint": "6e4d706ad74f387f516565d2a5d3345016f06a095cc1489e8a5e458637eee1fa",
       "bundle_fingerprint": "0b2888b74802a9372eef348d12b5ec9dfbb07b590c40f26a545d4c47cbabafc0",
-      "provider_decision": "provider_called",
-      "last_successful_narration_fingerprint": "6e4d706ad74f387f516565d2a5d3345016f06a095cc1489e8a5e458637eee1fa"
+      "provider_decision": "cache_reuse",
+      "last_successful_narration_fingerprint": "6e4d706ad74f387f516565d2a5d3345016f06a095cc1489e8a5e458637eee1fa",
+      "cache_mode": "exact"
     },
     "48h": {
       "schema_version": "v25",
       "status": "ready",
-      "source": "provider",
+      "source": "cache",
       "fingerprint": "277ee61c2d54a10945f9081b9d45c2047aee8ae2317d27323ce4e555f5db76f1",
       "generated_utc": "2026-09-07T04:48:45Z",
       "sections": [
@@ -1196,8 +1197,9 @@
       },
       "substrate_fingerprint": "277ee61c2d54a10945f9081b9d45c2047aee8ae2317d27323ce4e555f5db76f1",
       "bundle_fingerprint": "567beb481d8a3144e7e26eacc4d999bf2d5de492c4a2399f6f19521c6da6adef",
-      "provider_decision": "provider_called",
-      "last_successful_narration_fingerprint": "277ee61c2d54a10945f9081b9d45c2047aee8ae2317d27323ce4e555f5db76f1"
+      "provider_decision": "cache_reuse",
+      "last_successful_narration_fingerprint": "277ee61c2d54a10945f9081b9d45c2047aee8ae2317d27323ce4e555f5db76f1",
+      "cache_mode": "exact"
     }
   },
   "standup_brief_scoped": {
@@ -1206,7 +1208,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1219,7 +1221,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1232,7 +1234,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1245,7 +1247,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1258,7 +1260,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1271,7 +1273,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1284,7 +1286,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1297,7 +1299,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1310,7 +1312,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1323,7 +1325,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1336,7 +1338,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1349,7 +1351,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1362,7 +1364,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1375,7 +1377,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1388,7 +1390,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1401,7 +1403,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1414,7 +1416,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1427,7 +1429,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1440,7 +1442,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1453,7 +1455,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1466,7 +1468,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1479,7 +1481,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1492,7 +1494,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1505,7 +1507,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1518,7 +1520,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1531,19 +1533,24 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "5598caae16991bf29cebc8891039afad043d0ad910f45299c2df0e1d365079a1",
+        "substrate_fingerprint": "5598caae16991bf29cebc8891039afad043d0ad910f45299c2df0e1d365079a1",
         "bundle_fingerprint": "",
         "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "sections": [],
         "diagnostics": {
           "reason": "skipped_not_worth_calling",
           "title": "Brief reused last validated narration",
           "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
           "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "skip_reason": "deferred_to_background",
+          "provider": "codex-cli",
+          "provider_failure_code": "credits_exhausted",
+          "provider_failure_detail": "2026-09-07T04:48:46.849848Z WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back 2026-09 ... :44 PM. ERROR: You've hit your usage limit for GPT-5.3-Codex-Spark. Switch to another model now, or try again at Sep 7th, 2026 1:44 PM.",
+          "provider_model": "gpt-5.3-codex-spark",
+          "provider_reasoning_effort": "medium"
         },
         "evidence_lookup": {}
       },
@@ -1551,7 +1558,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1564,7 +1571,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1577,7 +1584,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1590,7 +1597,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1603,19 +1610,24 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "4fd5539742f49b0a56a32b0de9ebafed89e0aca2503b53773b33a0bdf8208395",
+        "substrate_fingerprint": "4fd5539742f49b0a56a32b0de9ebafed89e0aca2503b53773b33a0bdf8208395",
         "bundle_fingerprint": "",
         "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "sections": [],
         "diagnostics": {
           "reason": "skipped_not_worth_calling",
           "title": "Brief reused last validated narration",
           "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
           "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "skip_reason": "deferred_to_background",
+          "provider": "codex-cli",
+          "provider_failure_code": "credits_exhausted",
+          "provider_failure_detail": "2026-09-07T04:48:46.849848Z WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back 2026-09 ... :44 PM. ERROR: You've hit your usage limit for GPT-5.3-Codex-Spark. Switch to another model now, or try again at Sep 7th, 2026 1:44 PM.",
+          "provider_model": "gpt-5.3-codex-spark",
+          "provider_reasoning_effort": "medium"
         },
         "evidence_lookup": {}
       },
@@ -1623,7 +1635,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1636,7 +1648,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1649,7 +1661,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1662,7 +1674,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1675,7 +1687,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1688,7 +1700,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1701,7 +1713,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1714,7 +1726,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1727,7 +1739,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1740,7 +1752,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1753,7 +1765,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1766,7 +1778,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1779,7 +1791,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1792,7 +1804,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1805,7 +1817,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1818,7 +1830,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1831,7 +1843,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1844,7 +1856,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1857,7 +1869,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1870,7 +1882,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1883,7 +1895,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1896,7 +1908,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1909,7 +1921,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1922,7 +1934,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1935,7 +1947,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1948,7 +1960,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1961,7 +1973,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1974,7 +1986,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1987,7 +1999,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2000,7 +2012,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2013,7 +2025,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2026,7 +2038,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2039,7 +2051,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2052,7 +2064,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2065,7 +2077,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2078,7 +2090,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2091,7 +2103,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2104,7 +2116,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2117,7 +2129,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2130,7 +2142,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2143,7 +2155,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2156,7 +2168,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2169,7 +2181,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2182,7 +2194,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2195,7 +2207,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2208,7 +2220,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2221,7 +2233,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2234,7 +2246,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2247,7 +2259,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2260,7 +2272,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2273,7 +2285,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2286,7 +2298,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2299,7 +2311,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2312,7 +2324,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2325,7 +2337,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2338,7 +2350,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2351,7 +2363,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2364,7 +2376,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2377,7 +2389,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2390,7 +2402,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2403,7 +2415,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2416,7 +2428,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2429,7 +2441,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2442,7 +2454,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2455,7 +2467,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2468,7 +2480,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2481,7 +2493,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2494,7 +2506,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2507,7 +2519,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2520,7 +2532,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2533,7 +2545,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2546,7 +2558,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2559,7 +2571,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2572,7 +2584,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2585,7 +2597,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2598,7 +2610,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2611,7 +2623,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2624,7 +2636,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2637,7 +2649,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2650,7 +2662,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2663,7 +2675,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2676,7 +2688,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2689,7 +2701,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2702,7 +2714,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2715,7 +2727,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2728,7 +2740,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2741,7 +2753,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2754,7 +2766,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2767,7 +2779,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2780,7 +2792,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2793,7 +2805,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2806,7 +2818,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2819,7 +2831,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2832,7 +2844,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2845,7 +2857,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2858,7 +2870,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2871,7 +2883,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2884,7 +2896,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2897,7 +2909,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2910,7 +2922,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2923,7 +2935,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2936,7 +2948,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2949,7 +2961,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2962,7 +2974,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2975,7 +2987,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2988,7 +3000,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3001,7 +3013,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3014,7 +3026,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3027,7 +3039,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3040,7 +3052,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3053,7 +3065,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3066,7 +3078,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3079,7 +3091,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3092,7 +3104,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3107,7 +3119,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3120,7 +3132,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3133,7 +3145,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3146,7 +3158,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3159,7 +3171,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3172,7 +3184,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3185,7 +3197,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3198,7 +3210,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3211,7 +3223,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3224,7 +3236,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3237,7 +3249,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3250,7 +3262,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3263,7 +3275,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3276,7 +3288,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3289,7 +3301,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3302,7 +3314,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3315,7 +3327,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3328,7 +3340,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3341,7 +3353,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3354,7 +3366,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3367,7 +3379,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3380,7 +3392,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3393,7 +3405,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3406,7 +3418,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3419,7 +3431,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3432,19 +3444,24 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "dfca7c1ff2f8dc5c59919650490cd2cae819c08442529e40446cce10c5517cc4",
+        "substrate_fingerprint": "dfca7c1ff2f8dc5c59919650490cd2cae819c08442529e40446cce10c5517cc4",
         "bundle_fingerprint": "",
         "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "sections": [],
         "diagnostics": {
           "reason": "skipped_not_worth_calling",
           "title": "Brief reused last validated narration",
           "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
           "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "skip_reason": "deferred_to_background",
+          "provider": "codex-cli",
+          "provider_failure_code": "credits_exhausted",
+          "provider_failure_detail": "2026-09-07T04:48:46.849848Z WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back 2026-09 ... :44 PM. ERROR: You've hit your usage limit for GPT-5.3-Codex-Spark. Switch to another model now, or try again at Sep 7th, 2026 1:44 PM.",
+          "provider_model": "gpt-5.3-codex-spark",
+          "provider_reasoning_effort": "medium"
         },
         "evidence_lookup": {}
       },
@@ -3452,7 +3469,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3465,7 +3482,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3478,7 +3495,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3491,7 +3508,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3504,19 +3521,24 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "0818add0ac9f49a88e23e0f377b3fa0105e44ae159539935bf263b5eef540a9a",
+        "substrate_fingerprint": "0818add0ac9f49a88e23e0f377b3fa0105e44ae159539935bf263b5eef540a9a",
         "bundle_fingerprint": "",
         "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "sections": [],
         "diagnostics": {
           "reason": "skipped_not_worth_calling",
           "title": "Brief reused last validated narration",
           "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
           "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "skip_reason": "deferred_to_background",
+          "provider": "codex-cli",
+          "provider_failure_code": "credits_exhausted",
+          "provider_failure_detail": "2026-09-07T04:48:46.849848Z WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back 2026-09 ... :44 PM. ERROR: You've hit your usage limit for GPT-5.3-Codex-Spark. Switch to another model now, or try again at Sep 7th, 2026 1:44 PM.",
+          "provider_model": "gpt-5.3-codex-spark",
+          "provider_reasoning_effort": "medium"
         },
         "evidence_lookup": {}
       },
@@ -3524,7 +3546,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3537,7 +3559,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3550,7 +3572,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3563,7 +3585,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3576,7 +3598,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3589,7 +3611,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3602,7 +3624,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3615,7 +3637,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3628,7 +3650,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3641,7 +3663,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3654,7 +3676,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3667,7 +3689,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3680,7 +3702,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3693,7 +3715,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3706,7 +3728,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3719,7 +3741,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3732,7 +3754,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3745,7 +3767,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3758,7 +3780,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3771,7 +3793,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3784,7 +3806,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3797,7 +3819,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3810,7 +3832,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3823,7 +3845,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3836,7 +3858,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3849,7 +3871,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3862,7 +3884,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3875,7 +3897,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3888,7 +3910,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3901,7 +3923,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3914,7 +3936,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3927,7 +3949,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3940,7 +3962,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3953,7 +3975,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3966,7 +3988,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3979,7 +4001,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3992,7 +4014,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4005,7 +4027,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4018,7 +4040,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4031,7 +4053,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4044,7 +4066,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4057,7 +4079,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4070,7 +4092,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4083,7 +4105,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4096,7 +4118,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4109,7 +4131,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4122,7 +4144,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4135,7 +4157,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4148,7 +4170,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4161,7 +4183,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4174,7 +4196,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4187,7 +4209,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4200,7 +4222,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4213,7 +4235,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4226,7 +4248,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4239,7 +4261,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4252,7 +4274,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4265,7 +4287,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4278,7 +4300,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4291,7 +4313,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4304,7 +4326,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4317,7 +4339,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4330,7 +4352,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4343,7 +4365,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4356,7 +4378,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4369,7 +4391,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4382,7 +4404,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4395,7 +4417,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4408,7 +4430,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4421,7 +4443,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4434,7 +4456,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4447,7 +4469,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4460,7 +4482,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4473,7 +4495,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4486,7 +4508,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4499,7 +4521,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4512,7 +4534,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4525,7 +4547,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4538,7 +4560,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4551,7 +4573,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4564,7 +4586,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4577,7 +4599,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4590,7 +4612,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4603,7 +4625,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4616,7 +4638,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4629,7 +4651,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4642,7 +4664,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4655,7 +4677,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4668,7 +4690,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4681,7 +4703,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4694,7 +4716,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4707,7 +4729,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4720,7 +4742,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4733,7 +4755,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4746,7 +4768,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4759,7 +4781,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4772,7 +4794,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4785,7 +4807,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4798,7 +4820,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4811,7 +4833,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4824,7 +4846,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4837,7 +4859,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4850,7 +4872,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4863,7 +4885,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4876,7 +4898,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4889,7 +4911,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4902,7 +4924,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4915,7 +4937,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4928,7 +4950,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4941,7 +4963,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4954,7 +4976,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4967,7 +4989,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4980,7 +5002,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4993,7 +5015,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-07T04:48:45Z",
+        "generated_utc": "2026-09-07T05:21:30Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5006,10 +5028,10 @@
   },
   "standup_runtime": {
     "24h": {
-      "global_reuse_fingerprint": "10f858517819792525d0b335e9543b9417f979bf429fda49efae0d17aed93d04",
+      "global_reuse_fingerprint": "423a054eb80de8523599be51bb352e2f4b7fd15373a18315262bdb6b7218229e",
       "scoped_reuse_fingerprints": {
-        "B-142": "66e33a4a4305aa8374b18fa2c0107782f79028609eddcdbe1eaa0fc7e3aa36ff",
-        "B-005": "0e5632049a6e7fa02c525036fd8e4b94af4a271acb414aa8966e1fd41eae2880"
+        "B-142": "6aaab9686f00eda1007facb3b5be547f6e2d1b7c1bfff048ba8cc7b3475db250",
+        "B-005": "6a95a8d199a578cda70795e46b1bdfea8ac4f31bf2d1b5fcc95151bccc958a9e"
       },
       "verified_scope_ids": [
         "B-005",
@@ -7950,10 +7972,10 @@
       }
     },
     "48h": {
-      "global_reuse_fingerprint": "62d10746d5449f18fa09c8f56cd6e6f9d94f0303b4d201bfcda10352ed020713",
+      "global_reuse_fingerprint": "429f7bee8ef88f449dedc5efc539d9021953b9ced7379b4c32f254aef8af1721",
       "scoped_reuse_fingerprints": {
-        "B-142": "4068932574ff4b6125e3b106b38afbed6b4d1559bcca0cbf0cc1d77a15086239",
-        "B-005": "3f42356a9c7ff228c76318ab662544d86b72f28d03debe9146a2385f6b51b3bb"
+        "B-142": "186d629ea1cd305292e78b1f79f66df606d4c06b764cf0ed0111e95509d9e786",
+        "B-005": "dd1f1dfc5f415106958790a0a04c6bc50ce3ada04a45a640abe3fb669086d426"
       },
       "verified_scope_ids": [
         "B-005",
@@ -23577,19 +23599,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
+          "commit_count": 5,
           "local_change_count": 1,
           "file_touch_count": 68
         },
         "48h": {
-          "commit_count": 10,
+          "commit_count": 11,
           "local_change_count": 1,
           "file_touch_count": 475
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-09-06T21:48:43-07:00",
+        "last_activity_iso": "2026-09-06T22:21:29-07:00",
         "age_days": 72,
         "eta_days": 12,
         "eta_confidence": "high"
@@ -23605,7 +23627,7 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 70,
+          "index": 73,
           "band": "High"
         },
         "48h": {
@@ -24542,19 +24564,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
+          "commit_count": 5,
           "local_change_count": 1,
           "file_touch_count": 67
         },
         "48h": {
-          "commit_count": 10,
+          "commit_count": 11,
           "local_change_count": 1,
           "file_touch_count": 172
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-09-06T21:48:42-07:00",
+        "last_activity_iso": "2026-09-06T22:21:28-07:00",
         "age_days": 162,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -24570,7 +24592,7 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 70,
+          "index": 73,
           "band": "High"
         },
         "48h": {
@@ -48730,19 +48752,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
+            "commit_count": 5,
             "local_change_count": 1,
             "file_touch_count": 68
           },
           "48h": {
-            "commit_count": 10,
+            "commit_count": 11,
             "local_change_count": 1,
             "file_touch_count": 475
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-09-06T21:48:43-07:00",
+          "last_activity_iso": "2026-09-06T22:21:29-07:00",
           "age_days": 72,
           "eta_days": 12,
           "eta_confidence": "high"
@@ -48758,7 +48780,7 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 70,
+            "index": 73,
             "band": "High"
           },
           "48h": {
@@ -49185,19 +49207,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
+            "commit_count": 5,
             "local_change_count": 1,
             "file_touch_count": 67
           },
           "48h": {
-            "commit_count": 10,
+            "commit_count": 11,
             "local_change_count": 1,
             "file_touch_count": 172
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-09-06T21:48:42-07:00",
+          "last_activity_iso": "2026-09-06T22:21:28-07:00",
           "age_days": 162,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -49213,7 +49235,7 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 70,
+            "index": 73,
             "band": "High"
           },
           "48h": {
@@ -78614,19 +78636,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
+            "commit_count": 5,
             "local_change_count": 1,
             "file_touch_count": 68
           },
           "48h": {
-            "commit_count": 10,
+            "commit_count": 11,
             "local_change_count": 1,
             "file_touch_count": 475
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-09-06T21:48:43-07:00",
+          "last_activity_iso": "2026-09-06T22:21:29-07:00",
           "age_days": 72,
           "eta_days": 12,
           "eta_confidence": "high"
@@ -78642,7 +78664,7 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 70,
+            "index": 73,
             "band": "High"
           },
           "48h": {
@@ -79069,19 +79091,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
+            "commit_count": 5,
             "local_change_count": 1,
             "file_touch_count": 67
           },
           "48h": {
-            "commit_count": 10,
+            "commit_count": 11,
             "local_change_count": 1,
             "file_touch_count": 172
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-09-06T21:48:42-07:00",
+          "last_activity_iso": "2026-09-06T22:21:28-07:00",
           "age_days": 162,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -79097,7 +79119,7 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 70,
+            "index": 73,
             "band": "High"
           },
           "48h": {
@@ -108499,19 +108521,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
+          "commit_count": 5,
           "local_change_count": 1,
           "file_touch_count": 68
         },
         "48h": {
-          "commit_count": 10,
+          "commit_count": 11,
           "local_change_count": 1,
           "file_touch_count": 475
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-09-06T21:48:43-07:00",
+        "last_activity_iso": "2026-09-06T22:21:29-07:00",
         "age_days": 72,
         "eta_days": 12,
         "eta_confidence": "high"
@@ -108527,7 +108549,7 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 70,
+          "index": 73,
           "band": "High"
         },
         "48h": {
@@ -108954,19 +108976,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
+          "commit_count": 5,
           "local_change_count": 1,
           "file_touch_count": 67
         },
         "48h": {
-          "commit_count": 10,
+          "commit_count": 11,
           "local_change_count": 1,
           "file_touch_count": 172
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-09-06T21:48:42-07:00",
+        "last_activity_iso": "2026-09-06T22:21:28-07:00",
         "age_days": 162,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -108982,7 +109004,7 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 70,
+          "index": 73,
           "band": "High"
         },
         "48h": {
@@ -147082,7 +147104,7 @@
     {
       "id": "local:M:odylith/compass/runtime/agent-stream.v1.jsonl",
       "kind": "local_change",
-      "ts_iso": "2026-09-06T21:48:43-07:00",
+      "ts_iso": "2026-09-06T22:21:29-07:00",
       "summary": "Modified odylith/compass/runtime/agent-stream.v1.jsonl",
       "author": "local",
       "sha": "",
@@ -147091,6 +147113,230 @@
         "odylith/compass/runtime/agent-stream.v1.jsonl"
       ],
       "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": "",
+      "proof_lane": "",
+      "proof_fingerprint": "",
+      "proof_phase": "",
+      "evidence_tier": "",
+      "proof_status": "",
+      "work_category": "",
+      "deployment_truth": {}
+    },
+    {
+      "id": "agent:decision:1219:2026-09-06T22:21:29-07:00",
+      "kind": "decision",
+      "ts_iso": "2026-09-06T22:21:29-07:00",
+      "summary": "Greenfield decision cards are readable in six prototype browser states; diagram authority labels and mobile relationship navigation still need work.",
+      "author": "freedom-research",
+      "sha": "",
+      "workstreams": [
+        "B-142"
+      ],
+      "files": [
+        "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "source": "maintainer",
+      "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "Prototype only: eleven no-call tests; six desktop/mobile normal, empty and Mermaid-failure cells with separate exact decision and keyboard assertions. New consumer review distinguishes registration subjects from performing actors; earlier declared inventory failure stays failed. No schema/evaluator changes, provider calls, adoption, publication or consumer timing claim. Evidence: /private/tmp/odylith-greenfield-decision-view.BxNrwx/report.md. Keep continuous Project, Radar, Registry, Atlas, Casebook, Compass and dashboard experience checks with exact coverage and open gaps.",
+      "headline_hint": "",
+      "proof_lane": "",
+      "proof_fingerprint": "",
+      "proof_phase": "",
+      "evidence_tier": "",
+      "proof_status": "",
+      "work_category": "primary_blocker",
+      "deployment_truth": {}
+    },
+    {
+      "id": "plan:update:26:odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+      "kind": "plan_update",
+      "ts_iso": "2026-09-06T22:21:28-07:00",
+      "summary": "Plan updated: greenfield typed semantic compiler and patchset repair (B-005) is In progress; checklist 137/158 complete.",
+      "author": "plan",
+      "sha": "",
+      "workstreams": [
+        "B-005",
+        "B-142"
+      ],
+      "files": [
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "source": "plan_index",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": "",
+      "proof_lane": "",
+      "proof_fingerprint": "",
+      "proof_phase": "",
+      "evidence_tier": "",
+      "proof_status": "",
+      "work_category": "",
+      "deployment_truth": {}
+    },
+    {
+      "id": "plan:implementation:26:odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+      "kind": "implementation",
+      "ts_iso": "2026-09-06T22:21:28-07:00",
+      "summary": "Implementation checkpoint in greenfield typed semantic compiler and patchset repair: completed Convert final package validators to emit typed finding codes, source-map.",
+      "author": "plan",
+      "sha": "",
+      "workstreams": [
+        "B-005",
+        "B-142"
+      ],
+      "files": [
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "source": "plan_file",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": "",
+      "proof_lane": "",
+      "proof_fingerprint": "",
+      "proof_phase": "",
+      "evidence_tier": "",
+      "proof_status": "",
+      "work_category": "",
+      "deployment_truth": {}
+    },
+    {
+      "id": "local:M:odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+      "kind": "local_change",
+      "ts_iso": "2026-09-06T22:21:28-07:00",
+      "summary": "Modified odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+      "author": "local",
+      "sha": "",
+      "workstreams": [
+        "B-005",
+        "B-142"
+      ],
+      "files": [
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": "",
+      "proof_lane": "",
+      "proof_fingerprint": "",
+      "proof_phase": "",
+      "evidence_tier": "",
+      "proof_status": "",
+      "work_category": "",
+      "deployment_truth": {}
+    },
+    {
+      "id": "local:M:odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md",
+      "kind": "local_change",
+      "ts_iso": "2026-09-06T22:21:28-07:00",
+      "summary": "Modified odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md",
+      "author": "local",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": "",
+      "proof_lane": "",
+      "proof_fingerprint": "",
+      "proof_phase": "",
+      "evidence_tier": "",
+      "proof_status": "",
+      "work_category": "",
+      "deployment_truth": {}
+    },
+    {
+      "id": "bug:watch:23:P1",
+      "kind": "bug_watch",
+      "ts_iso": "2026-09-06T22:21:28-07:00",
+      "summary": "Critical bug remains open (P1): Greenfield project surfaces repeated and clipped canonical meaning.",
+      "author": "bugs",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md"
+      ],
+      "source": "bugs_index",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": "",
+      "proof_lane": "",
+      "proof_fingerprint": "",
+      "proof_phase": "",
+      "evidence_tier": "",
+      "proof_status": "",
+      "work_category": "",
+      "deployment_truth": {}
+    },
+    {
+      "id": "commit:4c1ad9539253b3c84abdde0192f31ba6688dec4c",
+      "kind": "commit",
+      "ts_iso": "2026-09-06T22:03:04-07:00",
+      "summary": "Record Greenfield review rejection and clarify governance status",
+      "author": "freedom-research",
+      "sha": "4c1ad9539253b3c84abdde0192f31ba6688dec4c",
+      "workstreams": [
+        "B-005",
+        "B-142"
+      ],
+      "files": [
+        "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md",
+        "odylith/casebook/casebook-detail-shard-003.v1.js",
+        "odylith/casebook/casebook-detail-shard-010.v1.js",
+        "odylith/casebook/casebook-payload.v1.js",
+        "odylith/casebook/casebook.html",
+        "odylith/compass/compass-payload.v1.js",
+        "odylith/compass/compass-source-truth.v1.json",
+        "odylith/compass/compass.html",
+        "odylith/compass/runtime/agent-stream.v1.jsonl",
+        "odylith/compass/runtime/current.v1.js",
+        "odylith/compass/runtime/current.v1.json",
+        "odylith/compass/runtime/history/2026-09-06.v1.json",
+        "odylith/compass/runtime/history/embedded.v1.js",
+        "odylith/compass/runtime/history/index.v1.json",
+        "odylith/radar/backlog-detail-shard-001.v1.js",
+        "odylith/radar/backlog-detail-shard-002.v1.js",
+        "odylith/radar/backlog-detail-shard-003.v1.js",
+        "odylith/radar/backlog-detail-shard-004.v1.js",
+        "odylith/radar/backlog-document-shard-004.v1.js",
+        "odylith/radar/backlog-payload.v1.js",
+        "odylith/radar/radar.html",
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/traceability-graph.v1.json",
+        "odylith/registry/source/components/release/FORENSICS.v1.json",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+        "src/odylith/bundle/assets/odylith/casebook/casebook.html",
+        "src/odylith/bundle/assets/odylith/compass/compass.html",
+        "src/odylith/bundle/assets/odylith/radar/radar.html"
+      ],
+      "source": "git",
       "session_id": "",
       "transaction_id": "",
       "transaction_seq": null,
@@ -147131,145 +147377,6 @@
       "evidence_tier": "",
       "proof_status": "",
       "work_category": "primary_blocker",
-      "deployment_truth": {}
-    },
-    {
-      "id": "local:M:odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md",
-      "kind": "local_change",
-      "ts_iso": "2026-09-06T21:48:42-07:00",
-      "summary": "Modified odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
-      "id": "bug:watch:23:P1",
-      "kind": "bug_watch",
-      "ts_iso": "2026-09-06T21:48:42-07:00",
-      "summary": "Critical bug remains open (P1): Greenfield project surfaces repeated and clipped canonical meaning.",
-      "author": "bugs",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md"
-      ],
-      "source": "bugs_index",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
-      "id": "plan:update:26:odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
-      "kind": "plan_update",
-      "ts_iso": "2026-09-06T21:48:42-07:00",
-      "summary": "Plan updated: greenfield typed semantic compiler and patchset repair (B-005) is In progress; checklist 137/158 complete.",
-      "author": "plan",
-      "sha": "",
-      "workstreams": [
-        "B-005",
-        "B-142"
-      ],
-      "files": [
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
-      ],
-      "source": "plan_index",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
-      "id": "plan:implementation:26:odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
-      "kind": "implementation",
-      "ts_iso": "2026-09-06T21:48:42-07:00",
-      "summary": "Implementation checkpoint in greenfield typed semantic compiler and patchset repair: completed Convert final package validators to emit typed finding codes, source-map.",
-      "author": "plan",
-      "sha": "",
-      "workstreams": [
-        "B-005",
-        "B-142"
-      ],
-      "files": [
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
-      ],
-      "source": "plan_file",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
-      "id": "local:M:odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
-      "kind": "local_change",
-      "ts_iso": "2026-09-06T21:48:42-07:00",
-      "summary": "Modified odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
-      "author": "local",
-      "sha": "",
-      "workstreams": [
-        "B-005",
-        "B-142"
-      ],
-      "files": [
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
       "deployment_truth": {}
     },
     {
@@ -149607,11 +149714,11 @@
   ],
   "timeline_transactions": [
     {
-      "id": "txn:global:auto-global-0062:0062",
-      "transaction_id": "txn:global:auto-global-0062:0062",
+      "id": "txn:global:auto-global-0064:0064",
+      "transaction_id": "txn:global:auto-global-0064:0064",
       "session_id": "",
-      "start_ts_iso": "2026-09-06T21:48:42-07:00",
-      "end_ts_iso": "2026-09-06T21:48:43-07:00",
+      "start_ts_iso": "2026-09-06T22:21:28-07:00",
+      "end_ts_iso": "2026-09-06T22:21:29-07:00",
       "headline": "Implementation checkpoint in greenfield typed semantic compiler and patchset repair: completed Convert final package validators to emit typed finding codes, source-map",
       "context": "",
       "event_count": 6,
@@ -149631,7 +149738,7 @@
         {
           "id": "local:M:odylith/compass/runtime/agent-stream.v1.jsonl",
           "kind": "local_change",
-          "ts_iso": "2026-09-06T21:48:43-07:00",
+          "ts_iso": "2026-09-06T22:21:29-07:00",
           "summary": "Modified odylith/compass/runtime/agent-stream.v1.jsonl",
           "author": "local",
           "sha": "",
@@ -149655,61 +149762,9 @@
           "deployment_truth": {}
         },
         {
-          "id": "local:M:odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md",
-          "kind": "local_change",
-          "ts_iso": "2026-09-06T21:48:42-07:00",
-          "summary": "Modified odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md",
-          "author": "local",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        },
-        {
-          "id": "bug:watch:23:P1",
-          "kind": "bug_watch",
-          "ts_iso": "2026-09-06T21:48:42-07:00",
-          "summary": "Critical bug remains open (P1): Greenfield project surfaces repeated and clipped canonical meaning.",
-          "author": "bugs",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md"
-          ],
-          "source": "bugs_index",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        },
-        {
           "id": "plan:update:26:odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
           "kind": "plan_update",
-          "ts_iso": "2026-09-06T21:48:42-07:00",
+          "ts_iso": "2026-09-06T22:21:28-07:00",
           "summary": "Plan updated: greenfield typed semantic compiler and patchset repair (B-005) is In progress; checklist 137/158 complete.",
           "author": "plan",
           "sha": "",
@@ -149738,7 +149793,7 @@
         {
           "id": "plan:implementation:26:odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
           "kind": "implementation",
-          "ts_iso": "2026-09-06T21:48:42-07:00",
+          "ts_iso": "2026-09-06T22:21:28-07:00",
           "summary": "Implementation checkpoint in greenfield typed semantic compiler and patchset repair: completed Convert final package validators to emit typed finding codes, source-map.",
           "author": "plan",
           "sha": "",
@@ -149767,7 +149822,7 @@
         {
           "id": "local:M:odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
           "kind": "local_change",
-          "ts_iso": "2026-09-06T21:48:42-07:00",
+          "ts_iso": "2026-09-06T22:21:28-07:00",
           "summary": "Modified odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
           "author": "local",
           "sha": "",
@@ -149792,12 +149847,220 @@
           "proof_status": "",
           "work_category": "",
           "deployment_truth": {}
+        },
+        {
+          "id": "local:M:odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md",
+          "kind": "local_change",
+          "ts_iso": "2026-09-06T22:21:28-07:00",
+          "summary": "Modified odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md",
+          "author": "local",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md"
+          ],
+          "source": "local",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": "",
+          "proof_lane": "",
+          "proof_fingerprint": "",
+          "proof_phase": "",
+          "evidence_tier": "",
+          "proof_status": "",
+          "work_category": "",
+          "deployment_truth": {}
+        },
+        {
+          "id": "bug:watch:23:P1",
+          "kind": "bug_watch",
+          "ts_iso": "2026-09-06T22:21:28-07:00",
+          "summary": "Critical bug remains open (P1): Greenfield project surfaces repeated and clipped canonical meaning.",
+          "author": "bugs",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md"
+          ],
+          "source": "bugs_index",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": "",
+          "proof_lane": "",
+          "proof_fingerprint": "",
+          "proof_phase": "",
+          "evidence_tier": "",
+          "proof_status": "",
+          "work_category": "",
+          "deployment_truth": {}
         }
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0063:0063",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0063:0063",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0065:0065",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0065:0065",
+      "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
+      "start_ts_iso": "2026-09-06T22:21:29-07:00",
+      "end_ts_iso": "2026-09-06T22:21:29-07:00",
+      "headline": "Prototype only: eleven no-call tests; six desktop/mobile normal, empty and Mermaid-failure cells with separate exact decision and keyboard assertions",
+      "context": "Prototype only: eleven no-call tests; six desktop/mobile normal, empty and Mermaid-failure cells with separate exact decision and keyboard assertions. New consumer review distinguishes registration subjects from performing actors; earlier declared inventory failure stays failed. No schema/evaluator changes, provider calls, adoption, publication or consumer timing claim. Evidence: /private/tmp/odylith-greenfield-decision-view.BxNrwx/report.md. Keep continuous Project, Radar, Registry, Atlas, Casebook, Compass and dashboard experience checks with exact coverage and open gaps.",
+      "event_count": 1,
+      "files_count": 2,
+      "workstreams": [
+        "B-142"
+      ],
+      "files": [
+        "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "explicit_open": false,
+      "explicit_closed": false,
+      "events": [
+        {
+          "id": "agent:decision:1219:2026-09-06T22:21:29-07:00",
+          "kind": "decision",
+          "ts_iso": "2026-09-06T22:21:29-07:00",
+          "summary": "Greenfield decision cards are readable in six prototype browser states; diagram authority labels and mobile relationship navigation still need work.",
+          "author": "freedom-research",
+          "sha": "",
+          "workstreams": [
+            "B-142"
+          ],
+          "files": [
+            "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md",
+            "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+          ],
+          "source": "maintainer",
+          "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "Prototype only: eleven no-call tests; six desktop/mobile normal, empty and Mermaid-failure cells with separate exact decision and keyboard assertions. New consumer review distinguishes registration subjects from performing actors; earlier declared inventory failure stays failed. No schema/evaluator changes, provider calls, adoption, publication or consumer timing claim. Evidence: /private/tmp/odylith-greenfield-decision-view.BxNrwx/report.md. Keep continuous Project, Radar, Registry, Atlas, Casebook, Compass and dashboard experience checks with exact coverage and open gaps.",
+          "headline_hint": "",
+          "proof_lane": "",
+          "proof_fingerprint": "",
+          "proof_phase": "",
+          "evidence_tier": "",
+          "proof_status": "",
+          "work_category": "primary_blocker",
+          "deployment_truth": {}
+        }
+      ]
+    },
+    {
+      "id": "txn:global:auto-global-0063:0063",
+      "transaction_id": "txn:global:auto-global-0063:0063",
+      "session_id": "",
+      "start_ts_iso": "2026-09-06T22:03:04-07:00",
+      "end_ts_iso": "2026-09-06T22:03:04-07:00",
+      "headline": "Record Greenfield review rejection and clarify governance status",
+      "context": "",
+      "event_count": 1,
+      "files_count": 28,
+      "workstreams": [
+        "B-005",
+        "B-142"
+      ],
+      "files": [
+        "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md",
+        "odylith/casebook/casebook-detail-shard-003.v1.js",
+        "odylith/casebook/casebook-detail-shard-010.v1.js",
+        "odylith/casebook/casebook-payload.v1.js",
+        "odylith/casebook/casebook.html",
+        "odylith/compass/compass-payload.v1.js",
+        "odylith/compass/compass-source-truth.v1.json",
+        "odylith/compass/compass.html",
+        "odylith/compass/runtime/agent-stream.v1.jsonl",
+        "odylith/compass/runtime/current.v1.js",
+        "odylith/compass/runtime/current.v1.json",
+        "odylith/compass/runtime/history/2026-09-06.v1.json",
+        "odylith/compass/runtime/history/embedded.v1.js",
+        "odylith/compass/runtime/history/index.v1.json",
+        "odylith/radar/backlog-detail-shard-001.v1.js",
+        "odylith/radar/backlog-detail-shard-002.v1.js",
+        "odylith/radar/backlog-detail-shard-003.v1.js",
+        "odylith/radar/backlog-detail-shard-004.v1.js",
+        "odylith/radar/backlog-document-shard-004.v1.js",
+        "odylith/radar/backlog-payload.v1.js",
+        "odylith/radar/radar.html",
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/traceability-graph.v1.json",
+        "odylith/registry/source/components/release/FORENSICS.v1.json",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+        "src/odylith/bundle/assets/odylith/casebook/casebook.html",
+        "src/odylith/bundle/assets/odylith/compass/compass.html",
+        "src/odylith/bundle/assets/odylith/radar/radar.html"
+      ],
+      "explicit_open": false,
+      "explicit_closed": false,
+      "events": [
+        {
+          "id": "commit:4c1ad9539253b3c84abdde0192f31ba6688dec4c",
+          "kind": "commit",
+          "ts_iso": "2026-09-06T22:03:04-07:00",
+          "summary": "Record Greenfield review rejection and clarify governance status",
+          "author": "freedom-research",
+          "sha": "4c1ad9539253b3c84abdde0192f31ba6688dec4c",
+          "workstreams": [
+            "B-005",
+            "B-142"
+          ],
+          "files": [
+            "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md",
+            "odylith/casebook/casebook-detail-shard-003.v1.js",
+            "odylith/casebook/casebook-detail-shard-010.v1.js",
+            "odylith/casebook/casebook-payload.v1.js",
+            "odylith/casebook/casebook.html",
+            "odylith/compass/compass-payload.v1.js",
+            "odylith/compass/compass-source-truth.v1.json",
+            "odylith/compass/compass.html",
+            "odylith/compass/runtime/agent-stream.v1.jsonl",
+            "odylith/compass/runtime/current.v1.js",
+            "odylith/compass/runtime/current.v1.json",
+            "odylith/compass/runtime/history/2026-09-06.v1.json",
+            "odylith/compass/runtime/history/embedded.v1.js",
+            "odylith/compass/runtime/history/index.v1.json",
+            "odylith/radar/backlog-detail-shard-001.v1.js",
+            "odylith/radar/backlog-detail-shard-002.v1.js",
+            "odylith/radar/backlog-detail-shard-003.v1.js",
+            "odylith/radar/backlog-detail-shard-004.v1.js",
+            "odylith/radar/backlog-document-shard-004.v1.js",
+            "odylith/radar/backlog-payload.v1.js",
+            "odylith/radar/radar.html",
+            "odylith/radar/source/INDEX.md",
+            "odylith/radar/traceability-graph.v1.json",
+            "odylith/registry/source/components/release/FORENSICS.v1.json",
+            "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+            "src/odylith/bundle/assets/odylith/casebook/casebook.html",
+            "src/odylith/bundle/assets/odylith/compass/compass.html",
+            "src/odylith/bundle/assets/odylith/radar/radar.html"
+          ],
+          "source": "git",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": "",
+          "proof_lane": "",
+          "proof_fingerprint": "",
+          "proof_phase": "",
+          "evidence_tier": "",
+          "proof_status": "",
+          "work_category": "",
+          "deployment_truth": {}
+        }
+      ]
+    },
+    {
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0062:0062",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0062:0062",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-06T21:48:43-07:00",
       "end_ts_iso": "2026-09-06T21:48:43-07:00",
@@ -154080,103 +154343,87 @@
     "recent_window_minutes": 90,
     "global": {
       "is_active": true,
-      "transaction_id": "txn:global:auto-global-0062:0062",
-      "session_id": "",
-      "context": "",
-      "headline": "Implementation checkpoint in greenfield typed semantic compiler and patchset repair: completed Convert final package validators to emit typed finding codes, source-map",
-      "last_event_iso": "2026-09-06T21:48:43-07:00",
-      "start_ts_iso": "2026-09-06T21:48:42-07:00",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0065:0065",
+      "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
+      "context": "Prototype only: eleven no-call tests; six desktop/mobile normal, empty and Mermaid-failure cells with separate exact decision and keyboard assertions. New consumer review distinguishes registration subjects from performing actors; earlier declared inventory failure stays failed. No schema/evaluator changes, provider calls, adoption, publication or consumer timing claim. Evidence: /private/tmp/odylith-greenfield-decision-view.BxNrwx/report.md. Keep continuous Project, Radar, Registry, Atlas, Casebook, Compass and dashboard experience checks with exact coverage and open gaps.",
+      "headline": "Prototype only: eleven no-call tests; six desktop/mobile normal, empty and Mermaid-failure cells with separate exact decision and keyboard assertions",
+      "last_event_iso": "2026-09-06T22:21:29-07:00",
+      "start_ts_iso": "2026-09-06T22:21:29-07:00",
       "workstreams": [
-        "B-005",
         "B-142"
       ],
-      "event_count": 6,
-      "files_count": 3,
+      "event_count": 1,
+      "files_count": 2,
       "kind_counts": {
-        "local_change": 3,
-        "bug_watch": 1,
-        "plan_update": 1,
-        "implementation": 1
+        "decision": 1
       },
       "source_counts": {
-        "local": 3,
-        "bugs_index": 1,
-        "plan_index": 1,
-        "plan_file": 1
+        "maintainer": 1
       },
-      "activity_signal_count": 5,
-      "risk_signal_count": 1,
+      "activity_signal_count": 1,
+      "risk_signal_count": 0,
       "top_files": [
         "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
-        "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md",
-        "odylith/compass/runtime/agent-stream.v1.jsonl"
+        "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md"
       ],
       "source_files_count": 1,
-      "generated_files_count": 2,
+      "generated_files_count": 1,
       "generated_only_batch": false,
-      "latest_event_kind": "local_change",
-      "latest_event_summary": "Modified odylith/compass/runtime/agent-stream.v1.jsonl",
+      "latest_event_kind": "decision",
+      "latest_event_summary": "Greenfield decision cards are readable in six prototype browser states; diagram authority labels and mobile relationship navigation still need work.",
       "has_implementation_signal": true,
-      "focus_reason": "recent_activity_signal",
+      "focus_reason": "context_and_activity",
       "selection_mode": "active_implementation",
       "has_live_implementation": true,
       "has_recent_implementation": true,
-      "latest_implementation_iso": "2026-09-06T21:48:43-07:00"
+      "latest_implementation_iso": "2026-09-06T22:21:29-07:00"
     },
     "by_workstream": {
-      "B-005": {
-        "is_active": true,
-        "transaction_id": "txn:global:auto-global-0062:0062",
-        "session_id": "",
-        "context": "",
-        "headline": "Implementation checkpoint in greenfield typed semantic compiler and patchset repair: completed Convert final package validators to emit typed finding codes, source-map",
-        "last_event_iso": "2026-09-06T21:48:43-07:00",
-        "start_ts_iso": "2026-09-06T21:48:42-07:00",
-        "workstreams": [
-          "B-005",
-          "B-142"
-        ],
-        "event_count": 6,
-        "files_count": 3,
-        "kind_counts": {
-          "local_change": 3,
-          "bug_watch": 1,
-          "plan_update": 1,
-          "implementation": 1
-        },
-        "source_counts": {
-          "local": 3,
-          "bugs_index": 1,
-          "plan_index": 1,
-          "plan_file": 1
-        },
-        "activity_signal_count": 5,
-        "risk_signal_count": 1,
-        "top_files": [
-          "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
-          "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md",
-          "odylith/compass/runtime/agent-stream.v1.jsonl"
-        ],
-        "source_files_count": 1,
-        "generated_files_count": 2,
-        "generated_only_batch": false,
-        "latest_event_kind": "local_change",
-        "latest_event_summary": "Modified odylith/compass/runtime/agent-stream.v1.jsonl",
-        "has_implementation_signal": true,
-        "focus_reason": "recent_activity_signal",
-        "selection_mode": "active_implementation",
-        "has_live_implementation": true,
-        "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-09-06T21:48:43-07:00"
-      },
       "B-142": {
         "is_active": true,
-        "transaction_id": "txn:global:auto-global-0062:0062",
+        "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0065:0065",
+        "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
+        "context": "Prototype only: eleven no-call tests; six desktop/mobile normal, empty and Mermaid-failure cells with separate exact decision and keyboard assertions. New consumer review distinguishes registration subjects from performing actors; earlier declared inventory failure stays failed. No schema/evaluator changes, provider calls, adoption, publication or consumer timing claim. Evidence: /private/tmp/odylith-greenfield-decision-view.BxNrwx/report.md. Keep continuous Project, Radar, Registry, Atlas, Casebook, Compass and dashboard experience checks with exact coverage and open gaps.",
+        "headline": "Prototype only: eleven no-call tests; six desktop/mobile normal, empty and Mermaid-failure cells with separate exact decision and keyboard assertions",
+        "last_event_iso": "2026-09-06T22:21:29-07:00",
+        "start_ts_iso": "2026-09-06T22:21:29-07:00",
+        "workstreams": [
+          "B-142"
+        ],
+        "event_count": 1,
+        "files_count": 2,
+        "kind_counts": {
+          "decision": 1
+        },
+        "source_counts": {
+          "maintainer": 1
+        },
+        "activity_signal_count": 1,
+        "risk_signal_count": 0,
+        "top_files": [
+          "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+          "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md"
+        ],
+        "source_files_count": 1,
+        "generated_files_count": 1,
+        "generated_only_batch": false,
+        "latest_event_kind": "decision",
+        "latest_event_summary": "Greenfield decision cards are readable in six prototype browser states; diagram authority labels and mobile relationship navigation still need work.",
+        "has_implementation_signal": true,
+        "focus_reason": "context_and_activity",
+        "selection_mode": "active_implementation",
+        "has_live_implementation": true,
+        "has_recent_implementation": true,
+        "latest_implementation_iso": "2026-09-06T22:21:29-07:00"
+      },
+      "B-005": {
+        "is_active": true,
+        "transaction_id": "txn:global:auto-global-0064:0064",
         "session_id": "",
         "context": "",
         "headline": "Implementation checkpoint in greenfield typed semantic compiler and patchset repair: completed Convert final package validators to emit typed finding codes, source-map",
-        "last_event_iso": "2026-09-06T21:48:43-07:00",
-        "start_ts_iso": "2026-09-06T21:48:42-07:00",
+        "last_event_iso": "2026-09-06T22:21:29-07:00",
+        "start_ts_iso": "2026-09-06T22:21:28-07:00",
         "workstreams": [
           "B-005",
           "B-142"
@@ -154185,15 +154432,15 @@
         "files_count": 3,
         "kind_counts": {
           "local_change": 3,
-          "bug_watch": 1,
           "plan_update": 1,
-          "implementation": 1
+          "implementation": 1,
+          "bug_watch": 1
         },
         "source_counts": {
           "local": 3,
-          "bugs_index": 1,
           "plan_index": 1,
-          "plan_file": 1
+          "plan_file": 1,
+          "bugs_index": 1
         },
         "activity_signal_count": 5,
         "risk_signal_count": 1,
@@ -154212,7 +154459,7 @@
         "selection_mode": "active_implementation",
         "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-09-06T21:48:43-07:00"
+        "latest_implementation_iso": "2026-09-06T22:21:29-07:00"
       },
       "B-001": {
         "is_active": false,
@@ -157155,7 +157402,7 @@
   "runtime_contract": {
     "version": "v1",
     "standup_brief_schema_version": "v25",
-    "input_fingerprint": "34b2468f40a20be6de39f747ab1bdc79be9da272e0f2bfbb92b6b47e78ee82cb",
+    "input_fingerprint": "2d8b63bb695713e3f5bb41cf34a746f407e997ee2dcc2e928a4383ec33d64909",
     "retention_days": 15,
     "active_window_minutes": 15,
     "max_review_age_days": 21,
@@ -157163,8 +157410,8 @@
     "refresh_profile": "shell-safe",
     "surface_contract_version": "v1",
     "surface": "compass",
-    "projection_fingerprint": "444bf68609a88d7f06084d8b46ed6647da35b70a566071ab72a6f7e4f92a12a6",
-    "projection_scope": "reasoning",
+    "projection_fingerprint": "f05021102d2d54327dcb423f2a3d067835e2945a508b9cc9de4fd4ca292f3fc7",
+    "projection_scope": "default",
     "generation": 0,
     "cache_hit": false,
     "built_from": "fresh_runtime_payload",
@@ -157178,22 +157425,20 @@
       "flags": {
         "projection_names": [
           "bugs",
-          "code_graph",
           "codex_events",
           "components",
+          "delivery",
           "diagrams",
-          "engineering_graph",
           "plans",
           "releases",
-          "test_graph",
           "traceability",
           "workstreams"
         ]
       },
-      "projection_fingerprint": "444bf68609a88d7f06084d8b46ed6647da35b70a566071ab72a6f7e4f92a12a6",
-      "projection_scope": "reasoning",
+      "projection_fingerprint": "f05021102d2d54327dcb423f2a3d067835e2945a508b9cc9de4fd4ca292f3fc7",
+      "projection_scope": "default",
       "repo_root": "/private/tmp/odylith-greenfield-v13-proof.vhWjvG/repo",
-      "sync_generation": 0,
+      "sync_generation": 5,
       "version": "v1"
     },
     "backend_provenance": {
@@ -157202,10 +157447,10 @@
         "backend_dependencies_available": false,
         "storage": "compiler_projection_snapshot"
       },
-      "projection_fingerprint": "444bf68609a88d7f06084d8b46ed6647da35b70a566071ab72a6f7e4f92a12a6",
-      "projection_scope": "reasoning",
+      "projection_fingerprint": "f05021102d2d54327dcb423f2a3d067835e2945a508b9cc9de4fd4ca292f3fc7",
+      "projection_scope": "default",
       "repo_root": "/private/tmp/odylith-greenfield-v13-proof.vhWjvG/repo",
-      "sync_generation": 0,
+      "sync_generation": 5,
       "version": "v1"
     },
     "postbuild_input_changed": false,
@@ -157215,7 +157460,7 @@
       "applied_profile": "shell-safe",
       "runtime_mode": "standalone",
       "reason": "",
-      "attempted_utc": "2026-09-07T04:48:45Z",
+      "attempted_utc": "2026-09-07T05:21:30Z",
       "fallback_used": false
     }
   }

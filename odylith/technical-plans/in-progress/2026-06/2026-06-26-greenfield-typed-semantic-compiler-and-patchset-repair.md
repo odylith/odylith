@@ -25,6 +25,32 @@ The package-depth, source-custody and fixed 60/90/120 gates remain unchanged.
 
 ### Required package depth and current blocker (2026-09-05)
 
+Current preview result (2026-09-06): the temporary view now renders the existing
+canonical Problem, Customer, Opportunity and Product View as explicit facts or
+assumptions; source/design bytes and production owners are unchanged. Eleven
+no-call tests and six desktop/mobile normal, empty and Mermaid-failure states
+pass, with exact visible-content and keyboard checks on the same six cells.
+Root and independent visual review confirm the decision cards are readable.
+The hidden-decisions P1 is closed only in this development preview. The review
+also identifies P2 inconsistent accepted-fact wording in a candidate diagram
+and mobile relationships hidden behind uncued horizontal scrolling. Five useful,
+detailed diagrams are not yet proved. General-assumption visual behavior is not
+proved by this input, which has only decision-specific assumptions. Evidence:
+`/private/tmp/odylith-greenfield-decision-view.BxNrwx/report.md`.
+
+Consumer-level adjudication distinguishes representation coverage from actual
+meaning: residents remain registration subjects and all five city-staff actions
+survive, so a new independent review does not substantiate the earlier P1 solely
+from the missing actor-list entry. Preserve the prior failed inventory gate and
+review disagreement; do not turn that experiment into a pass. No schema rename,
+evaluator mutation, retry, provider call, production adoption or timing claim
+follows. The next comparison must declare its consumer-semantic proof boundary
+before execution. Settle stage-correct diagram labels and usable navigation at
+their presentation owners, then pursue complete-package integration under the
+existing source/proposed authority, generalization, transaction, 60/90/120 and
+release gates. Keep all-surface experience checks active; this prototype does
+not reprove the dashboard or clear the earlier Compass visibility gap.
+
 Latest discriminator (2026-09-06): the unchanged Sol/medium source reviewer
 audits the retained complete-author candidate once in 8.611 seconds, inside its
 16.936-second remainder, but returns no corrections. The explicit participant

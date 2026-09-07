@@ -6,6 +6,21 @@
 
 - Severity: P1
 
+- Decision Visibility And Consumer Adjudication (2026-09-06): The retained
+  development preview now shows all four canonical decisions with distinct
+  source-cited candidate and assumption labels, without changing source/design
+  bytes. Eleven no-call tests and six desktop/mobile normal, empty and Mermaid
+  failure states pass, with separate exact-content and keyboard assertions on
+  those same six cells. Root and independent visual inspection confirm readable
+  decision cards. This closes the hidden-decisions P1 only in the prototype.
+  Two P2s remain: the state/evidence diagram incorrectly says accepted facts,
+  and mobile diagram relationships require horizontal navigation with no cue.
+  A fresh source-versus-package review does not substantiate consumer meaning
+  loss solely from residents being registration subjects rather than listed
+  actors. The prior declared participant-inventory gate still failed; it is not
+  retroactively passed or erased. No schema/evaluator change or production
+  adoption follows. Evidence: `/private/tmp/odylith-greenfield-decision-view.BxNrwx/report.md`.
+
 - Complete-Author Review Finding (2026-09-06): One unchanged Sol/medium source
   review of the retained complete-author candidate finishes in 8.611 seconds
   under its 16.936-second cap but returns no corrections. The source remains
@@ -25,7 +40,7 @@
 
 - Type: OperatorUX
 
-- Description: Greenfield remains unqualified: the complete-author draft omits a source-stated person group from its participant inventory, and its temporary preview hides Opportunity assumptions. One unchanged source review completed in 8.611 seconds but made no correction, so independent review rejected semantic coverage despite valid 4/5/5 draft structure. Production v48 and the 60/90/120 deadlines are unchanged; no publication or adoption is claimed. Current findings must appear in this displayed summary, not only in custom source-record notes. Historical failures included repeated completion prose, clipped fragments, a generic `Lab App` title, dropped `failed stress runs` responsibility and wording such as `visit evidence with source evidence`.
+- Description: Greenfield remains unqualified. The retained development preview now visibly distinguishes all four canonical decisions and assumptions; eleven unit tests and six desktop/mobile normal, empty and error states pass. Diagram authority wording and mobile relationship visibility remain P2 gaps. A fresh consumer review does not substantiate meaning loss solely from the omitted participant-list entry, but the earlier declared inventory gate stays failed. Production v48, the 60/90/120 deadlines and all package, transaction and release gates remain unchanged; no adoption or publication is claimed. Historical failures included repeated completion prose, clipped fragments, a generic `Lab App` title, dropped `failed stress runs` responsibility and wording such as `visit evidence with source evidence`.
 
 - Impact: First-time users receive a polished-looking workspace whose core product story is repetitive, incomplete, and not trustworthy enough to guide implementation.
 
