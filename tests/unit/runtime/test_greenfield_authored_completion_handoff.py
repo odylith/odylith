@@ -151,10 +151,12 @@ def test_authored_handoff_preserves_verified_fields_without_legacy_reconstructio
         release_selector="0.0.1",
     )
 
-    assert first_path in handoff["implementation_prompt"]
+    proposed_first_run = "Proposed first run:\n" + "\n".join(row["event_quote"] for row in relations)
+    assert proposed_first_run in handoff["implementation_prompt"]
+    assert proposal["intent"]["first_path"] == first_path
     assert proof_boundary in handoff["implementation_prompt"]
     readiness_contract = handoff["coding_readiness_contract"]
-    assert readiness_contract["source_facts"]["accepted_first_path"] == first_path
+    assert readiness_contract["source_facts"]["accepted_first_path"] == proposed_first_run
     assert readiness_contract["source_facts"]["proof_boundary"] == proof_boundary
     assert readiness_contract["source_facts"]["evidence_requirements"] == (
         "Source evidence preserves berth history",
@@ -189,7 +191,7 @@ def test_authored_handoff_preserves_verified_fields_without_legacy_reconstructio
         ),
         release_selector="0.0.1",
     )["harbor-desk"]
-    assert component_handoff["accepted_first_path"] == first_path
+    assert component_handoff["accepted_first_path"] == proposed_first_run
     assert component_handoff["proof_boundary"] == proof_boundary
     assert component_handoff["first_slice"] == first_path
     assert component_handoff["success_metrics"] == success_metrics

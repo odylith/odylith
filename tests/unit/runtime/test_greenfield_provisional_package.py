@@ -48,7 +48,7 @@ def test_artifact_bindings_preserve_explicit_source_and_design_authority(tmp_pat
         assert row["project_intelligence_binding"]["authority_kind"] == row["authority_kind"]
     if surface == "diagrams":
         assert [row["authority_kind"] for row in rows] == [
-            "source_grounded", "source_grounded", "provisional_design", "provisional_design", "provisional_design",
+            "source_grounded", "provisional_design", "provisional_design", "provisional_design", "provisional_design",
         ]
     else:
         assert all(row["authority_kind"] == "provisional_design" for row in rows)

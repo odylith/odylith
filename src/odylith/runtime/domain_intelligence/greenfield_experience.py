@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Protocol, Sequence
 
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import authored_first_run_text
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     GreenfieldAuthoredSemanticsError,
     authored_projection_relations,
@@ -94,8 +95,7 @@ def build_next_steps(
     )
     project_title = str(project_row.get("title") or intent.get("title") or "").strip()
     start_title = str(start_row.get("title") or project_title).strip()
-    first_path_value = intent.get("first_path")
-    first_path = first_path_value if isinstance(first_path_value, str) else ""
+    first_path = authored_first_run_text(intent)
     proof_boundary_value = intent.get("proof_boundary")
     proof_boundary = proof_boundary_value if isinstance(proof_boundary_value, str) else ""
     validation_metrics = list(
@@ -191,7 +191,7 @@ def build_component_handoffs(
         )
     project_context = _project_context(proposal)
     intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
-    first_path = intent.get("first_path") if isinstance(intent.get("first_path"), str) else ""
+    first_path = authored_first_run_text(intent)
     proof_boundary = (
         intent.get("proof_boundary") if isinstance(intent.get("proof_boundary"), str) else ""
     )

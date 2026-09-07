@@ -29,6 +29,7 @@ def build_provisional_design_atlas_specs(
     visible_result: str,
     proof_boundary: str,
     non_goals: Sequence[str],
+    source_precedence: Sequence[Mapping[str, Any]],
 ) -> dict[str, dict[str, Any]]:
     """Return three deterministic proposed-design lenses from canonical rows."""
 
@@ -36,6 +37,8 @@ def build_provisional_design_atlas_specs(
     design = validate_provisional_design(
         provisional_design,
         event_orders=event_orders,
+        source_precedence=source_precedence,
+        result_event_order=next(int(row["order"]) for row in relations if row["visible_result_quote"]),
     )
     components = [
         {
@@ -223,17 +226,17 @@ def _capability_support_view(
     non_goals: Sequence[str],
 ) -> tuple[str, list[dict[str, str]]]:
     event_ids = {row["order"]: f"event{index}" for index, row in enumerate(relations, 1)}
-    lines = ["flowchart LR", '  subgraph source_path["Source-stated first path"]']
+    lines = ["flowchart LR", '  subgraph source_path["Source-stated actions"]']
     boxes = [atlas_box(
-        "source_path", "Source-stated first path", "Container",
-        "Groups exact source events without changing their actors or order.",
+        "source_path", "Source-stated actions", "Container",
+        "Groups exact source actions without assigning execution order.",
     )]
     for index, relation in enumerate(relations, 1):
         event = relation["event_quote"]
         lines.append(f'    event{index}["{mermaid_label(event)}"]')
         boxes.append(atlas_box(
             f"event{index}", event, "Source-stated event",
-            f"Source-stated first-path event {relation['order']}: {event}",
+            f"Source-stated action {relation['order']}: {event}",
         ))
     lines.extend(["  end", '  subgraph proposed_components["Proposed capability boundaries"]'])
     boxes.append(atlas_box(

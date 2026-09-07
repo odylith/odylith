@@ -8,6 +8,7 @@ from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
 )
+from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import preview_project_dashboard_payload
 from odylith.runtime.project_intelligence import assets
 from odylith.runtime.project_intelligence import builder as project_intelligence_builder
 from odylith.runtime.project_intelligence import presenter as project_intelligence_presenter
@@ -22,6 +23,12 @@ from tests.unit.runtime.greenfield_proposal_fixtures import (
     _seed_empty_governance_repo,
     commit_precompiled_greenfield_proposal,
     stub_preconfirm_surface_refresh,
+)
+from tests.unit.runtime.test_greenfield_authored_project_dashboard import (
+    PROPOSED_FIRST_RUN,
+    _accepted_preview,
+    _handoff_scope_proposal,
+    _result_first_proposal,
 )
 
 
@@ -90,6 +97,7 @@ def _write_project_page(page_path: Path, payload: dict[str, object]) -> Path:
                 "  --surface-identifier-font-size: 14px;",
                 "  --surface-identifier-font-weight: 500;",
                 "}",
+                "* { box-sizing: border-box; }",
                 "body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #eef6ff; }",
                 "</style>",
                 "<style>",
@@ -151,12 +159,12 @@ def _degraded_project_payload() -> dict[str, object]:
                     "Keep the last verified permit decision visible until the unavailable source is restored.",
                 )
             ],
-            "current": [
+            "current": (
                 "The last verified permit decision remains available with its complete evidence explanation."
-            ],
-            "desired": [
+            ),
+            "desired": (
                 "The unavailable source returns and the operator can reconcile the next decision without ambiguity."
-            ],
+            ),
             "host_handoff_title": "How to continue in the host chat",
             "host_handoff_note": "Use the bounded recovery prompt after reviewing the degraded evidence.",
             "host_handoff_steps": [
@@ -310,6 +318,9 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
             const capabilityCard = node.querySelector('[data-semantic-slot="owned_capabilities"]');
             const capabilityBody = capabilityCard?.querySelector(':scope > .project-story-contract-body');
             const capabilityHeading = capabilityCard?.querySelector(':scope > h3');
+            const pathCard = node.querySelector('[data-semantic-slot="first_path"]');
+            const pathBody = pathCard?.querySelector(':scope > .project-story-contract-body');
+            const pathHeading = pathCard?.querySelector(':scope > h3');
             const bodies = rows.map(
               (row) => String(row.querySelector(".project-story-contract-body")?.innerText || "").trim()
             );
@@ -322,6 +333,10 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
               capabilityBodyLeft: capabilityBody?.getBoundingClientRect().left || 0,
               capabilityHeadingRight: capabilityHeading?.getBoundingClientRect().right || 0,
               capabilityColumns: capabilityCard ? window.getComputedStyle(capabilityCard).gridTemplateColumns.split(' ').length : 0,
+              pathChildCount: pathCard?.children.length || 0,
+              pathBodyLeft: pathBody?.getBoundingClientRect().left || 0,
+              pathHeadingRight: pathHeading?.getBoundingClientRect().right || 0,
+              pathColumns: pathCard ? window.getComputedStyle(pathCard).gridTemplateColumns.split(' ').length : 0,
               distinctBodyCount: new Set(bodies.map((body) => body.toLocaleLowerCase())).size,
               focusEventCount: node.ownerDocument.querySelectorAll(
                 '[data-authored-fact-list="focus"] [data-authored-fact-item]'
@@ -349,8 +364,11 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
     assert story_layout["contractFontSize"] == "14px"
     assert story_layout["rowCount"] == 5
     assert story_layout["capabilityChildCount"] == 2
+    assert story_layout["pathChildCount"] == 2
     if story_layout["capabilityColumns"] == 2:
         assert story_layout["capabilityBodyLeft"] > story_layout["capabilityHeadingRight"]
+    if story_layout["pathColumns"] == 2:
+        assert story_layout["pathBodyLeft"] > story_layout["pathHeadingRight"]
     assert story_layout["distinctBodyCount"] == 5
     assert story_layout["focusEventCount"] >= 1
     assert story_layout["firstPathEventCount"] == story_layout["focusEventCount"]
@@ -369,11 +387,13 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
     assert story_layout["firstRowColumns"] != ""
     assert int(story_layout["scrollDelta"]) <= 4
 
-    assert _clipped_project_text(page) == []
+    _assert_project_sections_do_not_overflow(page, [".project-product-story", ".project-host-handoff"])
 
 
 def _assert_project_sections_do_not_overflow(page, selectors: list[str]) -> None:  # noqa: ANN001
     assert _clipped_project_text(page) == []
+    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+    assert page.locator(".project-pane").evaluate("node => node.scrollWidth <= node.clientWidth")
     for selector in selectors:
         locator = page.locator(selector)
         assert locator.count() >= 1
@@ -401,6 +421,7 @@ def _run_greenfield_project_tab_browser_check(tmp_path: Path, monkeypatch, *, co
                 response = page.goto(base_url + "/index.html", wait_until="domcontentloaded")
                 assert response is not None and response.ok
                 _assert_greenfield_project_tab_layout(page, compact=compact)
+                page.screenshot(path=str(tmp_path / f"project-{viewport['width']}.png"), full_page=True)
                 _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
             finally:
                 context.close()
@@ -412,6 +433,100 @@ def test_project_tab_renders_accepted_greenfield_story_without_broken_layout(tmp
 
 def test_project_tab_renders_accepted_greenfield_story_in_compact_browser(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _run_greenfield_project_tab_browser_check(tmp_path, monkeypatch, compact=True)
+
+
+def test_project_handoff_scope_is_visible_and_copyable_at_both_widths(tmp_path: Path) -> None:
+    cases = (
+        ("constraints", ("Preserve APIv7 casing",), ()),
+        ("non-goals", (), ("Batch Æther migration",)),
+        ("mixed", ("Preserve APIv7 casing",), ("Batch Æther migration",)),
+        ("empty", (), ()),
+    )
+    payloads = {}
+    for name, constraints, non_goals in cases:
+        payload = preview_project_dashboard_payload(
+            root=tmp_path,
+            proposal=_handoff_scope_proposal(constraints=constraints, non_goals=non_goals),
+            accepted_project_preview=_accepted_preview(),
+            source_launch_context={"start_workstream_id": "B-701"},
+        )
+        payloads[name] = payload
+        _write_project_page(tmp_path / f"{name}.html", payload)
+    with _static_server(root=tmp_path) as base_url:
+        for _pw, browser in _browser():
+            for viewport in ({"width": 1440, "height": 1100}, {"width": 430, "height": 932}):
+                for name, constraints, non_goals in cases:
+                    context = browser.new_context(viewport=viewport)
+                    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                    try:
+                        response = page.goto(base_url + f"/{name}.html", wait_until="domcontentloaded")
+                        assert response is not None and response.ok
+                        prompts = page.locator(".project-host-prompt code")
+                        assert prompts.count() == 5
+                        expected_block = (
+                            "Operational constraints — preserve these requirements:\n"
+                            + ("\n".join(constraints) if constraints else "None stated.")
+                            + "\n\nExcluded scope — preserve these exclusions:\n"
+                            + ("\n".join(non_goals) if non_goals else "None stated.")
+                        )
+                        for index, handoff in enumerate(payloads[name]["host_handoff_prompts"]):
+                            prompt = prompts.nth(index)
+                            assert prompt.is_visible()
+                            assert prompt.text_content() == handoff["prompt"]
+                            copied_text = prompt.evaluate("""node => {
+                              const range = document.createRange();
+                              range.selectNodeContents(node);
+                              const selection = window.getSelection();
+                              selection.removeAllRanges();
+                              selection.addRange(range);
+                              return selection.toString();
+                            }""")
+                            assert copied_text == handoff["prompt"]
+                            assert copied_text.endswith(expected_block)
+                        _assert_project_sections_do_not_overflow(page, [".project-host-handoff"])
+                        page.evaluate("window.getSelection().removeAllRanges()")
+                        page.locator(".project-host-prompt").first.screenshot(
+                            path=str(tmp_path / f"handoff-{name}-{viewport['width']}.png"),
+                        )
+                        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+                    finally:
+                        context.close()
+
+
+def test_project_tab_result_first_source_renders_labeled_proposed_order_at_both_widths(tmp_path: Path) -> None:
+    proposal = _result_first_proposal()
+    payload = preview_project_dashboard_payload(
+        root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(),
+        source_launch_context={"start_workstream_id": "B-701"},
+    )
+    _write_project_page(tmp_path / "index.html", payload)
+    expected_events = PROPOSED_FIRST_RUN.splitlines()[1:]
+    with _static_server(root=tmp_path) as base_url:
+        for _pw, browser in _browser():
+            for viewport in ({"width": 1440, "height": 1100}, {"width": 430, "height": 932}):
+                context = browser.new_context(viewport=viewport)
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                try:
+                    response = page.goto(base_url + "/index.html", wait_until="domcontentloaded")
+                    assert response is not None and response.ok
+                    for key in ("focus", "first_path"):
+                        sequence = page.locator(f'[data-authored-fact-list="{key}"]')
+                        assert sequence.get_attribute("data-authority-kind") == "provisional_design"
+                        items = sequence.locator("[data-authored-fact-item]")
+                        assert items.all_text_contents() == expected_events
+                        assert items.evaluate_all("nodes => nodes.map(node => node.dataset.eventOrder)") == ["2", "1"]
+                    assert page.locator("[data-proposed-first-run-label]").all_text_contents() == [
+                        "Proposed first run:", "Proposed first run:",
+                    ]
+                    card = page.locator('[data-semantic-slot="first_path"]')
+                    assert card.locator(":scope > *").count() == 2
+                    assert card.locator(":scope > .project-story-contract-body").count() == 1
+                    _assert_project_sections_do_not_overflow(page, [".project-product-story", ".project-host-handoff"])
+                    card.screenshot(path=str(tmp_path / f"proposed-first-run-{viewport['width']}.png"))
+                    page.screenshot(path=str(tmp_path / f"project-{viewport['width']}.png"), full_page=True)
+                    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+                finally:
+                    context.close()
 
 
 def test_project_tab_clipping_probe_detects_a_clipping_parent(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -464,7 +579,9 @@ def test_project_tab_blank_and_degraded_states_wrap_at_desktop_and_mobile_widths
                         response = page.goto(f"{base_url}/{filename}", wait_until="domcontentloaded")
                         assert response is not None and response.ok
                         assert terminal_text in page.locator(".project-surface").inner_text()
+                        assert "['The" not in page.locator(".project-surface").inner_text()
                         _assert_project_sections_do_not_overflow(page, selectors)
+                        page.screenshot(path=str(tmp_path / f"{Path(filename).stem}-{viewport['width']}.png"), full_page=True)
                         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
                     finally:
                         context.close()

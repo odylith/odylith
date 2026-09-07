@@ -9,10 +9,11 @@ flowchart LR
     subgraph graph_lane["Canonical typed meaning"]
       direction TB
       facts["Candidate source-cited facts<br/>Story, state, actors, systems,<br/>responsibilities, risks, and proof"]
-      events["Ordered event bindings<br/>Selected actor fact, source-bound target,<br/>and recovery meaning"]
-      terminal["Terminal result binding<br/>Exact selected output citation"]
-      design["Provisional design<br/>4–5 components and workstreams<br/>Exchanges, verification and source-event support"]
-      custody["Deterministic custody compiler<br/>Byte spans, actor kind, action fact,<br/>target binding, event order, and final result"]
+      events["Stable source action identities<br/>Selected performer and source-bound target<br/>No source-list chronology"]
+      precedence["Source-stated prerequisites<br/>References to exact existing<br/>operational-constraint facts"]
+      terminal["Explicit result producer<br/>Exact output citation<br/>No last-position requirement"]
+      design["Provisional design and first run<br/>4–5 components and workstreams<br/>Exchanges, verification and source-event support"]
+      custody["Deterministic custody compiler<br/>Source bytes, identities and prerequisites<br/>Proposed order preserves required actions"]
       completeness{"Material facts and<br/>relations complete?"}
       clarify["Clarification required<br/>Missing or conflicting material meaning<br/>stops before persistence"]
       canonical["Canonical source and design<br/>Distinct authority, same relation hash"]
@@ -20,10 +21,10 @@ flowchart LR
 
     subgraph consumer_lane["Deterministic consumers"]
       direction TB
-      project["Project story and first path"]
+      project["Project story and proposed first run<br/>Copyable handoff preserves required constraints<br/>Non-goals remain separate exclusions"]
       radar["Radar proposed deliverables and acceptance"]
       registry["Registry proposed logical ownership<br/>Never transfers source actor authority"]
-      atlas["Atlas source context and first path<br/>Proposed exchanges, dependencies and support"]
+      atlas["Atlas source context and proposed first run<br/>Distinct source and proposed arrows<br/>Exchanges, delivery dependencies and support"]
       compass["Compass decisions and proof"]
       evaluator["Release evaluator<br/>Reads the same typed relations<br/>and product-owned Mermaid parser"]
     end
@@ -38,11 +39,13 @@ flowchart LR
     request --> source_units --> model_author
     model_author --> facts
     model_author --> events
+    model_author --> precedence
     model_author --> terminal
     model_author --> design
     design --> custody
     facts --> custody
     events --> custody
+    precedence --> custody
     terminal --> custody --> completeness
     completeness -- "no" --> clarify
     completeness -- "yes" --> canonical
@@ -65,7 +68,7 @@ flowchart LR
     classDef governance fill:#F5F3FF,stroke:#DDD6FE,color:#132033,stroke-width:1px;
     classDef constraint fill:#FFF8E6,stroke:#F6D98B,color:#132033,stroke-width:1px;
     class request,source_units,model_author primary;
-    class facts,events,terminal,design,custody,canonical,project,radar,registry,atlas,compass,evaluator semantic;
+    class facts,events,precedence,terminal,design,custody,canonical,project,radar,registry,atlas,compass,evaluator semantic;
     class seal,confirm,readback governance;
     class completeness,clarify constraint;
 

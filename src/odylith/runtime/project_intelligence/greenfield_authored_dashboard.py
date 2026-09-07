@@ -8,13 +8,20 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
+    AUTHORED_SEMANTICS_KEY,
     GreenfieldAuthoredSemanticsError,
+    authored_visible_result,
     component_responsibility_relations_from_intent,
     first_path_context_relations_from_intent,
     first_path_relations_from_intent,
 )
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_first_run_relations,
+    authored_first_run_text,
+)
 from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
     build_project_handoff_step_contract,
+    render_project_handoff_scope,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
     decision_copy,
@@ -40,6 +47,7 @@ def build_authored_greenfield_payload(
         )
     intent = _required_mapping(proposal, "intent")
     relations = first_path_relations_from_intent(intent)
+    first_run_relations = authored_first_run_relations(intent)
     context_relations = first_path_context_relations_from_intent(intent)
     component_relations = component_responsibility_relations_from_intent(intent)
     if not relations:
@@ -49,7 +57,7 @@ def build_authored_greenfield_payload(
 
     title = _required_text(intent, "title")
     product_story = _required_text(intent, "product_story")
-    first_path = _required_text(intent, "first_path")
+    first_path = authored_first_run_text(intent)
     proof_boundary = _required_text(intent, "proof_boundary")
     human_actors = _text_values(intent.get("human_actors"))
     internal_systems = _text_values(intent.get("internal_systems"))
@@ -58,8 +66,8 @@ def build_authored_greenfield_payload(
     operational_constraints = _text_values(intent.get("operational_constraints"))
     evidence_requirements = _text_values(intent.get("evidence_requirements"))
     success_metrics = _text_values(intent.get("success_metrics"))
-    visible_result = _required_relation_text(relations[-1], "visible_result_quote")
-    event_quotes = [_required_relation_text(row, "event_quote") for row in relations]
+    visible_result = authored_visible_result(relations)
+    event_quotes = [_required_relation_text(row, "event_quote") for row in first_run_relations]
 
     release_plan = _mapping(proposal.get("release_plan"))
     observed = _mapping(proposal.get("observed_source"))
@@ -79,7 +87,7 @@ def build_authored_greenfield_payload(
         keys=("question", "statement"),
     )
     risk_items = _authored_risk_rows(proposal.get("risks"))
-    actors = authored_actor_rows(human_actors=human_actors, relations=relations)
+    actors = authored_actor_rows(human_actors=human_actors, relations=first_run_relations)
     jobs = _job_rows(backlog=backlog, accepted=accepted)
     governance_titles = _governance_titles(
         backlog=backlog,
@@ -94,7 +102,8 @@ def build_authored_greenfield_payload(
         event_quotes=event_quotes,
         components=components,
         jobs=jobs,
-        excluded_scope=_unique([*operational_constraints, *non_goals]),
+        operational_constraints=operational_constraints,
+        excluded_scope=non_goals,
         context=_mapping(proposal.get("_source_launch") or proposal.get("source_launch")),
     )
     open_items = _unique([*questions, *assumptions])
@@ -150,14 +159,14 @@ def build_authored_greenfield_payload(
         "risk_note": "Only risks explicitly present in the model-authored proposal appear here.",
         "risk_items": risk_items,
         "scenario": [
-            "Model-authored first path",
+            "Proposed first run",
             title,
             first_path,
-            "The ordered event facts below are the validated authored path.",
+            "This proposed walkthrough preserves source actions and their stated prerequisites.",
             "\n".join(event_quotes),
         ],
         "scenario_details": [
-            ("First path", first_path),
+            ("Proposed first run", first_path),
             ("Visible result", visible_result),
             ("Proof boundary", proof_boundary),
         ],
@@ -259,7 +268,7 @@ def build_authored_greenfield_payload(
         "authored_facts": {
             "title": title,
             "product_story": product_story,
-            "first_path": first_path,
+            "first_path": _required_text(intent, "first_path"),
             "proof_boundary": proof_boundary,
             "visible_result": visible_result,
             "human_actors": list(human_actors),
@@ -270,6 +279,7 @@ def build_authored_greenfield_payload(
             "evidence_requirements": list(evidence_requirements),
             "success_metrics": list(success_metrics),
             "first_path_relations": [dict(row) for row in relations],
+            "source_precedence": [dict(row) for row in intent[AUTHORED_SEMANTICS_KEY]["source_precedence"]],
             "first_path_context_relations": [dict(row) for row in context_relations],
             "component_responsibility_relations": [dict(row) for row in component_relations],
             "provisional_design": provisional_design_from_intent(intent),
@@ -297,7 +307,7 @@ def _product_story(
     capabilities = authored_component_capabilities(components)
     bodies = {
         "User Problem": problem,
-        "First Path": "\n".join(event_quotes),
+        "First Path": first_path,
         "Product Boundary": authored_product_boundary(
             components=components,
             internal_systems=internal_systems,
@@ -472,7 +482,7 @@ def _claim_evidence(
     values = (
         ("Project identity", title),
         ("Product story", product_story),
-        ("First path", first_path),
+        ("Proposed first run", first_path),
         ("Visible result", visible_result),
         ("Proof boundary", proof_boundary),
     )
@@ -498,6 +508,7 @@ def _source_launch(
     event_quotes: Sequence[str],
     components: Sequence[Mapping[str, Any]],
     jobs: Sequence[tuple[str, str, str, str]],
+    operational_constraints: Sequence[str],
     excluded_scope: Sequence[str],
     context: Mapping[str, Any],
 ) -> dict[str, Any]:
@@ -519,7 +530,7 @@ def _source_launch(
             "when": "Use this before creating the first source-editable plan.",
             "prompt": (
                 f"Choose and record the implementation language and runtime for {title}. "
-                f"Preserve this model-authored first path exactly: {first_path}"
+                f"Preserve this proposed walkthrough and its exact source actions: {first_path}"
             ),
             "result": "The implementation runtime is explicit before source planning.",
             "stop": "Stop after the language and runtime are recorded.",
@@ -530,7 +541,7 @@ def _source_launch(
             "when": "Use this after the implementation runtime is explicit.",
             "prompt": (
                 f"Create the first implementation plan for {title} and {job_text}. "
-                f"Preserve these ordered typed events exactly: {event_sequence}"
+                f"Preserve this proposed first-run order and its exact source actions: {event_sequence}"
             ),
             "result": "The first source boundary and its proof obligations are planned.",
             "stop": "Stop before source edits until the plan is accepted.",
@@ -541,7 +552,7 @@ def _source_launch(
             "when": "Use this only after the first implementation plan is accepted.",
             "prompt": (
                 f"Implement the smallest runnable slice for {title}. Keep component IDs {component_text}. "
-                f"Preserve the authored first path exactly: {first_path}"
+                f"Preserve this proposed walkthrough and its exact source actions: {first_path}"
             ),
             "result": "The smallest authored path exists as runnable source.",
             "stop": "Stop when the authored path is runnable and no excluded scope was added.",
@@ -572,7 +583,11 @@ def _source_launch(
         },
     ]
     workstream_refs = _unique([*job_ids, target])
+    scope_copy = render_project_handoff_scope(
+        operational_constraints=operational_constraints, excluded_scope=excluded_scope,
+    )
     for row in prompts:
+        row["prompt"] = f"{row['prompt']}\n\n{scope_copy}"
         row["contract"] = build_project_handoff_step_contract(
             step_id=str(row["step_id"]),
             project_title=title,
@@ -580,13 +595,14 @@ def _source_launch(
             first_release_workstream_refs=workstream_refs,
             proof_boundary=proof_boundary,
             visible_result=visible_result,
+            operational_constraints=operational_constraints,
             excluded_scope=excluded_scope,
             component_refs=component_ids,
             verification_commands=verification_commands,
         )
     return {
         "title": "First source creation sequence",
-        "note": "This sequence carries the validated model-authored facts into source work without reinterpreting them.",
+        "note": "This sequence carries the proposed first run and its exact source actions into implementation work.",
         "steps": [row["label"] for row in prompts],
         "prompts": prompts,
     }

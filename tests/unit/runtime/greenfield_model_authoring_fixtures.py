@@ -43,6 +43,7 @@ def authored_response(
     first_path_relations: Sequence[Mapping[str, Any]] | None = None,
     component_responsibility_owners: Sequence[str] | None = None,
     provisional_design: Mapping[str, Any] | None = None,
+    source_precedence: Sequence[Mapping[str, Any]] = (),
 ) -> dict[str, Any]:
     """Build a model-shaped response using quotes and occurrence ordinals only."""
 
@@ -112,6 +113,7 @@ def authored_response(
             "status": "authored",
             "facts": facts,
             "events": relation_rows,
+            "source_precedence": [dict(row) for row in source_precedence],
             "terminal": terminal,
             "components": components,
             "assumptions": list(intent.get("assumptions") or []),
@@ -123,7 +125,9 @@ def authored_response(
     }
 
 
-def structural_design_fixture(event_orders: Sequence[int]) -> dict[str, Any]:
+def structural_design_fixture(
+    event_orders: Sequence[int], *, first_run_event_orders: Sequence[int] | None = None,
+) -> dict[str, Any]:
     """Synthetic design for custody/wiring tests, never product-quality evidence."""
 
     orders = list(event_orders)
@@ -140,8 +144,12 @@ def structural_design_fixture(event_orders: Sequence[int]) -> dict[str, Any]:
         for index in range(1, 5)
     ]
     return {
-        "version": "odylith.greenfield.provisional-design.v1",
+        "version": "odylith.greenfield.provisional-design.v2",
         "authority_kind": "provisional_design",
+        "first_run": {
+            "event_orders": list(first_run_event_orders) if first_run_event_orders is not None else orders,
+            "rationale": "The fixture proposes this execution order; citation order does not establish chronology.",
+        },
         "components": components,
         "workstreams": [
             {
@@ -264,7 +272,7 @@ def _terminal_row(
     ]
     if not visible_rows:
         raise ValueError("authored fixture requires one terminal visible result")
-    _, result_quote = visible_rows[-1]
+    event_order, result_quote = visible_rows[-1]
     proof_fact = next(
         (
             fact
@@ -296,6 +304,7 @@ def _terminal_row(
             fact_start + local_start,
         )
     return {
+        "event_order": event_order,
         "result_quote": result_quote,
         "result_occurrence": result_occurrence,
     }

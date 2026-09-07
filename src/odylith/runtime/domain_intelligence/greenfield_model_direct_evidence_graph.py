@@ -36,7 +36,7 @@ MODEL_EVENT_FIELDS = frozenset(
         "target_quote",
     }
 )
-MODEL_TERMINAL_FIELDS = frozenset({"result_quote", "result_occurrence"})
+MODEL_TERMINAL_FIELDS = frozenset({"result_quote", "result_occurrence", "event_order"})
 MODEL_COMPONENT_FIELDS = frozenset({"owner_fact_quote", "responsibilities"})
 MODEL_COMPONENT_RESPONSIBILITY_FIELDS = frozenset({"quote", "occurrence"})
 _CONTEXT_KIND_BY_FIELD = {
@@ -265,7 +265,12 @@ def _derive_events(
         selected_facts=selected_facts,
         evidence_text=evidence_text,
     )
-    rows[-1]["visible_result_quote"] = terminal_fact["terminal_result_quote"]
+    result_event_order = _positive_index(terminal.get("event_order"))
+    if not 1 <= result_event_order <= len(rows):
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring returned an invalid terminal event reference"
+        )
+    rows[result_event_order - 1]["visible_result_quote"] = terminal_fact["terminal_result_quote"]
     return tuple(rows), terminal_fact
 
 
@@ -677,6 +682,10 @@ MODEL_TERMINAL_SCHEMA: dict[str, Any] = {
                     ),
                 },
                 "result_occurrence": {"type": "integer", "minimum": 1},
+                "event_order": {
+                    "type": "integer", "minimum": 1, "maximum": MAX_FIRST_PATH_RELATIONS,
+                    "description": "One-based source-event identity that produces this result, regardless of its position in the evidence.",
+                },
             },
         },
         {"type": "null"},

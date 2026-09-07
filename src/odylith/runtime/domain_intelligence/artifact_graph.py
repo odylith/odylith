@@ -12,6 +12,8 @@ from dataclasses import dataclass
 from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import authored_first_run_text
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import AUTHORED_SEMANTICS_KEY
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -50,7 +52,8 @@ def canonical_graph_from_workstream(
     title = clean_text(workstream.get("title")) or clean_text(intent.get("title"))
     state_object = clean_text(intent.get("state_object"))
     evidence_record = clean_text(intent.get("evidence_record"))
-    first_path = clean_text(intent.get("first_path"))
+    authored = AUTHORED_SEMANTICS_KEY in intent
+    first_path = authored_first_run_text(intent) if authored else clean_text(intent.get("first_path"))
     first_slice = clean_text(workstream.get("recommended_first_slice"))
     proof_boundary = clean_text(intent.get("proof_boundary"))
     human_actors = _intent_rows(intent, "human_actors")
@@ -68,7 +71,10 @@ def canonical_graph_from_workstream(
     state_objects = _rows(state_object)
     evidence = _rows(evidence_record, *source_requirements)
     proof = _rows(proof_boundary, evidence_record, *validation)
-    workflows = _rows(first_path, first_slice)
+    workflows = (
+        tuple(dict.fromkeys(value for value in (first_path, first_slice) if value))
+        if authored else _rows(first_path, first_slice)
+    )
     invariants = _rows(*constraints)
     exceptions = _rows(*ambiguities, *non_goals)
     origin = _rows(*assumptions, *external_systems, *dependencies)

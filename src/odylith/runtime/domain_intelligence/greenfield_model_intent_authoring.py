@@ -40,6 +40,10 @@ from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
     PROVISIONAL_DESIGN_SCHEMA,
     validate_provisional_design,
 )
+from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
+    SOURCE_PRECEDENCE_SCHEMA,
+    validate_source_precedence,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     STANDARD_PROFILE_ID,
     get_greenfield_model_profile,
@@ -53,7 +57,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v50"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v51"
 GREENFIELD_MODEL_PROOF_FD_ENV = "ODYLITH_GREENFIELD_MODEL_PROOF_FD"
 MAX_GREENFIELD_SEMANTIC_CALLS = 1
 
@@ -152,6 +156,7 @@ class GreenfieldModelAuthoredIntent:
     source_spans: tuple[dict[str, Any], ...]
     source_sha256: str
     provisional_design: dict[str, Any]
+    source_precedence: tuple[dict[str, int], ...]
     elapsed_seconds: float
     tier: str
     provider: dict[str, str]
@@ -353,6 +358,7 @@ def _validated_authoring_response(
         "ambiguities",
         "consistency",
         "provisional_design",
+        "source_precedence",
     }:
         raise GreenfieldModelAuthoringError("Greenfield authoring returned an unsupported authored contract; no records were created.")
     if consistency_status in {"material_ambiguity", "material_contradiction"}:
@@ -403,9 +409,15 @@ def _validated_authoring_response(
         raise GreenfieldModelAuthoringError(f"{exc}; no records were created.") from exc
     tier = authoring_tier(profile_id)
     try:
+        event_orders = [row["order"] for row in derived_relations.first_path_relations]
+        source_precedence = validate_source_precedence(
+            result.get("source_precedence"), event_orders=event_orders,
+            operational_constraints=intent["operational_constraints"],
+        )
         provisional_design = validate_provisional_design(
             result.get("provisional_design"),
-            event_orders=[row["order"] for row in derived_relations.first_path_relations],
+            event_orders=event_orders, source_precedence=source_precedence,
+            result_event_order=result["terminal"]["event_order"],
         )
     except ValueError as exc:
         raise GreenfieldModelAuthoringError(f"{exc}; no records were created.") from exc
@@ -422,6 +434,7 @@ def _validated_authoring_response(
         source_spans=(*source_spans, *consistency_spans),
         source_sha256=hashlib.sha256(evidence_text.encode("utf-8")).hexdigest(),
         provisional_design=provisional_design,
+        source_precedence=source_precedence,
         elapsed_seconds=elapsed_seconds,
         tier=tier,
         provider={str(key): str(value) for key, value in provider.items()},
@@ -645,7 +658,7 @@ def _intent_from_typed_source_spans(
         start = _exact_occurrence_start(evidence, quoted_bytes, occurrence)
         end = start + len(quoted_bytes)
         key = (field, 0, start, end)
-        if key in seen:
+        if key in seen and field != "operational_constraints":
             continue
         seen.add(key)
         projection_start = 0
@@ -824,6 +837,13 @@ actions the capability supports; they never transfer the original actor's work t
 the component. Support every source event and assign every component to work.
 Give each workstream a concrete deliverable, useful acceptance, component references
 and only necessary prerequisite workstream keys. Prerequisites must be acyclic.
+first_run proposes one complete walkthrough: include each source event identity once
+and respect every cited source_precedence edge, including required actions after the
+observable result. terminal.event_order identifies the correct result producer,
+independent of its walkthrough position. Explain the chosen sequence in its rationale.
+This is a provisional first run, not source
+fact or a model of all concurrency, branches or loops. Never derive runtime order
+from workstream depends_on, which describes delivery work rather than product use.
 Exchanges name internal component keys and the specific information or contract
 crossing that proposed boundary. Do not add proposed names to source facts or source
 components. Invent no external dependency, authority, metric or safety guarantee.
@@ -837,10 +857,11 @@ according to their schema. product_story is the shortest complete source span ab
 product behavior or outcome, excluding the operator's request to create a proposal.
 customer is the direct user or primary beneficiary, not merely a downstream subject.
 
-FIRST PATH AND OWNERSHIP
+SOURCE ACTIONS, ORDER AND OWNERSHIP
 Select one non-overlapping first_path citation per independently executable action,
-in source order, and one matching event. Include the explicit actor with its action
-and object in the first citation and whenever the actor changes. A coordinated
+in source order, and one matching event. Event indexes are stable reference identities,
+not runtime order: a capability list establishes no execution sequence. Include the
+explicit actor with its action and object in the first citation and whenever the actor changes. A coordinated
 continuation can omit its subject only when the immediately previous event has that
 same actor. A stage, artifact or status label alone is not an event.
 Keep every required source-stated action under its original performer.
@@ -850,7 +871,14 @@ external_systems or title fact for every event. Resolve aliases and omitted subj
 to that same selected actor fact; change it only when the source changes performer.
 Keep the original actor wording in the exact event citation, not a second actor field.
 action_quote and nonempty target_quote must occur within that event. terminal cites
-the final event's visible result according to its schema.
+the visible result and explicitly selects the event that produces it; that event may
+appear anywhere in the source action list.
+source_precedence contains only source-stated ordering requirements, not a proposed
+workflow. Each edge names before_event, after_event and the one-based constraint_index
+of its exact existing facts.operational_constraints citation. Select the whole source
+constraint there, including the actions and their ordering relationship. Reuse a
+constraint index when that same citation states multiple edges; cite each constraint
+once. Keep independent preparations unordered. Return [] when no order is stated.
 Group each owner's exact responsibility citations under one owner_fact_quote, which
 selects an internal_systems fact or title when no narrower system exists. A product
 responsibility belongs to one owner, not a human actor. Cite only capabilities not
@@ -1029,6 +1057,7 @@ _AUTHORED_RESULT_SCHEMA: dict[str, Any] = {
         "ambiguities",
         "consistency",
         "provisional_design",
+        "source_precedence",
     ],
     "properties": {
         "status": {"type": "string", "enum": ["authored"]},
@@ -1039,6 +1068,7 @@ _AUTHORED_RESULT_SCHEMA: dict[str, Any] = {
         "assumptions": ASSUMPTION_SCHEMA,
         "ambiguities": _ADVISORY_SCHEMA,
         "provisional_design": PROVISIONAL_DESIGN_SCHEMA,
+        "source_precedence": SOURCE_PRECEDENCE_SCHEMA,
         "consistency": _consistency_schema(
             statuses=("consistent", "non_material_ambiguity")
         ),

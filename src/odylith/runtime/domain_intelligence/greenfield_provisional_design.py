@@ -11,8 +11,12 @@ from copy import deepcopy
 from graphlib import CycleError, TopologicalSorter
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
+    FIRST_RUN_SCHEMA,
+    validate_first_run,
+)
 
-PROVISIONAL_DESIGN_VERSION = "odylith.greenfield.provisional-design.v1"
+PROVISIONAL_DESIGN_VERSION = "odylith.greenfield.provisional-design.v2"
 PROVISIONAL_DESIGN_AUTHORITY_KIND = "provisional_design"
 _TEXT = {"type": "string", "minLength": 1, "maxLength": 4000}
 _KEY = {"type": "string", "minLength": 1, "maxLength": 80, "pattern": "^[a-z][a-z0-9-]*$"}
@@ -50,18 +54,22 @@ def _row_schema(fields: Mapping[str, Any], *, minimum: int, maximum: int) -> dic
 PROVISIONAL_DESIGN_SCHEMA = {
     "type": "object",
     "additionalProperties": False,
-    "required": ["version", "authority_kind", "components", "workstreams", "exchanges"],
+    "required": ["version", "authority_kind", "components", "workstreams", "exchanges", "first_run"],
     "properties": {
         "version": {"type": "string", "const": PROVISIONAL_DESIGN_VERSION},
         "authority_kind": {"type": "string", "const": PROVISIONAL_DESIGN_AUTHORITY_KIND},
         "components": _row_schema(_COMPONENT_FIELDS, minimum=4, maximum=5),
         "workstreams": _row_schema(_WORKSTREAM_FIELDS, minimum=4, maximum=5),
         "exchanges": _row_schema(_EXCHANGE_FIELDS, minimum=0, maximum=32),
+        "first_run": FIRST_RUN_SCHEMA,
     },
 }
 
 
-def validate_provisional_design(value: Any, *, event_orders: Sequence[int]) -> dict[str, Any]:
+def validate_provisional_design(
+    value: Any, *, event_orders: Sequence[int],
+    source_precedence: Sequence[Mapping[str, int]] = (), result_event_order: int | None = None,
+) -> dict[str, Any]:
     """Validate structural design obligations without interpreting source prose."""
 
     if (
@@ -79,6 +87,10 @@ def validate_provisional_design(value: Any, *, event_orders: Sequence[int]) -> d
         or len(set(event_orders)) != len(event_orders)
     ):
         raise ValueError("Greenfield provisional design requires valid source-event orders")
+    validate_first_run(
+        value["first_run"], event_orders=event_orders,
+        source_precedence=source_precedence, result_event_order=result_event_order,
+    )
     components = _design_rows(value, "components", _COMPONENT_FIELDS, minimum=4, maximum=5)
     workstreams = _design_rows(value, "workstreams", _WORKSTREAM_FIELDS, minimum=4, maximum=5)
     exchanges = _design_rows(value, "exchanges", _EXCHANGE_FIELDS, minimum=0, maximum=32)
@@ -139,6 +151,8 @@ def provisional_design_from_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
     return validate_provisional_design(
         semantics.get("provisional_design") if isinstance(semantics, Mapping) else None,
         event_orders=tuple(row["order"] for row in relations),
+        source_precedence=semantics["source_precedence"],
+        result_event_order=next(row["order"] for row in relations if row["visible_result_quote"]),
     )
 
 

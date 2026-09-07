@@ -6,24 +6,34 @@ from collections.abc import Iterable
 from typing import Any
 from urllib.parse import urlparse
 
+from odylith.runtime.domain_intelligence.greenfield_event_ordering import validate_source_precedence
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import validate_provisional_design
 
 
 AUTHORED_STRUCTURE_EXPRESSION = """(node) => {
+  const visibleText = (item) => item?.checkVisibility({checkOpacity: true, checkVisibilityCSS: true})
+    ? String(item.innerText || "").trim() : "";
   const eventRows = (selector) => Array.from(node.querySelectorAll(selector)).map((item) => ({
-    order: Number(item.dataset.eventOrder || "0"), text: String(item.innerText || "").trim()
+    order: Number(item.dataset.eventOrder || "0"), text: visibleText(item)
   }));
+  const focus = node.querySelector('[data-authored-fact-list="focus"]');
+  const firstPath = node.querySelector('[data-authored-fact-list="first_path"]');
   const capabilities = node.querySelector('[data-authored-fact-list="owned_capabilities"]');
   return {
     focus: eventRows('[data-authored-fact-list="focus"] [data-authored-fact-item]'),
     first_path: eventRows('[data-authored-fact-list="first_path"] [data-authored-fact-item]'),
+    focus_authority: String(focus?.dataset.authorityKind || ""),
+    focus_label: visibleText(focus?.querySelector('[data-proposed-first-run-label]')),
+    first_path_authority: String(firstPath?.dataset.authorityKind || ""),
+    first_path_label: visibleText(firstPath?.closest('[data-semantic-slot="first_path"]')
+      ?.querySelector('[data-proposed-first-run-label]')),
     actors: Array.from(node.querySelectorAll("[data-authored-actor]")).map((card) => ({
       actor: String(card.dataset.authoredActor || "").trim(),
       events: Array.from(card.querySelectorAll('[data-authored-fact-list="actor"] [data-authored-fact-item]'))
-        .map((item) => ({order: Number(item.dataset.eventOrder || "0"), text: String(item.innerText || "").trim()}))
+        .map((item) => ({order: Number(item.dataset.eventOrder || "0"), text: visibleText(item)}))
     })).filter((row) => row.events.length),
     capabilities_authority: String(capabilities?.dataset.authorityKind || ""),
-    capabilities_label: String(node.querySelector('[data-provisional-design-label]')?.innerText || "").trim(),
+    capabilities_label: visibleText(node.querySelector('[data-provisional-design-label]')),
     capabilities: Array.from(capabilities?.querySelectorAll('[data-authored-fact-item]') || []).map((item) => ({
       owner: String(item.querySelector("[data-authored-owner]")?.innerText || "").trim(),
       responsibility: String(item.querySelector("[data-authored-responsibility]")?.innerText || "").trim()
@@ -85,9 +95,32 @@ def authored_structure_issues(rendered: Any, authored_facts: Any) -> tuple[str, 
     raw_events = authored_facts.get("first_path_relations")
     if not isinstance(raw_events, (list, tuple)):
         return ("browser surface project payload has no typed first-path relations",)
-    event_rows = [row for row in raw_events if isinstance(row, dict)]
+    if not raw_events or any(
+        not isinstance(row, dict)
+        or not isinstance(row.get("event_quote"), str) or not row["event_quote"].strip()
+        or not isinstance(row.get("visible_result_quote"), str)
+        for row in raw_events
+    ):
+        return ("browser surface project has invalid canonical source events",)
+    event_orders = tuple(row.get("order") for row in raw_events)
+    result_orders = [row.get("order") for row in raw_events if row["visible_result_quote"]]
+    if len(result_orders) != 1:
+        return ("browser surface project has invalid canonical result-event binding",)
+    try:
+        source_precedence = validate_source_precedence(
+            authored_facts.get("source_precedence"), event_orders=event_orders,
+            operational_constraints=authored_facts.get("operational_constraints"),
+        )
+        design = validate_provisional_design(
+            authored_facts.get("provisional_design"), event_orders=event_orders,
+            source_precedence=source_precedence, result_event_order=result_orders[0],
+        )
+    except ValueError as exc:
+        return (f"browser surface project has invalid canonical provisional design: {exc}",)
+    events_by_order = {row["order"]: row for row in raw_events}
+    event_rows = [events_by_order[order] for order in design["first_run"]["event_orders"]]
     expected_events = [
-        {"order": row.get("order"), "text": str(row.get("event_quote") or "").strip()}
+        {"order": row["order"], "text": _browser_visible_text(row["event_quote"])}
         for row in event_rows
     ]
     issues: list[str] = []
@@ -96,6 +129,13 @@ def authored_structure_issues(rendered: Any, authored_facts: Any) -> tuple[str, 
         if actual != expected_events:
             issues.append(
                 f"browser surface project {surface.replace('_', ' ')} does not preserve typed event nodes"
+            )
+        if (
+            rendered.get(f"{surface}_authority") != "provisional_design"
+            or rendered.get(f"{surface}_label") != "Proposed first run:"
+        ):
+            issues.append(
+                f"browser surface project {surface.replace('_', ' ')} lost its explicit proposed-first-run marker"
             )
 
     raw_human_actors = authored_facts.get("human_actors")
@@ -121,13 +161,6 @@ def authored_structure_issues(rendered: Any, authored_facts: Any) -> tuple[str, 
     if rendered.get("actors") != expected_actors:
         issues.append("browser surface project actor cards do not preserve typed human event nodes")
 
-    try:
-        design = validate_provisional_design(
-            authored_facts.get("provisional_design"),
-            event_orders=tuple(row.get("order") for row in event_rows),
-        )
-    except ValueError as exc:
-        return (*issues, f"browser surface project has invalid canonical provisional design: {exc}")
     expected_capabilities = [
         {
             "owner": _browser_visible_text(row["name"]),

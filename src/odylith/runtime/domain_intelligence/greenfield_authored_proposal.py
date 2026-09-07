@@ -17,6 +17,10 @@ from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence.greenfield_authored_atlas_view import (
     build_authored_atlas_diagrams,
 )
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_first_run_relations,
+    authored_first_run_text,
+)
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
     AUTHORED_SEMANTICS_KEY,
@@ -26,16 +30,12 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     first_path_context_relations_from_intent,
     first_path_relations_from_intent,
 )
-from odylith.runtime.domain_intelligence.greenfield_command_text import shell_quote
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
     provisional_design_from_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_provisional_package import (
     build_provisional_backlog,
     build_provisional_components,
-)
-from odylith.runtime.domain_intelligence.greenfield_intent_shaping_prompt import (
-    accepted_intent_shaping_prompt,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
     assumption_rows,
@@ -82,12 +82,9 @@ def build_authored_greenfield_proposal(
     first_path_context_relations = first_path_context_relations_from_intent(confirmed_intent)
     release = str(release_selector or "").strip() or greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR
     title = _required_text(confirmed_intent, "title")
-    command_prompt = accepted_intent_shaping_prompt(
-        confirmed_intent,
-        fallback_title=title,
-    )
     product_slug = slugify(title) or "greenfield-project"
-    first_path = _required_text(confirmed_intent, "first_path")
+    first_path = authored_first_run_text(confirmed_intent)
+    first_run_relations = authored_first_run_relations(confirmed_intent)
     state_object = _required_text(confirmed_intent, "state_object")
     proof_boundary = _required_text(confirmed_intent, "proof_boundary")
     product_story = _required_text(confirmed_intent, "product_story")
@@ -135,8 +132,9 @@ def build_authored_greenfield_proposal(
         operational_constraints=operational_constraints,
         components=components,
         backlog=backlog,
-        relations=relations,
+        relations=first_run_relations,
         provisional_design=provisional_design,
+        source_precedence=confirmed_intent[AUTHORED_SEMANTICS_KEY]["source_precedence"],
     )
     diagrams = build_authored_atlas_diagrams(
         title=title,
@@ -153,6 +151,8 @@ def build_authored_greenfield_proposal(
         relations=relations,
         provisional_design=provisional_design,
         diagram_roles=tuple(diagram_slugs),
+        source_precedence=confirmed_intent[AUTHORED_SEMANTICS_KEY]["source_precedence"],
+        operational_constraints=operational_constraints,
     )
     intent = _intent_copy(confirmed_intent)
     intent.update(
@@ -206,7 +206,6 @@ def build_authored_greenfield_proposal(
             non_goals=non_goals,
             operational_constraints=operational_constraints,
             evidence_requirements=evidence_requirements,
-            command_prompt=command_prompt,
         ),
         "project_intelligence": _project_intelligence(
             title=title,
@@ -238,10 +237,7 @@ def build_authored_greenfield_proposal(
         "components": components,
         "semantic_model": semantic_model,
         "diagrams": diagrams,
-        "apply_commands": [
-            f"odylith greenfield propose --repo-root . --prompt {shell_quote(command_prompt)}",
-            "# CONFIRM publishes the exact sealed transaction; EDIT rebuilds from new evidence; REJECT writes nothing.",
-        ],
+        "apply_commands": [],
     }
     return proposal
 
@@ -429,10 +425,12 @@ def _semantic_model(
     backlog: Sequence[Mapping[str, Any]],
     relations: Sequence[Mapping[str, Any]],
     provisional_design: Mapping[str, Any],
+    source_precedence: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
     events = [
         {
             "index": index,
+            "source_event_order": row["order"],
             "actor": _text(row.get("actor_fact_quote")),
             "owner_system": _text(row.get("owner_system_quote")),
             "action": _text(row.get("action_verb_quote")),
@@ -440,7 +438,7 @@ def _semantic_model(
             "mutation": _text(row.get("event_quote")),
             "visible_result": bool(_text(row.get("visible_result_quote"))),
             "text": _text(row.get("event_quote")),
-            "source_kind": "accepted_first_path",
+            "source_kind": "proposed_first_run",
         }
         for index, row in enumerate(relations, start=1)
     ]
@@ -471,6 +469,7 @@ def _semantic_model(
     return {
         "schema_version": "odylith.greenfield.semantic_model.v3",
         "first_path_contract": {
+            "authority_kind": "provisional_design",
             "actor": _text(first_event.get("actor_fact_quote")),
             "action": _text(first_event.get("action_verb_quote")),
             "entity": state_object,
@@ -496,6 +495,7 @@ def _semantic_model(
         },
         "components": component_refs,
         "provisional_design": copy.deepcopy(provisional_design),
+        "source_precedence": [dict(row) for row in source_precedence],
         "workstreams": workstreams,
         "diagram_event_graph": {
             "events": events,
@@ -524,7 +524,6 @@ def _project_brief(
     non_goals: Sequence[str],
     operational_constraints: Sequence[str],
     evidence_requirements: Sequence[str],
-    command_prompt: str,
 ) -> dict[str, Any]:
     problem_statement = problem
     sections = [
@@ -534,8 +533,8 @@ def _project_brief(
             problem_statement,
             "The source-stated need or an explicitly provisional decision assumption.",
         ),
-        _brief_section("First path", first_path, "The accepted first complete user path."),
-        _brief_section("Visible result", visible_result, "The terminal result typed in the first-path relation."),
+        _brief_section("First path", first_path, "One proposed walkthrough constrained by source evidence."),
+        _brief_section("Visible result", visible_result, "The source result bound to its producing action."),
         _brief_section("Proof", proof_boundary, "The accepted release proof boundary."),
     ]
     if operational_constraints:
@@ -556,14 +555,7 @@ def _project_brief(
         "customization_prompts": [],
         "pre_coding_checkpoints": [],
         "coding_readiness_gates": _unique([proof_boundary, *evidence_requirements]),
-        "host_independent_paths": [
-            {
-                "path": "Review the creation-ready transaction",
-                "command": f"odylith greenfield propose --repo-root . --prompt {shell_quote(command_prompt)}",
-                "works_in": "shell, Codex, Claude Code",
-                "use_when": "Review the sealed package before choosing CONFIRM, EDIT, or REJECT.",
-            }
-        ],
+        "host_independent_paths": [],
         "actors": list(human_actors),
         "internal_systems": list(internal_systems),
         "external_systems": list(external_systems),

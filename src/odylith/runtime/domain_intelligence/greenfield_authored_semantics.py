@@ -14,10 +14,11 @@ from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
     intent_text_rows,
 )
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import validate_provisional_design
+from odylith.runtime.domain_intelligence.greenfield_event_ordering import validate_source_precedence
 from odylith.runtime.governance.artifact_tribunal import _bind_verified_source_custody
 
 AUTHORED_SEMANTICS_KEY = "authored_semantics"
-AUTHORED_SEMANTICS_VERSION = "odylith.greenfield.authored-semantics.v15"
+AUTHORED_SEMANTICS_VERSION = "odylith.greenfield.authored-semantics.v16"
 AUTHORED_RELATION_SET_SHA256_KEY = "authored_relation_set_sha256"
 AUTHORED_PROJECTION_ORIGIN = "model_authored_typed_intent"
 AUTHORED_SEMANTIC_ROOT = f"intent.{AUTHORED_SEMANTICS_KEY}"
@@ -112,7 +113,7 @@ def validate_first_path_relations(
     product_title: str = "",
     terminal_result_facts: Sequence[str] = (),
 ) -> tuple[dict[str, Any], ...]:
-    """Return ordered relations whose quoted parts are exact first-path bytes."""
+    """Return stable source-event identities, not an inferred execution order."""
 
     if (
         not isinstance(value, Sequence)
@@ -205,7 +206,7 @@ def validate_first_path_relations(
         ):
             raise GreenfieldAuthoredSemanticsError("Greenfield authoring returned ungrounded first-path relations")
         if visible_result_quote:
-            if visible_seen or expected_order != len(value):
+            if visible_seen:
                 raise GreenfieldAuthoredSemanticsError("Greenfield authoring returned an invalid terminal visible result")
             visible_seen = True
         seen_source_events.add((source_start, source_end))
@@ -389,6 +390,7 @@ def authored_semantics_mapping(
     component_responsibility_relations: Sequence[Mapping[str, Any]] = (),
     *,
     first_path_context_relations: Sequence[Mapping[str, Any]] = (),
+    source_precedence: Sequence[Mapping[str, Any]] = (),
     provisional_design: Mapping[str, Any],
 ) -> dict[str, Any]:
     """Serialize source relations and tagged design without replacing source facts."""
@@ -402,8 +404,11 @@ def authored_semantics_mapping(
         "component_responsibility_relations": [
             dict(row) for row in component_responsibility_relations
         ],
+        "source_precedence": [dict(row) for row in source_precedence],
         "provisional_design": validate_provisional_design(
             provisional_design, event_orders=tuple(row["order"] for row in relations),
+            source_precedence=source_precedence,
+            result_event_order=next((row["order"] for row in relations if row["visible_result_quote"]), None),
         ),
     }
 
@@ -745,6 +750,7 @@ def _authored_relations_from_intent(
             "first_path_relations",
             "first_path_context_relations",
             "component_responsibility_relations",
+            "source_precedence",
             "provisional_design",
         }
     ):
@@ -775,9 +781,16 @@ def _authored_relations_from_intent(
         first_path_relations=first_path_relations,
     )
     try:
+        source_precedence = validate_source_precedence(
+            semantics["source_precedence"],
+            event_orders=tuple(row["order"] for row in first_path_relations),
+            operational_constraints=intent_text_rows(intent.get("operational_constraints")),
+        )
         validate_provisional_design(
             semantics["provisional_design"],
             event_orders=tuple(row["order"] for row in first_path_relations),
+            source_precedence=source_precedence,
+            result_event_order=next(row["order"] for row in first_path_relations if row["visible_result_quote"]),
         )
     except ValueError as exc:
         raise GreenfieldAuthoredSemanticsError(str(exc)) from exc
@@ -921,6 +934,7 @@ def authored_relation_set_sha256(
     component_responsibility_relations: Sequence[Mapping[str, Any]] = (),
     *,
     first_path_context_relations: Sequence[Mapping[str, Any]] = (),
+    source_precedence: Sequence[Mapping[str, Any]] = (),
     provisional_design: Mapping[str, Any] | None = None,
 ) -> str:
     """Bind source relations and provisional design in one semantic custody hash."""
@@ -948,10 +962,17 @@ def authored_relation_set_sha256(
         ):
             raise GreenfieldAuthoredSemanticsError("Greenfield authored relation custody is malformed")
         context_payload.append(dict(relation))
-    if not first_path_payload and (component_payload or context_payload or provisional_design is not None):
+    precedence_payload = []
+    for row in source_precedence:
+        if not isinstance(row, Mapping) or set(row) != {"before_event", "after_event", "constraint_index"}:
+            raise GreenfieldAuthoredSemanticsError("Greenfield source precedence custody is malformed")
+        precedence_payload.append(dict(row))
+    if not first_path_payload and (component_payload or context_payload or precedence_payload or provisional_design is not None):
         raise GreenfieldAuthoredSemanticsError("Greenfield authored design requires source relations")
     design_payload = validate_provisional_design(
         provisional_design, event_orders=tuple(row["order"] for row in first_path_payload),
+        source_precedence=precedence_payload,
+        result_event_order=next((row["order"] for row in first_path_payload if row["visible_result_quote"]), None),
     ) if first_path_payload else None
     canonical = json.dumps(
         {
@@ -959,6 +980,7 @@ def authored_relation_set_sha256(
             "first_path_relations": first_path_payload,
             "first_path_context_relations": context_payload,
             "component_responsibility_relations": component_payload,
+            "source_precedence": precedence_payload,
             "provisional_design": design_payload,
         },
         ensure_ascii=True,
@@ -1006,6 +1028,7 @@ def require_relation_authority_parity(
         relations,
         component_relations,
         first_path_context_relations=context_relations,
+        source_precedence=intent[AUTHORED_SEMANTICS_KEY]["source_precedence"],
         provisional_design=intent[AUTHORED_SEMANTICS_KEY]["provisional_design"],
     )
     if sealed_digest != expected:
@@ -1033,6 +1056,7 @@ def authored_source_custody(
             relations,
             component_relations,
             first_path_context_relations=context_relations,
+            source_precedence=intent[AUTHORED_SEMANTICS_KEY]["source_precedence"],
             provisional_design=intent[AUTHORED_SEMANTICS_KEY]["provisional_design"],
         ),
     )

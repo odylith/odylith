@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 from copy import deepcopy
+import html
 import sys
 from pathlib import Path
 
@@ -513,15 +514,19 @@ def _source_design_structure() -> tuple[dict, dict]:
                 "event_quote": "Keeper signals amber ferry",
                 "actor_kind": "human",
                 "actor_fact_quote": "Keeper",
+                "visible_result_quote": "",
             },
             {
                 "order": 2,
                 "event_quote": "Relay writes blue receipt",
                 "actor_kind": "product",
                 "actor_fact_quote": "Relay",
+                "visible_result_quote": "blue receipt",
             },
         ],
         "human_actors": ["Keeper"],
+        "source_precedence": [],
+        "operational_constraints": [],
         "internal_systems": ["Relay", "Audit Console"],
         "component_responsibility_relations": [
             {
@@ -540,6 +545,10 @@ def _source_design_structure() -> tuple[dict, dict]:
     rendered = {
         "focus": events,
         "first_path": events,
+        "focus_authority": "provisional_design",
+        "focus_label": "Proposed first run:",
+        "first_path_authority": "provisional_design",
+        "first_path_label": "Proposed first run:",
         "actors": [{"actor": "Keeper", "events": events[:1]}],
         "capabilities_authority": "provisional_design",
         "capabilities_label": "Proposed capabilities:",
@@ -572,6 +581,210 @@ def test_authored_structure_requires_direct_typed_node_parity() -> None:
     assert module.authored_structure_issues(collapsed, facts) == (
         "browser surface project first path does not preserve typed event nodes",
     )
+
+
+def _result_first_structure() -> tuple[dict, dict]:
+    rendered, facts = _source_design_structure()
+    facts["first_path_relations"] = [
+        {"order": 1, "event_quote": "Keeper publishes blue receipt", "actor_kind": "human",
+         "actor_fact_quote": "Keeper", "visible_result_quote": "blue receipt"},
+        {"order": 2, "event_quote": "Relay writes blue receipt", "actor_kind": "product",
+         "actor_fact_quote": "Relay", "visible_result_quote": ""},
+        {"order": 3, "event_quote": "Keeper reviews blue receipt", "actor_kind": "human",
+         "actor_fact_quote": "Keeper", "visible_result_quote": ""},
+    ]
+    facts["source_precedence"] = [
+        {"before_event": 2, "after_event": 3, "constraint_index": 1},
+        {"before_event": 3, "after_event": 1, "constraint_index": 2},
+    ]
+    facts["operational_constraints"] = [
+        "The Relay writes the receipt before the Keeper reviews it.",
+        "The Keeper reviews the receipt before publishing it.",
+    ]
+    facts["provisional_design"] = structural_design_fixture((1, 2, 3), first_run_event_orders=(2, 3, 1))
+    events = [
+        {"order": 2, "text": "Relay writes blue receipt"},
+        {"order": 3, "text": "Keeper reviews blue receipt"},
+        {"order": 1, "text": "Keeper publishes blue receipt"},
+    ]
+    rendered.update(focus=events, first_path=events, actors=[{"actor": "Keeper", "events": events[1:]}])
+    return rendered, facts
+
+
+def test_authored_browser_oracle_accepts_result_first_source_and_proposed_walk() -> None:
+    module = _authored_contract_module()
+    rendered, facts = _result_first_structure()
+    assert module.authored_structure_issues(rendered, facts) == ()
+
+
+def _post_result_structure() -> tuple[dict, dict]:
+    rendered, facts = _source_design_structure()
+    quotes = ("Keeper publishes blue receipt", "Keeper archives receipt evidence")
+    facts["first_path_relations"] = [
+        {"order": order, "event_quote": quote, "actor_kind": "human",
+         "actor_fact_quote": "Keeper", "visible_result_quote": "blue receipt" if order == 1 else ""}
+        for order, quote in enumerate(quotes, 1)
+    ]
+    facts["source_precedence"] = [{"before_event": 1, "after_event": 2, "constraint_index": 1}]
+    facts["operational_constraints"] = ["The Keeper publishes before archiving receipt evidence."]
+    events = [{"order": order, "text": quote} for order, quote in enumerate(quotes, 1)]
+    rendered.update(focus=events, first_path=events, actors=[{"actor": "Keeper", "events": events}])
+    return rendered, facts
+
+
+def test_authored_browser_oracle_accepts_required_post_result_archiving() -> None:
+    module = _authored_contract_module()
+    rendered, facts = _post_result_structure()
+    assert module.authored_structure_issues(rendered, facts) == ()
+
+
+@pytest.mark.parametrize("surface", ["focus", "first_path", "actors"])
+def test_authored_browser_oracle_rejects_raw_source_order_in_proposed_walk(surface: str) -> None:
+    module = _authored_contract_module()
+    rendered, facts = _result_first_structure()
+    assert module.authored_structure_issues(rendered, facts) == ()
+    if surface == "actors":
+        rendered[surface][0]["events"] = list(reversed(rendered[surface][0]["events"]))
+    else:
+        rendered[surface] = sorted(rendered[surface], key=lambda event: event["order"])
+    assert module.authored_structure_issues(rendered, facts)
+
+
+@pytest.mark.parametrize("field", ["focus_authority", "focus_label", "first_path_authority", "first_path_label"])
+def test_authored_browser_oracle_requires_both_proposed_walk_markers(field: str) -> None:
+    module = _authored_contract_module()
+    rendered, facts = _source_design_structure()
+    rendered[field] = ""
+    assert module.authored_structure_issues(rendered, facts)
+
+
+@pytest.mark.parametrize("damage", [
+    "missing_precedence", "missing_constraints", "unknown_constraint", "unknown_event", "cycle",
+    "no_result", "two_results", "malformed_result", "reversed_walk", "unknown_walk_event",
+])
+def test_authored_browser_oracle_rejects_invalid_order_authority(damage: str) -> None:
+    module = _authored_contract_module()
+    rendered, facts = _result_first_structure()
+    assert module.authored_structure_issues(rendered, facts) == ()
+    if damage == "missing_precedence":
+        facts.pop("source_precedence")
+    elif damage == "missing_constraints":
+        facts.pop("operational_constraints")
+    elif damage == "unknown_constraint":
+        facts["source_precedence"][0]["constraint_index"] = 3
+    elif damage == "unknown_event":
+        facts["source_precedence"][0]["before_event"] = 4
+    elif damage == "cycle":
+        facts["source_precedence"].append({"before_event": 1, "after_event": 2, "constraint_index": 1})
+    elif damage == "no_result":
+        facts["first_path_relations"][0]["visible_result_quote"] = ""
+    elif damage == "two_results":
+        facts["first_path_relations"][1]["visible_result_quote"] = "blue receipt"
+    elif damage == "malformed_result":
+        facts["first_path_relations"][0]["visible_result_quote"] = True
+    elif damage == "reversed_walk":
+        facts["provisional_design"]["first_run"]["event_orders"] = [3, 2, 1]
+    else:
+        facts["provisional_design"]["first_run"]["event_orders"] = [2, 4, 1]
+    assert any("invalid canonical" in issue for issue in module.authored_structure_issues(rendered, facts))
+
+
+@pytest.fixture(scope="module")
+def authored_contract_browser():
+    playwright = pytest.importorskip("playwright.sync_api")
+    with playwright.sync_playwright() as runtime:
+        browser = runtime.chromium.launch(headless=True)
+        yield browser
+        browser.close()
+
+
+def _authored_contract_html(facts: dict) -> str:
+    from odylith.runtime.project_intelligence.authored_fact_presenter import (
+        render_authored_actor_cards, render_authored_focus, render_product_story_contract,
+    )
+
+    project = {"authored_facts": facts}
+    render_text = lambda value: html.escape(str(value))
+    focus = render_authored_focus(project, render_text=render_text)
+    actors = render_authored_actor_cards(
+        [("Human participant", "Keeper", "Reviews and publishes receipts.")],
+        project=project, render_text=render_text,
+    )
+    story = render_product_story_contract([
+        {"label": label, "semantic_slot": slot, "body": "Rendered from typed facts."}
+        for label, slot in (
+            ("First Path", "first_path"), ("Product Boundary", "product_boundary"),
+            ("Proposed Capabilities", "owned_capabilities"),
+        )
+    ], project=project, render_text=render_text)
+    deliveries = "".join(
+        f'<article class="project-job-card"><h3>{render_text(row["title"])}</h3>'
+        f'<p>{render_text(row["deliverable"])}</p></article>'
+        for row in facts["provisional_design"]["workstreams"]
+    )
+    return f'<!doctype html><main id="authored">{focus}{actors}{story}{deliveries}</main>'
+
+
+@pytest.mark.parametrize("width,height", [(1440, 1100), (430, 932)], ids=["desktop", "mobile"])
+def test_authored_dom_oracle_preserves_publication_and_post_result_archiving(
+    authored_contract_browser, width: int, height: int,
+) -> None:
+    module = _authored_contract_module()
+    _, facts = _post_result_structure()
+    page = authored_contract_browser.new_page(viewport={"width": width, "height": height})
+    try:
+        page.set_content(_authored_contract_html(facts))
+        actual = page.locator("#authored").evaluate(module.AUTHORED_STRUCTURE_EXPRESSION)
+        assert module.authored_structure_issues(actual, facts) == ()
+        for surface in ("focus", "first_path"):
+            assert [row["text"] for row in actual[surface]] == [
+                "Keeper publishes blue receipt", "Keeper archives receipt evidence",
+            ]
+    finally:
+        page.close()
+
+
+@pytest.mark.parametrize("width,height", [(1440, 1100), (430, 932)], ids=["desktop", "mobile"])
+def test_authored_dom_oracle_detects_hidden_labels_and_source_order(
+    authored_contract_browser, width: int, height: int,
+) -> None:
+    module = _authored_contract_module()
+    _, facts = _result_first_structure()
+    page = authored_contract_browser.new_page(viewport={"width": width, "height": height})
+    document = _authored_contract_html(facts)
+    try:
+        page.set_content(document)
+        root = page.locator("#authored")
+        assert module.authored_structure_issues(root.evaluate(module.AUTHORED_STRUCTURE_EXPRESSION), facts) == ()
+        for surface, parent_selector in (
+            ("focus", '[data-authored-fact-list="focus"]'),
+            ("first_path", '[data-semantic-slot="first_path"]'),
+        ):
+            for damage in ("display", "visibility", "opacity", "removed", "lost_copy"):
+                page.set_content(document)
+                label = page.locator(f"{parent_selector} [data-proposed-first-run-label]")
+                label.evaluate("""(node, damage) => {
+                  if (damage === "removed") node.remove();
+                  else if (damage === "lost_copy") node.textContent = "First run:";
+                  else node.style[damage] = ({display: "none", visibility: "hidden", opacity: "0"})[damage];
+                }""", damage)
+                actual = root.evaluate(module.AUTHORED_STRUCTURE_EXPRESSION)
+                assert any(
+                    f"{surface.replace('_', ' ')} lost its explicit proposed-first-run marker" in issue
+                    for issue in module.authored_structure_issues(actual, facts)
+                ), (surface, damage, actual)
+            page.set_content(document)
+            page.locator(f'[data-authored-fact-list="{surface}"]').evaluate("""node => {
+              const rows = Array.from(node.querySelectorAll('[data-authored-fact-item]'));
+              rows.sort((left, right) => Number(left.dataset.eventOrder) - Number(right.dataset.eventOrder));
+              rows.forEach(row => node.appendChild(row));
+            }""")
+            assert any(
+                f"{surface.replace('_', ' ')} does not preserve typed event nodes" in issue
+                for issue in module.authored_structure_issues(root.evaluate(module.AUTHORED_STRUCTURE_EXPRESSION), facts)
+            )
+    finally:
+        page.close()
 
 
 @pytest.mark.parametrize("damage", [
@@ -650,5 +863,4 @@ def test_project_state_assertion_fails_closed_when_authored_nodes_are_missing() 
         payload_authored_facts={"first_path_relations": []},
     )
 
-    assert "browser surface project focus does not preserve typed event nodes" in issues
-    assert "browser surface project first path does not preserve typed event nodes" in issues
+    assert "browser surface project has invalid canonical source events" in issues

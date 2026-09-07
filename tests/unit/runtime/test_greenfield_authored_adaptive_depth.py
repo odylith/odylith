@@ -337,7 +337,7 @@ def test_boundary_free_source_keeps_complete_structural_design_projection(
     ] * 4
     assert [row["title"] for row in proposal["diagrams"]] == [
         "System Context View",
-        "First Path Sequence",
+        "Proposed First Run",
         "Proposed Component Exchanges",
         "Proposed Delivery Dependencies and Acceptance",
         "Proposed Capability Support and Source Facts",
@@ -380,7 +380,7 @@ def test_one_typed_event_keeps_complete_structural_projection_without_extra_even
 
     assert [row["title"] for row in proposal["diagrams"]] == [
         "System Context View",
-        "First Path Sequence",
+        "Proposed First Run",
         "Proposed Component Exchanges",
         "Proposed Delivery Dependencies and Acceptance",
         "Proposed Capability Support and Source Facts",
@@ -440,14 +440,14 @@ def test_structured_source_projects_distinct_canonical_design_with_source_custod
     diagrams = {row["title"]: row for row in proposal["diagrams"]}
     assert set(diagrams) == {
         "System Context View",
-        "First Path Sequence",
+        "Proposed First Run",
         "Proposed Component Exchanges",
         "Proposed Delivery Dependencies and Acceptance",
         "Proposed Capability Support and Source Facts",
     }
     assert [row["authority_kind"] for row in proposal["diagrams"]] == [
         "source_grounded",
-        "source_grounded",
+        "provisional_design",
         "provisional_design",
         "provisional_design",
         "provisional_design",
@@ -649,7 +649,7 @@ def test_authored_service_readiness_keeps_nonapproval_as_a_safety_boundary(
         "Automatic operational approval is outside the first release."
     ]
     first_path_contract = proposal["semantic_model"]["first_path_contract"]
-    assert first_path_contract["raw_path"] == "\n".join(
+    assert first_path_contract["raw_path"] == "Proposed first run:\n" + "\n".join(
         (
             "Coordinator records service capacity evidence",
             "Readiness Ledger records review status",
@@ -731,7 +731,7 @@ def test_authored_solar_path_keeps_user_outcome_distinct_from_meta_proof(
     )
 
     first_path_contract = proposal["semantic_model"]["first_path_contract"]
-    assert first_path_contract["raw_path"] == "\n".join(
+    assert first_path_contract["raw_path"] == "Proposed first run:\n" + "\n".join(
         (
             "Homeowner connects a solar inverter and battery",
             "Forecast Engine computes a forecast-driven dispatch schedule",

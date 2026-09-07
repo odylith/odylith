@@ -7,6 +7,12 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    GreenfieldAuthoredSemanticsError,
+)
+from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
+    validate_source_precedence,
+)
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
     validate_provisional_design,
 )
@@ -45,25 +51,31 @@ class AuthoredFactView:
 def authored_fact_view(project: Mapping[str, Any]) -> AuthoredFactView | None:
     """Read only validated, already-typed Project facts; never interpret prose."""
 
-    raw_facts = project.get("authored_facts")
-    if not isinstance(raw_facts, Mapping):
+    if "authored_facts" not in project:
         return None
+    raw_facts = project["authored_facts"]
+    if not isinstance(raw_facts, Mapping):
+        raise GreenfieldAuthoredSemanticsError("Project authored facts are malformed")
 
     raw_events = raw_facts.get("first_path_relations")
     if not isinstance(raw_events, Sequence) or isinstance(raw_events, (str, bytes, bytearray)):
-        return None
+        raise GreenfieldAuthoredSemanticsError("Project authored event inventory is malformed")
     events: list[AuthoredEvent] = []
+    result_orders: list[int] = []
     for expected_order, raw_event in enumerate(raw_events, start=1):
         if not isinstance(raw_event, Mapping):
-            return None
+            raise GreenfieldAuthoredSemanticsError("Project authored event inventory is malformed")
         order = raw_event.get("order")
         text = raw_event.get("event_quote")
         actor_kind = raw_event.get("actor_kind")
         actor = raw_event.get("actor_fact_quote")
-        if order != expected_order or not all(
+        result = raw_event.get("visible_result_quote")
+        if type(order) is not int or order != expected_order or not isinstance(result, str) or not all(
             isinstance(value, str) and value.strip() for value in (text, actor_kind, actor)
         ):
-            return None
+            raise GreenfieldAuthoredSemanticsError("Project authored event inventory is malformed")
+        if result:
+            result_orders.append(order)
         events.append(
             AuthoredEvent(
                 order=expected_order,
@@ -72,15 +84,22 @@ def authored_fact_view(project: Mapping[str, Any]) -> AuthoredFactView | None:
                 actor=actor.strip(),
             )
         )
-    if not events:
-        return None
+    if not events or len(result_orders) != 1:
+        raise GreenfieldAuthoredSemanticsError("Project authored events require one explicit result")
 
     try:
+        source_precedence = validate_source_precedence(
+            raw_facts.get("source_precedence"),
+            event_orders=tuple(event.order for event in events),
+            operational_constraints=raw_facts.get("operational_constraints"),
+        )
         design = validate_provisional_design(
             raw_facts.get("provisional_design"), event_orders=tuple(event.order for event in events),
+            source_precedence=source_precedence, result_event_order=result_orders[0],
         )
-    except ValueError:
-        return None
+    except ValueError as exc:
+        raise GreenfieldAuthoredSemanticsError(str(exc)) from exc
+    events_by_order = {event.order: event for event in events}
     capabilities = tuple(
         AuthoredCapability(owner=row["name"], responsibility=row["responsibility"])
         for row in design["components"]
@@ -105,7 +124,7 @@ def authored_fact_view(project: Mapping[str, Any]) -> AuthoredFactView | None:
         if row.items
     )
     return AuthoredFactView(
-        events=tuple(events),
+        events=tuple(events_by_order[order] for order in design["first_run"]["event_orders"]),
         capabilities=capabilities,
         boundary_groups=boundary_groups,
     )
@@ -119,7 +138,11 @@ def render_authored_focus(project: Mapping[str, Any], *, render_text: RenderText
         f'<span data-authored-fact-item data-event-order="{event.order}">{render_text(event.text)}</span>'
         for event in view.events
     )
-    return f'<h2 data-authored-fact-list="focus">{items}</h2>'
+    return (
+        '<h2 data-authored-fact-list="focus" data-authority-kind="provisional_design">'
+        '<span data-proposed-first-run-label>Proposed first run:</span><br aria-hidden="true">'
+        f'{items}</h2>'
+    )
 
 
 def render_authored_actor_cards(
@@ -201,7 +224,11 @@ def _structured_story_body(
     if view is None:
         return ""
     if semantic_slot == "first_path":
-        return _event_list(view.events, list_key="first_path", contract_body=True)
+        return (
+            '<div class="project-story-contract-body">'
+            '<p data-proposed-first-run-label>Proposed first run:</p>'
+            f'{_event_list(view.events, list_key="first_path")}</div>'
+        )
     if semantic_slot == "owned_capabilities" and view.capabilities:
         rows = "".join(
             '<li data-authored-fact-item>'
@@ -235,17 +262,15 @@ def _event_list(
     events: Sequence[AuthoredEvent],
     *,
     list_key: str,
-    contract_body: bool = False,
 ) -> str:
     classes = ["project-story-records", "project-authored-fact-list"]
-    if contract_body:
-        classes.append("project-story-contract-body")
     rows = "".join(
         f'<li data-authored-fact-item data-event-order="{event.order}">{html.escape(event.text)}</li>'
         for event in events
     )
     return (
-        f'<ol class="{" ".join(classes)}" data-authored-fact-list="{html.escape(list_key, quote=True)}">'
+        f'<ol class="{" ".join(classes)}" data-authored-fact-list="{html.escape(list_key, quote=True)}" '
+        'data-authority-kind="provisional_design">'
         f"{rows}</ol>"
     )
 

@@ -48,6 +48,7 @@ def _authored_diagrams(
     component_label: str = "Berth map",
     components: tuple[dict[str, Any], ...] | None = None,
     visible_result: str = "the berth map shows the placement",
+    result_event_order: int = 3,
     proof_boundary: str = "Verify the placement and retention receipt",
     human_actors: tuple[str, ...] = ("Dock attendant Ivo",),
     external_systems: tuple[str, ...] = ("Harbor Ledger",),
@@ -76,6 +77,11 @@ def _authored_diagrams(
             "event_quote": "the berth map shows the placement",
             "owner_system_quote": component_label,
         },
+    )
+    assert result_event_order in {row["order"] for row in source_relations}
+    source_relations = tuple(
+        {**row, "visible_result_quote": visible_result if row["order"] == result_event_order else ""}
+        for row in source_relations
     )
     design = provisional_design or _provisional_design(
         event_orders=tuple(row["order"] for row in source_relations)
@@ -116,8 +122,12 @@ def _provisional_design(*, event_orders: tuple[int, ...] = (1, 2, 3)) -> dict[st
     ]
     assigned_orders.append(list(event_orders))
     return {
-        "version": "odylith.greenfield.provisional-design.v1",
+        "version": "odylith.greenfield.provisional-design.v2",
         "authority_kind": "provisional_design",
+        "first_run": {
+            "event_orders": list(event_orders),
+            "rationale": "Use this declared fixture walkthrough to prepare and show the result.",
+        },
         "components": [
             {
                 "key": "vessel-intake",
@@ -250,6 +260,8 @@ def test_context_groups_five_exact_events_under_one_human_performer() -> None:
     )
     rows = _authored_diagrams(
         human_actors=("city staff",),
+        result_event_order=5,
+        visible_result="readiness report",
         relations=tuple(
             _relation(order, "city staff", event)
             for order, event in enumerate(events, start=1)
@@ -272,6 +284,8 @@ def test_context_groups_each_human_performers_events_without_cross_assignment() 
     )
     rows = _authored_diagrams(
         human_actors=("Coordinator Mara", "Reviewer Ivo"),
+        result_event_order=3,
+        visible_result="the result",
         relations=relations,
     )
     context = next(row for row in rows if row["slug"] == "harbor-desk-context")
@@ -291,6 +305,8 @@ def test_context_excludes_product_events_from_human_action_groups() -> None:
     rows = _authored_diagrams(
         human_actors=("Mara",),
         component_label="Harbor Desk",
+        result_event_order=2,
+        visible_result="berth occupancy",
         relations=(
             _relation(1, "Mara", human_event),
             _relation(
@@ -318,6 +334,8 @@ def test_context_has_no_human_performer_edges_without_human_events(
     rows = _authored_diagrams(
         human_actors=human_actors,
         component_label="Harbor Desk",
+        result_event_order=1,
+        visible_result="berth occupancy",
         relations=(
             _relation(
                 1,
@@ -347,6 +365,8 @@ def test_product_only_context_retains_five_exact_events_without_empty_people() -
     rows = _authored_diagrams(
         title=title,
         component_label=title,
+        result_event_order=5,
+        visible_result="release readiness proof",
         human_actors=(),
         external_systems=(),
         relations=tuple(
@@ -383,6 +403,8 @@ def test_context_preserves_a_single_exact_event_for_each_typed_performer(
     context = _authored_diagrams(
         component_label="Harbor Desk",
         human_actors=humans,
+        result_event_order=1,
+        visible_result='"café" evidence & IDs',
         relations=(_relation(1, actor, event, actor_kind=actor_kind, owner=owner),),
     )[0]
     boxes = {row["node_id"]: row for row in context["diagram_boxes"]}
@@ -397,6 +419,8 @@ def test_context_groups_mixed_typed_performers_without_cross_assignment() -> Non
     context = _authored_diagrams(
         human_actors=("Mara", "Field Ombud"),
         external_systems=("Harbor Ledger", "Tide Service"),
+        result_event_order=6,
+        visible_result="the receipt",
         components=(
             {"label": "Harbor Desk", "responsibility": "Record the intake", "dependencies": []},
             {
@@ -446,6 +470,8 @@ def test_context_rejects_unbound_performers_instead_of_assigning_another_owner(
 ) -> None:
     with pytest.raises(ValueError, match=error):
         _authored_diagrams(
+            result_event_order=1,
+            visible_result="the exact event",
             relations=(_relation(1, actor, "Preserve the exact event", actor_kind=kind, owner=owner),),
         )
 
@@ -454,6 +480,8 @@ def test_context_retains_repeated_exact_event_text_and_seals_the_group() -> None
     repeated_event = "Mara records the intake"
     rows = _authored_diagrams(
         human_actors=("Mara",),
+        result_event_order=2,
+        visible_result="the intake",
         relations=(
             _relation(1, "Mara", repeated_event),
             _relation(2, "Mara", repeated_event),
@@ -563,7 +591,7 @@ def test_authored_atlas_depth_is_five_distinct_semantic_views_not_a_count_floor(
 
     assert [(row["slug"], row["title"]) for row in rows] == [
         ("harbor-desk-context", "System Context View"),
-        ("harbor-desk-sequence", "First Path Sequence"),
+        ("harbor-desk-sequence", "Proposed First Run"),
         ("harbor-desk-component-exchanges", "Proposed Component Exchanges"),
         (
             "harbor-desk-delivery-dependencies",
@@ -621,8 +649,8 @@ def test_authored_atlas_depth_is_five_distinct_semantic_views_not_a_count_floor(
 
 def test_provisional_views_keep_authority_and_complete_labels_separate_from_source() -> None:
     rows = _authored_diagrams()
-    source_rows = rows[:2]
-    design_rows = rows[2:]
+    source_rows = rows[:1]
+    design_rows = rows[1:]
 
     assert all(row["authority_kind"] == "source_grounded" for row in source_rows)
     assert all(row["authority_kind"] == "provisional_design" for row in design_rows)
@@ -635,8 +663,13 @@ def test_provisional_views_keep_authority_and_complete_labels_separate_from_sour
         "placement-view",
         "placement-evidence",
     ]
-    assert all("Accepted" not in json.dumps(row["diagram_boxes"]) for row in design_rows)
-    exchanges = design_rows[0]
+    assert all("Accepted" not in json.dumps(row["diagram_boxes"]) for row in rows[2:])
+    first_run = design_rows[0]
+    assert first_run["components"] == design_rows[1]["components"]
+    assert "one first run, not all possible paths" in first_run["read_guide"]
+    assert 'event1 -. "proposed next step" .-> event2' in first_run["mermaid_source"]
+    assert "event1 --> event2" not in first_run["mermaid_source"]
+    exchanges = design_rows[1]
     assert "Proposed berth-occupancy<br/>state" in exchanges["mermaid_source"]
     assert exchanges["diagram_boxes"][1]["description"].startswith(
         "Proposed responsibility:"
@@ -647,6 +680,38 @@ def test_provisional_views_keep_authority_and_complete_labels_separate_from_sour
         "Placement View",
         "Placement Evidence",
     }
+
+
+def test_first_run_keeps_result_first_source_ids_and_proposed_links() -> None:
+    design = _provisional_design(event_orders=(1, 2, 3))
+    design["first_run"] = {
+        "event_orders": [2, 3, 1],
+        "rationale": "Capture the vessel and record occupancy before showing the placement.",
+    }
+    relations = (
+        _relation(1, "Berth map", "Berth map shows the placement", actor_kind="product", owner="Berth map"),
+        _relation(2, "Dock attendant Ivo", "Dock attendant Ivo enters a vessel tag"),
+        _relation(3, "Berth map", "Berth map records berth occupancy", actor_kind="product", owner="Berth map"),
+    )
+    rows = _authored_diagrams(
+        relations=relations, provisional_design=design,
+        result_event_order=1, visible_result="the placement",
+    )
+    first_run = rows[1]
+    assert first_run["authority_kind"] == "provisional_design"
+    assert [box["node_id"] for box in first_run["diagram_boxes"] if box["node_id"].startswith("event")] == [
+        "event1", "event2", "event3",
+    ]
+    source = first_run["mermaid_source"]
+    assert 'event2 -. "proposed next step" .-> event3' in source
+    assert 'event3 -. "proposed next step" .-> event1' in source
+    assert 'event1 -. "proposed next step" .-> event2' not in source
+    design["first_run"]["event_orders"] = [1, 2]
+    with pytest.raises(ValueError, match="must include every source event exactly once"):
+        _authored_diagrams(
+            relations=relations, provisional_design=design,
+            result_event_order=1, visible_result="the placement",
+        )
 
 
 def test_capability_support_keeps_source_events_and_proposed_ownership_distinct() -> None:

@@ -11,8 +11,13 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.common.value_coercion import normalize_string as clean_text
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_first_run_relations,
+    authored_first_run_text,
+)
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
+    AUTHORED_SEMANTICS_KEY,
     authored_projection_relations,
     authored_visible_result,
     component_responsibility_relations_from_intent,
@@ -25,6 +30,7 @@ from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
     PROJECT_HANDOFF_STEP_SEQUENCE,
     coding_readiness_contract_issues,
     project_handoff_step_contract_issues,
+    render_project_handoff_scope,
 )
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_scalar_values import (
@@ -108,6 +114,8 @@ def _authored_project_dashboard_contract_issues(
         dict(row) for row in relations
     ]:
         issues.append("model-authored Project dashboard drifted from typed first-path relations")
+    if facts.get("source_precedence") != intent[AUTHORED_SEMANTICS_KEY]["source_precedence"]:
+        issues.append("model-authored Project dashboard drifted from source prerequisites")
     context_relations = first_path_context_relations_from_intent(intent)
     if [dict(row) for row in mapping_rows(facts.get("first_path_context_relations"))] != [
         dict(row) for row in context_relations
@@ -129,6 +137,7 @@ def _authored_project_dashboard_contract_issues(
         for row in mapping_rows(story.get("release_contract"))
     }
     expected_cards = {
+        "first_path": authored_first_run_text(intent),
         "product_boundary": authored_product_boundary(
             components=components,
             internal_systems=_exact_rows(intent.get("internal_systems")),
@@ -144,7 +153,7 @@ def _authored_project_dashboard_contract_issues(
         {"role": "human", "title": actor, "body": body}
         for _role, actor, body in authored_actor_rows(
             human_actors=_exact_rows(intent.get("human_actors")),
-            relations=relations,
+            relations=authored_first_run_relations(intent),
         )
     ]
     if [dict(row) for row in mapping_rows(story.get("actors"))] != expected_actor_cards:
@@ -166,11 +175,10 @@ def _authored_project_dashboard_contract_issues(
         if clean_text(row.get("component_id") or row.get("id"))
     )
     expected_commands = _exact_rows(next_steps.get("verification_commands"))
-    expected_excluded_scope = _unique_exact(
-        [
-            *_exact_rows(intent.get("operational_constraints")),
-            *_exact_rows(intent.get("non_goals")),
-        ]
+    expected_constraints = _exact_rows(intent.get("operational_constraints"))
+    expected_excluded_scope = _exact_rows(intent.get("non_goals"))
+    expected_scope_copy = render_project_handoff_scope(
+        operational_constraints=expected_constraints, excluded_scope=expected_excluded_scope,
     )
     for index, (prompt, expected_step_id) in enumerate(
         zip(prompts, PROJECT_HANDOFF_STEP_SEQUENCE, strict=True),
@@ -189,14 +197,18 @@ def _authored_project_dashboard_contract_issues(
             continue
         if bindings.get("project_title") != intent.get("title"):
             issues.append(f"model-authored Project handoff step {index} drifted from intent.title")
-        if bindings.get("accepted_first_path") != intent.get("first_path"):
-            issues.append(f"model-authored Project handoff step {index} drifted from intent.first_path")
+        if bindings.get("accepted_first_path") != authored_first_run_text(intent):
+            issues.append(f"model-authored Project handoff step {index} drifted from the proposed first run")
         if bindings.get("proof_boundary") != intent.get("proof_boundary"):
             issues.append(f"model-authored Project handoff step {index} drifted from intent.proof_boundary")
         if bindings.get("visible_result") != authored_visible_result(relations):
             issues.append(f"model-authored Project handoff step {index} drifted from the visible result")
         if _exact_rows(bindings.get("excluded_scope")) != expected_excluded_scope:
-            issues.append(f"model-authored Project handoff step {index} drifted from accepted scope")
+            issues.append(f"model-authored Project handoff step {index} drifted from excluded scope")
+        if _exact_rows(bindings.get("operational_constraints")) != expected_constraints:
+            issues.append(f"model-authored Project handoff step {index} drifted from operational constraints")
+        if not isinstance(prompt.get("prompt"), str) or not prompt["prompt"].endswith(expected_scope_copy):
+            issues.append(f"model-authored Project handoff step {index} lost its exact scope copy")
         if _exact_rows(bindings.get("component_refs")) != expected_components:
             issues.append(f"model-authored Project handoff step {index} drifted from component ids")
         if _exact_rows(bindings.get("verification_commands")) != expected_commands:
@@ -287,14 +299,6 @@ def _require_preview_text(
 def _exact_rows(value: Any) -> tuple[str, ...]:
     rows = value if isinstance(value, Sequence) and not isinstance(value, (str, bytes)) else (value,)
     return tuple(row for row in rows if isinstance(row, str) and row)
-
-
-def _unique_exact(values: Sequence[str]) -> tuple[str, ...]:
-    rows: list[str] = []
-    for value in values:
-        if value and value not in rows:
-            rows.append(value)
-    return tuple(rows)
 
 
 __all__ = ["next_steps_preview_issues", "project_dashboard_preview_issues"]

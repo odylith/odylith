@@ -16,6 +16,65 @@ from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
 )
 
 
+@pytest.mark.parametrize("constraints,non_goals", [
+    (("Keep APIv7 casing",), ()),
+    ((), ("Bulk migration",)),
+    (("Keep APIv7 casing",), ("Bulk migration",)),
+    ((), ()),
+])
+@pytest.mark.parametrize("step_id", greenfield_handoff_contract.PROJECT_HANDOFF_STEP_SEQUENCE)
+def test_handoff_keeps_required_operations_separate_from_excluded_scope(
+    constraints: tuple[str, ...], non_goals: tuple[str, ...], step_id: str,
+) -> None:
+    contract = greenfield_handoff_contract.build_project_handoff_step_contract(
+        step_id=step_id, project_title="Receipt Desk", accepted_first_path="Publish the receipt.",
+        first_release_workstream_refs=("B-042",), proof_boundary="A reviewer sees the receipt.",
+        operational_constraints=constraints, excluded_scope=non_goals,
+    )
+    assert contract["schema_version"] == "odylith.greenfield.project-handoff-step.v2"
+    assert contract["fact_bindings"]["operational_constraints"] == constraints
+    assert contract["fact_bindings"]["excluded_scope"] == non_goals
+    assert "preserve_operational_constraints" in contract["required_actions"]
+    assert greenfield_handoff_contract.project_handoff_step_contract_issues(
+        contract, expected_step_id=step_id,
+    ) == ()
+
+
+def test_handoff_scope_copy_preserves_repeated_source_bytes() -> None:
+    constraints = ("\tPreserve **café** evidence.\n", "\tPreserve **café** evidence.\n")
+    non_goals = ("  Bulk `APIv7` migration.  ",)
+    contract = greenfield_handoff_contract.build_project_handoff_step_contract(
+        step_id="choose_language", project_title="Receipt Desk", accepted_first_path="Publish the receipt.",
+        operational_constraints=constraints, excluded_scope=non_goals,
+    )
+    assert contract["fact_bindings"]["operational_constraints"] == constraints
+    assert greenfield_handoff_contract.render_project_handoff_scope(
+        operational_constraints=constraints, excluded_scope=non_goals,
+    ) == (
+        "Operational constraints — preserve these requirements:\n"
+        "\tPreserve **café** evidence.\n\n\tPreserve **café** evidence.\n\n\n"
+        "Excluded scope — preserve these exclusions:\n  Bulk `APIv7` migration.  "
+    )
+
+
+@pytest.mark.parametrize("damage", ["v1", "missing_constraints", "missing_exclusions", "scalar_constraints"])
+def test_handoff_v2_rejects_absent_or_untyped_scope_categories(damage: str) -> None:
+    contract = greenfield_handoff_contract.build_project_handoff_step_contract(
+        step_id="choose_language", project_title="Receipt Desk", accepted_first_path="Publish the receipt.",
+    )
+    if damage == "v1":
+        contract["schema_version"] = "odylith.greenfield.project-handoff-step.v1"
+    elif damage == "missing_constraints":
+        contract["fact_bindings"].pop("operational_constraints", None)
+    elif damage == "missing_exclusions":
+        contract["fact_bindings"].pop("excluded_scope")
+    else:
+        contract["fact_bindings"]["operational_constraints"] = "Keep APIv7 casing"
+    assert greenfield_handoff_contract.project_handoff_step_contract_issues(
+        contract, expected_step_id="choose_language",
+    )
+
+
 def _readiness_contract() -> dict[str, object]:
     return build_coding_readiness_contract(
         workstream_id="b-042",

@@ -55,6 +55,8 @@ def build_authored_atlas_diagrams(
     relations: Sequence[Mapping[str, Any]],
     provisional_design: Mapping[str, Any],
     diagram_roles: Sequence[str] | None = None,
+    source_precedence: Sequence[Mapping[str, Any]] = (),
+    operational_constraints: Sequence[str] = (),
 ) -> list[dict[str, Any]]:
     """Project source facts and one separately authoritative provisional design."""
 
@@ -85,7 +87,6 @@ def build_authored_atlas_diagrams(
         components=components,
         relations=relations,
     )
-    sequence_source, sequence_boxes = _sequence_view(relations)
     design_specs = build_provisional_design_atlas_specs(
         provisional_design=provisional_design,
         relations=relations,
@@ -93,6 +94,10 @@ def build_authored_atlas_diagrams(
         visible_result=visible_result,
         proof_boundary=proof_boundary,
         non_goals=non_goals,
+        source_precedence=source_precedence,
+    )
+    sequence_source, sequence_boxes = _sequence_view(
+        relations, first_run=provisional_design["first_run"], source_precedence=source_precedence,
     )
     design_workstream_titles = design_specs["delivery_dependencies"]["workstream_titles"]
     if backlog_titles != design_workstream_titles:
@@ -107,8 +112,8 @@ def build_authored_atlas_diagrams(
             "read_guide": (
                 "People are source-stated participants, not necessarily product users. "
                 "Each performing person, product system, or external system connects to its "
-                "own exact events; other people remain edge-free. The sequence view shows "
-                "event order across owners. Registry links identify proposed "
+                "own exact events; other people remain edge-free. The first-run view shows "
+                "one proposed walkthrough, not source-list chronology. Registry links identify proposed "
                 "support, not replacement of source ownership."
             ),
             "source": context_source,
@@ -119,17 +124,21 @@ def build_authored_atlas_diagrams(
             "workstream_titles": backlog_titles,
         },
         "sequence": {
-            "title": "First Path Sequence",
-            "summary": "The verified first-path events in source order.",
+            "title": "Proposed First Run",
+            "summary": "One proposed walkthrough respecting explicit source prerequisites.",
             "read_guide": (
-                "Read the source-bound events in order; owner boxes connect typed owner systems "
-                "to the events they own. Registry links identify proposed support, not replacement "
-                "of source ownership."
+                "Solid event arrows show source prerequisites; dotted arrows show additional "
+                "proposed next steps. Event IDs retain source identity, not execution rank. "
+                "Owner boxes retain source ownership. This is one first run, not all possible paths. "
+                + provisional_design["first_run"]["rationale"]
+                + (" Source constraints: " + " ".join(
+                    f"{index}. {quote}" for index, quote in enumerate(operational_constraints, 1)
+                ) if source_precedence else " No source-stated execution order is asserted.")
             ),
             "source": sequence_source,
             "boxes": sequence_boxes,
-            "authority_kind": SOURCE_GROUNDED_AUTHORITY_KIND,
-            "components": source_component_rows,
+            "authority_kind": PROVISIONAL_DESIGN_AUTHORITY_KIND,
+            "components": design_specs["component_exchanges"]["components"],
             "component_ids": design_component_ids,
             "workstream_titles": backlog_titles,
         },
@@ -457,11 +466,15 @@ def _context_view(
 
 def _sequence_view(
     relations: Sequence[Mapping[str, Any]],
+    *,
+    first_run: Mapping[str, Any],
+    source_precedence: Sequence[Mapping[str, Any]],
 ) -> tuple[str, list[dict[str, str]]]:
     lines = ["flowchart LR"]
     boxes: list[dict[str, str]] = []
     owners: dict[str, str] = {}
-    for index, relation in enumerate(relations, start=1):
+    for relation in relations:
+        index = relation["order"]
         event_quote = _required_string(relation.get("event_quote"), "first-path event quote")
         actor_kind = _required_string(relation.get("actor_kind"), "first-path actor kind")
         lines.append(f'  event{index}["{_mermaid_label(event_quote)}"]')
@@ -470,7 +483,7 @@ def _sequence_view(
                 f"event{index}",
                 event_quote,
                 f"{actor_kind} event",
-                f"Source-bound first-path event {index}: {event_quote}",
+                f"Source action {index}, performed by {relation['actor_fact_quote']}: {event_quote}",
             )
         )
         owner = relation.get("owner_system_quote")
@@ -488,8 +501,13 @@ def _sequence_view(
                     )
                 )
             lines.append(f"  {owners[owner]} --> event{index}")
-        if index > 1:
-            lines.append(f"  event{index - 1} --> event{index}")
+    required = {(row["before_event"], row["after_event"]): row["constraint_index"] for row in source_precedence}
+    for (before, after), constraint_index in required.items():
+        lines.append(f'  event{before} -->|"source constraint {constraint_index}"| event{after}')
+    orders = first_run["event_orders"]
+    for before, after in zip(orders, orders[1:]):
+        if (before, after) not in required:
+            lines.append(f'  event{before} -. "proposed next step" .-> event{after}')
     return _styled_mermaid(lines), boxes
 
 

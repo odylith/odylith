@@ -81,7 +81,7 @@ def test_failure_tracking_and_restoration_remain_exact_actions_without_recovery_
                 "target_quote": "service",
             },
         ),
-        terminal={"result_quote": "service", "result_occurrence": 1},
+        terminal={"result_quote": "service", "result_occurrence": 1, "event_order": 2},
         components=(),
         selected_facts=selected_facts,
         first_path=first_path,
@@ -96,6 +96,7 @@ def test_failure_tracking_and_restoration_remain_exact_actions_without_recovery_
         (restoration_event, "restores", "service"),
     ]
     assert all(set(row) == FIRST_PATH_RELATION_FIELDS for row in derived.first_path_relations)
+    assert [row["visible_result_quote"] for row in derived.first_path_relations] == ["", "service"]
 
     components = authored_component_relation_facts(
         title=title,

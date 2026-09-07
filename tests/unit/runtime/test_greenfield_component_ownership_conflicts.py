@@ -60,7 +60,7 @@ def _derive(
                 "target_quote": target_quote,
             },
         ),
-        terminal={"result_quote": terminal_quote, "result_occurrence": 1},
+        terminal={"result_quote": terminal_quote, "result_occurrence": 1, "event_order": 1},
         components=(
             {
                 "owner_fact_quote": owner_fact_quote,

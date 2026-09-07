@@ -3,7 +3,7 @@ flowchart TB
       direction LR
       request["Greenfield request and EDIT evidence<br/>Untrusted input with exact source custody"]
       model_pass["One complete source and design author<br/>No runtime review or repair call"]
-      typed_graph["Canonical source facts and provisional design<br/>Optional source capabilities; required design<br/>Distinct authority; one relation hash"]
+      typed_graph["Canonical source facts and provisional design<br/>Source prerequisites; proposed first run<br/>Distinct authority; one relation hash"]
       ambiguity{"Material meaning complete?"}
       clarify["One focused clarification<br/>No transaction or governed write"]
       request --> model_pass --> typed_graph --> ambiguity
@@ -12,8 +12,8 @@ flowchart TB
 
     subgraph projection_lane["Deterministic package construction"]
       direction LR
-      custody["Custody and invariant validation<br/>Exact source owners and event order<br/>No terminal-to-product promotion"]
-      projections["Deterministic source and design projections<br/>4–5 Radar, 4–5 Registry, five Atlas views<br/>Source actors retain their actions"]
+      custody["Custody and invariant validation<br/>Stable source IDs and explicit result producer<br/>No chronology from source-list position"]
+      projections["Deterministic source and design projections<br/>4–5 Radar, 4–5 Registry, five Atlas views<br/>Required constraints and exclusions stay distinct"]
       quality["Pre-confirm custody and structural gates<br/>Semantic-role admission P1 remains open"]
       timing["Proposal timing gate<br/>Standard at 60 seconds<br/>Rescue at 90; deep at 120"]
       custody --> projections --> quality --> timing
@@ -22,7 +22,7 @@ flowchart TB
     subgraph transaction_lane["Reviewed transaction boundary"]
       direction LR
       sealed["Sealed ProductCreateTransaction<br/>Exact after-image, provenance,<br/>preconditions, and hash"]
-      decision["One operator decision<br/>CONFIRM, EDIT, or REJECT the hash"]
+      decision["One operator decision<br/>CONFIRM, EDIT, or REJECT the hash<br/>No synthetic regeneration-as-review command"]
       confirm["Commit-only CONFIRM<br/>Verify and write sealed bytes;<br/>no model, parser, generation, or repair"]
       publish["Journaled publication and exact readback<br/>No universal atomic reader claim"]
       recovery["Recovery boundary<br/>Rollback snapshot, journal,<br/>interrupt cleanup, and safe retry"]

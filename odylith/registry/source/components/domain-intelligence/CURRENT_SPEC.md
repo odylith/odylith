@@ -6,7 +6,7 @@ Last updated: 2026-09-07
 
 Domain Intelligence owns the Greenfield evidence-to-transaction boundary. One
 pinned model authors source-cited facts and typed relations alongside a required,
-separately labeled provisional design. The source-local v50 candidate uses one
+separately labeled provisional design. The source-local v51 candidate uses one
 call and the full 55/80/105 model windows inside fixed 60/90/120 consumer limits;
 there is no second runtime reviewer or repair call. Deterministic code verifies
 exact custody, binds design in the existing relation hash, projects the complete governed package,
@@ -16,11 +16,13 @@ Codex and Claude transport the same exact hash-bound `CONFIRM`, `EDIT`, and
 `REJECT` contract. No evidence interpretation, model call, artifact generation,
 or prose repair runs after confirmation.
 
-The design owns 4–5 logical components, 4–5 workstreams, exchanges and verification;
+The design owns 4–5 logical components, 4–5 workstreams, exchanges, verification
+and one proposed first-run walkthrough;
 it supports exact source-event identities without transferring actor authority.
-Registry and Radar project it directly. Atlas preserves two source views and
-three labeled design views. The source-only backlog projector is retired.
-The v50 candidate is not release-qualified: independent semantic regression,
+Registry and Radar project it directly. Atlas preserves source context and four
+labeled proposed views: first run, exchanges, delivery dependencies and support.
+The source-only backlog projector is retired.
+The v51 candidate is not release-qualified: independent semantic regression,
 complete-package UX, exact transaction, timing and clean-distribution proof remain
 required. Synthetic fixture counts are not proof of useful product design.
 A full fixture-backed pre-confirm counterexample still accepts an exact operator
@@ -34,9 +36,39 @@ The projector groups complete exact events by typed human, product or external
 performer and connects only the corresponding selected node to that group.
 Nonperforming participants stay edge-free; absent participants produce no empty
 container. Product-only sources retain their actions, objects and output purposes
-without inventing a human reviewer. First Path remains the separate ordering view.
+without inventing a human reviewer. Proposed First Run is the separate ordering view.
 These projections use existing relations; they do not infer performers, create
 new semantic facts or change confirmation behavior.
+
+Authored semantics v16 preserves source-event IDs independently of execution
+rank. Exact operational-constraint facts own source-precedence evidence; edges
+reference their existing one-based indexes, without a second citation store.
+Provisional design v2 owns the proposed permutation and its bounded rationale.
+The existing relation hash binds both. The explicit visible-result producer may
+occur anywhere in that walkthrough; required archive or cleanup actions are not
+dropped or moved before it. Atlas uses labeled solid source-prerequisite arrows
+and dotted proposed next steps. CLI preview, Project, semantic views and handoffs
+use the same proposed-run owner; Registry/Radar support references retain source
+IDs. Canonical and browser checks reject cross-surface order or authority drift.
+One permutation does not prove support for mutually exclusive branches, loops or
+all concurrency. Those generalization limits remain unqualified, not silently
+excluded from the product goal.
+
+Project handoff v2 keeps operational constraints and non-goals in distinct
+source-bound fields and distinct, exact-copy prompt sections. Preconfirm checks
+both bindings and the copied scope content against canonical intent. Required
+operations must never become excluded work. Authored proposals no longer expose
+synthetic re-propose commands as transaction review; their dead shaping serializer
+is removed. The transaction-owned final CONFIRM/EDIT/REJECT rail is unchanged.
+The first v51 live request stages in 48.988 seconds, but independent review rejects
+that unchanged package for these handoff defects. Corrected synthetic/browser
+evidence must not be presented as acceptance of the rejected live transaction.
+The correction passes 1034 Greenfield runtime and 1036 install/browser checks,
+plus a fresh synthetic native 32-cell matrix and exact 113-file readback. Actual
+desktop/mobile selection retains both scope categories and source line breaks;
+the owning handoff style uses pre-wrap without header or layout changes.
+Flat-workstream next-step hierarchy and implementation-scope guidance remain a
+separate open defect; complete semantic and release qualification remain pending.
 
 Atlas display values use one native Mermaid decimal-entity encoder, not HTML
 escaping or downstream prose repair. Entity/markup-looking input remains literal
@@ -90,6 +122,9 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-07 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_event_ordering.py`
 - **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `src/odylith/runtime/domain_intelligence/proposal_validation.py`, `tests/unit/runtime/test_greenfield_source_component_ownership.py`
@@ -105,9 +140,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_view.py`
-- **2026-09-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_view.py`, `src/odylith/runtime/domain_intelligence/greenfield_authored_proposal.py`, plus 1 more
 <!-- registry-requirements:end -->
 
 ## Feature History

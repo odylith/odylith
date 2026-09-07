@@ -231,6 +231,7 @@ def build_product_intent_envelope(
         authored_relations,
         component_responsibility_relations,
         first_path_context_relations=first_path_context_relations,
+        source_precedence=intent[AUTHORED_SEMANTICS_KEY]["source_precedence"],
         provisional_design=provisional_design_from_intent(intent),
     )
     facts = product_facts_payload(intent)

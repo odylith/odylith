@@ -311,7 +311,7 @@ def test_transaction_compilation_rejects_mutated_relation_set(
     expected_error = (
         "invalid first-path relations"
         if mutation == "removed_classification"
-        else "invalid source-event references"
+        else "first run must include every source event exactly once"
     )
     with pytest.raises(GreenfieldAuthoredSemanticsError, match=expected_error):
         greenfield_proposals.compile_greenfield_create_transaction(

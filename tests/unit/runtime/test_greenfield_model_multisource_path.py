@@ -270,7 +270,7 @@ def test_two_document_path_materializes_exact_source_and_structural_design_custo
         release_selector="",
         confirmed_intent=candidate,
     )
-    assert proposal["semantic_model"]["first_path_contract"]["raw_path"] == "\n".join(
+    assert proposal["semantic_model"]["first_path_contract"]["raw_path"] == "Proposed first run:\n" + "\n".join(
         segments
     )
     assert proposal["project_brief"]["external_systems"] == ["Tide Authority API"]

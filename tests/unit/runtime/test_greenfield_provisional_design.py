@@ -36,6 +36,10 @@ def _design(*, event_orders: tuple[int, ...] = (1, 2), count: int = 4) -> dict[s
     return {
         "version": PROVISIONAL_DESIGN_VERSION,
         "authority_kind": PROVISIONAL_DESIGN_AUTHORITY_KIND,
+        "first_run": {
+            "event_orders": list(event_orders),
+            "rationale": "Propose the fixture execution order without asserting source chronology.",
+        },
         "components": [
             {
                 "key": f"capability-{index}", "name": f"Capability {index}",
@@ -71,6 +75,7 @@ def test_valid_design_is_copied_without_rewriting_provisional_text(count: int) -
     assert result == original
     result["components"][0]["supported_event_orders"].clear()
     result["workstreams"][0]["component_keys"].clear()
+    result["first_run"]["event_orders"].clear()
     assert design == original
 
 
@@ -79,6 +84,12 @@ def test_valid_design_is_copied_without_rewriting_provisional_text(count: int) -
     [
         (("version",), "retired"),
         (("authority_kind",), "accepted_fact"),
+        (("first_run", "event_orders"), []),
+        (("first_run", "event_orders"), [1, 1]),
+        (("first_run", "event_orders"), [1]),
+        (("first_run", "event_orders"), [1, 2, 3]),
+        (("first_run", "event_orders"), [True, 2]),
+        (("first_run", "rationale"), " "),
         (("components",), []),
         (("components",), _design(count=6)["components"]),
         (("components", 0, "key"), " "),
@@ -121,15 +132,16 @@ def test_invalid_structure_is_rejected(path: tuple[Any, ...], replacement: Any) 
     for key in path[:-1]:
         target = target[key]
     target[path[-1]] = replacement
-    with pytest.raises(ValueError, match="Greenfield provisional"):
+    message = "Greenfield (first run|event orders)" if path[0] == "first_run" else "Greenfield provisional"
+    with pytest.raises(ValueError, match=message):
         validate_provisional_design(design, event_orders=(1, 2))
 
 
-@pytest.mark.parametrize("owner", ["root", "components", "workstreams", "exchanges"])
+@pytest.mark.parametrize("owner", ["root", "first_run", "components", "workstreams", "exchanges"])
 @pytest.mark.parametrize("damage", ["unknown", "missing"])
 def test_every_object_shape_is_closed(owner: str, damage: str) -> None:
     design = _design()
-    target = design if owner == "root" else design[owner][0]
+    target = design if owner == "root" else design[owner] if owner == "first_run" else design[owner][0]
     if damage == "unknown":
         target["source_fact"] = "Invented authority"
     else:
@@ -146,6 +158,7 @@ def test_invalid_source_event_inventory_is_rejected(orders: Any) -> None:
 
 def test_every_source_action_and_proposed_component_has_delivery_support() -> None:
     design = _design(event_orders=(1,))
+    design["first_run"]["event_orders"] = [1, 2]
     with pytest.raises(ValueError, match="every source action"):
         validate_provisional_design(design, event_orders=(1, 2))
     design = _design()
@@ -172,12 +185,46 @@ def test_workstreams_may_own_multiple_components_and_exchanges_may_be_empty() ->
     assert validate_provisional_design(design, event_orders=(1, 2)) == design
 
 
+def test_first_run_is_an_explicit_permutation_not_document_order() -> None:
+    design = _design(event_orders=(1, 2, 3))
+    design["first_run"]["event_orders"] = [2, 3, 1]
+    precedence = [{"before_event": 2, "after_event": 3, "constraint_index": 1}]
+
+    assert validate_provisional_design(
+        design, event_orders=(1, 2, 3), source_precedence=precedence,
+        result_event_order=1,
+    ) == design
+    assert design["components"][0]["supported_event_orders"] == [1, 2, 3]
+
+    design["first_run"]["event_orders"] = [3, 2, 1]
+    with pytest.raises(ValueError):
+        validate_provisional_design(
+            design, event_orders=(1, 2, 3), source_precedence=precedence,
+            result_event_order=1,
+        )
+
+
+def test_first_run_preserves_post_result_actions_and_their_source_precedence() -> None:
+    design = _design()
+    precedence = [{"before_event": 1, "after_event": 2, "constraint_index": 1}]
+    assert validate_provisional_design(
+        design, event_orders=(1, 2), source_precedence=precedence, result_event_order=1,
+    ) == design
+    design["first_run"]["event_orders"] = [2, 1]
+    with pytest.raises(ValueError, match="precedence"):
+        validate_provisional_design(
+            design, event_orders=(1, 2), source_precedence=precedence, result_event_order=1,
+        )
+
+
 def test_model_schema_declares_the_same_closed_authority_boundary() -> None:
     assert set(PROVISIONAL_DESIGN_SCHEMA["required"]) == set(_design())
     assert PROVISIONAL_DESIGN_SCHEMA["additionalProperties"] is False
     properties = PROVISIONAL_DESIGN_SCHEMA["properties"]
     assert properties["version"]["const"] == PROVISIONAL_DESIGN_VERSION
     assert properties["authority_kind"]["const"] == "provisional_design"
+    assert properties["first_run"]["additionalProperties"] is False
+    assert set(properties["first_run"]["required"]) == set(_design()["first_run"])
     for owner in ("components", "workstreams", "exchanges"):
         row_schema = properties[owner]["items"]
         assert row_schema["additionalProperties"] is False
@@ -231,6 +278,7 @@ def _enveloped_intent() -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]
     intent[AUTHORED_SEMANTICS_KEY] = authored_semantics_mapping(
         [relation], first_path_context_relations=[context],
         provisional_design=_design(event_orders=(1,)),
+        source_precedence=[],
     )
     terminal_fact = {
         **path_fact, "terminal_result_quote": "result",
@@ -260,6 +308,7 @@ def test_design_uses_existing_semantic_hash_without_entering_source_facts_or_ato
         semantics["first_path_relations"], semantics["component_responsibility_relations"],
         first_path_context_relations=semantics["first_path_context_relations"],
         provisional_design=design,
+        source_precedence=semantics["source_precedence"],
     )
     assert authority[AUTHORED_RELATION_SET_SHA256_KEY] == expected
     assert envelope["custody_ledger"][AUTHORED_RELATION_SET_SHA256_KEY] == expected
@@ -293,6 +342,18 @@ def test_each_design_section_is_bound_without_changing_source_authority(
     changed = deepcopy(intent)
     changed[AUTHORED_SEMANTICS_KEY]["provisional_design"][owner][0][field] = replacement
     assert provisional_design_from_intent(changed)[owner][0][field] == replacement
+    assert product_facts_payload(changed) == envelope["product_facts"]
+    with pytest.raises(GreenfieldAuthoredSemanticsError, match="do not match sealed"):
+        require_relation_authority_parity(changed, authority)
+
+
+def test_first_run_rationale_is_sealed_without_becoming_a_source_fact() -> None:
+    intent, envelope, authority = _enveloped_intent()
+    changed = deepcopy(intent)
+    changed[AUTHORED_SEMANTICS_KEY]["provisional_design"]["first_run"]["rationale"] = (
+        "A different proposed execution rationale."
+    )
+
     assert product_facts_payload(changed) == envelope["product_facts"]
     with pytest.raises(GreenfieldAuthoredSemanticsError, match="do not match sealed"):
         require_relation_authority_parity(changed, authority)

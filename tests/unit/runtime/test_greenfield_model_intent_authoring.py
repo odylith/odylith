@@ -6,6 +6,7 @@ import hashlib
 import inspect
 import json
 import os
+from copy import deepcopy
 
 import pytest
 
@@ -20,6 +21,9 @@ from odylith.runtime.domain_intelligence import greenfield_preconfirm_handoff_qu
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import (
     build_confirmed_greenfield_proposal,
 )
+from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
+    authored_projection_parity_issues,
+)
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     authored_component_relation_facts,
     authored_semantics_mapping,
@@ -30,9 +34,6 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring impor
     GreenfieldModelAuthoringError,
     _validated_authoring_response,
     author_greenfield_intent,
-)
-from odylith.runtime.domain_intelligence.greenfield_intent_shaping_prompt import (
-    accepted_intent_shaping_prompt,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
     combined_prompt_evidence_source,
@@ -59,24 +60,6 @@ from tests.unit.runtime.test_greenfield_model_path_custody import (
     _response,
     _source,
 )
-
-
-def test_accepted_intent_shaping_preserves_source_punctuation_without_double_periods() -> None:
-    prompt = accepted_intent_shaping_prompt(
-        {
-            "title": "PulseHIIT",
-            "problem": "A trainee needs hands-free interval cues.",
-            "product_view": "PulseHIIT preserves the completed session in history.",
-        },
-        fallback_title="Fallback",
-    )
-
-    assert prompt.splitlines() == [
-        "Product: PulseHIIT",
-        "Problem: A trainee needs hands-free interval cues.",
-        "Product view: PulseHIIT preserves the completed session in history.",
-    ]
-    assert ".." not in prompt
 
 
 def test_model_authored_intent_reaches_staged_product_intent_without_parser_recovery(tmp_path) -> None:  # type: ignore[no-untyped-def]
@@ -318,6 +301,9 @@ def test_model_authored_multi_component_events_bind_to_exact_source_owned_system
         observed_source={},
         confirmed_intent=candidate,
     )
+    assert proposal["apply_commands"] == []
+    assert proposal["project_brief"]["host_independent_paths"] == []
+    assert "odylith greenfield propose" not in json.dumps(proposal, ensure_ascii=False)
 
     # Verified source ownership is retained independently of proposed implementation ownership.
     assert candidate["internal_systems"] == ["Intake Desk", "Review Board"]
@@ -367,6 +353,17 @@ def test_model_authored_multi_component_events_bind_to_exact_source_owned_system
     context = next(row for row in proposal["diagrams"] if row["title"] == "System Context View")
     assert "external1 -->" not in context["mermaid_source"]
     assert proposal["semantic_model"]["provisional_design"] == design
+    for field in ("apply_commands", "project_brief"):
+        drifted = deepcopy(proposal)
+        command = "odylith greenfield propose --repo-root . --prompt 'Regenerate a partial proposal'"
+        if field == "apply_commands":
+            drifted[field] = [command]
+        else:
+            drifted[field]["host_independent_paths"] = [{"path": "Review sealed transaction", "command": command}]
+        assert any(
+            f"`{field}` projection drifted" in issue
+            for issue in authored_projection_parity_issues(drifted)
+        )
 
 
 def test_model_authored_project_seals_one_source_and_design_package(tmp_path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
@@ -404,7 +401,7 @@ def test_model_authored_project_seals_one_source_and_design_package(tmp_path, mo
     next_steps = transaction.prewrite_package.next_steps_preview
     assert next_steps is not None
     assert next_steps["coding_readiness_contract"]["source_facts"]["accepted_first_path"] == (
-        _AUTHORED_FIRST_PATH
+        "Proposed first run:\n" + _AUTHORED_FIRST_PATH
     )
     assert [
         row["gate_id"] for row in next_steps["coding_readiness_contract"]["gates"]
@@ -431,17 +428,20 @@ def test_model_authored_project_seals_one_source_and_design_package(tmp_path, mo
         *transaction.proposal["diagrams"],
     ):
         assert artifact["project_intelligence_binding"]["source"] == "intent.authored_semantics"
-    accepted_events = [
-        event
-        for event in transaction.proposal["semantic_model"]["first_path_contract"]["events"]
-        if event["source_kind"] == "accepted_first_path"
-    ]
+    accepted_events = transaction.proposal["semantic_model"]["first_path_contract"]["events"]
+    assert all(event["source_kind"] == "proposed_first_run" for event in accepted_events)
     assert [(event["actor"], event["action"]) for event in accepted_events] == [
         ("Dock attendant Ivo", "enters"),
         ("Berth map", "records"),
         ("Berth map", "shows"),
     ]
     assert transaction_path.is_file()
+    assert transaction.proposal["apply_commands"] == []
+    assert transaction.proposal["project_brief"]["host_independent_paths"] == []
+    assert "odylith greenfield propose" not in transaction.prewrite_package.project_brief_record_text
+    sealed = json.loads(transaction_path.read_text(encoding="utf-8"))
+    assert "odylith greenfield propose" not in json.dumps(sealed, ensure_ascii=False)
+    assert "Review the creation-ready transaction" not in json.dumps(sealed, ensure_ascii=False)
 
 
 def test_public_propose_cli_uses_one_model_call_and_returns_hash_bound_choices(
@@ -707,7 +707,9 @@ def test_authoring_schema_structurally_separates_complete_authored_and_clarifica
     assert "minItems" not in typed_facts["properties"]["human_actors"]
     authored_properties = authored_branch["properties"]
     terminal = authored_properties["terminal"]
-    assert set(terminal["properties"]) == {"result_quote", "result_occurrence"}
+    assert set(terminal["properties"]) == {"event_order", "result_quote", "result_occurrence"}
+    assert "event_order" in terminal["required"]
+    assert terminal["properties"]["event_order"]["type"] == "integer"
     assert "workflow stage" in terminal["properties"]["result_quote"]["description"]
     assert authored_properties["events"]["type"] == "array"
     assert authored_properties["events"]["minItems"] == 1
@@ -735,10 +737,10 @@ def test_authoring_schema_structurally_separates_complete_authored_and_clarifica
     assert "facts" not in clarification_branch["properties"]
 
 
-def test_authoring_rejects_superseded_terminal_and_component_link_fields() -> None:
+def test_authoring_rejects_unknown_terminal_and_superseded_component_link_fields() -> None:
     source = _source()
     response = _response(source)
-    response["result"]["terminal"]["event_order"] = len(model_event_rows(response))  # type: ignore[index]
+    response["result"]["terminal"]["unknown_field"] = len(model_event_rows(response))  # type: ignore[index]
 
     with pytest.raises(GreenfieldModelAuthoringError, match="invalid terminal result"):
         author_greenfield_intent(

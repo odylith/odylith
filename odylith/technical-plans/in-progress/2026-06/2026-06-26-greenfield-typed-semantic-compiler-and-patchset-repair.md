@@ -23,19 +23,47 @@ path [2,3,5,4,1], with coherent five-component/five-workstream design. Complete
 behavior and household scope remain despite two noncritical copy/citation issues.
 Evidence: `/private/tmp/odylith-event-order-authority.qTFzOp/review.md`.
 
-This is feasibility, not production adoption or whole-consumer latency proof.
-Implement one ownership replacement across author/derivation, semantic mapping
-and custody, materialization/atomic result linkage, proposal/Atlas, preconfirm
-alignment and experience/readiness handoff. Preserve existing source-support
-identifiers in Registry and Radar. Remove inferred adjacency and result-last
-assumptions; never introduce another downstream sequence generator. Before
-adoption, prove unordered and equivalent-source controls, explicit/reverse and
-partial precedence, result placement, negative integrity, native sealed/readback
-transactions and source/design agreement across all projections. Run fresh
-desktop/mobile normal and applicable empty/fallback/error checks for Project,
-Radar, Registry, Atlas, Casebook, Compass and dashboard shell. No retry, schema
-migration or profile change was performed by the experiment; 60/90/120, useful
-4-5/4-5/5+ depth, other semantic/design blockers and final holdout gates remain.
+The source-local implementation now uses author v51, semantics v16 and design v2.
+Existing operational-constraint facts own source-precedence citations; no second
+citation store or runtime review call is added. One shared proposed-run projection
+feeds CLI preview, Project, semantic views and readiness/handoff. Registry/Radar
+support IDs remain source identities. Atlas distinguishes solid source prerequisites
+from dotted proposed next steps. The older ordering owners and Tribunal's redundant
+event reconstruction are removed, not retained as alternate paths.
+
+A fresh post-result counterexample overruled 989 passing Greenfield checks:
+publishing a report then archiving evidence could not satisfy the inherited
+result-last restriction. Remove that restriction and the Project final-row lookup,
+not required source actions. Preserve explicit result-producer custody and source
+precedence. The 64-edge and 1000-character rationale bounds remain unchanged.
+Mutually exclusive branches remain an unqualified limit, not an approved envelope
+exclusion or a reason to build generic workflow machinery in this wave.
+
+The frozen implementation passes 999 Greenfield and 1035 install/browser/convergence
+checks. Its one standard production CLI seed request stages in 48.988 seconds,
+including one 43.491-second author call. Independent review accepts the ordering
+discriminator, four components/workstreams and five differentiated diagrams, but
+rejects the complete package before CONFIRM. The handoff misclassifies required
+constraints as exclusions, and a supposed sealed-review command regenerates from
+incomplete synthetic evidence. Preserve that unchanged rejected package:
+`/private/tmp/odylith-v51-event-order-native.CfUUIh/rejection-review.md`.
+
+The bounded correction is implemented: handoff v2 separates canonical constraints
+from non-goals through typed and copyable content; the synthetic re-propose path
+and dead serializer are deleted. The transaction-owned final decision rail stays
+unchanged. Actual browser selection exposed whitespace collapse, fixed by one
+handoff-only style rule with no header/layout change. Independent review accepts
+the correction. Fresh proof passes 1034 Greenfield runtime and 1036 install/browser
+checks, plus a separate synthetic native 32-cell/113-file exact readback matrix.
+Eight category/viewport controls prove selected-copy fidelity; 14 current maintainer
+surface cells pass. A stale command-mutation test was corrected and the full runtime
+suite rerun. Evidence: `/private/tmp/odylith-v51-handoff-ux.6Epb8V/review.md`.
+No new author call or rejected-response replay occurred. Separate P2 next-step debt
+remains: flat workstreams acquire an invented project/child hierarchy and inconsistent
+implementation scope. Mobile initial-fit readability and KPI-first density remain
+visible limitations, not proof passes disguised as premium UX.
+Consumer 60/90/120, useful 4-5/4-5/5+ depth, semantic/design quality, native live
+acceptance, installed-release proof and the untouched final holdout remain fixed.
 
 ### Continuous experience gate (2026-09-06)
 

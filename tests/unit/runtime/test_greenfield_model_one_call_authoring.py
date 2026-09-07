@@ -219,7 +219,7 @@ def test_proof_preserves_the_exact_only_candidate_without_review_metadata(tmp_pa
     retained = json.loads(path.read_text())
     assert retained["response"] == response
     assert retained["semantic_model_call_count"] == 1
-    assert retained["authoring_version"] == "odylith.greenfield.intent-authoring.v50"
+    assert retained["authoring_version"] == "odylith.greenfield.intent-authoring.v51"
     assert retained["initial_authoring"]["timeout_seconds"] == 80.0
     assert retained["initial_authoring"]["elapsed_seconds"] == 36.0
     assert "source_review" not in retained

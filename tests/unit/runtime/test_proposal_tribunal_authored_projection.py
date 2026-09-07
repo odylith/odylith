@@ -297,7 +297,9 @@ def _rename_backlog_projection_everywhere(proposal) -> None:
             id="greenfield-ux",
         ),
         pytest.param(
-            lambda proposal: proposal["apply_commands"].__setitem__(0, "todo"),
+            lambda proposal: proposal["apply_commands"].append(
+                "odylith greenfield propose --repo-root . --prompt 'replacement'"
+            ),
             id="apply-command",
         ),
         pytest.param(_rename_backlog_projection_everywhere, id="coordinated-backlog-rename"),

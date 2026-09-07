@@ -10,6 +10,7 @@ from typing import Any, Mapping
 
 from odylith.install.fs import atomic_write_text
 from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import assumption_preview_values
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import authored_first_run_text
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_SEMANTICS_KEY,
 )
@@ -85,7 +86,7 @@ def stage_candidate_intent(
         paths=paths,
         repo_root=repo_root,
     )
-    markdown = render_candidate_intent_markdown(facts)
+    markdown = render_candidate_intent_markdown(intent if AUTHORED_SEMANTICS_KEY in intent else facts)
     structured_payload, evidence_payload = _candidate_payloads(
         facts=facts,
         envelope=envelope,
@@ -141,7 +142,7 @@ def render_candidate_intent_markdown(intent: Mapping[str, Any]) -> str:
         _text_fact(intent, "state_object"),
         "",
         "## First complete path",
-        _text_fact(intent, "first_path"),
+        authored_first_run_text(intent) if AUTHORED_SEMANTICS_KEY in intent else _text_fact(intent, "first_path"),
         "",
         "## Operational constraints",
         *_bullet_lines(

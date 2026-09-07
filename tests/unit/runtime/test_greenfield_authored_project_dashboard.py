@@ -44,6 +44,10 @@ FIRST_PATH = (
     "Registry Custodian QuOrates one Æther packet. "
     "Meridian Engine vitrifies the Æther packet into Ω-Receipt."
 )
+PROPOSED_FIRST_RUN = (
+    "Proposed first run:\nRegistry Custodian QuOrates one Æther packet.\n"
+    "Meridian Engine vitrifies the Æther packet into Ω-Receipt."
+)
 PRODUCT_STORY = (
     "People preserve APIv7 evidence while Ω-case casing remains source-authored."
 )
@@ -225,6 +229,74 @@ def _accepted_preview() -> dict[str, object]:
     }
 
 
+def _handoff_scope_proposal(*, constraints: tuple[str, ...], non_goals: tuple[str, ...]) -> dict[str, object]:
+    proposal = _proposal()
+    intent = proposal["intent"]
+    intent["operational_constraints"] = list(constraints)
+    intent["non_goals"] = list(non_goals)
+    contexts = intent["authored_semantics"]["first_path_context_relations"]
+    contexts[:] = [row for row in contexts if row["context_kind"] != "operational_constraint"]
+    cursor = max(row["source_end_byte"] for row in contexts) + 1
+    for index, quote in enumerate(constraints):
+        end = cursor + len(quote.encode("utf-8"))
+        contexts.append({
+            "context_kind": "operational_constraint", "fact_path": f"/operational_constraints/{index}",
+            "fact_quote": quote, "source_start_byte": cursor, "source_end_byte": end,
+            "first_path_event_order": 0,
+        })
+        cursor = end + 1
+    return proposal
+
+
+def _result_first_proposal(*, include_actor_review: bool = False) -> dict[str, object]:
+    """Project projection control with source inventory deliberately nonchronological."""
+
+    proposal = _proposal()
+    intent = proposal["intent"]
+    semantics = intent["authored_semantics"]
+    relations = list(reversed(semantics["first_path_relations"]))
+    if include_actor_review:
+        review = {
+            **relations[1],
+            "event_quote": "Registry Custodian reviews Ω-Receipt.",
+            "action_verb_quote": "reviews",
+            "target_quote": "Ω-Receipt",
+            "visible_result_quote": "Ω-Receipt",
+        }
+        relations[0]["visible_result_quote"] = ""
+        relations = [review, relations[1], relations[0]]
+    cursor = 0
+    for order, row in enumerate(relations, start=1):
+        end = cursor + len(row["event_quote"].encode("utf-8"))
+        row.update(
+            order=order, source_start_byte=cursor, source_end_byte=end,
+            event_start_byte=cursor, event_end_byte=end,
+        )
+        cursor = end + 1
+    intent["first_path"] = " ".join(row["event_quote"] for row in relations)
+    semantics["first_path_relations"] = relations
+    if include_actor_review:
+        semantics["provisional_design"] = structural_design_fixture((1, 2, 3))
+    semantics["provisional_design"]["first_run"] = {
+        "event_orders": [2, 3, 1] if include_actor_review else [2, 1],
+        "rationale": "Prepare the packet and produce its receipt before the final result review.",
+    }
+    product_event_order = 3 if include_actor_review else 1
+    state_start = relations[product_event_order - 1]["source_start_byte"] + len(
+        "Meridian Engine vitrifies the ".encode("utf-8")
+    )
+    semantics["first_path_context_relations"][0].update(
+        first_path_event_order=product_event_order, source_start_byte=state_start,
+        source_end_byte=state_start + len("Æther packet".encode("utf-8")),
+    )
+    independent_start = len(intent["first_path"].encode("utf-8")) + 1
+    for context in semantics["first_path_context_relations"][1:]:
+        context["source_start_byte"] = independent_start
+        context["source_end_byte"] = independent_start + len(context["fact_quote"].encode("utf-8"))
+        independent_start = context["source_end_byte"] + 1
+    return proposal
+
+
 def _pronoun_proposal() -> dict[str, object]:
     proposal = _proposal()
     intent = deepcopy(proposal["intent"])
@@ -354,7 +426,7 @@ def test_authored_dashboard_bypasses_legacy_projection_and_preserves_exact_facts
 
     assert payload["title"] == "eXact Ω Forge"
     assert payload["intro"] == PRODUCT_STORY
-    assert payload["focus"] == FIRST_PATH
+    assert payload["focus"] == PROPOSED_FIRST_RUN
     assert payload["desired"] == "Ω-Receipt"
     assert payload["actors"] == [
         (
@@ -369,7 +441,7 @@ def test_authored_dashboard_bypasses_legacy_projection_and_preserves_exact_facts
         ),
     ]
     assert payload["scenario_details"] == [
-        ("First path", FIRST_PATH),
+        ("Proposed first run", PROPOSED_FIRST_RUN),
         ("Visible result", "Ω-Receipt"),
         ("Proof boundary", PROOF_BOUNDARY),
     ]
@@ -394,6 +466,7 @@ def test_authored_dashboard_bypasses_legacy_projection_and_preserves_exact_facts
     }
     assert payload["projection"]["origin"] == AUTHORED_PROJECTION_ORIGIN
     assert payload["authored_facts"]["first_path"] == FIRST_PATH
+    assert payload["authored_facts"]["source_precedence"] == []
     assert payload["authored_facts"]["human_actors"] == [
         "Registry Custodian",
         "Field Ombud",
@@ -411,11 +484,12 @@ def test_authored_dashboard_bypasses_legacy_projection_and_preserves_exact_facts
     assert tuple(row["step_id"] for row in prompts) == EXPECTED_HANDOFF_STEPS
     expected_bindings = {
         "project_title": "eXact Ω Forge",
-        "accepted_first_path": FIRST_PATH,
+        "accepted_first_path": PROPOSED_FIRST_RUN,
         "first_release_workstream_refs": ("B-701",),
         "proof_boundary": PROOF_BOUNDARY,
         "visible_result": "Ω-Receipt",
-        "excluded_scope": ("Preserve APIv7 casing", "Batch Æther migration"),
+        "operational_constraints": ("Preserve APIv7 casing",),
+        "excluded_scope": ("Batch Æther migration",),
         "component_refs": ("meridian-engine",),
         "verification_commands": ("verify-Ω --APIv7",),
     }
@@ -430,9 +504,75 @@ def test_authored_dashboard_bypasses_legacy_projection_and_preserves_exact_facts
             contract,
             expected_step_id=expected_step_id,
         ) == ()
-    assert FIRST_PATH in prompts[0]["prompt"]
+    assert PROPOSED_FIRST_RUN in prompts[0]["prompt"]
     assert "QuOrates" in prompts[1]["prompt"]
     assert prompts[3]["verification_commands"] == ["verify-Ω --APIv7"]
+
+
+@pytest.mark.parametrize("constraints,non_goals", [
+    (("Preserve APIv7 casing",), ()),
+    ((), ("Batch Æther migration",)),
+    (("Preserve APIv7 casing",), ("Batch Æther migration",)),
+    (("Preserve APIv7 casing", "Preserve APIv7 casing"), ()),
+    ((), ()),
+])
+def test_authored_handoff_exposes_operating_requirements_and_only_non_goals_as_exclusions(
+    tmp_path: Path, constraints: tuple[str, ...], non_goals: tuple[str, ...],
+) -> None:
+    proposal = _handoff_scope_proposal(constraints=constraints, non_goals=non_goals)
+    payload = preview_project_dashboard_payload(
+        root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(),
+        source_launch_context={"start_workstream_id": "B-701", "verification_commands": ["verify-Ω --APIv7"]},
+    )
+    expected_scope = (
+        "Operational constraints — preserve these requirements:\n"
+        + ("\n".join(constraints) if constraints else "None stated.")
+        + "\n\nExcluded scope — preserve these exclusions:\n"
+        + ("\n".join(non_goals) if non_goals else "None stated.")
+    )
+    for handoff in payload["host_handoff_prompts"]:
+        bindings = handoff["contract"]["fact_bindings"]
+        assert bindings["operational_constraints"] == constraints
+        assert bindings["excluded_scope"] == non_goals
+        assert handoff["prompt"].endswith(expected_scope)
+    assert project_dashboard_preview_issues(
+        _completion_package(proposal=proposal, dashboard=payload), payload, model_authored=True,
+    ) == []
+
+
+@pytest.mark.parametrize("damage", [
+    "swap_bindings", "drop_constraints", "drop_exclusions", "swap_copy", "swap_both", "drop_copy",
+])
+def test_authored_handoff_preconfirm_rejects_lost_or_swapped_scope_categories(
+    tmp_path: Path, damage: str,
+) -> None:
+    proposal = _proposal()
+    payload = preview_project_dashboard_payload(
+        root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(),
+        source_launch_context={"start_workstream_id": "B-701", "verification_commands": ["verify-Ω --APIv7"]},
+    )
+    package = _completion_package(proposal=proposal, dashboard=payload)
+    assert project_dashboard_preview_issues(package, payload, model_authored=True) == []
+    handoff = payload["host_handoff_prompts"][1]
+    bindings = handoff["contract"]["fact_bindings"]
+    if damage in {"swap_bindings", "swap_both"}:
+        bindings["operational_constraints"], bindings["excluded_scope"] = (
+            bindings["excluded_scope"], bindings["operational_constraints"],
+        )
+    elif damage == "drop_constraints":
+        bindings.pop("operational_constraints", None)
+    elif damage == "drop_exclusions":
+        bindings.pop("excluded_scope")
+    if damage in {"swap_copy", "swap_both"}:
+        handoff["prompt"] = (
+            "Create the implementation plan.\n\n"
+            "Operational constraints — preserve these requirements:\nBatch Æther migration\n\n"
+            "Excluded scope — preserve these exclusions:\nPreserve APIv7 casing"
+        )
+    elif damage == "drop_copy":
+        handoff["prompt"] = "Create the implementation plan."
+    issues = project_dashboard_preview_issues(package, payload, model_authored=True)
+    assert any("step 2" in issue and ("scope" in issue or "operational constraints" in issue) for issue in issues)
 
 
 def test_authored_dashboard_labels_assumptions_without_promoting_them_to_blockers(
@@ -460,7 +600,155 @@ def test_authored_dashboard_labels_assumptions_without_promoting_them_to_blocker
     assert payload["blockers"] == []
 
 
-def test_authored_dashboard_validates_contracts_independently_of_visible_prompt_copy(
+def test_authored_dashboard_separates_proposed_walkthrough_from_result_first_source(
+    tmp_path: Path,
+) -> None:
+    proposal = _result_first_proposal()
+    source_intent = deepcopy(proposal["intent"])
+    payload = preview_project_dashboard_payload(
+        root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(),
+        source_launch_context={"start_workstream_id": "B-701"},
+    )
+
+    assert payload["focus"] == PROPOSED_FIRST_RUN
+    assert payload["scenario_details"][0] == ("Proposed first run", PROPOSED_FIRST_RUN)
+    assert payload["desired"] == "Ω-Receipt"
+    assert payload["authored_facts"]["first_path"] == source_intent["first_path"]
+    assert payload["authored_facts"]["first_path_relations"] == source_intent["authored_semantics"]["first_path_relations"]
+    assert payload["authored_facts"]["source_precedence"] == source_intent["authored_semantics"]["source_precedence"]
+    assert [row["order"] for row in payload["authored_facts"]["first_path_relations"]] == [1, 2]
+    cards = {row["semantic_slot"]: row["body"] for row in payload["product_story"]["release_contract"]}
+    assert cards["first_path"] == PROPOSED_FIRST_RUN
+    for prompt in payload["host_handoff_prompts"]:
+        assert prompt["contract"]["fact_bindings"]["accepted_first_path"] == PROPOSED_FIRST_RUN
+    assert proposal["intent"] == source_intent
+
+
+def test_authored_dashboard_preserves_archive_after_the_published_result(tmp_path: Path) -> None:
+    events = (
+        "Coordinator publishes a report.",
+        "Coordinator archives the report evidence.",
+    )
+    constraint = "Coordinator publishes the report before archiving its evidence."
+    intent = {
+        "title": "Report Desk",
+        "product_story": "Coordinators publish reviewable reports and retain their evidence.",
+        "problem": "Report evidence is lost after publication.",
+        "customer": "Coordinator",
+        "opportunity": "Keep published reports and evidence reviewable together.",
+        "product_view": "A report publication and evidence retention workspace.",
+        "first_path": " ".join(events),
+        "state_object": "report",
+        "proof_boundary": "The published report is visible and its evidence can be retrieved.",
+        "human_actors": ["Coordinator"],
+        "internal_systems": [], "external_systems": [],
+        "component_responsibilities": [], "assumptions": [], "ambiguities": [],
+        "non_goals": [], "operational_constraints": [constraint],
+        "evidence_requirements": ["Retrieve the archived report evidence."],
+        "success_metrics": ["The published report remains visible."],
+    }
+    relations = tuple(
+        {
+            "actor_kind": "human", "actor_fact_quote": "Coordinator",
+            "event_quote": event, "action_verb_quote": action, "target_quote": target,
+            "visible_result_quote": "report" if index == 0 else "",
+        }
+        for index, (event, action, target) in enumerate(zip(
+            events, ("publishes", "archives"), ("a report", "report evidence"), strict=True,
+        ))
+    )
+    precedence = [{"before_event": 1, "after_event": 2, "constraint_index": 1}]
+    source = "\n".join(
+        str(item) for value in intent.values()
+        for item in (value if isinstance(value, list) else [value]) if str(item)
+    )
+    authored = materialize_model_authored_intent(
+        prompt=source, repo_root=tmp_path,
+        authoring_provider=StructuredAuthoringProvider(authored_response(
+            intent, evidence_text=source, first_path_relations=relations,
+            source_precedence=precedence,
+        )),
+        authoring_timeout_seconds=60, authoring_profile_id=STANDARD_PROFILE_ID,
+    )
+    proposal = build_authored_greenfield_proposal(
+        observed_source={"source_posture": "operator prompt evidence"},
+        release_selector="0.0.1", confirmed_intent=authored,
+    )
+    payload = preview_project_dashboard_payload(
+        root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(),
+        source_launch_context={
+            "start_workstream_id": "B-701", "verification_commands": ["verify-Ω --APIv7"],
+        },
+    )
+    proposed_run = "Proposed first run:\n" + "\n".join(events)
+    assert payload["focus"] == proposed_run
+    assert payload["desired"] == "report"
+    assert payload["authored_facts"]["visible_result"] == "report"
+    assert payload["authored_facts"]["source_precedence"] == precedence
+    assert [row["visible_result_quote"] for row in payload["authored_facts"]["first_path_relations"]] == ["report", ""]
+    assert payload["actors"][0][2] == "\n".join(events)
+    cards = {row["semantic_slot"]: row["body"] for row in payload["product_story"]["release_contract"]}
+    assert cards["first_path"] == proposed_run
+    for handoff in payload["host_handoff_prompts"]:
+        assert handoff["contract"]["fact_bindings"]["accepted_first_path"] == proposed_run
+    package = _completion_package(proposal=proposal, dashboard=payload)
+    assert project_dashboard_preview_issues(package, payload, model_authored=True) == []
+
+
+@pytest.mark.parametrize("mutation", ["source_precedence", "first_path"])
+def test_authored_dashboard_preconfirm_rejects_order_authority_drift(
+    tmp_path: Path, mutation: str,
+) -> None:
+    proposal = _result_first_proposal()
+    payload = preview_project_dashboard_payload(
+        root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(),
+        source_launch_context={
+            "start_workstream_id": "B-701", "verification_commands": ["verify-Ω --APIv7"],
+        },
+    )
+    package = _completion_package(proposal=proposal, dashboard=payload)
+    assert project_dashboard_preview_issues(package, payload, model_authored=True) == []
+    if mutation == "source_precedence":
+        payload["authored_facts"]["source_precedence"] = [
+            {"before_event": 2, "after_event": 1, "constraint_index": 1},
+        ]
+        expected_issue = "model-authored Project dashboard drifted from source prerequisites"
+    else:
+        card = next(
+            row for row in payload["product_story"]["release_contract"] if row["semantic_slot"] == "first_path"
+        )
+        card["body"] = proposal["intent"]["first_path"]
+        expected_issue = "model-authored Project dashboard drifted from typed first_path"
+    assert expected_issue in project_dashboard_preview_issues(package, payload, model_authored=True)
+
+
+def test_authored_dashboard_same_actor_cards_follow_proposed_order_and_preconfirm_parity(
+    tmp_path: Path,
+) -> None:
+    proposal = _result_first_proposal(include_actor_review=True)
+    payload = preview_project_dashboard_payload(
+        root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(),
+        source_launch_context={
+            "start_workstream_id": "B-701", "verification_commands": ["verify-Ω --APIv7"],
+        },
+    )
+    expected = "Registry Custodian QuOrates one Æther packet.\nRegistry Custodian reviews Ω-Receipt."
+    assert payload["actors"][0][2] == expected
+    assert payload["product_story"]["actors"][0]["body"] == expected
+    package = _completion_package(proposal=proposal, dashboard=payload)
+    assert project_dashboard_preview_issues(package, payload, model_authored=True) == []
+    source_actor_order = "\n".join(
+        row["event_quote"] for row in payload["authored_facts"]["first_path_relations"]
+        if row["actor_kind"] == "human"
+    )
+    assert source_actor_order != expected
+    payload["product_story"]["actors"][0]["body"] = source_actor_order
+    assert "model-authored Project dashboard drifted from typed actor identities" in (
+        project_dashboard_preview_issues(package, payload, model_authored=True)
+    )
+
+
+def test_authored_dashboard_validates_contracts_independently_of_introductory_prompt_copy(
     tmp_path: Path,
 ) -> None:
     proposal = _proposal()
@@ -478,7 +766,11 @@ def test_authored_dashboard_validates_contracts_independently_of_visible_prompt_
     for index, row in enumerate(prompts, start=1):
         row["label"] = f"Reworded visible phase {index}"
         row["when"] = "Use this visible explanation whenever the typed gate permits it."
-        row["prompt"] = "Follow the attached typed action and fact bindings."
+        row["prompt"] = (
+            "Follow the attached typed action and fact bindings.\n\n"
+            "Operational constraints — preserve these requirements:\nPreserve APIv7 casing\n\n"
+            "Excluded scope — preserve these exclusions:\nBatch Æther migration"
+        )
         row["result"] = "The structurally declared output is produced."
         row["stop"] = "Honor the structurally declared stop policy."
 

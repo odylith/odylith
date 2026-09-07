@@ -13,7 +13,7 @@ from typing import Any
 from odylith.runtime.common.value_coercion import normalize_string
 
 
-PROJECT_HANDOFF_STEP_SCHEMA_VERSION = "odylith.greenfield.project-handoff-step.v1"
+PROJECT_HANDOFF_STEP_SCHEMA_VERSION = "odylith.greenfield.project-handoff-step.v2"
 CODING_READINESS_SCHEMA_VERSION = "odylith.greenfield.coding-readiness.v1"
 
 PROJECT_HANDOFF_STEP_SEQUENCE = (
@@ -30,6 +30,7 @@ _PROJECT_HANDOFF_REQUIRED_ACTIONS = {
         "record_runtime_assumptions",
         "define_test_approach",
         "record_tradeoffs",
+        "preserve_operational_constraints",
     ),
     "create_plan": (
         "bind_first_release_work_item",
@@ -37,6 +38,7 @@ _PROJECT_HANDOFF_REQUIRED_ACTIONS = {
         "name_target_files",
         "bind_proof_obligations",
         "list_validation_commands",
+        "preserve_operational_constraints",
         "preserve_excluded_scope",
     ),
     "build_slice": (
@@ -45,6 +47,7 @@ _PROJECT_HANDOFF_REQUIRED_ACTIONS = {
         "build_accepted_first_path_only",
         "validate_inputs",
         "return_structured_result",
+        "preserve_operational_constraints",
         "preserve_excluded_scope",
     ),
     "prove_behavior": (
@@ -55,12 +58,14 @@ _PROJECT_HANDOFF_REQUIRED_ACTIONS = {
         "prove_repeatability",
         "run_validation_commands",
         "stop_on_failed_validation",
+        "preserve_operational_constraints",
     ),
     "refresh_governance": (
         "bind_first_release_work_item",
         "refresh_from_implemented_behavior",
         "cite_validation_results",
         "withhold_unproven_release_readiness",
+        "preserve_operational_constraints",
     ),
 }
 
@@ -95,6 +100,7 @@ def build_project_handoff_step_contract(
     first_release_workstream_refs: Sequence[str] = (),
     proof_boundary: str = "",
     visible_result: str = "",
+    operational_constraints: Sequence[str] = (),
     excluded_scope: Sequence[str] = (),
     component_refs: Sequence[str] = (),
     verification_commands: Sequence[str] = (),
@@ -117,7 +123,8 @@ def build_project_handoff_step_contract(
             "first_release_workstream_refs": _normalized_strings(first_release_workstream_refs),
             "proof_boundary": _exact_text(proof_boundary),
             "visible_result": _exact_text(visible_result),
-            "excluded_scope": _exact_strings(excluded_scope),
+            "operational_constraints": _scope_facts(operational_constraints),
+            "excluded_scope": _scope_facts(excluded_scope),
             "component_refs": _normalized_strings(component_refs),
             "verification_commands": _exact_strings(verification_commands),
         },
@@ -158,6 +165,11 @@ def project_handoff_step_contract_issues(
         issues.append("is missing its project-title binding")
     if not normalize_string(bindings.get("accepted_first_path")):
         issues.append("is missing its accepted-first-path binding")
+    for field in ("operational_constraints", "excluded_scope"):
+        try:
+            _scope_facts(bindings.get(field))
+        except ValueError:
+            issues.append(f"has a missing or malformed {field} scope binding")
     workstream_refs = _normalized_strings(bindings.get("first_release_workstream_refs"))
     if expected != "choose_language" and not workstream_refs:
         issues.append("is missing its first-release workstream binding")
@@ -173,6 +185,28 @@ def project_handoff_step_contract_issues(
     if normalize_string(value.get("stop_policy")) != _PROJECT_HANDOFF_STOP_POLICIES[expected]:
         issues.append("does not carry the required stop policy")
     return tuple(issues)
+
+
+def render_project_handoff_scope(
+    *, operational_constraints: Sequence[str], excluded_scope: Sequence[str],
+) -> str:
+    """Keep required operations and excluded work distinct in copyable handoffs."""
+
+    constraints = "\n".join(_scope_facts(operational_constraints)) or "None stated."
+    non_goals = "\n".join(_scope_facts(excluded_scope)) or "None stated."
+    return (
+        f"Operational constraints — preserve these requirements:\n{constraints}\n\n"
+        f"Excluded scope — preserve these exclusions:\n{non_goals}"
+    )
+
+
+def _scope_facts(value: Any) -> tuple[str, ...]:
+    if (
+        not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray))
+        or any(not isinstance(row, str) or not row.strip() for row in value)
+    ):
+        raise ValueError("Greenfield handoff scope requires an explicit source-text sequence")
+    return tuple(value)
 
 
 def build_coding_readiness_contract(
@@ -346,5 +380,6 @@ __all__ = [
     "build_project_handoff_step_contract",
     "coding_readiness_contract_issues",
     "project_handoff_step_contract_issues",
+    "render_project_handoff_scope",
     "render_coding_readiness_gates",
 ]

@@ -6,6 +6,8 @@ from collections.abc import Mapping
 from typing import Any
 
 from odylith.runtime.common.value_coercion import normalize_string
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import authored_first_run_relations
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import AUTHORED_SEMANTICS_KEY
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_scalar_values import nested_text_values
 from odylith.runtime.domain_intelligence.greenfield_provisional_package import build_provisional_components
@@ -170,18 +172,37 @@ def semantic_diagram_alignment_issues(proposal: Mapping[str, Any], semantic: Map
     if active_components != graph_components:
         issues.append("DiagramEventGraph component sequence drifted from active ReleaseScope components")
     first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
-    first_path_events = tuple(
-        normalize_string(row.get("text"))
-        for row in mapping_rows(first_path.get("events") if isinstance(first_path, Mapping) else ())
-        if normalize_string(row.get("text"))
+    intent = proposal.get("intent")
+    if not isinstance(intent, Mapping):
+        return [*issues, "Greenfield event alignment is missing the canonical source-and-design intent"]
+    try:
+        relations = authored_first_run_relations(intent)
+    except (TypeError, ValueError) as exc:
+        return [*issues, str(exc)]
+    authored = intent[AUTHORED_SEMANTICS_KEY]
+    if first_path.get("authority_kind") != "provisional_design":
+        issues.append("FirstPathContract lost its provisional first-run authority")
+    if semantic.get("source_precedence") != authored["source_precedence"]:
+        issues.append("GreenfieldSemanticModel source precedence drifted from canonical intent")
+    if semantic.get("provisional_design") != authored["provisional_design"]:
+        issues.append("GreenfieldSemanticModel first-run design drifted from canonical intent")
+    expected_events = tuple(
+        (index, row["order"], row["event_quote"], "proposed_first_run")
+        for index, row in enumerate(relations, 1)
     )
-    graph_events = tuple(
-        normalize_string(row.get("text"))
-        for row in mapping_rows(graph.get("events") if isinstance(graph, Mapping) else ())
-        if normalize_string(row.get("text"))
-    )
-    if first_path_events and graph_events != first_path_events:
-        issues.append("DiagramEventGraph events drifted from FirstPathContract events")
+    for label, projection in (("FirstPathContract", first_path), ("DiagramEventGraph", graph)):
+        raw_events = projection.get("events")
+        rows = mapping_rows(raw_events)
+        actual_events = tuple(
+            (row.get("index"), row.get("source_event_order"), row.get("text"), row.get("source_kind"))
+            for row in rows
+        )
+        if (
+            not isinstance(raw_events, list) or len(raw_events) != len(rows)
+            or any(type(row.get(key)) is not int for row in rows for key in ("index", "source_event_order"))
+            or actual_events != expected_events
+        ):
+            issues.append(f"{label} events drifted from the canonical proposed first run")
     diagram_rows = mapping_rows(proposal.get("diagrams"))
     if not diagram_rows:
         issues.append("pre-confirm completion requires in-memory Atlas diagram artifacts")

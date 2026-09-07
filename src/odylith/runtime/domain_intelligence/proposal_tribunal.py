@@ -169,7 +169,7 @@ def _run_authored_projection_tribunal(
             "for exact authored identifiers and references"
         ),
         "semantic_projection": (
-            f"checked {len(_authored_events(relations))} authored event(s) against the "
+            f"checked {len(relations)} authored event(s) against the "
             "semantic model, component sequence, and workstream projection"
         ),
         "provenance": (
@@ -287,23 +287,6 @@ def _without_project_intelligence_binding(value: Any) -> Any:
             for row in value
         ]
     return value
-
-
-def _authored_events(relations: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
-    return [
-        {
-            "index": index,
-            "actor": row.get("actor_fact_quote"),
-            "owner_system": row.get("owner_system_quote"),
-            "action": row.get("action_verb_quote"),
-            "target_entity": row.get("target_quote"),
-            "mutation": row.get("event_quote"),
-            "visible_result": bool(row.get("visible_result_quote")),
-            "text": row.get("event_quote"),
-            "source_kind": "accepted_first_path",
-        }
-        for index, row in enumerate(relations, start=1)
-    ]
 
 
 def raise_for_failed_greenfield_tribunal(decision: GreenfieldTribunalDecision) -> None:
