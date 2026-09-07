@@ -12,6 +12,27 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ### Source-first ownership comparison (2026-09-07)
 
+Current decision: do not adopt the pinned source-first allocation. Its next
+required retained-negative control returned no verdict: one Sol/medium call
+timed out at an effective 19.895-second allowance; the adapter stopped in
+19.922 seconds inside the absolute 20-second limit. Root and independent review
+verified unchanged prompt/schema/roles, exact request/input equality and hashes.
+The localized purpose-positive was not called; no retry, expanded cap, production
+change or holdout access occurred. This is verdict-availability failure, not
+semantic false acceptance or a diagnosis of the provider's underlying delay.
+Preserve the successful observation below but do not extend it into qualification.
+A successor requires a separately grounded latency/ownership improvement and
+bounded prediction; do not run more controls or sweep profiles for this allocation.
+Evidence: `/private/tmp/odylith-source-verdict-controls.U5bS1i/review.md`.
+
+The accompanying fresh governed UX readback passes 14 normal desktop/mobile
+routes and four spec-reading controls, not full experience acceptance. Compass's
+latest timeline reports the failed gate while its older timestamped standup
+still uses optimistic checkpoint/ETA language. Preserve that visible caveat and
+inspect brief evidence/selection/freshness before any correction; do not rewrite
+narration or call a provider merely to replace an unfavorable observation.
+Evidence: `/private/tmp/odylith-continuous-ux.bSorfa/readback/result.json`.
+
 The installed Harbor pair remains a localized purpose-role discriminator, not a
 whole-source positive: both responses omit the explicit records-before-shows
 constraint and source-precedence edge. Stop the proposed reviewer-only 20-second
@@ -26,8 +47,9 @@ and the guarded join. All five human-owned actions, household scope, four cited
 edges and publication identity survive; five proposed components/workstreams
 deliver usable behavior. Ten no-provider ownership/harness controls pass.
 
-This earns the retained negative and equivalent-source gate, not production
-adoption or complete consumer timing. Verification remains mostly happy-path and
+That observation earned the retained negative gate, which subsequently failed
+as recorded above, not production adoption or complete consumer timing.
+Verification remains mostly happy-path and
 reference-centric. Require wrong-role rejection without losing valid purpose,
 actor/dependency, constraints and non-path capability preservation before the
 candidate displaces the current owner. Complete sealed packages, installed
