@@ -37,6 +37,7 @@ def _authored_diagrams(
     visible_result: str = "the berth map shows the placement",
     proof_boundary: str = "Verify the placement and retention receipt",
     human_actors: tuple[str, ...] = ("Dock attendant Ivo",),
+    relations: tuple[dict[str, Any], ...] | None = None,
 ) -> list[dict[str, Any]]:
     return greenfield_authored_atlas_view.build_authored_atlas_diagrams(
         title=title,
@@ -61,7 +62,9 @@ def _authored_diagrams(
             },
         ),
         backlog=({"title": "Deliver Harbor Desk"},),
-        relations=(
+        relations=relations
+        if relations is not None
+        else (
             {
                 "order": 1,
                 "actor_kind": "human",
@@ -99,6 +102,23 @@ def _authored_diagrams(
     )
 
 
+def _relation(
+    order: int,
+    actor: str,
+    event: str,
+    *,
+    actor_kind: str = "human",
+    owner: str = "",
+) -> dict[str, Any]:
+    return {
+        "order": order,
+        "actor_kind": actor_kind,
+        "actor_fact_quote": actor,
+        "event_quote": event,
+        "owner_system_quote": owner,
+    }
+
+
 def test_context_distinguishes_performers_from_contextual_participants() -> None:
     rows = _authored_diagrams(human_actors=("Dock attendant Ivo", "Field Ombud"))
     context = next(row for row in rows if row["slug"] == "harbor-desk-context")
@@ -118,6 +138,130 @@ def test_context_distinguishes_performers_from_contextual_participants() -> None
     greenfield_authored_atlas_view.validate_authored_atlas_view(
         context, source_text=context["mermaid_source"]
     )
+
+
+def test_context_groups_five_exact_events_under_one_human_performer() -> None:
+    events = (
+        "city staff register residents",
+        "city staff match household needs",
+        "city staff track constraints",
+        "city staff preserve consent evidence",
+        "city staff produce readiness report",
+    )
+    rows = _authored_diagrams(
+        human_actors=("city staff",),
+        relations=tuple(
+            _relation(order, "city staff", event)
+            for order, event in enumerate(events, start=1)
+        ),
+    )
+    context = next(row for row in rows if row["slug"] == "harbor-desk-context")
+    boxes = {row["node_id"]: row for row in context["diagram_boxes"]}
+
+    assert 'actor1 -->|"performs"| actor1_actions' in context["mermaid_source"]
+    assert context["mermaid_source"].count('actor1_actions["') == 1
+    assert boxes["actor1_actions"]["label"] == "\n".join(events)
+    assert [line for line in boxes["actor1_actions"]["label"].splitlines()] == list(events)
+
+
+def test_context_groups_each_human_performers_events_without_cross_assignment() -> None:
+    relations = (
+        _relation(1, "Coordinator Mara", "Mara records the intake"),
+        _relation(2, "Reviewer Ivo", "Ivo reviews the intake"),
+        _relation(3, "Coordinator Mara", "Mara publishes the result"),
+    )
+    rows = _authored_diagrams(
+        human_actors=("Coordinator Mara", "Reviewer Ivo"),
+        relations=relations,
+    )
+    context = next(row for row in rows if row["slug"] == "harbor-desk-context")
+    boxes = {row["node_id"]: row for row in context["diagram_boxes"]}
+
+    assert boxes["actor1_actions"]["label"].splitlines() == [
+        "Mara records the intake",
+        "Mara publishes the result",
+    ]
+    assert boxes["actor2_actions"]["label"] == "Ivo reviews the intake"
+    assert context["mermaid_source"].count('|"performs"|') == 2
+
+
+def test_context_excludes_product_events_from_human_action_groups() -> None:
+    human_event = "Mara enters a vessel tag"
+    product_event = "Harbor Desk records berth occupancy"
+    rows = _authored_diagrams(
+        human_actors=("Mara",),
+        relations=(
+            _relation(1, "Mara", human_event),
+            _relation(
+                2,
+                "Harbor Desk",
+                product_event,
+                actor_kind="product",
+                owner="Harbor Desk",
+            ),
+        ),
+    )
+    context = next(row for row in rows if row["slug"] == "harbor-desk-context")
+    action_box = next(
+        row for row in context["diagram_boxes"] if row["node_id"] == "actor1_actions"
+    )
+
+    assert action_box["label"] == human_event
+    assert product_event not in action_box["label"]
+
+
+@pytest.mark.parametrize("human_actors", [(), ("Field Ombud",)])
+def test_context_has_no_performer_edges_without_human_events(
+    human_actors: tuple[str, ...],
+) -> None:
+    rows = _authored_diagrams(
+        human_actors=human_actors,
+        relations=(
+            _relation(
+                1,
+                "Harbor Desk",
+                "Harbor Desk records berth occupancy",
+                actor_kind="product",
+                owner="Harbor Desk",
+            ),
+        ),
+    )
+    context = next(row for row in rows if row["slug"] == "harbor-desk-context")
+
+    assert '|"performs"|' not in context["mermaid_source"]
+    assert all(not row["node_id"].endswith("_actions") for row in context["diagram_boxes"])
+
+
+def test_context_retains_repeated_exact_event_text_and_seals_the_group() -> None:
+    repeated_event = "Mara records the intake"
+    rows = _authored_diagrams(
+        human_actors=("Mara",),
+        relations=(
+            _relation(1, "Mara", repeated_event),
+            _relation(2, "Mara", repeated_event),
+        ),
+    )
+    context = next(row for row in rows if row["slug"] == "harbor-desk-context")
+    action_box = next(
+        row for row in context["diagram_boxes"] if row["node_id"] == "actor1_actions"
+    )
+
+    assert action_box["label"].splitlines() == [repeated_event, repeated_event]
+    assert greenfield_authored_atlas_view.validate_authored_atlas_view(
+        context,
+        source_text=context["mermaid_source"],
+    )["diagram_boxes"] == context["diagram_boxes"]
+
+    tampered = deepcopy(context)
+    tampered_action = next(
+        row for row in tampered["diagram_boxes"] if row["node_id"] == "actor1_actions"
+    )
+    tampered_action["label"] = repeated_event
+    with pytest.raises(ValueError, match="sealed hash"):
+        greenfield_authored_atlas_view.validate_authored_atlas_view(
+            tampered,
+            source_text=tampered["mermaid_source"],
+        )
 
 
 def test_context_view_represents_a_sole_title_owned_product_once() -> None:

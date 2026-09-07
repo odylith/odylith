@@ -1585,6 +1585,62 @@
   change. Preserve plan-quality learning without a model/effort/prompt sweep or
   a claim that separately timed stages prove a complete package.
 
+- Proposed-Package Replay (2026-09-06): Retained validated source plus a separate
+  proposed plan produces 5 Radar drafts, 5 candidate Registry drafts and 5 Atlas
+  views without changing source grounding. Six replay browser states and sixteen
+  exact-output/separation/negative tests pass; independent review finds no new
+  P0/P1 in the bounded draft. This is not model, transaction or release proof.
+  Evidence: `/private/tmp/odylith-greenfield-draft-package.iYRD5L/output-v2/`
+  and `browser-evidence-v5/`. Exact inspection corrects an inherited diagnostic:
+  this context view is disconnected inventory, not a self-nested product.
+  Its existing typed human events permit one grouped performer-to-actions view,
+  retaining exact event text/order and off-path participants without invented
+  interactions. Compare that narrow projection; do not add event-by-event context
+  duplication, fake product arrows or an artifact-count exemption. Inventory-only
+  context eligibility and complete proposed-design integration remain unresolved.
+  Preserve the failed timing allocations and fixed 60/90/120 deadlines. Citation
+  co-location is deferred because no measured latency improvement justifies it.
+  The grouped-context source change adds 17 net lines and passes 21 focused tests.
+  Its first frozen broad gate passes 4,628 and fails only Release forensic-sidecar
+  freshness. Retain `/private/tmp/odylith-context-ownership-source-proof.DClQA3/`.
+  Governance refresh must precede the next full freeze; repair the CLI-generated
+  sidecar through its owner, not by changing the test or authoring its bytes.
+  Six updated-context replay browser states pass. Native mobile pan exposes the
+  complete action text and performer edge, withdrawing a screenshot-only clipping
+  P1; pan discoverability and keyboard focus remain prototype P2 advisories.
+  The existing context-only Atlas checker passes both old and new rows, so this
+  is a human-utility improvement, not proof that the prior installed failure is
+  cleared. Source/proposed data and the four other replay diagrams stay unchanged.
+  After CLI-owned forensic refresh, the frozen source gate passes 4,629 tests in
+  495.64 seconds. Evidence: `/private/tmp/odylith-context-ownership-source-qualified.ofCUB2/`,
+  JUnit SHA `947bb3655915989f5b25a2f3b546a91ad086c5b93ef8c0ead53489ce13df1ec2`;
+  before/after tracked-diff SHA
+  `a97bce57c9bff460422c0693fb96860baec8dae588cd4a4e151bfae3d07589ca`.
+
+- Cross-Surface Experience Checkpoint (2026-09-06): The operator requires UX
+  checks across Project, Radar, Registry, Atlas, Casebook, Compass and shell
+  throughout building, including desktop/mobile normal and recovery states.
+  Existing functional tests pass 25/25 in 33.34 seconds. The actual generated
+  maintainer dashboard audit retains 14 normal and six empty/fallback/error
+  screenshots, without repository changes. Evidence:
+  `/private/tmp/odylith-governance-ux-checkpoint.nproHe/`; visual report SHA
+  `90989d56332b72ac7c5806835aa8d3b00555cc7400cc05e33e41d7d69eb27ded`.
+  A desktop Registry screenshot proves pre-existing P1 description drift:
+  `domain-intelligence.what_it_is` still says "Provider-free runtime" while the
+  current spec and runtime use model authoring and mandatory source review.
+  The statement misleads provider, latency, cost and trust expectations; it is
+  not a context-renderer regression. Component/Registry/governance CLI discovery
+  exposes no metadata-update operation. Preserve a maintainer-ready update-path
+  gap under CB-104 rather than hand-editing the manifest or creating a duplicate.
+  P2 observations: D-043 starts at unreadable 19% fit until zoom, Radar Parked
+  and Active Waves KPIs are blank, and mobile KPI stacks delay useful detail.
+  No inaccessible clipping or overlap was found in the sampled cells. Canceled
+  preliminary iframe requests and injected asset failures are retained, not
+  reported as zero network failures. Mobile Registry after-scroll detail,
+  accessibility, loading, exhaustive state permutations and installed parity
+  remain unproved. Passing functional tests do not clear this UX finding or the
+  complete-package 60/90/120 gate. This record remains open.
+
 - V30 Source Discriminator Result (2026-09-04): The unchanged flood request
   passed the v30 prediction. One deep authoring call completed in `49.80s`,
   selected `city staff` as the direct customer, preserved all five city-staff

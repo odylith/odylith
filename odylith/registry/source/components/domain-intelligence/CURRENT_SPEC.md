@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-09-05
+Last updated: 2026-09-06
 
 
 ## Overview
@@ -31,6 +31,9 @@ or prose repair runs after confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_view.py`, `tests/unit/runtime/test_greenfield_authored_atlas_view.py`
 - **2026-09-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_view.py`
@@ -46,9 +49,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_backlog.py`, `tests/unit/runtime/test_greenfield_authored_radar_rationale.py`
-- **2026-09-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_assumptions.py`, `src/odylith/runtime/domain_intelligence/greenfield_authored_backlog.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -3459,6 +3459,20 @@ This section captures synchronized requirement and contract signals derived from
   Project and Atlas distinguish contextual participants from typed human event
   performers. Only performers enter project-intelligence operators; participant
   presence does not create product interaction arrows or assigned actions.
+  Atlas context groups exact source event text by human performer and uses only
+  a labeled performer-to-actions edge. Grouping preserves source order and repeated
+  events; off-path participants stay edge-free, and product events never enter
+  human groups. Existing product and external boundaries are unchanged. This is
+  an ownership view, not a second workflow sequence or inferred interaction.
+  Inventory-only context eligibility remains an open quality boundary. The
+  separately replayed 5/5/5 proposed-design package is not production-integrated,
+  timing-qualified or a sealed transaction; current production profiles remain v48.
+  Experience proof accompanies relevant build checkpoints across Project, Radar,
+  Registry, Atlas, Casebook, Compass and shell at desktop/mobile widths, with
+  normal, empty/fallback and degraded/error coverage and explicit gaps. Rendered
+  meaning and usability are judged separately from functional assertions.
+  The 2026-09-06 audit found stale "Provider-free runtime" inventory copy despite
+  this model-based contract; its governed update-path gap remains open in CB-303.
   Review input includes the literal resolver's actual citation byte offsets and
   64-character surrounding source context. This is a read-only binding view, not
   new semantic evidence or a second parser. Repeated quote bytes do not establish

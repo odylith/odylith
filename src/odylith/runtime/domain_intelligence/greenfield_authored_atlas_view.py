@@ -92,8 +92,8 @@ def build_authored_atlas_diagrams(
             "title": "System Context View",
             "summary": f"People in product context, named systems, and candidate product-owned boundaries for {title}.",
             "read_guide": (
-                "People are source-stated participants, not necessarily product users. First-path "
-                "actors have typed actions; this context inventory does not imply interaction."
+                "People are source-stated participants, not necessarily product users. A labeled edge "
+                "connects each human performer to one grouped box of exact events; other people remain edge-free."
             ),
             "source": context_source,
             "boxes": context_boxes,
@@ -367,10 +367,14 @@ def _context_view(
     components: Sequence[Mapping[str, Any]],
     relations: Sequence[Mapping[str, Any]],
 ) -> tuple[str, list[dict[str, str]]]:
-    performers = {
-        row.get("actor_fact_quote") for row in relations if row.get("actor_kind") == "human"
-    }
+    performer_events: dict[str, list[str]] = {}
+    for relation in relations:
+        if relation.get("actor_kind") == "human":
+            actor = _required_string(relation.get("actor_fact_quote"), "human actor fact")
+            event = _required_string(relation.get("event_quote"), "human first-path event")
+            performer_events.setdefault(actor, []).append(event)
     lines = ["flowchart LR", '  subgraph people["People in product context"]']
+    action_lines: list[str] = []
     boxes = [
         _box(
             "people",
@@ -381,21 +385,34 @@ def _context_view(
     ]
     for index, actor in enumerate(actors, start=1):
         lines.append(f'    actor{index}["{_mermaid_label(actor)}"]')
+        events = performer_events.get(actor, ())
         boxes.append(
             _box(
                 f"actor{index}",
                 actor,
-                "First-path actor" if actor in performers else "Participant",
+                "First-path actor" if events else "Participant",
                 f"Performs source-stated first-path actions: {actor}"
-                if actor in performers
+                if events
                 else "Named in project evidence; no first-path action is assigned.",
             )
         )
+        if events:
+            action_id = f"actor{index}_actions"
+            event_label = "<br/>".join(_mermaid_label(event) for event in events)
+            action_lines.append(f'  {action_id}["{event_label}"]')
+            action_lines.append(f'  actor{index} -->|"performs"| {action_id}')
+            boxes.append(
+                _box(
+                    action_id, "\n".join(events), "Grouped first-path actions",
+                    f"Exact source events performed by {actor}, in first-path order.",
+                )
+            )
     product_lines, product_boxes, component_targets = _product_boundary_projection(
         title=title,
         components=components,
     )
     lines.append("  end")
+    lines.extend(action_lines)
     lines.extend(product_lines)
     boxes.extend(product_boxes)
     if externals:

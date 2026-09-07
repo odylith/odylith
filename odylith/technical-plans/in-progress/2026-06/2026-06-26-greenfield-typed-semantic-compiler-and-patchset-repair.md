@@ -13,9 +13,72 @@ or generated content after confirmation.
 
 ## Current Convergence Contract (2026-09-04)
 
+### Continuous experience gate (2026-09-06)
+
+The operator requires UX and experience checks throughout building, across
+Project, Radar, Registry, Atlas, Casebook, Compass and the dashboard shell.
+Each relevant checkpoint must combine bounded functional browser checks with
+rendered-content and navigation review at desktop and mobile widths, including
+normal, empty/fallback and degraded/error coverage. Record the exact state map
+and untested cells; a passing DOM assertion is not human-quality evidence.
+Check meaning, useful detail, readability, reachable navigation and recovery.
+Distinguish native scroll/zoom from inaccessible clipping. Keep these checks in
+the existing validation path, without a second UI framework or a redesign sweep.
+The package-depth, source-custody and fixed 60/90/120 gates remain unchanged.
+
 ### Required package depth and current blocker (2026-09-05)
 
-Current wave outcome (2026-09-06, author-latency comparison): no planning candidate
+Current wave (2026-09-06, package replay and context projection): the retained
+validated source plus the separate v2 proposed plan produces five Radar drafts,
+five logical Registry drafts and five Atlas views, versus the current 1/1/3.
+Six desktop/mobile normal, empty and Mermaid-failure replay states pass; all five
+diagrams render as SVG, with complete fallback source and tables. Sixteen exact
+replay/custody/negative controls pass. Independent semantic and consumer-quality
+reviews find no substantiated P0/P1 in this draft. These are review drafts, not
+production-governed records, a sealed transaction or new model timing evidence.
+Retain `/private/tmp/odylith-greenfield-draft-package.iYRD5L/output-v2/` and
+`browser-evidence-v5/`; canonical draft digest
+`96029216294576d3b603911a45cc2a1b0940aa1e0a93a9bf6ed8b117cf003559`.
+Do not splice the separately retained source and plan into consumer success.
+
+The context view is truthful but disconnected inventory, not self-nested product
+ownership in this replay. The selected narrow source change uses its existing
+typed human relations to render one grouped exact-event box per performer and a
+`performs` edge. Off-path participants receive no edge; product events never enter
+human groups; product/external boundaries stay unchanged. This adds an ownership
+lens rather than another per-event sequence. Context eligibility for cases without
+useful relations remains open; no artifact-depth rewrite is included. Source facts,
+model roles/calls, source schemas, transaction laws and 60/90/120 are unchanged.
+Citation co-location was considered and deferred: it reduces positional coupling
+but has no demonstrated latency benefit. No new model/profile/prompt sweep is run.
+The explicit proposed-design mechanism earns further integration work, not
+production adoption: normal proposal parity, Registry/Radar contracts, sealed
+publication, fresh timing, independent generalization and installed release proof
+remain required. The first frozen broad run is retained at
+`/private/tmp/odylith-context-ownership-source-proof.DClQA3/`: 4,628 pass and one
+fails because Release `FORENSICS.v1.json` is stale after governance changes.
+The tracked tree stays byte-identical during that run. Refresh CLI-owned evidence
+before repeating qualification; do not alter the failing freshness test.
+After that refresh, the frozen source gate passes 4,629 tests in 495.64 seconds
+at `/private/tmp/odylith-context-ownership-source-qualified.ofCUB2/`; JUnit SHA
+`947bb3655915989f5b25a2f3b546a91ad086c5b93ef8c0ead53489ce13df1ec2`.
+The renderer blob is `e26b29cda1e065287922fa2a9efe9ed9df42f02a`.
+The separate cross-surface browser gate passes 25 tests in 33.34 seconds.
+The actual generated maintainer dashboard review retains 14 desktop/mobile
+normal captures and six Casebook empty / Atlas PNG-fallback / asset-error
+captures at `/private/tmp/odylith-governance-ux-checkpoint.nproHe/`.
+One pre-existing P1 remains: Registry's selected Domain Intelligence description
+claims "Provider-free runtime" despite model-based authoring and source review.
+Existing CLI discovery exposes register and refresh, not metadata update; record
+the missing governed update path rather than hand-editing the manifest (CB-104).
+P2 follow-ups are initial Atlas 19% legibility, blank Radar KPI values and mobile
+KPI-first density. No inaccessible clipping was found in the sampled views.
+Mobile Registry after-scroll detail, keyboard/screen-reader, transient loading,
+every state permutation and installed parity are not proved by these captures.
+These are source and bounded UX evidence, not complete-package timing, release
+qualification or a clean UX verdict. CB-303 remains open.
+
+Prior wave outcome (2026-09-06, author-latency comparison): no planning candidate
 has earned production integration. The explicit experimental role map is
 Luna/medium source author, Terra/low parallel planner and Sol/medium mandatory
 reviewer, with at most three calls inside model 55s / consumer 60s. Source prompt,
