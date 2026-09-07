@@ -6,10 +6,7 @@ Updated: 2026-09-06
 
 Backlog: B-142
 
-Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It
-must turn imperfect initial evidence into a coherent governed project without
-writing unconfirmed artifacts or needing product interpretation, quality repair,
-or generated content after confirmation.
+Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must turn imperfect initial evidence into a coherent governed project without writing unconfirmed artifacts or needing product interpretation, quality repair, or generated content after confirmation.
 
 ## Current Convergence Contract (2026-09-04)
 
@@ -27,6 +24,25 @@ the existing validation path, without a second UI framework or a redesign sweep.
 The package-depth, source-custody and fixed 60/90/120 gates remain unchanged.
 
 ### Required package depth and current blocker (2026-09-05)
+
+Latest discriminator (2026-09-06): the unchanged Sol/medium source reviewer
+audits the retained complete-author candidate once in 8.611 seconds, inside its
+16.936-second remainder, but returns no corrections. The explicit participant
+inventory still omits displaced residents. All five staff actions, exact objects,
+source custody and unchanged proposed-plan support joins survive; structural
+assembly remains 4/5/5. This rejects semantic coverage, not timing feasibility.
+Evidence: `/private/tmp/odylith-greenfield-complete-review.tDanXi/`, including
+predeclared acceptance, frozen inputs and independent rejection in
+`adjudication.md`. Exit0 means only structural checks pending independent review.
+No retry or fresh integrated run is earned; do not add separately timed author
+and review runs into a consumer timing claim. Production v48 and 60/90/120 are
+unchanged. The schema already represents contextual participants, so no new role
+schema or canonical rename is justified solely by this omission. Any next change
+must demonstrate better coverage on positive, negative and equivalent-source
+controls without vocabulary patches or another repair layer. The separate
+preview-assumption P1 remains: show the canonical Problem, Customer, Opportunity
+and Product View facts and all typed assumptions with explicit authority labels.
+Do not derive missing decisions from proposed-plan prose.
 
 Comparison result (2026-09-06): one Terra/low call completed in 38.064 seconds;
 the frozen driver took 38.492 seconds and produced four Radar drafts, five

@@ -6,11 +6,26 @@
 
 - Severity: P1
 
+- Complete-Author Review Finding (2026-09-06): One unchanged Sol/medium source
+  review of the retained complete-author candidate finishes in 8.611 seconds
+  under its 16.936-second cap but returns no corrections. The source remains
+  unchanged: five complete city-staff actions retain custody, while displaced
+  residents survives as state/target but not in the required participant
+  inventory. The original plan and final event-support joins remain unchanged
+  at four Radar, five Registry and five diagram draft entries. Independent
+  adjudication rejects semantic coverage; process exit0 records only structural
+  validation pending that review. Evidence and frozen inputs are preserved at
+  `/private/tmp/odylith-greenfield-complete-review.tDanXi/`. No retry, publication,
+  integrated timing claim, canonical rename or production adoption follows.
+  The temporary preview's omitted Opportunity/assumptions remains a separate P1;
+  source facts and typed assumptions need visible, distinct authority labels.
+  Production v48 and consumer 60/90/120 remain unchanged. This bug stays open.
+
 - Reproducibility: Consistent
 
 - Type: OperatorUX
 
-- Description: Generated Greenfield surfaces reused one completion sentence for first path, product boundary, owned capabilities, and proof, while other public sentences ended as clipped fragments. Fresh source-local replay also passed a generic `Lab App` title, silently dropped the explicit `failed stress runs` responsibility at the internal-system row cap, and rendered phrases such as `visit evidence with source evidence`.
+- Description: Greenfield remains unqualified: the complete-author draft omits a source-stated person group from its participant inventory, and its temporary preview hides Opportunity assumptions. One unchanged source review completed in 8.611 seconds but made no correction, so independent review rejected semantic coverage despite valid 4/5/5 draft structure. Production v48 and the 60/90/120 deadlines are unchanged; no publication or adoption is claimed. Current findings must appear in this displayed summary, not only in custom source-record notes. Historical failures included repeated completion prose, clipped fragments, a generic `Lab App` title, dropped `failed stress runs` responsibility and wording such as `visit evidence with source evidence`.
 
 - Impact: First-time users receive a polished-looking workspace whose core product story is repetitive, incomplete, and not trustworthy enough to guide implementation.
 
