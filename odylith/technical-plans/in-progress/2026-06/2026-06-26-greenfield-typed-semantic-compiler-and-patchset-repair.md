@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-06-26
 
-Updated: 2026-09-06
+Updated: 2026-09-07
 
 Backlog: B-142
 
@@ -23,7 +23,66 @@ Distinguish native scroll/zoom from inaccessible clipping. Keep these checks in
 the existing validation path, without a second UI framework or a redesign sweep.
 The package-depth, source-custody and fixed 60/90/120 gates remain unchanged.
 
+Experience checkpoint (2026-09-07): the exact Registry category owner now keeps
+`application` intact and invalidates both dependent caches; the existing Radar
+escaper preserves numeric zero and false. Frozen diff f9b5f419 at HEAD 668b94e6
+passed all 4776 runtime/install tests and the existing native 32-cell desktop/
+mobile seven-surface matrix, with source fingerprints and sealed/published bytes
+unchanged. Focused category and value checks separately passed 26 and 52 tests
+(overlapping scopes, not additive). Evidence:
+`/private/tmp/odylith-v49-ux-fidelity-proof.JdaH6G/`. Actual mobile detail review
+also confirmed inaccessible Registry Topology clipping, now recorded in CB-303
+before its fix. A single mobile grid-track change then passed 45 focused checks
+after two mobile failures on the unchanged layout; normal/fallback complete
+paragraph bounds and desktop preservation are proved in
+`/private/tmp/odylith-registry-mobile-topology.rxVIw8/`.
+Preserve exact state-map gaps: this is not
+all-state, live-model quality, installed-release or consumer-timing proof.
+
+The retained consumer also passed one ordinary-control mobile six-surface
+journey with sampled keyboard focus and Atlas native-asset error recovery.
+Atlas feedback is reachable, but seven upward scrolls from the selected list
+leave a discoverability issue; its source-link direction copy is inaccurate.
+Casebook populated detail, ready Compass narration and exhaustive accessibility
+remain unproved. Evidence: `/private/tmp/odylith-v49-journey-review.C0tbzh/`.
+Keep those bounded UX findings separate from the semantic admission blocker.
+
+Final combined checkpoint: 119 focused checks passed on frozen diff b6013c58.
+The 32-cell native run had zero UI issues but failed its whole-consumer unchanged
+inventory gate when Compass cache/request/state/lock files changed. Independent
+diagnosis attributes this to the pre-transaction baseline refresh's detached
+narration worker, not browser or Greenfield commit writes. Post-worker readback
+proves all 113 sealed artifacts still exact. Preserve the
+failure and establish baseline settlement before another clean full-proof claim;
+do not disable Compass, exclude the files to force a pass, or call this consumer
+timing qualification. Evidence: `/private/tmp/odylith-v49-ux-checkpoint.UrKsTr/`.
+
 ### Required package depth and current blocker (2026-09-05)
+
+Admission discriminator result (2026-09-07): the independent read-only
+codex-cli/Sol-medium verdict timed out on its first retained negative at
+10.021 seconds against the predeclared 10-second cap. No verdict was returned;
+the positive control was not called. Source and input fingerprints stayed
+unchanged. Reject this exact alternative for adoption, with no retry, relaxed
+deadline or production semantic change. Accuracy, successful generation and
+consumer timing remain unproved. Both control annotations were independently
+approved before the call. Full evidence is retained under
+`/private/tmp/odylith-v49-admission-comparison.9oIvGH/`.
+
+Bounded admission comparison (2026-09-07): clean pushed HEAD 668b94e6 reproduces
+the exact invocation-as-product P1 through the full pre-confirm path, with no
+publication. Keep v49 unchanged while comparing three mechanisms: current
+single-author structural admission; canonical removal of redundant narrative
+ownership; and one independent, read-only semantic verdict. Narrative removal
+alone cannot address actor, state, opportunity, dependency or terminal-role
+errors. The verdict experiment must detect the retained wrong-role candidate
+and preserve the valid control without returning replacement content. Use one
+pinned profile, at most one 10-second verdict call per control, no retry and no
+holdout. A failure rejects this experiment; success earns only the remaining
+retained semantic controls, not production adoption. Existing 55/80/105 model
+windows and 60/90/120 consumer deadlines do not change; no composed timing
+estimate qualifies an end-to-end request. Read-only diagnosis does not itself
+solve successful generation after a rejected author candidate.
 
 Final source-local checkpoint proof (2026-09-07): frozen diff c449520f passed
 1508 Greenfield/Atlas-renderer unit checks in 155.30 seconds and a separate,

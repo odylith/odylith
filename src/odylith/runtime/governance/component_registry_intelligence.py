@@ -79,8 +79,8 @@ _FEATURE_HISTORY_PLAN_ROUTE_RE = re.compile(r"(?:^|.*/)?odylith/radar/radar\.htm
 _FEATURE_HISTORY_PLAN_ROUTE_VERSION = "radar-html-v1"
 _PRODUCT_LAYER_NORMALIZATION_VERSION = "consumer-distro-suffix-v1"
 _RADAR_IDEA_CONTRACT_VERSION = f"v0.1.11:{backlog_contract.IDEA_SPEC_CACHE_VERSION}"
-_COMPONENT_INDEX_CACHE_VERSION = "v2"
-_COMPONENT_REPORT_CACHE_VERSION = "v5"
+_COMPONENT_INDEX_CACHE_VERSION = "v3"
+_COMPONENT_REPORT_CACHE_VERSION = "v6"
 _MIGRATION_OBSERVER_MARKER_RE = re.compile(
     r"\bmigration-observer:[A-Za-z0-9_.-]+:[A-Za-z0-9_.-]+(?::[A-Fa-f0-9]{12})?\b"
 )
@@ -91,6 +91,7 @@ _SKILL_TRIGGER_INLINE_RE = re.compile(r"^\s*-\s*Trigger phrases:\s*(.+?)\s*$", r
 
 _COMPONENT_CATEGORIES: frozenset[str] = frozenset(
     {
+        "application",
         "data",
         "governance_engine",
         "governance_surface",
@@ -467,7 +468,6 @@ def _default_category_for_kind(kind: str) -> str:
 def normalize_component_category(value: str, *, fallback_kind: str = "") -> str:
     token = _normalize_taxonomy_token(value)
     alias_map: dict[str, str] = {
-        "application": "governance_engine",
         "platform_runtime": "governance_engine",
         "tooling": "control_gate",
     }

@@ -51,6 +51,10 @@ mutations retain the product-main guard. The Component CLI family owns dispatch
 in `component_cli.py`; `component_description_update.py` owns the narrow update.
 
 ### Source truth
+- An authored `application` category stays `application` through manifest
+  loading, cached reports, validation and rendered detail. It must not alias to
+  `governance_engine`; proposed product components are not governance engines.
+  A category-normalization change invalidates both dependent cache contracts.
 - `odylith/registry/source/component_registry.v1.json`
   Canonical component manifest.
 - `odylith/registry/source/components/<component-id>/CURRENT_SPEC.md`
@@ -59,6 +63,9 @@ in `component_cli.py`; `component_description_update.py` owns the narrow update.
   Derived forensic snapshots for tracked components.
 
 ### Derived and rendered artifacts
+- Mobile Topology rows use shrinkable grid tracks so complete prose and metadata
+  wrap inside the detail panel. Browser proof must inspect text bounds within
+  clipping ancestors after ordinary navigation, not only document overflow.
 - `odylith/registry/registry.html`
 - `odylith/registry/registry-payload.v1.js`
 - `odylith/registry/registry-app.v1.js`

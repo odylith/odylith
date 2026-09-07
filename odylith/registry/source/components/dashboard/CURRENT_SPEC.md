@@ -64,6 +64,10 @@ unit or DOM-count success does not establish complete-package human quality.
   Compass, Radar, Registry, and Casebook top-line summary tiles must consume
   the shared KPI grid/card/label-value helpers instead of shipping local
   summary-card CSS forks.
+- Value presentation must distinguish zero from missing data. Radar's existing
+  HTML escape owner preserves numeric `0` and boolean `false`, while null,
+  undefined and empty input remain blank; escaping still treats values as text.
+  This is content fidelity, not a change to KPI layout or the dashboard header.
 - Shared interactive `B-###` workstream buttons also share one destination:
   Dashboard routes them to Radar's canonical workstream view. Child surfaces
   may keep their own local scope state, but they must not repurpose those

@@ -696,6 +696,7 @@ def test_render_backlog_ui_keeps_decision_basis_labeling_self_contained() -> Non
 def test_render_backlog_ui_includes_release_filters_summary_cards_and_release_chips() -> None:
     html = render_backlog_ui._render_html(payload={"entries": []})
 
+    assert 'function escapeHtml(value) {\n      return String(value ?? "")' in html
     assert '<select id="type">' in html
     assert '<option value="umbrella">Umbrella</option>' in html
     assert '<option value="child">Child</option>' in html

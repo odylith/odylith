@@ -1280,7 +1280,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
     }
 
     function escapeHtml(value) {
-      return String(value || "")
+      return String(value ?? "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")

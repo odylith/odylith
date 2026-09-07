@@ -966,7 +966,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         grid-template-columns: 1fr;
       }
       .context-row {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
       }
       .context-count {
         text-align: left;
