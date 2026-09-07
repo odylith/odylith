@@ -730,6 +730,8 @@ def _record_retained_execution(
     for name in (
         "input.prompt",
         "input.edit-evidence",
+        "show.stdout",
+        "show.stderr",
         "propose.stdout",
         "propose.stderr",
         "create.stdout",
@@ -1160,6 +1162,7 @@ def _run_case(
         create_seconds=create_seconds,
         create_detail=create.stderr or create.stdout,
         external_issues=(
+            *execution.output_contract_issues,
             *receipt_issues,
             *decision_rail_issues,
             *navigation_issues,
@@ -1366,24 +1369,6 @@ def _run_expected_clarification_case(
     )
 
 
-def _run_compiled_greenfield_create(
-    *,
-    repo_root: Path,
-    env: Mapping[str, str],
-    prompt: str,
-    edit_evidence: str = "",
-    repair_tier: str = "auto",
-) -> tuple[Any, float, float]:
-    execution = _run_compiled_greenfield_create_with_receipt(
-        repo_root=repo_root,
-        env=env,
-        prompt=prompt,
-        edit_evidence=edit_evidence,
-        repair_tier=repair_tier,
-    )
-    return execution.create, execution.proposal_seconds, execution.create_seconds
-
-
 def _run_compiled_greenfield_create_with_receipt(
     *,
     repo_root: Path,
@@ -1398,6 +1383,11 @@ def _run_compiled_greenfield_create_with_receipt(
     configured_profile_id = str(env.get("ODYLITH_GREENFIELD_MODEL_PROFILE") or "").strip()
     if configured_profile_id != profile_id:
         raise ValueError("release proof repair tier does not match its configured model profile")
+    shown = _run(cwd=repo_root, env=env, command=["./.odylith/bin/odylith", "show", "--repo-root", "."], timeout=60)
+    if raw_streams is not None:
+        raw_streams.update({"show.stdout": shown.stdout, "show.stderr": shown.stderr})
+    if shown.returncode != 0 or "Odylith read this repo" not in shown.stdout:
+        raise RuntimeError("installed Greenfield journey failed its initial capability show")
     proposal_timeout = int(get_greenfield_model_profile(profile_id).consumer_budget_seconds)
     proposal_started = time.perf_counter()
     proposed = _run_greenfield_propose(

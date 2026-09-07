@@ -10,6 +10,58 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Fresh installed empty-state UX (2026-09-07)
+
+The exact 4ce8cd2f install passes 16 desktop/mobile route and layout cells with
+unchanged governed bytes, but independent screenshot review rejects the empty
+experience. CB-330 records Atlas displaying a broken preview and blank diagram
+metadata, Compass estimating roughly six days with no active workstreams, and
+Casebook suggesting filters when no cases exist. Radar and Registry blank-panel
+guidance and mobile density also remain weak. Clear Project onboarding and
+unanchored-route recovery are verified; do not misreport the visual defects as
+regressions caused by the last Atlas reading change.
+
+Next bounded UX correction must distinguish absent source records from filtered
+results at the existing surface owners. Require failing empty-state assertions
+before changes, then preserve populated, fallback and error behavior at both
+widths. Do not redesign the frozen header, add a shared framework for this case,
+or treat the automated route pass as human-quality acceptance. Evidence lives in
+`/private/tmp/odylith-installed-checkpoint.tefox7/installed-empty-browser-reviewed/`
+and the retained earlier diagnostic screenshots.
+
+### Exact distribution install checkpoint (2026-09-07)
+
+Clean pushed 4ce8cd2f builds the complete local 0.1.15 distribution. The real
+nested fresh install, version, doctor and capability checks pass, and isolated
+installed Atlas module hashes match source. The unchanged local smoke then
+fails because it disables model authoring while expecting a generated proposal.
+CB-181 is reopened with the retained failure and exact build provenance at
+`/private/tmp/odylith-installed-checkpoint.tefox7/install-result.json`.
+Resolve this proof-owner mismatch without weakening the required positive
+installed propose/confirm journey, adding an author fallback, or relabeling
+synthetic/no-model evidence as semantic release acceptance. This is packaging
+and diagnosis progress only; installed creation, recovery, host parity and
+semantic qualification remain open. Keep 60/90/120 and the holdout gate fixed.
+
+Selected correction: installation smoke owns the disabled-author refusal and
+no-write boundary; the mandatory same-distribution installed matrix owns the
+positive show/propose/confirm journey and all transferred anti-host-repair
+output checks. Browser, readback and crash/retry gates remain required. No new
+model fallback, semantic mechanism or generic proof framework is authorized.
+Test the two owners independently before running the fresh deterministic install;
+a passing install is not a Greenfield quality or consumer-latency claim.
+
+The correction passes 148 focused controls and all 1075 install tests. A second
+fresh install of the same frozen distribution passes installation in 28.872
+seconds, then audited author-unavailable refusal in 1.074 seconds with zero write
+or subprocess attempts, unchanged governed records and no staged transaction.
+The positive matrix retains every unique prior completion/output/artifact check;
+the obsolete smoke owner and receipt-dropping wrapper are deleted. Harness code
+is net eight lines smaller. CB-181 is FixedPendingRelease for this bounded fix,
+not Greenfield acceptance. No runtime, model profile, source semantics, deadline
+or dashboard-header change occurred. The release topology was reviewed and its
+installed-matrix-before-publication boundary remains unchanged.
+
 ### Atlas reading and semantic authority boundary (2026-09-07)
 
 Keep the full-diagram overview and make native-size reading an explicit Atlas

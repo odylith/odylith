@@ -6,6 +6,7 @@ Last updated (UTC): 2026-09-07
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-330 | 2026-09-07 | Fresh installed empty governance surfaces imply records or delivery evidence tha | P2 | dashboard | Open | [2026-09-07-fresh-installed-empty-governance-surfaces-imply-records-or-delivery-evidence-tha.md](2026-09-07-fresh-installed-empty-governance-surfaces-imply-records-or-delivery-evidence-tha.md) |
 | CB-328 | 2026-09-03 | Protected greenfield holdout targets a superseded evaluator contract | P1 | domain-intelligence-greenfield | FixedPendingRelease | [2026-09-03-protected-greenfield-holdout-targets-a-superseded-evaluator-contract.md](2026-09-03-protected-greenfield-holdout-targets-a-superseded-evaluator-contract.md) |
 | CB-329 | 2026-09-03 | Greenfield release proof diverges from product semantic owners | P1 | domain-intelligence-greenfield | Open | [2026-09-03-greenfield-release-proof-diverges-from-product-semantic-owners.md](2026-09-03-greenfield-release-proof-diverges-from-product-semantic-owners.md) |
 | CB-327 | 2026-09-03 | Greenfield rejects a product title that aliases its internal system | P1 | domain-intelligence | FixedPendingRelease | [2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md](2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md) |

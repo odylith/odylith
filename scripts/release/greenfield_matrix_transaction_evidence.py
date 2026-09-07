@@ -29,6 +29,13 @@ POST_CONFIRM_NAVIGATION = {
     "atlas": "odylith/index.html?tab=atlas",
     "compass": "odylith/index.html?tab=compass&date=live",
 }
+_HOST_REPAIR_OUTPUT_TOKENS = (
+    '"reasoning_contract"', '"host_instruction"', "active-proposal.v1.json",
+    "must be non-empty", "greenfield proposal validation failed",
+    "greenfield proposal Tribunal failed", "host-side schema repair",
+)
+
+
 @dataclass(frozen=True)
 class CompiledCreateExecution:
     """The commit result and immutable transaction facts captured before that commit."""
@@ -38,6 +45,7 @@ class CompiledCreateExecution:
     create_seconds: float
     dry_run_receipt: Mapping[str, Any]
     proposal_payload: Mapping[str, Any]
+    output_contract_issues: tuple[str, ...] = ()
 
 
 def commit_precompiled_transaction(
@@ -54,6 +62,16 @@ def commit_precompiled_transaction(
     except (TypeError, ValueError):
         proposal_returncode = 1
     proposed_payload = _json_mapping(getattr(proposed, "stdout", ""))
+    output_issues = _positive_journey_output_issues(proposed, stage="propose", repo_root=repo_root)
+    if output_issues:
+        return CompiledCreateExecution(
+            create=_error_result("; ".join(output_issues)),
+            proposal_seconds=proposal_seconds,
+            create_seconds=0.0,
+            dry_run_receipt=_receipt(status="proposal_contract_failed"),
+            proposal_payload=proposed_payload,
+            output_contract_issues=output_issues,
+        )
     if proposal_returncode != 0:
         return CompiledCreateExecution(
             create=proposed,
@@ -126,7 +144,33 @@ def commit_precompiled_transaction(
         create_seconds=round(time.perf_counter() - started, 3),
         dry_run_receipt=receipt,
         proposal_payload=proposed_payload,
+        output_contract_issues=_positive_journey_output_issues(create, stage="create", repo_root=repo_root),
     )
+
+
+def _positive_journey_output_issues(result: Any, *, stage: str, repo_root: Path) -> tuple[str, ...]:
+    if getattr(result, "returncode", 1) != 0:
+        return ()
+    output = "\n".join(str(getattr(result, stream, "") or "") for stream in ("stdout", "stderr"))
+    issues = [
+        f"greenfield {stage} exposed a host-side repair contract: {token}"
+        for token in _HOST_REPAIR_OUTPUT_TOKENS if token in output
+    ]
+    if stage == "create":
+        payload = _json_mapping(getattr(result, "stdout", ""))
+        if payload.get("mode") != "applied":
+            issues.append("greenfield create did not return applied mode")
+        for field in ("validation_gate", "dashboard_refresh"):
+            if field not in payload:
+                issues.append(f"greenfield create omitted {field}")
+        for relative in (
+            "odylith/runtime/source/accepted-project.v1.json",
+            "odylith/runtime/delivery_intelligence.v4.json",
+            "odylith/radar/traceability-graph.v1.json",
+        ):
+            if not (repo_root / relative).is_file():
+                issues.append(f"greenfield create did not write {relative}")
+    return tuple(issues)
 
 
 def confirmation_preview_issues(*, proposal_payload: Mapping[str, Any]) -> tuple[str, ...]:

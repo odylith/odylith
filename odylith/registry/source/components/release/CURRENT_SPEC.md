@@ -452,14 +452,19 @@ governed subsystem.
 - Local release smoke should prove the installer from a nested repo directory
   as well as the repo root so the zero-friction repo-root detection contract
   does not silently regress.
-- Local release smoke must also exercise both fresh greenfield journeys:
-  install into an empty repo, run `odylith show`, run
-  `odylith greenfield propose --format json`, apply that exact proposal file
-  with confirmation, require a passed Tribunal and first coding handoff, assert
-  Radar/Registry/Atlas/Compass surfaces exist, and reject host-side schema
-  repair loop strings. A second fresh repo must run confirmed
-  `odylith greenfield create` so the one-command shortcut cannot drift from the
-  explicit propose/apply path.
+- Local release smoke owns deterministic installation and unavailable-author
+  boundary proof: install into an empty repo, run `odylith show`, require public
+  `greenfield propose --format json` to refuse when authoring is disabled, and
+  verify no governed-byte changes or sealed transaction. A passing standalone
+  smoke is not positive Greenfield qualification.
+- The mandatory same-distribution installed matrix owns the positive journey:
+  `show`, public `greenfield propose --format json`, then hash-bound
+  `greenfield create --confirm` of the exact sealed transaction. Successful
+  proposal and creation output must reject host-side schema repair loops,
+  internal host instructions, reasoning contracts and active-proposal paths.
+  Exact readback, first coding handoff, generated-surface browser checks and
+  installed recovery remain release gates; no title-only create shortcut or
+  hidden model fallback substitutes for this journey.
 - The shared Greenfield release proof lane must run an installed, immutable
   candidate after local release smoke and retain its matrix payload outside any
   disposable generated repository. Every commit-capable request inside the
@@ -487,7 +492,7 @@ governed subsystem.
   Browser proof must exercise Project, Radar, Registry, Atlas, Compass,
   Casebook, and the tooling shell across normal, empty/fallback, and
   degraded/invalid-recovery states at desktop and 430px mobile widths. The
-  fixed matrix contains 28 required cells and rejects missing cells, document
+  fixed matrix contains 32 required cells and rejects missing cells, document
   or pane overflow, clipped/hidden text, stale payload binding, malformed
   content, and any rendered typed fact whose count, order, or value differs
   from the same generated repository's authored facts.

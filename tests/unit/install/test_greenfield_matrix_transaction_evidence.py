@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     product_facts_payload,
 )
 from tests.greenfield_matrix_campaign_test_support import SCRIPTS_ROOT
+from tests.greenfield_matrix_campaign_test_support import load_module
 
 
 if str(SCRIPTS_ROOT) not in sys.path:
@@ -32,6 +33,118 @@ HASH = "a" * 64
 PRODUCT_FACTS_SHA256 = "c" * 64
 ATOMIC_CUSTODY_SHA256 = "d" * 64
 TRANSACTION_FILE = f".odylith/runtime/greenfield/pending/{HASH}/product-create-transaction.v1.json"
+
+
+@pytest.mark.parametrize("show_result", ["passed", "failed", "missing_marker"])
+def test_installed_matrix_preserves_show_propose_sealed_confirm_journey(
+    tmp_path: Path, monkeypatch, show_result: str,
+) -> None:
+    module = load_module(SCRIPTS_ROOT / "greenfield_preconfirm_matrix.py", "matrix_installed_journey_test")
+    _path, transaction_hash = _write_transaction(tmp_path)
+    calls = []
+
+    def invoke(**kwargs):
+        command = kwargs["command"]
+        calls.append(command)
+        if "show" in command:
+            return SimpleNamespace(
+                returncode=1 if show_result == "failed" else 0,
+                stdout="missing" if show_result == "missing_marker" else "Odylith read this repo",
+                stderr="",
+            )
+        if "propose" in command:
+            return _proposal(transaction_hash)
+        assert "create" in command and "--confirm" in command
+        return _successful_create_output(tmp_path)
+
+    monkeypatch.setattr(module, "_run", invoke)
+    profile = module.get_greenfield_model_profile(module.model_profile_id_for_repair_tier("auto"))
+    raw = {}
+    if show_result == "passed":
+        execution = module._run_compiled_greenfield_create_with_receipt(
+            repo_root=tmp_path, env={"ODYLITH_GREENFIELD_MODEL_PROFILE": profile.profile_id},
+            prompt="A dispatcher records a dispatch and sees its receipt.", raw_streams=raw,
+        )
+        assert ["show" if "show" in command else command[2] for command in calls] == ["show", "propose", "create"]
+        assert execution.dry_run_receipt["transaction_hash"] == transaction_hash
+        assert not execution.output_contract_issues
+    else:
+        with pytest.raises(RuntimeError, match="capability show"):
+            module._run_compiled_greenfield_create_with_receipt(
+                repo_root=tmp_path, env={"ODYLITH_GREENFIELD_MODEL_PROFILE": profile.profile_id},
+                prompt="A dispatcher records a dispatch and sees its receipt.", raw_streams=raw,
+            )
+        assert len(calls) == 1
+    assert "show.stdout" in raw and "show.stderr" in raw
+
+
+@pytest.mark.parametrize("stage", ["propose", "create"])
+@pytest.mark.parametrize("stream", ["stdout", "stderr"])
+@pytest.mark.parametrize("token", [
+    '"reasoning_contract"', '"host_instruction"', "active-proposal.v1.json",
+    "must be non-empty", "greenfield proposal validation failed",
+    "greenfield proposal Tribunal failed", "host-side schema repair",
+])
+def test_installed_positive_journey_rejects_successful_host_repair_output(
+    tmp_path: Path, stage: str, stream: str, token: str,
+) -> None:
+    _path, transaction_hash = _write_transaction(tmp_path)
+    proposed = _proposal(transaction_hash)
+    created = SimpleNamespace(returncode=0, stdout="{}", stderr="")
+    target = proposed if stage == "propose" else created
+    if stream == "stdout":
+        payload = json.loads(target.stdout)
+        payload["leaked_contract"] = json.loads(token) if token.startswith('"') else token
+        target.stdout = json.dumps(payload)
+    else:
+        target.stderr = token
+    calls = []
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path, proposed=proposed, proposal_seconds=1,
+        invoke_create=lambda command: calls.append(command) or created,
+    )
+    assert any(token in issue for issue in execution.output_contract_issues)
+    assert bool(calls) == (stage == "create")
+    if stage == "create":
+        assert execution.create is created, "Retain the actual output instead of replacing failure evidence"
+
+
+@pytest.mark.parametrize("missing", [
+    "", "mode", "validation_gate", "dashboard_refresh",
+    "odylith/runtime/source/accepted-project.v1.json",
+    "odylith/runtime/delivery_intelligence.v4.json",
+    "odylith/radar/traceability-graph.v1.json",
+])
+def test_positive_matrix_keeps_original_confirmed_smoke_artifact_guards(tmp_path: Path, missing: str) -> None:
+    _path, transaction_hash = _write_transaction(tmp_path)
+    created = _successful_create_output(tmp_path)
+    if missing.startswith("odylith/"):
+        (tmp_path / missing).unlink()
+    elif missing:
+        payload = json.loads(created.stdout)
+        payload.pop(missing)
+        created.stdout = json.dumps(payload)
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path, proposed=_proposal(transaction_hash), proposal_seconds=1,
+        invoke_create=lambda _command: created,
+    )
+    assert bool(execution.output_contract_issues) == bool(missing)
+    if missing:
+        assert any(missing in issue for issue in execution.output_contract_issues)
+
+
+def _successful_create_output(repo_root: Path) -> SimpleNamespace:
+    for relative in (
+        "odylith/runtime/source/accepted-project.v1.json",
+        "odylith/runtime/delivery_intelligence.v4.json",
+        "odylith/radar/traceability-graph.v1.json",
+    ):
+        path = repo_root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("{}\n", encoding="utf-8")
+    return SimpleNamespace(returncode=0, stderr="", stdout=json.dumps({
+        "mode": "applied", "validation_gate": {"passed": True}, "dashboard_refresh": {"status": "passed"},
+    }))
 
 
 def test_commit_precompiled_transaction_validates_receipt_before_invoking_create(tmp_path: Path) -> None:

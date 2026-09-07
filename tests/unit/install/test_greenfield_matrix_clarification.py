@@ -8,6 +8,8 @@ from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 
 SCRIPTS_ROOT = Path(__file__).resolve().parents[3] / "scripts" / "release"
 if str(SCRIPTS_ROOT) not in sys.path:
@@ -293,9 +295,11 @@ def test_typed_clarification_rejects_a_missing_frozen_field_oracle() -> None:
     assert "clarification release case lacks frozen expected material fields" in issues
 
 
+@pytest.mark.parametrize("output_issues", [(), ("successful output exposed a host-side repair contract",)])
 def test_success_case_passes_closed_retained_stage_observation_to_profile_evidence(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001
+    output_issues: tuple[str, ...],
 ) -> None:
     module = _matrix_module()
     repo_root = tmp_path / "repo"
@@ -316,6 +320,7 @@ def test_success_case_passes_closed_retained_stage_observation_to_profile_eviden
         create_seconds=0.1,
         dry_run_receipt={},
         proposal_payload={},
+        output_contract_issues=output_issues,
     )
     captured: dict[str, object] = {}
 
@@ -342,7 +347,9 @@ def test_success_case_passes_closed_retained_stage_observation_to_profile_eviden
     monkeypatch.setattr(module, "dry_run_commit_issues", lambda **_kwargs: ())
     monkeypatch.setattr(module, "confirmation_preview_issues", lambda **_kwargs: ())
     monkeypatch.setattr(module, "post_confirm_navigation_issues", lambda **_kwargs: ())
-    monkeypatch.setattr(module, "build_quality_verdict", lambda **_kwargs: _passing_quality(module))
+    monkeypatch.setattr(module, "build_quality_verdict", lambda **kwargs: captured.update(
+        quality_external_issues=kwargs["external_issues"],
+    ) or _passing_quality(module))
     monkeypatch.setattr(module, "_case_evidence_manifest", lambda **_kwargs: {})
     monkeypatch.setattr(module, "_record_retained_execution", lambda **_kwargs: None)
     monkeypatch.setattr(module, "commit_manifest_summary", lambda _manifest: {})
@@ -366,6 +373,7 @@ def test_success_case_passes_closed_retained_stage_observation_to_profile_eviden
     assert result.status == "passed"
     assert captured["profile"] == STANDARD_PROFILE_ID
     assert captured["stage_observation"] == stage
+    assert set(output_issues) <= set(captured["quality_external_issues"])
 
 
 def test_clarification_case_passes_one_call_stage_observation_to_profile_evidence(

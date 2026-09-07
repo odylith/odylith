@@ -1,4 +1,4 @@
-"""Exercise a local hosted-release install flow against a temporary repo."""
+"""Prove deterministic installation and unavailable-author safety, not Greenfield success."""
 
 from __future__ import annotations
 
@@ -19,6 +19,10 @@ from urllib import error as urllib_error
 
 from odylith.install.release_assets import fetch_release
 from odylith.install.state import AUTHORITATIVE_RELEASE_REPO
+from greenfield_matrix_clarification import run_expected_clarification
+from greenfield_matrix_write_audit import begin_installed_write_audit
+from greenfield_model_profile_proof import unavailable_provider_proof_issues
+from greenfield_process import run_command_with_group_timeout
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 _TEMP_ROOT_CLEANUP_RETRY_COUNT = 5
@@ -198,12 +202,6 @@ def _require_output_contains(*, output: str, expected: str, label: str) -> None:
         raise RuntimeError(f"{label} missing expected text: {expected!r}")
 
 
-_GREENFIELD_SCHEMA_LOOP_TOKENS = (
-    "must be non-empty",
-    "greenfield proposal validation failed",
-    "greenfield proposal Tribunal failed",
-    "host-side schema repair",
-)
 _GREENFIELD_GUIDANCE_FILES = (
     "AGENTS.md",
     "odylith/AGENTS.md",
@@ -303,12 +301,6 @@ _FORBIDDEN_CONSUMER_MAINTAINER_TREE_TOKENS = (
     "New branches must use",
     "<year>/freedom/<tag>",
 )
-
-
-def _require_no_greenfield_schema_loop(*, output: str, label: str) -> None:
-    for token in _GREENFIELD_SCHEMA_LOOP_TOKENS:
-        if token in output:
-            raise RuntimeError(f"{label} exposed a schema repair loop: {token}")
 
 
 def _require_greenfield_surfaces(*, repo_root: Path, label: str) -> None:
@@ -513,87 +505,51 @@ def _install_and_smoke(*, repo_root: Path, install_script: Path, env: dict[str, 
     doctor = _run(cwd=repo_root, env=env, command=[str(odylith), "doctor", "--repo-root", "."]).stdout
     _require_output_contains(output=doctor, expected="Context engine mode: full_local_memory", label="odylith doctor")
     _require_output_contains(output=doctor, expected="Context engine pack: installed", label="odylith doctor")
-    _greenfield_propose_apply_smoke(repo_root=repo_root, odylith=odylith, env=env)
+    _greenfield_unavailable_author_smoke(repo_root=repo_root, odylith=odylith, env=env)
     _run(cwd=repo_root, env=env, command=[str(odylith), "sync", "--repo-root", ".", "--force"])
+    _require_greenfield_surfaces(repo_root=repo_root, label="fresh install baseline")
 
 
-def _greenfield_propose_apply_smoke(*, repo_root: Path, odylith: Path, env: dict[str, str]) -> None:
+def _greenfield_unavailable_author_smoke(*, repo_root: Path, odylith: Path, env: dict[str, str]) -> None:
     show = _run(cwd=repo_root, env=env, command=[str(odylith), "show", "--repo-root", "."]).stdout
     _require_output_contains(output=show, expected="Odylith read this repo", label="odylith show")
-    proposal = _run(
-        cwd=repo_root,
-        env=env,
-        command=[
-            str(odylith),
-            "greenfield",
-            "propose",
-            "--repo-root",
-            ".",
-            "--prompt",
-            "warehouse dispatch planning app",
-            "--format",
-            "json",
-        ],
-    ).stdout
-    _require_output_contains(
-        output=proposal,
-        expected='"mode": "product_create_transaction"',
-        label="greenfield propose json",
+    audit = begin_installed_write_audit(repo_root=repo_root)
+    try:
+        execution = run_expected_clarification(
+            repo_root=repo_root,
+            parse_payload=json.loads,
+            invoke=lambda: run_command_with_group_timeout(
+                cwd=repo_root,
+                env={**env, **audit.environment()},
+                command=audit.command(
+                    runtime_python=repo_root / ".odylith/runtime/current/bin/python",
+                    arguments=("greenfield", "propose", "--repo-root", ".", "--prompt",
+                               "warehouse dispatch planning app", "--format", "json"),
+                ),
+                timeout=90,
+                pass_fds=audit.pass_fds,
+            ),
+        )
+    finally:
+        observed = audit.finish()
+    payload = execution.payload
+    if not isinstance(payload, dict) or payload.get("mode") != "error" or set(payload) != {"mode", "error"}:
+        raise RuntimeError("unavailable-author smoke did not return the bounded refusal payload")
+    issues = unavailable_provider_proof_issues(
+        returncode=execution.returncode,
+        proposal_seconds=execution.seconds,
+        detail=str(payload["error"]),
+        write_audit_active=observed.active,
+        write_audit_error=observed.error,
+        write_attempts=observed.write_attempts,
+        subprocess_attempts=observed.subprocess_attempts,
+        changed_records=execution.changed_records,
+        staged_transaction_present=execution.staged_transaction_present,
     )
-    if any(token in proposal for token in ('"reasoning_contract"', '"host_instruction"', "active-proposal.v1.json")):
-        raise RuntimeError("greenfield propose path still exposes host-side schema-repair contract")
-    _require_no_greenfield_schema_loop(output=proposal, label="greenfield propose json")
-    _require_output_contains(
-        output=proposal,
-        expected='"mode": "product_create_transaction"',
-        label="greenfield propose json",
-    )
-    _require_output_contains(
-        output=proposal,
-        expected='"transaction_hash"',
-        label="greenfield propose json",
-    )
-    _require_output_contains(
-        output=proposal,
-        expected='"transaction_file"',
-        label="greenfield propose json",
-    )
-    transaction_payload = json.loads(proposal)
-    transaction_hash = str(transaction_payload["product_create_transaction"]["transaction_hash"]).strip()
-    if not transaction_hash:
-        raise RuntimeError("greenfield propose json omitted product_create_transaction.transaction_hash")
-    transaction_file = str(transaction_payload.get("transaction_file") or "").strip()
-    if not transaction_file:
-        raise RuntimeError("greenfield propose json omitted transaction_file")
-    create = _run(
-        cwd=repo_root,
-        env=env,
-        command=[
-            str(odylith),
-            "greenfield",
-            "create",
-            "--repo-root",
-            ".",
-            "--transaction-file",
-            transaction_file,
-            "--transaction-hash",
-            transaction_hash,
-            "--confirm",
-            "--json",
-        ],
-    ).stdout
-    _require_output_contains(output=create, expected='"mode": "applied"', label="greenfield create json")
-    _require_output_contains(output=create, expected='"validation_gate"', label="greenfield create json")
-    _require_output_contains(output=create, expected='"dashboard_refresh"', label="greenfield create json")
-    _require_no_greenfield_schema_loop(output=create, label="greenfield create json")
-    _require_greenfield_surfaces(repo_root=repo_root, label="greenfield create smoke")
-    for relative_path in (
-        "odylith/runtime/source/accepted-project.v1.json",
-        "odylith/runtime/delivery_intelligence.v4.json",
-        "odylith/radar/traceability-graph.v1.json",
-    ):
-        if not (repo_root / relative_path).is_file():
-            raise RuntimeError(f"greenfield create smoke did not write {relative_path}")
+    if issues:
+        raise RuntimeError("unavailable-author smoke failed: " + "; ".join(issues))
+
+
 def _install_previous_release(*, repo_root: Path, install_script: Path, previous_version: str) -> None:
     hosted_previous_env = _force_deterministic_reasoning_env(dict(os.environ))
     hosted_previous_env["ODYLITH_VERSION"] = previous_version
@@ -728,7 +684,10 @@ def _stale_uninstall_residue_cycle(
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run local Odylith release smoke tests against generated assets.")
+    parser = argparse.ArgumentParser(description=(
+        "Prove installation, upgrade and unavailable-author no-write behavior. "
+        "This does not qualify a successful Greenfield request; the required installed matrix owns that proof."
+    ))
     parser.add_argument("--version", required=True, help="Release version, for example 0.1.0.")
     parser.add_argument("--dist-dir", default="dist", help="Directory containing generated release assets.")
     parser.add_argument(
@@ -756,8 +715,7 @@ def main(argv: list[str] | None = None) -> int:
         local_env = _local_release_env(base_url=base_url, version=args.version)
         fresh_repo = _repo_root(temp_root, "fresh-install")
         _install_and_smoke(repo_root=fresh_repo, install_script=install_script, env=local_env)
-        # Prompt-only create is intentionally disabled; the install smoke covers
-        # the no-write intent and proposal-contract path.
+        # Positive show/propose/CONFIRM and readback belong to the required installed matrix.
 
         previous_versions = tuple(str(version).strip() for version in args.previous_version if str(version).strip())
         if not previous_versions:
