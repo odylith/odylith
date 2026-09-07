@@ -12,6 +12,35 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ### Source-first ownership comparison (2026-09-07)
 
+Allocation result: zero accepted joins from two related requests, four actual
+calls and no retry. Both authors return within 35 seconds; complete model-stage
+attempts end in 33.235 and 48.902 seconds inside 55. Independent review diagnoses
+one duplicate result-location binding failure and one over-blocking source
+verdict about visibly proposed problem copy. No source outcome reversal is
+established. The second design supplies useful 5/4 depth with P2 walkthrough
+precision, not complete-package qualification. All 118 frozen hashes match.
+Do not promote the allocation or launch another cap/profile sweep. Characterize
+one canonical result reference and separation of source admission from proposed
+decision quality next; neither hypothesis is an adopted refactor. Production
+v51, consumer 60/90/120 and all release obligations remain unchanged.
+Evidence: `/private/tmp/odylith-source-allocation-comparison.y8GFVV/review.md`.
+
+Bounded allocation decision: keep source-first ownership provisional and compare
+one 35/20/20 role allocation inside the unchanged 55-second model window. Repeated
+30-second author cutoffs establish availability risk, not a diagnosed semantic
+schema failure. The failed equivalent-source probe already ran outside the repo;
+repository instructions do not explain that timeout. No context-isolation patch,
+schema compaction, new parser, profile sweep or broad rewrite is justified here.
+This supersedes only the earlier requirement to change the semantic mechanism
+before any new experiment, not its failed gate or prohibition on retrying that
+frozen run. Two fixed original/equivalent development requests run once each,
+with unchanged prompts, models and schemas; retain every outcome. Both joins must
+pass independent source/design review within 55 seconds or the allocation is not
+promoted. This is not a paired speed study, complete-package gate or release floor.
+No production profile changes. Consumer 60/90/120, full package depth and all
+remaining release obligations stay fixed. Contract:
+`/private/tmp/odylith-source-allocation-comparison.y8GFVV/acceptance.md`.
+
 Current decision: the successor pipeline does not clear its equivalent-source
 model-stage gate. One actual source-only Terra/low call times out at an effective
 29.898 seconds; role time is 29.922 seconds and adapter time 29.924 seconds,
