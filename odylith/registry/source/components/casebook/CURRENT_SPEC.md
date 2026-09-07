@@ -140,6 +140,13 @@ one-off operator step.
 This ensures the index remains a projection of the bug archive instead of a
 separate editable ledger that could drift.
 
+When a selective sync includes changed Casebook truth, index normalization and
+validation must finish before any selected surface reads bug projections,
+including Compass. Invalid Casebook source must stop that refresh before a
+surface publishes a new readout. Runtime reuse must not combine an older status
+with newly parsed detail. CB-019 tracks the observed violation and its bounded
+regression proof; a forced refresh is recovery, not recurrence prevention.
+
 ## Render Pipeline
 `render_casebook_dashboard.py` consumes the bug snapshot from Context Engine and
 builds:

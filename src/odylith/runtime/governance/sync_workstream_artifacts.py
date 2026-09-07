@@ -519,7 +519,9 @@ def _build_truth_only_selective_sync_plan(
                 next_command_on_failure=sync_failure_command,
             )
         )
-    for surface in refresh_surfaces:
+    # Compass and other runtime readers also consume the derived Casebook index.
+    # Settle its owned refresh first, preserving the other surfaces' order.
+    for surface in sorted(refresh_surfaces, key=lambda surface: surface != "casebook"):
         steps.extend(
             _dashboard_surface_steps(
                 repo_root=repo_root,

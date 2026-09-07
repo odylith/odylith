@@ -336,6 +336,9 @@ themselves.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-025, B-142
+  - Evidence: `src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py`, `src/odylith/runtime/governance/sync_workstream_artifacts.py`, `tests/unit/runtime/test_sync_casebook_freshness.py`
 - **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 6 verifiable artifact references.
   - Evidence: `odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_proposals.py`, `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`, plus 2 more
 - **2026-06-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
@@ -350,9 +353,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-141
   - Evidence: `odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md`, `odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md`, `src/odylith/install/runtime.py`, `src/odylith/runtime/intervention_engine/prompt_signal_runtime.py`
-- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-141
-  - Evidence: `odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md`, `odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md`, `tests/integration/runtime/test_governance_sync_performance.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

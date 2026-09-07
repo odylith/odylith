@@ -15,7 +15,7 @@
   the B-110 workstream anchor when measuring the v0.1.11 Odylith Discipline program,
   so Context/Execution adoption metrics can distinguish real ambiguity from a
   missing program tag.
-Last updated: 2026-08-01
+Last updated: 2026-09-07
 
 
 ## Purpose
@@ -586,6 +586,9 @@ evidence is missing or drifting.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-025, B-142
+  - Evidence: `src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py`, `src/odylith/runtime/governance/sync_workstream_artifacts.py`, `tests/unit/runtime/test_sync_casebook_freshness.py`
 - **2026-08-01 · Implementation:** Implementation evidence linked this component to governed work with 5 verifiable artifact references.
   - Evidence: `odylith/casebook/bugs/2026-08-01-fresh-install-compact-guidance-omitted-greenfield-commit-only-boundary.md`, `odylith/runtime/source/release-notes/v0.1.15.md`, `src/odylith/install/bootstrap_assets.py`, `tests/unit/install/test_manager.py`, plus 1 more
 - **2026-05-06 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
@@ -599,9 +602,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-04-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-110
   - Evidence: `odylith/runtime/source/optimization-evaluation-corpus.v1.json`, `odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md`
-- **2026-04-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
-  - Scope: B-110, B-111, B-112, B-113
-  - Evidence: `odylith/runtime/source/discipline-evaluation-corpus.v1.json`, `odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md`, `src/odylith/runtime/discipline/contract.py`, `src/odylith/runtime/governance/validate_discipline.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

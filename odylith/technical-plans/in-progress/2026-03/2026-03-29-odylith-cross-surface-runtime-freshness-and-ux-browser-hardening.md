@@ -46,6 +46,40 @@ failure note survives, and open-case count rises from 232 to 233. This is
 owned-surface recovery, not a fix for the stale-row recurrence. Preserve the
 failed browser receipt and require a separate final readback after settlement.
 
+Before continuing the broader brief correction, fix the reproduced selective
+Casebook read inconsistency. The actual selected plan/executor and read owners
+fail in both modes: standalone Compass reads Closed then Casebook reads Open;
+auto Compass and Casebook both read Closed after source/index become Open.
+Red evidence: `/private/tmp/odylith-casebook-sync-proof.qQMDuX/red.xml`.
+Keep the correction inside existing scheduling and cache ownership: settle the
+Casebook owned refresh before other selected readers and characterize repo-owned
+path-fingerprint eviction. Do not add status overrides, an alternate renderer,
+provider calls or a new cache framework. The existing 2964-line sync module is
+red-zone debt; this safety-critical status repair permits only the small ordering
+correction, not unrelated growth or a new decomposition campaign.
+
+The ordering correction passes the two reader regressions. Separate red controls
+prove both path-fingerprint variants survive repo-specific eviction incorrectly;
+prefixing their existing cache keys with the owner repo fixes that gap without a
+new cache or status fallback. The focused suite passes 121 tests, including four
+new cases and unchanged sibling-cache reuse. Independent source review approves
+this bounded correction pending broader validation. The 2765-line projection
+search owner takes no net growth; both oversized modules remain structural debt,
+not claimed cleanup. Current evidence does not close the historical-brief defect,
+the complete UX gate, installed qualification or Greenfield's 60/90/120 gates.
+
+Frozen tree `b6d8a731865c2fe19bdf72dea4228b85d626b8b2` then passes
+4000 runtime unit tests (protected final-holdout test excluded), 1084
+install/bundle unit tests and 56 browser state controls with no tree drift.
+Evidence: `/private/tmp/odylith-casebook-sync-proof.qQMDuX/runtime-frozen.xml`
+and `/private/tmp/odylith-cb019-ux-plan.KyjRx0/matrix-review.md`.
+An earlier runtime preflight was stopped when governance was changing; it earns
+no acceptance credit. The first strict check exposes nine stale Atlas review
+fingerprints after derived Registry requirements change. Settle them through
+the canonical Atlas command, then require strict staged-byte validation and
+the final 22-control current-surface readback. Do not reopen the source patch
+or broaden into the separate brief-admission defect during this checkpoint.
+
 Current architecture rule:
 - local code selects, compresses, diffs, validates, and caches
 - the provider only writes the final prose bundle
