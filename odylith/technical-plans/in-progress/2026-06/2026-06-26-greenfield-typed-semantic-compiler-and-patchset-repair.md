@@ -12,6 +12,36 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ### Source-first ownership comparison (2026-09-07)
 
+Boundary result: both actual terminal-reference source controls pass independent
+review in 30.741 and 24.790 seconds, preserving all five coordinator actions,
+four required edges and exact result custody. Retain this candidate for a focused
+replacement in the existing resolver, with downstream characterization; do not
+ship the old-shape comparison adapter or two interpretations. The three-disposition
+reviewer fails two of four frozen predicates (false document-order contradiction
+and positive timeout); retire it without another repair stage or prompt/cap sweep.
+Its two correct hard-block witnesses remain evidence, not overall qualification.
+Do not turn every grammatical but weak practical-need assumption into a universal
+repair blocker. Preserve the frozen experiment's original expectation, while
+keeping goal-defined hard blockers and unresolved P0/P1 release findings distinct
+from advisory copy improvements. Production and all consumer timing/package gates
+remain unchanged. Reports:
+`/private/tmp/odylith-terminal-reference-boundary.b4SSSF/review.md` and
+`/private/tmp/odylith-review-disposition-boundary.l2u3qQ/review.md`.
+
+Boundary comparison, not production integration: one terminal reference inherits
+an eligible selected fact's source custody and resolves its result phrase locally.
+Fifteen no-provider controls pass before two fixed original/equivalent source calls
+at unchanged Terra/low, at most 35 seconds each. Compare reviewer dispositions on
+four frozen controls at unchanged Sol/medium, at most 20 seconds each. Source facts
+and proposed decisions retain separate authority; weak proposed copy remains
+unresolved and cannot join or seal. The affirmative copy control is explicitly
+hand-authored development evidence, not an actual generated package. No new repair
+stage, retry, production schema migration or profile sweep. All observed failures
+remain in their denominators. These component gates do not qualify the combined
+pipeline, 4–5/4–5/5+ useful package depth, consumer 60/90/120 or release. Contracts:
+`/private/tmp/odylith-terminal-reference-boundary.b4SSSF/acceptance.md` and
+`/private/tmp/odylith-review-disposition-boundary.l2u3qQ/acceptance.md`.
+
 Allocation result: zero accepted joins from two related requests, four actual
 calls and no retry. Both authors return within 35 seconds; complete model-stage
 attempts end in 33.235 and 48.902 seconds inside 55. Independent review diagnoses
