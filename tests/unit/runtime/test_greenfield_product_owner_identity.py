@@ -33,7 +33,7 @@ def _evidence(intent: dict[str, object]) -> str:
     )
 
 
-def test_title_alias_canonicalizes_to_its_internal_system_owner(tmp_path) -> None:  # type: ignore[no-untyped-def]
+def test_title_alias_keeps_source_owner_through_structural_design_support(tmp_path) -> None:  # type: ignore[no-untyped-def]
     first_path = (
         "Dock attendant Ivo enters a vessel tag and Harbor Desk shows the placement"
     )
@@ -88,10 +88,27 @@ def test_title_alias_canonicalizes_to_its_internal_system_owner(tmp_path) -> Non
         release_selector="",
         confirmed_intent=candidate,
     )
-    assert proposal["components"][0]["label"] == "Harbor Desk"
-    for workstream in proposal["backlog"]:
-        refs = workstream["authored_workstream_semantics"]
-        assert "/internal_systems/0" in [*refs["fact_refs"], *refs["shared_fact_refs"]]
+    design = semantics["provisional_design"]
+    assert [row["label"] for row in proposal["components"]] == [
+        row["name"] for row in design["components"]
+    ]
+    assert all(
+        row["authority_kind"] == "provisional_design"
+        for row in proposal["components"]
+    )
+    supported_events = [
+        event
+        for row in proposal["components"]
+        for event in row["component_contract"]["supporting_events"]
+    ]
+    assert semantics["first_path_relations"][1] in supported_events
+    assert all(
+        event["actor_fact_quote"] not in {row["name"] for row in design["components"]}
+        for event in supported_events
+    )
+    assert proposal["semantic_model"]["first_path_contract"]["events"][1]["actor"] == (
+        "Harbor Desk"
+    )
 
 
 def test_two_indistinguishable_internal_system_paths_fail_closed() -> None:

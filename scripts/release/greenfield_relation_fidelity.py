@@ -42,6 +42,7 @@ _SEMANTICS_FIELDS = frozenset(
         "first_path_relations",
         "first_path_context_relations",
         "component_responsibility_relations",
+        "provisional_design",
     }
 )
 _EVENT_FIELDS = frozenset(
@@ -210,6 +211,7 @@ def snapshot_relation_evidence(
             events,
             components,
             first_path_context_relations=contexts,
+            provisional_design=semantics.get("provisional_design"),
         )
     except (TypeError, ValueError):
         return _empty_evidence("sealed authored_semantics relation set is malformed")

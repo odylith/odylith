@@ -122,22 +122,18 @@ def test_profile_registry_pins_preselected_standard_rescue_and_deep_requests() -
     standard = get_greenfield_model_profile(STANDARD_PROFILE_ID)
     assert standard.model == "gpt-5.6-terra"
     assert standard.reasoning_effort == "low"
-    assert standard.source_review_model == "gpt-5.6-sol"
-    assert standard.source_review_reasoning_effort == "medium"
     assert standard.lower_capability is True
     rescue = get_greenfield_model_profile(RESCUE_PROFILE_ID)
     assert rescue.model == "gpt-5.6-terra"
     assert rescue.reasoning_effort == "medium"
-    assert rescue.source_review_model == "gpt-5.6-sol"
-    assert rescue.source_review_reasoning_effort == "high"
     assert rescue.lower_capability is True
-    assert rescue.source_review_reserve_seconds == 20.0
-    assert standard.source_review_reserve_seconds == 25.0
     deep = get_greenfield_model_profile(DEEP_PROFILE_ID)
-    assert deep.source_review_reserve_seconds == 20.0
     assert deep.model == "gpt-5.6-sol"
-    assert deep.source_review_model == "gpt-5.6-sol"
-    assert deep.source_review_reasoning_effort == "high"
+    assert deep.reasoning_effort == "high"
+    assert [(profile.model_timeout_seconds, profile.consumer_budget_seconds) for profile in (standard, rescue, deep)] == [
+        (55.0, 60.0), (80.0, 90.0), (105.0, 120.0),
+    ]
+    assert all(not hasattr(profile, "source_review_model") for profile in (standard, rescue, deep))
     assert get_greenfield_model_profile(UNAVAILABLE_PROVIDER_PROFILE).lower_capability is False
     assert UNAVAILABLE_PROVIDER_PROFILE not in supported_greenfield_model_profile_ids()
 
@@ -198,17 +194,12 @@ def test_profile_evidence_requires_sealed_observation_parity() -> None:
     assert evidence["observed"] == observed
     assert evidence["sealed_request_role"] == "initial_authoring"
     assert evidence["lower_capability_scope"] == "initial_authoring"
-    assert evidence["expected_source_review"] == {
-        "provider": "codex-cli",
-        "model": "gpt-5.6-sol",
-        "reasoning_effort": "medium",
-    }
+    assert "expected_source_review" not in evidence
     assert evidence["stage_observation"] == stage_observation
     assert evidence["stage_observation_summary"]["response_kind"] == "authored"
-    assert evidence["stage_observation_summary"]["semantic_model_call_count"] == 2
+    assert evidence["stage_observation_summary"]["semantic_model_call_count"] == 1
     assert set(evidence["stage_observation_summary"]["request_roles"]) == {
         "initial_authoring",
-        "source_review",
     }
     require_greenfield_model_profile_observation(**observed)
 
@@ -252,7 +243,7 @@ def test_profile_evidence_accepts_one_call_clarification_without_review() -> Non
     }
 
 
-def test_profile_evidence_accepts_two_call_review_demoted_clarification() -> None:
+def test_profile_evidence_rejects_obsolete_two_call_review_demoted_clarification() -> None:
     env = model_profile_environment(RESCUE_PROFILE_ID, {})
     observed = _sealed_observation(RESCUE_PROFILE_ID)
     stage = _stage_observation(
@@ -268,12 +259,9 @@ def test_profile_evidence_accepts_two_call_review_demoted_clarification() -> Non
         stage_observation=stage,
     )
 
-    assert evidence["status"] == "passed"
-    assert evidence["stage_observation_summary"]["semantic_model_call_count"] == 2
-    assert set(evidence["stage_observation_summary"]["request_roles"]) == {
-        "initial_authoring",
-        "source_review",
-    }
+    assert evidence["status"] == "failed"
+    assert "complete-author response must record exactly one semantic call" in evidence["issues"]
+    assert "complete-author response must not record an intermediate review path" in evidence["issues"]
 
 
 def test_profile_evidence_fails_closed_without_retained_stage_observation() -> None:
@@ -294,88 +282,48 @@ def test_profile_evidence_fails_closed_without_retained_stage_observation() -> N
     (
         ("version", "retained model authoring observation version is invalid"),
         ("authoring_version", "retained model authoring version is invalid"),
+        ("response_version", "retained model response version is invalid"),
+        ("response_kind", "retained model response kind is invalid"),
         ("bool_count", "retained semantic model call count is invalid"),
-        ("one_authored_call", "authored model response must record exactly two semantic calls"),
+        ("two_calls", "complete-author response must record exactly one semantic call"),
         ("forged_initial_role", "retained initial_authoring request role is invalid"),
         ("forged_initial_model", "observed model does not match pinned Greenfield model profile"),
         ("initial_failure", "retained initial_authoring provider metadata records a failure"),
-        ("initial_cap", "retained initial authoring timeout does not preserve the review reserve"),
+        ("initial_cap", "retained authoring timeout does not match the sealed model window"),
         ("initial_elapsed", "retained initial authoring elapsed time exceeds its timeout"),
-        ("missing_review", "reviewed model response is missing its source review"),
-        ("invalid_initial_candidate", "retained initial candidate is not an authored response"),
-        ("legacy_review_decision", "retained source review decision is invalid"),
-        ("forged_review_role", "retained source_review request role is invalid"),
-        ("forged_review_model", "observed model does not match pinned Greenfield model profile"),
-        ("review_remaining", "retained source review timeout exceeds the remaining shared window"),
-        ("review_elapsed", "retained source review elapsed time exceeds its timeout"),
-        ("total_elapsed", "retained semantic calls exceed the sealed shared model window"),
+        ("missing_initial", "retained initial authoring observation is missing"),
     ),
 )
 def test_stage_observation_rejects_malformed_forged_roles_and_timing(
-    mutation: str,
-    expected_issue: str,
+    mutation: str, expected_issue: str,
 ) -> None:
-    observed = _sealed_observation(RESCUE_PROFILE_ID)
-    stage = _mutated_stage_observation(mutation)
-
     issues = model_stage_observation_issues(
-        RESCUE_PROFILE_ID,
-        observed=observed,
-        stage_observation=stage,
+        RESCUE_PROFILE_ID, observed=_sealed_observation(RESCUE_PROFILE_ID),
+        stage_observation=_mutated_stage_observation(mutation),
     )
-
     assert expected_issue in issues
 
 
-@pytest.mark.parametrize(
-    ("mutation", "expected_issue"),
-    (
-        ("three_calls", "clarification model response must record one or two semantic calls"),
-        ("missing_candidate", "reviewed model response is missing its initial candidate"),
-        ("missing_review", "reviewed model response is missing its source review"),
-        ("forged_review_role", "retained source_review request role is invalid"),
-        ("forged_review_cap", "retained source review timeout exceeds the remaining shared window"),
-        ("legacy_review_decision", "retained source review decision is invalid"),
-        (
-            "mismatched_review_decision",
-            "clarification source review decision does not match the final response",
-        ),
-    ),
-)
-def test_review_demoted_clarification_rejects_missing_or_forged_proof(
-    mutation: str,
-    expected_issue: str,
-) -> None:
-    stage = _stage_observation(
-        RESCUE_PROFILE_ID,
-        response_kind="clarification_required",
-        reviewed=True,
-    )
-    if mutation == "three_calls":
-        stage["semantic_model_call_count"] = 3
-    elif mutation == "missing_candidate":
-        stage.pop("initial_response")
-    elif mutation == "missing_review":
-        stage.pop("source_review")
-    else:
-        review = stage["source_review"]
-        assert isinstance(review, dict)
-        if mutation == "forged_review_role":
-            review["request_role"] = "initial_authoring"
-        elif mutation == "forged_review_cap":
-            review["timeout_seconds"] = 76.0
-        elif mutation == "legacy_review_decision":
-            review["response"] = {"corrections": []}
-        elif mutation == "mismatched_review_decision":
-            review["response"] = {"result": {"corrections": []}}
-
+@pytest.mark.parametrize("response_kind", ["authored", "clarification_required"])
+@pytest.mark.parametrize("field", ["source_review", "initial_response"])
+def test_obsolete_review_metadata_is_rejected_even_with_a_one_call_claim(response_kind, field):
+    stage = _stage_observation(RESCUE_PROFILE_ID, response_kind=response_kind)
+    stage[field] = {}
     issues = model_stage_observation_issues(
-        RESCUE_PROFILE_ID,
-        observed=_sealed_observation(RESCUE_PROFILE_ID),
-        stage_observation=stage,
+        RESCUE_PROFILE_ID, observed=_sealed_observation(RESCUE_PROFILE_ID), stage_observation=stage,
     )
+    assert "complete-author response must not record an intermediate review path" in issues
 
-    assert expected_issue in issues
+
+@pytest.mark.parametrize("response_kind", ["authored", "clarification_required"])
+@pytest.mark.parametrize("count", [0, 2, 3])
+def test_both_outcomes_reject_non_single_call_claims(response_kind, count):
+    stage = _stage_observation(RESCUE_PROFILE_ID, response_kind=response_kind)
+    stage["semantic_model_call_count"] = count
+    issues = model_stage_observation_issues(
+        RESCUE_PROFILE_ID, observed=_sealed_observation(RESCUE_PROFILE_ID), stage_observation=stage,
+    )
+    assert "complete-author response must record exactly one semantic call" in issues
 
 
 def _sealed_observation(
@@ -404,12 +352,7 @@ def _role_observation(
     elapsed_seconds: float,
 ) -> dict[str, object]:
     profile = get_greenfield_model_profile(profile_id)
-    model = profile.model if request_role == "initial_authoring" else profile.source_review_model
-    effort = (
-        profile.reasoning_effort
-        if request_role == "initial_authoring"
-        else profile.source_review_reasoning_effort
-    )
+    model, effort = profile.model, profile.reasoning_effort
     return {
         "profile_id": profile_id,
         "request_role": request_role,
@@ -436,27 +379,6 @@ def _clarification_result() -> dict[str, object]:
     }
 
 
-def _review_observation(
-    profile_id: str,
-    *,
-    response_kind: str = "authored",
-) -> dict[str, object]:
-    observation = _role_observation(
-        profile_id,
-        request_role="source_review",
-        timeout_seconds=10.0,
-        elapsed_seconds=5.0,
-    )
-    observation["response"] = {
-        "result": (
-            {"corrections": []}
-            if response_kind == "authored"
-            else _clarification_result()
-        )
-    }
-    return observation
-
-
 def _stage_observation(
     profile_id: str,
     *,
@@ -471,11 +393,10 @@ def _stage_observation(
         if response_kind == "authored"
         else _clarification_result()
     )
-    has_review = response_kind == "authored" or reviewed
     stage: dict[str, object] = {
         "version": "odylith.greenfield.model-proof-observation.v2",
         "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
-        "semantic_model_call_count": 2 if has_review else 1,
+        "semantic_model_call_count": 2 if reviewed else 1,
         "response": {
             "version": GREENFIELD_INTENT_AUTHORING_VERSION,
             "result": response_result,
@@ -483,74 +404,46 @@ def _stage_observation(
         "initial_authoring": _role_observation(
             profile_id,
             request_role="initial_authoring",
-            timeout_seconds=shared - profile.source_review_reserve_seconds,
+            timeout_seconds=shared,
             elapsed_seconds=10.0,
         ),
     }
-    if has_review:
+    if reviewed:
         stage["initial_response"] = {
             "version": GREENFIELD_INTENT_AUTHORING_VERSION,
             "result": {"status": "authored"},
         }
-        stage["source_review"] = _review_observation(
-            profile_id,
-            response_kind=response_kind,
-        )
+        stage["source_review"] = {"request_role": "source_review", "response": {"result": {"corrections": []}}}
     return stage
 
 
 def _mutated_stage_observation(mutation: str) -> dict[str, object]:
     stage = deepcopy(_stage_observation(RESCUE_PROFILE_ID))
     initial = stage["initial_authoring"]
-    review = stage["source_review"]
-    assert isinstance(initial, dict) and isinstance(review, dict)
-    if mutation == "version":
-        stage["version"] = "old"
-    elif mutation == "authoring_version":
-        stage["authoring_version"] = "old"
+    assert isinstance(initial, dict)
+    if mutation in {"version", "authoring_version"}:
+        stage[mutation] = "old"
+    elif mutation == "response_version":
+        stage["response"]["version"] = "old"
+    elif mutation == "response_kind":
+        stage["response"]["result"]["status"] = "invented"
     elif mutation == "bool_count":
         stage["semantic_model_call_count"] = True
-    elif mutation == "one_authored_call":
-        stage["semantic_model_call_count"] = 1
+    elif mutation == "two_calls":
+        stage["semantic_model_call_count"] = 2
     elif mutation == "forged_initial_role":
         initial["request_role"] = "source_review"
     elif mutation == "forged_initial_model":
         initial["model"] = "gpt-5.6-sol"
-        provider = initial["provider"]
-        assert isinstance(provider, dict)
-        provider["model"] = "gpt-5.6-sol"
+        initial["provider"]["model"] = "gpt-5.6-sol"
     elif mutation == "initial_failure":
-        provider = initial["provider"]
-        assert isinstance(provider, dict)
-        provider["code"] = "provider_timeout"
+        initial["provider"]["code"] = "provider_timeout"
     elif mutation == "initial_cap":
-        initial["timeout_seconds"] = 80.0
+        initial["timeout_seconds"] = 60.0
     elif mutation == "initial_elapsed":
-        initial["elapsed_seconds"] = 61.0
-    elif mutation == "missing_review":
-        stage.pop("source_review")
-    elif mutation == "invalid_initial_candidate":
-        initial_response = stage["initial_response"]
-        assert isinstance(initial_response, dict)
-        initial_response["result"] = _clarification_result()
-    elif mutation == "legacy_review_decision":
-        review["response"] = {"corrections": []}
-    elif mutation == "forged_review_role":
-        review["request_role"] = "initial_authoring"
-    elif mutation == "forged_review_model":
-        review["model"] = "gpt-5.6-terra"
-        provider = review["provider"]
-        assert isinstance(provider, dict)
-        provider["model"] = "gpt-5.6-terra"
-    elif mutation == "review_remaining":
-        initial["elapsed_seconds"] = 75.0
-        review["timeout_seconds"] = 10.0
-    elif mutation == "review_elapsed":
-        review["elapsed_seconds"] = 11.0
-    elif mutation == "total_elapsed":
-        initial["elapsed_seconds"] = 60.0
-        review["timeout_seconds"] = 20.0
-        review["elapsed_seconds"] = 21.0
+        initial["elapsed_seconds"] = 80.001
+    elif mutation == "missing_initial":
+        stage.pop("initial_authoring")
     else:
         raise AssertionError(f"unknown mutation: {mutation}")
     return stage

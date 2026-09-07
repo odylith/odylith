@@ -147,10 +147,11 @@ def _projection_authority(
         return (
             AUTHORED_SEMANTICS_ROOT,
             AUTHORED_SEMANTICS_VERSION,
-            "projected_from_verified_authored_semantics",
+            "source_grounding_and_provisional_design",
             (
-                "Greenfield governance artifacts copy verified authored relations and accepted facts; "
-                "project_intelligence is a derived view and must not reinterpret canonical meaning."
+                "Greenfield artifacts project canonical source facts and separately labeled provisional design. "
+                "A design choice never establishes a source fact, deployment or actor authority; "
+                "project_intelligence is a derived view, not a second meaning owner."
             ),
         )
     return (
@@ -217,16 +218,33 @@ def _bind_rows(value: Any, *, base: Mapping[str, str], artifact_kind: str) -> li
             base,
             artifact_kind=artifact_kind,
             artifact_id=_artifact_identifier(row, fallback=f"{artifact_kind}-{index}"),
+            authority_kind=(
+                _authored_artifact_authority(row, artifact_kind)
+                if base.get("source") == AUTHORED_SEMANTICS_ROOT else ""
+            ),
         )
         result.append(row)
     return result
 
 
-def _binding_for(base: Mapping[str, str], *, artifact_kind: str, artifact_id: str) -> dict[str, str]:
+def _binding_for(
+    base: Mapping[str, str], *, artifact_kind: str, artifact_id: str,
+    authority_kind: str = "",
+) -> dict[str, str]:
     binding = dict(base)
     binding["artifact_kind"] = artifact_kind
     binding["artifact_id"] = clean_text(artifact_id)
+    if authority_kind:
+        binding["authority_kind"] = authority_kind
     return binding
+
+
+def _authored_artifact_authority(row: Mapping[str, Any], artifact_kind: str) -> str:
+    authority = row.get("authority_kind")
+    allowed = {"source_grounded", "provisional_design"} if artifact_kind == "atlas_diagram" else {"provisional_design"}
+    if not isinstance(authority, str) or authority not in allowed:
+        raise ValueError(f"{artifact_kind} is missing its explicit source/design authority")
+    return str(authority)
 
 
 def _release_identifier(value: Any) -> str:
@@ -330,6 +348,14 @@ def _check_binding(
         issues.append(
             f"{owner} project_intelligence_binding.artifact_id must match its stable artifact identifier"
         )
+    if expected_source == AUTHORED_SEMANTICS_ROOT and expected_artifact_kind != "release_plan":
+        try:
+            expected_authority = _authored_artifact_authority(row, expected_artifact_kind)
+        except ValueError as exc:
+            issues.append(str(exc))
+        else:
+            if binding.get("authority_kind") != expected_authority:
+                issues.append(f"{owner} project_intelligence_binding.authority_kind must preserve source/design authority")
 
 
 __all__ = [

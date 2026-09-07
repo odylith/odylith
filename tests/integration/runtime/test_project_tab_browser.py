@@ -307,6 +307,9 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
             const list = node.querySelector(".project-story-records");
             const contract = node.querySelector(".project-story-contract-body");
             const rows = Array.from(node.querySelectorAll(".project-story-contract-card"));
+            const capabilityCard = node.querySelector('[data-semantic-slot="owned_capabilities"]');
+            const capabilityBody = capabilityCard?.querySelector(':scope > .project-story-contract-body');
+            const capabilityHeading = capabilityCard?.querySelector(':scope > h3');
             const bodies = rows.map(
               (row) => String(row.querySelector(".project-story-contract-body")?.innerText || "").trim()
             );
@@ -315,6 +318,10 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
               listFontSize: list ? window.getComputedStyle(list).fontSize : "",
               contractFontSize: contract ? window.getComputedStyle(contract).fontSize : "",
               rowCount: rows.length,
+              capabilityChildCount: capabilityCard?.children.length || 0,
+              capabilityBodyLeft: capabilityBody?.getBoundingClientRect().left || 0,
+              capabilityHeadingRight: capabilityHeading?.getBoundingClientRect().right || 0,
+              capabilityColumns: capabilityCard ? window.getComputedStyle(capabilityCard).gridTemplateColumns.split(' ').length : 0,
               distinctBodyCount: new Set(bodies.map((body) => body.toLocaleLowerCase())).size,
               focusEventCount: node.ownerDocument.querySelectorAll(
                 '[data-authored-fact-list="focus"] [data-authored-fact-item]'
@@ -341,6 +348,9 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
     assert story_layout["listFontSize"] == "14px"
     assert story_layout["contractFontSize"] == "14px"
     assert story_layout["rowCount"] == 5
+    assert story_layout["capabilityChildCount"] == 2
+    if story_layout["capabilityColumns"] == 2:
+        assert story_layout["capabilityBodyLeft"] > story_layout["capabilityHeadingRight"]
     assert story_layout["distinctBodyCount"] == 5
     assert story_layout["focusEventCount"] >= 1
     assert story_layout["firstPathEventCount"] == story_layout["focusEventCount"]

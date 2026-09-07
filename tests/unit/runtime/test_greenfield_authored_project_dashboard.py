@@ -36,6 +36,7 @@ from odylith.runtime.project_intelligence import greenfield
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     StructuredAuthoringProvider,
     authored_response,
+    structural_design_fixture,
 )
 
 
@@ -65,6 +66,7 @@ def _event_span(event: str) -> tuple[int, int]:
 
 
 def _proposal() -> dict[str, object]:
+    """Isolated renderer fixture; not a full-package quality/cardinality proof."""
     first_event = "Registry Custodian QuOrates one Æther packet."
     second_event = "Meridian Engine vitrifies the Æther packet into Ω-Receipt."
     first_start, first_end = _event_span(first_event)
@@ -139,6 +141,7 @@ def _proposal() -> dict[str, object]:
                         "responsibility_source": "terminal_visible_result",
                     },
                 ),
+                provisional_design=structural_design_fixture((1, 2)),
                 first_path_context_relations=(
                     {
                         "context_kind": "state_object",
@@ -193,6 +196,7 @@ def _proposal() -> dict[str, object]:
                 "product_view": "A source-custodied Æther transfer product.",
                 "recommended_first_slice": FIRST_PATH,
                 "evidence_tier": "user_intent",
+                "authority_kind": "provisional_design",
                 "projection_origin": AUTHORED_PROJECTION_ORIGIN,
             }
         ],
@@ -201,6 +205,7 @@ def _proposal() -> dict[str, object]:
                 "component_id": "meridian-engine",
                 "label": "Meridian Engine",
                 "responsibility": "Meridian Engine vitrifies the Æther packet into Ω-Receipt.",
+                "authority_kind": "provisional_design",
                 "projection_origin": AUTHORED_PROJECTION_ORIGIN,
             }
         ],
@@ -286,6 +291,7 @@ def _pronoun_proposal() -> dict[str, object]:
         relations,
         intent["authored_semantics"]["component_responsibility_relations"],
         first_path_context_relations=contexts,
+        provisional_design=intent["authored_semantics"]["provisional_design"],
     )
     proposal["intent"] = intent
     return proposal
@@ -382,10 +388,12 @@ def test_authored_dashboard_bypasses_legacy_projection_and_preserves_exact_facts
         for row in payload["product_story"]["release_contract"]
     }
     assert cards["owned_capabilities"] == (
+        "Proposed capabilities:\n"
         "Meridian Engine: Meridian Engine vitrifies the Æther packet into Ω-Receipt."
     )
     assert cards["product_boundary"] == (
-        "Product-owned systems:\nMeridian Engine\nExternal systems:\nAPIv7 Archive\n"
+        "Proposed logical components (not deployment commitments):\nMeridian Engine\n"
+        "Source-stated systems:\nMeridian Engine\nExternal systems:\nAPIv7 Archive\n"
         "Excluded from the first release:\nBatch Æther migration"
     )
     assert payload["risk_items"] == []
@@ -524,6 +532,7 @@ def test_authored_dashboard_checks_exact_capability_view_value_without_punctuati
         if row["semantic_slot"] == "owned_capabilities"
     )
     assert capability_card["body"] == (
+        "Proposed capabilities:\n"
         "Meridian Engine: Meridian Engine vitrifies the Æther packet into Ω-Receipt."
     )
 
@@ -604,7 +613,7 @@ def test_authored_dashboard_uses_canonical_actor_fact_for_aliased_events(
     )
 
 
-def test_authored_dashboard_projects_title_owned_capability_without_empty_cards(
+def test_authored_dashboard_projects_proposed_capabilities_without_changing_source_actors(
     tmp_path: Path,
 ) -> None:
     first_path = (
@@ -697,8 +706,15 @@ def test_authored_dashboard_projects_title_owned_capability_without_empty_cards(
         for row in payload["product_story"]["release_contract"]
     }
 
-    assert cards["owned_capabilities"] == "Harbor Desk: the placement"
-    assert cards["product_boundary"] == "Product-owned systems:\nHarbor Desk"
+    design = authored["authored_semantics"]["provisional_design"]
+    assert cards["owned_capabilities"] == "\n".join([
+        "Proposed capabilities:",
+        *(f"{row['name']}: {row['responsibility']}" for row in design["components"]),
+    ])
+    assert cards["product_boundary"] == "\n".join([
+        "Proposed logical components (not deployment commitments):",
+        *(row["name"] for row in design["components"]),
+    ])
     assert all(cards.values())
     assert proposal["intent"]["human_actors"] == ["Dock attendant Ivo", "Port observer"]
     assert proposal["project_intelligence"]["operators"] == ["Dock attendant Ivo"]

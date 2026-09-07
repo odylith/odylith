@@ -25,6 +25,96 @@ The package-depth, source-custody and fixed 60/90/120 gates remain unchanged.
 
 ### Required package depth and current blocker (2026-09-05)
 
+Final source-local checkpoint proof (2026-09-07): frozen diff c449520f passed
+1508 Greenfield/Atlas-renderer unit checks in 155.30 seconds and a separate,
+overlapping 35 Project/Atlas-browser and Registry checks in 16.75 seconds.
+The fresh native package passed all 32 existing browser cells plus exact sealed
+and committed Radar prerequisite node/edge readback, Atlas relation parity and
+absence of invented component dependencies. All source/new-file hashes remained
+unchanged. Evidence: `/private/tmp/odylith-v49-checkpoint-proof.1g3mPk/` and
+`/private/tmp/odylith-v49-final-browser.FEteRu/`. Governance refresh passed with
+47 fresh Atlas diagrams and zero stale. This is a development checkpoint, not
+semantic, installed-release or 60/90/120 model-timing qualification. The P1 and
+P2 findings below stay open; no live provider or holdout was used.
+
+Current integration (2026-09-06): v49 is an unqualified source-local candidate,
+not a release win. One pinned author returns cited source facts plus a required,
+separately labeled provisional design. Semantics v14 carries that design in the
+existing relation hash and sealed transaction; candidate sidecars remain diagnostic
+views, not another persisted meaning owner. Profile v11 uses the full 55/80/105
+model windows inside unchanged 60/90/120 consumer deadlines, without review,
+retry or promotion. Required design produces 4–5 workstreams, 4–5 logical
+components and five source/design Atlas views. The obsolete runtime source
+reviewer and 1,139-line source-only backlog projector are removed from the fresh
+path. The orphaned count-driven artifact-depth planner and its five obsolete
+role-selection tests are also removed after confirming no production caller;
+the required design carrier owns this choice now. Git preserves their history.
+
+Continuous experience inspection found a real presenter mismatch: the Project
+structured renderer still substituted source-owned responsibilities for proposed
+components even after its scalar dashboard payload had changed. The canonical
+design now reaches that presenter; proposed capabilities and source-stated
+systems remain distinct, and job cards copy exact distinct deliverables. Atlas
+catalog compilation now preserves the source/design authority sealed in its
+display hash. Browser oracles check visible proposed labels and canonical
+content instead of blessing SVG/card counts. These are code and focused-test
+results, not semantic-author qualification.
+
+Frozen integration at base 8896c6c4 and diff a917c26e passed 1455 Greenfield
+runtime/install tests in 140.77 seconds; a separate overlapping Project-browser
+and Registry run passed 27 tests. The first frozen run remains recorded as
+1423 passed / 30 failed. Its obsolete two-call/source-only fixture expectations
+were migrated while preserving source/custody and negative transaction controls.
+A new Project regression failed before the capability body wrapper fix and
+passed afterward. Evidence: `/private/tmp/odylith-v49-final-integration.xfA6PO/`.
+
+The fresh production-baseline source-rendering proof passed actual compile,
+seal/reload, exact-byte commit and the existing seven-surface 32-cell browser
+matrix, with zero reported issues. Ten separate fresh-page Atlas captures plus
+zoom/pan checks retain each emitted diagram. The earlier bare-source run lacked
+installed baseline assets, repeating a documented V40 diagnostic mistake; do not
+add baseline generation to the transaction. Neither run is installed-release or
+model-quality/timing evidence. Full state maps and human findings are retained
+at `/private/tmp/odylith-v49-baseline-browser.LxmHuk/visual-review.md`.
+
+Human review exposed three concrete projection defects despite those passing
+checks: invented component dependencies from exchange direction, Atlas browser
+truncation of complete responsibility clauses, and canonical workstream
+prerequisites missing from native Radar topology. The first two losing
+interpretations are removed: component projection checks pass 29 tests, and
+the Atlas responsibility/browser checks pass 55 tests with a 58-line production
+deletion. The existing pre-confirm allocation/link owner now preserves exact
+dependency IDs; 21 focused checks include native sealed readback and malformed
+allocation rejection. Rerun integration and browser proof on the new frozen
+tree. Retain Registry category-label, Radar zero-count and initial-fit
+diagram-readability P2s without expanding this wave into a dashboard redesign.
+D-046's outdated flow is corrected: projection and rendering precede sealing,
+while CONFIRM performs journaled publication and exact readback only. D-043 now
+labels the open semantic-role gate explicitly instead of implying it is proved.
+
+Semantic qualification is stopped on a reproduced P1: an exact operator
+invocation assigned to product_story passes the full fixture-backed pre-confirm
+Tribunal and seals a pending 4/4/5 package. No CONFIRM occurred. This is the
+already documented V35/V36 failure class, not a newly discovered vocabulary
+edge. Source-span custody is not entailment, and another prompt sentence does
+not independently enforce that role. Live-model failure frequency is unmeasured.
+The exact fixture/request, standalone reproduction and gate/hash evidence remain
+in `/private/tmp/odylith-v49-semantic-admission-audit.zCv1Ds/`.
+Before further authoring changes, compare bounded alternatives against this
+admission defect and the six retained reviewer regression classes:
+wrong owner, citation prefix collision, recipient/external confusion, unsupported
+opportunity, invocation mistaken for product, and first-path/terminal mismatch.
+Their original examples are retained in the reviewer tests at baseline 8896c6c4;
+synthetic design fixtures prove custody/wiring only, not those semantic outcomes.
+Independent adjudication, clean distribution, host parity and the untouched
+replacement holdout remain mandatory. No provider call, holdout, publication or
+fresh timing/generalization claim occurred in this integration wave. Do not add
+invocation rules, downstream story substitution, another repair cascade, a
+larger deadline or a relaxed quality floor.
+
+The following preview and v48 entries are retained historical evidence, not the
+current candidate's qualification.
+
 Current preview result (2026-09-06): the temporary view now renders the existing
 canonical Problem, Customer, Opportunity and Product View as explicit facts or
 assumptions; source/design bytes and production owners are unchanged. Eleven

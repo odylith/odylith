@@ -33,12 +33,12 @@ from odylith.runtime.domain_intelligence.greenfield_model_direct_evidence_graph 
     MODEL_COMPONENT_SCHEMA,
     MODEL_EVENT_SCHEMA,
     MODEL_TERMINAL_SCHEMA,
-    GreenfieldComponentOwnershipError,
     derive_model_relations,
     model_component_responsibility_rows,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_source_review import (
-    review_semantic_source_claims,
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
+    PROVISIONAL_DESIGN_SCHEMA,
+    validate_provisional_design,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     STANDARD_PROFILE_ID,
@@ -53,9 +53,9 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v48"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v49"
 GREENFIELD_MODEL_PROOF_FD_ENV = "ODYLITH_GREENFIELD_MODEL_PROOF_FD"
-MAX_GREENFIELD_SEMANTIC_CALLS = 2
+MAX_GREENFIELD_SEMANTIC_CALLS = 1
 
 _TEXT_FIELDS = (
     "title",
@@ -151,6 +151,7 @@ class GreenfieldModelAuthoredIntent:
     atomic_claims: tuple[dict[str, Any], ...]
     source_spans: tuple[dict[str, Any], ...]
     source_sha256: str
+    provisional_design: dict[str, Any]
     elapsed_seconds: float
     tier: str
     provider: dict[str, str]
@@ -198,11 +199,7 @@ def author_greenfield_intent(
         timeout_seconds,
         maximum_seconds=profile.model_timeout_seconds,
     )
-    initial_budget_seconds = budget_seconds - profile.source_review_reserve_seconds
-    if initial_budget_seconds < 1.0:
-        raise GreenfieldModelAuthoringError(
-            "Greenfield authoring has no time before its reserved source review; no records were created."
-        )
+    initial_budget_seconds = budget_seconds
     provider_before_call = odylith_reasoning.provider_failure_metadata(provider)
     require_greenfield_model_profile_observation(
         profile_id=profile.profile_id,
@@ -259,10 +256,7 @@ def author_greenfield_intent(
         raise GreenfieldModelAuthoringError(
             "A verified source-cited Greenfield package could not be produced; no records were created."
         )
-    initial_response = response
     initial_elapsed_seconds = elapsed_seconds
-    review_observation: dict[str, Any] = {}
-    validation_error = ""
     call_count = 1
     validation_context = {
         "evidence_text": text,
@@ -275,44 +269,6 @@ def author_greenfield_intent(
             raise GreenfieldModelAuthoringError(
                 "Greenfield authoring exceeded its declared time window; no records were created."
             )
-        try:
-            candidate = _validated_authoring_response(
-                response, elapsed_seconds=elapsed_seconds, **validation_context
-            )
-        except GreenfieldModelAuthoringError as exc:
-            if not isinstance(exc.__cause__, GreenfieldComponentOwnershipError):
-                raise
-            validation_error = str(exc.__cause__)
-        else:
-            if isinstance(candidate, GreenfieldAuthoringClarification):
-                return candidate
-        resolved_citations = _resolved_candidate_citations(
-            response=response,
-            evidence_text=text,
-        )
-        remaining = budget_seconds - max(0.0, clock() - started)
-        if remaining < 1.0:
-            raise GreenfieldModelAuthoringError(
-                "Greenfield source review has no remaining authoring time; no records were created."
-            )
-        call_count = 2
-        try:
-            response = review_semantic_source_claims(
-                response, evidence_text=text, provider=provider,
-                profile_id=profile.profile_id, remaining_seconds=remaining,
-                observation=review_observation,
-                authored_schemas=_AUTHORED_RESULT_SCHEMA["properties"],
-                clarification_schema=_CLARIFICATION_RESULT_SCHEMA,
-                resolved_citations=resolved_citations,
-                validation_error=validation_error,
-            )
-        except GreenfieldAuthoredSemanticsError as exc:
-            raise GreenfieldModelAuthoringError(f"{exc}; no records were created.") from exc
-        elapsed_seconds = max(0.0, clock() - started)
-        if elapsed_seconds > budget_seconds:
-            raise GreenfieldModelAuthoringError(
-                "Greenfield authoring exceeded its declared time window; no records were created."
-            )
         return _validated_authoring_response(
             response, elapsed_seconds=elapsed_seconds,
             semantic_model_call_count=call_count, **validation_context,
@@ -320,8 +276,6 @@ def author_greenfield_intent(
     finally:
         _emit_release_proof_observation(
             evidence_text=text, response=response, call_count=call_count,
-            initial_response=initial_response if call_count == 2 else None,
-            source_review=review_observation,
             initial_authoring={
                 "profile_id": profile.profile_id,
                 "request_role": "initial_authoring",
@@ -350,6 +304,10 @@ def _validated_authoring_response(
     effective_timeout_seconds: float,
     semantic_model_call_count: int = 1,
 ) -> GreenfieldModelAuthoredIntent | GreenfieldAuthoringClarification:
+    if type(semantic_model_call_count) is not int or semantic_model_call_count != 1:
+        raise GreenfieldModelAuthoringError(
+            "Greenfield requires exactly one complete authoring call; no records were created."
+        )
     if set(response) != {"version", "result"}:
         raise GreenfieldModelAuthoringError("Greenfield authoring returned an unsupported response contract; no records were created.")
     if str(response.get("version") or "") != GREENFIELD_INTENT_AUTHORING_VERSION:
@@ -394,6 +352,7 @@ def _validated_authoring_response(
         "assumptions",
         "ambiguities",
         "consistency",
+        "provisional_design",
     }:
         raise GreenfieldModelAuthoringError("Greenfield authoring returned an unsupported authored contract; no records were created.")
     if consistency_status in {"material_ambiguity", "material_contradiction"}:
@@ -443,6 +402,13 @@ def _validated_authoring_response(
     except GreenfieldAuthoredSemanticsError as exc:
         raise GreenfieldModelAuthoringError(f"{exc}; no records were created.") from exc
     tier = authoring_tier(profile_id)
+    try:
+        provisional_design = validate_provisional_design(
+            result.get("provisional_design"),
+            event_orders=[row["order"] for row in derived_relations.first_path_relations],
+        )
+    except ValueError as exc:
+        raise GreenfieldModelAuthoringError(f"{exc}; no records were created.") from exc
     return GreenfieldModelAuthoredIntent(
         intent=intent,
         first_path_relations=derived_relations.first_path_relations,
@@ -455,6 +421,7 @@ def _validated_authoring_response(
         atomic_claims=atomic_claims,
         source_spans=(*source_spans, *consistency_spans),
         source_sha256=hashlib.sha256(evidence_text.encode("utf-8")).hexdigest(),
+        provisional_design=provisional_design,
         elapsed_seconds=elapsed_seconds,
         tier=tier,
         provider={str(key): str(value) for key, value in provider.items()},
@@ -479,8 +446,6 @@ def _validated_clarification(response: Mapping[str, Any]) -> tuple[str, ...]:
 
 def _emit_release_proof_observation(
     *, evidence_text: str, response: Any, call_count: int,
-    initial_response: Mapping[str, Any] | None = None,
-    source_review: Mapping[str, Any] | None = None,
     initial_authoring: Mapping[str, Any] | None = None,
     failure: Mapping[str, Any] | None = None,
 ) -> None:
@@ -511,9 +476,6 @@ def _emit_release_proof_observation(
         payload["response"] = dict(response)
     if initial_authoring is not None:
         payload["initial_authoring"] = dict(initial_authoring)
-    if initial_response is not None and failure is None:
-        payload["initial_response"] = dict(initial_response)
-        payload["source_review"] = dict(source_review or {})
     encoded = (json.dumps(payload, sort_keys=True, ensure_ascii=False) + "\n").encode(
         "utf-8"
     )
@@ -789,58 +751,6 @@ def _exact_occurrence_start(haystack: bytes, needle: bytes, occurrence: Any) -> 
     )
 
 
-def _resolved_candidate_citations(
-    *,
-    response: Mapping[str, Any],
-    evidence_text: str,
-) -> list[dict[str, Any]]:
-    """Expose literal candidate bindings to review without granting authority."""
-
-    result = response.get("result")
-    if not isinstance(result, Mapping):
-        raise GreenfieldModelAuthoringError(
-            "Greenfield authoring returned invalid source citations; no records were created."
-        )
-    source = evidence_text.encode("utf-8")
-    rows: list[dict[str, Any]] = []
-
-    def visit(value: Any, path: str) -> None:
-        if isinstance(value, Mapping):
-            keys = set(value)
-            citation_keys = None
-            if keys == {"quote", "occurrence"}:
-                citation_keys = ("quote", "occurrence")
-            elif keys == {"result_quote", "result_occurrence"}:
-                citation_keys = ("result_quote", "result_occurrence")
-            if citation_keys is not None:
-                quote = _exact_quote(value.get(citation_keys[0]))
-                occurrence = value.get(citation_keys[1])
-                quote_bytes = quote.encode("utf-8")
-                start = _exact_occurrence_start(source, quote_bytes, occurrence)
-                end = start + len(quote_bytes)
-                rows.append(
-                    {
-                        "path": path,
-                        "quote": quote,
-                        "occurrence": occurrence,
-                        "source_start_byte": start,
-                        "source_end_byte": end,
-                        "before": source[:start].decode("utf-8")[-64:],
-                        "after": source[end:].decode("utf-8")[:64],
-                    }
-                )
-                return
-            for key, child in value.items():
-                escaped = str(key).replace("~", "~0").replace("/", "~1")
-                visit(child, f"{path}/{escaped}")
-        elif isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-            for index, child in enumerate(value):
-                visit(child, f"{path}/{index}")
-
-    visit(result, "")
-    return rows
-
-
 def _advisory_rows(value: Any) -> list[str]:
     if (
         not isinstance(value, Sequence)
@@ -901,6 +811,24 @@ proven benefits. The Assumption label is added by the renderer. Give the decisio
 itself, not commentary about what the source omitted or how you extracted it.
 General assumptions disclose only additional consequential product choices. Preserve
 uncertain facts as uncertain; invent no dependencies, metrics, safety or authority.
+
+PROVISIONAL DESIGN
+In provisional_design, propose 4–5 distinct logical components, 4–5 actionable
+workstreams and meaningful internal information exchanges. This section is design
+for review, never source fact, deployed architecture or guaranteed behavior.
+Logical components may share one implementation and deployment; do not pad with
+generic infrastructure, duplicated responsibilities or repetitions of the story.
+Give each component its own responsibility and observable boundary verification.
+supported_event_orders are one-based indexes into your source events. They identify
+actions the capability supports; they never transfer the original actor's work to
+the component. Support every source event and assign every component to work.
+Give each workstream a concrete deliverable, useful acceptance, component references
+and only necessary prerequisite workstream keys. Prerequisites must be acyclic.
+Exchanges name internal component keys and the specific information or contract
+crossing that proposed boundary. Do not add proposed names to source facts or source
+components. Invent no external dependency, authority, metric or safety guarantee.
+Keep copy concise and complete. Do not emit Markdown or Mermaid. If material source
+uncertainty requires clarification, return that result without a design.
 
 SOURCE FACTS
 Every citation is an exact contiguous source substring plus its one-based occurrence.
@@ -1098,6 +1026,7 @@ _AUTHORED_RESULT_SCHEMA: dict[str, Any] = {
         "assumptions",
         "ambiguities",
         "consistency",
+        "provisional_design",
     ],
     "properties": {
         "status": {"type": "string", "enum": ["authored"]},
@@ -1107,6 +1036,7 @@ _AUTHORED_RESULT_SCHEMA: dict[str, Any] = {
         "components": MODEL_COMPONENT_SCHEMA,
         "assumptions": ASSUMPTION_SCHEMA,
         "ambiguities": _ADVISORY_SCHEMA,
+        "provisional_design": PROVISIONAL_DESIGN_SCHEMA,
         "consistency": _consistency_schema(
             statuses=("consistent", "non_material_ambiguity")
         ),

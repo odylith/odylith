@@ -470,7 +470,7 @@ def _retained_stage(profile_id: str, *, response_kind: str) -> dict[str, object]
     initial = {
         "profile_id": profile_id,
         "request_role": "initial_authoring",
-        "timeout_seconds": profile.model_timeout_seconds - profile.source_review_reserve_seconds,
+        "timeout_seconds": profile.model_timeout_seconds,
         "elapsed_seconds": 5.0,
         "model": profile.model,
         "reasoning_effort": profile.reasoning_effort,
@@ -483,7 +483,7 @@ def _retained_stage(profile_id: str, *, response_kind: str) -> dict[str, object]
     return {
         "version": "odylith.greenfield.model-proof-observation.v2",
         "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
-        "semantic_model_call_count": 1 if response_kind == "clarification_required" else 2,
+        "semantic_model_call_count": 1,
         "response": {
             "version": GREENFIELD_INTENT_AUTHORING_VERSION,
             "result": {"status": response_kind},

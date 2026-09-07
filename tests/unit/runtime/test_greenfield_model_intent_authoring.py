@@ -97,7 +97,7 @@ def test_model_authored_intent_reaches_staged_product_intent_without_parser_reco
     assert candidate["internal_systems"] == ["Berth map"]
     assert receipt["tier"] == "rescue"
     assert receipt["authoring_version"] == GREENFIELD_INTENT_AUTHORING_VERSION
-    assert receipt["semantic_model_call_count"] == 2
+    assert receipt["semantic_model_call_count"] == 1
     assert candidate["authored_semantics"]["first_path_relations"][0]["action_verb_quote"] == "enters"
     assert "model_authoring" not in candidate
     assert candidate["product_intent_authority"]["material_fields"]["first_path"]["source_span_ids"] == [
@@ -128,7 +128,7 @@ def test_model_authored_intent_reaches_staged_product_intent_without_parser_reco
     }
 
 
-def test_edit_evidence_reauthors_one_new_typed_candidate_with_source_review(tmp_path) -> None:  # type: ignore[no-untyped-def]
+def test_edit_evidence_reauthors_one_new_complete_candidate(tmp_path) -> None:  # type: ignore[no-untyped-def]
     source = _source()
     edited_path = (
         "Dock attendant Ivo scans a vessel tag and the product records berth occupancy "
@@ -200,7 +200,7 @@ def test_edit_evidence_reauthors_one_new_typed_candidate_with_source_review(tmp_
     )
     assert candidate["authored_semantics"]["first_path_relations"][0]["action_verb_quote"] == "scans"
     assert candidate["product_intent_authority"]["source_format"] == "operator_prompt_with_edit_evidence"
-    assert provider.calls == 2
+    assert provider.calls == 1
 
 
 def test_model_authored_multi_component_events_bind_to_exact_source_owned_systems(tmp_path) -> None:
@@ -319,52 +319,42 @@ def test_model_authored_multi_component_events_bind_to_exact_source_owned_system
         confirmed_intent=candidate,
     )
 
-    assert [row["label"] for row in proposal["components"]] == ["Intake Desk", "Review Board"]
-    assert proposal["components"][0]["component_contract"]["responsibility_facts"] == [
-        "Intake Desk records the permit application"
+    # Verified source ownership is retained independently of proposed implementation ownership.
+    assert candidate["internal_systems"] == ["Intake Desk", "Review Board"]
+    assert candidate["component_responsibilities"] == intent["component_responsibilities"]
+    assert [
+        (row["owner_system_quote"], row["responsibility_quote"])
+        for row in candidate["authored_semantics"]["component_responsibility_relations"]
+    ] == list(zip(intent["internal_systems"], intent["component_responsibilities"]))
+    design = response["result"]["provisional_design"]
+    events = candidate["authored_semantics"]["first_path_relations"]
+    assert [row["label"] for row in proposal["components"]] == [
+        row["name"] for row in design["components"]
     ]
-    assert proposal["components"][1]["component_contract"]["responsibility_facts"] == [
-        "Review Board approves the permit application"
+    assert [row["component_id"] for row in proposal["components"]] == [
+        row["key"] for row in design["components"]
     ]
-    assert "Review Board approves" not in proposal["components"][0]["responsibility"]
-    assert "Intake Desk records" not in proposal["components"][1]["responsibility"]
-    assert [row["workstream_role"] for row in proposal["backlog"]] == [
-        "project",
-        "boundary",
-    ]
-    assert proposal["backlog"][0]["component_focus"] == ["intake-desk", "review-board"]
-    assert set(
-        proposal["backlog"][1]["authored_workstream_semantics"]["fact_refs"]
-    ) == {
-        "/external_systems/0",
-        "/non_goals/0",
-        "/internal_systems/0",
-        "/internal_systems/1",
-        "/component_responsibilities/0",
-        "/component_responsibilities/1",
-    }
-    assert proposal["security_compliance"] == {}
-    for component in proposal["components"]:
+    for component, proposed in zip(proposal["components"], design["components"], strict=True):
+        assert component["authority_kind"] == "provisional_design"
+        assert component["responsibility"] == proposed["responsibility"]
+        assert component["validation"] == [proposed["verification"]]
+        contract = component["component_contract"]
+        assert contract["authority_kind"] == "provisional_design"
+        assert contract["provisional_component"] == proposed
+        assert contract["supporting_events"] == [
+            events[order - 1] for order in proposed["supported_event_orders"]
+        ]
         assert component["kind"] == "component"
-        assert component["boundary"] == ""
-        assert component["dependencies"] == []
-        assert component["interfaces"] == []
-        assert component["validation"] == []
-        assert set(component["component_contract"]) == {
-            "owner_system",
-            "responsibility_facts",
-            "owner_bound_events",
-            "event_targets",
-            "visible_results",
-            "state_context",
-            "external_dependencies",
-            "operational_constraints",
-        }
         rendered_component = json.dumps(component, ensure_ascii=False)
         assert intent["proof_boundary"] not in rendered_component
         assert intent["non_goals"][0] not in rendered_component
         assert intent["external_systems"][0] not in rendered_component
         assert intent["operational_constraints"][0] not in rendered_component
+    for workstream, proposed in zip(proposal["backlog"], design["workstreams"], strict=True):
+        assert workstream["workstream_role"] == "provisional_design"
+        assert workstream["component_focus"] == proposed["component_keys"]
+        assert workstream["provisional_workstream_contract"]["provisional_workstream"] == proposed
+    assert proposal["security_compliance"] == {}
     assert [
         event["owner_system"]
         for event in proposal["semantic_model"]["first_path_contract"]["events"]
@@ -375,14 +365,11 @@ def test_model_authored_multi_component_events_bind_to_exact_source_owned_system
     assert first_path_contract["deferred_scope"] == []
 
     context = next(row for row in proposal["diagrams"] if row["title"] == "System Context View")
-    boundary = next(row for row in proposal["diagrams"] if row["title"] == "Component Boundary View")
     assert "external1 -->" not in context["mermaid_source"]
-    assert "component1 --> component2" not in boundary["mermaid_source"]
-    assert "--> component1" not in boundary["mermaid_source"]
-    assert "-. deferred .->" not in boundary["mermaid_source"]
+    assert proposal["semantic_model"]["provisional_design"] == design
 
 
-def test_model_authored_project_seals_one_package_with_justified_boundary(tmp_path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+def test_model_authored_project_seals_one_source_and_design_package(tmp_path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
     source = _source()
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
     provider = StructuredAuthoringProvider(_response(staged_evidence))
@@ -400,13 +387,17 @@ def test_model_authored_project_seals_one_package_with_justified_boundary(tmp_pa
     )
 
     assert candidate["title"] == "Harbor Desk"
-    assert provider.calls == 2
-    assert [row["workstream_role"] for row in transaction.proposal["backlog"]] == [
-        "project",
-        "boundary",
-    ]
-    assert len(transaction.proposal["components"]) == 1
-    assert len(transaction.proposal["diagrams"]) == 4
+    assert provider.calls == 1
+    design = candidate["authored_semantics"]["provisional_design"]
+    assert [
+        row["provisional_workstream_contract"]["provisional_workstream"]
+        for row in transaction.proposal["backlog"]
+    ] == design["workstreams"]
+    assert [
+        row["component_contract"]["provisional_component"]
+        for row in transaction.proposal["components"]
+    ] == design["components"]
+    assert len(transaction.proposal["diagrams"]) == 5
     assert "Berth placement is hard to track" in transaction.proposal["project_brief"]["purpose"]
     assert transaction.proposal["artifact_derivation"]["root"] == "intent.authored_semantics"
     assert transaction.prewrite_package is not None
@@ -453,7 +444,7 @@ def test_model_authored_project_seals_one_package_with_justified_boundary(tmp_pa
     assert transaction_path.is_file()
 
 
-def test_public_propose_cli_uses_two_model_calls_and_returns_hash_bound_choices(
+def test_public_propose_cli_uses_one_model_call_and_returns_hash_bound_choices(
     tmp_path,
     monkeypatch,
     capsys,
@@ -474,7 +465,7 @@ def test_public_propose_cli_uses_two_model_calls_and_returns_hash_bound_choices(
 
     assert rc == 0, payload
     assert payload["mode"] == "product_create_transaction"
-    assert provider.calls == 2
+    assert provider.calls == 1
     assert payload["transaction_file"].endswith("product-create-transaction.v1.json")
     choices = payload["confirmation"]["choices"]
     assert [choice["command"].split(maxsplit=1)[0] for choice in choices] == [
@@ -542,7 +533,7 @@ def test_public_authored_propose_bypasses_the_legacy_completion_cascade(
     payload = json.loads(capsys.readouterr().out)
 
     assert rc == 0, payload
-    assert provider.calls == 2
+    assert provider.calls == 1
     assert payload["mode"] == "product_create_transaction"
     assert payload["transaction_file"].endswith("product-create-transaction.v1.json")
 
@@ -1113,6 +1104,7 @@ def test_envelope_rejects_authored_spans_rebound_to_different_source_bytes() -> 
             result.first_path_relations,
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
+            provisional_design=result.provisional_design,
         ),
     }
 
@@ -1140,6 +1132,7 @@ def test_envelope_reverifies_atomic_claim_bytes_against_the_exact_source() -> No
             result.first_path_relations,
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
+            provisional_design=result.provisional_design,
         ),
     }
     claims = [dict(row) for row in result.atomic_claims]

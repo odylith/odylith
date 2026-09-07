@@ -6,6 +6,41 @@ from collections.abc import Iterable
 from typing import Any
 from urllib.parse import urlparse
 
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import validate_provisional_design
+
+
+AUTHORED_STRUCTURE_EXPRESSION = """(node) => {
+  const eventRows = (selector) => Array.from(node.querySelectorAll(selector)).map((item) => ({
+    order: Number(item.dataset.eventOrder || "0"), text: String(item.innerText || "").trim()
+  }));
+  const capabilities = node.querySelector('[data-authored-fact-list="owned_capabilities"]');
+  return {
+    focus: eventRows('[data-authored-fact-list="focus"] [data-authored-fact-item]'),
+    first_path: eventRows('[data-authored-fact-list="first_path"] [data-authored-fact-item]'),
+    actors: Array.from(node.querySelectorAll("[data-authored-actor]")).map((card) => ({
+      actor: String(card.dataset.authoredActor || "").trim(),
+      events: Array.from(card.querySelectorAll('[data-authored-fact-list="actor"] [data-authored-fact-item]'))
+        .map((item) => ({order: Number(item.dataset.eventOrder || "0"), text: String(item.innerText || "").trim()}))
+    })).filter((row) => row.events.length),
+    capabilities_authority: String(capabilities?.dataset.authorityKind || ""),
+    capabilities_label: String(node.querySelector('[data-provisional-design-label]')?.innerText || "").trim(),
+    capabilities: Array.from(capabilities?.querySelectorAll('[data-authored-fact-item]') || []).map((item) => ({
+      owner: String(item.querySelector("[data-authored-owner]")?.innerText || "").trim(),
+      responsibility: String(item.querySelector("[data-authored-responsibility]")?.innerText || "").trim()
+    })),
+    boundary_groups: Array.from(node.querySelectorAll("[data-authored-boundary-group]")).map((group) => ({
+      key: String(group.dataset.boundaryKind || "").trim(),
+      label: String(group.querySelector(":scope > strong")?.innerText || "").trim(),
+      items: Array.from(group.querySelectorAll("[data-authored-fact-item]"))
+        .map((item) => String(item.innerText || "").trim())
+    })),
+    deliveries: Array.from(node.querySelectorAll(".project-job-card")).map((card) => ({
+      title: String(card.querySelector("h3")?.innerText || "").trim(),
+      deliverable: String(card.querySelector(":scope > p")?.innerText || "").trim()
+    }))
+  };
+}"""
+
 
 def story_rows_match_payload(
     rendered_rows: list[dict[str, Any]],
@@ -86,27 +121,37 @@ def authored_structure_issues(rendered: Any, authored_facts: Any) -> tuple[str, 
     if rendered.get("actors") != expected_actors:
         issues.append("browser surface project actor cards do not preserve typed human event nodes")
 
-    raw_capabilities = authored_facts.get("component_responsibility_relations")
-    capability_rows = (
-        [row for row in raw_capabilities if isinstance(row, dict)]
-        if isinstance(raw_capabilities, (list, tuple))
-        else []
-    )
+    try:
+        design = validate_provisional_design(
+            authored_facts.get("provisional_design"),
+            event_orders=tuple(row.get("order") for row in event_rows),
+        )
+    except ValueError as exc:
+        return (*issues, f"browser surface project has invalid canonical provisional design: {exc}")
     expected_capabilities = [
         {
-            "owner": str(row.get("owner_system_quote") or "").strip(),
-            "responsibility": str(row.get("responsibility_quote") or "").strip(),
+            "owner": _browser_visible_text(row["name"]),
+            "responsibility": _browser_visible_text(row["responsibility"]),
         }
-        for row in capability_rows
+        for row in design["components"]
     ]
     if rendered.get("capabilities") != expected_capabilities:
-        issues.append("browser surface project capability rows do not preserve typed responsibility nodes")
+        issues.append("browser surface project capability rows do not preserve canonical proposed responsibilities")
+    if (
+        rendered.get("capabilities_authority") != "provisional_design"
+        or rendered.get("capabilities_label") != "Proposed capabilities:"
+    ):
+        issues.append("browser surface project capabilities lost their explicit proposed-design marker")
 
-    expected_boundary_groups = []
-    for key, values in (
-        ("product_owned_systems", authored_facts.get("internal_systems", ())),
-        ("external_systems", authored_facts.get("external_systems", ())),
-        ("non_goals", authored_facts.get("non_goals", ())),
+    expected_boundary_groups = [{
+        "key": "provisional_components",
+        "label": "Proposed logical components (not deployment commitments):",
+        "items": [_browser_visible_text(row["name"]) for row in design["components"]],
+    }]
+    for key, label, values in (
+        ("source_product_systems", "Source-stated systems:", authored_facts.get("internal_systems", ())),
+        ("external_systems", "External systems:", authored_facts.get("external_systems", ())),
+        ("non_goals", "Excluded from the first release:", authored_facts.get("non_goals", ())),
     ):
         items = (
             [
@@ -118,9 +163,15 @@ def authored_structure_issues(rendered: Any, authored_facts: Any) -> tuple[str, 
             else []
         )
         if items:
-            expected_boundary_groups.append({"key": key, "items": items})
+            expected_boundary_groups.append({"key": key, "label": label, "items": items})
     if rendered.get("boundary_groups") != expected_boundary_groups:
-        issues.append("browser surface project boundary groups do not preserve typed fact nodes")
+        issues.append("browser surface project boundary groups conflate or alter proposed design and source context")
+    expected_deliveries = [
+        {"title": _browser_visible_text(row["title"]), "deliverable": _browser_visible_text(row["deliverable"])}
+        for row in design["workstreams"]
+    ]
+    if rendered.get("deliveries") != expected_deliveries:
+        issues.append("browser surface project delivery cards do not preserve canonical proposed deliverables")
     return tuple(issues)
 
 
@@ -215,6 +266,7 @@ def atlas_error_state_assertion_issues(
 
 
 __all__ = [
+    "AUTHORED_STRUCTURE_EXPRESSION",
     "atlas_degraded_state_assertion_issues",
     "atlas_diagram_coverage_issues",
     "atlas_error_state_assertion_issues",

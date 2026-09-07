@@ -235,8 +235,8 @@ def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_lis
     assert "Owning Components" in html
     assert "const componentTitleLookup = sanitizeLookupObject(tooltipLookup.component_titles);" in html
     assert "function componentDisplayName(value)" in html
-    assert "function componentResponsibilityText(component, displayName, rawName)" in html
-    assert "For the first release,\\s+this boundary" in html
+    assert all(name not in html for name in ("componentResponsibilityText", "componentNameWords", "stripLeadingComponentName", "escapeRegExp"))
+    assert 'body.textContent = description.trim() ? description : "Named responsibility in this diagram.";' in html
     assert "component-token" in html
     assert "component-description" in html
     assert "grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));" in html

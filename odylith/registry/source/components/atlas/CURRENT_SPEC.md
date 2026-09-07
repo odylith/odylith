@@ -6,7 +6,7 @@
   affordances, admissible action, proof, compact learning, benchmark evidence,
   updated priors, and the cross-system loop through Context, Execution,
   Memory, Intervention, Tribunal, Surfaces, and Benchmarks.
-Last updated: 2026-07-20
+Last updated: 2026-09-06
 
 
 ## Purpose
@@ -112,6 +112,10 @@ implementation activity. Important fields include:
 - catalog-authored `diagram_boxes` descriptions must be clear complete
   sentences; terse placeholders are invalid because the generated detail pane
   is an operator reading surface, not an internal shorthand dump
+- component cards must show the complete nonempty catalog description as text,
+  including safety, dependency and proof clauses. The browser must not reparse,
+  shorten, rename or rewrite responsibility prose. Missing descriptions use an
+  explicit neutral fallback; component-name presentation remains separately owned.
 
 The catalog is the authoritative metadata layer; the image files alone are not
 enough to recover engineering intent.

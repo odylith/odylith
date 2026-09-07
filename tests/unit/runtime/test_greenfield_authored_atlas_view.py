@@ -38,14 +38,42 @@ def _authored_diagrams(
     proof_boundary: str = "Verify the placement and retention receipt",
     human_actors: tuple[str, ...] = ("Dock attendant Ivo",),
     relations: tuple[dict[str, Any], ...] | None = None,
+    provisional_design: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
+    source_relations = relations if relations is not None else (
+        {
+            "order": 1,
+            "actor_kind": "human",
+            "actor_fact_quote": "Dock attendant Ivo",
+            "event_quote": "Dock attendant Ivo enters a vessel tag",
+            "owner_system_quote": "",
+        },
+        {
+            "order": 2,
+            "actor_kind": "product",
+            "actor_fact_quote": "Berth map",
+            "event_quote": "the product records berth occupancy",
+            "owner_system_quote": "Berth map",
+        },
+        {
+            "order": 3,
+            "actor_kind": "product",
+            "actor_fact_quote": "Berth map",
+            "event_quote": "the berth map shows the placement",
+            "owner_system_quote": "Berth map",
+        },
+    )
+    design = provisional_design or _provisional_design(
+        event_orders=tuple(row["order"] for row in source_relations)
+    )
     return greenfield_authored_atlas_view.build_authored_atlas_diagrams(
         title=title,
         diagram_slugs={
             "context": "harbor-desk-context",
             "sequence": "harbor-desk-sequence",
-            "state_evidence": "harbor-desk-state",
-            "component_boundaries": "harbor-desk-boundaries",
+            "component_exchanges": "harbor-desk-component-exchanges",
+            "delivery_dependencies": "harbor-desk-delivery-dependencies",
+            "capability_support": "harbor-desk-capability-support",
         },
         human_actors=human_actors,
         external_systems=("Harbor Ledger",),
@@ -61,45 +89,102 @@ def _authored_diagrams(
                 "dependencies": ["Harbor Ledger"],
             },
         ),
-        backlog=({"title": "Deliver Harbor Desk"},),
-        relations=relations
-        if relations is not None
-        else (
-            {
-                "order": 1,
-                "actor_kind": "human",
-                "actor_fact_quote": "Dock attendant Ivo",
-                "event_quote": "Dock attendant Ivo enters a vessel tag",
-                "owner_system_quote": "",
-            },
-            {
-                "order": 2,
-                "actor_kind": "product",
-                "actor_fact_quote": "Berth map",
-                "event_quote": "the product records berth occupancy",
-                "owner_system_quote": "Berth map",
-            },
-            {
-                "order": 3,
-                "actor_kind": "product",
-                "actor_fact_quote": "Berth map",
-                "event_quote": "the berth map shows the placement",
-                "owner_system_quote": "Berth map",
-            },
-        ),
-        context_relations=(
-            {
-                "context_kind": "state_object",
-                "fact_quote": "berth occupancy",
-                "first_path_event_order": 2,
-            },
-            {
-                "context_kind": "external_system",
-                "fact_quote": "Harbor Ledger",
-                "first_path_event_order": 0,
-            },
-        ),
+        backlog=tuple({"title": row["title"]} for row in design["workstreams"]),
+        relations=source_relations,
+        provisional_design=design,
     )
+
+
+def _provisional_design(*, event_orders: tuple[int, ...] = (1, 2, 3)) -> dict[str, Any]:
+    assigned_orders = [
+        [event_orders[index % len(event_orders)]] for index in range(3)
+    ]
+    assigned_orders.append(list(event_orders))
+    return {
+        "version": "odylith.greenfield.provisional-design.v1",
+        "authority_kind": "provisional_design",
+        "components": [
+            {
+                "key": "vessel-intake",
+                "name": "Vessel Intake",
+                "responsibility": "Capture the proposed vessel tag.",
+                "supported_event_orders": assigned_orders[0],
+                "verification": "A submitted vessel tag remains available for occupancy work.",
+            },
+            {
+                "key": "occupancy-record",
+                "name": "Occupancy Record",
+                "responsibility": "Record proposed berth occupancy.",
+                "supported_event_orders": assigned_orders[1],
+                "verification": "Recorded berth occupancy remains available to the placement view.",
+            },
+            {
+                "key": "placement-view",
+                "name": "Placement View",
+                "responsibility": "Show the proposed berth placement.",
+                "supported_event_orders": assigned_orders[2],
+                "verification": "The placement view shows the recorded berth placement.",
+            },
+            {
+                "key": "placement-evidence",
+                "name": "Placement Evidence",
+                "responsibility": "Retain proposed evidence for the placement path.",
+                "supported_event_orders": assigned_orders[3],
+                "verification": "Placement evidence identifies the supported source events.",
+            },
+        ],
+        "workstreams": [
+            {
+                "key": "intake",
+                "title": "Deliver vessel intake",
+                "component_keys": ["vessel-intake"],
+                "depends_on": [],
+                "deliverable": "Working vessel-tag intake.",
+                "verification": "Submit a vessel tag and verify its saved value.",
+            },
+            {
+                "key": "occupancy",
+                "title": "Deliver occupancy recording",
+                "component_keys": ["occupancy-record"],
+                "depends_on": ["intake"],
+                "deliverable": "Working berth-occupancy recording.",
+                "verification": "Record occupancy and verify the saved berth state.",
+            },
+            {
+                "key": "placement",
+                "title": "Deliver the placement view",
+                "component_keys": ["placement-view"],
+                "depends_on": ["occupancy"],
+                "deliverable": "Working berth-placement view.",
+                "verification": "Open the view and verify the recorded placement appears.",
+            },
+            {
+                "key": "evidence",
+                "title": "Deliver placement evidence",
+                "component_keys": ["placement-evidence"],
+                "depends_on": ["placement"],
+                "deliverable": "Working placement-evidence record.",
+                "verification": "Verify the evidence identifies every supported source event.",
+            },
+        ],
+        "exchanges": [
+            {
+                "from_component": "vessel-intake",
+                "to_component": "occupancy-record",
+                "contract": "Proposed vessel-tag record",
+            },
+            {
+                "from_component": "occupancy-record",
+                "to_component": "placement-view",
+                "contract": "Proposed berth-occupancy state",
+            },
+            {
+                "from_component": "placement-view",
+                "to_component": "placement-evidence",
+                "contract": "Proposed placement result",
+            },
+        ],
+    }
 
 
 def _relation(
@@ -278,24 +363,6 @@ def test_context_view_represents_a_sole_title_owned_product_once() -> None:
     ] == [("product", "Harbor Desk", "Product boundary")]
 
 
-def test_boundary_view_represents_a_sole_title_owned_product_once() -> None:
-    rows = _authored_diagrams(component_label="Harbor Desk")
-    boundary = next(row for row in rows if row["slug"] == "harbor-desk-boundaries")
-    source = boundary["mermaid_source"]
-
-    assert source.count('["Harbor Desk"]') == 1
-    assert 'subgraph product["Harbor Desk"]' not in source
-    assert 'product["Harbor Desk"]' in source
-    assert "component1" not in source
-    assert "external1 -.-> product" in source
-    assert "product -.-> non_goal1" in source
-    assert [
-        (box["node_id"], box["label"], box["role"])
-        for box in boundary["diagram_boxes"]
-        if box["label"] == "Harbor Desk"
-    ] == [("product", "Harbor Desk", "Product boundary")]
-
-
 def test_distinct_multiple_components_keep_containment_and_typed_external_target() -> None:
     components = (
         {
@@ -313,13 +380,14 @@ def test_distinct_multiple_components_keep_containment_and_typed_external_target
     )
     rows = _authored_diagrams(components=components)
 
-    for slug in ("harbor-desk-context", "harbor-desk-boundaries"):
-        source = next(row["mermaid_source"] for row in rows if row["slug"] == slug)
-        assert 'subgraph product["Harbor Desk"]' in source
-        assert 'component1["Berth map"]' in source
-        assert 'component2["Receipt vault"]' in source
-        assert "external1 -.-> component1" in source
-        assert "external1 -.-> product" not in source
+    source = next(
+        row["mermaid_source"] for row in rows if row["slug"] == "harbor-desk-context"
+    )
+    assert 'subgraph product["Harbor Desk"]' in source
+    assert 'component1["Berth map"]' in source
+    assert 'component2["Receipt vault"]' in source
+    assert "external1 -.-> component1" in source
+    assert "external1 -.-> product" not in source
 
 
 def _traceability_plan() -> SimpleNamespace:
@@ -329,7 +397,7 @@ def _traceability_plan() -> SimpleNamespace:
 def test_authored_atlas_view_seals_exact_versioned_display_custody() -> None:
     rows = _authored_diagrams()
 
-    assert len(rows) == 4
+    assert len(rows) == 5
     for row in rows:
         authority = row[greenfield_authored_atlas_view.AUTHORED_ATLAS_AUTHORITY_KEY]
         assert set(authority) == {
@@ -357,14 +425,21 @@ def test_authored_atlas_view_seals_exact_versioned_display_custody() -> None:
         assert authority["node_order"] == [box["node_id"] for box in row["diagram_boxes"]]
 
 
-def test_authored_atlas_depth_is_four_distinct_semantic_views_not_a_count_floor() -> None:
+def test_authored_atlas_depth_is_five_distinct_semantic_views_not_a_count_floor() -> None:
     rows = _authored_diagrams()
 
     assert [(row["slug"], row["title"]) for row in rows] == [
         ("harbor-desk-context", "System Context View"),
         ("harbor-desk-sequence", "First Path Sequence"),
-        ("harbor-desk-state", "State and Evidence View"),
-        ("harbor-desk-boundaries", "Component Boundary View"),
+        ("harbor-desk-component-exchanges", "Proposed Component Exchanges"),
+        (
+            "harbor-desk-delivery-dependencies",
+            "Proposed Delivery Dependencies and Acceptance",
+        ),
+        (
+            "harbor-desk-capability-support",
+            "Proposed Capability Support and Source Facts",
+        ),
     ]
     node_ids_by_slug = {
         row["slug"]: {box["node_id"] for box in row["diagram_boxes"]}
@@ -372,48 +447,101 @@ def test_authored_atlas_depth_is_four_distinct_semantic_views_not_a_count_floor(
     }
     assert {"people", "product", "external_systems"} <= node_ids_by_slug["harbor-desk-context"]
     assert {"event1", "event2", "event3", "owner1"} <= node_ids_by_slug["harbor-desk-sequence"]
-    assert node_ids_by_slug["harbor-desk-state"] == {
-        "accepted_facts",
+    assert {"proposed", "component1", "component4"} <= node_ids_by_slug[
+        "harbor-desk-component-exchanges"
+    ]
+    assert {"workstream1", "workstream1_acceptance", "workstream4"} <= node_ids_by_slug[
+        "harbor-desk-delivery-dependencies"
+    ]
+    assert {
+        "source_path",
+        "event1",
+        "proposed_components",
+        "component1",
+        "component1_verification",
+        "source_facts",
         "state",
-        "state_event",
         "result",
         "proof",
-    }
-    assert {"product", "component1", "external_systems", "outside_scope"} <= node_ids_by_slug[
-        "harbor-desk-boundaries"
-    ]
-    assert len({row["summary"] for row in rows}) == 4
-    assert len({row["mermaid_source"] for row in rows}) == 4
+        "non_goal1",
+    } <= node_ids_by_slug["harbor-desk-capability-support"]
+    assert len({row["summary"] for row in rows}) == 5
+    assert len({row["mermaid_source"] for row in rows}) == 5
     source_by_slug = {row["slug"]: row["mermaid_source"] for row in rows}
     assert "actor1 --> product" not in source_by_slug["harbor-desk-context"]
     assert "actor1 --> component1" not in source_by_slug["harbor-desk-context"]
     assert "external1 -.-> component1" in source_by_slug["harbor-desk-context"]
-    assert "state -. exact source overlap .-> state_event" in source_by_slug["harbor-desk-state"]
-    assert "state_event --> result" not in source_by_slug["harbor-desk-state"]
-    assert "result --> proof" not in source_by_slug["harbor-desk-state"]
-    assert "external1 -.-> component1" in source_by_slug["harbor-desk-boundaries"]
-    assert "product -.-> non_goal1" in source_by_slug["harbor-desk-boundaries"]
+    assert 'component1 -->|"Proposed exchange: Proposed vessel-tag record"| component2' in source_by_slug[
+        "harbor-desk-component-exchanges"
+    ]
+    assert 'workstream1 -->|"proposed prerequisite"| workstream2' in source_by_slug[
+        "harbor-desk-delivery-dependencies"
+    ]
+    support = source_by_slug["harbor-desk-capability-support"]
+    assert 'component1 -->|"supports source action"| event1' in support
+    assert "exact source overlap" not in support
+    assert "exact source containment" not in support
+    assert "state -->" not in support
+    assert "result -->" not in support
+    assert "proof -->" not in support
 
 
-def test_state_view_links_result_to_proof_only_for_exact_source_containment() -> None:
-    contained = _authored_diagrams(
-        visible_result="exception review",
-        proof_boundary="care-plan readiness, visit evidence, and exception review",
-    )
-    separate = _authored_diagrams(
-        visible_result="exception review",
-        proof_boundary="care-plan readiness and visit evidence",
-    )
-    contained_source = next(
-        row["mermaid_source"] for row in contained if row["slug"] == "harbor-desk-state"
-    )
-    separate_source = next(
-        row["mermaid_source"] for row in separate if row["slug"] == "harbor-desk-state"
-    )
+def test_provisional_views_keep_authority_and_complete_labels_separate_from_source() -> None:
+    rows = _authored_diagrams()
+    source_rows = rows[:2]
+    design_rows = rows[2:]
 
-    assert "result -. exact source containment .-> proof" in contained_source
-    assert "result -. exact source containment .-> proof" not in separate_source
-    assert "result --> proof" not in contained_source
+    assert all(row["authority_kind"] == "source_grounded" for row in source_rows)
+    assert all(row["authority_kind"] == "provisional_design" for row in design_rows)
+    assert source_rows[0]["components"] == [
+        {"name": "Berth map", "description": "Record berth occupancy"}
+    ]
+    assert source_rows[0]["related_components"] == [
+        "vessel-intake",
+        "occupancy-record",
+        "placement-view",
+        "placement-evidence",
+    ]
+    assert all("Accepted" not in json.dumps(row["diagram_boxes"]) for row in design_rows)
+    exchanges = design_rows[0]
+    assert "Proposed berth-occupancy<br/>state" in exchanges["mermaid_source"]
+    assert exchanges["diagram_boxes"][1]["description"].startswith(
+        "Proposed responsibility:"
+    )
+    assert {row["name"] for row in exchanges["components"]} == {
+        "Vessel Intake",
+        "Occupancy Record",
+        "Placement View",
+        "Placement Evidence",
+    }
+
+
+def test_capability_support_keeps_source_events_and_proposed_ownership_distinct() -> None:
+    rows = _authored_diagrams()
+    support = next(
+        row for row in rows if row["slug"] == "harbor-desk-capability-support"
+    )
+    boxes = {row["node_id"]: row for row in support["diagram_boxes"]}
+
+    assert boxes["event1"]["label"] == "Dock attendant Ivo enters a vessel tag"
+    assert boxes["event1"]["role"] == "Source-stated event"
+    assert boxes["component1"]["role"] == "Proposed component"
+    assert 'component1 -->|"supports source action"| event1' in support["mermaid_source"]
+    assert "event1 --> component1" not in support["mermaid_source"]
+    assert "owner" not in support["mermaid_source"]
+    assert boxes["source_facts"]["label"] == "Source-stated facts"
+    assert "Accepted" not in json.dumps(support)
+
+
+def test_authored_atlas_authority_kind_is_sealed_with_the_display() -> None:
+    row = deepcopy(_authored_diagrams()[0])
+    row["authority_kind"] = "provisional_design"
+
+    with pytest.raises(ValueError, match="sealed hash"):
+        greenfield_authored_atlas_view.validate_authored_atlas_view(
+            row,
+            source_text=row["mermaid_source"],
+        )
 
 
 @pytest.mark.parametrize(
@@ -470,6 +598,7 @@ def test_authored_atlas_catalog_and_source_survive_compilation_and_readback_exac
     )[0]
     authority_key = greenfield_authored_atlas_view.AUTHORED_ATLAS_AUTHORITY_KEY
     assert compiled_row["projection_origin"] == proposal_row["projection_origin"]
+    assert compiled_row["authority_kind"] == proposal_row["authority_kind"]
     assert compiled_row[authority_key] == proposal_row[authority_key]
     assert compiled_row["diagram_boxes"] == proposal_row["diagram_boxes"]
     assert compiled_row["summary"] == proposal_row["summary"]
@@ -601,7 +730,7 @@ def test_public_authored_propose_never_calls_legacy_semantic_rule_families(
     )
 
     assert rc == 0, payload
-    assert provider.calls == 2
+    assert provider.calls == 1
     assert family_calls["terminal_deferral"] == 0
     assert family_calls["source_casing"] == 0
     assert family_calls["connector"] == 0
@@ -613,7 +742,7 @@ def test_public_authored_propose_never_calls_legacy_semantic_rule_families(
     proposal_rows = transaction["proposal"]["diagrams"]
     compiled_rows = transaction["prewrite_package"]["atlas_catalog_rows"]
     authority_key = greenfield_authored_atlas_view.AUTHORED_ATLAS_AUTHORITY_KEY
-    assert len(proposal_rows) == len(compiled_rows) == 4
+    assert len(proposal_rows) == len(compiled_rows) == 5
     for proposal_row, compiled_row in zip(proposal_rows, compiled_rows, strict=True):
         assert compiled_row["projection_origin"] == AUTHORED_PROJECTION_ORIGIN
         assert compiled_row[authority_key] == proposal_row[authority_key]

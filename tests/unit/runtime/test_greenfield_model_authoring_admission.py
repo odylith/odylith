@@ -166,7 +166,7 @@ def test_product_only_path_builds_complete_source_bound_proposal_without_a_fake_
         confirmed_intent=candidate,
     )
 
-    assert provider.calls == 2
+    assert provider.calls == 1
     assert "human_actors" not in candidate
     assert candidate["authored_semantics"]["first_path_relations"][0][
         "actor_fact_path"
@@ -185,10 +185,14 @@ def test_product_only_path_builds_complete_source_bound_proposal_without_a_fake_
     assert "Primary user" not in preview
     assert proposal["backlog"] and proposal["components"] and proposal["diagrams"]
     customer_ref = "/assumptions/0"
-    assert [row["workstream_role"] for row in proposal["backlog"]] == ["project"]
+    design = candidate["authored_semantics"]["provisional_design"]
+    assert [
+        row["provisional_workstream_contract"]["provisional_workstream"]
+        for row in proposal["backlog"]
+    ] == design["workstreams"]
     for row in proposal["backlog"]:
-        semantics = row["authored_workstream_semantics"]
-        assert semantics["rendered_field_refs"]["customer"] == [customer_ref]
+        semantics = row["provisional_workstream_contract"]
+        assert semantics["decision_refs"]["customer"] == customer_ref
         assert row["customer"] == (
             "Assumption — Service owners are the primary beneficiaries of feed health receipts."
         )
@@ -250,7 +254,7 @@ def test_external_only_path_retains_exact_external_actor_custody() -> None:
         clock=lambda: 0.0,
     )
 
-    assert provider.calls == 2
+    assert provider.calls == 1
     assert result.intent["human_actors"] == []
     assert result.first_path_relations[0]["actor_kind"] == "external_system"
     assert result.first_path_relations[0]["actor_fact_path"] == "/external_systems/0"
@@ -305,10 +309,10 @@ def test_each_event_actor_kind_requires_one_selected_typed_actor_fact(
         )
 
 
-def test_late_packet_completes_mandatory_source_review_inside_rescue() -> None:
+def test_late_packet_uses_the_full_single_author_window_inside_rescue() -> None:
     source = _source()
     provider = StructuredAuthoringProvider(_response(source))
-    ticks = iter((0.0, 55.0, 55.0, 55.0))
+    ticks = iter((0.0, 80.0))
 
     result = author_greenfield_intent(
         evidence_text=source,
@@ -319,7 +323,10 @@ def test_late_packet_completes_mandatory_source_review_inside_rescue() -> None:
     )
 
     assert result.tier == "rescue"
-    assert provider.calls == 2
+    assert provider.calls == 1
+    assert result.semantic_model_call_count == 1
+    assert result.elapsed_seconds == 80.0
+    assert result.effective_timeout_seconds == provider.requests[0].timeout_seconds == 80.0
 
 
 @pytest.mark.parametrize(
@@ -332,7 +339,7 @@ def test_pinned_nonstandard_profile_does_not_relabel_a_fast_response_as_standard
 ) -> None:
     source = _source()
     profile = get_greenfield_model_profile(profile_id)
-    ticks = iter((0.0, 1.0, 1.0, 1.0))
+    ticks = iter((0.0, 1.0))
 
     result = author_greenfield_intent(
         evidence_text=source,
@@ -464,7 +471,7 @@ def test_source_bound_nonmaterial_conflict_increases_sealed_ambiguity(
 @pytest.mark.parametrize(
     ("failure_code", "diagnostic_detail"),
     (
-        ("timeout", "Codex CLI exceeded 60.0s."),
+        ("timeout", "Codex CLI exceeded 80.0s."),
         ("unavailable", "Codex CLI is unavailable."),
         ("transport_error", "Provider connection reset during authoring."),
         ("invalid_response", "invalid provider output " * 20),
@@ -482,7 +489,7 @@ def test_initial_non_mapping_response_retains_bounded_failure_observation(
     observation = tmp_path / "model-failure-observation.json"
     descriptor = os.open(observation, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     monkeypatch.setenv(GREENFIELD_MODEL_PROOF_FD_ENV, str(descriptor))
-    ticks = iter((0.0, 61.805))
+    ticks = iter((0.0, 81.805))
     try:
         with pytest.raises(GreenfieldModelAuthoringError) as exc_info:
             author_greenfield_intent(
@@ -506,8 +513,8 @@ def test_initial_non_mapping_response_retains_bounded_failure_observation(
     assert retained["failure"] == {
         "stage": "initial_authoring",
         "profile_id": RESCUE_PROFILE_ID,
-        "effective_timeout_seconds": 60.0,
-        "elapsed_seconds": pytest.approx(61.805),
+        "effective_timeout_seconds": 80.0,
+        "elapsed_seconds": pytest.approx(81.805),
         "response_shape": "NoneType",
         "provider": {
             "provider": "codex-cli",

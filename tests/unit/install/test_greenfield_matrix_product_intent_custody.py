@@ -116,7 +116,7 @@ def test_write_transaction_custody_rejects_manifest_or_receipt_product_intent_dr
     assert "write transaction Product Intent facts hash does not match the create payload summary" in receipt_issues
 
 
-def test_authored_structural_validation_accepts_one_or_two_calls_only_when_authenticated() -> None:
+def test_authored_structural_validation_accepts_only_one_authenticated_call_without_reinterpretation() -> None:
     scoring = _scoring_module()
     manifest = _authored_structural_manifest()
 
@@ -127,8 +127,10 @@ def test_authored_structural_validation_accepts_one_or_two_calls_only_when_authe
     assert isinstance(model_authoring, dict)
     model_authoring["semantic_model_call_count"] = 2
 
-    assert scoring._typed_structural_validation_passed(manifest) is True  # noqa: SLF001
+    assert scoring._typed_structural_validation_passed(manifest) is False  # noqa: SLF001
+    assert "pre-confirm quality lens report did not pass" in scoring._manifest_issues(manifest)  # noqa: SLF001
 
+    model_authoring["semantic_model_call_count"] = 1
     semantic_compiler = manifest["semantic_compiler"]
     assert isinstance(semantic_compiler, dict)
     semantic_compiler["post_authoring_interpretation_calls"] = 1
@@ -142,7 +144,7 @@ def test_authored_structural_validation_accepts_one_or_two_calls_only_when_authe
 def test_authored_structural_validation_rejects_invalid_semantic_call_counts() -> None:
     scoring = _scoring_module()
 
-    for invalid_count in (True, 0, 3):
+    for invalid_count in (True, False, 0, 2, 3):
         manifest = _authored_structural_manifest()
         model_authoring = manifest["model_authoring"]
         assert isinstance(model_authoring, dict)

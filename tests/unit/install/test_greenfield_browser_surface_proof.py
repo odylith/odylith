@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import importlib.util
+from copy import deepcopy
 import sys
 from pathlib import Path
 
 import pytest
+
+from tests.unit.runtime.greenfield_model_authoring_fixtures import structural_design_fixture
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -392,7 +395,7 @@ def test_project_state_assertion_accepts_css_transformed_story_labels() -> None:
                 "body": "The product owns packet review but not the external archive.",
             },
             {
-                "label": "OWNED CAPABILITIES",
+                "label": "PROPOSED CAPABILITIES",
                 "semantic_slot": "owned_capabilities",
                 "body": "The product validates, records, and displays the decision.",
             },
@@ -409,7 +412,7 @@ def test_project_state_assertion_compares_shared_source_facts_to_typed_payload()
         {"label": "User Problem", "semantic_slot": "user_problem", "body": "One accepted fact."},
         {"label": "First Path", "semantic_slot": "first_path", "body": "One accepted path.\nThen another."},
         {"label": "Product Boundary", "semantic_slot": "product_boundary", "body": "One boundary."},
-        {"label": "Owned Capabilities", "semantic_slot": "owned_capabilities", "body": "One capability."},
+        {"label": "Proposed Capabilities", "semantic_slot": "owned_capabilities", "body": "One capability."},
         {"label": "Proof", "semantic_slot": "proof", "body": "One accepted path. Then another."},
     ]
     rendered_rows = [dict(row) for row in rows]
@@ -481,7 +484,7 @@ def test_story_row_parity_defers_structured_card_bodies_to_typed_node_proof() ->
         {"label": "User Problem", "semantic_slot": "user_problem", "body": "A source fact."},
         {"label": "First Path", "semantic_slot": "first_path", "body": "Signal amber\nRecord receipt"},
         {"label": "Product Boundary", "semantic_slot": "product_boundary", "body": "Product-owned systems:\nFerry desk"},
-        {"label": "Owned Capabilities", "semantic_slot": "owned_capabilities", "body": "Ferry desk: signal amber; record receipt"},
+        {"label": "Proposed Capabilities", "semantic_slot": "owned_capabilities", "body": "Ferry desk: signal amber; record receipt"},
         {"label": "Proof", "semantic_slot": "proof", "body": "A reviewed receipt."},
     ]
     rendered_rows = [dict(row) for row in payload_rows]
@@ -501,8 +504,8 @@ def test_story_row_parity_defers_structured_card_bodies_to_typed_node_proof() ->
     )
 
 
-def test_authored_structure_requires_direct_typed_node_parity() -> None:
-    module = _authored_contract_module()
+def _source_design_structure() -> tuple[dict, dict]:
+    design = structural_design_fixture((1, 2))
     facts = {
         "first_path_relations": [
             {
@@ -528,6 +531,7 @@ def test_authored_structure_requires_direct_typed_node_parity() -> None:
         ],
         "external_systems": ["North Archive"],
         "non_goals": ["Do not claim live settlement."],
+        "provisional_design": design,
     }
     events = [
         {"order": 1, "text": "Keeper signals amber ferry"},
@@ -537,15 +541,27 @@ def test_authored_structure_requires_direct_typed_node_parity() -> None:
         "focus": events,
         "first_path": events,
         "actors": [{"actor": "Keeper", "events": events[:1]}],
+        "capabilities_authority": "provisional_design",
+        "capabilities_label": "Proposed capabilities:",
         "capabilities": [
-            {"owner": "Relay", "responsibility": "Own blue-receipt custody."}
+            {"owner": row["name"], "responsibility": row["responsibility"]}
+            for row in design["components"]
         ],
         "boundary_groups": [
-            {"key": "product_owned_systems", "items": ["Relay", "Audit Console"]},
-            {"key": "external_systems", "items": ["North Archive"]},
-            {"key": "non_goals", "items": ["Do not claim live settlement."]},
+            {"key": "provisional_components", "label": "Proposed logical components (not deployment commitments):",
+             "items": [row["name"] for row in design["components"]]},
+            {"key": "source_product_systems", "label": "Source-stated systems:", "items": ["Relay", "Audit Console"]},
+            {"key": "external_systems", "label": "External systems:", "items": ["North Archive"]},
+            {"key": "non_goals", "label": "Excluded from the first release:", "items": ["Do not claim live settlement."]},
         ],
+        "deliveries": [{"title": row["title"], "deliverable": row["deliverable"]} for row in design["workstreams"]],
     }
+    return rendered, facts
+
+
+def test_authored_structure_requires_direct_typed_node_parity() -> None:
+    module = _authored_contract_module()
+    rendered, facts = _source_design_structure()
 
     assert module.authored_structure_issues(rendered, facts) == ()
 
@@ -556,6 +572,65 @@ def test_authored_structure_requires_direct_typed_node_parity() -> None:
     assert module.authored_structure_issues(collapsed, facts) == (
         "browser surface project first path does not preserve typed event nodes",
     )
+
+
+@pytest.mark.parametrize("damage", [
+    "source_responsibility", "missing_authority", "missing_label", "source_ownership_label",
+    "source_context_lost", "actor_reassigned", "repeated_deliverable", "delivery_missing",
+    "unsupported_design", "missing_design",
+])
+def test_authored_browser_oracle_rejects_source_design_or_delivery_corruption(damage: str) -> None:
+    module = _authored_contract_module()
+    rendered, facts = _source_design_structure()
+    if damage == "source_responsibility":
+        rendered["capabilities"][0] = {"owner": "Relay", "responsibility": "Own blue-receipt custody."}
+    elif damage == "missing_authority":
+        rendered["capabilities_authority"] = ""
+    elif damage == "missing_label":
+        rendered["capabilities_label"] = "Capabilities:"
+    elif damage == "source_ownership_label":
+        rendered["boundary_groups"][0]["label"] = "Product-owned systems:"
+    elif damage == "source_context_lost":
+        rendered["boundary_groups"].pop(1)
+    elif damage == "actor_reassigned":
+        rendered["actors"][0]["actor"] = facts["provisional_design"]["components"][0]["name"]
+    elif damage == "repeated_deliverable":
+        rendered["deliveries"][1]["deliverable"] = rendered["deliveries"][0]["deliverable"]
+    elif damage == "delivery_missing":
+        rendered["deliveries"].pop()
+    elif damage == "unsupported_design":
+        facts["provisional_design"]["components"][0]["supported_event_orders"] = [3]
+    else:
+        facts.pop("provisional_design")
+    assert module.authored_structure_issues(rendered, facts)
+
+
+def test_proposed_oracle_preserves_canonical_bytes_under_browser_whitespace_only() -> None:
+    module = _authored_contract_module()
+    rendered, facts = _source_design_structure()
+    facts["provisional_design"]["components"][0]["responsibility"] = "Keep café evidence\nwith APIv7 receipt."
+    original = deepcopy(facts)
+    rendered["capabilities"][0]["responsibility"] = "Keep café evidence with APIv7 receipt."
+    assert module.authored_structure_issues(rendered, facts) == ()
+    rendered["capabilities"][0]["responsibility"] = "Keep cafe evidence with APIv7 receipt."
+    assert module.authored_structure_issues(rendered, facts)
+    assert facts == original
+
+
+def test_required_proposed_capability_label_does_not_accept_retired_source_label() -> None:
+    module = _module()
+    issues = module._project_story_binding_issues([
+        {"label": "Owned Capabilities", "semantic_slot": "owned_capabilities", "body": "A proposed capability."},
+    ])
+    assert any("unexpected semantic label: `Owned Capabilities`" in issue for issue in issues)
+    assert any("missing its `Proposed Capabilities` card" in issue for issue in issues)
+
+
+def test_browser_dom_extraction_has_one_owner_below_the_runner_size_limit() -> None:
+    source = (SCRIPTS_ROOT / "greenfield_browser_surface_proof.py").read_text(encoding="utf-8")
+    assert "evaluate(AUTHORED_STRUCTURE_EXPRESSION)" in source
+    assert "const authoredStructure" not in source
+    assert len(source.splitlines()) <= 1200
 
 
 def test_project_state_assertion_fails_closed_when_authored_nodes_are_missing() -> None:

@@ -359,6 +359,7 @@ def test_sealed_separate_source_context_rejects_an_unknown_event_order() -> None
             result.first_path_relations,
             result.component_responsibility_relations,
             first_path_context_relations=context_relations,
+            provisional_design=result.provisional_design,
         ),
     }
 
@@ -473,6 +474,7 @@ def test_repeated_event_text_at_distinct_source_and_projection_coordinates_seals
             result.first_path_relations,
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
+            provisional_design=result.provisional_design,
         ),
     }
     envelope = build_product_intent_envelope(
@@ -514,6 +516,7 @@ def test_true_duplicate_event_coordinates_fail_sealed_validation() -> None:
             relations,
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
+            provisional_design=result.provisional_design,
         ),
     }
 
@@ -541,6 +544,7 @@ def test_partially_overlapping_source_event_coordinates_fail_sealed_validation()
             relations,
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
+            provisional_design=result.provisional_design,
         ),
     }
 

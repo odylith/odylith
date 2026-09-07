@@ -19,6 +19,9 @@ from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
 from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
     decision_copy,
 )
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
+    provisional_design_from_intent,
+)
 from odylith.runtime.project_intelligence.product_story_contract import (
     PRODUCT_STORY_CARD_SLOTS,
 )
@@ -131,6 +134,7 @@ def build_authored_greenfield_payload(
             title=title,
             product_story=product_story,
             problem=decision_copy(intent, "problem"),
+            internal_systems=internal_systems,
             first_path=first_path,
             proof_boundary=proof_boundary,
             visible_result=visible_result,
@@ -268,6 +272,7 @@ def build_authored_greenfield_payload(
             "first_path_relations": [dict(row) for row in relations],
             "first_path_context_relations": [dict(row) for row in context_relations],
             "component_responsibility_relations": [dict(row) for row in component_relations],
+            "provisional_design": provisional_design_from_intent(intent),
             "validation_strategy": validation,
         },
     }
@@ -283,6 +288,7 @@ def _product_story(
     visible_result: str,
     human_actors: Sequence[str],
     components: Sequence[Mapping[str, Any]],
+    internal_systems: Sequence[str],
     external_systems: Sequence[str],
     non_goals: Sequence[str],
     event_quotes: Sequence[str],
@@ -294,6 +300,7 @@ def _product_story(
         "First Path": "\n".join(event_quotes),
         "Product Boundary": authored_product_boundary(
             components=components,
+            internal_systems=internal_systems,
             external_systems=external_systems,
             non_goals=non_goals,
         ),
@@ -306,7 +313,11 @@ def _product_story(
         "paragraphs": [product_story, *event_quotes],
         "supporting_records": [],
         "release_contract": [
-            {"label": label, "semantic_slot": slot, "body": bodies[label]}
+            {
+                "label": "Proposed capabilities" if slot == "owned_capabilities" else label,
+                "semantic_slot": slot,
+                "body": bodies[label],
+            }
             for label, slot in PRODUCT_STORY_CARD_SLOTS
         ],
         "actors": [
@@ -346,6 +357,10 @@ def authored_component_capabilities(
 
     rows: list[str] = []
     for component in components:
+        if component.get("authority_kind") != "provisional_design":
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield dashboard capability requires explicit provisional design authority"
+            )
         label = _required_text(component, "label")
         responsibility = _required_text(component, "responsibility")
         row = f"{label}: {responsibility}"
@@ -355,23 +370,26 @@ def authored_component_capabilities(
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield dashboard requires an authored component capability"
         )
-    return tuple(rows)
+    return ("Proposed capabilities:", *rows)
 
 
 def authored_product_boundary(
     *,
     components: Sequence[Mapping[str, Any]],
+    internal_systems: Sequence[str],
     external_systems: Sequence[str],
     non_goals: Sequence[str],
 ) -> str:
-    """Render exact ownership, external, and exclusion facts as one boundary card."""
+    """Keep proposed logical boundaries distinct from source-stated dependencies."""
 
     labels = [_required_text(component, "label") for component in components]
     if not labels:
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield dashboard requires an authored product boundary"
         )
-    rows = ["Product-owned systems:", *labels]
+    rows = ["Proposed logical components (not deployment commitments):", *labels]
+    if internal_systems:
+        rows.extend(("Source-stated systems:", *internal_systems))
     if external_systems:
         rows.extend(("External systems:", *external_systems))
     if non_goals:
@@ -399,8 +417,7 @@ def _job_rows(
         title = _first_text(item, "title", "name") or "Authored workstream"
         body = _first_text(
             item,
-            "product_view",
-            "problem",
+            "deliverable",
             "recommended_first_slice",
         ) or title
         reference = _first_text(

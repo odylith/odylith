@@ -15,6 +15,9 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
     render_coding_readiness_gates,
 )
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    structural_design_fixture,
+)
 
 
 def _typed_relation(
@@ -125,6 +128,7 @@ def test_authored_handoff_preserves_verified_fields_without_legacy_reconstructio
                         "responsibility_source": "terminal_visible_result",
                     },
                 ),
+                provisional_design=structural_design_fixture((1, 2, 3)),
             ),
         },
         "project_brief": {

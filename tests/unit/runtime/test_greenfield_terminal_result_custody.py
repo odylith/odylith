@@ -128,6 +128,7 @@ def test_terminal_result_keeps_selected_product_story_custody_across_sealed_vali
             result.first_path_relations,
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
+            provisional_design=result.provisional_design,
         ),
     }
 

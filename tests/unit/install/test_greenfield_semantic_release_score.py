@@ -39,6 +39,9 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     greenfield_operating_envelope_receipt,
 )
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    structural_design_fixture,
+)
 
 
 TEST_CONFIDENCE = {
@@ -920,6 +923,7 @@ def _commit_result(
                         first_path_context_relations=semantics[
                             "first_path_context_relations"
                         ],
+                        provisional_design=semantics["provisional_design"],
                     ),
                 },
             },
@@ -974,11 +978,13 @@ def _authored_semantics(
             "responsibility_source": "terminal_visible_result",
         }
     ]
+    provisional_design = structural_design_fixture((1,))
     return {
         "version": AUTHORED_SEMANTICS_VERSION,
         "first_path_relations": relations,
         "first_path_context_relations": [],
         "component_responsibility_relations": components,
+        "provisional_design": provisional_design,
     }
 
 
@@ -1247,6 +1253,9 @@ def _rich_relation_bundle(
                 "first_path_event_order": order,
             }
         )
+    provisional_design = structural_design_fixture(
+        tuple(row["order"] for row in semantic_events)
+    )
     semantics = {
         "version": AUTHORED_SEMANTICS_VERSION,
         "first_path_relations": semantic_events,
@@ -1261,6 +1270,7 @@ def _rich_relation_bundle(
                 "responsibility_source": "accepted_fact",
             }
         ],
+        "provisional_design": provisional_design,
     }
     result = _commit_result(case, atoms=actual_atoms, facts=facts)
     snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
@@ -1297,6 +1307,7 @@ def _refresh_relation_hash(result: GreenfieldMatrixResult) -> None:
         semantics["first_path_relations"],
         semantics["component_responsibility_relations"],
         first_path_context_relations=semantics["first_path_context_relations"],
+        provisional_design=semantics["provisional_design"],
     )
 
 
@@ -1354,6 +1365,7 @@ def _repeated_relation_evidence() -> tuple[GreenfieldMatrixCase, dict[str, objec
                 "visible_result_sha256": _sha(visible) if visible else "",
             }
         )
+    provisional_design = structural_design_fixture((1, 2))
     semantics = {
         "version": AUTHORED_SEMANTICS_VERSION,
         "first_path_relations": semantic_events,
@@ -1368,6 +1380,7 @@ def _repeated_relation_evidence() -> tuple[GreenfieldMatrixCase, dict[str, objec
                 "responsibility_source": "terminal_visible_result",
             }
         ],
+        "provisional_design": provisional_design,
     }
     snapshot = {
         "facts": {
@@ -1380,6 +1393,7 @@ def _repeated_relation_evidence() -> tuple[GreenfieldMatrixCase, dict[str, objec
             semantic_events,
             semantics["component_responsibility_relations"],
             first_path_context_relations=[],
+            provisional_design=provisional_design,
         ),
     }
     atoms = [

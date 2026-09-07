@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
 )
 from greenfield_browser_authored_contract import (
+    AUTHORED_STRUCTURE_EXPRESSION,
     atlas_degraded_state_assertion_issues as _atlas_degraded_state_assertion_issues,
     atlas_diagram_coverage_issues as _atlas_diagram_coverage_issues,
     atlas_error_state_assertion_issues as _atlas_error_state_assertion_issues,
@@ -308,39 +309,6 @@ def _project_generated_state_issues(
                     body: String(item.querySelector(".project-story-contract-body")?.innerText || "").trim()
                   }))
                   .filter((item) => item.label || item.body);
-                const eventRows = (selector) => Array.from(node.querySelectorAll(selector))
-                  .map((item) => ({
-                    order: Number(item.dataset.eventOrder || "0"),
-                    text: String(item.innerText || "").trim()
-                  }));
-                const authoredStructure = {
-                  focus: eventRows('[data-authored-fact-list="focus"] [data-authored-fact-item]'),
-                  first_path: eventRows('[data-authored-fact-list="first_path"] [data-authored-fact-item]'),
-                  actors: Array.from(node.querySelectorAll("[data-authored-actor]"))
-                    .map((card) => ({
-                      actor: String(card.dataset.authoredActor || "").trim(),
-                      events: Array.from(card.querySelectorAll('[data-authored-fact-list="actor"] [data-authored-fact-item]'))
-                        .map((item) => ({
-                          order: Number(item.dataset.eventOrder || "0"),
-                          text: String(item.innerText || "").trim()
-                        }))
-                    }))
-                    .filter((row) => row.events.length),
-                  capabilities: Array.from(
-                    node.querySelectorAll('[data-authored-fact-list="owned_capabilities"] [data-authored-fact-item]')
-                  ).map((item) => ({
-                    owner: String(item.querySelector("[data-authored-owner]")?.innerText || "").trim(),
-                    responsibility: String(
-                      item.querySelector("[data-authored-responsibility]")?.innerText || ""
-                    ).trim()
-                  })),
-                  boundary_groups: Array.from(node.querySelectorAll("[data-authored-boundary-group]"))
-                    .map((group) => ({
-                      key: String(group.dataset.boundaryKind || "").trim(),
-                      items: Array.from(group.querySelectorAll("[data-authored-fact-item]"))
-                        .map((item) => String(item.innerText || "").trim())
-                    }))
-                };
                 const clippedText = Array.from(
                   node.querySelectorAll("h1, h2, h3, h4, p, li, td, th, code, strong, span")
                 ).filter((item) => {
@@ -372,7 +340,6 @@ def _project_generated_state_issues(
                     storyBodies.map((body) => body.toLocaleLowerCase())
                   ).size,
                   storyRows,
-                  authoredStructure,
                   clippedTextCount: clippedText.length,
                   hasPromptGrid: Boolean(node.querySelector(".project-host-prompt-grid")),
                   hasBlankState: text.includes("Project not defined yet"),
@@ -386,6 +353,7 @@ def _project_generated_state_issues(
                 };
             }"""
         )
+        authored_structure = page.locator("#pane-project").evaluate(AUTHORED_STRUCTURE_EXPRESSION)
         payload_state = page.evaluate(
             """() => {
                 const payload = window.__ODYLITH_TOOLING_DATA__ || {};
@@ -433,9 +401,7 @@ def _project_generated_state_issues(
                 payload_story_rows=(
                     payload_state.get("storyRows", ()) if isinstance(payload_state, dict) else ()
                 ),
-                authored_structure=(
-                    project_state.get("authoredStructure", {}) if isinstance(project_state, dict) else {}
-                ),
+                authored_structure=authored_structure,
                 payload_authored_facts=(
                     payload_state.get("authoredFacts", {}) if isinstance(payload_state, dict) else {}
                 ),
@@ -528,7 +494,7 @@ def _project_story_binding_issues(rows: list[dict[str, Any]]) -> tuple[str, ...]
         "user problem": ("User Problem", "user_problem"),
         "first path": ("First Path", "first_path"),
         "product boundary": ("Product Boundary", "product_boundary"),
-        "owned capabilities": ("Owned Capabilities", "owned_capabilities"),
+        "proposed capabilities": ("Proposed Capabilities", "owned_capabilities"),
         "proof": ("Proof", "proof"),
     }
     issues: list[str] = []

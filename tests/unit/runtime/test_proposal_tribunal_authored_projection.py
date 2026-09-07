@@ -18,6 +18,9 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.project_intelligence_binding import (
     attach_project_intelligence_bindings,
 )
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    structural_design_fixture,
+)
 
 
 def _authored_proposal() -> dict[str, object]:
@@ -80,6 +83,7 @@ def _authored_proposal() -> dict[str, object]:
                     "first_path_event_order": 1,
                 },
             ),
+            provisional_design=structural_design_fixture((1,)),
         ),
     }
     return attach_project_intelligence_bindings(
@@ -143,21 +147,39 @@ def test_authored_typed_projection_passes_structural_tribunal() -> None:
         },
     )
     assert proposal["security_compliance"] == {}
+    assert len(proposal["components"]) == 4
     component = proposal["components"][0]
     assert set(component["component_contract"]) == {
-        "owner_system",
-        "responsibility_facts",
-        "owner_bound_events",
-        "event_targets",
-        "visible_results",
-        "state_context",
-        "external_dependencies",
-        "operational_constraints",
+        "authority_kind",
+        "design_ref",
+        "provisional_component",
+        "support_event_refs",
+        "supporting_events",
+        "exchanges",
     }
-    assert component["boundary"] == ""
+    semantics = proposal["intent"][AUTHORED_SEMANTICS_KEY]
+    assert component["component_id"] == "test-boundary-1"
+    assert component["authority_kind"] == "provisional_design"
+    assert component["component_contract"]["provisional_component"] == semantics[
+        "provisional_design"
+    ]["components"][0]
+    assert component["component_contract"]["support_event_refs"] == [
+        "/authored_semantics/first_path_relations/0"
+    ]
+    assert component["component_contract"]["supporting_events"] == semantics[
+        "first_path_relations"
+    ]
+    assert component["boundary"] == (
+        "Proposed logical ownership; no implementation or deployment is asserted."
+    )
     assert component["dependencies"] == []
-    assert component["interfaces"] == []
-    assert component["validation"] == []
+    assert component["interfaces"] == [
+        "Proposed exchange — test-boundary-1 → test-boundary-2: "
+        "The exact test value from boundary 1."
+    ]
+    assert component["validation"] == [
+        "Read back the exact test value assigned to boundary 1."
+    ]
 
 
 @pytest.mark.parametrize(

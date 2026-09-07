@@ -1,4 +1,4 @@
-"""Closed source-grounded semantic relations from Greenfield model authoring."""
+"""Closed source relations and distinctly provisional Greenfield design custody."""
 
 from __future__ import annotations
 
@@ -13,10 +13,11 @@ from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
     intent_text_at_path,
     intent_text_rows,
 )
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import validate_provisional_design
 from odylith.runtime.governance.artifact_tribunal import _bind_verified_source_custody
 
 AUTHORED_SEMANTICS_KEY = "authored_semantics"
-AUTHORED_SEMANTICS_VERSION = "odylith.greenfield.authored-semantics.v13"
+AUTHORED_SEMANTICS_VERSION = "odylith.greenfield.authored-semantics.v14"
 AUTHORED_RELATION_SET_SHA256_KEY = "authored_relation_set_sha256"
 AUTHORED_PROJECTION_ORIGIN = "model_authored_typed_intent"
 AUTHORED_SEMANTIC_ROOT = f"intent.{AUTHORED_SEMANTICS_KEY}"
@@ -388,8 +389,9 @@ def authored_semantics_mapping(
     component_responsibility_relations: Sequence[Mapping[str, Any]] = (),
     *,
     first_path_context_relations: Sequence[Mapping[str, Any]] = (),
+    provisional_design: Mapping[str, Any],
 ) -> dict[str, Any]:
-    """Serialize verified relations beside, but never instead of, source facts."""
+    """Serialize source relations and tagged design without replacing source facts."""
 
     return {
         "version": AUTHORED_SEMANTICS_VERSION,
@@ -400,6 +402,9 @@ def authored_semantics_mapping(
         "component_responsibility_relations": [
             dict(row) for row in component_responsibility_relations
         ],
+        "provisional_design": validate_provisional_design(
+            provisional_design, event_orders=tuple(row["order"] for row in relations),
+        ),
     }
 
 
@@ -745,6 +750,7 @@ def _authored_relations_from_intent(
             "first_path_relations",
             "first_path_context_relations",
             "component_responsibility_relations",
+            "provisional_design",
         }
     ):
         raise GreenfieldAuthoredSemanticsError("Greenfield authored semantics are malformed")
@@ -773,6 +779,13 @@ def _authored_relations_from_intent(
         intent=intent,
         first_path_relations=first_path_relations,
     )
+    try:
+        validate_provisional_design(
+            semantics["provisional_design"],
+            event_orders=tuple(row["order"] for row in first_path_relations),
+        )
+    except ValueError as exc:
+        raise GreenfieldAuthoredSemanticsError(str(exc)) from exc
     return first_path_relations, context_relations, component_relations
 
 
@@ -935,8 +948,9 @@ def authored_relation_set_sha256(
     component_responsibility_relations: Sequence[Mapping[str, Any]] = (),
     *,
     first_path_context_relations: Sequence[Mapping[str, Any]] = (),
+    provisional_design: Mapping[str, Any] | None = None,
 ) -> str:
-    """Hash the complete ordered relation contract without interpreting its language."""
+    """Bind source relations and provisional design in one semantic custody hash."""
 
     if isinstance(relations, (str, bytes, bytearray)):
         raise GreenfieldAuthoredSemanticsError("Greenfield authored relation custody is malformed")
@@ -961,12 +975,18 @@ def authored_relation_set_sha256(
         ):
             raise GreenfieldAuthoredSemanticsError("Greenfield authored relation custody is malformed")
         context_payload.append(dict(relation))
+    if not first_path_payload and (component_payload or context_payload or provisional_design is not None):
+        raise GreenfieldAuthoredSemanticsError("Greenfield authored design requires source relations")
+    design_payload = validate_provisional_design(
+        provisional_design, event_orders=tuple(row["order"] for row in first_path_payload),
+    ) if first_path_payload else None
     canonical = json.dumps(
         {
             "version": AUTHORED_SEMANTICS_VERSION,
             "first_path_relations": first_path_payload,
             "first_path_context_relations": context_payload,
             "component_responsibility_relations": component_payload,
+            "provisional_design": design_payload,
         },
         ensure_ascii=True,
         separators=(",", ":"),
@@ -1013,6 +1033,7 @@ def require_relation_authority_parity(
         relations,
         component_relations,
         first_path_context_relations=context_relations,
+        provisional_design=intent[AUTHORED_SEMANTICS_KEY]["provisional_design"],
     )
     if sealed_digest != expected:
         raise GreenfieldAuthoredSemanticsError(
@@ -1039,6 +1060,7 @@ def authored_source_custody(
             relations,
             component_relations,
             first_path_context_relations=context_relations,
+            provisional_design=intent[AUTHORED_SEMANTICS_KEY]["provisional_design"],
         ),
     )
 

@@ -17,6 +17,9 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
     PRODUCT_INTENT_AUTHORITY_KEY,
 )
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    structural_design_fixture,
+)
 
 
 FIRST_PATH = (
@@ -116,6 +119,7 @@ def _proposal() -> dict[str, object]:
                         "first_path_event_order": 0,
                     },
                 ),
+                provisional_design=structural_design_fixture((1, 2)),
             ),
         },
         "observed_source": {"source_posture": "operator prompt"},

@@ -7,6 +7,9 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
+    validate_provisional_design,
+)
 
 RenderText = Callable[[object], str]
 
@@ -72,34 +75,30 @@ def authored_fact_view(project: Mapping[str, Any]) -> AuthoredFactView | None:
     if not events:
         return None
 
-    capabilities: list[AuthoredCapability] = []
-    raw_capabilities = raw_facts.get("component_responsibility_relations")
-    capability_rows = (
-        raw_capabilities
-        if isinstance(raw_capabilities, Sequence)
-        and not isinstance(raw_capabilities, (str, bytes, bytearray))
-        else ()
+    try:
+        design = validate_provisional_design(
+            raw_facts.get("provisional_design"), event_orders=tuple(event.order for event in events),
+        )
+    except ValueError:
+        return None
+    capabilities = tuple(
+        AuthoredCapability(owner=row["name"], responsibility=row["responsibility"])
+        for row in design["components"]
     )
-    for raw_capability in capability_rows:
-        if not isinstance(raw_capability, Mapping):
-            continue
-        owner = raw_capability.get("owner_system_quote")
-        responsibility = raw_capability.get("responsibility_quote")
-        if isinstance(owner, str) and owner.strip() and isinstance(responsibility, str) and responsibility.strip():
-            capabilities.append(
-                AuthoredCapability(
-                    owner=owner.strip(),
-                    responsibility=responsibility.strip(),
-                )
-            )
-
-    product_owners = _authored_text_items(raw_facts.get("internal_systems"))
+    proposed_components = tuple(row["name"] for row in design["components"])
     external_systems = _authored_text_items(raw_facts.get("external_systems"))
     non_goals = _authored_text_items(raw_facts.get("non_goals"))
     boundary_groups = tuple(
         row
         for row in (
-            AuthoredBoundaryGroup("product_owned_systems", "Product-owned systems", product_owners),
+            AuthoredBoundaryGroup(
+                "provisional_components", "Proposed logical components (not deployment commitments)",
+                proposed_components,
+            ),
+            AuthoredBoundaryGroup(
+                "source_product_systems", "Source-stated systems",
+                _authored_text_items(raw_facts.get("internal_systems")),
+            ),
             AuthoredBoundaryGroup("external_systems", "External systems", external_systems),
             AuthoredBoundaryGroup("non_goals", "Excluded from the first release", non_goals),
         )
@@ -107,7 +106,7 @@ def authored_fact_view(project: Mapping[str, Any]) -> AuthoredFactView | None:
     )
     return AuthoredFactView(
         events=tuple(events),
-        capabilities=tuple(capabilities),
+        capabilities=capabilities,
         boundary_groups=boundary_groups,
     )
 
@@ -212,8 +211,11 @@ def _structured_story_body(
             for item in view.capabilities
         )
         return (
-            '<ul class="project-story-records project-story-contract-body project-authored-fact-list" '
-            f'data-authored-fact-list="owned_capabilities">{rows}</ul>'
+            '<div class="project-story-contract-body">'
+            '<p data-provisional-design-label>Proposed capabilities:</p>'
+            '<ul class="project-story-records project-authored-fact-list" '
+            'data-authored-fact-list="owned_capabilities" data-authority-kind="provisional_design">'
+            f'{rows}</ul></div>'
         )
     if semantic_slot == "product_boundary" and view.boundary_groups:
         groups = "".join(

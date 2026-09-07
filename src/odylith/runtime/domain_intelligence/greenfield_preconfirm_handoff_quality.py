@@ -131,6 +131,7 @@ def _authored_project_dashboard_contract_issues(
     expected_cards = {
         "product_boundary": authored_product_boundary(
             components=components,
+            internal_systems=_exact_rows(intent.get("internal_systems")),
             external_systems=_exact_rows(intent.get("external_systems")),
             non_goals=_exact_rows(intent.get("non_goals")),
         ),

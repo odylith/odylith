@@ -36,44 +36,61 @@ from tests.unit.runtime.greenfield_proposal_fixtures import (
 )
 
 
-def test_authoring_receipt_preserves_the_validated_intent_call_count() -> None:
+@pytest.mark.parametrize("call_count", [1, 2])
+def test_authoring_receipt_preserves_observed_count_without_authenticating_it(call_count) -> None:
+    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
     authored = SimpleNamespace(
         provider={
-            "provider": "codex",
-            "model": "gpt-5.6-terra",
-            "reasoning_effort": "medium",
+            "provider": profile.provider,
+            "model": profile.model,
+            "reasoning_effort": profile.reasoning_effort,
         },
-        profile_id="greenfield-standard-terra-medium-v1",
-        effective_timeout_seconds=55.0,
+        profile_id=profile.profile_id,
+        effective_timeout_seconds=profile.model_timeout_seconds,
         tier="standard",
         elapsed_seconds=42.0,
         consistency_status="consistent",
         source_spans=(),
-        semantic_model_call_count=2,
+        semantic_model_call_count=call_count,
     )
 
-    assert _authoring_receipt(authored)["semantic_model_call_count"] == 2
+    receipt = _authoring_receipt(authored)
+    assert receipt["semantic_model_call_count"] == call_count
+    manifest = approved_authored_quality_manifest_fixture(model_authoring=receipt)
+    if call_count == 2:
+        with pytest.raises(ValueError, match="quality manifest is not approved"):
+            greenfield_create_transaction.require_product_create_transaction_quality_approved(manifest)
+    else:
+        greenfield_create_transaction.require_product_create_transaction_quality_approved(manifest)
 
 
 @pytest.mark.parametrize("call_count", [1, 2])
 def test_clarification_receipt_preserves_the_observed_call_count(call_count) -> None:
+    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
     clarification = GreenfieldAuthoringClarification(
         required_fields=("first_path",),
         elapsed_seconds=12.0,
         tier="standard",
         provider={
-            "provider": "codex",
-            "model": "gpt-5.6-terra",
-            "reasoning_effort": "medium",
+            "provider": profile.provider,
+            "model": profile.model,
+            "reasoning_effort": profile.reasoning_effort,
         },
-        profile_id="greenfield-standard-terra-medium-v1",
-        effective_timeout_seconds=55.0,
+        profile_id=profile.profile_id,
+        effective_timeout_seconds=profile.model_timeout_seconds,
         consistency_status="material_ambiguity",
         consistency_source_spans=(),
         semantic_model_call_count=call_count,
     )
 
-    assert _authoring_receipt(clarification)["semantic_model_call_count"] == call_count
+    receipt = _authoring_receipt(clarification)
+    assert receipt["semantic_model_call_count"] == call_count
+    if call_count == 2:
+        # Serialization preserves an obsolete claim; it does not authenticate it.
+        with pytest.raises(ValueError, match="quality manifest is not approved"):
+            greenfield_create_transaction.require_product_create_transaction_quality_approved(
+                approved_authored_quality_manifest_fixture(model_authoring=receipt)
+            )
 
 
 def _approved_model_authoring(
@@ -99,22 +116,19 @@ def _approved_model_authoring(
     }
 
 
-@pytest.mark.parametrize("semantic_model_call_count", (1, 2))
-def test_quality_approval_accepts_bounded_model_calls_and_zero_reinterpretation(
-    semantic_model_call_count: int,
-) -> None:
+def test_quality_approval_accepts_one_model_call_and_zero_reinterpretation() -> None:
     greenfield_create_transaction.require_product_create_transaction_quality_approved(
         approved_authored_quality_manifest_fixture(
             model_authoring=_approved_model_authoring(
                 STANDARD_PROFILE_ID,
                 elapsed_seconds=12.0,
-                semantic_model_call_count=semantic_model_call_count,
+                semantic_model_call_count=1,
             )
         )
     )
 
 
-@pytest.mark.parametrize("invalid_count", (True, 0, 3))
+@pytest.mark.parametrize("invalid_count", (True, False, 0, 2, 3))
 def test_quality_approval_rejects_invalid_semantic_model_call_counts(
     invalid_count: object,
 ) -> None:

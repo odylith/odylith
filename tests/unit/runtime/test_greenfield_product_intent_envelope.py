@@ -133,6 +133,7 @@ def _authored_inputs() -> tuple[str, GreenfieldModelAuthoredIntent, dict[str, An
             result.first_path_relations,
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
+            provisional_design=result.provisional_design,
         ),
     }
     return source, result, intent
@@ -173,6 +174,7 @@ def test_authored_envelope_preserves_exact_facts_spans_relations_and_authority()
         result.first_path_relations,
         result.component_responsibility_relations,
         first_path_context_relations=result.first_path_context_relations,
+        provisional_design=result.provisional_design,
     )
 
     assert envelope["schema_version"] == PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION

@@ -9,10 +9,8 @@ from pathlib import Path
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
-from odylith.runtime.domain_intelligence.greenfield_authored_backlog import (
-    _validated_rendered_field_refs,
-)
 from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
+    authored_projection_parity_issues,
     build_authored_greenfield_proposal,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_radar_ordering import (
@@ -150,10 +148,10 @@ def test_explicit_decision_pointer_survives_equal_story_or_path_bytes(
         decision_overrides={field: shared_value},
     )
     project = proposal["backlog"][0]
-    semantics = project["authored_workstream_semantics"]
+    semantics = project["provisional_workstream_contract"]
 
     assert proposal["intent"][field] == proposal["intent"][source_field] == shared_value
-    assert semantics["rendered_field_refs"][field] == [f"/{field}"]
+    assert semantics["decision_refs"][field] == f"/{field}"
     assert shared_value in project[field]
     authority = proposal[PRODUCT_INTENT_AUTHORITY_KEY]
     source_bound_paths = {
@@ -194,16 +192,10 @@ def test_equal_value_custody_does_not_relax_decision_fact_xor_assumption(
         )
 
 
-def test_rendered_decision_ref_must_remain_owned_by_its_semantic_contract() -> None:
-    with pytest.raises(ValueError, match="unowned semantic ref"):
-        _validated_rendered_field_refs(
-            projection={"field_refs": {"product_view": ["/product_view"]}},
-            semantic_contract={
-                "fact_refs": ["/product_story"],
-                "relation_refs": [],
-                "shared_fact_refs": [],
-            },
-        )
+def test_rendered_decision_ref_must_remain_owned_by_its_canonical_decision(tmp_path: Path) -> None:
+    proposal = _authored_proposal(tmp_path, non_goals=[])
+    proposal["backlog"][0]["provisional_workstream_contract"]["decision_refs"]["product_view"] = "/product_story"
+    assert any("`backlog` projection drifted" in issue for issue in authored_projection_parity_issues(proposal))
 
 
 def test_authored_backlog_rationale_reaches_rendering_without_placeholder_copy(
@@ -226,21 +218,15 @@ def test_authored_backlog_rationale_reaches_rendering_without_placeholder_copy(
     assert decision["version"] == AUTHORED_ORDERING_DECISION_VERSION
     assert decision["tradeoff"] == ""
     assert decision["deferred_scope"] == [non_goal]
-    assert decision["ranking_basis"] == (
-        "Dock attendant records berth occupancy and sees a signed berth receipt"
-    )
+    assert decision["ranking_basis"] == first["recommended_first_slice"]
     assert row_args.ordering_rationale == decision["ranking_basis"]
-    assert rationale_lines[0] == "- why now: Provide one reviewable berth workflow."
-    assert rationale_lines[1] == (
-        "- expected outcome: Harbor Desk records berth occupancy."
-    )
+    assert rationale_lines[0] == "- why now: Source fact — Provide one reviewable berth workflow."
+    assert rationale_lines[1] == f"- expected outcome: {first['recommended_first_slice']}"
     assert rationale_lines[2] == f"- deferred for now: {non_goal}"
-    assert rationale_lines[3].endswith(
-        "Dock attendant records berth occupancy and sees a signed berth receipt"
-    )
+    assert rationale_lines[3].endswith(first["recommended_first_slice"])
     assert "TBD" not in "\n".join(rationale_lines)
     sections = first["radar_sections"]
-    assert [row["workstream_role"] for row in proposal["backlog"]] == ["project"]
+    assert [row["workstream_role"] for row in proposal["backlog"]] == ["provisional_design"] * 4
     assert non_goal in sections["Non-Goals"]
     assert non_goal not in sections["Risks"]
     assert non_goal not in sections["Migration/Compatibility"]

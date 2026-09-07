@@ -3,7 +3,7 @@ flowchart LR
       direction TB
       reviewed["Reviewed ProductCreateTransaction<br/>Hash-bound exact after-image"]
       preconditions["Receipt and precondition check<br/>Repository state must still match"]
-      write["Atomic transaction write<br/>No model, parser, generation,<br/>or prose repair after CONFIRM"]
+      write["Journaled sealed-byte publication<br/>No model, parser, generation,<br/>or prose repair after CONFIRM"]
       recovery["Rollback and recovery custody<br/>Snapshot, journal, interrupt cleanup,<br/>and same-hash retry"]
       readback["Exact governed readback<br/>Published bytes match reviewed bytes"]
     end
@@ -32,7 +32,8 @@ flowchart LR
     reviewed --> preconditions --> write --> readback
     write -. "failure or interruption" .-> recovery
     recovery -. "restore or safe retry" .-> write
-    readback --> projections --> atlas_source --> atlas_render --> surfaces --> browser
+    projections --> atlas_source --> atlas_render --> surfaces --> reviewed
+    readback --> browser
     product_parser --> evaluator
     projections --> evaluator
     browser --> evaluator --> strict_gate --> confidence --> retain --> cleanup --> release

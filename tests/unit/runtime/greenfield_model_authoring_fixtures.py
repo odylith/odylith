@@ -32,8 +32,6 @@ class StructuredAuthoringProvider:
         self.last_request_reasoning_effort = str(getattr(request, "reasoning_effort", ""))
         self.requests.append(request)
         self.calls += 1
-        if str(getattr(request, "schema_name", "")) == "greenfield_semantic_source_review":
-            return {"result": {"corrections": []}}
         return copy.deepcopy(dict(self.response)) if self.response is not None else None
 
 
@@ -45,6 +43,7 @@ def authored_response(
     first_path_relations: Sequence[Mapping[str, Any]] | None = None,
     component_responsibility_owners: Sequence[str] | None = None,
     terminal_component_owner: str | None = None,
+    provisional_design: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build a model-shaped response using quotes and occurrence ordinals only."""
 
@@ -120,7 +119,51 @@ def authored_response(
             "assumptions": list(intent.get("assumptions") or []),
             "ambiguities": list(intent.get("ambiguities") or []),
             "consistency": {"status": "consistent", "evidence_quotes": []},
+            "provisional_design": copy.deepcopy(provisional_design) if provisional_design is not None
+            else structural_design_fixture(range(1, len(relation_rows) + 1)),
         },
+    }
+
+
+def structural_design_fixture(event_orders: Sequence[int]) -> dict[str, Any]:
+    """Synthetic design for custody/wiring tests, never product-quality evidence."""
+
+    orders = list(event_orders)
+    if not orders:
+        raise ValueError("design fixture requires source events")
+    components = [
+        {
+            "key": f"test-boundary-{index}",
+            "name": f"Structural test boundary {index}",
+            "responsibility": f"Retain the test value at boundary {index}.",
+            "supported_event_orders": orders if index == 1 else [orders[(index - 1) % len(orders)]],
+            "verification": f"Read back the exact test value assigned to boundary {index}.",
+        }
+        for index in range(1, 5)
+    ]
+    return {
+        "version": "odylith.greenfield.provisional-design.v1",
+        "authority_kind": "provisional_design",
+        "components": components,
+        "workstreams": [
+            {
+                "key": f"test-work-{index}",
+                "title": f"Implement structural test boundary {index}",
+                "component_keys": [row["key"]],
+                "depends_on": [f"test-work-{index - 1}"] if index > 1 else [],
+                "deliverable": f"Implement the exact-value boundary {index}.",
+                "verification": f"An independent read returns the test value from boundary {index}.",
+            }
+            for index, row in enumerate(components, 1)
+        ],
+        "exchanges": [
+            {
+                "from_component": components[index - 1]["key"],
+                "to_component": components[index]["key"],
+                "contract": f"The exact test value from boundary {index}.",
+            }
+            for index in range(1, 4)
+        ],
     }
 
 

@@ -5,7 +5,7 @@
   B-111 through B-117. The surface should show the umbrella, execution waves,
   release target `release-0-1-11`, and proof gates without turning Odylith Discipline
   into noisy task theater.
-Last updated: 2026-07-20
+Last updated: 2026-09-06
 
 
 ## Purpose
@@ -50,6 +50,11 @@ Odylith surfaces.
   only when the operator selects Rank; Score and Date modes must order rows by
   their own comparators after the fixed execution/parked/active/finished
   section grouping.
+- Greenfield provisional workstream prerequisites must reach native
+  `workstream_depends_on` record IDs before transaction sealing. The existing
+  allocation/link owner resolves canonical design keys; dependency prose and
+  Atlas arrows alone are not native Radar topology proof. No title parsing or
+  post-confirm link rebuilding is permitted.
 
 ## Runtime Contract
 ### Source truth

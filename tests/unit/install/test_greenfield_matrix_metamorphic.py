@@ -30,6 +30,9 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     authored_relation_set_sha256,
     combined_prompt_evidence_source,
 )
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    structural_design_fixture,
+)
 
 
 HASH = "c" * 64
@@ -459,11 +462,13 @@ def _typed_semantic_snapshot(
             "responsibility_source": "terminal_visible_result",
         }
     ]
+    provisional_design = structural_design_fixture((1,))
     semantics = {
         "version": AUTHORED_SEMANTICS_VERSION,
         "first_path_relations": relations,
         "first_path_context_relations": contexts,
         "component_responsibility_relations": components,
+        "provisional_design": provisional_design,
     }
     atoms = _atomic_facts(
         facts=facts,
@@ -481,6 +486,7 @@ def _typed_semantic_snapshot(
             relations,
             components,
             first_path_context_relations=contexts,
+            provisional_design=provisional_design,
         ),
     }
 

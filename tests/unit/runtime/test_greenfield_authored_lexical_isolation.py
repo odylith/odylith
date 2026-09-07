@@ -6,6 +6,7 @@ import hashlib
 import json
 from collections.abc import Mapping
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 from odylith.runtime.domain_intelligence import (
@@ -139,7 +140,7 @@ def test_public_authored_propose_seals_exact_non_latin_customer(
     )
 
     assert rc == 0, payload
-    assert provider.calls == 2
+    assert provider.calls == 1
     assert payload["intent_hypothesis"]["customer"] == "港務員"
     assert payload["mode"] == "product_create_transaction"
     transaction_path = tmp_path / payload["transaction_file"]
@@ -160,7 +161,7 @@ def test_public_authored_rescue_tier_seals_the_90_second_budget(
     author_greenfield_intent = greenfield_model_intent_authoring.author_greenfield_intent
 
     def author_after_standard_window(**kwargs: Any) -> Any:
-        ticks = iter((0.0, 55.0, 55.0, 55.0))
+        ticks = iter((0.0, 80.0))
         return author_greenfield_intent(**kwargs, clock=lambda: next(ticks))
 
     monkeypatch.setattr(
@@ -168,6 +169,7 @@ def test_public_authored_rescue_tier_seals_the_90_second_budget(
         "author_greenfield_intent",
         author_after_standard_window,
     )
+    monkeypatch.setattr(greenfield_proposals_cli, "time", SimpleNamespace(perf_counter=lambda: 0.0))
     rc, payload, provider = _public_propose(
         tmp_path=tmp_path,
         monkeypatch=monkeypatch,
@@ -177,7 +179,7 @@ def test_public_authored_rescue_tier_seals_the_90_second_budget(
     )
 
     assert rc == 0, payload
-    assert provider.calls == 2
+    assert provider.calls == 1
     transaction = json.loads((tmp_path / payload["transaction_file"]).read_text(encoding="utf-8"))
     manifest = transaction["quality_manifest"]
     assert manifest["requested_repair_tier"] == "rescue"
@@ -185,7 +187,9 @@ def test_public_authored_rescue_tier_seals_the_90_second_budget(
     assert manifest["budget_seconds"] == 90.0
     assert manifest["rescue_activated"] is True
     assert manifest["model_authoring"]["tier"] == "rescue"
-    assert manifest["model_authoring"]["semantic_model_call_count"] == 2
+    assert manifest["model_authoring"]["semantic_model_call_count"] == 1
+    assert provider.requests[0].timeout_seconds == 80.0
+    assert manifest["model_authoring"]["model_profile"]["effective_timeout_seconds"] == 80.0
 
 
 def test_public_authored_propose_seals_exact_non_latin_product_title(
@@ -207,13 +211,21 @@ def test_public_authored_propose_seals_exact_non_latin_product_title(
     )
 
     assert rc == 0, payload
-    assert provider.calls == 2
+    assert provider.calls == 1
     assert payload["intent_hypothesis"]["title"] == "港務台"
     transaction_path = tmp_path / payload["transaction_file"]
     transaction = json.loads(transaction_path.read_text(encoding="utf-8"))
     assert transaction["proposal"]["intent"]["title"] == "港務台"
-    idea_paths = transaction["prewrite_package"]["backlog_result"]["idea_files"]
-    assert any("deliver-港務台" in path for path in idea_paths)
+    title_atom = next(
+        atom for atom in transaction["intent_authority"]["atomic_facts"]
+        if any(link["path"] == "/title" for link in atom["projection_links"])
+    )
+    assert title_atom["normalized_value"] == "港務台"
+    title_span = title_atom["source_span_refs"][0]
+    source_bytes = combined_prompt_evidence_source(
+        prompt=_evidence_source(intent), edit_evidence="",
+    ).encode("utf-8")
+    assert source_bytes[title_span["source_start_byte"]:title_span["source_end_byte"]] == "港務台".encode("utf-8")
 
 
 def test_public_authored_propose_seals_exact_repeated_brand_without_rewriting(
@@ -235,7 +247,7 @@ def test_public_authored_propose_seals_exact_repeated_brand_without_rewriting(
     )
 
     assert rc == 0, payload
-    assert provider.calls == 2
+    assert provider.calls == 1
     assert payload["intent_hypothesis"]["title"] == "Miu Miu"
     transaction_path = tmp_path / payload["transaction_file"]
     transaction = json.loads(transaction_path.read_text(encoding="utf-8"))
@@ -247,6 +259,7 @@ def test_public_authored_deep_tier_stays_structural_and_seals_exact_unicode_cust
     monkeypatch: Any,
     capsys: Any,
 ) -> None:
+    monkeypatch.setattr(greenfield_proposals_cli, "time", SimpleNamespace(perf_counter=lambda: 0.0))
     intent = _authored_intent(customer="港務員")
     source = _evidence_source(intent)
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
@@ -259,12 +272,13 @@ def test_public_authored_deep_tier_stays_structural_and_seals_exact_unicode_cust
     )
 
     assert rc == 0, payload
-    assert provider.calls == 2
+    assert provider.calls == 1
     transaction = json.loads((tmp_path / payload["transaction_file"]).read_text(encoding="utf-8"))
     manifest = transaction["quality_manifest"]
     assert manifest["requested_repair_tier"] == "deep"
     assert manifest["repair_tier"] == "deep"
     assert manifest["budget_seconds"] == 120.0
+    assert provider.requests[0].timeout_seconds == 105.0
     assert manifest["rescue_activated"] is True
     assert manifest["semantic_compiler"] == {
         "version": "odylith.greenfield.authored-semantic-validation.v3",

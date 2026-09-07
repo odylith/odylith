@@ -135,6 +135,7 @@ def test_product_intent_authority_binds_complete_ordered_authored_relation_set(t
         relations,
         component_relations,
         first_path_context_relations=context_relations,
+        provisional_design=candidate["authored_semantics"]["provisional_design"],
     )
 
 
@@ -310,7 +311,7 @@ def test_transaction_compilation_rejects_mutated_relation_set(
     expected_error = (
         "invalid first-path relations"
         if mutation == "removed_classification"
-        else "do not match sealed Product Intent authority"
+        else "invalid source-event references"
     )
     with pytest.raises(GreenfieldAuthoredSemanticsError, match=expected_error):
         greenfield_proposals.compile_greenfield_create_transaction(

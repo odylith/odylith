@@ -11,6 +11,10 @@ from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
 )
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
+    PROVISIONAL_DESIGN_AUTHORITY_KIND,
+    provisional_design_from_intent,
+)
 from odylith.runtime.governance import backlog_authoring
 
 
@@ -149,13 +153,21 @@ def apply_backlog_traceability(
     proposal: Mapping[str, Any],
     plan: GreenfieldTraceabilityPlan,
 ) -> list[str]:
-    """Publish only exact authored diagram references into compiled Radar records."""
+    """Publish exact diagram and allocated design prerequisites before sealing."""
 
     if proposal.get("projection_origin") != AUTHORED_PROJECTION_ORIGIN:
         raise ValueError("Greenfield traceability publication requires a sealed authored projection")
+    dependencies = _allocated_workstream_dependencies(proposal=proposal, workstreams=plan.workstreams)
+    records = [
+        (workstream, *backlog_authoring._parse_metadata_and_sections(workstream.path))
+        for workstream in plan.workstreams
+    ]
+    for workstream, metadata, _ in records:
+        if metadata.get("idea_id") != workstream.idea_id or metadata.get("title") != workstream.title:
+            raise ValueError("Greenfield workstream allocation does not match its compiled Radar record")
     touched: list[str] = []
-    for workstream in plan.workstreams:
-        metadata, sections = backlog_authoring._parse_metadata_and_sections(workstream.path)
+    for workstream, metadata, sections in records:
+        metadata["workstream_depends_on"] = _join_ids(dependencies[workstream.idea_id])
         diagrams = plan.backlog_diagrams.get(workstream.idea_id, ())
         if diagrams:
             metadata["related_diagram_ids"] = _join_ids(
@@ -167,6 +179,43 @@ def apply_backlog_traceability(
         )
         touched.append(_repo_relative(repo_root=repo_root, path=workstream.path))
     return touched
+
+
+def _allocated_workstream_dependencies(
+    *, proposal: Mapping[str, Any], workstreams: Sequence[CreatedWorkstream],
+) -> dict[str, tuple[str, ...]]:
+    design = provisional_design_from_intent(_mapping(proposal.get("intent")))
+    canonical_rows = {row["key"]: row for row in design["workstreams"]}
+    ids_by_key: dict[str, str] = {}
+    allocated_ids: set[str] = set()
+    allocated_paths: set[Path] = set()
+    for workstream in workstreams:
+        contract = _mapping(workstream.row.get("provisional_workstream_contract"))
+        projected = _mapping(contract.get("provisional_workstream"))
+        key = projected.get("key")
+        canonical = canonical_rows.get(key) if isinstance(key, str) else None
+        if (
+            canonical is None
+            or projected != canonical
+            or contract.get("authority_kind") != PROVISIONAL_DESIGN_AUTHORITY_KIND
+            or workstream.row.get("authority_kind") != PROVISIONAL_DESIGN_AUTHORITY_KIND
+            or workstream.title != canonical["title"]
+            or workstream.row.get("title") != canonical["title"]
+            or key in ids_by_key
+            or not workstream.idea_id
+            or workstream.idea_id in allocated_ids
+            or workstream.path.resolve() in allocated_paths
+        ):
+            raise ValueError("Greenfield workstream allocation must bind each canonical design key exactly once")
+        ids_by_key[key] = workstream.idea_id
+        allocated_ids.add(workstream.idea_id)
+        allocated_paths.add(workstream.path.resolve())
+    if ids_by_key.keys() != canonical_rows.keys():
+        raise ValueError("Greenfield workstream allocation is missing canonical design workstreams")
+    return {
+        ids_by_key[key]: tuple(ids_by_key[dependency] for dependency in row["depends_on"])
+        for key, row in canonical_rows.items()
+    }
 
 
 def _created_workstreams(

@@ -125,7 +125,7 @@ def _stage_observation(
     initial = {
         "profile_id": profile_id, "request_role": "initial_authoring",
         "model": profile.model, "reasoning_effort": profile.reasoning_effort,
-        "timeout_seconds": profile.model_timeout_seconds - profile.source_review_reserve_seconds,
+        "timeout_seconds": profile.model_timeout_seconds,
         "elapsed_seconds": 5.0,
         "provider": {
             "provider": profile.provider, "model": profile.model,
@@ -133,7 +133,7 @@ def _stage_observation(
         },
     }
     response_result = _clarification_result() if clarification else {"status": "authored"}
-    has_review = not clarification or reviewed
+    has_review = reviewed
     observation = {
         "version": "odylith.greenfield.model-proof-observation.v2",
         "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
@@ -151,12 +151,12 @@ def _stage_observation(
         }
         observation["source_review"] = {
             "profile_id": profile_id, "request_role": "source_review",
-            "model": profile.source_review_model,
-            "reasoning_effort": profile.source_review_reasoning_effort,
+            "model": "gpt-5.6-sol",
+            "reasoning_effort": "medium",
             "timeout_seconds": profile.model_timeout_seconds - 5.0, "elapsed_seconds": 5.0,
             "provider": {
-                "provider": profile.provider, "model": profile.source_review_model,
-                "reasoning_effort": profile.source_review_reasoning_effort,
+                "provider": profile.provider, "model": "gpt-5.6-sol",
+                "reasoning_effort": "medium",
             },
             "response": {
                 "result": response_result if clarification else {"corrections": []},
@@ -1219,7 +1219,7 @@ def test_model_profile_release_proof_requires_all_tiers_under_strict_budgets() -
     )["status"] == "failed"
 
 
-def test_model_profile_release_proof_accepts_review_demoted_clarification() -> None:
+def test_model_profile_release_proof_rejects_obsolete_review_demoted_clarification() -> None:
     module = _module()
     profile_id = module.model_profile_id_for_repair_tier("standard")
     results = (
@@ -1234,9 +1234,9 @@ def test_model_profile_release_proof_accepts_review_demoted_clarification() -> N
 
     proof = module.model_profile_release_proof(results, require_complete=False)
 
-    assert proof["status"] == "passed"
+    assert proof["status"] == "failed"
     assert proof["profiles"][profile_id]["committed_positive_case_count"] == 1
-    assert proof["profiles"][profile_id]["clarification_no_write_control_count"] == 1
+    assert proof["profiles"][profile_id]["clarification_no_write_control_count"] == 0
 
 
 def test_model_profile_release_proof_reports_missing_lower_profile_as_unproven() -> None:
@@ -1263,7 +1263,7 @@ def test_model_profile_release_proof_reports_missing_lower_profile_as_unproven()
     assert module.model_profile_release_proof(results, require_complete=True)["status"] == "failed"
 
 
-@pytest.mark.parametrize("mutation", ["missing", "review_model", "review_timeout", "outcome"])
+@pytest.mark.parametrize("mutation", ["missing", "author_model", "author_timeout", "review_path", "outcome"])
 def test_model_profile_aggregate_rechecks_private_roles_despite_passed_label(mutation: str) -> None:
     module = _module()
     profile_id = module.model_profile_id_for_repair_tier("standard")
@@ -1273,10 +1273,12 @@ def test_model_profile_aggregate_rechecks_private_roles_despite_passed_label(mut
     stages = _stage_observation(profile_id)
     if mutation == "missing":
         stages = {}
-    elif mutation == "review_model":
-        stages["source_review"]["provider"]["model"] = "gpt-5.6-terra"
-    elif mutation == "review_timeout":
-        stages["source_review"]["timeout_seconds"] = 55.0
+    elif mutation == "author_model":
+        stages["initial_authoring"]["provider"]["model"] = "gpt-5.6-sol"
+    elif mutation == "author_timeout":
+        stages["initial_authoring"]["timeout_seconds"] = 54.0
+    elif mutation == "review_path":
+        stages["source_review"] = {}
     else:
         stages = _stage_observation(profile_id, clarification=True)
     profile_evidence["stage_observation"] = stages

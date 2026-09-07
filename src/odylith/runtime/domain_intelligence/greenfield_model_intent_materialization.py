@@ -162,6 +162,7 @@ def materialize_model_authored_intent(
         authored.first_path_relations,
         authored.component_responsibility_relations,
         first_path_context_relations=authored.first_path_context_relations,
+        provisional_design=authored.provisional_design,
     )
     root = Path(repo_root).expanduser().resolve()
     paths = candidate_intent_stage_paths(root)

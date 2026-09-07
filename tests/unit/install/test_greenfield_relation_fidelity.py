@@ -352,7 +352,8 @@ def test_relation_fidelity_rejects_missing_or_digest_mismatched_sealed_authority
         snapshot["authored_relation_set_sha256"] = "f" * 64
     else:
         snapshot["authored_semantics"]["first_path_relations"][0]["order"] = "one"
-        _refresh_relation_hash(result)
+        with pytest.raises(ValueError):
+            _refresh_relation_hash(result)
 
     report = score_module.evaluate_semantic_release(
         cases=(case,),

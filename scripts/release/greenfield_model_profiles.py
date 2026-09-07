@@ -148,7 +148,7 @@ def model_profile_evidence(
     observed: Mapping[str, Any] | None = None,
     stage_observation: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Bind configured and retained request evidence to one composite profile."""
+    """Bind configured and retained evidence to one complete-author request."""
 
     contract = get_greenfield_model_profile(profile)
     configured = {
@@ -210,11 +210,7 @@ def model_profile_evidence(
         "lower_capability_scope": (
             "initial_authoring" if contract.lower_capability else "not_applicable"
         ),
-        "expected_source_review": {
-            "provider": contract.provider,
-            "model": contract.source_review_model,
-            "reasoning_effort": contract.source_review_reasoning_effort,
-        },
+        "maximum_semantic_model_calls": 1,
         "configured": configured,
         "observed": observation,
         "stage_observation": (
@@ -246,7 +242,7 @@ def model_stage_observation_issues(
     observed: Mapping[str, Any],
     stage_observation: Mapping[str, Any],
 ) -> tuple[str, ...]:
-    """Return fail-closed issues for one retained composite request observation."""
+    """Return fail-closed issues for one retained complete-author observation."""
 
     return tuple(
         str(issue)
@@ -313,11 +309,8 @@ def _model_stage_observation_evidence(
     if initial_elapsed is None:
         issues.append("retained initial authoring elapsed time is invalid")
     if sealed_timeout is not None and initial_timeout is not None:
-        expected_initial_timeout = sealed_timeout - contract.source_review_reserve_seconds
-        if expected_initial_timeout <= 0.0 or not _same_seconds(
-            initial_timeout, expected_initial_timeout
-        ):
-            issues.append("retained initial authoring timeout does not preserve the review reserve")
+        if not _same_seconds(initial_timeout, sealed_timeout):
+            issues.append("retained authoring timeout does not match the sealed model window")
     if (
         initial_timeout is not None
         and initial_elapsed is not None
@@ -325,73 +318,11 @@ def _model_stage_observation_evidence(
     ):
         issues.append("retained initial authoring elapsed time exceeds its timeout")
 
-    source_review = _mapping(retained.get("source_review"))
     request_roles: dict[str, Any] = {"initial_authoring": initial_summary}
-    if response_kind == "authored":
-        if normalized_call_count != 2:
-            issues.append("authored model response must record exactly two semantic calls")
-    elif response_kind == "clarification_required" and normalized_call_count not in {1, 2}:
-        issues.append("clarification model response must record one or two semantic calls")
-
-    has_review = response_kind == "authored" or normalized_call_count == 2
-    if has_review:
-        initial_response = _mapping(retained.get("initial_response"))
-        initial_result = _mapping(initial_response.get("result"))
-        if not initial_response:
-            issues.append("reviewed model response is missing its initial candidate")
-        elif (
-            str(initial_response.get("version") or "")
-            != GREENFIELD_INTENT_AUTHORING_VERSION
-            or str(initial_result.get("status") or "") != "authored"
-        ):
-            issues.append("retained initial candidate is not an authored response")
-        if not source_review:
-            issues.append("reviewed model response is missing its source review")
-        review_summary = _request_role_summary(source_review)
-        request_roles["source_review"] = review_summary
-        issues.extend(
-            _request_role_issues(
-                profile,
-                request_role="source_review",
-                observation=source_review,
-            )
-        )
-        review_timeout = _positive_float(source_review.get("timeout_seconds"))
-        review_elapsed = _positive_float(source_review.get("elapsed_seconds"))
-        if review_timeout is None:
-            issues.append("retained source review timeout is invalid")
-        if review_elapsed is None:
-            issues.append("retained source review elapsed time is invalid")
-        if (
-            review_timeout is not None
-            and review_elapsed is not None
-            and review_elapsed > review_timeout + _TIME_TOLERANCE_SECONDS
-        ):
-            issues.append("retained source review elapsed time exceeds its timeout")
-        if sealed_timeout is not None and initial_elapsed is not None and review_timeout is not None:
-            remaining = sealed_timeout - initial_elapsed
-            if review_timeout > remaining + _TIME_TOLERANCE_SECONDS:
-                issues.append("retained source review timeout exceeds the remaining shared window")
-        if sealed_timeout is not None and initial_elapsed is not None and review_elapsed is not None:
-            if initial_elapsed + review_elapsed > sealed_timeout + _TIME_TOLERANCE_SECONDS:
-                issues.append("retained semantic calls exceed the sealed shared model window")
-
-        review_response = _mapping(source_review.get("response"))
-        review_result = _mapping(review_response.get("result"))
-        if set(review_response) != {"result"} or not review_result:
-            issues.append("retained source review decision is invalid")
-        elif response_kind == "authored":
-            if set(review_result) != {"corrections"} or not isinstance(
-                review_result.get("corrections"), list
-            ):
-                issues.append("authored source review decision is invalid")
-        elif review_result != result:
-            issues.append("clarification source review decision does not match the final response")
-    elif response_kind == "clarification_required" and normalized_call_count == 1:
-        if "source_review" in retained:
-            issues.append("one-call clarification must not record a source review")
-        if "initial_response" in retained:
-            issues.append("one-call clarification must not record an intermediate candidate")
+    if normalized_call_count != 1:
+        issues.append("complete-author response must record exactly one semantic call")
+    if "source_review" in retained or "initial_response" in retained:
+        issues.append("complete-author response must not record an intermediate review path")
 
     return {
         "observation_version": str(retained.get("version") or ""),

@@ -52,6 +52,7 @@ def test_decision_assumptions_keep_their_type_and_custody() -> None:
         authored.first_path_relations,
         authored.component_responsibility_relations,
         first_path_context_relations=authored.first_path_context_relations,
+        provisional_design=authored.provisional_design,
     )
     assert intent["problem"] == intent["opportunity"] == intent["product_view"] == ""
     assert intent["assumptions"] == _DECISIONS
@@ -89,19 +90,19 @@ def test_radar_required_decisions_point_to_assumptions_not_missing_facts() -> No
         authored.first_path_relations,
         authored.component_responsibility_relations,
         first_path_context_relations=authored.first_path_context_relations,
+        provisional_design=authored.provisional_design,
     )
     proposal = build_authored_greenfield_proposal(
         observed_source={}, release_selector="0.0.1", confirmed_intent=intent,
     )
-    project = next(row for row in proposal["backlog"] if row["workstream_role"] == "project")
-    refs = project["authored_workstream_semantics"]["rendered_field_refs"]
-    for index, decision in enumerate(_DECISIONS):
-        field = decision["applies_to"]
-        assert refs[field] == [f"/assumptions/{index}"]
-        assert "Assumption" in project[field]
-        assert decision["statement"] in project[field]
-        assert decision["statement"] not in project["radar_sections"]["Assumptions"]
-    assert project["radar_sections"]["Assumptions"] == "- No additional assumptions."
+    assert len(proposal["backlog"]) == 4
+    for row in proposal["backlog"]:
+        refs = row["provisional_workstream_contract"]["decision_refs"]
+        for index, decision in enumerate(_DECISIONS):
+            field = decision["applies_to"]
+            assert refs[field] == f"/assumptions/{index}"
+            assert row[field] == f"Assumption — {decision['statement']}"
+            assert decision["statement"] in row["radar_sections"]["Assumptions"]
     assert "Validate this gap" not in str(proposal)
     assert proposal["project_brief"]["purpose"] == decision_copy(intent, "problem")
     customer_index = next(
@@ -110,14 +111,9 @@ def test_radar_required_decisions_point_to_assumptions_not_missing_facts() -> No
         if decision["applies_to"] == "customer"
     )
     customer_ref = f"/assumptions/{customer_index}"
-    child_rows = [
-        row for row in proposal["backlog"] if row["workstream_role"] != "project"
-    ]
-    assert child_rows
-    for row in child_rows:
-        semantics = row["authored_workstream_semantics"]
-        assert semantics["rendered_field_refs"]["customer"] == [customer_ref]
-        assert customer_ref in semantics["shared_fact_refs"]
+    for row in proposal["backlog"]:
+        semantics = row["provisional_workstream_contract"]
+        assert semantics["decision_refs"]["customer"] == customer_ref
         assert row["customer"] == (
             "Assumption — Marine operations leaders are the primary beneficiaries "
             "of the berth record."

@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 import html
+from copy import deepcopy
+
+import pytest
 
 from odylith.runtime.project_intelligence import authored_fact_presenter
 from odylith.runtime.project_intelligence import greenfield_authored_dashboard
+from tests.unit.runtime.greenfield_model_authoring_fixtures import structural_design_fixture
 
 
 EVENTS = (
@@ -11,6 +15,14 @@ EVENTS = (
     "Rill Engine writes blue receipt",
     "Quartz Keeper reviews blue receipt",
 )
+DESIGN_NAMES = ("Receipt entry", "Custody journal", "Evidence view", "Replay checks")
+
+
+def _design() -> dict:
+    design = structural_design_fixture((1, 2, 3))
+    for row, name in zip(design["components"], DESIGN_NAMES, strict=True):
+        row["name"] = name
+    return design
 
 
 def _project() -> dict[str, object]:
@@ -21,6 +33,7 @@ def _project() -> dict[str, object]:
             ("Participant", "Silent Reviewer", "Named in project evidence; no first-path action is assigned."),
         ],
         "authored_facts": {
+            "provisional_design": _design(),
             "first_path_relations": [
                 {
                     "order": 1,
@@ -73,11 +86,11 @@ def test_authored_fact_view_preserves_unseen_typed_facts_without_prose_parsing()
         (3, EVENTS[2]),
     ]
     assert [(row.owner, row.responsibility) for row in view.capabilities] == [
-        ("Rill Engine", "Own blue-receipt custody."),
-        ("Harbor Ledger", "Own amber-ferry evidence."),
+        (row["name"], row["responsibility"]) for row in _design()["components"]
     ]
     assert [(group.key, group.items) for group in view.boundary_groups] == [
-        ("product_owned_systems", ("Rill Engine", "Harbor Ledger", "Beacon Console")),
+        ("provisional_components", DESIGN_NAMES),
+        ("source_product_systems", ("Rill Engine", "Harbor Ledger", "Beacon Console")),
         ("external_systems", ("Delta Relay", "North Archive")),
         (
             "non_goals",
@@ -121,7 +134,13 @@ def test_authored_fact_presenter_renders_repeated_nodes_in_exact_order() -> None
     assert "Named in project evidence; no first-path action is assigned." in actors
     assert story.count('data-authored-fact-list="first_path"') == 1
     assert story.count('data-authored-fact-list="owned_capabilities"') == 1
-    assert story.count("data-authored-boundary-group") == 3
+    assert story.count("data-authored-boundary-group") == 4
+    assert 'data-authority-kind="provisional_design"' in story
+    assert '<p data-provisional-design-label>Proposed capabilities:</p>' in story
+    assert "Proposed logical components (not deployment commitments)" in story
+    assert "Source-stated systems:" in story
+    assert "Own blue-receipt custody." not in story
+    assert "Own amber-ferry evidence." not in story
     assert story.index("Rill Engine") < story.index("Harbor Ledger")
     assert "Beacon Console" in story
     assert story.index("Delta Relay") < story.index("North Archive")
@@ -138,9 +157,10 @@ def test_greenfield_story_fallback_bodies_preserve_structured_boundaries() -> No
         proof_boundary="A reviewer sees the blue receipt.",
         visible_result="blue receipt",
         human_actors=("Quartz Keeper",),
+        internal_systems=("Rill Engine", "Harbor Ledger", "Beacon Console"),
         components=(
-            {"label": "Rill Engine", "responsibility": "Own blue-receipt custody."},
-            {"label": "Harbor Ledger", "responsibility": "Own amber-ferry evidence."},
+            {"label": "Rill Engine", "responsibility": "Own blue-receipt custody.", "authority_kind": "provisional_design"},
+            {"label": "Harbor Ledger", "responsibility": "Own amber-ferry evidence.", "authority_kind": "provisional_design"},
         ),
         external_systems=("Delta Relay", "North Archive"),
         non_goals=("Do not claim live settlement.", "Do not automate reviewer judgment."),
@@ -151,13 +171,15 @@ def test_greenfield_story_fallback_bodies_preserve_structured_boundaries() -> No
 
     assert cards["first_path"] == "\n".join(EVENTS)
     assert cards["owned_capabilities"] == (
+        "Proposed capabilities:\n"
         "Rill Engine: Own blue-receipt custody.\n"
         "Harbor Ledger: Own amber-ferry evidence."
     )
     assert cards["product_boundary"] == (
-        "Product-owned systems:\n"
+        "Proposed logical components (not deployment commitments):\n"
         "Rill Engine\n"
         "Harbor Ledger\n"
+        "Source-stated systems:\nRill Engine\nHarbor Ledger\nBeacon Console\n"
         "External systems:\n"
         "Delta Relay\n"
         "North Archive\n"
@@ -175,3 +197,16 @@ def test_authored_fact_presenter_keeps_scalar_fallback_for_legacy_project() -> N
         project,
         render_text=_render_text,
     ) == "<h2>One legacy focus sentence.</h2>"
+
+
+@pytest.mark.parametrize("mutation", ["missing", "authority", "support"])
+def test_malformed_design_cannot_fall_back_to_source_owned_capabilities(mutation: str) -> None:
+    project = deepcopy(_project())
+    facts = project["authored_facts"]
+    if mutation == "missing":
+        facts.pop("provisional_design")
+    elif mutation == "authority":
+        facts["provisional_design"]["authority_kind"] = "source_grounded"
+    else:
+        facts["provisional_design"]["components"][0]["supported_event_orders"] = [99]
+    assert authored_fact_presenter.authored_fact_view(project) is None

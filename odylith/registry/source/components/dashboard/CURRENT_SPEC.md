@@ -5,7 +5,7 @@
   benchmark proof, and release-gate indicators may surface when useful, but
   passing checks should stay quiet and no dashboard claim should imply shipped
   behavior before pinned dogfood and benchmark proof exist.
-Last updated: 2026-09-05
+Last updated: 2026-09-06
 
 
 ## Purpose
@@ -13,6 +13,15 @@ Dashboard is the shell host for Odylith. It provides the top-level tabbed,
 deep-linkable parent surface that composes Project, Radar, Atlas, Compass,
 Registry, and Casebook into one navigable product entrypoint without flattening
 each child surface into the shell renderer.
+
+For the source-local v49 Greenfield candidate, Project receives exact canonical
+provisional design alongside source facts. Both scalar and structured presenters
+show proposed capabilities and proposed logical boundaries; source-stated systems,
+external dependencies and exclusions remain separate. Job cards copy each proposed
+workstream's distinct deliverable. The presenter must not reconstruct capabilities
+from source responsibility relations or hide the proposed-authority label.
+Browser proof checks these visible values and source actors on desktop/mobile;
+unit or DOM-count success does not establish complete-package human quality.
 
 ## Scope And Non-Goals
 ### Dashboard owns

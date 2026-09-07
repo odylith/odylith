@@ -25,8 +25,7 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     StructuredAuthoringProvider,
     clarification_response,
 )
-from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
-from tests.unit.runtime.test_greenfield_model_source_review import _provider
+from tests.unit.runtime.test_greenfield_model_path_custody import _source
 
 
 def _clarification(
@@ -189,66 +188,59 @@ def test_material_dimension_schema_distinguishes_path_from_product_boundary() ->
     assert "product_boundary" in description and "responsibility or scope limit" in description
 
 
-def test_review_can_select_existing_clarification_and_retains_both_roles(
+def test_one_call_clarification_retains_exact_source_and_only_author_role(
     tmp_path, monkeypatch,
 ) -> None:
-    initial = _response(_source())
-    review = {"result": _clarification()["result"]}
-    provider, clock = _provider(monkeypatch, [initial, review], [20.0, 8.0])
+    source = "Create a workspace without a stated first task."
+    response = _clarification()
+    provider = StructuredAuthoringProvider(response)
     observation = tmp_path / "observation.json"
     descriptor = os.open(observation, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     monkeypatch.setenv(GREENFIELD_MODEL_PROOF_FD_ENV, str(descriptor))
     try:
         result = author_greenfield_intent(
-            evidence_text=_source(), provider=provider, clock=clock
+            evidence_text=source, provider=provider, clock=iter([0.0, 28.0]).__next__,
         )
     finally:
         os.close(descriptor)
 
     assert isinstance(result, GreenfieldAuthoringClarification)
     assert result.required_fields == ("first_path",)
-    assert result.consistency_source_spans[0]["text"] == _source()
+    assert result.consistency_source_spans[0]["text"] == source
     assert result.elapsed_seconds == 28.0
-    assert result.semantic_model_call_count == 2
-    assert len(provider.requests) == 2
-    assert [request.timeout_seconds for request in provider.requests] == [30.0, 35.0]
+    assert result.semantic_model_call_count == provider.calls == 1
+    assert provider.requests[0].timeout_seconds == 55.0
     retained = json.loads(observation.read_text())
-    assert retained["semantic_model_call_count"] == 2
-    assert retained["initial_response"] == initial
-    assert retained["source_review"]["response"] == review
-    assert retained["response"]["result"] == review["result"]
+    assert retained["semantic_model_call_count"] == 1
+    assert retained["response"] == response
     assert retained["initial_authoring"]["request_role"] == "initial_authoring"
-    assert retained["source_review"]["request_role"] == "source_review"
-    assert retained["source_review"]["elapsed_seconds"] == 8.0
+    assert "source_review" not in retained
+    assert "initial_response" not in retained
     assert "facts" not in retained["response"]["result"]
 
 
-def test_review_contradiction_uses_the_same_exact_two_side_validation(monkeypatch):
+def test_author_contradiction_uses_exact_two_side_validation():
     first = "Send review notices automatically."
     second = "Never send review notices."
-    source = f"{_source()} {first} {second}"
-    review = {"result": _clarification(
+    source = f"{first} {second}"
+    provider = StructuredAuthoringProvider(_clarification(
         status="material_contradiction", quotes=(first, second),
         dimension="operational_constraints",
-    )["result"]}
-    provider, clock = _provider(monkeypatch, [_response(source), review], [20.0, 5.0])
-
-    result = author_greenfield_intent(evidence_text=source, provider=provider, clock=clock)
+    ))
+    result = author_greenfield_intent(evidence_text=source, provider=provider, clock=lambda: 0.0)
 
     assert isinstance(result, GreenfieldAuthoringClarification)
     assert [span["text"] for span in result.consistency_source_spans] == [first, second]
-    assert len(provider.requests) == 2
+    assert provider.calls == 1
 
 
 @pytest.mark.parametrize("mutation", [
     "extra-field", "mixed-corrections", "wrong-status", "invalid-dimension",
     "copied-ambiguity-quote", "missing-contradiction-side", "legacy-corrections",
 ])
-def test_review_clarification_rejects_invalid_outcome_without_another_call(
-    monkeypatch, mutation,
-):
-    review = {"result": _clarification()["result"]}
-    result = review["result"]
+def test_clarification_rejects_invalid_outcome_without_another_call(mutation):
+    response = _clarification()
+    result = response["result"]
     if mutation == "extra-field":
         result["facts"] = {}
     elif mutation == "mixed-corrections":
@@ -262,23 +254,21 @@ def test_review_clarification_rejects_invalid_outcome_without_another_call(
     elif mutation == "missing-contradiction-side":
         result["consistency"]["status"] = "material_contradiction"
     else:
-        review = {"corrections": []}
-    provider, clock = _provider(monkeypatch, [_response(_source()), review], [20.0, 5.0])
-
+        response = {"corrections": []}
+    provider = StructuredAuthoringProvider(response)
     with pytest.raises(GreenfieldModelAuthoringError):
-        author_greenfield_intent(evidence_text=_source(), provider=provider, clock=clock)
+        author_greenfield_intent(evidence_text=_source(), provider=provider, clock=lambda: 0.0)
+    assert provider.calls == 1
 
-    assert len(provider.requests) == 2
 
-
-def test_review_clarification_cannot_extend_the_shared_deadline(monkeypatch):
-    review = {"result": _clarification()["result"]}
-    provider, clock = _provider(monkeypatch, [_response(_source()), review], [25.0, 31.0])
-
+def test_clarification_cannot_extend_the_shared_deadline():
+    provider = StructuredAuthoringProvider(_clarification())
     with pytest.raises(GreenfieldModelAuthoringError, match="exceeded"):
-        author_greenfield_intent(evidence_text=_source(), provider=provider, clock=clock)
-
-    assert len(provider.requests) == 2
+        author_greenfield_intent(
+            evidence_text="The first task is unspecified.", provider=provider,
+            clock=iter([0.0, 55.001]).__next__,
+        )
+    assert provider.calls == 1
 
 
 @pytest.mark.parametrize("claims", [

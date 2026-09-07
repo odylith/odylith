@@ -14,26 +14,26 @@ from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence import greenfield_programs
-from odylith.runtime.domain_intelligence.greenfield_artifact_depth import (
-    plan_greenfield_artifact_depth,
-)
 from odylith.runtime.domain_intelligence.greenfield_authored_atlas_view import (
     build_authored_atlas_diagrams,
-)
-from odylith.runtime.domain_intelligence.greenfield_authored_backlog import (
-    build_authored_backlog,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
     AUTHORED_SEMANTICS_KEY,
     authored_component_relation_facts,
-    authored_semantics_mapping,
     authored_visible_result,
     component_responsibility_relations_from_intent,
     first_path_context_relations_from_intent,
     first_path_relations_from_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_command_text import shell_quote
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
+    provisional_design_from_intent,
+)
+from odylith.runtime.domain_intelligence.greenfield_provisional_package import (
+    build_provisional_backlog,
+    build_provisional_components,
+)
 from odylith.runtime.domain_intelligence.greenfield_intent_shaping_prompt import (
     accepted_intent_shaping_prompt,
 )
@@ -100,18 +100,9 @@ def build_authored_greenfield_proposal(
     operational_constraints = _strings(confirmed_intent.get("operational_constraints"))
     evidence_requirements = _strings(confirmed_intent.get("evidence_requirements"))
     success_metrics = _strings(confirmed_intent.get("success_metrics"))
-    artifact_depth = plan_greenfield_artifact_depth(
-        actor_count=len(_unique(human_actors)),
-        event_count=len(relations),
-        internal_system_count=len(_unique(internal_systems)),
-        external_system_count=len(_unique(external_systems)),
-        ambiguity_count=len(_unique(ambiguities)),
-        non_goal_count=len(_unique(non_goals)),
-        evidence_requirement_count=len(_unique(evidence_requirements)),
-        operational_constraint_count=len(_unique(operational_constraints)),
-    )
+    provisional_design = provisional_design_from_intent(confirmed_intent)
     visible_result = authored_visible_result(relations)
-    components = _components(
+    source_components = _source_components(
         title=title,
         product_slug=product_slug,
         internal_systems=internal_systems,
@@ -119,44 +110,18 @@ def build_authored_greenfield_proposal(
         component_responsibility_relations=component_responsibility_relations,
         first_path_context_relations=first_path_context_relations,
     )
-    all_diagram_slugs = {
+    components = build_provisional_components(intent=confirmed_intent, product_slug=product_slug)
+    diagram_slugs = {
         "context": f"{product_slug}-system-context",
         "sequence": f"{product_slug}-first-path",
-        "state_evidence": f"{product_slug}-state-evidence",
-        "component_boundaries": f"{product_slug}-component-boundaries",
+        "component_exchanges": f"{product_slug}-component-exchanges",
+        "delivery_dependencies": f"{product_slug}-delivery-dependencies",
+        "capability_support": f"{product_slug}-capability-support",
     }
-    backlog = build_authored_backlog(
-        title=title,
-        first_path=first_path,
-        product_story=product_story,
-        problem=_text(confirmed_intent.get("problem")),
-        customer=_text(confirmed_intent.get("customer")),
-        opportunity=_text(confirmed_intent.get("opportunity")),
-        product_view=_text(confirmed_intent.get("product_view")),
-        state_object=state_object,
-        human_actors=human_actors,
-        internal_systems=internal_systems,
-        success_metrics=success_metrics,
-        visible_result=visible_result,
-        proof_boundary=proof_boundary,
-        external_systems=external_systems,
-        evidence_requirements=evidence_requirements,
-        non_goals=non_goals,
-        operational_constraints=operational_constraints,
-        assumptions=assumptions,
-        ambiguities=ambiguities,
-        components=components,
-        relations=relations,
-        context_relations=first_path_context_relations,
-        component_responsibility_relations=component_responsibility_relations,
-        diagram_slugs={
-            role: all_diagram_slugs[role]
-            for role in artifact_depth.diagram_roles
-        },
-        workstream_roles=artifact_depth.workstream_roles,
+    backlog = build_provisional_backlog(
+        intent=confirmed_intent,
+        diagram_slugs=diagram_slugs,
     )
-    diagram_roles = artifact_depth.diagram_roles
-    diagram_slugs = {role: all_diagram_slugs[role] for role in diagram_roles}
     semantic_model = _semantic_model(
         title=title,
         state_object=state_object,
@@ -171,6 +136,7 @@ def build_authored_greenfield_proposal(
         components=components,
         backlog=backlog,
         relations=relations,
+        provisional_design=provisional_design,
     )
     diagrams = build_authored_atlas_diagrams(
         title=title,
@@ -181,11 +147,11 @@ def build_authored_greenfield_proposal(
         state_object=state_object,
         visible_result=visible_result,
         proof_boundary=proof_boundary,
-        components=components,
+        components=source_components,
         backlog=backlog,
         relations=relations,
-        context_relations=first_path_context_relations,
-        diagram_roles=diagram_roles,
+        provisional_design=provisional_design,
+        diagram_roles=tuple(diagram_slugs),
     )
     intent = _intent_copy(confirmed_intent)
     intent.update(
@@ -195,11 +161,7 @@ def build_authored_greenfield_proposal(
             "reasoning_mode": "model_authored_typed_intent",
             "evidence_tier": "user_intent",
             "summary": product_story,
-            AUTHORED_SEMANTICS_KEY: authored_semantics_mapping(
-                relations,
-                component_responsibility_relations,
-                first_path_context_relations=first_path_context_relations,
-            ),
+            AUTHORED_SEMANTICS_KEY: copy.deepcopy(confirmed_intent[AUTHORED_SEMANTICS_KEY]),
         }
     )
     validation_strategy = _unique([*success_metrics, proof_boundary, *evidence_requirements])
@@ -214,7 +176,7 @@ def build_authored_greenfield_proposal(
         "observed_source": dict(observed_source),
         "classification": {
             "method": "model_authored_typed_intent",
-            "fit_policy": "Project only verified source-cited facts and typed relations.",
+            "fit_policy": "Keep verified source facts separate from the required provisional design.",
             "provider_calls": 0,
         },
         "greenfield_ux": {
@@ -327,7 +289,7 @@ def _without_binding(field: str, value: Any) -> Any:
     return value
 
 
-def _components(
+def _source_components(
     *,
     title: str,
     product_slug: str,
@@ -465,6 +427,7 @@ def _semantic_model(
     components: Sequence[Mapping[str, Any]],
     backlog: Sequence[Mapping[str, Any]],
     relations: Sequence[Mapping[str, Any]],
+    provisional_design: Mapping[str, Any],
 ) -> dict[str, Any]:
     events = [
         {
@@ -489,13 +452,9 @@ def _semantic_model(
             {
                 "component_id": component_id,
                 "label": str(component.get("label") or ""),
-                "semantic_axis": "authored",
+                "semantic_axis": "provisional_design",
                 "release_scope": str(component.get("release_scope") or "first_release"),
-                "owner_system": _text(contract.get("owner_system")),
-                "responsibility_facts": _strings(contract.get("responsibility_facts")),
-                "owner_bound_events": _strings(contract.get("owner_bound_events")),
-                "event_targets": _strings(contract.get("event_targets")),
-                "visible_results": _strings(contract.get("visible_results")),
+                "component_contract": copy.deepcopy(contract),
             }
         )
     workstreams = [
@@ -535,6 +494,7 @@ def _semantic_model(
             "domain_terms": [],
         },
         "components": component_refs,
+        "provisional_design": copy.deepcopy(provisional_design),
         "workstreams": workstreams,
         "diagram_event_graph": {
             "events": events,
@@ -706,11 +666,7 @@ def _brief_section(section: str, value: str, why: str) -> dict[str, str]:
 
 
 def _intent_copy(intent: Mapping[str, Any]) -> dict[str, Any]:
-    return {
-        str(key): list(value) if isinstance(value, list) else value
-        for key, value in intent.items()
-        if key != AUTHORED_SEMANTICS_KEY
-    }
+    return copy.deepcopy({key: value for key, value in intent.items() if key != AUTHORED_SEMANTICS_KEY})
 
 
 def _required_text(value: Mapping[str, Any], key: str) -> str:

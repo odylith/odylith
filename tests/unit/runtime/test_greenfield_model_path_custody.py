@@ -189,7 +189,7 @@ def test_authoring_accepts_only_byte_verified_source_citations() -> None:
     )
     assert result.tier == "rescue"
     assert len(result.source_spans) == 19
-    assert provider.calls == 2
+    assert provider.calls == 1
 
 
 def test_product_led_path_keeps_review_recipient_without_inventing_human_event() -> None:
@@ -484,6 +484,7 @@ def test_verified_authoring_spans_become_the_product_intent_custody_source() -> 
             result.first_path_relations,
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
+            provisional_design=result.provisional_design,
         ),
     }
     envelope = build_product_intent_envelope(
@@ -555,6 +556,7 @@ def test_envelope_rejects_relation_rebound_to_a_duplicate_source_occurrence() ->
             relations,
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
+            provisional_design=result.provisional_design,
         ),
     }
 
@@ -606,6 +608,7 @@ def test_authored_custody_preserves_exact_unicode_markdown_and_deferred_actor_by
             result.first_path_relations,
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
+            provisional_design=result.provisional_design,
         ),
     }
     envelope = build_product_intent_envelope(

@@ -1,4 +1,4 @@
-"""Adaptive artifact depth on the sealed model-authored proposal route."""
+"""Source fidelity across required structural provisional-design projections."""
 
 from __future__ import annotations
 
@@ -244,143 +244,118 @@ def _sparse_proposal(
     )
 
 
-def _semantic_values(proposal: dict[str, Any]) -> dict[str, str]:
+def _assert_structural_design_projection_preserves_source(proposal: dict[str, Any]) -> None:
+    """Characterize structural fixture custody, not proposed-design usefulness."""
+
     intent = proposal["intent"]
-    values = {
-        f"/{field}": intent[field]
-        for field in (
-            "title",
-            "product_story",
-            "problem",
-            "customer",
-            "opportunity",
-            "product_view",
-            "state_object",
-            "first_path",
-            "proof_boundary",
-        )
-        if intent.get(field)
-    }
-    for field in (
-        "human_actors",
-        "internal_systems",
-        "external_systems",
-        "success_metrics",
-        "evidence_requirements",
-        "non_goals",
-        "operational_constraints",
-        "component_responsibilities",
-    ):
-        values.update(
-            {
-                f"/{field}/{index}": value
-                for index, value in enumerate(intent.get(field, []))
-            }
-        )
-    values.update({
-        f"/assumptions/{index}": row["statement"]
-        for index, row in enumerate(intent.get("assumptions", []))
-    })
     semantics = intent["authored_semantics"]
-    for field, quote_field in (
-        ("first_path_relations", "event_quote"),
-        ("first_path_context_relations", "fact_quote"),
-        ("component_responsibility_relations", "responsibility_quote"),
+    relations = semantics["first_path_relations"]
+    design = semantics["provisional_design"]
+    visible_package = str({
+        field: proposal[field]
+        for field in (
+            "assumptions",
+            "project_brief",
+            "project_intelligence",
+            "release_plan",
+            "backlog",
+            "components",
+            "semantic_model",
+            "diagrams",
+        )
+    })
+    for field in (
+        "title",
+        "product_story",
+        "problem",
+        "customer",
+        "opportunity",
+        "product_view",
+        "state_object",
+        "proof_boundary",
     ):
-        values.update(
-            {
-                f"/authored_semantics/{field}/{index}": row[quote_field]
-                for index, row in enumerate(semantics[field])
-            }
-        )
-    return values
-
-
-def _assert_owned_rendering(proposal: dict[str, Any]) -> None:
-    source_values = _semantic_values(proposal)
-    for row in proposal["backlog"]:
-        assert len({row["problem"], row["opportunity"], row["product_view"]}) == 3
-        contract = row["authored_workstream_semantics"]
-        owned_refs = (
-            set(contract["fact_refs"])
-            | set(contract["relation_refs"])
-            | set(contract["shared_fact_refs"])
-        )
-        rendered_text = {
-            "title": row["title"],
-            "problem": row["problem"],
-            "customer": row["customer"],
-            "opportunity": row["opportunity"],
-            "product_view": row["product_view"],
-            "success_metrics": "\n".join(row["success_metrics"]),
-            "recommended_first_slice": row["recommended_first_slice"],
-            "dependencies": "\n".join(row["dependencies"]),
-            "validation": "\n".join(row["validation"]),
-            "deferred_scope": "\n".join(row["ordering_decision"]["deferred_scope"]),
-            "scope": row["radar_sections"]["Scope"],
-            "ordering_why_now": row["ordering_decision"]["why_now"],
-            "ordering_expected_outcome": row["ordering_decision"]["expected_outcome"],
-            **{
-                f"radar_sections.{section}": body
-                for section, body in row["radar_sections"].items()
-            },
-        }
-        for field, refs in contract["rendered_field_refs"].items():
-            assert set(refs) <= owned_refs
-            assert all(source_values[ref] in rendered_text[field] for ref in refs)
-        component_refs = contract["rendered_field_refs"][
-            "radar_sections.Impacted Components"
-        ]
-        rendered_components = {
-            line.removeprefix("- ")
-            for line in row["radar_sections"]["Impacted Components"].splitlines()
-            if line.startswith("- ")
-        }
-        assert {source_values[ref] for ref in component_refs} == rendered_components
-
-
-def _assert_component_ownership_is_source_exact(proposal: dict[str, Any]) -> None:
-    intent = proposal["intent"]
-    assert {row["label"] for row in proposal["components"]} == set(
-        intent["internal_systems"]
-    )
-    assert {row["responsibility"] for row in proposal["components"]} == set(
-        intent["component_responsibilities"]
-    )
+        if intent.get(field):
+            assert intent[field] in visible_package
+    assert all(row["event_quote"] in visible_package for row in relations)
+    for field in (
+        "success_metrics",
+        "component_responsibilities",
+        "human_actors",
+        "external_systems",
+        "internal_systems",
+        "non_goals",
+        "evidence_requirements",
+        "operational_constraints",
+    ):
+        assert all(value in visible_package for value in intent.get(field, []))
     assert all(
-        row["component_contract"]["owner_system"] == row["label"]
-        for row in proposal["components"]
+        row["statement"] in visible_package for row in intent.get("assumptions", [])
     )
+    assert proposal["semantic_model"]["provisional_design"] == design
+    assert [row["label"] for row in proposal["components"]] == [
+        row["name"] for row in design["components"]
+    ]
+    assert [row["title"] for row in proposal["backlog"]] == [
+        row["title"] for row in design["workstreams"]
+    ]
+    supported_events: list[dict[str, Any]] = []
+    for index, (projected, canonical) in enumerate(
+        zip(proposal["components"], design["components"], strict=True)
+    ):
+        contract = projected["component_contract"]
+        assert projected["authority_kind"] == "provisional_design"
+        assert contract["authority_kind"] == "provisional_design"
+        assert contract["design_ref"] == f"/authored_semantics/provisional_design/components/{index}"
+        assert contract["provisional_component"] == canonical
+        assert contract["supporting_events"] == [
+            relations[order - 1] for order in canonical["supported_event_orders"]
+        ]
+        supported_events.extend(contract["supporting_events"])
+    assert all(relation in supported_events for relation in relations)
+    titles_by_key = {row["key"]: row["title"] for row in design["workstreams"]}
+    for index, (projected, canonical) in enumerate(
+        zip(proposal["backlog"], design["workstreams"], strict=True)
+    ):
+        contract = projected["provisional_workstream_contract"]
+        assert projected["authority_kind"] == projected["workstream_role"] == "provisional_design"
+        assert projected["component_focus"] == canonical["component_keys"]
+        assert contract["design_ref"] == f"/authored_semantics/provisional_design/workstreams/{index}"
+        assert contract["provisional_workstream"] == canonical
+        assert projected["dependencies"] == [
+            titles_by_key[key] for key in canonical["depends_on"]
+        ]
+        assert "actor's ownership" in projected["radar_sections"]["Design Authority"]
 
 
-def test_boundary_free_authored_project_keeps_one_complete_row_and_three_views(
+def test_boundary_free_source_keeps_complete_structural_design_projection(
     tmp_path: Path,
 ) -> None:
     proposal = _simple_proposal(tmp_path)
 
-    assert [row["workstream_role"] for row in proposal["backlog"]] == ["project"]
+    assert [row["workstream_role"] for row in proposal["backlog"]] == [
+        "provisional_design"
+    ] * 4
     assert [row["title"] for row in proposal["diagrams"]] == [
         "System Context View",
         "First Path Sequence",
-        "State and Evidence View",
+        "Proposed Component Exchanges",
+        "Proposed Delivery Dependencies and Acceptance",
+        "Proposed Capability Support and Source Facts",
     ]
     project = proposal["backlog"][0]
-    semantics = project["authored_workstream_semantics"]
-    assert semantics["role"] == "project"
-    assert "/product_story" in semantics["fact_refs"]
-    assert "/first_path" in semantics["fact_refs"]
     assert "Berth requests are hard to review." in project["problem"]
-    assert "Dock attendants receive a reviewable berth receipt." in project["radar_sections"]["Scope"]
+    assert proposal["intent"]["product_story"] == "Dock attendants receive a reviewable berth receipt."
     assert "Harbor Desk records one berth request and shows its receipt." in project["product_view"]
-    assert any("signed berth receipt" in metric for metric in project["success_metrics"])
-    _assert_owned_rendering(proposal)
+    assert "A dock attendant sees a signed berth receipt." in project["radar_sections"]["Source Success Metrics"]
+    _assert_structural_design_projection_preserves_source(proposal)
+    workstream_titles = [row["title"] for row in proposal["backlog"]]
     assert all(
-        row["related_workstream_titles"] == ["Deliver Harbor Desk"]
+        row["related_workstream_titles"] == workstream_titles
         for row in proposal["diagrams"]
     )
 
 
-def test_one_typed_event_omits_unjustified_sequence_and_backlog_link(
+def test_one_typed_event_keeps_complete_structural_projection_without_extra_events(
     tmp_path: Path,
 ) -> None:
     proposal = _sparse_proposal(
@@ -405,155 +380,84 @@ def test_one_typed_event_omits_unjustified_sequence_and_backlog_link(
 
     assert [row["title"] for row in proposal["diagrams"]] == [
         "System Context View",
-        "State and Evidence View",
+        "First Path Sequence",
+        "Proposed Component Exchanges",
+        "Proposed Delivery Dependencies and Acceptance",
+        "Proposed Capability Support and Source Facts",
     ]
+    assert len(proposal["semantic_model"]["first_path_contract"]["events"]) == 1
     assert all(
-        "-first-path" not in slug
-        for slug in proposal["backlog"][0]["related_diagram_slugs"]
+        component["component_contract"]["supporting_events"][0]["event_quote"]
+        == "Dock attendant records a request"
+        for component in proposal["components"]
     )
+    _assert_structural_design_projection_preserves_source(proposal)
 
 
-def test_structured_authored_project_adds_only_distinct_typed_workstream_roles(
+def test_structured_source_projects_distinct_canonical_design_with_source_custody(
     tmp_path: Path,
 ) -> None:
     proposal = _structured_proposal(tmp_path)
     backlog = proposal["backlog"]
+    intent = proposal["intent"]
+    design = intent["authored_semantics"]["provisional_design"]
 
-    assert [row["workstream_role"] for row in backlog] == [
-        "project",
-        "workflow",
-        "boundary",
-        "proof",
-    ]
+    assert [row["workstream_role"] for row in backlog] == ["provisional_design"] * 4
     assert len({row["title"] for row in backlog}) == 4
-    assert backlog[-1]["component_focus"] == ["receipt-ledger"]
-    semantics = {
-        row["workstream_role"]: row["authored_workstream_semantics"]
-        for row in backlog
-    }
-    assert semantics["workflow"]["fact_refs"] == [
-        "/first_path",
-        "/opportunity",
-        "/human_actors/0",
-        "/human_actors/1",
+    assert [row["component_focus"] for row in backlog] == [
+        row["component_keys"] for row in design["workstreams"]
     ]
-    assert semantics["workflow"]["relation_refs"] == [
-        "/authored_semantics/first_path_relations/0",
-        "/authored_semantics/first_path_relations/1",
-        "/authored_semantics/first_path_relations/2",
-        "/authored_semantics/first_path_relations/3",
+    source_events = [
+        row["event_quote"]
+        for row in intent["authored_semantics"]["first_path_relations"]
     ]
-    assert set(semantics["boundary"]["fact_refs"]) == {
-        "/external_systems/0",
-        "/external_systems/1",
-        "/non_goals/0",
-        "/non_goals/1",
-        "/internal_systems/0",
-        "/internal_systems/1",
-        "/component_responsibilities/0",
-        "/component_responsibilities/1",
-    }
-    assert semantics["proof"]["fact_refs"] == [
-        "/proof_boundary",
-        "/success_metrics/0",
-        "/success_metrics/1",
-        "/evidence_requirements/0",
-        "/evidence_requirements/1",
-        "/operational_constraints/0",
-        "/operational_constraints/1",
+    assert source_events == [
+        "Dock attendant submits a cargo request",
+        "Intake Router records the cargo request",
+        "Harbor reviewer approves the cargo request",
+        "Receipt Ledger publishes a signed cargo receipt",
     ]
-    claimed_fact_refs = [
-        ref
-        for contract in semantics.values()
-        for ref in contract["fact_refs"]
-    ]
-    claimed_relation_refs = [
-        ref
-        for contract in semantics.values()
-        for ref in contract["relation_refs"]
-    ]
-    assert len(claimed_fact_refs) == len(set(claimed_fact_refs))
-    assert len(claimed_relation_refs) == len(set(claimed_relation_refs))
-    assert "Harbor reviewer approves the cargo request" in backlog[1]["product_view"]
-    assert "Keep one multi-owner cargo path reviewable." in backlog[1]["opportunity"]
-    assert "Archive Vault" in backlog[2]["opportunity"]
-    assert "A dock attendant sees the signed cargo receipt." in backlog[3]["success_metrics"]
-    _assert_owned_rendering(proposal)
-    specialized_fact_refs = {
-        ref
-        for role in ("workflow", "boundary", "proof")
-        for ref in semantics[role]["fact_refs"]
-    }
-    assert set(semantics["project"]["shared_fact_refs"]) == specialized_fact_refs
-    assert not set(semantics["project"]["shared_fact_refs"]) & set(
-        semantics["project"]["fact_refs"]
+    for row in backlog:
+        assert row["problem"] == f"Source fact — {intent['problem']}"
+        assert row["customer"] == f"Source fact — {intent['customer']}"
+        assert row["opportunity"] == f"Source fact — {intent['opportunity']}"
+        assert row["product_view"] == f"Source fact — {intent['product_view']}"
+        assert all(value in row["radar_sections"]["Non-Goals"] for value in intent["non_goals"])
+        assert all(
+            value in row["radar_sections"]["Operational Constraints"]
+            for value in intent["operational_constraints"]
+        )
+    rendered_support = "\n".join(
+        row["radar_sections"]["Source Event Support"] for row in backlog
     )
-    assert semantics["workflow"]["shared_fact_refs"] == [
-        "/title",
-        "/customer",
-        "/internal_systems/0",
-        "/internal_systems/1",
-    ]
-    assert semantics["boundary"]["shared_fact_refs"] == ["/title", "/customer"]
-    assert semantics["proof"]["shared_fact_refs"] == [
-        "/title",
-        "/customer",
-        "/internal_systems/1",
-    ]
-    for row in backlog[1:]:
-        contract = row["authored_workstream_semantics"]
-        assert {"/title", "/customer"} <= set(contract["shared_fact_refs"])
-        assert not set(contract["shared_fact_refs"]) & set(contract["fact_refs"])
-        rendered_refs = {
-            ref
-            for refs in contract["rendered_field_refs"].values()
-            for ref in refs
-        }
-        assert set(contract["shared_fact_refs"]) <= rendered_refs
-        assert row["customer"] == proposal["intent"]["customer"]
-    proof_boundary = proposal["intent"]["proof_boundary"]
-    for row in backlog[1:3]:
-        assert proof_boundary not in str(row["success_metrics"])
-        assert proof_boundary not in str(row["validation"])
-        assert proof_boundary not in str(row["ordering_decision"])
-        assert proof_boundary not in row["radar_sections"]["Rollout"]
+    assert all(event in rendered_support for event in source_events)
     assert all(
         row["recommended_first_slice"] in row["radar_sections"]["Rollout"]
         for row in backlog
     )
-    not_applicable = [
-        body
-        for row in backlog
-        for body in row["radar_sections"].values()
-        if body.startswith("- Not applicable")
-    ]
-    assert len(not_applicable) == len(set(not_applicable))
-    assert all(row["workstream_role"] in "\n".join(row["radar_sections"].values()) for row in backlog)
-    assert "No source-stated" not in "\n".join(
-        body for row in backlog for body in row["radar_sections"].values()
-    )
+    _assert_structural_design_projection_preserves_source(proposal)
 
     diagrams = {row["title"]: row for row in proposal["diagrams"]}
     assert set(diagrams) == {
         "System Context View",
         "First Path Sequence",
-        "State and Evidence View",
-        "Component Boundary View",
+        "Proposed Component Exchanges",
+        "Proposed Delivery Dependencies and Acceptance",
+        "Proposed Capability Support and Source Facts",
     }
-    assert diagrams["System Context View"]["related_workstream_titles"] == [
-        "Deliver Cargo Relay",
-        "Run Cargo Relay first path",
-        "Define Cargo Relay boundaries",
+    assert [row["authority_kind"] for row in proposal["diagrams"]] == [
+        "source_grounded",
+        "source_grounded",
+        "provisional_design",
+        "provisional_design",
+        "provisional_design",
     ]
-    assert diagrams["State and Evidence View"]["related_workstream_titles"] == [
-        "Deliver Cargo Relay",
-        "Prove Cargo Relay release",
-    ]
-    assert all("Ownership and Proof" not in title for title in diagrams)
-    assert all("Release Proof Review" not in title for title in diagrams)
+    context_copy = str(diagrams["System Context View"])
+    assert "Vessel Registry" in context_copy
+    assert "Archive Vault" in context_copy
 
 
-def test_direct_evidence_graph_material_facts_compile_complete_project_and_workflow(
+def test_direct_evidence_graph_material_facts_survive_structural_design_projection(
     tmp_path: Path,
 ) -> None:
     first_path = (
@@ -631,56 +535,44 @@ def test_direct_evidence_graph_material_facts_compile_complete_project_and_workf
         responsibility_owners=["Community Exchange"],
     )
 
-    backlog = {
-        row["workstream_role"]: row
-        for row in proposal["backlog"]
-    }
-    assert list(backlog) == [
-        "project",
-        "workflow",
-        "boundary",
-        "proof",
-    ]
-    project = backlog["project"]
-    workflow = backlog["workflow"]
-    assert project["recommended_first_slice"] == "\n".join(
-        (
-            "Donor registers a batch",
-            "Volunteer inspects the batch",
-            "Supervisor releases the batch",
+    backlog = proposal["backlog"]
+    assert [row["workstream_role"] for row in backlog] == ["provisional_design"] * 4
+    for row in backlog:
+        for index, (field, statement) in enumerate(decisions.items()):
+            assert row[field] == f"Assumption — {statement}"
+            assert row["provisional_workstream_contract"]["decision_refs"][field] == (
+                f"/assumptions/{index}"
+            )
+        assert all(
+            statement in row["radar_sections"]["Assumptions"]
+            for statement in decisions.values()
         )
-    )
-    for field, statement in decisions.items():
-        assert "Assumption" in project[field]
-        assert statement in project[field]
-    assert decisions["customer"] in project["customer"]
-    assert "evidence_gaps" not in project["authored_workstream_semantics"]
-    assert project["authored_workstream_semantics"]["rendered_field_refs"][
-        "problem"
-    ] == ["/assumptions/0"]
+        assert "Do not override a safety hold." in row["radar_sections"]["Non-Goals"]
+        assert "Preserve the release decision." in row["radar_sections"]["Operational Constraints"]
+        assert "Keep inspection evidence reviewable." in row["radar_sections"]["Operational Constraints"]
     brief_sections = {
         section["section"]: section["must_capture"]
         for section in proposal["project_brief"]["blueprint_sections"]
     }
     assert brief_sections["User problem"] == f"Assumption — {decisions['problem']}"
-    assert project["success_metrics"] == [proof_boundary]
-    assert decisions["customer"] in workflow["customer"]
-    assert workflow["opportunity"] == f"Assumption: {decisions['opportunity']}"
-    assert "evidence_gaps" not in workflow["authored_workstream_semantics"]
-    for role in ("workflow", "boundary", "proof"):
-        assert "Assumption" in backlog[role]["customer"]
-        assert decisions["customer"] in backlog[role]["customer"]
-        semantics = backlog[role]["authored_workstream_semantics"]
-        assert semantics["rendered_field_refs"]["customer"] == ["/assumptions/1"]
-        assert "/assumptions/1" in semantics["shared_fact_refs"]
-    project_semantics = project["authored_workstream_semantics"]
-    assert {
-        "/first_path",
-        "/proof_boundary",
-        "/human_actors/0",
-        "/external_systems/0",
-    } <= set(project_semantics["shared_fact_refs"])
-    _assert_owned_rendering(proposal)
+    assert proposal["project_brief"]["external_systems"] == ["Safety Registry"]
+    assert [
+        row["actor_fact_quote"]
+        for row in proposal["intent"]["authored_semantics"]["first_path_relations"]
+    ] == ["Donor", "Volunteer", "Supervisor"]
+    rendered_support = "\n".join(
+        row["radar_sections"]["Source Event Support"] for row in backlog
+    )
+    assert all(
+        event in rendered_support
+        for event in (
+            "Donor registers a batch",
+            "Volunteer inspects the batch",
+            "Supervisor releases the batch",
+        )
+    )
+    assert proposal["release_plan"]["strategy"] == proof_boundary
+    _assert_structural_design_projection_preserves_source(proposal)
 
 
 def test_authored_service_readiness_keeps_nonapproval_as_a_safety_boundary(
@@ -855,6 +747,8 @@ def test_authored_solar_path_keeps_user_outcome_distinct_from_meta_proof(
 def test_authored_ocean_reproducibility_stays_proof_not_component_identity(
     tmp_path: Path,
 ) -> None:
+    """Check source semantics; the synthetic design assertion covers custody only."""
+
     proof_boundary = (
         "A data steward can reproduce the accepted or rejected correction from the "
         "sensor reading, reference sample, drift estimate, correction decision, and reviewer note."
@@ -920,7 +814,7 @@ def test_authored_ocean_reproducibility_stays_proof_not_component_identity(
         responsibility_owners=["Calibration Ledger", "Publication Gate"],
     )
 
-    _assert_component_ownership_is_source_exact(proposal)
+    _assert_structural_design_projection_preserves_source(proposal)
     assert all(proof_boundary not in str(row) for row in proposal["components"])
     assert proposal["release_plan"]["strategy"] == proof_boundary
     assert proof_boundary in proposal["project_brief"]["coding_readiness_gates"]
@@ -929,6 +823,8 @@ def test_authored_ocean_reproducibility_stays_proof_not_component_identity(
 def test_authored_health_tracking_retains_safety_and_first_path_outcome(
     tmp_path: Path,
 ) -> None:
+    """Check source safety; the synthetic design assertion covers custody only."""
+
     safety_boundary = "The product must not diagnose, prescribe, or approve treatment."
     visible_result = "reviewable symptom trend and safety status"
     proposal = _proposal(
@@ -995,7 +891,7 @@ def test_authored_health_tracking_retains_safety_and_first_path_outcome(
         responsibility_owners=["Episode Ledger", "Trend Board"],
     )
 
-    _assert_component_ownership_is_source_exact(proposal)
+    _assert_structural_design_projection_preserves_source(proposal)
     assert proposal["semantic_model"]["first_path_contract"]["visible_result"] == visible_result
     assert proposal["intent"]["operational_constraints"] == [safety_boundary]
     assert safety_boundary in proposal["project_brief"]["operational_constraints"]
@@ -1082,6 +978,8 @@ def test_authored_robotic_safety_projects_the_reviewed_recovery_status(
 def test_authored_service_goal_components_cannot_acquire_cross_domain_templates(
     tmp_path: Path,
 ) -> None:
+    """Check source isolation; the synthetic design assertion covers custody only."""
+
     proposal = _proposal(
         tmp_path,
         intent={
@@ -1154,13 +1052,33 @@ def test_authored_service_goal_components_cannot_acquire_cross_domain_templates(
         responsibility_owners=["Goal Planner", "Progress Ledger", "Reminder Board"],
     )
 
-    _assert_component_ownership_is_source_exact(proposal)
-    _assert_owned_rendering(proposal)
-    authored_facts = set(proposal["intent"]["component_responsibilities"])
-    assert all(row["source_system_description"] in authored_facts for row in proposal["components"])
+    _assert_structural_design_projection_preserves_source(proposal)
+    assert [
+        (row["actor_kind"], row["actor_fact_quote"])
+        for row in proposal["intent"]["authored_semantics"]["first_path_relations"]
+    ] == [
+        ("human", "Coordinator"),
+        ("product", "Goal Planner"),
+        ("product", "Progress Ledger"),
+        ("product", "Reminder Board"),
+    ]
+    rendered = str({
+        "project_brief": proposal["project_brief"],
+        "diagrams": proposal["diagrams"],
+    })
+    assert all(value in rendered for value in proposal["intent"]["component_responsibilities"])
+    structural_design = str(
+        proposal["intent"]["authored_semantics"]["provisional_design"]
+    ).casefold()
+    assert all(
+        leaked not in structural_design
+        for leaked in ("harbor", "berth", "cargo", "calibration", "symptom")
+    )
 
 
-def test_sparse_depth_keeps_facts_in_project_without_filler_rows(tmp_path: Path) -> None:
+def test_sparse_source_facts_remain_visible_with_structural_design_projection(
+    tmp_path: Path,
+) -> None:
     human_event = {
         "actor_kind": "human",
         "actor_fact_quote": "Dock attendant",
@@ -1205,8 +1123,7 @@ def test_sparse_depth_keeps_facts_in_project_without_filler_rows(tmp_path: Path)
                 "relations": [human_event, intake_event, intake_result_event],
                 "responsibility_owners": ["Intake Board"],
             },
-            "/external_systems/0",
-            4,
+            "Vessel Registry",
         ),
         (
             "multi-owner-only",
@@ -1222,8 +1139,7 @@ def test_sparse_depth_keeps_facts_in_project_without_filler_rows(tmp_path: Path)
                 "relations": [human_event, intake_event, receipt_event],
                 "responsibility_owners": ["Intake Board", "Receipt Ledger"],
             },
-            "/component_responsibilities/1",
-            4,
+            "Publish the signed request receipt.",
         ),
         (
             "proof-only",
@@ -1239,21 +1155,27 @@ def test_sparse_depth_keeps_facts_in_project_without_filler_rows(tmp_path: Path)
                 "relations": [human_event, intake_event, intake_result_event],
                 "responsibility_owners": ["Intake Board"],
             },
-            "/evidence_requirements/1",
-            3,
+            "Retain the signed request receipt.",
         ),
     )
-    for name, arguments, retained_ref, expected_diagram_count in cases:
+    for name, arguments, retained_fact in cases:
         case_root = tmp_path / name
         case_root.mkdir()
         proposal = _sparse_proposal(case_root, **arguments)
-        assert [row["workstream_role"] for row in proposal["backlog"]] == ["project"]
-        assert retained_ref in proposal["backlog"][0]["authored_workstream_semantics"]["fact_refs"]
-        assert len(proposal["diagrams"]) == expected_diagram_count
+        assert [row["workstream_role"] for row in proposal["backlog"]] == [
+            "provisional_design"
+        ] * 4
+        assert len(proposal["diagrams"]) == 5
+        visible_package = str({
+            "project_brief": proposal["project_brief"],
+            "diagrams": proposal["diagrams"],
+            "semantic_model": proposal["semantic_model"],
+        })
+        assert retained_fact in visible_package
         visible_copy = "\n".join(
             str(proposal["backlog"][0][field])
             for field in ("problem", "customer", "opportunity", "product_view")
         ).lower()
         assert "none accepted" not in visible_copy
         assert "reviewers" not in visible_copy
-        _assert_owned_rendering(proposal)
+        _assert_structural_design_projection_preserves_source(proposal)

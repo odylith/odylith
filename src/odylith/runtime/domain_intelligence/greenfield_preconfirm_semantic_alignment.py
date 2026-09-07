@@ -8,6 +8,9 @@ from typing import Any
 from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_scalar_values import nested_text_values
+from odylith.runtime.domain_intelligence.greenfield_provisional_package import build_provisional_components
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import provisional_design_from_intent
+from odylith.runtime.analysis_engine.types import slugify
 
 
 def semantic_model_shape_issues(semantic: Mapping[str, Any]) -> list[str]:
@@ -58,8 +61,23 @@ def semantic_component_alignment_issues(proposal: Mapping[str, Any], semantic: M
     proposal_components = mapping_rows(proposal.get("components"))
     model_components = mapping_rows(semantic.get("components"))
     issues: list[str] = []
+    intent = proposal.get("intent")
+    if not isinstance(intent, Mapping):
+        return ["GreenfieldSemanticModel is missing the canonical source-and-design intent"]
+    try:
+        design = provisional_design_from_intent(intent)
+        expected_components = build_provisional_components(
+            intent=intent, product_slug=slugify(str(intent.get("title") or "")) or "greenfield-project",
+        )
+    except ValueError as exc:
+        return [str(exc)]
+    if semantic.get("provisional_design") != design:
+        issues.append("GreenfieldSemanticModel drifted from the canonical provisional design")
+    expected_by_id = {row["component_id"]: row for row in expected_components}
     proposal_by_id = {_component_id(row): row for row in proposal_components if _component_id(row)}
     model_by_id = {_component_id(row): row for row in model_components if _component_id(row)}
+    if set(proposal_by_id) != set(expected_by_id):
+        issues.append("Greenfield component inventory drifted from the canonical provisional design")
     if set(proposal_by_id) != set(model_by_id):
         missing = sorted(set(proposal_by_id) - set(model_by_id))
         extra = sorted(set(model_by_id) - set(proposal_by_id))
@@ -71,18 +89,13 @@ def semantic_component_alignment_issues(proposal: Mapping[str, Any], semantic: M
         model = model_by_id.get(component_id)
         if not isinstance(model, Mapping):
             continue
-        contract = row.get("component_contract") if isinstance(row.get("component_contract"), Mapping) else {}
-        for key in (
-            "owner_system",
-            "responsibility_facts",
-            "owner_bound_events",
-            "event_targets",
-            "visible_results",
-        ):
-            if model.get(key) != contract.get(key):
-                issues.append(
-                    f"GreenfieldSemanticModel component `{component_id}` drifted from authored `{key}`"
-                )
+        expected = expected_by_id.get(component_id)
+        if expected is None or row.get("component_contract") != expected["component_contract"]:
+            issues.append(f"Greenfield component `{component_id}` drifted from canonical provisional design")
+        if model.get("component_contract") != row.get("component_contract"):
+            issues.append(f"GreenfieldSemanticModel component `{component_id}` drifted from its provisional contract")
+        if model.get("semantic_axis") != "provisional_design":
+            issues.append(f"GreenfieldSemanticModel component `{component_id}` lost its provisional authority")
     return issues
 
 

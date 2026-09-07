@@ -727,10 +727,6 @@ initSharedQuickTooltips();
       });
     }
 
-    function escapeRegExp(value) {
-      return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\$&");
-    }
-
     function displayText(value) {
       return String(value || "")
         .replace(/\*\*/g, "")
@@ -738,59 +734,6 @@ initSharedQuickTooltips();
         .replace(/`([^`\n]*)`/g, "$1")
         .replace(/\s+/g, " ")
         .trim();
-    }
-
-    function componentNameWords(value) {
-      return displayText(value)
-        .replace(/\b(service|component|surface|adapter|engine|store|model|resolver)\b/gi, " ")
-        .replace(/[^a-z0-9]+/gi, " ")
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean);
-    }
-
-    function stripLeadingComponentName(text, value) {
-      const words = componentNameWords(value);
-      if (!words.length) return text;
-      const original = String(text || "").trim();
-      for (let keep = words.length; keep > 0; keep -= 1) {
-        const pattern = new RegExp(
-          "^\s*" + words.slice(0, keep).map(escapeRegExp).join("[\s,/-]+") + "\b\s*",
-          "i",
-        );
-        const stripped = original.replace(pattern, "").trim();
-        if (stripped !== original) return stripped || original;
-      }
-      return original;
-    }
-
-    function componentResponsibilityText(component, displayName, rawName) {
-      let text = displayText(component && component.description ? component.description : "");
-      if (!text) return "Named responsibility in this diagram.";
-      [
-        /\bFor release\s+\S+,\s+it receives or produces\b/i,
-        /\bFor the first release,\s+this boundary\b/i,
-        /\bIt matters for release\s+\S+\s+because\b/i,
-        /\bReviewers trust it only when\b/i,
-        /\bProof must stay inside\b/i,
-        /\bThe first workflow depends on\b/i,
-        /\bThe first path depends on\b/i,
-      ].some((pattern) => {
-        const match = text.search(pattern);
-        if (match < 0) return false;
-        text = text.slice(0, match).trim().replace(/[;,.-]+$/g, "");
-        return true;
-      });
-      text = stripLeadingComponentName(text, rawName);
-      text = stripLeadingComponentName(text, displayName);
-      text = text.replace(
-        /^\s*owns?\s+(accepts?|assembles?|binds?|captures?|computes?|derives?|engraves?|estimates?|exports?|handles?|imports?|links?|performs?|preserves?|records?|renders?|resolves?|stores?|tracks?|validates?|writes?)\b/i,
-        (_match, verb) => String(verb || "").replace(/^./, (letter) => letter.toUpperCase()),
-      );
-      text = text.replace(/^\s*owns?\s+owns?\s+/i, "Owns ");
-      text = text.replace(/^\s*owns?\s+/i, "Owns ");
-      if (!text) return "Named responsibility in this diagram.";
-      return /[.!?]$/.test(text) ? text : `${text}.`;
     }
 
     function renderComponents(diagram) {
@@ -808,7 +751,8 @@ initSharedQuickTooltips();
 
         const body = document.createElement("p");
         body.className = "component-description";
-        body.textContent = componentResponsibilityText(component, displayName, rawName);
+        const description = String(component.description || "");
+        body.textContent = description.trim() ? description : "Named responsibility in this diagram.";
 
         headingGroup.appendChild(heading);
         if (rawName && displayName && rawName !== displayName) {

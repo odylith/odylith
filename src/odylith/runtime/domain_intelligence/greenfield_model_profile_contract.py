@@ -1,6 +1,6 @@
 """Pinned model profiles for the supported Greenfield operating envelope.
 
-Profiles bind real author/reviewer requests to one end-to-end consumer deadline. The
+Profiles bind one complete-author request to an end-to-end consumer deadline. The
 unavailable-provider profile is deliberately outside the supported-success set;
 it exists only to prove fail-closed, no-write behavior.
 """
@@ -11,31 +11,27 @@ from dataclasses import dataclass
 from types import MappingProxyType
 
 
-GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v10"
+GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v11"
 
-STANDARD_PROFILE_ID = "greenfield-standard-terra-low-sol-medium-review-v10"
-RESCUE_PROFILE_ID = "greenfield-rescue-terra-medium-sol-high-review-v8"
-DEEP_PROFILE_ID = "greenfield-deep-sol-high-v8"
+STANDARD_PROFILE_ID = "greenfield-standard-terra-low-complete-author-v11"
+RESCUE_PROFILE_ID = "greenfield-rescue-terra-medium-complete-author-v11"
+DEEP_PROFILE_ID = "greenfield-deep-sol-high-complete-author-v11"
 UNAVAILABLE_PROVIDER_PROFILE_ID = "greenfield-unavailable-provider-no-write-v1"
 
 
 @dataclass(frozen=True, slots=True)
 class GreenfieldModelProfile:
-    """Pinned author/reviewer roles inside one shared consumer time budget."""
+    """Pinned complete author inside one preselected consumer time budget."""
 
     profile_id: str
     repair_tier: str
     provider: str
     model: str
     reasoning_effort: str
-    source_review_model: str
-    source_review_reasoning_effort: str
     consumer_budget_seconds: float
     model_timeout_seconds: float
-    # Relative capability of the initial semantic author, not every role in a composite.
     lower_capability: bool = False
     supported_success: bool = True
-    source_review_reserve_seconds: float = 0.0
 
 
 _PROFILES = MappingProxyType(
@@ -46,12 +42,9 @@ _PROFILES = MappingProxyType(
             provider="codex-cli",
             model="gpt-5.6-terra",
             reasoning_effort="low",
-            source_review_model="gpt-5.6-sol",
-            source_review_reasoning_effort="medium",
             consumer_budget_seconds=60.0,
             model_timeout_seconds=55.0,
             lower_capability=True,
-            source_review_reserve_seconds=25.0,
         ),
         RESCUE_PROFILE_ID: GreenfieldModelProfile(
             profile_id=RESCUE_PROFILE_ID,
@@ -59,12 +52,9 @@ _PROFILES = MappingProxyType(
             provider="codex-cli",
             model="gpt-5.6-terra",
             reasoning_effort="medium",
-            source_review_model="gpt-5.6-sol",
-            source_review_reasoning_effort="high",
             consumer_budget_seconds=90.0,
             model_timeout_seconds=80.0,
             lower_capability=True,
-            source_review_reserve_seconds=20.0,
         ),
         DEEP_PROFILE_ID: GreenfieldModelProfile(
             profile_id=DEEP_PROFILE_ID,
@@ -72,11 +62,8 @@ _PROFILES = MappingProxyType(
             provider="codex-cli",
             model="gpt-5.6-sol",
             reasoning_effort="high",
-            source_review_model="gpt-5.6-sol",
-            source_review_reasoning_effort="high",
             consumer_budget_seconds=120.0,
             model_timeout_seconds=105.0,
-            source_review_reserve_seconds=20.0,
         ),
         UNAVAILABLE_PROVIDER_PROFILE_ID: GreenfieldModelProfile(
             profile_id=UNAVAILABLE_PROVIDER_PROFILE_ID,
@@ -84,8 +71,6 @@ _PROFILES = MappingProxyType(
             provider="codex-cli",
             model="gpt-5.4-mini",
             reasoning_effort="high",
-            source_review_model="gpt-5.4-mini",
-            source_review_reasoning_effort="high",
             consumer_budget_seconds=90.0,
             model_timeout_seconds=1.0,
             supported_success=False,
@@ -171,7 +156,7 @@ def greenfield_model_profile_observation_issues(
     """Compare observed request metadata with the pinned pre-call profile."""
 
     profile = get_greenfield_model_profile(profile_id)
-    if request_role not in {"initial_authoring", "source_review"}:
+    if request_role != "initial_authoring":
         raise ValueError(f"unsupported Greenfield model request role: {request_role}")
     observations = {
         "provider": str(provider or "").strip().casefold(),
@@ -180,11 +165,8 @@ def greenfield_model_profile_observation_issues(
     }
     expected = {
         "provider": profile.provider,
-        "model": profile.source_review_model if request_role == "source_review" else profile.model,
-        "reasoning_effort": (
-            profile.source_review_reasoning_effort if request_role == "source_review"
-            else profile.reasoning_effort
-        ),
+        "model": profile.model,
+        "reasoning_effort": profile.reasoning_effort,
     }
     issues = [
         f"observed {field} does not match pinned Greenfield model profile"

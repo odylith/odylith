@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import assumption_rows
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import provisional_design_from_intent
 
 from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
     ATOMIC_FACT_LEDGER_VERSION,
@@ -230,6 +231,7 @@ def build_product_intent_envelope(
         authored_relations,
         component_responsibility_relations,
         first_path_context_relations=first_path_context_relations,
+        provisional_design=provisional_design_from_intent(intent),
     )
     facts = product_facts_payload(intent)
     source_bytes = str(source_text or "").encode("utf-8")

@@ -5,14 +5,29 @@ Last updated: 2026-09-06
 ## Overview
 
 Domain Intelligence owns the Greenfield evidence-to-transaction boundary. One
-pinned model authors source-cited facts and typed relations, with one bounded
-pre-confirm source-claim review inside the original time window;
-deterministic code verifies exact custody, projects the complete governed package,
+pinned model authors source-cited facts and typed relations alongside a required,
+separately labeled provisional design. The source-local v49 candidate uses one
+call and the full 55/80/105 model windows inside fixed 60/90/120 consumer limits;
+there is no second runtime reviewer or repair call. Deterministic code verifies
+exact custody, binds design in the existing relation hash, projects the complete governed package,
 and validates it before confirmation. Each pending package is immutable and
 hash-addressed, and accepted bytes publish as one transaction-addressed generation.
 Codex and Claude transport the same exact hash-bound `CONFIRM`, `EDIT`, and
 `REJECT` contract. No evidence interpretation, model call, artifact generation,
 or prose repair runs after confirmation.
+
+The design owns 4–5 logical components, 4–5 workstreams, exchanges and verification;
+it supports exact source-event identities without transferring actor authority.
+Registry and Radar project it directly. Atlas preserves two source views and
+three labeled design views. The source-only backlog projector is retired.
+The v49 candidate is not release-qualified: independent semantic regression,
+complete-package UX, exact transaction, timing and clean-distribution proof remain
+required. Synthetic fixture counts are not proof of useful product design.
+A full fixture-backed pre-confirm counterexample still accepts an exact operator
+invocation as product_story. This known P1 blocks semantic qualification; a passed
+custody/structure manifest is not proof of source entailment. Component exchange
+direction also does not establish an implementation dependency. Keep exact
+exchanges and explicit workstream prerequisites under their distinct owners.
 
 ## Boundary
 

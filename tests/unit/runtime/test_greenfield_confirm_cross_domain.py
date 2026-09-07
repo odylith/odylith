@@ -411,7 +411,7 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
     )
 
     assert rc == 0, output
-    assert provider.calls == 2
+    assert provider.calls == 1
     assert "- validation gate: passed" in output
     accepted = json.loads(
         (tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8")
@@ -427,12 +427,22 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
     ).read_text(encoding="utf-8").splitlines()
     assert accepted["validation_gate"]["status"] == "passed"
     assert isinstance(accepted["proposal"]["semantic_model"], dict)
+    accepted_intent = accepted["proposal"]["intent"]
+    assert accepted_intent["first_path"] == intent["first_path"]
+    assert accepted_intent["human_actors"] == intent["human_actors"]
+    assert accepted_intent["component_responsibilities"] == intent["component_responsibilities"]
+    design = accepted_intent["authored_semantics"]["provisional_design"]
     assert len(list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))) >= 2
-    assert len(registry["components"]) == len(intent["component_responsibilities"])
+    assert len(registry["components"]) == len(design["components"])
+    assert [
+        row["component_contract"]["provisional_component"]
+        for row in accepted["proposal"]["components"]
+    ] == design["components"]
     diagram_names = [path.name for path in (tmp_path / "odylith/atlas/source").glob("*.mmd")]
-    assert len(diagram_names) == 3
-    assert all(not name.endswith("-first-path.mmd") for name in diagram_names)
-    for role in ("system-context", "state-evidence", "component-boundaries"):
+    assert len(diagram_names) == 5
+    for role in (
+        "system-context", "first-path", "component-exchanges", "delivery-dependencies", "capability-support",
+    ):
         assert any(name.endswith(f"-{role}.mmd") for name in diagram_names)
     assert release_events
     assert compass_events and json.loads(compass_events[-1])["kind"] == "decision"

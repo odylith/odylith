@@ -9,6 +9,7 @@ from typing import Any
 
 import pytest
 
+from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_backlog_commit
@@ -194,27 +195,41 @@ def _complete_authored_supplier_proposal(
 
 
 def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
-    idea_path = Path("/repo/odylith/radar/source/ideas/B-001.md")
     backlog_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
-    workstream_title = str(
-        (backlog_rows[0].get("title") if backlog_rows else "")
-        or "Prove supplier risk review path"
-    )
+    workstream_titles = [
+        str(row.get("title") or f"Prove supplier risk review path {index}")
+        for index, row in enumerate(backlog_rows, start=1)
+    ] or ["Prove supplier risk review path"]
+    workstream_ids = [f"B-{index:03d}" for index in range(1, len(workstream_titles) + 1)]
+    idea_paths = [
+        Path(f"/repo/odylith/radar/source/ideas/{idea_id}.md")
+        for idea_id in workstream_ids
+    ]
     created_backlog = [
-        {"title": workstream_title, "idea_id": "B-001", "idea_path": str(idea_path)}
+        {"title": title, "idea_id": idea_id, "idea_path": str(path)}
+        for title, idea_id, path in zip(
+            workstream_titles, workstream_ids, idea_paths, strict=True
+        )
     ]
     backlog_result = {
         "created": created_backlog,
-        "idea_files": {str(idea_path): workstream_title},
+        "idea_files": {
+            str(path): title
+            for path, title in zip(idea_paths, workstream_titles, strict=True)
+        },
         "backlog_index": "/repo/odylith/radar/source/INDEX.md",
-        "backlog_index_text": f"| B-001 | {workstream_title} |",
+        "backlog_index_text": "\n".join(
+            f"| {idea_id} | {title} |"
+            for idea_id, title in zip(workstream_ids, workstream_titles, strict=True)
+        ),
         "_candidate_idea_specs": {
-            "B-001": backlog_contract.IdeaSpec(
-                path=idea_path,
-                metadata={"idea_id": "B-001", "status": "candidate"},
+            idea_id: backlog_contract.IdeaSpec(
+                path=path,
+                metadata={"idea_id": idea_id, "status": "candidate"},
                 sections={"Problem", "Product View"},
                 section_bodies={"Problem": "Supplier risk is hard to review.", "Product View": "Review board."},
             )
+            for idea_id, path in zip(workstream_ids, idea_paths, strict=True)
         },
     }
     diagram_rows = [row for row in proposal.get("diagrams", []) if isinstance(row, dict)]
@@ -237,47 +252,26 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
         traceability_plan=traceability_plan,
         review_date="2026-07-07",
     )
-    component_rows = [row for row in proposal.get("components", []) if isinstance(row, Mapping)]
-    component_row = component_rows[0] if component_rows else {}
-    component_id = str(component_row.get("component_id") or "supplier-risk-service")
-    component_label = str(component_row.get("label") or "Supplier Risk Service")
-    component_path = str(component_row.get("intended_path") or "src/supplier_risk")
-    component_kind = str(component_row.get("kind") or "service")
-    component_responsibility = str(
-        component_row.get("responsibility")
-        or "Supplier Risk Service keeps supplier review state attached."
+    component_registry_preview = greenfield_apply_components.preview_prewrite_components(
+        root=Path("/repo"),
+        proposal=proposal,
+        release_selector="0.0.1",
+        backlog_result=backlog_result,
     )
-    component_key = greenfield_traceability.component_key(
-        {"component_id": component_id, "label": component_label}
+    rendered_component_specs = greenfield_apply_components.render_prewrite_component_specs(
+        root=Path("/repo"),
+        proposal=proposal,
+        release_selector="0.0.1",
+        backlog_result=backlog_result,
     )
-    component_diagrams = traceability_plan.component_diagrams.get(component_key, ())
-    component_handoff = {
-        "workstream_id": "B-001",
-        "workstream_title": workstream_title,
-        "implementation_prompt": "Implement the accepted supplier risk review path.",
-    }
-    component_authoring_input = {
-        "component_id": component_id,
-        "label": component_label,
-        "path": component_path,
-        "kind": component_kind,
-        "category": "application",
-        "qualification": "candidate",
-        "owner": "repo",
-        "status": "planned",
-        "product_layer": "application",
-        "sources": ("user_intent",),
-        "workstreams": ("B-001",),
-        "diagrams": component_diagrams,
-        "responsibility": component_responsibility,
-        "boundary": str(component_row.get("boundary") or "Supplier review state only."),
-        "dependencies": (),
-        "interfaces": (),
-        "validation": (),
-        "risks": (),
-        "implementation_handoff": component_handoff,
-        "component_contract": dict(component_row.get("component_contract") or {}),
-    }
+    component_ids = [str(row["component_id"]) for row in component_registry_preview]
+    component_previews = [
+        {
+            "component_id": row["component_id"],
+            "spec_path": row["spec_path"],
+        }
+        for row in component_registry_preview
+    ]
     package = GreenfieldCompletionPackage(
         proposal=proposal,
         release_selector="0.0.1",
@@ -288,37 +282,8 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
         backlog_result=backlog_result,
         prewrite_safety_preview={"status": "passed"},
         surface_refresh_preview=surface_refresh_preview_fixture(),
-        component_registry_preview=(
-            {
-                "component_id": component_id,
-                "label": component_label,
-                "spec_path": f"odylith/registry/source/components/{component_id}/CURRENT_SPEC.md",
-                "implementation_handoff": component_handoff,
-                "authoring_input": component_authoring_input,
-                "registry_entry": {
-                    "component_id": component_id,
-                    "name": component_label,
-                    "kind": component_kind,
-                    "category": "application",
-                    "qualification": "candidate",
-                    "aliases": [],
-                    "path_prefixes": [component_path],
-                    "workstreams": ["B-001"],
-                    "diagrams": list(component_diagrams),
-                    "owner": "repo",
-                    "status": "planned",
-                    "what_it_is": f"{component_label} defines the planned ownership boundary for supplier review state.",
-                    "why_tracked": "Tracked from user-stated intent because this named ownership boundary must stay understandable before source-backed behavior promotes it.",
-                    "spec_ref": f"odylith/registry/source/components/{component_id}/CURRENT_SPEC.md",
-                    "sources": ["user_intent"],
-                    "subcomponents": [],
-                    "product_layer": "application",
-                },
-            },
-        ),
-        rendered_component_specs={
-            component_label: f"# {component_label}\n\n{component_responsibility}\n",
-        },
+        component_registry_preview=component_registry_preview,
+        rendered_component_specs=rendered_component_specs,
         project_brief_record_text=f"# Supplier Risk Board Project Brief\n\n- accepted_at: {COMPILED_ACCEPTED_AT}\n",
         accepted_project_preview={
             "schema_version": "odylith.accepted_project.v1",
@@ -327,7 +292,12 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
             "accepted_at": COMPILED_ACCEPTED_AT,
             "title": "Supplier Risk Board",
             "source_launch": {"implementation_prompt": "Start B-001 from the accepted transaction package."},
-            "created": {"workstreams": [{"idea_id": "B-001"}], "components": [], "diagrams": []},
+            "created": {
+                "workstreams": [{"idea_id": idea_id} for idea_id in workstream_ids],
+                "components": component_previews,
+                "diagrams": list(diagram_ids),
+                "release_selector": "0.0.1",
+            },
             "validation_gate": {"status": "passed", "issues": []},
         },
         compass_memory_preview={
@@ -337,9 +307,9 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
             "ts_iso": COMPILED_ACCEPTED_AT,
             "author": "odylith",
             "source": "domain-intelligence",
-            "workstreams": ["B-001"],
+            "workstreams": workstream_ids,
             "artifacts": ["odylith/runtime/source/project-brief.v1.md"],
-            "components": ["supplier-risk-service"],
+            "components": component_ids,
             "evidence_tier": "user_intent",
             "work_category": "governance",
         },
@@ -369,11 +339,11 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
         },
         release_assignment_result={
             "dry_run": True,
-            "workstream_ids": ["B-001"],
+            "workstream_ids": workstream_ids,
             "events": [],
             "release": {"release_id": "release-0-0-1"},
         },
-        release_workstream_ids=("B-001",),
+        release_workstream_ids=tuple(workstream_ids),
     )
     return _seal_test_package(package, repo_root=Path("/repo"))
 
@@ -730,8 +700,12 @@ def test_product_create_transaction_json_round_trips_traceability_diagram_links(
     assert isinstance(plan, greenfield_traceability.GreenfieldTraceabilityPlan)
     assert isinstance(plan.workstreams[0].path, Path)
     assert plan.diagram_links[0].diagram_id == "D-001"
-    assert plan.diagram_links[0].related_workstream_ids == ("B-001",)
-    assert plan.diagram_links[0].related_backlog_paths == ("/repo/odylith/radar/source/ideas/B-001.md",)
+    assert plan.diagram_links[0].related_workstream_ids == tuple(
+        workstream.idea_id for workstream in plan.workstreams
+    )
+    assert plan.diagram_links[0].related_backlog_paths == tuple(
+        str(workstream.path) for workstream in plan.workstreams
+    )
     assert restored.prewrite_package.atlas_diagram_ids == transaction.prewrite_package.atlas_diagram_ids
     assert restored.prewrite_package.rendered_atlas_sources == transaction.prewrite_package.rendered_atlas_sources
     assert restored.prewrite_package.atlas_catalog_rows == transaction.prewrite_package.atlas_catalog_rows

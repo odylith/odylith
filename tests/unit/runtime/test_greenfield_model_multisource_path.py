@@ -197,7 +197,7 @@ def _response(
     )
 
 
-def test_two_document_dispersed_path_materializes_exact_typed_package(
+def test_two_document_path_materializes_exact_source_and_structural_design_custody(
     tmp_path: Path,
 ) -> None:
     prompt, edit_evidence, intent, segments, relations = _case()
@@ -217,7 +217,7 @@ def test_two_document_dispersed_path_materializes_exact_typed_package(
         authoring_provider=provider,
     )
 
-    assert provider.calls == 2
+    assert provider.calls == 1
     assert candidate["first_path"] == "\n".join(segments)
     sealed_relations = candidate["authored_semantics"]["first_path_relations"]
     for row in sealed_relations:
@@ -279,6 +279,26 @@ def test_two_document_dispersed_path_materializes_exact_typed_package(
         "Do not place a berth without clearance"
     ]
     assert proposal["semantic_model"]["first_path_contract"]["visible_result"] == segments[3]
+    design = candidate["authored_semantics"]["provisional_design"]
+    assert proposal["semantic_model"]["provisional_design"] == design
+    assert [row["label"] for row in proposal["components"]] == [
+        row["name"] for row in design["components"]
+    ]
+    supported_events = [
+        event
+        for component in proposal["components"]
+        for event in component["component_contract"]["supporting_events"]
+    ]
+    assert all(relation in supported_events for relation in sealed_relations)
+    assert [
+        (row["actor_kind"], row["actor_fact_quote"])
+        for row in sealed_relations
+    ] == [
+        ("human", "Dock attendant Ivo"),
+        ("external_system", "Tide Authority API"),
+        ("product", "Harbor Registry"),
+        ("product", "berth map"),
+    ]
 
 
 def test_authoring_rejects_unreferenced_first_path_segment() -> None:
