@@ -12,6 +12,42 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ### Continuous experience gate (2026-09-06)
 
+Next bounded ownership gate (2026-09-07): the mandatory source-component
+viability gate survives from source-only package construction, while mandatory
+provisional design now owns published component/task depth. The empty-group
+fallback assigns a terminal result to a product owner even when the event is
+human-owned. Compare removing this source-ownership requirement and fallback,
+not replacing them with story-to-capability promotion. Retain explicit non-path
+capabilities, existing typed product events, and exact enabling product-story
+meaning in the Project/context view. Characterize human-only, product-owned,
+mixed and external terminal paths; explicit narrower ownership; contradictions;
+no duplicated source facts; and unchanged useful 4–5/4–5/5+ design. First prove
+the no-call semantic and rendered-package controls, then one live discriminator
+inside the original tier. No production adoption is authorized by this diagnosis
+alone, and invocation-as-story remains a separate unresolved P1. Independent
+quality review and cross-surface desktop/mobile proof must judge the same package.
+
+Review-reserve comparison (2026-09-07): the one-shot complete Luna/low draft
+times out at 25.021/25 seconds with the unchanged complete-author contract and
+exact flood source. The predeclared Sol/high review reserve is never used.
+Reject this allocation; no retry, model sweep, production profile change,
+transaction or holdout access. Frozen hashes and actual provider identity match.
+Evidence: `/private/tmp/odylith-complete-draft-budget.OXyZLC/`. The next design
+question is removal of duplicated semantic claims, not more bounded-review
+variants or role promotion of product-story text. Any removal must preserve
+complete typed source meaning and useful visible packages before adoption.
+
+Semantic admission comparison (2026-09-07): clean b8b2b06f still admits the
+unchanged invocation-as-product fixture before confirmation. Reject the exact
+local DeBERTa-small NLI alternative: its two independently annotated controls
+both fail the predeclared thresholds and the wrong role scores above the valid
+role (0.789 versus 0.701). Cold CPU inference is 4.220 seconds, but latency alone
+is not utility and its 512-token context cannot cover the fixed envelope. Do not
+tune thresholds, truncate evidence or add a second NLI model to this comparison.
+Production stays unchanged; no fresh generative call or holdout access occurred.
+Evidence: `/private/tmp/odylith-semantic-ownership-wave.RnXYrF/`. This eliminates
+one unsuitable mechanism; it does not close semantic or experience gates.
+
 Literal-label checkpoint (2026-09-07): native Mermaid decimal encoding replaces
 HTML escaping in the existing owner; nine rendered punctuation and literal-text
 controls preserve node/edge text without injection. Authored Atlas retains its
