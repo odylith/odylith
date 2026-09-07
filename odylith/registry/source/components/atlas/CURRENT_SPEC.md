@@ -16,6 +16,15 @@ architecture evidence that Context Engine consumes for topology-sensitive
 grounding.
 
 ## Scope And Non-Goals
+### Viewer lifecycle and empty states
+`atlas_viewer_asset_runtime.py` owns loading, clear state, asset fallback and
+selected-versus-empty presentation. A truly empty catalog hides selection-only
+metadata and the source-less image, disables unavailable controls, and offers
+Open Project. Filters hiding a retained selection explain that distinction;
+filters with no selection offer filter recovery. Re-showing the same loaded
+diagram preserves viewport state. CB-330 requires real rendered desktop/mobile
+checks, including hidden action styling, rather than hidden-attribute assertions.
+
 ### Atlas owns
 - The canonical diagram catalog.
 - Diagram metadata linking workstreams, components, docs, code, and change

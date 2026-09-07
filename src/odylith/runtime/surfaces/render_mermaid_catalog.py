@@ -1730,6 +1730,7 @@ def _render_html(
     }
 
     __ODYLITH_ATLAS_DETAIL_LAYOUT_CSS__
+    __ODYLITH_ATLAS_EMPTY_VIEW_CSS__
 
     __ODYLITH_ATLAS_SECONDARY_TYPOGRAPHY__
     __ODYLITH_ATLAS_TOOLTIP_SURFACE__
@@ -1836,10 +1837,12 @@ def _render_html(
         <div class="stat"><p class="k" id="statStale">0</p><p class="l">Needs Update</p></div>
       </div>
 
+      <p id="diagramListStatus" class="empty-note" role="status" hidden></p>
       <ul id="diagramList" class="diagram-list"></ul>
     </aside>
 
     <main class="panel main">
+      __ODYLITH_ATLAS_EMPTY_VIEW_HTML__
       <section class="hero">
         <div class="hero-copy">
           <h2 id="diagramTitle" class="hero-title"></h2>
@@ -1916,7 +1919,7 @@ def _render_html(
         </div>
         <p id="viewerInstructions" class="viewer-instructions">Tab to diagram: arrows pan; Shift pans farther. +/− zoom; 0 reads at 100%; F fits. Outside diagram, ↑/↓ select.</p>
         <div id="viewerStage" class="viewer-stage" tabindex="0" role="region" aria-labelledby="diagramTitle" aria-describedby="viewerInstructions">
-          <img id="viewerImage" class="viewer-image" alt="diagram visualization" draggable="false" />
+          <img id="viewerImage" class="viewer-image" alt="diagram visualization" draggable="false" hidden />
         </div>
       </section>
 
@@ -2003,7 +2006,7 @@ __ODYLITH_ATLAS_VIEWPORT_RUNTIME__
         reset: document.getElementById("reset"),
       },
     });
-__ODYLITH_ATLAS_VIEWER_ASSET_INITIALIZATION__
+__ODYLITH_ATLAS_VIEWER_RUNTIME__
 
     let activeList = allDiagrams.slice();
     let activeIndex = 0;
@@ -2019,6 +2022,10 @@ __ODYLITH_ATLAS_VIEWER_ASSET_INITIALIZATION__
     const DIAGRAM_COMPACT_RE = /^D(\\d{3,})$/;
     const SIDEBAR_PREF_KEY = "mermaid.sidebar.collapsed";
     const TOOLING_BASE_HREF = __ODYLITH_TOOLING_BASE_HREF__;
+    const viewer = createAtlasViewer({
+      mainEl: document.querySelector(".main"), stageEl, imageEl, listEl, viewport,
+      catalogCount: allDiagrams.length, projectHref: `${TOOLING_BASE_HREF}?tab=project`,
+    });
     const SORT_DEFAULT = "newest";
     const SORT_TOKENS = new Set(["newest", "oldest", "reviewed", "title", "freshness"]);
     __ODYLITH_ATLAS_QUICK_TOOLTIP_RUNTIME__
@@ -2426,35 +2433,7 @@ __ODYLITH_ATLAS_VIEWER_ASSET_INITIALIZATION__
 
     function clearActiveDiagram() {
       activeDiagram = null;
-      titleEl.textContent = "";
-      idEl.textContent = "";
-      kindEl.textContent = "";
-      statusEl.textContent = "";
-      ownerEl.textContent = "";
-      reviewedEl.textContent = "";
-      freshnessEl.textContent = "";
-      freshnessCardEl?.classList.remove("ok", "warn");
-      summaryEl.textContent = "";
-      readGuideEl.textContent = "";
-      clearNode(sourceLinksEl);
-      clearNode(diagramBoxListEl);
-      diagramBoxesSectionEl.hidden = true;
-      clearNode(componentListEl);
-      clearNode(backlogLinksEl);
-      clearNode(planLinksEl);
-      clearNode(docLinksEl);
-      clearNode(codeLinksEl);
-      clearNode(registryLinksEl);
-      clearNode(surfaceLinksEl);
-      clearNode(ownerWorkstreamLinksEl);
-      clearNode(activeWorkstreamLinksEl);
-      clearNode(historicalWorkstreamLinksEl);
-      historicalWorkstreamGroupEl.hidden = true;
-      historicalWorkstreamDisclosureEl.open = false;
-      historicalWorkstreamSummaryEl.textContent = "";
-      staleAlertEl.classList.remove("visible");
-      staleAlertEl.textContent = "";
-__ODYLITH_ATLAS_VIEWER_ASSET_CLEAR__
+      viewer.clear();
     }
 
     function applyMeta(diagram) {
@@ -2472,7 +2451,7 @@ __ODYLITH_ATLAS_VIEWER_ASSET_CLEAR__
       summaryEl.textContent = diagram.summary;
       readGuideEl.textContent = diagramReadGuide(diagram);
 
-__ODYLITH_ATLAS_VIEWER_ASSET_LOAD__
+      viewer.show(diagram);
 
       renderSourceLinks(diagram);
       renderDiagramBoxes(diagram);
@@ -2651,6 +2630,7 @@ __ODYLITH_ATLAS_VIEWER_ASSET_LOAD__
         return normalizedText.includes(normalizedNeedle);
       }));
 
+      const matchingCount = activeList.length;
       if (!activeList.length && selectedToken) {
         const fallback = allDiagrams.find(
           (diagram) => canonicalizeDiagramId(diagram.diagram_id) === selectedToken
@@ -2673,6 +2653,7 @@ __ODYLITH_ATLAS_VIEWER_ASSET_LOAD__
         ? activeList.findIndex((diagram) => canonicalizeDiagramId(diagram.diagram_id) === selectedToken)
         : -1;
       activeIndex = selectedIndex >= 0 ? selectedIndex : (exactSearchIndex >= 0 ? exactSearchIndex : 0);
+      viewer.setResults({ matches: matchingCount, hasSelection: activeList.length > 0 });
       updateStats(activeList);
       renderList();
     }
@@ -2790,16 +2771,16 @@ __ODYLITH_ATLAS_VIEWER_ASSET_LOAD__
             atlas_viewer_viewport_runtime.VIEWPORT_RUNTIME_JS.strip("\n"),
         )
         .replace(
-            "__ODYLITH_ATLAS_VIEWER_ASSET_INITIALIZATION__",
-            atlas_viewer_asset_runtime.VIEWER_ASSET_INITIALIZATION_JS.strip("\n"),
+            "__ODYLITH_ATLAS_VIEWER_RUNTIME__",
+            atlas_viewer_asset_runtime.VIEWER_RUNTIME_JS.strip("\n"),
         )
         .replace(
-            "__ODYLITH_ATLAS_VIEWER_ASSET_CLEAR__",
-            atlas_viewer_asset_runtime.VIEWER_ASSET_CLEAR_JS.strip("\n"),
+            "__ODYLITH_ATLAS_EMPTY_VIEW_CSS__",
+            atlas_viewer_asset_runtime.EMPTY_VIEW_CSS.strip("\n"),
         )
         .replace(
-            "__ODYLITH_ATLAS_VIEWER_ASSET_LOAD__",
-            atlas_viewer_asset_runtime.VIEWER_ASSET_LOAD_JS.strip("\n"),
+            "__ODYLITH_ATLAS_EMPTY_VIEW_HTML__",
+            atlas_viewer_asset_runtime.EMPTY_VIEW_HTML.strip("\n"),
         )
         .replace("__ODYLITH_ATLAS_ARTIFACT_LABEL_TYPOGRAPHY__", artifact_label_css)
         .replace("__ODYLITH_ATLAS_DIAGRAM_BOX_ROLE_LABEL__", diagram_box_role_label_css)

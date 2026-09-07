@@ -5,7 +5,7 @@
   B-111 through B-117. The surface should show the umbrella, execution waves,
   release target `release-0-1-11`, and proof gates without turning Odylith Discipline
   into noisy task theater.
-Last updated: 2026-09-06
+Last updated: 2026-09-07
 
 
 ## Purpose
@@ -15,6 +15,14 @@ execution evidence into the ranked workstream view used by operators and other
 Odylith surfaces.
 
 ## Scope And Non-Goals
+### Selection and empty-state lifecycle
+`backlog_selection_ui.py` owns detail loading and cancellation. No source rows
+produces a clear explanation and an Open Project next step; zero filtered rows
+explains how to recover existing workstreams. A selection revision invalidates
+late responses even when the same workstream ID is selected again. The HTML
+renderer owns populated detail markup, not a competing empty/async path.
+CB-330 requires desktop/mobile source-empty and filtered recovery browser proof.
+
 ### Radar owns
 - The canonical Odylith workstream backlog under `odylith/radar/source/`.
 - The repo-local release-planning source subtree under

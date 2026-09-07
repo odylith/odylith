@@ -5,7 +5,7 @@
   affected component spec names its faculty, hot-path boundary, proof duty,
   and surface duty so the Odylith Discipline layer remains cross-cutting rather than a
   runtime-only feature.
-Last updated: 2026-07-20
+Last updated: 2026-09-07
 
 
 ## Purpose
@@ -16,6 +16,14 @@ requirements, and how operators inspect change history by component rather than
 only by workstream.
 
 ## Scope And Non-Goals
+### Component selection lifecycle
+`registry_selection_ui.py` owns selected-summary resolution, detail-load
+cancellation and empty presentation. An empty inventory offers Open Project;
+filters hiding existing components offer search/filter recovery. Detail and
+timeline only accept the latest selection revision, including repeated selection
+of the same component. Populated detail and forensic rendering retain their
+existing owners. CB-330 browser proof covers both source states at both widths.
+
 ### Registry owns
 - The canonical component manifest.
 - Component-to-workstream, component-to-diagram, and component-to-spec linkage.

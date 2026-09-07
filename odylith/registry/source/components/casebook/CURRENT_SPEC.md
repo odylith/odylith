@@ -5,7 +5,7 @@
   Recurring false allows, false blocks, proofless claims, visible-UX misses,
   or governance-bypass patterns should become Casebook bugs only when evidence
   is concrete enough to prevent rediscovery.
-Last updated: 2026-07-20
+Last updated: 2026-09-07
 
 
 ## Purpose
@@ -15,6 +15,14 @@ queryable bug knowledge base linked back to workstreams, components, diagrams,
 and source evidence.
 
 ## Scope And Non-Goals
+### Honest list presentation
+`casebook_list_presentation_runtime.py` owns list cards and empty-list copy from
+explicit source and visible row counts. An empty Casebook explains how to capture
+a case; filtered results explain how to recover existing cases. It does not own
+URL selection, detail loading or cancellation, which stay in the controller.
+CB-330 proof covers desktop/mobile empty and invalid routes, filter recovery,
+escaped titles and late detail responses. Cache inputs include the presenter.
+
 ### Casebook owns
 - The canonical bug markdown tree.
 - Bug-index regeneration from source markdown.

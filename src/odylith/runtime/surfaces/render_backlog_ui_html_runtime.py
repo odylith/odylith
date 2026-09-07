@@ -7,6 +7,7 @@ import json
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import execution_wave_ui_runtime_primitives
+from odylith.runtime.surfaces import backlog_selection_ui
 
 
 def _render_html(*, payload: dict[str, object]) -> str:
@@ -3392,25 +3393,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
       );
     }
 
-    async function renderDetail(rows) {
-      const selectedSummary = rows.find((row) => row.idea_id === state.selectedIdeaId);
-      if (!selectedSummary) {
-        el.detail.hidden = true;
-        el.detailEmpty.hidden = true;
-        el.detail.innerHTML = "";
-        return;
-      }
-      el.detail.hidden = false;
-      el.detailEmpty.hidden = true;
-      el.detail.innerHTML = "";
-      const loadedDetail = await backlogDataSource.loadDetail(selectedSummary.idea_id);
-      if (String(state.selectedIdeaId || "").trim() !== String(selectedSummary.idea_id || "").trim()) {
-        return;
-      }
-      const selected = loadedDetail && typeof loadedDetail === "object"
-        ? { ...selectedSummary, ...loadedDetail }
-        : selectedSummary;
-
+    function renderDetail(selected) {
       const sectionBadge = sectionBadgeInfo(selected);
       const rankingClass = selected.founder_override === "yes" ? "founder-override" : "score-ordered";
       const rankingText = selected.founder_override === "yes" ? "Priority Override" : "Score Ordered";
@@ -3613,6 +3596,12 @@ def _render_html(*, payload: dict[str, object]) -> str:
       `;
     }
 
+    __ODYLITH_RADAR_SELECTION_RUNTIME__
+    const renderSelectedWorkstream = createBacklogSelection({
+      detail: el.detail, empty: el.detailEmpty, sourceCount: all.length,
+      loadDetail: id => backlogDataSource.loadDetail(id), renderDetail,
+    });
+
     function render(options = {}) {
       const filtered = sortRows(applyFilters());
       if (filtered.length && !filtered.some((item) => item.idea_id === state.selectedIdeaId)) {
@@ -3624,12 +3613,8 @@ def _render_html(*, payload: dict[str, object]) -> str:
       el.meta.textContent = `Showing ${filtered.length} of ${all.length} workstreams`;
       void renderAnalytics(filtered);
       renderList(filtered, { preserveListScroll: Boolean(options.preserveListScroll) });
-      void renderDetail(filtered);
+      void renderSelectedWorkstream(state.selectedIdeaId, filtered);
       el.empty.hidden = true;
-      if (!filtered.length) {
-        el.detail.hidden = true;
-        el.detailEmpty.hidden = true;
-      }
 
       syncParentShellSelection();
     }
@@ -4472,6 +4457,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
         .replace("__ODYLITH_RADAR_META_COPY__", meta_supporting_css)
         .replace("__ODYLITH_EXECUTION_WAVE_CSS__", execution_wave_css)
         .replace("__ODYLITH_EXECUTION_WAVE_RUNTIME_JS__", execution_wave_runtime_js)
+        .replace("__ODYLITH_RADAR_SELECTION_RUNTIME__", backlog_selection_ui.runtime_js())
         .replace("__ODYLITH_RADAR_OPERATOR_READOUT_LAYOUT__", "")
         .replace("__ODYLITH_RADAR_OPERATOR_READOUT_LABEL__", "")
         .replace("__ODYLITH_RADAR_OPERATOR_READOUT_COPY__", "")

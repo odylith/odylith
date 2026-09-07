@@ -3241,25 +3241,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
       );
     }
 
-    async function renderDetail(rows) {
-      const selectedSummary = rows.find((row) => row.idea_id === state.selectedIdeaId);
-      if (!selectedSummary) {
-        el.detail.hidden = true;
-        el.detailEmpty.hidden = true;
-        el.detail.innerHTML = "";
-        return;
-      }
-      el.detail.hidden = false;
-      el.detailEmpty.hidden = true;
-      el.detail.innerHTML = "";
-      const loadedDetail = await backlogDataSource.loadDetail(selectedSummary.idea_id);
-      if (String(state.selectedIdeaId || "").trim() !== String(selectedSummary.idea_id || "").trim()) {
-        return;
-      }
-      const selected = loadedDetail && typeof loadedDetail === "object"
-        ? { ...selectedSummary, ...loadedDetail }
-        : selectedSummary;
-
+    function renderDetail(selected) {
       const sectionBadge = sectionBadgeInfo(selected);
       const rankingClass = selected.founder_override === "yes" ? "founder-override" : "score-ordered";
       const rankingText = selected.founder_override === "yes" ? "Priority Override" : "Score Ordered";
@@ -3462,6 +3444,31 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
       `;
     }
 
+    function createBacklogSelection({ detail, empty, sourceCount, loadDetail, renderDetail }) {
+      let revision = 0;
+      empty.setAttribute("role", "status");
+      return async function selectWorkstream(selectedId, filtered) {
+        const currentRevision = ++revision;
+        const summary = filtered.find(row => row.idea_id === selectedId);
+        detail.innerHTML = "";
+        detail.hidden = !summary;
+        empty.hidden = Boolean(summary);
+        if (!summary) {
+          empty.innerHTML = sourceCount === 0
+            ? `<h2>No workstreams yet</h2><p>Radar will show the work planned for this project.</p><p><a href="../index.html?tab=project" target="_top">Open Project</a> to start from your project intent.</p>`
+            : `<h2>No matching workstreams</h2><p>Change your search or filters to see workstreams already in Radar.</p>`;
+          return;
+        }
+        const loaded = await loadDetail(summary.idea_id);
+        if (currentRevision !== revision) return;
+        renderDetail(loaded && typeof loaded === "object" ? { ...summary, ...loaded } : summary);
+      };
+    }
+    const renderSelectedWorkstream = createBacklogSelection({
+      detail: el.detail, empty: el.detailEmpty, sourceCount: all.length,
+      loadDetail: id => backlogDataSource.loadDetail(id), renderDetail,
+    });
+
     function render(options = {}) {
       const filtered = sortRows(applyFilters());
       if (filtered.length && !filtered.some((item) => item.idea_id === state.selectedIdeaId)) {
@@ -3473,12 +3480,8 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
       el.meta.textContent = `Showing ${filtered.length} of ${all.length} workstreams`;
       void renderAnalytics(filtered);
       renderList(filtered, { preserveListScroll: Boolean(options.preserveListScroll) });
-      void renderDetail(filtered);
+      void renderSelectedWorkstream(state.selectedIdeaId, filtered);
       el.empty.hidden = true;
-      if (!filtered.length) {
-        el.detail.hidden = true;
-        el.detailEmpty.hidden = true;
-      }
 
       syncParentShellSelection();
     }

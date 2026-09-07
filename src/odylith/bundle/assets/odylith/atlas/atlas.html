@@ -1071,6 +1071,12 @@
         gap: 6px;
       }
     }
+        .main > [hidden], #atlasProjectLink[hidden] { display: none; }
+    .main[data-selection-empty="true"] {
+      min-height: 0;
+      grid-template-rows: auto;
+      align-content: start;
+    }
 
     .diagram-name {
   margin: 0;
@@ -1283,10 +1289,16 @@
         <div class="stat"><p class="k" id="statStale">0</p><p class="l">Needs Update</p></div>
       </div>
 
+      <p id="diagramListStatus" class="empty-note" role="status" hidden></p>
       <ul id="diagramList" class="diagram-list"></ul>
     </aside>
 
     <main class="panel main">
+            <section id="atlasEmptyState" class="section" aria-labelledby="atlasEmptyTitle" hidden>
+        <h2 id="atlasEmptyTitle"></h2>
+        <p id="atlasEmptyMessage"></p>
+        <a id="atlasProjectLink" class="tool-btn" target="_top">Open Project</a>
+      </section>
       <section class="hero">
         <div class="hero-copy">
           <h2 id="diagramTitle" class="hero-title"></h2>
@@ -1363,7 +1375,7 @@
         </div>
         <p id="viewerInstructions" class="viewer-instructions">Tab to diagram: arrows pan; Shift pans farther. +/− zoom; 0 reads at 100%; F fits. Outside diagram, ↑/↓ select.</p>
         <div id="viewerStage" class="viewer-stage" tabindex="0" role="region" aria-labelledby="diagramTitle" aria-describedby="viewerInstructions">
-          <img id="viewerImage" class="viewer-image" alt="diagram visualization" draggable="false" />
+          <img id="viewerImage" class="viewer-image" alt="diagram visualization" draggable="false" hidden />
         </div>
       </section>
 
@@ -1472,7 +1484,7 @@
   }
 })();
 </script>
-  <script id="catalogData" src="mermaid-payload.v1.js?v=8da27b706c83"></script>
-  <script src="mermaid-app.v1.js?v=8da27b706c83"></script>
+  <script id="catalogData" src="mermaid-payload.v1.js?v=8eb1bf83e08e"></script>
+  <script src="mermaid-app.v1.js?v=8eb1bf83e08e"></script>
 </body>
 </html>

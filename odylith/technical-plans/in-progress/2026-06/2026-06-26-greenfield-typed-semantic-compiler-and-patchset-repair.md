@@ -29,6 +29,30 @@ or treat the automated route pass as human-quality acceptance. Evidence lives in
 `/private/tmp/odylith-installed-checkpoint.tefox7/installed-empty-browser-reviewed/`
 and the retained earlier diagnostic screenshots.
 
+The correction is now in progress with red browser controls: Atlas four,
+Casebook four, and Radar/Registry eight failures; Compass has six red fact and
+narration controls while its source-backed estimates remain green. The diagnosed
+owners are Atlas selection lifecycle, Compass no-workstream facts, Casebook list
+presentation and Radar/Registry async selection. Replace the obsolete paths in
+those owners; no global empty-state framework or semantic parser change is
+needed. A late Radar response must not restore detail after filters remove its
+selection. Keep mobile KPI density explicitly unresolved by this bounded wave.
+Final source-local proof passes 28 empty/invalid route cells, six Project
+recoveries and independent desktop/mobile review of all seven surfaces. A fresh
+four-workstream, four-component, five-diagram synthetic package passes 32 browser
+state cells and 113 exact sealed/published files. Its diagnostic 35.080 seconds
+is not model-authoring or consumer SLA evidence. CB-330 is FixedPendingRelease,
+with exact new-distribution installation still pending. The retained installed
+4ce8cd2f screenshots remain baseline evidence.
+
+The first visually reviewed isolated run had 28 passing DOM cells but still
+invented stale progress with no workstream or event. Freshness admission now
+requires a real workstream or timestamp, retaining genuine stale scopes, global
+evidence and independent risks; 212 Compass controls pass. A separate first
+fixture spawned background narration outside its in-process guard and is invalid
+for no-model proof. Both failed attempts remain explicit in the proof bundle.
+Keep synthetic background isolation separate from production engine policy.
+
 ### Exact distribution install checkpoint (2026-09-07)
 
 Clean pushed 4ce8cd2f builds the complete local 0.1.15 distribution. The real

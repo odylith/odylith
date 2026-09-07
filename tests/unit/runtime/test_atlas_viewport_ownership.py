@@ -3,6 +3,7 @@
 import inspect
 
 from odylith.runtime.surfaces import atlas_viewer_viewport_runtime as viewport
+from odylith.runtime.surfaces import atlas_viewer_asset_runtime as viewer
 from odylith.runtime.surfaces import render_mermaid_catalog as catalog
 
 
@@ -26,3 +27,19 @@ def test_catalog_has_one_explicit_viewport_owner() -> None:
     assert "viewport.setDiagram(diagram);" in html
     assert "viewport.imageLoaded();" in html
     assert "viewport.clear();" in html
+
+
+def test_catalog_delegates_selection_lifecycle_to_the_viewer_owner() -> None:
+    source = inspect.getsource(catalog)
+    assert "const viewer = createAtlasViewer({" in source
+    assert "viewer.clear();" in source
+    assert "viewer.show(diagram);" in source
+    assert 'titleEl.textContent = "";' not in source
+    for retired in ("VIEWER_ASSET_INITIALIZATION_JS", "VIEWER_ASSET_CLEAR_JS", "VIEWER_ASSET_LOAD_JS"):
+        assert retired not in source
+        assert not hasattr(viewer, retired)
+    assert "function createAtlasViewer({" in viewer.VIEWER_RUNTIME_JS
+    assert "imageEl.hidden = true;" in viewer.VIEWER_RUNTIME_JS
+    assert "imageEl.onload = null;" in viewer.VIEWER_RUNTIME_JS
+    assert 'mainEl.dataset.selectionEmpty = String(!available);' in viewer.VIEWER_RUNTIME_JS
+    assert "activeDiagram" not in viewer.VIEWER_RUNTIME_JS

@@ -120,7 +120,9 @@ def test_registry_category_labels_survive_filter_empty_and_runtime_fallback(
                 registry.locator("#search").fill("no-match-category-proof")
                 assert registry.locator("button[data-component]").count() == 0
                 assert registry.locator(".group-head").count() == 0
-                assert registry.locator("#detail").inner_text() == ""
+                empty = registry.locator("#detail [role=status]")
+                assert "No matching components" in empty.inner_text()
+                assert "reset the filters" in empty.inner_text()
                 registry.locator("#resetFilters").click()
                 assert registry.locator("button[data-component]").count() == 2
                 assert registry.locator('button[data-component="radar"] .label').first.inner_text() == "Application"

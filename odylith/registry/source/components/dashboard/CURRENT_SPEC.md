@@ -5,7 +5,7 @@
   benchmark proof, and release-gate indicators may surface when useful, but
   passing checks should stay quiet and no dashboard claim should imply shipped
   behavior before pinned dogfood and benchmark proof exist.
-Last updated: 2026-09-06
+Last updated: 2026-09-07
 
 
 ## Purpose
@@ -24,6 +24,15 @@ Browser proof checks these visible values and source actors on desktop/mobile;
 unit or DOM-count success does not establish complete-package human quality.
 
 ## Scope And Non-Goals
+### Cross-surface experience proof
+Every generated-surface change requires desktop/mobile browser checks of normal,
+empty or fallback, and degraded/error states, followed by independent screenshot
+review. A heading, route or no-overflow pass alone is not UX acceptance. CB-330
+demonstrated this on a fresh installed repo. Each child owns its useful empty
+state; Dashboard owns the shared Project route, not a second record interpreter.
+The header remains frozen. Mobile KPI density and broader accessibility remain
+separate open obligations, not implied successes of the empty-state correction.
+
 ### Dashboard owns
 - Shell-level routing and query-param deep links.
 - The parent iframe composition model.

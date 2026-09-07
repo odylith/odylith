@@ -31,14 +31,14 @@ def test_fresh_atlas_render_contains_accessible_asset_failure_and_reset() -> Non
 def test_atlas_viewer_asset_lifecycle_stays_in_its_template_owner() -> None:
     renderer_source = inspect.getsource(render_mermaid_catalog)
 
-    assert "__ODYLITH_ATLAS_VIEWER_ASSET_INITIALIZATION__" in renderer_source
-    assert "__ODYLITH_ATLAS_VIEWER_ASSET_CLEAR__" in renderer_source
-    assert "__ODYLITH_ATLAS_VIEWER_ASSET_LOAD__" in renderer_source
+    assert "__ODYLITH_ATLAS_VIEWER_RUNTIME__" in renderer_source
+    assert "viewer.clear();" in renderer_source
+    assert "viewer.show(diagram);" in renderer_source
     assert 'imageErrorEl.id = "viewerAssetError"' not in renderer_source
     assert 'imageEl.src = fallback;' not in renderer_source
     assert (
         'imageErrorEl.id = "viewerAssetError"'
-        in atlas_viewer_asset_runtime.VIEWER_ASSET_INITIALIZATION_JS
+        in atlas_viewer_asset_runtime.VIEWER_RUNTIME_JS
     )
-    assert 'imageEl.src = fallback;' in atlas_viewer_asset_runtime.VIEWER_ASSET_LOAD_JS
-    assert "Diagram preview unavailable." in atlas_viewer_asset_runtime.VIEWER_ASSET_LOAD_JS
+    assert 'imageEl.src = fallback;' in atlas_viewer_asset_runtime.VIEWER_RUNTIME_JS
+    assert "Diagram preview unavailable." in atlas_viewer_asset_runtime.VIEWER_RUNTIME_JS

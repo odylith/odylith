@@ -20,6 +20,7 @@ from odylith.runtime.surfaces import generated_surface_refresh_guards
 from odylith.runtime.surfaces import governance_surface_theme
 from odylith.runtime.surfaces import registry_component_identity_ui
 from odylith.runtime.surfaces import registry_forensic_evidence_ui
+from odylith.runtime.surfaces import registry_selection_ui
 from odylith.runtime.surfaces import registry_typography_ui
 from odylith.runtime.surfaces import source_bundle_mirror
 from odylith.runtime.surfaces import surface_path_helpers
@@ -2398,10 +2399,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     }
 
     function renderDetail(row) {
-      if (!row) {
-        detailEl.innerHTML = "";
-        return;
-      }
       const workstreams = Array.isArray(row.workstreams) ? row.workstreams : [];
       const diagrams = Array.isArray(row.diagrams) ? row.diagrams : [];
       const diagramDetails = Array.isArray(row.diagram_details) ? row.diagram_details : [];
@@ -2645,29 +2642,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
 
     __ODYLITH_REGISTRY_FORENSIC_EVIDENCE_RUNTIME__
 
-    async function renderSelectedComponent(selectedId, filtered) {
-      const selectedSummary = filtered.find((row) => String(row.component_id || "").toLowerCase() === String(selectedId || "").toLowerCase()) || null;
-      if (!selectedSummary) {
-        detailEl.dataset.selectedComponent = "";
-        renderDetail(null);
-        renderTimeline(null);
-        return;
-      }
-      const expectedSelected = String(selectedId || "").trim().toLowerCase();
-      detailEl.dataset.selectedComponent = expectedSelected;
-      detailEl.innerHTML = "";
-      timelineCountEl.textContent = "";
-      timelineEl.innerHTML = "";
-      const loadedDetail = await registryDataSource.loadDetail(selectedId);
-      if (String(detailEl.dataset.selectedComponent || "") !== expectedSelected) {
-        return;
-      }
-      const selected = loadedDetail && typeof loadedDetail === "object"
-        ? { ...selectedSummary, ...loadedDetail }
-        : selectedSummary;
-      renderDetail(selected);
-      renderTimeline(selected);
-    }
+    __ODYLITH_REGISTRY_SELECTION_RUNTIME__
+    const renderSelectedComponent = createRegistrySelection({
+      detail: detailEl, timeline: timelineEl, timelineCount: timelineCountEl,
+      sourceCount: allComponents.length,
+      loadDetail: id => registryDataSource.loadDetail(id), renderDetail, renderTimeline,
+    });
 
     function applyState(requestedId, options = {}) {
       renderFilterControls();
@@ -2897,6 +2877,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         .replace("__ODYLITH_REGISTRY_COMPONENT_IDENTITY_CSS__", registry_component_identity_ui.css())
         .replace("__ODYLITH_REGISTRY_FORENSIC_EVIDENCE_MARKUP__", registry_forensic_evidence_ui.markup())
         .replace("__ODYLITH_REGISTRY_FORENSIC_EVIDENCE_RUNTIME__", registry_forensic_evidence_ui.runtime_js())
+        .replace("__ODYLITH_REGISTRY_SELECTION_RUNTIME__", registry_selection_ui.runtime_js())
         .replace("__ODYLITH_REGISTRY_COMPONENT_IDENTITY_RUNTIME__", registry_component_identity_ui.runtime_js())
         .replace("__ODYLITH_BRAND_HEAD__", str(payload.get("brand_head_html", "")).strip())
         .replace("__DATA__", data_json)

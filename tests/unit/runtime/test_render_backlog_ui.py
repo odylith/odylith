@@ -619,11 +619,14 @@ def test_render_backlog_ui_normalizes_compact_workstream_search_queries() -> Non
     assert "const token = canonicalizeIdeaId(ideaId);" in html
 
 
-def test_render_backlog_ui_omits_empty_placeholder_copy() -> None:
+def test_render_backlog_ui_explains_empty_source_and_filtered_results() -> None:
     html = render_backlog_ui._render_html(payload={"entries": []})
 
     assert "Select a workstream from the ranked list." not in html
-    assert "No workstreams match current filters." not in html
+    assert "No workstreams yet" in html
+    assert "No matching workstreams" in html
+    assert "Change your search or filters" in html
+    assert 'href="../index.html?tab=project" target="_top"' in html
     assert "Loading workstream detail…" not in html
     assert "No finished execution data yet." not in html
     assert "No completed execution samples in this window." not in html

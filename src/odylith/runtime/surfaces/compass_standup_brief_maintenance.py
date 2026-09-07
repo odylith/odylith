@@ -50,6 +50,7 @@ _WORKER_EPOCH_RELATIVE_PATHS = (
     "src/odylith/runtime/surfaces/compass_standup_brief_batch.py",
     "src/odylith/runtime/surfaces/compass_standup_brief_provider_contract.py",
     "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py",
+    "src/odylith/runtime/surfaces/compass_standup_brief_status.py",
     "src/odylith/runtime/surfaces/compass_standup_brief_substrate.py",
 )
 def maintenance_request_path(*, repo_root: Path) -> Path:

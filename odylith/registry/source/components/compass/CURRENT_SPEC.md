@@ -6,7 +6,7 @@
   and release-gate posture, but should suppress weak Odylith Discipline noise.
 - Compass entries should preserve workstream ids B-110 through B-117 and the
   benchmark gates that feed future session priors.
-Last updated: 2026-07-20
+Last updated: 2026-09-07
 
 
 ## Purpose
@@ -16,6 +16,19 @@ of what changed, what is active, what risks or cases dominate, and what the
 standup-level summary should be.
 
 ## Scope And Non-Goals
+### No-workstream evidence boundary
+The global fact packet and legacy outcome digest must not estimate an empty
+workstream mapping or invent a priority, direction or forcing function. Actual
+completion, plan actions and risk evidence remain independently visible; populated
+and queued workstreams retain their existing estimate policy. Narration
+availability copy belongs to `compass_standup_brief_status.py`; a deferred provider
+is not proof that a brief is being prepared. CB-330 changes no provider, cache,
+retry or model policy. It removes unsupported inputs before presentation.
+Freshness requires a real workstream or evidence timestamp. An empty repo uses
+the existing unknown bucket; genuine global evidence is labelled as repository
+evidence, not an invented lane. Worker-epoch inputs include the status owner so
+its copy changes invalidate an already-running maintenance worker.
+
 ### Compass owns
 - The local host/Odylith timeline stream.
 - Durable execution memory for governance-learning decisions, proof

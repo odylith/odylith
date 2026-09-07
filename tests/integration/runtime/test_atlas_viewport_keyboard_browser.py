@@ -166,6 +166,6 @@ def test_unavailable_diagram_does_not_offer_unusable_reading_controls(browser_co
         assert atlas.locator(f"#{control}").is_disabled()
         assert atlas.locator(f"#{control}").evaluate("node => Number(getComputedStyle(node).opacity)") < 1
     assert atlas.locator("#viewerStage").get_attribute("tabindex") == "-1"
-    assert atlas.locator("#prevDiagram").is_enabled()
-    assert atlas.locator("#nextDiagram").is_enabled()
+    assert atlas.locator("#prevDiagram").is_disabled() == (state == "empty")
+    assert atlas.locator("#nextDiagram").is_disabled() == (state == "empty")
     _assert_clean_page(page, *errors)
