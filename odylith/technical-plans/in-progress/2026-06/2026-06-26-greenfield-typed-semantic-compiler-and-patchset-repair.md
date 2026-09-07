@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-06-26
 
-Updated: 2026-09-05
+Updated: 2026-09-06
 
 Backlog: B-142
 
@@ -14,6 +14,67 @@ or generated content after confirmation.
 ## Current Convergence Contract (2026-09-04)
 
 ### Required package depth and current blocker (2026-09-05)
+
+Current wave outcome (2026-09-06): no planning candidate has earned production
+integration. The one parallel experiment fails when unchanged source authoring
+returns null at 30.012/30 seconds. The independent planner returns in 20.642
+seconds, but source review never runs. Two observed calls, total 30.015 seconds,
+no publication and no complete package. Ten temporary source-support boundary
+tests pass. Evidence: `/private/tmp/odylith-greenfield-parallel-plan.oaoavx/`,
+result SHA `486492077f9b4cd0628b974d0edd61384083a99b9bc7661ceb7aeadf92d3aacd`.
+Stop this wave; do not retry the candidate or weaken the fixed deadlines.
+
+Independent review of the raw, unreviewed plan finds five meaningfully distinct
+logical components with source-backed support, but two P1 admission blockers:
+all five Radar tasks can close on designs/maps without delivering working product
+behavior, and reporting exchanges broaden exposure of medical/accessibility
+details and consent-evidence references beyond the source request. Matching also
+lacks a clear owner or explicit assumption for capacity input (P2). These are
+isolated planner findings, not a claim about an accepted or sealed package.
+The next implementation decision must address the source-authoring latency
+bottleneck while retaining independent review, executable deliverables/proof,
+and minimum necessary data exchange. A lower artifact count, a design-document
+self-check, a faster but unsafe plan, or an arbitrary provider-timeout exemption
+cannot satisfy the goal. No additional mechanism or profile is selected here.
+Production stays at the source-qualified v48 checkpoint; installed package depth,
+generalization, clean-install qualification and final adjudication remain open.
+
+Latest discriminator (2026-09-06): the reviewer-owned provisional-plan alternative
+preserves the initial request and all accepted-source validation. Its 18 temporary
+boundary tests pass. The one authorized standard attempt returns a source-valid
+initial candidate in 27.551/30 seconds, then times out in review at 27.446 seconds
+against the measured 27.428-second remainder. Total model time is 55.020/55 seconds;
+two calls, no plan response, no publication, no runtime adoption, no holdout access.
+This allocation is exercised and rejected on timing, not on unobserved plan quality.
+Evidence: `/private/tmp/odylith-greenfield-review-planning.fu76cy/`, result SHA
+`25ca8d5af5cbfa1dbd27005eca6dccb37522a974ebad280514902ef397e8b75a`.
+Do not retry it or raise its cap. One unchanged source-review control against
+the retained initial candidate and identical cap passes in16.658 seconds. It
+corrects the participant inventory and clears task data incorrectly labeled as
+an operating constraint; full source validation passes. Private transport output
+is retained under `baseline-review-control/`; result SHA
+`9185319751253563fd74aaa33e392117055725418134b77056cf80160c7ad9d3`.
+This demonstrates that the existing reviewer fits this sample's window, not
+that the control plus an earlier author is a new end-to-end run or that the
+candidate timeout has a proven causal explanation. Preserve the working source
+review; evaluate only a bounded mechanism that avoids adding plan authorship to
+its critical path. A concurrent planner is under independent design adjudication,
+not production-qualified by this result. Independent semantic adjudication selects
+one temporary concurrent-planner discriminator: unchanged initial source author
+and an evidence-only provisional planner run concurrently within30 seconds, then
+the mandatory independent reviewer audits both within the remaining55-second
+model window. The consumer deadline stays60 seconds; this predeclared experimental
+profile has at most three calls, no retries or tier promotion. Production's
+two-call profiles remain unchanged. The planner cites complete source actions by
+quote/occurrence. After source corrections are fully validated, each support span
+must lie inside exactly one final first-path span and contain that event's action
+and nonempty target, not merely its verb;
+the union covers every event without changing its performer. Keep the three-list
+component/workstream/exchange plan; reject a compact1:1 work-package replacement
+because it conflates component and delivery ownership. A pass only earns full
+package integration and positive/negative/equivalent-source quality evidence;
+it is not release proof. Stop on any timeout, ambiguous binding, padded proposal
+or source/proposal contamination. No new production runtime code exists.
 
 The operator now explicitly requires 4–5 actionable Radar workstreams, 4–5
 candidate Registry components, and at least five detailed Atlas diagrams for a
@@ -116,10 +177,22 @@ initial-result SHA `2adea4e8054bbd7e9ab7b2e7e5f123ff8d40edafaecba043317a2b025da2
 A separately retained, identical-driver rerun is rejected before process launch
 by the permission reviewer because model-service data egress needs explicit
 authorization. Do not bypass it through another transport, provider or relocated
-CLI state. Obtain approval for the test evidence, instructions/schema and generated
-candidate payload before the single bounded run. The standard candidate remains
-unproved; source-qualified v48 remains the last implemented mechanism, with its
-installed depth failure and all later gates still open.
+CLI state. That permission boundary is historical: the operator subsequently
+explicitly authorizes the model-data test and further in-scope execution without
+approval waiting. The identical-driver standard run then reaches its initial
+30-second deadline and returns null in 30.015 seconds with provider code `timeout`.
+No second call, generated plan, publication or runtime patch occurs. Reject this
+initial-author additive-plan configuration; do not retry it or promote its tier.
+This is measured timing failure, not a semantic verdict or a proved latency cause.
+Evidence: `/private/tmp/odylith-greenfield-standard-discriminator.3l5UvG/`;
+driver SHA `ca806068f46e94a4f7f24bd7b16f8b5fc4b556be31739429a425d8804f2d3797`,
+contract SHA `91e0f2b7db8590475f1a853138e46e28975eaab01f591eb66b7702a28bf065f1`,
+result SHA `d7ef07049982d73b73a64b0d44fa2bd4c3b2e741f722081e21bbd396ca08c238`.
+Source-qualified v48 remains the last implemented mechanism, with its installed
+depth failure and all later gates still open. A review-stage planning alternative
+must first preserve mandatory accepted-source review and bind its plan to final
+corrected event identities; moving unverified claims into proposal prose is not a
+quality improvement. Independent ownership adjudication precedes that comparison.
 
 The operator explicitly requires an achievable, finite release goal without
 overengineering. Release claims cover the published operating envelope and the

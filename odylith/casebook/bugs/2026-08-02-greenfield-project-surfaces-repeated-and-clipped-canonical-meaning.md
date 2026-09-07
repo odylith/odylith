@@ -1506,8 +1506,56 @@
   Retain `flood-shelter-intake-standard/initial.json` under the same evidence root
   (SHA `2adea4e8054bbd7e9ab7b2e7e5f123ff8d40edafaecba043317a2b025da2b8fc`).
   A scoped permission request for the identical test is rejected before launch over
-  model-service data egress. Explicit approval is required; no transport workaround,
-  timing-cap change, generated package, production patch or holdout run occurs.
+  model-service data egress. No transport workaround, timing-cap change, generated
+  package, production patch or holdout run occurs at that point.
+  On2026-09-06 the operator explicitly authorizes the model-data test and further
+  in-scope execution without approval waiting. The authorized standard test returns
+  null with provider code `timeout` in30.015/30s, with one call and no publication.
+  Retain `/private/tmp/odylith-greenfield-standard-discriminator.3l5UvG/`
+  (result SHA `d7ef07049982d73b73a64b0d44fa2bd4c3b2e741f722081e21bbd396ca08c238`).
+  Reject this initial-author additive-plan configuration on timing, not inferred
+  semantics. Do not repeat it, extend its cap or continue reporting permissions
+  as the active blocker. Assess a different ownership/allocation only with explicit
+  source/proposal custody and mandatory review safeguards intact.
+
+  The reviewer-owned alternative is also rejected on timing on2026-09-06. Its
+  unchanged initial author returns a source-valid candidate in27.551/30s, but
+  review plus provisional planning returns null in27.446s against27.428s remaining;
+  total55.020/55s. Eighteen temporary structure/separation checks pass, but no plan
+  exists to assess usefulness. There are exactly two calls, no publication and no
+  production adoption. Evidence `/private/tmp/odylith-greenfield-review-planning.fu76cy/`,
+  result SHA `25ca8d5af5cbfa1dbd27005eca6dccb37522a974ebad280514902ef397e8b75a`.
+  Preserve this failure. Do not retry, promote tiers, infer timeout causality or
+  describe provider permission as blocked. The one paired baseline source-review
+  diagnostic on the retained initial candidate passes in16.658s under the same
+  27.428s cap. It returns two source corrections and passes full source validation.
+  Retain `baseline-review-control/` under the same evidence root, result SHA
+  `9185319751253563fd74aaa33e392117055725418134b77056cf80160c7ad9d3`.
+  This is a baseline-only control, not a new full two-call consumer run or causal
+  latency proof. Preserve the existing source reviewer and do not infer that
+  permission, transport initialization or source semantics caused the plan timeout.
+  Before the concurrent-planner attempt, independent review catches a prototype
+  support-join defect: testing only the canonical action span can admit a verb
+  without its governed object. The temporary join now requires both action and
+  nonempty canonical target inside the same uniquely bound event. Add an explicit
+  action-only negative; no NLP inference or source-ownership change is involved.
+  The one parallel experiment then fails at unchanged initial source authoring:
+  null at 30.012/30 seconds. Its independent planner returns in 20.642 seconds,
+  but mandatory review never runs. Two observed calls, total 30.015 seconds,
+  no publication or production adoption. Retain
+  `/private/tmp/odylith-greenfield-parallel-plan.oaoavx/`, result SHA
+  `486492077f9b4cd0628b974d0edd61384083a99b9bc7661ceb7aeadf92d3aacd`.
+  Ten temporary support-join tests pass, including action-only, target-only,
+  unrelated occurrence, cross-event and final-order controls. They do not prove
+  usefulness or a successful source/review transaction.
+  Independent adjudication of the raw plan finds two P1 admission defects:
+  design/map deliverables permit all Radar tasks to close without working product
+  behavior, and proposed report interfaces expose sensitive constraint details
+  and consent references not authorized by the source. Missing capacity-input
+  ownership is P2. Proposed labels do not make unsafe design harmless. Preserve
+  distinct logical components, but require executable product outcomes and minimum
+  necessary information flow. No source-fact invention, review removal, deadline
+  extension, padded task or provider-timeout exemption is a valid recovery.
 
 - V30 Source Discriminator Result (2026-09-04): The unchanged flood request
   passed the v30 prediction. One deep authoring call completed in `49.80s`,
