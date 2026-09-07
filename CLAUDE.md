@@ -11,7 +11,7 @@
 - Claude Code uses the checked-in `.claude/` project assets for hooks, commands, rules, skills, subagents, statusline, and auto-memory; keep those assets aligned with the shared `AGENTS.md` contract.
 - Governance-learning is mandatory for Claude too: durable errors, failed mechanisms, bad artifacts, and validation results update the appropriate Casebook, Radar, Registry, Atlas, or Compass record before closeout. Before a fix, search existing truth, read prior failed mechanisms, and do not repeat a fix path that governance already shows failed.
 - First-match help, show-me, and capability inventory routes stay stdout-clean: use `odylith --help`, `odylith show`, or `odylith capabilities` as appropriate before any diagnostics.
-- Commit messages must use only the `freedom-research` contributor identity and must not include coding-assistant trailers.
+- Maintainer-authored commits use the `freedom-research` identity; external human contributors retain their Git authorship. Never use assistant/model identities or coding-assistant attribution trailers.
 - In the Odylith product repo, maintainer-only release and benchmark publishing work follows `odylith/maintainer/AGENTS.md`.
 - In maintainer mode, pinned dogfood is the default proof posture and detached `source-local` is the explicit live-source posture.
 
@@ -28,4 +28,4 @@
 - First-match demo route: if the user says `Odylith, show me what you can do` or asks what Odylith can do for this repo, use the advisory `odylith show` demo. Do not run install, status, intervention, or launcher diagnostics first.
 - Capability inventory route: if the user asks to list Odylith capabilities, engines, product architecture, or the capability map, run `odylith capabilities` and print stdout only. Do not infer the taxonomy from `odylith --help`, `odylith show`, Claude Code capability prose, or any host-model surface.
 - Claude Code is a first-class Odylith delegation host. Codex emits routed `spawn_agent` payloads subject to active host policy; Claude Code executes the same bounded delegation contract through Task-tool subagents and the checked-in `.claude/` project assets.
-- Commit messages in this repository must never carry a `Co-Authored-By:` or other coding-assistant trailer. The contributor on every commit is `freedom-research`.
+- Human `Co-Authored-By:` trailers are allowed. Never use Claude or another assistant/model as an author, committer, or attributed co-author; maintainer-authored commits use `freedom-research`, while external humans retain their Git authorship.

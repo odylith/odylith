@@ -68,7 +68,7 @@
         "tests/fixtures/greenfield-release-corpus/retired-ba25-final-holdout-regressions.v1.json"
       ],
       "confidence": "high",
-      "event_index": 1141,
+      "event_index": 1143,
       "explicit_components": [
         "atlas",
         "compass",

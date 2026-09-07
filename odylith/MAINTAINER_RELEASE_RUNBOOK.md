@@ -262,16 +262,23 @@ Run the targets in this order.
   and a local hosted-style installer proof for
   `install -> version -> doctor -> sync`.
 - `make release-preflight` must also fail closed unless the built local dist
-  passes the installed greenfield pre-confirm compilation and commit-only release matrix. That matrix is
-  part of shared release proof, must cover at least ten high-variance standard
-  cases under the 60 second budget, must run per-case headless generated
-  browser state proof for Radar, Registry, Atlas, Compass, Casebook, and
-  tooling-shell surfaces, including normal shell routes, invalid-query
-  recovery, and Casebook empty/filter fallback, must provision Playwright
-  Chromium through the maintained proof wrapper, must persist
-  `greenfield-preconfirm-matrix.v1.json` in the dist directory, and must label
-  installed rescue smoke as wiring-only unless a natural non-internal rescue
-  scenario is also proven. `BROWSER_PROOF=0` is local debugging only and cannot
+  passes the installed Greenfield pre-confirm compilation and commit-only
+  release matrix. The matrix is part of shared release proof and must cover at
+  least ten high-variance standard cases within the pinned 60-second consumer
+  budget. Its model-profile proof must separately bind standard, rescue, and
+  deep to their exact provider requests and 60-, 90-, and 120-second budgets.
+  Default or `auto` is standard; elapsed time and failure may not relabel or
+  extend it into rescue or deep. Rescue and deep are explicit pre-call choices.
+  The lower-capability profile must either meet the same semantic floor, ask the
+  one material clarification, or fail safely without writes, and provider
+  unavailability must have its own fast no-write proof. Synthetic rescue probes
+  and post-hoc tier relabeling are not release evidence.
+- The same matrix must run per-case headless generated browser state proof for
+  Radar, Registry, Atlas, Compass, Casebook, and tooling-shell surfaces,
+  including normal shell routes, invalid-query recovery, and Casebook
+  empty/filter fallback. It must provision Playwright Chromium through the
+  maintained proof wrapper and persist `greenfield-preconfirm-matrix.v1.json`
+  in the dist directory. `BROWSER_PROOF=0` is local debugging only and cannot
   support release readiness.
 - `make release-preflight` also fails closed when release-facing security docs
   drift from the candidate version, including the repo-root GitHub security
@@ -313,13 +320,14 @@ Run the targets in this order.
   before dispatch.
 - The GitHub workflow will refuse to publish unless the requested `tag`, the
   session `expected_sha`, and `GITHUB_SHA` all match.
-- Maintainer identity proof now pins canonical maintainer authorship for
-  release-history validation and no longer depends on a GitHub-generated
-  squash-merge committer exception in canonical `main` ancestry. Local
-  maintainer config still stays strict on both author and committer identity;
-  release-history proof no longer treats platform-generated committer metadata
-  as the deciding signal, but it still tolerates the immutable historical
-  maintainer author alias already present in older canonical commits.
+- Maintainer identity proof keeps local maintainer author, committer, and
+  authenticated GitHub release authority strict on `freedom-research`.
+  Release-history validation separately preserves external contributors' raw
+  Git authorship and platform committer metadata, tolerates only the explicitly
+  enumerated immutable historical maintainer alias, and rejects
+  explicit assistant/model/coding-tool-branded identity signatures or
+  attribution. Never rewrite an external contributor to satisfy the release
+  gate.
 - Release, release-candidate, and test workflows now pin `actions/checkout
   v5.0.1` and `actions/setup-python v6.1.0` at immutable SHAs so the
   canonical release lane no longer carries the prior Node 20 runtime warning

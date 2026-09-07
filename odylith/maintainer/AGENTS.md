@@ -102,10 +102,12 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   because it is visible in a backlog or Odylith queue surface.
 - Local maintainer release identity is also non-negotiable in this lane:
   authored maintainer work uses `freedom-research
-  <freedom@freedompreetham.org>` for both author and committer config. If
-  canonical release-history proof needs to survive platform merge machinery,
-  keep the history gate focused on canonical maintainer authorship instead of
-  widening local identity policy.
+  <freedom@freedompreetham.org>` for both author and committer config.
+  Release-history proof keeps that maintainer credential boundary separate
+  from contribution authorship: preserve external contributors' raw Git
+  identities, tolerate only the explicitly enumerated immutable historical
+  maintainer alias, and reject assistant/model/coding-tool identity or
+  attribution. Never rewrite an external contributor as `freedom-research`.
 - Keep maintainer and dogfood progress updates task-first. Do not narrate
   startup, routing, packet-selection, or degraded-attempt history unless a
   literal command, a live blocker, or a runtime-lane distinction matters.

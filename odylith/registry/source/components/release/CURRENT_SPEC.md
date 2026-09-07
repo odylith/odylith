@@ -1,5 +1,5 @@
 # Release
-Last updated: 2026-08-13
+Last updated: 2026-08-08
 
 
 ## Purpose
@@ -336,14 +336,20 @@ governed subsystem.
   - the workflow ref is `refs/heads/main`
   - the requested `tag` resolves to the session `expected_sha`
   - `GITHUB_SHA` equals that same `expected_sha`
-- Release identity validation now pins canonical maintainer authorship for
-  commit-history proof and no longer depends on a GitHub-generated committer
-  exception in canonical `main` ancestry.
-- Local maintainer config still remains strict on both author and committer
-  identity. The history gate is intentionally narrower: it validates the
-  canonical authored identity that must survive platform merge machinery while
-  tolerating the immutable historical maintainer author alias already present
-  in older canonical commits.
+- Release identity validation separates maintainer credential proof from
+  contribution-history safety. Maintainer release and push workspaces keep
+  local config and authenticated GitHub release authority strict on the
+  canonical `freedom-research` identity; contributor clones use each
+  contributor's own Git identity.
+- Commit-history validation preserves external human author and committer
+  identities. Whenever the canonical maintainer name or email is used, the
+  validator requires the exact canonical pair, apart from the explicitly
+  enumerated immutable historical maintainer alias bounded to its trusted
+  ancestry cutoff. It inspects raw Git object identity so `.mailmap` cannot
+  disguise explicit assistant/model/coding-tool-branded author or committer
+  signatures, and rejects structured or prose attribution to those tools.
+  External contribution authorship must not be rewritten to satisfy the
+  release gate.
 - The concrete `v0.1.10` follow-up record is
   [B-060](/Users/freedom/code/odylith/odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md).
 - Release, release-candidate, and test workflows now pin
@@ -643,6 +649,11 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-08-04: Corrected the release identity gate so external human contributors retain their original Git authorship while maintainer credentials remain pinned to `freedom-research`. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005); Bug: `CB-320`)
+  The history validator now rejects partial or mismatched maintainer identity
+  and explicit assistant/model/coding-tool-branded identity signatures or
+  attribution without treating legitimate contributor names as a release
+  failure.
 - 2026-08-03: Moved canonical full-suite pytest execution behind deterministic fresh-process shards after a long-lived Python 3.13 process emitted order-dependent failures and terminated with `SIGBUS`. The runner preserves collected order, reports every failed or signaled shard, continues the remaining corpus, and returns one fail-closed aggregate verdict. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-308`)
 - 2026-07-05: Proved the retained final local-installable dist through strict installed release proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`)
   Release proof for

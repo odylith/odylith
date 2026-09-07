@@ -5,7 +5,7 @@
   benchmark proof, and release-gate indicators may surface when useful, but
   passing checks should stay quiet and no dashboard claim should imply shipped
   behavior before pinned dogfood and benchmark proof exist.
-Last updated: 2026-08-13
+Last updated: 2026-08-08
 
 
 ## Purpose

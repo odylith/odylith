@@ -176,7 +176,7 @@ def managed_claude_bridge_block(*, repo_role: str = "consumer_repo") -> str:
     ]
     if str(repo_role).strip() == "product_repo":
         lines.append(
-            "- Commit messages must use only the `freedom-research` contributor identity and must not include coding-assistant trailers."
+            "- Maintainer-authored commits use the `freedom-research` identity; external human contributors retain their Git authorship. Never use assistant/model identities or coding-assistant attribution trailers."
         )
         lines.append(
             "- In the Odylith product repo, maintainer-only release and benchmark publishing work follows `odylith/maintainer/AGENTS.md`."

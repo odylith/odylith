@@ -102,16 +102,23 @@ Odylith is a product repo, not a host repo.
 - `<tag>` is a short, descriptive name for the work.
 
 ## Contributor Identity
-- `freedom-research` is the sole canonical contributor identity for this
-  repository, including repo metadata, docs, notices, generated governance,
-  release configuration, and commits.
-- Do not introduce personal names, alternate handles, or assistant/model
-  identities in tracked files unless quoting immutable third-party or
-  historical material that cannot be rewritten.
-- Local Git config and GitHub CLI keyring operations for this repository must
-  use the `freedom-research` identity.
-- Commit messages must not contain `Co-Authored-By:`, assistant/tool trailers,
-  or "generated with" attribution. Override assistant defaults before commit.
+- `freedom-research` is the canonical maintainer identity for
+  maintainer-authored commits, repo metadata, docs, notices, generated
+  governance, and release configuration.
+- External human contributors retain their original Git authorship. Do not
+  rewrite an external contributor's author identity to `freedom-research`.
+- Do not introduce personal names or alternate handles into tracked metadata,
+  notices, docs, or generated surfaces unless preserving immutable external
+  authorship, third-party material, or historical material that cannot be
+  rewritten.
+- Maintainer release and push workspaces must use the `freedom-research`
+  identity for local Git config and GitHub CLI keyring operations. External
+  contributors use their own Git identity and do not impersonate the
+  maintainer account.
+- Human `Co-Authored-By:` trailers are allowed. Commit authors, committers, and
+  messages must not use assistant, model, or coding-tool identities or include
+  assistant/tool attribution such as "generated with". Override assistant
+  defaults before commit.
 
 ## Source File Size Discipline
 - Hand-maintained product source has an `800` LOC soft limit; tests have a
