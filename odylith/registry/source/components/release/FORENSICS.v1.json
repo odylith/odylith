@@ -14,12 +14,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 672,
-    "mapped_workstream_evidence_count": 566,
+    "explicit_event_count": 673,
+    "mapped_workstream_evidence_count": 567,
     "recent_path_match_count": 0,
     "spec_history_event_count": 64,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 672
+    "timeline_event_count": 673
   },
   "name": "Release",
   "path_prefixes": [
@@ -48,6 +48,43 @@
   ],
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "sha256:54a42d7ec1a2fb0bbfacf5bd84e0a653a1c55c219136385a6b85a20277d60060",
+        "src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_design_views.py",
+        "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py"
+      ],
+      "confidence": "high",
+      "event_index": 1233,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-09-07T02:22:54-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 3,
       "artifacts": [

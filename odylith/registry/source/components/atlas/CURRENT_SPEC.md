@@ -6,7 +6,7 @@
   affordances, admissible action, proof, compact learning, benchmark evidence,
   updated priors, and the cross-system loop through Context, Execution,
   Memory, Intervention, Tribunal, Surfaces, and Benchmarks.
-Last updated: 2026-09-06
+Last updated: 2026-09-07
 
 
 ## Purpose
@@ -48,6 +48,15 @@ grounding.
   text also matches the query.
 
 ## Runtime Contract
+
+Authored Greenfield diagrams preserve their existing authority marker when
+selected for rendering. Both native Mermaid routes can render their exact labels
+and topology; if both fail, the authored job fails closed. The emergency static
+subset renderer is not admissible for these diagrams because it loses authored
+relationship labels and PNG text. Non-authored legacy fallback is unchanged.
+The shared Greenfield label encoder uses Mermaid decimal entities so source
+punctuation, literal entities and markup-looking text remain display text.
+
 ### Source truth
 - `odylith/atlas/source/catalog/diagrams.v1.json`
   Canonical diagram catalog metadata.
@@ -324,6 +333,9 @@ too low-signal for default promotion.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `sha256:54a42d7ec1a2fb0bbfacf5bd84e0a653a1c55c219136385a6b85a20277d60060`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_design_views.py`, `src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py`
 - **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
   - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `src/odylith/runtime/surfaces/assets/mermaid_cli_worker.mjs`, `src/odylith/runtime/surfaces/assets/mermaid_render_config.json`
 - **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
@@ -337,8 +349,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-28 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md`, `odylith/registry/source/components/atlas/CURRENT_SPEC.md`, `src/odylith/runtime/surfaces/render_mermaid_catalog.py`, plus 1 more
-- **2026-03-16 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
-  - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `odylith/registry/source/components/subagent-router/CURRENT_SPEC.md`, `src/odylith/runtime/orchestration/subagent_router.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

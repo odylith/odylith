@@ -14,6 +14,7 @@ import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_authored_atlas_view
+from odylith.runtime.domain_intelligence.greenfield_authored_atlas_design_views import mermaid_label
 from odylith.runtime.domain_intelligence import greenfield_confirmed_text
 from odylith.runtime.domain_intelligence import greenfield_deferral_predicates
 from odylith.runtime.domain_intelligence import greenfield_text
@@ -27,6 +28,18 @@ from tests.unit.runtime.test_greenfield_authored_lexical_isolation import (
     _authored_intent,
     _public_propose,
 )
+
+
+def test_mermaid_label_encodes_format_characters_once_without_rewriting_text() -> None:
+    assert mermaid_label('"<sample>" & #quot; `code`', width=100) == (
+        '#34;#60;sample#62;#34; #38; #35;quot; #96;code#96;'
+    )
+    assert mermaid_label("A sample's release-readiness proof is available for review.") == (
+        "A sample's release-readiness<br/>proof is available for<br/>review."
+    )
+    assert mermaid_label('日本語 — café ♥ 50% / path | value', width=100) == (
+        '日本語 — café ♥ 50% / path | value'
+    )
 
 
 def _authored_diagrams(

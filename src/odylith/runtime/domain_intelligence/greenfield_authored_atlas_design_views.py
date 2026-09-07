@@ -8,13 +8,17 @@ it never infers source semantics or changes first-path ownership.
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from html import escape
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
     PROVISIONAL_DESIGN_AUTHORITY_KIND,
     validate_provisional_design,
 )
+
+
+# Mermaid consumes decimal entities, not HTML's hexadecimal quote escapes.
+# Include entity and Markdown introducers so source text is decoded only once.
+_MERMAID_LABEL_ENTITIES = str.maketrans({char: f"#{ord(char)};" for char in '&<>"#`'})
 
 
 def build_provisional_design_atlas_specs(
@@ -128,7 +132,7 @@ def mermaid_label(value: str, *, width: int = 28) -> str:
             current = candidate
     if current:
         lines.append(current)
-    return "<br/>".join(escape(line, quote=True) for line in lines)
+    return "<br/>".join(line.translate(_MERMAID_LABEL_ENTITIES) for line in lines)
 
 
 def styled_mermaid(lines: Sequence[str]) -> str:

@@ -12,6 +12,26 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ### Continuous experience gate (2026-09-06)
 
+Literal-label checkpoint (2026-09-07): native Mermaid decimal encoding replaces
+HTML escaping in the existing owner; nine rendered punctuation and literal-text
+controls preserve node/edge text without injection. Authored Atlas retains its
+authority marker through rendering and cannot fall through to the lossy static
+subset renderer. Red controls precede both fixes. Frozen diff 3a1d1b71 at 8c259fee
+passes 150 focused and 1545 broader checks, the unchanged 32-cell native consumer
+matrix and ten supplemental Atlas views. All 115 sealed/published files and whole
+consumer bytes match. The exact semiconductor response is replayed unchanged;
+there are no new model calls, semantic edits or post-confirm generation. Four
+separate Project browser tests pass normal/blank/degraded and negative clipping
+controls; these do not fill native-package Project empty/error cells. Root sees
+the corrected apostrophe in the D-004 SVG/PNG, but mobile initial-fit readability,
+edge routing, Registry unknown spec date, populated Casebook, ready Compass, full
+accessibility and independent final visual adjudication remain open. Evidence:
+`/private/tmp/odylith-atlas-label-proof.USpFbp/`. The diagnostic's 67.642 seconds
+includes fresh baseline and browser proof, not consumer-request latency. Next:
+resolve invocation admission and duplicated source-capability ownership without
+role promotion or reinstating a failed reviewer. All 60/90/120, quality, custody,
+distribution and untouched holdout gates remain fixed.
+
 Product-context checkpoint (2026-09-07): typed performer grouping fixes the empty
 product-only System Context without a schema or source-author change. The red
 product-only control is preserved; 31 owned checks and 1517 broader checks pass.

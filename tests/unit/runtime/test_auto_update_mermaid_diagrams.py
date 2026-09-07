@@ -10,6 +10,44 @@ import pytest
 
 from odylith.runtime.surfaces import auto_update_mermaid_diagrams as mermaid
 from odylith.runtime.surfaces import mermaid_worker_session
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import AUTHORED_PROJECTION_ORIGIN
+
+
+@pytest.mark.parametrize("authority", [
+    {"projection_origin": AUTHORED_PROJECTION_ORIGIN},
+    {"authored_atlas_view_authority": {}},
+])
+def test_authored_atlas_never_falls_back_to_lossy_static_renderer(
+    tmp_path: Path, monkeypatch, authority: dict,
+) -> None:
+    source = tmp_path / "diagram.mmd"
+    source.write_text('flowchart TD\n  A["quoted action"] --> B["result"]\n')
+    item = {
+        "diagram_id": "D-001", "source_mmd": "diagram.mmd",
+        "source_svg": "diagram.svg", "source_png": "diagram.png", **authority,
+    }
+    classified = mermaid._classify_diagram_items(
+        repo_root=tmp_path, items=[item],
+        fingerprint_cache=mermaid.diagram_freshness.ContentFingerprintCache(),
+    )
+
+    def unavailable(**kwargs):
+        raise RuntimeError("native renderer unavailable")
+
+    static_calls = []
+    monkeypatch.setattr(mermaid, "_MermaidWorkerSession", unavailable)
+    monkeypatch.setattr(mermaid, "_render_diagram", unavailable)
+    monkeypatch.setattr(
+        mermaid.generated_flowchart_assets, "render_generated_flowchart_assets",
+        lambda **kwargs: static_calls.append(kwargs) or True,
+    )
+    with pytest.raises(RuntimeError, match="Blocking diagram ids: D-001"):
+        mermaid._render_diagrams_batch(
+            repo_root=tmp_path, render_jobs=classified.render_jobs, cli_version="11.12.0",
+        )
+    assert static_calls == []
+    assert not (tmp_path / "diagram.svg").exists()
+    assert not (tmp_path / "diagram.png").exists()
 
 
 def test_render_diagrams_batch_falls_back_from_blocking_worker_job(tmp_path: Path, monkeypatch, capsys) -> None:

@@ -38,6 +38,15 @@ without inventing a human reviewer. First Path remains the separate ordering vie
 These projections use existing relations; they do not infer performers, create
 new semantic facts or change confirmation behavior.
 
+Atlas display values use one native Mermaid decimal-entity encoder, not HTML
+escaping or downstream prose repair. Entity/markup-looking input remains literal
+in node and relationship labels. Render-job selection preserves the existing
+authored authority: if both native renderer routes fail, authored views fail
+closed rather than entering the lossy static subset renderer. Legacy non-authored
+fallback is unchanged. Fresh native literal-text and seven-surface browser proof
+supports this source-local display contract, not complete visual, semantic,
+deadline or release qualification.
+
 The 2026-09-07 title-capability comparison is rejected for adoption: copying a
 product story into an accepted responsibility silently expands its source role.
 Its one under-60-second flood success does not clear that defect or establish
@@ -63,6 +72,9 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:start -->
 - **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
+  - Evidence: `sha256:54a42d7ec1a2fb0bbfacf5bd84e0a653a1c55c219136385a6b85a20277d60060`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_design_views.py`, `src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py`
+- **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_view.py`, `tests/unit/runtime/test_greenfield_authored_atlas_view.py`
 - **2026-09-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
@@ -76,9 +88,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_source_review.py`
-- **2026-09-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_source_review.py`, `tests/unit/runtime/test_greenfield_model_source_review.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
