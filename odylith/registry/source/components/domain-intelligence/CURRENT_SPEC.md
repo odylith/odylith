@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-09-06
+Last updated: 2026-09-07
 
 
 ## Overview
@@ -29,6 +29,21 @@ custody/structure manifest is not proof of source entailment. Component exchange
 direction also does not establish an implementation dependency. Keep exact
 exchanges and explicit workstream prerequisites under their distinct owners.
 
+System Context is a source-ownership view, not a participant inventory alone.
+The projector groups complete exact events by typed human, product or external
+performer and connects only the corresponding selected node to that group.
+Nonperforming participants stay edge-free; absent participants produce no empty
+container. Product-only sources retain their actions, objects and output purposes
+without inventing a human reviewer. First Path remains the separate ordering view.
+These projections use existing relations; they do not infer performers, create
+new semantic facts or change confirmation behavior.
+
+The 2026-09-07 title-capability comparison is rejected for adoption: copying a
+product story into an accepted responsibility silently expands its source role.
+Its one under-60-second flood success does not clear that defect or establish
+complete-package quality. Production authoring stays v49 while that ownership
+and the invocation-admission P1 remain unresolved.
+
 ## Boundary
 
 - **Logical boundary**: deterministic Greenfield intent compilation, pre-confirm
@@ -46,6 +61,9 @@ exchanges and explicit workstream prerequisites under their distinct owners.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_view.py`, `tests/unit/runtime/test_greenfield_authored_atlas_view.py`
 - **2026-09-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_view.py`, `tests/unit/runtime/test_greenfield_authored_atlas_view.py`
@@ -61,9 +79,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_source_review.py`, `tests/unit/runtime/test_greenfield_model_source_review.py`
-- **2026-09-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_backlog.py`, `tests/unit/runtime/test_greenfield_authored_radar_rationale.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -3474,12 +3489,12 @@ This section captures synchronized requirement and contract signals derived from
   Project and Atlas distinguish contextual participants from typed human event
   performers. Only performers enter project-intelligence operators; participant
   presence does not create product interaction arrows or assigned actions.
-  Atlas context groups exact source event text by human performer and uses only
-  a labeled performer-to-actions edge. Grouping preserves source order and repeated
-  events; off-path participants stay edge-free, and product events never enter
-  human groups. Existing product and external boundaries are unchanged. This is
-  an ownership view, not a second workflow sequence or inferred interaction.
-  Inventory-only context eligibility remains an open quality boundary. The
+  Atlas context groups exact source event text by typed human, product or external
+  performer with a labeled performer-to-actions edge. Grouping preserves source
+  order and repeated events; off-path participants stay edge-free, and product
+  events never enter human groups. Empty participant containers are omitted;
+  product and external owners use their existing boundary nodes. This is an
+  ownership view, not a second workflow sequence or inferred interaction. The
   separately replayed 5/5/5 proposed-design package is not production-integrated,
   timing-qualified or a sealed transaction; current production profiles remain v48.
   Experience proof accompanies relevant build checkpoints across Project, Radar,

@@ -99,13 +99,13 @@ def build_authored_atlas_diagrams(
         "context": {
             "title": "System Context View",
             "summary": (
-                "People in product context, named systems, and candidate "
-                f"product-owned boundaries for {title}."
+                f"Who owns the source-stated work in {title}."
             ),
             "read_guide": (
                 "People are source-stated participants, not necessarily product users. "
-                "A labeled edge connects each human performer to one grouped box of exact "
-                "events; other people remain edge-free. Registry links identify proposed "
+                "Each performing person, product system, or external system connects to its "
+                "own exact events; other people remain edge-free. The sequence view shows "
+                "event order across owners. Registry links identify proposed "
                 "support, not replacement of source ownership."
             ),
             "source": context_source,
@@ -359,54 +359,51 @@ def _context_view(
     components: Sequence[Mapping[str, Any]],
     relations: Sequence[Mapping[str, Any]],
 ) -> tuple[str, list[dict[str, str]]]:
-    performer_events: dict[str, list[str]] = {}
+    performer_events: dict[tuple[str, str], list[str]] = {}
     for relation in relations:
-        if relation.get("actor_kind") == "human":
-            actor = _required_string(relation.get("actor_fact_quote"), "human actor fact")
-            event = _required_string(relation.get("event_quote"), "human first-path event")
-            performer_events.setdefault(actor, []).append(event)
-    lines = ["flowchart LR", '  subgraph people["People in product context"]']
-    action_lines: list[str] = []
-    boxes = [
-        _box(
-            "people",
-            "People in product context",
-            "Container",
-            "Source-stated people, including participants without a first-path action.",
-        )
-    ]
-    for index, actor in enumerate(actors, start=1):
-        lines.append(f'    actor{index}["{_mermaid_label(actor)}"]')
-        events = performer_events.get(actor, ())
+        kind = _required_string(relation.get("actor_kind"), "first-path actor kind")
+        performer = _required_string(relation.get("actor_fact_quote"), "first-path actor fact")
+        if kind == "product" and relation.get("owner_system_quote") != performer:
+            raise ValueError("authored Atlas product performer does not match its typed owner")
+        event = _required_string(relation.get("event_quote"), "first-path event")
+        performer_events.setdefault((kind, performer), []).append(event)
+    lines = ["flowchart LR"]
+    boxes: list[dict[str, str]] = []
+    owner_nodes: dict[tuple[str, str], str] = {}
+    if actors:
+        lines.append('  subgraph people["People in product context"]')
         boxes.append(
             _box(
-                f"actor{index}",
-                actor,
-                "First-path actor" if events else "Participant",
-                f"Performs source-stated first-path actions: {actor}"
-                if events
-                else "Named in project evidence; no first-path action is assigned.",
+                "people",
+                "People in product context",
+                "Container",
+                "Source-stated people, including participants without a first-path action.",
             )
         )
-        if events:
-            action_id = f"actor{index}_actions"
-            event_label = "<br/>".join(_mermaid_label(event) for event in events)
-            action_lines.append(f'  {action_id}["{event_label}"]')
-            action_lines.append(f'  actor{index} -->|"performs"| {action_id}')
+        for index, actor in enumerate(actors, start=1):
+            actor_id = f"actor{index}"
+            owner_nodes[("human", actor)] = actor_id
+            lines.append(f'    {actor_id}["{_mermaid_label(actor)}"]')
+            events = performer_events.get(("human", actor), ())
             boxes.append(
                 _box(
-                    action_id, "\n".join(events), "Grouped first-path actions",
-                    f"Exact source events performed by {actor}, in first-path order.",
+                    actor_id,
+                    actor,
+                    "First-path actor" if events else "Participant",
+                    f"Performs source-stated first-path actions: {actor}"
+                    if events
+                    else "Named in project evidence; no first-path action is assigned.",
                 )
             )
+        lines.append("  end")
     product_lines, product_boxes, component_targets = _product_boundary_projection(
         title=title,
         components=components,
     )
-    lines.append("  end")
-    lines.extend(action_lines)
     lines.extend(product_lines)
     boxes.extend(product_boxes)
+    for component, target in zip(components, component_targets, strict=True):
+        owner_nodes[("product", component["label"])] = target
     if externals:
         lines.append('  subgraph external_systems["Accepted external systems"]')
         boxes.append(
@@ -418,16 +415,32 @@ def _context_view(
             )
         )
         for index, external in enumerate(externals, start=1):
-            lines.append(f'    external{index}["{_mermaid_label(external)}"]')
+            external_id = f"external{index}"
+            owner_nodes[("external_system", external)] = external_id
+            lines.append(f'    {external_id}["{_mermaid_label(external)}"]')
             boxes.append(
                 _box(
-                    f"external{index}",
+                    external_id,
                     external,
                     "External system",
                     f"Accepted external system outside product ownership: {external}",
                 )
             )
         lines.append("  end")
+    for identity, events in performer_events.items():
+        owner_id = owner_nodes.get(identity)
+        if owner_id is None:
+            raise ValueError("authored Atlas performer is missing its typed context owner")
+        action_id = f"{owner_id}_actions"
+        event_label = "<br/>".join(_mermaid_label(event) for event in events)
+        lines.append(f'  {action_id}["{event_label}"]')
+        lines.append(f'  {owner_id} -->|"performs"| {action_id}')
+        boxes.append(
+            _box(
+                action_id, "\n".join(events), "Grouped first-path actions",
+                f"Exact source events performed by {identity[1]}, in first-path order.",
+            )
+        )
     for external_index, component_index in _external_component_edges(
         externals=externals,
         components=components,

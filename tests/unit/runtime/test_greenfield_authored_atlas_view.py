@@ -37,6 +37,7 @@ def _authored_diagrams(
     visible_result: str = "the berth map shows the placement",
     proof_boundary: str = "Verify the placement and retention receipt",
     human_actors: tuple[str, ...] = ("Dock attendant Ivo",),
+    external_systems: tuple[str, ...] = ("Harbor Ledger",),
     relations: tuple[dict[str, Any], ...] | None = None,
     provisional_design: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
@@ -51,16 +52,16 @@ def _authored_diagrams(
         {
             "order": 2,
             "actor_kind": "product",
-            "actor_fact_quote": "Berth map",
+            "actor_fact_quote": component_label,
             "event_quote": "the product records berth occupancy",
-            "owner_system_quote": "Berth map",
+            "owner_system_quote": component_label,
         },
         {
             "order": 3,
             "actor_kind": "product",
-            "actor_fact_quote": "Berth map",
+            "actor_fact_quote": component_label,
             "event_quote": "the berth map shows the placement",
-            "owner_system_quote": "Berth map",
+            "owner_system_quote": component_label,
         },
     )
     design = provisional_design or _provisional_design(
@@ -76,7 +77,7 @@ def _authored_diagrams(
             "capability_support": "harbor-desk-capability-support",
         },
         human_actors=human_actors,
-        external_systems=("Harbor Ledger",),
+        external_systems=external_systems,
         non_goals=("Do not manage vessel scheduling",),
         state_object="berth occupancy",
         visible_result=visible_result,
@@ -275,6 +276,7 @@ def test_context_excludes_product_events_from_human_action_groups() -> None:
     product_event = "Harbor Desk records berth occupancy"
     rows = _authored_diagrams(
         human_actors=("Mara",),
+        component_label="Harbor Desk",
         relations=(
             _relation(1, "Mara", human_event),
             _relation(
@@ -296,11 +298,12 @@ def test_context_excludes_product_events_from_human_action_groups() -> None:
 
 
 @pytest.mark.parametrize("human_actors", [(), ("Field Ombud",)])
-def test_context_has_no_performer_edges_without_human_events(
+def test_context_has_no_human_performer_edges_without_human_events(
     human_actors: tuple[str, ...],
 ) -> None:
     rows = _authored_diagrams(
         human_actors=human_actors,
+        component_label="Harbor Desk",
         relations=(
             _relation(
                 1,
@@ -313,8 +316,124 @@ def test_context_has_no_performer_edges_without_human_events(
     )
     context = next(row for row in rows if row["slug"] == "harbor-desk-context")
 
-    assert '|"performs"|' not in context["mermaid_source"]
-    assert all(not row["node_id"].endswith("_actions") for row in context["diagram_boxes"])
+    assert 'actor1 -->|"performs"|' not in context["mermaid_source"]
+    assert 'product -->|"performs"| product_actions' in context["mermaid_source"]
+    assert all(not row["node_id"].startswith("actor1_actions") for row in context["diagram_boxes"])
+
+
+def test_product_only_context_retains_five_exact_events_without_empty_people() -> None:
+    title = "semiconductor reliability lab custody platform"
+    events = (
+        "semiconductor reliability lab custody platform that receives wafer lot samples",
+        "records chamber exposure conditions",
+        "preserves chain-of-custody evidence",
+        "tracks failed stress runs",
+        "prepares release readiness proof for engineering review",
+    )
+    rows = _authored_diagrams(
+        title=title,
+        component_label=title,
+        human_actors=(),
+        external_systems=(),
+        relations=tuple(
+            _relation(order, title, event, actor_kind="product", owner=title)
+            for order, event in enumerate(events, start=1)
+        ),
+    )
+    context = rows[0]
+    boxes = {row["node_id"]: row for row in context["diagram_boxes"]}
+
+    assert set(boxes) == {"product", "product_actions"}
+    assert boxes["product_actions"]["label"] == "\n".join(events)
+    assert 'product -->|"performs"| product_actions' in context["mermaid_source"]
+    assert 'subgraph people[' not in context["mermaid_source"]
+    assert 'subgraph external_systems[' not in context["mermaid_source"]
+    assert not any(row["role"] in {"Participant", "First-path actor"} for row in boxes.values())
+    assert greenfield_authored_atlas_view.validate_authored_atlas_view(
+        context, source_text=context["mermaid_source"],
+    )["diagram_boxes"] == context["diagram_boxes"]
+
+
+@pytest.mark.parametrize(
+    ("actor_kind", "actor", "owner", "node_id", "humans"),
+    [
+        ("human", "Mara", "", "actor1", ("Mara",)),
+        ("product", "Harbor Desk", "Harbor Desk", "product", ()),
+        ("external_system", "Harbor Ledger", "", "external1", ()),
+    ],
+)
+def test_context_preserves_a_single_exact_event_for_each_typed_performer(
+    actor_kind: str, actor: str, owner: str, node_id: str, humans: tuple[str, ...],
+) -> None:
+    event = f'{actor} preserves "café" evidence & IDs for review; no approval is implied.'
+    context = _authored_diagrams(
+        component_label="Harbor Desk",
+        human_actors=humans,
+        relations=(_relation(1, actor, event, actor_kind=actor_kind, owner=owner),),
+    )[0]
+    boxes = {row["node_id"]: row for row in context["diagram_boxes"]}
+
+    assert boxes[f"{node_id}_actions"]["label"] == event
+    assert f'{node_id} -->|"performs"| {node_id}_actions' in context["mermaid_source"]
+    assert context["mermaid_source"].count('|"performs"|') == 1
+    assert ("people" in boxes) == bool(humans)
+
+
+def test_context_groups_mixed_typed_performers_without_cross_assignment() -> None:
+    context = _authored_diagrams(
+        human_actors=("Mara", "Field Ombud"),
+        external_systems=("Harbor Ledger", "Tide Service"),
+        components=(
+            {"label": "Harbor Desk", "responsibility": "Record the intake", "dependencies": []},
+            {
+                "label": "Berth map", "responsibility": "Show the placement", "dependencies": [],
+                "component_contract": {"external_dependencies": ["Harbor Ledger"]},
+            },
+        ),
+        relations=(
+            _relation(1, "Harbor Desk", "Harbor Desk accepts the intake", actor_kind="product", owner="Harbor Desk"),
+            _relation(2, "Mara", "Mara enters a vessel tag"),
+            _relation(3, "Harbor Ledger", "Harbor Ledger returns the receipt", actor_kind="external_system"),
+            _relation(4, "Berth map", "Berth map shows the placement", actor_kind="product", owner="Berth map"),
+            _relation(5, "Mara", "Mara reviews the placement"),
+            _relation(6, "Harbor Desk", "Harbor Desk retains the receipt", actor_kind="product", owner="Harbor Desk"),
+        ),
+    )[0]
+    boxes = {row["node_id"]: row for row in context["diagram_boxes"]}
+    expected = {
+        "actor1_actions": ["Mara enters a vessel tag", "Mara reviews the placement"],
+        "component1_actions": ["Harbor Desk accepts the intake", "Harbor Desk retains the receipt"],
+        "component2_actions": ["Berth map shows the placement"],
+        "external1_actions": ["Harbor Ledger returns the receipt"],
+    }
+
+    assert {key: row["label"].splitlines() for key, row in boxes.items() if key.endswith("_actions")} == expected
+    assert boxes["actor2"]["role"] == "Participant"
+    assert 'actor2 -->|"performs"|' not in context["mermaid_source"]
+    assert 'external2 -->|"performs"|' not in context["mermaid_source"]
+    for action_id in expected:
+        assert f'{action_id.removesuffix("_actions")} -->|"performs"| {action_id}' in context["mermaid_source"]
+    assert "external1 -.-> component2" in context["mermaid_source"]
+    assert "external1 -.-> component1" not in context["mermaid_source"]
+    assert "external2 -.-> product" in context["mermaid_source"]
+
+
+@pytest.mark.parametrize(
+    ("kind", "actor", "owner", "error"),
+    [
+        ("human", "Unselected person", "", "missing its typed context owner"),
+        ("external_system", "Unselected service", "", "missing its typed context owner"),
+        ("product", "Unselected component", "Unselected component", "missing its typed context owner"),
+        ("product", "Berth map", "Harbor Desk", "does not match its typed owner"),
+    ],
+)
+def test_context_rejects_unbound_performers_instead_of_assigning_another_owner(
+    kind: str, actor: str, owner: str, error: str,
+) -> None:
+    with pytest.raises(ValueError, match=error):
+        _authored_diagrams(
+            relations=(_relation(1, actor, "Preserve the exact event", actor_kind=kind, owner=owner),),
+        )
 
 
 def test_context_retains_repeated_exact_event_text_and_seals_the_group() -> None:

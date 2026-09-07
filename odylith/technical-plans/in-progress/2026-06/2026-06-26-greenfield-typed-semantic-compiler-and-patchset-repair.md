@@ -12,6 +12,22 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ### Continuous experience gate (2026-09-06)
 
+Product-context checkpoint (2026-09-07): typed performer grouping fixes the empty
+product-only System Context without a schema or source-author change. The red
+product-only control is preserved; 31 owned checks and 1517 broader checks pass.
+Fresh unchanged-response replay passes the existing 32-cell desktop/mobile matrix
+and ten supplemental Atlas views with 115 sealed files and whole consumer bytes
+exact. The original worker-exit baseline failure remains failed; its separately
+declared continuation proves an idle-backoff interval, not ready Compass narration.
+Evidence: `/private/tmp/odylith-product-context-readback.teTwap/`. Retain literal
+apostrophe-entity leakage in D-004 and tiny mobile initial-fit type as UX debt;
+next format-owner work needs rendered punctuation controls, not output repair.
+Independent final review rates the apostrophe-entity leak P1 for the overall
+human-readable package, while approving the context patch itself. Keep that
+blocker rather than using the earlier P2 assessment to qualify the package.
+Project empty/error, populated Casebook, ready Compass and full accessibility
+remain unproved. Do not expand this checkpoint into release or semantic approval.
+
 The operator requires UX and experience checks throughout building, across
 Project, Radar, Registry, Atlas, Casebook, Compass and the dashboard shell.
 Each relevant checkpoint must combine bounded functional browser checks with
@@ -58,6 +74,46 @@ do not disable Compass, exclude the files to force a pass, or call this consumer
 timing qualification. Evidence: `/private/tmp/odylith-v49-ux-checkpoint.UrKsTr/`.
 
 ### Required package depth and current blocker (2026-09-05)
+
+Ownership comparison terminal decision: reject this prototype for adoption. It
+silently promotes a product-story selection into an accepted source responsibility;
+the invocation and user-need controls expose that error. A direct reference would
+preserve provenance but cannot alone establish capability entailment. Keep production
+v49 unchanged and stop provider calls on this candidate. The successful exact-case
+generation is retained, not upgraded to complete-package quality: the live design
+also has an unowned/duplicated constraint exchange and missing contextual residents.
+Continue the separately grounded, owner-local Atlas context omission correction;
+do not combine it with an unproved semantic contract migration.
+
+Fresh complete-package review rejects the staged semiconductor System Context as
+an empty people group plus a product node. Source roles and proposed 5/5 design
+pass, but only four diagrams are useful. Fix the owning projection using existing
+typed performers and exact events, not invented context semantics or diagram-count
+padding; characterize all owner kinds, mixed/nonperforming participants and full
+text before desktop/mobile readback. No shared-dashboard redesign is authorized by
+this defect. The separate external title-capability prototype passes nine no-call
+structural controls and stages a fresh flood request in 44.509 seconds with one
+38.085-second standard call. That is bounded candidate evidence only. The known
+invocation-role admission still fails; do not mark the feature qualified.
+
+Complete-author discriminator (2026-09-07): unchanged c9ebbc95 rejects the exact
+flood-shelter request in 40.898 seconds but stages the exact semiconductor control
+in 45.013 seconds, each with one standard Terra/low call and frozen source. The
+flood author preserves five human events and useful 5/5 provisional design but
+separately reassigns four human clauses as product responsibilities. Its first
+enabling clause also exposes an overbroad containment explanation. Retain the
+sound rejection; do not weaken the guard. Before production edits, compare a
+bounded ownership candidate outside the runtime: reuse the existing product story
+for the title-owned capability, preserve typed event performers, and keep narrower
+internal-system responsibilities explicitly source-bound. Test the retained pair,
+one-event enablement, distinct internal ownership, contradictory/unselected owners
+and rejection of the superseded title citation list. Then allow one unchanged-tier
+live flood generation only if those structural controls are clean. No retry,
+holdout, new reviewer, post-CONFIRM generation or deadline promotion. This does not
+solve the separate invocation-as-product semantic-admission P1. Record each result
+before the next call; any semantic or useful-package regression rejects adoption.
+Evidence: `/private/tmp/odylith-v49-live-author.Gk0OMf/` and
+`/private/tmp/odylith-capability-owner-comparison.V15hgz/`.
 
 Admission discriminator result (2026-09-07): the independent read-only
 codex-cli/Sol-medium verdict timed out on its first retained negative at
