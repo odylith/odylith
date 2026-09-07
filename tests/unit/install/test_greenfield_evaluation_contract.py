@@ -160,7 +160,6 @@ def _annotation(case: GreenfieldMatrixCase) -> dict[str, object]:
     actor_sha = hashlib.sha256(b"Operator").hexdigest()
     action = first_path.split()[1]
     action_sha = hashlib.sha256(action.encode("utf-8")).hexdigest()
-    title_sha = hashlib.sha256(title.encode("utf-8")).hexdigest()
     event_sha = hashlib.sha256(first_path.encode("utf-8")).hexdigest()
     return {
         "case_id": case.case_id,
@@ -235,16 +234,7 @@ def _annotation(case: GreenfieldMatrixCase) -> dict[str, object]:
                 }
             ],
             "context_relations": [],
-            "component_responsibility_relations": [
-                {
-                    "responsibility_path": "/first_path",
-                    "responsibility_sha256": event_sha,
-                    "product_owner_path": "/title",
-                    "product_owner_sha256": title_sha,
-                    "first_path_event_order": 1,
-                    "responsibility_source": "terminal_visible_result",
-                }
-            ],
+            "component_responsibility_relations": [],
         },
     }
 
@@ -379,11 +369,22 @@ def test_reference_only_atoms_are_admitted_without_becoming_scored_truth() -> No
 def test_atomic_annotations_reject_an_owner_identity_without_frozen_atom_custody() -> None:
     case = _case(
         "case-1",
-        "Review Desk supports this path: Operator records one decision.",
+        "Review Desk supports this path: Operator records one decision. Review Desk preserves decisions.",
     )
     annotation = _annotation(case)
     relation = annotation["relation_fidelity"]
-    relation["component_responsibility_relations"][0]["product_owner_sha256"] = "f" * 64
+    responsibility = "Review Desk preserves decisions"
+    atom = _atom(case.prompt, responsibility, role="reference_only",
+        identifier="explicit-capability", field="component_responsibilities",
+        path="/component_responsibilities/0", category="actions")
+    annotation["atoms"].append(atom)
+    annotation["complexity"]["component_responsibilities"] = 1
+    relation["component_responsibility_relations"] = [{
+        "responsibility_path": "/component_responsibilities/0",
+        "responsibility_sha256": hashlib.sha256(responsibility.encode()).hexdigest(),
+        "product_owner_path": "/title", "product_owner_sha256": "f" * 64,
+        "first_path_event_order": 0, "responsibility_source": "accepted_fact",
+    }]
 
     _annotations, issues = validate_atomic_annotations(cases=(case,), rows=[annotation])
 
@@ -723,10 +724,8 @@ def test_profile_confidence_preflight_rejects_sparse_metric_denominators() -> No
         "1 `clarify` observation(s)" in issue
         for issue in issues
     )
-    assert any(
-        "1 `component_responsibility_relations` relation sample(s)" in issue
-        for issue in issues
-    )
+    assert any("1 `first_path_events` relation sample(s)" in issue for issue in issues)
+    assert not any("`component_responsibility_relations` relation sample" in issue for issue in issues)
     assert not any("`context_relations` relation sample" in issue for issue in issues)
 
 

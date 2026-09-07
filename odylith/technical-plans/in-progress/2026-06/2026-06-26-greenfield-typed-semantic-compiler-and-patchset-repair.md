@@ -12,20 +12,35 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ### Continuous experience gate (2026-09-06)
 
-Next bounded ownership gate (2026-09-07): the mandatory source-component
-viability gate survives from source-only package construction, while mandatory
-provisional design now owns published component/task depth. The empty-group
-fallback assigns a terminal result to a product owner even when the event is
-human-owned. Compare removing this source-ownership requirement and fallback,
-not replacing them with story-to-capability promotion. Retain explicit non-path
-capabilities, existing typed product events, and exact enabling product-story
-meaning in the Project/context view. Characterize human-only, product-owned,
-mixed and external terminal paths; explicit narrower ownership; contradictions;
-no duplicated source facts; and unchanged useful 4–5/4–5/5+ design. First prove
-the no-call semantic and rendered-package controls, then one live discriminator
-inside the original tier. No production adoption is authorized by this diagnosis
-alone, and invocation-as-story remains a separate unresolved P1. Independent
-quality review and cross-surface desktop/mobile proof must judge the same package.
+Optional source ownership checkpoint (2026-09-07): source-local v50 removes the
+obsolete mandatory capability inventory and terminal-to-product fallback.
+Explicit source capabilities and typed product events keep their owners;
+product story stays a description and required proposed design supplies depth.
+The first native consumer attempt exposed the same assumption in generic
+diagram validation; authored proposals now use the existing Atlas authority
+validator. The native red test precedes that correction. Frozen runtime/install
+proof passes 1451 checks; after removing two contradictory prompt instructions,
+111 focused checks pass. A stale wording assertion was corrected after the live
+call had already been dispatched; preserve that process deviation rather than
+claiming clean-gated release proof. The one unchanged standard flood request
+stages 4/4/5 in 36.426 seconds (one Terra/low call, 30.431 seconds). There is no
+retry, promotion, response repair or CONFIRM in that live consumer.
+
+Both the synthetic human-only control and an unchanged live-response replay
+pass fresh 32-cell desktop/mobile matrices and ten Atlas views each; these are
+separate packages, not 64 independent product examples. The live replay reads
+back all 113 sealed files exactly with no consumer drift or post-confirm work.
+Independent synthetic UX review finds no new P0/P1 but retains mobile diagram
+readability, KPI-stack depth and below-fold error feedback. Source ownership is
+improved. Independent live-package review rejects three P1 classes: capability
+list order promoted to a workflow, contradictory constraint/consent exchanges,
+and missing provisional privacy/safety planning for sensitive records. Preserve
+the exact response; do not patch it or retry. Invocation-as-story, design quality, installed migration,
+remaining UX states and final untouched holdout remain release blockers.
+Evidence: `/private/tmp/odylith-optional-source-ownership.R4S1X4/review.md` and
+`/private/tmp/odylith-v50-live-package-browser.Y7dRYQ/`. Do not retune the flood
+response or weaken floors. Preserve fixed 60/90/120 and compare the next owning
+abstraction only against diagnosed, independently reviewed failure classes.
 
 Review-reserve comparison (2026-09-07): the one-shot complete Luna/low draft
 times out at 25.021/25 seconds with the unchanged complete-author contract and

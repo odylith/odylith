@@ -193,7 +193,6 @@ def _response(
         intent,
         first_path_segments=segments,
         first_path_relations=relations,
-        terminal_component_owner="berth map",
     )
 
 

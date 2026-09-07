@@ -267,7 +267,6 @@ def test_event_rejects_target_that_is_only_adjacent_in_a_selected_fact() -> None
     response = authored_response(
         intent,
         evidence_text=source,
-        terminal_component_owner=str(intent["title"]),
         first_path_relations=[
             {
                 "actor_kind": "product",
@@ -391,7 +390,6 @@ def test_two_human_actor_changes_use_selected_facts_across_sentences() -> None:
                 "visible_result_quote": "release readiness proof",
             },
         ],
-        terminal_component_owner="Review Desk",
     )
 
     result = author_greenfield_intent(

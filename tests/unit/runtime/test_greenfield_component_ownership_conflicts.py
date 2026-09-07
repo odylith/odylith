@@ -66,7 +66,7 @@ def _derive(
                 "owner_fact_quote": owner_fact_quote,
                 "responsibilities": responsibilities,
             },
-        ),
+        ) if responsibilities else (),
         selected_facts=selected_facts,
         first_path=event_quote,
         evidence_text=evidence,

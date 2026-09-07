@@ -17,11 +17,12 @@ from tests.unit.runtime.greenfield_proposal_fixtures import HIIT_CONFIRMED_INTEN
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 
 
-def test_hiit_greenfield_create_projects_model_authored_path_and_quality_under_sixty_seconds(
+def test_hiit_structured_fixture_preserves_path_and_sealed_package_under_sixty_seconds(
     tmp_path: Path,
     monkeypatch,
     capsys,
 ) -> None:
+    """Native integration with a fixed author fixture, not live semantic/timing proof."""
     _seed_empty_governance_repo(tmp_path)
     intent_path = tmp_path / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
     intent_path.parent.mkdir(parents=True, exist_ok=True)
@@ -43,7 +44,7 @@ def test_hiit_greenfield_create_projects_model_authored_path_and_quality_under_s
     elapsed = time.perf_counter() - started
 
     assert rc == 0
-    assert provider.calls == 2
+    assert provider.calls == 1
     accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
     proposal = accepted["proposal"]
     first_path = proposal["semantic_model"]["first_path_contract"]
@@ -59,9 +60,9 @@ def test_hiit_greenfield_create_projects_model_authored_path_and_quality_under_s
     }
     assert payload["commit_manifest"]["create_elapsed_seconds"] < 60.0
     assert "whole_project_elapsed_seconds" not in payload["commit_manifest"]
-    assert len(payload["backlog"]) == 1
-    assert len(payload["components"]) == 1
-    assert len(payload["diagrams"]) == 4
+    assert len(payload["backlog"]) == 4
+    assert len(payload["components"]) == 4
+    assert len(payload["diagrams"]) == 5
     transaction_package = transaction_payload["prewrite_package"]
     assert payload["next_steps"] == transaction_package["next_steps_preview"]
     assert payload["diagrams"] == transaction_package["atlas_diagram_ids"]
@@ -234,12 +235,12 @@ def _hiit_authoring_provider(prompt: str) -> StructuredAuthoringProvider:
             intent,
             evidence_text=evidence,
             first_path_relations=relations,
-            terminal_component_owner="the timer",
         )
     )
 
 
 def _run_proposed_transaction_create(tmp_path: Path, *, prompt: str, capsys) -> tuple[float, int, dict, dict]:
+    started = time.perf_counter()
     propose_rc = greenfield_proposals_cli.main(
         [
             "propose",
@@ -259,7 +260,6 @@ def _run_proposed_transaction_create(tmp_path: Path, *, prompt: str, capsys) -> 
     transaction_hash = str(propose_payload["product_create_transaction"]["transaction_hash"])
     transaction_file = str(propose_payload["transaction_file"])
     transaction_payload = json.loads((tmp_path / transaction_file).read_text(encoding="utf-8"))
-    started = time.perf_counter()
     rc = greenfield_proposals_cli.main(
         [
             "create",

@@ -116,18 +116,6 @@ def test_authored_handoff_preserves_verified_fields_without_legacy_reconstructio
             "success_metrics": success_metrics,
             "authored_semantics": authored_semantics_mapping(
                 relations,
-                (
-                    {
-                        "responsibility_path": "/first_path",
-                        "responsibility_quote": (
-                            "the placement with the complete source-owned retention receipt"
-                        ),
-                        "owner_system_path": "/title",
-                        "owner_system_quote": "Harbor Desk",
-                        "first_path_event_order": 3,
-                        "responsibility_source": "terminal_visible_result",
-                    },
-                ),
                 provisional_design=structural_design_fixture((1, 2, 3)),
             ),
         },

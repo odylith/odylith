@@ -131,16 +131,6 @@ def _proposal() -> dict[str, object]:
             "success_metrics": ["One Ω-Receipt is visible"],
             "authored_semantics": authored_semantics_mapping(
                 relations,
-                (
-                    {
-                        "responsibility_path": "/first_path",
-                        "responsibility_quote": "Ω-Receipt",
-                        "owner_system_path": "/internal_systems/0",
-                        "owner_system_quote": "Meridian Engine",
-                        "first_path_event_order": 2,
-                        "responsibility_source": "terminal_visible_result",
-                    },
-                ),
                 provisional_design=structural_design_fixture((1, 2)),
                 first_path_context_relations=(
                     {
@@ -412,7 +402,10 @@ def test_authored_dashboard_bypasses_legacy_projection_and_preserves_exact_facts
         "action_verb_quote"
     ] == "QuOrates"
     assert len(payload["authored_facts"]["first_path_context_relations"]) == 3
-    assert len(payload["authored_facts"]["component_responsibility_relations"]) == 1
+    assert payload["authored_facts"]["component_responsibility_relations"] == []
+    assert payload["authored_facts"]["first_path_relations"][1][
+        "owner_system_quote"
+    ] == "Meridian Engine"
     prompts = payload["host_handoff_prompts"]
     assert isinstance(prompts, list)
     assert tuple(row["step_id"] for row in prompts) == EXPECTED_HANDOFF_STEPS
@@ -684,7 +677,6 @@ def test_authored_dashboard_projects_proposed_capabilities_without_changing_sour
                 intent,
                 evidence_text=source,
                 first_path_relations=relations,
-                terminal_component_owner="Harbor Desk",
             )
         ),
         authoring_timeout_seconds=60,

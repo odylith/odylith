@@ -80,10 +80,41 @@ def test_relation_fidelity_reports_exact_family_and_worst_slice_evidence() -> No
     }
 
 
+def test_empty_source_component_family_is_not_credited_as_ownership_evidence() -> None:
+    case = _case("optional-source-components", expectation="transaction_committed")
+    annotation = _commit_annotation()
+    result = _commit_result(case)
+    snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
+
+    expected = annotation_relation_evidence(case=case,
+        value=annotation["relation_fidelity"], atom_rows=annotation["atoms"])
+    actual = snapshot_relation_evidence(case=case, snapshot=snapshot)
+    for evidence in (expected, actual):
+        assert not evidence.issues
+        assert evidence.keys["component_responsibility_relations"] == ()
+        assert evidence.minimum_samples["component_responsibility_relations"] == 0
+
+    report = score_module.evaluate_semantic_release(cases=(case,),
+        annotations={case.case_id: annotation}, results=(result,), floors=FLOORS,
+        _include_model_profiles=False, _allow_not_applicable_metrics=True)
+    family = report["relation_fidelity_by_family"]["component_responsibility_relations"]
+    assert family["status"] == "not_applicable"
+    assert family["sample_count"] == 0
+    assert family["confidence_interval_95"] is None
+    family_floor = next(row for row in report["confidence_checks"]
+        if row["name"] == "relation_fidelity:component_responsibility_relations")
+    assert family_floor["status"] == "not_applicable"
+    assert report["metrics"]["relation_fidelity"]["status"] == "measured"
+    assert report["metrics"]["relation_fidelity"]["correct_count"] == 1
+    assert report["metrics"]["relation_fidelity"]["sample_count"] == 1
+    assert next(row for row in report["acceptance_checks"]
+        if row["name"] == "relation_fidelity")["status"] == "passed"
+
+
 def test_relation_fidelity_rejects_retired_actor_annotation_contract() -> None:
     case, annotation, _result = _rich_relation_bundle("relations-retired-annotation")
     relation = annotation["relation_fidelity"]
-    relation["version"] = "odylith.greenfield.relation-fidelity-annotation.v2"
+    relation["version"] = "odylith.greenfield.relation-fidelity-annotation.v3"
 
     evidence = annotation_relation_evidence(
         case=case,
@@ -92,7 +123,7 @@ def test_relation_fidelity_rejects_retired_actor_annotation_contract() -> None:
     )
 
     assert evidence.issues == (
-        "relation_fidelity must declare odylith.greenfield.relation-fidelity-annotation.v3",
+        "relation_fidelity must declare odylith.greenfield.relation-fidelity-annotation.v4",
     )
 
 

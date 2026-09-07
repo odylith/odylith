@@ -452,22 +452,12 @@ def _typed_semantic_snapshot(
             "first_path_event_order": 1,
         }
     ]
-    components = [
-        {
-            "responsibility_path": "/first_path",
-            "responsibility_quote": visible_result,
-            "owner_system_path": "/title",
-            "owner_system_quote": str(facts["title"]),
-            "first_path_event_order": 1,
-            "responsibility_source": "terminal_visible_result",
-        }
-    ]
     provisional_design = structural_design_fixture((1,))
     semantics = {
         "version": AUTHORED_SEMANTICS_VERSION,
         "first_path_relations": relations,
         "first_path_context_relations": contexts,
-        "component_responsibility_relations": components,
+        "component_responsibility_relations": [],
         "provisional_design": provisional_design,
     }
     atoms = _atomic_facts(
@@ -484,7 +474,7 @@ def _typed_semantic_snapshot(
         "authored_semantics": semantics,
         "authored_relation_set_sha256": authored_relation_set_sha256(
             relations,
-            components,
+            (),
             first_path_context_relations=contexts,
             provisional_design=provisional_design,
         ),

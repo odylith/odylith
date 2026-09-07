@@ -716,7 +716,8 @@ def test_authoring_schema_structurally_separates_complete_authored_and_clarifica
         "action_quote",
         "target_quote",
     }
-    assert authored_properties["components"]["minItems"] == 1
+    assert authored_properties["components"]["minItems"] == 0
+    assert authored_properties["components"]["items"]["properties"]["responsibilities"]["minItems"] == 1
     component = authored_properties["components"]["items"]
     assert set(component["properties"]) == {
         "owner_fact_quote",
@@ -931,7 +932,7 @@ def test_authoring_rejects_an_action_quote_outside_its_event() -> None:
 def test_authoring_rejects_a_missing_component_responsibility_owner() -> None:
     source = _source()
     response = _response(source)
-    response["result"]["components"] = []
+    response["result"]["components"][0].pop("owner_fact_quote")
 
     with pytest.raises(GreenfieldModelAuthoringError, match="invalid component ownership"):
         author_greenfield_intent(
@@ -1288,7 +1289,6 @@ def test_product_owned_terminal_result_uses_the_typed_event_owner() -> None:
             authored_response(
                 intent,
                 evidence_text=source,
-                terminal_component_owner="Permit Relay",
                 first_path_relations=[
                     {
                         "actor_kind": "human",
@@ -1313,26 +1313,17 @@ def test_product_owned_terminal_result_uses_the_typed_event_owner() -> None:
         clock=lambda: 0.0,
     )
 
-    assert result.component_responsibility_relations == (
-        {
-            "responsibility_path": "/first_path",
-            "responsibility_quote": "it listed",
-            "owner_system_path": "/title",
-            "owner_system_quote": "Permit Relay",
-            "first_path_event_order": 2,
-            "responsibility_source": "terminal_visible_result",
-        },
-    )
+    assert result.component_responsibility_relations == ()
     contracts = authored_component_relation_facts(
         title="Permit Relay",
         internal_systems=(),
         relations=result.first_path_relations,
         component_responsibility_relations=result.component_responsibility_relations,
     )
-    assert contracts[0]["responsibility_facts"] == ["it listed"]
+    assert contracts[0]["responsibility_facts"] == ["Permit Relay shows it listed"]
 
 
-def test_human_terminal_result_uses_one_explicit_grounded_product_owner() -> None:
+def test_human_terminal_result_does_not_create_a_product_responsibility() -> None:
     first_path = "Applicant Nia enters one item and sees it listed"
     intent = {
         **_TEXT_FIELDS,
@@ -1357,25 +1348,15 @@ def test_human_terminal_result_uses_one_explicit_grounded_product_owner() -> Non
             authored_response(
                 intent,
                 evidence_text=source,
-                terminal_component_owner="Permit Relay",
             )
         ),
         clock=lambda: 0.0,
     )
 
-    assert result.component_responsibility_relations == (
-        {
-            "responsibility_path": "/first_path",
-            "responsibility_quote": first_path,
-            "owner_system_path": "/title",
-            "owner_system_quote": "Permit Relay",
-            "first_path_event_order": 1,
-            "responsibility_source": "terminal_visible_result",
-        },
-    )
+    assert result.component_responsibility_relations == ()
 
 
-def test_human_only_path_cannot_reach_staging_without_component_viability() -> None:
+def test_human_only_path_is_admitted_without_inventing_a_source_component() -> None:
     first_path = "Applicant Nia enters one item and sees it listed"
     intent = {
         **_TEXT_FIELDS,
@@ -1396,16 +1377,16 @@ def test_human_only_path_cannot_reach_staging_without_component_viability() -> N
     response = authored_response(
         intent,
         evidence_text=source,
-        terminal_component_owner="Permit Relay",
     )
     response["result"]["components"] = []
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="invalid component ownership"):
-        author_greenfield_intent(
-            evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
-            clock=lambda: 0.0,
-        )
+    result = author_greenfield_intent(
+        evidence_text=source,
+        provider=StructuredAuthoringProvider(response),
+        clock=lambda: 0.0,
+    )
+    assert result.component_responsibility_relations == ()
+    assert result.provisional_design == response["result"]["provisional_design"]
 
 
 def test_sealed_semantics_drop_all_provider_fact_indices(tmp_path) -> None:  # type: ignore[no-untyped-def]

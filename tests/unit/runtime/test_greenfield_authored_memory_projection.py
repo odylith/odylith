@@ -98,16 +98,6 @@ def _proposal() -> dict[str, object]:
             "non_goals": ["Do not infer batch migration"],
             "authored_semantics": authored_semantics_mapping(
                 relations,
-                (
-                    {
-                        "responsibility_path": "/first_path",
-                        "responsibility_quote": "Ω-Receipt",
-                        "owner_system_path": "/internal_systems/0",
-                        "owner_system_quote": "Meridian Engine",
-                        "first_path_event_order": 2,
-                        "responsibility_source": "terminal_visible_result",
-                    },
-                ),
                 first_path_context_relations=(
                     {
                         "context_kind": "operational_constraint",

@@ -82,6 +82,7 @@ def _authored_diagrams(
     )
     return greenfield_authored_atlas_view.build_authored_atlas_diagrams(
         title=title,
+        product_story=f"{title} supports the source-stated workflow",
         diagram_slugs={
             "context": "harbor-desk-context",
             "sequence": "harbor-desk-sequence",
@@ -95,7 +96,7 @@ def _authored_diagrams(
         state_object="berth occupancy",
         visible_result=visible_result,
         proof_boundary=proof_boundary,
-        components=components or (
+        components=components if components is not None else (
             {
                 "component_id": "berth-map",
                 "label": component_label,

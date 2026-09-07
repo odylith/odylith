@@ -223,18 +223,13 @@ def _enveloped_intent() -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]
         "event_quote": intent["first_path"], "action_verb_quote": "shows",
         "target_quote": "result", "visible_result_quote": "result",
     }
-    component = {
-        "responsibility_path": "/first_path", "responsibility_quote": "result",
-        "owner_system_path": "/title", "owner_system_quote": "Desk",
-        "first_path_event_order": 1, "responsibility_source": "terminal_visible_result",
-    }
     context = {
         "context_kind": "state_object", "fact_path": "/state_object", "fact_quote": "result",
         "source_start_byte": state_fact["source_start_byte"],
         "source_end_byte": state_fact["source_end_byte"], "first_path_event_order": 0,
     }
     intent[AUTHORED_SEMANTICS_KEY] = authored_semantics_mapping(
-        [relation], [component], first_path_context_relations=[context],
+        [relation], first_path_context_relations=[context],
         provisional_design=_design(event_orders=(1,)),
     )
     terminal_fact = {

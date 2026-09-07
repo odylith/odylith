@@ -57,7 +57,6 @@ def _author_terminal_intent(
             authored_response(
                 intent,
                 evidence_text=source,
-                terminal_component_owner="Pickup Relay",
                 first_path_relations=[
                     {
                         "actor_kind": "human",
@@ -95,7 +94,7 @@ def test_terminal_result_keeps_exact_proof_fact_custody_outside_final_event() ->
     terminal_event = result.first_path_relations[-1]
     assert result_quote not in terminal_event["event_quote"]
     assert terminal_event["visible_result_quote"] == result_quote
-    assert result.component_responsibility_relations[0]["responsibility_path"] == "/proof_boundary"
+    assert result.component_responsibility_relations == ()
     visible_claim = next(
         row
         for row in result.atomic_claims
@@ -135,7 +134,7 @@ def test_terminal_result_keeps_selected_product_story_custody_across_sealed_vali
     validated = first_path_relations_from_intent(sealed_intent)
 
     assert validated[-1]["visible_result_quote"] == result_quote
-    assert result.component_responsibility_relations[0]["responsibility_path"] == "/product_story"
+    assert result.component_responsibility_relations == ()
     visible_claim = next(
         row for row in result.atomic_claims if row["relation_role"] == "visible_result_quote"
     )

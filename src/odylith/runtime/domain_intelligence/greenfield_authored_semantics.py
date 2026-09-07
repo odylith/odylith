@@ -17,7 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_provisional_design import va
 from odylith.runtime.governance.artifact_tribunal import _bind_verified_source_custody
 
 AUTHORED_SEMANTICS_KEY = "authored_semantics"
-AUTHORED_SEMANTICS_VERSION = "odylith.greenfield.authored-semantics.v14"
+AUTHORED_SEMANTICS_VERSION = "odylith.greenfield.authored-semantics.v15"
 AUTHORED_RELATION_SET_SHA256_KEY = "authored_relation_set_sha256"
 AUTHORED_PROJECTION_ORIGIN = "model_authored_typed_intent"
 AUTHORED_SEMANTIC_ROOT = f"intent.{AUTHORED_SEMANTICS_KEY}"
@@ -84,7 +84,7 @@ FIRST_PATH_CONTEXT_KINDS = (
     "external_system",
     "operational_constraint",
 )
-COMPONENT_RESPONSIBILITY_SOURCES = ("accepted_fact", "terminal_visible_result")
+COMPONENT_RESPONSIBILITY_SOURCES = ("accepted_fact",)
 MAX_FIRST_PATH_RELATIONS = 24
 MAX_COMPONENT_RESPONSIBILITY_RELATIONS = 32
 
@@ -474,11 +474,6 @@ def authored_component_relation_facts(
         raise GreenfieldAuthoredSemanticsError(
             "model-authored component relation references an unselected owner"
         )
-    if not ordered_owners:
-        raise GreenfieldAuthoredSemanticsError(
-            "model-authored intent did not establish a viable component projection"
-        )
-
     rows: list[dict[str, Any]] = []
     for owner_path in ordered_owners:
         owner = owner_values[owner_path]
@@ -846,13 +841,9 @@ def validate_component_responsibility_relations(
     expected_paths = tuple(
         f"/component_responsibilities/{index}" for index in range(len(responsibilities))
     )
-    if expected_paths and len(value) != len(expected_paths):
+    if len(value) != len(expected_paths):
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authored semantics left component responsibilities without typed owners"
-        )
-    if not expected_paths and len(value) != 1:
-        raise GreenfieldAuthoredSemanticsError(
-            "Greenfield authored semantics do not establish a viable component projection"
         )
     systems_value = intent.get("internal_systems")
     systems = (
@@ -909,24 +900,6 @@ def validate_component_responsibility_relations(
                 raise GreenfieldAuthoredSemanticsError(
                     "Greenfield authored semantics assign contradictory owners to one product event"
                 )
-        if responsibility_source == "terminal_visible_result":
-            responsibility_quote = str(raw.get("responsibility_quote") or "")
-            responsibility_fact = intent_text_at_path(intent, responsibility_path)
-            if (
-                expected_paths
-                or linked_event is None
-                or event_order != len(events_by_order)
-                or not str(linked_event.get("visible_result_quote") or "")
-                or responsibility_quote
-                != str(linked_event.get("visible_result_quote") or "")
-                or not responsibility_fact
-                or responsibility_quote not in responsibility_fact
-            ):
-                raise GreenfieldAuthoredSemanticsError(
-                    "Greenfield authored terminal component responsibility is malformed"
-                )
-            rows.append(dict(raw))
-            continue
         expected_path = expected_paths[index] if index < len(expected_paths) else ""
         responsibility = responsibilities[index] if index < len(responsibilities) else ""
         if (

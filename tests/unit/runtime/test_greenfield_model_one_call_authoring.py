@@ -94,7 +94,7 @@ def test_validation_boundary_rejects_non_single_integer_call_claims(call_count):
         )
 
 
-@pytest.mark.parametrize("failure", ["ownership", "source_quote", "design_source_fact", "design_authority", "remove_components"])
+@pytest.mark.parametrize("failure", ["ownership", "source_quote", "design_source_fact", "design_authority", "empty_owner_group"])
 def test_invalid_candidate_never_reaches_a_second_prepared_response_or_writes(tmp_path, failure):
     source = _source()
     invalid = _response(source)
@@ -112,7 +112,7 @@ def test_invalid_candidate_never_reaches_a_second_prepared_response_or_writes(tm
     elif failure == "design_authority":
         invalid["result"]["provisional_design"]["authority_kind"] = "accepted_fact"
     else:
-        invalid["result"]["components"] = []
+        invalid["result"]["components"][0]["responsibilities"] = []
     original = deepcopy(invalid)
     clock = Clock()
     provider = Provider([invalid, _response(source)], [1.0, 1.0], clock)
@@ -219,7 +219,7 @@ def test_proof_preserves_the_exact_only_candidate_without_review_metadata(tmp_pa
     retained = json.loads(path.read_text())
     assert retained["response"] == response
     assert retained["semantic_model_call_count"] == 1
-    assert retained["authoring_version"] == "odylith.greenfield.intent-authoring.v49"
+    assert retained["authoring_version"] == "odylith.greenfield.intent-authoring.v50"
     assert retained["initial_authoring"]["timeout_seconds"] == 80.0
     assert retained["initial_authoring"]["elapsed_seconds"] == 36.0
     assert "source_review" not in retained
@@ -248,4 +248,5 @@ def test_source_schema_keeps_human_participants_distinct_from_operational_depend
     assert "explicitly source-stated operational exchange or dependency" in external
     assert "an output recipient, or a reviewer does not" in external
     assert "never a human performer or external participant" in component["owner_fact_quote"]["description"]
-    assert "enclosing product capability" in component["responsibilities"]["description"]
+    assert properties["components"]["minItems"] == 0
+    assert component["responsibilities"]["minItems"] == 1

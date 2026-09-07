@@ -42,6 +42,7 @@ AUTHORED_ATLAS_ROLES = (
 def build_authored_atlas_diagrams(
     *,
     title: str,
+    product_story: str,
     diagram_slugs: Mapping[str, str],
     human_actors: Sequence[str],
     external_systems: Sequence[str],
@@ -59,6 +60,7 @@ def build_authored_atlas_diagrams(
 
     selected_roles = _selected_diagram_roles(diagram_roles)
     title = _required_string(title, "project title")
+    product_story = _required_string(product_story, "source product story")
     state_object = _required_string(state_object, "state object")
     visible_result = _required_string(visible_result, "visible result")
     proof_boundary = _required_string(proof_boundary, "proof boundary")
@@ -77,6 +79,7 @@ def build_authored_atlas_diagrams(
 
     context_source, context_boxes = _context_view(
         title=title,
+        product_story=product_story,
         actors=human_actors,
         externals=external_systems,
         components=components,
@@ -280,7 +283,7 @@ def validate_authored_atlas_view(
 
     summary = _required_string(row.get("summary"), "authored Atlas summary")
     read_guide = _required_string(row.get("read_guide"), "authored Atlas read guide")
-    components = _component_rows(row.get("components"))
+    components = _component_rows(row.get("components"), authority_kind=authority_kind)
     surface_payload = _surface_payload(
         source_sha256=source_sha256,
         node_order=node_order,
@@ -317,7 +320,7 @@ def _authority_for_row(row: Mapping[str, Any]) -> dict[str, Any]:
         boxes=boxes,
         summary=_required_string(row.get("summary"), "authored Atlas summary"),
         read_guide=_required_string(row.get("read_guide"), "authored Atlas read guide"),
-        components=_component_rows(row.get("components")),
+        components=_component_rows(row.get("components"), authority_kind=_authority_kind(row)),
         authority_kind=_authority_kind(row),
     )
     return {
@@ -354,6 +357,7 @@ def _surface_payload(
 def _context_view(
     *,
     title: str,
+    product_story: str,
     actors: Sequence[str],
     externals: Sequence[str],
     components: Sequence[Mapping[str, Any]],
@@ -398,6 +402,7 @@ def _context_view(
         lines.append("  end")
     product_lines, product_boxes, component_targets = _product_boundary_projection(
         title=title,
+        product_story=product_story,
         components=components,
     )
     lines.extend(product_lines)
@@ -491,8 +496,15 @@ def _sequence_view(
 def _product_boundary_projection(
     *,
     title: str,
+    product_story: str,
     components: Sequence[Mapping[str, Any]],
 ) -> tuple[list[str], list[dict[str, str]], tuple[str, ...]]:
+    if not components:
+        return (
+            [f'  product["{_mermaid_label(title)}<br/>{_mermaid_label(product_story)}"]'],
+            [_box("product", title, "Product description", product_story)],
+            (),
+        )
     rows = tuple(
         (
             _required_string(component.get("label"), "component label"),
@@ -564,9 +576,9 @@ def _external_component_edges(
     return tuple(edges)
 
 
-def _component_rows(value: Any) -> list[dict[str, str]]:
-    if not isinstance(value, list) or not value:
-        raise ValueError("authored Atlas components must be a non-empty list")
+def _component_rows(value: Any, *, authority_kind: str) -> list[dict[str, str]]:
+    if not isinstance(value, list) or (not value and authority_kind != SOURCE_GROUNDED_AUTHORITY_KIND):
+        raise ValueError("authored Atlas components must be a list, non-empty for proposed design")
     rows: list[dict[str, str]] = []
     for index, raw_row in enumerate(value):
         if not isinstance(raw_row, Mapping) or set(raw_row) != {"name", "description"}:

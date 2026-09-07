@@ -57,6 +57,17 @@ relationship labels and PNG text. Non-authored legacy fallback is unchanged.
 The shared Greenfield label encoder uses Mermaid decimal entities so source
 punctuation, literal entities and markup-looking text remain display text.
 
+Source-grounded Greenfield views may have no source-owned components. They
+preserve typed performer events and the exact product story as a Product
+description; they never assign a human or external terminal output to the
+product. Proposed Registry links remain separate from source component facts.
+The three proposed-design views still require nonempty component descriptions.
+The sealed Atlas validator owns this distinction through proposal validation
+and publication; a generic component-count gate must not reinterpret it.
+The v50 human-only and live-flood replay controls preserve this separation across
+desktop/mobile surfaces. Tiny mobile initial-fit diagrams, long KPI stacks and
+below-fold error feedback remain usability debt, not functional-pass exemptions.
+
 ### Source truth
 - `odylith/atlas/source/catalog/diagrams.v1.json`
   Canonical diagram catalog metadata.

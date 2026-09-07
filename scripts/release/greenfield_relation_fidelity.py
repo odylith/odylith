@@ -29,7 +29,7 @@ from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
 )
 
 
-RELATION_FIDELITY_ANNOTATION_VERSION = "odylith.greenfield.relation-fidelity-annotation.v3"
+RELATION_FIDELITY_ANNOTATION_VERSION = "odylith.greenfield.relation-fidelity-annotation.v4"
 RELATION_FAMILIES = (
     "first_path_events",
     "context_relations",
@@ -66,7 +66,6 @@ _EVENT_FIELDS = frozenset(
 _EVENT_ACTOR_KIND_INDEX = 7
 _EVENT_OWNER_PATH_INDEX = 10
 _EVENT_OWNER_SHA_INDEX = 11
-_EVENT_VISIBLE_SHA_INDEX = 14
 _CONTEXT_FIELDS = frozenset(
     {
         "context_kind",
@@ -114,7 +113,7 @@ def annotation_relation_evidence(
 
     issues: list[str] = []
     if not isinstance(value, Mapping) or set(value) != _ANNOTATION_FIELDS:
-        return _empty_evidence("relation_fidelity must use the exact v2 typed fields")
+        return _empty_evidence("relation_fidelity must use the exact typed fields")
     if value.get("version") != RELATION_FIDELITY_ANNOTATION_VERSION:
         issues.append(
             "relation_fidelity must declare "
@@ -178,7 +177,7 @@ def annotation_relation_evidence(
             "first_path_events": len(events),
             "context_relations": sum(selected_contexts.values()),
             "component_responsibility_relations": (
-                sum(selected_responsibilities.values()) or 1
+                sum(selected_responsibilities.values())
             ),
         },
         issues=tuple(dict.fromkeys(issues)),
@@ -270,7 +269,7 @@ def snapshot_relation_evidence(
             "first_path_events": len(event_keys),
             "context_relations": sum(selected_contexts.values()),
             "component_responsibility_relations": (
-                sum(selected_responsibilities.values()) or 1
+                sum(selected_responsibilities.values())
             ),
         },
         issues=tuple(
@@ -438,8 +437,8 @@ def _annotation_component_keys(
     projection_identities: frozenset[tuple[str, str]],
 ) -> tuple[tuple[tuple[Any, ...], ...], tuple[str, ...]]:
     rows = _mapping_rows(value)
-    if rows is None or not rows:
-        return (), ("relation_fidelity requires component responsibility ownership",)
+    if rows is None:
+        return (), ("relation_fidelity component responsibility ownership must be an array",)
     issues: list[str] = []
     keys: list[tuple[Any, ...]] = []
     for index, row in enumerate(rows, start=1):
@@ -471,13 +470,6 @@ def _annotation_component_keys(
                 responsibility_sha,
             ) not in projection_identities:
                 issues.append(f"{label} accepted responsibility is not atom-grounded")
-        elif (
-            responsibility_path != "/first_path"
-            or event is None
-            or not responsibility_sha
-            or responsibility_sha != event[_EVENT_VISIBLE_SHA_INDEX]
-        ):
-            issues.append(f"{label} terminal responsibility does not match its visible result")
         keys.append(
             (
                 "component",
@@ -678,13 +670,6 @@ def _snapshot_component_keys(
         if source == "accepted_fact":
             if _projection_value(facts, responsibility_path) != responsibility_quote:
                 issues.append(f"{label} does not match its exact responsibility fact")
-        elif source == "terminal_visible_result":
-            if (
-                responsibility_path != "/first_path"
-                or event is None
-                or str(event.get("visible_result_quote") or "") != responsibility_quote
-            ):
-                issues.append(f"{label} does not match its exact terminal visible result")
         else:
             issues.append(f"{label} has an invalid responsibility_source")
         keys.append(
@@ -698,8 +683,6 @@ def _snapshot_component_keys(
                 source,
             )
         )
-    if not keys:
-        issues.append("sealed authored_semantics has no component responsibility ownership")
     if len(keys) != len(set(keys)):
         issues.append("sealed component relation identities are duplicated")
     return tuple(keys), tuple(issues)
@@ -838,17 +821,9 @@ def _component_completeness_issues(
         for key in observed
         if len(key) == 7 and key[6] == "accepted_fact"
     )
-    terminal_count = sum(
-        1
-        for key in observed
-        if len(key) == 7 and key[6] == "terminal_visible_result"
-    )
     complete = (
         accepted == selected
-        and terminal_count == 0
         and len(observed) == sum(accepted.values())
-        if selected
-        else len(observed) == 1 and terminal_count == 1 and not accepted
     )
     if complete:
         return ()

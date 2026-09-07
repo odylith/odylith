@@ -846,18 +846,7 @@ def _relation_annotation(prompt: str) -> dict[str, object]:
             }
         ],
         "context_relations": [],
-        "component_responsibility_relations": [
-            {
-                "responsibility_path": "/first_path",
-                "responsibility_sha256": hashlib.sha256(
-                    b"accepted permit receipt"
-                ).hexdigest(),
-                "product_owner_path": "/title",
-                "product_owner_sha256": hashlib.sha256(b"Permit Desk").hexdigest(),
-                "first_path_event_order": 1,
-                "responsibility_source": "terminal_visible_result",
-            }
-        ],
+        "component_responsibility_relations": [],
     }
 
 
@@ -939,7 +928,6 @@ def _authored_semantics(
 ) -> dict[str, object]:
     first_path = str(facts.get("first_path") or "")
     actor = str(next(iter(facts.get("human_actors", ())), ""))
-    title = str(facts.get("title") or "")
     source_start, source_end, _digest = _span(
         case.prompt,
         first_path,
@@ -968,22 +956,12 @@ def _authored_semantics(
             "visible_result_quote": visible_result,
         }
     ]
-    components = [
-        {
-            "responsibility_path": "/first_path",
-            "responsibility_quote": visible_result,
-            "owner_system_path": "/title",
-            "owner_system_quote": title,
-            "first_path_event_order": 1,
-            "responsibility_source": "terminal_visible_result",
-        }
-    ]
     provisional_design = structural_design_fixture((1,))
     return {
         "version": AUTHORED_SEMANTICS_VERSION,
         "first_path_relations": relations,
         "first_path_context_relations": [],
-        "component_responsibility_relations": components,
+        "component_responsibility_relations": [],
         "provisional_design": provisional_design,
     }
 
@@ -1370,16 +1348,7 @@ def _repeated_relation_evidence() -> tuple[GreenfieldMatrixCase, dict[str, objec
         "version": AUTHORED_SEMANTICS_VERSION,
         "first_path_relations": semantic_events,
         "first_path_context_relations": [],
-        "component_responsibility_relations": [
-            {
-                "responsibility_path": "/first_path",
-                "responsibility_quote": "one receipt",
-                "owner_system_path": "/title",
-                "owner_system_quote": "Repeat Desk",
-                "first_path_event_order": 2,
-                "responsibility_source": "terminal_visible_result",
-            }
-        ],
+        "component_responsibility_relations": [],
         "provisional_design": provisional_design,
     }
     snapshot = {
@@ -1452,16 +1421,7 @@ def _repeated_relation_evidence() -> tuple[GreenfieldMatrixCase, dict[str, objec
             "version": RELATION_FIDELITY_ANNOTATION_VERSION,
             "first_path_events": expected_events,
             "context_relations": [],
-            "component_responsibility_relations": [
-                {
-                    "responsibility_path": "/first_path",
-                    "responsibility_sha256": _sha("one receipt"),
-                    "product_owner_path": "/title",
-                    "product_owner_sha256": _sha("Repeat Desk"),
-                    "first_path_event_order": 2,
-                    "responsibility_source": "terminal_visible_result",
-                }
-            ],
+            "component_responsibility_relations": [],
         },
     }
     return case, annotation, snapshot

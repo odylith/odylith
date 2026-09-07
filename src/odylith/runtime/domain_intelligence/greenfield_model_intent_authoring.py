@@ -53,7 +53,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v49"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v50"
 GREENFIELD_MODEL_PROOF_FD_ENV = "ODYLITH_GREENFIELD_MODEL_PROOF_FD"
 MAX_GREENFIELD_SEMANTIC_CALLS = 1
 
@@ -843,8 +843,7 @@ in source order, and one matching event. Include the explicit actor with its act
 and object in the first citation and whenever the actor changes. A coordinated
 continuation can omit its subject only when the immediately previous event has that
 same actor. A stage, artifact or status label alone is not an event.
-Keep every required source-stated action. When a product enables human work, preserve
-the human actions as events and the enclosing capability as product responsibility.
+Keep every required source-stated action under its original performer.
 Constraints and non-goals remain facts, not extra workflow events.
 actor_fact_quote selects the performing human_actors, internal_systems,
 external_systems or title fact for every event. Resolve aliases and omitted subjects
@@ -854,8 +853,11 @@ action_quote and nonempty target_quote must occur within that event. terminal ci
 the final event's visible result according to its schema.
 Group each owner's exact responsibility citations under one owner_fact_quote, which
 selects an internal_systems fact or title when no narrower system exists. A product
-responsibility belongs to one owner, not a human actor. With no stated responsibility,
-use one selected product owner with an empty responsibilities list.
+responsibility belongs to one owner, not a human actor. Cite only capabilities not
+already represented by product_story or typed product events; do not duplicate those
+claims. Return components=[] when none remain. Never infer a product responsibility
+from a terminal result or use an empty owner group. The proposed design supplies
+implementation boundaries without creating accepted source capabilities.
 
 MATERIALITY
 Return authored when there is a product, usable action/path and observable result or

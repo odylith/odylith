@@ -6,7 +6,7 @@ Last updated: 2026-09-07
 
 Domain Intelligence owns the Greenfield evidence-to-transaction boundary. One
 pinned model authors source-cited facts and typed relations alongside a required,
-separately labeled provisional design. The source-local v49 candidate uses one
+separately labeled provisional design. The source-local v50 candidate uses one
 call and the full 55/80/105 model windows inside fixed 60/90/120 consumer limits;
 there is no second runtime reviewer or repair call. Deterministic code verifies
 exact custody, binds design in the existing relation hash, projects the complete governed package,
@@ -20,7 +20,7 @@ The design owns 4–5 logical components, 4–5 workstreams, exchanges and verif
 it supports exact source-event identities without transferring actor authority.
 Registry and Radar project it directly. Atlas preserves two source views and
 three labeled design views. The source-only backlog projector is retired.
-The v49 candidate is not release-qualified: independent semantic regression,
+The v50 candidate is not release-qualified: independent semantic regression,
 complete-package UX, exact transaction, timing and clean-distribution proof remain
 required. Synthetic fixture counts are not proof of useful product design.
 A full fixture-backed pre-confirm counterexample still accepts an exact operator
@@ -50,8 +50,28 @@ deadline or release qualification.
 The 2026-09-07 title-capability comparison is rejected for adoption: copying a
 product story into an accepted responsibility silently expands its source role.
 Its one under-60-second flood success does not clear that defect or establish
-complete-package quality. Production authoring stays v49 while that ownership
-and the invocation-admission P1 remain unresolved.
+complete-package quality. The v50 source-local replacement instead permits an
+empty source-capability inventory and removes terminal-to-product synthesis.
+Explicit capabilities still need exact citations and typed owners; product
+events retain their existing owners. Product story remains a description, not
+a new capability fact. Mandatory provisional design supplies package depth.
+Authored proposal validation delegates diagram custody to the existing Atlas
+validator instead of requiring a second source-component inventory. Relation
+annotation v4 reports absent optional capabilities as not applicable, never a
+fabricated passing sample; explicit omissions and required global relation
+evidence still fail closed. Older semantic contracts are not silently migrated.
+
+The unchanged flood request stages a 4/4/5 package in 36.426 seconds with one
+30.431-second standard Terra/low call, compared with the prior source-ownership
+rejection. Fresh native replay passes 32 desktop/mobile cells, ten Atlas views
+and exact 113-file readback without post-confirm generation. This is one
+development discriminator, not envelope-wide reliability or release approval.
+Independent review accepts the bounded ownership removal but rejects this flood
+package for inferred workflow order, contradictory constraint/consent exchanges
+and absent provisional sensitive-data safety planning. The separate invocation
+P1, complete-package quality, mobile usability, installed migration and untouched
+holdout gates remain open. A structural passed manifest cannot override these
+semantic/design findings.
 
 ## Boundary
 
@@ -70,6 +90,9 @@ and the invocation-admission P1 remain unresolved.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `src/odylith/runtime/domain_intelligence/proposal_validation.py`, `tests/unit/runtime/test_greenfield_source_component_ownership.py`
 - **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `sha256:54a42d7ec1a2fb0bbfacf5bd84e0a653a1c55c219136385a6b85a20277d60060`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_design_views.py`, `src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py`
@@ -85,9 +108,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_view.py`, `src/odylith/runtime/domain_intelligence/greenfield_authored_proposal.py`, plus 1 more
-- **2026-09-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_source_review.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

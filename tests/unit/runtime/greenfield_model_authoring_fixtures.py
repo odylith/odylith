@@ -42,7 +42,6 @@ def authored_response(
     first_path_segments: Sequence[str] | None = None,
     first_path_relations: Sequence[Mapping[str, Any]] | None = None,
     component_responsibility_owners: Sequence[str] | None = None,
-    terminal_component_owner: str | None = None,
     provisional_design: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build a model-shaped response using quotes and occurrence ordinals only."""
@@ -106,7 +105,6 @@ def authored_response(
         intent=intent,
         fact_indexes=fact_indexes,
         owners=component_responsibility_owners,
-        terminal_owner=terminal_component_owner,
     )
     return {
         "version": GREENFIELD_INTENT_AUTHORING_VERSION,
@@ -363,7 +361,6 @@ def _component_responsibility_relation_rows(
     intent: Mapping[str, Any],
     fact_indexes: Mapping[str, int],
     owners: Sequence[str] | None,
-    terminal_owner: str | None,
 ) -> list[dict[str, Any]]:
     responsibilities = [
         str(row)
@@ -372,21 +369,7 @@ def _component_responsibility_relation_rows(
     ]
     systems = [str(row) for row in intent.get("internal_systems", []) if str(row)]
     if not responsibilities:
-        if not terminal_owner:
-            raise ValueError(
-                "authored fixture must explicitly bind a terminal component owner when no responsibility fact exists"
-            )
-        return [
-            {
-                "owner_fact_quote": _owner_fact_quote(
-                    owner=terminal_owner,
-                    intent=intent,
-                    systems=systems,
-                    fact_indexes=fact_indexes,
-                ),
-                "responsibilities": [],
-            }
-        ]
+        return []
     if owners is None:
         raise ValueError(
             "authored fixture must explicitly bind component_responsibility_owners"

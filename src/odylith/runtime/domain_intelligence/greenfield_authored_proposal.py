@@ -140,6 +140,7 @@ def build_authored_greenfield_proposal(
     )
     diagrams = build_authored_atlas_diagrams(
         title=title,
+        product_story=product_story,
         diagram_slugs=diagram_slugs,
         human_actors=human_actors,
         external_systems=external_systems,

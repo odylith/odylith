@@ -110,7 +110,6 @@ def _harbor_case() -> tuple[str, dict[str, object], dict[str, object]]:
                 "visible_result_quote": segments[3],
             },
         ],
-        terminal_component_owner="berth map",
     )
     return evidence, intent, response
 
@@ -242,7 +241,6 @@ def test_product_pronoun_uses_an_explicit_selected_actor_fact() -> None:
                 "visible_result_quote": segments[2],
             },
         ],
-        terminal_component_owner="Review Engine",
     )
 
     result = _author(prompt, response)
@@ -457,7 +455,6 @@ def _repeated_event_case() -> tuple[str, dict[str, object]]:
                 "visible_result_quote": terminal,
             },
         ],
-        terminal_component_owner="Retry Console",
     )
     path_facts = response["result"]["facts"]["first_path"]
     path_facts[1]["occurrence"] = 2
@@ -640,7 +637,6 @@ def test_utf8_multiactor_path_preserves_meaning_when_source_order_differs() -> N
                 "visible_result_quote": segments[3],
             },
         ],
-        terminal_component_owner="Café Console",
     )
 
     result = _author(evidence, response)

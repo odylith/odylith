@@ -528,7 +528,7 @@ def _normalized_semantic_digest(annotation: Mapping[str, Any]) -> str:
         ]
     except (KeyError, TypeError, ValueError):
         return ""
-    if not scored_atoms or not events or not components:
+    if not scored_atoms or not events:
         return ""
     if any(not row[1] for row in contexts) or any(not row[0] or not row[1] for row in components):
         return ""

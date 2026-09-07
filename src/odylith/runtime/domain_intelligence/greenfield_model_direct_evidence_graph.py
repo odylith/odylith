@@ -89,7 +89,6 @@ def derive_model_relations(
             components,
             selected_facts=selected_facts,
             first_path_relations=path_relations,
-            terminal_result_fact=terminal_fact,
         ),
         terminal_result_fact=terminal_fact,
     )
@@ -101,14 +100,12 @@ def model_component_responsibility_rows(value: Any) -> tuple[dict[str, Any], ...
     if (
         not isinstance(value, Sequence)
         or isinstance(value, (str, bytes, bytearray))
-        or not value
         or len(value) > MAX_COMPONENT_RESPONSIBILITY_RELATIONS
     ):
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring returned invalid component ownership"
         )
     rows: list[dict[str, Any]] = []
-    empty_group_count = 0
     owner_fact_quotes: set[str] = set()
     for raw in value:
         if not isinstance(raw, Mapping) or set(raw) != MODEL_COMPONENT_FIELDS:
@@ -125,21 +122,12 @@ def model_component_responsibility_rows(value: Any) -> tuple[dict[str, Any], ...
         if (
             not isinstance(responsibilities, Sequence)
             or isinstance(responsibilities, (str, bytes, bytearray))
+            or not responsibilities
             or len(responsibilities) > MAX_COMPONENT_RESPONSIBILITY_RELATIONS
         ):
             raise GreenfieldAuthoredSemanticsError(
                 "Greenfield authoring returned invalid component ownership"
             )
-        if not responsibilities:
-            empty_group_count += 1
-            rows.append(
-                {
-                    "owner_fact_quote": owner_fact_quote,
-                    "responsibility_quote": "",
-                    "responsibility_occurrence": 0,
-                }
-            )
-            continue
         for responsibility in responsibilities:
             if (
                 not isinstance(responsibility, Mapping)
@@ -159,19 +147,7 @@ def model_component_responsibility_rows(value: Any) -> tuple[dict[str, Any], ...
                     ),
                 }
             )
-    responsibility_count = sum(
-        bool(row["responsibility_quote"])
-        for row in rows
-    )
-    if (
-        len(rows) > MAX_COMPONENT_RESPONSIBILITY_RELATIONS
-        or (responsibility_count and empty_group_count)
-        or (not responsibility_count and (len(value) != 1 or len(rows) != 1))
-        or any(
-            row["responsibility_quote"] and not row["responsibility_occurrence"]
-            for row in rows
-        )
-    ):
+    if len(rows) > MAX_COMPONENT_RESPONSIBILITY_RELATIONS:
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring returned invalid component ownership"
         )
@@ -397,7 +373,6 @@ def _derive_component_relations(
     *,
     selected_facts: Sequence[Mapping[str, Any]],
     first_path_relations: Sequence[Mapping[str, Any]],
-    terminal_result_fact: Mapping[str, Any],
 ) -> tuple[dict[str, Any], ...]:
     model_rows = model_component_responsibility_rows(value)
     owner_facts = _selected_product_owner_facts(selected_facts)
@@ -406,21 +381,12 @@ def _derive_component_relations(
         for fact in selected_facts
         if str(fact.get("field") or "") == "component_responsibilities"
     )
-    if responsibility_facts and len(model_rows) != len(responsibility_facts):
+    if len(model_rows) != len(responsibility_facts):
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring left component responsibilities without owners"
         )
-    if not responsibility_facts and (
-        len(model_rows) != 1 or model_rows[0]["responsibility_quote"]
-    ):
-        raise GreenfieldAuthoredSemanticsError(
-            "Greenfield authoring did not establish one viable component owner"
-        )
     rows: list[dict[str, Any]] = []
-    aligned_facts: Sequence[Mapping[str, Any] | None] = (
-        responsibility_facts if responsibility_facts else (None,)
-    )
-    for raw, responsibility_fact in zip(model_rows, aligned_facts, strict=True):
+    for raw, responsibility_fact in zip(model_rows, responsibility_facts, strict=True):
         owner_fact = owner_facts.get(str(raw.get("owner_fact_quote") or ""))
         if owner_fact is None:
             raise GreenfieldAuthoredSemanticsError(
@@ -428,22 +394,6 @@ def _derive_component_relations(
             )
         owner_path = str(owner_fact.get("projection_path") or "")
         owner_quote = str(owner_fact.get("quote") or "")
-        if responsibility_fact is None:
-            rows.append(
-                {
-                    "responsibility_path": str(
-                        terminal_result_fact.get("projection_path") or ""
-                    ),
-                    "responsibility_quote": str(
-                        terminal_result_fact.get("terminal_result_quote") or ""
-                    ),
-                    "owner_system_path": owner_path,
-                    "owner_system_quote": owner_quote,
-                    "first_path_event_order": len(first_path_relations),
-                    "responsibility_source": "terminal_visible_result",
-                }
-            )
-            continue
         responsibility_quote = str(responsibility_fact.get("quote") or "")
         if responsibility_quote != raw["responsibility_quote"]:
             raise GreenfieldAuthoredSemanticsError(
@@ -743,7 +693,7 @@ MODEL_COMPONENT_SCHEMA: dict[str, Any] = {
                 "owner_fact_quote": {
                     **_quote_schema(required=True),
                     "description": (
-                        "The selected product or internal-system fact that owns this capability or result; "
+                        "The selected product or internal-system fact that owns this capability; "
                         "never a human performer or external participant."
                     ),
                 },
@@ -760,18 +710,23 @@ MODEL_COMPONENT_SCHEMA: dict[str, Any] = {
                         },
                         maximum=MAX_COMPONENT_RESPONSIBILITY_RELATIONS,
                     ),
+                    "minItems": 1,
                     "description": (
                         "Exact complete source clauses expressing the selected product owner's own "
-                        "capability or result. For a product that enables human work, cite the enclosing "
-                        "product capability, not its individual human-action spans. Those actions remain "
-                        "human-owned workflow events."
+                        "capability or result, without duplicating the product story or product events. "
+                        "Human-action spans remain human-owned workflow events."
                     ),
                 },
             },
         },
         maximum=MAX_COMPONENT_RESPONSIBILITY_RELATIONS,
     ),
-    "minItems": 1,
+    "minItems": 0,
+    "description": (
+        "Source-stated capabilities not already represented by the product story or typed "
+        "product events. Return [] when none remain; proposed design owns implementation "
+        "depth. Never assign an output to a product merely because it ends the workflow."
+    ),
 }
 
 

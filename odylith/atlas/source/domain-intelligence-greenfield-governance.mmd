@@ -3,7 +3,7 @@ flowchart TB
       direction LR
       request["Greenfield request and EDIT evidence<br/>Untrusted input with exact source custody"]
       model_pass["One complete source and design author<br/>No runtime review or repair call"]
-      typed_graph["Canonical source facts and provisional design<br/>Distinct authority; one existing relation hash"]
+      typed_graph["Canonical source facts and provisional design<br/>Optional source capabilities; required design<br/>Distinct authority; one relation hash"]
       ambiguity{"Material meaning complete?"}
       clarify["One focused clarification<br/>No transaction or governed write"]
       request --> model_pass --> typed_graph --> ambiguity
@@ -12,7 +12,7 @@ flowchart TB
 
     subgraph projection_lane["Deterministic package construction"]
       direction LR
-      custody["Custody and invariant validation<br/>Citations, ownership, event order,<br/>responsibilities, and terminal result"]
+      custody["Custody and invariant validation<br/>Exact source owners and event order<br/>No terminal-to-product promotion"]
       projections["Deterministic source and design projections<br/>4–5 Radar, 4–5 Registry, five Atlas views<br/>Source actors retain their actions"]
       quality["Pre-confirm custody and structural gates<br/>Semantic-role admission P1 remains open"]
       timing["Proposal timing gate<br/>Standard at 60 seconds<br/>Rescue at 90; deep at 120"]
@@ -33,7 +33,7 @@ flowchart TB
     subgraph proof_lane["Release evidence"]
       direction LR
       owners["Product semantic owners<br/>Canonical graph and Mermaid parser"]
-      evaluator["Evaluator adapters<br/>Reuse product owners;<br/>no parallel semantic rules"]
+      evaluator["Evaluator adapters<br/>Optional source capabilities may be absent<br/>No invented samples or parallel rules"]
       acceptance["Independent semantic, transaction and UX gates<br/>Source-local candidate is unqualified<br/>60, 90, 120 second ceilings"]
       confidence["Confidence report<br/>Intervals stay separate<br/>from hard acceptance"]
       retained["Retained raw and browser proof<br/>Captured before temporary cleanup"]
