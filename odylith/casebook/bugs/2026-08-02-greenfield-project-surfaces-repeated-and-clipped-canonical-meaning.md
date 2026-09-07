@@ -1557,6 +1557,34 @@
   necessary information flow. No source-fact invention, review removal, deadline
   extension, padded task or provider-timeout exemption is a valid recovery.
 
+- Source-Author Latency Comparison (2026-09-06): A new explicitly experimental
+  Luna/medium author, Terra/low parallel planner and Sol/medium mandatory-review
+  allocation fails before review: author null at 30.021/30s, planner returned 24.897s,
+  total 30.025s, two observed calls. Source schema/prompt/custody and production
+  profiles remain unchanged. General planner instructions require executable
+  deliverables and minimum-necessary interfaces. Independent raw-plan review
+  confirms removal of the prior design-only and sensitive-reporting P1s, without
+  qualifying the missing source/review/join or package. Two new P1 claims were
+  withdrawn on exact-text review: no automatic identifier generation was stated,
+  and the explicit intake-to-matcher exchange already owns needs transfer.
+  These are P2 precision advisories, alongside sensitive-constraint access policy,
+  not proven circularity or missing ownership. Require evidence for severity;
+  evaluator overstatement must not trigger unnecessary architecture or duplication.
+  Thirty-three temporary boundary checks pass. Retain
+  `/private/tmp/odylith-greenfield-luna-plan.fRtkui/`, result SHA
+  `6fe9dd5b7e4f52978cc1f2b50251c50a4d03bf4ca08a938b4b26a7c2d4062995`.
+  One same-request source-only JSON-event diagnostic returns in 25.504s with no
+  tool calls and 16,272 input tokens. Removing concurrency and adding observation
+  does not establish the earlier timeout cause, and no reviewer runs. A subsequent
+  one-call task-only base-instruction comparison times out at 30.023/30s with only
+  thread/turn-start events; token savings and latency improvement are unobserved.
+  Retain `/private/tmp/odylith-greenfield-lean-role.6H1HBb/source-control/`, result
+  SHA `8659b2c41ead15d123a980ea88395886a46c3228e4c39257da1f4984bca0141d`.
+  Reject both attempted allocations for adoption. No production code, source
+  schemas, profile ladder, global host settings or fixed 60/90/120 deadlines
+  change. Preserve plan-quality learning without a model/effort/prompt sweep or
+  a claim that separately timed stages prove a complete package.
+
 - V30 Source Discriminator Result (2026-09-04): The unchanged flood request
   passed the v30 prediction. One deep authoring call completed in `49.80s`,
   selected `city staff` as the direct customer, preserved all five city-staff

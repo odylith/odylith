@@ -15,8 +15,57 @@ or generated content after confirmation.
 
 ### Required package depth and current blocker (2026-09-05)
 
-Current wave outcome (2026-09-06): no planning candidate has earned production
-integration. The one parallel experiment fails when unchanged source authoring
+Current wave outcome (2026-09-06, author-latency comparison): no planning candidate
+has earned production integration. The explicit experimental role map is
+Luna/medium source author, Terra/low parallel planner and Sol/medium mandatory
+reviewer, with at most three calls inside model 55s / consumer 60s. Source prompt,
+schema and custody are unchanged. General planner/reviewer instructions now
+require executable deliverables and minimum-necessary data exchange; this is a
+combined feasibility comparison, not a causal model-only comparison.
+The author returns null at 30.021/30 seconds while the planner returns in 24.897s.
+Total 30.025s, two observed calls, no source review, final support join or package.
+Thirty-three temporary boundary/profile/separation tests pass. Evidence:
+`/private/tmp/odylith-greenfield-luna-plan.fRtkui/`, driver SHA
+`75687162082c7d0fed4be69ac1a70b73a82ecadb1781e7fa22cc5f3d62c87478`,
+contract SHA `a643485fd78063e90c633e2ea287b12af9f7ad3d68bcfa1fea0242186273325f`,
+result SHA `6fe9dd5b7e4f52978cc1f2b50251c50a4d03bf4ca08a938b4b26a7c2d4062995`.
+The experimental identity never enters production-profile qualification; the
+existing profile selects only the validator's structural tier before the retained
+result identity is replaced. Actual role observations are authoritative (CB-306).
+
+Independent raw-plan review confirms both earlier P1s are removed: five working
+capability deliveries replace design-only tasks, and reporting receives placement
+and consent status rather than sensitive constraint details or consent contents.
+Two newly asserted P1s were withdrawn after exact-text adjudication: the plan does
+not claim automatic identifier generation, and its explicit intake-to-matcher
+exchange already owns household-needs transfer. Do not invent contradictions or
+require every contract field to repeat on every surface. Identifier provenance,
+intake-needs acceptance coverage and sensitive-constraint access/minimum-field
+policy remain P2 advisories. No substantiated raw-plan P0/P1 remains; the missing
+source/review/join and complete package still prevent qualification.
+
+One source-only diagnostic keeps the failed request/model/effort/30s cap, adds
+documented JSON event capture and removes concurrency. It returns in 25.504s
+(25.530s including driver work), observing no tool calls, 16,272 input tokens,
+1,220 output tokens and 635 reasoning-output tokens. No reviewer runs; this is
+neither a successful transaction nor evidence that concurrency caused the timeout.
+Evidence is under `author-transport-diagnostic/`, result SHA
+`54b9634ed5d16ecdf7cab9bd6ac2aa68a1749a1ad8045dba6845b7d592b34954`.
+The one task-only base-instruction comparison then returns null at 30.023/30s.
+Its trace contains only thread/turn start, no completed usage or observed tool
+work. Neither input-token savings nor latency improvement is established.
+Evidence: `/private/tmp/odylith-greenfield-lean-role.6H1HBb/source-control/`,
+result SHA `8659b2c41ead15d123a980ea88395886a46c3228e4c39257da1f4984bca0141d`.
+The documented instruction override was call-local; global settings, production
+runtime, profiles, source schemas and operating envelope remain unchanged.
+Reject both allocations for adoption. Do not start a model/effort/prompt sweep,
+infer timeout causality from null output, or splice separately timed successes
+into consumer proof. The next candidate must improve the measured critical path
+and produce a complete independently reviewed package inside the existing tier;
+token reduction alone is not an admission gate. Keep the generic planner-quality
+learning, not the failed allocation. Installed depth and release gates remain open.
+
+Prior wave outcome (2026-09-06): the first parallel experiment fails when source authoring
 returns null at 30.012/30 seconds. The independent planner returns in 20.642
 seconds, but source review never runs. Two observed calls, total 30.015 seconds,
 no publication and no complete package. Ten temporary source-support boundary
