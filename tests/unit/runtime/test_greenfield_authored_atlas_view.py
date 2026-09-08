@@ -299,6 +299,35 @@ def test_context_groups_each_human_performers_events_without_cross_assignment() 
     assert context["mermaid_source"].count('|"performs"|') == 2
 
 
+@pytest.mark.parametrize("actor_kind", ["human", "product", "external_system"])
+def test_context_action_listing_does_not_claim_the_proposed_execution_order(
+    actor_kind: str,
+) -> None:
+    actor = {"human": "Mara", "product": "Harbor Desk", "external_system": "Harbor Ledger"}[actor_kind]
+    relations = tuple(
+        _relation(index, actor, event, actor_kind=actor_kind,
+                  owner=actor if actor_kind == "product" else "")
+        for index, event in enumerate(("Record the intake", "Inspect the tag"), 1)
+    )
+    design = _provisional_design(event_orders=(1, 2))
+    arguments = dict(
+        component_label="Harbor Desk", human_actors=("Mara",),
+        result_event_order=1, visible_result="the intake", relations=relations,
+    )
+    source_list_walk = _authored_diagrams(**arguments, provisional_design=design)
+    design["first_run"]["event_orders"] = [2, 1]
+    reverse_walk = _authored_diagrams(**arguments, provisional_design=design)
+
+    context = reverse_walk[0]
+    assert context == source_list_walk[0]
+    assert reverse_walk[1]["mermaid_source"] != source_list_walk[1]["mermaid_source"]
+    action_box = next(box for box in context["diagram_boxes"] if box["node_id"].endswith("_actions"))
+    assert action_box["label"].splitlines() == [row["event_quote"] for row in relations]
+    assert action_box["description"] == (
+        f"Exact source events performed by {actor}. Listing order does not establish execution order."
+    )
+
+
 def test_context_excludes_product_events_from_human_action_groups() -> None:
     human_event = "Mara enters a vessel tag"
     product_event = "Harbor Desk records berth occupancy"

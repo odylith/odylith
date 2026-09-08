@@ -452,7 +452,8 @@ def _context_view(
         boxes.append(
             _box(
                 action_id, "\n".join(events), "Grouped first-path actions",
-                f"Exact source events performed by {identity[1]}, in first-path order.",
+                f"Exact source events performed by {identity[1]}. "
+                "Listing order does not establish execution order.",
             )
         )
     for external_index, component_index in _external_component_edges(

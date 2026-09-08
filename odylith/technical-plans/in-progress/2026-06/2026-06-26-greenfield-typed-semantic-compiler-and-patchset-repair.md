@@ -10,6 +10,81 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Re-adjudicate the failure before changing its mechanism (2026-09-08)
+
+Independent participant-impact review qualifies the laboratory's earlier P1.
+The missing borrower entry would omit a dedicated participant card, context node
+and actor-category atom, but the source events, checkout target, first-run text
+and registration contract retain the borrower relationship. No laboratory package
+was staged, so material consumer loss is unproven. This matches the earlier
+displaced-resident adjudication below. Preserve both original reports and the
+failed 60/55 experiment; do not retroactively admit the candidate. Inventory
+coverage and relationship fidelity need separate controls. A complete list with
+wrong ownership or a lost relationship must still fail semantic quality.
+
+The native-context audit also establishes no attributable latency cause. The
+application's system_prompt is CLI user-message input; ignore-user-config skips
+the user config file and does not promise payload-only context. The retained
+22,789 counter is total reported tokens used, not an input-token breakdown.
+Installed skill presence is not proof of transmitted context or its cost. Prior
+instruction-removal experiments failed; do not repeat them, strip safeguards,
+sweep profiles or infer speed from byte counts. The debug prompt renderer has
+unverified exec parity and is not native-wire evidence.
+
+These findings remove two unsupported reasons for architectural change; they do
+not solve serial author/review budget pressure. Keep 60/90/120, complete-package
+depth, immutable review and the full release gates. Correct the separate Context
+view claim that source-list order is first-path execution order at its existing
+presentation owner. Consider repetition/layout only through bounded visual
+comparison; do not add source relationships to make a diagram connected.
+Evidence: /private/tmp/odylith-model-context-audit.TeldnU/native-context-review.md
+and participant-impact-review.md. No generation or holdout access occurred.
+
+The Context correction now states that listing order does not establish execution
+order. Three human/product/external reverse-walk controls fail on the old copy
+and pass after the one description change; the focused Atlas/package pack passes
+61 controls. Exact labels, graph topology and the other four views are unchanged.
+Preserve the initial invalid test selector separately from this corrected run.
+Independent presentation review does not earn a broader layout rewrite; defer
+the title-only story label until its information-access tradeoff has visual proof.
+Broader package/staging/transaction proof passes 207 tests; bundle mirrors pass
+nine. The first install run passes 1100 and fails one process-group signal-zero
+probe with PermissionError. Preserve it: an isolated owned-group diagnostic then
+terminates both processes in 0.010704 seconds with explicit absence, and the
+unchanged full rerun passes all 1101 in 69.34 seconds. No cleanup-test or runtime
+change is made, and the original permission error's cause remains unproven.
+
+Eighteen synthetic Atlas browser cells pass across three owner types, two widths
+and normal/PNG-fallback/image-error states. Context Mermaid and all four other
+diagram rows equal baseline. Preserve the initial 0/18 whitespace-oracle failure
+and browser-only correction: the existing metadata heading collapses separate
+action lines, a deferred readability limitation rather than lost source words.
+The new explanation is visible and unclipped. Maintainer governance has 24/26
+initial cells plus two corrected Radar-only readbacks against unchanged complete
+text; do not relabel it a pristine 26/26 run. Current decisions and original
+historical brief notices/timestamps are readable. All owned proof processes stop.
+These close bounded source-local copy and governance visibility, not diagram-depth,
+full consumer UX, semantic generalization, timing, distribution or release gates.
+Reports: context-browser/review.md and governance-browser/review.md under the
+audit root. Final checkpoint settlement must preserve tested source bytes.
+
+Final focal governance readback is 7/8, not a clean pass. Mobile Radar has 76px
+of page-wide overflow from two historical Validation phrases whose text boxes
+fit but whose unbroken text does not. Both phrases already exist in the prior
+HEAD; every current-section segment remains readable. Preserve this P2 finding
+and the failed receipt. Its owning fix is generic plan text wrapping, not source
+rewriting or a Greenfield semantic rule. No historical browser comparison or
+full mobile acceptance is claimed. See final-readback/overflow-diagnostic-review.md
+under the governance browser evidence above. All owned browser work is terminal.
+
+Neither OPENAI_API_KEY nor ANTHROPIC_API_KEY is present in this shell; no secret
+values were read. Ask whether an existing configured API-backed endpoint is
+available before pursuing a direct-transport comparison with separate usage
+charges. This is an untested alternative, not a measured speedup, adopted adapter,
+relaxed host contract or reason to stop other safe goal work. No new model call,
+provider implementation, profile change or protected holdout access is earned by
+this checkpoint alone. Serial quality and budget reliability remain unresolved.
+
 ### Laboratory discriminator rejected under the product deadline (2026-09-08)
 
 The sole ordinary-native laboratory attempt fails to deliver a package. Authoring
