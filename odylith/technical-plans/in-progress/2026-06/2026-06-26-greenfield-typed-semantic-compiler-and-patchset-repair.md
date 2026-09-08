@@ -10,6 +10,32 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Proposed-verification comparison: no integrated preview (2026-09-08)
+
+One frozen v54 author-prompt candidate asks for meaningful success/failure checks
+and proportionate proposed controls through existing verification and assumption
+fields. No schema, reviewer, model profile, call ceiling or deadline changes.
+After 145 focused controls pass, the complete source-local proposal returns no
+preview in 55.411078 seconds: author 35.177988 seconds; reviewer null after
+19.826509 seconds against 19.805631 seconds remaining. No maintained no-write-root
+hash changes; the prior sealed pending transaction remains byte-identical.
+
+The raw candidate contains more useful negative checks and a visibly proposed
+staff-access obligation. This demonstrates field capacity, not complete-package
+quality, generalization or causation for the timeout. Reject this candidate for
+adoption, remove its production prompt/version and candidate-only test, and retain
+the original evidence. Do not retry, raise a budget, bypass review or claim v53 is
+a qualified fallback. A further generation experiment needs a new evidence-backed
+deadline feasibility decision, not another prompt/schema iteration. Evidence:
+`/private/tmp/odylith-proposed-verification.nn9Msk/`.
+
+The whole capability map, including Memory, remains the acceptance boundary
+below. Native automatic intervention delivery is still separately unproven under
+CB-242. Neither useful raw model output nor a manually relayed Assist establishes
+a smooth integrated consumer journey. Keep 60/90/120 fixed, preserve all relevant
+engine handoffs and the untouched final holdout, and qualify complete behavior
+before further architecture expansion.
+
 ### Requested Fast-service feasibility and current visibility (2026-09-08)
 
 The manual visibility check also reproduces current-summary loss: old replay
