@@ -10,6 +10,59 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Shell focus ownership correction (2026-09-08)
+
+The upgrade checkpoint is committed and pushed as ddb65494. CB-331 now records
+a separate, proved UX defect behind a plausible cross-surface failure mechanism:
+Starter Guide dismissal can move focus away from a subsequently chosen child
+input. A passive trace observes the theft; four controlled browser cells prove
+that the original deferred callback can lose insertion on both Radar and Registry.
+This does not establish the exact unrecorded interleaving in the two historical
+timeouts. Evidence: `/private/tmp/odylith-registry-empty-replay.Anv7ST/focus-causal-review.md`.
+Replace only the deferred focus in the existing shell close/open actions with
+synchronous focus return. Preserve filters, header, accessible recovery controls
+and timeouts. Add desktop/mobile regressions for a new focus choice before the
+next animation frame; require red-before/green-after, unchanged empty-state and
+onboarding controls, then frozen broader browser and bundle proof. No semantic
+mechanism, generation deadline or transaction-kernel expansion is part of this fix.
+
+The three delayed focus callbacks are now removed (six fewer source lines), with
+the existing action retaining focus ownership. All ten valid old-source controls
+fail and all ten corrected-source controls plus twelve unchanged empty-state
+cases pass (22 in 60.99 seconds); the focused unit/header pack passes 86 in 1.88
+seconds. The initial six invalid upgrade fixtures are retained as setup failures:
+their Radar seed incorrectly created product-repo markers. Optional fixture-only
+markers now keep these consumer controls truthful without mocking eligibility.
+Independent review and frozen full-browser/bundle validation precede checkpoint
+acceptance. The remaining Greenfield semantic, host, timing and holdout gates
+are still open.
+
+Independent review identifies the same delayed-focus class in Cheatsheet opening.
+Bound the remaining check to that existing 100-line owner: choose child or drawer
+focus after opening but before the next native frame, then preserve ordinary
+search focus/selection and Escape return. Compare before/after before freezing;
+no generic focus manager, filter changes or wider accessibility redesign is needed.
+
+The Cheatsheet controls reproduce all four failures before its callback removal.
+All fourteen focus controls, twelve original empty-state cases and three ordinary
+Cheatsheet/upgrade/storage-error controls pass afterward: 29 in 74.16 seconds.
+Review accepts the source changes and requests an explicit retained-value check,
+now added before final proof. The two source owners shrink by eight lines in total;
+the only remaining animation frame in them measures status layout, not focus.
+
+The final frozen tree passes 4,500 runtime tests, 1,382 install tests and 326
+browser cases, including all fourteen focus controls. One absent-fixture Radar
+diagnostic check is explicitly skipped, not accepted coverage. Full distribution
+build and clean-install/upgrade/unavailable-author smoke pass; both changed shell
+templates in the wheel match source bytes. The tree hash remains
+61ad0f33f48b0f9cde14d675e92fd51992def91db2addae6633f47c82dcc4961
+through the end of all runs. CB-331 is FixedPendingRelease for 0.1.15, not closed.
+Proof: `/private/tmp/odylith-focus-release-proof.u1JhmF/README.md`.
+These checks qualify the four-callback repair, not the unresolved semantic,
+native-host, timing or untouched-holdout gates. Do not rerun or tune generation
+against the protected holdout or treat adjacent test volume as convergence of the
+author/reviewer mechanism. The existing endpoint decision remains unresolved.
+
 ### Upgrade readiness repair and installed proof gate (2026-09-08)
 
 The readiness repair now has empty-predecessor installed proof. The current

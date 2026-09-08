@@ -18,12 +18,13 @@ def _load_backlog_payload(root: Path) -> dict[str, object]:
     return json.loads(payload_js.split(" = ", 1)[1].rsplit(";", 1)[0])
 
 
-def _seed_backlog_render_repo(root: Path) -> None:
-    (root / "src" / "odylith").mkdir(parents=True, exist_ok=True)
-    (root / "pyproject.toml").write_text(
-        "[project]\nname = \"odylith\"\nversion = \"0.1.11\"\n",
-        encoding="utf-8",
-    )
+def _seed_backlog_render_repo(root: Path, *, product_repo: bool = True) -> None:
+    if product_repo:
+        (root / "src" / "odylith").mkdir(parents=True, exist_ok=True)
+        (root / "pyproject.toml").write_text(
+            "[project]\nname = \"odylith\"\nversion = \"0.1.11\"\n",
+            encoding="utf-8",
+        )
     (root / "odylith" / "registry" / "source").mkdir(parents=True, exist_ok=True)
     (root / "odylith" / "registry" / "source" / "component_registry.v1.json").write_text(
         "{\"version\": \"v1\", \"components\": []}\n",

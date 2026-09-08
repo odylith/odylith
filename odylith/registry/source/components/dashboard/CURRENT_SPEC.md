@@ -342,6 +342,9 @@ the child surfaces.
 - The bottom-right recovery dock is for global shell reopen actions such as the
   starter guide or upgrade spotlight. Do not add per-surface status reopen
   buttons there.
+- Returning focus when closing or opening a shell overlay belongs to that action.
+  A deferred callback must not override a later focus choice in a child surface
+  or the overlay itself. Preserve keyboard recovery without losing new input.
 - First-run Starter Guide is an activation path, not a marketing hero. It must
   keep one primary prompt obvious, keep repo-condition notices compact and near
   the decision they affect, and teach the Radar, Registry, Atlas, Casebook, and

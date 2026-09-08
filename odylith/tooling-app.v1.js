@@ -337,9 +337,7 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
       setUpgradeSpotlightDismissed(true);
       setUpgradeSpotlightHidden(true);
       if (upgradeReopen && !upgradeReopen.hidden) {
-        window.requestAnimationFrame(() => {
-          upgradeReopen.focus();
-        });
+        upgradeReopen.focus();
       }
     }
 
@@ -348,9 +346,7 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
       setUpgradeSpotlightDismissed(false);
       setUpgradeSpotlightHidden(false);
       if (upgradeSpotlightDismiss) {
-        window.requestAnimationFrame(() => {
-          upgradeSpotlightDismiss.focus();
-        });
+        upgradeSpotlightDismiss.focus();
       }
     }
 
@@ -1394,9 +1390,7 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
         }
         setWelcomeHidden(true);
         if (welcomeReopen && !welcomeReopen.hidden) {
-          window.requestAnimationFrame(() => {
-            welcomeReopen.focus();
-          });
+          welcomeReopen.focus();
         }
       });
     }
@@ -1943,12 +1937,10 @@ initToolingShellQuickTooltips();
 
   if (toggle && drawer && searchInput) {
     toggle.addEventListener("click", () => {
-      window.requestAnimationFrame(() => {
-        if (drawer.classList.contains("open")) {
-          searchInput.focus();
-          searchInput.select();
-        }
-      });
+      if (drawer.classList.contains("open")) {
+        searchInput.focus();
+        searchInput.select();
+      }
     });
   }
 

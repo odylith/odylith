@@ -337,9 +337,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       setUpgradeSpotlightDismissed(true);
       setUpgradeSpotlightHidden(true);
       if (upgradeReopen && !upgradeReopen.hidden) {
-        window.requestAnimationFrame(() => {
-          upgradeReopen.focus();
-        });
+        upgradeReopen.focus();
       }
     }
 
@@ -348,9 +346,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       setUpgradeSpotlightDismissed(false);
       setUpgradeSpotlightHidden(false);
       if (upgradeSpotlightDismiss) {
-        window.requestAnimationFrame(() => {
-          upgradeSpotlightDismiss.focus();
-        });
+        upgradeSpotlightDismiss.focus();
       }
     }
 
@@ -1394,9 +1390,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         }
         setWelcomeHidden(true);
         if (welcomeReopen && !welcomeReopen.hidden) {
-          window.requestAnimationFrame(() => {
-            welcomeReopen.focus();
-          });
+          welcomeReopen.focus();
         }
       });
     }
