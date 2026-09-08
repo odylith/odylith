@@ -10,6 +10,22 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Installed positive journey boundary (2026-09-08)
+
+One predeclared default development case now exercises the actual pinned full
+distribution, without source substitutions or retries. It stops before preview
+after 56.272514 seconds: author 44.169103 seconds; reviewer null after 10.830552
+seconds against its remaining 10.812170-second allowance. All maintained
+no-write-root hashes, including pending transactions, remain unchanged. This
+reproduces CB-303 on the installed path, not a successful under-60-second journey.
+No publication, generated-project browser, resumed-session or semantic-quality
+claim follows. Retain the first result under
+`/private/tmp/odylith-installed-journey.lYB7hH/`; do not turn it into another
+native retry or architecture change. CB-242 separately retains the automatic
+intervention-delivery gap. The full integrated acceptance below stays unchanged;
+the next mechanism comparison still requires the previously identified endpoint
+and deadline preflight, not a larger schema or relaxed 60/90/120 requirement.
+
 ### Current distribution and installed baseline proof (2026-09-08)
 
 Clean pushed revision `76e523cda0a602af224940de0bb44e54c73283f1` now has a
