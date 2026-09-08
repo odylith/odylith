@@ -4,6 +4,16 @@ Last updated: 2026-09-08
 
 ## Overview
 
+The published predecessor population is ordinary unactivated governance, not the
+later development JSON/journal formats: all eight current release wheels through
+v0.1.14 were inspected with asset-digest and build-provenance matching. Retained
+development recovery evidence remains protected. CB-305 now includes a concrete
+existing-install readiness failure: a public-CLI simulated upgrade succeeds but
+never activates the complete baseline required by proposal admission. The next
+repair belongs to the existing lifecycle activation owner, followed by actual
+published-runtime upgrade/readback and proposal-readiness proof. No general
+consumer schema converter or completed migration assessment is implied.
+
 The generation store uses the sealed write-set hash as its immutable address.
 Exact manifest bytes are compiled after that hash and sealed inside the outer
 ProductCreateTransaction; CONFIRM validates and copies them without generating a

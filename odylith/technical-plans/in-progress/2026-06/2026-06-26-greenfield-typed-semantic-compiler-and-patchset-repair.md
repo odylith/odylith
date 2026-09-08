@@ -10,6 +10,31 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Proven predecessor population and next activation repair (2026-09-08)
+
+Checkpoint a3641597 is pushed after frozen proof and staged governance validation.
+Independent inspection of all eight currently published wheels (v0.1.7-v0.1.14),
+with asset digest and build-provenance matching, establishes ordinary unactivated
+governance as the published predecessor population. The JSON publication and
+v3/v4 journals originate only in later unreleased development commits. A general
+converter for those formats is not an established consumer release prerequisite;
+their retained evidence and recorded-runtime recovery obligations remain protected.
+
+The next falsified product path is narrower: a complete unactivated 0.1.14-shaped
+installation upgrades successfully to 0.1.15 and reports Dashboard ready but has
+no active publication. The public-CLI simulator witness fails in 0.69 seconds;
+ordinary upgrade refresh bypasses the existing first-run activation owner.
+Reuse that owner and its repository lock to make a successful existing-install
+upgrade ready for Greenfield, without reparsing source or introducing another
+migration framework. Prove the actual published v0.1.14 runtime/launcher route,
+hosted existing-install refresh, preserved consumer truth, exact baseline readback,
+proposal readiness and failure recovery. Synthetic upgrade success is insufficient.
+Only then reassess the exact migration fingerprints. Evidence:
+`/private/tmp/odylith-sole-entry-final-proof.VaQSHc/predecessor-populations-review.md`
+and `published-predecessor-activation-before.xml`. Full quality, 60/90/120, host
+parity, current-generation dirty-edit disposition and the untouched holdout stay
+separate obligations; none is weakened by this population finding.
+
 ### Close interrupted-publication visibility before release proof (2026-09-08)
 
 The disclosed stopped-writer dashboard counterexample now passes: three SIGKILL
