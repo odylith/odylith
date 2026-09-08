@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 
@@ -193,3 +194,76 @@ def test_radar_zero_counts_and_score_are_visible(
         assert any("surfaces/backlog/list" in url for url in fallback_requests)
         assert any("surfaces/backlog/detail" in url for url in fallback_requests)
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+@pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("document_kind", ["plan", "spec"])
+def test_radar_standalone_documents_wrap_complete_unbroken_text(
+    browser_context, tmp_path: Path, width: int, document_kind: str,
+) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, *errors = _new_page(context)
+    page.set_viewport_size({"width": width, "height": 1100 if width == 1440 else 932})
+    opaque_reference = "aB7" * 80
+    paragraph = f"Reference {opaque_reference} must remain readable in full."
+    checkbox = f"Verify {opaque_reference} before recording success."
+    source = tmp_path / "reading.md"
+    source.write_text(
+        "---\nidea_id: B-995\ntitle: Reading record\nstatus: queued\n---\n\n"
+        f"## Validation\n{paragraph}\n\n## Rollout\n- [ ] {checkbox}\n",
+        encoding="utf-8",
+    )
+    entry = {"idea_id": "B-995", "title": "Reading record",
+             "idea_file": "reading.md", "promoted_to_plan_file": "reading.md"}
+    renderer = (render_backlog_ui._render_plan_html if document_kind == "plan"
+                else render_backlog_ui._render_idea_spec_html)
+    html = renderer(repo_root=tmp_path, index_output_path=tmp_path / "radar.html", entry=entry)
+    page.route("**/standalone-radar.html", lambda route: route.fulfill(
+        status=200, content_type="text/html", body=html,
+    ))
+    response = page.goto(base_url + "/standalone-radar.html", wait_until="networkidle")
+    assert response is not None and response.ok
+    paragraph_node = page.locator(".block").filter(
+        has=page.get_by_role("heading", name="Validation", exact=True),
+    ).locator("p")
+    checkbox_node = page.locator(".check-text")
+    assert paragraph_node.count() == checkbox_node.count() == 1
+    assert paragraph_node.inner_text() == paragraph
+    assert checkbox_node.inner_text() == checkbox
+    assert page.locator('input[type="checkbox"]').count() == 1
+    geometry = page.locator("body").evaluate("""body => {
+        const doc=body.ownerDocument, viewport=doc.documentElement.clientWidth;
+        const targets=Array.from(body.querySelectorAll('.block p,.check-text'));
+        const textOverflows=[], hiddenText=[], horizontalScroll=[];
+        for (const target of targets) {
+            const style=getComputedStyle(target);
+            if (style.display==='none'||style.visibility==='hidden'||parseInt(style.webkitLineClamp||'0',10)>0)
+                hiddenText.push(target.innerText);
+            const range=doc.createRange(); range.selectNodeContents(target);
+            for (const box of range.getClientRects()) {
+                if (box.left < -1 || box.right > viewport+1)
+                    textOverflows.push({text:target.innerText,left:box.left,right:box.right,viewport});
+                for (let owner=target;owner;owner=owner.parentElement) {
+                    const clip=owner.getBoundingClientRect(), css=getComputedStyle(owner);
+                    if (['hidden','clip','auto','scroll'].includes(css.overflowX) &&
+                        (box.left<clip.left-1||box.right>clip.right+1))
+                        hiddenText.push({text:target.innerText,owner:owner.className,axis:'x'});
+                    if (['hidden','clip'].includes(css.overflowY) &&
+                        (box.top<clip.top-1||box.bottom>clip.bottom+1))
+                        hiddenText.push({text:target.innerText,owner:owner.className,axis:'y'});
+                }
+            }
+            for (let owner=target;owner;owner=owner.parentElement) horizontalScroll.push(owner.scrollLeft);
+        }
+        return {viewport,bodyScrollWidth:body.scrollWidth,textOverflows,hiddenText,horizontalScroll};
+    }""")
+    screenshot = _failure_screenshot_path(f"radar-standalone-{document_kind}-{width}")
+    if screenshot is not None:
+        screenshot.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(screenshot), full_page=True)
+        screenshot.with_suffix(".json").write_text(json.dumps(geometry, indent=2) + "\n")
+    assert not geometry["textOverflows"], geometry
+    assert not geometry["hiddenText"], geometry
+    assert geometry["bodyScrollWidth"] <= geometry["viewport"] + 1, geometry
+    assert not any(geometry["horizontalScroll"]), geometry
+    _assert_clean_page(page, *errors)

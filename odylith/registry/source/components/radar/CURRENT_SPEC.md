@@ -5,7 +5,7 @@
   B-111 through B-117. The surface should show the umbrella, execution waves,
   release target `release-0-1-11`, and proof gates without turning Odylith Discipline
   into noisy task theater.
-Last updated: 2026-09-07
+Last updated: 2026-09-08
 
 
 ## Purpose
@@ -33,6 +33,16 @@ explains how to recover existing workstreams. A selection revision invalidates
 late responses even when the same workstream ID is selected again. The HTML
 renderer owns populated detail markup, not a competing empty/async path.
 CB-330 requires desktop/mobile source-empty and filtered recovery browser proof.
+
+### Standalone source fidelity
+`backlog_detail_pages.py` renders complete workstream and plan documents through
+the existing rich-text renderer. Section content and supplied rationale remain
+source-owned: no character clipping, sentence-count cap, vocabulary-specific
+paraphrase or spelling repair may replace the recorded text. Unbroken references
+wrap within the page rather than extending outside it or being hidden. Regression
+proof preserves late restrictions, list order and punctuation and measures actual
+text ranges at desktop and mobile widths. Concise source authoring is an upstream
+responsibility, not permission for the reader to discard meaning.
 
 ### Radar owns
 - The canonical Odylith workstream backlog under `odylith/radar/source/`.

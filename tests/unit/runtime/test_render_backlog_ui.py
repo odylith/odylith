@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from xml.etree import ElementTree
+
+import pytest
 
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import render_backlog_ui
@@ -426,7 +429,7 @@ def test_render_idea_spec_html_places_product_view_below_problem(tmp_path: Path)
     assert problem_idx < decision_idx < customer_idx
 
 
-def test_render_idea_spec_html_compacts_inventory_blobs_in_reader_sections(tmp_path: Path) -> None:
+def test_render_idea_spec_html_preserves_inventory_and_rationale_source(tmp_path: Path) -> None:
     repo_root = tmp_path
     idea_path = repo_root / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "2026-04-08-blob-example.md"
     idea_path.parent.mkdir(parents=True)
@@ -439,6 +442,12 @@ def test_render_idea_spec_html_compacts_inventory_blobs_in_reader_sections(tmp_p
         "Every claim maps back to source evidence, reviewer action, state transition, validation output, "
         "deferred scope, and a clear implementation stop condition before broader planning proceeds."
     )
+    rationale_bullets = [
+        f"why now: {long_inventory}",
+        "tradeoff: Define Boundary keeps sample product focused on one releaseable path while delaying scope not accepted in the confirmation.",
+        "deferred for now: anything outside this proof boundary waits: broad unproven scope.",
+        "ranking basis: Sample Product release readiness depends on preserving the confirmed product story, domain state, evidence, and proof boundary.",
+    ]
     idea_path.write_text(
         "\n".join(
             (
@@ -482,23 +491,21 @@ def test_render_idea_spec_html_compacts_inventory_blobs_in_reader_sections(tmp_p
             "status": "queued",
             "ordering_score": 42,
             "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-blob-example.md",
-            "rationale_bullets": [
-                f"why now: {long_inventory}",
-                "tradeoff: Define Boundary keeps sample product focused on one releaseable path while delaying scope not accepted in the confirmation.",
-                "deferred for now: anything outside this proof boundary waits: broad unproven scope.",
-                "ranking basis: Sample Product release readiness depends on preserving the confirmed product story, domain state, evidence, and proof boundary.",
-            ],
+            "rationale_bullets": rationale_bullets,
         },
     )
 
-    assert "Make product-owned systems explicit." in html
-    assert "Keep external systems separate." in html
-    assert "releaseable" not in html
-    assert "Keep the first release focused on the accepted path" in html
-    assert "Scope outside the accepted proof boundary waits for explicit evidence." in html
-    assert "Release readiness depends on the product story" in html
-    assert "Converts Long Source Records Into A Consistent Domain View" not in html
-    assert "Ranks Items By Recency" not in html
+    for title in ("Opportunity", "Why Now"):
+        section = html.split(f"<h2>{title}</h2>", 1)[1].split("</section>", 1)[0]
+        positions = []
+        for sentence in long_inventory.split(". "):
+            assert sentence in section, sentence
+            positions.append(section.index(sentence))
+        assert positions == sorted(positions)
+    rationale = html.split("<h2>Decision Basis</h2>", 1)[1].split("</article>", 1)[0]
+    rendered_items = ElementTree.fromstring(f"<div>{rationale}</div>").findall("./ul/li")
+    assert [" ".join(" ".join(item.itertext()).split()) for item in rendered_items] == rationale_bullets
+    assert "…" not in rationale
 
 
 def test_render_section_body_splits_dense_single_paragraph_prose() -> None:
@@ -516,6 +523,45 @@ def test_render_section_body_splits_dense_single_paragraph_prose() -> None:
     assert "<code>generated_utc</code>" in html
     assert "bounded refresh" in html
     assert "<code>pytest</code>" in html
+
+
+@pytest.mark.parametrize("section_title", ["Problem", "Validation"])
+def test_render_idea_spec_html_preserves_complete_late_constraints(
+    tmp_path: Path, section_title: str,
+) -> None:
+    sentences = [
+        "An operator reads every recorded observation before deciding whether an item can proceed to the next stage.",
+        "The record retains the original measurement, its observer and its collection time so another person can review the same evidence.",
+        "A separate reviewer checks the item against its recorded requirements and records any unresolved uncertainty without changing the original observation.",
+        "The visible result includes the decision and the evidence that supports it, including the final restriction stated at the end of this paragraph.",
+        "Do not publish the result until the independent reviewer has accepted the complete record.",
+    ]
+    final_paragraph = "A rejected item remains available for inspection. Rejection must never be presented as successful publication."
+    checklist = [
+        "Preserve the first observation and its original owner.",
+        "Verify that the final result remains unpublished when its review is incomplete.",
+    ]
+    idea = tmp_path / "full-record.md"
+    idea.write_text(
+        "---\nidea_id: B-996\ntitle: Full record\nstatus: queued\n---\n\n"
+        f"## {section_title}\n{' '.join(sentences)}\n\n{final_paragraph}\n\n"
+        + "\n".join(f"- [ ] {item}" for item in checklist) + "\n",
+        encoding="utf-8",
+    )
+    html = render_backlog_ui._render_idea_spec_html(
+        repo_root=tmp_path, index_output_path=tmp_path / "radar.html",
+        entry={"idea_id": "B-996", "title": "Full record", "idea_file": "full-record.md"},
+    )
+    section = html.split(f"<h2>{section_title}</h2>", 1)[1].split("</section>", 1)[0]
+    expected = [*sentences, *final_paragraph.split(". "), *checklist]
+    positions = []
+    for text in expected:
+        assert text in section, text
+        positions.append(section.index(text))
+    assert positions == sorted(positions)
+    assert section.count('class="check-text"') == 2
+    assert section.count('type="checkbox"') == 2
+    assert "…" not in section
 
 
 def test_render_section_body_keeps_wrapped_bullets_in_single_list_item() -> None:

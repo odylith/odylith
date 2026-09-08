@@ -10,6 +10,51 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Remove the remaining standalone Radar prose reinterpretation (2026-09-08)
+
+Two new source-fidelity controls reproduce loss of late publication restrictions
+and checklist content in standalone workstream specs. Four real-renderer browser
+controls also reproduce unbroken-text overflow in plan and spec pages at desktop
+and mobile widths. The old compaction test passes because it explicitly expects
+detail deletion and vocabulary-specific rewriting; preserve that historical
+result, then replace that mechanism expectation with complete source preservation.
+
+The owning module is backlog_detail_pages.py, currently 1245 lines. Remove its
+six private compaction helpers and their regex import, route both spec section
+sites through the existing rich-text renderer, and retain the supplied rationale.
+Use inherited text wrapping on both standalone pages; do not hide overflow, insert
+ellipsis, rewrite historical evidence or add a semantic repair layer. This should
+remove the source-loss class and shrink the owner below 1200 lines. Require exact
+late-constraint/list proof, text-range browser geometry, normal/empty/fallback
+controls and a fresh readback of the originally failing mobile B-142 plan.
+Evidence: radar-fidelity under the model-context audit root below.
+
+The deletion now shrinks the source owner from 1245 to 1142 lines. All 48 focused
+Radar unit checks and 15 desktop/mobile browser checks pass, including complete
+source text and normal, empty and unavailable-runtime fallback controls. The
+initial unit run passed 47 and failed the migrated rationale test's XML fragment:
+it selected an article through a section closing tag. Preserve that failure; the
+test-only boundary correction leaves exact source words, punctuation and list
+order checks intact. No new runtime parser, model role or schema was introduced.
+Broader package/rendering/transaction proof passes 155 controls; all 1101 install
+tests and 17 bundle/mirror checks pass. Independent readback passes four cells:
+the original B-142 plan and a long source spec at both widths. The two historical
+phrases remain exact; the 76px mobile page overflow becomes zero. Late review
+restrictions, rejection meaning, ordered checklists and supplied rationale remain
+visible. Source and served hashes stay unchanged and owned processes terminate.
+Preserve the original 7/8 failure separately. This closes the bounded source-local
+Radar fidelity/wrapping defect, not complete Greenfield UX or timing qualification.
+
+The separate three-alternative timing audit finds only about 3.1 milliseconds of
+local work between the laboratory author duration and review allowance. There is
+no demonstrated seconds-scale local scheduling opportunity; full review depends
+on the completed candidate. Prior one-call admission, source-only review, profile
+switching and compaction experiments do not earn another unchanged attempt.
+An explicit API transport remains conditional on the existing endpoint question,
+truthful model/effort identity and absolute-deadline preflight. No transport is
+adopted and no speedup is claimed. Preserve all deadlines and release obligations.
+Evidence: next-mechanism-review.md under the same audit root.
+
 ### Re-adjudicate the failure before changing its mechanism (2026-09-08)
 
 Independent participant-impact review qualifies the laboratory's earlier P1.
