@@ -71,20 +71,20 @@ def run_with_greenfield_managed_mutation_boundary(
     *,
     repo_root: Path,
     command_tokens: Sequence[str],
-    operation: Callable[[], int],
+    operation: Callable[[int | None], int],
 ) -> int:
     """Keep the previous complete view selected until a successful successor is sealed."""
 
     root = Path(repo_root).expanduser().resolve()
     if not command_may_mutate_greenfield_managed_paths(command_tokens):
-        return operation()
+        return operation(None)
     try:
-        with greenfield_repository_lock.greenfield_repository_lock(root):
+        with greenfield_repository_lock.greenfield_repository_lock(root) as descriptor:
             GreenfieldCommitJournal.recover_pending_journals(repo_root=root)
             state = greenfield_generation_state.read_active_publication(root)
             pinned = greenfield_generation_store.require_greenfield_working_generation(root) if state else None
             active = greenfield_generation_state.active_generation_identity(root)
-            result = operation()
+            result = operation(descriptor)
             if result != 0:
                 return result
             if pinned is None:

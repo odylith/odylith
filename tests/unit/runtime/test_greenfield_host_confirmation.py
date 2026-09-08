@@ -460,7 +460,7 @@ def test_hash_bound_confirm_cannot_be_retargeted_by_a_newer_pending_proposal(
     first_path, _first_receipt, first_hash = _stage_pending_transaction(tmp_path)
     existing = tmp_path / "odylith/radar/source/operator-change.md"
 
-    def publish_operator_change() -> int:
+    def publish_operator_change(_descriptor) -> int:
         existing.parent.mkdir(parents=True, exist_ok=True)
         existing.write_text("different preconfirm evidence\n", encoding="utf-8")
         return 0

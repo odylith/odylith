@@ -739,7 +739,7 @@ def test_post_confirm_navigation_requires_the_reviewed_generation_workspace(tmp_
         transaction_hash=transaction_hash,
     ) == ()
 
-    def later_writer():
+    def later_writer(_repository_lock_fd):
         compatibility_dashboard.with_name("tooling-shell.html").write_text("later complete shell\n", encoding="utf-8")
         return 0
 

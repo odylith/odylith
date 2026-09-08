@@ -244,6 +244,11 @@ def test_greenfield_install_smoke_requires_author_unavailable_without_writes(
         ),
     )
     monkeypatch.setattr(module, "begin_installed_write_audit", lambda **kwargs: audit)
+    baseline_checks: list[Path] = []
+    monkeypatch.setattr(
+        module, "_require_greenfield_baseline",
+        lambda **kwargs: baseline_checks.append(kwargs["repo_root"]),
+    )
 
     def fake_run(**kwargs):  # noqa: ANN001
         command = tuple(str(part) for part in kwargs["command"])
@@ -276,6 +281,7 @@ def test_greenfield_install_smoke_requires_author_unavailable_without_writes(
     else:
         module._greenfield_unavailable_author_smoke(repo_root=repo_root, odylith=odylith, env=env)
     assert finished == [True]
+    assert baseline_checks == [repo_root]
     assert commands[0] == (str(odylith), "show", "--repo-root", ".")
     assert len(commands) == 2 and "propose" in commands[1] and "--confirm" not in commands[1]
 
@@ -509,6 +515,14 @@ def test_upgrade_cycle_proves_dashboard_refresh_after_each_target_activation(
     monkeypatch.setattr(module, "_install_cwd", lambda root: root)
     monkeypatch.setattr(module, "_seed_legacy_compass_archive_fixture", lambda **kwargs: history_checks.append("seed"))
     monkeypatch.setattr(module, "_require_compass_history_layout", lambda **kwargs: history_checks.append("check"))
+    monkeypatch.setattr(
+        module, "_greenfield_unavailable_author_smoke",
+        lambda **kwargs: commands.append(("greenfield-ready",)),
+    )
+    monkeypatch.setattr(
+        module, "_require_greenfield_baseline",
+        lambda **kwargs: commands.append(("baseline-readback",)),
+    )
 
     module._upgrade_cycle(
         repo_root=repo_root,
@@ -527,6 +541,82 @@ def test_upgrade_cycle_proves_dashboard_refresh_after_each_target_activation(
     assert all(command[-3:] == ("refresh", "--repo-root", ".") for command in dashboard_commands)
     assert history_checks == ["seed", "check", "seed", "check", "seed", "check"]
     assert sum(1 for command in commands if command == ("bash", str(install_script))) == 4
+    for index, command in enumerate(commands):
+        if "dashboard" in command:
+            assert commands[index - 1] == ("greenfield-ready",)
+            assert commands[index + 1] == ("baseline-readback",)
+
+
+@pytest.mark.parametrize("defect", ["", "no_publication", "working_drift", "published_drift", "incomplete"])
+def test_greenfield_baseline_probe_uses_installed_readback_contract(
+    monkeypatch, tmp_path: Path, defect: str,
+) -> None:
+    from odylith import cli
+    from odylith.runtime.domain_intelligence import greenfield_create_baseline as baseline
+    from odylith.runtime.domain_intelligence import greenfield_generation_store as store
+    from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
+
+    module = _module()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    if defect != "no_publication":
+        if defect == "incomplete":
+            empty_surface = repo_root / cli._FIRST_RUN_SURFACE_OUTPUTS[1]
+            empty_surface.parent.mkdir(parents=True, exist_ok=True)
+            empty_surface.touch()
+            # Simulate a publisher defect with internally consistent but incomplete bytes.
+            with monkeypatch.context() as patch:
+                patch.setattr(baseline, "_require_completed_baseline_surfaces", lambda *args: None)
+                activate_greenfield_baseline_fixture(repo_root)
+        else:
+            activate_greenfield_baseline_fixture(repo_root)
+        generation = store.require_greenfield_working_generation(repo_root)
+        if defect in {"working_drift", "published_drift"}:
+            root = repo_root if defect == "working_drift" else generation.repository_root
+            (root / "odylith/radar/radar.html").write_text("changed\n", encoding="utf-8")
+
+    commands: list[list[str]] = []
+
+    def run_source_contract(**kwargs):  # noqa: ANN001
+        command = kwargs["command"]
+        commands.append(command)
+        assert command[:4] == [str(repo_root / ".odylith/runtime/current/bin/python"), "-I", "-B", "-c"]
+        assert kwargs["cwd"] == repo_root
+        monkeypatch.chdir(repo_root)
+        # This unit test exercises the exact probe, not an installed-wheel proof.
+        exec(command[4], {})
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(module, "_run", run_source_contract)
+    if defect:
+        expected_error = {
+            "no_publication": "no active immutable generation",
+            "working_drift": "managed files differ from the published generation",
+            "published_drift": "immutable generation bytes differ from the sealed manifest",
+            "incomplete": "requires a complete rendered surface",
+        }[defect]
+        with pytest.raises(RuntimeError, match=expected_error):
+            module._require_greenfield_baseline(repo_root=repo_root, env={})
+    else:
+        module._require_greenfield_baseline(repo_root=repo_root, env={})
+    assert len(commands) == 1
+
+
+def test_greenfield_smoke_cannot_repair_a_missing_baseline_before_readiness(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    module = _module()
+
+    def refuse_baseline(**kwargs):  # noqa: ANN001
+        raise RuntimeError("Greenfield has no active immutable generation")
+
+    monkeypatch.setattr(module, "_require_greenfield_baseline", refuse_baseline)
+    monkeypatch.setattr(module, "_run", lambda **kwargs: pytest.fail("must not run show or repair"))
+    monkeypatch.setattr(module, "begin_installed_write_audit", lambda **kwargs: pytest.fail("must not propose"))
+    with pytest.raises(RuntimeError, match="no active immutable generation"):
+        module._greenfield_unavailable_author_smoke(
+            repo_root=tmp_path, odylith=tmp_path / ".odylith/bin/odylith", env={},
+        )
 
 
 def test_install_clean_previous_release_resets_generated_install_state(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001

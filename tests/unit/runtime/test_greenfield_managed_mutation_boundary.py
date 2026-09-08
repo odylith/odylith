@@ -141,7 +141,7 @@ def _run(repo: Path, operation) -> int:
     return greenfield_managed_mutation_boundary.run_with_greenfield_managed_mutation_boundary(
         repo_root=repo,
         command_tokens=("radar", "refresh"),
-        operation=operation,
+        operation=lambda _descriptor: operation(),
     )
 
 

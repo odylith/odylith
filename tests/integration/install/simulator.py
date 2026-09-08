@@ -371,7 +371,7 @@ class InstallLifecycleSimulator:
         del check, capture_output, text, kwargs
         version = Path(str(command[0])).expanduser().resolve().parent.parent.name
         stderr = self._smoke_failures.get(version, "")
-        return SimpleNamespace(returncode=1 if stderr else 0, stdout="", stderr=stderr)
+        return SimpleNamespace(args=command, returncode=1 if stderr else 0, stdout="", stderr=stderr)
 
     def _fake_first_run_sync(self, argv: list[str]) -> int:
         del argv

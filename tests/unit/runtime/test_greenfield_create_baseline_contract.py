@@ -94,7 +94,7 @@ def test_compile_read_lock_excludes_writers_through_transaction_verification(tmp
     attempts = []
     writes = []
 
-    def partial_writer():
+    def partial_writer(_descriptor):
         writes.append(True)
         return 1
 

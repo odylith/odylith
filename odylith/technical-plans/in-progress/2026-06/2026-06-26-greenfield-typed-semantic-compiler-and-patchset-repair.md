@@ -10,7 +10,60 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
-### Proven predecessor population and next activation repair (2026-09-08)
+### Upgrade readiness repair and installed proof gate (2026-09-08)
+
+The readiness repair now has empty-predecessor installed proof. The current
+upgrade parent retains its existing writer lock through a fixed render-only worker
+launched by the target runtime. Only that descriptor is inherited by renderer
+subprocesses; the parent alone activates the initial baseline or publishes the
+successful successor. Closing an owner does not explicitly unlock surviving
+children. One shared dashboard-completion owner requires exactly one successful
+terminal result per selected surface; queued or malformed coverage cannot activate
+the baseline. Upgrade refresh failure returns nonzero and cannot publish partial
+output as success. No semantic parser, repair loop or general dispatch bypass was
+added. The lock capability is not authentication against a same-UID attacker.
+
+The original readiness simulator now passes all 10 cases in 19.52 seconds. Shared
+completion/baseline/renderer controls pass 127 tests in 1.79 seconds; real descriptor
+transport and process-death controls pass 25 in 8.79 seconds; the focused CLI owner
+passes six. The root CLI migration-assessment failure is preserved. These receipts
+live in `/private/tmp/odylith-sole-entry-final-proof.VaQSHc/`. They do not replace
+installed upgrade, recovery, model quality, host parity or latency evidence.
+
+The unchanged 3,157-file tree f7f2b86293112672984cab5fc8e3fb222ec1df90516eb3c6130e79dd0f866f92
+passes 4,500 runtime tests and full distribution build. Strengthened canonical
+local-release smoke verifies readiness before manual refresh. An independent
+published-v0.1.14 installation preserves source bytes, pin and active runtime on
+the exact migration-required refusal, then the hosted installer upgrades that same
+repository and passes complete baseline/readback and unavailable-author safety.
+The candidate manifest is unchanged. Reports and preserved source bytes are at
+`/private/tmp/odylith-published-upgrade-proof.hxW8Sw/`. This empty predecessor has
+no Atlas diagrams; it is not populated-diagram migration or model quality proof.
+
+The broad install run records 1,379 passes and three stale callback failures;
+browser records 310 passes, two failures and one known diagnostic skip. Two test
+callbacks now accept the explicit lock descriptor. The historical Casebook browser
+fixture now publishes its real refresh through the public dashboard writer instead
+of bypassing publication. All 80 tests in those three owners pass in 13.96 seconds,
+with original assertions preserved and an added successor/readback assertion.
+The separate Registry filtered-empty timeout did not recur in ten exact unchanged
+executions or eleven neighboring controls. Its cause remains unclassified; do not
+call it fixed or weaken the two-second assertion. Preserve passive failure-state
+capture during the next required frozen browser run. The original broad receipt
+remains failing. Report: `/private/tmp/odylith-registry-empty-replay.Anv7ST/review.md`.
+The final install unit lane passes all 1,156 tests in 101.04 seconds. A combined
+browser-owner run records twelve passes and the same filtered-empty timeout on
+desktop Radar instead of Registry. This cross-surface recurrence now warrants
+capturing shell navigation, focus and input events; its cause is not yet proved.
+The successful installed-witness consumer is cleaned, with reports and archived
+source bytes retained. Next: commit the upgrade development checkpoint with these
+qualification boundaries, then resolve the recurring input failure from captured
+behavior. Do not assert full browser or release acceptance. Keep the exact migration assessment open until its
+consumer compatibility scope is evidenced; a clean worktree is not qualification.
+Keep failed-render working-drift recovery and broader descendant cleanup explicitly
+open; do not claim that a nonzero exit itself restores the previous working tree.
+
+### Published predecessor evidence (2026-09-08)
 
 Checkpoint a3641597 is pushed after frozen proof and staged governance validation.
 Independent inspection of all eight currently published wheels (v0.1.7-v0.1.14),
@@ -20,11 +73,11 @@ v3/v4 journals originate only in later unreleased development commits. A general
 converter for those formats is not an established consumer release prerequisite;
 their retained evidence and recorded-runtime recovery obligations remain protected.
 
-The next falsified product path is narrower: a complete unactivated 0.1.14-shaped
+The original falsified product path was narrower: a complete unactivated 0.1.14-shaped
 installation upgrades successfully to 0.1.15 and reports Dashboard ready but has
 no active publication. The public-CLI simulator witness fails in 0.69 seconds;
 ordinary upgrade refresh bypasses the existing first-run activation owner.
-Reuse that owner and its repository lock to make a successful existing-install
+The repair above reuses that owner and its repository lock to make a successful existing-install
 upgrade ready for Greenfield, without reparsing source or introducing another
 migration framework. Prove the actual published v0.1.14 runtime/launcher route,
 hosted existing-install refresh, preserved consumer truth, exact baseline readback,

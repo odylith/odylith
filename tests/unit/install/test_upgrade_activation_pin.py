@@ -30,7 +30,7 @@ def _installed_case(tmp_path, monkeypatch, pin_intent):
     assert sim.install("1.2.3") == 0
     if pin_intent == "absent":
         # Publish the fixture's explicit absent-pin precondition, not unmanaged drift.
-        def remove_fixture_pin():
+        def remove_fixture_pin(_repository_lock_fd):
             pin_path.unlink()
             return 0
 

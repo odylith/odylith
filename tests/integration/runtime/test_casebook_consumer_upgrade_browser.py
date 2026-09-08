@@ -4,10 +4,11 @@ import json
 import subprocess
 from pathlib import Path
 
+from odylith import cli
 from odylith.install import upgrade_reporting
 from odylith.install.casebook_metadata_migration import STATUS_FSM_MIGRATION_ID
 from odylith.install.casebook_metadata_migration import MIGRATION_ID as CASEBOOK_COMPACT_MIGRATION_ID
-from odylith.runtime.governance import sync_workstream_artifacts
+from odylith.runtime.domain_intelligence import greenfield_generation_store
 
 from tests.integration.install.simulator import InstallLifecycleSimulator
 from tests.integration.runtime.surface_browser_test_support import (
@@ -156,11 +157,13 @@ def test_dirty_consumer_upgrade_normalizes_casebook_and_browser_stale_url_state(
     )
     assert change_review["manual_review_required"]["paths"] == ["consumer-notes.md"]
 
-    assert sync_workstream_artifacts.refresh_dashboard_surfaces(
-        repo_root=sim.repo_root,
-        surfaces=("casebook", "tooling_shell"),
-        runtime_mode="standalone",
-    ) == 0
+    previous = greenfield_generation_store.require_greenfield_working_generation(sim.repo_root)
+    assert cli.main([
+        "dashboard", "refresh", "--repo-root", str(sim.repo_root),
+        "--surfaces", "casebook,tooling_shell", "--runtime-mode", "standalone",
+    ]) == 0
+    current = greenfield_generation_store.require_greenfield_working_generation(sim.repo_root)
+    assert current.write_set_hash != previous.write_set_hash
     payload_text = (sim.repo_root / "odylith" / "casebook" / "casebook-payload.v1.js").read_text(encoding="utf-8")
     assert "ForwardFixUpdatedLocallyPendingPlatformReleaseDeploy" not in payload_text
     assert "PrivateJobsRunnerManifes" not in payload_text

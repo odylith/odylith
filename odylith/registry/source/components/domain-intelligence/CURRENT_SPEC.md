@@ -8,10 +8,19 @@ The published predecessor population is ordinary unactivated governance, not the
 later development JSON/journal formats: all eight current release wheels through
 v0.1.14 were inspected with asset-digest and build-provenance matching. Retained
 development recovery evidence remains protected. CB-305 now includes a concrete
-existing-install readiness failure: a public-CLI simulated upgrade succeeds but
-never activates the complete baseline required by proposal admission. The next
-repair belongs to the existing lifecycle activation owner, followed by actual
-published-runtime upgrade/readback and proposal-readiness proof. No general
+existing-install readiness failure: a public-CLI simulated upgrade succeeded but
+never activated the complete baseline required by proposal admission. The existing
+activation owner now completes only after terminal successful dashboard rendering.
+The upgrade parent retains its writer lock through the target-runtime render-only
+worker and rendering subprocesses; only the parent activates or publishes. Failure
+and incomplete result coverage cannot authorize publication. Focused lifecycle,
+completion and process-death checks pass. A frozen full runtime run passes 4,500
+tests. Strengthened installed smoke and a genuine published-v0.1.14 refusal followed
+by same-repository hosted upgrade prove baseline/readback and unavailable-author
+safety for an empty predecessor. They do not prove model quality or populated
+governance migration. Failed
+rendering may leave working drift requiring recovery; this repair does not claim
+automatic restoration or general descendant cleanup. No general
 consumer schema converter or completed migration assessment is implied.
 
 The generation store uses the sealed write-set hash as its immutable address.

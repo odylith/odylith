@@ -295,3 +295,82 @@ def test_first_install_publishes_writes_made_after_bootstrap_activation(tmp_path
     assert final.write_set_hash != baseline_generation[0].write_set_hash
     assert (final.repository_root / "odylith/registry/registry.html").read_bytes() == b"Complete final install view\n"
     assert (baseline_generation[0].repository_root / "odylith/registry/registry.html").read_bytes() != b"Complete final install view\n"
+
+
+def _dashboard_renderer(monkeypatch, render):
+    monkeypatch.setattr(cli, "_sync_workstream_artifacts", lambda: SimpleNamespace(
+        normalize_dashboard_surfaces=lambda values: tuple(values[0].split(",")),
+        refresh_dashboard_surfaces=render,
+    ))
+
+
+def test_dashboard_refresh_activates_complete_baseline_inside_writer_lock(tmp_path, monkeypatch):
+    def render(**kwargs):
+        with pytest.raises(lock.GreenfieldRepositoryBusyError):
+            with lock.greenfield_repository_lock(tmp_path):
+                pytest.fail("dashboard completion lost writer ownership")
+        _complete(tmp_path)
+        return kwargs.get("on_completed", lambda: 0)()
+
+    _dashboard_renderer(monkeypatch, render)
+    assert cli.main(["dashboard", "refresh", "--repo-root", str(tmp_path), "--force"]) == 0
+    store.require_greenfield_working_generation(tmp_path)
+
+
+@pytest.mark.parametrize("defect", ("missing", "empty", "placeholder", "failed", "queued", "dry-run"))
+def test_dashboard_cannot_activate_incomplete_or_unfinished_refresh(tmp_path, monkeypatch, capsys, defect):
+    _complete(tmp_path)
+    target = tmp_path / "odylith/registry/registry.html"
+    if defect == "missing":
+        target.unlink()
+    elif defect == "empty":
+        target.write_bytes(b"")
+    elif defect == "placeholder":
+        (tmp_path / "odylith/index.html").write_text(customer_shell_index_placeholder_source(repo_root=tmp_path))
+
+    def render(**kwargs):
+        if defect == "failed":
+            return 2
+        if defect in {"queued", "dry-run"}:
+            return 0
+        return kwargs.get("on_completed", lambda: 0)()
+
+    _dashboard_renderer(monkeypatch, render)
+    args = ["dashboard", "refresh", "--repo-root", str(tmp_path)]
+    if defect == "dry-run":
+        args.append("--dry-run")
+    rc = cli.main(args)
+    assert state.read_active_publication(tmp_path) is None
+    if defect not in {"queued", "dry-run"}:
+        assert rc != 0
+    if defect in {"empty", "placeholder"}:
+        assert "baseline activation" in capsys.readouterr().err
+
+
+def test_dashboard_active_generation_uses_outer_successor_not_baseline_readmission(tmp_path, monkeypatch):
+    _complete(tmp_path)
+    previous = _activate(tmp_path)
+    monkeypatch.setattr(baseline, "activate_completed_greenfield_baseline_locked", lambda **_: pytest.fail("re-admitted in-flight working writes"))
+
+    def render(**kwargs):
+        (tmp_path / "odylith/registry/registry.html").write_bytes(b"Updated registry view\n")
+        return kwargs.get("on_completed", lambda: 0)()
+
+    _dashboard_renderer(monkeypatch, render)
+    assert cli.main(["dashboard", "refresh", "--repo-root", str(tmp_path)]) == 0
+    current = store.require_greenfield_working_generation(tmp_path)
+    assert state.read_active_publication(tmp_path) != previous
+    assert (current.repository_root / "odylith/registry/registry.html").read_bytes() == b"Updated registry view\n"
+
+
+def test_dashboard_activation_failure_is_not_success(tmp_path, monkeypatch, capsys):
+    _complete(tmp_path)
+
+    def fail(**_):
+        raise OSError("activation write failed")
+
+    monkeypatch.setattr(baseline, "activate_completed_greenfield_baseline_locked", fail)
+    _dashboard_renderer(monkeypatch, lambda **kwargs: kwargs.get("on_completed", lambda: 0)())
+    assert cli.main(["dashboard", "refresh", "--repo-root", str(tmp_path)]) == 1
+    assert "activation write failed" in capsys.readouterr().err
+    assert state.read_active_publication(tmp_path) is None

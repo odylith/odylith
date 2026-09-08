@@ -18,7 +18,7 @@ from types import SimpleNamespace
 from typing import Iterator, Mapping, Sequence
 
 from odylith import __version__
-from odylith.install import migration_runtime, upgrade_reporting
+from odylith.install import migration_runtime, upgrade_dashboard, upgrade_reporting
 from odylith.runtime.common.dirty_overlap import summarize_dirty_overlap
 from odylith.runtime.common.command_surface import (
     ensure_nested_subcommand_repo_root_args,
@@ -27,6 +27,7 @@ from odylith.runtime.common.command_surface import (
 from odylith.runtime.common.environment import env_flag_enabled
 from odylith.runtime.common.repo_shape import PRODUCT_REPO_ROLE, repo_role_from_local_shape
 from odylith.runtime.domain_intelligence import greenfield_managed_mutation_boundary
+from odylith.runtime.governance import dashboard_refresh_contract
 from odylith.runtime.surfaces import tooling_dashboard_version_state
 
 _CONTEXT_ENGINE_FEATURE_PACK_COMMANDS = {"warmup", "serve", "benchmark", "odylith-remote-sync"}
@@ -41,15 +42,8 @@ _CONTEXT_ENGINE_SHORTCUTS = (
 )
 _CONTEXT_ENGINE_SHORTCUT_TARGETS = {command: target for command, target, _help_text in _CONTEXT_ENGINE_SHORTCUTS}
 _EXPLICIT_CONTEXT_ENGINE_SHORTCUTS = frozenset({"bootstrap", "context", "query"})
-_FIRST_RUN_SURFACE_OUTPUTS = (
-    Path("odylith/index.html"),
-    Path("odylith/radar/radar.html"),
-    Path("odylith/atlas/atlas.html"),
-    Path("odylith/compass/compass.html"),
-    Path("odylith/registry/registry.html"),
-    Path("odylith/casebook/casebook.html"),
-)
-_DEFAULT_DASHBOARD_REFRESH_SURFACES = ("tooling_shell", "radar", "compass")
+_FIRST_RUN_SURFACE_OUTPUTS = dashboard_refresh_contract.FIRST_RUN_SURFACE_OUTPUTS
+_DEFAULT_DASHBOARD_REFRESH_SURFACES = upgrade_dashboard.UPGRADE_DASHBOARD_SURFACES
 _DEFAULT_DASHBOARD_REFRESH_SURFACES_CSV = ",".join(_DEFAULT_DASHBOARD_REFRESH_SURFACES)
 _START_NARROWING_REASON_LABELS = {
     "Need one code path.": "Name one code path, workstream, component, bug, or file before implementation.",
@@ -625,18 +619,7 @@ def _bootstrap_first_run_surfaces(
             )
     if render_rc != 0 or _missing_first_run_surfaces(repo_root=resolved_repo_root):
         return render_rc or 1
-    from odylith.runtime.domain_intelligence import greenfield_create_baseline, greenfield_generation_state
-
-    try:
-        # Protected refreshes publish through their outer managed-writer lock.
-        if greenfield_generation_state.read_active_publication(resolved_repo_root) is None:
-            greenfield_create_baseline.activate_completed_greenfield_baseline_locked(
-                repo_root=resolved_repo_root, required_surface_outputs=_FIRST_RUN_SURFACE_OUTPUTS,
-            )
-    except (OSError, RuntimeError, ValueError) as exc:
-        print(f"Odylith baseline activation needs recovery: {exc}", file=sys.stderr)
-        return 1
-    return 0
+    return dashboard_refresh_contract.activate_initial_dashboard_baseline(repo_root=resolved_repo_root)
 
 
 def _is_first_install(*, repo_root: Path) -> bool:
@@ -1127,6 +1110,7 @@ def _prepare_install_upgrade_spotlight_from_previous(
 def _refresh_dashboard_after_upgrade(
     *,
     repo_root: Path,
+    repository_lock_fd: int,
     emit_output: bool = True,
     compact_output: bool = False,
     details: dict[str, object] | None = None,
@@ -1161,6 +1145,8 @@ def _refresh_dashboard_after_upgrade(
             runtime_mode="auto",
             atlas_sync=False,
             force=True,
+            on_completed=lambda: dashboard_refresh_contract.activate_initial_dashboard_baseline(repo_root=repo_root),
+            repository_lock_fd=repository_lock_fd,
         )
         if details is not None:
             details.update({"returncode": render_rc, "success": render_rc == 0})
@@ -1170,30 +1156,11 @@ def _refresh_dashboard_after_upgrade(
                 "Odylith upgrade succeeded, but dashboard refresh failed. Retry with `./.odylith/bin/odylith dashboard refresh --repo-root . --force`.",
             )
         return True, "Dashboard refreshed. Open `odylith/index.html` to see what landed in this release."
-    command = [
-        str(launcher_path),
-        "dashboard",
-        "refresh",
-        "--repo-root",
-        str(repo_root),
-        "--surfaces",
-        _DEFAULT_DASHBOARD_REFRESH_SURFACES_CSV,
-        "--force",
-    ]
     if details is not None:
-        details.update(
-            {
-                "mode": "launcher",
-                "command": command,
-            }
-        )
+        details["mode"] = "launcher"
     try:
-        completed = subprocess.run(
-            command,
-            cwd=str(repo_root),
-            check=False,
-            capture_output=True,
-            text=True,
+        completed = upgrade_dashboard.run_dashboard_renderer(
+            repo_root=repo_root, repository_lock_fd=repository_lock_fd,
         )
     except OSError as exc:
         if details is not None:
@@ -1206,6 +1173,7 @@ def _refresh_dashboard_after_upgrade(
     if details is not None:
         details.update(
             {
+                "command": completed.args,
                 "returncode": completed.returncode,
                 "stdout": completed.stdout,
                 "stderr": completed.stderr,
@@ -1226,6 +1194,10 @@ def _refresh_dashboard_after_upgrade(
             False,
             "Odylith upgrade succeeded, but dashboard refresh failed. Retry with `./.odylith/bin/odylith dashboard refresh --repo-root . --force`.",
         )
+    if dashboard_refresh_contract.activate_initial_dashboard_baseline(repo_root=repo_root) != 0:
+        if details is not None:
+            details["success"] = False
+        return False, "Odylith upgrade succeeded, but dashboard activation needs recovery. Retry `odylith dashboard refresh --repo-root . --force`."
     return True, "Dashboard refreshed. Open `odylith/index.html` to see what landed in this release."
 
 
@@ -1309,6 +1281,7 @@ def _cmd_install_common(
                 target_version=target_version,
                 release_repo=release_repo,
                 source_repo=None,
+                repository_lock_fd=args.repository_lock_fd,
                 write_pin=True,
                 dry_run=bool(getattr(args, "dry_run", False)),
                 verbose=bool(getattr(args, "verbose", False)),
@@ -1437,17 +1410,24 @@ def _cmd_install_common(
                     summary=upgrade_summary,
                     release_repo=release_repo,
                 )
-        _refreshed, refresh_message = _refresh_dashboard_after_upgrade(repo_root=summary.repo_root)
+        _refreshed, refresh_message = _refresh_dashboard_after_upgrade(
+            repo_root=summary.repo_root, repository_lock_fd=args.repository_lock_fd,
+        )
         print(refresh_message)
+        if not _refreshed:
+            return 1
     elif install_migration_refresh_required or install_upgrade_spotlight_written:
         refreshed, refresh_message = _refresh_dashboard_after_upgrade(
             repo_root=summary.repo_root,
             compact_output=compact_output,
+            repository_lock_fd=args.repository_lock_fd,
         )
         if compact_output and refreshed:
             _print_install_progress("done", "Dashboard ready.")
         else:
             print(refresh_message)
+        if not refreshed:
+            return 1
     dashboard_path = summary.repo_root / "odylith" / "index.html"
     opened_dashboard, open_message = _maybe_open_dashboard_in_browser(
         dashboard_path=dashboard_path,
@@ -1592,8 +1572,12 @@ def _cmd_reinstall(args: argparse.Namespace) -> int:
             )
             return render_rc or 1
     else:
-        _refreshed, refresh_message = _refresh_dashboard_after_upgrade(repo_root=requested_repo_root)
+        _refreshed, refresh_message = _refresh_dashboard_after_upgrade(
+            repo_root=requested_repo_root, repository_lock_fd=args.repository_lock_fd,
+        )
         print(refresh_message)
+        if not _refreshed:
+            return 1
 
     active_version = str(summary.active_version or "").strip()
     previous_version = str(summary.previous_version or "").strip()
@@ -1826,6 +1810,7 @@ def _cmd_upgrade(args: argparse.Namespace) -> int:
     dashboard_details: dict[str, object] = {}
     dashboard_started_at = datetime.now(UTC)
     refreshed, message = _refresh_dashboard_after_upgrade(
+        repository_lock_fd=args.repository_lock_fd,
         repo_root=requested_repo_root,
         emit_output=not output_json,
         compact_output=compact_output,
@@ -1858,14 +1843,14 @@ def _cmd_upgrade(args: argparse.Namespace) -> int:
             name="dashboard_refresh",
             started_at=dashboard_started_at,
             finished_at=dashboard_finished_at,
-            status="ok" if refreshed else "warning",
+            status="ok" if refreshed else "failed",
             details=dashboard_details,
         )
     )
     command_finished_at = datetime.now(UTC)
     report: dict[str, object] = {
         "schema": "odylith.upgrade.report.v1",
-        "status": "succeeded" if refreshed else "succeeded_with_warnings",
+        "status": "succeeded" if refreshed else "failed",
         "repo_root": str(requested_repo_root),
         "started_at": command_started_at.isoformat(),
         "finished_at": command_finished_at.isoformat(),
@@ -1893,7 +1878,7 @@ def _cmd_upgrade(args: argparse.Namespace) -> int:
     )
     if output_json:
         print(json.dumps(report, indent=2, sort_keys=True))
-        return 0
+        return 0 if refreshed else 1
     if compact_output:
         if refreshed:
             _print_install_progress("done", "Dashboard ready.")
@@ -1942,7 +1927,7 @@ def _cmd_upgrade(args: argparse.Namespace) -> int:
         print("Rollback command: `./.odylith/bin/odylith rollback --repo-root . --previous`")
         print("Odylith keeps the active runtime and one rollback target locally.")
     _print_retention_warnings(summary)
-    return 0
+    return 0 if refreshed else 1
 
 
 def _cmd_rollback(args: argparse.Namespace) -> int:
@@ -2333,6 +2318,12 @@ def _cmd_dashboard_refresh(args: argparse.Namespace) -> int:
         dry_run=bool(args.dry_run),
         verbose=bool(getattr(args, "verbose", False)),
         force=bool(getattr(args, "force", False)),
+        on_completed=(
+            lambda: dashboard_refresh_contract.activate_initial_dashboard_baseline(
+                repo_root=Path(args.repo_root).expanduser().resolve(),
+            )
+        ) if "tooling_shell" in surfaces else None,
+        repository_lock_fd=getattr(args, "repository_lock_fd", None),
     )
 
 
@@ -3654,7 +3645,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _dispatch_main(argv: list[str] | None = None) -> int:
+def _dispatch_main(argv: list[str] | None = None, *, repository_lock_fd: int | None = None) -> int:
     tokens = [str(token) for token in (argv or sys.argv[1:])]
     if tokens:
         if tokens[0] in _CONTEXT_ENGINE_SHORTCUT_TARGETS and tokens[0] not in _EXPLICIT_CONTEXT_ENGINE_SHORTCUTS:
@@ -3677,7 +3668,9 @@ def _dispatch_main(argv: list[str] | None = None) -> int:
                 parser = build_parser()
                 args = parser.parse_args(tokens)
                 return _cmd_dashboard_refresh(args)
-            return _cmd_dashboard_refresh(_parse_dashboard_refresh_fast_args(repo_root=repo_root, forwarded=forwarded))
+            args = _parse_dashboard_refresh_fast_args(repo_root=repo_root, forwarded=forwarded)
+            args.repository_lock_fd = repository_lock_fd
+            return _cmd_dashboard_refresh(args)
         if tokens[0] == "governance" and len(tokens) >= 2:
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             if tokens[1] in {
@@ -3995,6 +3988,7 @@ def _dispatch_main(argv: list[str] | None = None) -> int:
 
     parser = build_parser()
     args = parser.parse_args(tokens)
+    args.repository_lock_fd = repository_lock_fd
     if args.command == "start":
         return _cmd_start(args)
     if args.command == "lane" and args.lane_command == "status":
@@ -4119,6 +4113,8 @@ def _dispatch_main(argv: list[str] | None = None) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     tokens = [str(token) for token in (argv or sys.argv[1:])]
+    if tokens[:1] == [upgrade_dashboard.RENDER_WORKER_COMMAND]:
+        return upgrade_dashboard.worker_main(tokens[1:])
     repo_root, _forwarded = _extract_repo_root(tokens[1:] if tokens else ())
     admission_tokens = tokens
     try:
@@ -4143,7 +4139,7 @@ def main(argv: list[str] | None = None) -> int:
         return greenfield_managed_mutation_boundary.run_with_greenfield_managed_mutation_boundary(
             repo_root=Path(repo_root),
             command_tokens=admission_tokens,
-            operation=lambda: _dispatch_main(tokens),
+            operation=lambda descriptor: _dispatch_main(tokens, repository_lock_fd=descriptor),
         )
     except greenfield_managed_mutation_boundary.GreenfieldManagedMutationBusyError as exc:
         print(str(exc), file=sys.stderr)

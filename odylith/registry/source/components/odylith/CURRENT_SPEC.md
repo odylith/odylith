@@ -77,6 +77,19 @@ remediation, and rendering.
   not arbitrary crash, missing-pin repair, or legacy generation migration proof;
   the exact migration-assessment release gate remains open.
 
+- Upgrade dashboard completion runs in the newly activated runtime through a
+  fixed render-only worker. The admitted parent explicitly passes its repository
+  lock descriptor through the launcher and renderer children, waits for terminal
+  results, and alone activates the first baseline or publishes a successor.
+  Incomplete, queued or failed rendering is not successful upgrade completion.
+  The shared dashboard-completion owner enforces this contract for initial
+  rendering and public dashboard refresh too. Focused tests, full runtime and
+  canonical installed smoke pass. The genuine published-v0.1.14 launcher safely
+  refuses this migration-required candidate; hosted upgrade of that same empty
+  predecessor then passes complete baseline/readback and unavailable-author safety.
+  Populated migration and automatic failed-render working-drift recovery remain
+  open under CB-305. Descriptor validation is not same-UID caller authentication.
+
 ### Control-plane leverage
 - Odylith is not trying to beat the underlying model weights. It is trying to
   improve the default operating policy around the same model.

@@ -17,6 +17,7 @@ import concurrent.futures
 import contextlib
 from contextvars import copy_context
 from dataclasses import dataclass
+from functools import partial
 import importlib
 import io
 import json
@@ -609,6 +610,7 @@ def _run_command(
     args: Sequence[str],
     heartbeat_label: str = "",
     timeout_seconds: float | None = None,
+    pass_fds: tuple[int, ...] = (),
 ) -> int:
     env = os.environ.copy()
     cwd = Path.cwd()
@@ -636,6 +638,8 @@ def _run_command(
         }
         if os.name == "posix":
             popen_kwargs["start_new_session"] = True
+        if pass_fds:
+            popen_kwargs["pass_fds"] = pass_fds
         process = subprocess.Popen(tokens, **popen_kwargs)
         while True:
             rc = process.poll()
@@ -663,6 +667,7 @@ def _run_command(
         cwd=str(repo_root),
         env=env,
         check=False,
+        **({"pass_fds": pass_fds} if pass_fds else {}),
     )
     return int(completed.returncode)
 
@@ -1948,6 +1953,8 @@ def refresh_dashboard_surfaces(
     dry_run: bool = False,
     verbose: bool = False,
     force: bool = False,
+    on_completed: Callable[[], int] | None = None,
+    repository_lock_fd: int | None = None,
 ) -> int:
     selected = normalize_dashboard_surfaces(surfaces)
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
@@ -1964,9 +1971,9 @@ def refresh_dashboard_surfaces(
     started_at = time.perf_counter()
     surface_results: list[dict[str, Any]] = []
     runtime_fallback_used = False
-    run_impl = _run_command
+    run_impl = _run_command if repository_lock_fd is None else partial(_run_command, pass_fds=(repository_lock_fd,))
     session_context: contextlib.AbstractContextManager[object] = contextlib.nullcontext()
-    if len(selected) == 1 and _use_runtime_fast_path(normalized_runtime_mode) and _runtime_fast_path_prerequisites_met(repo_root):
+    if repository_lock_fd is None and len(selected) == 1 and _use_runtime_fast_path(normalized_runtime_mode) and _runtime_fast_path_prerequisites_met(repo_root):
         run_impl = _run_command_in_process
         session_context = governed_sync_session.activate_sync_session(
             governed_sync_session.GovernedSyncSession(repo_root=repo_root)
@@ -2018,41 +2025,10 @@ def refresh_dashboard_surfaces(
                 os.environ.pop(_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV, None)
             else:
                 os.environ[_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV] = previous_guard_skip
-    for result in surface_results:
-        runtime_fallback_used = runtime_fallback_used or bool(result.get("fallback_used"))
-    elapsed = time.perf_counter() - started_at
-    failures = [result for result in surface_results if str(result.get("status", "")).strip() == "failed"]
-    queued = [result for result in surface_results if str(result.get("status", "")).strip() == "queued"]
-    print("dashboard refresh completed")
-    if failures:
-        print("- outcome: failed")
-    elif queued:
-        print("- outcome: queued")
-    else:
-        print("- outcome: passed")
-    print(f"- elapsed_seconds: {elapsed:.1f}")
-    print(f"- runtime_fallback_used: {'yes' if runtime_fallback_used else 'no'}")
-    for result in surface_results:
-        surface = str(result.get("surface", "")).strip()
-        status = str(result.get("status", "")).strip() or "failed"
-        suffix = " (standalone fallback used)" if bool(result.get("fallback_used")) else ""
-        if bool(result.get("cache_hit")):
-            suffix += " (fingerprint reuse)"
-        print(f"- {surface}: {status}{suffix}")
-        if status not in {"passed", "queued"}:
-            failed_step = str(result.get("failed_step", "")).strip()
-            next_command = str(result.get("next_command", "")).strip()
-            if failed_step:
-                print(f"  failed_step: {failed_step}")
-            if next_command:
-                print(f"  next: {next_command}")
-        elif status == "queued":
-            next_command = str(result.get("next_command", "")).strip()
-            if next_command:
-                print(f"  next: {next_command}")
-    if failures:
-        return 2
-    return 0
+    return dashboard_refresh_contract.complete_dashboard_refresh(
+        results=surface_results, selected=selected, elapsed=time.perf_counter() - started_at,
+        runtime_fallback_used=runtime_fallback_used, on_completed=on_completed,
+    )
 
 
 def _sync_surface_batch_outputs(surfaces: Sequence[str], *, repo_root: Path) -> tuple[str, ...]:

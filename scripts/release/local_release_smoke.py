@@ -315,6 +315,24 @@ def _require_greenfield_surfaces(*, repo_root: Path, label: str) -> None:
             raise RuntimeError(f"{label} did not render {relative_path}")
 
 
+def _require_greenfield_baseline(*, repo_root: Path, env: dict[str, str]) -> None:
+    """Check the installed runtime's complete working and published baseline without repair."""
+
+    _run(cwd=repo_root, env=env, command=[
+        str(repo_root / ".odylith/runtime/current/bin/python"), "-I", "-B", "-c", """
+from pathlib import Path
+from odylith import cli
+from odylith.runtime.domain_intelligence import greenfield_create_baseline as baseline
+from odylith.runtime.domain_intelligence import greenfield_generation_store as store
+
+root = Path.cwd()
+generation = store.require_greenfield_working_generation(root)
+for tree in (root, generation.repository_root):
+    baseline._require_completed_baseline_surfaces(tree, cli._FIRST_RUN_SURFACE_OUTPUTS)
+""",
+    ])
+
+
 def _require_greenfield_guidance_uses_confirmed_create(*, repo_root: Path, label: str) -> None:
     for relative_path in _GREENFIELD_GUIDANCE_FILES:
         path = repo_root / relative_path
@@ -508,9 +526,11 @@ def _install_and_smoke(*, repo_root: Path, install_script: Path, env: dict[str, 
     _greenfield_unavailable_author_smoke(repo_root=repo_root, odylith=odylith, env=env)
     _run(cwd=repo_root, env=env, command=[str(odylith), "sync", "--repo-root", ".", "--force"])
     _require_greenfield_surfaces(repo_root=repo_root, label="fresh install baseline")
+    _require_greenfield_baseline(repo_root=repo_root, env=env)
 
 
 def _greenfield_unavailable_author_smoke(*, repo_root: Path, odylith: Path, env: dict[str, str]) -> None:
+    _require_greenfield_baseline(repo_root=repo_root, env=env)
     show = _run(cwd=repo_root, env=env, command=[str(odylith), "show", "--repo-root", "."]).stdout
     _require_output_contains(output=show, expected="Odylith read this repo", label="odylith show")
     audit = begin_installed_write_audit(repo_root=repo_root)
@@ -615,7 +635,9 @@ def _upgrade_cycle(
         local_env=local_env,
     )
     odylith = repo_root / ".odylith" / "bin" / "odylith"
+    _greenfield_unavailable_author_smoke(repo_root=repo_root, odylith=odylith, env=local_env)
     _run(cwd=repo_root, env=local_env, command=[str(odylith), "dashboard", "refresh", "--repo-root", "."])
+    _require_greenfield_baseline(repo_root=repo_root, env=local_env)
     _require_compass_history_layout(repo_root=repo_root)
     _install_clean_previous_release(
         repo_root=repo_root,
@@ -624,7 +646,9 @@ def _upgrade_cycle(
     )
     _seed_legacy_compass_archive_fixture(repo_root=repo_root)
     _run(cwd=_install_cwd(repo_root), env=local_env, command=["bash", str(install_script)])
+    _greenfield_unavailable_author_smoke(repo_root=repo_root, odylith=odylith, env=local_env)
     _run(cwd=repo_root, env=local_env, command=[str(odylith), "dashboard", "refresh", "--repo-root", "."])
+    _require_greenfield_baseline(repo_root=repo_root, env=local_env)
     _require_compass_history_layout(repo_root=repo_root)
     _install_clean_previous_release(
         repo_root=repo_root,
@@ -639,7 +663,9 @@ def _upgrade_cycle(
         local_env=local_env,
     )
     odylith = repo_root / ".odylith" / "bin" / "odylith"
+    _greenfield_unavailable_author_smoke(repo_root=repo_root, odylith=odylith, env=local_env)
     _run(cwd=repo_root, env=local_env, command=[str(odylith), "dashboard", "refresh", "--repo-root", "."])
+    _require_greenfield_baseline(repo_root=repo_root, env=local_env)
     _require_compass_history_layout(repo_root=repo_root)
 
 
@@ -681,6 +707,7 @@ def _stale_uninstall_residue_cycle(
     _require_output_contains(output=version, expected=f"Active: {target_version}", label="stale residue version")
     if not (repo_root / "odylith" / "AGENTS.md").is_file():
         raise RuntimeError("stale uninstall residue install did not restore odylith/ governed source truth")
+    _require_greenfield_baseline(repo_root=repo_root, env=local_env)
 
 
 def build_parser() -> argparse.ArgumentParser:
