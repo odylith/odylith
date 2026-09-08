@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 757,
-    "mapped_workstream_evidence_count": 707,
+    "explicit_event_count": 759,
+    "mapped_workstream_evidence_count": 709,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 757
+    "timeline_event_count": 759
   },
   "name": "Radar",
   "path_prefixes": [
@@ -53,6 +53,79 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "sha256:e1a3b20f4677667ce4bad474278a9838c299e267acb5588395ad22be3fd8bda1",
+        "sha256:11c931b68574c24a73066f0a5d5233c88738a87aa7e4fd7b99caf578bbbd8091"
+      ],
+      "confidence": "high",
+      "event_index": 1322,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-09-08T13:45:16-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "sha256:d672c5d950b3118f96951a328093e9386346e86d81f5343d39afde878c21bd98"
+      ],
+      "confidence": "high",
+      "event_index": 1321,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-09-08T13:42:39-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 0,
       "artifacts": [],

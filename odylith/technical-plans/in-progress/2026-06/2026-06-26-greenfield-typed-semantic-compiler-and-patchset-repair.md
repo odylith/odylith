@@ -10,6 +10,35 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Current distribution and installed baseline proof (2026-09-08)
+
+Clean pushed revision `76e523cda0a602af224940de0bb44e54c73283f1` now has a
+complete local distribution: wheel, three platform runtimes, three memory packs,
+installer, manifest, provenance, SBOM and attribution. All twelve checksummed
+assets verify. This is the documented local unsigned build, not signed release
+qualification. Fresh hosted-style installation takes 29.815 seconds and the actual
+managed launcher reports pinned 0.1.15 with healthy full-local-memory operation.
+Guidance, unavailable-author no-write, sync and immutable baseline readback pass.
+Both hosts have complete installed static registration. Codex correctly stays
+unverified with no chat evidence; native trust, dispatch and visible delivery are
+still open. Four installed confirmation, capability and memory modules match
+current source bytes under isolated Python imports. The first import probe used
+a nonexistent shortened module name; preserve its failure and the corrected
+supplemental receipt rather than reinstalling or changing production code.
+
+Twelve installed-baseline browser cells pass: five governance shell routes and
+Casebook empty filtering, each on desktop and mobile, with eighteen screenshots.
+This is not generated-project or complete accessibility/interaction proof. Visual
+inspection also finds the fresh Compass timeline dominated by setup-file events
+(243 local changes and a 232-event group before product work). Retain that
+onboarding-density finding under CB-303; do not hide the underlying audit or add
+phrase filters without diagnosing the event owner. Evidence and the reusable
+installed candidate are retained under
+`/private/tmp/odylith-current-dist-proof.BQ24A9/`. All build, install and browser
+process handles are terminal; their HTTP servers are closed. Preserve the
+candidate for the next installed lifecycle/semantic gate. Native activation,
+live quality, 60/90/120, independent adjudication and the holdout remain open.
+
 ### Integrated consumer journey (2026-09-08)
 
 The full product capability inventory, including memory, is an integration
