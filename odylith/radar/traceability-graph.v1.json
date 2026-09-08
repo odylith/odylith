@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "44b5a9dff545fe32a4e9614d379cda5cc84a0f8bcd56154eac1a1a3ed469389d",
+    "digest": "482ff0309757bb10eb0c3e0be6dbd76395c61293f7f86deb696174c464f30930",
     "file_count": 315,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -24950,5 +24950,5 @@
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-09-08 09:24:31Z"
+  "generated_utc": "2026-09-08 09:53:45Z"
 }

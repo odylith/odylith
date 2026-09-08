@@ -10,6 +10,38 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Close interrupted-publication visibility before release proof (2026-09-08)
+
+CB-305 now has a real-browser stopped-writer counterexample. An isolated copy
+of the real shell and Atlas/Radar pages carries exactly two sealed HTML markers.
+After SIGKILL at the first atomic file write, desktop and mobile shell navigation
+show the new Atlas version alongside the old Radar version. After-pointer
+controls show one new version across both surfaces. The normal-image run has
+zero page errors/bad HTTP responses; both fixtures reach terminal recovery.
+The unchanged kernel suite passes 114 tests in 26.09 seconds but does not cover
+this stopped-before-recovery browser interval. Evidence:
+`/private/tmp/odylith-confirm-read-proof.4PUYEv/consumer-normal-red.xml`.
+
+Reject the helper-only alternative: a journal guard passed three direct-helper
+tests, but both production handoff callers supply hashes and bypass that branch.
+The draft was removed completely. An opener-only check also cannot protect later
+browser fetches after its lock is released. The bounded next comparison must
+place generation routing at the actual shell/child-resource boundary against
+the same crash control, preserve exact reviewed-generation links, and include
+initial/no-generation, old/new, failure/recovery, and later-writer behavior.
+Do not claim package-level atomicity while canonical readers use mutable siblings.
+This is not permission to build a general transaction platform or change model
+roles, semantic schemas, package depth, or the fixed 60/90/120 deadlines.
+
+CB-304 separately retains host eligibility and native callback proof. The 17
+Python callback tests pass, but two no-model offer probes show CONFIRM is emitted
+without eligibility checks. No successful unsupported-host write was claimed.
+Require explicit host-facing capability and real installed callback evidence;
+do not confuse provider identity with host capability or restrict separately
+authorized manual CLI by an environment flag. Independent reports:
+`/private/tmp/odylith-host-confirmation-proof.czLkUO/`. Final holdout, clean release
+distribution, complete semantics/UX and timing qualification remain unproved.
+
 ### Preserve Atlas action boundaries at the browser owner (2026-09-08)
 
 The earlier Context proof retained action words but exposed joined metadata

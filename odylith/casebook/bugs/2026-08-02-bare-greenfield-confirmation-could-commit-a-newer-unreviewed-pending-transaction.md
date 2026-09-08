@@ -1,5 +1,7 @@
 - Bug ID: CB-304
 
+- Host Eligibility And Native Proof Gap (2026-09-08): Current source passes 17 focused host tests in 5.24 seconds, proving the two Python hook main functions use the shared hash-bound callback before ordinary routing. Those tests stub commit and do not establish native Codex/Claude hook activation or absence of a later semantic model turn. A separate two-probe no-model counterexample shows public proposal rendering unconditionally offers CONFIRM and a runnable create command even when eligibility is false; confirmation_supported has no production caller, and unknown-host decisions return None rather than an explicit read-only outcome. This is an offer-boundary omission, not proof of a successful unsupported-host write or hash-integrity bypass. Preserve authorized manual CLI use and the product-neutral kernel; establish explicit adapter capability at the host-facing offer boundary, not a model-name or forgeable environment allowlist. Evidence: /private/tmp/odylith-host-confirmation-proof.czLkUO/review.md, focused.xml and offer-boundary.xml. The native-host release gate remains open.
+
 - Status: Open
 
 - Created: 2026-08-02
