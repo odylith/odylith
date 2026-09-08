@@ -10,6 +10,46 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Preserve Atlas action boundaries at the browser owner (2026-09-08)
+
+The earlier Context proof retained action words but exposed joined metadata
+headings. Authored catalog loading already preserves the exact fields; the
+browser's second text cleaner deletes inline tokens and collapses line breaks.
+The bounded replacement is literal box-field rendering in the existing
+atlas_detail_layout owner, with explicit DOM arguments and CSS line preservation.
+Remove the competing box renderer from the 3041-line catalog template. Do not
+change source meaning, graph edges, schemas, model roles or the 60/90/120 budget.
+
+Require failing-before/passing-after exact text and line-geometry controls across
+desktop/mobile normal, PNG fallback, image error and empty states; repeated
+actions and markup-looking text must remain inert and complete. Existing authored
+catalog readback, package/transaction, Atlas interaction and bundle/install proof
+must stay green. A frozen independent review must inspect actual screenshots.
+This is a source-local readability/fidelity slice, not timing or release proof.
+Evidence root: /private/tmp/odylith-atlas-box-metadata.otiHwT/.
+
+The detail owner now holds the sole box DOM builder; the catalog renderer shrinks
+from 3041 to 3003 lines, with no net source growth across the two owners. Exact
+field rendering and CSS line preservation replace the second text-cleaning pass.
+Independent baseline proof has 12 metadata/line failures and two empty passes.
+The first correction passes 97 of 100 checks but exposes three mobile role-label
+overflows: the shared primitive's later nowrap overrides the local wrapping rule.
+Correcting CSS order, without changing tests or fields, passes all 100 controls.
+Preserve that first failure and its missing screenshots (incorrect environment
+name); the corrected run uses the established capture setting.
+
+Broader source-local proof passes 104 package/transaction/Atlas, 1101 install,
+17 bundle and nine Project/shell checks. Fresh independent readback compiles a
+synthetic Context view through the actual catalog loader and renderer: all six
+desktop/mobile normal, PNG-fallback and image-error cells preserve exact fields,
+repeated actions and visible line separation. Its source and served hashes stay
+unchanged; the fixture is archived and removed, and owned processes terminate.
+Preserve the driver's pre-browser import failure separately. These are metadata
+and interaction proofs, not native diagram quality or model-generated usefulness.
+The initial wider Atlas matrix passes 46 checks but overlaps surface refresh;
+rerun the final matrix against settled surfaces before committing. Timing and
+the full semantic, transaction, host, holdout and release gates remain open.
+
 ### Remove the remaining standalone Radar prose reinterpretation (2026-09-08)
 
 Two new source-fidelity controls reproduce loss of late publication restrictions

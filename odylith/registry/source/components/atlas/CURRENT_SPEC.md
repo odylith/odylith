@@ -6,7 +6,7 @@
   affordances, admissible action, proof, compact learning, benchmark evidence,
   updated priors, and the cross-system loop through Context, Execution,
   Memory, Intervention, Tribunal, Surfaces, and Benchmarks.
-Last updated: 2026-09-07
+Last updated: 2026-09-08
 
 
 ## Purpose
@@ -57,6 +57,16 @@ checks, including hidden action styling, rather than hidden-attribute assertions
   text also matches the query.
 
 ## Runtime Contract
+
+Box metadata is literal presentation data. The detail-layout owner renders label,
+role and description through textContent with their supplied line breaks and
+punctuation intact. It takes the diagram and destination elements explicitly;
+the catalog template must not retain a competing box renderer or run a second
+text interpreter. CSS preserves action-line separation and wraps complete text.
+Markup-looking values remain inert text. These guarantees apply during normal
+image display, PNG fallback and image failure; an empty box list remains hidden.
+Proof must compare exact field content and visible line/text geometry at desktop
+and mobile widths, not just word counts or element presence.
 
 The viewport owner preserves the initial full-bounds overview and provides an
 explicit Read at 100% action that reveals and focuses the labelled stage.
@@ -401,6 +411,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-09-08: Assigned literal box-field presentation to the existing Atlas detail owner, removing browser text reinterpretation and preserving authored action line boundaries. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-09-03: Added a fail-closed `odylith atlas update` writer for existing catalog entries. The command preserves omitted fields, replaces only explicit metadata, rejects unknown ids and unsafe paths, and removes the hand-edit escape hatch that left stale change-watch ownership in D-043, D-045, and D-046. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-329`)
 - 2026-07-07: Cleaned generic Atlas evidence-node explanation copy. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-220`)
   `atlas_box_explanations.py` now describes evidence/log/record nodes as

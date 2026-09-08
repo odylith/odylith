@@ -224,7 +224,7 @@ def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_lis
     assert ".read-guide-body {" in html
     assert "Boxes In This Diagram" in html
     assert 'id="diagramBoxList"' in html
-    assert "function renderDiagramBoxes(diagram)" in html
+    assert "function renderDiagramBoxes(diagram, sectionEl, listEl)" in html
     assert "diagram-box-row" in html
     assert ".diagram-box-role {\n  --label-bg: #f6faf7;" in html
     assert "border-radius: 4px;" in html

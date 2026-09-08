@@ -751,11 +751,6 @@
       min-width: 0;
     }
 
-    .diagram-box-name strong {
-      overflow-wrap: anywhere;
-      word-break: break-word;
-    }
-
     .diagram-box-role {
   --label-bg: #f6faf7;
   --label-border: #d7e2dc;
@@ -784,13 +779,18 @@
   font-weight: 700;
   text-transform: none;
 }
+    .diagram-box-name strong,
+    .diagram-box-role,
+    .diagram-box-description {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
     .diagram-box-role {
       width: fit-content;
       max-width: 100%;
-      overflow-wrap: anywhere;
-      word-break: break-word;
       justify-content: flex-start;
-      white-space: normal;
     }
 
     .diagram-box-description {
@@ -1484,7 +1484,7 @@
   }
 })();
 </script>
-  <script id="catalogData" src="mermaid-payload.v1.js?v=c24795e10501"></script>
-  <script src="mermaid-app.v1.js?v=c24795e10501"></script>
+  <script id="catalogData" src="mermaid-payload.v1.js?v=ec502a099f5e"></script>
+  <script src="mermaid-app.v1.js?v=ec502a099f5e"></script>
 </body>
 </html>

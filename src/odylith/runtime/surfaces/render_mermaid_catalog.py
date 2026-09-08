@@ -2383,44 +2383,6 @@ __ODYLITH_ATLAS_VIEWER_RUNTIME__
       });
     }
 
-    function renderDiagramBoxes(diagram) {
-      clearNode(diagramBoxListEl);
-      const boxes = Array.isArray(diagram.diagram_boxes)
-        ? diagram.diagram_boxes.filter((box) => box && typeof box === "object")
-        : [];
-      diagramBoxesSectionEl.hidden = !boxes.length;
-      boxes.forEach((box, index) => {
-        const row = document.createElement("article");
-        row.className = "diagram-box-row";
-
-        const number = document.createElement("span");
-        number.className = "diagram-box-index";
-        number.textContent = String(index + 1);
-
-        const name = document.createElement("div");
-        name.className = "diagram-box-name";
-        const heading = document.createElement("strong");
-        heading.textContent = displayText(box.label);
-        name.appendChild(heading);
-        const roleText = displayText(box.role);
-        if (roleText) {
-          const role = document.createElement("span");
-          role.className = "diagram-box-role";
-          role.textContent = roleText;
-          name.appendChild(role);
-        }
-
-        const description = document.createElement("p");
-        description.className = "diagram-box-description";
-        description.textContent = displayText(box.description);
-
-        row.appendChild(number);
-        row.appendChild(name);
-        row.appendChild(description);
-        diagramBoxListEl.appendChild(row);
-      });
-    }
-
     function renderAlert(diagram) {
       if (diagram.freshness === "stale" && (diagram.stale_reasons || []).length) {
         staleAlertEl.classList.add("visible");
@@ -2454,7 +2416,7 @@ __ODYLITH_ATLAS_VIEWER_RUNTIME__
       viewer.show(diagram);
 
       renderSourceLinks(diagram);
-      renderDiagramBoxes(diagram);
+      renderDiagramBoxes(diagram, diagramBoxesSectionEl, diagramBoxListEl);
       renderComponents(diagram);
       renderAlert(diagram);
 
