@@ -17,6 +17,21 @@
   user-visible value is earned.
 Last updated: 2026-09-08
 
+## Explicit current closeout and pending replay
+
+An explicit `visible-intervention --phase stop_summary --include-closeout`
+with a supplied summary displays that current Assist through the existing
+visible-quality gate. Historical replay cannot replace it. Pending messages
+remain stored and unconfirmed for a subsequent recovery request; confirming the
+current text cannot confirm text that was not shown. A useful closeout does not
+need a generic visibility Observation prepended to it.
+
+The renderer preserves the complete supplied summary and punctuation. It does
+not clip characters or invent the next action. This is manual, host-authored
+narration, not source-fact admission, native activation proof or permission to
+publish a proposal. Input-free replay and normal live Observation/Proposal
+selection retain their existing owners and eligibility contracts.
+
 ## Native activation proof boundary
 
 Codex configuration, native hook trust, callback execution and chat visibility

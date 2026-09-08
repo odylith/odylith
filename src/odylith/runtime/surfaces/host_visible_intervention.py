@@ -46,10 +46,7 @@ def _stop_summary_assist_text(summary: object, *, forced: bool = False, changed_
         return ""
     if not forced and not changed_paths and not _looks_like_completed_work_summary(text):
         return ""
-    text = text.rstrip(".")
-    if len(text) > 220:
-        text = f"{text[:217].rstrip()}..."
-    return f"**Odylith Assist:** {text}. The next visible checkpoint is verification."
+    return f"**Odylith Assist:** {text}"
 
 
 def _looks_like_completed_work_summary(value: str) -> bool:
@@ -105,6 +102,11 @@ def render_visible_intervention(
     )
     if include_closeout is not None:
         closeout = bool(include_closeout)
+    current_closeout = (
+        _stop_summary_assist_text(summary, forced=True)
+        if normalized_phase == "stop_summary" and include_closeout is True
+        else ""
+    )
     resolved_session = host_surface_runtime.normalized_session_id(session_id, host_family=host_family)
     prompt_assist_feedback = (
         normalized_phase in _PROMPT_SUBMIT_PHASES
@@ -125,7 +127,8 @@ def render_visible_intervention(
             )
         )
     )
-    replay = visibility_replay.replayable_chat_markdown(
+    # An explicit current closeout is not a request to consume historical replay.
+    replay = "" if current_closeout else visibility_replay.replayable_chat_markdown(
         repo_root=repo_root,
         host_family=host_family,
         session_id=resolved_session,
@@ -161,11 +164,17 @@ def render_visible_intervention(
         assistant_summary=summary,
         changed_paths=changed_paths,
     )
+    if current_closeout:
+        bundle = dict(bundle)
+        bundle["closeout_bundle"] = {
+            "markdown_text": current_closeout,
+            "plain_text": f"Odylith Assist: {_normalize_text(summary)}",
+        }
     if prompt_assist_feedback:
         bundle = host_intervention_support.with_assist_cadence_preference(bundle)
     if normalized_phase in _PROMPT_SUBMIT_PHASES and closeout:
         bundle = host_intervention_support.ensure_prompt_visible_assist_bundle(bundle)
-    visible_override = ""
+    visible_override = current_closeout
     if prompt_assist_feedback:
         visible_override = conversation_surface.render_closeout_text(bundle, markdown=True)
     elif replay and closeout:
@@ -229,7 +238,7 @@ def render_visible_intervention(
             visible_markdown_override=rendered,
         )
         rendered = decision.visible_markdown
-    if not rendered and closeout and normalized_phase == "stop_summary":
+    if not rendered and not current_closeout and closeout and normalized_phase == "stop_summary":
         rendered = _stop_summary_assist_text(
             summary,
             forced=include_closeout is True,

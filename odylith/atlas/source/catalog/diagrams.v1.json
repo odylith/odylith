@@ -297,7 +297,7 @@
         "src/odylith/runtime/orchestration/subagent_orchestrator.py": "aebe3e76aa00f3bd1a8a8b95936217f0af83574b90767d1796298df9e269aa5a",
         "src/odylith/runtime/intervention_engine/alignment_evidence.py": "adcfadbd69549f20da11a72583497a9a08b8aade39971008280d19f07f383c85",
         "src/odylith/runtime/intervention_engine/alignment_context.py": "85716c490ccfc0abf7639845bd0532c43fd9bfe4aa61737aaf7ff16ce09f94bd",
-        "src/odylith/runtime/intervention_engine/visibility_broker.py": "069251aa7c8c99790fb147edda3ff1fb442c345e2556205893bfcb260a38bceb",
+        "src/odylith/runtime/intervention_engine/visibility_broker.py": "e55a80119c8df478243b4f54f4ba95fc1ce85bdcae42cb3eddf20a76eb938e13",
         "src/odylith/runtime/intervention_engine/conversation_runtime.py": "9678407b21d711c8280602e11f59bbb237bcb1ff45c801a2e9e7cd092737519f",
         "src/odylith/runtime/intervention_engine/delivery_runtime.py": "35318abc7537a18210b97181efca5d83a7082070146229b7201430954c71ddfc",
         "src/odylith/runtime/evaluation/odylith_benchmark_execution_engine.py": "fd4c87a39eaca52ab261c10a41a0ac25915fcf61da072e7802305ecfba081209"
@@ -2352,7 +2352,7 @@
         "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md": "da20bb2c778974ea69ef1474dbe41a4b42de3617d4ef1875a493543786b02175",
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "509f277a5b77fc104a92794c1834c633fbbcc4effa583bff0f19d5784de4bd0f",
         "odylith/technical-plans/done/2026-03/2026-03-28-odylith-managed-runtime-bundles-and-supported-platform-contract.md": "1f23b5b159f92612c4dd52b7fe1e077d5842a9e6439b59b6c42c617111ccf45b",
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "209866329da31a09fcdff69fa50faf52ff300dc2cdb6403acec181bd06e3f4e4",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "3484cf648b5c7137ffc910e40b253061491a339761c743e571631fa35c27e19c",
         "odylith/casebook/bugs/2026-03-28-public-consumer-install-depends-on-machine-python.md": "892477de3906a35157275d8aaa2f9cfc259dd2efb76222fa7247461d011a1ea6",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "3a1c665817831189e5e638fd81d1197fb558a9b5a3f8461d4d76ac3c824e35f8",
         "odylith/registry/source/components/release/CURRENT_SPEC.md": "d10d8fcd1b2c2d205df9f696c21aab8240fe9bfc7bce3edd653cd19eaa8265f2",
@@ -2620,7 +2620,7 @@
         "src/odylith/runtime/context_engine/execution_engine_handshake.py": "86fe40878555e8652d766ceb03a7bc22804646c1a18959414a90f1c3eb44e20b",
         "src/odylith/runtime/execution_engine": "3977c26b91022bf35360b2f7cb0c8de61f77030ea2964268c6264a79d6322d22",
         "src/odylith/runtime/intervention_engine/alignment_context.py": "85716c490ccfc0abf7639845bd0532c43fd9bfe4aa61737aaf7ff16ce09f94bd",
-        "src/odylith/runtime/intervention_engine/visibility_broker.py": "069251aa7c8c99790fb147edda3ff1fb442c345e2556205893bfcb260a38bceb",
+        "src/odylith/runtime/intervention_engine/visibility_broker.py": "e55a80119c8df478243b4f54f4ba95fc1ce85bdcae42cb3eddf20a76eb938e13",
         "src/odylith/runtime/reasoning/tribunal_engine.py": "2351fffa53bd1f49ae0948b5369518bbf1ec2ba56a8d18d5f4b7930720e31baf",
         "src/odylith/runtime/evaluation/odylith_benchmark_execution_engine.py": "fd4c87a39eaca52ab261c10a41a0ac25915fcf61da072e7802305ecfba081209"
       }
@@ -3049,7 +3049,7 @@
         "src/odylith/runtime/execution_engine/validation.py": "9b4c52ea51dc5824d09f75d54f4b2d0e8d4a579c41c02efcb3f0f805ee4080b4",
         "src/odylith/runtime/execution_engine/contradictions.py": "1adac1306d8eb4a8b644a8a8a10508029c753199f65e57357eb7db17754f5616",
         "src/odylith/runtime/context_engine/execution_engine_handshake.py": "86fe40878555e8652d766ceb03a7bc22804646c1a18959414a90f1c3eb44e20b",
-        "src/odylith/runtime/intervention_engine/visibility_broker.py": "069251aa7c8c99790fb147edda3ff1fb442c345e2556205893bfcb260a38bceb",
+        "src/odylith/runtime/intervention_engine/visibility_broker.py": "e55a80119c8df478243b4f54f4ba95fc1ce85bdcae42cb3eddf20a76eb938e13",
         "src/odylith/runtime/evaluation/odylith_benchmark_execution_engine.py": "fd4c87a39eaca52ab261c10a41a0ac25915fcf61da072e7802305ecfba081209",
         "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md": "fb6a81fc4e560201be218397c78ff274f4ec0a32f3c1b955176e83cb47638f8f"
       },
@@ -3596,7 +3596,7 @@
         "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py": "a1357c49dc57e289258fa9de7623166f6689326d3929391d123b742e0e877f7d",
         "src/odylith/runtime/context_engine/execution_engine_handshake.py": "86fe40878555e8652d766ceb03a7bc22804646c1a18959414a90f1c3eb44e20b",
         "src/odylith/runtime/execution_engine": "3977c26b91022bf35360b2f7cb0c8de61f77030ea2964268c6264a79d6322d22",
-        "src/odylith/runtime/intervention_engine/visibility_broker.py": "069251aa7c8c99790fb147edda3ff1fb442c345e2556205893bfcb260a38bceb",
+        "src/odylith/runtime/intervention_engine/visibility_broker.py": "e55a80119c8df478243b4f54f4ba95fc1ce85bdcae42cb3eddf20a76eb938e13",
         "src/odylith/runtime/evaluation/odylith_benchmark_execution_engine.py": "fd4c87a39eaca52ab261c10a41a0ac25915fcf61da072e7802305ecfba081209",
         "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md": "399826d44cfb7b7eb98b964c3b4f1bd4bb458dd7efff76a91b353771f2587c67"
       },
@@ -3702,19 +3702,19 @@
         "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py"
       ],
       "reviewed_watch_fingerprints": {
-        "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md": "88e9a11652479e081fff0c7c23a47ba505314428b4aa701471ff56e77ee50e97",
+        "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md": "f1bbcb5b1e370534d9d2b04012e9ca7420c3e4929ceb1f21b28e39c0b5000d63",
         "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md": "57bba7097da96f661eb1cfdb11da9a9a8a61240edecb16007c8bb1f12050552f",
         "odylith/registry/source/components/compass/CURRENT_SPEC.md": "f5ead08f30c68e0b57eb59d84c3661bc3bb33332ff02e705a8ed8ce7c6397ee9",
         "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md": "fb6a81fc4e560201be218397c78ff274f4ec0a32f3c1b955176e83cb47638f8f",
         "odylith/technical-plans/done/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md": "f57500cf0b063ff9c8fbe61b8dae9c5d53dd2784f8c3f5bf42fa8d50d2779a50",
-        "src/odylith/runtime/intervention_engine": "3ad3eb83933612d710474f901ec181eb207c1359e3dcb746393de3fc0e54db32",
+        "src/odylith/runtime/intervention_engine": "ab6515a02cbc186816c0c42f294bc23eaecf1667384b5333acf73bfdcc45e325",
         "src/odylith/runtime/intervention_engine/value_engine.py": "0fb0da256721038654a61592a858b0f6c26c9881137d27290ee54d142b720c00",
         "src/odylith/runtime/intervention_engine/value_engine_types.py": "31f9802ec2dadea4ed6c3295222edb31aa56e637cda04454d809c8d646a0819d",
         "src/odylith/runtime/intervention_engine/value_engine_selection.py": "8548774bb2815c55fed5d035c08dd61beb31d2e9610245af3012f770a2f8f9f9",
         "src/odylith/runtime/intervention_engine/value_engine_corpus.py": "f0f6b6d48d69031c758583cb8aca0e2dd7b85a9a41aea86652f571809bc1b9f5",
         "src/odylith/runtime/intervention_engine/alignment_evidence.py": "adcfadbd69549f20da11a72583497a9a08b8aade39971008280d19f07f383c85",
         "src/odylith/runtime/intervention_engine/alignment_context.py": "85716c490ccfc0abf7639845bd0532c43fd9bfe4aa61737aaf7ff16ce09f94bd",
-        "src/odylith/runtime/intervention_engine/visibility_broker.py": "069251aa7c8c99790fb147edda3ff1fb442c345e2556205893bfcb260a38bceb",
+        "src/odylith/runtime/intervention_engine/visibility_broker.py": "e55a80119c8df478243b4f54f4ba95fc1ce85bdcae42cb3eddf20a76eb938e13",
         "src/odylith/runtime/intervention_engine/conversation_runtime.py": "9678407b21d711c8280602e11f59bbb237bcb1ff45c801a2e9e7cd092737519f",
         "src/odylith/runtime/evaluation/odylith_intervention_value_engine_benchmark.py": "5caecc514832dd71a4333dc751cbc59df9094fbfc6a421af765624eb418802c0",
         "src/odylith/install/value_engine_migration.py": "b6c2e74a3773b4ed74cc8f7bc7daad3e1eae04180b3af7a32ee12e8788f60279",

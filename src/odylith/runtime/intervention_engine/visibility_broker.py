@@ -421,6 +421,7 @@ def build_visible_intervention_decision(
     if (
         visibility_failure
         and "**Odylith Observation:**" not in visible
+        and not (normalized_phase == "stop_summary" and "**Odylith Assist:**" in visible)
     ):
         closeout = (
             conversation_surface.render_closeout_text(bundle, markdown=True)

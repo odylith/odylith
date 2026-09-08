@@ -10,6 +10,54 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Requested Fast-service feasibility and current visibility (2026-09-08)
+
+The manual visibility check also reproduces current-summary loss: old replay
+wins before the current result is composed. CB-242 bounds the correction to
+the existing manual renderer and visibility broker. Explicit current closeout
+copy stays whole, retains the quality gate and cannot acknowledge undisplayed
+pending messages. Input-free replay remains available. This fixes a presentation
+handoff; it cannot close native trust/activation or the wider integration gate.
+
+Focused validation passes 55 cross-host presentation/recording controls. Frozen
+follow-through passes 4593 runtime tests and 42 targeted browser checks with all
+1825 input hashes unchanged. The exact current Assist is manually rendered and
+confirmed in the actual session. No native delivery, installed rollout, complete
+Greenfield quality or SLA qualification is inferred. Evidence:
+`/private/tmp/odylith-integrated-visibility-check.aOCzSb/`.
+
+One isolated installed comparison requests Fast service with unchanged Terra/low
+authoring, Sol/medium complete-candidate review and the standard 60/55-second
+consumer/model limits. Native configuration accepts the per-process request;
+the actual server-served tier is not observed. The preview seals in 50.333816
+seconds with five workstreams, five components, five diagrams and 56 planned
+writes. This is staging feasibility, not full-lifecycle timing, reliability or
+proof that Fast service caused the difference. No global defaults change and
+no production profile is promoted. Evidence:
+`/private/tmp/odylith-fast-service-preflight.tGGNwq/installed-result.json`.
+
+Local package inspection finds weak display/review-only verification and no
+proposed privacy/access-control obligations for sensitive medical and consent
+information. This repeats the disclosed v50 quality concern. It is not an
+independently adjudicated P0 contradiction or grounds for inventing source facts.
+The requested review route remains local-only; independent adjudication is
+outstanding. Preserve the pending transaction unchanged and unpublished. Trace
+the existing assumption/verification ownership before proposing a bounded
+correction; do not add a safety keyword filter, a new schema or another review
+call without evidence that the existing contract is insufficient.
+
+The operator's renewed whole-product/visibility request keeps the integrated
+acceptance below fixed. Fresh comparison of the actual session shows the old
+launcher reporting ready while the corrected reader reports degraded with
+three unrecognized hooks. Both see only the prior two manually confirmed Assist
+events and no Observation/Proposal events. CB-242 remains open; configuration,
+manual fallback and automated delivery are separate evidence claims. Use a
+matching runtime/configuration and native exact-definition review before a
+fresh-session delivery qualification. Never mix new hooks with the old runtime
+or silently alter host trust. Analysis/advisory discovery, orchestration,
+taxonomies, evaluation and lifecycle support must remain available in their
+owning phases; this does not require invoking every capability on every request.
+
 ### Installed positive journey boundary (2026-09-08)
 
 One predeclared default development case now exercises the actual pinned full
@@ -23,8 +71,9 @@ claim follows. Retain the first result under
 `/private/tmp/odylith-installed-journey.lYB7hH/`; do not turn it into another
 native retry or architecture change. CB-242 separately retains the automatic
 intervention-delivery gap. The full integrated acceptance below stays unchanged;
-the next mechanism comparison still requires the previously identified endpoint
-and deadline preflight, not a larger schema or relaxed 60/90/120 requirement.
+At this checkpoint the next candidate required an endpoint/deadline preflight.
+The separately recorded Fast-service comparison above adds new bounded evidence;
+it does not relax 60/90/120 or justify a larger schema.
 
 ### Current distribution and installed baseline proof (2026-09-08)
 
