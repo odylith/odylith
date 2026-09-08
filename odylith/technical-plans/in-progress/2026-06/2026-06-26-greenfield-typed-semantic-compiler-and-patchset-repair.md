@@ -10,6 +10,25 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Post-commit integrated freshness finding (2026-09-08)
+
+Pushed checkpoint `5db5485b` passes staged readiness and 42 final shell/intervention
+browser controls, but clean-head check-only then finds Delivery Intelligence stale.
+Registry remains current. The read-only comparison isolates exactly 44 changed
+`deployment_truth.local_head` fields and no other semantic difference. Proof State
+fills unknown recorded identity from the current Git checkout; the persisted
+Delivery artifact therefore invalidates across a commit that includes that artifact.
+
+Bound the next correction to recorded proof identity versus live checkout
+observation at the existing Proof State/Delivery seam. Preserve explicitly recorded
+revisions, current-context observation, source-change invalidation and all claim
+guards. Test metadata-only commit stability, actual proof/source changes and live
+identity before adopting a correction. Do not remove live-head fallback globally,
+because existing live-context tests require it; do not mask arbitrary freshness
+differences or repeat refresh/commit loops. This is a locally diagnosed integration
+gap, not an implemented or independently adjudicated fix. Evidence:
+`/private/tmp/odylith-proposed-verification.nn9Msk/delivery-clean-head-diff.json`.
+
 ### Proposed-verification comparison: no integrated preview (2026-09-08)
 
 One frozen v54 author-prompt candidate asks for meaningful success/failure checks
