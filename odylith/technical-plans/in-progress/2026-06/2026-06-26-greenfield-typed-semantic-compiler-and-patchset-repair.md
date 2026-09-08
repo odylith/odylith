@@ -10,6 +10,53 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Design-finalization comparison rejected (2026-09-07)
+
+The first and only actual control times out with no structured response or final
+candidate. Sol/medium receives 19.999708417 seconds; the scoped role ends at
+20.011249708 seconds after one provider-method call. Independent readback verifies
+all 172 frozen dependencies, exact request/source/assumption hashes, HEAD f1bf7405
+and the planned-governance diff. Controls 1-5 are cancelled; no retry, publication
+or production change follows. Fifteen no-backend controls had passed before the
+call. Keep the initial policy, test-selector and interpreter preflight errors
+alongside their pre-call corrections, not as passing initial proof.
+
+Reject full-design finalization under this fixed second-role allocation. There
+is no returned meaning to adjudicate and no trace separating server, reasoning
+or output time; do not attribute the timeout to copying design bytes. This is
+not a consumer 60-second run, a proof of impossibility, or permission to change
+60/90/120. Do not tune this failed prompt/schema, increase its cap or add another
+repair stage. The next decision remains first-pass author/design coherence and
+joint native-package quality/latency, not another downstream correction loop.
+Terminal review: `/private/tmp/odylith-design-finalization.lRaKfE/terminal-review.md`.
+
+The first post-record check passes 32 controls but fails the Release forensics
+freshness control; strict sync identifies eight stale generated Registry sidecars
+after the narrower plan/Casebook refresh. Preserve those failures and settle the
+existing governance dependencies through canonical sync before checkpoint proof.
+No product or test-code fix is indicated by this known settlement dependency.
+
+The following preserves the predeclared comparison, not permission to rerun it.
+
+The binary review correctly rejects the retained Fast candidate's incompatible
+proposed first run, but cannot recover that provisional decision. Compare one
+complete design replacement inside the existing second call, keeping accepted
+source and assumptions immutable. The reviewer still sees all meaning and choices;
+source loss, contradictory assumptions and materially unsafe behavior still deny.
+The replacement uses the existing design schema, not a patch language or extra
+model role. A revised design is second-call-authored, not independently reviewed.
+
+Freeze six disclosed controls: the actual design conflict, unchanged museum and
+G4 positives, source loss, an immutable assumption reversal, and the same conflict
+with only constraint-sentence placement changed. Keep Sol/medium, one call capped
+at 20 seconds per control, and the actual 60/90/120 consumer and 55/80/105 model
+bounds. Stop on the first failure; do not tune around it. Isolated control success
+earns only a complete native comparison, not adoption or consumer timing proof.
+Production stays unchanged. Prior broad repairs lost sound meaning/assumptions or
+exceeded latency; current preflight restores an omitted unsafe-behavior obligation
+and the existing non-temporal event-ID wording before any calls. Exact contract:
+`/private/tmp/odylith-design-finalization.lRaKfE/acceptance.md`.
+
 ### Product timing and local-support projection (2026-09-07)
 
 Keep consumer 60/90/120 and model 55/80/105 fixed. Preserve prior frozen 50/45
