@@ -12,6 +12,33 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ### Close interrupted-publication visibility before release proof (2026-09-08)
 
+The bounded browser comparison selects one canonical HTML publication entry
+for production integration, not release acceptance. Four file/HTTP desktop/mobile
+schedules pass in 47.69 seconds: 36 coherent normal/history observations and
+20 corruption/environment outcomes. Delayed iframe loads and a second partial
+writer after later success remain pinned. A two-case coarse-Last-Modified
+comparison passes in 4.89 seconds; HTTP needs a no-store read of that same entry
+to avoid a stale cached selector. Direct-file browsing consumes the atomic entry.
+No competing JSON pointer is active in the prototype. Existing generation-store,
+journal, sealed-byte and clean-install integration are not tested by its synthetic
+writer. No empty baseline or polished missing-file recovery UX is claimed.
+Evidence: `/private/tmp/odylith-dashboard-pointer-comparison.a7ZCxp/review.md`.
+
+Next ownership move: use the existing generation store and journal; allocate or
+derive a pre-confirm generation identity without a transaction-hash self-reference;
+seal the exact publication bytes; separate publication-entry ownership from full
+immutable shell bytes in write-set, precondition, rollback and readback contracts;
+migrate the old JSON authority explicitly; initialize an immutable baseline; and
+publish immutable successors after successful later writers instead of returning
+to mutable live paths. Preserve exact reviewed-hash links and define activation
+for already-open legacy tabs. Do not copy the experimental snapshot subsystem
+into production, retain both pointers, or generate the router after CONFIRM.
+Production source is unchanged at this evidence checkpoint. The original crash
+law remains a release blocker until the actual commit/journal/browser route passes.
+Preserve failed prototype receipts and keep fixture storage bounded; repeated
+full copies exhausted the local disk before recoverable archival and isolated-copy
+hardlinks reduced the final four-cell fixture batch to 474 MiB.
+
 CB-305 now has a real-browser stopped-writer counterexample. An isolated copy
 of the real shell and Atlas/Radar pages carries exactly two sealed HTML markers.
 After SIGKILL at the first atomic file write, desktop and mobile shell navigation
