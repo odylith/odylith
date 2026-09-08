@@ -10,6 +10,52 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### First-author comparison rejected (2026-09-07)
+
+The sole actual Sol/low attempt times out in initial authoring: 55.011981 seconds
+against 54.999692 available. The native CLI returns an error at 56.212644 seconds,
+with one real call and no structured response, reviewer or package. Cancel the
+Terra baseline; do not retry or widen the profile search. The independent terminal
+audit verifies both 356-file consumers and the frozen source/request identity
+unchanged. Exact owned processes are absent. A post-return permission error in
+the harness's process-group observation left its final result and after-inventory
+unwritten; preserve this separately from the native author timeout. Later read-only
+checks establish absence, not an originally successful harness completion.
+
+Nine no-backend guard checks and four native fake controls passed before the real
+call. The first fake preflight correctly rejected cross-profile loading earlier
+than its test expected; preserve that oracle failure and its corrected successor.
+Neither fake staging nor a timely error establishes consumer success. No returned
+meaning exists to adjudicate, and no trace establishes the backend timeout cause.
+Production remains unchanged; the full quality, timing, UX and release goal stays
+open. Evidence: `/private/tmp/odylith-first-author-pair.xJTUW5/terminal-review.md`.
+
+Keep the first-pass coherence/latency problem in scope. This result does not earn
+another model sweep, downstream repair layer or relaxed deadline. The earlier
+54.3-second complete staging remains bounded feasibility evidence under 60/55,
+not a qualified mechanism or a substitute for end-to-end quality proof. The next
+mechanism decision must address a diagnosed recurring failure, with a bounded
+comparison that measures actual consumer utility and not an extra timing proxy.
+
+The following preserves the predeclared comparison, not permission to rerun it.
+
+Compare Terra/low with Sol/low under the current complete-author and immutable
+binary-review contract. Only the first author model and truthful experimental
+profile identity differ. Keep both prompts, schemas, source, reviewer, ordinary
+native execution settings, model 55 and consumer 60 fixed. Older Sol/low v20
+semantic failures and Sol/medium v41 author timeout remain negative evidence;
+neither tested this exact complete-candidate contract. Do not retry or tune the
+rejected second-call finalizer, add a repair stage or weaken 60/90/120.
+
+Use the already disclosed seed-exchange evidence and pre-output source/design
+annotations. Run the isolated Sol candidate once first; failure cancels the
+baseline. Only a complete timely candidate independently cleared through actual
+package and rendered UX readback permits one Terra baseline run. Preserve all
+failures. A passing pair demonstrates bounded feasibility, not production
+adoption or release qualification. Source stays unchanged while the experiment
+runs; no CONFIRM, holdout access, new production branch or profile sweep.
+Contract: `/private/tmp/odylith-first-author-pair.xJTUW5/acceptance.md`.
+
 ### Design-finalization comparison rejected (2026-09-07)
 
 The first and only actual control times out with no structured response or final
