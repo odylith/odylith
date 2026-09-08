@@ -7,6 +7,7 @@ import pytest
 
 from tests.integration.runtime.surface_browser_test_support import (
     _assert_clean_page,
+    _failure_screenshot_path,
     _new_page,
     _wait_for_compass_ready,
     _wait_for_shell_query_param,
@@ -90,7 +91,33 @@ def test_registry_execution_engine_hard_cut_is_visible_and_alias_free(browser_co
 
     registry.locator("#search").fill("execution-governance")
     _wait_for_frame_locator_count(page, "#frame-registry", "button[data-component]", 0)
-    assert registry.locator("#detail").inner_text().strip() == ""
+    empty_status = registry.locator("#detail").get_by_role("status")
+    empty_status.get_by_role("heading", name="No matching components", exact=True).wait_for(timeout=15000)
+    assert empty_status.locator("p").inner_text() == (
+        "Change your search or reset the filters to see components already in Registry."
+    )
+    assert registry.locator("#detail .component-name").count() == 0
+    assert registry.locator("#detail").get_attribute("data-selected-component") == ""
+    empty_text = registry.locator("#detail").inner_text().lower()
+    assert "execution-governance" not in empty_text
+    assert "constraint-aware execution runtime" not in empty_text
+    empty_capture = _failure_screenshot_path("registry-retired-alias-no-results")
+    if empty_capture is not None:
+        page.screenshot(path=str(empty_capture), full_page=True)
+
+    registry.locator("#resetFilters").click()
+    assert registry.locator("#search").input_value() == ""
+    registry.locator('button[data-component="execution-engine"]').click(timeout=15000)
+    registry.locator('button[data-component="execution-engine"].active').wait_for(timeout=15000)
+    registry.locator("#detail .component-name", has_text="Execution Engine").wait_for(timeout=15000)
+    assert registry.locator("#detail").get_attribute("data-selected-component") == "execution-engine"
+    assert registry.locator("#detail").get_by_role("status").count() == 0
+    assert "Constraint-aware execution runtime" in registry.locator("#detail").inner_text()
+    assert registry.locator('button[data-component="execution-governance"]').count() == 0
+    assert "execution-governance" not in registry.locator("#detail").inner_text().lower()
+    restored_capture = _failure_screenshot_path("registry-canonical-reset-recovery")
+    if restored_capture is not None:
+        page.screenshot(path=str(restored_capture), full_page=True)
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 

@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_backlog_commit
+from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_prewrite_commit_result
 from odylith.runtime.domain_intelligence import greenfield_prewrite_surface_stage
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
@@ -45,6 +46,7 @@ class GreenfieldPrewriteTransactionSeal:
     surface_refresh_preview: Mapping[str, Any]
     repository_write_set: Mapping[str, Any] | None
     commit_result_preview: Mapping[str, Any] | None
+    generation_manifest_text: str = ""
 
 
 def seal_staged_greenfield_create(request: GreenfieldPrewriteSealRequest) -> GreenfieldPrewriteTransactionSeal:
@@ -102,6 +104,7 @@ def seal_staged_greenfield_create(request: GreenfieldPrewriteSealRequest) -> Gre
         surface_refresh_preview=dict(staged_surfaces.surface_refresh_preview),
         repository_write_set=write_set,
         commit_result_preview=commit_result,
+        generation_manifest_text=greenfield_generation_store.compile_greenfield_generation_manifest(write_set),
     )
 
 

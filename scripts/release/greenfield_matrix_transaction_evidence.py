@@ -14,8 +14,8 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_create_lifecycle
 from odylith.runtime.domain_intelligence import greenfield_generation_state
-from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     product_facts_payload,
 )
@@ -235,12 +235,13 @@ def post_confirm_navigation_issues(
     navigation = _mapping(create_payload.get("post_confirm_navigation"))
     missing = [key for key, value in POST_CONFIRM_NAVIGATION.items() if navigation.get(key) != value]
     root = Path(repo_root).expanduser().resolve()
-    dashboard = (
-        root
-        / ".odylith/runtime/greenfield/generations"
-        / transaction_hash
-        / "repository/odylith/index.html"
-    ).resolve()
+    try:
+        reviewed = GreenfieldCommitJournal.pin_reviewed_generation(
+            repo_root=root, transaction_hash=transaction_hash,
+        )
+    except (OSError, RuntimeError, ValueError):
+        return ("post-confirm navigation has no valid reviewed generation receipt",)
+    dashboard = (reviewed.repository_root / "odylith/index.html").resolve()
     expected = {
         "dashboard_path": str(dashboard),
         "project_url": f"{dashboard.as_uri()}?tab=project",
@@ -496,7 +497,7 @@ def _active_generation_issues(
     if state is None:
         return ("active generation readback is missing or invalid",)
     try:
-        pinned = greenfield_generation_store.pin_greenfield_generation(
+        pinned = GreenfieldCommitJournal.pin_reviewed_generation(
             repo_root=root,
             transaction_hash=transaction_hash,
         )
@@ -514,7 +515,7 @@ def _active_generation_issues(
     }
     if observed_identity != expected_identity:
         issues.append("active generation identity does not match the sealed transaction")
-    if pinned.transaction_hash != transaction_hash or pinned.write_set_hash != write_set_hash:
+    if pinned.write_set_hash != write_set_hash:
         issues.append("immutable generation identity does not match the sealed transaction")
     manifest_after = _fingerprint_mapping(pinned.manifest.get("after_fingerprints"))
     if manifest_after != dict(after_fingerprints):

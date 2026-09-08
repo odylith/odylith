@@ -20,7 +20,7 @@ from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 
 
-JOURNAL_VERSION = "odylith.greenfield.commit_journal.v3"
+JOURNAL_VERSION = "odylith.greenfield.commit_journal.v4"
 _LEGACY_JOURNAL_VERSIONS = frozenset(
     {"odylith.greenfield.commit_journal.v1", "odylith.greenfield.commit_journal.v2"}
 )
@@ -108,6 +108,14 @@ class GreenfieldCommitJournal:
                 fsync_directory(journal_parent)
                 continue
             record = _read_journal_record(entry)
+            if record.get("version") == "odylith.greenfield.commit_journal.v3":
+                if record.get("state") == "closed":
+                    continue
+                raise GreenfieldCommitJournalError(
+                    "legacy transaction-addressed Greenfield recovery requires its recorded runtime; no journal was migrated",
+                    failure_kind="post_confirm_legacy_generation_requires_migration",
+                    recovery_path=str(entry),
+                )
             if str(record.get("version", "")) in _LEGACY_JOURNAL_VERSIONS:
                 _quarantine_legacy_journal(entry, journal_parent=journal_parent)
                 continue
@@ -218,7 +226,7 @@ class GreenfieldCommitJournal:
                 raise RuntimeError("active pointer does not name this transaction")
             pinned = greenfield_generation_store.pin_greenfield_generation(
                 repo_root=self.repo_root,
-                transaction_hash=self.transaction_hash,
+                write_set_hash=self.write_set_hash,
                 expected_write_set=self.write_set,
             )
             if pinned.manifest_sha256 != self._record_generation_manifest_hash(record):
@@ -256,10 +264,7 @@ class GreenfieldCommitJournal:
                 recovery_path=self.recovery_path,
             ) from exc
         self._write_record(state="aborted")
-        greenfield_generation_store.discard_unpublished_greenfield_generation(
-            repo_root=self.repo_root,
-            transaction_hash=self.transaction_hash,
-        )
+        self._discard_unreferenced_generation()
         self._discard_snapshot()
         self._discard_staging()
 
@@ -381,12 +386,61 @@ class GreenfieldCommitJournal:
         if not self.root.exists() or self._read_record().get("state") == "aborted":
             return
         self._write_record(state="aborted")
-        greenfield_generation_store.discard_unpublished_greenfield_generation(
-            repo_root=self.repo_root,
-            transaction_hash=self.transaction_hash,
-        )
+        self._discard_unreferenced_generation()
         self._discard_snapshot()
         self._discard_staging()
+
+    def _discard_unreferenced_generation(self) -> None:
+        # Distinct confirmed transactions may share the same sealed write set.
+        # A closed historical receipt owns its generation even after supersession.
+        state = greenfield_generation_state.read_active_generation_state(self.repo_root)
+        if state is not None and state.get("write_set_hash") == self.write_set_hash:
+            return
+        for entry in self.root.parent.iterdir():
+            if entry == self.root:
+                continue
+            if entry.name == "manual-recovery" or entry.name.startswith(".prepare-"):
+                return
+            record = _read_journal_record(entry)
+            if record.get("repository_write_set_hash") == self.write_set_hash and record.get("state") != "aborted":
+                return
+        target = greenfield_generation_store.generation_root(self.repo_root, self.write_set_hash)
+        if target.is_symlink():
+            raise RuntimeError("Greenfield immutable generation path is unsafe")
+        if target.is_dir():
+            shutil.rmtree(target)
+            fsync_directory(target.parent)
+
+    @classmethod
+    def pin_reviewed_generation(
+        cls, *, repo_root: Path, transaction_hash: str,
+    ) -> greenfield_generation_store.PinnedGreenfieldGeneration:
+        """Resolve a reviewed hash through its durable receipt, never through current state."""
+
+        root = Path(repo_root).expanduser().resolve()
+        transaction = _require_digest(transaction_hash, label="transaction hash")
+        record = _read_journal_record(root / ".odylith/runtime/greenfield/create-journal" / transaction)
+        if record.get("version") != JOURNAL_VERSION:
+            raise GreenfieldCommitJournalError(
+                "historical Greenfield receipt requires its recorded runtime; its generation was preserved",
+                failure_kind="post_confirm_legacy_generation_requires_migration",
+            )
+        journal = cls(repo_root=root, transaction_hash=transaction, write_set=record.get("recovery_write_set"))
+        record = journal._read_record()
+        if record["state"] not in {"published", "verified", "closed", "recovery_required"}:
+            raise GreenfieldCommitJournalError(
+                "Greenfield reviewed generation has no published receipt",
+                failure_kind="post_confirm_unpublished_generation",
+            )
+        pinned = greenfield_generation_store.pin_greenfield_generation(
+            repo_root=root, write_set_hash=journal.write_set_hash, expected_write_set=journal.write_set,
+        )
+        if pinned.manifest_sha256 != journal._record_generation_manifest_hash(record):
+            raise GreenfieldCommitJournalError(
+                "Greenfield reviewed generation manifest differs from its receipt",
+                failure_kind="post_confirm_committed_state_drift",
+            )
+        return pinned
 
     def discard_recovered_abort(self) -> None:
         """Remove a settled same-hash abort before retrying its sealed commit."""
@@ -646,6 +700,12 @@ def _is_empty_prewrite_orphan(root: Path) -> bool:
 
 def _read_journal_record(root: Path) -> dict[str, Any]:
     state_path = Path(root) / "state.v1.json"
+    if any(path.is_symlink() for path in (state_path, Path(root), *Path(root).parents)):
+        raise GreenfieldCommitJournalError(
+            "greenfield commit journal path is unsafe",
+            failure_kind="post_confirm_commit_environment_or_io_failure",
+            recovery_path=str(root),
+        )
     try:
         payload = json.loads(state_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:

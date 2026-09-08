@@ -10,6 +10,7 @@ from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence.greenfield_commit_transaction import load_sealed_product_create_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
@@ -378,6 +379,7 @@ def seal_compiled_greenfield_package_fixture(
     return replace(
         package,
         repository_write_set=write_set,
+        generation_manifest_text=greenfield_generation_store.compile_greenfield_generation_manifest(write_set),
         commit_result_preview=commit_result,
     )
 

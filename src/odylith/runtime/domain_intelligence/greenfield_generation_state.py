@@ -13,7 +13,7 @@ from odylith.install.fs import atomic_write_text
 from odylith.install.fs import fsync_directory
 
 
-ACTIVE_GENERATION_STATE_VERSION = "odylith.greenfield.active-generation.v1"
+ACTIVE_GENERATION_STATE_VERSION = "odylith.greenfield.active-generation.v2"
 ACTIVE = "active"
 SUPERSEDED = "superseded"
 NONE = "none"
@@ -101,7 +101,7 @@ def publish_active_generation_state(
         "transaction_hash": transaction,
         "write_set_hash": write_set,
         "generation_manifest_sha256": manifest,
-        "generation_path": f".odylith/runtime/greenfield/generations/{transaction}",
+        "generation_path": f".odylith/runtime/greenfield/generations/{write_set}",
     }
     state["record_hash"] = _record_hash(state)
     path = active_generation_state_path(root)
@@ -156,12 +156,14 @@ def _state_identity(state: Mapping[str, Any]) -> dict[str, str]:
 
 
 def _require_state(state: Mapping[str, Any]) -> None:
+    if state.get("version") == "odylith.greenfield.active-generation.v1":
+        raise RuntimeError("Greenfield transaction-addressed active state requires migration; existing generations are preserved")
     if str(state.get("version") or "") != ACTIVE_GENERATION_STATE_VERSION:
         raise RuntimeError("Greenfield active-generation state version is unsupported")
     require_active_generation_identity(state)
-    transaction = str(state.get("transaction_hash") or "")
+    identity = str(state.get("write_set_hash") or "")
     if str(state.get("generation_path") or "") != (
-        f".odylith/runtime/greenfield/generations/{transaction}"
+        f".odylith/runtime/greenfield/generations/{identity}"
     ):
         raise RuntimeError("Greenfield active-generation path is invalid")
     digest = str(state.get("record_hash") or "")

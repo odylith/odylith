@@ -139,8 +139,8 @@ def commit_greenfield_create_transaction(
                 result["product_create_transaction"] = transaction_summary
                 generation = greenfield_generation_store.materialize_immutable_greenfield_generation(
                     repo_root=root,
-                    transaction_hash=transaction.transaction_hash,
                     write_set=write_set,
+                    manifest_text=transaction.prewrite_package.generation_manifest_text,
                 )
                 journal.mark_projecting(
                     result,
@@ -161,6 +161,7 @@ def commit_greenfield_create_transaction(
                         repo_root=root,
                         generation=generation,
                         expected_active_identity=write_set["active_generation_precondition"],
+                        transaction_hash=transaction.transaction_hash,
                     ),
                     published_probe=lambda: greenfield_generation_state.active_generation_is(
                         repo_root=root,

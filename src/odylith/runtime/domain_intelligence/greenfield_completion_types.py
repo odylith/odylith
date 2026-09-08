@@ -62,6 +62,7 @@ class GreenfieldCompletionPackage:
     release_assignment_result: Mapping[str, Any] | None = None
     release_workstream_ids: tuple[str, ...] = ()
     repository_write_set: Mapping[str, Any] | None = None
+    generation_manifest_text: str = ""
     commit_result_preview: Mapping[str, Any] | None = None
 
 

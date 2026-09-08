@@ -1,8 +1,25 @@
 # Domain Intelligence
-Last updated: 2026-09-07
+Last updated: 2026-09-08
 
 
 ## Overview
+
+The generation store uses the sealed write-set hash as its immutable address.
+Exact manifest bytes are compiled after that hash and sealed inside the outer
+ProductCreateTransaction; CONFIRM validates and copies them without generating a
+manifest. The durable commit journal binds the distinct confirmation hash to the
+write set and manifest digest, owns reviewed-history resolution, and protects
+shared historical generations during abort cleanup. Legacy generation layouts
+remain preserved and require explicit migration before new-runtime recovery.
+The JSON active pointer still owns current publication. Browser-entry replacement,
+initial baseline and immutable later-writer publication remain open under CB-305;
+this change does not establish all-reader atomicity or relax 60/90/120.
+The frozen kernel revision passes 4,336 runtime tests and 1,106 install unit
+tests, with the final holdout explicitly excluded. Independent four-edge
+readback resolves the demonstrated ancestor-symlink defect. These checks do not
+establish native host parity, migration usability, complete consumer quality,
+or the browser publication law. Full receipts and failures remain at
+`/private/tmp/odylith-generation-seal-proof.90CkQs/review.md`.
 
 The capability-support Atlas projector groups each proposed component's complete
 responsibility, verification and exact supported source-action references locally.

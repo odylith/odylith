@@ -12,6 +12,54 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ### Close interrupted-publication visibility before release proof (2026-09-08)
 
+The first production integration now addresses immutable generations by the
+existing sealed write-set hash, not the later confirmation hash. The compiler
+seals exact generation-manifest text after the write set and before the outer
+transaction. The commit loader validates its complete binding; CONFIRM copies
+those bytes. The existing durable journal remains the transaction-to-generation
+history owner. No second index, random ID, model role, or semantic schema was added.
+Cleanup now checks active and historical journal references before removing a
+shared generation. Legacy active state and nonterminal transaction-addressed
+journals fail closed with an explicit migration requirement; old closed journals
+and generation bytes stay in place. A complete upgrade migration is still owed.
+
+Initial integrated proof passes 130 kernel, transaction, provenance, and recovery
+tests in 29.55 seconds. New controls cover exact manifest copying with generation
+disabled, invalid sealed manifests, same-write-set/different-transaction rejection,
+historical navigation after pending cleanup, and preservation of another closed
+transaction's noncurrent generation during abort cleanup. The first new admission
+test expected the wrong exception; the actual code correctly rejected the changed
+active-generation precondition before writes. That test expectation was corrected.
+Release-reader migration passes 101 focused checks in 1.47 seconds: observations
+pin the sealed write set, published history requires its transaction receipt, and
+retained evidence selects the preconfirm write-set address instead of current state.
+Independent review also reproduced an inherited ancestor-symlink escape through
+reviewed navigation. The sole generation-path owner now rejects it; the expanded
+17-case seal suite passes in 1.54 seconds. The independent review's unchanged
+four-edge script then passes in 0.68 seconds; no further P0/P1 was demonstrated
+within that bounded kernel review, not across Greenfield as a whole.
+
+The frozen source passes 4,336 runtime tests in 338.18 seconds and 1,106 install
+unit tests in 78.53 seconds. Preserve the initial runtime invocation failure:
+four default-provider checks failed because a governance-only environment
+override was applied to pytest. The exact four pass unchanged with that override
+removed; the complete rerun also passes without product edits. Browser validation
+reports 292 passed, one failed, and one skipped in 852.81 seconds. The failure
+expects blank Registry detail instead of the existing no-matches recovery panel.
+CB-330, the Registry spec and source history confirm that assertion is obsolete.
+The exact test now passes in 1.52 seconds after requiring visible recovery,
+absence of stale/retired detail, working Reset and canonical reselection; no
+runtime or served content changed. Both screenshots were independently and
+main-reviewed. Preserve the original full-run failure. The skipped
+Radar diagnostic fixture does not establish that case. Evidence:
+`/private/tmp/odylith-generation-seal-proof.90CkQs/review.md`.
+
+This storage change does not close CB-305. The sole browser-readable entry,
+publication-entry versus shell ownership, immutable first baseline, explicit
+activation/migration, and later-writer successors still need joint integration.
+The JSON pointer remains the only current authority until that replacement lands;
+no HTML mirror is active. Keep the stopped-writer browser counterexample open.
+
 The bounded browser comparison selects one canonical HTML publication entry
 for production integration, not release acceptance. Four file/HTTP desktop/mobile
 schedules pass in 47.69 seconds: 36 coherent normal/history observations and
@@ -33,8 +81,9 @@ publish immutable successors after successful later writers instead of returning
 to mutable live paths. Preserve exact reviewed-hash links and define activation
 for already-open legacy tabs. Do not copy the experimental snapshot subsystem
 into production, retain both pointers, or generate the router after CONFIRM.
-Production source is unchanged at this evidence checkpoint. The original crash
-law remains a release blocker until the actual commit/journal/browser route passes.
+The acyclic storage and manifest owners are now integrated in production source;
+the browser-entry replacement is not. The original crash law remains a release
+blocker until the actual commit/journal/browser route passes.
 Preserve failed prototype receipts and keep fixture storage bounded; repeated
 full copies exhausted the local disk before recoverable archival and isolated-copy
 hardlinks reduced the final four-cell fixture batch to 474 MiB.

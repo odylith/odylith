@@ -440,7 +440,7 @@ def _retain_greenfield_repository_evidence(
     receipt = receipt if isinstance(receipt, Mapping) else {}
     transaction_file = str(receipt.get("transaction_file") or "").strip()
     compiler_receipt_file = str(receipt.get("compiler_receipt_file") or "").strip()
-    transaction_hash = str(receipt.get("transaction_hash") or "").strip()
+    write_set_hash = str(receipt.get("repository_write_set_hash") or "").strip()
     for relative, destination in (
         (transaction_file, "semantic/product-create-transaction.v1.json"),
         (compiler_receipt_file, "semantic/product-create-transaction.compiler-receipt.v1.json"),
@@ -454,9 +454,9 @@ def _retain_greenfield_repository_evidence(
         source = repo_artifact_path(source_root, relative)
         if source is not None and source.exists():
             _copy_case_source(case, source_root=source_root, source=source, destination=destination)
-    if not is_sha256(transaction_hash):
+    if not is_sha256(write_set_hash):
         return
-    generation = source_root / ".odylith/runtime/greenfield/generations" / transaction_hash
+    generation = source_root / ".odylith/runtime/greenfield/generations" / write_set_hash
     manifest = generation / "generation-manifest.v1.json"
     if manifest.exists():
         _copy_case_source(

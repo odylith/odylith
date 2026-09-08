@@ -11,6 +11,8 @@ from odylith.runtime.domain_intelligence import greenfield_managed_mutation_boun
 from odylith.runtime.domain_intelligence import greenfield_post_confirm_handoff
 from odylith.runtime.domain_intelligence import greenfield_repository_lock
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
+from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 
 
 TX_HASH = "c" * 64
@@ -33,20 +35,37 @@ def _active_repository(tmp_path: Path) -> tuple[Path, greenfield_generation_stor
         source_root=repo,
         staged_root=stage,
     )
-    generation = greenfield_generation_store.materialize_immutable_greenfield_generation(
-        repo_root=repo,
-        transaction_hash=TX_HASH,
-        write_set=write_set,
-    )
-    greenfield_repository_write_set.apply_compiled_greenfield_repository_write_set(
-        repo_root=repo,
-        write_set=write_set,
-    )
-    greenfield_generation_store.publish_greenfield_generation(
-        repo_root=repo,
-        generation=generation,
-        expected_active_identity=write_set["active_generation_precondition"],
-    )
+    manifest_text = greenfield_generation_store.compile_greenfield_generation_manifest(write_set)
+    journal = GreenfieldCommitJournal(repo_root=repo, transaction_hash=TX_HASH, write_set=write_set)
+    journal.prepare()
+    result = {"status": "created", "transaction_hash": TX_HASH}
+    with GreenfieldApplyTransaction(
+        repo, paths=journal.paths, snapshot_root=journal.snapshot_root, retain_snapshot=True,
+    ) as transaction:
+        journal.mark_prepared()
+        generation = greenfield_generation_store.materialize_immutable_greenfield_generation(
+            repo_root=repo, write_set=write_set, manifest_text=manifest_text,
+        )
+        journal.mark_projecting(result, generation_manifest_sha256=generation.manifest_sha256)
+        greenfield_repository_write_set.apply_compiled_greenfield_repository_write_set(
+            repo_root=repo, write_set=write_set, temporary_directory=journal.staging_root,
+        )
+        greenfield_repository_write_set.require_greenfield_repository_after_state(
+            repo_root=repo, write_set=write_set,
+        )
+        transaction.publish(
+            lambda: greenfield_generation_store.publish_greenfield_generation(
+                repo_root=repo, generation=generation,
+                expected_active_identity=write_set["active_generation_precondition"], transaction_hash=TX_HASH,
+            ),
+            published_probe=lambda: greenfield_generation_state.active_generation_is(
+                repo_root=repo, transaction_hash=TX_HASH, write_set_hash=generation.write_set_hash,
+                generation_manifest_sha256=generation.manifest_sha256,
+            ),
+        )
+        journal.mark_published(result, generation_manifest_sha256=generation.manifest_sha256)
+        journal.mark_closed(result, generation_manifest_sha256=generation.manifest_sha256)
+    journal.discard_committed_snapshot()
     return repo, generation
 
 
@@ -124,6 +143,7 @@ def test_failed_writer_does_not_supersede_or_expose_partial_live_tree(tmp_path: 
     ):
         greenfield_post_confirm_handoff.canonical_current_project_root(repo)
     reviewed = greenfield_post_confirm_handoff.post_confirm_navigation(repo, transaction_hash=TX_HASH)
+    assert reviewed["generation_transaction_hash"] == TX_HASH
     assert reviewed["dashboard_path"] == str(
         (generation.repository_root / "odylith/index.html").resolve()
     )
@@ -140,6 +160,7 @@ def test_reviewed_generation_link_remains_exact_after_later_success(tmp_path: Pa
     reviewed = greenfield_post_confirm_handoff.post_confirm_navigation(repo, transaction_hash=TX_HASH)
     current = greenfield_post_confirm_handoff.post_confirm_navigation(repo)
     assert reviewed["view_status"] == "reviewed_generation"
+    assert reviewed["generation_transaction_hash"] == TX_HASH
     assert reviewed["dashboard_path"] == str(
         (generation.repository_root / "odylith/index.html").resolve()
     )

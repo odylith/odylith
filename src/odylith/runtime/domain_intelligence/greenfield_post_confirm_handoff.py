@@ -10,6 +10,7 @@ import webbrowser
 from odylith.runtime.common.environment import env_flag_enabled
 from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_generation_store
+from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
 from odylith.runtime.domain_intelligence import greenfield_repository_lock
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 
@@ -67,7 +68,7 @@ def post_confirm_navigation(repo_root: Path, *, transaction_hash: str = "") -> d
     root = Path(repo_root).expanduser().resolve()
     transaction = str(transaction_hash or "").strip()
     if transaction:
-        pinned = greenfield_generation_store.pin_greenfield_generation(
+        pinned = GreenfieldCommitJournal.pin_reviewed_generation(
             repo_root=root,
             transaction_hash=transaction,
         )
@@ -83,7 +84,7 @@ def post_confirm_navigation(repo_root: Path, *, transaction_hash: str = "") -> d
     navigation["view_status"] = view_status
     navigation["compatibility_dashboard_path"] = str((root / "odylith" / "index.html").resolve())
     if pinned is not None:
-        navigation["generation_transaction_hash"] = pinned.transaction_hash
+        navigation["generation_transaction_hash"] = transaction
         navigation["reviewed_generation_path"] = str(pinned.generation_root)
     return navigation
 

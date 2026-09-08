@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence import greenfield_create_lifecycle
 from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     product_facts_payload,
 )
@@ -565,7 +566,7 @@ def test_dry_run_commit_issues_rejects_changed_generation_manifest(tmp_path: Pat
     manifest_path = (
         tmp_path
         / ".odylith/runtime/greenfield/generations"
-        / transaction_hash
+        / str(write_set["write_set_hash"])
         / "generation-manifest.v1.json"
     )
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -579,8 +580,7 @@ def test_dry_run_commit_issues_rejects_changed_generation_manifest(tmp_path: Pat
         repo_root=tmp_path,
     )
 
-    assert "active generation identity does not match the sealed transaction" in issues
-    assert "immutable generation manifest does not match the sealed managed after-state" in issues
+    assert issues == ("immutable generation readback is missing or invalid",)
 
 
 def test_dry_run_commit_issues_rejects_changed_active_generation_identity(tmp_path: Path) -> None:
@@ -594,6 +594,7 @@ def test_dry_run_commit_issues_rejects_changed_active_generation_identity(tmp_pa
     state_path = greenfield_generation_state.active_generation_state_path(tmp_path)
     state = json.loads(state_path.read_text(encoding="utf-8"))
     state["write_set_hash"] = "b" * 64
+    state["generation_path"] = ".odylith/runtime/greenfield/generations/" + "b" * 64
     state.pop("record_hash")
     state["record_hash"] = _record_hash(state)
     state_path.write_text(_canonical_json(state), encoding="utf-8")
@@ -605,6 +606,30 @@ def test_dry_run_commit_issues_rejects_changed_active_generation_identity(tmp_pa
     )
 
     assert issues == ("active generation identity does not match the sealed transaction",)
+
+
+def test_generation_proof_rejects_an_unapproved_transaction_with_the_same_write_set(tmp_path: Path) -> None:
+    receipt, write_set = _compiled_receipt(tmp_path)
+    _publish_committed_generation(
+        repo_root=tmp_path, transaction_hash=str(receipt["transaction_hash"]), write_set=write_set,
+    )
+    identity = greenfield_generation_state.active_generation_identity(tmp_path)
+    unapproved_transaction = "b" * 64
+    greenfield_generation_state.publish_active_generation_state(
+        repo_root=tmp_path, expected_identity=identity,
+        transaction_hash=unapproved_transaction,
+        write_set_hash=str(write_set["write_set_hash"]),
+        generation_manifest_sha256=identity["generation_manifest_sha256"],
+    )
+
+    assert evidence_module._active_generation_issues(  # noqa: SLF001
+        repo_root=tmp_path, transaction_hash=unapproved_transaction,
+        write_set_hash=str(write_set["write_set_hash"]),
+        after_fingerprints=write_set["after_fingerprints"],
+    ) == ("immutable generation readback is missing or invalid",)
+    assert post_confirm_navigation_issues(
+        create_payload={}, repo_root=tmp_path, transaction_hash=unapproved_transaction,
+    ) == ("post-confirm navigation has no valid reviewed generation receipt",)
 
 
 def test_dry_run_commit_issues_rejects_changed_managed_repository_state(tmp_path: Path) -> None:
@@ -636,7 +661,7 @@ def test_dry_run_commit_issues_rejects_changed_generation_repository_state(tmp_p
     generation_index = (
         tmp_path
         / ".odylith/runtime/greenfield/generations"
-        / transaction_hash
+        / str(write_set["write_set_hash"])
         / "repository/odylith/index.html"
     )
     generation_index.write_text("changed immutable generation", encoding="utf-8")
@@ -647,7 +672,7 @@ def test_dry_run_commit_issues_rejects_changed_generation_repository_state(tmp_p
         repo_root=tmp_path,
     )
 
-    assert issues == ("immutable generation repository does not match the sealed managed after-state",)
+    assert issues == ("immutable generation readback is missing or invalid",)
 
 
 def test_confirmation_preview_requires_the_hash_bound_decision_rail() -> None:
@@ -663,17 +688,18 @@ def test_confirmation_preview_requires_the_hash_bound_decision_rail() -> None:
 
 
 def test_post_confirm_navigation_requires_the_reviewed_generation_workspace(tmp_path: Path) -> None:
+    receipt, write_set = _compiled_receipt(tmp_path)
+    transaction_hash = str(receipt["transaction_hash"])
+    _publish_committed_generation(
+        repo_root=tmp_path, transaction_hash=transaction_hash, write_set=write_set,
+    )
     dashboard = (
         tmp_path
         / ".odylith/runtime/greenfield/generations"
-        / HASH
+        / str(write_set["write_set_hash"])
         / "repository/odylith/index.html"
     ).resolve()
-    dashboard.parent.mkdir(parents=True)
-    dashboard.write_text("<html></html>", encoding="utf-8")
     compatibility_dashboard = (tmp_path / "odylith/index.html").resolve()
-    compatibility_dashboard.parent.mkdir(parents=True)
-    compatibility_dashboard.write_text("<html></html>", encoding="utf-8")
     payload = {
         "post_confirm_navigation": {
             "project": "odylith/index.html?tab=project",
@@ -685,14 +711,21 @@ def test_post_confirm_navigation_requires_the_reviewed_generation_workspace(tmp_
             "project_url": f"{dashboard.as_uri()}?tab=project",
             "view_status": "reviewed_generation",
             "compatibility_dashboard_path": str(compatibility_dashboard),
-            "generation_transaction_hash": HASH,
+            "generation_transaction_hash": transaction_hash,
         }
     }
 
     assert post_confirm_navigation_issues(
         create_payload=payload,
         repo_root=tmp_path,
-        transaction_hash=HASH,
+        transaction_hash=transaction_hash,
+    ) == ()
+
+    greenfield_generation_state.supersede_active_generation(
+        repo_root=tmp_path, expected_transaction_hash=transaction_hash,
+    )
+    assert post_confirm_navigation_issues(
+        create_payload=payload, repo_root=tmp_path, transaction_hash=transaction_hash,
     ) == ()
 
     payload["post_confirm_navigation"]["project_url"] = "file:///wrong/index.html?tab=project"
@@ -700,7 +733,7 @@ def test_post_confirm_navigation_requires_the_reviewed_generation_workspace(tmp_
     assert post_confirm_navigation_issues(
         create_payload=payload,
         repo_root=tmp_path,
-        transaction_hash=HASH,
+        transaction_hash=transaction_hash,
     ) == (
         "post-confirm response does not expose the reviewed generation workspace routes: project_url",
     )
@@ -889,9 +922,16 @@ def _publish_committed_generation(
 ) -> None:
     generation = greenfield_generation_store.materialize_immutable_greenfield_generation(
         repo_root=repo_root,
-        transaction_hash=transaction_hash,
         write_set=write_set,
+        manifest_text=greenfield_generation_store.compile_greenfield_generation_manifest(write_set),
     )
+    journal = GreenfieldCommitJournal(
+        repo_root=repo_root, transaction_hash=transaction_hash, write_set=write_set,
+    )
+    journal.prepare()
+    journal.snapshot_root.mkdir()
+    journal.mark_prepared()
+    journal.mark_projecting({}, generation_manifest_sha256=generation.manifest_sha256)
     greenfield_repository_write_set.apply_compiled_greenfield_repository_write_set(
         repo_root=repo_root,
         write_set=write_set,
@@ -900,7 +940,10 @@ def _publish_committed_generation(
         repo_root=repo_root,
         generation=generation,
         expected_active_identity=write_set["active_generation_precondition"],
+        transaction_hash=transaction_hash,
     )
+    journal.mark_published({}, generation_manifest_sha256=generation.manifest_sha256)
+    journal.mark_closed({}, generation_manifest_sha256=generation.manifest_sha256)
 
 
 def _create_payload(receipt: dict[str, object]) -> dict[str, object]:

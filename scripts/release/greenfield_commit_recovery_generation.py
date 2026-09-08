@@ -78,6 +78,7 @@ import sys
 
 from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_generation_store
+from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
 
 root = Path.cwd().resolve()
 transaction_hash = sys.argv[1]
@@ -85,7 +86,10 @@ transaction_path = Path(sys.argv[2]).expanduser()
 if not transaction_path.is_absolute():
     transaction_path = root / transaction_path
 transaction_payload = json.loads(transaction_path.read_text(encoding="utf-8"))
+if transaction_payload.get("transaction_hash") != transaction_hash:
+    raise RuntimeError("observed transaction hash differs from its sealed transaction")
 write_set = transaction_payload["prewrite_package"]["repository_write_set"]
+write_set_hash = str(write_set["write_set_hash"])
 identity = greenfield_generation_state.active_generation_identity(root)
 payload = {
     "active_identity": identity,
@@ -97,14 +101,14 @@ payload = {
     "transaction_generation_readback_status": "missing",
 }
 generation = None
-generation_path = greenfield_generation_store.generation_root(root, transaction_hash)
+generation_path = greenfield_generation_store.generation_root(root, write_set_hash)
 if generation_path.exists():
     payload["transaction_generation_status"] = "invalid"
     payload["transaction_generation_readback_status"] = "invalid"
 try:
     generation = greenfield_generation_store.pin_greenfield_generation(
         repo_root=root,
-        transaction_hash=transaction_hash,
+        write_set_hash=write_set_hash,
         expected_write_set=write_set,
     )
 except (RuntimeError, ValueError):
@@ -115,13 +119,16 @@ else:
     payload["transaction_generation_write_set_hash"] = generation.write_set_hash
     payload["transaction_generation_readback_status"] = "passed"
 if identity.get("status") == greenfield_generation_state.ACTIVE:
-    active = (
-        generation
-        if generation is not None and generation.transaction_hash == identity.get("transaction_hash")
-        else greenfield_generation_store.pin_active_greenfield_generation(root)
+    active = GreenfieldCommitJournal.pin_reviewed_generation(
+        repo_root=root, transaction_hash=identity["transaction_hash"],
     )
+    if (
+        active.write_set_hash != identity.get("write_set_hash")
+        or active.manifest_sha256 != identity.get("generation_manifest_sha256")
+    ):
+        raise RuntimeError("active generation differs from its transaction receipt")
     payload["active_pin_status"] = "active"
-    payload["active_pin_transaction_hash"] = active.transaction_hash
+    payload["active_pin_transaction_hash"] = identity["transaction_hash"]
 print(json.dumps(payload, sort_keys=True))
 """
 

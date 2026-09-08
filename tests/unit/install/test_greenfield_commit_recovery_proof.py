@@ -9,8 +9,12 @@ from pathlib import Path
 import shutil
 from types import SimpleNamespace
 
+import pytest
+
+from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -100,7 +104,10 @@ def test_generation_observation_rejects_manifest_only_published_proof() -> None:
     assert "installed SIGKILL recovery published generation failed sealed after-image readback" in module._generation_observation_issues(facts)  # noqa: SLF001
 
 
-def test_installed_generation_observation_rejects_tampered_after_image(tmp_path: Path) -> None:
+@pytest.mark.parametrize("state", ("sealed", "tampered", "published", "unapproved", "wrong_transaction"))
+def test_installed_generation_observation_requires_sealed_bytes_and_transaction_receipt(
+    tmp_path: Path, state: str,
+) -> None:
     module = _module()
     repo = tmp_path / "repo"
     stage = tmp_path / "stage"
@@ -115,22 +122,45 @@ def test_installed_generation_observation_rejects_tampered_after_image(tmp_path:
     )
     generation = greenfield_generation_store.materialize_immutable_greenfield_generation(
         repo_root=repo,
-        transaction_hash="a" * 64,
         write_set=write_set,
+        manifest_text=greenfield_generation_store.compile_greenfield_generation_manifest(write_set),
     )
     transaction_file = repo / "transaction.json"
     transaction_file.write_text(
-        json.dumps({"prewrite_package": {"repository_write_set": write_set}}),
+        json.dumps({"transaction_hash": "a" * 64, "prewrite_package": {"repository_write_set": write_set}}),
         encoding="utf-8",
     )
-    (generation.repository_root / "odylith/index.html").write_text("tampered\n", encoding="utf-8")
+    assert generation.generation_root.name == write_set["write_set_hash"] != "a" * 64
+    if state == "tampered":
+        (generation.repository_root / "odylith/index.html").write_text("tampered\n", encoding="utf-8")
+    if state in {"published", "unapproved"}:
+        journal = GreenfieldCommitJournal(repo_root=repo, transaction_hash="a" * 64, write_set=write_set)
+        journal.prepare()
+        journal.snapshot_root.mkdir()
+        journal.mark_prepared()
+        journal.mark_projecting({}, generation_manifest_sha256=generation.manifest_sha256)
+        greenfield_repository_write_set.apply_compiled_greenfield_repository_write_set(
+            repo_root=repo, write_set=write_set,
+        )
+        greenfield_generation_store.publish_greenfield_generation(
+            repo_root=repo, generation=generation, transaction_hash="a" * 64,
+            expected_active_identity=write_set["active_generation_precondition"],
+        )
+        journal.mark_published({}, generation_manifest_sha256=generation.manifest_sha256)
+        if state == "unapproved":
+            greenfield_generation_state.publish_active_generation_state(
+                repo_root=repo, transaction_hash="b" * 64,
+                expected_identity=greenfield_generation_state.active_generation_identity(repo),
+                write_set_hash=generation.write_set_hash,
+                generation_manifest_sha256=generation.manifest_sha256,
+            )
 
     observed = subprocess.run(
         [
             sys.executable,
             "-c",
             module._GENERATION_OBSERVATION_SCRIPT,  # noqa: SLF001
-            "a" * 64,
+            ("b" if state == "wrong_transaction" else "a") * 64,
             str(transaction_file),
         ],
         cwd=repo,
@@ -140,12 +170,24 @@ def test_installed_generation_observation_rejects_tampered_after_image(tmp_path:
         },
         text=True,
         capture_output=True,
-        check=True,
+        check=False,
     )
+    if state in {"unapproved", "wrong_transaction"}:
+        assert observed.returncode != 0
+        expected_error = (
+            "observed transaction hash differs from its sealed transaction"
+            if state == "wrong_transaction" else "greenfield commit journal state cannot be read"
+        )
+        assert expected_error in observed.stderr
+        assert not observed.stdout
+        return
+    assert observed.returncode == 0, observed.stderr
     payload = json.loads(observed.stdout)
 
-    assert payload["transaction_generation_status"] == "invalid"
-    assert payload["transaction_generation_readback_status"] == "invalid"
+    assert payload["transaction_generation_status"] == ("invalid" if state == "tampered" else "present")
+    assert payload["transaction_generation_readback_status"] == ("invalid" if state == "tampered" else "passed")
+    assert payload["active_pin_status"] == ("active" if state == "published" else "none")
+    assert payload["active_pin_transaction_hash"] == ("a" * 64 if state == "published" else "")
 
 
 def test_faulted_create_uses_the_installed_runtime_without_source_path(tmp_path: Path, monkeypatch) -> None:

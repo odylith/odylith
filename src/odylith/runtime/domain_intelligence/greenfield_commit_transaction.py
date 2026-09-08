@@ -29,6 +29,7 @@ from odylith.runtime.domain_intelligence.greenfield_create_contract import PRODU
 from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_ALLOWED_OPERATIONS
 from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_FORBIDDEN_OPERATIONS
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.domain_intelligence import greenfield_generation_store
 
 
 _POSTCONFIRM_RUNTIME_SOURCE_FILES = (
@@ -71,6 +72,7 @@ class SealedGreenfieldCommitPackage:
     _repository_write_set_json: str
     _commit_result_preview_json: str
     _surface_refresh_preview_json: str
+    generation_manifest_text: str
 
     @property
     def repository_write_set(self) -> Mapping[str, Any]:
@@ -223,6 +225,7 @@ def load_sealed_product_create_commit(
             _repository_write_set_json=_sealed_mapping_json(write_set),
             _commit_result_preview_json=_sealed_mapping_json(commit_preview),
             _surface_refresh_preview_json=_sealed_mapping_json(surface_preview),
+            generation_manifest_text=package.get("generation_manifest_text", ""),
         ),
         _attestation=_SEALED_COMMIT_ATTESTATION,
     )
@@ -245,6 +248,9 @@ def require_sealed_commit_transaction(transaction: Any) -> None:
     package = getattr(transaction, "prewrite_package", None)
     write_set = getattr(package, "repository_write_set", None)
     greenfield_repository_write_set.require_compiled_greenfield_repository_write_set(write_set)
+    greenfield_generation_store.require_sealed_greenfield_generation_manifest(
+        getattr(package, "generation_manifest_text", ""), write_set=write_set,
+    )
 
 
 def _require_current_sealed_intent_versions(payload: Mapping[str, Any]) -> None:

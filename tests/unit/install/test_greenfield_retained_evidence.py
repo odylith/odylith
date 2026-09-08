@@ -31,9 +31,10 @@ def test_retained_evidence_survives_temp_cleanup_and_detects_tampering(tmp_path:
     temp_parent.mkdir()
     repo = temp_parent / "sim"
     transaction_hash = "a" * 64
+    write_set_hash = "c" * 64
     transaction = repo / ".odylith/runtime/greenfield/pending" / transaction_hash / "product-create-transaction.v1.json"
     receipt = transaction.with_name(transaction.name + ".compiler-receipt.v1.json")
-    generation = repo / ".odylith/runtime/greenfield/generations" / transaction_hash
+    generation = repo / ".odylith/runtime/greenfield/generations" / write_set_hash
     _write(transaction, '{"transaction_hash":"' + transaction_hash + '"}\n')
     _write(receipt, '{"version":"receipt"}\n')
     _write(generation / "generation-manifest.v1.json", '{"version":"generation"}\n')
@@ -41,6 +42,10 @@ def test_retained_evidence_survives_temp_cleanup_and_detects_tampering(tmp_path:
     _write(generation / "repository/odylith/atlas/source/system.mmd", "flowchart LR\nA --- B\n")
     _write(generation / "repository/odylith/atlas/source/system.svg", "<svg></svg>\n")
     _write(repo / ".odylith/runtime/greenfield/active-generation.v1.json", '{}\n')
+    _write(
+        repo / ".odylith/runtime/greenfield/generations" / transaction_hash / "repository/wrong.txt",
+        "obsolete transaction-addressed bytes\n",
+    )
 
     evidence_root = prepare_retained_evidence_output_dir(
         output_dir=tmp_path / "evidence",
@@ -59,6 +64,7 @@ def test_retained_evidence_survives_temp_cleanup_and_detects_tampering(tmp_path:
             "preconfirm_dry_run": {
                 "status": "compiled",
                 "transaction_hash": transaction_hash,
+                "repository_write_set_hash": write_set_hash,
                 "transaction_file": str(transaction.relative_to(repo)),
                 "compiler_receipt_file": str(receipt.relative_to(repo)),
             },
@@ -72,6 +78,7 @@ def test_retained_evidence_survives_temp_cleanup_and_detects_tampering(tmp_path:
     assert retained_evidence_manifest_issues(manifest, expected_case_ids=("GFH-001",)) == ()
     retained_atlas = evidence_root / "gfh-001/generated/odylith/atlas/source/system.svg"
     assert retained_atlas.read_text(encoding="utf-8") == "<svg></svg>\n"
+    assert not (evidence_root / "gfh-001/generated/wrong.txt").exists()
 
     retained_atlas.write_text("tampered\n", encoding="utf-8")
     assert "retained case evidence hash changed" in " ".join(retained_evidence_manifest_issues(manifest))
@@ -123,7 +130,8 @@ def test_retained_case_rejects_symlinked_generation_artifact(tmp_path: Path) -> 
     temp_parent = tmp_path / "temp"
     repo = temp_parent / "sim"
     transaction_hash = "b" * 64
-    generation = repo / ".odylith/runtime/greenfield/generations" / transaction_hash
+    write_set_hash = "d" * 64
+    generation = repo / ".odylith/runtime/greenfield/generations" / write_set_hash
     _write(generation / "generation-manifest.v1.json", '{}\n')
     repository = generation / "repository"
     repository.mkdir(parents=True)
@@ -141,7 +149,10 @@ def test_retained_case_rejects_symlinked_generation_artifact(tmp_path: Path) -> 
             repo_root=repo,
             result_payload={
                 "status": "failed",
-                "evidence": {"preconfirm_dry_run": {"transaction_hash": transaction_hash}},
+                "evidence": {"preconfirm_dry_run": {
+                    "transaction_hash": transaction_hash,
+                    "repository_write_set_hash": write_set_hash,
+                }},
             },
         )
 

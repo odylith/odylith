@@ -9,6 +9,7 @@ from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_prewrite_commit_result
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence import greenfield_traceability_commit
@@ -45,7 +46,10 @@ def require_complete_compiled_greenfield_package(
         greenfield_repository_write_set.require_compiled_greenfield_repository_write_set(
             prewrite_package.repository_write_set,
         )
-    except ValueError as exc:
+        greenfield_generation_store.require_sealed_greenfield_generation_manifest(
+            prewrite_package.generation_manifest_text, write_set=prewrite_package.repository_write_set,
+        )
+    except (ValueError, RuntimeError) as exc:
         issues.append(str(exc))
     try:
         greenfield_prewrite_commit_result.require_greenfield_commit_result_preview(

@@ -1,5 +1,7 @@
 - Bug ID: CB-330
 
+- Regression Oracle Alignment (2026-09-08): The broad browser suite's execution-engine hard-cut test still required blank detail after a retired-alias search. That expectation contradicted this record and the Registry selection contract introduced in 4ca2f3d5. The test now requires the existing no-matches guidance, no stale component or retired alias, working Reset and canonical component reselection. The exact case passes in 1.52 seconds with runtime and served bytes unchanged; main and independent screenshot review corroborate the no-results/recovery journey. Evidence: /private/tmp/odylith-generation-seal-proof.90CkQs/registry-oracle-correction.xml. Preserve the original full-suite failure; no new installed-release or complete UX claim follows.
+
 - Title: Fresh installed governance surfaces imply records or delivery evidence that does not exist
 
 - Status: FixedPendingRelease

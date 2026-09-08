@@ -83,6 +83,7 @@ def run_with_greenfield_managed_mutation_boundary(
     try:
         with greenfield_repository_lock.greenfield_repository_lock(root):
             pinned = greenfield_generation_store.pin_active_greenfield_generation(root)
+            active = greenfield_generation_state.read_active_generation_state(root)
             result = operation()
             if result != 0:
                 return result
@@ -91,7 +92,7 @@ def run_with_greenfield_managed_mutation_boundary(
             if actual != expected:
                 greenfield_generation_state.supersede_active_generation(
                     repo_root=root,
-                    expected_transaction_hash=pinned.transaction_hash,
+                    expected_transaction_hash=str(active["transaction_hash"]),
                 )
             return result
     except greenfield_repository_lock.GreenfieldRepositoryBusyError as exc:

@@ -50,7 +50,8 @@ def _committed_result() -> dict[str, object]:
 
 def _stub_navigation(monkeypatch: pytest.MonkeyPatch) -> None:
     def _navigation(root: Path, *, transaction_hash: str) -> dict[str, str]:
-        dashboard = root / ".odylith/runtime/greenfield/generations" / transaction_hash / "repository/odylith/index.html"
+        # Callback routing is stubbed here; the generation address is not the approval hash.
+        dashboard = root / ".odylith/runtime/greenfield/generations" / ("d" * 64) / "repository/odylith/index.html"
         return {
             "project": "odylith/index.html?tab=project",
             "radar": "odylith/index.html?tab=radar",
