@@ -26,6 +26,7 @@ from typing import Sequence
 from odylith.common.json_objects import load_json_object as _load_json
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.reasoning import odylith_reasoning
+from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.surfaces import compass_standup_brief_batch
 from odylith.runtime.surfaces import compass_standup_brief_narrator
 from odylith.runtime.surfaces import compass_standup_brief_provider_contract
@@ -456,6 +457,8 @@ def enqueue_request(
     scope_signals: Mapping[str, Mapping[str, Mapping[str, Any]]],
 ) -> dict[str, Any]:
     repo_root = Path(repo_root).resolve()
+    if not compass_refresh_contract.background_maintenance_allowed(repo_root=repo_root):
+        return {}
     state = _load_state(repo_root=repo_root)
     state_entries = dict(state.get("entries", {}))
     payload: dict[str, Any] = {
@@ -623,6 +626,8 @@ def _patch_current_runtime_from_terminal_state(
 
 
 def maybe_spawn_background(*, repo_root: Path) -> int:
+    if not compass_refresh_contract.background_maintenance_allowed(repo_root=repo_root):
+        return 0
     if str(os.environ.get(_BACKGROUND_DISABLE_ENV, "")).strip() == "1":
         return 0
     if str(os.environ.get("PYTEST_CURRENT_TEST", "")).strip() and str(os.environ.get(_BACKGROUND_TEST_ALLOW_ENV, "")).strip() != "1":

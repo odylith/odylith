@@ -13,6 +13,17 @@ guards, but is not a qualified winning mechanism. The earlier external
 not establish robustness. Consumer 60/90/120 and all quality/release gates remain
 fixed. Evidence: `/private/tmp/odylith-v53-native-admission.G4DKq8/proposal-report.json`.
 
+Prewrite compilation explicitly owns a temporary refresh-root lifetime. Compass
+still renders its canonical timeline, workstreams, risks and local facts, and may
+reuse only exact validated narration. The temporary root cannot queue or launch
+detached narration jobs; a cold brief remains explicitly unavailable. Durable
+repositories retain normal background warming. No job is handed to CONFIRM.
+Three pre-fix lifecycle controls fail. The corrected source passes 4311 runtime
+tests, 1101 install tests and 34 synthetic staged-browser checks; native synthetic
+success, malformed-output and timeout controls admit no unexpected dispatches.
+These are development-lane proofs, not real-model or installed-release qualification.
+This removes extra work ownership, not the separately measured author latency.
+
 Domain Intelligence owns the Greenfield evidence-to-transaction boundary. One
 pinned model authors source-cited facts and typed relations alongside a required,
 separately labeled provisional design. Source-local v53 uses one author and one
@@ -194,6 +205,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-09-07: Bound temporary prewrite refresh roots so Compass can render without queuing or launching detached narration. Exact-cache and explicit unavailable states remain unchanged, as does durable-repository warming. The settled source passes 4311 runtime tests, 1101 install tests and 34 synthetic staged-browser checks, plus native synthetic success/malformed/timeout controls. Real-model quality, timing and installed-release qualification remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 
 - 2026-09-04: Qualified v30 on the unchanged flood source discriminator. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-303`, `CB-329`; Diagram: D-043)
   One deep model call completed in `49.80s`, chose `city staff` as the direct

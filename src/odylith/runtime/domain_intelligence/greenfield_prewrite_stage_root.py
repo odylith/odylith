@@ -9,6 +9,7 @@ import shutil
 import tempfile
 
 from odylith.runtime.domain_intelligence import greenfield_create_baseline
+from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.domain_intelligence.greenfield_repository_write_set import (
     GREENFIELD_REPOSITORY_WRITE_PATHS,
 )
@@ -33,8 +34,9 @@ def staged_greenfield_prewrite_root(root: Path) -> Iterator[Path]:
         stage_root.mkdir(parents=True, exist_ok=True)
         for token in _PREWRITE_STAGE_PATHS:
             _copy_existing_path(source_root / token, stage_root / token)
-        ensure_greenfield_create_baseline(stage_root)
-        yield stage_root
+        with compass_refresh_contract.transient_refresh_root(repo_root=stage_root):
+            ensure_greenfield_create_baseline(stage_root)
+            yield stage_root
 
 
 def _copy_existing_path(source: Path, target: Path) -> None:

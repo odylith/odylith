@@ -12,6 +12,76 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ### Source-first ownership comparison (2026-09-07)
 
+The temporary-root correction now has bounded source-local approval: 4311 runtime
+tests, 1101 install tests and 34 synthetic staged-browser checks pass. The exact
+native synthetic path passes success, malformed-output and 55-second timeout
+controls with respectively two, one and one fake dispatches, no unexpected calls
+and no pre-confirm governed writes. Independent readback verifies the complete
+sealed candidate and consumer inventories. Preserve the first runtime failure
+from stale Release forensics; the passing full run followed canonical governance
+settlement on a frozen tree. Evidence: `/private/tmp/odylith-staging-lifetime-proof.biKspe/`
+and `/private/tmp/odylith-fast-execution-gate.ivieTi/synthetic-preflight-review.md`.
+This closes the diagnosed transient-job ownership defect in the development lane,
+not real-model latency or full Greenfield quality. Remaining staged UX findings
+include an obscured D-004 edge label, uneven diagram depth, dense mobile chrome,
+unknown Registry spec date and awkward cold-Compass planning copy. Keep them in
+the package-quality gate. Do not repeat full runtime tests for narrative-only
+settlement; verify the unchanged tested code and focused governed projections.
+
+Before the next live experiment, preserve the original acceptance and synthetic
+receipts and bind a prerequisite addendum into a fresh frozen contract. The
+candidate includes the lifecycle correction; Fast is only the provider-request
+delta on that corrected tree, not the sole difference from historical G4. Require
+fresh current-checkpoint preflight before dispatch. Neither synthetic timing nor
+one live success can establish a causal speedup, generalization or release.
+
+Preflight stop: successful synthetic staging attempts two additional Compass
+global narration requests (48h and 24h) from the temporary prewrite repository.
+Both were refused before model execution; the 6.193-second staged result is not
+a passing experiment. Resolve the mismatch against the existing shell-safe
+foreground and Briefs Voice contracts before any live Fast comparison. Preserve
+all surfaces, exact-cache truth and explicit non-ready states; do not introduce
+a fallback narrator or hide provider work outside the request accounting.
+This finding does not explain the prior author latency. Evidence:
+`/private/tmp/odylith-fast-execution-gate.ivieTi/readiness-report.md`.
+
+The bounded correction assigns temporary-root lifetime to the existing Compass
+refresh contract. The prewrite root registers that lifetime explicitly; narration
+enqueue and spawn must both honor it across parallel surface workers. Ordinary
+durable-root warming and all foreground evidence/rendering remain unchanged.
+No path-name heuristic, new refresh profile, fallback narrator, global environment
+switch or post-confirm handoff is allowed. Prefer this to joining extra narration
+inside the already pressured model budget. The 1447-line maintenance owner receives
+only the two lifecycle guards as a safety-critical repair; its wider decomposition
+remains outside this slice. Require red/green staging, nested/exception/thread and
+durable-root controls, then native synthetic, full runtime and rendered cold-state
+proof before closing this defect. The initial existing-request test used an invalid
+empty request and passed spuriously; its corrected valid request fails before the
+fix, alongside the enqueue and absent-lifetime-contract controls.
+
+Next bounded discriminator: request documented Fast execution for one unchanged
+native standard-tier author/full-review proposal. The current request inventory
+finds no duplicate evidence or candidate submission worth removing; citation and
+relationship repetition has distinct custody obligations. Prior schema pooling,
+base-instruction removal and source-only parallel review do not justify another
+equivalent experiment.
+
+Keep Terra/low authoring, Sol/medium full review, both exact prompts/schemas,
+source evidence, two-call ceiling and 60/90/120 fixed. Official Codex documentation
+describes Fast as 1.5x model speed at 2.5x ChatGPT credit consumption, not an SLA.
+Only an external process-local invocation requests it; no global configuration,
+runtime profile or default changes. Record requested versus actually observed
+serving tier honestly. Before paid dispatch, exercise the complete fake-return
+native staging path under its exact interpreter, including imports and final
+validation, plus malformed/timeout/no-write controls and independent preflight.
+The experiment requires a complete staged package within 50 seconds and its
+full model interval within 45 seconds, plus independent no-P0/P1 source/package
+review. These stronger comparison thresholds demand headroom while preserving
+the product deadlines. Failure ends this candidate without retry or promotion;
+one pass is feasibility only and cannot replace later quality, browser, host,
+cost or holdout gates. Contract and evidence owner:
+`/private/tmp/odylith-fast-execution-gate.ivieTi/acceptance.md`.
+
 Current decision: stop qualification of the native sequential v53 candidate.
 Independent review finds no P0/P1 in its retained author output and verifies
 367/367 consumer files unchanged, zero added files and no pending transaction.
