@@ -132,6 +132,17 @@ Public entrypoint: `odylith context-engine`
   summaries, bootstrap packets, hot-path packets, context dossiers, and
   runtime surfaces should consume that shared snapshot instead of locally
   deriving policy posture.
+- Dossier delivery keeps the full typed `related_entity_ids` map independently
+  of its descriptive-row budget. Bootstrap and session brief retain that dossier
+  and share the existing execution attachment owner. The handshake consumes only
+  resolved workstream relations and preserves every selected component identity;
+  a display limit must not hide a noncanonical identity or truncate target scope.
+  These identities are context, not writable targets or renewed instructions.
+  Complete narrowing copy is preserved without phrase substitution or clipping.
+  CB-333 proof: 144 focused tests, 4563 frozen runtime tests, 31 browser integration
+  cases, and public bootstrap/resume readback preserving all 96 sealed files.
+  Native-host visibility, full-profile next-action admission and release timing
+  remain separate obligations.
 - When a packet is guidance-behavior-relevant, packet builders attach the
   compact `guidance_behavior_summary` first and the handshake carries its
   validator command as recommended validation. The summary remains a compact

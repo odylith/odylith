@@ -43,15 +43,41 @@ Frozen runtime proof passes 4544 tests, and 31 targeted browser integration
 checks pass across normal/empty/error navigation and publication recovery.
 The 3162-file pre/post-run fingerprint is unchanged; JUnit receipts are retained
 under `/private/tmp/odylith-session-resume-proof.45l4zG/`. CB-332 is fixed pending
-release. Bootstrap still lacks the target component in its
-top-level execution handoff, and the resumed packet still requests narrower
-execution context; neither is claimed fixed by session retention. This structural
+release. At that checkpoint bootstrap still lacked the target component in its
+general execution handoff, and the resumed packet still requested narrower
+execution context; neither was fixed by session retention. This structural
 author/reviewer fixture does not qualify human package quality or live model
 timing. CB-242 retains the separate intervention visibility complaint and
 manual-only recovery evidence. Its fresh actual-session check reports degraded
 activation: the original checkout still has the ignored flat hook document,
 while the repaired checkpoint has the native wrapper. Matching-runtime installed
 activation, fresh-session delivery and fault qualification remain required.
+
+### Resolved workstream handoff repair (2026-09-08)
+
+CB-333 isolates the next boundary without changing the Greenfield generation
+mechanism. The resolved dossier survives packet assembly but bootstrap delivery
+drops it. Descriptive-row caps also hide canonical relation identities. Following
+CB-029, preserve selected typed references rather than adding a model or reparsing
+prose. The existing dossier owner now retains all related IDs separately from
+bounded detail, and bootstrap/session brief share one Execution attachment owner.
+The old bootstrap-only attachment, phrase rewriting, clipping and duplicate
+mapping helper are removed: ten fewer production lines across three existing
+files. Canonical IDs survive without inventing writable paths or replaying intent.
+
+Proof passes 144 focused tests, 4563 full runtime tests and 31 targeted browser
+integration cases. The 1825-file runtime/test/config fingerprint is unchanged
+across broad validation. The independent public CLI journey preserves the exact
+component and all five diagram IDs in bootstrap and resume, with all 96 sealed
+bytes/modes, active identity and transaction bytes unchanged. Receipts are in
+`/private/tmp/odylith-session-handoff-proof.S3jUS4/` and the native-Claude fixture's
+`handoff-after-*` files. Pre-confirm author/reviewer doubles still exclude semantic
+quality and generation-timing claims. Restored references increase delivered
+output to 15159/14220 pretty-printed bytes; no new provider call or publication
+operation is introduced. The resumed packet still requests narrower execution
+context. CB-242 remains open with degraded actual-session activation; manual
+verified-result Assist copy does not prove automatic native delivery. Preserve
+the full integration acceptance, live 60/90/120 and untouched-holdout gates.
 
 ### Native confirmation prompt termination (2026-09-08)
 

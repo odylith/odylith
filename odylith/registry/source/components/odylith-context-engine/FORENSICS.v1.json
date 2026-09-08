@@ -43,12 +43,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 206,
-    "mapped_workstream_evidence_count": 151,
+    "explicit_event_count": 207,
+    "mapped_workstream_evidence_count": 152,
     "recent_path_match_count": 0,
     "spec_history_event_count": 1,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 206
+    "timeline_event_count": 207
   },
   "name": "Odylith Context Engine",
   "path_prefixes": [
@@ -57,6 +57,41 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1319,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-09-08T12:38:52-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 1,
       "artifacts": [

@@ -8,6 +8,8 @@
 
 - Status: Open
 
+- CB-333 Checkpoint Visibility (2026-09-08): A fresh read-only actual-session check again reports degraded activation and no Observation/Proposal events. The existing five ledger events and two confirmations do not establish automatic delivery. After the public relation-handoff probe, the assistant manually surfaced a factual Assist about the retained component, five diagram references and unchanged 96-file publication. That is useful manual chat output, not native-hook qualification. Keep matching-runtime activation and fresh-session transport evidence open; the Context Engine repair must not close this defect.
+
 - Created: 2026-07-11
 
 - Severity: P1
