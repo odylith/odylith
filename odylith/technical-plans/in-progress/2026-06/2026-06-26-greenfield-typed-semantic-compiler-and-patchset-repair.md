@@ -12,6 +12,32 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ### Source-first ownership comparison (2026-09-07)
 
+The first-run clarification comparison is terminal and rejected. Its sole real
+museum attempt stages the complete package in 54.296589 seconds with a verified
+48.257923-second model interval: within product 60/55, outside the frozen 50/45
+headroom gate. Two real dispatches occur; the second case is cancelled. No retry
+or CONFIRM follows. After independent readback, the paragraph and its three test
+assertions are removed, restoring production source/tests exactly to 23144bb4.
+This is useful evidence that complete staging can fit this product band, not a
+qualified latency distribution or a winning mechanism. The full goal stays open.
+
+The sample retains all five conservator actions, required report inputs and
+post-report archive work. Its accepted required-evidence atom and readiness/handoff
+retain the input constraint, although the annotation's expected 2/3-to-4 graph
+edges are absent. Report that expectation as unmet without inventing global
+source loss. Model triage finds no substantiated P0/P1; P2 exchange precision,
+isolated source-attribution and copy limits remain. Thirty-four bounded browser
+checks pass, but the disconnected/repetitive D-001, crossing-heavy D-005 and
+mobile summary density do not qualify the requested final UX/diagram quality.
+Evidence: `/private/tmp/odylith-first-run-coherence.OpJ5Ms/actual/museum_conservation_intake/`.
+
+The next decision must address the measured joint first-pass quality and serial
+author/reviewer timing constraint. No further prompt-condition stack, unchanged
+retry, arbitrary profile sweep or new schema is earned by this result. Preserve
+the failed comparison and independently corrected annotations. Do not convert
+the experimental 50/45 rejection into a claim that the product 60/55 failed, and
+do not promote this one 60/55 sample to reliability or release qualification.
+
 The Fast discriminator is now terminal and rejected. On pushed checkpoint
 `a3215f14`, the live author returns in 32.096728 seconds and full review denies in
 14.018430 seconds; the CLI returns an error at 46.395096 seconds with no package.
@@ -32,7 +58,7 @@ compare a bounded ownership improvement against the existing mechanism using
 positive, negative and equivalent-source controls; no new schema, repair role,
 profile sweep or prompt exception is earned solely by this one failure.
 
-The bounded next hypothesis is a clarification of the existing author contract:
+The now-rejected hypothesis was a clarification of the existing author contract:
 the proposed walkthrough must be feasible under its own proposed runtime inputs,
 exchanges and verification, without promoting delivery prerequisites or arbitrary
 exchange direction into runtime laws. Freeze one revision and two independently
@@ -42,8 +68,8 @@ Keep schema, reviewer, model/profile and deadlines unchanged. Allow one native
 attempt per control and reject the revision on source loss, invented ordering,
 design inconsistency, weak complete-package utility or failed timing/headroom.
 Do not follow a rejection with another condition stack or repair role. This is
-an untested comparison, not a production fix or permission to repair the retained
-failed candidate. Review: `/private/tmp/odylith-fast-execution-gate.ivieTi/actual-semantic-review.md`.
+a historical comparison contract, not a production fix or permission to repair
+either retained candidate. Review: `/private/tmp/odylith-fast-execution-gate.ivieTi/actual-semantic-review.md`.
 
 The temporary-root correction now has bounded source-local approval: 4311 runtime
 tests, 1101 install tests and 34 synthetic staged-browser checks pass. The exact

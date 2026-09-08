@@ -4,7 +4,19 @@ Last updated: 2026-09-07
 
 ## Overview
 
-The latest native Fast experiment also fails to deliver a package: authoring
+The latest bounded author-coherence revision stages one complete museum package
+in 54.296589 seconds with a 48.257923-second model interval. It passes the product
+60/55 band but misses the predeclared 50/45 headroom gate. The second case is
+cancelled; no retry or CONFIRM occurs. The candidate paragraph and test assertions
+are removed after frozen readback, so this does not change the current production
+author contract or establish a winner. Independent model triage finds no
+substantiated P0/P1 in this sample; 34 bounded browser checks pass. Required input
+meaning survives accepted evidence/readiness despite missing redundant graph
+edges. Exchange precision, shallow context detail, dense capability edges and
+mobile/copy limits remain; five artifacts are not final diagram-quality proof.
+Evidence: `/private/tmp/odylith-first-run-coherence.OpJ5Ms/actual/museum_conservation_intake/`.
+
+The preceding native Fast experiment fails to deliver a package: authoring
 takes 32.096728 seconds and review takes 14.018430 seconds, denying a proposed
 workflow/design inconsistency. The command returns an error at 46.395096 seconds;
 A plus R alone exceeds the stricter 45-second comparison headroom target. Source
