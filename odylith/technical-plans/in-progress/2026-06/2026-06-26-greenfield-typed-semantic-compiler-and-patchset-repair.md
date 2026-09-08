@@ -10,6 +10,82 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Integrated consumer journey (2026-09-08)
+
+The full product capability inventory, including memory, is an integration
+acceptance requirement, not a request for a new engine framework. Preserve the
+existing owners and exercise their relevant handoffs: installation/trust and
+startup; Context/Memory retrieval and resumption; Domain Intelligence and
+Reasoning/Tribunal custody; Discipline/Turn Gate and Execution admission;
+sealed publication and recovery; Delivery/Proof State, topology and Surface DAG
+agreement; all governance surfaces and dashboard navigation; earned visible
+Observation, Proposal and Assist. Keep every engine available, but do not force
+every engine into every phase or generate prohibited Greenfield programs/waves.
+The unchanged 60/90/120 envelope includes the real consumer path, not isolated
+model latency. Artifact counts alone remain insufficient quality evidence.
+
+Require normal, empty/fallback, degraded/error, EDIT, REJECT, retry, interruption,
+recovery and resumed-session evidence. Source meaning, assumptions, constraints,
+approval identity and proof posture must survive every relevant handoff. Reuse
+existing acceptance owners; record actual gaps before proposing replacements.
+
+Current bounded integration probe: the real native-Claude publication fixture
+resolves B-001 and its component through `context`. `bootstrap-session` with that
+explicit workstream returns a missing target component; `session-brief` with the
+same session ID returns no workstream. All 96 sealed after-image files and modes,
+the active publication identity and transaction bytes remain unchanged. Inspect
+the session API's persistence and selection contract before assigning root cause.
+This structural author/reviewer fixture does not qualify human package quality,
+live model timing or complete memory continuity. Evidence:
+`/private/tmp/odylith-claude-confirmation.5ntA3g/integration-publication-readback.json`
+and its context/bootstrap/resume outputs. CB-242 retains the separate intervention
+visibility complaint and manual-only recovery evidence.
+
+### Native confirmation prompt termination (2026-09-08)
+
+Native nonempty confirmation now publishes 95 sealed writes with 96 after-image
+files independently matched byte-for-byte and by mode. Retry preserves all 204
+publication/journal files and returns the same callback receipt, with no inference
+request. This uses fixed author/review transport doubles before confirmation;
+it is transaction evidence, not live semantic quality or latency qualification.
+The corrected native file comparison also identifies a separate registration
+defect: the flat event document is ignored, while the wrapped hooks map executes.
+The emitter, migration writer, capability reader and intervention-status reader
+now share that document contract. Migration preserves custom entries, metadata
+and first backups; duplicate status-side matcher helpers are removed. Five
+new controls fail before the repair; the expanded host/install selection passes
+134 tests afterward. Expanded runtime/install runs expose one stale forensic
+sidecar and two retired flat-document test assertions; settle them through the
+existing owners before rerunning. A real Claude 2.1.202 control now publishes
+95 writes, independently matches 96 after-image files and modes, and preserves
+214 publication/pending/journal files on retry. The complete receipt is visible
+in native text output with no inference. Both hosts still require installed
+activation and timeout/error qualification; Codex completion visibility and
+unknown-host offer eligibility remain open. Do not replace a missing completion view
+with a post-confirm model turn. Preserve failed control setup and the rejected
+no-op publication fixture in CB-304 rather than counting them as successes.
+
+The settled reruns now pass 4521 runtime and 1382 install checks. Browser recovery
+accounts for all 327 collected nodes: 326 passes and one skipped diagnostic fixture;
+the original run stopped on a terminal output-pipe error, not an assertion failure.
+CB-304 retains the exact receipts. Native Claude timeout injection nevertheless
+proves fail-open model dispatch, and Codex exit-code-2/stderr still hides the receipt.
+Neither transport can be declared fully qualified from successful callback tests.
+
+CB-304 now has a real Codex protocol comparison against a loopback-only model
+request detector. With witnessed inline hook invocation, context-only output
+reaches model dispatch; a blocking UserPromptSubmit decision ends the native turn
+with zero inference requests and zero tokens. Replace context-only continuation
+for consumed Greenfield decisions in the existing shared host payload owner.
+Only EDIT carrying new evidence may continue into a pre-confirm compilation.
+Preserve exact hashes, sealed-byte publication, recovery outcomes and the kernel.
+No provider/schema change or semantic retry is part of this repair. Native
+installed activation and Codex visible receipt delivery remain required; native
+Codex JSON output alone does not display the receipt. Claude publication evidence
+is retained at `/private/tmp/odylith-claude-confirmation.5ntA3g/`.
+The first four file-based controls never invoked their hook and remain invalid
+termination evidence. Report: `/private/tmp/odylith-native-confirmation-control.xvEV2h/`.
+
 ### Shell focus ownership correction (2026-09-08)
 
 The upgrade checkpoint is committed and pushed as ddb65494. CB-331 now records

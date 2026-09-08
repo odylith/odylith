@@ -21,7 +21,7 @@ def _seed_repo(repo_root: Path) -> None:
     (codex_root / "config.toml").write_text("project_root_markers = [\".git\"]\n", encoding="utf-8")
     (codex_root / "hooks.json").write_text(
         json.dumps(
-            {
+            {"hooks": {
                 "UserPromptSubmit": [
                     {
                         "hooks": [
@@ -53,7 +53,7 @@ def _seed_repo(repo_root: Path) -> None:
                         ]
                     }
                 ],
-            }
+            }}
         ),
         encoding="utf-8",
     )
@@ -141,7 +141,7 @@ def test_inspect_codex_compatibility_accepts_bash_only_checkpoint_matcher(
 ) -> None:
     _seed_repo(tmp_path)
     payload = json.loads((tmp_path / ".codex" / "hooks.json").read_text(encoding="utf-8"))
-    payload["PostToolUse"][0]["matcher"] = "Bash"
+    payload["hooks"]["PostToolUse"][0]["matcher"] = "Bash"
     (tmp_path / ".codex" / "hooks.json").write_text(json.dumps(payload), encoding="utf-8")
 
     def _fake_run(*, repo_root: Path, codex_bin: str, args: list[str], timeout: int = 10):

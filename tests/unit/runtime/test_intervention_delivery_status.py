@@ -22,7 +22,7 @@ def _seed_codex_repo(repo_root: Path) -> None:
     (codex_root / "config.toml").write_text("[features]\ncodex_hooks = true\n", encoding="utf-8")
     (codex_root / "hooks.json").write_text(
         json.dumps(
-            {
+            {"hooks": {
                 "UserPromptSubmit": [
                     {
                         "hooks": [
@@ -51,7 +51,7 @@ def _seed_codex_repo(repo_root: Path) -> None:
                         ]
                     }
                 ],
-            }
+            }}
         ),
         encoding="utf-8",
     )

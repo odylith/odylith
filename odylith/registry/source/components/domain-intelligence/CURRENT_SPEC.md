@@ -4,6 +4,25 @@ Last updated: 2026-09-08
 
 ## Overview
 
+The shared Greenfield host decision transport must consume CONFIRM, REJECT and
+incomplete decisions before native model dispatch. Supplying developer context
+alone is not a stop mechanism. Only EDIT with supplied new evidence may continue
+into pre-confirm compilation. Native activation and user-visible completion are
+separate proof obligations from callback equality and commit-kernel correctness.
+Native source-local confirmation has nonempty sealed-byte and retry evidence;
+fixed pre-confirm author/review doubles do not establish semantic quality. Hook
+registration uses the common Codex document owner rather than an independent
+Greenfield registration format or a host-name-based claim of eligibility.
+Claude 2.1.202 also shows the full deterministic receipt in native text output
+after real publication and retry, with no inference requests. Its 96-file
+after-image and 214-file unchanged retry are mechanical proof, not live quality.
+Codex receipt visibility, installed activation and timeout/error behavior remain
+unqualified; native discovery or a successful callback alone cannot close them.
+Native Claude command-hook timeout is now a witnessed fail-open boundary: the
+hook is invoked, its output is absent, and CONFIRM reaches model dispatch without
+publication. Eligibility must include fault-safe termination and visible outcomes,
+not only successful callback behavior. CB-304 retains the counterexample.
+
 The published predecessor population is ordinary unactivated governance, not the
 later development JSON/journal formats: all eight current release wheels through
 v0.1.14 were inspected with asset-digest and build-provenance matching. Retained

@@ -275,8 +275,41 @@ def test_codex_and_claude_hooks_short_circuit_to_identical_confirmation_payload(
 
     assert codex_payload == claude_payload
     assert codex_payload["systemMessage"].startswith("**Odylith Greenfield published**")
+    assert codex_payload["decision"] == "block"
+    assert codex_payload["reason"] == codex_payload["systemMessage"]
+    assert "hookSpecificOutput" not in codex_payload
     assert len(commits) == 2
     assert commits[0] == commits[1]
+
+
+@pytest.mark.parametrize("command,status", [
+    ("CONFIRM", "CLOSED"), ("CONFIRM", "BUSY_NO_WRITE"),
+    ("CONFIRM", "STALE_TRANSACTION"), ("CONFIRM", "RECOVERY_REQUIRED"),
+    ("CONFIRM", "DECISION_HASH_REQUIRED"),
+    ("REJECT", "ABORTED"), ("REJECT", "CLOSED"),
+    ("REJECT", "BUSY_NO_WRITE"), ("REJECT", "RECOVERY_REQUIRED"),
+    ("EDIT", "edit_evidence_required"), ("EDIT", "STALE_TRANSACTION"),
+])
+def test_consumed_decision_blocks_native_model_continuation(command: str, status: str) -> None:
+    visible = "The exact transaction outcome remains complete, including its final recovery clause."
+    payload = greenfield_host_confirmation.host_hook_payload({
+        "command": command, "status": status,
+        "visible_markdown": visible, "developer_context": "Do not run another model turn.",
+    })
+    assert payload == {"systemMessage": visible, "decision": "block", "reason": visible}
+
+
+def test_edit_with_new_evidence_can_continue_into_preconfirm_compilation() -> None:
+    payload = greenfield_host_confirmation.host_hook_payload({
+        "command": "EDIT", "status": "edit_evidence_received",
+        "visible_markdown": "The correction is new evidence.",
+        "developer_context": "Rebuild and show a new hash before publication.",
+    })
+    assert "decision" not in payload
+    assert payload["hookSpecificOutput"] == {
+        "hookEventName": "UserPromptSubmit",
+        "additionalContext": "Rebuild and show a new hash before publication.",
+    }
 
 
 def test_decision_callback_is_exact_and_proposal_only_for_unknown_hosts(

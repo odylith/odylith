@@ -1,5 +1,9 @@
 - Bug ID: CB-242
 
+- Current Session Visibility Evidence (2026-09-08): The operator again reports too few interventions while asking for the complete Greenfield-to-memory/execution journey. The original repository launcher reports static Activation ready but zero chat-confirmed events. An explicit visible-intervention fallback is rendered verbatim in the existing conversation; the subsequent status reports two confirmed events through assistant_chat_transcript. This proves manual recovery only, not automatic native delivery, useful ongoing cadence or a root cause for the original absence. No tracked files, host trust or authentication settings were changed in that repository. Session: 019ffcfa-f136-7080-a35d-1c9d6b6d8c79.
+
+- Integration Acceptance (2026-09-08): Keep this record open until earned decision, risk and verified-result moments survive the actual host transport and are visible across resumed sessions. Registration readiness, hidden context, recorded events and manual acknowledgement copy cannot substitute for observed user value. Preserve the distinct Observation, Proposal and Assist roles; do not solve absence with repetitive diagnostics or unconditional chatter. CB-304 separately owns native confirmation transport and its timeout/receipt boundary.
+
 - Status: Open
 
 - Created: 2026-07-11

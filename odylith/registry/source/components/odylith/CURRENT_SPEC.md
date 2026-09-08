@@ -161,6 +161,12 @@ Public docs should describe these commands, not direct module entrypoints.
   routes through a lightweight proxy module.
 
 ## Coding-Agent Host Contract
+- Codex hook documents use the native top-level `hooks` event map. The common
+  capability owner emits, migrates and reads that shape; intervention status
+  uses the same reader and command matcher. Legacy flat maps are migration
+  inputs, never evidence of current native activation. Migration preserves user
+  hooks, metadata and the first preimage backup. Project trust, exact-hook trust,
+  callback execution and visible completion remain distinct proof obligations.
 - The default Odylith host contract is shared across Codex and Claude Code:
   repo-root `AGENTS.md`, the repo-local launcher `./.odylith/bin/odylith`,
   truthful `odylith ... --help`, and the grounded governance workflow should

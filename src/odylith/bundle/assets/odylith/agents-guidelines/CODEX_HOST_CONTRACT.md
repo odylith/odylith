@@ -100,6 +100,11 @@
   when the local Codex build proves `features.codex_hooks = true`.
 - Codex only activates the checked-in `.codex/` layer for trusted projects.
   Install materialization is not the same thing as host activation.
+- `.codex/hooks.json` uses a top-level `hooks` object containing event groups.
+  A legacy flat event map is not current native wiring. Install and repair
+  preserve user hooks while migrating the document. Non-managed hooks also need
+  native trust of their exact definition; writing the file does not grant trust
+  or prove that the callback ran or its completion was visible.
 - Odylith treats Codex compatibility as capability-based. Validate the local
   host with `./.odylith/bin/odylith codex compatibility --repo-root .` instead
   of pinning a maximum Codex version or assuming one exact CLI build is the

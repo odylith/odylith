@@ -141,8 +141,8 @@ def _unsupported_probe(completed: subprocess.CompletedProcess[str] | None) -> bo
     return any(token in combined for token in _UNSUPPORTED_TOKENS)
 
 
-def _load_codex_hooks(repo_root: Path) -> dict[str, Any]:
-    """Load the local Codex hooks configuration when present and valid."""
+def load_codex_hook_map(repo_root: Path) -> dict[str, Any]:
+    """Read only the event map that native Codex discovers in hooks.json."""
     path = repo_root / ".codex" / "hooks.json"
     if not path.is_file():
         return {}
@@ -150,7 +150,8 @@ def _load_codex_hooks(repo_root: Path) -> dict[str, Any]:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError):
         return {}
-    return payload if isinstance(payload, dict) else {}
+    hooks = payload.get("hooks") if isinstance(payload, dict) else None
+    return hooks if isinstance(hooks, dict) else {}
 
 
 def _matcher_tokens(value: Any) -> set[str]:
@@ -172,7 +173,7 @@ def _matcher_covers(value: Any, required_tokens: tuple[str, ...]) -> bool:
     return all(token in tokens for token in required_tokens)
 
 
-def _hook_command_present(
+def codex_hook_command_present(
     payload: dict[str, Any],
     event_name: str,
     command_token: str,
@@ -225,19 +226,19 @@ def _inspect_cached(repo_root: str, codex_bin: str, probe_prompt_input: bool) ->
     codex_project_assets_present = assets["codex_project_assets_present"]
     codex_skill_shims_present = assets["codex_skill_shims_present"]
     baseline_ready = launcher_present and repo_agents_present
-    hooks_payload = _load_codex_hooks(resolved_root)
-    supports_user_prompt_submit_hook = _hook_command_present(
+    hooks_payload = load_codex_hook_map(resolved_root)
+    supports_user_prompt_submit_hook = codex_hook_command_present(
         hooks_payload,
         "UserPromptSubmit",
         "codex prompt-context",
     )
-    supports_post_bash_checkpoint_hook = _hook_command_present(
+    supports_post_bash_checkpoint_hook = codex_hook_command_present(
         hooks_payload,
         "PostToolUse",
         "codex post-bash-checkpoint",
         required_matcher_tokens=_CODEX_CHECKPOINT_MATCHER_TOKENS,
     )
-    supports_stop_summary_hook = _hook_command_present(
+    supports_stop_summary_hook = codex_hook_command_present(
         hooks_payload,
         "Stop",
         "codex stop-summary",
@@ -431,7 +432,7 @@ def render_effective_codex_project_config(
 
 def render_effective_codex_hooks(*, repo_root: Path | str = ".") -> str:
     del repo_root
-    return json.dumps(_baked_hooks_payload(), indent=2, sort_keys=False) + "\n"
+    return json.dumps({"hooks": _baked_hooks_payload()}, indent=2, sort_keys=False) + "\n"
 
 
 def write_effective_codex_project_config(
@@ -473,10 +474,26 @@ def write_effective_codex_hooks(*, repo_root: Path | str) -> Path:
     existing = host_project_settings.load_json_object_for_update(target_path)
     if existing is None:
         return target_path
-    odylith_payload = json.loads(render_effective_codex_hooks(repo_root=resolved_root))
-    merged = host_project_settings.merge_hook_map(existing, odylith_payload)
-    if isinstance(merged, dict):
-        host_project_settings.atomic_write_json_object(target_path, merged)
+    additions = _baked_hooks_payload()
+    document = dict(existing)
+    if "hooks" in document:
+        if not isinstance(document["hooks"], dict):
+            return target_path
+        events = dict(document["hooks"])
+        # Older installers added flat managed events beside a native user map.
+        for event in additions:
+            if event in document:
+                legacy = document.pop(event)
+                if not isinstance(legacy, list) or not isinstance(events.get(event, []), list):
+                    return target_path
+                events[event] = host_project_settings.merge_hook_entries(events.get(event), legacy)
+    else:
+        metadata = {key: document[key] for key in ("description", "$schema") if key in document}
+        events = {key: value for key, value in document.items() if key not in metadata}
+        document = metadata
+    document["hooks"] = host_project_settings.merge_hook_map(events, additions)
+    host_project_settings.atomic_write_json_object(target_path, document)
+    clear_codex_cli_capability_cache()
     return target_path
 
 
@@ -488,7 +505,10 @@ def deactivate_codex_project_hooks(*, repo_root: Path | str) -> Path:
     existing = host_project_settings.load_json_object_for_update(target_path)
     if existing is None:
         return target_path
-    scrubbed, changed = host_project_settings.remove_hook_commands(existing, _ODYLITH_HOOK_COMMAND_TOKENS)
+    events = existing.get("hooks") if "hooks" in existing else existing
+    scrubbed, changed = host_project_settings.remove_hook_commands(events, _ODYLITH_HOOK_COMMAND_TOKENS)
     if changed and isinstance(scrubbed, dict):
-        host_project_settings.atomic_write_json_object(target_path, scrubbed)
+        document = {**existing, "hooks": scrubbed} if "hooks" in existing else scrubbed
+        host_project_settings.atomic_write_json_object(target_path, document)
+        clear_codex_cli_capability_cache()
     return target_path

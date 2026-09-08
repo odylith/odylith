@@ -108,13 +108,16 @@ def maybe_handle_greenfield_decision(
 
 
 def host_hook_payload(decision: Mapping[str, Any]) -> dict[str, Any]:
-    """Return the same UserPromptSubmit transport shape for Codex and Claude."""
+    """Consume handled prompts; only new EDIT evidence may reach model reasoning."""
 
     visible = str(decision.get("visible_markdown") or "").strip()
     context = str(decision.get("developer_context") or "").strip()
     payload: dict[str, Any] = {}
     if visible:
         payload["systemMessage"] = visible
+    if decision.get("command") != "EDIT" or decision.get("status") != "edit_evidence_received":
+        payload.update(decision="block", reason=visible)
+        return payload
     if context:
         payload["hookSpecificOutput"] = {
             "hookEventName": "UserPromptSubmit",
