@@ -15,7 +15,25 @@
   platform seamless" may rank voice or integration inspection affordances, but
   it must still stay silent when no hard law is violated and no immediate
   user-visible value is earned.
-Last updated: 2026-07-20
+Last updated: 2026-09-08
+
+## Native activation proof boundary
+
+Codex configuration, native hook trust, callback execution and chat visibility
+are separate evidence. The capability reader uses the native feature registry's
+`hooks` key, with the older `codex_hooks` alias only when that is what the registry
+exposes. The low-latency status reader parses the actual TOML features table;
+comments, strings, unrelated tables, malformed input and explicit disablement
+cannot establish readiness. Neither reader grants trust or starts a model turn.
+
+Configured Codex assets yield `baseline_safe_hooks_configured` compatibility and
+`Activation: unverified` status, not a native-ready claim. Status exits nonzero
+until activation is proven; this is not permission to modify native trust.
+Review of exact non-managed hook definitions belongs to the user's native
+`/hooks` flow. New or changed definitions require review again. Manual transcript
+confirmation remains useful fallback evidence but cannot promote native
+activation. CB-242 stays open for matching-runtime installed execution and
+earned automatic visible delivery; CB-304 owns confirmation fault safety.
 
 
 ## Purpose

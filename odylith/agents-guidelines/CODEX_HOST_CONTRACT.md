@@ -97,14 +97,17 @@
 - Consumer install and repair now derive the effective `.codex/config.toml`
   from the local Codex capability snapshot instead of copying one frozen
   feature assumption forever. Hooks are enabled in the effective config only
-  when the local Codex build proves `features.codex_hooks = true`.
+  when the local Codex feature registry reports hooks enabled. Use the reported
+  `features.hooks` key, or `features.codex_hooks` on older registries; do not
+  infer support from a version number.
 - Codex only activates the checked-in `.codex/` layer for trusted projects.
   Install materialization is not the same thing as host activation.
 - `.codex/hooks.json` uses a top-level `hooks` object containing event groups.
   A legacy flat event map is not current native wiring. Install and repair
   preserve user hooks while migrating the document. Non-managed hooks also need
-  native trust of their exact definition; writing the file does not grant trust
-  or prove that the callback ran or its completion was visible.
+  native trust of their exact definition through `/hooks`; changed definitions
+  require review again. Writing the file does not grant trust or prove that the
+  callback ran or its completion was visible.
 - Odylith treats Codex compatibility as capability-based. Validate the local
   host with `./.odylith/bin/odylith codex compatibility --repo-root .` instead
   of pinning a maximum Codex version or assuming one exact CLI build is the
@@ -113,8 +116,8 @@
 ## Native Codex CLI Support
 - Repo-scoped custom project agents under `.codex/agents/*.toml`.
 - Repo-scoped config under `.codex/config.toml`.
-- Repo-scoped lifecycle hooks under `.codex/hooks.json` when
-  `[features] codex_hooks = true`.
+- Repo-scoped lifecycle hooks under `.codex/hooks.json` when hooks are enabled
+  and the project and exact hook definitions are trusted.
 - Repo-scoped skill shims under `.agents/skills/*/SKILL.md`.
 
 ## Codex-Only Optimizations When Supported
@@ -125,14 +128,15 @@
   probe, so routing and host banners can distinguish the baseline-safe lane
   from locally proven project-hook support instead of treating every Codex
   build as the same frozen capability set.
-- If you want to know whether those optional Codex project-asset optimizations
-  are actually live, run `./.odylith/bin/odylith codex compatibility --repo-root .`.
-- `baseline_safe_assistant_visible_ready` is intentionally stricter than
-  "Codex can read AGENTS." It requires the local Codex feature registry to
-  report `features.codex_hooks = true`, `.codex/hooks.json` to wire
+- To inspect optional Codex project-asset configuration, run
+  `./.odylith/bin/odylith codex compatibility --repo-root .`.
+- `baseline_safe_hooks_configured` requires the local Codex feature registry to
+  report hooks enabled and `.codex/hooks.json` to wire
   `UserPromptSubmit`, Bash `PostToolUse`, and `Stop` to the Odylith CLI hook
-  commands, the live prompt-input probe to show repo-root guidance, and the
-  assistant-render fallback to be available for chat-visible delivery.
+  commands. This is not native trust, execution or visible-delivery proof.
+  Static `intervention-status` reports `Activation: unverified` when those files
+  are configured; its nonzero exit must not trigger automatic trust changes.
+  A manual chat confirmation proves the rendered fallback, not native hooks.
   `codex debug prompt-input` proves model-visible repo guidance only; it does
   not prove the user saw any intervention in chat.
 - `codex exec --json` is useful smoke coverage for the CLI command lane, but
@@ -364,12 +368,12 @@
 - Local evidence on 2026-04-16 shows `codex-cli 0.119.0-alpha.28` exposes
   `features.codex_hooks`, reads the repo-root AGENTS contract through
   `codex debug prompt-input`, and has the three Odylith intervention hooks
-  wired in `.codex/hooks.json`; those are separate checks, and all must remain
-  green before claiming live-proven Codex intervention posture.
+  wired in `.codex/hooks.json`. That historical configuration evidence does not
+  establish current native trust or chat-visible delivery.
 
 ## Native-Blocked And Deferred
-- No `PreCompact` hook equivalent.
-- No `SubagentStart` or `SubagentStop` hook equivalent.
+- Odylith does not currently register `PreCompact`, `SubagentStart` or
+  `SubagentStop` hooks, even where the native host exposes those events.
 - No custom statusline renderer API comparable to Claude's command-driven
   statusline.
 - No routed named-agent selection through Odylith's current `spawn_agent`

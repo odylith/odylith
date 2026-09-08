@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from html import escape
-import json
 from pathlib import Path
 
 from odylith.runtime.intervention_engine import stream_state
+from odylith.runtime.common import codex_cli_capabilities
 from odylith.runtime.surfaces import host_intervention_status
 from odylith.runtime.surfaces import host_visible_intervention
 from tests.integration.runtime.surface_browser_test_support import (
@@ -23,40 +23,9 @@ def _seed_codex_repo(repo_root: Path) -> None:
     (launcher / "odylith").write_text("#!/bin/sh\n", encoding="utf-8")
     codex_root = repo_root / ".codex"
     codex_root.mkdir(parents=True, exist_ok=True)
-    (codex_root / "config.toml").write_text("[features]\ncodex_hooks = true\n", encoding="utf-8")
+    (codex_root / "config.toml").write_text("[features]\nhooks = true\n", encoding="utf-8")
     (codex_root / "hooks.json").write_text(
-        json.dumps(
-            {
-                "UserPromptSubmit": [
-                    {
-                        "hooks": [
-                            {
-                                "command": "python3 ./.agents/bin/odylith-host-launcher.py codex prompt-context --repo-root ."
-                            }
-                        ]
-                    }
-                ],
-                "PostToolUse": [
-                    {
-                        "matcher": "Bash",
-                        "hooks": [
-                            {
-                                "command": "python3 ./.agents/bin/odylith-host-launcher.py codex post-bash-checkpoint --repo-root ."
-                            }
-                        ],
-                    }
-                ],
-                "Stop": [
-                    {
-                        "hooks": [
-                            {
-                                "command": "python3 ./.agents/bin/odylith-host-launcher.py codex stop-summary --repo-root ."
-                            }
-                        ]
-                    }
-                ],
-            }
-        ),
+        codex_cli_capabilities.render_effective_codex_hooks(),
         encoding="utf-8",
     )
 
@@ -138,6 +107,9 @@ def test_intervention_status_text_is_browser_visible_for_unproven_and_chat_confi
     page.locator("#unproven", has_text="still need to appear in assistant text").wait_for(timeout=15000)
     page.locator("#proven", has_text="Chat visibility: confirmed in this session").wait_for(timeout=15000)
     page.locator("#proven", has_text="assistant_chat_transcript").wait_for(timeout=15000)
+    for section in ("#unproven", "#proven"):
+        page.locator(section, has_text="Activation: unverified").wait_for(timeout=15000)
+        page.locator(section, has_text="exact hook definition in /hooks").wait_for(timeout=15000)
     page.locator("#proven", has_text="Chat confirmations recorded on this probe: 1").wait_for(
         timeout=15000
     )

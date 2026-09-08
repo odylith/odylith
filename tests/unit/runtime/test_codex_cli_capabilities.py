@@ -2,11 +2,87 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import subprocess
+import tomllib
 
 import pytest
 
 from odylith.runtime.common import codex_cli_capabilities
 from odylith.runtime.surfaces import host_intervention_status
+from odylith.runtime.surfaces import codex_host_compatibility
+
+
+@pytest.mark.parametrize(
+    ("registry", "key", "enabled"),
+    [
+        ("hooks  stable  true\n", "hooks", True),
+        ("hooks  stable  false\n", "hooks", False),
+        ("codex_hooks  under development  true\n", "codex_hooks", True),
+        ("codex_hooks  under development  false\n", "codex_hooks", False),
+        ("hooks  stable  false\ncodex_hooks  deprecated  true\n", "hooks", False),
+        ("codex_hooks  deprecated  false\nhooks  stable  true\n", "hooks", True),
+        ("unrelated_hooks  stable  true\n", "", None),
+    ],
+)
+def test_hook_feature_uses_native_registry_without_version_guesses(
+    monkeypatch, tmp_path: Path, registry: str, key: str, enabled: bool | None,
+) -> None:
+    _seed_repo(tmp_path)
+
+    def native_probe(**kwargs):
+        args = kwargs["args"]
+        outputs = {("--version",): "codex-cli future-build\n", ("features", "list"): registry}
+        return subprocess.CompletedProcess(args, 0, stdout=outputs[tuple(args)], stderr="")
+
+    monkeypatch.setattr(codex_cli_capabilities, "_run_codex_command", native_probe)
+    codex_cli_capabilities.clear_codex_cli_capability_cache()
+    snapshot = codex_cli_capabilities.inspect_codex_cli_capabilities(tmp_path, probe_prompt_input=False)
+    assert snapshot.hooks_feature_known is bool(key)
+    assert snapshot.hooks_feature_enabled is enabled
+    assert snapshot.hooks_feature_key == key
+    rendered = tomllib.loads(codex_cli_capabilities.render_effective_codex_project_config(
+        repo_root=tmp_path, capabilities=snapshot,
+    ))
+    assert rendered.get("features", {}) == ({key: True} if enabled else {})
+    notes = codex_host_compatibility.render_codex_compatibility(snapshot)
+    if key:
+        assert f"features.{key} = {str(enabled).lower()}" in notes
+
+
+@pytest.mark.parametrize(
+    ("configuration", "configured"),
+    [
+        ("[features]\nhooks = true\n", True),
+        ("[features]\ncodex_hooks = true\n", True),
+        ('[features]\n"hooks" = true # Native flag\n', True),
+        ("features.hooks = true\n", True),
+        ("[features]\nhooks = false\ncodex_hooks = true\n", False),
+        ("[features]\nhooks = true\ncodex_hooks = false\n", True),
+        ("[unrelated]\ncodex_hooks = true\n", False),
+        ('description = """\ncodex_hooks = true\n"""\n', False),
+        ('[features]\nhooks = "true"\n', False),
+        ("[features]\nhooks = 1\n", False),
+        ("[features]\ncodex_hooks = true\ninvalid = [\n", False),
+        ("features = true\n", False),
+        ("", False),
+    ],
+)
+def test_static_hooks_status_reads_toml_structure_not_matching_lines(
+    tmp_path: Path, configuration: str, configured: bool,
+) -> None:
+    _seed_repo(tmp_path)
+    (tmp_path / ".codex/config.toml").write_text(configuration)
+    codex_cli_capabilities.write_effective_codex_hooks(repo_root=tmp_path)
+    report = host_intervention_status.inspect_intervention_status(
+        repo_root=tmp_path, host_family="codex", session_id="native-hook-config-control",
+    )
+    readiness = report["static_readiness"]
+    assert readiness["checks"]["codex_hooks_feature_configured"] is configured
+    assert readiness["ready"] is configured
+    assert report["activation"] == ("unverified" if configured else "degraded")
+    assert "/hooks" in readiness["activation_note"]
+    assert "definition" in readiness["activation_note"]
+    assert report["chat_visible_proof"]["status"] != "proven_this_session"
 
 
 def test_rendered_hooks_use_native_document_wrapper() -> None:

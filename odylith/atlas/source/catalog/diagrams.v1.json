@@ -2352,7 +2352,7 @@
         "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md": "da20bb2c778974ea69ef1474dbe41a4b42de3617d4ef1875a493543786b02175",
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "509f277a5b77fc104a92794c1834c633fbbcc4effa583bff0f19d5784de4bd0f",
         "odylith/technical-plans/done/2026-03/2026-03-28-odylith-managed-runtime-bundles-and-supported-platform-contract.md": "1f23b5b159f92612c4dd52b7fe1e077d5842a9e6439b59b6c42c617111ccf45b",
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "3cd6c414b3ba9dfc99f3b47a24dc121d199abd8950b78211b6b08fef4ece01e7",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "be4915bda663b9bc88a05c09240b76424e7652793752c0332506731201cd44c3",
         "odylith/casebook/bugs/2026-03-28-public-consumer-install-depends-on-machine-python.md": "892477de3906a35157275d8aaa2f9cfc259dd2efb76222fa7247461d011a1ea6",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "3a1c665817831189e5e638fd81d1197fb558a9b5a3f8461d4d76ac3c824e35f8",
         "odylith/registry/source/components/release/CURRENT_SPEC.md": "d10d8fcd1b2c2d205df9f696c21aab8240fe9bfc7bce3edd653cd19eaa8265f2",
@@ -3609,7 +3609,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-09-07",
+      "last_reviewed_utc": "2026-09-08",
       "source_mmd": "odylith/atlas/source/odylith-conversation-observation-and-governed-proposal-flow.mmd",
       "source_svg": "odylith/atlas/source/odylith-conversation-observation-and-governed-proposal-flow.svg",
       "source_png": "odylith/atlas/source/odylith-conversation-observation-and-governed-proposal-flow.png",
@@ -3702,7 +3702,7 @@
         "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py"
       ],
       "reviewed_watch_fingerprints": {
-        "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md": "d45af56b66f9a8386b91a5a1a8843952f8eb497884ad3038ae9726d7b0143574",
+        "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md": "88e9a11652479e081fff0c7c23a47ba505314428b4aa701471ff56e77ee50e97",
         "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md": "57bba7097da96f661eb1cfdb11da9a9a8a61240edecb16007c8bb1f12050552f",
         "odylith/registry/source/components/compass/CURRENT_SPEC.md": "f5ead08f30c68e0b57eb59d84c3661bc3bb33332ff02e705a8ed8ce7c6397ee9",
         "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md": "fb6a81fc4e560201be218397c78ff274f4ec0a32f3c1b955176e83cb47638f8f",

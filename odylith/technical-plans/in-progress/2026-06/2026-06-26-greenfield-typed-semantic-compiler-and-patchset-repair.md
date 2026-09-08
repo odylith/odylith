@@ -81,6 +81,21 @@ the full integration acceptance, live 60/90/120 and untouched-holdout gates.
 
 ### Native confirmation prompt termination (2026-09-08)
 
+The current Codex 0.153.4 registry adds a bounded compatibility correction:
+recognize the native `hooks` feature key, retain older alias support by observed
+capability, and replace the status line regex with TOML parsing. Native discovery
+finds all five generated project hooks but marks each untrusted. Static
+configuration therefore reports `unverified`, not native-ready; manual visible
+recovery cannot promote that claim. The 91-test focused runtime/install selection
+passes. CB-242 retains this evidence at
+`/private/tmp/odylith-native-hooks-current.B6Bxhe/` and stays open. No new engine,
+trust mutation, model call or Greenfield timing/semantic mechanism is added.
+Frozen follow-through passes 4583 runtime, 1382 install and 67 targeted browser
+checks with identical 1825-file input fingerprints. The install suite includes
+all 120 first-governance-command orders. This is source-local contract proof,
+not matching-runtime native activation or a current distribution qualification.
+The actual session still reports degraded hooks and prior manual-only visibility.
+
 Native nonempty confirmation now publishes 95 sealed writes with 96 after-image
 files independently matched byte-for-byte and by mode. Retry preserves all 204
 publication/journal files and returns the same callback receipt, with no inference

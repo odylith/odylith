@@ -59,6 +59,7 @@ class CodexCliCapabilitySnapshot:
     repo_guidance_detected: bool
     future_version_policy: str
     overall_posture: str
+    hooks_feature_key: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         """Return the snapshot as a plain mapping for JSON output."""
@@ -251,12 +252,14 @@ def _inspect_cached(repo_root: str, codex_bin: str, probe_prompt_input: bool) ->
 
     hooks_feature_known = False
     hooks_feature_enabled: bool | None = None
+    hooks_feature_key = ""
     if codex_available:
         features_run = _run_codex_command(repo_root=resolved_root, codex_bin=codex_bin, args=["features", "list"])
         features = parse_feature_flags(features_run.stdout if features_run is not None and features_run.returncode == 0 else "")
-        if "codex_hooks" in features:
+        hooks_feature_key = next((key for key in ("hooks", "codex_hooks") if key in features), "")
+        if hooks_feature_key:
             hooks_feature_known = True
-            hooks_feature_enabled = bool(features["codex_hooks"]["enabled"])
+            hooks_feature_enabled = bool(features[hooks_feature_key]["enabled"])
 
     prompt_input_probe_supported = False
     prompt_input_probe_passed = False
@@ -283,7 +286,7 @@ def _inspect_cached(repo_root: str, codex_bin: str, probe_prompt_input: bool) ->
         if codex_available:
             overall_posture = "baseline_safe_with_best_effort_project_assets"
         if intervention_hooks_wired:
-            overall_posture = "baseline_safe_assistant_visible_ready"
+            overall_posture = "baseline_safe_hooks_configured"
 
     return CodexCliCapabilitySnapshot(
         repo_root=str(resolved_root),
@@ -309,6 +312,7 @@ def _inspect_cached(repo_root: str, codex_bin: str, probe_prompt_input: bool) ->
         repo_guidance_detected=repo_guidance_detected,
         future_version_policy="capability_based_no_max_pin",
         overall_posture=overall_posture,
+        hooks_feature_key=hooks_feature_key,
     )
 
 
@@ -415,7 +419,7 @@ def render_effective_codex_project_config(
             [
                 "",
                 "[features]",
-                "codex_hooks = true",
+                f"{snapshot.hooks_feature_key or 'codex_hooks'} = true",
             ]
         )
     lines.extend(

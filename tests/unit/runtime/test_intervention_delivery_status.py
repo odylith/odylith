@@ -546,12 +546,12 @@ def test_codex_intervention_status_is_low_latency_and_human_readable(tmp_path: P
     )
     rendered = host_intervention_status.render_intervention_status(report)
 
-    assert report["activation"] == "ready"
+    assert report["activation"] == "unverified"
     assert report["chat_visible_proof"]["status"] == "ledger_visible_unconfirmed"
     assert report["delivery_ledger"]["visible_event_count"] == 1
     assert report["delivery_ledger"]["chat_confirmed_event_count"] == 0
     assert "**Odylith Intervention Status**" in rendered
-    assert "Activation: ready" in rendered
+    assert "Activation: unverified" in rendered
     assert "Chat visibility: recorded but not confirmed in chat" in rendered
     assert "1 recorded-visible event(s)" in rendered
     assert "proven-visible event(s)" not in rendered
@@ -577,7 +577,7 @@ def test_codex_intervention_status_separates_static_ready_from_visible_proof(tmp
     )
     rendered = host_intervention_status.render_intervention_status(report)
 
-    assert report["activation"] == "ready"
+    assert report["activation"] == "unverified"
     assert report["delivery_ledger"]["visible_event_count"] == 0
     assert report["chat_visible_proof"]["status"] == "unproven_this_session"
     assert "Chat visibility: not confirmed in this session" in rendered
@@ -608,7 +608,7 @@ def test_codex_intervention_status_does_not_count_hidden_ready_payload_as_visibl
     )
     rendered = host_intervention_status.render_intervention_status(report)
 
-    assert report["activation"] == "ready"
+    assert report["activation"] == "unverified"
     assert report["delivery_ledger"]["event_count"] == 1
     assert report["delivery_ledger"]["visible_event_count"] == 0
     assert report["delivery_ledger"]["chat_confirmed_event_count"] == 0
@@ -747,7 +747,7 @@ def test_hook_payload_visible_text_without_ledger_proof_stays_unproven(tmp_path:
     )
 
     assert visible_candidate == "---\n\n**Odylith Observation:** Hidden hook context is not chat proof.\n\n---"
-    assert report["activation"] == "ready"
+    assert report["activation"] == "unverified"
     assert report["delivery_ledger"]["event_count"] == 0
     assert report["delivery_ledger"]["visible_event_count"] == 0
     assert report["chat_visible_proof"]["status"] == "unproven_this_session"
@@ -773,10 +773,10 @@ def test_claude_intervention_status_checks_prompt_teaser_and_edit_hooks(tmp_path
 
 def test_host_intervention_status_cli_dispatches_for_both_hosts(tmp_path: Path, capsys) -> None:
     _seed_codex_repo(tmp_path)
-    assert cli.main(["codex", "intervention-status", "--repo-root", str(tmp_path), "--json"]) == 0
+    assert cli.main(["codex", "intervention-status", "--repo-root", str(tmp_path), "--json"]) == 1
     codex_payload = json.loads(capsys.readouterr().out)
     assert codex_payload["host_family"] == "codex"
-    assert codex_payload["activation"] == "ready"
+    assert codex_payload["activation"] == "unverified"
     assert codex_payload["chat_visible_proof"]["status"] == "unproven_this_session"
 
     _seed_claude_repo(tmp_path)

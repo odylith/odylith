@@ -5,8 +5,8 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-import re
 import sys
+import tomllib
 from typing import Any
 from typing import Mapping
 
@@ -30,10 +30,11 @@ def _codex_hooks_feature_configured(repo_root: Path) -> bool:
     if not path.is_file():
         return False
     try:
-        text = path.read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
+        configuration = tomllib.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError):
         return False
-    return bool(re.search(r"(?m)^\s*codex_hooks\s*=\s*true\s*$", text))
+    features = configuration.get("features")
+    return isinstance(features, dict) and features.get("hooks", features.get("codex_hooks")) is True
 
 
 def _codex_static_readiness(repo_root: Path) -> dict[str, Any]:
@@ -56,7 +57,9 @@ def _codex_static_readiness(repo_root: Path) -> dict[str, Any]:
         "ready": all(checks.values()),
         "checks": checks,
         "activation_note": (
-            "Codex hook wiring is statically ready; trusted-project approval and a fresh/reloaded session are still required for live host delivery."
+            "These checks cover configuration only, not native execution or chat visibility. "
+            "Codex requires project trust and review of each exact hook definition in /hooks; "
+            "changed definitions require review again. Use a fresh/reloaded session for live delivery proof."
         ),
     }
 
@@ -252,6 +255,9 @@ def inspect_intervention_status(
         limit=limit,
     )
     activation = "ready" if bool(readiness.get("ready")) else "degraded"
+    if host == "codex" and readiness.get("ready"):
+        # Static files cannot attest native per-definition trust or execution.
+        activation = "unverified"
     proof = _chat_visible_proof(
         ledger=ledger,
         static_ready=bool(readiness.get("ready")),
