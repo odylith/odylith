@@ -4,11 +4,22 @@ Last updated: 2026-09-07
 
 ## Overview
 
+Native admission candidate failed its standard-tier gate: authoring consumed
+50.496233 seconds, leaving 4.498808 seconds for review. The reviewer returned no
+verdict and the command failed at 55.441175 seconds before producing a complete
+package. Source-local v53 has truthful two-role receipts and fail-closed deadline
+guards, but is not a qualified winning mechanism. The earlier external
+54.974559-second pass had only 25 milliseconds of model-window headroom and did
+not establish robustness. Consumer 60/90/120 and all quality/release gates remain
+fixed. Evidence: `/private/tmp/odylith-v53-native-admission.G4DKq8/proposal-report.json`.
+
 Domain Intelligence owns the Greenfield evidence-to-transaction boundary. One
 pinned model authors source-cited facts and typed relations alongside a required,
-separately labeled provisional design. The source-local v52 candidate uses one
-call and the full 55/80/105 model windows inside fixed 60/90/120 consumer limits;
-there is no second runtime reviewer or repair call. Deterministic code verifies
+separately labeled provisional design. Source-local v53 uses one author and one
+read-only full-candidate reviewer inside the same 55/80/105 model windows and
+fixed 60/90/120 consumer limits. Review receives at most 20 seconds and only
+remaining time, including setup and validation; no repair call or retry follows.
+Invalid authoring and material clarification do not invoke review. Deterministic code verifies
 exact custody, binds design in the existing relation hash, projects the complete governed package,
 and validates it before confirmation. Each pending package is immutable and
 hash-addressed, and accepted bytes publish under journaled rollback and readback.
@@ -16,6 +27,19 @@ All-reader atomic generation-pointer publication remains unqualified.
 Codex and Claude transport the same exact hash-bound `CONFIRM`, `EDIT`, and
 `REJECT` contract. No evidence interpretation, model call, artifact generation,
 or prose repair runs after confirmation.
+
+The admitted receipt records both real roles and binds complete candidate,
+source and Product Intent hashes. Compiler and commit-only canonicalizers retain
+nested model timings while the final consumer elapsed observation remains volatile.
+Native approval and release scoring share the same metadata-only author/reviewer
+receipt validator. A claimed quality-lens pass cannot bypass current version,
+role, timing or admission requirements; scoring also binds reviewed facts to
+the committed facts summary. Independent semantic lenses still require their
+own evidence and are not inferred from a structurally valid receipt.
+Review cannot change accepted meaning, assumptions or proposed design. It hard-blocks
+material source loss, contradiction or unsafe choices, not optional implementation
+detail or weak but grammatical practical-need copy. Structural custody and model
+admission remain evidence, not a universal semantic oracle.
 
 The bounded v52 integration replaces only terminal-result location selection:
 `result_fact` identifies an eligible raw source-fact field and one-based row;
@@ -39,11 +63,11 @@ it supports exact source-event identities without transferring actor authority.
 Registry and Radar project it directly. Atlas preserves source context and four
 labeled proposed views: first run, exchanges, delivery dependencies and support.
 The source-only backlog projector is retired.
-The v52 candidate is not release-qualified: independent semantic regression,
+The v53 candidate is not release-qualified: independent semantic regression,
 complete-package UX, exact transaction, timing and clean-distribution proof remain
 required. Synthetic fixture counts are not proof of useful product design.
-A full fixture-backed pre-confirm counterexample still accepts an exact operator
-invocation as product_story. This known P1 blocks semantic qualification; a passed
+A retained v52 pre-confirm counterexample accepts an exact operator invocation
+as product_story. Its replacement requires fresh semantic qualification; a passed
 custody/structure manifest is not proof of source entailment. Component exchange
 direction also does not establish an implementation dependency. Keep exact
 exchanges and explicit workstream prerequisites under their distinct owners.

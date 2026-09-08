@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from odylith.runtime.surfaces import render_backlog_ui
 from tests.integration.runtime.surface_browser_test_support import (
     _assert_clean_page,
+    _failure_screenshot_path,
     _new_page,
     browser_context,
 )
@@ -27,6 +30,112 @@ def test_radar_html_escaping_preserves_values_and_missing_blanks(browser_context
         assert page.evaluate(f"value => {{ {escape_function} return escapeHtml(value); }}", value) == expected
     assert page.evaluate(f"() => {{ {escape_function} return escapeHtml(); }}") == ""
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+@pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("state", ["normal", "runtime-fallback"])
+def test_radar_selected_detail_text_fits_its_clipping_ancestors(
+    browser_context, width: int, state: str,
+) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, *errors = _new_page(context)
+    page.set_viewport_size({"width": width, "height": 1100 if width == 1440 else 932})
+    final_sentence = "The reader can reach the complete final sentence without hidden horizontal scrolling."
+    payload = {"entries": [{
+        "idea_id": "B-001", "title": "Review complete project proposals before publication",
+        "section": "execution", "status": "implementation", "ordering_score": 100,
+        "idea_date": "2026-05-02", "execution_start_date": "2026-06-25",
+        "execution_duration_days": 74, "idea_age_days": 128, "confidence": "high",
+        "priority": "P1", "sizing": "L", "complexity": "High",
+        "impacted_parts": "web,planner,catalog,reporting,notifications,publication,review,coordination",
+        "registry_components": [{"component_id": "publication-coordination", "name": "Publication Coordination Engine"}],
+        "promoted_to_plan_ui_href": "../plans/publication-review.html",
+        "rationale_bullets": [
+            "why now: readers need complete source-grounded evidence before publication",
+            "expected outcome: independent review preserves the complete governance contract",
+            "tradeoff: release waits until the reviewed package is verified",
+            "deferred for now: optional integrations wait until the core reading experience is reliable",
+        ],
+        "execution_state": "active", "execution_state_meta": {"source_ts_iso": "2026-09-07T12:15:00Z"},
+        "problem": "Readers must be able to inspect the complete proposal before deciding whether to publish it.",
+        "product_view": "A selected workstream presents its intent, evidence and success criteria together.",
+        "success_metrics": (
+            "Every supported request produces a faithful and reviewable proposal or an explicit failure. "
+            "The entire success criterion remains readable in the selected workstream detail. " + final_sentence
+        ),
+    }]}
+    fallback_requests = []
+    if state == "runtime-fallback":
+        payload["data_source"] = {"preferred_backend": "runtime", "runtime_base_url": base_url + "/reading-runtime/"}
+
+        def unavailable_runtime(route) -> None:  # noqa: ANN001
+            fallback_requests.append(route.request.url)
+            route.fulfill(status=200, content_type="application/json", body="invalid JSON")
+
+        page.route("**/reading-runtime/**", unavailable_runtime)
+    html = render_backlog_ui._render_html(payload=payload)  # noqa: SLF001
+    page.route("**/odylith/radar/radar.html*", lambda route: route.fulfill(
+        status=200, content_type="text/html", body=html,
+    ))
+    page.goto(base_url + "/odylith/index.html?tab=radar&workstream=B-001", wait_until="networkidle")
+    for selector in ("#upgradeSpotlightDismiss", "#welcomeDismiss", "#gridBriefClose", "#odylithClose"):
+        control = page.locator(selector)
+        if control.count() and control.first.is_visible():
+            control.first.click()
+    frame = page.frame_locator("#frame-radar")
+    detail = frame.locator("#detail")
+    metrics = detail.locator(".block").filter(has=frame.get_by_role("heading", name="Success Metrics", exact=True))
+    paragraph = metrics.locator("p").first
+    paragraph.wait_for(state="attached")
+    # Only vertical wheel input: scrollIntoView can conceal clipping by scrolling a hidden-overflow ancestor.
+    page.mouse.move(width - 110, 650)
+    for _ in range(40):
+        bounds = paragraph.bounding_box()
+        if bounds and 410 <= bounds["y"] and bounds["y"] + bounds["height"] < page.viewport_size["height"] - 12:
+            break
+        page.mouse.wheel(0, min(650, bounds["y"] - 490) if bounds else 650)
+        page.wait_for_timeout(70)
+    assert bounds and 410 <= bounds["y"] and bounds["y"] + bounds["height"] < page.viewport_size["height"] - 12, bounds
+    assert final_sentence in metrics.inner_text()
+    geometry = detail.evaluate("""detail => {
+        const rect = node => {const r = node.getBoundingClientRect(); return {left:r.left, right:r.right, width:r.width};};
+        const panel = detail.closest('.detail-panel');
+        const style = getComputedStyle(detail);
+        const clipping = [];
+        for (let node=detail; node; node=node.parentElement) {
+            if (['hidden','clip','auto','scroll'].includes(getComputedStyle(node).overflowX)) clipping.push(node);
+        }
+        const blockOverflows = Array.from(detail.children).filter(node => {
+            const box=rect(node); return clipping.some(owner => box.left < rect(owner).left-1 || box.right > rect(owner).right+1);
+        }).map(node => ({class:node.className, ...rect(node)}));
+        const textOverflows = [];
+        for (const p of detail.querySelectorAll('.block p')) {
+            const range=document.createRange(); range.selectNodeContents(p);
+            for (const box of range.getClientRects()) for (let owner=p.parentElement; owner; owner=owner.parentElement) {
+                if (['hidden','clip','auto','scroll'].includes(getComputedStyle(owner).overflowX)) {
+                    const clip=rect(owner);
+                    if (box.left < clip.left-1 || box.right > clip.right+1) textOverflows.push({text:p.innerText,left:box.left,right:box.right,clip});
+                }
+            }
+        }
+        return {blockOverflows,textOverflows,panelClient:panel.clientWidth,panelScroll:panel.scrollWidth,
+            track:parseFloat(style.gridTemplateColumns),budget:detail.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight),
+            ancestorScrollLeft:clipping.map(node => node.scrollLeft)};
+    }""")
+    screenshot = _failure_screenshot_path(f"radar-detail-reading-{width}-{state}")
+    if screenshot is not None:
+        screenshot.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(screenshot))
+        screenshot.with_suffix(".json").write_text(json.dumps(geometry, indent=2) + "\n")
+    assert not geometry["blockOverflows"], geometry
+    assert not geometry["textOverflows"], geometry
+    assert geometry["panelScroll"] <= geometry["panelClient"] + 1, geometry
+    assert geometry["track"] <= geometry["budget"] + 1, geometry
+    assert not any(geometry["ancestorScrollLeft"]), geometry
+    if state == "runtime-fallback":
+        assert any("surfaces/backlog/list" in url for url in fallback_requests)
+        assert any("surfaces/backlog/detail" in url for url in fallback_requests)
+    _assert_clean_page(page, *errors)
 
 
 @pytest.mark.parametrize("viewport", [(1440, 1100), (390, 844)], ids=["desktop", "mobile"])

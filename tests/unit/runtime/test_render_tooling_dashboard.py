@@ -5,7 +5,7 @@ from pathlib import Path
 import time
 
 from odylith.install.state import write_install_state, write_upgrade_spotlight, write_version_pin
-from tests.unit.runtime.greenfield_proposal_fixtures import (
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import (
     _canonical_model_authored_greenfield_fixture as _authored_greenfield_fixture,
 )
 from odylith.runtime.surfaces import render_tooling_dashboard as renderer

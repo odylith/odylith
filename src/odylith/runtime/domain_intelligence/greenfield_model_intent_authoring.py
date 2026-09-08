@@ -11,9 +11,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+from copy import deepcopy
+from dataclasses import dataclass, field, replace
 from time import monotonic
 from typing import Any
 
@@ -21,6 +23,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     GreenfieldAuthoredSemanticsError,
     authored_component_relation_facts,
 )
+from odylith.runtime.domain_intelligence.greenfield_candidate_review import review_greenfield_candidate
 from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
     ASSUMPTION_SCHEMA,
     assumption_rows,
@@ -57,9 +60,9 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v52"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v53"
 GREENFIELD_MODEL_PROOF_FD_ENV = "ODYLITH_GREENFIELD_MODEL_PROOF_FD"
-MAX_GREENFIELD_SEMANTIC_CALLS = 1
+MAX_GREENFIELD_SEMANTIC_CALLS = 2
 
 _TEXT_FIELDS = (
     "title",
@@ -164,6 +167,8 @@ class GreenfieldModelAuthoredIntent:
     effective_timeout_seconds: float
     consistency_status: str
     semantic_model_call_count: int = 1
+    initial_authoring_elapsed_seconds: float = 0.0
+    candidate_review: dict[str, Any] = field(default_factory=dict)
 
 
 def author_greenfield_intent(
@@ -178,6 +183,8 @@ def author_greenfield_intent(
     source_document_count: int = 1,
     source_language: str = "en",
     clock: Callable[[], float] = monotonic,
+    review_provider_factory: Callable[[], odylith_reasoning.ReasoningProvider | None] | None = None,
+    deadline: float | None = None,
 ) -> GreenfieldModelAuthoredIntent | GreenfieldAuthoringClarification:
     """Produce one validated canonical intent from untrusted evidence.
 
@@ -204,7 +211,15 @@ def author_greenfield_intent(
         timeout_seconds,
         maximum_seconds=profile.model_timeout_seconds,
     )
-    initial_budget_seconds = budget_seconds
+    started = clock()
+    model_deadline = started + budget_seconds
+    if deadline is not None:
+        if not math.isfinite(deadline):
+            raise GreenfieldModelAuthoringError("Greenfield received an invalid model deadline; no records were created.")
+        model_deadline = min(model_deadline, deadline)
+    initial_budget_seconds = model_deadline - started
+    if initial_budget_seconds < 1.0:
+        raise GreenfieldModelAuthoringError("Greenfield exhausted its model time window; no records were created.")
     provider_before_call = odylith_reasoning.provider_failure_metadata(provider)
     require_greenfield_model_profile_observation(
         profile_id=profile.profile_id,
@@ -213,18 +228,26 @@ def author_greenfield_intent(
         reasoning_effort=request_effort,
         effective_timeout_seconds=initial_budget_seconds,
     )
-    started = clock()
-    response = provider.generate_structured(
-        request=odylith_reasoning.StructuredReasoningRequest(
-            system_prompt=_SYSTEM_PROMPT,
-            schema_name="greenfield_intent_authoring",
-            output_schema=_AUTHORING_SCHEMA,
-            prompt_payload=_authoring_payload(text),
-            model=request_model,
-            reasoning_effort=request_effort,
-            timeout_seconds=initial_budget_seconds,
+    try:
+        response = provider.generate_structured(
+            request=odylith_reasoning.StructuredReasoningRequest(
+                system_prompt=_SYSTEM_PROMPT,
+                schema_name="greenfield_intent_authoring",
+                output_schema=_AUTHORING_SCHEMA,
+                prompt_payload=_authoring_payload(text),
+                model=request_model,
+                reasoning_effort=request_effort,
+                timeout_seconds=initial_budget_seconds,
+            )
         )
-    )
+    except Exception as exc:
+        _emit_release_proof_observation(evidence_text=text, response=None, call_count=1,
+            failure={"stage": "initial_authoring", "profile_id": profile.profile_id,
+                "effective_timeout_seconds": initial_budget_seconds,
+                "elapsed_seconds": max(0.0, clock() - started), "code": type(exc).__name__})
+        raise GreenfieldModelAuthoringError(
+            "Greenfield model authoring is unavailable; no records were created."
+        ) from exc
     elapsed_seconds = max(0.0, clock() - started)
     provider_metadata = odylith_reasoning.provider_failure_metadata(provider)
     provider_metadata["model"] = provider_metadata.get("model") or request_model
@@ -262,25 +285,49 @@ def author_greenfield_intent(
             "A verified source-cited Greenfield package could not be produced; no records were created."
         )
     initial_elapsed_seconds = elapsed_seconds
-    call_count = 1
+    review_observation: dict[str, Any] = {}
     validation_context = {
         "evidence_text": text,
         "provider": provider_metadata,
         "profile_id": profile.profile_id,
-        "effective_timeout_seconds": budget_seconds,
+        "effective_timeout_seconds": initial_budget_seconds,
     }
     try:
         if elapsed_seconds > initial_budget_seconds:
             raise GreenfieldModelAuthoringError(
                 "Greenfield authoring exceeded its declared time window; no records were created."
             )
-        return _validated_authoring_response(
+        frozen_response = deepcopy(response)
+        authored = _validated_authoring_response(
             response, elapsed_seconds=elapsed_seconds,
-            semantic_model_call_count=call_count, **validation_context,
+            semantic_model_call_count=1, **validation_context,
         )
+        if response != frozen_response:
+            raise GreenfieldModelAuthoringError("Greenfield author validation changed its candidate; no records were created.")
+        if clock() > model_deadline:
+            raise GreenfieldModelAuthoringError("Greenfield validation exceeded its model time window; no records were created.")
+        if isinstance(authored, GreenfieldAuthoringClarification):
+            return replace(authored, elapsed_seconds=max(0.0, clock() - started))
+        try:
+            review = review_greenfield_candidate(
+                evidence_text=text, candidate=response["result"], profile_id=profile.profile_id,
+                provider_factory=review_provider_factory, deadline=model_deadline,
+                clock=clock, observation=review_observation,
+            )
+        except Exception as exc:
+            raise GreenfieldModelAuthoringError(
+                "A source-faithful Greenfield package could not be verified; no records were created."
+            ) from exc
+        if response != frozen_response:
+            raise GreenfieldModelAuthoringError("Greenfield review changed its authored candidate; no records were created.")
+        return replace(authored, semantic_model_call_count=2, candidate_review=review,
+            initial_authoring_elapsed_seconds=initial_elapsed_seconds,
+            elapsed_seconds=max(0.0, clock() - started))
     finally:
         _emit_release_proof_observation(
-            evidence_text=text, response=response, call_count=call_count,
+            evidence_text=text, response=response,
+            call_count=1 + int(review_observation.get("dispatched") is True),
+            candidate_review=review_observation or None,
             initial_authoring={
                 "profile_id": profile.profile_id,
                 "request_role": "initial_authoring",
@@ -291,6 +338,8 @@ def author_greenfield_intent(
                 "provider": provider_metadata,
             },
         )
+        if clock() > model_deadline:
+            raise GreenfieldModelAuthoringError("Greenfield exceeded its model time window; no records were created.")
 
 
 def authoring_tier(profile_id: str) -> str:
@@ -461,6 +510,7 @@ def _emit_release_proof_observation(
     *, evidence_text: str, response: Any, call_count: int,
     initial_authoring: Mapping[str, Any] | None = None,
     failure: Mapping[str, Any] | None = None,
+    candidate_review: Mapping[str, Any] | None = None,
 ) -> None:
     """Write exact pre-validation evidence only to a parent-granted proof FD."""
 
@@ -489,6 +539,8 @@ def _emit_release_proof_observation(
         payload["response"] = dict(response)
     if initial_authoring is not None:
         payload["initial_authoring"] = dict(initial_authoring)
+    if candidate_review is not None:
+        payload["candidate_review"] = dict(candidate_review)
     encoded = (json.dumps(payload, sort_keys=True, ensure_ascii=False) + "\n").encode(
         "utf-8"
     )
@@ -794,7 +846,9 @@ def _bounded_timeout(value: float | None, *, maximum_seconds: float) -> float:
         raise GreenfieldModelAuthoringError(
             "Greenfield model authoring received an invalid profile-bound timeout; no records were created."
         ) from exc
-    return min(maximum_seconds, max(1.0, timeout))
+    if isinstance(value, bool) or not math.isfinite(timeout) or timeout <= 0:
+        raise GreenfieldModelAuthoringError("Greenfield model authoring received an invalid timeout; no records were created.")
+    return min(maximum_seconds, timeout)
 
 
 def _mapping(value: Any) -> Mapping[str, Any]:

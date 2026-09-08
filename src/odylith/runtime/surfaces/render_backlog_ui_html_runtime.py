@@ -483,6 +483,8 @@ def _render_html(*, payload: dict[str, object]) -> str:
     .detail {
       padding: 16px 18px 18px;
       display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      overflow-wrap: anywhere;
       gap: 14px;
     }
 

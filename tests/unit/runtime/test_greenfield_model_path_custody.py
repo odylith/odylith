@@ -27,6 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     product_intent_authority_from_envelope,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
     model_event_rows,
@@ -170,7 +171,8 @@ def test_authoring_accepts_only_byte_verified_source_citations() -> None:
         provider=provider,
         timeout_seconds=84,
         model_profile_id=RESCUE_PROFILE_ID,
-        clock=lambda: next(ticks),
+        clock=lambda: next(ticks, 4.0),
+        review_provider_factory=AdmittingReviewProvider,
     )
 
     assert result.intent["first_path"] == _AUTHORED_FIRST_PATH
@@ -230,6 +232,7 @@ def test_product_led_path_keeps_review_recipient_without_inventing_human_event()
         evidence_text=source,
         provider=StructuredAuthoringProvider(response),
         clock=lambda: 0.0,
+        review_provider_factory=AdmittingReviewProvider,
     )
 
     assert [row["actor_kind"] for row in result.first_path_relations] == ["product"]
@@ -283,6 +286,7 @@ def test_event_rejects_target_that_is_only_adjacent_in_a_selected_fact() -> None
             evidence_text=source,
             provider=StructuredAuthoringProvider(response),
             clock=lambda: 0.0,
+            review_provider_factory=AdmittingReviewProvider,
         )
 
 
@@ -296,6 +300,7 @@ def test_event_target_stays_fail_closed_after_ordered_event_simplification() -> 
             evidence_text=source,
             provider=StructuredAuthoringProvider(response),
             clock=lambda: 0.0,
+            review_provider_factory=AdmittingReviewProvider,
         )
 
 
@@ -311,6 +316,7 @@ def test_selected_target_without_event_co_containment_stays_fail_closed() -> Non
             evidence_text=source,
             provider=StructuredAuthoringProvider(response),
             clock=lambda: 0.0,
+            review_provider_factory=AdmittingReviewProvider,
         )
 
 
@@ -321,6 +327,7 @@ def test_coordinated_events_derive_actor_presence_from_one_typed_fact_edge() -> 
         evidence_text=source,
         provider=StructuredAuthoringProvider(response),
         clock=lambda: 0.0,
+        review_provider_factory=AdmittingReviewProvider,
     )
 
     assert [row["actor_fact_quote"] for row in result.first_path_relations] == [
@@ -396,6 +403,7 @@ def test_two_human_actor_changes_use_selected_facts_across_sentences() -> None:
         evidence_text=source,
         provider=StructuredAuthoringProvider(response),
         clock=lambda: 0.0,
+        review_provider_factory=AdmittingReviewProvider,
     )
 
     assert [row["actor_fact_quote"] for row in result.first_path_relations] == [
@@ -422,6 +430,7 @@ def test_unselected_actor_fact_cannot_start_or_switch_an_actor_chain(
             evidence_text=source,
             provider=StructuredAuthoringProvider(response),
             clock=lambda: 0.0,
+            review_provider_factory=AdmittingReviewProvider,
         )
 
 
@@ -434,6 +443,7 @@ def test_canonical_relation_rejects_retired_surface_actor_fields(
         evidence_text=source,
         provider=StructuredAuthoringProvider(response),
         clock=lambda: 0.0,
+        review_provider_factory=AdmittingReviewProvider,
     )
     tampered = [dict(row) for row in result.first_path_relations]
     tampered[0][retired_field] = (
@@ -460,6 +470,7 @@ def test_materialization_preserves_exact_event_fact_bytes(tmp_path) -> None:  # 
         authoring_provider=StructuredAuthoringProvider(response),
         authoring_timeout_seconds=84,
         authoring_profile_id=RESCUE_PROFILE_ID,
+        review_provider_factory=AdmittingReviewProvider,
     )
 
     assert candidate["first_path"] == _AUTHORED_FIRST_PATH
@@ -475,6 +486,7 @@ def test_verified_authoring_spans_become_the_product_intent_custody_source() -> 
         evidence_text=source,
         provider=StructuredAuthoringProvider(_response(source)),
         clock=lambda: 0.0,
+        review_provider_factory=AdmittingReviewProvider,
     )
     sealed_intent = {
         **result.intent,
@@ -543,6 +555,7 @@ def test_envelope_rejects_relation_rebound_to_a_duplicate_source_occurrence() ->
         evidence_text=source,
         provider=StructuredAuthoringProvider(_response(source)),
         clock=lambda: 0.0,
+        review_provider_factory=AdmittingReviewProvider,
     )
     relations = [dict(row) for row in result.first_path_relations]
     duplicate_start = source.encode("utf-8").rfind(event.encode("utf-8"))
@@ -598,6 +611,7 @@ def test_authored_custody_preserves_exact_unicode_markdown_and_deferred_actor_by
             )
         ),
         clock=lambda: 0.0,
+        review_provider_factory=AdmittingReviewProvider,
     )
 
     sealed_intent = {

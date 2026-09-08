@@ -35,6 +35,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 )
 from odylith.runtime.governance import backlog_authoring
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
 )
@@ -105,6 +106,7 @@ def _authored_proposal(
         ),
         authoring_timeout_seconds=84.0,
         authoring_profile_id=RESCUE_PROFILE_ID,
+        review_provider_factory=AdmittingReviewProvider,
     )
     proposal = build_authored_greenfield_proposal(
         observed_source={},

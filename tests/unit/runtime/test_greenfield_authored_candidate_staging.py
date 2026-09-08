@@ -30,6 +30,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     product_intent_authority_from_envelope,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
 )
@@ -67,6 +68,7 @@ def _authored_stage_inputs(repo_root: Path) -> tuple[dict[str, object], dict[str
         if str(row)
     ) + "."
     result = author_greenfield_intent(
+        review_provider_factory=AdmittingReviewProvider,
         evidence_text=evidence,
         provider=StructuredAuthoringProvider(
             authored_response(

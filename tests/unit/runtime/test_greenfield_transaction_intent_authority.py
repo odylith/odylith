@@ -23,28 +23,14 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 )
 from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import atomic_fact_ledger_hash
 from odylith.runtime.domain_intelligence.greenfield_authored_proposal import build_authored_greenfield_proposal
-from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
-    GREENFIELD_INTENT_AUTHORING_VERSION,
-)
-from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
-    STANDARD_PROFILE_ID,
-    get_greenfield_model_profile,
-)
 from tests.unit.runtime.greenfield_proposal_fixtures import compiled_greenfield_package_fixture
-from tests.unit.runtime.greenfield_proposal_fixtures import canonical_model_authored_intent_fixture
-from tests.unit.runtime.greenfield_proposal_fixtures import _canonical_model_authored_greenfield_fixture
-from tests.unit.runtime.greenfield_proposal_fixtures import approved_authored_quality_manifest_fixture
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import canonical_model_authored_intent_fixture
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import _canonical_model_authored_greenfield_fixture
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import approved_authored_quality_manifest_fixture
 
 
-def _approved_quality_manifest() -> dict[str, Any]:
-    return approved_authored_quality_manifest_fixture(
-        semantic_compiler={
-            "version": "odylith.greenfield.authored-semantic-validation.v3",
-            "status": "passed",
-            "semantic_owner": "validated_model_authored_intent",
-            "post_authoring_interpretation_calls": 0,
-        }
-    )
+def _approved_quality_manifest(authority: dict[str, Any]) -> dict[str, Any]:
+    return approved_authored_quality_manifest_fixture(intent_authority=authority)
 
 
 def _recorded_authority(tmp_path: Path) -> tuple[Path, dict[str, Any], dict[str, Any]]:
@@ -75,7 +61,7 @@ def _transaction(tmp_path: Path, *, authority: dict[str, Any] | None = None) -> 
         prewrite_package=package,
         backlog_result=package.backlog_result or {},
         intent_authority=intent_authority,
-        quality_manifest=_approved_quality_manifest(),
+        quality_manifest=_approved_quality_manifest(intent_authority),
         repo_root=tmp_path,
     )
 
@@ -115,7 +101,6 @@ def test_product_create_transaction_carries_confirmed_intent_authority_block(tmp
 def test_serialized_authored_transaction_contains_only_sealed_component_relation_identity(
     tmp_path: Path,
 ) -> None:
-    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
     candidate = canonical_model_authored_intent_fixture(tmp_path)
     authority = dict(candidate[PRODUCT_INTENT_AUTHORITY_KEY])
     intent = {
@@ -129,29 +114,7 @@ def test_serialized_authored_transaction_contains_only_sealed_component_relation
     )
     proposal[PRODUCT_INTENT_AUTHORITY_KEY] = authority
     package = compiled_greenfield_package_fixture(proposal, repo_root=tmp_path)
-    quality_manifest = {
-        **_approved_quality_manifest(),
-        "semantic_compiler": {
-            "version": "odylith.greenfield.authored-semantic-validation.v3",
-            "status": "passed",
-            "semantic_owner": "validated_model_authored_intent",
-            "post_authoring_interpretation_calls": 0,
-        },
-        "model_authoring": {
-            "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
-            "semantic_model_call_count": 1,
-            "tier": "standard",
-            "elapsed_seconds": 1.0,
-            "model_profile": {
-                "profile_id": profile.profile_id,
-                "provider": profile.provider,
-                "model": profile.model,
-                "reasoning_effort": profile.reasoning_effort,
-                "effective_timeout_seconds": profile.model_timeout_seconds,
-                "authoring_tier": profile.repair_tier,
-            },
-        },
-    }
+    quality_manifest = _approved_quality_manifest(authority)
     transaction = build_product_create_transaction(
         proposal=proposal,
         release_selector="0.0.1",
@@ -402,7 +365,7 @@ def test_transaction_rejects_typed_intent_drift_from_its_sealed_authority(tmp_pa
             prewrite_package=package,
             backlog_result=package.backlog_result or {},
             intent_authority=authority,
-            quality_manifest=_approved_quality_manifest(),
+            quality_manifest=_approved_quality_manifest(authority),
             repo_root=tmp_path,
         )
 

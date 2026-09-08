@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring impor
     author_greenfield_intent,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
 )
@@ -81,6 +82,7 @@ def _author_terminal_intent(
         evidence_text=source,
         provider=StructuredAuthoringProvider(response),
         clock=lambda: 0.0,
+        review_provider_factory=AdmittingReviewProvider,
     )
     return result, source
 

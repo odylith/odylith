@@ -15,6 +15,17 @@ execution evidence into the ranked workstream view used by operators and other
 Odylith surfaces.
 
 ## Scope And Non-Goals
+### Selected detail readability
+The local Radar detail grid owns the width of its header and narrative blocks.
+Its single track must fit the available content box on mobile and desktop;
+the enclosing panel's clipping must never hide ordinary prose or KPI values.
+CB-303 native 430-pixel evidence reproduces an implicit auto track wider than
+the panel. The local track must stay bounded and long metadata must wrap without
+rewriting meaning; constraining the track alone does not prevent text clipping.
+The correction does not change shared header geometry or shorten prose.
+Regression proof must measure text ranges
+and blocks against clipping ancestors, not only document width or DOM presence.
+
 ### Selection and empty-state lifecycle
 `backlog_selection_ui.py` owns detail loading and cancellation. No source rows
 produces a clear explanation and an Open Project next step; zero filtered rows

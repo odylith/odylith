@@ -19,6 +19,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     build_product_intent_envelope,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
     model_event_rows,
@@ -133,6 +134,7 @@ def _author(
         evidence_text=evidence,
         provider=StructuredAuthoringProvider(response),
         clock=lambda: 0.0,
+        review_provider_factory=AdmittingReviewProvider,
     )
     assert isinstance(result, GreenfieldModelAuthoredIntent)
     return result

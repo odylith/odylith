@@ -28,7 +28,7 @@ from odylith.runtime.domain_intelligence.greenfield_preconfirm_handoff_quality i
     project_dashboard_preview_issues,
 )
 from tests.unit.runtime import greenfield_model_authoring_fixtures as authoring_fixtures
-from tests.unit.runtime.greenfield_proposal_fixtures import (
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import (
     _canonical_model_authored_greenfield_fixture,
 )
 

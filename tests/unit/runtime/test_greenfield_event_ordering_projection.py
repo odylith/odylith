@@ -33,6 +33,7 @@ from odylith.runtime.domain_intelligence.greenfield_preconfirm_semantic_alignmen
 )
 from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
     structural_design_fixture,
@@ -98,6 +99,7 @@ def test_post_result_action_survives_authoring_custody_and_all_projections(tmp_p
     provider = StructuredAuthoringProvider(response)
     candidate = materialize_model_authored_intent(
         prompt=source, repo_root=tmp_path, authoring_provider=provider,
+        review_provider_factory=AdmittingReviewProvider,
     )
     assert provider.calls == 1
     relations = require_relation_authority_parity(candidate, candidate[PRODUCT_INTENT_AUTHORITY_KEY])
@@ -132,6 +134,7 @@ def ordered_package(tmp_path):
     provider = StructuredAuthoringProvider(response)
     candidate = materialize_model_authored_intent(
         prompt=source, repo_root=tmp_path, authoring_provider=provider,
+        review_provider_factory=AdmittingReviewProvider,
     )
     assert provider.calls == 1
     proposal = build_greenfield_proposal(

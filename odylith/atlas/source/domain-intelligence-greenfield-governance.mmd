@@ -2,7 +2,7 @@ flowchart TB
     subgraph evidence_lane["Evidence and interpretation"]
       direction LR
       request["Greenfield request and EDIT evidence<br/>Untrusted input with exact source custody"]
-      model_pass["One complete source and design author<br/>No runtime review or repair call"]
+      model_pass["One complete source and design author<br/>Pinned author inside shared model deadline"]
       typed_graph["Canonical source facts and provisional design<br/>Source prerequisites; proposed first run<br/>Distinct authority; one relation hash"]
       ambiguity{"Material meaning complete?"}
       clarify["One focused clarification<br/>No transaction or governed write"]
@@ -13,10 +13,14 @@ flowchart TB
     subgraph projection_lane["Deterministic package construction"]
       direction LR
       custody["Custody and invariant validation<br/>Stable source IDs and explicit result producer<br/>No chronology from source-list position"]
+      review["Read-only complete-candidate admission<br/>Source meaning and proposed choices remain distinct<br/>One review; at most 20 seconds and remaining time"]
+      denied["No admitted package<br/>No retry, repair cascade or governed write"]
       projections["Deterministic source and design projections<br/>4–5 Radar, 4–5 Registry, five Atlas views<br/>Exact release membership and dependency-ready task"]
-      quality["Pre-confirm custody and structural gates<br/>Semantic-role admission P1 remains open"]
+      quality["Pre-confirm complete-package gates<br/>Two-role receipt bound to source and intent<br/>Independent release qualification remains open"]
       timing["Proposal timing gate<br/>Standard at 60 seconds<br/>Rescue at 90; deep at 120"]
-      custody --> projections --> quality --> timing
+      custody --> review
+      review -- "admitted unchanged" --> projections --> quality --> timing
+      review -- "denied, unavailable or late" --> denied
     end
 
     subgraph transaction_lane["Reviewed transaction boundary"]
@@ -54,10 +58,10 @@ flowchart TB
     classDef constraint fill:#FFF8E6,stroke:#F6D98B,color:#132033,stroke-width:1px;
     classDef invalid fill:#FFF1F0,stroke:#F7B4AE,color:#132033,stroke-width:1px;
     class request,model_pass,typed_graph primary;
-    class custody,projections,quality,timing execution;
+    class custody,review,projections,quality,timing execution;
     class sealed,decision,confirm,publish,recovery,owners,evaluator,acceptance,confidence,retained governance;
     class ambiguity,drift constraint;
-    class clarify,replace invalid;
+    class clarify,denied,replace invalid;
 
     style evidence_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
     style projection_lane fill:#F8FFFE,stroke:#A7E9E3,stroke-width:1px,color:#293D52

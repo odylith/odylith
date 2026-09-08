@@ -355,8 +355,14 @@ def _payload_hash(payload: Mapping[str, Any]) -> str:
         "compiler_provenance",
         "commit_summary",
     )
+    canonical_payload = {field: _json_ready(payload.get(field)) for field in fields}
+    manifest = payload.get("quality_manifest")
+    if isinstance(manifest, Mapping) and "model_authoring" in manifest:
+        canonical_payload["quality_manifest"]["model_authoring"] = _json_ready(
+            manifest["model_authoring"], preserve_timing=True,
+        )
     canonical = json.dumps(
-        {field: _json_ready(payload.get(field)) for field in fields},
+        canonical_payload,
         ensure_ascii=True,
         separators=(",", ":"),
         sort_keys=True,
@@ -370,15 +376,15 @@ def canonical_product_create_transaction_receipt_bytes(receipt: Mapping[str, Any
     return (json.dumps(dict(receipt), indent=2, sort_keys=True) + "\n").encode("utf-8")
 
 
-def _json_ready(value: Any) -> Any:
+def _json_ready(value: Any, *, preserve_timing: bool = False) -> Any:
     if isinstance(value, Mapping):
         return {
-            str(key): _json_ready(item)
+            str(key): _json_ready(item, preserve_timing=preserve_timing)
             for key, item in sorted(value.items(), key=lambda row: str(row[0]))
-            if str(key) not in _VOLATILE_HASH_KEYS
+            if preserve_timing or str(key) not in _VOLATILE_HASH_KEYS
         }
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        return [_json_ready(item) for item in value]
+        return [_json_ready(item, preserve_timing=preserve_timing) for item in value]
     return value
 
 

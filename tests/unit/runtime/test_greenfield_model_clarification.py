@@ -22,6 +22,7 @@ from odylith.runtime.domain_intelligence.greenfield_proposals_cli import (
     _print_greenfield_clarification,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     clarification_response,
 )
@@ -50,6 +51,7 @@ def test_missing_information_binds_the_complete_evidence_without_a_model_quote()
         evidence_text=source,
         provider=provider,
         clock=lambda: 0.0,
+        review_provider_factory=AdmittingReviewProvider,
     )
 
     assert isinstance(result, GreenfieldAuthoringClarification)
@@ -77,6 +79,7 @@ def test_missing_information_preserves_unicode_byte_custody() -> None:
         evidence_text=source,
         provider=StructuredAuthoringProvider(_clarification()),
         clock=lambda: 0.0,
+        review_provider_factory=AdmittingReviewProvider,
     )
 
     span = result.consistency_source_spans[0]
@@ -92,6 +95,7 @@ def test_missing_information_accepts_bounded_evidence_longer_than_a_fact_quote()
         evidence_text=source,
         provider=StructuredAuthoringProvider(_clarification()),
         clock=lambda: 0.0,
+        review_provider_factory=AdmittingReviewProvider,
     )
 
     assert result.consistency_source_spans[0]["text"] == source
@@ -109,6 +113,7 @@ def test_missing_information_rejects_a_copied_quote_instead_of_ignoring_it() -> 
             evidence_text=source,
             provider=provider,
             clock=lambda: 0.0,
+            review_provider_factory=AdmittingReviewProvider,
         )
     assert provider.calls == 1
 
@@ -128,6 +133,7 @@ def test_material_contradiction_keeps_two_exact_distinct_source_sides() -> None:
             )
         ),
         clock=lambda: 0.0,
+        review_provider_factory=AdmittingReviewProvider,
     )
 
     assert [span["text"] for span in result.consistency_source_spans] == [
@@ -167,6 +173,7 @@ def test_material_contradiction_rejects_incomplete_or_inexact_sides(
             evidence_text=source,
             provider=provider,
             clock=lambda: 0.0,
+            review_provider_factory=AdmittingReviewProvider,
         )
     assert provider.calls == 1
 
@@ -177,6 +184,7 @@ def test_material_dimension_schema_distinguishes_path_from_product_boundary() ->
         evidence_text="Create a product without a stated task.",
         provider=provider,
         clock=lambda: 0.0,
+        review_provider_factory=AdmittingReviewProvider,
     )
 
     request = provider.requests[0]
@@ -197,9 +205,11 @@ def test_one_call_clarification_retains_exact_source_and_only_author_role(
     observation = tmp_path / "observation.json"
     descriptor = os.open(observation, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     monkeypatch.setenv(GREENFIELD_MODEL_PROOF_FD_ENV, str(descriptor))
+    ticks = iter((0.0, 28.0))
     try:
         result = author_greenfield_intent(
-            evidence_text=source, provider=provider, clock=iter([0.0, 28.0]).__next__,
+            evidence_text=source, provider=provider, clock=lambda: next(ticks, 28.0),
+            review_provider_factory=AdmittingReviewProvider,
         )
     finally:
         os.close(descriptor)
@@ -227,7 +237,7 @@ def test_author_contradiction_uses_exact_two_side_validation():
         status="material_contradiction", quotes=(first, second),
         dimension="operational_constraints",
     ))
-    result = author_greenfield_intent(evidence_text=source, provider=provider, clock=lambda: 0.0)
+    result = author_greenfield_intent(evidence_text=source, provider=provider, clock=lambda: 0.0, review_provider_factory=AdmittingReviewProvider)
 
     assert isinstance(result, GreenfieldAuthoringClarification)
     assert [span["text"] for span in result.consistency_source_spans] == [first, second]
@@ -257,16 +267,18 @@ def test_clarification_rejects_invalid_outcome_without_another_call(mutation):
         response = {"corrections": []}
     provider = StructuredAuthoringProvider(response)
     with pytest.raises(GreenfieldModelAuthoringError):
-        author_greenfield_intent(evidence_text=_source(), provider=provider, clock=lambda: 0.0)
+        author_greenfield_intent(evidence_text=_source(), provider=provider, clock=lambda: 0.0, review_provider_factory=AdmittingReviewProvider)
     assert provider.calls == 1
 
 
 def test_clarification_cannot_extend_the_shared_deadline():
     provider = StructuredAuthoringProvider(_clarification())
+    ticks = iter((0.0, 55.001))
     with pytest.raises(GreenfieldModelAuthoringError, match="exceeded"):
         author_greenfield_intent(
             evidence_text="The first task is unspecified.", provider=provider,
-            clock=iter([0.0, 55.001]).__next__,
+            clock=lambda: next(ticks, 55.001),
+            review_provider_factory=AdmittingReviewProvider,
         )
     assert provider.calls == 1
 
@@ -288,6 +300,7 @@ def test_contradiction_handoff_presents_exact_claims_and_one_choice_question(
         materialize_model_authored_intent(
             prompt=source, repo_root=tmp_path, authoring_provider=provider,
             authoring_receipt=receipt,
+            review_provider_factory=AdmittingReviewProvider,
         )
     exc = captured.value
     question = "Which of these conflicting requirements should this project follow?"
@@ -314,6 +327,7 @@ def test_missing_path_handoff_preserves_question_without_conflicting_claims(
         materialize_model_authored_intent(
             prompt="Create a product without a stated first workflow.",
             repo_root=tmp_path, authoring_provider=StructuredAuthoringProvider(_clarification()),
+            review_provider_factory=AdmittingReviewProvider,
         )
     _print_greenfield_clarification(captured.value, as_json=False)
     output = capsys.readouterr().out

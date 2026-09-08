@@ -12,6 +12,104 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ### Source-first ownership comparison (2026-09-07)
 
+Current decision: stop qualification of the native sequential v53 candidate.
+Independent review finds no P0/P1 in its retained author output and verifies
+367/367 consumer files unchanged, zero added files and no pending transaction.
+The one authorized author-only timing diagnostic is now terminal: the process
+returns in 37.046533 seconds, below its predeclared 45-second slow threshold.
+Turn start is observed at 0.259797 seconds and turn completion at 36.308574;
+no tool items are emitted. Reported usage is 20509 input, 1806 output and 516
+reasoning-output tokens, with zero cached input. Provider construction and request
+serialization precede the measured window; the opaque in-turn interval cannot
+separate server queue, prefill, reasoning and decode. Post-return validation fails
+on the diagnostic's missing local jsonschema dependency. Preserve that harness
+failure, not a passing diagnostic. Frozen source, inputs and all 367 consumer
+files remain unchanged; no reviewer, retry, staging or publication follows.
+The slow-path diagnosis is inconclusive and this unchanged allocation must not
+be rerun automatically. No product performance improvement or winning mechanism
+is established. Evidence: `/private/tmp/odylith-author-latency-trace.8pibFp/`.
+
+The bounded safety/readability checkpoint passes 4308 runtime tests with the
+protected holdout excluded, 1101 install tests, 15 overlapping Project/mirror
+checks, 27 focused browser checks, 26 cross-surface cells and two actual B-142
+reading cells. Radar's local track and wrapping rules remove unreachable mobile
+prose without changing meaning or shared chrome. Keep the native failure and
+remaining release gates open; commit this validated checkpoint as unqualified.
+
+One frozen standard request fails at 55.441175 seconds: authoring consumes
+50.496233 seconds, leaving the reviewer 4.498808 seconds; no review verdict or
+complete package returns. Two actual calls, no retry and unchanged source are
+recorded. The fixed model deadline correctly prevents staging. Error latency
+inside 60 seconds is not a passing consumer outcome. The earlier 25-millisecond
+model-window margin was insufficient evidence of robustness.
+
+Preserve truthful two-role receipts, deadline guards and the failed gate. Do not
+extend 60/90/120, reserve less authoring time without improving author latency,
+restore the known source-loss-prone one-call admission, or repeat a profile sweep.
+Inspect retained requests, responses and provider timing evidence before choosing
+one falsifiable alternative. A mechanism change must improve complete-package
+quality and timing together; no new schema or repair role is earned by this failure
+alone. Final receipt guards pass 151 tests after the 527-test integration run.
+Maintainer UX passes 26 matrix and two corrected D-043 reading cells, with the
+initial harness selector failure preserved; no consumer package exists to review.
+Evidence: `/private/tmp/odylith-v53-native-admission.G4DKq8/`.
+
+The following entries preserve the decisions preceding that failed native gate.
+
+Native integration also requires exact serializer parity in the existing
+commit-only hash owner: retain nested author/reviewer receipt timings in both
+canonicalizers while leaving the final consumer clock volatile. Real CLI
+staging tests exposed the mismatch; retain their failing evidence until the
+same sealed package reloads without weakening integrity checks.
+
+The actual combined-author/full-review feasibility gate passed independent
+semantic and clock/custody review in 54.974559 seconds, with only 0.025441 seconds
+remaining in the model window. This is not native consumer timing or robustness.
+Integrate that unchanged reviewer at the validated-author boundary, preserve all
+candidate values, record two real roles, and enforce one absolute model deadline
+including reviewer setup and validation. No reviewer after clarification or
+invalid authoring, no retry/repair, and no semantic work after confirmation.
+Bind admission to the candidate and sealed intent; replace the one-call receipt
+contract rather than hiding a second call behind it. Limit implementation to
+authoring/review, pinned profiles, materialization, public deadline, manifest and
+transaction approval. Focused integrity/deadline tests and independent review
+precede one frozen native complete-package quality/timing/browser gate. Stop
+qualification on failure; 60/90/120 stays fixed. CB-303 remains Open/P0.
+Evidence: `/private/tmp/odylith-author-review-window.hS6MWH/review.md`.
+
+Full-candidate result: all five frozen predicates pass independent review in
+17.081, 8.259, 9.044, 10.653 and 9.045 seconds, exactly five calls with all 114
+dependencies unchanged. The reviewer admits practical proposed choices and
+denies assumption/design contradictions, actual source loss and invocation
+misclassification. This is a bounded component result, not a quality floor.
+Before changing six production receipt/deadline owners, run one no-write actual
+combined-author→full-review feasibility check under one absolute 55-second model
+window, with R capped at min(20 seconds, remaining time). Preserve actual author
+bytes, at most two calls, no repair/retry or native one-call receipt bypass.
+Failure stops this candidate before integration. Passing only earns truthful
+native integration and the unchanged complete-package/60/90/120 gate; it does not
+qualify consumer timing. Evidence: `/private/tmp/odylith-full-candidate-admission.S1Nl1i/review.md`.
+Clock contract: `/private/tmp/odylith-author-review-window.hS6MWH/acceptance.md`.
+The rejected no-call clock preflight is preserved: enforce R's post-return
+deadline, distinguish final audit-summary I/O from timed candidate work, and
+bind canonical candidate bytes to the persisted actual A response on both sides
+of structural validation before refreezing. No model outcome informed this fix.
+
+Full-candidate discriminator: source-only admission cannot judge choices that it
+never receives, and moving those choices to the designer leaves the same hole.
+Compare one binary reviewer with explicitly separated accepted-source and
+proposed-decision namespaces, preserving every value. Review proposed choices
+for material incompatibility, not source quotation or preferred wording. Freeze
+five controls: the independently accepted source/design candidate, an assumption
+constraint reversal, a single component-responsibility reversal, actual v52
+constraint loss, and invocation-as-product-story. Retain Sol/medium, one witness,
+20 seconds per control and no retry. Any wrong verdict or timeout rejects this
+candidate before authoring integration. Even a pass is only component evidence;
+the next adoption gate must measure one complete package within 60/90/120, not
+sum historical role times. No fourth role, repair cascade, production change,
+profile sweep, broader quality claim or protected-holdout use.
+Contract: `/private/tmp/odylith-full-candidate-admission.S1Nl1i/acceptance.md`.
+
 Source-authority result: all three frozen controls pass root and independent
 review in 14.183, 9.095 and 13.047 seconds, with three actual calls and all 111
 dependency hashes unchanged. The reviewer admits accepted source meaning and

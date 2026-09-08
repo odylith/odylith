@@ -30,12 +30,14 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 )
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.surfaces import brand_assets
-from tests.unit.runtime.greenfield_proposal_fixtures import (
-    _seed_empty_governance_repo,
-    _write_confirmed_intent,
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import (
     _canonical_model_authored_greenfield_fixture,
     approved_authored_quality_manifest_fixture,
     canonical_model_authored_intent_fixture,
+)
+from tests.unit.runtime.greenfield_proposal_fixtures import (
+    _seed_empty_governance_repo,
+    _write_confirmed_intent,
     compiled_greenfield_package_fixture,
     surface_refresh_preview_fixture,
 )
@@ -72,10 +74,6 @@ def _write_stubbed_atlas_render_outputs(repo_root: Path) -> None:
         diagram["reviewed_watch_fingerprints"] = {path: "stubbed-official-refresh" for path in watched}
         diagram["render_source_fingerprint"] = "stubbed-official-refresh"
     catalog_path.write_text(json.dumps(catalog, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-
-
-def _approved_quality_manifest() -> dict[str, object]:
-    return approved_authored_quality_manifest_fixture()
 
 
 def _stub_dashboard_refresh(monkeypatch, calls: list[dict[str, object]] | None = None) -> None:
@@ -278,7 +276,7 @@ def _compiled_transaction_for_cli(tmp_path: Path):
         prewrite_package=package,
         backlog_result=package.backlog_result or {},
         intent_authority=authority,
-        quality_manifest=_approved_quality_manifest(),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
         repo_root=tmp_path,
     )
     return proposal, transaction

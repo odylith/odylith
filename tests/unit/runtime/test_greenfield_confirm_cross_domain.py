@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     combined_prompt_evidence_source,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
 )
@@ -370,10 +371,15 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
             component_responsibility_owners=intent["internal_systems"],
         )
     )
+    reviewer = AdmittingReviewProvider()
     monkeypatch.setattr(
         greenfield_proposals_cli,
         "_greenfield_authoring_provider",
-        lambda **_kwargs: (provider, "test-model", "low"),
+        lambda **kwargs: (
+            (reviewer, "gpt-5.6-sol", "medium")
+            if kwargs.get("request_role") == "candidate_review"
+            else (provider, "test-model", "low")
+        ),
     )
 
     def render_preconfirm_surfaces(*, repo_root: Path) -> dict[str, Any]:
@@ -412,6 +418,7 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
 
     assert rc == 0, output
     assert provider.calls == 1
+    assert reviewer.calls == 1
     assert "- validation gate: passed" in output
     accepted = json.loads(
         (tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8")

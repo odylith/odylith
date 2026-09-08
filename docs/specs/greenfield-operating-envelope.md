@@ -47,18 +47,21 @@ callback and visibility contract.
 Release evaluation covers three pinned candidate success profiles; their identity
 does not itself establish qualification:
 
-- `greenfield-standard-terra-low-complete-author-v11`: the default and `auto`
+- `greenfield-standard-terra-low-complete-author-review-v12`: the default and `auto`
   path, with a 60-second consumer budget and a 55-second model window.
-- `greenfield-rescue-terra-medium-complete-author-v11`: the explicit rescue
+- `greenfield-rescue-terra-medium-complete-author-review-v12`: the explicit rescue
   path, with a 90-second consumer budget and an 80-second model window.
-- `greenfield-deep-sol-high-complete-author-v11`: the explicit deep path,
+- `greenfield-deep-sol-high-complete-author-review-v12`: the explicit deep path,
   with a 120-second consumer budget and a 105-second model window.
 
 The selected profile is fixed before the model request. Elapsed time or a failed
 attempt never relabels or extends a standard request into rescue or deep.
 Standard uses Terra low, rescue uses Terra medium, and deep uses Sol high for
-one complete authoring call. Models, effort and the whole window are selected
-before that call; no review reserve, retry, repair call or tier promotion follows.
+one complete authoring call. An authored result then requires one read-only
+Sol/medium review of the complete candidate, with at most 20 seconds and only
+the shared model window's remaining time. Reviewer setup, validation and finalization
+are inside that deadline. No fixed author reserve, retry, repair call or tier
+promotion follows. Invalid authoring and material clarification do not invoke review.
 These are bounded candidate profiles, not claims about every provider model.
 Host-model output is candidate evidence only. Every profile must clarify or fail
 safely instead of inventing product truth. Provider unavailability is separately
@@ -70,7 +73,7 @@ proof requires each profile's observed committed positive case and a source-boun
 clarification with no writes, separately from unavailable-provider behavior.
 No other model earns a proof claim without its own observed request evidence.
 
-Authoring v49 returns either a complete source-and-design candidate or the
+Authoring v53 returns either a reviewed source-and-design candidate or the
 existing material clarification result. Source facts, actions and relationships
 remain citation-bound. A required, separately labeled `provisional_design`
 proposes 4–5 logical components, 4–5 workstreams, internal exchanges and
@@ -82,17 +85,31 @@ is not evidence of useful detail; human review and browser proof remain required
 
 The existing authored relation hash binds this design with source semantics;
 no second candidate store, source ledger or post-confirm interpretation is added.
-The old runtime source-review/correction path is removed. Private proof retains
-the actual single request, raw response, model, effort, provider, cap and elapsed
-time. Two-call observations cannot qualify these profiles. One-call execution
-and structural custody are not proof of source entailment or useful design.
+The old source-review/correction path remains removed. The new reviewer receives
+accepted-source and proposed-decision namespaces without changing any value.
+It may admit or deny with one substantiated witness, never rewrite the candidate.
+Practical proposed choices remain advisory unless materially incompatible or unsafe.
+Private proof retains both actual requests, responses, profiles, caps and elapsed
+times. Successful native receipts require exactly two calls and bind admission to
+the complete candidate and the sealed source/intent hashes. Single-call observations
+cannot qualify these profiles. Admission is not proof of universal entailment.
 Independent semantic, transaction and UX adjudication remains a release gate,
 including regression examples previously caught by the retired source reviewer.
 This candidate has not earned a release or universal-success claim.
-Its current source-local counterexample accepts a source-exact operator invocation
-under the wrong product-story role through pre-confirm structure checks. That
-known semantic-admission defect blocks qualification; exact citations and a passed
+The previous one-call path admitted a source-exact operator invocation under the
+wrong product-story role and lost an explicit source prerequisite in another
+actual package. Those failures motivate this boundary. The complete reviewer passed
+five frozen discrimination controls, and one actual author/reviewer candidate
+passed independent semantic review in 54.975 seconds before full-package work.
+That is component and model-window feasibility evidence, not complete consumer
+timing, robustness or release qualification. Exact citations and a passed
 structural quality manifest must not be reported as an entailment guarantee.
+
+The subsequent native standard-tier gate failed: authoring took 50.496 seconds,
+leaving 4.499 seconds for review, which returned no verdict. The command stopped
+at 55.441 seconds without a complete package. This is a failed qualification,
+not a sub-60-second success. The sequential candidate has not demonstrated
+sufficient timing headroom; the consumer limits and semantic floor stay fixed.
 
 Identical quote bytes at a different location do not prove the selected role.
 An impossible ordinal can normalize only when the quote has one exact location;

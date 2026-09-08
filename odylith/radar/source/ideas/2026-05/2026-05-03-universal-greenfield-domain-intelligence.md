@@ -70,10 +70,10 @@ Consumer-lane operators starting a new product, research project, science or mat
 Add an Odylith-owned confirmed greenfield path that turns vague or precise project intent into concrete backlog, a provisional release plan, planned Registry components, Atlas topology, assumptions, risks, and validation obligations while keeping observed source, user intent, and Odylith assumptions distinct.
 
 ## Proposed Solution
-Create a first-class `runtime/domain_intelligence` package that owns the complete evidence-to-transaction boundary. `odylith greenfield propose` sends the untrusted request through exactly one preselected authoring-model profile. That response selects source-cited facts, ordered actor/action events, one terminal result, component ownership, assumptions, and ambiguities. Deterministic code verifies exact byte custody, derives only structural links and coordinates, projects every governed surface in isolated staging, runs the Greenfield Tribunal, and seals one immutable `ProductCreateTransaction` before showing `CONFIRM`, `EDIT`, or `REJECT`. `odylith greenfield create --transaction-file ... --transaction-hash ... --confirm` only verifies receipt, hash, and preconditions, atomically publishes the reviewed bytes, validates readback, and refreshes owned surfaces. It never parses evidence, calls a model, generates artifacts, or repairs prose after confirmation.
+The `runtime/domain_intelligence` package owns the complete evidence-to-transaction boundary. A pinned author proposes source-cited facts, actor/action events, a terminal result, assumptions and separately labeled design. The current v53 candidate adds one read-only complete-candidate reviewer inside the same model window; its native standard-tier gate failed, so this is not an adopted winning mechanism. Deterministic code verifies exact custody, projects every governed surface in isolated staging, validates the complete package, and seals one immutable `ProductCreateTransaction` before showing `CONFIRM`, `EDIT`, or `REJECT`. The confirmation command verifies receipt, hash and preconditions, publishes exact sealed bytes, and validates readback. It never interprets evidence, calls a model, generates artifacts, rebuilds persistent projections or repairs prose after confirmation. Current publication proves journaled recovery; package-level atomic visibility remains unqualified until all canonical readers resolve one atomic generation pointer.
 
 ## Research Signals
-External ecosystem checks argue against a narrow canned project taxonomy. GitHub Octoverse 2025 shows high-volume new repository creation, AI/agent growth, TypeScript-heavy application work, Python/Jupyter AI and data-science work, and private/product repos growing alongside public open source. CNCF organizes cloud-native work around infrastructure, delivery, observability, security, AI/ML, and runtime ecosystems. Apache describes mature open-source projects across data, cloud, search, libraries, geospatial, IoT, and related categories. NASA's software and open-data surfaces show science projects built from code, data, analysis pipelines, simulation/modeling tools, visualization, reproducibility, and sustained scientific libraries. Those signals prove greenfield intent is open-world; the durable contract is therefore generic product-first narration plus Odylith-owned apply-ready proposal generation, validation, topology hygiene, release targeting, program/wave formation, and durable memory.
+External ecosystem checks argue against a narrow canned project taxonomy. GitHub Octoverse 2025 shows high-volume new repository creation, AI/agent growth, TypeScript-heavy application work, Python/Jupyter AI and data-science work, and private/product repos growing alongside public open source. CNCF organizes cloud-native work around infrastructure, delivery, observability, security, AI/ML, and runtime ecosystems. Apache describes mature open-source projects across data, cloud, search, libraries, geospatial, IoT, and related categories. NASA's software and open-data surfaces show science projects built from code, data, analysis pipelines, simulation/modeling tools, visualization, reproducibility, and sustained scientific libraries. These historical signals motivate domain-neutral onboarding within the versioned operating envelope; they do not qualify unseen-input reliability. The fixed goal requires useful governance and durable learning without Greenfield programs or execution waves.
 
 ## Scope
 - Add no-write `odylith greenfield propose` for Product Intent Confirmation.
@@ -98,9 +98,11 @@ External ecosystem checks argue against a narrow canned project taxonomy. GitHub
   validation/release topology; domain-specific profiles should add the
   operational-risk views the prompt makes material.
 - Preserve evidence separation: observed source, user intent, and Odylith assumptions must stay distinct.
-- Use exactly one pinned authoring-model request per proposal. Standard, rescue,
-  and deep are operator-selected profiles with independent 60/90/120 budgets,
-  not a retry ladder or post-hoc tier-promotion cascade.
+- Select one pinned profile before authoring. Bound all model roles and package
+  work within the independent 60/90/120 consumer budgets; no retry ladder or
+  post-hoc tier promotion. Call count is a replaceable mechanism, not a substitute
+  for source fidelity, useful governance or measured completion.
+- Create no Greenfield programs, execution waves or associated residue.
 - Write only after explicit confirmation and reject missing or duplicated Atlas
   topology before any governed file changes.
 - Filter Compass timeline audit entries so zero-file prompt-intervention narration does not become fake implementation history.
@@ -123,7 +125,7 @@ External ecosystem checks argue against a narrow canned project taxonomy. GitHub
 - Depends on B-141 for the v0.1.14 host/runtime integrity lane: greenfield prompt routing must preserve low-latency host behavior, Intervention Engine separation, consumer-lane feature integrity, robust upgrade migration, and generated-surface refresh proof.
 
 ## Success Metrics
-Greenfield propose returns one complete, source-cited Product Intent transaction candidate for any supported vague or precise greenfield prompt through exactly one preselected model call.
+Greenfield propose returns a faithful, complete and reviewable transaction candidate for supported evidence, one focused material question when necessary, or an explicit unsupported-evidence or environment outcome. A timed-out clear, supported request is a qualification failure, not successful delivery. Model calls are bounded by the preselected profile; their count does not define product success.
 Product Intent Confirmation guidance requires scannable sectioned Markdown, short paragraphs, bullets where appropriate, and plain domain terms with no code ticks or decorative bold markers.
 Before confirmation, Greenfield stages an apply-ready proposal with backlog candidates, release plan, planned Registry components, draft Atlas Mermaid sources, assumptions, risks, validation strategy, open questions, and exact governed-write evidence.
 Greenfield scaffolds include a multi-view Atlas suite with mutually traceable workstream/component links; complex physical, analytical, and operational domains can add risk, safety, telemetry, deployment-boundary, and observability/audit views without hard-coded domain families.
@@ -133,7 +135,7 @@ Greenfield create writes the exact sealed Radar, Registry, Atlas, release-target
 The pre-confirm compiler rejects missing Mermaid source, duplicated diagram source, incomplete proposal sections, and invalid evidence tiers before any governed write.
 Apply/create closeout leads with the project workstream and readiness gates, then names the eventual first coding workstream as a later lane rather than the immediate next action.
 Host prompt routing avoids noisy raw Observation chatter for normal greenfield intents while preserving earned intervention paths.
-Greenfield proposal compilation runs a deterministic Tribunal before confirmation; commit-only create refreshes Radar, Registry, Atlas, and Compass once after the sealed artifacts are written.
+Greenfield compilation validates and seals every artifact and persistent projection before confirmation; commit-only create publishes those bytes and verifies readback without regenerating Radar, Registry, Atlas or Compass.
 Compass timeline audit filters zero-file prompt-intervention narration so routing notes do not render as fake implementation history.
 Standard, rescue, and deep complete the full installed proposal, confirmation, readback, recovery, browser, and quality path within 60, 90, and 120 seconds respectively, with no retry, tier cascade, or post-confirm semantic work.
 
@@ -149,18 +151,21 @@ Standard, rescue, and deep complete the full installed proposal, confirmation, r
 - Every transaction-material fact must have exact eligible source custody.
   Material ambiguity produces at most one focused question; non-material gaps
   remain explicit assumptions. An invalid response fails closed before preview.
-- There is no semantic retry stack. Standard, rescue, and deep each make one
-  request through the profile selected before authoring and must finish the full
-  installed lifecycle within 60, 90, and 120 seconds respectively.
+- There is no semantic retry stack. Standard, rescue and deep retain their
+  preselected profiles and full installed lifecycle limits of 60, 90 and 120
+  seconds respectively. The current two-role v53 candidate failed its native
+  standard gate; neither its component tests nor a timely error qualifies it.
 - The quality gate must fail closed before confirmation on missing meaning,
   cross-surface drift, malformed ownership, clipping, repetition, disconnected
   topology, invalid Registry contracts, private-custody leakage, or incomplete
   release proof. Evaluators must compare typed structure and sealed payload
   fidelity instead of inferring quality from regex-classified prose.
 - CONFIRM is commit-only. It verifies the reviewed hash and preconditions,
-  writes the exact sealed bytes under rollback guard, validates readback, and
-  refreshes owned surfaces. Any model call, evidence parsing, artifact
-  generation, semantic repair, or prose repair after confirmation is forbidden.
+  publishes exact sealed bytes and validates readback. Before publication a
+  failure aborts safely; after observed publication it verifies or enters
+  recovery rather than silently rolling back. Any model call, evidence parsing,
+  artifact or persistent-projection generation, semantic repair, or prose repair
+  after confirmation is forbidden. All-reader atomic visibility remains open.
 - Failed mechanisms to avoid: regex/template semantic towers, rendered-text
   rewrite loops, fixture-specific vocabulary, independently generated recovery
   transactions, retry cascades, and stale evaluator expectations that reward a
@@ -171,7 +176,7 @@ Standard, rescue, and deep complete the full installed proposal, confirmation, r
   operator authorize the one-shot protected holdout.
 
 ## Validation
-- Unit tests for the Product Intent request contract, open-world confirmed proposal generation, required Mermaid sources, duplicate-topology rejection, program waves, release plan, CLI JSON, host greenfield routing, component authoring user-intent metadata, and Compass zero-file intervention chatter filtering.
+- Unit tests for Product Intent custody, materiality, complete proposal generation, meaningful diagram depth, absence of programs/waves, sealed-byte publication, CLI JSON, deterministic host confirmation, component evidence and Compass zero-file narration filtering.
 - CLI proof for `odylith greenfield propose --format json` on empty/thin repo posture.
 - Governance proof through Casebook, Radar, Registry, Atlas, and Compass refreshes.
 - Browser proof for refreshed Radar, Registry, Atlas, Casebook, and Compass surfaces after generated assets update.

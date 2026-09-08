@@ -38,6 +38,19 @@ class StructuredAuthoringProvider:
         return copy.deepcopy(dict(self.response)) if self.response is not None else None
 
 
+class AdmittingReviewProvider(StructuredAuthoringProvider):
+    """Independent transport double for structurally valid positive wiring cases."""
+
+    def __init__(self) -> None:
+        super().__init__({"admissible": True, "issues": []})
+
+    def generate_structured(self, *, request: object) -> Mapping[str, Any] | None:
+        assert getattr(request, "schema_name", "") == "greenfield_candidate_review"
+        assert getattr(request, "model", "") == "gpt-5.6-sol"
+        assert getattr(request, "reasoning_effort", "") == "medium"
+        return super().generate_structured(request=request)
+
+
 def authored_response(
     intent: Mapping[str, Any],
     *,

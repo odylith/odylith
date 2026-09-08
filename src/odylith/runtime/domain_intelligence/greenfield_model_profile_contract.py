@@ -1,27 +1,28 @@
 """Pinned model profiles for the supported Greenfield operating envelope.
 
-Profiles bind one complete-author request to an end-to-end consumer deadline. The
-unavailable-provider profile is deliberately outside the supported-success set;
-it exists only to prove fail-closed, no-write behavior.
+Profiles bind a complete author and read-only candidate review to one shared
+model window inside the consumer deadline. The unavailable-provider profile is
+outside the supported-success set and proves fail-closed, no-write behavior.
 """
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from types import MappingProxyType
 
 
-GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v11"
+GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v12"
 
-STANDARD_PROFILE_ID = "greenfield-standard-terra-low-complete-author-v11"
-RESCUE_PROFILE_ID = "greenfield-rescue-terra-medium-complete-author-v11"
-DEEP_PROFILE_ID = "greenfield-deep-sol-high-complete-author-v11"
+STANDARD_PROFILE_ID = "greenfield-standard-terra-low-complete-author-review-v12"
+RESCUE_PROFILE_ID = "greenfield-rescue-terra-medium-complete-author-review-v12"
+DEEP_PROFILE_ID = "greenfield-deep-sol-high-complete-author-review-v12"
 UNAVAILABLE_PROVIDER_PROFILE_ID = "greenfield-unavailable-provider-no-write-v1"
 
 
 @dataclass(frozen=True, slots=True)
 class GreenfieldModelProfile:
-    """Pinned complete author inside one preselected consumer time budget."""
+    """Pinned author and review roles inside one preselected time budget."""
 
     profile_id: str
     repair_tier: str
@@ -32,6 +33,9 @@ class GreenfieldModelProfile:
     model_timeout_seconds: float
     lower_capability: bool = False
     supported_success: bool = True
+    review_model: str = "gpt-5.6-sol"
+    review_reasoning_effort: str = "medium"
+    review_timeout_seconds: float = 20.0
 
 
 _PROFILES = MappingProxyType(
@@ -156,7 +160,15 @@ def greenfield_model_profile_observation_issues(
     """Compare observed request metadata with the pinned pre-call profile."""
 
     profile = get_greenfield_model_profile(profile_id)
-    if request_role != "initial_authoring":
+    if request_role == "initial_authoring":
+        expected_model = profile.model
+        expected_effort = profile.reasoning_effort
+        role_cap = profile.model_timeout_seconds
+    elif request_role == "candidate_review":
+        expected_model = profile.review_model
+        expected_effort = profile.review_reasoning_effort
+        role_cap = min(profile.review_timeout_seconds, profile.model_timeout_seconds)
+    else:
         raise ValueError(f"unsupported Greenfield model request role: {request_role}")
     observations = {
         "provider": str(provider or "").strip().casefold(),
@@ -165,8 +177,8 @@ def greenfield_model_profile_observation_issues(
     }
     expected = {
         "provider": profile.provider,
-        "model": profile.model,
-        "reasoning_effort": profile.reasoning_effort,
+        "model": expected_model,
+        "reasoning_effort": expected_effort,
     }
     issues = [
         f"observed {field} does not match pinned Greenfield model profile"
@@ -174,10 +186,14 @@ def greenfield_model_profile_observation_issues(
         if value != expected[field]
     ]
     try:
-        timeout_seconds = float(effective_timeout_seconds)
-    except (TypeError, ValueError):
+        timeout_seconds = (
+            float(effective_timeout_seconds)
+            if type(effective_timeout_seconds) in (int, float)
+            else 0.0
+        )
+    except (TypeError, ValueError, OverflowError):
         timeout_seconds = 0.0
-    if not 0.0 < timeout_seconds <= profile.model_timeout_seconds:
+    if not math.isfinite(timeout_seconds) or not 0.0 < timeout_seconds <= role_cap:
         issues.append("observed effective timeout exceeds or omits the pinned Greenfield model window")
     normalized_tier = str(authoring_tier or "").strip().casefold()
     if normalized_tier and normalized_tier != profile.repair_tier:

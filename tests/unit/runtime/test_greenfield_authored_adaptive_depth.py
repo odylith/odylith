@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
     STANDARD_PROFILE_ID,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
 )
@@ -48,6 +49,7 @@ def _proposal(
         ),
         authoring_timeout_seconds=54,
         authoring_profile_id=STANDARD_PROFILE_ID,
+        review_provider_factory=AdmittingReviewProvider,
     )
     return greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,

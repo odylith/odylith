@@ -8,7 +8,7 @@ from odylith.runtime.domain_intelligence.greenfield_experience import (
     _implementation_prompt,
     build_next_steps,
 )
-from tests.unit.runtime.greenfield_proposal_fixtures import (
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import (
     _canonical_model_authored_greenfield_fixture,
 )
 

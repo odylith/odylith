@@ -27,6 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 )
 from odylith.runtime.governance import artifact_tribunal
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
 )
@@ -104,6 +105,7 @@ def _materialized_authored_intent(tmp_path: Path) -> dict[str, Any]:
         ),
         authoring_timeout_seconds=84,
         authoring_profile_id=RESCUE_PROFILE_ID,
+        review_provider_factory=AdmittingReviewProvider,
     )
 
 

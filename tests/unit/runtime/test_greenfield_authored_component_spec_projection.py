@@ -20,6 +20,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     PRODUCT_INTENT_AUTHORITY_KEY,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
 )
@@ -93,6 +94,7 @@ def _authored_proposal(tmp_path: Path) -> dict[str, object]:
         ),
         authoring_timeout_seconds=60,
         authoring_profile_id=STANDARD_PROFILE_ID,
+        review_provider_factory=AdmittingReviewProvider,
     )
     proposal = build_authored_greenfield_proposal(
         observed_source={"source_posture": "operator prompt evidence"},

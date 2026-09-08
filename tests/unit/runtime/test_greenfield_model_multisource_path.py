@@ -29,6 +29,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization
     materialize_model_authored_intent,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
     model_event_rows,
@@ -106,6 +107,7 @@ def test_model_event_contract_rejects_restatement_of_derived_custody() -> None:
             ),
             provider=StructuredAuthoringProvider(response),
             clock=lambda: 0.0,
+            review_provider_factory=AdmittingReviewProvider,
         )
 
 
@@ -214,6 +216,7 @@ def test_two_document_path_materializes_exact_source_and_structural_design_custo
         edit_evidence=edit_evidence,
         repo_root=tmp_path,
         authoring_provider=provider,
+        review_provider_factory=AdmittingReviewProvider,
     )
 
     assert provider.calls == 1
@@ -315,6 +318,7 @@ def test_authoring_rejects_unreferenced_first_path_segment() -> None:
             ),
             provider=StructuredAuthoringProvider(response),
             clock=lambda: 0.0,
+            review_provider_factory=AdmittingReviewProvider,
         )
 
 
@@ -328,6 +332,7 @@ def test_authoring_derives_context_custody_without_model_restatement() -> None:
         ),
         provider=StructuredAuthoringProvider(response),
         clock=lambda: 0.0,
+        review_provider_factory=AdmittingReviewProvider,
     )
 
     assert [
@@ -352,6 +357,7 @@ def test_authoring_canonicalizes_a_unique_segment_occurrence() -> None:
         ),
         provider=StructuredAuthoringProvider(response),
         clock=lambda: 0.0,
+        review_provider_factory=AdmittingReviewProvider,
     )
 
     path_span = next(
@@ -376,6 +382,7 @@ def test_authoring_rejects_events_reordered_against_composite_path() -> None:
             ),
             provider=StructuredAuthoringProvider(response),
             clock=lambda: 0.0,
+            review_provider_factory=AdmittingReviewProvider,
         )
 
 
@@ -402,6 +409,7 @@ def test_reordered_evidence_preserves_typed_meaning_but_changes_source_coordinat
         ),
         provider=StructuredAuthoringProvider(response),
         clock=lambda: 0.0,
+        review_provider_factory=AdmittingReviewProvider,
     )
     reordered = author_greenfield_intent(
         evidence_text=combined_prompt_evidence_source(
@@ -410,6 +418,7 @@ def test_reordered_evidence_preserves_typed_meaning_but_changes_source_coordinat
         ),
         provider=StructuredAuthoringProvider(copy.deepcopy(response)),
         clock=lambda: 0.0,
+        review_provider_factory=AdmittingReviewProvider,
     )
 
     assert original.intent == reordered.intent

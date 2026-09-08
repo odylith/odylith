@@ -42,8 +42,8 @@ from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.surfaces import brand_assets
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
-from tests.unit.runtime.greenfield_proposal_fixtures import approved_authored_quality_manifest_fixture
-from tests.unit.runtime.greenfield_proposal_fixtures import materialize_typed_intent_fixture
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import approved_authored_quality_manifest_fixture
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import materialize_typed_intent_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_package_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_transaction
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
@@ -409,7 +409,7 @@ def _transaction(repo_root: Path | None = None) -> Any:
         prewrite_package=package,
         backlog_result=package.backlog_result or {},
         intent_authority=authority,
-        quality_manifest=approved_authored_quality_manifest_fixture(),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
         repo_root=root,
     )
 
@@ -690,7 +690,7 @@ def test_product_create_transaction_json_round_trips_traceability_diagram_links(
         prewrite_package=package,
         backlog_result=package.backlog_result or {},
         intent_authority=authority,
-        quality_manifest=approved_authored_quality_manifest_fixture(),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
         repo_root=root,
     )
 
@@ -1231,7 +1231,7 @@ def test_product_create_transaction_rejects_incomplete_compiled_package_before_c
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-            quality_manifest=approved_authored_quality_manifest_fixture(),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
             repo_root=tmp_path,
         )
 
@@ -1251,7 +1251,7 @@ def test_product_create_transaction_rejects_drift_between_reviewed_and_compiled_
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-            quality_manifest=approved_authored_quality_manifest_fixture(),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
             repo_root=tmp_path,
         )
 
@@ -1289,7 +1289,7 @@ def test_product_create_transaction_rejects_missing_surface_refresh_proof_before
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-            quality_manifest=approved_authored_quality_manifest_fixture(),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
             repo_root=tmp_path,
         )
 
@@ -1308,7 +1308,7 @@ def test_product_create_transaction_rejects_missing_compiled_atlas_catalog_rows_
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-            quality_manifest=approved_authored_quality_manifest_fixture(),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
             repo_root=tmp_path,
         )
 
@@ -1325,7 +1325,7 @@ def test_product_create_transaction_rejects_missing_compiled_traceability_before
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-            quality_manifest=approved_authored_quality_manifest_fixture(),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
             repo_root=tmp_path,
         )
 
@@ -1346,7 +1346,7 @@ def test_product_create_transaction_rejects_compiled_traceability_without_diagra
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-            quality_manifest=approved_authored_quality_manifest_fixture(),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
             repo_root=tmp_path,
         )
 

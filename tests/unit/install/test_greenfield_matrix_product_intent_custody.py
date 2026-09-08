@@ -7,6 +7,10 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import approved_authored_quality_manifest_fixture
+
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS_ROOT = REPO_ROOT / "scripts" / "release"
@@ -42,7 +46,8 @@ def _manifest() -> dict[str, object]:
 
 
 def _authored_structural_manifest() -> dict[str, object]:
-    manifest = _manifest()
+    manifest = approved_authored_quality_manifest_fixture()
+    manifest.update(_manifest())
     manifest.update(
         {
             "status": "passed",
@@ -56,15 +61,9 @@ def _authored_structural_manifest() -> dict[str, object]:
                 "lenses": {},
                 "reason": "typed_structural_validation",
             },
-            "semantic_compiler": {
-                "version": "odylith.greenfield.authored-semantic-validation.v3",
-                "status": "passed",
-                "semantic_owner": "validated_model_authored_intent",
-                "post_authoring_interpretation_calls": 0,
-            },
-            "model_authoring": {"semantic_model_call_count": 1},
         }
     )
+    manifest["model_authoring"]["candidate_review"]["product_facts_sha256"] = "c" * 64
     return manifest
 
 
@@ -116,7 +115,7 @@ def test_write_transaction_custody_rejects_manifest_or_receipt_product_intent_dr
     assert "write transaction Product Intent facts hash does not match the create payload summary" in receipt_issues
 
 
-def test_authored_structural_validation_accepts_only_one_authenticated_call_without_reinterpretation() -> None:
+def test_authored_structural_validation_requires_two_calls_and_one_admitted_review() -> None:
     scoring = _scoring_module()
     manifest = _authored_structural_manifest()
 
@@ -125,15 +124,15 @@ def test_authored_structural_validation_accepts_only_one_authenticated_call_with
 
     model_authoring = manifest["model_authoring"]
     assert isinstance(model_authoring, dict)
-    model_authoring["semantic_model_call_count"] = 2
+    model_authoring["semantic_model_call_count"] = 1
 
     assert scoring._typed_structural_validation_passed(manifest) is False  # noqa: SLF001
     assert "pre-confirm quality lens report did not pass" in scoring._manifest_issues(manifest)  # noqa: SLF001
 
-    model_authoring["semantic_model_call_count"] = 1
+    model_authoring["semantic_model_call_count"] = 2
     semantic_compiler = manifest["semantic_compiler"]
     assert isinstance(semantic_compiler, dict)
-    semantic_compiler["post_authoring_interpretation_calls"] = 1
+    semantic_compiler["post_authoring_interpretation_calls"] = 0
 
     assert scoring._typed_structural_validation_passed(manifest) is False  # noqa: SLF001
     assert "pre-confirm quality lens report did not pass" in scoring._manifest_issues(  # noqa: SLF001
@@ -144,13 +143,94 @@ def test_authored_structural_validation_accepts_only_one_authenticated_call_with
 def test_authored_structural_validation_rejects_invalid_semantic_call_counts() -> None:
     scoring = _scoring_module()
 
-    for invalid_count in (True, False, 0, 2, 3):
+    for invalid_count in (True, False, 0, 1, 3, 2.0, "2"):
         manifest = _authored_structural_manifest()
         model_authoring = manifest["model_authoring"]
         assert isinstance(model_authoring, dict)
         model_authoring["semantic_model_call_count"] = invalid_count
 
         assert scoring._typed_structural_validation_passed(manifest) is False  # noqa: SLF001
+
+
+def test_scoring_reuses_the_native_metadata_receipt_validator() -> None:
+    from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
+        greenfield_model_authoring_receipt_approved,
+    )
+
+    assert _scoring_module().greenfield_model_authoring_receipt_approved is greenfield_model_authoring_receipt_approved
+
+
+@pytest.mark.parametrize("call_count", [1, 2])
+@pytest.mark.parametrize("claimed_lens_pass", [False, True])
+def test_legacy_v3_receipt_never_qualifies_current_authored_scoring(call_count, claimed_lens_pass) -> None:
+    scoring = _scoring_module()
+    manifest = _authored_structural_manifest()
+    manifest["semantic_compiler"].update(
+        version="odylith.greenfield.authored-semantic-validation.v3",
+        post_authoring_interpretation_calls=0,
+    )
+    receipt = manifest["model_authoring"]
+    receipt.update(authoring_version="odylith.greenfield.intent-authoring.v52", semantic_model_call_count=call_count)
+    receipt.pop("candidate_review")
+    receipt.pop("initial_authoring_elapsed_seconds")
+    if claimed_lens_pass:
+        manifest["quality_lenses"]["status"] = "passed"
+    assert scoring._typed_structural_validation_passed(manifest) is False  # noqa: SLF001
+    assert "pre-confirm authoring and candidate-review receipt did not pass" in scoring._manifest_issues(manifest)  # noqa: SLF001
+
+
+@pytest.mark.parametrize("receipt_state", ["missing", "denied", "repair_before_preview"])
+@pytest.mark.parametrize("claimed_lens_pass", [False, True])
+def test_v4_missing_or_unadmitted_review_cannot_hide_behind_lenses(receipt_state, claimed_lens_pass) -> None:
+    scoring = _scoring_module()
+    manifest = _authored_structural_manifest()
+    if receipt_state == "missing":
+        manifest["model_authoring"].pop("candidate_review")
+    else:
+        manifest["model_authoring"]["candidate_review"]["status"] = receipt_state
+    if claimed_lens_pass:
+        manifest["quality_lenses"]["status"] = "passed"
+    assert scoring._typed_structural_validation_passed(manifest) is False  # noqa: SLF001
+    assert "pre-confirm authoring and candidate-review receipt did not pass" in scoring._manifest_issues(manifest)  # noqa: SLF001
+    assert scoring._semantic_manifest_score(manifest) == 0  # noqa: SLF001
+
+
+@pytest.mark.parametrize(
+    ("path", "value"),
+    [
+        (("model_profile", "effective_timeout_seconds"), 0.1),
+        (("initial_authoring_elapsed_seconds",), 1.0),
+        (("elapsed_seconds",), 55.001),
+        (("elapsed_seconds",), float("nan")),
+        (("candidate_review", "model_profile", "model"), "gpt-5.6-terra"),
+        (("candidate_review", "model_profile", "reasoning_effort"), "low"),
+        (("candidate_review", "model_profile", "effective_timeout_seconds"), 20.001),
+        (("candidate_review", "model_profile", "effective_timeout_seconds"), True),
+        (("candidate_review", "elapsed_seconds"), 20.001),
+        (("candidate_review", "elapsed_seconds"), float("inf")),
+        (("candidate_review", "elapsed_seconds"), -1),
+        (("candidate_review", "source_sha256"), ""),
+        (("candidate_review", "candidate_sha256"), "g" * 64),
+        (("candidate_review", "product_facts_sha256"), None),
+    ],
+)
+def test_authored_scoring_rejects_invalid_role_profile_timing_or_digest(path, value) -> None:
+    scoring = _scoring_module()
+    manifest = _authored_structural_manifest()
+    target = manifest["model_authoring"]
+    for key in path[:-1]:
+        target = target[key]
+    target[path[-1]] = value
+    assert scoring._typed_structural_validation_passed(manifest) is False  # noqa: SLF001
+    assert "pre-confirm authoring and candidate-review receipt did not pass" in scoring._manifest_issues(manifest)  # noqa: SLF001
+
+
+def test_candidate_review_facts_must_match_the_committed_custody_summary() -> None:
+    scoring = _scoring_module()
+    manifest = _authored_structural_manifest()
+    manifest["model_authoring"]["candidate_review"]["product_facts_sha256"] = "d" * 64
+    assert "candidate-review Product Intent facts hash does not match the write transaction" in scoring._manifest_issues(manifest)  # noqa: SLF001
+    assert scoring._semantic_manifest_score(manifest) == 0  # noqa: SLF001
 
 
 def test_authored_structural_validation_does_not_promote_unproven_semantic_lenses() -> None:

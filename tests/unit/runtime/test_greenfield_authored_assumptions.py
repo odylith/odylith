@@ -20,7 +20,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     product_facts_hash,
     product_facts_payload,
 )
-from tests.unit.runtime.greenfield_model_authoring_fixtures import StructuredAuthoringProvider
+from tests.unit.runtime.greenfield_model_authoring_fixtures import StructuredAuthoringProvider, AdmittingReviewProvider
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
 
@@ -41,6 +41,7 @@ def _authored():
     authored = author_greenfield_intent(
         evidence_text=source,
         provider=StructuredAuthoringProvider(response),
+        review_provider_factory=AdmittingReviewProvider,
     )
     return source, authored
 

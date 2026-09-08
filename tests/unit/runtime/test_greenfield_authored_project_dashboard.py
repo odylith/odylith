@@ -36,6 +36,7 @@ from odylith.runtime.domain_intelligence.greenfield_preconfirm_handoff_quality i
 from odylith.runtime.domain_intelligence.greenfield_experience import build_next_steps
 from odylith.runtime.project_intelligence import greenfield
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
     structural_design_fixture,
@@ -637,6 +638,7 @@ def test_authored_dashboard_preserves_archive_after_the_published_result(tmp_pat
             source_precedence=precedence,
         )),
         authoring_timeout_seconds=60, authoring_profile_id=STANDARD_PROFILE_ID,
+        review_provider_factory=AdmittingReviewProvider,
     )
     proposal = build_authored_greenfield_proposal(
         observed_source={"source_posture": "operator prompt evidence"},
@@ -928,6 +930,7 @@ def test_authored_dashboard_projects_proposed_capabilities_without_changing_sour
         ),
         authoring_timeout_seconds=60,
         authoring_profile_id=STANDARD_PROFILE_ID,
+        review_provider_factory=AdmittingReviewProvider,
     )
     proposal = build_authored_greenfield_proposal(
         observed_source={"source_posture": "operator prompt evidence"},

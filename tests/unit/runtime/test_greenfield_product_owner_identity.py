@@ -15,6 +15,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization
     materialize_model_authored_intent,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
 )
@@ -76,6 +77,7 @@ def test_title_alias_keeps_source_owner_through_structural_design_support(tmp_pa
         prompt=source,
         repo_root=tmp_path,
         authoring_provider=StructuredAuthoringProvider(response),
+        review_provider_factory=AdmittingReviewProvider,
     )
 
     semantics = candidate["authored_semantics"]
@@ -133,6 +135,7 @@ def test_two_indistinguishable_internal_system_paths_fail_closed() -> None:
             evidence_text=source,
             provider=StructuredAuthoringProvider(response),
             clock=lambda: 0.0,
+            review_provider_factory=AdmittingReviewProvider,
         )
 
 
@@ -154,4 +157,5 @@ def test_product_and_human_label_collision_fails_closed() -> None:
             evidence_text=source,
             provider=StructuredAuthoringProvider(response),
             clock=lambda: 0.0,
+            review_provider_factory=AdmittingReviewProvider,
         )

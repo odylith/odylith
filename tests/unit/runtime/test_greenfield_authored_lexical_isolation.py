@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     combined_prompt_evidence_source,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
 )
@@ -115,7 +116,10 @@ def _public_propose(
     monkeypatch.setattr(
         greenfield_proposals_cli,
         "_greenfield_authoring_provider",
-        lambda **_kwargs: (provider, "test-model", "low"),
+        lambda **kwargs: (
+            AdmittingReviewProvider() if kwargs.get("request_role") == "candidate_review" else provider,
+            "test-model", "low",
+        ),
     )
 
     arguments = ["propose", "--repo-root", str(tmp_path), "--prompt", source, "--format", "json"]
@@ -158,18 +162,14 @@ def test_public_authored_rescue_tier_seals_the_90_second_budget(
     monkeypatch: Any,
     capsys: Any,
 ) -> None:
-    author_greenfield_intent = greenfield_model_intent_authoring.author_greenfield_intent
-
-    def author_after_standard_window(**kwargs: Any) -> Any:
-        ticks = iter((0.0, 80.0))
-        return author_greenfield_intent(**kwargs, clock=lambda: next(ticks))
-
-    monkeypatch.setattr(
-        greenfield_model_intent_materialization,
-        "author_greenfield_intent",
-        author_after_standard_window,
-    )
-    monkeypatch.setattr(greenfield_proposals_cli, "time", SimpleNamespace(perf_counter=lambda: 0.0))
+    now = {"time": 0.0}
+    generate = StructuredAuthoringProvider.generate_structured
+    def author_after_standard_window(self, *, request):
+        if request.schema_name == "greenfield_intent_authoring":
+            now["time"] = 70.0
+        return generate(self, request=request)
+    monkeypatch.setattr(StructuredAuthoringProvider, "generate_structured", author_after_standard_window)
+    monkeypatch.setattr(greenfield_proposals_cli, "time", SimpleNamespace(perf_counter=lambda: now["time"]))
     rc, payload, provider = _public_propose(
         tmp_path=tmp_path,
         monkeypatch=monkeypatch,
@@ -187,7 +187,7 @@ def test_public_authored_rescue_tier_seals_the_90_second_budget(
     assert manifest["budget_seconds"] == 90.0
     assert manifest["rescue_activated"] is True
     assert manifest["model_authoring"]["tier"] == "rescue"
-    assert manifest["model_authoring"]["semantic_model_call_count"] == 1
+    assert manifest["model_authoring"]["semantic_model_call_count"] == 2
     assert provider.requests[0].timeout_seconds == 80.0
     assert manifest["model_authoring"]["model_profile"]["effective_timeout_seconds"] == 80.0
 
@@ -281,10 +281,10 @@ def test_public_authored_deep_tier_stays_structural_and_seals_exact_unicode_cust
     assert provider.requests[0].timeout_seconds == 105.0
     assert manifest["rescue_activated"] is True
     assert manifest["semantic_compiler"] == {
-        "version": "odylith.greenfield.authored-semantic-validation.v3",
+        "version": "odylith.greenfield.authored-semantic-validation.v4",
         "status": "passed",
         "semantic_owner": "validated_model_authored_intent",
-        "post_authoring_interpretation_calls": 0,
+        "post_authoring_interpretation_calls": 1,
     }
     unicode_atom = next(
         atom

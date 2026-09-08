@@ -154,14 +154,14 @@ from odylith.runtime.domain_intelligence import greenfield_product_intent_envelo
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_proposals_cli
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import combined_prompt_evidence_source
-from tests.unit.runtime.greenfield_model_authoring_fixtures import StructuredAuthoringProvider
+from tests.unit.runtime.greenfield_model_authoring_fixtures import StructuredAuthoringProvider, AdmittingReviewProvider
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
 source = _source()
 evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
 provider = StructuredAuthoringProvider(_response(evidence))
 greenfield_proposals_cli._greenfield_authoring_provider = (
-    lambda **_kwargs: (provider, "test-model", "low")
+    lambda **kwargs: (AdmittingReviewProvider() if kwargs.get("request_role") == "candidate_review" else provider, "test-model", "low")
 )
 with tempfile.TemporaryDirectory(prefix="greenfield-parser-retirement-") as repo_root:
     result = greenfield_proposals_cli.main(

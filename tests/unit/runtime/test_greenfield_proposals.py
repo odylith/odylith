@@ -13,7 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
 from odylith.runtime.project_intelligence.greenfield import build_greenfield_payload
-from tests.unit.runtime.greenfield_proposal_fixtures import (
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import (
     _canonical_model_authored_greenfield_fixture,
 )
 

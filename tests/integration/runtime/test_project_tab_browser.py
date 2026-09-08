@@ -18,8 +18,10 @@ from tests.integration.runtime.surface_browser_test_support import (
     _new_page,
     _static_server,
 )
-from tests.unit.runtime.greenfield_proposal_fixtures import (
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import (
     _canonical_model_authored_greenfield_fixture,
+)
+from tests.unit.runtime.greenfield_proposal_fixtures import (
     _seed_empty_governance_repo,
     commit_precompiled_greenfield_proposal,
     stub_preconfirm_surface_refresh,

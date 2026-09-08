@@ -19,8 +19,8 @@ from odylith.runtime.domain_intelligence.artifact_tribunal_actors import (
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
-    MAX_GREENFIELD_SEMANTIC_CALLS,
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
+    greenfield_model_authoring_receipt_approved,
 )
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
@@ -695,6 +695,17 @@ def _manifest_issues(
     tier_budget_seconds = _sealed_tier_budget_seconds(manifest)
     if tier_budget_seconds is None:
         issues.append("pre-confirm manifest does not declare an approved 60/90/120 repair-tier budget")
+    model_authoring = mapping_copy(manifest.get("model_authoring"))
+    if not greenfield_model_authoring_receipt_approved(
+        model_authoring=model_authoring,
+        semantic_compiler=mapping_copy(manifest.get("semantic_compiler")),
+        requested_repair_tier=str(manifest.get("requested_repair_tier", "")),
+    ):
+        issues.append("pre-confirm authoring and candidate-review receipt did not pass")
+    elif model_authoring["candidate_review"]["product_facts_sha256"] != mapping_copy(
+        manifest.get("write_transaction")
+    ).get("product_facts_sha256"):
+        issues.append("candidate-review Product Intent facts hash does not match the write transaction")
     lens_report = mapping_copy(manifest.get("quality_lenses"))
     if (
         str(lens_report.get("status", "")).strip() != "passed"
@@ -831,26 +842,21 @@ def _lens_passed(lenses: Mapping[str, Any], name: str) -> bool:
 
 
 def _typed_structural_validation_passed(manifest: Mapping[str, Any]) -> bool:
-    """Authenticate the authored route's explicit replacement for prose lenses."""
+    """Validate the authored receipt without promoting independent semantic lenses."""
 
     lens_report = mapping_copy(manifest.get("quality_lenses"))
     semantic_compiler = mapping_copy(manifest.get("semantic_compiler"))
     model_authoring = mapping_copy(manifest.get("model_authoring"))
-    semantic_model_call_count = model_authoring.get("semantic_model_call_count")
     return (
         str(manifest.get("status", "")).strip() == "passed"
         and str(manifest.get("validation_status", "")).strip() == "passed"
         and int(manifest.get("issue_count") or 0) == 0
         and str(lens_report.get("status", "")).strip() == "not_applicable"
         and str(lens_report.get("reason", "")).strip() == "typed_structural_validation"
-        and str(semantic_compiler.get("status", "")).strip() == "passed"
-        and str(semantic_compiler.get("version", "")).strip()
-        == "odylith.greenfield.authored-semantic-validation.v3"
-        and str(semantic_compiler.get("semantic_owner", "")).strip()
-        == "validated_model_authored_intent"
-        and semantic_compiler.get("post_authoring_interpretation_calls") == 0
-        and type(semantic_model_call_count) is int
-        and 1 <= semantic_model_call_count <= MAX_GREENFIELD_SEMANTIC_CALLS
+        and greenfield_model_authoring_receipt_approved(
+            model_authoring=model_authoring, semantic_compiler=semantic_compiler,
+            requested_repair_tier=str(manifest.get("requested_repair_tier", "")),
+        )
     )
 
 

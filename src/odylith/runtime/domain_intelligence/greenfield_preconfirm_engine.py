@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
+from copy import deepcopy
 from dataclasses import asdict, dataclass
 import time
 from typing import Any
@@ -277,10 +278,10 @@ def build_greenfield_preconfirm_manifest(
             "reason": "typed_structural_validation",
         },
         "semantic_compiler": {
-            "version": "odylith.greenfield.authored-semantic-validation.v3",
+            "version": "odylith.greenfield.authored-semantic-validation.v4",
             "status": "passed",
             "semantic_owner": "validated_model_authored_intent",
-            "post_authoring_interpretation_calls": 0,
+            "post_authoring_interpretation_calls": 1,
         },
         "write_transaction": {
             "status": write_transaction_status,
@@ -298,8 +299,12 @@ def _model_authoring_manifest(receipt: Mapping[str, Any]) -> dict[str, Any]:
     model_profile = model_profile if isinstance(model_profile, Mapping) else {}
     return {
         key: receipt.get(key)
-        for key in ("authoring_version", "semantic_model_call_count", "tier", "elapsed_seconds")
+        for key in (
+            "authoring_version", "semantic_model_call_count", "tier", "elapsed_seconds",
+            "initial_authoring_elapsed_seconds",
+        )
     } | {
+        "candidate_review": deepcopy(receipt.get("candidate_review")),
         "model_profile": {
             key: model_profile.get(key)
             for key in (

@@ -30,6 +30,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
     get_greenfield_model_profile,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
     clarification_response,
@@ -156,6 +157,7 @@ def test_product_only_path_builds_complete_source_bound_proposal_without_a_fake_
     )
 
     candidate = materialize_model_authored_intent(
+        review_provider_factory=AdmittingReviewProvider,
         prompt=prompt,
         repo_root=tmp_path,
         authoring_provider=provider,
@@ -213,6 +215,7 @@ def test_product_only_proposal_accepts_omission_but_rejects_malformed_present_hu
     prompt = _fact_source(intent)
     evidence = combined_prompt_evidence_source(prompt=prompt, edit_evidence="")
     candidate = materialize_model_authored_intent(
+        review_provider_factory=AdmittingReviewProvider,
         prompt=prompt,
         repo_root=tmp_path,
         authoring_provider=StructuredAuthoringProvider(
@@ -249,6 +252,7 @@ def test_external_only_path_retains_exact_external_actor_custody() -> None:
     )
 
     result = author_greenfield_intent(
+        review_provider_factory=AdmittingReviewProvider,
         evidence_text=source,
         provider=provider,
         clock=lambda: 0.0,
@@ -303,30 +307,28 @@ def test_each_event_actor_kind_requires_one_selected_typed_actor_fact(
         match="unbound first-path actor fact",
     ):
         author_greenfield_intent(
+            review_provider_factory=AdmittingReviewProvider,
             evidence_text=source,
             provider=StructuredAuthoringProvider(response),
             clock=lambda: 0.0,
         )
 
 
-def test_late_packet_uses_the_full_single_author_window_inside_rescue() -> None:
+def test_late_packet_cannot_skip_review_after_spending_the_shared_rescue_window() -> None:
     source = _source()
     provider = StructuredAuthoringProvider(_response(source))
-    ticks = iter((0.0, 80.0))
-
-    result = author_greenfield_intent(
-        evidence_text=source,
-        provider=provider,
-        timeout_seconds=84,
-        model_profile_id=RESCUE_PROFILE_ID,
-        clock=lambda: next(ticks),
-    )
-
-    assert result.tier == "rescue"
+    reviewer = AdmittingReviewProvider()
+    with pytest.raises(GreenfieldModelAuthoringError, match="could not be verified") as exc_info:
+        author_greenfield_intent(
+            evidence_text=source, provider=provider, timeout_seconds=84,
+            model_profile_id=RESCUE_PROFILE_ID,
+            clock=lambda: 80.0 if provider.calls else 0.0,
+            review_provider_factory=lambda: reviewer,
+        )
     assert provider.calls == 1
-    assert result.semantic_model_call_count == 1
-    assert result.elapsed_seconds == 80.0
-    assert result.effective_timeout_seconds == provider.requests[0].timeout_seconds == 80.0
+    assert reviewer.calls == 0
+    assert str(exc_info.value.__cause__) == "Greenfield review has no remaining model time"
+    assert provider.requests[0].timeout_seconds == 80.0
 
 
 @pytest.mark.parametrize(
@@ -339,18 +341,20 @@ def test_pinned_nonstandard_profile_does_not_relabel_a_fast_response_as_standard
 ) -> None:
     source = _source()
     profile = get_greenfield_model_profile(profile_id)
-    ticks = iter((0.0, 1.0))
+    provider = StructuredAuthoringProvider(_response(source))
 
     result = author_greenfield_intent(
+        review_provider_factory=AdmittingReviewProvider,
         evidence_text=source,
-        provider=StructuredAuthoringProvider(_response(source)),
+        provider=provider,
         timeout_seconds=profile.model_timeout_seconds,
         model_profile_id=profile_id,
-        clock=lambda: next(ticks),
+        clock=lambda: 1.0 if provider.calls else 0.0,
     )
 
     assert result.tier == expected_tier
     assert result.profile_id == profile_id
+    assert result.semantic_model_call_count == 2
 
 
 def test_authoring_keeps_one_material_question_separate_from_any_package() -> None:
@@ -361,6 +365,7 @@ def test_authoring_keeps_one_material_question_separate_from_any_package() -> No
     )
 
     result = author_greenfield_intent(
+        review_provider_factory=AdmittingReviewProvider,
         evidence_text="A project needs a clear outcome.",
         provider=StructuredAuthoringProvider(response),
         clock=lambda: 0.0,
@@ -382,6 +387,7 @@ def test_component_ownership_clarification_is_one_plain_question_without_staging
 
     with pytest.raises(GreenfieldClarificationRequired) as exc_info:
         materialize_model_authored_intent(
+            review_provider_factory=AdmittingReviewProvider,
             prompt=prompt,
             repo_root=tmp_path,
             authoring_provider=StructuredAuthoringProvider(response),
@@ -416,6 +422,7 @@ def test_source_bound_material_contradiction_returns_one_no_write_clarification(
 
     with pytest.raises(GreenfieldClarificationRequired) as exc_info:
         materialize_model_authored_intent(
+            review_provider_factory=AdmittingReviewProvider,
             prompt=prompt,
             repo_root=tmp_path,
             authoring_provider=StructuredAuthoringProvider(response),
@@ -445,6 +452,7 @@ def test_source_bound_nonmaterial_conflict_increases_sealed_ambiguity(
     }
 
     candidate = materialize_model_authored_intent(
+        review_provider_factory=AdmittingReviewProvider,
         prompt=source,
         repo_root=tmp_path,
         authoring_provider=StructuredAuthoringProvider(response),
@@ -493,6 +501,7 @@ def test_initial_non_mapping_response_retains_bounded_failure_observation(
     try:
         with pytest.raises(GreenfieldModelAuthoringError) as exc_info:
             author_greenfield_intent(
+                review_provider_factory=AdmittingReviewProvider,
                 evidence_text="Create a source-cited project.",
                 provider=provider,
                 model_profile_id=RESCUE_PROFILE_ID,
@@ -537,6 +546,7 @@ def test_initial_non_mapping_response_without_proof_fd_keeps_public_error_exact(
 
     with pytest.raises(GreenfieldModelAuthoringError) as exc_info:
         author_greenfield_intent(
+            review_provider_factory=AdmittingReviewProvider,
             evidence_text="Create a source-cited project.",
             provider=provider,
             clock=lambda: 0.0,

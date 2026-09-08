@@ -21,8 +21,10 @@ from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
 )
 from odylith.runtime.governance import backlog_authoring
 from tests.unit.runtime import greenfield_model_authoring_fixtures as authoring_fixtures
-from tests.unit.runtime.greenfield_proposal_fixtures import (
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import (
     _canonical_model_authored_greenfield_fixture,
+)
+from tests.unit.runtime.greenfield_proposal_fixtures import (
     seal_compiled_greenfield_transaction,
 )
 
