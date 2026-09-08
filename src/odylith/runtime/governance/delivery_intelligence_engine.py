@@ -27,6 +27,7 @@ from odylith.runtime.governance import component_registry_intelligence as regist
 from odylith.runtime.governance.delivery import scope_signal_ladder
 from odylith.runtime.governance import operator_readout
 from odylith.runtime.governance import proof_state
+from odylith.runtime.governance.proof_state import ledger as proof_state_ledger
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import stable_generated_utc
@@ -2586,6 +2587,7 @@ def build_delivery_intelligence_artifact(
     scopes = proof_state.annotate_scopes_with_proof_state(
         repo_root=repo_root,
         scopes=scopes,
+        observe_workspace_head=False,
     )
     scopes = scope_signal_ladder.annotate_delivery_scope_signals(
         scopes=scopes,
@@ -2813,6 +2815,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "odylith/atlas/source/catalog/diagrams.v1.json",
                 "odylith/radar/traceability-graph.v1.json",
                 *agent_runtime_contract.candidate_stream_tokens(),
+                proof_state_ledger.proof_surfaces_path(repo_root=repo_root),
                 DEFAULT_CONTROL_POSTURE_PATH,
                 DEFAULT_ODYLITH_REASONING_PATH,
                 "src/odylith/runtime/governance",

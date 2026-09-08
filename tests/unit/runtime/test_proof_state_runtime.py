@@ -436,6 +436,76 @@ def test_annotate_scopes_infers_single_live_lane_without_tracked_truth(monkeypat
     }
 
 
+def test_persisted_proof_identity_excludes_workspace_observation_but_live_context_keeps_it(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    _write_casebook_bug(tmp_path)
+    observed = []
+
+    def current_head(repo_root):
+        observed.append(repo_root)
+        return "current-workspace-revision"
+
+    monkeypatch.setattr(proof_state_resolver, "_current_local_head", current_head)
+    persisted = proof_state.annotate_scopes_with_proof_state(
+        repo_root=tmp_path, scopes=[_scope()], observe_workspace_head=False,
+    )[0]
+    assert observed == []
+    assert persisted["proof_state"]["deployment_truth"]["local_head"] == "unknown"
+    live = proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])[0]
+    assert observed == [tmp_path.resolve()]
+    assert live["proof_state"]["deployment_truth"]["local_head"] == "current-workspace-revision"
+    assert live["claim_guard"] == persisted["claim_guard"]
+    live["proof_state"]["deployment_truth"]["local_head"] = "unknown"
+    assert live == persisted
+
+
+def test_recorded_snapshot_tracks_changed_source_blocker(tmp_path: Path) -> None:
+    _write_casebook_bug(tmp_path, blocker="Readback lacks the expected receipt.")
+    before = proof_state.annotate_scopes_with_proof_state(
+        repo_root=tmp_path, scopes=[_scope()], observe_workspace_head=False,
+    )[0]
+    assert before["proof_state"]["current_blocker"] == "Readback lacks the expected receipt."
+    _write_casebook_bug(tmp_path, blocker="Readback reports a mismatched receipt.")
+    after = proof_state.annotate_scopes_with_proof_state(
+        repo_root=tmp_path, scopes=[_scope()], observe_workspace_head=False,
+    )[0]
+    assert after["proof_state"]["current_blocker"] == "Readback reports a mismatched receipt."
+    assert after["proof_state"]["deployment_truth"]["local_head"] == "unknown"
+    assert after["claim_guard"] == before["claim_guard"]
+
+
+def test_snapshot_and_live_resolution_preserve_explicit_proof_identity_and_claim_guards(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    _write_casebook_bug(tmp_path)
+
+    def unexpected_workspace_lookup(_repo_root):
+        raise AssertionError("Recorded proof identity must not be replaced by workspace state")
+
+    monkeypatch.setattr(proof_state_resolver, "_current_local_head", unexpected_workspace_lookup)
+    proof_state.persist_live_proof_lanes(
+        repo_root=tmp_path,
+        live_proof_lanes={
+            "proof-state-control-plane": {
+                "lane_id": "proof-state-control-plane",
+                "proof_status": "fixed_in_code",
+                "workstreams": ["B-062"],
+                "deployment_truth": {"local_head": "recorded-proof-revision", "pushed_head": "recorded-push"},
+            },
+        },
+    )
+    persisted = proof_state.annotate_scopes_with_proof_state(
+        repo_root=tmp_path, scopes=[_scope()], observe_workspace_head=False,
+    )[0]
+    live = proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])[0]
+    assert live == persisted
+    assert persisted["proof_state"]["deployment_truth"]["local_head"] == "recorded-proof-revision"
+    assert persisted["proof_state"]["deployment_truth"]["pushed_head"] == "recorded-push"
+    assert persisted["claim_guard"]["highest_truthful_claim"] == "fixed in code"
+    assert set(persisted["claim_guard"]["blocked_terms"]) >= {"fixed", "cleared", "resolved"}
+
+
 def test_annotate_scopes_merges_deployment_truth_and_promotes_advanced_frontier_live(monkeypatch, tmp_path: Path) -> None:
     _write_casebook_bug(tmp_path)
     monkeypatch.setattr(proof_state_resolver, "_current_local_head", lambda _repo_root: "abc123")
@@ -513,7 +583,9 @@ def test_annotate_scopes_marks_multiple_inferred_live_lanes_ambiguous(tmp_path: 
     }
 
 
-def test_load_bug_snapshot_enriches_rows_with_proof_state_and_claim_guard(tmp_path: Path) -> None:
+def test_load_bug_snapshot_enriches_rows_with_proof_state_and_claim_guard(monkeypatch, tmp_path: Path) -> None:
+    workspace_head = ["current-context-first"]
+    monkeypatch.setattr(proof_state_resolver, "_current_local_head", lambda _root: workspace_head[0])
     _write_casebook_bug(tmp_path)
     _write_casebook_index(tmp_path)
     _write_stream_event(
@@ -535,12 +607,18 @@ def test_load_bug_snapshot_enriches_rows_with_proof_state_and_claim_guard(tmp_pa
 
     assert bug["proof_state"]["lane_id"] == "proof-state-control-plane"
     assert bug["proof_state"]["current_blocker"] == "Lambda permission lifecycle on ecs-drift-monitor invoke"
+    assert bug["proof_state"]["deployment_truth"]["local_head"] == "current-context-first"
     assert bug["proof_state_resolution"] == {
         "state": "resolved",
         "lane_ids": ["proof-state-control-plane"],
     }
     assert bug["claim_guard"]["highest_truthful_claim"] == "fixed in code"
     assert bug["claim_guard"]["blocked_terms"] == ["fixed", "cleared", "resolved"]
+    workspace_head[0] = "current-context-second"
+    refreshed = projection_backlog.load_bug_snapshot(repo_root=tmp_path, runtime_mode="standalone")
+    refreshed_bug = next(row for row in refreshed if row["bug_id"] == "CB-077")
+    assert refreshed_bug["proof_state"]["deployment_truth"]["local_head"] == "current-context-second"
+    assert refreshed_bug["claim_guard"] == bug["claim_guard"]
 
 
 def test_casebook_index_and_bug_snapshot_ignore_claude_companion_files(tmp_path: Path) -> None:

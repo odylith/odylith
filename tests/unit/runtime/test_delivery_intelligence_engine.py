@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import shutil
 import subprocess
+
+import pytest
 
 from odylith.runtime.governance import delivery_intelligence_engine as engine
 from odylith.runtime.governance import delivery_intelligence_refresh as refresh
@@ -346,3 +349,86 @@ def test_slice_delivery_intelligence_for_surface_retains_proof_state_contract() 
     assert sliced["workstreams"]["B-062"]["claim_guard"]["highest_truthful_claim"] == "fixed in code"
     assert sliced["workstreams"]["B-062"]["scope_signal"]["rung"] == "R5"
     assert sliced["workstreams"]["B-062"]["scope_signal"]["budget_class"] == "escalated_reasoning"
+
+
+@pytest.mark.parametrize("entrypoint", [engine.main, refresh.main], ids=["engine", "sync-wrapper"])
+def test_delivery_refresh_tracks_recorded_proof_revision_without_checkout_change(tmp_path: Path, entrypoint) -> None:
+    lanes = {
+        "delivery-checkpoint": {
+            "lane_id": "delivery-checkpoint",
+            "current_blocker": "Verification has not cleared the recorded failure.",
+            "failure_fingerprint": "retained-failure",
+            "first_failing_phase": "verification",
+            "frontier_phase": "verification",
+            "proof_status": "fixed_in_code",
+            "workstreams": [],
+            "deployment_truth": {"local_head": "recorded-a"},
+        },
+    }
+    engine.proof_state.persist_live_proof_lanes(repo_root=tmp_path, live_proof_lanes=lanes)
+    assert entrypoint(["--repo-root", str(tmp_path)]) == 0
+    output = tmp_path / engine.DEFAULT_OUTPUT_PATH
+    first = output.read_bytes()
+    first_states = [row["proof_state"] for row in json.loads(first)["scopes"] if "proof_state" in row]
+    assert first_states
+    assert all(state["deployment_truth"]["local_head"] == "recorded-a" for state in first_states)
+
+    lanes["delivery-checkpoint"]["deployment_truth"]["local_head"] = "recorded-b"
+    engine.proof_state.persist_live_proof_lanes(repo_root=tmp_path, live_proof_lanes=lanes)
+    assert entrypoint(["--repo-root", str(tmp_path)]) == 0
+    assert output.read_bytes() != first
+    changed_states = [row["proof_state"] for row in json.loads(output.read_bytes())["scopes"] if "proof_state" in row]
+    assert changed_states
+    assert all(state["deployment_truth"]["local_head"] == "recorded-b" for state in changed_states)
+    assert engine.main(["--repo-root", str(tmp_path), "--check-only"]) == 0
+
+
+def test_delivery_artifact_remains_current_after_its_own_git_commit(tmp_path: Path) -> None:
+    if shutil.which("git") is None:
+        pytest.skip("Git is required to prove the commit boundary")
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    git = ["git", "-C", str(repo_root)]
+    subprocess.run([*git, "init"], check=True, capture_output=True)
+    commit = [*git, "-c", "user.name=freedom-research", "-c", "user.email=freedom@freedompreetham.org", "commit"]
+    subprocess.run([*commit, "--allow-empty", "-m", "Initial proof fixture"], check=True, capture_output=True)
+    first_head = support.current_local_head(repo_root)
+    engine.proof_state.persist_live_proof_lanes(
+        repo_root=repo_root,
+        live_proof_lanes={
+            "delivery-checkpoint": {
+                "lane_id": "delivery-checkpoint",
+                "current_blocker": "Verification has not cleared the recorded failure.",
+                "failure_fingerprint": "retained-failure",
+                "first_failing_phase": "verification",
+                "frontier_phase": "verification",
+                "proof_status": "fixed_in_code",
+                "workstreams": [],
+            },
+        },
+    )
+    assert engine.main(["--repo-root", str(repo_root)]) == 0
+    output = repo_root / engine.DEFAULT_OUTPUT_PATH
+    sealed = output.read_bytes()
+    states = [row["proof_state"] for row in json.loads(sealed)["scopes"] if "proof_state" in row]
+    assert states, "The fixture must exercise nonempty proof-state snapshots"
+    subprocess.run([*git, "add", "--", engine.DEFAULT_OUTPUT_PATH], check=True, capture_output=True)
+    subprocess.run([*commit, "-m", "Record the delivery snapshot"], check=True, capture_output=True)
+    assert support.current_local_head(repo_root) != first_head
+
+    assert engine.main(["--repo-root", str(repo_root), "--check-only"]) == 0
+    assert output.read_bytes() == sealed
+    assert all(state["deployment_truth"]["local_head"] == "unknown" for state in states)
+
+    stream = repo_root / "odylith/compass/runtime/codex-stream.v1.jsonl"
+    stream.parent.mkdir(parents=True, exist_ok=True)
+    stream.write_text(json.dumps({
+        "ts_iso": "2026-09-08T12:00:00Z",
+        "proof_lane": "delivery-checkpoint",
+        "proof_fingerprint": "newly-observed-failure",
+        "proof_phase": "verification",
+        "proof_status": "falsified_live",
+        "deployment_truth": {"local_head": first_head},
+    }) + "\n", encoding="utf-8")
+    assert engine.main(["--repo-root", str(repo_root), "--check-only"]) == 2
+    assert output.read_bytes() == sealed

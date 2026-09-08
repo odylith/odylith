@@ -10,6 +10,33 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Delivery proof identity and memory-cache correction (2026-09-08)
+
+The bounded correction keeps unrecorded checkout observations out of persisted
+Delivery snapshots while retaining live Context fallback and explicit proof
+revisions. Independent review also reproduces stale normal refresh after a
+proof-ledger-only change: both existing cache guards omit that input. They now
+watch the existing canonical ledger path. No new engine, schema, provider call,
+transaction behavior, semantic rule or deadline change is introduced.
+
+The actual Git commit regression fails before the identity correction; both
+normal cache entrypoints fail before ledger dependency correction. All 35 focused
+controls now pass, including linked source changes and live Context identity.
+The superseded broad run was stopped after 2779 passes with unchanged inputs;
+it is not full-suite evidence. Final independent review accepts the bounded fix
+after eight controls and a fresh-process lightweight-cache check, with no remaining
+P0/P1/P2 finding in this slice. Frozen runtime/browser proof and actual post-commit
+check-only remain checkpoint gates, recorded as they settle in the receipts:
+`/private/tmp/odylith-delivery-proof-identity.9mIIEr/REVIEW.md`.
+
+The 2898-line Delivery owner receives only proof-provenance safety changes in
+this pass. Before unrelated growth, separate evidence collection from scope
+synthesis with characterization of complete snapshots and both refresh guards;
+do not introduce forwarding wrappers or duplicate normalizers. Existing Atlas
+flows retain the same resolver/Delivery/Context owners and edges. This correction
+does not close native interventions, generation quality, 60/90/120 reliability,
+current installed release proof or the untouched holdout gate.
+
 ### Post-commit integrated freshness finding (2026-09-08)
 
 Pushed checkpoint `5db5485b` passes staged readiness and 42 final shell/intervention
