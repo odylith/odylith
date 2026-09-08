@@ -11,8 +11,6 @@ import pytest
 from odylith.runtime.surfaces import compass_dashboard_base
 from odylith.runtime.surfaces import compass_dashboard_runtime as runtime
 from odylith.runtime.surfaces import compass_runtime_payload_runtime
-from odylith.runtime.surfaces import compass_standup_brief_narrator
-from odylith.runtime.surfaces import compass_standup_runtime_reuse
 
 
 def _fixed_now(monkeypatch, *, year: int, month: int, day: int) -> None:  # noqa: ANN001
@@ -367,137 +365,6 @@ def test_brief_with_known_failure_state_replaces_provider_deferred(monkeypatch: 
 
     assert brief["diagnostics"]["reason"] == "provider_error"
     assert "provider failed" in brief["diagnostics"]["message"].lower()
-
-
-def test_prior_runtime_state_rejects_mismatched_brief_schema() -> None:
-    state = compass_standup_runtime_reuse.prior_runtime_state(
-        payload={
-            "runtime_contract": {
-                "standup_brief_schema_version": "legacy",
-            },
-            "standup_runtime": {"24h": {"global_reuse_fingerprint": "x"}},
-            "standup_brief": {"24h": {"status": "ready"}},
-        }
-    )
-
-    assert state == {}
-
-
-def test_reuse_ready_brief_returns_cache_ready_payload_without_notice() -> None:
-    brief = {
-        "status": "ready",
-        "source": "provider",
-        "sections": [
-            {
-                "key": "completed",
-                "label": "Completed in this window",
-                "bullets": [{"text": "Closed the loop."}],
-            }
-        ],
-        "evidence_lookup": {"F-001": {"kind": "fact", "text": "Closed the loop."}},
-    }
-
-    reused = compass_standup_runtime_reuse.reuse_ready_brief(
-        brief=brief,
-        generated_utc="2026-04-09T17:00:00Z",
-        fingerprint="salient:test",
-    )
-
-    assert reused["status"] == "ready"
-    assert reused["source"] == "cache"
-    assert reused["cache_mode"] == "fallback"
-    assert reused["fingerprint"] == "salient:test"
-    assert "notice" not in reused
-
-
-def test_scoped_reuse_fingerprint_changes_when_activity_changes() -> None:
-    base_row = {
-        "idea_id": "B-025",
-        "title": "Compass refresh hardening",
-        "status": "implementation",
-        "activity": {"24h": {"commit_count": 1, "local_change_count": 2, "file_touch_count": 3}},
-        "plan": {"progress_ratio": 0.5, "done_tasks": 5, "total_tasks": 10, "next_tasks": ["Land the retry fix."]},
-        "timeline": {"last_activity_iso": "2026-04-09T09:00:00Z", "eta_days": 3, "eta_confidence": "medium"},
-    }
-
-    left = compass_standup_runtime_reuse.scoped_reuse_fingerprint(
-        row=base_row,
-        window_hours=24,
-        next_action_tokens=["Land the retry fix."],
-        completed_deliverables=["plan-a.md"],
-        execution_updates=[{"summary": "Shipped the retry hardening.", "kind": "implementation"}],
-        transaction_updates=[],
-        risk_summary="No critical blockers.",
-        self_host_snapshot={"posture": "pinned_release", "active_version": "0.1.11"},
-    )
-    right = compass_standup_runtime_reuse.scoped_reuse_fingerprint(
-        row={
-            **base_row,
-            "activity": {"24h": {"commit_count": 2, "local_change_count": 2, "file_touch_count": 3}},
-        },
-        window_hours=24,
-        next_action_tokens=["Land the retry fix."],
-        completed_deliverables=["plan-a.md"],
-        execution_updates=[{"summary": "Shipped the retry hardening.", "kind": "implementation"}],
-        transaction_updates=[],
-        risk_summary="No critical blockers.",
-        self_host_snapshot={"posture": "pinned_release", "active_version": "0.1.11"},
-    )
-
-    assert left != right
-
-
-def test_scoped_reuse_fingerprint_changes_when_visible_progress_semantics_change() -> None:
-    base_row = {
-        "idea_id": "B-068",
-        "title": "Context Engine Benchmark Family and Grounding Quality Gates",
-        "status": "implementation",
-        "activity": {"24h": {"commit_count": 0, "local_change_count": 2, "file_touch_count": 2}},
-        "plan": {
-            "progress_ratio": 0.0,
-            "done_tasks": 0,
-            "total_tasks": 15,
-            "progress_classification": "active_untracked",
-            "display_progress_label": "Checklist 0/15",
-            "display_progress_state": "checklist_only",
-            "next_tasks": ["Land the family acceptance checks."],
-        },
-        "timeline": {"last_activity_iso": "2026-04-09T20:00:00Z", "eta_days": None, "eta_confidence": "low"},
-    }
-
-    left = compass_standup_runtime_reuse.scoped_reuse_fingerprint(
-        row=base_row,
-        window_hours=24,
-        next_action_tokens=["Land the family acceptance checks."],
-        completed_deliverables=[],
-        execution_updates=[],
-        transaction_updates=[],
-        risk_summary="No critical blockers.",
-        self_host_snapshot={"posture": "pinned_release", "active_version": "0.1.11"},
-    )
-    right = compass_standup_runtime_reuse.scoped_reuse_fingerprint(
-        row={
-            **base_row,
-            "plan": {
-                **base_row["plan"],
-                "progress_ratio": 0.7857,
-                "done_tasks": 11,
-                "total_tasks": 14,
-                "progress_classification": "tracked",
-                "display_progress_label": "79% progress",
-                "display_progress_state": "percent",
-            },
-        },
-        window_hours=24,
-        next_action_tokens=["Land the family acceptance checks."],
-        completed_deliverables=[],
-        execution_updates=[],
-        transaction_updates=[],
-        risk_summary="No critical blockers.",
-        self_host_snapshot={"posture": "pinned_release", "active_version": "0.1.11"},
-    )
-
-    assert left != right
 
 
 def test_cached_governance_summary_for_shell_safe_reuses_current_payload(tmp_path: Path) -> None:
@@ -1263,53 +1130,6 @@ def test_global_brief_provider_stays_disabled_for_non_global_windows() -> None:
         window_hours=12,
         refresh_profile="shell-safe",
     )
-
-
-def test_reusable_brief_sections_for_fact_packet_requires_voice_valid_sections(monkeypatch) -> None:  # noqa: ANN001
-    monkeypatch.setattr(
-        compass_standup_brief_narrator,
-        "_validated_cached_sections",
-        lambda **_kwargs: None,
-    )
-
-    assert compass_runtime_payload_runtime._reusable_brief_sections_for_fact_packet(  # noqa: SLF001
-        brief={
-            "status": "ready",
-            "source": "provider",
-            "sections": [
-                {
-                    "key": "completed",
-                    "label": "Completed in this window",
-                    "bullets": [{"text": "Bad cached line.", "fact_ids": ["F-001"]}],
-                }
-            ],
-        },
-        fact_packet={"facts": [{"id": "F-001", "section_key": "completed", "text": "Good fact."}]},
-    ) is None
-
-
-def test_reusable_brief_sections_for_fact_packet_accepts_clean_ready_brief(monkeypatch) -> None:  # noqa: ANN001
-    sections = [{"key": "completed", "label": "Completed in this window", "bullets": []}]
-    monkeypatch.setattr(
-        compass_standup_brief_narrator,
-        "_validated_cached_sections",
-        lambda **_kwargs: sections,
-    )
-
-    assert compass_runtime_payload_runtime._reusable_brief_sections_for_fact_packet(  # noqa: SLF001
-        brief={
-            "status": "ready",
-            "source": "provider",
-            "sections": [
-                {
-                    "key": "completed",
-                    "label": "Completed in this window",
-                    "bullets": [{"text": "Good cached line.", "fact_ids": ["F-001"]}],
-                }
-            ],
-        },
-        fact_packet={"facts": [{"id": "F-001", "section_key": "completed", "text": "Good fact."}]},
-    ) == sections
 
 
 def test_generated_only_transaction_detection_keeps_source_mixed_rows() -> None:

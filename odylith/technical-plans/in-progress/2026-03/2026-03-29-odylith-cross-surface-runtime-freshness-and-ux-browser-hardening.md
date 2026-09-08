@@ -12,6 +12,41 @@ across the UX/UI, including cross-surface filter and search semantics.
 
 ## Current freshness defect (2026-09-07)
 
+The exact-admission correction now has frozen source-local proof: 4312 runtime
+tests (protected holdout excluded), 1101 install/bundle tests, 47 cross-surface
+browser controls, 10 additional controls and 12 corrected identity tests pass.
+The actual dashboard matrix retains 24 passes and two literal-label oracle
+failures; four narrow corrected Compass cells establish the required timestamp
+and warning at both widths and windows. Prior page-lifecycle test errors remain
+recorded too. Retained history reads September 6 21:48 with the unavailable/
+last-ready warning. Staged tree 896c8f7b50075efc6dff346aeefae985f6d178ec and
+served bytes remain unchanged through proof. The final governance-only update
+requires strict staged validation and a focused rendered readback, not another
+runtime run against unchanged Python. CB-019 remains Open for the separate ETA,
+risk-selection and broader UX issues; this is not Greenfield release evidence.
+
+The final first-author checkpoint reproduces the same competing-owner defect at
+22:50 beside the 22:49 rejection event. Resume the already diagnosed correction:
+remove reduced-fingerprint global/scoped ready-brief admission and its obsolete
+helpers, using the existing exact-substrate narrator with foreground providers
+disabled. Characterize both windows and scopes before deletion; preserve exact
+cache generation identity, explicit unavailable/failure state, inactive scopes
+and visibly historical last-readable narration. This is a Compass trust repair,
+not a new Greenfield author experiment or a solution to semantic/latency gates.
+Evidence and red/green proof: `/private/tmp/odylith-exact-brief-reuse.PZ0Kdo/`.
+
+The source correction removes 392 net runtime lines across the two calling
+owners and the deleted 288-line reuse module. Four actual-window controls fail
+before deletion and all five pass afterward; the complete focused pack passes
+193 checks. The six deleted tests covered the superseded mechanism, while the
+existing narrator retains exact-cache, old-schema, changed-packet, scope/window
+and voice-validation controls. A synthetic offline comparison measures exact
+admission at 0.827 ms median versus 0.0066 ms for the unsafe shortcut, with zero
+real provider calls. This is not full-runtime or consumer timing evidence.
+Historical presentation, full runtime/install and cross-surface browser proof
+remain required before a source checkpoint; upstream ETA/risk semantics remain
+outside this bounded correction.
+
 CB-019 is reopened by the Greenfield continuous UX pass. Both window briefs
 retain identical older sections while the reduced-fingerprint reuse path stamps
 the new refresh time; the browser shows Generated 11:33 beside the latest failed

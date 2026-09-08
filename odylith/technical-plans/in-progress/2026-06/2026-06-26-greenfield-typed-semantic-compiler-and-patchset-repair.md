@@ -10,6 +10,30 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Next bounded product-deadline discriminator (2026-09-07)
+
+After the Compass checkpoint, test the exact former first-run coherence
+paragraph once on the disclosed laboratory control that was never dispatched.
+This is a new prospective test, not resumption of the rejected museum campaign.
+The museum met product 60/55 but failed its frozen extra headroom gate; retain
+that outcome and its incomplete diagram/copy/UX quality. The earlier instruction
+directly addresses the observed conflict between a proposed walk and its own
+inputs; no simpler lossless sorting replacement has been established.
+
+Keep schemas, source custody, complete author and immutable full-candidate
+review, models and consumer 60/90/120 unchanged. Use ordinary native execution
+and 60/55 for this control, with headroom diagnostic only. Preserve runtime
+scan/register/print/handover order, the existing catalogue and the opposite
+registration-before-scanner delivery requirement without conflating them.
+Freeze requests, source and a preflight-proved process harness before dispatch;
+permit one A-to-R attempt, no repair, retry, CONFIRM or holdout access. Inspect
+actual meaning, complete artifacts and rendered quality before any retention
+decision. A pass adds bounded development evidence, not reliability or release
+qualification. This supersedes the candidate-retirement decision prospectively,
+without altering the old failure or claiming a causal timing improvement.
+Decision and remaining quality controls:
+`/private/tmp/odylith-exact-brief-reuse.PZ0Kdo/next-mechanism-decision.md`.
+
 ### First-author comparison rejected (2026-09-07)
 
 The sole actual Sol/low attempt times out in initial authoring: 55.011981 seconds

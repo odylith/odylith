@@ -90,7 +90,7 @@
       "reviewed_watch_fingerprints": {
         "odylith/registry/source/component_registry.v1.json": "cde55ce2eba82e67ee574d58385bf8711f58adb40498c2e576a81b6bc1817b6f",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "04d96f3add1086ef48ec9c6a8e5dbfe7874e2b73ceb3dc4e6fbd5b80a2b38a76",
-        "odylith/radar/source/INDEX.md": "bbcd56300b1c66d0cf21dcd96004c2e05c643ce9ba4415f606d5f0fd899dadc2",
+        "odylith/radar/source/INDEX.md": "92d6f457cab1b217b8182af8eff41cd7f78bdda5dd5b523db90c6437c2f08bc6",
         "odylith/technical-plans/INDEX.md": "6a7a4d6de0e4efad4bea49962ca4873b45a836c87eba1072d701cf44bd5a327d"
       }
     },
@@ -2336,7 +2336,7 @@
         "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md": "da20bb2c778974ea69ef1474dbe41a4b42de3617d4ef1875a493543786b02175",
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "509f277a5b77fc104a92794c1834c633fbbcc4effa583bff0f19d5784de4bd0f",
         "odylith/technical-plans/done/2026-03/2026-03-28-odylith-managed-runtime-bundles-and-supported-platform-contract.md": "1f23b5b159f92612c4dd52b7fe1e077d5842a9e6439b59b6c42c617111ccf45b",
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "62db7d52c4793c4f9e1d4aeebbd1a54274426d48b4e2bc2aa06c8a3b698c9d3b",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "38af7389f01945c6c79fb72f69aaea7b6578b83e46b862b10063877a188b15c1",
         "odylith/casebook/bugs/2026-03-28-public-consumer-install-depends-on-machine-python.md": "892477de3906a35157275d8aaa2f9cfc259dd2efb76222fa7247461d011a1ea6",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "04d96f3add1086ef48ec9c6a8e5dbfe7874e2b73ceb3dc4e6fbd5b80a2b38a76",
         "odylith/registry/source/components/release/CURRENT_SPEC.md": "d10d8fcd1b2c2d205df9f696c21aab8240fe9bfc7bce3edd653cd19eaa8265f2",
@@ -2702,7 +2702,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-09-03",
+      "last_reviewed_utc": "2026-09-07",
       "source_mmd": "odylith/atlas/source/odylith-release-planning-and-workstream-targeting.mmd",
       "source_svg": "odylith/atlas/source/odylith-release-planning-and-workstream-targeting.svg",
       "source_png": "odylith/atlas/source/odylith-release-planning-and-workstream-targeting.png",
@@ -2778,7 +2778,7 @@
         "src/odylith/runtime/governance/release_planning_authoring.py": "354f21ba7fe9688ded8013909781a95a4de21f608d42338259c70f985b47ba79",
         "src/odylith/runtime/governance/build_traceability_graph.py": "a8610cb13b65e62c90b8791081cda1933a703236612109ecc3730717a52e10d1",
         "src/odylith/runtime/surfaces/render_backlog_ui.py": "265a7321c8c8c199248d78112591716897828c774d5173a3eecaed3e8537da8f",
-        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py": "0d56f54f775848ed9413fb7a564776f20ac69230b9f21d9b5fdfd3ce00486605",
+        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py": "4d5173918c00ab4bea1e7ccff84796c198b611c0439e675fae95c19377512357",
         "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py": "23b0f9f56d2642a876784b898a0bb08a7c86adb464643d47186051b213f79279"
       }
     },
@@ -2855,7 +2855,7 @@
         "src/odylith/runtime/governance/delivery/scope_signal_ladder.py": "f46c661776a3cb2ad8c9b22e84ffcb2e141ac735ce47818566d77907104cdae2",
         "src/odylith/runtime/governance/delivery_intelligence_engine.py": "ffef91400594d031fb0b850bc883a77658d25d53fcf1812bd7881f6d4845d1cc",
         "src/odylith/runtime/governance/operator_readout.py": "290f73bebc132e23c7fc6c4bc837a4b1935d18ee5780d16dfa06c43ecc03f5b8",
-        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py": "0d56f54f775848ed9413fb7a564776f20ac69230b9f21d9b5fdfd3ce00486605",
+        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py": "4d5173918c00ab4bea1e7ccff84796c198b611c0439e675fae95c19377512357",
         "src/odylith/runtime/surfaces/render_backlog_ui_payload_runtime.py": "7c1e7c10993e279fdd709bab84726163b431b4bcb6e9ebc7420740208f9a401c",
         "src/odylith/runtime/surfaces/render_registry_dashboard.py": "4dfb1a24a331b53bdde3b660f1db5bb20536cd449ae3aacba014ee775750a971",
         "src/odylith/runtime/surfaces/render_mermaid_catalog.py": "13e1da3f8debca17b6c4a1ba88840d301fa80f8439eb520b806ddf326a99545c"
@@ -2931,7 +2931,7 @@
       "render_source_fingerprint": "70cb8a718d5c1e93ce0c7d8315bcca4df81dea22eb6525e36e2bfe022c7376f0",
       "reviewed_watch_fingerprints": {
         "src/odylith/runtime/governance/delivery/scope_signal_ladder.py": "f46c661776a3cb2ad8c9b22e84ffcb2e141ac735ce47818566d77907104cdae2",
-        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py": "0d56f54f775848ed9413fb7a564776f20ac69230b9f21d9b5fdfd3ce00486605",
+        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py": "4d5173918c00ab4bea1e7ccff84796c198b611c0439e675fae95c19377512357",
         "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-state.v1.js": "55c747c79c4a13b018def295aa3710c7fcd081ce2abd951b87bd87cf638aafac",
         "src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py": "011a36e503d9767ca98d84dcb837119ea02b5f51a75dfd7d6f36be5c26e9fb35",
         "src/odylith/runtime/surfaces/render_registry_dashboard.py": "4dfb1a24a331b53bdde3b660f1db5bb20536cd449ae3aacba014ee775750a971",
@@ -3133,7 +3133,7 @@
         "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py",
         "src/odylith/runtime/surfaces/compass_standup_brief_batch.py",
         "src/odylith/runtime/surfaces/compass_standup_brief_maintenance.py",
-        "src/odylith/runtime/surfaces/compass_standup_runtime_reuse.py",
+        "src/odylith/runtime/surfaces/compass_window_summary_support.py",
         "src/odylith/runtime/governance/delivery/scope_signal_ladder.py",
         "src/odylith/cli.py"
       ],
@@ -3159,7 +3159,7 @@
         "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py",
         "src/odylith/runtime/surfaces/compass_standup_brief_batch.py",
         "src/odylith/runtime/surfaces/compass_standup_brief_maintenance.py",
-        "src/odylith/runtime/surfaces/compass_standup_runtime_reuse.py",
+        "src/odylith/runtime/surfaces/compass_window_summary_support.py",
         "src/odylith/runtime/governance/delivery/scope_signal_ladder.py",
         "src/odylith/cli.py"
       ],
@@ -3174,19 +3174,19 @@
         "delivery-intelligence",
         "odylith-context-engine"
       ],
+      "render_source_fingerprint": "aeceaa811935a591898912894e338e913dfc6d74c6e7601b2b61ebac24ac5c25",
       "reviewed_watch_fingerprints": {
         "src/odylith/runtime/surfaces/compass_refresh_contract.py": "6159343264884cf67641dca44e3e26a64945921c4d4517fabe26d2729b3b8597",
         "src/odylith/runtime/surfaces/compass_refresh_runtime.py": "f900f0495015574aa340bfd1a9a460eb2d31ad861f678f3656bdf39d4199cbbc",
         "src/odylith/runtime/surfaces/compass_dashboard_runtime.py": "e7f38ab96becbcc0c41ecaa10f8d0414f05042b1ad8cfe176c68017211fa791f",
-        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py": "0d56f54f775848ed9413fb7a564776f20ac69230b9f21d9b5fdfd3ce00486605",
+        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py": "4d5173918c00ab4bea1e7ccff84796c198b611c0439e675fae95c19377512357",
         "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py": "526a53300642481a9f68188c64989a55324546af0248f29cd50ad5cbb5fe3ec0",
         "src/odylith/runtime/surfaces/compass_standup_brief_batch.py": "03b18a60dec6831693296440a68df640559aeb155ebf6f76241b5c55f3a9ee11",
         "src/odylith/runtime/surfaces/compass_standup_brief_maintenance.py": "0c977f56a034fcd360da232b63114b6232a9bf4f1a11b3a1f00a650349bb5db1",
-        "src/odylith/runtime/surfaces/compass_standup_runtime_reuse.py": "8f9ac0e7feb3ff89f47408f9d4feed23c121bbde8f2cd4ba3636a03785d3c4ec",
+        "src/odylith/runtime/surfaces/compass_window_summary_support.py": "1a973a4dca3c391cd19be0b55e397cc28b45782094f027e25c8a8006af70bbcb",
         "src/odylith/runtime/governance/delivery/scope_signal_ladder.py": "f46c661776a3cb2ad8c9b22e84ffcb2e141ac735ce47818566d77907104cdae2",
         "src/odylith/cli.py": "72a384a4262f4302923cec8ed5c72c9226ae21c27dc280681d42b83825c2c573"
-      },
-      "render_source_fingerprint": "aeceaa811935a591898912894e338e913dfc6d74c6e7601b2b61ebac24ac5c25"
+      }
     },
     {
       "diagram_id": "D-033",
@@ -3702,7 +3702,7 @@
         "src/odylith/runtime/surfaces/claude_host_stop_summary.py": "1dbb0d6b3af97cbfee8eee9429173d1653503f116cae87637e5dc70b1f696400",
         "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py": "2cb4ed5a7c907f48093228d656a630bb8c1562f65ba7b062f5c44aced25cfc21",
         "src/odylith/runtime/surfaces/claude_host_post_edit_checkpoint.py": "e7b8f523eda06e37b62ccaff9f61100e160e34d2cc4bc3eab69a9fa05bcc2eab",
-        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py": "0d56f54f775848ed9413fb7a564776f20ac69230b9f21d9b5fdfd3ce00486605"
+        "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py": "4d5173918c00ab4bea1e7ccff84796c198b611c0439e675fae95c19377512357"
       },
       "render_source_fingerprint": "b293dfcc63e3b799115cabf34a447bcec1801ebe4c1c2daa683e1a3bd69d22ef"
     },

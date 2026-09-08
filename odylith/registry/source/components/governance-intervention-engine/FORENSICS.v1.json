@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 734,
-    "mapped_workstream_evidence_count": 687,
+    "explicit_event_count": 736,
+    "mapped_workstream_evidence_count": 689,
     "recent_path_match_count": 0,
     "spec_history_event_count": 31,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 734
+    "timeline_event_count": 736
   },
   "name": "Governance Intervention Engine",
   "path_prefixes": [
@@ -43,6 +43,94 @@
   ],
   "spec_ref": "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-03-29-compass-runtime-freshness-regressed-brief-risk-and-timeline-trust.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 1288,
+      "explicit_components": [
+        "atlas",
+        "briefs-voice-contract",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "briefs-voice-contract",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-09-07T23:47:00-07:00",
+      "workstreams": [
+        "B-025",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-03-29-compass-runtime-freshness-regressed-brief-risk-and-timeline-trust.md",
+        "src/odylith/runtime/surfaces/compass_window_summary_support.py",
+        "tests/unit/runtime/test_compass_window_brief_custody.py"
+      ],
+      "confidence": "high",
+      "event_index": 1287,
+      "explicit_components": [
+        "atlas",
+        "briefs-voice-contract",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "briefs-voice-contract",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-09-07T23:20:46-07:00",
+      "workstreams": [
+        "B-025",
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 2,
       "artifacts": [

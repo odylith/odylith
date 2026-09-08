@@ -21,7 +21,6 @@ from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.surfaces import compass_execution_focus_runtime
 from odylith.runtime.surfaces import compass_standup_brief_narrator
 from odylith.runtime.surfaces import compass_standup_brief_maintenance
-from odylith.runtime.surfaces import compass_standup_runtime_reuse
 from odylith.runtime.surfaces import compass_window_summary_support
 
 
@@ -65,23 +64,6 @@ def _bug_is_open_critical(*, severity: str, status: str) -> bool:
     if str(severity).strip().upper() not in {"P0", "P1"}:
         return False
     return casebook_metadata.casebook_status_requires_active_attention(status)
-
-
-def _reusable_brief_sections_for_fact_packet(
-    *,
-    brief: Mapping[str, Any],
-    fact_packet: Mapping[str, Any],
-) -> list[dict[str, Any]] | None:
-    if not compass_standup_runtime_reuse.brief_ready_without_notice(brief):
-        return None
-    raw_sections = brief.get("sections")
-    if not isinstance(raw_sections, Sequence) or not raw_sections:
-        return None
-    return compass_standup_brief_narrator._validated_cached_sections(  # noqa: SLF001
-        raw_sections=raw_sections,
-        fact_packet=fact_packet,
-        cached_evidence_lookup=brief.get("evidence_lookup", {}),
-    )
 
 
 def _brief_with_known_failure_state(
@@ -1173,9 +1155,6 @@ def _build_runtime_payload(
     ]
     generated_utc = now_utc.replace(microsecond=0).isoformat().replace("+00:00", "Z")
     reasoning_config = odylith_reasoning.reasoning_config_from_env(repo_root=repo_root)
-    prior_runtime_state = compass_standup_runtime_reuse.prior_runtime_state(
-        payload=_current_runtime_payload(repo_root),
-    )
     self_host = _self_host_snapshot(repo_root=repo_root, refresh_profile=refresh_profile)
     self_host_risks = _self_host_risk_rows(snapshot=self_host, local_date=now.date().isoformat())
     _emit_refresh_progress(
@@ -1206,7 +1185,6 @@ def _build_runtime_payload(
         self_host_risks=self_host_risks,
         generated_utc=generated_utc,
         reasoning_config=reasoning_config,
-        prior_runtime_state=prior_runtime_state,
         delivery_workstreams=delivery_workstreams,
         progress_callback=progress_callback,
         build_window_activity=_build_window_activity,
@@ -1217,7 +1195,6 @@ def _build_runtime_payload(
         scope_risk_rows=_scope_risk_rows,
         build_global_standup_fact_packet=_build_global_standup_fact_packet,
         build_scoped_standup_fact_packet=_build_scoped_standup_fact_packet,
-        reusable_brief_sections_for_fact_packet=_reusable_brief_sections_for_fact_packet,
         brief_with_known_failure_state=_brief_with_known_failure_state,
         inactive_scoped_standup_brief=_inactive_scoped_standup_brief,
         verified_scoped_window_ids=_verified_scoped_window_ids,
