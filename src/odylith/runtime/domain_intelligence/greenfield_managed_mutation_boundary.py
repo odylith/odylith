@@ -1,10 +1,11 @@
-"""Supersede an active Greenfield view only after a successful managed CLI write."""
+"""Publish complete immutable successors for successful managed CLI writes."""
 
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
+from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
 from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_lock
@@ -72,27 +73,50 @@ def run_with_greenfield_managed_mutation_boundary(
     command_tokens: Sequence[str],
     operation: Callable[[], int],
 ) -> int:
-    """Run one supported writer and supersede only after successful changed readback."""
+    """Keep the previous complete view selected until a successful successor is sealed."""
 
     root = Path(repo_root).expanduser().resolve()
     if not command_may_mutate_greenfield_managed_paths(command_tokens):
         return operation()
-    state = greenfield_generation_state.read_active_generation_state(root)
-    if state is None or str(state.get("status") or "") != greenfield_generation_state.ACTIVE:
-        return operation()
     try:
         with greenfield_repository_lock.greenfield_repository_lock(root):
-            pinned = greenfield_generation_store.pin_active_greenfield_generation(root)
-            active = greenfield_generation_state.read_active_generation_state(root)
+            GreenfieldCommitJournal.recover_pending_journals(repo_root=root)
+            state = greenfield_generation_state.read_active_publication(root)
+            pinned = greenfield_generation_store.require_greenfield_working_generation(root) if state else None
+            active = greenfield_generation_state.active_generation_identity(root)
             result = operation()
             if result != 0:
                 return result
-            expected = {str(key): str(value) for key, value in dict(pinned.manifest["after_fingerprints"]).items()}
+            if pinned is None:
+                # A first install can activate, then perform further managed writes.
+                if greenfield_generation_state.read_active_publication(root) is None:
+                    return result
+                pinned = greenfield_generation_store.pin_active_greenfield_generation(root)
+                active = greenfield_generation_state.active_generation_identity(root)
+            expected = dict(pinned.manifest["after_fingerprints"])
             actual = greenfield_repository_write_set.greenfield_managed_fingerprints(root)
             if actual != expected:
-                greenfield_generation_state.supersede_active_generation(
+                write_set = greenfield_repository_write_set.compile_greenfield_repository_write_set(
+                    source_root=pinned.repository_root,
+                    staged_root=root,
+                    publication_precondition=active,
+                )
+                manifest = greenfield_generation_store.compile_greenfield_generation_manifest(write_set)
+                generation = greenfield_generation_store.materialize_immutable_greenfield_generation(
+                    repo_root=root, write_set=write_set, manifest_text=manifest,
+                )
+                publication = greenfield_generation_state.compile_greenfield_publication_entry(
+                    write_set_hash=generation.write_set_hash,
+                    generation_manifest_sha256=generation.manifest_sha256,
+                )
+                greenfield_repository_write_set.require_greenfield_repository_after_state(
+                    repo_root=root, write_set=write_set,
+                )
+                greenfield_generation_store.publish_greenfield_generation(
                     repo_root=root,
-                    expected_transaction_hash=str(active["transaction_hash"]),
+                    generation=generation,
+                    write_set=write_set,
+                    publication_entry_text=publication,
                 )
             return result
     except greenfield_repository_lock.GreenfieldRepositoryBusyError as exc:

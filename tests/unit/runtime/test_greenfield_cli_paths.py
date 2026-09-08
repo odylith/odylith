@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence import (
     greenfield_apply_diagrams,
     greenfield_create_baseline,
     greenfield_create_commit,
+    greenfield_generation_store,
     greenfield_post_confirm_handoff,
     greenfield_proposals,
     greenfield_proposals_cli,
@@ -41,6 +42,7 @@ from tests.unit.runtime.greenfield_proposal_fixtures import (
     compiled_greenfield_package_fixture,
     surface_refresh_preview_fixture,
 )
+from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 
 
 @pytest.fixture(autouse=True)
@@ -156,6 +158,7 @@ def test_greenfield_domain_token_normalizer_keeps_common_words_legible() -> None
 
 
 def test_greenfield_completion_opens_exact_committed_project_url(tmp_path, monkeypatch) -> None:
+    activate_greenfield_baseline_fixture(tmp_path)
     monkeypatch.delenv("ODYLITH_NO_BROWSER", raising=False)
     navigation = greenfield_post_confirm_handoff.post_confirm_navigation(tmp_path)
     opened: list[tuple[str, int]] = []
@@ -167,12 +170,17 @@ def test_greenfield_completion_opens_exact_committed_project_url(tmp_path, monke
 
     result = greenfield_post_confirm_handoff.open_committed_dashboard(navigation)
 
-    expected_url = f"{(tmp_path / 'odylith/index.html').resolve().as_uri()}?tab=project"
+    pinned = greenfield_generation_store.pin_active_greenfield_generation(tmp_path)
+    dashboard = pinned.repository_root / "odylith/index.html"
+    assert dashboard.is_file()
+    assert dashboard != tmp_path / "odylith/index.html"
+    expected_url = f"{dashboard.resolve().as_uri()}?tab=project"
     assert result == {"status": "opened", "url": expected_url, "reason": ""}
     assert opened == [(expected_url, 2)]
 
 
 def test_greenfield_completion_browser_failure_does_not_raise(tmp_path, monkeypatch) -> None:
+    activate_greenfield_baseline_fixture(tmp_path)
     monkeypatch.delenv("ODYLITH_NO_BROWSER", raising=False)
     navigation = greenfield_post_confirm_handoff.post_confirm_navigation(tmp_path)
     monkeypatch.setattr(
@@ -188,6 +196,7 @@ def test_greenfield_completion_browser_failure_does_not_raise(tmp_path, monkeypa
 
 
 def test_greenfield_completion_respects_automated_browser_opt_out(tmp_path, monkeypatch) -> None:
+    activate_greenfield_baseline_fixture(tmp_path)
     navigation = greenfield_post_confirm_handoff.post_confirm_navigation(tmp_path)
 
     def fail_open(*_args, **_kwargs) -> bool:

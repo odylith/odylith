@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence import greenfield_repository_write_set 
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_create_transaction
 from odylith.runtime.domain_intelligence import greenfield_commit_transaction
+from odylith.runtime.domain_intelligence import greenfield_compiled_package_contract
 from odylith.runtime.domain_intelligence import greenfield_post_confirm_handoff
 from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_commit_journal
@@ -77,12 +78,14 @@ def test_real_confirm_copies_sealed_manifest_and_history_survives_pending_cleanu
     path = tmp_path / "proposal.json"
     greenfield_create_transaction.write_compiled_product_create_transaction_file(path, transaction)
     sealed_manifest = transaction.prewrite_package.generation_manifest_text
+    sealed_publication = transaction.prewrite_package.publication_entry_text
     write_hash = transaction.prewrite_package.repository_write_set["write_set_hash"]
 
     def forbidden(*args, **kwargs):
         raise AssertionError("manifest generation is forbidden after CONFIRM")
 
     monkeypatch.setattr(generations, "compile_greenfield_generation_manifest", forbidden)
+    monkeypatch.setattr(greenfield_generation_state, "compile_greenfield_publication_entry", forbidden)
     result = greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path, transaction_file=path, transaction_hash=transaction.transaction_hash, confirm=True,
     )
@@ -92,6 +95,7 @@ def test_real_confirm_copies_sealed_manifest_and_history_survives_pending_cleanu
     )
     assert generation.generation_root.name == write_hash
     assert (generation.generation_root / "generation-manifest.v1.json").read_bytes() == sealed_manifest.encode()
+    assert (tmp_path / "odylith/index.html").read_bytes() == sealed_publication.encode("utf-8")
     retry = greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path, transaction_file=path, transaction_hash=transaction.transaction_hash, confirm=True,
     )
@@ -128,6 +132,76 @@ def test_commit_loader_rejects_invalid_manifest_even_with_rehashed_outer_receipt
     assert not (tmp_path / ".odylith/runtime/greenfield/create-journal").exists()
 
 
+def test_publication_is_sealed_before_transaction_and_validation_never_compiles(tmp_path, monkeypatch):
+    transaction = _transaction(tmp_path)
+    package = transaction.prewrite_package
+    publication = package.publication_entry_text
+    assert transaction.transaction_hash not in publication
+    identity = greenfield_generation_state.require_sealed_greenfield_publication_entry(
+        publication,
+        write_set_hash=package.repository_write_set["write_set_hash"],
+        generation_manifest_sha256=hashlib.sha256(package.generation_manifest_text.encode("utf-8")).hexdigest(),
+    )
+    assert identity["publication_sha256"] == hashlib.sha256(publication.encode("utf-8")).hexdigest()
+    changed = replace(transaction, prewrite_package=replace(package, publication_entry_text=publication + " "))
+    assert greenfield_create_transaction.product_create_transaction_hash(changed) != transaction.transaction_hash
+    path = tmp_path / "proposal.json"
+    greenfield_create_transaction.write_compiled_product_create_transaction_file(path, transaction)
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("publication or manifest compilation ran after sealing")
+
+    monkeypatch.setattr(greenfield_generation_state, "compile_greenfield_publication_entry", forbidden)
+    monkeypatch.setattr(generations, "compile_greenfield_generation_manifest", forbidden)
+    greenfield_compiled_package_contract.require_complete_compiled_greenfield_package(
+        package, release_selector=transaction.release_selector,
+    )
+    sealed = greenfield_commit_transaction.load_sealed_product_create_commit(path, repo_root=tmp_path)
+    assert sealed.prewrite_package.publication_entry_text == publication
+    greenfield_commit_transaction.require_sealed_commit_transaction(sealed)
+
+
+@pytest.mark.parametrize("change", ["missing", "null", "empty", "bytes", "write_set", "manifest", "script"])
+def test_commit_loader_rejects_invalid_publication_even_with_rehashed_outer_receipt(tmp_path, change):
+    transaction = _transaction(tmp_path)
+    path = tmp_path / "proposal.json"
+    greenfield_create_transaction.write_compiled_product_create_transaction_file(path, transaction)
+    payload = json.loads(path.read_text())
+    package = payload["prewrite_package"]
+    if change == "missing":
+        package.pop("publication_entry_text")
+    elif change == "null":
+        package["publication_entry_text"] = None
+    elif change == "empty":
+        package["publication_entry_text"] = ""
+    elif change == "bytes":
+        package["publication_entry_text"] += " "
+    else:
+        original, replacement = {
+            "write_set": (package["repository_write_set"]["write_set_hash"], "f" * 64),
+            "manifest": (hashlib.sha256(package["generation_manifest_text"].encode("utf-8")).hexdigest(), "f" * 64),
+            "script": ("location.replace(target.href);", "document.body.remove();"),
+        }[change]
+        assert original in package["publication_entry_text"]
+        package["publication_entry_text"] = package["publication_entry_text"].replace(original, replacement)
+    _rewrite_sealed_transaction(path, payload)
+    before = write_sets.greenfield_managed_fingerprints(tmp_path)
+    with pytest.raises(ValueError, match="publication entry"):
+        greenfield_commit_transaction.load_sealed_product_create_commit(path, repo_root=tmp_path)
+    assert write_sets.greenfield_managed_fingerprints(tmp_path) == before
+    assert not (tmp_path / ".odylith/runtime/greenfield/create-journal").exists()
+
+
+@pytest.mark.parametrize("publication", ["", "unsealed publication"])
+def test_complete_preconfirm_package_requires_publication_entry(tmp_path, publication):
+    transaction = _transaction(tmp_path)
+    with pytest.raises(ValueError, match="publication entry"):
+        greenfield_compiled_package_contract.require_complete_compiled_greenfield_package(
+            replace(transaction.prewrite_package, publication_entry_text=publication),
+            release_selector=transaction.release_selector,
+        )
+
+
 def test_shared_generation_does_not_approve_a_different_transaction(tmp_path):
     first = _transaction(tmp_path)
     second = replace(first, quality_manifest={**first.quality_manifest, "audit_note": "Separate reviewed transaction"})
@@ -146,7 +220,15 @@ def test_shared_generation_does_not_approve_a_different_transaction(tmp_path):
             repo_root=tmp_path, transaction_file=second_path, transaction_hash=second.transaction_hash, confirm=True,
         )
     assert write_sets.greenfield_managed_fingerprints(tmp_path) == before
-    assert greenfield_generation_state.active_generation_identity(tmp_path)["transaction_hash"] == first.transaction_hash
+    assert greenfield_generation_state.read_active_publication(tmp_path) == {
+        "write_set_hash": first.prewrite_package.repository_write_set["write_set_hash"],
+        "generation_manifest_sha256": hashlib.sha256(
+            first.prewrite_package.generation_manifest_text.encode("utf-8"),
+        ).hexdigest(),
+        "publication_sha256": hashlib.sha256(
+            first.prewrite_package.publication_entry_text.encode("utf-8"),
+        ).hexdigest(),
+    }
     assert not (tmp_path / ".odylith/runtime/greenfield/create-journal" / second.transaction_hash).exists()
     GreenfieldCommitJournal.pin_reviewed_generation(repo_root=tmp_path, transaction_hash=first.transaction_hash)
 
@@ -162,13 +244,18 @@ def test_abort_cannot_collect_another_transactions_noncurrent_historical_generat
 
     # Exercise collection against a noncurrent closed reference, independently of admission.
     later_write_set = write_sets.compile_greenfield_repository_write_set(source_root=tmp_path, staged_root=tmp_path)
+    later_manifest = generations.compile_greenfield_generation_manifest(later_write_set)
+    later_publication = greenfield_generation_state.compile_greenfield_publication_entry(
+        write_set_hash=later_write_set["write_set_hash"],
+        generation_manifest_sha256=hashlib.sha256(later_manifest.encode("utf-8")).hexdigest(),
+    )
     later = generations.materialize_immutable_greenfield_generation(
         repo_root=tmp_path, write_set=later_write_set,
-        manifest_text=generations.compile_greenfield_generation_manifest(later_write_set),
+        manifest_text=later_manifest,
     )
     generations.publish_greenfield_generation(
-        repo_root=tmp_path, generation=later, transaction_hash="c" * 64,
-        expected_active_identity=later_write_set["active_generation_precondition"],
+        repo_root=tmp_path, generation=later, publication_entry_text=later_publication,
+        write_set=later_write_set,
     )
     assert later.generation_root != historical.generation_root
     aborted = GreenfieldCommitJournal(

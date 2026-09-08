@@ -11,9 +11,58 @@ manifest. The durable commit journal binds the distinct confirmation hash to the
 write set and manifest digest, owns reviewed-history resolution, and protects
 shared historical generations during abort cleanup. Legacy generation layouts
 remain preserved and require explicit migration before new-runtime recovery.
-The JSON active pointer still owns current publication. Browser-entry replacement,
-initial baseline and immutable later-writer publication remain open under CB-305;
-this change does not establish all-reader atomicity or relax 60/90/120.
+Current source uses one presealed HTML entry for publication, with exact W,
+manifest and entry-byte custody. The journal owns admitted transaction approval;
+the publication store derives the predecessor from sealed W. Live shell writes
+use a separate working filename while immutable snapshots retain index.html.
+Completed first-run rendering activates a baseline before proposal authoring.
+Later writers recover interrupted creates, reject unexplained working drift,
+and publish immutable successors after successful readback. JSON authority and
+supersession-to-live fallback are removed. Explicit migration and interrupted
+activation proof in installed repositories remain open under CB-305. Supported
+doctor repair now validates arguments and restores only the exact missing shell
+before normal writer admission. Every writer locks before its publication-state
+read; bootstrap uses the same lock-owned activation phase. ProductCreate requires
+an active predecessor before preview and in the sealed commit contract, and direct
+compilation charges readiness verification to the existing latency budget.
+The existing shared repository read lock holds that baseline through deterministic
+staging, sealing and transaction verification; neither authoring nor review holds
+the lock. Pending-decision writes and CONFIRM retain their separate exclusive
+admission. A failed cooperating writer cannot enter the staging interval.
+The tested real Atlas/Radar crash transitions are coherent before recovery, but
+focused journal, activation, SIGKILL and carrier controls do not establish complete
+dashboard UX, clean installation or all-reader atomicity, and do not relax 60/90/120.
+Installed recovery and matrix proof must resolve active immutable bytes through
+the publication entry and prove exact transaction approval independently through
+the admitted journal. The entry must not acquire an approval field merely to
+preserve an obsolete proof fixture. The first frozen integrated rerun exposes
+sixteen install-proof and five baseline-fixture failures; it is diagnostic, not
+release acceptance. Runtime fixture correction passes seventeen focused checks;
+the two installed-proof owners now follow the publication/journal split and pass
+97 focused checks. Full integrated reruns and genuine clean installation remain
+required at that historical checkpoint; the subsequent unchanged 3,152-file tree
+passes 4,473 runtime tests and 1,111 install-unit tests, builds the full distribution
+and passes canonical clean-install/upgrade smoke. The smoke's unavailable-author
+control does not prove positive generation. Browser results retain 308 passes,
+four fixture failures and one skipped diagnostic case. Baseline activation and
+historical unactivated setup corrections now pass six Project and three focused
+Casebook/migration checks without relaxing admission. A settled full-browser rerun
+and current-simulator upgrade/recovery adjudication remain open. These checks do
+not establish native host eligibility, active-generation manual-edit reconciliation,
+complete installed activation recovery, model quality or consumer latency.
+The supported failed-upgrade path now retains the old working/published baseline:
+the install manager defers target-pin writes until activation smoke passes and
+recovers runtime/launcher on raised smoke errors. Eleven focused checks and nine
+lifecycle-simulator tests pass, including subsequent successful command admission.
+This closes that bounded source failure, not arbitrary crash or legacy migration.
+The later unchanged 3,153-file tree passes 4,473 runtime, 1,345 install
+unit/integration and 312 browser checks, with one skipped diagnostic fixture.
+Full distribution and canonical local-release smoke pass; installed readback
+confirms exact baseline identity and the corrected manager bytes. Root CLI's
+clarification fixture now proves unchanged activated publication/managed content;
+the actual migration-assessment gate remains open. These results qualify a
+development checkpoint, not native confirmation, semantic quality, complete
+consumer UX, legacy migration or the 60/90/120 contract.
 The frozen kernel revision passes 4,336 runtime tests and 1,106 install unit
 tests, with the final holdout explicitly excluded. Independent four-edge
 readback resolves the demonstrated ancestor-symlink defect. These checks do not

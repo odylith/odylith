@@ -12,6 +12,7 @@ import time
 from typing import Any, Mapping
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import GreenfieldClarificationRequired
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
@@ -353,6 +354,7 @@ def _compile_prompt_evidence_transaction(
         raise RuntimeError(
             "Greenfield proposal exhausted its shared time budget while reading evidence; no records were created."
         )
+    greenfield_generation_store.require_greenfield_working_generation(repo_root)
     provider_result = _greenfield_authoring_provider(
         repo_root=repo_root,
         profile_id=profile_id,

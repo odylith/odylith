@@ -149,6 +149,9 @@ def test_native_radar_dependency_topology_is_sealed_and_committed_without_rebuil
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, forward_references: bool,
 ) -> None:
     proposal = _proposal(tmp_path, monkeypatch, forward_references=forward_references)
+    from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
+
+    activate_greenfield_baseline_fixture(tmp_path)
     receipt = proposal.pop("_test_model_authoring_receipt")
     transaction = greenfield_proposals.compile_greenfield_create_transaction(
         repo_root=tmp_path, proposal=proposal, release_selector="0.0.1", proposal_ready=True,

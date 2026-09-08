@@ -72,6 +72,7 @@ raise SystemExit(cli.main(sys.argv[1:]))
 """
 
 GENERATION_OBSERVATION_SCRIPT = """
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -90,11 +91,20 @@ if transaction_payload.get("transaction_hash") != transaction_hash:
     raise RuntimeError("observed transaction hash differs from its sealed transaction")
 write_set = transaction_payload["prewrite_package"]["repository_write_set"]
 write_set_hash = str(write_set["write_set_hash"])
+package = transaction_payload["prewrite_package"]
+manifest_text = package["generation_manifest_text"]
+greenfield_generation_store.require_sealed_greenfield_generation_manifest(manifest_text, write_set=write_set)
+publication = greenfield_generation_state.require_sealed_greenfield_publication_entry(
+    package["publication_entry_text"],
+    write_set_hash=write_set_hash,
+    generation_manifest_sha256=hashlib.sha256(manifest_text.encode("utf-8")).hexdigest(),
+)
 identity = greenfield_generation_state.active_generation_identity(root)
 payload = {
     "active_identity": identity,
     "active_pin_status": "none",
     "active_pin_transaction_hash": "",
+    "transaction_publication_sha256": publication["publication_sha256"],
     "transaction_generation_status": "missing",
     "transaction_generation_manifest_sha256": "",
     "transaction_generation_write_set_hash": "",
@@ -119,16 +129,26 @@ else:
     payload["transaction_generation_write_set_hash"] = generation.write_set_hash
     payload["transaction_generation_readback_status"] = "passed"
 if identity.get("status") == greenfield_generation_state.ACTIVE:
-    active = GreenfieldCommitJournal.pin_reviewed_generation(
-        repo_root=root, transaction_hash=identity["transaction_hash"],
-    )
+    active = greenfield_generation_store.pin_active_greenfield_generation(root)
     if (
         active.write_set_hash != identity.get("write_set_hash")
         or active.manifest_sha256 != identity.get("generation_manifest_sha256")
     ):
-        raise RuntimeError("active generation differs from its transaction receipt")
+        raise RuntimeError("active generation differs from its publication")
     payload["active_pin_status"] = "active"
-    payload["active_pin_transaction_hash"] = identity["transaction_hash"]
+    if active.write_set_hash == write_set_hash:
+        reviewed = GreenfieldCommitJournal.pin_reviewed_generation(
+            repo_root=root, transaction_hash=transaction_hash,
+        )
+        journal = GreenfieldCommitJournal(repo_root=root, transaction_hash=transaction_hash, write_set=write_set)
+        if (
+            not journal.publication_is_active()
+            or identity != {"status": greenfield_generation_state.ACTIVE, **publication}
+            or reviewed.write_set_hash != active.write_set_hash
+            or reviewed.manifest_sha256 != active.manifest_sha256
+        ):
+            raise RuntimeError("active publication differs from its admitted transaction receipt")
+        payload["active_pin_transaction_hash"] = transaction_hash
 print(json.dumps(payload, sort_keys=True))
 """
 
@@ -184,8 +204,12 @@ def generation_observation_issues(facts: Mapping[str, Any]) -> list[str]:
             issues.append(f"installed {label} published generation failed sealed after-image readback")
         if (
             observation
-            and str(active_identity.get("transaction_hash") or "")
-            != str(observation.get("active_pin_transaction_hash") or "")
+            and (
+                not observation.get("active_pin_transaction_hash")
+                or active_identity.get("write_set_hash") != observation.get("transaction_generation_write_set_hash")
+                or active_identity.get("generation_manifest_sha256") != observation.get("transaction_generation_manifest_sha256")
+                or active_identity.get("publication_sha256") != observation.get("transaction_publication_sha256")
+            )
         ):
             issues.append(f"installed {label} active pointer and canonical read disagree")
     return issues
@@ -237,14 +261,15 @@ def require_published_generation_boundary(
     identity = _mapping(observation.get("active_identity"))
     if str(identity.get("status") or "") != "active":
         raise RuntimeError(f"installed {label} did not publish an active-generation pointer")
-    if str(identity.get("transaction_hash") or "") != transaction_hash:
-        raise RuntimeError(f"installed {label} active pointer identifies the wrong transaction")
     if str(identity.get("write_set_hash") or "") != write_set_hash:
         raise RuntimeError(f"installed {label} active pointer identifies the wrong write set")
     if observation.get("active_pin_status") != "active":
         raise RuntimeError(f"installed {label} did not expose the active canonical generation")
     if str(observation.get("active_pin_transaction_hash") or "") != transaction_hash:
         raise RuntimeError(f"installed {label} canonical read identifies the wrong transaction")
+    publication = str(observation.get("transaction_publication_sha256") or "")
+    if not publication or publication != str(identity.get("publication_sha256") or ""):
+        raise RuntimeError(f"installed {label} active entry differs from the sealed publication")
     if observation.get("transaction_generation_status") != "present":
         raise RuntimeError(f"installed {label} published generation is missing")
     if observation.get("transaction_generation_readback_status") != "passed":

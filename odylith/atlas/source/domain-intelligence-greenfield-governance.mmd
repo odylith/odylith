@@ -2,11 +2,13 @@ flowchart TB
     subgraph evidence_lane["Evidence and interpretation"]
       direction LR
       request["Greenfield request and EDIT evidence<br/>Untrusted input with exact source custody"]
+      baseline["Complete installed baseline<br/>Immutable view exists before proposal admission"]
       model_pass["One complete source and design author<br/>Pinned author inside shared model deadline"]
       typed_graph["Canonical source facts and provisional design<br/>Source prerequisites; proposed first run<br/>Distinct authority; one relation hash"]
       ambiguity{"Material meaning complete?"}
       clarify["One focused clarification<br/>No transaction or governed write"]
       request --> model_pass --> typed_graph --> ambiguity
+      baseline -. "required" .-> model_pass
       ambiguity -- "no" --> clarify
     end
 
@@ -16,7 +18,7 @@ flowchart TB
       review["Read-only complete-candidate admission<br/>Source meaning and proposed choices remain distinct<br/>One review; at most 20 seconds and remaining time"]
       denied["No admitted package<br/>No retry, repair cascade or governed write"]
       projections["Deterministic source and design projections<br/>4–5 Radar, 4–5 Registry, five Atlas views<br/>Exact release membership and dependency-ready task"]
-      staged_surfaces["Temporary-root surface rendering<br/>Compass local facts and exact cache remain available<br/>No detached narration queue or worker"]
+      staged_surfaces["Temporary-root surface rendering<br/>Shared read lock holds the validated baseline<br/>No detached narration queue or worker"]
       quality["Pre-confirm complete-package gates<br/>Two-role receipt bound to source and intent<br/>Independent release qualification remains open"]
       timing["Proposal timing gate<br/>Standard at 60 seconds<br/>Rescue at 90; deep at 120"]
       custody --> review
@@ -28,12 +30,16 @@ flowchart TB
       direction LR
       write_set["Sealed repository write set<br/>Complete after-image and preconditions<br/>Write-set hash addresses the generation"]
       generation_manifest["Pre-confirm generation manifest<br/>Exact bytes bound to the write set<br/>No enclosing transaction hash"]
-      sealed["Sealed ProductCreateTransaction<br/>Write set and exact manifest bytes<br/>Distinct confirmation hash"]
+      entry["Sole sealed HTML publication entry<br/>Write-set and manifest identity<br/>No second JSON selector"]
+      sealed["Sealed ProductCreateTransaction<br/>Write set, manifest and entry bytes<br/>Verify distinct confirmation hash, then release read lock"]
       decision["One operator decision<br/>CONFIRM, EDIT, or REJECT the hash<br/>No synthetic regeneration-as-review command"]
       confirm["Commit-only CONFIRM<br/>Verify and write sealed bytes;<br/>no model, parser, generation, or repair"]
-      publish["Copy sealed generation and publish pointer<br/>Journal binds confirmation hash to generation<br/>No universal atomic reader claim"]
+      publish["Publish exact sealed HTML entry<br/>Journal retains admitted transaction evidence<br/>Readers pin immutable shell and child resources"]
+      later["Successful later update<br/>Recover creates and verify working bytes first<br/>Publish a complete immutable successor"]
       recovery["Recovery boundary<br/>Rollback snapshot, journal,<br/>interrupt cleanup, and safe retry"]
-      write_set --> generation_manifest --> sealed --> decision --> confirm --> publish
+      write_set --> generation_manifest --> entry --> sealed --> decision --> confirm --> publish
+      publish --> later
+      later -. "fresh predecessor-bound transition" .-> publish
       confirm -. "failure or interruption" .-> recovery
     end
 
@@ -60,9 +66,9 @@ flowchart TB
     classDef governance fill:#F5F3FF,stroke:#DDD6FE,color:#132033,stroke-width:1px;
     classDef constraint fill:#FFF8E6,stroke:#F6D98B,color:#132033,stroke-width:1px;
     classDef invalid fill:#FFF1F0,stroke:#F7B4AE,color:#132033,stroke-width:1px;
-    class request,model_pass,typed_graph primary;
+    class request,baseline,model_pass,typed_graph primary;
     class custody,review,projections,staged_surfaces,quality,timing execution;
-    class write_set,generation_manifest,sealed,decision,confirm,publish,recovery,owners,evaluator,acceptance,confidence,retained governance;
+    class write_set,generation_manifest,entry,sealed,decision,confirm,publish,later,recovery,owners,evaluator,acceptance,confidence,retained governance;
     class ambiguity,drift constraint;
     class clarify,denied,replace invalid;
 

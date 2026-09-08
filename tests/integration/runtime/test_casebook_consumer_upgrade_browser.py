@@ -12,6 +12,7 @@ from odylith.runtime.governance import sync_workstream_artifacts
 from tests.integration.install.simulator import InstallLifecycleSimulator
 from tests.integration.runtime.surface_browser_test_support import (
     _assert_clean_page,
+    _failure_screenshot_path,
     _new_page,
     _static_server,
     browser_context,
@@ -121,7 +122,9 @@ def test_dirty_consumer_upgrade_normalizes_casebook_and_browser_stale_url_state(
     _route_git_subprocess(monkeypatch, sim)
     sim.register_release("0.1.14")
 
-    assert sim.install("0.1.13") == 0
+    # Historical 0.1.13 had no publication entry. Today's install CLI would
+    # activate P and turn these legacy edits into unrelated working-copy drift.
+    sim.seed_historical_unactivated_install("0.1.13")
     _commit_installed_baseline(sim.repo_root)
     deploy_bug, infra_bug = _write_bad_legacy_casebook_records(sim.repo_root)
     (sim.repo_root / "consumer-notes.md").write_text("local work must survive upgrade\n", encoding="utf-8")
@@ -171,6 +174,8 @@ def test_dirty_consumer_upgrade_normalizes_casebook_and_browser_stale_url_state(
             wait_until="domcontentloaded",
         )
         assert response is not None and response.ok
+        page.locator("#upgradeSpotlightDismiss").click()
+        page.locator("#shellUpgradeSpotlight").wait_for(state="hidden", timeout=15000)
         casebook = page.frame_locator("#frame-casebook")
         casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
         casebook.locator('button.bug-row.active[data-bug="CB-998"]').wait_for(timeout=15000)
@@ -184,6 +189,10 @@ def test_dirty_consumer_upgrade_normalizes_casebook_and_browser_stale_url_state(
         )
         assert facts["Status"] == "Fixed pending release"
         assert facts["Type"] == "Deployment"
+        screenshot = _failure_screenshot_path("historical-dirty-upgrade-stale-status-recovery")
+        if screenshot is not None:
+            screenshot.parent.mkdir(parents=True, exist_ok=True)
+            page.screenshot(path=str(screenshot), full_page=True)
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
     report_payload = json.loads(_report_path.read_text(encoding="utf-8"))

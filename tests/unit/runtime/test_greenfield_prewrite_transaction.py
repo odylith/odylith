@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -12,6 +13,7 @@ from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_create_commit
+from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import proposal_memory
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
@@ -27,6 +29,7 @@ from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_author
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.project_intelligence.greenfield import build_greenfield_payload
 from tests.unit.runtime.greenfield_authored_proposal_fixtures import _canonical_model_authored_greenfield_fixture
+from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import commit_precompiled_greenfield_proposal
 from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_transaction
@@ -140,6 +143,15 @@ def test_greenfield_prewrite_builds_complete_authored_surface_package(
         "release_assignment_dry_run": True,
     }
     assert prewrite.package.surface_refresh_preview["status"] == "passed"
+    publication = prewrite.package.publication_entry_text
+    identity = greenfield_generation_state.require_sealed_greenfield_publication_entry(
+        publication,
+        write_set_hash=prewrite.package.repository_write_set["write_set_hash"],
+        generation_manifest_sha256=hashlib.sha256(
+            prewrite.package.generation_manifest_text.encode("utf-8"),
+        ).hexdigest(),
+    )
+    assert identity["publication_sha256"] == hashlib.sha256(publication.encode("utf-8")).hexdigest()
     assert prewrite.package.surface_refresh_preview["surfaces"] == [
         "radar",
         "registry",
@@ -854,6 +866,7 @@ def test_greenfield_accepted_memory_rebases_staged_workstream_paths(tmp_path: Pa
 def test_greenfield_apply_blocks_bad_rendered_specs_before_governed_writes(tmp_path: Path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
     proposal = _proposal(tmp_path)
+    activate_greenfield_baseline_fixture(tmp_path)
     _force_bad_rendered_specs(monkeypatch)
 
     with pytest.raises(ValueError, match="could not prepare a creation-ready package"):
@@ -871,6 +884,7 @@ def test_greenfield_apply_blocks_bad_rendered_specs_before_governed_writes(tmp_p
 
 def test_greenfield_apply_commits_prewrite_atlas_source_not_regenerated_drift(tmp_path: Path, monkeypatch) -> None:
     proposal = _proposal(tmp_path)
+    activate_greenfield_baseline_fixture(tmp_path)
     _disable_refreshes(monkeypatch)
     transaction = greenfield_proposals.compile_greenfield_create_transaction(
         repo_root=tmp_path,
@@ -919,6 +933,7 @@ def test_greenfield_commit_does_not_rematerialize_component_specs_after_confirma
     monkeypatch,
 ) -> None:
     proposal = _proposal(tmp_path)
+    activate_greenfield_baseline_fixture(tmp_path)
     _disable_refreshes(monkeypatch)
     transaction = greenfield_proposals.compile_greenfield_create_transaction(
         repo_root=tmp_path,
@@ -959,6 +974,7 @@ def test_greenfield_commit_does_not_regenerate_project_brief_after_confirmation(
     monkeypatch,
 ) -> None:
     proposal = _proposal(tmp_path)
+    activate_greenfield_baseline_fixture(tmp_path)
     _disable_refreshes(monkeypatch)
     transaction = greenfield_proposals.compile_greenfield_create_transaction(
         repo_root=tmp_path,
@@ -994,6 +1010,7 @@ def test_greenfield_commit_does_not_regenerate_project_brief_after_confirmation(
 
 def test_greenfield_prewrite_failure_does_not_commit_governed_records(tmp_path: Path, monkeypatch) -> None:
     proposal = _proposal(tmp_path)
+    activate_greenfield_baseline_fixture(tmp_path)
     _force_bad_rendered_specs(monkeypatch)
 
     with pytest.raises(ValueError, match="could not prepare a creation-ready package"):
@@ -1011,6 +1028,7 @@ def test_greenfield_prewrite_failure_does_not_commit_governed_records(tmp_path: 
 
 def test_greenfield_apply_blocks_bad_accepted_project_preview_before_governed_writes(tmp_path: Path, monkeypatch) -> None:
     proposal = _proposal(tmp_path)
+    activate_greenfield_baseline_fixture(tmp_path)
     monkeypatch.setattr(
         greenfield_apply_prewrite,
         "preview_accepted_project_memory",
@@ -1032,6 +1050,7 @@ def test_greenfield_apply_blocks_bad_accepted_project_preview_before_governed_wr
 
 def test_greenfield_commit_does_not_rebuild_release_target_after_confirmation(tmp_path: Path, monkeypatch) -> None:
     proposal = _proposal(tmp_path)
+    activate_greenfield_baseline_fixture(tmp_path)
     _disable_refreshes(monkeypatch)
     original = greenfield_apply_prewrite.release_planning_authoring.ensure_release_selector
     preconfirm_calls: list[bool] = []
@@ -1067,8 +1086,9 @@ def test_greenfield_commit_does_not_rebuild_release_target_after_confirmation(tm
     assert preconfirm_calls
 
 
-def test_greenfield_apply_bootstraps_target_repo_only_after_package_gate(tmp_path: Path, monkeypatch) -> None:
+def test_greenfield_apply_publishes_project_over_prepared_baseline_after_package_gate(tmp_path: Path, monkeypatch) -> None:
     proposal = _proposal(tmp_path)
+    activate_greenfield_baseline_fixture(tmp_path)
     _disable_refreshes(monkeypatch)
 
     result = commit_precompiled_greenfield_proposal(

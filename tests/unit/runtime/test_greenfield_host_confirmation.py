@@ -14,10 +14,12 @@ from odylith.runtime.domain_intelligence import greenfield_authored_semantics
 from odylith.runtime.domain_intelligence import greenfield_commit_transaction
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_create_transaction
+from odylith.runtime.domain_intelligence import greenfield_managed_mutation_boundary
 from odylith.runtime.domain_intelligence import greenfield_model_intent_authoring
 from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store
 from odylith.runtime.domain_intelligence import greenfield_product_intent_envelope
 from odylith.runtime.domain_intelligence import greenfield_repository_lock
+from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence.greenfield_commit_transaction import (
     _POSTCONFIRM_RUNTIME_SOURCE_FILES,
 )
@@ -350,6 +352,8 @@ def test_edit_requests_new_evidence_without_mutating_staging(tmp_path: Path) -> 
 
 def test_reject_removes_only_terminal_staging(tmp_path: Path) -> None:
     transaction, receipt, transaction_hash = _stage_pending_transaction(tmp_path)
+    before = greenfield_repository_write_set.greenfield_managed_fingerprints(tmp_path)
+    publication = (tmp_path / "odylith/index.html").read_bytes()
 
     decision = greenfield_host_confirmation.maybe_handle_greenfield_decision(
         repo_root=tmp_path,
@@ -361,7 +365,8 @@ def test_reject_removes_only_terminal_staging(tmp_path: Path) -> None:
     assert decision["status"] == "ABORTED"
     assert not transaction.exists()
     assert not receipt.exists()
-    assert not (tmp_path / "odylith").exists()
+    assert greenfield_repository_write_set.greenfield_managed_fingerprints(tmp_path) == before
+    assert (tmp_path / "odylith/index.html").read_bytes() == publication
 
 
 def test_reject_preserves_staging_when_recovery_evidence_exists(tmp_path: Path) -> None:
@@ -454,8 +459,17 @@ def test_hash_bound_confirm_cannot_be_retargeted_by_a_newer_pending_proposal(
 ) -> None:
     first_path, _first_receipt, first_hash = _stage_pending_transaction(tmp_path)
     existing = tmp_path / "odylith/radar/source/operator-change.md"
-    existing.parent.mkdir(parents=True, exist_ok=True)
-    existing.write_text("different preconfirm evidence\n", encoding="utf-8")
+
+    def publish_operator_change() -> int:
+        existing.parent.mkdir(parents=True, exist_ok=True)
+        existing.write_text("different preconfirm evidence\n", encoding="utf-8")
+        return 0
+
+    assert greenfield_managed_mutation_boundary.run_with_greenfield_managed_mutation_boundary(
+        repo_root=tmp_path,
+        command_tokens=("radar", "refresh"),
+        operation=publish_operator_change,
+    ) == 0
     second_path, _second_receipt, second_hash = _stage_pending_transaction(tmp_path)
     assert first_hash != second_hash
     calls: list[dict[str, object]] = []

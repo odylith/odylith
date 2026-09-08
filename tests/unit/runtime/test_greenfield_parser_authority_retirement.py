@@ -149,11 +149,13 @@ def test_public_greenfield_imports_cannot_load_retired_parser_authority() -> Non
     probe = """
 import sys
 import tempfile
+from pathlib import Path
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_product_intent_envelope
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_proposals_cli
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import combined_prompt_evidence_source
+from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 from tests.unit.runtime.greenfield_model_authoring_fixtures import StructuredAuthoringProvider, AdmittingReviewProvider
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
@@ -164,6 +166,7 @@ greenfield_proposals_cli._greenfield_authoring_provider = (
     lambda **kwargs: (AdmittingReviewProvider() if kwargs.get("request_role") == "candidate_review" else provider, "test-model", "low")
 )
 with tempfile.TemporaryDirectory(prefix="greenfield-parser-retirement-") as repo_root:
+    activate_greenfield_baseline_fixture(Path(repo_root))
     result = greenfield_proposals_cli.main(
         ["propose", "--repo-root", repo_root, "--prompt", source, "--format", "json"]
     )

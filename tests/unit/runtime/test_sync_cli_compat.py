@@ -6,6 +6,7 @@ from types import SimpleNamespace
 from odylith.runtime.context_engine import odylith_context_engine
 from odylith.runtime.governance import agent_governance_intelligence as governance
 from odylith.runtime.governance import dashboard_refresh_contract
+from odylith.runtime.governance import sync_generated_outputs
 from odylith.runtime.governance import sync_session
 from odylith.runtime.governance import sync_surface_render_batch
 from odylith.runtime.governance import sync_workstream_artifacts
@@ -664,7 +665,7 @@ def test_build_sync_execution_plan_defers_runtime_backed_renders_until_after_del
     assert module_step_indexes["odylith.runtime.governance.delivery_intelligence_refresh"] < batch_index
     assert batch_step.action is not None
     for surface in ("compass", "radar", "registry", "casebook", "tooling_shell"):
-        for output in sync_workstream_artifacts._surface_render_outputs(surface):  # noqa: SLF001
+        for output in sync_generated_outputs.surface_render_outputs(surface, repo_root=tmp_path):
             assert output in batch_step.paths
 
 

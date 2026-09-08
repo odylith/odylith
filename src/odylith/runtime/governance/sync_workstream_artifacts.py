@@ -1136,36 +1136,6 @@ def _delivery_intelligence_command(*, repo_root: Path, check_only: bool) -> tupl
     return tuple(command)
 
 
-def _surface_render_outputs(surface: str) -> tuple[str, ...]:
-    return {
-        "tooling_shell": ("odylith/index.html", "odylith/tooling-payload.v1.js", "odylith/tooling-app.v1.js"),
-        "radar": (
-            "odylith/radar/radar.html",
-            "odylith/radar/backlog-payload.v1.js",
-            "odylith/radar/backlog-app.v1.js",
-            "odylith/radar/traceability-graph.v1.json",
-        ),
-        "compass": (
-            "odylith/compass/compass.html",
-            "odylith/compass/compass-payload.v1.js",
-            "odylith/compass/compass-app.v1.js",
-            "odylith/compass/compass-style-base.v1.css",
-            "odylith/compass/compass-style-execution-waves.v1.css",
-            "odylith/compass/compass-style-surface.v1.css",
-            "odylith/compass/compass-shared.v1.js",
-            "odylith/compass/compass-state.v1.js",
-            "odylith/compass/compass-summary.v1.js",
-            "odylith/compass/compass-timeline.v1.js",
-            "odylith/compass/compass-waves.v1.js",
-            "odylith/compass/compass-workstreams.v1.js",
-            "odylith/compass/compass-ui-runtime.v1.js",
-        ),
-        "atlas": ("odylith/atlas/atlas.html", "odylith/atlas/mermaid-payload.v1.js", "odylith/atlas/mermaid-app.v1.js"),
-        "registry": ("odylith/registry/registry.html", "odylith/registry/registry-payload.v1.js", "odylith/registry/registry-app.v1.js"),
-        "casebook": ("odylith/casebook/casebook.html", "odylith/casebook/casebook-payload.v1.js", "odylith/casebook/casebook-app.v1.js"),
-    }.get(surface, ())
-
-
 def _runtime_retry_command(command: Sequence[str]) -> tuple[str, ...]:
     return _replace_runtime_mode_args(command, runtime_mode="standalone")
 
@@ -1235,7 +1205,7 @@ def _casebook_render_step(
         command=command,
         standalone_command=_runtime_retry_command(command),
         mutation_classes=("generated_surfaces",),
-        paths=_surface_render_outputs("casebook"),
+        paths=sync_generated_outputs.surface_render_outputs("casebook", repo_root=repo_root),
         next_command_on_failure=next_command_on_failure,
         timeout_seconds=_DASHBOARD_REFRESH_TIMEOUT_SECONDS,
     )
@@ -1379,7 +1349,7 @@ def _dashboard_surface_steps(
                     normalized_runtime_mode=normalized_runtime_mode,
                 ),
                 mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("compass"),
+                paths=sync_generated_outputs.surface_render_outputs("compass", repo_root=repo_root),
                 next_command_on_failure=dashboard_refresh_contract.dashboard_refresh_failure_command(
                     surface=surface,
                 ),
@@ -1413,7 +1383,7 @@ def _dashboard_surface_steps(
                 command=command,
                 standalone_command=_runtime_retry_command(command),
                 mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("radar"),
+                paths=sync_generated_outputs.surface_render_outputs("radar", repo_root=repo_root),
                 next_command_on_failure=refresh_command,
                 timeout_seconds=_DASHBOARD_REFRESH_TIMEOUT_SECONDS,
             )
@@ -1425,7 +1395,7 @@ def _dashboard_surface_steps(
                 "Render Atlas from the current Mermaid catalog state.",
                 surface=surface,
                 mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("atlas"),
+                paths=sync_generated_outputs.surface_render_outputs("atlas", repo_root=repo_root),
                 action=lambda: render_mermaid_catalog_refresh.main(
                     [
                         "--repo-root",
@@ -1455,7 +1425,7 @@ def _dashboard_surface_steps(
                 command=command,
                 standalone_command=_runtime_retry_command(command),
                 mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("registry"),
+                paths=sync_generated_outputs.surface_render_outputs("registry", repo_root=repo_root),
                 next_command_on_failure=refresh_command,
                 timeout_seconds=_DASHBOARD_REFRESH_TIMEOUT_SECONDS,
             )
@@ -1494,7 +1464,7 @@ def _dashboard_surface_steps(
                 command=command,
                 standalone_command=_runtime_retry_command(command),
                 mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("tooling_shell"),
+                paths=sync_generated_outputs.surface_render_outputs("tooling_shell", repo_root=repo_root),
                 next_command_on_failure=display_command("dashboard", "refresh", "--repo-root", ".", "--surfaces", "shell"),
                 timeout_seconds=_DASHBOARD_REFRESH_TIMEOUT_SECONDS,
             )
@@ -1833,7 +1803,7 @@ def _run_surface_worker(
     try:
         if surface == "radar":
             _normalize_radar_source_before_surface_refresh(repo_root=repo_root)
-        outputs = _surface_render_outputs(surface)
+        outputs = sync_generated_outputs.surface_render_outputs(surface, repo_root=repo_root)
         if force:
             cache_hit = False
             cache_details = {"force": True}
@@ -2085,17 +2055,17 @@ def refresh_dashboard_surfaces(
     return 0
 
 
-def _sync_surface_batch_outputs(surfaces: Sequence[str]) -> tuple[str, ...]:
+def _sync_surface_batch_outputs(surfaces: Sequence[str], *, repo_root: Path) -> tuple[str, ...]:
     return sync_surface_render_batch.sync_surface_batch_outputs(
         surfaces=surfaces,
-        surface_render_outputs=_surface_render_outputs,
+        surface_render_outputs=lambda surface: sync_generated_outputs.surface_render_outputs(surface, repo_root=repo_root),
     )
 
 
-def _sync_surface_batch_runtime() -> sync_surface_render_batch.SyncSurfaceBatchRuntime:
+def _sync_surface_batch_runtime(*, repo_root: Path) -> sync_surface_render_batch.SyncSurfaceBatchRuntime:
     return sync_surface_render_batch.SyncSurfaceBatchRuntime(
         normalize_dashboard_surfaces=normalize_dashboard_surfaces,
-        surface_render_outputs=_surface_render_outputs,
+        surface_render_outputs=lambda surface: sync_generated_outputs.surface_render_outputs(surface, repo_root=repo_root),
         dashboard_surface_steps=_dashboard_surface_steps,
         execute_dashboard_refresh_surface=_execute_dashboard_refresh_surface,
         use_runtime_fast_path=_use_runtime_fast_path,
@@ -2113,7 +2083,7 @@ def _run_sync_surface_render_batch(
     runtime_mode: str,
 ) -> int:
     return sync_surface_render_batch.run_sync_surface_render_batch(
-        runtime=_sync_surface_batch_runtime(),
+        runtime=_sync_surface_batch_runtime(repo_root=repo_root),
         repo_root=repo_root,
         surfaces=surfaces,
         runtime_mode=runtime_mode,
@@ -2432,7 +2402,7 @@ def build_sync_execution_plan(
                         runtime_mode=runtime_mode,
                     ),
                     mutation_classes=("generated_surfaces",),
-                    paths=_surface_render_outputs("atlas"),
+                    paths=sync_generated_outputs.surface_render_outputs("atlas", repo_root=repo_root),
                     next_command_on_failure=display_command("atlas", "render", "--repo-root", ".", "--fail-on-stale"),
                 ),
             ]
@@ -2484,7 +2454,7 @@ def build_sync_execution_plan(
                     runtime_mode=runtime_mode,
                 ),
                 mutation_classes=("generated_surfaces",),
-                paths=_sync_surface_batch_outputs(sync_surface_batch),
+                paths=_sync_surface_batch_outputs(sync_surface_batch, repo_root=repo_root),
                 change_watch_paths=("odylith/radar/traceability-graph.v1.json",),
                 next_command_on_failure=sync_failure_command,
             )
@@ -2503,7 +2473,7 @@ def build_sync_execution_plan(
                         runtime_mode,
                     ]
                 ),
-                paths=_surface_render_outputs("atlas"),
+                paths=sync_generated_outputs.surface_render_outputs("atlas", repo_root=repo_root),
                 next_command_on_failure=sync_failure_command,
             )
         )
@@ -2519,7 +2489,7 @@ def build_sync_execution_plan(
                     str(repo_root),
                     *_runtime_args(runtime_mode),
                 ),
-                paths=_surface_render_outputs("compass"),
+                paths=sync_generated_outputs.surface_render_outputs("compass", repo_root=repo_root),
                 next_command_on_failure=sync_failure_command,
             )
         )
@@ -2535,7 +2505,7 @@ def build_sync_execution_plan(
                     str(repo_root),
                     *_runtime_args(runtime_mode),
                 ),
-                paths=_surface_render_outputs("radar"),
+                paths=sync_generated_outputs.surface_render_outputs("radar", repo_root=repo_root),
                 next_command_on_failure=sync_failure_command,
             )
         )
@@ -2551,7 +2521,7 @@ def build_sync_execution_plan(
                     str(repo_root),
                     *_runtime_args(runtime_mode),
                 ),
-                paths=_surface_render_outputs("registry"),
+                paths=sync_generated_outputs.surface_render_outputs("registry", repo_root=repo_root),
                 next_command_on_failure=sync_failure_command,
             )
         )
@@ -2567,7 +2537,7 @@ def build_sync_execution_plan(
                     str(repo_root),
                     *_runtime_args(runtime_mode),
                 ),
-                paths=_surface_render_outputs("tooling_shell"),
+                paths=sync_generated_outputs.surface_render_outputs("tooling_shell", repo_root=repo_root),
                 next_command_on_failure=sync_failure_command,
             )
         )
@@ -2608,7 +2578,7 @@ def build_sync_execution_plan(
                         runtime_mode=runtime_mode,
                     ),
                     mutation_classes=("generated_surfaces",),
-                    paths=_surface_render_outputs("atlas"),
+                    paths=sync_generated_outputs.surface_render_outputs("atlas", repo_root=repo_root),
                     next_command_on_failure=sync_failure_command,
                 ),
             ]

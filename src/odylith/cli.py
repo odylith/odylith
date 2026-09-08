@@ -603,30 +603,40 @@ def _bootstrap_first_run_surfaces(
     # On a fresh install, jump straight to the full sync instead of printing a
     # transient missing-surface failure that the sync is about to resolve.
     if any(path != shell_path for path in missing_surfaces):
-        return _run_first_run_full_sync(
+        render_rc = _run_first_run_full_sync(
             repo_root=resolved_repo_root,
             proceed_with_bootstrap_overlap=proceed_with_bootstrap_overlap,
             sync_workstream_artifacts=sync_workstream_artifacts,
             compact=compact,
         )
-    render_rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
-        repo_root=resolved_repo_root,
-        surfaces=("tooling_shell",),
-        runtime_mode="auto",
-        atlas_sync=False,
-    )
-    remaining_missing = _missing_first_run_surfaces(repo_root=resolved_repo_root)
-    if remaining_missing:
-        full_sync_rc = _run_first_run_full_sync(
+    else:
+        render_rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
             repo_root=resolved_repo_root,
-            proceed_with_bootstrap_overlap=proceed_with_bootstrap_overlap,
-            sync_workstream_artifacts=sync_workstream_artifacts,
-            compact=compact,
+            surfaces=("tooling_shell",),
+            runtime_mode="auto",
+            atlas_sync=False,
         )
-        if full_sync_rc == 0:
-            return 0
-        return full_sync_rc
-    return render_rc
+        if _missing_first_run_surfaces(repo_root=resolved_repo_root):
+            render_rc = _run_first_run_full_sync(
+                repo_root=resolved_repo_root,
+                proceed_with_bootstrap_overlap=proceed_with_bootstrap_overlap,
+                sync_workstream_artifacts=sync_workstream_artifacts,
+                compact=compact,
+            )
+    if render_rc != 0 or _missing_first_run_surfaces(repo_root=resolved_repo_root):
+        return render_rc or 1
+    from odylith.runtime.domain_intelligence import greenfield_create_baseline, greenfield_generation_state
+
+    try:
+        # Protected refreshes publish through their outer managed-writer lock.
+        if greenfield_generation_state.read_active_publication(resolved_repo_root) is None:
+            greenfield_create_baseline.activate_completed_greenfield_baseline_locked(
+                repo_root=resolved_repo_root, required_surface_outputs=_FIRST_RUN_SURFACE_OUTPUTS,
+            )
+    except (OSError, RuntimeError, ValueError) as exc:
+        print(f"Odylith baseline activation needs recovery: {exc}", file=sys.stderr)
+        return 1
+    return 0
 
 
 def _is_first_install(*, repo_root: Path) -> bool:
@@ -4110,10 +4120,29 @@ def _dispatch_main(argv: list[str] | None = None) -> int:
 def main(argv: list[str] | None = None) -> int:
     tokens = [str(token) for token in (argv or sys.argv[1:])]
     repo_root, _forwarded = _extract_repo_root(tokens[1:] if tokens else ())
+    admission_tokens = tokens
     try:
+        if tokens[:1] == ["doctor"]:
+            args = build_parser().parse_args(tokens)
+            repo_root = args.repo_root
+            admission_tokens = ["doctor", "--repair"] if args.repair else ["doctor"]
+            if args.repair:
+                from odylith.runtime.domain_intelligence import greenfield_create_baseline, greenfield_repository_lock
+
+                try:
+                    greenfield_create_baseline.recover_published_greenfield_baseline(
+                        repo_root=Path(repo_root), required_surface_outputs=_FIRST_RUN_SURFACE_OUTPUTS,
+                    )
+                except greenfield_repository_lock.GreenfieldRepositoryBusyError as exc:
+                    raise greenfield_managed_mutation_boundary.GreenfieldManagedMutationBusyError(
+                        "BUSY_NO_WRITE: another governed repository transaction is in progress"
+                    ) from exc
+                except (OSError, RuntimeError, ValueError) as exc:
+                    print(f"Odylith baseline recovery refused: {exc}", file=sys.stderr)
+                    return 1
         return greenfield_managed_mutation_boundary.run_with_greenfield_managed_mutation_boundary(
             repo_root=Path(repo_root),
-            command_tokens=tokens,
+            command_tokens=admission_tokens,
             operation=lambda: _dispatch_main(tokens),
         )
     except greenfield_managed_mutation_boundary.GreenfieldManagedMutationBusyError as exc:

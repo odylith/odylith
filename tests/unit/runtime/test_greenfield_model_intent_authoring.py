@@ -15,6 +15,7 @@ from odylith.runtime.domain_intelligence import (
     greenfield_preconfirm_engine,
     greenfield_proposals,
     greenfield_proposals_cli,
+    greenfield_repository_write_set,
     greenfield_traceability,
 )
 from odylith.runtime.domain_intelligence import greenfield_preconfirm_handoff_quality
@@ -54,6 +55,7 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     clarification_response,
     model_event_rows,
 )
+from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 from tests.unit.runtime.test_greenfield_model_path_custody import (
     _AUTHORED_FIRST_PATH,
     _LIST_FIELDS,
@@ -371,6 +373,10 @@ def test_model_authored_multi_component_events_bind_to_exact_source_owned_system
 
 
 def test_model_authored_project_seals_one_source_and_design_package(tmp_path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    from tests.unit.runtime.test_greenfield_baseline_activation import _activate, _complete
+
+    _complete(tmp_path)
+    _activate(tmp_path)
     source = _source()
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
     provider = StructuredAuthoringProvider(_response(staged_evidence))
@@ -455,6 +461,8 @@ def test_public_propose_cli_uses_one_author_and_review_and_returns_hash_bound_ch
     monkeypatch,
     capsys,
 ) -> None:  # type: ignore[no-untyped-def]
+    activate_greenfield_baseline_fixture(tmp_path)
+    baseline = greenfield_repository_write_set.greenfield_managed_fingerprints(tmp_path)
     source = _source()
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
     provider = StructuredAuthoringProvider(_response(staged_evidence))
@@ -481,7 +489,7 @@ def test_public_propose_cli_uses_one_author_and_review_and_returns_hash_bound_ch
         "EDIT",
         "REJECT",
     ]
-    assert not (tmp_path / "odylith/radar/source").exists()
+    assert greenfield_repository_write_set.greenfield_managed_fingerprints(tmp_path) == baseline
 
 
 def test_public_authored_propose_bypasses_the_legacy_completion_cascade(
@@ -489,6 +497,7 @@ def test_public_authored_propose_bypasses_the_legacy_completion_cascade(
     monkeypatch,
     capsys,
 ) -> None:  # type: ignore[no-untyped-def]
+    activate_greenfield_baseline_fixture(tmp_path)
     source = _source()
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
     provider = StructuredAuthoringProvider(_response(staged_evidence))
@@ -553,6 +562,7 @@ def test_public_propose_cli_returns_one_model_question_without_a_transaction(
     monkeypatch,
     capsys,
 ) -> None:  # type: ignore[no-untyped-def]
+    activate_greenfield_baseline_fixture(tmp_path)
     provider = StructuredAuthoringProvider(
         clarification_response(
             question="What result should the dock attendant see after the first task?",

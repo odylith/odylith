@@ -5,6 +5,42 @@ from __future__ import annotations
 from pathlib import Path
 import subprocess
 
+from odylith.runtime.domain_intelligence.greenfield_repository_write_set import greenfield_repository_layout
+
+
+def surface_render_outputs(surface: str, *, repo_root: Path) -> tuple[str, ...]:
+    outputs = {
+        "tooling_shell": ("odylith/index.html", "odylith/tooling-payload.v1.js", "odylith/tooling-app.v1.js"),
+        "radar": (
+            "odylith/radar/radar.html",
+            "odylith/radar/backlog-payload.v1.js",
+            "odylith/radar/backlog-app.v1.js",
+            "odylith/radar/traceability-graph.v1.json",
+        ),
+        "compass": (
+            "odylith/compass/compass.html",
+            "odylith/compass/compass-payload.v1.js",
+            "odylith/compass/compass-app.v1.js",
+            "odylith/compass/compass-style-base.v1.css",
+            "odylith/compass/compass-style-execution-waves.v1.css",
+            "odylith/compass/compass-style-surface.v1.css",
+            "odylith/compass/compass-shared.v1.js",
+            "odylith/compass/compass-state.v1.js",
+            "odylith/compass/compass-summary.v1.js",
+            "odylith/compass/compass-timeline.v1.js",
+            "odylith/compass/compass-waves.v1.js",
+            "odylith/compass/compass-workstreams.v1.js",
+            "odylith/compass/compass-ui-runtime.v1.js",
+        ),
+        "atlas": ("odylith/atlas/atlas.html", "odylith/atlas/mermaid-payload.v1.js", "odylith/atlas/mermaid-app.v1.js"),
+        "registry": ("odylith/registry/registry.html", "odylith/registry/registry-payload.v1.js", "odylith/registry/registry-app.v1.js"),
+        "casebook": ("odylith/casebook/casebook.html", "odylith/casebook/casebook-payload.v1.js", "odylith/casebook/casebook-app.v1.js"),
+    }.get(surface, ())
+    if surface != "tooling_shell":
+        return outputs
+    layout = greenfield_repository_layout(repo_root)
+    return tuple(layout.target_path(path).relative_to(layout.repo_root).as_posix() for path in outputs)
+
 
 def generated_output_targets() -> tuple[str, ...]:
     return (
@@ -40,6 +76,7 @@ def generated_output_targets() -> tuple[str, ...]:
         "odylith/casebook/casebook-app.v1.js",
         "odylith/casebook/casebook-detail-shard-*.v1.js",
         "odylith/index.html",
+        "odylith/tooling-shell.html",
         "odylith/tooling-payload.v1.js",
         "odylith/tooling-app.v1.js",
         "odylith/runtime/delivery_intelligence.v4.json",

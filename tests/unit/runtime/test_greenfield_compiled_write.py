@@ -16,6 +16,7 @@ def test_write_compiled_greenfield_package_applies_only_the_sealed_write_set(
     tmp_path: Path,
 ) -> None:
     transaction = _transaction(repo_root=tmp_path)
+    publication = (tmp_path / "odylith/index.html").read_bytes()
     staged_root = tmp_path / "staged"
     staged_index = staged_root / "odylith/index.html"
     staged_index.parent.mkdir(parents=True, exist_ok=True)
@@ -32,7 +33,8 @@ def test_write_compiled_greenfield_package_applies_only_the_sealed_write_set(
     result = greenfield_compiled_write.write_compiled_greenfield_package(root=tmp_path, transaction=transaction)
 
     assert result["mode"] == "applied"
-    assert (tmp_path / "odylith/index.html").read_text(encoding="utf-8") == "sealed project surface\n"
+    assert (tmp_path / "odylith/tooling-shell.html").read_text(encoding="utf-8") == "sealed project surface\n"
+    assert (tmp_path / "odylith/index.html").read_bytes() == publication
     assert result["repository_write_set"]["write_set_hash"] == write_set["write_set_hash"]
     assert "completion_priority_quality_debt" not in result
 
@@ -41,6 +43,8 @@ def test_write_compiled_greenfield_package_rejects_missing_write_set_before_writ
     tmp_path: Path,
 ) -> None:
     transaction = _transaction(repo_root=tmp_path)
+    before = greenfield_repository_write_set.greenfield_managed_fingerprints(tmp_path)
+    publication = (tmp_path / "odylith/index.html").read_bytes()
     bad_transaction = replace(
         transaction,
         prewrite_package=replace(transaction.prewrite_package, repository_write_set=None),
@@ -52,13 +56,15 @@ def test_write_compiled_greenfield_package_rejects_missing_write_set_before_writ
             transaction=bad_transaction,
         )
 
-    assert not (tmp_path / "odylith/index.html").exists()
+    assert greenfield_repository_write_set.greenfield_managed_fingerprints(tmp_path) == before
+    assert (tmp_path / "odylith/index.html").read_bytes() == publication
 
 
 def test_write_compiled_greenfield_package_reports_sealed_preview_without_quality_recheck(
     tmp_path: Path,
 ) -> None:
     transaction = _transaction(repo_root=tmp_path)
+    publication = (tmp_path / "odylith/index.html").read_bytes()
     staged_root = tmp_path / "staged"
     staged_index = staged_root / "odylith/index.html"
     staged_index.parent.mkdir(parents=True, exist_ok=True)
@@ -81,7 +87,8 @@ def test_write_compiled_greenfield_package_reports_sealed_preview_without_qualit
     result = greenfield_compiled_write.write_compiled_greenfield_package(root=tmp_path, transaction=transaction)
 
     assert result["dashboard_refresh"]["status"] == "failed"
-    assert (tmp_path / "odylith/index.html").read_text(encoding="utf-8") == "sealed project surface\n"
+    assert (tmp_path / "odylith/tooling-shell.html").read_text(encoding="utf-8") == "sealed project surface\n"
+    assert (tmp_path / "odylith/index.html").read_bytes() == publication
 
 
 def test_record_compiled_greenfield_acceptance_does_not_reuse_timestamp_drift(tmp_path: Path) -> None:

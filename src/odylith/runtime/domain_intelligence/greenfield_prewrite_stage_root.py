@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence import greenfield_create_baseline
 from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.domain_intelligence.greenfield_repository_write_set import (
     GREENFIELD_REPOSITORY_WRITE_PATHS,
+    greenfield_repository_layout,
 )
 
 
@@ -29,11 +30,12 @@ def staged_greenfield_prewrite_root(root: Path) -> Iterator[Path]:
     """Stage governed inputs so completion gates can run without target writes."""
 
     source_root = Path(root).expanduser().resolve()
+    source_layout = greenfield_repository_layout(source_root)
     with tempfile.TemporaryDirectory(prefix="odylith-greenfield-prewrite-") as tmp:
         stage_root = (Path(tmp) / "repo").resolve()
         stage_root.mkdir(parents=True, exist_ok=True)
         for token in _PREWRITE_STAGE_PATHS:
-            _copy_existing_path(source_root / token, stage_root / token)
+            _copy_existing_path(source_layout.target_path(token.as_posix()), stage_root / token)
         with compass_refresh_contract.transient_refresh_root(repo_root=stage_root):
             ensure_greenfield_create_baseline(stage_root)
             yield stage_root

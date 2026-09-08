@@ -99,28 +99,35 @@ def publish_greenfield_generation(
     *,
     repo_root: Path,
     generation: PinnedGreenfieldGeneration,
-    expected_active_identity: Mapping[str, Any],
-    transaction_hash: str,
+    write_set: object,
+    publication_entry_text: str,
 ) -> dict[str, Any]:
+    payload = greenfield_repository_write_set.require_compiled_greenfield_repository_write_set(write_set)
+    if generation.write_set_hash != payload["write_set_hash"]:
+        raise ValueError("Greenfield publication generation differs from its sealed write set")
     pinned = pin_greenfield_generation(
         repo_root=repo_root,
         write_set_hash=generation.write_set_hash,
+        expected_write_set=payload,
     )
-    return greenfield_generation_state.publish_active_generation_state(
-        repo_root=repo_root,
-        expected_identity=expected_active_identity,
-        transaction_hash=transaction_hash,
+    greenfield_generation_state.require_sealed_greenfield_publication_entry(
+        publication_entry_text,
         write_set_hash=pinned.write_set_hash,
         generation_manifest_sha256=pinned.manifest_sha256,
+    )
+    return greenfield_generation_state.publish_sealed_publication(
+        repo_root=repo_root,
+        expected_identity=payload["active_generation_precondition"],
+        sealed_entry_text=publication_entry_text,
     )
 
 
 def pin_active_greenfield_generation(repo_root: Path) -> PinnedGreenfieldGeneration:
-    """Resolve the active-state record once and pin that exact immutable generation."""
+    """Resolve the canonical browser entry once and pin that immutable generation."""
 
     root = Path(repo_root).expanduser().resolve()
-    state = greenfield_generation_state.read_active_generation_state(root)
-    if state is None or str(state.get("status") or "") != greenfield_generation_state.ACTIVE:
+    state = greenfield_generation_state.read_active_publication(root)
+    if state is None:
         raise RuntimeError("Greenfield has no active immutable generation")
     pinned = pin_greenfield_generation(
         repo_root=root,
@@ -157,6 +164,8 @@ def pin_greenfield_generation(
         raise RuntimeError("Greenfield immutable generation manifest bytes are not canonical")
     manifest = dict(payload)
     _require_generation_manifest(manifest, write_set_hash=identity)
+    if expected_write_set is None and greenfield_repository_write_set.greenfield_managed_fingerprints(repository) != manifest["after_fingerprints"]:
+        raise RuntimeError("Greenfield immutable generation bytes differ from the sealed manifest")
     if expected_write_set is not None:
         write_set = greenfield_repository_write_set.require_compiled_greenfield_repository_write_set(
             expected_write_set
@@ -175,6 +184,18 @@ def pin_greenfield_generation(
         manifest_sha256=hashlib.sha256(raw).hexdigest(),
         manifest=manifest,
     )
+
+
+def require_greenfield_working_generation(repo_root: Path) -> PinnedGreenfieldGeneration:
+    """Admit work only against the complete, unchanged published baseline."""
+
+    generation = pin_active_greenfield_generation(repo_root)
+    if greenfield_repository_write_set.greenfield_managed_fingerprints(repo_root) != generation.manifest["after_fingerprints"]:
+        raise RuntimeError(
+            "RECOVERY_REQUIRED: managed files differ from the published generation; "
+            "the requested operation was not run"
+        )
+    return generation
 
 
 def compile_greenfield_generation_manifest(write_set: object) -> str:
@@ -254,5 +275,6 @@ __all__ = [
     "pin_active_greenfield_generation",
     "pin_greenfield_generation",
     "publish_greenfield_generation",
+    "require_greenfield_working_generation",
     "require_sealed_greenfield_generation_manifest",
 ]

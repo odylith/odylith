@@ -15,12 +15,14 @@ from odylith.runtime.project_intelligence import presenter as project_intelligen
 from tests.integration.runtime.surface_browser_test_support import (
     _assert_clean_page,
     _browser,
+    _failure_screenshot_path,
     _new_page,
     _static_server,
 )
 from tests.unit.runtime.greenfield_authored_proposal_fixtures import (
     _canonical_model_authored_greenfield_fixture,
 )
+from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import (
     _seed_empty_governance_repo,
     commit_precompiled_greenfield_proposal,
@@ -37,6 +39,7 @@ from tests.unit.runtime.test_greenfield_authored_project_dashboard import (
 
 def _write_greenfield_project_page(tmp_path: Path, monkeypatch) -> Path:  # noqa: ANN001
     _seed_empty_governance_repo(tmp_path)
+    activate_greenfield_baseline_fixture(tmp_path)
     stub_preconfirm_surface_refresh(monkeypatch)
     monkeypatch.setattr(
         greenfield_component_commit.component_compiled_commit.owned_surface_refresh,
@@ -424,7 +427,11 @@ def _run_greenfield_project_tab_browser_check(tmp_path: Path, monkeypatch, *, co
                 response = page.goto(base_url + "/index.html", wait_until="domcontentloaded")
                 assert response is not None and response.ok
                 _assert_greenfield_project_tab_layout(page, compact=compact)
-                page.screenshot(path=str(tmp_path / f"project-{viewport['width']}.png"), full_page=True)
+                screenshot = _failure_screenshot_path(f"project-{viewport['width']}")
+                if screenshot is None:
+                    screenshot = tmp_path / f"project-{viewport['width']}.png"
+                screenshot.parent.mkdir(parents=True, exist_ok=True)
+                page.screenshot(path=str(screenshot), full_page=True)
                 _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
             finally:
                 context.close()

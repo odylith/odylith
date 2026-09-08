@@ -24,6 +24,7 @@ from odylith.runtime.context_engine import odylith_context_engine_delivery_surfa
 from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.context_engine import odylith_context_engine_runtime_artifacts
 from odylith.runtime.context_engine import odylith_control_state
+from odylith.runtime.domain_intelligence.greenfield_repository_write_set import greenfield_repository_layout
 from odylith.runtime.governance import agent_governance_intelligence
 from odylith.runtime.governance import workstream_inference as ws_inference
 from odylith.runtime.project_intelligence import builder as project_intelligence_builder
@@ -91,7 +92,7 @@ def _refresh_guard_code_fingerprint() -> str:
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="odylith sync",
-        description="Render odylith/index.html as the centralized delivery-governance intelligence shell.",
+        description="Render the delivery-governance shell without replacing a sealed publication entry.",
     )
     parser.add_argument("--repo-root", default=".", help="Repository root")
     parser.add_argument("--output", default="odylith/index.html", help="Rendered dashboard output path")
@@ -434,7 +435,12 @@ def _build_live_refresh_payload(
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(args.repo_root).resolve()
+    layout = greenfield_repository_layout(repo_root)
     output_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.output)
+    if output_path == repo_root / "odylith/index.html":
+        output_path = layout.target_path("odylith/index.html")
+    if output_path.is_symlink():
+        raise ValueError("Tooling dashboard output is an unsafe symlink")
     radar_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.radar)
     atlas_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.atlas)
     compass_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.compass)

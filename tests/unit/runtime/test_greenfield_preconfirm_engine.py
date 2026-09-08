@@ -170,7 +170,11 @@ def test_relation_free_proposal_is_rejected_before_prewrite() -> None:
 
 def test_transaction_compiler_seals_the_once_validated_package_without_reinterpretation(
     monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
 ) -> None:
+    from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
+
+    activate_greenfield_baseline_fixture(tmp_path)
     proposal = {
         "projection_origin": "model_authored_typed_intent",
         "intent": {"title": "Harbor Desk"},
@@ -185,7 +189,7 @@ def test_transaction_compiler_seals_the_once_validated_package_without_reinterpr
     )
 
     result = proposals.compile_greenfield_create_transaction(
-        repo_root=Path("."),
+        repo_root=tmp_path,
         proposal=proposal,
         release_selector="0.0.1",
     )
@@ -196,7 +200,11 @@ def test_transaction_compiler_seals_the_once_validated_package_without_reinterpr
 
 def test_transaction_compiler_rejects_package_drift_instead_of_rebinding(
     monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
 ) -> None:
+    from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
+
+    activate_greenfield_baseline_fixture(tmp_path)
     proposal = {
         "projection_origin": "model_authored_typed_intent",
         "intent": {"title": "Harbor Desk"},
@@ -212,7 +220,7 @@ def test_transaction_compiler_rejects_package_drift_instead_of_rebinding(
 
     with pytest.raises(ValueError, match="drifted from the sealed model-authored proposal"):
         proposals.compile_greenfield_create_transaction(
-            repo_root=Path("."),
+            repo_root=tmp_path,
             proposal=proposal,
             release_selector="0.0.1",
         )

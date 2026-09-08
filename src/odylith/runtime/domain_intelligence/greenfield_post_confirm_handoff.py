@@ -12,7 +12,6 @@ from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
 from odylith.runtime.domain_intelligence import greenfield_repository_lock
-from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 
 
 POST_CONFIRM_NAVIGATION = {
@@ -36,8 +35,8 @@ def canonical_current_project_root(repo_root: Path) -> tuple[Path, str]:
         with greenfield_repository_lock.greenfield_repository_read_lock(root):
             return _canonical_current_project_root_while_locked(root)
     except greenfield_repository_lock.GreenfieldRepositoryBusyError as exc:
-        state = greenfield_generation_state.read_active_generation_state(root)
-        if state is not None and str(state.get("status") or "") == greenfield_generation_state.ACTIVE:
+        state = greenfield_generation_state.read_active_publication(root)
+        if state is not None:
             pinned = greenfield_generation_store.pin_active_greenfield_generation(root)
             return pinned.repository_root, "active_generation_during_managed_write"
         raise GreenfieldCanonicalViewUnavailableError(
@@ -46,19 +45,12 @@ def canonical_current_project_root(repo_root: Path) -> tuple[Path, str]:
 
 
 def _canonical_current_project_root_while_locked(root: Path) -> tuple[Path, str]:
-    state = greenfield_generation_state.read_active_generation_state(root)
+    state = greenfield_generation_state.read_active_publication(root)
     if state is None:
-        return root, "live_without_generation"
-    if str(state.get("status") or "") == greenfield_generation_state.SUPERSEDED:
-        return root, "live_after_supersession"
-    pinned = greenfield_generation_store.pin_active_greenfield_generation(root)
-    expected = {str(key): str(value) for key, value in dict(pinned.manifest["after_fingerprints"]).items()}
-    actual = greenfield_repository_write_set.greenfield_managed_fingerprints(root)
-    if actual != expected:
         raise GreenfieldCanonicalViewUnavailableError(
-            "The active Greenfield generation no longer matches the managed repository tree. "
-            "No potentially partial live view was opened."
+            "A complete published project view is not available. No partial live view was opened."
         )
+    pinned = greenfield_generation_store.pin_active_greenfield_generation(root)
     return pinned.repository_root, "active_generation"
 
 

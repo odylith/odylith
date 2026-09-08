@@ -105,7 +105,12 @@ def _mark_projecting(
         write_set=write_set,
         manifest_text=greenfield_generation_store.compile_greenfield_generation_manifest(write_set),
     )
-    journal.mark_projecting(result, generation_manifest_sha256=generation.manifest_sha256)
+    journal.mark_projecting(
+        result, generation_manifest_sha256=generation.manifest_sha256,
+        publication_entry_text=greenfield_generation_state.compile_greenfield_publication_entry(
+            write_set_hash=generation.write_set_hash, generation_manifest_sha256=generation.manifest_sha256,
+        ),
+    )
     return generation
 
 
@@ -127,15 +132,10 @@ def _publish_generation(
         lambda: greenfield_generation_store.publish_greenfield_generation(
             repo_root=root,
             generation=generation,
-            expected_active_identity=write_set["active_generation_precondition"],
-            transaction_hash="a" * 64,
+            write_set=write_set,
+            publication_entry_text=journal._read_record()["publication_entry_text"],
         ),
-        published_probe=lambda: greenfield_generation_state.active_generation_is(
-            repo_root=root,
-            transaction_hash="a" * 64,
-            write_set_hash=str(write_set["write_set_hash"]),
-            generation_manifest_sha256=generation.manifest_sha256,
-        ),
+        published_probe=journal.publication_is_active,
     )
     journal.mark_published(result, generation_manifest_sha256=generation.manifest_sha256)
     if close:
@@ -149,9 +149,16 @@ def _kill_commit_child(
     mode: str,
 ) -> subprocess.CompletedProcess[str]:
     write_set_path = root.parent / "write-set.json"
+    manifest_text = greenfield_generation_store.compile_greenfield_generation_manifest(write_set)
+    import hashlib
+    publication = greenfield_generation_state.compile_greenfield_publication_entry(
+        write_set_hash=str(write_set["write_set_hash"]),
+        generation_manifest_sha256=hashlib.sha256(manifest_text.encode("utf-8")).hexdigest(),
+    )
     write_set_path.write_text(json.dumps({
         "write_set": write_set,
-        "manifest_text": greenfield_generation_store.compile_greenfield_generation_manifest(write_set),
+        "manifest_text": manifest_text,
+        "publication_entry_text": publication,
     }), encoding="utf-8")
     script = """
 import json
@@ -186,7 +193,10 @@ with transaction:
         write_set=write_set,
         manifest_text=sealed["manifest_text"],
     )
-    journal.mark_projecting(result, generation_manifest_sha256=generation.manifest_sha256)
+    journal.mark_projecting(
+        result, generation_manifest_sha256=generation.manifest_sha256,
+        publication_entry_text=sealed["publication_entry_text"],
+    )
     if mode == \"first_write\":
         original = greenfield_repository_write_set.atomic_write_bytes
         calls = 0
@@ -218,15 +228,10 @@ with transaction:
             lambda: greenfield_generation_store.publish_greenfield_generation(
                 repo_root=root,
                 generation=generation,
-                expected_active_identity=write_set[\"active_generation_precondition\"],
-                transaction_hash=\"a\" * 64,
+                write_set=write_set,
+                publication_entry_text=sealed["publication_entry_text"],
             ),
-            published_probe=lambda: greenfield_generation_state.active_generation_is(
-                repo_root=root,
-                transaction_hash=\"a\" * 64,
-                write_set_hash=write_set[\"write_set_hash\"],
-                generation_manifest_sha256=generation.manifest_sha256,
-            ),
+            published_probe=journal.publication_is_active,
         )
         os.kill(os.getpid(), signal.SIGKILL)
 """
@@ -746,15 +751,10 @@ def test_published_generation_corruption_requires_recovery_without_rollback(tmp_
         lambda: greenfield_generation_store.publish_greenfield_generation(
             repo_root=root,
             generation=generation,
-            expected_active_identity=write_set["active_generation_precondition"],
-            transaction_hash="a" * 64,
+            write_set=write_set,
+            publication_entry_text=journal._read_record()["publication_entry_text"],
         ),
-        published_probe=lambda: greenfield_generation_state.active_generation_is(
-            repo_root=root,
-            transaction_hash="a" * 64,
-            write_set_hash=str(write_set["write_set_hash"]),
-            generation_manifest_sha256=generation.manifest_sha256,
-        ),
+        published_probe=journal.publication_is_active,
     )
     (generation.repository_root / "odylith/radar/source/first.md").write_text(
         "generation corruption\n",

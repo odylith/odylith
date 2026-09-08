@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
 import os
 import subprocess
@@ -15,6 +16,7 @@ from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
+from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -64,12 +66,13 @@ def _generation_observation(
     return {
         "active_identity": {
             "status": "active" if active else "none",
-            "transaction_hash": transaction_hash if active else "",
             "write_set_hash": write_set_hash if active else "",
             "generation_manifest_sha256": manifest if active else "",
+            "publication_sha256": "f" * 64 if active else "",
         },
         "active_pin_status": "active" if active else "none",
         "active_pin_transaction_hash": transaction_hash if active else "",
+        "transaction_publication_sha256": "f" * 64,
         "transaction_generation_status": "present" if generation_present else "missing",
         "transaction_generation_manifest_sha256": manifest,
         "transaction_generation_write_set_hash": write_set_hash if generation_present else "",
@@ -104,7 +107,7 @@ def test_generation_observation_rejects_manifest_only_published_proof() -> None:
     assert "installed SIGKILL recovery published generation failed sealed after-image readback" in module._generation_observation_issues(facts)  # noqa: SLF001
 
 
-@pytest.mark.parametrize("state", ("sealed", "tampered", "published", "unapproved", "wrong_transaction"))
+@pytest.mark.parametrize("state", ("sealed", "tampered", "published", "unapproved", "wrong_transaction", "publication_tampered"))
 def test_installed_generation_observation_requires_sealed_bytes_and_transaction_receipt(
     tmp_path: Path, state: str,
 ) -> None:
@@ -114,53 +117,67 @@ def test_installed_generation_observation_requires_sealed_bytes_and_transaction_
     source_file = repo / "odylith/index.html"
     source_file.parent.mkdir(parents=True)
     source_file.write_text("before\n", encoding="utf-8")
-    shutil.copytree(repo / "odylith", stage / "odylith")
+    activate_greenfield_baseline_fixture(repo)
+    baseline = greenfield_generation_store.require_greenfield_working_generation(repo)
+    shutil.copytree(baseline.repository_root / "odylith", stage / "odylith")
     (stage / "odylith/index.html").write_text("after\n", encoding="utf-8")
     write_set = greenfield_repository_write_set.compile_greenfield_repository_write_set(
         source_root=repo,
         staged_root=stage,
     )
+    manifest_text = greenfield_generation_store.compile_greenfield_generation_manifest(write_set)
+    publication_text = greenfield_generation_state.compile_greenfield_publication_entry(
+        write_set_hash=write_set["write_set_hash"],
+        generation_manifest_sha256=hashlib.sha256(manifest_text.encode()).hexdigest(),
+    )
     generation = greenfield_generation_store.materialize_immutable_greenfield_generation(
         repo_root=repo,
         write_set=write_set,
-        manifest_text=greenfield_generation_store.compile_greenfield_generation_manifest(write_set),
+        manifest_text=manifest_text,
     )
     transaction_file = repo / "transaction.json"
     transaction_file.write_text(
-        json.dumps({"transaction_hash": "a" * 64, "prewrite_package": {"repository_write_set": write_set}}),
+        json.dumps({"transaction_hash": "a" * 64, "prewrite_package": {
+            "repository_write_set": write_set,
+            "generation_manifest_text": manifest_text,
+            "publication_entry_text": publication_text,
+        }}),
         encoding="utf-8",
     )
     assert generation.generation_root.name == write_set["write_set_hash"] != "a" * 64
     if state == "tampered":
         (generation.repository_root / "odylith/index.html").write_text("tampered\n", encoding="utf-8")
-    if state in {"published", "unapproved"}:
+    if state in {"published", "unapproved", "publication_tampered"}:
         journal = GreenfieldCommitJournal(repo_root=repo, transaction_hash="a" * 64, write_set=write_set)
         journal.prepare()
         journal.snapshot_root.mkdir()
         journal.mark_prepared()
-        journal.mark_projecting({}, generation_manifest_sha256=generation.manifest_sha256)
+        journal.mark_projecting(
+            {}, generation_manifest_sha256=generation.manifest_sha256,
+            publication_entry_text=publication_text,
+        )
         greenfield_repository_write_set.apply_compiled_greenfield_repository_write_set(
             repo_root=repo, write_set=write_set,
         )
         greenfield_generation_store.publish_greenfield_generation(
-            repo_root=repo, generation=generation, transaction_hash="a" * 64,
-            expected_active_identity=write_set["active_generation_precondition"],
+            repo_root=repo, generation=generation, write_set=write_set,
+            publication_entry_text=publication_text,
         )
         journal.mark_published({}, generation_manifest_sha256=generation.manifest_sha256)
         if state == "unapproved":
-            greenfield_generation_state.publish_active_generation_state(
-                repo_root=repo, transaction_hash="b" * 64,
-                expected_identity=greenfield_generation_state.active_generation_identity(repo),
-                write_set_hash=generation.write_set_hash,
-                generation_manifest_sha256=generation.manifest_sha256,
-            )
+            # Same exact W/M/P, but the asserted transaction has no admitted journal.
+            payload = json.loads(transaction_file.read_text())
+            payload["transaction_hash"] = "b" * 64
+            transaction_file.write_text(json.dumps(payload), encoding="utf-8")
+        elif state == "publication_tampered":
+            source_file.write_bytes(source_file.read_bytes() + b"\n")
 
     observed = subprocess.run(
         [
             sys.executable,
             "-c",
             module._GENERATION_OBSERVATION_SCRIPT,  # noqa: SLF001
-            ("b" if state == "wrong_transaction" else "a") * 64,
+            ("b" if state in {"unapproved", "wrong_transaction"} else "a") * 64,
             str(transaction_file),
         ],
         cwd=repo,
@@ -172,12 +189,13 @@ def test_installed_generation_observation_requires_sealed_bytes_and_transaction_
         capture_output=True,
         check=False,
     )
-    if state in {"unapproved", "wrong_transaction"}:
+    if state in {"unapproved", "wrong_transaction", "publication_tampered"}:
         assert observed.returncode != 0
-        expected_error = (
-            "observed transaction hash differs from its sealed transaction"
-            if state == "wrong_transaction" else "greenfield commit journal state cannot be read"
-        )
+        expected_error = {
+            "wrong_transaction": "observed transaction hash differs from its sealed transaction",
+            "unapproved": "greenfield commit journal state cannot be read",
+            "publication_tampered": "Greenfield publication entry has an invalid envelope",
+        }[state]
         assert expected_error in observed.stderr
         assert not observed.stdout
         return
@@ -186,8 +204,23 @@ def test_installed_generation_observation_requires_sealed_bytes_and_transaction_
 
     assert payload["transaction_generation_status"] == ("invalid" if state == "tampered" else "present")
     assert payload["transaction_generation_readback_status"] == ("invalid" if state == "tampered" else "passed")
-    assert payload["active_pin_status"] == ("active" if state == "published" else "none")
+    assert payload["active_pin_status"] == "active"
     assert payload["active_pin_transaction_hash"] == ("a" * 64 if state == "published" else "")
+    assert "transaction_hash" not in payload["active_identity"]
+    assert payload["transaction_publication_sha256"] == hashlib.sha256(publication_text.encode()).hexdigest()
+    if state != "published":
+        assert payload["active_identity"] == write_set["active_generation_precondition"]
+
+
+def test_published_generation_boundary_rejects_changed_publication_digest() -> None:
+    module = _module()
+    observation = _generation_observation(active=True, generation_present=True)
+    observation["active_identity"]["publication_sha256"] = "0" * 64
+    with pytest.raises(RuntimeError, match="active entry differs from the sealed publication"):
+        module._require_published_generation_boundary(  # noqa: SLF001
+            observation=observation, transaction_hash="a" * 64, write_set_hash="b" * 64,
+            label="test recovery",
+        )
 
 
 def test_faulted_create_uses_the_installed_runtime_without_source_path(tmp_path: Path, monkeypatch) -> None:

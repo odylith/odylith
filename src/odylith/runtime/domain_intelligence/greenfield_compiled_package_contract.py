@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+import hashlib
 
 from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_prewrite_commit_result
-from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.domain_intelligence.greenfield_commit_transaction import require_product_create_repository_write_set
 from odylith.runtime.domain_intelligence import greenfield_generation_store
+from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence import greenfield_traceability_commit
@@ -43,11 +45,18 @@ def require_complete_compiled_greenfield_package(
         )
     )
     try:
-        greenfield_repository_write_set.require_compiled_greenfield_repository_write_set(
+        require_product_create_repository_write_set(
             prewrite_package.repository_write_set,
         )
         greenfield_generation_store.require_sealed_greenfield_generation_manifest(
             prewrite_package.generation_manifest_text, write_set=prewrite_package.repository_write_set,
+        )
+        greenfield_generation_state.require_sealed_greenfield_publication_entry(
+            prewrite_package.publication_entry_text,
+            write_set_hash=prewrite_package.repository_write_set["write_set_hash"],
+            generation_manifest_sha256=hashlib.sha256(
+                prewrite_package.generation_manifest_text.encode("utf-8"),
+            ).hexdigest(),
         )
     except (ValueError, RuntimeError) as exc:
         issues.append(str(exc))

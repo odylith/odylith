@@ -12,6 +12,105 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ### Close interrupted-publication visibility before release proof (2026-09-08)
 
+The disclosed stopped-writer dashboard counterexample now passes: three SIGKILL
+phases and twelve actual Atlas/Radar observations before recovery remain on one
+complete generation. This is protected-transition proof, not complete UX or SLA
+acceptance. The inactive-writer race and interrupted-shell doctor admission gap
+are corrected in their existing lock/baseline owners; 47 focused controls pass.
+Direct compilation now requires a complete published baseline before staging;
+the shared ProductCreate write contract rejects an unactivated predecessor both
+before preview and in the receipt-bound commit loader. Local admission time is
+charged to the existing budget. No new selector, retry loop or semantic role exists.
+Independent review then reproduced a failed writer entering between readiness and
+staging. The existing shared read lock now spans readiness through deterministic
+sealing and transaction verification, after the model pair and before pending
+decision writes. Forty focused controls pass; no new lock primitive or reader
+snapshot was introduced. Busy admission remains an explicit no-write outcome.
+Independent replay of the unchanged original race witness now stops the writer
+before any partial bytes or transaction exist (0.304 seconds); exact evidence is
+`/private/tmp/odylith-staging-admission-replay.tfbRn5/review.md`.
+
+The first broad runtime diagnostic remains 4,404 passed and 23 failed. After
+governance settlement, the unchanged 3,152-file tree completes 4,468 runtime
+passes with five failures and 1,090 install passes with sixteen failures. The
+runtime controls now assert unchanged publication/baseline bytes and route their
+operator edit through the real successor boundary; all seventeen tests in those
+two files pass. Installed proof still assumes approval resides in the old JSON
+publication record, beneath fixtures missing the newly required entry bytes.
+Those two existing proof owners now use journal-owned approval and sealed entry
+bytes; all 97 focused install tests pass, including five new missing/altered
+publication controls and the preserved wrong-transaction negatives. The first
+migration replay exposed five fixture layout mistakes, also retained as evidence.
+Main reviewed the four-file change; no runtime generation mechanism changed.
+The hotfile regression is removed by a genuine shared output-owner move, with
+140 focused passes and the original limit unchanged. The next 3,152-file freeze
+retains hash 690aeff51247879f4e8505a6e6f327a613b4ff82ad3d75614f9173c6314e6410
+before and after 4,473 runtime passes, 1,111 install-unit passes, the full local
+distribution build and successful canonical clean-install/upgrade smoke.
+The smoke includes a deliberately unavailable author, not positive generation.
+Browser proof records 308 passed, four failed and one skipped. Three Project
+failures need explicit fixture activation; all six Project tests now pass in
+10.68 seconds. The historical Casebook fixture accidentally used today's activated
+installation under old metadata; an explicitly unactivated historical setup
+preserves the original migration and browser laws, with three focused passes in
+5.13 seconds. Retain both the original failures and independent adjudication.
+Two current-simulator direct-pin-edit failures still require the supported upgrade
+and failure-recovery path to be proved before calling this a stable checkpoint.
+The actual --to/--write-pin path now reveals a P1: failed activation smoke restores
+the old runtime but leaves its newly written managed pin behind, keeping P unchanged
+while blocking subsequent writer admission. Correct the existing install activation
+owner and prove exact pre-operation pin/working-state recovery, including exceptions;
+retain previously established operator pin intent. Do not publish a failed successor
+or relax drift admission. The initial simulator file has two passes and seven failures,
+including six other direct-edit setup scenarios whose intended contracts remain owed.
+The manager now defers that pin write until read-only activation smoke passes and
+routes raised smoke exceptions through existing runtime/launcher recovery. Eleven
+focused checks pass in 8.53 seconds, including exact custom pin byte/mode preservation,
+pre-existing operator target intent, unchanged P/working readback and a successful
+subsequent upgrade. All nine lifecycle-simulator tests now pass in 13.75 seconds
+after explicit shared historical seeding and supported current upgrade setup.
+The browser fixture adopts the same historical seed; original migration/refusal
+assertions remain. Missing-pin refusal is not claimed as missing-pin repair, and
+this correction does not qualify arbitrary crash or filesystem rollback.
+The final 3,153-file frozen tree retains hash
+f4faa73fe26cae7c4a056ea7a47b91a06d1def3a1a8961a45a2a17fa949cea5e
+before and after 4,473 runtime passes, 1,345 install unit/integration passes and
+312 browser passes with one known diagnostic skip. The full distribution and
+canonical local-release smoke pass; its owned installation root is cleaned.
+Independent installed readback verifies the fixed manager bytes and exact baseline.
+The post-freeze root clarification fixture now preserves an activated baseline
+instead of requiring absent runtime state; its test and isolated imports move to
+the existing Greenfield CLI owner. Root CLI records 391 passes and one remaining
+real migration-assessment failure. Keep that gate open: legacy publication and
+nonterminal journal migration are not covered by historical no-migration wording.
+A development checkpoint is not release acceptance. The static Project fixture
+and two-surface crash coverage do not replace a genuine all-surface successful
+Greenfield journey. Evidence: `/private/tmp/odylith-sole-entry-final-proof.VaQSHc/`.
+
+Current source now integrates the sole HTML publication entry, pre-confirm entry
+sealing, admitted-journal publication evidence, physical working-shell ownership,
+complete first-install baseline activation and immutable later-writer successors.
+This replaces the JSON authority rather than mirroring it. W seals the exact
+predecessor; the publication store validates W instead of accepting a separately
+rebound predecessor. Current reads use immutable bytes, while reviewed T links
+remain journal-owned. Old layouts fail closed without destroying recovery evidence.
+
+Focused evidence includes 23 journal checks, four real SIGKILL protected-entry
+checks, 16 activation controls, and 30 reader/codec plus 18 production-carrier
+browser cells. The carrier report preserves the initial out-of-bound child-resource
+fixture failure and interrupted run. The separate actual dashboard crash gate is
+recorded in `/private/tmp/odylith-generation-seal-proof.90CkQs/real-dashboard-crash/review.md`.
+Keep the implementation unqualified until installed activation recovery and legacy
+migration, actual all-surface browser crash checks,
+and the remaining full-browser and install-integration checks pass. Runtime and
+install-unit suites plus local distribution/smoke are now green at the frozen hash
+above; they do not close those distinct obligations.
+The full goal, source fidelity, useful package depth, host confirmation eligibility,
+60/90/120 and protected holdout gates remain unchanged and open. Evidence:
+`/private/tmp/odylith-generation-seal-proof.90CkQs/publication-carrier-review.md`.
+
+The following receipts describe the preceding immutable-storage checkpoint.
+
 The first production integration now addresses immutable generations by the
 existing sealed write-set hash, not the later confirmation hash. The compiler
 seals exact generation-manifest text after the write set and before the outer
@@ -54,11 +153,12 @@ main-reviewed. Preserve the original full-run failure. The skipped
 Radar diagnostic fixture does not establish that case. Evidence:
 `/private/tmp/odylith-generation-seal-proof.90CkQs/review.md`.
 
-This storage change does not close CB-305. The sole browser-readable entry,
+That storage checkpoint did not close CB-305. The sole browser-readable entry,
 publication-entry versus shell ownership, immutable first baseline, explicit
 activation/migration, and later-writer successors still need joint integration.
-The JSON pointer remains the only current authority until that replacement lands;
-no HTML mirror is active. Keep the stopped-writer browser counterexample open.
+At that preceding checkpoint, JSON was still the only current authority. The
+in-progress replacement above removes it; keep the stopped-writer browser
+counterexample open until the actual integrated consumer route passes.
 
 The bounded browser comparison selects one canonical HTML publication entry
 for production integration, not release acceptance. Four file/HTTP desktop/mobile
@@ -82,8 +182,9 @@ to mutable live paths. Preserve exact reviewed-hash links and define activation
 for already-open legacy tabs. Do not copy the experimental snapshot subsystem
 into production, retain both pointers, or generate the router after CONFIRM.
 The acyclic storage and manifest owners are now integrated in production source;
-the browser-entry replacement is not. The original crash law remains a release
-blocker until the actual commit/journal/browser route passes.
+the browser-entry replacement was not integrated at that checkpoint. The current
+source and tested transition above replace this historical state; full release
+qualification still requires the complete consumer route and operating envelope.
 Preserve failed prototype receipts and keep fixture storage bounded; repeated
 full copies exhausted the local disk before recoverable archival and isolated-copy
 hardlinks reduced the final four-cell fixture batch to 474 MiB.

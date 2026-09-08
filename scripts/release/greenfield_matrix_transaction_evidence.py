@@ -14,6 +14,7 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_create_lifecycle
 from odylith.runtime.domain_intelligence import greenfield_generation_state
+from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
@@ -283,6 +284,7 @@ def dry_run_commit_issues(
         "product facts hash": expected_product_facts,
         "atomic custody hash": str(receipt.get("atomic_custody_sha256") or "").strip(),
         "repository write-set hash": expected_write_set,
+        "publication bytes hash": str(receipt.get("publication_sha256") or "").strip(),
     }
     invalid = [label for label, value in required_digests.items() if not _is_sha256(value)]
     if invalid:
@@ -334,6 +336,7 @@ def dry_run_commit_issues(
             transaction_hash=expected_transaction,
             write_set_hash=expected_write_set,
             after_fingerprints=expected_after,
+            publication_sha256=str(receipt["publication_sha256"]),
         )
     )
     return tuple(dict.fromkeys(issues))
@@ -401,6 +404,19 @@ def _sealed_dry_run_receipt(
         }
     )
     issues: list[str] = []
+    try:
+        manifest_text = prewrite_package.get("generation_manifest_text")
+        greenfield_generation_store.require_sealed_greenfield_generation_manifest(
+            manifest_text, write_set=repository_write_set,
+        )
+        publication = greenfield_generation_state.require_sealed_greenfield_publication_entry(
+            prewrite_package.get("publication_entry_text"),
+            write_set_hash=repository_write_set_hash,
+            generation_manifest_sha256=hashlib.sha256(manifest_text.encode("utf-8")).hexdigest(),
+        )
+        receipt["publication_sha256"] = publication["publication_sha256"]
+    except (TypeError, ValueError):
+        issues.append("pre-confirm transaction is missing valid sealed generation/publication bytes")
     declared_transaction_hash = str(transaction.get("transaction_hash") or "").strip()
     if declared_transaction_hash != transaction_hash:
         issues.append("transaction file hash does not match the propose response")
@@ -487,14 +503,15 @@ def _active_generation_issues(
     transaction_hash: str,
     write_set_hash: str,
     after_fingerprints: Mapping[str, str],
+    publication_sha256: str,
 ) -> tuple[str, ...]:
     root = Path(repo_root).expanduser().resolve()
     issues: list[str] = []
     try:
-        state = greenfield_generation_state.read_active_generation_state(root)
+        state = greenfield_generation_state.active_generation_identity(root)
     except (OSError, RuntimeError, ValueError):
         return ("active generation readback is missing or invalid",)
-    if state is None:
+    if state["status"] != greenfield_generation_state.ACTIVE:
         return ("active generation readback is missing or invalid",)
     try:
         pinned = GreenfieldCommitJournal.pin_reviewed_generation(
@@ -505,9 +522,9 @@ def _active_generation_issues(
         return ("immutable generation readback is missing or invalid",)
     expected_identity = {
         "status": greenfield_generation_state.ACTIVE,
-        "transaction_hash": transaction_hash,
         "write_set_hash": write_set_hash,
         "generation_manifest_sha256": pinned.manifest_sha256,
+        "publication_sha256": publication_sha256,
     }
     observed_identity = {
         key: str(state.get(key) or "").strip()

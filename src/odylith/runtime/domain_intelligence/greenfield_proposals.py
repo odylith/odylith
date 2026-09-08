@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import time
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -21,6 +22,8 @@ from odylith.runtime.domain_intelligence.greenfield_authored_radar_ordering impo
     render_authored_ordering_rationale,
 )
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
+from odylith.runtime.domain_intelligence import greenfield_generation_store
+from odylith.runtime.domain_intelligence import greenfield_repository_lock
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import ProductCreateTransaction
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
@@ -309,6 +312,7 @@ def compile_greenfield_create_transaction(
 ) -> ProductCreateTransaction:
     """Compile and quality-gate the complete create package before commit."""
 
+    started_at = time.monotonic()
     root = Path(repo_root).expanduser().resolve()
     release_selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
     intent_authority = proposal.get(PRODUCT_INTENT_AUTHORITY_KEY)
@@ -336,31 +340,34 @@ def compile_greenfield_create_transaction(
             "rebuild the transaction before showing CONFIRM"
         )
     require_distinct_supplied_diagram_sources(proposal.get("diagrams"))
-    proposal, tribunal, prewrite_build, quality_manifest = _build_authored_prewrite_package(
-        root=root,
-        proposal=proposal,
-        release_selector=release_selector,
-        proposal_ready=proposal_ready,
-        repair_tier=repair_tier,
-        preconfirm_elapsed_seconds=preconfirm_elapsed_seconds,
-        model_authoring_tier=model_authoring_tier,
-        model_authoring_receipt=model_authoring_receipt,
-    )
-    package_proposal = prewrite_build.package.proposal
-    if not isinstance(package_proposal, Mapping) or package_proposal != proposal:
-        raise ValueError(
-            "Greenfield pre-confirm package drifted from the sealed model-authored proposal"
+    # The model pair is finished. Keep local staging and sealing on one baseline.
+    with greenfield_repository_lock.greenfield_repository_read_lock(root):
+        greenfield_generation_store.require_greenfield_working_generation(root)
+        proposal, tribunal, prewrite_build, quality_manifest = _build_authored_prewrite_package(
+            root=root,
+            proposal=proposal,
+            release_selector=release_selector,
+            proposal_ready=proposal_ready,
+            repair_tier=repair_tier,
+            preconfirm_elapsed_seconds=preconfirm_elapsed_seconds + time.monotonic() - started_at,
+            model_authoring_tier=model_authoring_tier,
+            model_authoring_receipt=model_authoring_receipt,
         )
-    proposal = package_proposal
-    transaction = build_product_create_transaction(
-        proposal=proposal,
-        release_selector=release_selector,
-        validation_gate=tribunal.to_dict() if hasattr(tribunal, "to_dict") else {},
-        prewrite_package=prewrite_build.package,
-        backlog_result=prewrite_build.backlog_result,
-        intent_authority=intent_authority,
-        quality_manifest=quality_manifest,
-        repo_root=root,
-    )
-    require_product_create_transaction_verified(transaction)
+        package_proposal = prewrite_build.package.proposal
+        if not isinstance(package_proposal, Mapping) or package_proposal != proposal:
+            raise ValueError(
+                "Greenfield pre-confirm package drifted from the sealed model-authored proposal"
+            )
+        proposal = package_proposal
+        transaction = build_product_create_transaction(
+            proposal=proposal,
+            release_selector=release_selector,
+            validation_gate=tribunal.to_dict() if hasattr(tribunal, "to_dict") else {},
+            prewrite_package=prewrite_build.package,
+            backlog_result=prewrite_build.backlog_result,
+            intent_authority=intent_authority,
+            quality_manifest=quality_manifest,
+            repo_root=root,
+        )
+        require_product_create_transaction_verified(transaction)
     return transaction

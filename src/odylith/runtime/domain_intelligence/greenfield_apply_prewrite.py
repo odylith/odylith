@@ -318,6 +318,7 @@ def build_prewrite_completion_package(
             release_workstream_ids=tuple(first_release_workstreams),
             repository_write_set=transaction_seal.repository_write_set,
             generation_manifest_text=transaction_seal.generation_manifest_text,
+            publication_entry_text=transaction_seal.publication_entry_text,
             commit_result_preview=transaction_seal.commit_result_preview,
         )
         return GreenfieldPrewriteBuild(

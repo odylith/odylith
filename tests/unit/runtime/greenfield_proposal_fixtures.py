@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import Mapping
 from dataclasses import replace
@@ -11,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_commit_transaction import lo
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence import greenfield_generation_store
+from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
@@ -22,6 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import PROJECT_INTELLIGENCE_LAYERS
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
+from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 
 
 def _write(path: Path, text: str) -> None:
@@ -345,8 +348,9 @@ def seal_compiled_greenfield_package_fixture(
     *,
     repo_root: Path,
 ) -> GreenfieldCompletionPackage:
-    """Attach a no-op sealed commit envelope for transaction contract tests."""
+    """Attach a no-op create envelope over a real published baseline."""
 
+    activate_greenfield_baseline_fixture(repo_root)
     write_set = greenfield_repository_write_set.compile_greenfield_repository_write_set(
         source_root=repo_root,
         staged_root=repo_root,
@@ -376,10 +380,15 @@ def seal_compiled_greenfield_package_fixture(
         "release_bootstrap": dict(package.release_target_result or {"created": False, "release": {}}),
         "release_target": dict(package.release_assignment_result or {"events": []}),
     }
+    manifest_text = greenfield_generation_store.compile_greenfield_generation_manifest(write_set)
     return replace(
         package,
         repository_write_set=write_set,
-        generation_manifest_text=greenfield_generation_store.compile_greenfield_generation_manifest(write_set),
+        generation_manifest_text=manifest_text,
+        publication_entry_text=greenfield_generation_state.compile_greenfield_publication_entry(
+            write_set_hash=write_set["write_set_hash"],
+            generation_manifest_sha256=hashlib.sha256(manifest_text.encode("utf-8")).hexdigest(),
+        ),
         commit_result_preview=commit_result,
     )
 

@@ -17,7 +17,7 @@
   are first-class host families, dev/dogfood/consumer are first-class lanes,
   and host model aliases resolve to adapter families without turning Odylith Discipline
   classification into a model-consuming path.
-Last updated: 2026-08-03
+Last updated: 2026-09-08
 
 
 ## Purpose
@@ -65,6 +65,17 @@ remediation, and rendering.
 - Install, doctor, repair, on/off, sync, routing, orchestration, diagnosis,
   and surface generation are all parts of one product, not separate tools that
   happen to share a repository.
+- An upgrade's read-only activation smoke must pass before an explicitly
+  requested new version pin is written. A failed smoke result or raised smoke
+  exception restores the previous runtime and launcher, retains exact prior pin
+  bytes and permissions (including pre-existing operator target intent), and
+  records failure without publishing a successor generation. Supported commands
+  must remain usable after that recovery. Eleven focused controls and all nine
+  lifecycle-simulator tests pass under CB-305. The frozen integrated checkpoint
+  also passes 1,345 install unit/integration tests and canonical clean local-release
+  smoke, with independent installed baseline and manager-byte readback. This is
+  not arbitrary crash, missing-pin repair, or legacy generation migration proof;
+  the exact migration-assessment release gate remains open.
 
 ### Control-plane leverage
 - Odylith is not trying to beat the underlying model weights. It is trying to

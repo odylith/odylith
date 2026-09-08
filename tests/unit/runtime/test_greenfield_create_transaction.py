@@ -194,7 +194,7 @@ def _complete_authored_supplier_proposal(
     return proposal, authority
 
 
-def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
+def _package(proposal: dict[str, Any], *, repo_root: Path) -> GreenfieldCompletionPackage:
     backlog_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
     workstream_titles = [
         str(row.get("title") or f"Prove supplier risk review path {index}")
@@ -202,7 +202,7 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
     ] or ["Prove supplier risk review path"]
     workstream_ids = [f"B-{index:03d}" for index in range(1, len(workstream_titles) + 1)]
     idea_paths = [
-        Path(f"/repo/odylith/radar/source/ideas/{idea_id}.md")
+        repo_root / f"odylith/radar/source/ideas/{idea_id}.md"
         for idea_id in workstream_ids
     ]
     created_backlog = [
@@ -217,7 +217,7 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
             str(path): title
             for path, title in zip(idea_paths, workstream_titles, strict=True)
         },
-        "backlog_index": "/repo/odylith/radar/source/INDEX.md",
+        "backlog_index": str(repo_root / "odylith/radar/source/INDEX.md"),
         "backlog_index_text": "\n".join(
             f"| {idea_id} | {title} |"
             for idea_id, title in zip(workstream_ids, workstream_titles, strict=True)
@@ -246,20 +246,20 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
         diagram_ids=diagram_ids,
     )
     atlas_catalog_rows = greenfield_apply_diagrams.render_prewrite_atlas_catalog_rows(
-        root=Path("/repo"),
+        root=repo_root,
         rows=diagram_rows,
         diagram_ids=diagram_ids,
         traceability_plan=traceability_plan,
         review_date="2026-07-07",
     )
     component_registry_preview = greenfield_apply_components.preview_prewrite_components(
-        root=Path("/repo"),
+        root=repo_root,
         proposal=proposal,
         release_selector="0.0.1",
         backlog_result=backlog_result,
     )
     rendered_component_specs = greenfield_apply_components.render_prewrite_component_specs(
-        root=Path("/repo"),
+        root=repo_root,
         proposal=proposal,
         release_selector="0.0.1",
         backlog_result=backlog_result,
@@ -345,7 +345,7 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
         },
         release_workstream_ids=tuple(workstream_ids),
     )
-    return _seal_test_package(package, repo_root=Path("/repo"))
+    return _seal_test_package(package, repo_root=repo_root)
 
 
 def _seal_test_package(package: GreenfieldCompletionPackage, *, repo_root: Path) -> GreenfieldCompletionPackage:
@@ -397,7 +397,7 @@ def _transaction(repo_root: Path | None = None) -> Any:
     root = repo_root or Path(tempfile.mkdtemp(prefix="odylith-authored-transaction-"))
     proposal, authority = _complete_authored_supplier_proposal(root)
     package = replace(
-        _package(proposal),
+        _package(proposal, repo_root=root),
         baseline_writes=greenfield_create_baseline.precompiled_greenfield_create_baseline_writes(root),
         brand_asset_writes=brand_assets.precompiled_brand_asset_writes(repo_root=root),
     )
@@ -422,7 +422,7 @@ def _sealed_transaction(repo_root: Path, transaction: Any | None = None) -> Any:
 
 
 def test_compiled_memory_readback_rejects_accepted_project_drift(tmp_path: Path) -> None:
-    package = _package(_complete_authored_supplier_proposal(tmp_path)[0])
+    package = _package(_complete_authored_supplier_proposal(tmp_path)[0], repo_root=tmp_path)
     source_root = tmp_path / "odylith/runtime/source"
     source_root.mkdir(parents=True, exist_ok=True)
     accepted_project = dict(package.accepted_project_preview or {})
@@ -447,7 +447,7 @@ def test_compiled_memory_readback_rejects_accepted_project_drift(tmp_path: Path)
 
 
 def test_compiled_memory_readback_accepts_json_round_trip_equivalent_preview(tmp_path: Path) -> None:
-    package = _package(_complete_authored_supplier_proposal(tmp_path)[0])
+    package = _package(_complete_authored_supplier_proposal(tmp_path)[0], repo_root=tmp_path)
     preview = dict(package.accepted_project_preview or {})
     preview["created"] = {
         **dict(preview.get("created") or {}),
@@ -476,7 +476,7 @@ def test_compiled_memory_readback_accepts_json_round_trip_equivalent_preview(tmp
 
 
 def test_compiled_memory_readback_rejects_canonicalized_compass_component_ids(tmp_path: Path) -> None:
-    package = _package(_complete_authored_supplier_proposal(tmp_path)[0])
+    package = _package(_complete_authored_supplier_proposal(tmp_path)[0], repo_root=tmp_path)
     preview = dict(package.compass_memory_preview or {})
     preview["components"] = ["Supplier-Risk-Service"]
     package = replace(package, compass_memory_preview=preview)
@@ -504,7 +504,7 @@ def test_compiled_memory_readback_rejects_canonicalized_compass_component_ids(tm
 
 
 def test_compiled_memory_readback_rejects_compass_event_drift(tmp_path: Path) -> None:
-    package = _package(_complete_authored_supplier_proposal(tmp_path)[0])
+    package = _package(_complete_authored_supplier_proposal(tmp_path)[0], repo_root=tmp_path)
     source_root = tmp_path / "odylith/runtime/source"
     source_root.mkdir(parents=True, exist_ok=True)
     accepted_project = dict(package.accepted_project_preview or {})
@@ -529,7 +529,7 @@ def test_compiled_memory_readback_rejects_compass_event_drift(tmp_path: Path) ->
 
 
 def test_compiled_memory_readback_rejects_missing_compass_stream_event(tmp_path: Path) -> None:
-    package = _package(_complete_authored_supplier_proposal(tmp_path)[0])
+    package = _package(_complete_authored_supplier_proposal(tmp_path)[0], repo_root=tmp_path)
     source_root = tmp_path / "odylith/runtime/source"
     source_root.mkdir(parents=True, exist_ok=True)
     accepted_project = dict(package.accepted_project_preview or {})
@@ -682,7 +682,7 @@ def test_compiled_transaction_file_requires_untampered_compiler_receipt(tmp_path
 def test_product_create_transaction_json_round_trips_traceability_diagram_links() -> None:
     root = Path(tempfile.mkdtemp(prefix="odylith-authored-traceability-"))
     proposal, authority = _complete_authored_supplier_proposal(root)
-    package = _package(proposal)
+    package = _package(proposal, repo_root=root)
     transaction = build_product_create_transaction(
         proposal=proposal,
         release_selector="0.0.1",
@@ -904,7 +904,7 @@ def test_compiled_backlog_atlas_readback_rejects_backlog_drift(tmp_path: Path) -
     proposal = _complete_authored_supplier_proposal(tmp_path)[0]
     idea_path = tmp_path / "odylith/radar/source/ideas/2026-07/2026-07-07-supplier-risk-readback-path.md"
     index_path = tmp_path / "odylith/radar/source/INDEX.md"
-    package = _package(proposal)
+    package = _package(proposal, repo_root=tmp_path)
     package = replace(
         package,
         backlog_result={
@@ -928,7 +928,7 @@ def test_compiled_backlog_atlas_readback_rejects_atlas_drift(tmp_path: Path) -> 
     idea_path = tmp_path / "odylith/radar/source/ideas/2026-07/2026-07-07-supplier-risk-readback-path.md"
     index_path = tmp_path / "odylith/radar/source/INDEX.md"
     atlas_path = tmp_path / "odylith/atlas/source/supplier-risk-flow.mmd"
-    package = _package(proposal)
+    package = _package(proposal, repo_root=tmp_path)
     package = replace(
         package,
         backlog_result={
@@ -957,7 +957,7 @@ def test_compiled_backlog_atlas_readback_accepts_exact_atlas_catalog_rows(tmp_pa
     idea_path = tmp_path / "odylith/radar/source/ideas/2026-07/2026-07-07-supplier-risk-readback-path.md"
     index_path = tmp_path / "odylith/radar/source/INDEX.md"
     catalog_path = tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json"
-    package = _package(proposal)
+    package = _package(proposal, repo_root=tmp_path)
     package = replace(
         package,
         backlog_result={
@@ -996,7 +996,7 @@ def test_compiled_backlog_atlas_readback_rejects_atlas_catalog_drift(tmp_path: P
     idea_path = tmp_path / "odylith/radar/source/ideas/2026-07/2026-07-07-supplier-risk-readback-path.md"
     index_path = tmp_path / "odylith/radar/source/INDEX.md"
     catalog_path = tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json"
-    package = _package(proposal)
+    package = _package(proposal, repo_root=tmp_path)
     package = replace(
         package,
         backlog_result={
@@ -1121,11 +1121,11 @@ def test_compiled_write_replays_exact_sealed_release_payloads(
     event_log_bytes = b'{"action":"add","release_id":"release-0-0-1","workstream_id":"B-001"}\n'
     release_registry_path.write_bytes(release_registry_bytes)
     event_log_path.write_bytes(event_log_bytes)
+    transaction = _transaction(repo_root=tmp_path)
     write_set = greenfield_repository_write_set.compile_greenfield_repository_write_set(
         source_root=tmp_path,
         staged_root=staged_root,
     )
-    transaction = _transaction(repo_root=tmp_path)
     transaction = replace(
         transaction,
         prewrite_package=replace(transaction.prewrite_package, repository_write_set=write_set),
@@ -1221,7 +1221,7 @@ def test_compiled_release_assignment_replay_is_idempotent(tmp_path: Path) -> Non
 
 def test_product_create_transaction_rejects_incomplete_compiled_package_before_confirm(tmp_path: Path) -> None:
     proposal, authority = _complete_authored_supplier_proposal(tmp_path)
-    package = replace(_package(proposal), next_steps_preview=None)
+    package = replace(_package(proposal, repo_root=tmp_path), next_steps_preview=None)
 
     with pytest.raises(ValueError, match="missing compiled next_steps_preview"):
         build_product_create_transaction(
@@ -1241,7 +1241,7 @@ def test_product_create_transaction_rejects_drift_between_reviewed_and_compiled_
 ) -> None:
     proposal, authority = _complete_authored_supplier_proposal(tmp_path)
     drifted_intent = {**proposal["intent"], "first_path": "DRIFTED PACKAGE PATH"}
-    package = replace(_package(proposal), proposal={**proposal, "intent": drifted_intent})
+    package = replace(_package(proposal, repo_root=tmp_path), proposal={**proposal, "intent": drifted_intent})
 
     with pytest.raises(ValueError, match="compiled package proposal does not match"):
         build_product_create_transaction(
@@ -1279,7 +1279,7 @@ def test_hash_verification_rejects_rehashed_compiled_package_proposal_drift(tmp_
 
 def test_product_create_transaction_rejects_missing_surface_refresh_proof_before_confirm(tmp_path: Path) -> None:
     proposal, authority = _complete_authored_supplier_proposal(tmp_path)
-    package = replace(_package(proposal), surface_refresh_preview=None)
+    package = replace(_package(proposal, repo_root=tmp_path), surface_refresh_preview=None)
 
     with pytest.raises(ValueError, match="missing compiled pre-confirm surface refresh proof"):
         build_product_create_transaction(
@@ -1298,7 +1298,7 @@ def test_product_create_transaction_rejects_missing_compiled_atlas_catalog_rows_
     tmp_path: Path,
 ) -> None:
     proposal, authority = _complete_authored_supplier_proposal(tmp_path)
-    package = replace(_package(proposal), atlas_catalog_rows=())
+    package = replace(_package(proposal, repo_root=tmp_path), atlas_catalog_rows=())
 
     with pytest.raises(ValueError, match="Atlas catalog rows missing or incomplete"):
         build_product_create_transaction(
@@ -1315,7 +1315,7 @@ def test_product_create_transaction_rejects_missing_compiled_atlas_catalog_rows_
 
 def test_product_create_transaction_rejects_missing_compiled_traceability_before_confirm(tmp_path: Path) -> None:
     proposal, authority = _complete_authored_supplier_proposal(tmp_path)
-    package = replace(_package(proposal), traceability_plan=None)
+    package = replace(_package(proposal, repo_root=tmp_path), traceability_plan=None)
 
     with pytest.raises(ValueError, match="missing compiled traceability_plan"):
         build_product_create_transaction(
@@ -1334,7 +1334,7 @@ def test_product_create_transaction_rejects_compiled_traceability_without_diagra
     tmp_path: Path,
 ) -> None:
     proposal, authority = _complete_authored_supplier_proposal(tmp_path)
-    package = _package(proposal)
+    package = _package(proposal, repo_root=tmp_path)
     traceability_plan = replace(package.traceability_plan, diagram_links=())
     package = replace(package, traceability_plan=traceability_plan)
 
@@ -1364,11 +1364,11 @@ def test_compiled_write_uses_exact_precompiled_component_bytes(
     spec_bytes = b"# Compiled Registry Service\n\nCompiled registry service spec.\n"
     registry_path.write_bytes(registry_bytes)
     spec_path.write_bytes(spec_bytes)
+    transaction = _transaction(repo_root=tmp_path)
     write_set = greenfield_repository_write_set.compile_greenfield_repository_write_set(
         source_root=tmp_path,
         staged_root=staged_root,
     )
-    transaction = _transaction(repo_root=tmp_path)
     transaction = replace(
         transaction,
         prewrite_package=replace(transaction.prewrite_package, repository_write_set=write_set),

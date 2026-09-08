@@ -20,6 +20,7 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
 )
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
+from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 
 
 _SLOP_PHRASES = (
@@ -352,6 +353,7 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
 ) -> None:
     del name
     _seed_empty_governance_repo(tmp_path)
+    activate_greenfield_baseline_fixture(tmp_path)
     source = _source(intent)
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
     provider = StructuredAuthoringProvider(

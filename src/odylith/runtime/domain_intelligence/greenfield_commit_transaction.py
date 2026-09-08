@@ -30,6 +30,7 @@ from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_
 from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_FORBIDDEN_OPERATIONS
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence import greenfield_generation_store
+from odylith.runtime.domain_intelligence import greenfield_generation_state
 
 
 _POSTCONFIRM_RUNTIME_SOURCE_FILES = (
@@ -73,6 +74,7 @@ class SealedGreenfieldCommitPackage:
     _commit_result_preview_json: str
     _surface_refresh_preview_json: str
     generation_manifest_text: str
+    publication_entry_text: str
 
     @property
     def repository_write_set(self) -> Mapping[str, Any]:
@@ -197,6 +199,9 @@ def load_sealed_product_create_commit(
     write_set = package.get("repository_write_set")
     commit_preview = package.get("commit_result_preview")
     surface_preview = package.get("surface_refresh_preview")
+    publication_entry_text = package.get("publication_entry_text")
+    if not isinstance(publication_entry_text, str):
+        raise ValueError("ProductCreateTransaction is missing its sealed publication entry")
     commit_manifest_preview = payload.get("quality_manifest")
     transaction_summary = payload.get("commit_summary")
     if (
@@ -226,6 +231,7 @@ def load_sealed_product_create_commit(
             _commit_result_preview_json=_sealed_mapping_json(commit_preview),
             _surface_refresh_preview_json=_sealed_mapping_json(surface_preview),
             generation_manifest_text=package.get("generation_manifest_text", ""),
+            publication_entry_text=publication_entry_text,
         ),
         _attestation=_SEALED_COMMIT_ATTESTATION,
     )
@@ -247,10 +253,27 @@ def require_sealed_commit_transaction(transaction: Any) -> None:
         )
     package = getattr(transaction, "prewrite_package", None)
     write_set = getattr(package, "repository_write_set", None)
-    greenfield_repository_write_set.require_compiled_greenfield_repository_write_set(write_set)
+    require_product_create_repository_write_set(write_set)
     greenfield_generation_store.require_sealed_greenfield_generation_manifest(
         getattr(package, "generation_manifest_text", ""), write_set=write_set,
     )
+    greenfield_generation_state.require_sealed_greenfield_publication_entry(
+        getattr(package, "publication_entry_text", ""),
+        write_set_hash=write_set["write_set_hash"],
+        generation_manifest_sha256=hashlib.sha256(package.generation_manifest_text.encode("utf-8")).hexdigest(),
+    )
+
+
+def require_product_create_repository_write_set(write_set: object) -> Mapping[str, Any]:
+    """A create replaces a published baseline; activation is never CONFIRM work."""
+
+    payload = greenfield_repository_write_set.require_compiled_greenfield_repository_write_set(write_set)
+    if payload["active_generation_precondition"]["status"] != "active":
+        raise ValueError(
+            "ProductCreateTransaction requires a published baseline before confirmation; "
+            "complete Odylith setup, then rebuild the proposal"
+        )
+    return payload
 
 
 def _require_current_sealed_intent_versions(payload: Mapping[str, Any]) -> None:
@@ -414,5 +437,6 @@ __all__ = [
     "canonical_product_create_transaction_receipt_bytes",
     "load_sealed_product_create_commit",
     "require_product_create_transaction_compiler_provenance_payload",
+    "require_product_create_repository_write_set",
     "require_sealed_commit_transaction",
 ]

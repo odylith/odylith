@@ -44,7 +44,7 @@ def _repository_lock(repo_root: Path, *, mode: int) -> Iterator[None]:
         try:
             fcntl.flock(handle.fileno(), mode | fcntl.LOCK_NB)
         except BlockingIOError as exc:
-            raise GreenfieldRepositoryBusyError("Greenfield repository mutation is already in progress") from exc
+            raise GreenfieldRepositoryBusyError("BUSY_NO_WRITE: Greenfield repository mutation is already in progress") from exc
         except OSError as exc:
             raise GreenfieldRepositoryLockError("Greenfield repository lock could not be acquired") from exc
         try:

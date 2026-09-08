@@ -22,6 +22,7 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     StructuredAuthoringProvider,
     authored_response,
 )
+from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 
 
 def _authored_intent(**overrides: Any) -> dict[str, Any]:
@@ -102,6 +103,7 @@ def _public_propose(
     intent: Mapping[str, Any],
     repair_tier: str = "",
 ) -> tuple[int, dict[str, Any], StructuredAuthoringProvider]:
+    activate_greenfield_baseline_fixture(tmp_path)
     source = _evidence_source(intent)
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
     provider = StructuredAuthoringProvider(

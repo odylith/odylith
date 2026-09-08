@@ -17,6 +17,7 @@ from tests.unit.runtime.greenfield_authored_proposal_fixtures import canonical_m
 from tests.unit.runtime.greenfield_authored_proposal_fixtures import _canonical_model_authored_greenfield_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_transaction
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
+from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 
 
 _PROMPT = "Draft a greenfield proposal for a municipal permit review workspace"
@@ -52,6 +53,7 @@ def _proposal(repo_root: Path) -> dict[str, object]:
 def _compiled_transaction(repo_root: Path, monkeypatch: pytest.MonkeyPatch) -> Any:
     _disable_refreshes(monkeypatch)
     proposal = _proposal(repo_root)
+    activate_greenfield_baseline_fixture(repo_root)
     authoring_receipt = dict(proposal.pop("_test_model_authoring_receipt"))
     return greenfield_proposals.compile_greenfield_create_transaction(
         repo_root=repo_root,
