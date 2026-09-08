@@ -25,8 +25,17 @@ controls now pass, including linked source changes and live Context identity.
 The superseded broad run was stopped after 2779 passes with unchanged inputs;
 it is not full-suite evidence. Final independent review accepts the bounded fix
 after eight controls and a fresh-process lightweight-cache check, with no remaining
-P0/P1/P2 finding in this slice. Frozen runtime/browser proof and actual post-commit
-check-only remain checkpoint gates, recorded as they settle in the receipts:
+P0/P1/P2 finding in this slice. Frozen broad proof passes 4599 runtime tests in
+353.22 seconds and 42 browser checks in 57.39 seconds, with all tracked
+source/test/configuration/governance inputs unchanged and six HTML mirrors equal.
+Staged readiness passes, but actual clean-head check-only after source commit
+`b359963c` still fails Delivery freshness. Two synthetic workspace-activity events
+disappear when the source/spec changes are committed, altering evidence and queue
+ordering; Registry and Atlas remain current. This differs from the prior inferred
+HEAD-only failure and matches the persisted/live ownership class in CB-232.
+Keep one-pass integration unqualified, preserve the first artifact and comparison,
+and diagnose the separate Delivery activity boundary without blind refresh/commit
+loops or weakening live visibility. Receipts:
 `/private/tmp/odylith-delivery-proof-identity.9mIIEr/REVIEW.md`.
 
 The 2898-line Delivery owner receives only proof-provenance safety changes in
@@ -36,6 +45,12 @@ do not introduce forwarding wrappers or duplicate normalizers. Existing Atlas
 flows retain the same resolver/Delivery/Context owners and edges. This correction
 does not close native interventions, generation quality, 60/90/120 reliability,
 current installed release proof or the untouched holdout gate.
+
+Independent diagnosis permits one clean-source settlement refresh as a bounded
+development-checkpoint workaround, not a one-pass ownership fix. Source/spec
+changes are already committed; only diagnostic/generated records may follow.
+Require unchanged zero synthetic-workspace events and freshness before and after
+that record-only commit. Stop if it fails again; do not repeat settlement loops.
 
 ### Post-commit integrated freshness finding (2026-09-08)
 
