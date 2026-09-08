@@ -10,6 +10,32 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Product timing and local-support projection (2026-09-07)
+
+Keep consumer 60/90/120 and model 55/80/105 fixed. Preserve prior frozen 50/45
+experiment rejections, but use that extra headroom diagnostically in future
+product qualification, not as an unstated replacement release floor. A timely
+error is still failure; one 54.3-second staged package is not reliability proof.
+
+D005 replaces cross-component support arrows with local responsibility, exact
+source-action references and verification. Existing canonical support identities
+remain authoritative; repeated IDs do not create events or transfer ownership.
+No new schema, source interpretation, model call or post-confirm work is added.
+The retained-response fixture seals a fresh 5/5/5 package and passes 32 surface
+cells plus two readable-zoom journeys. Canonical semantics and the other four
+diagram rows are identical to the retained source package. The first wide-strip
+layout and one SVG-test-oracle error remain preserved. Focused/native proof
+passes 144 checks; the corrected full runtime run passes 4313 tests and install
+passes 1101, with the settled tree frozen. The first worker-disable invocation
+failure is preserved. Both terminal fixture directories are archived and moved
+recoverably to Trash. Evidence: `/private/tmp/odylith-atlas-local-support.ppgSjH/`.
+
+This resolves the bounded crossing mechanism, not all diagram quality or the
+generation mechanism. D001 detail, mobile/copy quality, maximum-density reading,
+first-pass semantics and timing reliability, distribution/host/recovery and
+independent final semantic/holdout qualification remain open. Do not repeat the
+failed author experiment or turn this fixture replay into a live quality claim.
+
 ### Source-first ownership comparison (2026-09-07)
 
 The first-run clarification comparison is terminal and rejected. Its sole real

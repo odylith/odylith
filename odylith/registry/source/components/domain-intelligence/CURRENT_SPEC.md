@@ -4,6 +4,18 @@ Last updated: 2026-09-07
 
 ## Overview
 
+The capability-support Atlas projector groups each proposed component's complete
+responsibility, verification and exact supported source-action references locally.
+Repeated source IDs preserve many-to-many support, not new events, performance
+ownership or execution chronology. Actor headers and action text are separated;
+state/result/proof/non-goals remain edge-free. The old shared support graph is
+removed. No authoring, schema, model, deadline or post-confirm contract changes.
+The bounded source-local fixture passes 144 focused/native checks, 32 surface
+cells and two reading journeys; the settled tree passes 4313 runtime tests and
+1101 install tests. The earlier test-environment failure remains recorded.
+Mobile panning and maximum-density readability are not qualified. Evidence:
+`/private/tmp/odylith-atlas-local-support.ppgSjH/`.
+
 The latest bounded author-coherence revision stages one complete museum package
 in 54.296589 seconds with a 48.257923-second model interval. It passes the product
 60/55 band but misses the predeclared 50/45 headroom gate. The second case is

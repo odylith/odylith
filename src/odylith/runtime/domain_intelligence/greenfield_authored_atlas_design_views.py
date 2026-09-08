@@ -99,8 +99,10 @@ def build_provisional_design_atlas_specs(
                 "state, result, and proof."
             ),
             "read_guide": (
-                "Support arrows do not transfer the source actor's action to a component. "
-                "Dotted arrows show proposed boundary verification. Source-stated facts are "
+                "Each group pairs a proposed responsibility with its supported source actions "
+                "and proposed verification, not a passed check. Repeated action IDs refer to the "
+                "same source action, not additional events or execution order. Support does not "
+                "transfer the stated actor's action to a component. Source-stated facts are "
                 "an edge-free context inventory; no transition or causal topology is inferred."
             ),
             "source": support_source,
@@ -225,36 +227,46 @@ def _capability_support_view(
     proof_boundary: str,
     non_goals: Sequence[str],
 ) -> tuple[str, list[dict[str, str]]]:
-    event_ids = {row["order"]: f"event{index}" for index, row in enumerate(relations, 1)}
-    lines = ["flowchart LR", '  subgraph source_path["Source-stated actions"]']
-    boxes = [atlas_box(
-        "source_path", "Source-stated actions", "Container",
-        "Groups exact source actions without assigning execution order.",
-    )]
-    for index, relation in enumerate(relations, 1):
-        event = relation["event_quote"]
-        lines.append(f'    event{index}["{mermaid_label(event)}"]')
-        boxes.append(atlas_box(
-            f"event{index}", event, "Source-stated event",
-            f"Source-stated action {relation['order']}: {event}",
-        ))
-    lines.extend(["  end", '  subgraph proposed_components["Proposed capability boundaries"]'])
-    boxes.append(atlas_box(
-        "proposed_components", "Proposed capability boundaries", "Container",
-        "Groups proposed logical components and their proposed boundary verification.",
-    ))
+    events = {row["order"]: row for row in relations}
+    lines = ["flowchart LR"]
+    boxes: list[dict[str, str]] = []
     for index, component in enumerate(design["components"], 1):
         component_id = f"component{index}"
+        support_id = f"component{index}_support"
+        actions_id = f"component{index}_actions"
         verification_id = f"component{index}_verification"
+        action_rows = [
+            f"Source action {order} · {events[order]['actor_kind']}: "
+            f"{events[order]['actor_fact_quote']}\n{events[order]['event_quote']}"
+            for order in component["supported_event_orders"]
+        ]
+        actions = "\n\n".join(action_rows)
+        actions_label = "<br/><br/>".join(
+            "<br/>".join(mermaid_label(line, width=44) for line in row.splitlines())
+            for row in action_rows
+        )
         lines.extend([
-            f'    {component_id}["{mermaid_label(component["name"])}"]',
-            f'    {verification_id}["{mermaid_label(component["verification"])}"]',
-            f'    {component_id} -. "proposed boundary verification" .-> {verification_id}',
+            f'  subgraph {support_id}["Proposed support: {mermaid_label(component["name"])}"]',
+            '    direction LR',
+            f'    {component_id}["Responsibility<br/>{mermaid_label(component["responsibility"], width=44)}"]',
+            f'    {actions_id}["{actions_label}"]',
+            f'    {verification_id}["Verification<br/>{mermaid_label(component["verification"], width=44)}"]',
+            f'    {component_id} -->|"proposed support"| {actions_id}',
+            f'    {component_id} -. "proposed verification" .-> {verification_id}',
+            "  end",
         ])
         boxes.extend([
             atlas_box(
+                support_id, component["name"], "Proposed support group",
+                "Groups one proposed responsibility, its source-action references and verification.",
+            ),
+            atlas_box(
                 component_id, component["name"], "Proposed component",
                 f"Proposed responsibility: {component['responsibility']}",
+            ),
+            atlas_box(
+                actions_id, actions, "Supported source actions",
+                "Exact source-action references; support does not transfer actor ownership.",
             ),
             atlas_box(
                 verification_id, component["verification"],
@@ -262,12 +274,7 @@ def _capability_support_view(
                 f"Proposed verification for {component['name']}: {component['verification']}",
             ),
         ])
-        for order in component["supported_event_orders"]:
-            lines.append(
-                f'  {component_id} -->|"supports source action"| {event_ids[order]}'
-            )
     lines.extend([
-        "  end",
         '  subgraph source_facts["Source-stated facts"]',
         f'    state["State object<br/>{mermaid_label(state_object)}"]',
         f'    result["Visible result<br/>{mermaid_label(visible_result)}"]',

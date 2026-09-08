@@ -615,9 +615,8 @@ def test_authored_atlas_depth_is_five_distinct_semantic_views_not_a_count_floor(
         "harbor-desk-delivery-dependencies"
     ]
     assert {
-        "source_path",
-        "event1",
-        "proposed_components",
+        "component1_support",
+        "component1_actions",
         "component1",
         "component1_verification",
         "source_facts",
@@ -639,7 +638,7 @@ def test_authored_atlas_depth_is_five_distinct_semantic_views_not_a_count_floor(
         "harbor-desk-delivery-dependencies"
     ]
     support = source_by_slug["harbor-desk-capability-support"]
-    assert 'component1 -->|"supports source action"| event1' in support
+    assert 'component1 -->|"proposed support"| component1_actions' in support
     assert "exact source overlap" not in support
     assert "exact source containment" not in support
     assert "state -->" not in support
@@ -721,14 +720,62 @@ def test_capability_support_keeps_source_events_and_proposed_ownership_distinct(
     )
     boxes = {row["node_id"]: row for row in support["diagram_boxes"]}
 
-    assert boxes["event1"]["label"] == "Dock attendant Ivo enters a vessel tag"
-    assert boxes["event1"]["role"] == "Source-stated event"
+    assert boxes["component1_actions"]["label"] == (
+        "Source action 1 · human: Dock attendant Ivo\n"
+        "Dock attendant Ivo enters a vessel tag"
+    )
+    assert boxes["component1_actions"]["role"] == "Supported source actions"
     assert boxes["component1"]["role"] == "Proposed component"
-    assert 'component1 -->|"supports source action"| event1' in support["mermaid_source"]
+    assert 'component1 -->|"proposed support"| component1_actions' in support["mermaid_source"]
     assert "event1 --> component1" not in support["mermaid_source"]
     assert "owner" not in support["mermaid_source"]
     assert boxes["source_facts"]["label"] == "Source-stated facts"
     assert "Accepted" not in json.dumps(support)
+
+
+@pytest.mark.parametrize("reverse_rows", [False, True])
+def test_capability_support_local_groups_preserve_exact_many_to_many_references(
+    reverse_rows: bool,
+) -> None:
+    relations = (
+        _relation(1, "Dispatch coordinator", "submits the request; retains its receipt"),
+        _relation(2, "Audit reviewer", "checks the receipt without approving payment"),
+        _relation(3, "Berth map", "shows the receipt & its `review` status", actor_kind="product", owner="Berth map"),
+    )
+    if reverse_rows:
+        relations = tuple(reversed(relations))
+    design = _provisional_design()
+    before = deepcopy((relations, design))
+    support = _authored_diagrams(
+        relations=relations, provisional_design=design,
+        human_actors=("Dispatch coordinator", "Audit reviewer"),
+    )[-1]
+    boxes = {row["node_id"]: row for row in support["diagram_boxes"]}
+    source = support["mermaid_source"]
+    by_order = {row["order"]: row for row in relations}
+    for index, component in enumerate(design["components"], 1):
+        actions = "\n\n".join(
+            f"Source action {order} · {by_order[order]['actor_kind']}: "
+            f"{by_order[order]['actor_fact_quote']}\n{by_order[order]['event_quote']}"
+            for order in component["supported_event_orders"]
+        )
+        assert boxes[f"component{index}_actions"]["label"] == actions
+        assert "<br/><br/>".join(
+            "<br/>".join(mermaid_label(line, width=44) for line in action.splitlines())
+            for action in actions.split("\n\n")
+        ) in source
+        assert mermaid_label(component["responsibility"], width=44) in source
+        assert mermaid_label(component["verification"], width=44) in source
+        group = source.split(f"  subgraph component{index}_support[", 1)[1].split("  end", 1)[0]
+        assert f'component{index} -->|"proposed support"| component{index}_actions' in group
+        assert f'component{index} -. "proposed verification" .-> component{index}_verification' in group
+        assert group.count("-->") == 1
+        assert group.count(".->") == 1
+    assert source.count("-->") == len(design["components"])
+    assert source.count(".->") == len(design["components"])
+    assert "source_path" not in source
+    assert "Repeated action IDs refer to the same source action" in support["read_guide"]
+    assert (relations, design) == before
 
 
 def test_authored_atlas_authority_kind_is_sealed_with_the_display() -> None:
