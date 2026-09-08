@@ -4,6 +4,15 @@ Last updated: 2026-09-07
 
 ## Overview
 
+The latest native Fast experiment also fails to deliver a package: authoring
+takes 32.096728 seconds and review takes 14.018430 seconds, denying a proposed
+workflow/design inconsistency. The command returns an error at 46.395096 seconds;
+A plus R alone exceeds the stricter 45-second comparison headroom target. Source
+constraints survive and all 366 consumer files remain unchanged. This is neither
+a timing success nor a qualified Fast mechanism. Requested and served tier remain
+distinct; no retry, default change or deadline relaxation follows. Evidence:
+`/private/tmp/odylith-fast-execution-gate.ivieTi/actual/timing-custody-review.md`.
+
 Native admission candidate failed its standard-tier gate: authoring consumed
 50.496233 seconds, leaving 4.498808 seconds for review. The reviewer returned no
 verdict and the command failed at 55.441175 seconds before producing a complete

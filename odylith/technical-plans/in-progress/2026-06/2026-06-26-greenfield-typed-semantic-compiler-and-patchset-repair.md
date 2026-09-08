@@ -12,6 +12,39 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ### Source-first ownership comparison (2026-09-07)
 
+The Fast discriminator is now terminal and rejected. On pushed checkpoint
+`a3215f14`, the live author returns in 32.096728 seconds and full review denies in
+14.018430 seconds; the CLI returns an error at 46.395096 seconds with no package.
+A plus R alone exceeds the 45-second comparison headroom target. All 366 consumer
+files and the frozen source/request dependencies remain unchanged; two real
+dispatches and no retry or CONFIRM occur. Requested Fast is not observed serving
+tier, and these unpaired runs cannot establish causal acceleration. Evidence:
+`/private/tmp/odylith-fast-execution-gate.ivieTi/actual/timing-custody-review.md`.
+
+The new quality finding concerns provisional design, not lost source ordering:
+the first run respects all four explicit source edges but conflicts with its own
+recorded-identity exchange into inspection. Do not turn this into a universal
+domain rule or infer event precedence from workstream delivery prerequisites.
+Component exchanges and supported-event IDs also do not generally specify runtime
+preconditions; automatically sorting that topology would revive an invalid owner.
+Keep the failed candidate immutable. Before another implementation or paid run,
+compare a bounded ownership improvement against the existing mechanism using
+positive, negative and equivalent-source controls; no new schema, repair role,
+profile sweep or prompt exception is earned solely by this one failure.
+
+The bounded next hypothesis is a clarification of the existing author contract:
+the proposed walkthrough must be feasible under its own proposed runtime inputs,
+exchanges and verification, without promoting delivery prerequisites or arbitrary
+exchange direction into runtime laws. Freeze one revision and two independently
+annotated disclosed development controls before any dispatch: a real runtime
+producer/consumer input and a contrasting delivery-only or non-temporal exchange.
+Keep schema, reviewer, model/profile and deadlines unchanged. Allow one native
+attempt per control and reject the revision on source loss, invented ordering,
+design inconsistency, weak complete-package utility or failed timing/headroom.
+Do not follow a rejection with another condition stack or repair role. This is
+an untested comparison, not a production fix or permission to repair the retained
+failed candidate. Review: `/private/tmp/odylith-fast-execution-gate.ivieTi/actual-semantic-review.md`.
+
 The temporary-root correction now has bounded source-local approval: 4311 runtime
 tests, 1101 install tests and 34 synthetic staged-browser checks pass. The exact
 native synthetic path passes success, malformed-output and 55-second timeout
@@ -59,7 +92,7 @@ proof before closing this defect. The initial existing-request test used an inva
 empty request and passed spuriously; its corrected valid request fails before the
 fix, alongside the enqueue and absent-lifetime-contract controls.
 
-Next bounded discriminator: request documented Fast execution for one unchanged
+The preceding predeclared discriminator requested Fast execution for one unchanged
 native standard-tier author/full-review proposal. The current request inventory
 finds no duplicate evidence or candidate submission worth removing; citation and
 relationship repetition has distinct custody obligations. Prior schema pooling,
