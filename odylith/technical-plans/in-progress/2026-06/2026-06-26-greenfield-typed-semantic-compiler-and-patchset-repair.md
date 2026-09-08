@@ -2,13 +2,49 @@ Status: In progress
 
 Created: 2026-06-26
 
-Updated: 2026-09-07
+Updated: 2026-09-08
 
 Backlog: B-142
 
 Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must turn imperfect initial evidence into a coherent governed project without writing unconfirmed artifacts or needing product interpretation, quality repair, or generated content after confirmation.
 
 ## Current Convergence Contract (2026-09-04)
+
+### Laboratory discriminator rejected under the product deadline (2026-09-08)
+
+The sole ordinary-native laboratory attempt fails to deliver a package. Authoring
+returns in 44.882774 seconds; immutable whole-candidate review receives 10.113837
+seconds and times out after 10.125710 with no verdict. The consumer interval is
+56.237771 seconds, native exit 2, two real dispatches, no retry or records. This
+fails the actual 60/55 success contract, not an extra 50/45 headroom threshold.
+Backend latency cause and network attempts remain unobserved.
+
+The returned candidate preserves all four assistant actions, catalogue dependency,
+scan/register/print/handover runtime edges, correct slip producer and post-result
+handover. Registration-before-scanner delivery remains distinct and coherent.
+Independent model triage identifies a P1 canonical participant-inventory omission:
+the borrower survives as a target and design participant but is absent from
+facts.human_actors. Do not call that total meaning loss or action transfer, and do
+not treat the null reviewer response as admission. No staged diagrams or consumer
+dashboard exist to qualify quality, artifact counts or rendered UX.
+
+The new runner preserves its failed receipt despite signal-0 PermissionError;
+that original process observation remains unknown. Later independent process-table
+readback finds exact owned PIDs and PGID absent, all 356 baseline files unchanged,
+and exact request/output/source custody. Six no-backend controls and three native
+fake controls passed before live, with 659 focused source tests. After preserving
+the actual evidence and frozen-state audit, remove only the candidate paragraph
+and its three assertions: source/tests again equal e984badac; 60 focused restored
+controls pass. No production mechanism, profile, schema or deadline is changed.
+
+This rejects the bounded candidate for joint delivery, not proof that its
+coherence wording is useless or that 60 seconds is impossible. Do not retry it,
+add another prompt condition, weaken full-candidate review, expand model roles,
+or claim a winning mechanism. The next mechanism decision must address repeated
+serial author/review deadline failure and complete canonical participant ownership
+with a bounded alternative, not another unchanged qualification attempt. The full
+goal, 60/90/120 and protected final holdout remain unchanged. Evidence:
+`/private/tmp/odylith-laboratory-coherence.0hy3hl/terminal-review.md`.
 
 ### Next bounded product-deadline discriminator (2026-09-07)
 
