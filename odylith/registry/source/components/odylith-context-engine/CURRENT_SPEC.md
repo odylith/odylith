@@ -15,7 +15,7 @@
   the B-110 workstream anchor when measuring the v0.1.11 Odylith Discipline program,
   so Context/Execution adoption metrics can distinguish real ambiguity from a
   missing program tag.
-Last updated: 2026-09-07
+Last updated: 2026-09-08
 
 
 ## Purpose
@@ -177,6 +177,12 @@ Public entrypoint: `odylith context-engine`
   Build a compact governance and delivery-truth packet.
 - `session-brief`
   Build one deterministic session dossier and refresh the session heartbeat.
+  A full-profile read with only an explicit session ID may recover a live saved
+  workstream through current canonical projections. Retained intent remains
+  session context, never a new turn instruction or execution permission. New
+  scope inputs take precedence; expired/missing sessions and missing anchors
+  do not inherit it. The `session_workstream_selection.py` phase owns selection
+  for both session packet forms; agent hot-path behavior is unchanged (CB-332).
 - `bootstrap-session`
   Build a compact fresh-session bootstrap packet with docs, commands, and test
   recommendations.

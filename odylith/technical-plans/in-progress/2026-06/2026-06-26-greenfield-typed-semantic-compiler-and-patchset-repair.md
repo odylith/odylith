@@ -29,17 +29,29 @@ recovery and resumed-session evidence. Source meaning, assumptions, constraints,
 approval identity and proof posture must survive every relevant handoff. Reuse
 existing acceptance owners; record actual gaps before proposing replacements.
 
-Current bounded integration probe: the real native-Claude publication fixture
-resolves B-001 and its component through `context`. `bootstrap-session` with that
-explicit workstream returns a missing target component; `session-brief` with the
-same session ID returns no workstream. All 96 sealed after-image files and modes,
-the active publication identity and transaction bytes remain unchanged. Inspect
-the session API's persistence and selection contract before assigning root cause.
-This structural author/reviewer fixture does not qualify human package quality,
-live model timing or complete memory continuity. Evidence:
-`/private/tmp/odylith-claude-confirmation.5ntA3g/integration-publication-readback.json`
-and its context/bootstrap/resume outputs. CB-242 retains the separate intervention
-visibility complaint and manual-only recovery evidence.
+The bounded native-Claude publication probe isolated CB-332: an input-free
+session read overwrote a live saved workstream and intent. The source-local repair
+now retains canonically revalidated workstream context and the saved intent
+without replaying it as a current instruction. New scope, expiry and missing
+anchor controls stay fail-closed. Two original positive regressions fail before
+the repair; all 23 resumption controls and 96 focused context tests pass after it.
+The same public CLI journey recovers B-001 and its component/diagram dossier,
+preserving all 96 sealed files/modes, active identity and transaction bytes.
+Evidence: `/private/tmp/odylith-claude-confirmation.5ntA3g/persistence-after-publication-readback.json`;
+the separate `persistence-before-*` receipts retain the original failure.
+Frozen runtime proof passes 4544 tests, and 31 targeted browser integration
+checks pass across normal/empty/error navigation and publication recovery.
+The 3162-file pre/post-run fingerprint is unchanged; JUnit receipts are retained
+under `/private/tmp/odylith-session-resume-proof.45l4zG/`. CB-332 is fixed pending
+release. Bootstrap still lacks the target component in its
+top-level execution handoff, and the resumed packet still requests narrower
+execution context; neither is claimed fixed by session retention. This structural
+author/reviewer fixture does not qualify human package quality or live model
+timing. CB-242 retains the separate intervention visibility complaint and
+manual-only recovery evidence. Its fresh actual-session check reports degraded
+activation: the original checkout still has the ignored flat hook document,
+while the repaired checkpoint has the native wrapper. Matching-runtime installed
+activation, fresh-session delivery and fault qualification remain required.
 
 ### Native confirmation prompt termination (2026-09-08)
 
