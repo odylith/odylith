@@ -527,6 +527,23 @@ Public docs should describe these commands, not direct module entrypoints.
   Sync must delay heartbeat emission until a step crosses a real slow-step
   threshold, and fast steps must complete without paying a steady polling lane
   or emitting misleading heartbeat chatter.
+- Active-plan traceability and risk checks must include dated subdirectories.
+  Traceability and risk checks report the same selected inventory they validate;
+  an existing empty applicable plan scope is not applicable, never a zero-check
+  pass. A missing required scope and invalid references remain failures.
+  Markdown-delimited paths retain dot-prefixed directory identity; punctuation
+  stripping must not reinterpret a source reference.
+- Risk-format normalization must preserve complete logical list items and the
+  ownership and checkbox state of their mitigations across source line wrapping;
+  wrapping alone must never generate placeholder risks or mitigations.
+  CommonMark list ancestry owns relationships across blank lines and owned
+  paragraphs, quotes, and code blocks. Inline literals and link/image labels must
+  not become live mitigation delimiters. Inline record splits must preserve
+  enclosing HTML and Markdown emphasis, including actual labels after a closed
+  container; text-token eligibility alone is insufficient. Source-preserving
+  formatting must retain code whitespace and hard breaks; whitespace-collapsed comparisons and
+  idempotency alone do not prove semantic preservation. CB-335 remains open until
+  the complete formatter, not only its paragraph adapter, meets this boundary.
 - Projection/compiler/backend writes remain single-writer and atomic. Lock
   batching is allowed, but the product must not weaken advisory-lock plus
   atomic-replace semantics in order to chase latency.

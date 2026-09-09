@@ -560,42 +560,23 @@ Related Bugs:
 ## Risks & Mitigations
 
 - [ ] Risk: stricter invalidation slows Compass too much.
-  - [x] Mitigation: reuse the current runtime by exact input fingerprint and
-        rewrite today's daily history files from that reused payload instead of
-        forcing a rebuild on simple date rollover.
-- [x] Risk: a minute-scale `full` refresh path keeps draining time, credits,
-      and operator trust while pretending to be a real product contract.
-  - [x] Mitigation: retire the second refresh mode entirely and collapse
-        Compass onto one bounded refresh engine.
-- [ ] Risk: global brief freshness fix reduces resilience when provider is
-    unavailable.
-  - [ ] Mitigation: keep exact-cache reuse from the current fact packet and
-    fail closed to explicit `unavailable` otherwise.
+  - [x] Mitigation: reuse the current runtime by exact input fingerprint and rewrite today's daily history files from that reused payload instead of forcing a rebuild on simple date rollover.
+- [x] Risk: a minute-scale `full` refresh path keeps draining time, credits, and operator trust while pretending to be a real product contract.
+  - [x] Mitigation: retire the second refresh mode entirely and collapse Compass onto one bounded refresh engine.
+- [ ] Risk: global brief freshness fix reduces resilience when provider is unavailable.
+  - [ ] Mitigation: keep exact-cache reuse from the current fact packet and fail closed to explicit `unavailable` otherwise.
 - [ ] Risk: browser tests become brittle.
   - [ ] Mitigation: assert stateful user-visible contracts, not layout trivia.
 - [ ] Risk: hiding info-level diagnostics masks real maintainer conflicts.
-  - [ ] Mitigation: keep those rows in the shared traceability graph/report and
-    filter only the default operator-facing warning surfaces.
-- [ ] Risk: overly fuzzy search hides exact-id intent or leaves surprising
-      cross-surface mismatches.
-  - [ ] Mitigation: prefer exact canonical-id and alias matches first, then
-        fall back to normalized token search with browser proof for compact id
-        forms and reset behavior.
-- [ ] Risk: opportunistic live refresh changes benchmark or release-proof
-    behavior.
-  - [ ] Mitigation: freeze benchmark and release-proof lanes to explicit clean
-    snapshots with no hidden refresh path.
-- [ ] Risk: live freshness mutates tracked governance outputs during mixed
-    work.
-  - [ ] Mitigation: prefer runtime-backed refresh and explicit stale-state
-    signaling; reserve tracked-truth mutation for explicit sync and commit-time
-    repair.
-- [x] Risk: internal diagnostics or spend evidence regrows into
-      dashboard product UI.
-  - [x] Mitigation: delete the shell status presenter path, strip the
-        CSS/JS/template hooks, codify the ban in Dashboard governance and
-        skills, and prove with headless Chromium that hostile legacy diagnostic
-        payload keys do not render across tabs.
+  - [ ] Mitigation: keep those rows in the shared traceability graph/report and filter only the default operator-facing warning surfaces.
+- [ ] Risk: overly fuzzy search hides exact-id intent or leaves surprising cross-surface mismatches.
+  - [ ] Mitigation: prefer exact canonical-id and alias matches first, then fall back to normalized token search with browser proof for compact id forms and reset behavior.
+- [ ] Risk: opportunistic live refresh changes benchmark or release-proof behavior.
+  - [ ] Mitigation: freeze benchmark and release-proof lanes to explicit clean snapshots with no hidden refresh path.
+- [ ] Risk: live freshness mutates tracked governance outputs during mixed work.
+  - [ ] Mitigation: prefer runtime-backed refresh and explicit stale-state signaling; reserve tracked-truth mutation for explicit sync and commit-time repair.
+- [x] Risk: internal diagnostics or spend evidence regrows into dashboard product UI.
+  - [x] Mitigation: delete the shell status presenter path, strip the CSS/JS/template hooks, codify the ban in Dashboard governance and skills, and prove with headless Chromium that hostile legacy diagnostic payload keys do not render across tabs.
 
 ## Validation/Test Plan
 - [ ] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_compass_dashboard_runtime.py tests/unit/runtime/test_compass_standup_brief_narrator.py tests/unit/install/test_agents.py`
@@ -918,3 +899,20 @@ Related Bugs:
   risk seams, thin-packet shortening, and rejection of abstract
   manager-speak such as `forcing function`, `execution coherence`, or
   `room to tighten`
+
+## Traceability
+
+Provenance/cache diagnosis supports freshness work; the Compass spec owns exact narration reuse and failed-refresh visibility. The operational reference does not cover every Compass recovery case.
+
+### Runbooks
+
+- `odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md`
+
+### Developer Docs
+
+- `odylith/registry/source/components/compass/CURRENT_SPEC.md`
+
+### Code References
+
+- `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`
+- `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`

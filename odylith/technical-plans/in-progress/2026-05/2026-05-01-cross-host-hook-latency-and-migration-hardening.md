@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-05-01
 
-Updated: 2026-05-03
+Updated: 2026-09-09
 
 Backlog: B-141
 
@@ -97,6 +97,14 @@ Related Bugs:
   BrokenPipe tracebacks.
 
 ## Learnings
+- [x] CB-242's broad-runtime child leak reproduces with a controlled scheduling
+      pause at cleanup entry. Separate command timeout and whole-hook alarm
+      ownership allowed the alarm to interrupt cleanup before it was protected.
+      One alarm-suspended command lifetime removes that window while retaining
+      the same monotonic budget and TERM/reap bounds. Sixteen ownership controls
+      and seventy cross-host controls pass; independent review and the fresh
+      broad gate remain open. Do not equate this local proof with native
+      intervention activation or Greenfield release qualification.
 - [x] The original Claude-led report was a symptom, not the product boundary:
       B-141 is cross-host because Codex shares the same hot-path risk class
       around prompt context, launcher dispatch, dirty-event settlement, and
@@ -345,116 +353,45 @@ Related Bugs:
       policy, release-gate proof, or migration-observer obligations.
 
 ## Risks & Mitigations
-- [x] Risk: Moving checkpoint work off the critical path could lose governance
-      evidence after edits or Bash commands.
-  - [x] Mitigation: Codex records durable dirty events synchronously and Stop
-        settlement replays governed refresh or keeps unsettled events for the
-        next prompt when refresh fails.
-- [x] Risk: The latency fix could make Codex checkpoint hooks silent and hide
-      live Intervention Engine output from the chat.
-  - [x] Mitigation: Codex post-bash now emits the earned live
-        Observation/Proposal payload from the existing intervention bundle
-        while continuing to exclude Assist from the hook-visible path and
-        defer heavy governance refresh.
-- [x] Risk: Claude prompt-bundle could accidentally drop visible teaser output
-      or hidden prompt context.
-  - [x] Mitigation: Prompt-bundle tests compare route-lock behavior and
-        hidden/visible output parity against the previous prompt-context and
-        prompt-teaser surfaces.
-- [x] Risk: Strict Casebook Status/Type validation could break legacy
-      consumer migrations.
-  - [x] Mitigation: Casebook sync migration backfills missing Type and compacts
-        prose Status before validation, with doctor and upgrade regression
-        coverage.
+
+- [x] Risk: Moving checkpoint work off the critical path could lose governance evidence after edits or Bash commands.
+  - [x] Mitigation: Codex records durable dirty events synchronously and Stop settlement replays governed refresh or keeps unsettled events for the next prompt when refresh fails.
+- [x] Risk: The latency fix could make Codex checkpoint hooks silent and hide live Intervention Engine output from the chat.
+  - [x] Mitigation: Codex post-bash now emits the earned live Observation/Proposal payload from the existing intervention bundle while continuing to exclude Assist from the hook-visible path and defer heavy governance refresh.
+- [x] Risk: Claude prompt-bundle could accidentally drop visible teaser output or hidden prompt context.
+  - [x] Mitigation: Prompt-bundle tests compare route-lock behavior and hidden/visible output parity against the previous prompt-context and prompt-teaser surfaces.
+- [x] Risk: Strict Casebook Status/Type validation could break legacy consumer migrations.
+  - [x] Mitigation: Casebook sync migration backfills missing Type and compacts prose Status before validation, with doctor and upgrade regression coverage.
 - [x] Risk: Skill-surface diet could remove automatic governance capture.
-  - [x] Mitigation: Explicit-only flags are limited to manual workflow skills;
-        tests assert automatic context and bug-capture skills remain
-        model-invokable.
-- [x] Risk: Consumer-lane guidance slimming could accidentally drop the
-      product philosophy: prompt context assessment, observations,
-      interventions, ambient assists, memory, execution, or governance capture.
-  - [x] Mitigation: The consumer hard-law kernel names the preserved engines,
-        keeps `start` as the serial first gate, keeps context/query ordering,
-        keeps intervention-status and visible-intervention proof, and routes
-        long-form behavior to the existing skills and guidance rather than
-        deleting it.
-- [x] Risk: Low-signal prompt optimization could bypass memory, Execution
-      Engine, Tribunal, or intervention alignment when the user is asking
-      Odylith about its own presence or visibility.
-  - [x] Mitigation: Generic low-signal prompts stay silent, while
-        Odylith-directed quiet prompts still build the compact local alignment
-        substrate. Tests assert the emitted context carries memory, execution,
-        and lane-proof evidence without constructing the full conversation
-        bundle.
-- [x] Risk: New generated launchers could look unhealthy to the shipped
-      v0.1.12 runtime during fresh install or repair.
-  - [x] Mitigation: Generated launchers now include a legacy health-check
-        fallback anchor and a regression test that mimics the v0.1.12 parser
-        while keeping the active direct-dispatch path.
-- [x] Risk: Current-source generated launchers could route Claude
-      prompt-bundle to a module missing from the shipped v0.1.12 runtime.
-  - [x] Mitigation: Generated launchers now detect the module in the active
-        runtime or source `PYTHONPATH`; if absent, they run the shipped
-        prompt-context and prompt-teaser commands and merge their outputs.
-- [x] Risk: Shipped v0.1.12 `claude intervention-status` could report
-      degraded when the current-source prompt-bundle hook is actually ready.
-  - [x] Mitigation: Current-source status treats prompt-bundle as the
-        prompt-submit readiness owner and the v0.1.13 settings renderer no
-        longer emits marker hooks that fork shells without doing product work.
-- [x] Risk: v0.1.13 could pass latest-runtime proof while older supported
-      installs fail during direct upgrade.
-  - [x] Mitigation: Added a lifecycle simulator matrix for 0.1.10 -> 0.1.13,
-        0.1.11 -> 0.1.13, and 0.1.12 -> 0.1.13. The 0.1.10 fixture removes
-        the value corpus and seeds a legacy signal-ranker artifact so the
-        value-engine migration applies, removes the old artifact, writes the
-        replacement corpus, activates 0.1.13, and records the result.
-- [x] Risk: Switching to dev-maintainer source-local could still leave the
-      UI looking pinned to 0.1.12 because stale active release lanes remained
-      visible beside the true 0.1.13 current/next target.
-  - [x] Mitigation: Compass Release Targets now defaults to current/next
-        alias groups when aliases exist, while preserving active/planned/draft
-        fallback for repos that have not adopted release aliases yet.
-- [x] Risk: Agents could optimize for lower wall-clock latency by launching
-      `start`, `context`, `git status`, and repo search together, making the
-      transcript imply the Context Engine ran before startup.
-  - [x] Mitigation: Cross-host guidance and skill surfaces now make startup a
-        serial gate. Tests pin root guidance, install-generated guidance,
-        Claude command assets, Codex/Claude skill shims, source skills, and
-        bundle mirrors to the same rule.
-- [x] Risk: Source-local maintainer posture could test unreleased runtime code
-      with the pinned managed interpreter and miss the target Lance/Tantivy
-      memory backend, making memory look degraded during the most important
-      product QA lane.
-  - [x] Mitigation: Source-local launchers now prefer the source checkout
-        `.venv` when present, then fall back to repo `.venv`, then host
-        Python. Consumer pinned runtime remains isolated and continues to rely
-        on the managed memory feature pack.
-- [x] Risk: Visibility feedback phrased as "I want to see Odylith Assist..."
-      could be treated as a normal prompt and skip the recovery line.
-  - [x] Mitigation: The shared prompt signal detector recognizes precise
-        Assist visibility phrases and keeps passthrough/help/show prompts
-        stdout-clean.
-- [x] Risk: Exact Assist visibility feedback could replay an older Observation
-      or Proposal before the recovery Assist and make the response look noisy or
-      mis-scoped.
-  - [x] Mitigation: Prompt-submit visible-intervention fallback now renders
-        Assist-only recovery for exact Assist visibility feedback unless the
-        caller explicitly forces proposal content.
-- [x] Risk: Operators could request Compass daemon mode for latency proof and
-      receive `mode_resolution_failed` whenever the local daemon had idled out.
-  - [x] Mitigation: Forced daemon mode starts the same local Context Engine
-        daemon contract and waits for readiness; `auto` still avoids spawning
-        a background process unless a daemon is already available.
-- [x] Risk: Engine-readiness proof could fail for the wrong reason if the
-      diagnostic benchmark default requires warm local-memory dependencies in
-      source-local posture.
-  - [x] Mitigation: Diagnostic benchmark runs now default to cold cache and the
-        Benchmark component spec documents warm cache as an explicit operator
-        choice for memory-substrate verification.
-- [x] Risk: Release proof scripts or shell consumers could make a healthy
-      Context Engine command look broken by closing stdout early.
-  - [x] Mitigation: The Context Engine CLI entrypoint catches closed-pipe
-        conditions at the command boundary and returns cleanly.
+  - [x] Mitigation: Explicit-only flags are limited to manual workflow skills; tests assert automatic context and bug-capture skills remain model-invokable.
+- [x] Risk: Consumer-lane guidance slimming could accidentally drop the product philosophy: prompt context assessment, observations, interventions, ambient assists, memory, execution, or governance capture.
+  - [x] Mitigation: The consumer hard-law kernel names the preserved engines, keeps `start` as the serial first gate, keeps context/query ordering, keeps intervention-status and visible-intervention proof, and routes long-form behavior to the existing skills and guidance rather than deleting it.
+- [x] Risk: Low-signal prompt optimization could bypass memory, Execution Engine, Tribunal, or intervention alignment when the user is asking Odylith about its own presence or visibility.
+  - [x] Mitigation: Generic low-signal prompts stay silent, while Odylith-directed quiet prompts still build the compact local alignment substrate. Tests assert the emitted context carries memory, execution, and lane-proof evidence without constructing the full conversation bundle.
+- [x] Risk: New generated launchers could look unhealthy to the shipped v0.1.12 runtime during fresh install or repair.
+  - [x] Mitigation: Generated launchers now include a legacy health-check fallback anchor and a regression test that mimics the v0.1.12 parser while keeping the active direct-dispatch path.
+- [x] Risk: Current-source generated launchers could route Claude prompt-bundle to a module missing from the shipped v0.1.12 runtime.
+  - [x] Mitigation: Generated launchers now detect the module in the active runtime or source `PYTHONPATH`; if absent, they run the shipped prompt-context and prompt-teaser commands and merge their outputs.
+- [x] Risk: Shipped v0.1.12 `claude intervention-status` could report degraded when the current-source prompt-bundle hook is actually ready.
+  - [x] Mitigation: Current-source status treats prompt-bundle as the prompt-submit readiness owner and the v0.1.13 settings renderer no longer emits marker hooks that fork shells without doing product work.
+- [x] Risk: v0.1.13 could pass latest-runtime proof while older supported installs fail during direct upgrade.
+  - [x] Mitigation: Added a lifecycle simulator matrix for 0.1.10 -> 0.1.13, 0.1.11 -> 0.1.13, and 0.1.12 -> 0.1.13. The 0.1.10 fixture removes the value corpus and seeds a legacy signal-ranker artifact so the value-engine migration applies, removes the old artifact, writes the replacement corpus, activates 0.1.13, and records the result.
+- [x] Risk: Switching to dev-maintainer source-local could still leave the UI looking pinned to 0.1.12 because stale active release lanes remained visible beside the true 0.1.13 current/next target.
+  - [x] Mitigation: Compass Release Targets now defaults to current/next alias groups when aliases exist, while preserving active/planned/draft fallback for repos that have not adopted release aliases yet.
+- [x] Risk: Agents could optimize for lower wall-clock latency by launching `start`, `context`, `git status`, and repo search together, making the transcript imply the Context Engine ran before startup.
+  - [x] Mitigation: Cross-host guidance and skill surfaces now make startup a serial gate. Tests pin root guidance, install-generated guidance, Claude command assets, Codex/Claude skill shims, source skills, and bundle mirrors to the same rule.
+- [x] Risk: Source-local maintainer posture could test unreleased runtime code with the pinned managed interpreter and miss the target Lance/Tantivy memory backend, making memory look degraded during the most important product QA lane.
+  - [x] Mitigation: Source-local launchers now prefer the source checkout `.venv` when present, then fall back to repo `.venv`, then host Python. Consumer pinned runtime remains isolated and continues to rely on the managed memory feature pack.
+- [x] Risk: Visibility feedback phrased as "I want to see Odylith Assist..." could be treated as a normal prompt and skip the recovery line.
+  - [x] Mitigation: The shared prompt signal detector recognizes precise Assist visibility phrases and keeps passthrough/help/show prompts stdout-clean.
+- [x] Risk: Exact Assist visibility feedback could replay an older Observation or Proposal before the recovery Assist and make the response look noisy or mis-scoped.
+  - [x] Mitigation: Prompt-submit visible-intervention fallback now renders Assist-only recovery for exact Assist visibility feedback unless the caller explicitly forces proposal content.
+- [x] Risk: Operators could request Compass daemon mode for latency proof and receive `mode_resolution_failed` whenever the local daemon had idled out.
+  - [x] Mitigation: Forced daemon mode starts the same local Context Engine daemon contract and waits for readiness; `auto` still avoids spawning a background process unless a daemon is already available.
+- [x] Risk: Engine-readiness proof could fail for the wrong reason if the diagnostic benchmark default requires warm local-memory dependencies in source-local posture.
+  - [x] Mitigation: Diagnostic benchmark runs now default to cold cache and the Benchmark component spec documents warm cache as an explicit operator choice for memory-substrate verification.
+- [x] Risk: Release proof scripts or shell consumers could make a healthy Context Engine command look broken by closing stdout early.
+  - [x] Mitigation: The Context Engine CLI entrypoint catches closed-pipe conditions at the command boundary and returns cleanly.
 
 ## Validation
 - [x] `PYTHONPATH=src pytest -q tests/unit/runtime/test_claude_host_prompt_context.py tests/unit/runtime/test_codex_host_post_bash_checkpoint.py tests/unit/runtime/test_codex_host_stop_summary.py tests/unit/runtime/test_casebook_bug_index.py tests/unit/runtime/test_host_runtime_contract.py tests/unit/runtime/test_claude_cli_capabilities.py tests/unit/install/test_claude_effective_settings.py tests/unit/runtime/test_claude_host_compatibility.py tests/unit/test_claude_host_cli.py tests/unit/test_cli_audit.py tests/unit/install/test_codex_project_assets.py tests/unit/runtime/test_source_bundle_mirror.py tests/unit/runtime/test_hygiene.py tests/integration/install/test_manager.py::test_doctor_bundle_repair_backfills_legacy_casebook_bug_ids tests/integration/install/test_manager.py::test_upgrade_same_version_backfills_legacy_casebook_bug_ids tests/integration/install/test_manager.py::test_consumer_upgrade_backfills_legacy_casebook_bug_ids_during_runtime_activation`
@@ -725,3 +662,21 @@ Related Bugs:
       `total_payload_token_delta=1363`). `CB-189` tracks that remaining
       efficiency debt; do not present the execution-engine quick lane as a clean
       low-latency pass until that bug closes.
+
+## Traceability
+
+Host-asset repair and migration operations; these references do not qualify hook latency or native chat delivery.
+
+### Runbooks
+
+- `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`
+
+### Developer Docs
+
+- `odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md`
+
+### Code References
+
+- `src/odylith/runtime/surfaces/claude_host_prompt_bundle.py`
+- `src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py`
+- `src/odylith/runtime/surfaces/codex_host_stop_summary.py`

@@ -3950,9 +3950,16 @@
     }
   ],
   "traceability": {
-    "code_references": [],
-    "developer_docs": [],
-    "runbooks": []
+    "code_references": [
+      "src/odylith/runtime/governance/component_registry_intelligence.py",
+      "src/odylith/runtime/surfaces/render_registry_dashboard.py"
+    ],
+    "developer_docs": [
+      "odylith/registry/source/components/registry/CURRENT_SPEC.md"
+    ],
+    "runbooks": [
+      "docs/runbooks/odylith-governance.md"
+    ]
   },
   "version": "v1",
   "what_it_is": "Approval-gated remediation packet compiler that turns diagnosis into bounded execution and rollback guidance.",

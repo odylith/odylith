@@ -15,7 +15,21 @@
   the B-110 workstream anchor when measuring the v0.1.11 Odylith Discipline program,
   so Context/Execution adoption metrics can distinguish real ambiguity from a
   missing program tag.
-Last updated: 2026-09-08
+Last updated: 2026-09-09
+
+## Supporting context and workstream ownership
+
+Documentation and runbooks may support several workstreams without identifying
+an exclusive owner. Selection must preserve that cross-workstream relationship:
+extra component or diagram memberships cannot turn shared support alone into a
+confident choice. Sharedness comes from distinct projected owners whose typed
+support references match each changed path, including overlapping directory and
+exact-file references; unrelated subtrees remain separate. It does not come
+from a growing filename list or equal reference spelling. Explicit workstream selection,
+genuine implementation or contract evidence, and independently bounded
+documentation ownership remain valid. Retained memory must not bypass the
+shared-only ambiguity boundary. CB-336 tracks the candidate correction and its
+positive, negative, duplicate, renamed-reference and ordering controls.
 
 
 ## Purpose

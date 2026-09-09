@@ -99,14 +99,11 @@ Related Bugs:
 ## Risks & Mitigations
 
 - [x] Risk: the wrong local provider is selected when multiple CLIs exist.
-  - [x] Mitigation: prefer the current host when detectable, then fall back to
-    the single available CLI or the existing deterministic path.
+  - [x] Mitigation: prefer the current host when detectable, then fall back to the single available CLI or the existing deterministic path.
 - [x] Risk: tests or CI start invoking providers implicitly.
-  - [x] Mitigation: suppress implicit local-provider calls whenever pytest or
-    CI markers are present.
+  - [x] Mitigation: suppress implicit local-provider calls whenever pytest or CI markers are present.
 - [x] Risk: Claude Code JSON output is wrapped differently than Codex output.
-  - [x] Mitigation: parse both direct JSON objects and `result`-wrapped JSON
-    payloads in the local Claude adapter.
+  - [x] Mitigation: parse both direct JSON objects and `result`-wrapped JSON payloads in the local Claude adapter.
 
 ## Validation/Test Plan
 - [x] `PYTHONPATH=src pytest -q tests/unit/runtime/test_odylith_reasoning.py tests/unit/runtime/test_compass_standup_brief_narrator.py`

@@ -612,6 +612,7 @@ def _workstream_selection(
         and top_workstream
         and hinted_workstream == top_workstream
         and context_engine_store._workstream_has_path_signal(top)
+        and (not broad_only or strong_signals > 0)
     )
     judgment_reason = str(judgment.get("reason", "")).strip()
     if top_score < context_engine_store._WORKSTREAM_SELECTION_CONFIDENT_SCORE:
@@ -1194,6 +1195,12 @@ def _collect_impacted_workstreams(
         candidate_direct_rows = [dict(row) for row in direct_match_rows]
     if not candidate_traceability_rows and normalized_changed_paths:
         candidate_traceability_rows = [dict(row) for row in traceability_match_rows]
+    support_owners: dict[str, set[str]] = {}
+    for row in candidate_traceability_rows:
+        if row["source_kind"] in {"trace_doc", "trace_runbook"} and row["source_id"] in workstream_entities:
+            for path_ref in normalized_changed_paths:
+                if context_engine_store._normalized_path_match_type(changed_path=path_ref, target_path=row["target_path"]):
+                    support_owners.setdefault(path_ref, set()).add(row["source_id"])
     diagnostics["fast_selector_used"] = bool(normalized_changed_paths)
     diagnostics["selector_cache_hit"] = bool(direct_cache_hit and trace_cache_hit)
     diagnostics["selector_candidate_row_count"] = len(candidate_direct_rows) + len(candidate_traceability_rows)
@@ -1210,26 +1217,10 @@ def _collect_impacted_workstreams(
             candidate_map[token] = context_engine_store._base_workstream_candidate(entity)
         return candidate_map[token]
 
-    for row in candidate_direct_rows:
-        workstream_id = str(row.get("source_id", "")).strip().upper()
-        target_path = str(row.get("target_path", "")).strip()
-        if not workstream_id or not target_path:
-            continue
-        for path_ref in normalized_changed_paths:
-            match_type = context_engine_store._normalized_path_match_type(changed_path=path_ref, target_path=target_path)
-            if not match_type:
-                continue
-            candidate = _candidate(workstream_id)
-            if candidate is None:
-                continue
-            context_engine_store._add_workstream_path_evidence(
-                candidate,
-                changed_path=path_ref,
-                target_path=target_path,
-                source_kind="direct",
-                match_type=match_type,
-            )
-    for row in candidate_traceability_rows:
+    path_match_rows = [
+        {**row, "source_kind": "direct"} for row in candidate_direct_rows
+    ] + candidate_traceability_rows
+    for row in path_match_rows:
         target_path = str(row.get("target_path", "")).strip()
         source_kind = str(row.get("source_kind", "")).strip() or "trace_doc"
         if not target_path:
@@ -1247,6 +1238,10 @@ def _collect_impacted_workstreams(
                 target_path=target_path,
                 source_kind=source_kind,
                 match_type=match_type,
+                shared_support=(
+                    source_kind in {"trace_doc", "trace_runbook"}
+                    and len(support_owners.get(path_ref, ())) > 1
+                ),
             )
     if component_ids:
         component_rows = context_engine_store._cached_projection_rows(

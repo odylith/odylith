@@ -94,14 +94,11 @@ Related Bugs:
 ## Risks & Mitigations
 
 - [x] Risk: memory-backend path ownership keeps swallowing adjacent modules.
-  - [x] Mitigation: narrow `path_prefixes` to concrete owned files before
-        adding sibling components.
+  - [x] Mitigation: narrow `path_prefixes` to concrete owned files before adding sibling components.
 - [x] Risk: new specs become stale narrative instead of living contracts.
-  - [x] Mitigation: ground each dossier in runtime files, owning modules, test
-        paths, and explicit failure posture.
+  - [x] Mitigation: ground each dossier in runtime files, owning modules, test paths, and explicit failure posture.
 - [x] Risk: Registry surface grows but still feels incoherent.
-  - [x] Mitigation: update the surrounding umbrella specs and subcomponent
-        links in the same slice.
+  - [x] Mitigation: update the surrounding umbrella specs and subcomponent links in the same slice.
 
 ## Validation/Test Plan
 - [x] `PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_validate_component_registry_contract.py tests/unit/runtime/test_render_registry_dashboard.py tests/unit/runtime/test_hygiene.py`

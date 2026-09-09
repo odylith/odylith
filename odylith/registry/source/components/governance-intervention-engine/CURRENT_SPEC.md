@@ -15,7 +15,20 @@
   platform seamless" may rank voice or integration inspection affordances, but
   it must still stay silent when no hard law is violated and no immediate
   user-visible value is earned.
-Last updated: 2026-09-08
+Last updated: 2026-09-09
+
+## Foreground hook lifetime
+
+Both host adapters use `host_hook_execution.run_hook_command` for owned
+foreground subprocesses. Within a whole-hook budget, one alarm-suspended
+command lifetime covers launch, communication and cleanup. Communication uses
+the remaining monotonic deadline; deadline expiry cannot interrupt entry into
+cleanup. The caller's alarm is restored afterward, and work outside the command
+remains subject to the whole-hook alarm. A child process group remains owned
+after its leader exits, with the existing TERM grace before forced cleanup.
+Budget expiry remains a distinct cancellation outcome, never a successful
+closeout. CB-242 carries the scheduling regression and cross-host proof;
+configured or trusted hooks still require separate visible-delivery evidence.
 
 ## Explicit current closeout and pending replay
 

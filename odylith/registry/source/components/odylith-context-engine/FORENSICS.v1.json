@@ -43,12 +43,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 208,
-    "mapped_workstream_evidence_count": 153,
+    "explicit_event_count": 212,
+    "mapped_workstream_evidence_count": 157,
     "recent_path_match_count": 0,
     "spec_history_event_count": 1,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 208
+    "timeline_event_count": 212
   },
   "name": "Odylith Context Engine",
   "path_prefixes": [
@@ -57,6 +57,154 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 1369,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-09-09T15:20:33-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-09-09-shared-supporting-references-can-manufacture-confident-workstream-ownership.md"
+      ],
+      "confidence": "high",
+      "event_index": 1368,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-09-09T15:07:25-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-09-09-shared-supporting-references-can-manufacture-confident-workstream-ownership.md"
+      ],
+      "confidence": "high",
+      "event_index": 1367,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-09-09T15:01:55-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-09-09-shared-supporting-references-can-manufacture-confident-workstream-ownership.md"
+      ],
+      "confidence": "high",
+      "event_index": 1366,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-09-09T14:42:56-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 1,
       "artifacts": [
@@ -9760,9 +9908,40 @@
     }
   ],
   "traceability": {
-    "code_references": [],
-    "developer_docs": [],
-    "runbooks": []
+    "code_references": [
+      "src/odylith/runtime/evaluation/odylith_benchmark_isolation.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py",
+      "src/odylith/runtime/context_engine/tooling_guidance_catalog.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_taxonomy.py",
+      "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py",
+      "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py",
+      "src/odylith/install/agents.py",
+      "src/odylith/runtime/common/consumer_profile.py",
+      "src/odylith/runtime/common/agent_runtime_contract.py",
+      "src/odylith/runtime/common/host_runtime.py",
+      "src/odylith/runtime/orchestration/subagent_router.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_publication.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_tree_identity.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_execution_engine.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+      "src/odylith/runtime/surfaces/claude_host_prompt_bundle.py",
+      "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
+      "src/odylith/runtime/surfaces/codex_host_stop_summary.py"
+    ],
+    "developer_docs": [
+      "docs/benchmarks/REVIEWER_GUIDE.md",
+      "docs/benchmarks/FAMILIES_AND_EVALS.md",
+      "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+      "docs/specs/odylith-repo-integration-contract.md",
+      "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
+      "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md"
+    ],
+    "runbooks": [
+      "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+      "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md",
+      "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+      "odylith/runtime/SUBAGENT_OPERATIONS.md"
+    ]
   },
   "version": "v1",
   "what_it_is": "Local deterministic grounding, projection-compilation, and packetization runtime that orchestrates Odylith's memory substrate.",

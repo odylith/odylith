@@ -7892,9 +7892,20 @@
     }
   ],
   "traceability": {
-    "code_references": [],
-    "developer_docs": [],
-    "runbooks": []
+    "code_references": [
+      "src/odylith/runtime/evaluation/odylith_benchmark_isolation.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py",
+      "src/odylith/runtime/governance/component_registry_intelligence.py",
+      "src/odylith/runtime/surfaces/render_registry_dashboard.py"
+    ],
+    "developer_docs": [
+      "docs/benchmarks/REVIEWER_GUIDE.md",
+      "odylith/registry/source/components/registry/CURRENT_SPEC.md"
+    ],
+    "runbooks": [
+      "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+      "docs/runbooks/odylith-governance.md"
+    ]
   },
   "version": "v1",
   "what_it_is": "Structured diagnosis engine that turns grounded dossiers into explicit leading and rival explanations, risks, and next checks.",

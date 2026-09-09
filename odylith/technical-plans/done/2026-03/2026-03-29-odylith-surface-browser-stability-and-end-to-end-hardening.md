@@ -66,14 +66,11 @@ Related Bugs:
 ## Risks & Mitigations
 
 - [x] Risk: selectors become brittle and create flaky browser tests.
-  - [x] Mitigation: use stable IDs, roles, explicit chip/button classes, and
-    shell query-state assertions instead of incidental layout assumptions.
+  - [x] Mitigation: use stable IDs, roles, explicit chip/button classes, and shell query-state assertions instead of incidental layout assumptions.
 - [x] Risk: deeper browser proof uncovers real shell routing defects.
-  - [x] Mitigation: patch the affected surface contract instead of weakening the
-    test.
+  - [x] Mitigation: patch the affected surface contract instead of weakening the test.
 - [x] Risk: browser proof becomes too slow for regular use.
-  - [x] Mitigation: keep flows targeted, reuse a shared browser context, and
-    widen only after the focused lane is green.
+  - [x] Mitigation: keep flows targeted, reuse a shared browser context, and widen only after the focused lane is green.
 
 ## Validation/Test Plan
 - [x] `PYTHONPATH=src .venv/bin/pytest -q tests/integration/runtime/test_surface_browser_smoke.py`

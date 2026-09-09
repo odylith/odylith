@@ -225,3 +225,20 @@ Related Bugs:
   `changed_paths` in the Compass log entry.
 - Do not trigger a selective governance sync on this commit; the fix
   does not touch rendered surface files.
+
+## Traceability
+
+Working-tree and path-scoped context diagnosis; nested-worktree repair remains a distinct implementation proof obligation.
+
+### Runbooks
+
+- `odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md`
+
+### Developer Docs
+
+- `docs/CONTEXT_ENGINE.md`
+
+### Code References
+
+- `src/odylith/runtime/governance/agent_governance_intelligence.py`
+- `src/odylith/runtime/common/consumer_profile.py`

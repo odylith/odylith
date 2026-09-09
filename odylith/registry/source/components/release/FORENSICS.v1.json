@@ -14,12 +14,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 800,
-    "mapped_workstream_evidence_count": 694,
+    "explicit_event_count": 808,
+    "mapped_workstream_evidence_count": 702,
     "recent_path_match_count": 0,
     "spec_history_event_count": 64,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 800
+    "timeline_event_count": 808
   },
   "name": "Release",
   "path_prefixes": [
@@ -48,6 +48,296 @@
   ],
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 1369,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-09-09T15:20:33-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-09-09-shared-supporting-references-can-manufacture-confident-workstream-ownership.md"
+      ],
+      "confidence": "high",
+      "event_index": 1368,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-09-09T15:07:25-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-09-09-shared-supporting-references-can-manufacture-confident-workstream-ownership.md"
+      ],
+      "confidence": "high",
+      "event_index": 1367,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-09-09T15:01:55-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-09-09-shared-supporting-references-can-manufacture-confident-workstream-ownership.md"
+      ],
+      "confidence": "high",
+      "event_index": 1366,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-09-09T14:42:56-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-09-09-plan-traceability-validation-skips-dated-active-plans.md",
+        "odylith/casebook/bugs/2026-09-09-risk-normalization-splits-wrapped-list-items-and-invents-missing-mitigations.md"
+      ],
+      "confidence": "high",
+      "event_index": 1365,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-09-09T14:08:24-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-09-09-plan-traceability-validation-skips-dated-active-plans.md",
+        "odylith/casebook/bugs/2026-09-09-risk-normalization-splits-wrapped-list-items-and-invents-missing-mitigations.md"
+      ],
+      "confidence": "high",
+      "event_index": 1364,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-09-09T13:52:36-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-09-09-risk-normalization-splits-wrapped-list-items-and-invents-missing-mitigations.md"
+      ],
+      "confidence": "high",
+      "event_index": 1363,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-09-09T13:47:23-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-09-09-risk-normalization-splits-wrapped-list-items-and-invents-missing-mitigations.md"
+      ],
+      "confidence": "high",
+      "event_index": 1362,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-09-09T13:20:16-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 0,
       "artifacts": [],
@@ -29321,9 +29611,46 @@
     }
   ],
   "traceability": {
-    "code_references": [],
-    "developer_docs": [],
-    "runbooks": []
+    "code_references": [
+      "src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py",
+      "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
+      "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+      "src/odylith/runtime/context_engine/tooling_guidance_catalog.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_taxonomy.py",
+      "bin/dogfood-activate",
+      "bin/ga-gate",
+      "src/odylith/install/runtime.py",
+      "src/odylith/install/release_assets.py",
+      "src/odylith/install/runtime_integrity.py",
+      "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+      "github/workflows/release.yml",
+      "src/odylith/runtime/common/claude_cli_capabilities.py",
+      "src/odylith/runtime/surfaces/claude_host_compatibility.py",
+      "src/odylith/cli.py",
+      "src/odylith/runtime/common/codex_cli_capabilities.py",
+      "src/odylith/runtime/surfaces/codex_host_shared.py",
+      "src/odylith/runtime/evaluation/benchmark_compare.py",
+      "tests/unit/runtime/test_hygiene.py",
+      "tests/unit/runtime/test_subagent_reasoning_ladder.py"
+    ],
+    "developer_docs": [
+      "docs/specs/greenfield-operating-envelope.md",
+      "docs/benchmarks/FAMILIES_AND_EVALS.md",
+      "odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md",
+      "odylith/SECURITY_POSTURE.md",
+      "docs/specs/odylith-repo-integration-contract.md",
+      "docs/benchmarks/REVIEWER_GUIDE.md",
+      "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md",
+      "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+      "odylith/agents-guidelines/VALIDATION_AND_TESTING.md"
+    ],
+    "runbooks": [
+      "docs/runbooks/odylith-greenfield.md",
+      "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+      "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+      "docs/runbooks/odylith-migration.md",
+      "odylith/runtime/SUBAGENT_OPERATIONS.md"
+    ]
   },
   "version": "v1",
   "what_it_is": "Canonical maintainer release lane that resolves one sticky semver session, binds it to a specific commit, publishes signed release assets plus managed runtime bundles, validates dogfood plus consumer rehearsal flow, and owns the reusable GTM-and-release readiness overlay for proof-backed launch assets.",

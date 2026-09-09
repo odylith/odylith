@@ -93,3 +93,20 @@ Related Bugs:
 - [ ] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_backlog_authoring.py tests/unit/runtime/test_validate_backlog_contract.py tests/unit/runtime/test_render_backlog_ui.py`
 - [ ] `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --runtime-mode standalone --proceed-with-overlap`
 - [ ] `git diff --check`
+
+## Traceability
+
+Grounded prefix-free title authoring and existing-title correction without changing workstream identity.
+
+### Runbooks
+
+- `docs/runbooks/odylith-governance.md`
+
+### Developer Docs
+
+- `odylith/registry/source/components/radar/CURRENT_SPEC.md`
+
+### Code References
+
+- `src/odylith/runtime/governance/backlog_title_contract.py`
+- `src/odylith/runtime/governance/backlog_authoring.py`

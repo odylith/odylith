@@ -89,21 +89,15 @@ Related Bugs:
 ## Risks & Mitigations
 
 - [x] Risk: the stronger publication contract makes the public benchmark look
-  - [ ] Mitigation: TODO (add explicit mitigation).
-  worse.
+  - [ ] Mitigation: TODO (add explicit mitigation). worse.
 - [ ] Risk: Unspecified risk (legacy backfill).
-  - [x] Mitigation: treat that as a product-truth correction, not a regression,
-    and explain the methodology clearly in README.
+  - [x] Mitigation: treat that as a product-truth correction, not a regression, and explain the methodology clearly in README.
 - [x] Risk: a multi-profile default makes local benchmark runs slower.
-  - [x] Mitigation: keep the corpus fixed and the aggregation logic compact; if
-    needed, preserve `--cache-profile warm` as the explicit faster local-only
-    override.
+  - [x] Mitigation: keep the corpus fixed and the aggregation logic compact; if needed, preserve `--cache-profile warm` as the explicit faster local-only override.
 - [x] Risk: new report fields drift from the graph and README readers.
-  - [x] Mitigation: add focused regression tests for conservative published
-    summary selection and graph rendering.
+  - [x] Mitigation: add focused regression tests for conservative published summary selection and graph rendering.
 - [x] Risk: benchmark remains powerful but still under-governed in source truth.
-  - [x] Mitigation: promote Benchmark into Registry and Atlas so future slices
-    update the same governed component and diagram instead of loose docs.
+  - [x] Mitigation: promote Benchmark into Registry and Atlas so future slices update the same governed component and diagram instead of loose docs.
 
 ## Validation/Test Plan
 - [x] `odylith benchmark --repo-root .`

@@ -178,18 +178,15 @@ Related Bugs:
       surfaces, plus any child refactor workstreams opened from this plan
 
 ## Risks & Mitigations
+
 - [ ] Risk: the release umbrella turns into mush and loses execution discipline.
-  - [ ] Mitigation: execute in bounded waves and open child workstreams when a
-        slice deserves its own owner and validation lane.
+  - [ ] Mitigation: execute in bounded waves and open child workstreams when a slice deserves its own owner and validation lane.
 - [ ] Risk: refactor work destabilizes central release-critical paths.
-  - [ ] Mitigation: prioritize size x churn x centrality, use characterization
-        tests first, and keep refactors to 1-2 files per PR where possible.
+  - [ ] Mitigation: prioritize size x churn x centrality, use characterization tests first, and keep refactors to 1-2 files per PR where possible.
 - [ ] Risk: release notes, popup copy, and persistent history diverge.
-  - [ ] Mitigation: make release notes a real source artifact that downstream
-        surfaces read instead of re-summarizing by hand.
+  - [ ] Mitigation: make release notes a real source artifact that downstream surfaces read instead of re-summarizing by hand.
 - [ ] Risk: benchmark regressions still arrive too late.
-  - [ ] Mitigation: make last-shipped benchmark compare part of pre-merge
-        release-candidate proof.
+  - [ ] Mitigation: make last-shipped benchmark compare part of pre-merge release-candidate proof.
 
 ## Validation/Test Plan
 - [ ] `make release-preflight`
@@ -277,3 +274,21 @@ Related Bugs:
 - [ ] Remaining `v0.1.6` should-ship follow-through stays open for a later wave:
   explainer copy for Radar/Registry/Atlas/Compass, a persistent
   "what changed since my version?" view, and benchmark history UI.
+
+## Traceability
+
+Release ordering and bounded refactor proof; historical target wording does not establish current release readiness.
+
+### Runbooks
+
+- `odylith/MAINTAINER_RELEASE_RUNBOOK.md`
+
+### Developer Docs
+
+- `odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md`
+
+### Code References
+
+- `src/odylith/install/runtime.py`
+- `bin/ga-gate`
+- `bin/dogfood-activate`

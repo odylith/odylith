@@ -2971,9 +2971,20 @@
     }
   ],
   "traceability": {
-    "code_references": [],
-    "developer_docs": [],
-    "runbooks": []
+    "code_references": [
+      "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py",
+      "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py",
+      "src/odylith/runtime/governance/delivery/scope_signal_ladder.py",
+      "src/odylith/runtime/governance/delivery_intelligence_engine.py"
+    ],
+    "developer_docs": [
+      "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+      "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md"
+    ],
+    "runbooks": [
+      "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md",
+      "docs/runbooks/odylith-governance.md"
+    ]
   },
   "version": "v1",
   "what_it_is": "Governed narration contract that keeps Compass briefs human, factual, friendly, and fail-closed.",

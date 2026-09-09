@@ -1,5 +1,179 @@
 Status: In progress
 
+## Current checkpoint proof (2026-09-09)
+
+The integrated correction now passes the frozen full gate: 5,002 runtime tests
+in 490.12 seconds, 1,168 install tests, 340 browser checks with one unchanged
+fixture-specific skip, ten current-record desktop/mobile checks and three root
+CLI checks. All 3,191 selected source and proof inputs remain identical before,
+during and after the run. Every process is terminal before the freeze is lifted.
+The unchanged hotfile guard passes after real duplicate-loop removal; no size
+exception or scoring rule is added. CB-334/335/336, CB-242 and CB-119 retain the
+causal failures and rejected candidates below and in their Casebook records.
+
+This is a stable source checkpoint, not completion of B-142. No new live model
+attempt or final holdout ran. A fresh complete package within the fixed selected
+deadline, host/profile qualification, all-reader atomic publication proof, full
+distribution and clean install, phase adjudication and final untouched holdout
+remain open. Automatic delivery in the current desktop session is unverified;
+the five hooks are already reviewed, trusted and enabled, with no user approval
+pending. Read-only model-free retained-candidate timing is not consumer-SLA proof.
+
+## Active-plan coverage correction (2026-09-09)
+
+Current bounded candidate: 84 focused checks pass, with 67 formatter/validator
+checks also passing on Markdown 4 (the main environment uses Markdown 3).
+The actual CLI validates 25 active reference plans and 95 active/completed risk
+plans. The current 95-plan source/render audit reports zero changes, placeholder
+growth or idempotency failures. This supersedes earlier candidate evidence below.
+The last independent finding exposed a P1 whole-section bypass around ordinary
+HTML: six causal formatter/validator controls now pass after removing that bypass.
+Uncertain enclosure text remains local; unrelated records are still checked.
+Final independent re-review passes 26 asserted boundary/reporting controls with
+no actionable finding. Governed refresh passed. The frozen wider gate finished
+with 4,783 runtime passes and ten failures, 1,168 install passes, and 340 browser
+passes with one fixture skip; all 3,188 selected paths stayed unchanged. Four
+supplemental Casebook readbacks pass after opening the intended detail disclosure.
+No new live Greenfield attempt or release claim follows from this mixed gate.
+
+## Integrated runtime corrections (2026-09-09)
+
+The size failure is corrected without a cap exception: a single ordered typed
+pass replaces the duplicate direct/traceability loops in the same owner. Scope
+is now 1,571 lines versus the unchanged 1,576 cap; the existing evidence module
+is unchanged. Five pre-refactor characterization checks preserve ordering,
+defaults and cache immutability. The final focused set passes 227 in 83.53
+seconds, full hygiene passes 56, independent controls pass 22 and all fourteen
+probe outputs remain byte-identical. Independent equivalence review and a
+fresh frozen full gate still precede a stable checkpoint. No new abstraction,
+scoring layer, filename rule or repository-wide decomposition claim is added.
+
+Independent equivalence review now accepts the consolidation: 41 checks pass
+in 26.55 seconds, including fourteen hash-verified comparisons with the accepted
+collector and five ordering/default/cache characterizations. Source writers and
+reviewers are terminal. Only the fresh frozen integration gate remains for this
+bounded checkpoint; the full Greenfield release obligations remain open.
+
+The fresh frozen gate has 4,996 runtime passes and one structural failure:
+the scope owner is 1,587 lines against its maintained 1,576 ceiling. All
+3,191 selected files remain unchanged across the run. Install has 1,168 passes;
+browser has 340 passes and one fixture-only skip; current Casebook readback
+has ten passes and root CLI has three. The prior ten runtime failures are
+cleared, but the new size failure prevents a stable checkpoint. Consolidate
+the duplicated direct/traceability evidence work or move that cohesive phase
+to its existing path-evidence owner, without formatting tricks or raising the
+ceiling. Prove the existing full hygiene module before repeating expensive
+integration checks. Source/test changes remain uncommitted pending this gate.
+
+Current CB-336 replacement uses the existing path matcher to collect support
+owners for each changed path. Its 43 overlap/locality/authority controls fail
+before the second correction and pass afterward; the combined focused suite
+passes 222 checks in 83.35 seconds. The two source owners gain thirteen net lines,
+with no new scoring or filename rule. Independent re-review and the frozen
+runtime/install/browser gate remain required. Earlier rejection evidence below
+is retained to explain why equal-target grouping was removed.
+
+Independent re-review now accepts the revised source: 22 checks pass, with
+fourteen additional baseline/current probe replays and no actionable finding.
+The collector remains O(references times changed paths), with one additional
+support-matching pass. Source and test writers are terminal. Refresh governed
+truth, run its non-mutating gate, then freeze the whole tree for full runtime,
+install and desktop/mobile normal/fallback/degraded browser proof.
+
+CB-242 now has a causal cleanup-entry race test: the old whole-hook alarm could
+skip subprocess cleanup after the command timeout fired. One alarm-suspended
+command lifetime removes that window without increasing deadlines or reducing
+TERM grace. Sixteen ownership and seventy cross-host controls pass; independent
+review reproduces the old leak by a different line-trace method and accepts the
+correction. The targeted intervention/dashboard browser set passes 45 controls.
+
+CB-336's first candidate is rejected by independent mixed watch/exact evidence:
+equal-target grouping demotes exact-file supporters but leaves a directory
+supporter falsely dedicated, creating a new confident choice with zero strong
+signals. Sharedness must be derived over references actually matching each
+changed path, with unrelated subtrees and true owners preserved. The wider gate
+is held until causal correction and independent re-review; 179 focused passes
+did not establish that relationship boundary.
+
+Context owner discipline: the scope and path-evidence modules were 1,576 and
+1,004 lines before this safety-critical routing repair. The proposed exception
+does not satisfy the maintained non-expanding inventory, so a bounded structural
+correction is now required in this change. Prefer removing the duplicate direct
+and traceability path-evidence pass over new abstractions. If a phase moves,
+use the existing path-evidence owner with a clear input/output contract; preserve
+cold/cached equivalence, explicit/code/contract ownership and narrowing. No
+forwarding module, alias wall or unrelated growth is allowed. This does not
+claim that all pre-existing Context Engine size debt is resolved.
+
+CB-336 owns a separate context-selection defect: a runbook shared by three
+workstreams plus unequal component memberships produces a confident unique
+choice with zero strong ownership signals. Preserve the supporting references,
+but use their actual cross-workstream relationships before inferring ownership.
+Do not add filename lists, new score layers or blanket weak-evidence suppression.
+The bounded source correction passes 179 focused controls, including genuine
+code/contract and dedicated-document positives. It reuses the existing shared
+evidence path and keeps ambiguity classifications; shared-only memory cannot
+invent ownership. The source delta is eleven net lines, with no new score
+system. Independent review and the full frozen gate remain outstanding.
+
+CB-119 distinguishes two reviewed corpus support-declaration updates from this
+product defect. Exact packet-codec, empty and ambiguous-input tests must use
+controlled premises while retaining separate real-repo semantic proof. Valid
+new code links must not be removed to recreate historical ambiguity.
+The six exact contracts and five live semantic cases now have a dedicated
+321-line test owner; 19 focused checks pass, including the unchanged runtime
+warmup regression. Their original expected IDs, encoded counts and small graph
+counts are preserved. Independent review accepts that bounded test/corpus slice,
+with 16 additional targeted passes. Canonical corpus mirroring passed and all
+30 corpus/publication controls now pass; the initial mirror failure is retained.
+
+Freeze source and proof inputs after both corrections, then rerun the full runtime and
+governance gates before a stable checkpoint. The final holdout remains unrun;
+the diagnostic fallback-search scope limitation is recorded in the private
+evidence report and must not be represented as proof of module non-access.
+
+## Active-plan correction history
+
+The initial focused correction passed 46 controls. Traceability now validates
+all 25 active plans, with grounded current owners and scoped operational links.
+The audit uncovered missing operational documentation; the governance and
+Greenfield runbooks now describe existing CLI authoring, validation, confirmation,
+and recovery boundaries without asserting release qualification. Historical
+modules were not restored. Partial runbook coverage remains explicitly labeled.
+
+CB-335 owns a second genuine failure: physical-line risk formatting invents
+placeholders and detaches wrapped mitigations. The first indented-line grouping
+candidate was rejected after valid lazy continuations and literal examples still
+failed. CommonMark paragraph/block spans replace that grouping and heading scan.
+On the actual 95-plan inventory, 30 candidate rewrites preserve all non-whitespace
+source tokens and rendered HTML, add no placeholders, and are idempotent; the
+canonical writer applied those formatting-only changes. The risk CLI passes.
+Independent review then rejects the partial CommonMark adapter: it still lets
+blank lines and opaque children terminate risk ownership, interprets inline-code
+labels as live mitigations, and collapses significant Markdown whitespace. All
+16 new public counterexample controls fail before the next source edit. Replace
+the physical-line renderer with actual list ancestry and source-preserving edits;
+do not retain that renderer beneath a new parsing adapter. CB-335 remains Open.
+Focused proof does not yet qualify the wider regression or release gate.
+
+Current-reference validation also reproduced a dot-path identity defect: two
+punctuation-stripping operations turned `.github` into `github` and invalidated
+`./src` references. Both are removed; Path owns relative-path normalization.
+No model role, profile, timing cap, confirmation authority, or holdout changed.
+
+The wait correction and coupled governance are committed and pushed at
+b62b3f56. Final staged validation required one review-only Atlas refresh;
+all 47 diagrams are fresh. The final Casebook readback passes on desktop
+and mobile. This is a stable bounded checkpoint, not Greenfield release proof.
+
+The CB-334 source correction and all 25 active reference sections are present;
+its actual CLI passes. The adjacent risk validator now distinguishes missing
+scope, empty applicable scope, and the exact counted validation inventory.
+CB-335 remains open pending the wider proof of this bounded formatter correction;
+its independent source re-review has passed. Refresh governed surfaces and freeze the whole tree.
+Do not weaken rules, restore retired paths, or use this checkpoint as permission
+for an unreviewed live Greenfield retry. No protected holdout access is included.
+
 ## Completion-wait implementation checkpoint (2026-09-09)
 
 The frozen broader gate is now terminal: runtime 4717 passed; install 1168
@@ -4796,38 +4970,14 @@ for retries until success. Current runtime profiles remain unchanged.
 
 ## Risks & Mitigations
 
-- [ ] Risk: Host reasoning improves semantic quality but makes normal creates
-      slower or nondeterministic.
-  - [ ] Mitigation: Keep one standard semantic compiler call, use deterministic
-        planning/rendering/custody, and reserve host repair for final-gate rescue.
+- [ ] Risk: Host reasoning improves semantic quality but makes normal creates slower or nondeterministic.
+  - [ ] Mitigation: Keep one standard semantic compiler call, use deterministic planning/rendering/custody, and reserve host repair for final-gate rescue.
 - [ ] Risk: Typed repair becomes another wrapper around rendered text.
-  - [ ] Mitigation: Tests must fail if a repair mutates rendered Markdown,
-        Radar prose, Registry prose, Atlas labels, Compass entries, or release
-        proof strings directly.
+  - [ ] Mitigation: Tests must fail if a repair mutates rendered Markdown, Radar prose, Registry prose, Atlas labels, Compass entries, or release proof strings directly.
 - [ ] Risk: Artifact lenses produce readable diagnostics but cannot drive repair.
-  - [ ] Mitigation: Every lens finding must carry a finding code, semantic node
-        ID, source-map target, projection ID, severity, and repairability.
-        The first shared `tribunal_lens.py` contract now pins that custody
-      metadata at judgment time for greenfield PM, architect, engineer, and
-      domain-expert lenses instead of reconstructing it later from prose.
-      The 2026-07-01 source-address checkpoint adds an executable
-      `ProjectionSourceAddress` contract in `greenfield_artifact_plan.py`:
-      dict projections require a named field, row projections require a row
-      index plus field, list projections may target whole-list facts or indexed
-      rows only, and broad roots such as `proposal.backlog`, `components`,
-      `project_brief`, non-indexed list tails, or preview-only paths cannot
-      become PatchSet operations. Package and lens findings now become plan
-      patches only when that source address exists;
-      identifiable Registry spec copy defects map back to
-      `components[n].component_contract.produced_outputs`, while unsupported
-      package repetition stays fail-closed instead of advertising a fake root
-      patch. This is the next typed-IR repair substrate step, but broader
-      renderer context starvation and full source-span IDs remain open.
-- [ ] Risk: The architecture record passes while generated artifacts remain
-      below the premium human bar.
-  - [ ] Mitigation: Completion requires fresh high-variance end-to-end
-        simulations, validators, timing evidence, and PM/architect/engineer/
-        domain-expert artifact-quality reports.
+  - [ ] Mitigation: Every lens finding must carry a finding code, semantic node ID, source-map target, projection ID, severity, and repairability. The first shared `tribunal_lens.py` contract now pins that custody metadata at judgment time for greenfield PM, architect, engineer, and domain-expert lenses instead of reconstructing it later from prose. The 2026-07-01 source-address checkpoint adds an executable `ProjectionSourceAddress` contract in `greenfield_artifact_plan.py`: dict projections require a named field, row projections require a row index plus field, list projections may target whole-list facts or indexed rows only, and broad roots such as `proposal.backlog`, `components`, `project_brief`, non-indexed list tails, or preview-only paths cannot become PatchSet operations. Package and lens findings now become plan patches only when that source address exists; identifiable Registry spec copy defects map back to `components[n].component_contract.produced_outputs`, while unsupported package repetition stays fail-closed instead of advertising a fake root patch. This is the next typed-IR repair substrate step, but broader renderer context starvation and full source-span IDs remain open.
+- [ ] Risk: The architecture record passes while generated artifacts remain below the premium human bar.
+  - [ ] Mitigation: Completion requires fresh high-variance end-to-end simulations, validators, timing evidence, and PM/architect/engineer/ domain-expert artifact-quality reports.
 
 ## Validation
 
@@ -8118,3 +8268,21 @@ for retries until success. Current runtime profiles remain unchanged.
   Inspect the generated human-visible package before broader validation. Keep
   source frozen during each live comparison and commission no blind holdout
   until all independent P0/P1 findings and the complete public gate are clear.
+
+## Traceability
+
+Current proposal/confirmation/recovery operations and versioned semantic/timing boundaries; historical post-confirm repair paths are superseded.
+
+### Runbooks
+
+- `docs/runbooks/odylith-greenfield.md`
+
+### Developer Docs
+
+- `docs/specs/greenfield-operating-envelope.md`
+
+### Code References
+
+- `src/odylith/runtime/domain_intelligence/greenfield_proposals.py`
+- `src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py`
+- `src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py`

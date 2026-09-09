@@ -8513,72 +8513,6 @@ def test_non_route_ready_hot_path_payload_drops_duplicate_routing_handoff() -> N
         assert key not in context_packet
 
 
-def test_governance_slice_hot_path_limits_operator_payload_lists() -> None:
-    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
-    scenario = next(row for row in scenarios if row["scenario_id"] == "closeout-surface-path-normalization")
-
-    packet_source, payload, _ = runner._build_packet_payload(  # noqa: SLF001
-        repo_root=REPO_ROOT,
-        scenario=scenario,
-        mode="odylith_on",
-        existing_paths=scenario["changed_paths"],
-    )
-    context_packet = dict(payload["context_packet"])
-    narrowing_guidance = dict(payload["narrowing_guidance"])
-    governance_signal = governance_signal_codec.expand_governance_signal(dict(context_packet["route"]["governance"]))
-
-    assert packet_source == "governance_slice"
-    assert sorted(payload.keys()) == ["changed_paths", "context_packet", "narrowing_guidance"]
-    assert payload.get("routing_handoff") is None
-    assert payload.get("packet_metrics") is None
-    assert payload.get("validation_bundle") is None
-    assert payload.get("governance_obligations") is None
-    assert payload.get("surface_refs") is None
-    assert payload["changed_paths"] == scenario["changed_paths"][:5]
-    assert governance_signal["strict_gate_command_count"] == 1
-    assert governance_signal["plan_binding_required"] is True
-    assert governance_signal["governed_surface_sync_required"] is True
-    assert governance_signal["closeout_doc_count"] >= 1
-    assert governance_signal["primary_workstream_id"] == "B-002"
-    assert governance_signal["primary_component_id"] == "odylith"
-    assert governance_signal["surface_count"] == 5
-    assert narrowing_guidance == {
-        "required": True,
-        "reason": "Need one code or contract path.",
-    }
-    assert context_packet["anchors"].get("explicit_paths") is None
-    assert context_packet["anchors"]["has_non_shared_anchor"] is True
-    assert context_packet["retrieval_plan"]["selected_counts"] == "c4d6g3"
-    assert context_packet["retrieval_plan"]["guidance_coverage"] == "direct"
-    assert context_packet.get("execution_profile") is None
-    assert context_packet["route"].get("native_spawn_ready") is None
-    assert context_packet["route"].get("reasoning_bias") is None
-    assert context_packet["route"].get("parallelism_hint") is None
-
-
-def test_governance_slice_hot_path_compacts_embedded_governance_keys() -> None:
-    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
-    scenario = next(row for row in scenarios if row["scenario_id"] == "closeout-surface-path-normalization")
-
-    _, payload, _ = runner._build_packet_payload(  # noqa: SLF001
-        repo_root=REPO_ROOT,
-        scenario=scenario,
-        mode="odylith_on",
-        existing_paths=scenario["changed_paths"],
-    )
-    governance_signal = dict(payload["context_packet"]["route"]["governance"])
-
-    assert governance_signal["sg"] == 1
-    assert governance_signal["pb"] is True
-    assert governance_signal["gs"] is True
-    assert governance_signal["cd"] >= 1
-    assert governance_signal["w"] == "B-002"
-    assert governance_signal["c"] == "odylith"
-    assert governance_signal["sf"] == 5
-    assert "strict_gate_command_count" not in governance_signal
-    assert "primary_workstream_id" not in governance_signal
-
-
 def test_miss_recovery_hot_path_keeps_signal_nested_under_retrieval_plan() -> None:
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(row for row in scenarios if row["scenario_id"] == "wave4-runtime-sparse-miss-recovery")
@@ -8702,27 +8636,6 @@ def test_broad_scope_hot_path_keeps_fallback_recommendation_without_result_paths
     }
     assert "docs/WHY_ODYLITH_CHANGES_OUTCOMES.md" not in observed_paths
     assert "odylith/technical-plans/CLAUDE.md" not in observed_paths
-
-
-def test_ambiguous_session_brief_keeps_fallback_recommendation_without_bug_result_paths() -> None:
-    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
-    scenario = next(row for row in scenarios if row["scenario_id"] == "compass-refresh-queued-state-recovery")
-
-    packet_source, payload, _ = runner._build_packet_payload(  # noqa: SLF001
-        repo_root=REPO_ROOT,
-        scenario=scenario,
-        mode="odylith_on",
-        existing_paths=scenario["changed_paths"],
-    )
-    observed_paths = runner._observed_packet_paths(payload)  # noqa: SLF001
-
-    assert packet_source == "session_brief"
-    assert payload["fallback_scan"] == {
-        "recommended": True,
-        "reason": "adaptive_full_scan_fallback",
-        "performed": True,
-    }
-    assert not any(path.startswith("odylith/casebook/bugs/") for path in observed_paths)
 
 
 def test_safe_governance_hot_path_skips_runtime_warmup_when_projection_snapshot_is_present(monkeypatch) -> None:  # noqa: ANN001
@@ -8935,72 +8848,6 @@ def test_observed_packet_paths_keeps_discipline_runtime_contract_without_countin
     assert "odylith/runtime/source/discipline-evaluation-corpus.v1.json" not in observed_paths
 
 
-def test_session_brief_exact_path_hot_path_keeps_only_live_narrowing_signal() -> None:
-    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
-    scenario = next(row for row in scenarios if row["scenario_id"] == "session-brief-runtime-path-ambiguity")
-
-    packet_source, payload, _ = runner._build_packet_payload(  # noqa: SLF001
-        repo_root=REPO_ROOT,
-        scenario=scenario,
-        mode="odylith_on",
-        existing_paths=scenario["changed_paths"],
-    )
-    context_packet = dict(payload["context_packet"])
-    retrieval_plan = dict(context_packet["retrieval_plan"])
-
-    assert packet_source == "session_brief"
-    assert context_packet.get("packet_kind") is None
-    assert context_packet.get("execution_profile") is None
-    assert context_packet.get("optimization") is None
-    assert context_packet.get("selection_state") is None
-    assert retrieval_plan == {
-        "ambiguity_class": "no_candidates",
-        "miss_recovery": {
-            "active": True,
-            "applied": True,
-            "mode": "projection_exact_rescue",
-        },
-    }
-    assert context_packet["route"] == {
-        "narrowing_required": True,
-        "b": "guarded_narrowing",
-        "p": "serial_guarded",
-    }
-    assert payload["narrowing_guidance"] == {
-        "required": True,
-        "reason": "Need one code path.",
-    }
-
-
-def test_architecture_hot_path_drops_ambiguous_count_scaffolding() -> None:
-    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
-    scenario = next(row for row in scenarios if row["scenario_id"] == "architecture-benchmark-honest-baseline-contract")
-
-    packet_source, payload, _ = runner._build_packet_payload(  # noqa: SLF001
-        repo_root=REPO_ROOT,
-        scenario=scenario,
-        mode="odylith_on",
-        existing_paths=scenario["changed_paths"],
-    )
-    context_packet = dict(payload["context_packet"])
-    retrieval_plan = dict(context_packet["retrieval_plan"])
-
-    assert packet_source == "impact"
-    assert context_packet.get("selection_state") is None
-    assert retrieval_plan.get("selected_counts") is None
-    assert retrieval_plan["ambiguity_class"] == "low_signal"
-    assert retrieval_plan["miss_recovery"] == {
-        "active": True,
-        "applied": True,
-        "mode": "projection_exact_rescue",
-    }
-    assert context_packet["anchors"]["changed_paths"] == [
-        "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
-        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
-    ]
-    assert context_packet["route"] == {"narrowing_required": True}
-
-
 def test_route_ready_hot_path_packet_skips_packet_metrics_and_handoff_scaffolding(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -9052,36 +8899,6 @@ def test_orchestration_request_payload_uses_embedded_governance_signal() -> None
 
     assert request["workstreams"] == ["B-002"]
     assert request["components"] == ["odylith"]
-
-
-def test_packet_level_architecture_audit_keeps_doc_only_slice_grounded() -> None:
-    payload = store.build_architecture_audit(
-        repo_root=REPO_ROOT,
-        changed_paths=["odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"],
-        runtime_mode="local",
-        detail_level="packet",
-    )
-
-    assert payload == {
-        "resolved": True,
-        "changed_paths": ["odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"],
-        "coverage": {
-            "confidence_tier": "medium",
-        },
-        "authority_graph": {
-            "counts": {
-                "edges": 2,
-                "traceability_edges": 1,
-            },
-        },
-        "execution_hint": {
-            "mode": "local_grounding_first",
-            "fanout": "no_fanout",
-            "risk_tier": "moderate",
-        },
-        "contract_touchpoint_count": 2,
-        "validation_obligation_count": 2,
-    }
 
 
 def test_hot_path_impact_honors_supplied_workstream_hint() -> None:

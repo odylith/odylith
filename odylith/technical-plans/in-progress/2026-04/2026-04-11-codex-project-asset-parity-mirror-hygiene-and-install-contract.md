@@ -140,3 +140,20 @@ Related Bugs:
       inventory again.
 - [ ] Codex host docs now distinguish project-native Codex CLI assets from the
       still-built-in-only routed `spawn_agent` tool contract.
+
+## Traceability
+
+Managed project-root asset installation and mirror ownership, not blanket host activation.
+
+### Runbooks
+
+- `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`
+
+### Developer Docs
+
+- `docs/specs/odylith-repo-integration-contract.md`
+
+### Code References
+
+- `src/odylith/install/manager.py`
+- `src/odylith/runtime/orchestration/subagent_router.py`

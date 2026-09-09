@@ -3273,6 +3273,10 @@
           "tests/unit/runtime/test_compass_refresh_runtime.py",
           "tests/unit/runtime/test_render_compass_dashboard.py"
         ],
+        "supporting_paths": [
+          "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+          "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md"
+        ],
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_compass_refresh_runtime.py tests/unit/runtime/test_render_compass_dashboard.py"
         ],
@@ -4492,7 +4496,8 @@
           "odylith/MAINTAINER_RELEASE_RUNBOOK.md"
         ],
         "supporting_paths": [
-          "docs/specs/odylith-repo-integration-contract.md"
+          "docs/specs/odylith-repo-integration-contract.md",
+          "docs/benchmarks/FAMILIES_AND_EVALS.md"
         ]
       },
       "match": {

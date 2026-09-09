@@ -15,6 +15,17 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
 )
 
 
+def test_greenfield_help_describes_complete_preconfirm_package(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["greenfield", "--help"])
+
+    output = capsys.readouterr().out.lower()
+    assert excinfo.value.code == 0
+    assert "provider-free" not in output
+    assert "complete" in output
+    assert "before confirmation" in output
+
+
 def test_greenfield_create_help_exposes_precompiled_transaction_contract(capsys) -> None:
     with pytest.raises(SystemExit) as excinfo:
         cli.main(["greenfield", "create", "--help"])

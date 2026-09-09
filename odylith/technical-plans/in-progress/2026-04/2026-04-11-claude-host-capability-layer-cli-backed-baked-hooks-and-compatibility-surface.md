@@ -332,3 +332,20 @@ Related Bugs:
 - [ ] `./.odylith/bin/odylith start --repo-root .`
 - [ ] `./.odylith/bin/odylith validate backlog-contract --repo-root .`
 - [ ] `git diff --check`
+
+## Traceability
+
+Install/repair covers effective host assets; the Claude contract owns capability and compatibility behavior. This is not a dedicated hook-debugging runbook.
+
+### Runbooks
+
+- `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`
+
+### Developer Docs
+
+- `odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md`
+
+### Code References
+
+- `src/odylith/runtime/common/claude_cli_capabilities.py`
+- `src/odylith/runtime/surfaces/claude_host_compatibility.py`
