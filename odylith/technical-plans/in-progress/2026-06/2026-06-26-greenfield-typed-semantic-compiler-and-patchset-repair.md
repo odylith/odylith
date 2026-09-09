@@ -10,6 +10,57 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Recorded activity ownership correction (2026-09-08)
+
+Four real source/spec sync-and-commit controls reproduce stale Delivery on both
+refresh entrypoints. Registry now owns live versus recorded-only collection,
+including separate disk/session cache identities and coherent coverage. Delivery
+persistence opts out of workspace observations; direct live fallback, Registry and
+Context keep them. Spec synchronization adopts the same boundary in its initial
+and post-update report builds, removing its prior local filter and duplicated
+coverage recomputation. An initial missed post-update call failed the existing
+CB-232 control and was corrected before broad validation. Fixture setup failures
+preceded the four causal reds and are not counted as product defects.
+
+The existing Registry/Delivery collection seam is preferable to a Delivery-local
+filter or globally disabling workspace activity. This is a narrow provenance
+safety correction in the existing large owners, not new feature growth. Their
+bounded follow-up remains separating collection/cache/report ownership from
+scope synthesis with complete snapshot characterization; do not add wrappers,
+normalizers, schema layers or semantic rules. Final focused proof passes 63
+controls in 2.87 seconds. Independent review accepts the bounded correction after
+11 controls in 1.67 seconds with no remaining P0/P1/P2. Its case-variant replay
+finding was reproduced twice before aligning event-kind handling with the existing
+normalization contract and invalidating old report caches. Frozen broad/browser
+proof and actual one-pass maintainer commit/readback remain required.
+The first selected sync additionally catches a direct private-cache caller in
+Registry validation omitted from the initial inventory. Its 17 failing controls
+share one missing mode argument; the validator now explicitly uses the live mode.
+Inventory private cache consumers as well as public builders at this boundary.
+The first frozen runtime run passes 4609 controls and fails only the pinned
+hotfile-size guard (381.92 seconds, unchanged full input hash). Preserve that
+failure. Remove the duplicate Registry component serializer in favor of
+`ComponentEntry.as_dict()` at all three consumers, including intervention path
+mapping, and remove Delivery's forwarding-only JSON helper in favor of its
+existing shared loader. Full-field and list-isolation characterization precedes
+the cleanup. Registry is now 2760 lines and Delivery 2897, both below unchanged
+pins; no cap exception, cosmetic compression or new module is required. Rerun
+focused, performance and full runtime proof before final browser/commit gates.
+Keep the pinned hotfile inventory test in the focused pack before future broad
+runs. The expanded focused pack now passes 121 controls in 4.08 seconds, including
+intervention behavior/performance and the unchanged size guard. Independent review
+accepts using the existing serializers instead of increasing caps.
+The final frozen runtime rerun passes all 4611 controls in 355.93 seconds. Full
+tracked source, tests, configuration and governance bytes retain SHA-256
+`032712708a11443636b5ab87b15646f7f748d2d7703e90962c213d618f05d28f`
+before and after the run. The original failure receipt remains immutable.
+Final rendered-browser, mirror, staged-readiness and actual one-pass clean-head
+results are recorded in the linked evidence report; do not treat the runtime
+pass alone as any of those gates or perform a second settlement if readback fails.
+Evidence: `/private/tmp/odylith-delivery-activity-boundary.fR20lE/`.
+The full capability-map journey, native intervention delivery, semantic quality,
+60/90/120, current installed release proof and untouched holdout gates stay open.
+
 ### Delivery proof identity and memory-cache correction (2026-09-08)
 
 The bounded correction keeps unrecorded checkout observations out of persisted

@@ -5,7 +5,7 @@
   affected component spec names its faculty, hot-path boundary, proof duty,
   and surface duty so the Odylith Discipline layer remains cross-cutting rather than a
   runtime-only feature.
-Last updated: 2026-09-07
+Last updated: 2026-09-08
 
 
 ## Purpose
@@ -135,6 +135,17 @@ It also separates:
 
 Synthetic workspace activity is explicitly forensic-only. It must not pollute
 requirements-trace sync or replace explicit Compass narrative capture.
+
+The report collector owns the live/persisted boundary through
+`include_workspace_activity`. Default live reports retain current path observations
+for Registry, Context and detail views. Recorded-only reports skip worktree scans
+and exclude replayed workspace events before calculating timelines, counts and
+coverage. Disk and session caches distinguish the two modes. Delivery persistence
+and both phases of spec/forensics synchronization use recorded-only reports; the
+forensic writer no longer maintains a separate event filter or coverage policy.
+`ComponentEntry.as_dict()` is the single component serialization contract for
+index enrichment, artifact matching and intervention path mapping. Its copied
+list values must not mutate the original inventory entry.
 
 ## Living Spec Synchronization
 `sync_component_spec_requirements.py` keeps each component spec aligned with
@@ -293,6 +304,9 @@ exhaustive regardless of rung.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-08 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `src/odylith/runtime/governance/component_registry_intelligence.py`, `src/odylith/runtime/governance/delivery_intelligence_engine.py`, `src/odylith/runtime/governance/sync_component_spec_requirements.py`
 - **2026-07-01 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md`, `odylith/registry/source/components/registry/CURRENT_SPEC.md`
@@ -305,6 +319,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-09-08: Centralized live versus recorded evidence collection for Registry forensics and Delivery, preserving live Context coverage and stable source/spec commit readback. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-07-01: Captured source-change forensics regeneration posture. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
   During release-provenance closure, pinned-runtime Registry forensics sync
   repeated the known CB-209 failure mode by reintroducing historical scenario

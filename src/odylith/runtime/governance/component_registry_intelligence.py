@@ -80,7 +80,7 @@ _FEATURE_HISTORY_PLAN_ROUTE_VERSION = "radar-html-v1"
 _PRODUCT_LAYER_NORMALIZATION_VERSION = "consumer-distro-suffix-v1"
 _RADAR_IDEA_CONTRACT_VERSION = f"v0.1.11:{backlog_contract.IDEA_SPEC_CACHE_VERSION}"
 _COMPONENT_INDEX_CACHE_VERSION = "v3"
-_COMPONENT_REPORT_CACHE_VERSION = "v6"
+_COMPONENT_REPORT_CACHE_VERSION = "v7"
 _MIGRATION_OBSERVER_MARKER_RE = re.compile(
     r"\bmigration-observer:[A-Za-z0-9_.-]+:[A-Za-z0-9_.-]+(?::[A-Fa-f0-9]{12})?\b"
 )
@@ -638,28 +638,6 @@ def _make_entry(
     )
 
 
-def _entry_to_mutable(entry: ComponentEntry) -> dict[str, Any]:
-    return {
-        "component_id": entry.component_id,
-        "name": entry.name,
-        "kind": entry.kind,
-        "category": entry.category,
-        "qualification": entry.qualification,
-        "aliases": list(entry.aliases),
-        "path_prefixes": list(entry.path_prefixes),
-        "workstreams": list(entry.workstreams),
-        "diagrams": list(entry.diagrams),
-        "owner": entry.owner,
-        "status": entry.status,
-        "what_it_is": entry.what_it_is,
-        "why_tracked": entry.why_tracked,
-        "spec_ref": entry.spec_ref,
-        "sources": list(entry.sources),
-        "subcomponents": list(entry.subcomponents),
-        "product_layer": entry.product_layer,
-    }
-
-
 def _mapped_event_from_payload(payload: Mapping[str, Any]) -> MappedEvent:
     return MappedEvent(
         event_index=int(payload.get("event_index", 0) or 0),
@@ -745,16 +723,18 @@ def _cached_component_registry_report_payload(
     ideas_root: Path,
     stream_path: Path,
     workspace_activity_window_hours: int,
+    include_workspace_activity: bool,
 ) -> tuple[Path, str]:
     cache_file = odylith_context_cache.cache_path(
         repo_root=repo_root,
         namespace="registry/component-report",
-        key="component-report",
+        key="component-report" if include_workspace_activity else "component-report-recorded",
     )
     from odylith.runtime.governance import agent_governance_intelligence as governance
 
     workspace_activity = []
-    for raw in governance.collect_git_changed_paths(repo_root=repo_root):
+    changed_paths = governance.collect_git_changed_paths(repo_root=repo_root) if include_workspace_activity else []
+    for raw in changed_paths:
         normalized = _normalize_workspace_activity_path(repo_root=repo_root, token=str(raw or ""))
         if not normalized or not is_meaningful_workspace_artifact(normalized, repo_root=repo_root):
             continue
@@ -779,6 +759,7 @@ def _cached_component_registry_report_payload(
                 manifest_path=manifest_path,
             ),
             "workspace_activity_window_hours": int(workspace_activity_window_hours),
+            "include_workspace_activity": include_workspace_activity,
             "workspace_activity": workspace_activity,
         }
     )
@@ -1505,7 +1486,7 @@ def build_component_index(
         manifest_path=manifest_path,
     )
     mutable_components: dict[str, dict[str, Any]] = {
-        key: _entry_to_mutable(value)
+        key: value.as_dict()
         for key, value in base_components.items()
     }
     path_prefix_trie = _build_component_path_prefix_trie(
@@ -1870,7 +1851,7 @@ def _match_by_artifact(
     components: Mapping[str, ComponentEntry],
 ) -> set[str]:
     trie = _build_component_path_prefix_trie(
-        {component_id: _entry_to_mutable(entry) for component_id, entry in components.items()},
+        {component_id: entry.as_dict() for component_id, entry in components.items()},
         include_spec_ref=True,
     )
     matched: set[str] = set()
@@ -2358,6 +2339,7 @@ def _build_component_registry_report_from_fingerprint(
     ideas: Path,
     stream: Path,
     workspace_activity_window_hours: int,
+    include_workspace_activity: bool,
     cache_file: Path,
     fingerprint: str,
 ) -> ComponentRegistryReport:
@@ -2381,13 +2363,19 @@ def _build_component_registry_report_from_fingerprint(
         components=components,
         alias_to_component=alias_to_component,
     )
-    workspace_events = build_workspace_activity_events(
-        repo_root=repo_root,
-        components=components,
-        stream_event_count=len(mapped_events),
-        window_hours=workspace_activity_window_hours,
-    )
-    mapped_events = [*mapped_events, *workspace_events]
+    if include_workspace_activity:
+        workspace_events = build_workspace_activity_events(
+            repo_root=repo_root,
+            components=components,
+            stream_event_count=len(mapped_events),
+            window_hours=workspace_activity_window_hours,
+        )
+        mapped_events = [*mapped_events, *workspace_events]
+    else:
+        mapped_events = [
+            event for event in mapped_events
+            if str(event.kind or "").strip().lower() not in _FORENSIC_ONLY_KINDS
+        ]
     diagnostics = sorted(set([*diagnostics, *mapping_diagnostics]))
     candidate_queue = build_candidate_component_queue(
         repo_root=repo_root,
@@ -2440,8 +2428,14 @@ def build_component_registry_report(
     ideas_root: Path | None = None,
     stream_path: Path | None = None,
     workspace_activity_window_hours: int = DEFAULT_WORKSPACE_ACTIVITY_WINDOW_HOURS,
+    include_workspace_activity: bool = True,
 ) -> ComponentRegistryReport:
-    """Build end-to-end component-registry report for renderer/validator/gov payloads."""
+    """Build coherent events and coverage for live or persisted consumers.
+
+    Persisted consumers exclude transient Git-status observations at collection,
+    so committing source and its synchronized evidence cannot stale the snapshot.
+    Live callers retain workspace activity; the two views never share cache keys.
+    """
 
     manifest = manifest_path or default_manifest_path(repo_root=repo_root)
     catalog = catalog_path or _resolve(repo_root, DEFAULT_CATALOG_PATH)
@@ -2454,6 +2448,7 @@ def build_component_registry_report(
         ideas_root=ideas,
         stream_path=stream,
         workspace_activity_window_hours=workspace_activity_window_hours,
+        include_workspace_activity=include_workspace_activity,
     )
     from odylith.runtime.governance import sync_session as governed_sync_session
 
@@ -2468,6 +2463,7 @@ def build_component_registry_report(
                     str(ideas.resolve()),
                     str(stream.resolve()),
                     str(int(workspace_activity_window_hours)),
+                    str(include_workspace_activity),
                     fingerprint,
                 )
             ),
@@ -2478,6 +2474,7 @@ def build_component_registry_report(
                 ideas=ideas,
                 stream=stream,
                 workspace_activity_window_hours=workspace_activity_window_hours,
+                include_workspace_activity=include_workspace_activity,
                 cache_file=cache_file,
                 fingerprint=fingerprint,
             ),
@@ -2489,6 +2486,7 @@ def build_component_registry_report(
         ideas=ideas,
         stream=stream,
         workspace_activity_window_hours=workspace_activity_window_hours,
+        include_workspace_activity=include_workspace_activity,
         cache_file=cache_file,
         fingerprint=fingerprint,
     )
