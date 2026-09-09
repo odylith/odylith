@@ -16,6 +16,12 @@ from odylith.runtime.intervention_engine import surface_runtime as intervention_
 from odylith.runtime.intervention_engine import visibility_replay
 from odylith.runtime.surfaces import codex_host_shared
 from odylith.runtime.surfaces import host_intervention_support
+from odylith.runtime.surfaces import host_hook_execution
+
+
+# The native hook has a 20-second outer timeout; leave launcher and owned
+# process cleanup headroom instead of granting each phase a fresh timeout.
+_STOP_BUDGET_SECONDS = 14.0
 
 
 def _stop_intervention_bundle(
@@ -90,7 +96,7 @@ def render_codex_stop_summary(
     )
 
 
-def main(argv: list[str] | None = None) -> int:
+def _run_stop_summary(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="odylith codex stop-summary",
         description="Log a meaningful Codex stop summary to Compass when present.",
@@ -190,6 +196,20 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
     return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    try:
+        with host_hook_execution.hook_budget(seconds=_STOP_BUDGET_SECONDS):
+            return _run_stop_summary(argv)
+    except host_hook_execution.HookBudgetExpired:
+        sys.stdout.write(json.dumps(host_surface_runtime.stop_payload(
+            system_message=(
+                "Odylith Stop work deferred: the hook budget is exhausted or unavailable. "
+                "Unsettled checkpoints remain queued for a later attempt."
+            ),
+        )))
+        return 0
 
 
 if __name__ == "__main__":

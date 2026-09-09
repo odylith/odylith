@@ -35,11 +35,10 @@ def record_dirty_event(
     host_family: str,
     session_id: str = "",
     source: str,
-    command: str = "",
     paths: Iterable[str] = (),
     governed_paths: Iterable[str] = (),
 ) -> str:
-    """Append one dirty-event record and return its stable event id."""
+    """Persist affected paths, not shell input, and return the event id."""
 
     event_id = uuid.uuid4().hex
     record = {
@@ -49,7 +48,6 @@ def record_dirty_event(
         "host_family": str(host_family or "").strip().casefold(),
         "session_id": str(session_id or "").strip(),
         "source": str(source or "").strip(),
-        "command": str(command or "").strip(),
         "paths": _dedupe_strings(paths),
         "governed_paths": _dedupe_strings(governed_paths),
     }

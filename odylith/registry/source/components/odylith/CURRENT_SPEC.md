@@ -1,5 +1,31 @@
 # Odylith
 
+## Product-repo host-settings repair
+
+Product-repo install and repair preserve authored guidance while refreshing
+existing Codex and Claude host settings through the shared preserving writers.
+Pre-activation refresh does not change host settings. Install, upgrade, rollback
+and doctor carry the stored integration state into completion refreshes and must
+not mutate host registration while integration is disabled. Regeneration
+preserves custom hooks, configuration,
+metadata and first preimage backups; it does not grant native hook trust or
+prove chat delivery. Native activation remains a separate host/session gate.
+
+Deferred host checkpoint records retain event identity, session and affected
+paths, not shell command contents. Settlement consumes the stored path scope;
+it does not require or reparse a persisted copy of the command. This rule
+applies to new records; historical logs are not silently rewritten.
+
+Codex Stop has one 14-second foreground budget across settlement, logging and
+rendering. The shared Codex/Claude command runner owns its foreground process
+group; timed sync children inherit that group only within the hook-owned scope.
+The owned group receives its full bounded TERM grace even if its leader exits
+first, so existing child cleanup handlers can finish before escalation.
+Unsettled events survive interruption for retry. Ordinary standalone execution
+and independently bounded background engines retain their own lifetime. Native
+browser-descendant cleanup and automatic chat visibility remain separate proof
+obligations, not implied by command-group tests.
+
 ## Odylith Discipline Contract
 - For v0.1.11, Odylith owns Odylith Discipline as a platform
   contract: local pressure observations, deterministic hard laws, adaptive
