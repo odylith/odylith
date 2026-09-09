@@ -32,12 +32,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 112,
+    "explicit_event_count": 114,
     "mapped_workstream_evidence_count": 91,
     "recent_path_match_count": 0,
     "spec_history_event_count": 5,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 112
+    "timeline_event_count": 114
   },
   "name": "Casebook",
   "path_prefixes": [
@@ -47,6 +47,38 @@
   ],
   "spec_ref": "odylith/registry/source/components/casebook/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1195,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-09-09T06:07:53Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1192,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-09-09T06:07:31Z",
+      "workstreams": []
+    },
     {
       "artifact_count": 0,
       "artifacts": [],

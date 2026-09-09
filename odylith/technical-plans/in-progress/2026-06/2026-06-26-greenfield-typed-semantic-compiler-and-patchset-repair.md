@@ -2,6 +2,27 @@ Status: In progress
 
 ## Active-session registration repair (2026-09-08)
 
+The bounded comparison identifies a live architecture evaluation behind
+the closing hook's compact-summary read. Reading existing runtime evidence
+instead, explicitly recorded with unverified freshness, reduces the same
+instrumented Stop invocation from deadline expiry at 14.011 seconds to
+completion in 3.837 seconds. No engine or time constraint changes. Preserve
+missing/corrupt/off controls. Independent review accepted the corrected
+freshness receipt. Removing the shared voice character slicer preserves complete
+long qualifiers across both hosts; the same six failing copy controls now pass.
+Fresh native chat displays both complete interventions and Stop automatically
+confirms both with zero pending events, without manual visibility/confirmation.
+The identical seven source/test files pass 60 focused controls in proof.
+Original runtime has 3,557 passes plus the unchanged renderer-size baseline
+failure; the full governance browser matrix has 202 passes and two fixture
+capability skips. Code stayed frozen; normal hook-driven governance upkeep
+remained active during the matrix. No current-desktop activation, newly
+generated Stop closeout, purpose-built customer wording, Greenfield
+package-quality, distribution or final-holdout proof is inferred. All original
+60/90/120-second consumer caps and broader completion gates remain fixed.
+
+The final check-only governance pass validates Registry and plan/backlog contracts, but remains red at Atlas: the active checkout still references removed Greenfield owners, and proof reports 24 stale diagrams out of 47. Neither gate is waived. CLI-managed Registry forensic evidence is refreshed (nine active/eight proof records; no component requirement changes). This is a development checkpoint, not all-surface freshness or release completion.
+
 Fresh native CLI evidence now exists: one scoped read-only prompt automatically
 displayed an Observation and Assist; the actual transcript confirms both events.
 This does not close intervention quality: Observation punctuation is malformed,

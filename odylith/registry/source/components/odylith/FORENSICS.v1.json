@@ -45,12 +45,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 802,
-    "mapped_workstream_evidence_count": 561,
+    "explicit_event_count": 807,
+    "mapped_workstream_evidence_count": 562,
     "recent_path_match_count": 0,
     "spec_history_event_count": 34,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 802
+    "timeline_event_count": 807
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -64,6 +64,68 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1195,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-09-09T06:07:53Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1194,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-09-09T06:07:53Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1193,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-09-09T06:07:31Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1192,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-09-09T06:07:31Z",
+      "workstreams": []
+    },
     {
       "artifact_count": 0,
       "artifacts": [],
@@ -186,6 +248,42 @@
       "summary": "Component evidence linked this component to governed work.",
       "ts_iso": "2026-09-08T23:24:14Z",
       "workstreams": []
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-07-11-host-specific-intervention-transport-hides-odylith-moments.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 1197,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-09-08T23:20:34-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifact_count": 0,

@@ -6,6 +6,8 @@ from pathlib import Path
 
 from odylith import cli
 from odylith.runtime.intervention_engine import stream_state
+from odylith.runtime.intervention_engine import voice
+from odylith.runtime.intervention_engine.contract import GovernanceFact
 from odylith.runtime.surfaces import claude_host_post_edit_checkpoint
 from odylith.runtime.surfaces import claude_host_post_bash_checkpoint
 from odylith.runtime.surfaces import claude_host_prompt_context
@@ -78,6 +80,34 @@ def test_cross_host_prompt_teaser_rendering_stays_consistent() -> None:
     )
 
     assert codex_text == claude_text
+
+
+def test_cross_host_prompt_preserves_complete_generated_teaser() -> None:
+    fact = GovernanceFact(
+        kind="history",
+        headline="Casebook records the earlier incomplete proof.",
+        detail=(
+            "The earlier check covered the normal observation path and its selected "
+            "evidence together with the unchanged confirmation boundary for this turn, "
+            "but the empty and degraded cases still need fresh verification before "
+            "any completion claim can be made, so this result does not authorize a release."
+        ),
+    )
+    _headline, _markdown_text, _plain_text, teaser = voice.render_observation(
+        facts=[fact], proposal_actions=[],
+    )
+    intervention = {"candidate": {"stage": "teaser", "teaser_text": teaser}}
+    prompt = "Design a conversation observation engine with governed proposal flow."
+
+    codex_text = codex_host_prompt_context.render_codex_prompt_context(
+        prompt=prompt, intervention_bundle_override=intervention,
+    )
+    claude_text = claude_host_prompt_context.render_prompt_context(
+        prompt=prompt, intervention_bundle_override=intervention,
+    )
+
+    assert codex_text == claude_text
+    assert f"Odylith Observation: {fact.headline} Why it matters: {fact.detail}" in codex_text
 
 
 def test_cross_host_prompt_submit_system_message_stays_quiet_without_feedback() -> None:

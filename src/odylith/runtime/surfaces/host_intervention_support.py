@@ -78,6 +78,8 @@ def _format_substrate_alignment(
     )
     memory_state = _compact_string(runtime_summary.get("memory_standardization_state"))
     memory = f"{memory_backend} ({memory_state})" if memory_state else memory_backend
+    if runtime_summary.get("status") == "recorded":
+        memory = f"{memory} [recorded; freshness unverified]"
     execution_mode = _compact_string(execution.get("execution_engine_mode"), fallback="unavailable")
     execution_next = _compact_string(execution.get("execution_engine_next_move"), fallback="n/a")
     execution_outcome = _compact_string(execution.get("execution_engine_outcome"))
