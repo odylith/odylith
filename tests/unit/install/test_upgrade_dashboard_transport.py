@@ -38,6 +38,7 @@ import json, os, sys
 from pathlib import Path
 sys.path.insert(0, SOURCE_ROOT)
 from odylith import cli
+from odylith.runtime.governance import sync_command_execution
 from odylith.runtime.governance import sync_workstream_artifacts as sync
 
 root = Path(sys.argv[sys.argv.index("--repo-root") + 1])
@@ -66,7 +67,7 @@ def target_renderer(**kwargs):
     (root / "target-observation.json").write_text(json.dumps(observed))
     (root / "worker-ready").touch()
     if config.get("leaf"):
-        return sync._run_command(
+        return sync_command_execution.run_command(
             repo_root=root,
             args=[sys.executable, "-B", "-c", LEAF_SOURCE, str(root), str(fd)],
             pass_fds=(fd,),

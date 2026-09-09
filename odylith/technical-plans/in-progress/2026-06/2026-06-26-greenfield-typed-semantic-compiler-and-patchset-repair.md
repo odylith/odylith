@@ -1,5 +1,63 @@
 Status: In progress
 
+## Completion-wait implementation checkpoint (2026-09-09)
+
+The frozen broader gate is now terminal: runtime 4717 passed; install 1168
+passed; browser 340 passed and one skipped fixture-only Radar diagnostic cell.
+All 3179 hashed tracked/owned files are unchanged. This closes the bounded
+wait-correction regression gate, not a live request or release phase. Record
+the newly diagnosed zero-plan traceability coverage gap separately; its current
+exit-zero result is not acceptable proof for B-142 or the other dated plans.
+The coverage gap is captured as CB-334. Use the existing plan-discovery
+contract for its bounded correction; do not broaden the Greenfield mechanism.
+Checkpoint the reviewed source and current governance without marking the
+overall goal complete or preapproving another live attempt.
+
+The preceding goal wave made progress: the diagnosed wait delay is now removed
+in a 105-line command owner, with direct adoption and no compatibility shims.
+Four genuine before-fix failures become passes; the focused sync, hook and
+upgrade transport pack passes 103 controls. All twelve final owner controls
+also pass independent review. The production-owner local compilation replay
+takes 5.369247 seconds with 116 verified after-image files, unchanged product
+facts, no provider calls and no consumer changes. The interim hook-status reply
+only reconfirmed known trust; it did not advance Greenfield qualification.
+
+Freeze source and generated truth, then run full runtime (excluding the
+protected final-holdout module before collection) and full applicable browser
+coverage. Preserve all failures. Only checkpoint after those gates and governed
+readback; no new live experiment is preapproved by local timing evidence.
+Consumer 60/90/120, model 55/80/105, reviewer20, semantic quality, all engines,
+transaction safety, host parity, clean install and final holdout remain fixed.
+The prior 60.516840-second live attempt remains failed.
+
+## Live package rejection and local tail diagnosis (2026-09-09)
+
+The one independently approved live attempt at pushed source ca1ed52c is
+terminal: error/no preview after 60.516840 seconds. Its author and reviewer
+return in 39.298001 and 14.528926 seconds; their sum is not independent
+whole-phase timing proof. Review admits unchanged. Independent adjudication
+finds no substantive defect in that admitted candidate but cannot qualify a
+sealed package because none is retained. Five candidate staging files change;
+no pending transaction, generation publication, retry or holdout access occurs.
+Do not adopt the exact-row mechanism or relabel this as a successful request.
+
+A no-provider local compilation profile places most of the tail in staged
+surface refresh. A bounded baseline/completion-aware-wait/baseline triplet takes
+6.046942/5.223923/6.040746 seconds with the same product-facts hash and 116
+after-image files; all consumer snapshots remain unchanged. Preserve the first
+profiler's post-compilation dataclass-reporting TypeError separately.
+
+Next, replace unconditional polling sleep in the shared sync command owner
+with bounded completion-aware waiting. Independent review accepts the narrow
+contract: suppress only TimeoutExpired, retain heartbeat/deadline checks,
+exit codes, termination escalation and inherited hook groups. First add causal
+zero/nonzero completion-at-0.03s controls, make still-running timeout doubles
+faithful, and retain real process-group tests. Respect oversized-file ownership
+discipline without broad architecture churn. This is a local performance
+candidate, not stricter deadline enforcement or proof of standard60 success.
+No new live attempt is preapproved. All original quality, 60/90/120, phase,
+host, browser, installed-release and final-holdout gates remain open.
+
 ## Live preflight correction checkpoint (2026-09-09)
 
 The preceding goal pass made progress: it rejected an incomplete freeze before

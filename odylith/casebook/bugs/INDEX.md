@@ -6,6 +6,7 @@ Last updated (UTC): 2026-09-09
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-334 | 2026-09-09 | Plan traceability validation skips dated active plans | P2 | odylith | Open | [2026-09-09-plan-traceability-validation-skips-dated-active-plans.md](2026-09-09-plan-traceability-validation-skips-dated-active-plans.md) |
 | CB-332 | 2026-09-08 | Session brief without new inputs erases retained workstream and intent | P1 | odylith-context-engine | FixedPendingRelease | [2026-09-08-session-brief-without-new-inputs-erases-retained-workstream-and-intent.md](2026-09-08-session-brief-without-new-inputs-erases-retained-workstream-and-intent.md) |
 | CB-331 | 2026-09-08 | Deferred shell focus return can steal governance search input | P2 | dashboard | FixedPendingRelease | [2026-09-08-deferred-shell-focus-return-can-steal-governance-search-input.md](2026-09-08-deferred-shell-focus-return-can-steal-governance-search-input.md) |
 | CB-333 | 2026-09-08 | Bootstrap delivery drops resolved workstream relations before execution handoff | P1 | odylith-context-engine | FixedPendingRelease | [2026-09-08-bootstrap-delivery-drops-resolved-workstream-relations-before-execution-handoff.md](2026-09-08-bootstrap-delivery-drops-resolved-workstream-relations-before-execution-handoff.md) |

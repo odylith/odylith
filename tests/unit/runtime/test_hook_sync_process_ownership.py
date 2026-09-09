@@ -38,9 +38,9 @@ def _write_sync_fixture(tmp_path: Path, *, step_timeout: float = 30, inherited_c
     sync.write_text(
         "import json,os,sys\nfrom pathlib import Path\n"
         f"sys.path.insert(0, {str(_SOURCE_ROOT)!r})\n"
-        "from odylith.runtime.governance import sync_workstream_artifacts as sync\n"
+        "from odylith.runtime.governance import sync_command_execution as sync\n"
         "Path('sync.json').write_text(json.dumps({'pid': os.getpid(), 'pgid': os.getpgrp()}))\n"
-        "rc = sync._run_command(repo_root=Path.cwd(), args=[sys.executable, 'renderer.py'], "
+        "rc = sync.run_command(repo_root=Path.cwd(), args=[sys.executable, 'renderer.py'], "
         f"heartbeat_label='controlled-render', timeout_seconds={step_timeout!r})\n"
         "Path('step-result').write_text(str(rc))\n"
         "raise SystemExit(rc)\n",

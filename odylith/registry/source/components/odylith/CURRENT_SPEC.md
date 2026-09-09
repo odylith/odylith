@@ -26,6 +26,15 @@ and independently bounded background engines retain their own lifetime. Native
 browser-descendant cleanup and automatic chat visibility remain separate proof
 obligations, not implied by command-group tests.
 
+Governed sync subprocesses use the shared command-execution owner. It preserves
+the invoking runtime's import path and explicitly forwarded lock descriptors
+when rendering another repository. Timed execution waits for child completion
+within each bounded observation interval; it does not impose an unconditional
+half-second delay on finished work. Heartbeat checks, exit-code forwarding,
+timeout termination/escalation and inherited hook-group ownership remain intact.
+This local latency contract does not certify a complete Greenfield request's
+60/90/120-second budget.
+
 Host alignment reads the existing Compass runtime posture; it does not run
 architecture evaluation or rebuild projections while preparing chat context.
 Recorded posture retains its evidence fields but is explicitly freshness-
@@ -53,7 +62,7 @@ comes from selecting facts, not cutting character windows out of their meaning.
   are first-class host families, dev/dogfood/consumer are first-class lanes,
   and host model aliases resolve to adapter families without turning Odylith Discipline
   classification into a model-consuming path.
-Last updated: 2026-09-08
+Last updated: 2026-09-09
 
 
 ## Purpose

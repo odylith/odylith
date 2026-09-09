@@ -24,7 +24,6 @@ import json
 import os
 from pathlib import Path
 import queue
-import signal
 import subprocess
 import sys
 import threading
@@ -43,6 +42,7 @@ from odylith.runtime.governance import compass_dashboard_refresh_inputs
 from odylith.runtime.governance import dashboard_refresh_contract
 from odylith.runtime.governance import release_truth_runtime
 from odylith.runtime.governance import surface_refresh_fingerprint_dag
+from odylith.runtime.governance import sync_command_execution
 from odylith.runtime.governance import sync_generated_outputs
 from odylith.runtime.governance import sync_session as governed_sync_session
 from odylith.runtime.governance import sync_surface_render_batch
@@ -55,7 +55,6 @@ from odylith.runtime.governance.sync_argument_contract import DEFAULT_SYNC_OVERL
 from odylith.runtime.governance.sync_argument_contract import configure_sync_parser
 from odylith.runtime.governance import sync_casebook_bug_index
 from odylith.runtime.surfaces import render_mermaid_catalog_refresh
-from odylith.runtime.surfaces import host_hook_execution
 from odylith.runtime.surfaces import source_bundle_mirror
 
 
@@ -127,7 +126,6 @@ _SURFACE_DISPLAY_NAMES: Mapping[str, str] = {
     "registry": "registry",
     "casebook": "casebook",
 }
-_HEARTBEAT_INTERVAL_SECONDS = 10.0
 _HEARTBEAT_START_DELAY_SECONDS = 2.0
 _IN_PROCESS_HEARTBEAT_MODULES = frozenset(
     {
@@ -170,13 +168,6 @@ _TRUTH_ONLY_SELECTIVE_EXACT_PATHS: frozenset[str] = frozenset(
     }
 )
 
-def _active_odylith_import_roots() -> tuple[str, ...]:
-    roots: list[str] = []
-    for candidate in (Path(__file__).resolve().parents[3],):
-        token = str(candidate)
-        if token not in roots:
-            roots.append(token)
-    return tuple(roots)
 
 @dataclass(frozen=True)
 class ExecutionStep:
@@ -605,72 +596,6 @@ def _print_execution_plan(name: str, plan: ExecutionPlan, *, dry_run: bool, verb
         print("dry-run mode: no files written")
 
 
-def _run_command(
-    *,
-    repo_root: Path,
-    args: Sequence[str],
-    heartbeat_label: str = "",
-    timeout_seconds: float | None = None,
-    pass_fds: tuple[int, ...] = (),
-) -> int:
-    env = os.environ.copy()
-    cwd = Path.cwd()
-    pythonpath_tokens: list[str] = []
-    for token in _active_odylith_import_roots():
-        if token not in pythonpath_tokens:
-            pythonpath_tokens.append(token)
-    raw_pythonpath = str(env.get("PYTHONPATH", "")).strip()
-    if raw_pythonpath:
-        for token in raw_pythonpath.split(os.pathsep):
-            normalized = str((cwd / token).resolve()) if token and not Path(token).is_absolute() else token
-            if normalized and normalized not in pythonpath_tokens:
-                pythonpath_tokens.append(normalized)
-    if pythonpath_tokens:
-        env["PYTHONPATH"] = os.pathsep.join(pythonpath_tokens)
-    tokens = [str(token) for token in args]
-    if tokens and tokens[0] == "python":
-        tokens[0] = sys.executable
-    if heartbeat_label or timeout_seconds is not None:
-        started_at = time.perf_counter()
-        last_heartbeat = started_at
-        popen_kwargs: dict[str, Any] = {
-            "cwd": str(repo_root),
-            "env": env,
-        }
-        if os.name == "posix" and not host_hook_execution.in_hook_owned_foreground_group():
-            popen_kwargs["start_new_session"] = True
-        if pass_fds:
-            popen_kwargs["pass_fds"] = pass_fds
-        process = subprocess.Popen(tokens, **popen_kwargs)
-        while True:
-            rc = process.poll()
-            if rc is not None:
-                return int(rc)
-            now = time.perf_counter()
-            if timeout_seconds is not None and now - started_at >= float(timeout_seconds):
-                print(
-                    f"- timeout: {heartbeat_label or 'command'} exceeded "
-                    f"{int(float(timeout_seconds))}s; terminating"
-                )
-                _terminate_process(process)
-                try:
-                    process.wait(timeout=5)
-                except subprocess.TimeoutExpired:
-                    _kill_process(process)
-                    process.wait(timeout=5)
-                return 124
-            if now - last_heartbeat >= _HEARTBEAT_INTERVAL_SECONDS:
-                print(f"- heartbeat: {heartbeat_label} still running ({int(now - started_at)}s)")
-                last_heartbeat = now
-            time.sleep(0.5)
-    completed = subprocess.run(
-        tokens,
-        cwd=str(repo_root),
-        env=env,
-        check=False,
-        **({"pass_fds": pass_fds} if pass_fds else {}),
-    )
-    return int(completed.returncode)
 
 
 def _run_callable_with_heartbeat(
@@ -699,7 +624,7 @@ def _run_callable_with_heartbeat(
         except queue.Empty:
             elapsed = int(time.perf_counter() - started_at)
             print(f"- heartbeat: {label} still running ({elapsed}s)")
-            timeout = max(0.01, float(_HEARTBEAT_INTERVAL_SECONDS))
+            timeout = max(0.01, float(sync_command_execution.HEARTBEAT_INTERVAL_SECONDS))
             continue
         worker.join(timeout=0.01)
         if error is not None:
@@ -846,26 +771,8 @@ def _step_materially_changed(
     return before_change_fingerprint != after_change_fingerprint
 
 
-def _terminate_process(process: subprocess.Popen[Any]) -> None:
-    process_pid = int(getattr(process, "pid", 0) or 0)
-    if os.name == "posix" and process_pid > 0:
-        try:
-            os.killpg(process_pid, signal.SIGTERM)
-            return
-        except (OSError, ProcessLookupError):
-            pass
-    process.terminate()
 
 
-def _kill_process(process: subprocess.Popen[Any]) -> None:
-    process_pid = int(getattr(process, "pid", 0) or 0)
-    if os.name == "posix" and process_pid > 0:
-        try:
-            os.killpg(process_pid, signal.SIGKILL)
-            return
-        except (OSError, ProcessLookupError):
-            pass
-    process.kill()
 
 
 def _display_sync_step_command(*, repo_root: Path, command: Sequence[str]) -> str:
@@ -887,7 +794,7 @@ def _run_command_in_process(
 ) -> int:
     tokens = tuple(str(token) for token in args)
     if timeout_seconds is not None:
-        return _run_command(
+        return sync_command_execution.run_command(
             repo_root=repo_root,
             args=tokens,
             heartbeat_label=heartbeat_label,
@@ -903,7 +810,7 @@ def _run_command_in_process(
                     callable_=lambda: int(main(list(tokens[3:])) or 0),
                 )
             return int(main(list(tokens[3:])) or 0)
-    return _run_command(
+    return sync_command_execution.run_command(
         repo_root=repo_root,
         args=tokens,
         heartbeat_label=heartbeat_label,
@@ -924,7 +831,7 @@ def _run_command_in_process_direct(
         main = getattr(module, "main", None)
         if callable(main):
             return _coerce_callable_step_result(main(list(tokens[3:])))
-    return _run_command(
+    return sync_command_execution.run_command(
         repo_root=repo_root,
         args=tokens,
         heartbeat_label=heartbeat_label,
@@ -1972,7 +1879,7 @@ def refresh_dashboard_surfaces(
     started_at = time.perf_counter()
     surface_results: list[dict[str, Any]] = []
     runtime_fallback_used = False
-    run_impl = _run_command if repository_lock_fd is None else partial(_run_command, pass_fds=(repository_lock_fd,))
+    run_impl = sync_command_execution.run_command if repository_lock_fd is None else partial(sync_command_execution.run_command, pass_fds=(repository_lock_fd,))
     session_context: contextlib.AbstractContextManager[object] = contextlib.nullcontext()
     if repository_lock_fd is None and len(selected) == 1 and _use_runtime_fast_path(normalized_runtime_mode) and _runtime_fast_path_prerequisites_met(repo_root):
         run_impl = _run_command_in_process
@@ -2047,7 +1954,7 @@ def _sync_surface_batch_runtime(*, repo_root: Path) -> sync_surface_render_batch
         execute_dashboard_refresh_surface=_execute_dashboard_refresh_surface,
         use_runtime_fast_path=_use_runtime_fast_path,
         runtime_fast_path_prerequisites_met=_runtime_fast_path_prerequisites_met,
-        run_command=_run_command,
+        run_command=sync_command_execution.run_command,
         run_command_in_process_direct=_run_command_in_process_direct,
         skip_generated_refresh_guard_env=_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV,
     )
@@ -2845,7 +2752,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.dry_run:
         return 0
 
-    run_impl = _run_command
+    run_impl = sync_command_execution.run_command
     runtime_fallback_used = False
     if not args.check_only and _use_runtime_fast_path(effective_runtime_mode) and _runtime_fast_path_prerequisites_met(repo_root):
         run_impl = _run_command_in_process
