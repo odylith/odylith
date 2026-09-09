@@ -175,6 +175,11 @@ All-reader atomic generation-pointer publication remains unqualified.
 Codex and Claude transport the same exact hash-bound `CONFIRM`, `EDIT`, and
 `REJECT` contract. No evidence interpretation, model call, artifact generation,
 or prose repair runs after confirmation.
+Every handled exact decision retains its approval hash through busy, stale and
+recovery outcomes, including the visible recovery text sent through host hooks.
+Retry and correction guidance carries the full hash-bound
+command; it never asks the operator to recover identity from a mutable latest
+proposal. Only a rejected bare command has no supplied hash to retain.
 
 The admitted receipt records both real roles and binds complete candidate,
 source and Product Intent hashes. Compiler and commit-only canonicalizers retain

@@ -415,6 +415,7 @@ def test_reject_preserves_staging_when_recovery_evidence_exists(tmp_path: Path) 
 
     assert decision is not None
     assert decision["status"] == "RECOVERY_REQUIRED"
+    assert decision["transaction_hash"] == transaction_hash
     assert transaction.is_file()
     assert receipt.is_file()
     assert journal.is_dir()
@@ -466,6 +467,8 @@ def test_busy_confirmation_reports_no_write_without_regeneration(tmp_path: Path,
 
     assert decision is not None
     assert decision["status"] == "BUSY_NO_WRITE"
+    assert decision["transaction_hash"] == transaction_hash
+    assert f"`CONFIRM {transaction_hash}`" in decision["visible_markdown"]
     assert "No bytes" in str(decision["visible_markdown"])
     assert "regenerate" in str(decision["developer_context"])
 
@@ -482,8 +485,105 @@ def test_busy_reject_preserves_the_exact_pending_package(tmp_path: Path) -> None
 
     assert decision is not None
     assert decision["status"] == "BUSY_NO_WRITE"
+    assert f"`REJECT {transaction_hash}`" in decision["visible_markdown"]
     assert transaction.is_file()
     assert receipt.is_file()
+
+
+@pytest.mark.parametrize("host", ["codex", "claude"])
+@pytest.mark.parametrize("error,status", [
+    (greenfield_create_commit.GreenfieldCreateCommitError(
+        "busy", rollback_status="not_started", failure_kind="post_confirm_repository_busy",
+    ), "BUSY_NO_WRITE"),
+    (greenfield_create_commit.GreenfieldCreateCommitError(
+        "publication interrupted", rollback_status="recovery_required", failure_kind="publication_interrupted",
+    ), "RECOVERY_REQUIRED"),
+    (ValueError("repository precondition changed"), "STALE_TRANSACTION"),
+    (OSError("storage unavailable"), "RECOVERY_REQUIRED"),
+])
+def test_confirmation_failure_retains_reviewed_identity(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, host: str, error: Exception, status: str,
+) -> None:
+    transaction, receipt, transaction_hash = _stage_pending_transaction(tmp_path)
+    before = (transaction.read_bytes(), receipt.read_bytes())
+
+    def fail(**_kwargs: object) -> None:
+        raise error
+
+    monkeypatch.setattr(greenfield_create_commit, "commit_greenfield_create_transaction", fail)
+    decision = greenfield_host_confirmation.maybe_handle_greenfield_decision(
+        repo_root=tmp_path, host_family=host, prompt=f"CONFIRM {transaction_hash}",
+    )
+    assert decision is not None
+    assert decision["status"] == status
+    assert decision["transaction_hash"] == transaction_hash
+    payload = greenfield_host_confirmation.host_hook_payload(decision)
+    assert payload["decision"] == "block"
+    assert payload["reason"] == decision["visible_markdown"]
+    assert "hookSpecificOutput" not in payload
+    assert transaction_hash in payload["reason"]
+    if status == "STALE_TRANSACTION":
+        assert f"EDIT {transaction_hash} <corrections>" in payload["reason"]
+    assert (transaction.read_bytes(), receipt.read_bytes()) == before
+
+
+@pytest.mark.parametrize("host", ["codex", "claude"])
+def test_failed_reject_retains_identity_and_staging(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, host: str,
+) -> None:
+    transaction, receipt, transaction_hash = _stage_pending_transaction(tmp_path)
+    before = (transaction.read_bytes(), receipt.read_bytes())
+
+    def fail(**_kwargs: object) -> None:
+        raise OSError("staging cleanup unavailable")
+
+    monkeypatch.setattr(greenfield_pending_transaction_store, "discard_pending_transaction", fail)
+    decision = greenfield_host_confirmation.maybe_handle_greenfield_decision(
+        repo_root=tmp_path, host_family=host, prompt=f"REJECT {transaction_hash}",
+    )
+    assert decision is not None
+    assert decision["status"] == "RECOVERY_REQUIRED"
+    assert decision["transaction_hash"] == transaction_hash
+    payload = greenfield_host_confirmation.host_hook_payload(decision)
+    assert payload["decision"] == "block"
+    assert transaction_hash in payload["reason"]
+    assert (transaction.read_bytes(), receipt.read_bytes()) == before
+
+
+@pytest.mark.parametrize("host", ["codex", "claude"])
+@pytest.mark.parametrize("command", ["CONFIRM", "REJECT"])
+def test_host_busy_response_supplies_a_complete_working_retry(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str],
+    host: str, command: str,
+) -> None:
+    transaction, receipt, transaction_hash = _stage_pending_transaction(tmp_path)
+    before = (transaction.read_bytes(), receipt.read_bytes())
+    monkeypatch.setenv("ODYLITH_NO_BROWSER", "1")
+
+    def invoke(prompt: str) -> dict[str, object]:
+        payload = json.dumps({"prompt": prompt})
+        if host == "codex":
+            monkeypatch.setattr("sys.stdin", io.StringIO(payload))
+            result = codex_host_prompt_context.main(["--repo-root", str(tmp_path)])
+        else:
+            result = claude_host_prompt_bundle.main([
+                "--repo-root", str(tmp_path), "--payload", payload,
+            ])
+        assert result == 0
+        return json.loads(capsys.readouterr().out)
+
+    with greenfield_repository_lock.greenfield_repository_lock(tmp_path):
+        busy = invoke(f"{command} {transaction_hash}")
+    assert busy["decision"] == "block"
+    assert busy["reason"] == busy["systemMessage"]
+    assert (transaction.read_bytes(), receipt.read_bytes()) == before
+    retry = str(busy["reason"]).partition("Retry `")[2].partition("`")[0]
+    assert retry == f"{command} {transaction_hash}"
+    terminal = invoke(retry)
+    assert terminal["decision"] == "block"
+    assert "hookSpecificOutput" not in terminal
+    expected = "published" if command == "CONFIRM" else "rejected"
+    assert f"**Odylith Greenfield {expected}**" in str(terminal["reason"])
 
 
 def test_hash_bound_confirm_cannot_be_retargeted_by_a_newer_pending_proposal(

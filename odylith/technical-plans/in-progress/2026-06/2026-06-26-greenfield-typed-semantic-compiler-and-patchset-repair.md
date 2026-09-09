@@ -10,6 +10,31 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Hash-bound recovery handoff (2026-09-08)
+
+CB-304's callback loses known approval identity in failure responses and suggests
+a bare confirmation retry that its own safety gate refuses. Preserve the parsed
+hash in the existing shared response owner and make shown retry/edit commands
+complete. Do not weaken exact-command admission or add model reasoning, implicit
+latest-transaction selection, retries, schemas or a host-specific duplicate.
+Require red-before/green-after failure controls for both hosts and a busy/retry
+round trip against the real lock and kernel. This bounded UX correction does not
+qualify native activation, host timeout safety, unknown-host offer eligibility,
+live package quality or the unchanged 60/90/120 consumer envelope.
+
+The focused gate now passes 82 controls in 17.90 seconds after 11 causal red
+assertions. The response constructor requires explicit identity at every branch;
+no new helper, parser, model call, schema or retry path is introduced. Four
+public-hook lock/retry controls use an existing no-op sealed fixture, not a new
+generated package. Frozen regression and checkpoint results remain in
+`/private/tmp/odylith-greenfield-decision-recovery.logj0B/REVIEW.md`.
+
+The parallel read-only handoff review keeps CB-333's remaining admission proof
+explicit: preserved component/diagram IDs are not sufficient evidence that an
+input-free resumed packet can implement the target scope. The next public
+readback must produce an admissible next move or a concrete missing writable-target
+blocker; generic repeated narrowing does not qualify the integrated journey.
+
 ### Compass terminal-failure UX correction (2026-09-08)
 
 Delivery checkpoint `46c35484` is pushed and passes its actual one-pass source/spec
