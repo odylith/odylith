@@ -20,6 +20,7 @@ from odylith.runtime.domain_intelligence.greenfield_commit_journal import Greenf
 from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournalError
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldCommitInterrupted
+from odylith.runtime.surfaces.host_hook_execution import HookBudgetExpired
 
 
 class GreenfieldCreateCommitError(RuntimeError):
@@ -215,6 +216,9 @@ def commit_greenfield_create_transaction(
             and generation is not None
             and result is not None
             and transaction is not None
+            # Cancellation is not evidence of drift. Preserve the admitted
+            # interrupted phase so a same-hash retry must reverify publication.
+            and not isinstance(exc, HookBudgetExpired)
             and journal.publication_is_active()
         ):
             try:
@@ -241,7 +245,7 @@ def commit_greenfield_create_transaction(
                 exc.failure_kind
                 if isinstance(exc, GreenfieldCommitJournalError)
                 else "post_confirm_commit_interrupted"
-                if isinstance(exc, (GreenfieldCommitInterrupted, KeyboardInterrupt, SystemExit))
+                if isinstance(exc, (GreenfieldCommitInterrupted, KeyboardInterrupt, SystemExit, HookBudgetExpired))
                 else "post_confirm_commit_environment_or_io_failure"
                 if isinstance(exc, OSError)
                 else "post_confirm_commit_invariant_failure"

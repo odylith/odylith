@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store
 from odylith.runtime.domain_intelligence import greenfield_post_confirm_handoff
 from odylith.runtime.domain_intelligence import greenfield_repository_lock
+from odylith.runtime.surfaces import host_hook_execution
 
 
 HOST_CONFIRMATION_CALLBACK_VERSION = "odylith.greenfield.host-confirmation-callback.v1"
@@ -18,6 +19,7 @@ SUPPORTED_HOSTS = frozenset({"codex", "claude"})
 PENDING_ROOT_RELATIVE_PATH = Path(".odylith/runtime/greenfield/pending")
 _DECISION_COMMANDS = frozenset({"CONFIRM", "EDIT", "REJECT"})
 _LOWER_HEX = frozenset("0123456789abcdef")
+_DECISION_BUDGET_SECONDS = 10.0
 
 
 def _parse_decision(command_text: str) -> tuple[str, str, str | None] | None:
@@ -43,13 +45,25 @@ def maybe_handle_greenfield_decision(
 ) -> dict[str, Any] | None:
     """Handle exact pending-transaction commands before host model reasoning."""
 
-    host = str(host_family or "").strip().casefold()
-    if host not in SUPPORTED_HOSTS:
-        return None
-    root = Path(repo_root).expanduser().resolve()
     command_text = str(prompt or "").strip()
     parsed = _parse_decision(command_text)
+    if not confirmation_supported(host_family):
+        if parsed is None:
+            return None
+        command, transaction_hash, _edit_evidence = parsed
+        return _decision(
+            status="HOST_CONFIRMATION_UNAVAILABLE",
+            command=command,
+            transaction_hash=transaction_hash,
+            visible_markdown=(
+                "**Odylith Greenfield is read-only in this host**\n\n"
+                "This host has no registered deterministic decision callback. No package was accessed or changed. "
+                f"Approval code: `{transaction_hash}`. Review it through a supported confirmation interface."
+            ),
+            developer_context="Do not reinterpret or execute this decision through a model or another tool.",
+        )
     if parsed is None:
+        root = Path(repo_root).expanduser().resolve()
         if command_text in {"CONFIRM", "EDIT", "REJECT"} and _has_pending_transactions(root):
             return _decision(
                 status="DECISION_HASH_REQUIRED",
@@ -64,6 +78,36 @@ def maybe_handle_greenfield_decision(
             )
         return None
     command, transaction_hash, edit_evidence = parsed
+    decision = None
+    try:
+        # Leave headroom beneath the managed 20s/30s native hook timeouts.
+        with host_hook_execution.hook_budget(seconds=_DECISION_BUDGET_SECONDS):
+            root = Path(repo_root).expanduser().resolve()
+            decision = _handle_pending_decision(
+                root=root, command=command, transaction_hash=transaction_hash,
+                edit_evidence=edit_evidence,
+            )
+        return decision
+    except host_hook_execution.HookBudgetExpired:
+        if decision is not None:
+            # Preserve the kernel's recorded recovery or verified success.
+            return decision
+        return _decision(
+            status="RECOVERY_REQUIRED",
+            command=command,
+            transaction_hash=transaction_hash,
+            visible_markdown=(
+                "**Odylith Greenfield could not finish this decision in time**\n\n"
+                "Check this transaction's recorded outcome before retrying. "
+                "The timeout does not authorize regenerating or repairing the reviewed package."
+            ),
+            developer_context="Report the bounded transaction/environment outcome. Do not continue into model reasoning.",
+        )
+
+
+def _handle_pending_decision(
+    *, root: Path, command: str, transaction_hash: str, edit_evidence: str | None,
+) -> dict[str, Any]:
     try:
         transaction_path = greenfield_pending_transaction_store.resolve_pending_transaction(
             repo_root=root,
@@ -128,6 +172,7 @@ def host_hook_payload(decision: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def confirmation_supported(host_family: str) -> bool:
+    """Report callback registration, not native activation or fault qualification."""
     return str(host_family or "").strip().casefold() in SUPPORTED_HOSTS
 
 
@@ -198,7 +243,10 @@ def _confirm_pending_transaction(
         root,
         transaction_hash=transaction_hash,
     )
-    browser = greenfield_post_confirm_handoff.open_committed_dashboard(navigation)
+    try:
+        browser = greenfield_post_confirm_handoff.open_committed_dashboard(navigation)
+    except host_hook_execution.HookBudgetExpired:
+        browser = {"status": "unavailable", "reason": "browser open exceeded the decision budget"}
     return _decision(
         status="CLOSED",
         command="CONFIRM",

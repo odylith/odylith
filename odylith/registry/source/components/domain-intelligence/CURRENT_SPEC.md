@@ -23,6 +23,21 @@ hook is invoked, its output is absent, and CONFIRM reaches model dispatch withou
 publication. Eligibility must include fault-safe termination and visible outcomes,
 not only successful callback behavior. CB-304 retains the counterexample.
 
+Exact decisions now use the existing foreground deadline owner with a 10-second
+inner budget beneath managed 20/30-second native hook limits. Managed expiry
+returns a blocked, hash-bound environment outcome; it must not reach model
+reasoning. Cancellation preserves an admitted interrupted publication so the
+same-hash retry re-verifies the existing journal, immutable generation and complete
+write set before closing. Actual publication drift remains fail-closed; no new
+recovery state or artifact repair is introduced. A browser-open expiry after
+verified commit keeps CLOSED and the exact reviewed-generation link. Unregistered
+hosts return read-only before repository access; callback registration still does
+not establish offer eligibility or native activation. The bounded native Claude
+control emits the full recovery reason with zero local inference requests, while
+the outer-timeout control reaches the detector once. Arbitrary host timeout,
+startup failure, trust skipping and desktop visibility remain unqualified.
+These controls do not prove authored-package quality or the 60/90/120 envelope.
+
 The published predecessor population is ordinary unactivated governance, not the
 later development JSON/journal formats: all eight current release wheels through
 v0.1.14 were inspected with asset-digest and build-provenance matching. Retained
@@ -326,6 +341,9 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-08 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_create_commit.py`, `src/odylith/runtime/surfaces/greenfield_host_confirmation.py`
 - **2026-09-07 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 1 verifiable artifact reference.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`
@@ -341,9 +359,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `sha256:54a42d7ec1a2fb0bbfacf5bd84e0a653a1c55c219136385a6b85a20277d60060`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_design_views.py`, `src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py`
-- **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_view.py`, `tests/unit/runtime/test_greenfield_authored_atlas_view.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

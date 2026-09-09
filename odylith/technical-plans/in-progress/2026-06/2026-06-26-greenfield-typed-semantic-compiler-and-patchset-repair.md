@@ -88,6 +88,26 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ### Hash-bound recovery handoff (2026-09-08)
 
+Next, compare the existing shared foreground deadline at the deterministic
+decision boundary against delayed resolution/publication/rejection. Predict a
+blocked environment outcome with the same approval hash before the managed
+host timeout, without later routing or model work. Keep hard-kill and externally
+shortened host timeouts outside that inference. Exact unregistered-host commands
+must return a read-only outcome without accessing pending data. This bounded
+comparison does not qualify write offers or complete native-host safety.
+
+The bounded comparison fixes 15 causal deadline/unknown-host failures. Real
+publication controls reject the first candidate because cancellation records a
+terminal recovery state and blocks same-hash retry. Keep cancellation distinct
+from diagnosed drift, preserving the existing interrupted journal and its strict
+verification path. The corrected callback/journal pack passes 90 checks; the
+expanded deadline pack passes 32, including both sides of durable publication,
+operator-drift preservation and successful commit despite stalled browser opening.
+Native Claude returns complete blocked recovery with zero inference requests when
+the inner deadline wins; a native outer timeout still reaches the local detector.
+Do not turn this bounded improvement into host-eligibility, consumer-timing or
+package-quality acceptance. Receipts: /private/tmp/odylith-decision-deadline.txhOc6/.
+
 CB-304's callback loses known approval identity in failure responses and suggests
 a bare confirmation retry that its own safety gate refuses. Preserve the parsed
 hash in the existing shared response owner and make shown retry/edit commands

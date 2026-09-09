@@ -225,6 +225,7 @@ def test_postconfirm_receipt_covers_executed_runtime(tmp_path: Path) -> None:
         source_root / "runtime/domain_intelligence/greenfield_pending_transaction_store.py",
         source_root / "runtime/domain_intelligence/greenfield_proposals_cli.py",
         source_root / "runtime/surfaces/greenfield_host_confirmation.py",
+        source_root / "runtime/surfaces/host_hook_execution.py",
     }
     assert expected - executed == expected_untraced
     assert executed == expected - expected_untraced
@@ -275,6 +276,7 @@ def test_postconfirm_receipt_covers_canonical_create_adapter(tmp_path: Path, cap
         source_root / "runtime/domain_intelligence/greenfield_pending_transaction_store.py",
         source_root / "runtime/domain_intelligence/greenfield_proposals_cli.py",
         source_root / "runtime/surfaces/greenfield_host_confirmation.py",
+        source_root / "runtime/surfaces/host_hook_execution.py",
     }
     assert expected - executed == expected_untraced
     assert executed == expected - expected_untraced

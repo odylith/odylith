@@ -55,6 +55,7 @@ _POSTCONFIRM_RUNTIME_SOURCE_FILES = (
     "runtime/domain_intelligence/greenfield_repository_write_set.py",
     "runtime/domain_intelligence/greenfield_transaction.py",
     "runtime/surfaces/greenfield_host_confirmation.py",
+    "runtime/surfaces/host_hook_execution.py",
 )
 _VOLATILE_HASH_KEYS = frozenset({"elapsed_seconds", "whole_project_elapsed_seconds", "create_elapsed_seconds"})
 _SEALED_COMMIT_ATTESTATION = object()

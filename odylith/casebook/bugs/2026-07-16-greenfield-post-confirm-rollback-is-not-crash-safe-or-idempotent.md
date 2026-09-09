@@ -1,5 +1,9 @@
 - Bug ID: CB-261
 
+- Managed Deadline Retry Correction (2026-09-08): HookBudgetExpired now preserves the existing admitted interrupted phase instead of declaring publication drift; the unchanged journal verifies exact publication and bytes on same-hash retry. Both hosts pass real-kernel interruption before publication, after pointer publication before journal promotion, and after durable published state. Browser expiry after verified commit remains CLOSED. Operator-modified publication remains untouched and retry fails closed. No lifecycle transition, generation repair or general recovery bypass is added; the expanded deadline selection passes 32 checks in 11.48 seconds. Installed crash/release proof remains separate.
+
+- Managed Deadline Retry Finding (2026-09-08): CB-304's real-kernel cancellation comparison preserves a published generation but records terminal recovery_required after a managed hook deadline, preventing exact same-hash recovery despite intact bytes. Both Codex and Claude callback controls reproduce this, and independent review rejects that candidate. The bounded correction must distinguish cancellation from diagnosed publication drift and reuse existing projecting/published verification without relaxing readback, snapshot protection or immutable approval identity. Evidence: /private/tmp/odylith-decision-deadline.txhOc6/after-recovery-correct-phase.xml.
+
 - Status: Open
 
 - Created: 2026-07-16

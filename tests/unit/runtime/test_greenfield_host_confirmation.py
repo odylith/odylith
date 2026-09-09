@@ -155,6 +155,7 @@ def test_supported_hosts_commit_the_pending_hash_without_semantic_work(
     ]
     assert executed <= admitted_runtime
     assert source_root / "runtime/surfaces/greenfield_host_confirmation.py" in executed
+    assert source_root / "runtime/surfaces/host_hook_execution.py" in executed
     assert source_root / "runtime/domain_intelligence/greenfield_pending_transaction_store.py" in executed
     assert source_root / "runtime/domain_intelligence/greenfield_commit_transaction.py" in executed
 
@@ -357,11 +358,13 @@ def test_decision_callback_is_exact_and_proposal_only_for_unknown_hosts(
         )
         assert decision is not None
         assert decision["status"] == "DECISION_HASH_REQUIRED"
-    assert greenfield_host_confirmation.maybe_handle_greenfield_decision(
+    unsupported = greenfield_host_confirmation.maybe_handle_greenfield_decision(
         repo_root=tmp_path,
         host_family="generic",
         prompt=f"CONFIRM {transaction_hash}",
-    ) is None
+    )
+    assert unsupported is not None
+    assert unsupported["status"] == "HOST_CONFIRMATION_UNAVAILABLE"
     assert greenfield_host_confirmation.confirmation_supported("codex") is True
     assert greenfield_host_confirmation.confirmation_supported("claude") is True
     assert greenfield_host_confirmation.confirmation_supported("generic") is False
