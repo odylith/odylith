@@ -479,6 +479,22 @@ Compass distinguishes:
 Generated-only narrative noise is intentionally deprioritized so dashboard
 churn does not drown out meaningful implementation evidence.
 
+Timeline event details do not infer file ownership or discard supplied events.
+Two or more typed `local_change` events share an expandable uncommitted-change
+group, using the same renderer inside and outside transaction cards. Single
+changes remain directly visible. Decisions, failures and other event kinds stay
+outside that group. Expansion exposes the complete supplied event list, including
+customer governance edits and unfamiliar paths; the former 24-event tail cutoff
+and generated-filename suppression are removed from this presentation boundary.
+Event text wraps within each card, including long filename tokens on mobile;
+page-level overflow alone is not sufficient proof of readable card content.
+Standalone events remain visible beside transactions, without duplicating members
+of transaction cards that actually render in the selected window. Hidden internal
+transactions do not consume visible audit events. Upstream selection, narration
+ranking, source records and event counts are unchanged. CB-303 browser controls
+cover desktop/mobile, keyboard expansion, mixed and internal transactions, and
+empty/single-change states. This does not establish native chat delivery.
+
 ## Snapshot-Age Contract
 - Compass rolling windows, per-day timelines, and audit-hour detail are anchored
   to the loaded runtime snapshot timestamp, not the browser wall clock.
@@ -700,6 +716,9 @@ or component definitions.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-08 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/registry/source/components/compass/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-workstreams.v1.js`, plus 1 more
 - **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/compass/CURRENT_SPEC.md`, `tests/unit/runtime/test_greenfield_prewrite_job_lifetime.py`
@@ -710,8 +729,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-03-04 · Decision:** Decision evidence linked this component to governed work with 4 verifiable artifact references.
   - Evidence: `src/odylith/runtime/governance/sync_workstream_artifacts.py`, `src/odylith/runtime/surfaces/render_backlog_ui.py`, `src/odylith/runtime/surfaces/render_compass_dashboard.py`, `src/odylith/runtime/surfaces/render_registry_dashboard.py`
 - **2026-03-03 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
-  - Evidence: `odylith/radar/source/INDEX.md`, `odylith/technical-plans/INDEX.md`, `src/odylith/runtime/surfaces/render_backlog_ui.py`, `src/odylith/runtime/surfaces/render_compass_dashboard.py`
-- **2026-03-03 · Decision:** Decision evidence linked this component to governed work with 4 verifiable artifact references.
   - Evidence: `odylith/radar/source/INDEX.md`, `odylith/technical-plans/INDEX.md`, `src/odylith/runtime/surfaces/render_backlog_ui.py`, `src/odylith/runtime/surfaces/render_compass_dashboard.py`
 <!-- registry-requirements:end -->
 

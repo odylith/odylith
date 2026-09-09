@@ -313,6 +313,17 @@ live quality, 60/90/120, independent adjudication and the holdout remain open.
 
 ### Integrated consumer journey (2026-09-08)
 
+Bounded onboarding correction under CB-303: replace timeline-detail filename-based
+suppression and the inaccessible 24-event tail with expandable grouping of the
+existing `local_change` event type. Share the renderer between standalone and
+transaction details; preserve raw payloads, counts, user edits and non-local
+events. Do not add an installation receipt schema, model call or filename list.
+Characterize desktop/mobile, empty/single/dense, mixed decision/failure, and
+transaction states before the patch, then run the applicable surface matrix.
+Keep upstream event selection and narration classification explicitly outside
+this presentation-only claim. Evidence lives at
+`/private/tmp/odylith-compass-event-density.d5G6Wj/`.
+
 The full product capability inventory, including memory, is an integration
 acceptance requirement, not a request for a new engine framework. Preserve the
 existing owners and exercise their relevant handoffs: installation/trust and

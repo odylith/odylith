@@ -213,14 +213,6 @@
       return { source, generated };
     }
 
-    function isGeneratedOnlyLocalEvent(eventRow) {
-      const kind = String(eventRow && eventRow.kind ? eventRow.kind : "").trim();
-      if (kind !== "local_change") return false;
-      const files = Array.isArray(eventRow && eventRow.files) ? eventRow.files : [];
-      const fileSplit = splitNarrativeFiles(files);
-      return fileSplit.source.length === 0 && fileSplit.generated.length > 0;
-    }
-
     function buildSignalSummary(kindCounts) {
       const counts = kindCounts && typeof kindCounts === "object" ? kindCounts : {};
       const lines = [];
@@ -1002,11 +994,42 @@
         `;
       };
 
+      const renderTimelineEventList = (events) => {
+        const localChanges = events.filter((row) => row.kind === "local_change");
+        if (localChanges.length < 2) return events.map(renderTimelineEventCard).join("");
+        let grouped = false;
+        return events.map((row) => {
+          if (row.kind !== "local_change") return renderTimelineEventCard(row);
+          if (grouped) return "";
+          grouped = true;
+          return `
+            <details class="tx-card workspace-change-group">
+              <summary>
+                <div class="tx-headline">Uncommitted changes (${localChanges.length})</div>
+                <div class="tx-meta">Expand to inspect every file-change event.</div>
+              </summary>
+              <div class="tx-detail">${localChanges.map(renderTimelineEventCard).join("")}</div>
+            </details>
+          `;
+        }).join("");
+      };
+
+      const visibleTransactions = relevantTransactions.filter((row) => {
+        if (isInternalSyncTransaction(row)) return false;
+        const ts = toDate(row.end_ts_iso || row.start_ts_iso);
+        const bounds = visibleHourBoundsForDay(toLocalDateToken(ts), state, payload);
+        return ts && bounds && hourInCompassTimeZone(ts) >= bounds.min
+          && hourInCompassTimeZone(ts) <= bounds.max;
+      });
+      const transactionEventIds = new Set(visibleTransactions.flatMap((row) =>
+        (Array.isArray(row.events) ? row.events : []).map((event) => String(event.id || ""))
+      ).filter(Boolean));
+
       for (const dayToken of renderDays) {
-        const dayTransactions = txRows.filter((row) => {
+        const dayTransactions = visibleTransactions.filter((row) => {
           const token = toLocalDateToken(row.end_ts_iso || row.start_ts_iso);
           return token === dayToken;
-        }).filter((row) => !isInternalSyncTransaction(row));
+        });
         const dayEvents = eventRows.filter((row) => {
           const token = toLocalDateToken(row.ts_iso);
           return token === dayToken;
@@ -1043,8 +1066,9 @@
             continue;
           }
 
-          if (!items.length && hourEventItems.length) {
-            const orderedEvents = [...hourEventItems].sort((left, right) => {
+          const orderedStandaloneEvents = hourEventItems
+            .filter((row) => !transactionEventIds.has(String(row.id || "")))
+            .sort((left, right) => {
               const leftTs = toDate((left && left.ts_iso) || "");
               const rightTs = toDate((right && right.ts_iso) || "");
               const leftMs = leftTs ? leftTs.getTime() : 0;
@@ -1054,24 +1078,12 @@
               const rightId = String(right && right.id ? right.id : "");
               return rightId.localeCompare(leftId);
             });
-            const compactedGenerated = orderedEvents.filter((row) => isGeneratedOnlyLocalEvent(row)).length;
-            const visibleStandalone = orderedEvents.filter((row) => !isGeneratedOnlyLocalEvent(row));
-            const shownStandalone = visibleStandalone.slice(0, 24);
-            const hiddenStandalone = Math.max(0, visibleStandalone.length - shownStandalone.length);
-            const compactSummary = [];
-            if (compactedGenerated > 0) {
-              compactSummary.push(`<div class="tx-meta">Compacted ${compactedGenerated} generated events.</div>`);
-            }
-            if (hiddenStandalone > 0) {
-              compactSummary.push(`<div class="tx-meta">Showing ${shownStandalone.length} of ${visibleStandalone.length} standalone events.</div>`);
-            }
-            const eventHtml = shownStandalone.length
-              ? `${compactSummary.join("")}${shownStandalone.map((eventRow) => renderTimelineEventCard(eventRow)).join("")}`
-              : `<div class="hour-event"><div class="hour-event-title">Compacted ${compactedGenerated} generated events.</div><div class="hour-event-meta">${escapeHtml(hourLabel)} • compacted</div></div>`;
+          if (!items.length) {
+            if (!orderedStandaloneEvents.length) continue;
             hourRows.push(`
               <div class="hour-row">
                 <div class="hour-label">${escapeHtml(hourLabel)}</div>
-                <div class="hour-events">${eventHtml}</div>
+                <div class="hour-events">${renderTimelineEventList(orderedStandaloneEvents)}</div>
               </div>
             `);
             continue;
@@ -1127,20 +1139,9 @@
               ? `<div><h3>Files</h3><ul class="tx-files">${fileRows.join("")}</ul></div>`
               : `<div><h3>Files</h3><p class="empty">No files captured for this transaction.</p></div>`;
 
-            const compactedGeneratedEvents = eventsList.filter((eventRow) => isGeneratedOnlyLocalEvent(eventRow)).length;
-            const visibleEvents = eventsList.filter((eventRow) => !isGeneratedOnlyLocalEvent(eventRow));
-            const shownEvents = visibleEvents.slice(0, 24);
-            const hiddenVisibleEvents = Math.max(0, visibleEvents.length - shownEvents.length);
-            const eventCompactionRows = [];
-            if (compactedGeneratedEvents > 0) {
-              eventCompactionRows.push(`<div class="tx-meta">Compacted ${compactedGeneratedEvents} generated events.</div>`);
-            }
-            if (hiddenVisibleEvents > 0) {
-              eventCompactionRows.push(`<div class="tx-meta">Showing ${shownEvents.length} of ${visibleEvents.length} non-generated events.</div>`);
-            }
-            const eventRowsHtml = shownEvents.length
-              ? `<div class="tx-events">${shownEvents.map((eventRow) => renderTimelineEventCard(eventRow)).join("")}</div>`
-              : `<p class="empty">No high-signal event details captured.</p>`;
+            const eventRowsHtml = eventsList.length
+              ? `<div class="tx-events">${renderTimelineEventList(eventsList)}</div>`
+              : `<p class="empty">No event details captured.</p>`;
             return `
               <details class="tx-card">
                 <summary>
@@ -1155,7 +1156,6 @@
                   ${fileHtml}
                   <div>
                     <h3>Events</h3>
-                    ${eventCompactionRows.join("")}
                     ${eventRowsHtml}
                   </div>
                 </div>
@@ -1166,7 +1166,7 @@
           hourRows.push(`
             <div class="hour-row">
               <div class="hour-label">${escapeHtml(hourLabel)}</div>
-              <div class="hour-events">${eventHtml}</div>
+              <div class="hour-events">${eventHtml}${renderTimelineEventList(orderedStandaloneEvents)}</div>
             </div>
           `);
         }
