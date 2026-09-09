@@ -1,5 +1,31 @@
 Status: In progress
 
+## Installed rescue-profile semantic boundary (2026-09-09)
+
+The unchanged 41c89d6d distribution builds completely and passes all twelve
+checksums. Fresh consumer baseline, guidance, no-write negative control, sync
+readback and installed import isolation pass. The predeclared existing
+rescue90/model80 semiconductor lab custody request then fails in 50.088195
+seconds with no package or governed-path changes. Its author takes 37.879944
+seconds; the reviewer takes 10.925066 seconds and correctly rejects the exact
+phrase “engineering review” as an unsupported human actor. Pre-generation
+annotations and independent adjudication agree: it is a proof purpose.
+
+This is semantic authoring failure, not timeout or escaped admission. Frozen
+inputs stay unchanged, and only the declared author/reviewer calls occur. No
+retry, profile escalation, confirmation, publication or protected-holdout access.
+The accepted contract, installed identity, full receipts, initial setup/preflight
+failures and proof limits are retained in
+`/private/tmp/odylith-rescue-profile-proof.vA5ms8/REVIEW.md`.
+
+Do not count rejection within the deadline as consumer success. More time alone
+does not correct the diagnosed exact-quote/wrong-role failure. A replacement is
+not selected: first compare the owning abstraction with retained failed
+mechanisms, including the retired three-disposition reviewer. No unchanged
+corrective-review retry, lexical actor filter, admission removal or model sweep
+is justified by this result. All 60/90/120, generated-quality, native delivery,
+whole-product UX and release gates remain fixed and open.
+
 ## Existing proposed-carrier fidelity (2026-09-09)
 
 Outcome: reject the low-effort reviewer after the first and only call returns

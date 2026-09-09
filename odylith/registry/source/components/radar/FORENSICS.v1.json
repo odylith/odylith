@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 788,
-    "mapped_workstream_evidence_count": 738,
+    "explicit_event_count": 789,
+    "mapped_workstream_evidence_count": 739,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 788
+    "timeline_event_count": 789
   },
   "name": "Radar",
   "path_prefixes": [
@@ -53,6 +53,41 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "sha256:2e98b5b0427a9ec259e12df783243a70cba649dd9bd831214d03781c48939e6c"
+      ],
+      "confidence": "high",
+      "event_index": 1352,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-09-09T02:10:05-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 1,
       "artifacts": [
