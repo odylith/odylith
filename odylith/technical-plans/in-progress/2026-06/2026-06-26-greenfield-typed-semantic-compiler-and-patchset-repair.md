@@ -1,5 +1,43 @@
 Status: In progress
 
+## Existing proposed-carrier fidelity (2026-09-09)
+
+Outcome: reject the low-effort reviewer after the first and only call returns
+null at 20.031191 seconds with provider timeout and unchanged inputs. No profile
+change, retry or later control. Independent review accepts stopping; this does
+not establish a general latency cause or qualify the unchanged mechanism.
+The separate Project correction preserves existing assumptions in an advisory
+blueprint section and Project intelligence, with no new schema or gate. Root
+rejected the initial coding-gate placement. Final-shape baseline reproduction
+fails at the missing section; current source passes 50 focused checks and 17
+fixture browser controls. Independent patch review accepts. The full frozen
+runtime suite passes all 4,708 tests in 339.95 seconds, with unchanged tracked
+tree and new-test hashes. Evidence and checkpoint limits:
+`/private/tmp/odylith-review-low-effort.j0i9Kv/REVIEW.md`.
+
+One separately bounded timing comparison changes only the existing complete
+candidate review's Sol reasoning effort from medium to low. Reuse the five
+unchanged, previously adjudicated development controls; stop at the first wrong
+verdict, unsubstantiated witness, provider failure or result over 10 seconds.
+The runtime role cap remains 20 seconds. Ten seconds is an experiment-advance
+criterion targeting a retained 44.169-second author's remaining window, not
+proof that the observed 50.496-second author can fit. Maximum five calls, one
+per control, independently reviewed before advancing. No production profile or
+prompt change, no retries, and no holdout access. Predeclared comparison:
+`/private/tmp/odylith-review-low-effort.j0i9Kv/acceptance.md`.
+
+Independent audit isolates one representation loss: general assumptions are
+omitted from the durable Project brief and Project intelligence. First reproduce
+that loss with existing typed assumptions and verification; then pass the same
+authored values through the existing Project views with explicit proposed,
+unverified authority. Radar, Registry, Atlas and selected-handoff controls must
+retain their current verification values. No new schema, semantic classifier,
+model call, runtime quality blocker or post-CONFIRM work belongs to this fix.
+Main owns governance and the separate timing comparison; one bounded worker owns
+the existing proposal builder and its cross-surface regression. The previous
+v54 prompt remains rejected; actual generated quality and the complete consumer
+time gates must still be proved together before promotion.
+
 ## Retained first-user quality adjudication (2026-09-09)
 
 Independent review rejects the retained 50.334-second installed shelter preview

@@ -38,6 +38,7 @@ from odylith.runtime.domain_intelligence.greenfield_provisional_package import (
     build_provisional_components,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
+    assumption_preview_values,
     assumption_rows,
     decision_copy,
 )
@@ -206,6 +207,7 @@ def build_authored_greenfield_proposal(
             non_goals=non_goals,
             operational_constraints=operational_constraints,
             evidence_requirements=evidence_requirements,
+            assumptions=assumptions,
         ),
         "project_intelligence": _project_intelligence(
             title=title,
@@ -224,6 +226,7 @@ def build_authored_greenfield_proposal(
             operational_constraints=operational_constraints,
             evidence_requirements=evidence_requirements,
             success_metrics=success_metrics,
+            assumptions=assumptions,
         ),
         "release_plan": _release_plan(
             title=title,
@@ -524,8 +527,10 @@ def _project_brief(
     non_goals: Sequence[str],
     operational_constraints: Sequence[str],
     evidence_requirements: Sequence[str],
+    assumptions: Sequence[Mapping[str, str]],
 ) -> dict[str, Any]:
     problem_statement = problem
+    assumption_values = assumption_preview_values(assumptions)
     sections = [
         _brief_section("Product outcome", product_story, "The accepted product outcome."),
         _brief_section(
@@ -543,6 +548,14 @@ def _project_brief(
         )
     if non_goals:
         sections.append(_brief_section("Non-goals", "; ".join(non_goals), "Explicitly excluded scope."))
+    if assumption_values:
+        sections.append(
+            _brief_section(
+                "Proposed assumptions",
+                "\n".join(assumption_values),
+                "Advisory and unverified; additional source evidence is required before acceptance.",
+            )
+        )
     return {
         "schema_version": "odylith.greenfield.project_brief.v1",
         "projection_origin": AUTHORED_PROJECTION_ORIGIN,
@@ -581,6 +594,7 @@ def _project_intelligence(
     operational_constraints: Sequence[str],
     evidence_requirements: Sequence[str],
     success_metrics: Sequence[str],
+    assumptions: Sequence[Mapping[str, str]],
 ) -> dict[str, Any]:
     return {
         "schema_version": "odylith.greenfield.project_intelligence.v1",
@@ -603,7 +617,7 @@ def _project_intelligence(
         "constraints": list(operational_constraints),
         "source_of_truth_map": [],
         "evidence": _unique([proof_boundary, *evidence_requirements]),
-        "assumptions": [],
+        "assumptions": assumption_preview_values(assumptions),
         "topology": _unique([*internal_systems, *external_systems]),
         "validation_obligations": _unique([proof_boundary, *success_metrics]),
         "metrics": list(success_metrics),
