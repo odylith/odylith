@@ -124,16 +124,16 @@ def review_greenfield_candidate(
     try:
         response = provider.generate_structured(request=request)
         observation["response"] = deepcopy(response)
+        metadata = odylith_reasoning.provider_failure_metadata(provider)
+        observation["provider"] = metadata
         if clock() > review_deadline:
             raise RuntimeError("Greenfield candidate review exceeded its time window")
-        metadata = odylith_reasoning.provider_failure_metadata(provider)
         model_profile = {
             "profile_id": profile_id, "provider": metadata.get("provider", ""),
             "model": metadata.get("model") or request.model,
             "reasoning_effort": metadata.get("reasoning_effort") or request.reasoning_effort,
             "effective_timeout_seconds": timeout, "authoring_tier": profile.repair_tier,
         }
-        observation["provider"] = metadata
         require_greenfield_model_profile_observation(**model_profile, request_role="candidate_review")
         if _encoded(payload) != frozen_payload:
             raise RuntimeError("Greenfield review changed its candidate or evidence")

@@ -1,5 +1,27 @@
 Status: In progress
 
+## Retained first-user quality adjudication (2026-09-09)
+
+Independent review rejects the retained 50.334-second installed shelter preview
+as a complete quality pass: its functional scope survives, but proportional
+privacy/risk obligations are missing. No P0 is established by this review. Keep
+the unpublished transaction unchanged. The projection hardcodes empty risk
+fields; no dashboard reinterpretation or source-keyword rules are justified.
+Existing assumptions and verification fields can represent safeguards, but the
+prior v54 authoring experiment failed review on time and remains rejected.
+Current v53 is unqualified, not a winning mechanism.
+
+One bounded correction preserves existing provider metadata before rejecting a
+late reviewer response. Four causal regression failures become 211 focused
+passes, and independent correction review accepts. The frozen broad run has
+4,705 passes and one stale Release forensic sidecar; its diff is exactly the new
+Compass decision logged after sync. Refresh through the owning CLI and validate
+that record without weakening the test. Seventeen browser checks pass. Preserve
+the failed broad receipt; no complete green rerun is claimed by these counts.
+This does not improve latency or qualify package quality. No prompt, profile,
+schema, model call, retry or 60/90/120 limit changes. Evidence and next-proof
+boundaries: `/private/tmp/odylith-review-evidence.mf25A6/REVIEW.md`.
+
 ## Active-session registration repair (2026-09-08)
 
 The bounded comparison identifies a live architecture evaluation behind

@@ -136,6 +136,26 @@ def test_late_response_fails_after_one_actual_call(duration):
     assert provider.calls == 1
 
 
+@pytest.mark.parametrize("started,duration", [(0.0, 20.001), (45.0, 10.001)])
+@pytest.mark.parametrize("response", [None, {"admissible": True, "issues": []}])
+def test_late_review_retains_provider_evidence_without_admitting_or_retrying(started, duration, response):
+    clock = Clock()
+    clock.value = started
+    provider = Reviewer(response, clock, duration)
+    provider.last_failure_code = "timeout" if response is None else ""
+    provider.last_failure_detail = "Codex CLI exceeded its request budget." if response is None else ""
+    observation = {}
+    with pytest.raises(RuntimeError, match="exceeded its time window"):
+        run_review(provider, clock, observation=observation)
+    assert provider.calls == 1
+    assert observation["response"] == response
+    assert observation["provider"] == review.odylith_reasoning.provider_failure_metadata(provider)
+    assert observation["provider"]["model"] == "gpt-5.6-sol"
+    assert observation["provider"]["reasoning_effort"] == "medium"
+    assert observation["provider"]["code"] == ("timeout" if response is None else "")
+    assert observation["elapsed_seconds"] == pytest.approx(duration)
+
+
 def test_native_author_requires_admission_and_preserves_source_and_design():
     source = _source()
     response = _response(source)
