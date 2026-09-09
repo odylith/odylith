@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 import sys
@@ -9,6 +10,7 @@ import sys
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_create_lifecycle
+from odylith.runtime.domain_intelligence.greenfield_commit_transaction import _payload_hash
 from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
@@ -36,6 +38,48 @@ HASH = "a" * 64
 PRODUCT_FACTS_SHA256 = "c" * 64
 ATOMIC_CUSTODY_SHA256 = "d" * 64
 TRANSACTION_FILE = f".odylith/runtime/greenfield/pending/{HASH}/product-create-transaction.v1.json"
+
+
+@pytest.mark.parametrize("tamper", [None, "product", "model", "reviewer"])
+def test_dry_run_uses_real_compiler_hash_with_sealed_model_timing(tmp_path: Path, tamper: str | None) -> None:
+    from odylith.runtime.domain_intelligence import greenfield_create_transaction as compiler
+    from tests.unit.runtime.test_greenfield_create_transaction import _transaction
+
+    transaction = _transaction(tmp_path)
+    quality = dict(transaction.quality_manifest)
+    quality["elapsed_seconds"] = 12.5
+    quality["model_authoring"] = {
+        **quality["model_authoring"], "elapsed_seconds": 9.0,
+        "candidate_review": {**quality["model_authoring"]["candidate_review"], "elapsed_seconds": 3.0},
+    }
+    transaction = replace(transaction, quality_manifest=quality)
+    transaction = replace(transaction, transaction_hash=compiler.product_create_transaction_hash(transaction))
+    path = tmp_path / TRANSACTION_FILE
+    compiler.write_compiled_product_create_transaction_file(path, transaction)
+    if tamper:
+        payload = json.loads(path.read_text())
+        if tamper == "product":
+            payload["proposal"]["intent"]["first_path"] = "Forged product meaning."
+        elif tamper == "model":
+            payload["quality_manifest"]["model_authoring"]["elapsed_seconds"] += 1
+        else:
+            payload["quality_manifest"]["model_authoring"]["candidate_review"]["elapsed_seconds"] += 1
+        encoded = json.dumps(payload, sort_keys=True).encode()
+        path.write_bytes(encoded)
+        receipt_path = path.with_name(path.name + ".compiler-receipt.v1.json")
+        receipt = json.loads(receipt_path.read_text())
+        receipt["transaction_file_sha256"] = hashlib.sha256(encoded).hexdigest()
+        receipt_path.write_text(json.dumps(receipt, sort_keys=True))
+    receipt, issues = evidence_module._sealed_dry_run_receipt(
+        repo_root=tmp_path, transaction_file=TRANSACTION_FILE,
+        transaction_hash=transaction.transaction_hash, proposal_mode="product_create_transaction")
+    if tamper:
+        assert "transaction body does not match its declared transaction hash" in issues
+        assert receipt["status"] == "invalid"
+    else:
+        assert issues == ()
+        assert receipt["transaction_body_sha256"] == transaction.transaction_hash
+        assert receipt["status"] == "compiled"
 
 
 @pytest.mark.parametrize("show_result", ["passed", "failed", "missing_marker"])
@@ -911,9 +955,7 @@ def _seal_transaction(
     receipt_hash: str | None = None,
 ) -> str:
     transaction.pop("transaction_hash", None)
-    transaction_hash = hashlib.sha256(
-        json.dumps(transaction, ensure_ascii=True, separators=(",", ":"), sort_keys=True).encode("ascii")
-    ).hexdigest()
+    transaction_hash = _payload_hash(transaction)
     transaction["transaction_hash"] = transaction_hash
     encoded = json.dumps(transaction, sort_keys=True).encode("utf-8")
     path.parent.mkdir(parents=True, exist_ok=True)

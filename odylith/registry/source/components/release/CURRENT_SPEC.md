@@ -1,5 +1,5 @@
 # Release
-Last updated: 2026-09-05
+Last updated: 2026-09-09
 
 
 ## Purpose
@@ -590,6 +590,9 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_greenfield_matrix_transaction_evidence.py`
 - **2026-09-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-model-profile-claimed-unobserved-provider-failure.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `tests/unit/install/test_greenfield_preconfirm_matrix_campaign.py`
@@ -605,9 +608,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-02-greenfield-recovery-proof-bound-compiler-identity-to-absolute-install-path.md`, `odylith/casebook/bugs/2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_backlog.py`
-- **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_greenfield_browser_surface_proof.py`, `tests/unit/install/test_greenfield_matrix_product_intent_custody.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

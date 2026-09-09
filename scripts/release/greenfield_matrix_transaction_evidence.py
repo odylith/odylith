@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
+from odylith.runtime.domain_intelligence.greenfield_commit_transaction import _payload_hash
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     product_facts_payload,
 )
@@ -378,13 +379,7 @@ def _sealed_dry_run_receipt(
     atomic_custody_sha256 = str(authority.get("atomic_custody_sha256") or "").strip()
     repository_write_set_hash = str(repository_write_set.get("write_set_hash") or "").strip()
     after_fingerprints = _fingerprint_mapping(repository_write_set.get("after_fingerprints"))
-    body_transaction_hash = _sha256_json(
-        {
-            key: value
-            for key, value in transaction.items()
-            if key != "transaction_hash"
-        }
-    )
+    body_transaction_hash = _payload_hash(transaction)
     receipt.update(
         {
             "transaction_file": str(transaction_path.relative_to(Path(repo_root).resolve())),

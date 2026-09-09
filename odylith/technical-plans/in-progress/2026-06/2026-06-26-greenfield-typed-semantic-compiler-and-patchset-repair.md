@@ -1,5 +1,57 @@
 Status: In progress
 
+## Package readback review (2026-09-09)
+
+Both bounded corrections now pass independent re-review, including independent
+14-test readback and 46-test overlay runs in separate processes. Twelve causal
+readback failures are eliminated while the real unchanged sealed package still
+passes. The maintained hash fix retains its 423-check regression evidence.
+This closes evaluator preparation, not live quality or timing qualification.
+
+The preceding goal pass made progress: 46 custody controls, actual sealed
+synthetic-package propagation, and 423 related release/transaction checks pass.
+Independent review accepts the canonical hash correction but requires the
+external evaluator to reject denial/malformed withdrawals and compare rebuilt
+envelope authority with the transaction and its two proposal projections.
+The actual artifact's three authorities already match; the gap is in proof.
+Close these two bounded findings with causal controls and re-review, then commit
+the source correction and governance before the single frozen live feasibility
+attempt. No live call or production mechanism adoption is authorized by the
+synthetic evidence alone. All original semantic, timing, UX and release gates
+remain unchanged; the hook review is complete but desktop activation unverified.
+
+## Complete-package feasibility preflight (2026-09-09)
+
+The two custody controls now pass with the existing 44, and independent review
+accepts the bounded overlay. The actual synthetic CLI produces a sealed package
+with five justified workstreams/components and five diagrams without publishing.
+Raw/final, typed-envelope and accepted-record correspondence checks pass before
+the maintained dry-run helper incorrectly rejects the body hash. The real
+commit-only loader verifies the unchanged package: the evaluator hashes volatile
+consumer timing unlike the compiler/commit contract. Reuse the existing hash
+owner and prove real compiled input plus semantic and nested-model-timing tamper
+rejection. Keep the first failed readback, package and original provider record.
+
+The previous goal pass made progress: it prepared the actual author/reviewer
+overlay, passed 44 no-provider controls, installed a fresh synthetic consumer
+baseline, and obtained an independent finding that changes the next action.
+No live package call or complete synthetic CLI proposal has run.
+
+Independent review reproduces a source-custody rebound that raw row checks miss:
+withdrawing an internal-system alias moves event and component ownership to a
+different title citation even though both structural validations pass. Before
+freezing the experiment, preserve the initial validated first-path, contextual
+and component-responsibility relations and check the exact merged argument sent
+to final validation for mutation. Require failing-before/passing-after controls,
+then independent re-review and actual synthetic CLI/package correspondence.
+The conservative relation check is a bounded feasibility restriction, not a
+general-purpose withdrawal algorithm. No lexical exception, schema expansion,
+new model role, larger deadline or production adoption is planned.
+
+All original semantic, complete-package, consumer60/90/120, model55/80/105,
+reviewer20, whole-product UX, host, release and protected-holdout gates remain
+open. Evidence: `/private/tmp/odylith-retraction-package.38qOEC/`.
+
 ## Exact-row component comparison outcome (2026-09-09)
 
 All six predeclared controls pass root and independent semantic adjudication
