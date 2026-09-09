@@ -54,6 +54,7 @@ from odylith.runtime.governance.sync_argument_contract import DEFAULT_SYNC_OVERL
 from odylith.runtime.governance.sync_argument_contract import configure_sync_parser
 from odylith.runtime.governance import sync_casebook_bug_index
 from odylith.runtime.surfaces import render_mermaid_catalog_refresh
+from odylith.runtime.surfaces import host_hook_execution
 from odylith.runtime.surfaces import source_bundle_mirror
 
 
@@ -632,7 +633,7 @@ def _run_command(
             "cwd": str(repo_root),
             "env": env,
         }
-        if os.name == "posix":
+        if os.name == "posix" and not host_hook_execution.in_hook_owned_foreground_group():
             popen_kwargs["start_new_session"] = True
         process = subprocess.Popen(tokens, **popen_kwargs)
         while True:

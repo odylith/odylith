@@ -1,60 +1,62 @@
 {
-  "SessionStart": [
-    {
-      "matcher": "startup|resume",
-      "hooks": [
-        {
-          "type": "command",
-          "command": "python3 ./.agents/bin/odylith-host-launcher.py codex session-start-ground --repo-root .",
-          "timeout": 30
-        }
-      ]
-    }
-  ],
-  "UserPromptSubmit": [
-    {
-      "hooks": [
-        {
-          "type": "command",
-          "command": "python3 ./.agents/bin/odylith-host-launcher.py codex prompt-context --repo-root .",
-          "timeout": 20
-        }
-      ]
-    }
-  ],
-  "PreToolUse": [
-    {
-      "matcher": "Bash",
-      "hooks": [
-        {
-          "type": "command",
-          "command": "python3 ./.agents/bin/odylith-host-launcher.py codex bash-guard --repo-root .",
-          "timeout": 10
-        }
-      ]
-    }
-  ],
-  "PostToolUse": [
-    {
-      "matcher": "Bash",
-      "hooks": [
-        {
-          "type": "command",
-          "command": "python3 ./.agents/bin/odylith-host-launcher.py codex post-bash-checkpoint --repo-root .",
-          "timeout": 20
-        }
-      ]
-    }
-  ],
-  "Stop": [
-    {
-      "hooks": [
-        {
-          "type": "command",
-          "command": "python3 ./.agents/bin/odylith-host-launcher.py codex stop-summary --repo-root .",
-          "timeout": 20
-        }
-      ]
-    }
-  ]
+  "hooks": {
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "python3 ./.agents/bin/odylith-host-launcher.py codex post-bash-checkpoint --repo-root .",
+            "timeout": 20,
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "python3 ./.agents/bin/odylith-host-launcher.py codex bash-guard --repo-root .",
+            "timeout": 10,
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "python3 ./.agents/bin/odylith-host-launcher.py codex session-start-ground --repo-root .",
+            "timeout": 30,
+            "type": "command"
+          }
+        ],
+        "matcher": "startup|resume"
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "python3 ./.agents/bin/odylith-host-launcher.py codex stop-summary --repo-root .",
+            "timeout": 20,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "command": "python3 ./.agents/bin/odylith-host-launcher.py codex prompt-context --repo-root .",
+            "timeout": 20,
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  }
 }

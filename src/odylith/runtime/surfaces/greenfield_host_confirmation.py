@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import Mapping
 import json
 from pathlib import Path
-import re
 from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_create_commit
@@ -17,7 +16,23 @@ from odylith.runtime.domain_intelligence import greenfield_repository_lock
 HOST_CONFIRMATION_CALLBACK_VERSION = "odylith.greenfield.host-confirmation-callback.v1"
 SUPPORTED_HOSTS = frozenset({"codex", "claude"})
 PENDING_ROOT_RELATIVE_PATH = Path(".odylith/runtime/greenfield/pending")
-_DECISION_PATTERN = re.compile(r"^(CONFIRM|EDIT|REJECT)\s+([0-9a-f]{64})(?:\s+(.+))?$", re.DOTALL)
+_DECISION_COMMANDS = frozenset({"CONFIRM", "EDIT", "REJECT"})
+_LOWER_HEX = frozenset("0123456789abcdef")
+
+
+def _parse_decision(command_text: str) -> tuple[str, str, str | None] | None:
+    """Parse the three-token protocol without interpreting user prose."""
+
+    command, separator, payload = command_text.partition(" ")
+    if not separator or command not in _DECISION_COMMANDS:
+        return None
+    transaction_hash, evidence_separator, edit_evidence = payload.partition(" ")
+    if len(transaction_hash) != 64 or not set(transaction_hash) <= _LOWER_HEX:
+        return None
+    if command != "EDIT" and evidence_separator:
+        return None
+    evidence = edit_evidence if evidence_separator else None
+    return command, transaction_hash, evidence
 
 
 def maybe_handle_greenfield_decision(
@@ -33,12 +48,13 @@ def maybe_handle_greenfield_decision(
         return None
     root = Path(repo_root).expanduser().resolve()
     command_text = str(prompt or "").strip()
-    match = _DECISION_PATTERN.fullmatch(command_text)
-    if match is None:
+    parsed = _parse_decision(command_text)
+    if parsed is None:
         if command_text in {"CONFIRM", "EDIT", "REJECT"} and _has_pending_transactions(root):
             return _decision(
                 status="DECISION_HASH_REQUIRED",
                 command=command_text,
+                transaction_hash="",
                 visible_markdown=(
                     "**Odylith Greenfield needs the approval code**\n\n"
                     "Copy the complete hash-bound command from the proposal. The code is what binds your decision "
@@ -47,7 +63,7 @@ def maybe_handle_greenfield_decision(
                 developer_context="Do not infer a pending package from a mutable current pointer. Ask for the exact displayed command.",
             )
         return None
-    command, transaction_hash, edit_evidence = match.groups()
+    command, transaction_hash, edit_evidence = parsed
     try:
         transaction_path = greenfield_pending_transaction_store.resolve_pending_transaction(
             repo_root=root,
@@ -93,13 +109,16 @@ def maybe_handle_greenfield_decision(
 
 
 def host_hook_payload(decision: Mapping[str, Any]) -> dict[str, Any]:
-    """Return the same UserPromptSubmit transport shape for Codex and Claude."""
+    """Consume handled prompts; only new EDIT evidence may reach model reasoning."""
 
     visible = str(decision.get("visible_markdown") or "").strip()
     context = str(decision.get("developer_context") or "").strip()
     payload: dict[str, Any] = {}
     if visible:
         payload["systemMessage"] = visible
+    if decision.get("command") != "EDIT" or decision.get("status") != "edit_evidence_received":
+        payload.update(decision="block", reason=visible)
+        return payload
     if context:
         payload["hookSpecificOutput"] = {
             "hookEventName": "UserPromptSubmit",
@@ -130,16 +149,18 @@ def _confirm_pending_transaction(
             return _decision(
                 status="BUSY_NO_WRITE",
                 command="CONFIRM",
+                transaction_hash=transaction_hash,
                 visible_markdown=(
                     "**Odylith Greenfield is busy**\n\n"
                     "Another create transaction owns the repository lock. No bytes from this transaction were written. "
-                    "Retry `CONFIRM` after it finishes."
+                    f"Retry `CONFIRM {transaction_hash}` after it finishes."
                 ),
                 developer_context="Report BUSY_NO_WRITE. Do not regenerate, repair, or reinterpret the pending transaction.",
             )
         return _decision(
             status="RECOVERY_REQUIRED",
             command="CONFIRM",
+            transaction_hash=transaction_hash,
             visible_markdown=(
                 "**Odylith Greenfield needs recovery**\n\n"
                 "The sealed package could not finish its environment-level publication. Product intent was not rejected. "
@@ -154,9 +175,11 @@ def _confirm_pending_transaction(
         return _decision(
             status="STALE_TRANSACTION",
             command="CONFIRM",
+            transaction_hash=transaction_hash,
             visible_markdown=(
                 "**Odylith Greenfield transaction is stale**\n\n"
-                "No governed records were written. Run `EDIT` with the current evidence to rebuild and review a new hash."
+                f"No governed records were written. Run `EDIT {transaction_hash} <corrections>` "
+                "with the current evidence to rebuild and review a new hash."
             ),
             developer_context=f"Report STALE_TRANSACTION without Product Intent failure language. Detail: {error}",
         )
@@ -164,6 +187,7 @@ def _confirm_pending_transaction(
         return _decision(
             status="RECOVERY_REQUIRED",
             command="CONFIRM",
+            transaction_hash=transaction_hash,
             visible_markdown=(
                 "**Odylith Greenfield could not publish**\n\n"
                 "An environment or transaction-integrity failure stopped publication. Product intent was not rejected."
@@ -208,7 +232,8 @@ def _reject_pending_transaction(*, root: Path, transaction_hash: str) -> dict[st
                         transaction_hash=transaction_hash,
                         visible_markdown=(
                             "**Odylith Greenfield is already published**\n\n"
-                            "This transaction is closed, so `REJECT` cannot undo it. Use `EDIT` to propose a new "
+                            "This transaction is closed, so `REJECT` cannot undo it. "
+                            f"Use `EDIT {transaction_hash} <corrections>` to propose a new "
                             "reviewed transaction or create a separately reviewed compensating change."
                         ),
                         developer_context=(
@@ -219,6 +244,7 @@ def _reject_pending_transaction(*, root: Path, transaction_hash: str) -> dict[st
                 return _decision(
                     status="RECOVERY_REQUIRED",
                     command="REJECT",
+                    transaction_hash=transaction_hash,
                     visible_markdown=(
                         "**Odylith Greenfield cannot discard this transaction yet**\n\n"
                         "Publication recovery evidence exists, so the sealed transaction was preserved for deterministic recovery."
@@ -236,7 +262,8 @@ def _reject_pending_transaction(*, root: Path, transaction_hash: str) -> dict[st
             transaction_hash=transaction_hash,
             visible_markdown=(
                 "**Odylith Greenfield is busy**\n\n"
-                "Another decision owns the repository lock. This exact pending package was preserved. Retry the hash-bound `REJECT`."
+                "Another decision owns the repository lock. This exact pending package was preserved. "
+                f"Retry `REJECT {transaction_hash}`."
             ),
             developer_context="Report BUSY_NO_WRITE. Do not delete or reinterpret another transaction.",
         )
@@ -244,6 +271,7 @@ def _reject_pending_transaction(*, root: Path, transaction_hash: str) -> dict[st
         return _decision(
             status="RECOVERY_REQUIRED",
             command="REJECT",
+            transaction_hash=transaction_hash,
             visible_markdown=(
                 "**Odylith Greenfield could not discard staging**\n\n"
                 "No governed records were written, but the pending transaction remains for safe cleanup."
@@ -291,10 +319,12 @@ def _decision(
     *,
     status: str,
     command: str,
+    transaction_hash: str,
     visible_markdown: str,
     developer_context: str,
-    transaction_hash: str = "",
 ) -> dict[str, Any]:
+    if status == "RECOVERY_REQUIRED":
+        visible_markdown += f"\n\nApproval code: `{transaction_hash}`."
     return {
         "version": HOST_CONFIRMATION_CALLBACK_VERSION,
         "status": status,

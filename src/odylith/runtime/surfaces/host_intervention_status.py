@@ -5,14 +5,15 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-import re
 import sys
+import tomllib
 from typing import Any
 from typing import Mapping
 
 from odylith.common.json_objects import load_json_object as _load_json
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import claude_cli_capabilities
+from odylith.runtime.common import codex_cli_capabilities
 from odylith.runtime.intervention_engine import delivery_ledger
 from odylith.runtime.intervention_engine import visibility_contract
 from odylith.runtime.intervention_engine import visibility_broker
@@ -24,74 +25,41 @@ from odylith.runtime.intervention_engine.visibility_contract import normalize_to
 _SUPPORTED_HOST_FAMILIES = ("codex", "claude")
 
 
-def _matcher_tokens(value: Any) -> set[str]:
-    matcher = _normalize_string(value)
-    if matcher in {"*", ".*"}:
-        return {"*"}
-    return {token.strip() for token in re.split(r"[|,\s]+", matcher) if token.strip()}
-
-
-def _matcher_covers(value: Any, required: tuple[str, ...]) -> bool:
-    tokens = _matcher_tokens(value)
-    return "*" in tokens or all(token in tokens for token in required)
-
-
-def _codex_hook_command_present(
-    payload: Mapping[str, Any],
-    event_name: str,
-    command_token: str,
-    *,
-    matcher_tokens: tuple[str, ...] = (),
-) -> bool:
-    bucket = payload.get(event_name)
-    if not isinstance(bucket, list):
-        return False
-    for group in bucket:
-        if not isinstance(group, Mapping):
-            continue
-        if not _matcher_covers(group.get("matcher"), matcher_tokens):
-            continue
-        hooks = group.get("hooks")
-        if not isinstance(hooks, list):
-            continue
-        for hook in hooks:
-            if isinstance(hook, Mapping) and command_token in str(hook.get("command") or ""):
-                return True
-    return False
-
-
 def _codex_hooks_feature_configured(repo_root: Path) -> bool:
     path = repo_root / ".codex" / "config.toml"
     if not path.is_file():
         return False
     try:
-        text = path.read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
+        configuration = tomllib.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError):
         return False
-    return bool(re.search(r"(?m)^\s*codex_hooks\s*=\s*true\s*$", text))
+    features = configuration.get("features")
+    return isinstance(features, dict) and features.get("hooks", features.get("codex_hooks")) is True
 
 
 def _codex_static_readiness(repo_root: Path) -> dict[str, Any]:
-    hooks = _load_json(repo_root / ".codex" / "hooks.json")
+    hooks = codex_cli_capabilities.load_codex_hook_map(repo_root)
     checks = {
         "launcher": (repo_root / ".odylith" / "bin" / "odylith").is_file(),
         "repo_guidance": (repo_root / "AGENTS.md").is_file(),
         "codex_hooks_feature_configured": _codex_hooks_feature_configured(repo_root),
-        "prompt_context_hook": _codex_hook_command_present(hooks, "UserPromptSubmit", "codex prompt-context"),
-        "post_bash_checkpoint_hook": _codex_hook_command_present(
+        "prompt_context_hook": codex_cli_capabilities.codex_hook_command_present(hooks, "UserPromptSubmit", "codex prompt-context"),
+        "post_bash_checkpoint_hook": codex_cli_capabilities.codex_hook_command_present(
             hooks,
             "PostToolUse",
             "codex post-bash-checkpoint",
-            matcher_tokens=("Bash",),
+            required_matcher_tokens=("Bash",),
         ),
-        "stop_summary_hook": _codex_hook_command_present(hooks, "Stop", "codex stop-summary"),
+        "stop_summary_hook": codex_cli_capabilities.codex_hook_command_present(hooks, "Stop", "codex stop-summary"),
     }
     return {
         "host_family": "codex",
         "ready": all(checks.values()),
         "checks": checks,
         "activation_note": (
-            "Codex hook wiring is statically ready; trusted-project approval and a fresh/reloaded session are still required for live host delivery."
+            "These checks cover configuration only, not native execution or chat visibility. "
+            "Codex requires project trust and review of each exact hook definition in /hooks; "
+            "changed definitions require review again. Use a fresh/reloaded session for live delivery proof."
         ),
     }
 
@@ -287,6 +255,9 @@ def inspect_intervention_status(
         limit=limit,
     )
     activation = "ready" if bool(readiness.get("ready")) else "degraded"
+    if host == "codex" and readiness.get("ready"):
+        # Static files cannot attest native per-definition trust or execution.
+        activation = "unverified"
     proof = _chat_visible_proof(
         ledger=ledger,
         static_ready=bool(readiness.get("ready")),

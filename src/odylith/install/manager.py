@@ -1940,6 +1940,7 @@ def install_bundle(
             include_brand=False,
             version=active_version,
             product_root=_bundled_product_root_for_runtime(runtime_root),
+            activate_host_settings=integration_enabled,
         )
         migration_plan = migration_runtime.plan_release_migrations(
             repo_root=root,
@@ -2191,6 +2192,7 @@ def upgrade_install(
                 include_brand=False,
                 version=current_version,
                 product_root=_bundled_product_root_for_runtime(current_runtime),
+                activate_host_settings=integration_enabled,
             )
             migration_plan_payload, migration_results, value_engine_migration = _apply_release_migration_plan(
                 plan=migration_plan,
@@ -2339,6 +2341,7 @@ def upgrade_install(
             include_brand=False,
             version=staged.version,
             product_root=_bundled_product_root_for_runtime(staged.root),
+            activate_host_settings=integration_enabled,
         )
         migration_plan_payload, migration_results, value_engine_migration = _apply_release_migration_plan(
             plan=migration_plan,
@@ -2566,6 +2569,7 @@ def rollback_install(*, repo_root: str | Path) -> RollbackSummary:
             include_brand=False,
             version=target_version,
             product_root=_bundled_product_root_for_runtime(target_root),
+            activate_host_settings=integration_enabled,
         )
         pin = load_version_pin(repo_root=root, fallback_version=target_version)
         diverged = bool(pin and target_version != pin.odylith_version)
@@ -2951,6 +2955,7 @@ def doctor_bundle(
             include_brand=False,
             version=repaired_active_version,
             product_root=_bundled_product_root_for_runtime(runtime_root),
+            activate_host_settings=integration_enabled,
         )
         _sync_consumer_casebook_bug_index(repo_root=root, repo_role=repo_role)
         component_register_repair = repair_component_register_registry_drift(

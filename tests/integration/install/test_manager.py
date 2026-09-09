@@ -736,7 +736,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert (repo_root / ".codex" / "hooks.json").is_file()
     assert (repo_root / ".codex" / "agents" / "odylith-workstream.toml").is_file()
     codex_hooks = json.loads((repo_root / ".codex" / "hooks.json").read_text(encoding="utf-8"))
-    assert codex_hooks["SessionStart"][0]["hooks"][0]["command"] == (
+    assert codex_hooks["hooks"]["SessionStart"][0]["hooks"][0]["command"] == (
         "python3 ./.agents/bin/odylith-host-launcher.py codex session-start-ground --repo-root ."
     )
     assert (repo_root / ".agents" / "skills" / "odylith-start" / "SKILL.md").is_file()
@@ -1057,7 +1057,7 @@ def test_install_bundle_merges_host_settings_after_verified_runtime_activation(t
     codex_hooks = json.loads(codex_hooks_path.read_text(encoding="utf-8"))
     codex_prompt_commands = [
         hook["command"]
-        for group in codex_hooks["UserPromptSubmit"]
+        for group in codex_hooks["hooks"]["UserPromptSubmit"]
         for hook in group.get("hooks", [])
     ]
     assert "python3 user.py" in codex_prompt_commands

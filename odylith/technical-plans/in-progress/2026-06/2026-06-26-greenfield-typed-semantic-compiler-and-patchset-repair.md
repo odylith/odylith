@@ -1,5 +1,60 @@
 Status: In progress
 
+## Active-session registration repair (2026-09-08)
+
+Fresh native CLI evidence now exists: one scoped read-only prompt automatically
+displayed an Observation and Assist; the actual transcript confirms both events.
+This does not close intervention quality: Observation punctuation is malformed,
+Stop deferred at its bounded deadline, and activation remains unverified.
+Attribute Stop phase cost and preserve coherent source-backed display ownership
+in the next bounded slice; do not grow string-repair rules or increase the cap.
+
+Latest checkpoint: the delegated audit is complete and all five project hooks
+are individually trusted/enabled through native review. Separate discovery
+confirms their hashes and timeouts with zero errors. Original runtime validation
+has 3,540 passes plus an unchanged baseline renderer-size failure. Install has
+1,093 passes; all five failures are resolved in bounded reruns by using the repo
+toolchain (28 passes) and the current native-wrapper assertions (two passes).
+Both checkouts pass 42 intervention/dashboard browser controls. Native execution
+and chat proof still follow; do not equate trust or browser proof with delivery.
+
+The operator explicitly authorized repair of the degraded active checkout.
+Backport matching validated hook/status/closeout owners without transplanting
+the unrelated Greenfield kernel. Fix the product-repo guidance early return
+that also skipped host settings, reusing the existing preserving writers and
+honoring disabled integration. The original launcher now reads the wrapped
+configuration; all three formerly missing hooks are recognized. The focused
+backport and repair gate passes 183 checks. Native discovery in the actual repo
+finds all five hooks enabled but untrusted, with no configuration override,
+trust mutation or started turn. The operator delegates definition review to
+the maintainer agent. Remove proven unnecessary command retention (40 focused
+controls pass), preserve disabled integration through all lifecycle refreshes
+(five controls pass in each checkout), and resolve the Stop timeout/lifetime
+mismatch before recommending blanket trust. Fresh native execution and chat
+proof remain required; do not rerun discovery as progress.
+
+The native UI now records four individually reviewed hooks as trusted; Stop
+remains untrusted until the separately grouped browser cleanup boundary is
+qualified. The 14-second whole-Stop budget and inherited sync group pass 173
+focused controls, including real child cleanup and a 14.543-second controlled
+launcher invocation. Freeze this checkpoint for wider validation and use a
+bounded real-browser cancellation probe before making further code changes.
+Do not add an ignored Puppeteer detached option or a new background supervisor.
+
+The real browser probe reproduced orphaned processes. Preserving the existing
+0.2-second group-wide TERM grace fixes that same probe: normal render 1.446
+seconds; cancellation 14.207 seconds; no recorded processes remain immediately
+or after 0.5 seconds. A new real cleanup regression fails before and passes
+afterward. Browser temporary-profile cleanup remains distinct and is not
+claimed fixed. Retain this bounded change without expanding the mechanism;
+native execution/chat and the broader validation gates still apply.
+
+Keep the whole-product and Memory requirements, 60/90/120 envelope, primary
+generation quality, confirmation fault safety, independent adjudication and
+untouched final holdout open. Finish wider runtime/install validation, governed
+refresh and stable delivery before calling this bounded repair complete.
+Evidence: /private/tmp/odylith-active-intervention-repair.HfhM0b/.
+
 Created: 2026-06-26
 
 Updated: 2026-08-06

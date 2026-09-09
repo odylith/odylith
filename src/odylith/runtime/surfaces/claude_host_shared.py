@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.surfaces import host_hook_execution
 
 _COMPASS_RUNTIME_RELATIVE = Path("odylith") / "compass" / "runtime" / "current.v1.json"
 _CLAUDE_CONFIG_DIR_ENV = "CLAUDE_CONFIG_DIR"
@@ -309,17 +310,11 @@ def run_odylith(
     launcher = project_launcher(project_dir)
     if not launcher.is_file():
         return None
-    try:
-        return subprocess.run(
-            [str(launcher), *args],
-            cwd=str(Path(project_dir).expanduser().resolve()),
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=timeout,
-        )
-    except (OSError, subprocess.SubprocessError):
-        return None
+    return host_hook_execution.run_hook_command(
+        command=[str(launcher), *args],
+        cwd=Path(project_dir).expanduser().resolve(),
+        timeout=timeout,
+    )
 
 
 def load_runtime_snapshot(project_dir: Path | str) -> dict[str, Any]:

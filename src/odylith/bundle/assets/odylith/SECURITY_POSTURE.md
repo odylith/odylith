@@ -142,6 +142,18 @@ Odylith does not claim full protection against:
 
 ### Host and migration safety
 
+- Native hook registration is not trust or proof of visible delivery. Exact
+  definitions require the supported host review/trust flow; install and doctor
+  do not approve their own hooks. Detached source-local handlers remain mutable.
+- Deferred host dirty-event records store affected paths and event identity,
+  not shell command contents. This minimizes new duplicated sensitive input;
+  it does not redact historical logs or guarantee secret-free path names.
+- Codex Stop uses one 14-second foreground budget, with command-group ownership
+  shared by both host adapters and inherited by hook-scoped sync children.
+  Unsettled checkpoints survive expiry. Separately grouped browser cleanup and
+  native chat delivery remain open proof boundaries; ordinary child-group tests
+  do not establish those outcomes.
+
 - Managed Codex and Claude assets merge additively with user-owned host
   settings; Odylith must not replace a user's host config with an
   Odylith-only template.

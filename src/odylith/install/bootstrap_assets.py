@@ -449,6 +449,9 @@ def refresh_consumer_managed_guidance(
     activate_host_settings: bool = True,
 ) -> None:
     if str(repo_role).strip() == PRODUCT_REPO_ROLE:
+        if activate_host_settings:
+            write_effective_codex_project_config(repo_root=repo_root)
+            write_effective_claude_project_settings(repo_root=repo_root)
         return
     source_product_root = _managed_product_root(product_root)
     source_project_root = _managed_project_root_assets_root(source_product_root)

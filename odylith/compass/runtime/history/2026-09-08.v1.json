@@ -303,7 +303,7 @@
         "Nothing moved in this window: B-068 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-069": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-070": [
         "Nothing moved in this window: B-070 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -743,7 +743,7 @@
         "Nothing moved in this window: B-068 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-069": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-070": [
         "Nothing moved in this window: B-070 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -951,7 +951,13 @@
         "provider_failure_detail": "Codex CLI exited with status 2. Laboratory guard refused: RuntimeError: Generation unavailable during baseline preparation",
         "provider_model": "gpt-5.3-codex-spark",
         "provider_reasoning_effort": "medium",
-        "next_retry_utc": "2026-09-09T06:43:33Z"
+        "next_retry_utc": "2026-09-09T06:10:52Z",
+        "fallback_title": "Local runtime facts",
+        "fallback_digest": [
+          "Current: Universal greenfield domain intelligence (B-142) is in active implementation.",
+          "Next: Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
+          "Watch: Greenfield sealed intent cannot prove atomic accepted fact custody. It is still open at P0."
+        ]
       },
       "evidence_lookup": {}
     },
@@ -975,7 +981,13 @@
         "provider_failure_detail": "Codex CLI exited with status 2. Laboratory guard refused: RuntimeError: Generation unavailable during baseline preparation",
         "provider_model": "gpt-5.3-codex-spark",
         "provider_reasoning_effort": "medium",
-        "next_retry_utc": "2026-09-09T06:43:33Z"
+        "next_retry_utc": "2026-09-09T06:10:52Z",
+        "fallback_title": "Local runtime facts",
+        "fallback_digest": [
+          "Current: Universal greenfield domain intelligence (B-142) is in active implementation.",
+          "Next: Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
+          "Watch: Greenfield sealed intent cannot prove atomic accepted fact custody. It is still open at P0."
+        ]
       },
       "evidence_lookup": {}
     }
@@ -2138,19 +2150,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "f0849e3a5e5a76e0b77610689aaa557fcdc559f07d0a5e8c744950babf7e9102",
+        "substrate_fingerprint": "f0849e3a5e5a76e0b77610689aaa557fcdc559f07d0a5e8c744950babf7e9102",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-09T05:43:28Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Land Host neutrality is not a doc polish task; Cross-Host Contract Hardening and Codex-Claude Separation (B-069) is completed.",
+            "Next: Immediate forcing function is to capture the next verified checkpoint for Cross-Host Contract Hardening and Codex-Claude Separation (B-069).",
+            "Watch: Operator context is aging: diagram D-033 Claude Guidance Companion Surface Topology has been stale for 36 days."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -4223,19 +4239,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "e0a0398cd43e0fe39c7ed61cb308c66b687f52b5a8229e794852e096f64c993d",
+        "substrate_fingerprint": "e0a0398cd43e0fe39c7ed61cb308c66b687f52b5a8229e794852e096f64c993d",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-09T05:43:28Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Land Host neutrality is not a doc polish task; Cross-Host Contract Hardening and Codex-Claude Separation (B-069) is completed.",
+            "Next: Immediate forcing function is to capture the next verified checkpoint for Cross-Host Contract Hardening and Codex-Claude Separation (B-069).",
+            "Watch: Operator context is aging: diagram D-033 Claude Guidance Companion Surface Topology has been stale for 36 days."
+          ]
         },
         "evidence_lookup": {}
       },

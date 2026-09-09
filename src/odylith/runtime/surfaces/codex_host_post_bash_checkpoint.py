@@ -734,7 +734,6 @@ def record_deferred_checkpoint_event(
         host_family="codex",
         session_id=session_id,
         source="post_bash_checkpoint",
-        command=command,
         paths=changed_paths,
         governed_paths=governed_paths,
     )

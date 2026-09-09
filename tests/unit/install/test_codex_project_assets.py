@@ -507,7 +507,9 @@ def test_codex_project_agents_have_expected_schema_and_runtime_fields() -> None:
 
 
 def test_codex_hooks_register_supported_events_only() -> None:
-    payload = json.loads((LIVE_CODEX_ROOT / "hooks.json").read_text(encoding="utf-8"))
+    document = json.loads((LIVE_CODEX_ROOT / "hooks.json").read_text(encoding="utf-8"))
+    assert set(document) == {"hooks"}
+    payload = document["hooks"]
 
     assert set(payload) == {"SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "Stop"}
     assert payload["SessionStart"][0]["matcher"] == "startup|resume"
@@ -583,12 +585,12 @@ def test_write_effective_codex_hooks_merges_without_destroying_user_hooks(tmp_pa
     payload = json.loads(hooks_path.read_text(encoding="utf-8"))
     prompt_commands = [
         hook["command"]
-        for group in payload["UserPromptSubmit"]
+        for group in payload["hooks"]["UserPromptSubmit"]
         for hook in group.get("hooks", [])
     ]
     stop_commands = [
         hook["command"]
-        for group in payload["Stop"]
+        for group in payload["hooks"]["Stop"]
         for hook in group.get("hooks", [])
     ]
     assert "python3 user_prompt.py" in prompt_commands

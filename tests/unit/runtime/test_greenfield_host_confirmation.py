@@ -14,10 +14,12 @@ from odylith.runtime.domain_intelligence import greenfield_authored_semantics
 from odylith.runtime.domain_intelligence import greenfield_commit_transaction
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_create_transaction
+from odylith.runtime.domain_intelligence import greenfield_managed_mutation_boundary
 from odylith.runtime.domain_intelligence import greenfield_model_intent_authoring
 from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store
 from odylith.runtime.domain_intelligence import greenfield_product_intent_envelope
 from odylith.runtime.domain_intelligence import greenfield_repository_lock
+from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence.greenfield_commit_transaction import (
     _POSTCONFIRM_RUNTIME_SOURCE_FILES,
 )
@@ -50,7 +52,8 @@ def _committed_result() -> dict[str, object]:
 
 def _stub_navigation(monkeypatch: pytest.MonkeyPatch) -> None:
     def _navigation(root: Path, *, transaction_hash: str) -> dict[str, str]:
-        dashboard = root / ".odylith/runtime/greenfield/generations" / transaction_hash / "repository/odylith/index.html"
+        # Callback routing is stubbed here; the generation address is not the approval hash.
+        dashboard = root / ".odylith/runtime/greenfield/generations" / ("d" * 64) / "repository/odylith/index.html"
         return {
             "project": "odylith/index.html?tab=project",
             "radar": "odylith/index.html?tab=radar",
@@ -272,14 +275,75 @@ def test_codex_and_claude_hooks_short_circuit_to_identical_confirmation_payload(
 
     assert codex_payload == claude_payload
     assert codex_payload["systemMessage"].startswith("**Odylith Greenfield published**")
+    assert codex_payload["decision"] == "block"
+    assert codex_payload["reason"] == codex_payload["systemMessage"]
+    assert "hookSpecificOutput" not in codex_payload
     assert len(commits) == 2
     assert commits[0] == commits[1]
 
 
-def test_decision_callback_is_exact_and_proposal_only_for_unknown_hosts(tmp_path: Path) -> None:
+@pytest.mark.parametrize("command,status", [
+    ("CONFIRM", "CLOSED"), ("CONFIRM", "BUSY_NO_WRITE"),
+    ("CONFIRM", "STALE_TRANSACTION"), ("CONFIRM", "RECOVERY_REQUIRED"),
+    ("CONFIRM", "DECISION_HASH_REQUIRED"),
+    ("REJECT", "ABORTED"), ("REJECT", "CLOSED"),
+    ("REJECT", "BUSY_NO_WRITE"), ("REJECT", "RECOVERY_REQUIRED"),
+    ("EDIT", "edit_evidence_required"), ("EDIT", "STALE_TRANSACTION"),
+])
+def test_consumed_decision_blocks_native_model_continuation(command: str, status: str) -> None:
+    visible = "The exact transaction outcome remains complete, including its final recovery clause."
+    payload = greenfield_host_confirmation.host_hook_payload({
+        "command": command, "status": status,
+        "visible_markdown": visible, "developer_context": "Do not run another model turn.",
+    })
+    assert payload == {"systemMessage": visible, "decision": "block", "reason": visible}
+
+
+def test_edit_with_new_evidence_can_continue_into_preconfirm_compilation() -> None:
+    payload = greenfield_host_confirmation.host_hook_payload({
+        "command": "EDIT", "status": "edit_evidence_received",
+        "visible_markdown": "The correction is new evidence.",
+        "developer_context": "Rebuild and show a new hash before publication.",
+    })
+    assert "decision" not in payload
+    assert payload["hookSpecificOutput"] == {
+        "hookEventName": "UserPromptSubmit",
+        "additionalContext": "Rebuild and show a new hash before publication.",
+    }
+
+
+def test_decision_callback_is_exact_and_proposal_only_for_unknown_hosts(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     _transaction_path, _receipt, transaction_hash = _stage_pending_transaction(tmp_path)
 
+    def forbidden_decision(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("conditional CONFIRM or REJECT must not reach a mutation handler")
+
+    monkeypatch.setattr(
+        greenfield_host_confirmation,
+        "_confirm_pending_transaction",
+        forbidden_decision,
+    )
+    monkeypatch.setattr(
+        greenfield_host_confirmation,
+        "_reject_pending_transaction",
+        forbidden_decision,
+    )
+
     for prompt in ("confirm", "CONFIRM please", "EDIT correction", "REJECT now"):
+        assert greenfield_host_confirmation.maybe_handle_greenfield_decision(
+            repo_root=tmp_path,
+            host_family="codex",
+            prompt=prompt,
+        ) is None
+    for prompt in (
+        f"CONFIRM {transaction_hash} but do not publish yet",
+        f"CONFIRM {transaction_hash} only if the dependency is removed",
+        f"REJECT {transaction_hash} only after a replacement exists",
+        f"REJECT {transaction_hash} with this explanation",
+    ):
         assert greenfield_host_confirmation.maybe_handle_greenfield_decision(
             repo_root=tmp_path,
             host_family="codex",
@@ -320,7 +384,12 @@ def test_edit_requests_new_evidence_without_mutating_staging(tmp_path: Path) -> 
 
 
 def test_reject_removes_only_terminal_staging(tmp_path: Path) -> None:
+    dashboard = tmp_path / "odylith/index.html"
+    dashboard.parent.mkdir(parents=True)
+    dashboard.write_text("Existing dashboard\n", encoding="utf-8")
     transaction, receipt, transaction_hash = _stage_pending_transaction(tmp_path)
+    before = greenfield_repository_write_set.greenfield_managed_fingerprints(tmp_path)
+    publication = (tmp_path / "odylith/index.html").read_bytes()
 
     decision = greenfield_host_confirmation.maybe_handle_greenfield_decision(
         repo_root=tmp_path,
@@ -332,7 +401,8 @@ def test_reject_removes_only_terminal_staging(tmp_path: Path) -> None:
     assert decision["status"] == "ABORTED"
     assert not transaction.exists()
     assert not receipt.exists()
-    assert not (tmp_path / "odylith").exists()
+    assert greenfield_repository_write_set.greenfield_managed_fingerprints(tmp_path) == before
+    assert (tmp_path / "odylith/index.html").read_bytes() == publication
 
 
 def test_reject_preserves_staging_when_recovery_evidence_exists(tmp_path: Path) -> None:
@@ -348,6 +418,7 @@ def test_reject_preserves_staging_when_recovery_evidence_exists(tmp_path: Path) 
 
     assert decision is not None
     assert decision["status"] == "RECOVERY_REQUIRED"
+    assert decision["transaction_hash"] == transaction_hash
     assert transaction.is_file()
     assert receipt.is_file()
     assert journal.is_dir()
@@ -399,6 +470,8 @@ def test_busy_confirmation_reports_no_write_without_regeneration(tmp_path: Path,
 
     assert decision is not None
     assert decision["status"] == "BUSY_NO_WRITE"
+    assert decision["transaction_hash"] == transaction_hash
+    assert f"`CONFIRM {transaction_hash}`" in decision["visible_markdown"]
     assert "No bytes" in str(decision["visible_markdown"])
     assert "regenerate" in str(decision["developer_context"])
 
@@ -415,8 +488,105 @@ def test_busy_reject_preserves_the_exact_pending_package(tmp_path: Path) -> None
 
     assert decision is not None
     assert decision["status"] == "BUSY_NO_WRITE"
+    assert f"`REJECT {transaction_hash}`" in decision["visible_markdown"]
     assert transaction.is_file()
     assert receipt.is_file()
+
+
+@pytest.mark.parametrize("host", ["codex", "claude"])
+@pytest.mark.parametrize("error,status", [
+    (greenfield_create_commit.GreenfieldCreateCommitError(
+        "busy", rollback_status="not_started", failure_kind="post_confirm_repository_busy",
+    ), "BUSY_NO_WRITE"),
+    (greenfield_create_commit.GreenfieldCreateCommitError(
+        "publication interrupted", rollback_status="recovery_required", failure_kind="publication_interrupted",
+    ), "RECOVERY_REQUIRED"),
+    (ValueError("repository precondition changed"), "STALE_TRANSACTION"),
+    (OSError("storage unavailable"), "RECOVERY_REQUIRED"),
+])
+def test_confirmation_failure_retains_reviewed_identity(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, host: str, error: Exception, status: str,
+) -> None:
+    transaction, receipt, transaction_hash = _stage_pending_transaction(tmp_path)
+    before = (transaction.read_bytes(), receipt.read_bytes())
+
+    def fail(**_kwargs: object) -> None:
+        raise error
+
+    monkeypatch.setattr(greenfield_create_commit, "commit_greenfield_create_transaction", fail)
+    decision = greenfield_host_confirmation.maybe_handle_greenfield_decision(
+        repo_root=tmp_path, host_family=host, prompt=f"CONFIRM {transaction_hash}",
+    )
+    assert decision is not None
+    assert decision["status"] == status
+    assert decision["transaction_hash"] == transaction_hash
+    payload = greenfield_host_confirmation.host_hook_payload(decision)
+    assert payload["decision"] == "block"
+    assert payload["reason"] == decision["visible_markdown"]
+    assert "hookSpecificOutput" not in payload
+    assert transaction_hash in payload["reason"]
+    if status == "STALE_TRANSACTION":
+        assert f"EDIT {transaction_hash} <corrections>" in payload["reason"]
+    assert (transaction.read_bytes(), receipt.read_bytes()) == before
+
+
+@pytest.mark.parametrize("host", ["codex", "claude"])
+def test_failed_reject_retains_identity_and_staging(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, host: str,
+) -> None:
+    transaction, receipt, transaction_hash = _stage_pending_transaction(tmp_path)
+    before = (transaction.read_bytes(), receipt.read_bytes())
+
+    def fail(**_kwargs: object) -> None:
+        raise OSError("staging cleanup unavailable")
+
+    monkeypatch.setattr(greenfield_pending_transaction_store, "discard_pending_transaction", fail)
+    decision = greenfield_host_confirmation.maybe_handle_greenfield_decision(
+        repo_root=tmp_path, host_family=host, prompt=f"REJECT {transaction_hash}",
+    )
+    assert decision is not None
+    assert decision["status"] == "RECOVERY_REQUIRED"
+    assert decision["transaction_hash"] == transaction_hash
+    payload = greenfield_host_confirmation.host_hook_payload(decision)
+    assert payload["decision"] == "block"
+    assert transaction_hash in payload["reason"]
+    assert (transaction.read_bytes(), receipt.read_bytes()) == before
+
+
+@pytest.mark.parametrize("host", ["codex", "claude"])
+@pytest.mark.parametrize("command", ["CONFIRM", "REJECT"])
+def test_host_busy_response_supplies_a_complete_working_retry(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str],
+    host: str, command: str,
+) -> None:
+    transaction, receipt, transaction_hash = _stage_pending_transaction(tmp_path)
+    before = (transaction.read_bytes(), receipt.read_bytes())
+    monkeypatch.setenv("ODYLITH_NO_BROWSER", "1")
+
+    def invoke(prompt: str) -> dict[str, object]:
+        payload = json.dumps({"prompt": prompt})
+        if host == "codex":
+            monkeypatch.setattr("sys.stdin", io.StringIO(payload))
+            result = codex_host_prompt_context.main(["--repo-root", str(tmp_path)])
+        else:
+            result = claude_host_prompt_bundle.main([
+                "--repo-root", str(tmp_path), "--payload", payload,
+            ])
+        assert result == 0
+        return json.loads(capsys.readouterr().out)
+
+    with greenfield_repository_lock.greenfield_repository_lock(tmp_path):
+        busy = invoke(f"{command} {transaction_hash}")
+    assert busy["decision"] == "block"
+    assert busy["reason"] == busy["systemMessage"]
+    assert (transaction.read_bytes(), receipt.read_bytes()) == before
+    retry = str(busy["reason"]).partition("Retry `")[2].partition("`")[0]
+    assert retry == f"{command} {transaction_hash}"
+    terminal = invoke(retry)
+    assert terminal["decision"] == "block"
+    assert "hookSpecificOutput" not in terminal
+    expected = "published" if command == "CONFIRM" else "rejected"
+    assert f"**Odylith Greenfield {expected}**" in str(terminal["reason"])
 
 
 def test_hash_bound_confirm_cannot_be_retargeted_by_a_newer_pending_proposal(
@@ -425,8 +595,17 @@ def test_hash_bound_confirm_cannot_be_retargeted_by_a_newer_pending_proposal(
 ) -> None:
     first_path, _first_receipt, first_hash = _stage_pending_transaction(tmp_path)
     existing = tmp_path / "odylith/radar/source/operator-change.md"
-    existing.parent.mkdir(parents=True, exist_ok=True)
-    existing.write_text("different preconfirm evidence\n", encoding="utf-8")
+
+    def publish_operator_change() -> int:
+        existing.parent.mkdir(parents=True, exist_ok=True)
+        existing.write_text("different preconfirm evidence\n", encoding="utf-8")
+        return 0
+
+    assert greenfield_managed_mutation_boundary.run_with_greenfield_managed_mutation_boundary(
+        repo_root=tmp_path,
+        command_tokens=("radar", "refresh"),
+        operation=publish_operator_change,
+    ) == 0
     second_path, _second_receipt, second_hash = _stage_pending_transaction(tmp_path)
     assert first_hash != second_hash
     calls: list[dict[str, object]] = []

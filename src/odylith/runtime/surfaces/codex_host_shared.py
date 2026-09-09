@@ -20,6 +20,7 @@ from odylith.runtime.intervention_engine import prompt_signal_runtime
 from odylith.runtime.surfaces import bash_guard_policy
 from odylith.runtime.surfaces import claude_host_shared
 from odylith.runtime.surfaces import host_hook_payload
+from odylith.runtime.surfaces import host_hook_execution
 
 
 _WORKSTREAM_RE = re.compile(r"\bB-\d{3,}\b")
@@ -72,17 +73,11 @@ def run_odylith(
     launcher = project_launcher(project_dir)
     if not launcher.is_file():
         return None
-    try:
-        return subprocess.run(
-            [str(launcher), *args],
-            cwd=str(resolve_repo_root(project_dir)),
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=timeout,
-        )
-    except (OSError, subprocess.SubprocessError):
-        return None
+    return host_hook_execution.run_hook_command(
+        command=[str(launcher), *args],
+        cwd=resolve_repo_root(project_dir),
+        timeout=timeout,
+    )
 
 
 def json_payload_from_output(output: str) -> dict[str, Any]:
