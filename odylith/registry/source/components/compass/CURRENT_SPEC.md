@@ -6,7 +6,7 @@
   and release-gate posture, but should suppress weak Odylith Discipline noise.
 - Compass entries should preserve workstream ids B-110 through B-117 and the
   benchmark gates that feed future session priors.
-Last updated: 2026-09-07
+Last updated: 2026-09-08
 
 
 ## Purpose
@@ -370,6 +370,11 @@ Compass consumes that contract through the prompt, voice validator, cache
 epoch, renderer, copied brief text, and fail-closed runtime states:
 - Compass brief source states are only `provider`, exact `cache`, or explicit
   `unavailable`.
+- Batch provider failures enrich unavailable diagnostics with the current fact
+  packet's existing labeled local facts, matching foreground refresh. Global and
+  scoped retries preserve those diagnostics through state recording and runtime
+  patching. These facts are not ready narration, and a retry must not copy stale
+  facts from a different packet merely to keep the panel populated.
 - `LLM writes, local code thinks` is the governing implementation rule.
 - Deterministic or templated fallback narration is retired. If Compass cannot
   validate a provider-authored brief and no exact same-packet narrated brief
@@ -711,6 +716,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-09-08: Aligned batch provider-failure diagnostics with foreground local-fact fallback, preserving explicitly unavailable global/scoped states without another provider call. Recorded background-worker settlement as a distinct proof requirement. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-09-07: Added explicit temporary refresh-root lifetime ownership to narration enqueue and spawn. Nested scopes and parallel surface threads preserve the guard; durable roots retain normal warming. Three pre-fix controls fail; the settled source passes 4311 runtime tests, 1101 install tests, native synthetic success/malformed/timeout controls and 34 staged-browser checks. Cold narration is explicitly unavailable, not fabricated or handed to CONFIRM. This is source-local lifecycle proof, not real-model quality or SLA qualification. (Plan: [B-142](../../../odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-04-17: Locked Compass `Programs` to release-like inner cards so each visible execution-wave program is a proper card inside the outer tinted Programs container, with unit and browser proof guarding against borderless flattening. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-14: Restored true rolling-window Timeline Audit rendering so Compass now shows every populated local day inside the active `24h` or `48h` window instead of collapsing to the selected `audit_day`; current-day future hours still stay clipped at the loaded runtime horizon. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-109`)

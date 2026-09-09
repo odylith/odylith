@@ -10,6 +10,24 @@ Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must
 
 ## Current Convergence Contract (2026-09-04)
 
+### Compass terminal-failure UX correction (2026-09-08)
+
+Delivery checkpoint `46c35484` is pushed and passes its actual one-pass source/spec
+commit gate. A later whole-tree check detects a separate background brief retry
+removing local-fact fallback diagnostics from the current Compass JSON/JS. Preserve
+that failure and stop only the identified owned laboratory worker; a passing
+before/after file hash does not establish process quiescence. Existing foreground
+refresh enriches unavailable diagnostics from its fact packet, but batch provider
+failure does not. A fresh bundle-to-runtime control fails with missing fallback
+title. Adopt the existing fact-packet enrichment at the batch failure owner; avoid
+patcher-side stale-fact carry-forward, new narration, retries or schema changes.
+This is a bounded terminal-state UX safety correction in the existing 2062-line
+batch owner, not unrelated feature growth. Keep its unchanged 2076-line guard and
+existing decomposition obligation; require scoped/global failure controls,
+ready-brief preservation, mismatched-generation guards and rendered degraded-state
+proof. Evidence and terminal checkpoint results remain in
+`/private/tmp/odylith-delivery-activity-boundary.fR20lE/REVIEW.md`.
+
 ### Recorded activity ownership correction (2026-09-08)
 
 Four real source/spec sync-and-commit controls reproduce stale Delivery on both
