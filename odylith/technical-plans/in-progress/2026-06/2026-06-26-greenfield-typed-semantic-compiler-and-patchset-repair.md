@@ -1,5 +1,72 @@
 Status: In progress
 
+## Exact-row component comparison outcome (2026-09-09)
+
+All six predeclared controls pass root and independent semantic adjudication
+with exactly six Sol/medium calls, no retries and unchanged frozen inputs. Two
+controls withdraw only the unsupported human classification; two retain real
+non-performing recipients unchanged. The negatives correctly deny missing
+matching-before-publication authority and an operator invocation used as a
+singular product story. Full measured reviewer roles take 16.809991, 16.186344,
+16.350920, 15.960882, 15.010641 and 17.260914 seconds, all within the existing
+20-second cap. Remaining source and proposed design stay exact on admissions.
+
+This supports the bounded retraction hypothesis on these development controls,
+not production adoption, unseen reliability, a speedup, generated package quality
+or consumer-SLA qualification. No product source/profile/schema changes, third
+runtime call, publication or holdout access. Retain the initial preparation
+failure, rejected freeze, six causal preflight failures and corrected 28-check
+proof alongside all live requests/results and independent decisions:
+`/private/tmp/odylith-retraction-review.Kd7T7o/REVIEW.md`.
+
+Only one separately predeclared complete actual author-to-review/package
+feasibility test is earned, with its own freeze and independent preflight under
+standard model55/consumer60 and reviewer20. It must carry the corrected candidate
+as real package authority while retaining the original model response and exact
+review receipt; an adapter returning the old pre-review authored object is not
+proof. Rescue80/90, deep105/120 and all semantic, UX, atomicity, engine-activation
+and release obligations remain unchanged and open.
+
+## Bounded exact-row admission comparison (2026-09-09)
+
+The installed purpose-as-person rejection motivates one external discriminator,
+not production adoption. Historical full/sparse correction could rewrite values
+and sometimes dropped valid recipients. Independent history review finds one
+narrowly distinct hypothesis: retain complete source/design admission, but allow
+the reviewer to withdraw only exact enumerated unsupported source-fact rows. It
+cannot introduce semantic values, replace prose, rewrite events or change design.
+Unreferenced or non-performing people are not inherently invalid; final source
+coverage remains mandatory and missing/replacement-required meaning must deny.
+
+Twenty-two no-provider controls pass. The actual surplus row can be withdrawn
+with unchanged workflow, context and design, while deleting a referenced actor
+fails structural binding. A valid non-performing recipient can also be deleted
+without structural failure: this explicitly disproves treating schema success
+as semantic proof. Six predeclared source/candidate controls cover the actual
+failure, a real recipient, equivalent action wording, missing source precedence
+and an invocation wrongly assigned as product story. The old invocation control
+lacks current complete-design fields, so its preparation fails before any input
+or provider call; the replacement is an explicitly constructed development
+control on the current candidate, not a weakened production validator.
+
+Independent preflight rejects the first frozen harness before any call: deleting
+rows can leave valid numeric precedence/terminal references bound to different
+source citations, and the role clock excludes its verification tail. Six causal
+controls fail against that harness, including equal quote bytes at different
+occurrences. The external correction preserves exact bound citations and event
+rows without remapping, calculates dispatch headroom after request preparation,
+and includes verification in the 20-second role clock. All 28 no-provider checks
+then pass. Preserve the rejected freeze and first failures; a fresh independently
+approved freeze remains required. Production code and live inputs are unchanged.
+
+Retain Sol/medium, at most 20 seconds and one call per control, stop at first
+failure, and require exact frozen-input preflight plus independent adjudication
+between calls. No third call, retry, model sweep, sealing or publication. A pass
+would only earn a separately declared actual author/review package feasibility
+test inside standard55/60; rescue80/90, deep105/120 and every quality/UX/release
+obligation remain fixed. Contract and raw evidence:
+`/private/tmp/odylith-retraction-review.Kd7T7o/acceptance.md`.
+
 ## Installed rescue-profile semantic boundary (2026-09-09)
 
 The unchanged 41c89d6d distribution builds completely and passes all twelve
