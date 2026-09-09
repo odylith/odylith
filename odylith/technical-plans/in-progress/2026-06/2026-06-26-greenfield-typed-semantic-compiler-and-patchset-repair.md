@@ -1,5 +1,24 @@
 Status: In progress
 
+## Live preflight correction checkpoint (2026-09-09)
+
+The preceding goal pass made progress: it rejected an incomplete freeze before
+dispatch, preserved interrupted proof output, bound actual consumer execution
+inputs, and passed 440 related source checks. Final independent review accepts
+the remaining directory-symlink correction with its causal control and twelve
+passing runner checks. The intervening hook review reconfirmed five trusted,
+enabled definitions; it did not qualify this existing desktop session.
+
+Commit the bounded source/governance correction, then freeze the one actual
+Terra/low author and Sol/medium exact-row reviewer complete-package attempt.
+Require independent approval of that exact freeze before dispatch. Preserve
+standard consumer60/model55/reviewer20, at most two calls, no retry, no CONFIRM
+and no protected-holdout access. Stop on the first latency, admission, integrity
+or independently grounded quality failure. A successful preview still requires
+semantic and browser review and establishes feasibility only, not release.
+All original phase, multi-profile, UX, transaction, distribution, reliability
+and final-holdout requirements remain open.
+
 ## Package readback review (2026-09-09)
 
 Both bounded corrections now pass independent re-review, including independent

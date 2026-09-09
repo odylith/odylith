@@ -45,6 +45,8 @@ class CommandLifecycleObserverError(RuntimeError):
         self.command_kind = _command_kind(command)
         self.returncode = int(result.returncode)
         self.state = state
+        self.stdout = result.stdout
+        self.stderr = result.stderr
 
 
 @contextlib.contextmanager
@@ -95,6 +97,7 @@ def run_command_with_group_timeout(
             on_started(process.pid, process.pid)
     except BaseException as exc:
         _stdout, _stderr, termination_observation = _stop_process_group(process)
+        exc.stdout, exc.stderr = _stdout, _stderr
         _notify_interrupted_lifecycle(
             observer,
             command,
@@ -126,6 +129,7 @@ def run_command_with_group_timeout(
         return result
     except BaseException as exc:
         _stdout, _stderr, termination_observation = _stop_process_group(process)
+        exc.stdout, exc.stderr = _stdout, _stderr
         _notify_interrupted_lifecycle(
             observer,
             command,

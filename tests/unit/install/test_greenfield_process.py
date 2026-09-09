@@ -30,6 +30,37 @@ def _module():
     return _load_module(SCRIPTS_ROOT / "greenfield_process.py", "greenfield_process")
 
 
+@pytest.mark.parametrize("phase", ["started", "communicate", "completed"])
+def test_exception_retains_available_streams_without_leaking_to_telemetry(monkeypatch, tmp_path: Path, phase: str) -> None:
+    module = _module()
+    events = []
+
+    class FakeProcess:
+        pid = 4242
+        returncode = -15
+
+        def communicate(self, timeout=None):
+            if phase == "communicate" and timeout == 1:
+                raise KeyboardInterrupt
+            return "private stdout", "private stderr"
+
+    monkeypatch.setattr(module.subprocess, "Popen", lambda *a, **kw: FakeProcess())
+    monkeypatch.setattr(module.os, "killpg", lambda *a: None)
+
+    def observe(event):
+        events.append(dict(event))
+        if phase in ("started", "completed") and event["state"] == phase:
+            raise OSError("recording unavailable")
+
+    error_type = KeyboardInterrupt if phase == "communicate" else (
+        module.CommandLifecycleObserverError if phase == "completed" else OSError)
+    with module.command_lifecycle_observer(observe), pytest.raises(error_type) as caught:
+        module.run_command_with_group_timeout(cwd=tmp_path, env={}, command=["python"], timeout=1)
+    assert caught.value.stdout == "private stdout"
+    assert caught.value.stderr == "private stderr"
+    assert "private" not in json.dumps(events)
+
+
 def test_run_command_with_group_timeout_terminates_process_group(monkeypatch, tmp_path: Path) -> None:
     module = _module()
     popen_kwargs: dict[str, object] = {}
