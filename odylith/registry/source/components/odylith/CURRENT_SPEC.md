@@ -26,6 +26,16 @@ and independently bounded background engines retain their own lifetime. Native
 browser-descendant cleanup and automatic chat visibility remain separate proof
 obligations, not implied by command-group tests.
 
+Host alignment reads the existing Compass runtime posture; it does not run
+architecture evaluation or rebuild projections while preparing chat context.
+Recorded posture retains its evidence fields but is explicitly freshness-
+unverified: the enclosing Compass refresh time cannot certify the age of a
+reused summary. Missing or malformed snapshots stay unavailable without
+opportunistic repair. The current disabled switch takes precedence over cached
+enabled state. Explicit engine evaluation and refresh owners remain active.
+Shared intervention voice preserves complete selected propositions; brevity
+comes from selecting facts, not cutting character windows out of their meaning.
+
 ## Odylith Discipline Contract
 - For v0.1.11, Odylith owns Odylith Discipline as a platform
   contract: local pressure observations, deterministic hard laws, adaptive

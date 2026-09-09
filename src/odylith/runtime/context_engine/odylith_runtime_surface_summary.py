@@ -7,6 +7,8 @@ from typing import Any, Mapping
 
 from odylith.runtime.common.value_coercion import mapping_copy as _mapping
 from odylith.runtime.evaluation import odylith_benchmark_runner
+from odylith.runtime.evaluation import odylith_ablation
+from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import odylith_context_engine_memory_snapshot_runtime as memory_snapshot_runtime
 from odylith.runtime.context_engine import odylith_context_engine_runtime_learning_runtime as runtime_learning_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store
@@ -54,6 +56,29 @@ def _merge_control_advisories(*sources: Mapping[str, Any]) -> dict[str, Any]:
             if key not in merged or merged[key] in ("", [], {}, None):
                 merged[key] = value
     return merged
+
+
+def load_recorded_runtime_surface_summary(*, repo_root: Path) -> dict[str, Any]:
+    """Read existing posture for hooks without evaluating or rebuilding engines."""
+    if not odylith_ablation.build_odylith_switch_snapshot(repo_root=repo_root).get("enabled", True):
+        return {"status": "disabled", "enabled": False, "memory_status": "disabled"}
+    source = "odylith/compass/runtime/current.v1.json"
+    try:
+        payload = odylith_context_cache.read_json_object(repo_root / source)
+    except (OSError, UnicodeError):
+        payload = {}
+    summary = _mapping(payload.get("odylith_runtime"))
+    if not summary:
+        return {"status": "unavailable", "source": source}
+    # Compass may reuse this field across refreshes. Its enclosing timestamp
+    # cannot attest when the original posture was measured.
+    return {
+        **summary,
+        "status": "recorded",
+        "recorded_status": summary.get("status", ""),
+        "source": source,
+        "freshness": "unverified",
+    }
 
 
 def load_runtime_surface_summary(*, repo_root: Path) -> dict[str, Any]:
@@ -647,4 +672,4 @@ def load_runtime_surface_summary(*, repo_root: Path) -> dict[str, Any]:
     }
 
 
-__all__ = ["load_runtime_surface_summary"]
+__all__ = ["load_runtime_surface_summary", "load_recorded_runtime_surface_summary"]

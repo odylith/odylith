@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from odylith.runtime.intervention_engine import voice
 from odylith.runtime.intervention_engine.contract import CaptureAction
 from odylith.runtime.intervention_engine.contract import GovernanceFact
@@ -131,3 +133,148 @@ def test_proposal_voice_keeps_shell_fixed_but_derives_body_from_fact_and_actions
     assert plain_text == markdown_text
     assert markdown_text.rstrip().endswith("-----")
     _assert_not_mechanical(markdown_text)
+
+
+def test_observation_retains_complete_casebook_description() -> None:
+    detail = (
+        "The visible-intervention fallback can show diagnostic host/tool language, "
+        "prompt eligibility is too keyword-bound for ordinary UX feedback, "
+        "and the Codex stop continuation request is discarded before transport. "
+        "This makes useful Odylith observations and assists inconsistent across "
+        "Codex, Claude, and future hosts."
+    )
+    fact = GovernanceFact(
+        kind="history",
+        headline="Casebook has CB-242 for this failure.",
+        detail=detail,
+    )
+
+    _headline, markdown_text, plain_text, teaser_text = voice.render_observation(
+        facts=[fact],
+        proposal_actions=[],
+    )
+
+    expected = f"Casebook has CB-242 for this failure. Why it matters: {detail}"
+    assert plain_text == f"Odylith Observation: {expected}"
+    assert teaser_text == plain_text
+    assert markdown_text == f"**Odylith Observation:** {expected}"
+
+
+@pytest.mark.parametrize(
+    "detail",
+    [
+        pytest.param(
+            "The current check confirms that the selected observation keeps its "
+            "grounded explanation together with the evidence collected for this turn, "
+            "and the remaining verification still belongs to the same component "
+            "before any completion claim is made, so this result does not authorize "
+            "a release.",
+            id="comma",
+        ),
+        pytest.param(
+            "The current check confirms that the selected observation keeps its "
+            "grounded explanation together with the evidence collected for this turn; "
+            "the remaining verification still belongs to the same component before "
+            "any completion claim is made; this result does not authorize a release.",
+            id="semicolon",
+        ),
+        pytest.param(
+            "The current check confirms that the selected observation keeps its "
+            "grounded explanation together with the evidence collected for this turn "
+            "and the remaining verification still belongs to the same component "
+            "before any completion claim is made so this result does not authorize "
+            "a release.",
+            id="no_separator",
+        ),
+        pytest.param(
+            "The current check confirms that the selected observation keeps its "
+            "grounded explanation together with the evidence collected for this turn. "
+            "The remaining verification still belongs to the same component before "
+            "any completion claim is made. This result does not authorize a release.",
+            id="multiple_sentences",
+        ),
+    ],
+)
+def test_shared_voice_preserves_long_selected_propositions(detail: str) -> None:
+    fact = GovernanceFact(
+        kind="history",
+        headline="The current proof is incomplete.",
+        detail=detail,
+    )
+    moment = {"primary_fact": fact.as_dict(), "ambient_label_kind": "history"}
+    action = CaptureAction(
+        surface="casebook",
+        action="update",
+        target_kind="bug",
+        target_id="CB-242",
+        rationale=detail,
+    )
+
+    _headline, markdown_text, plain_text, teaser_text = voice.render_observation(
+        facts=[fact], proposal_actions=[], moment=moment,
+    )
+    expected = f"The current proof is incomplete. Why it matters: {detail}"
+    assert markdown_text == f"**Odylith Observation:** {expected}"
+    assert plain_text == teaser_text == f"Odylith Observation: {expected}"
+
+    for markdown in (False, True):
+        label_kind, ambient_text = voice.render_ambient_signal(
+            moment=moment, facts=[fact], markdown=markdown,
+        )
+        label = "**Odylith History:**" if markdown else "Odylith History:"
+        assert label_kind == "history"
+        assert ambient_text == f"{label} {expected}"
+
+    _headline, action_markdown, action_plain, action_teaser = voice.render_observation(
+        facts=[fact], proposal_actions=[action], moment=moment,
+    )
+    action_expected = f"The current proof is incomplete. Next: {detail}"
+    assert action_markdown == f"**Odylith Observation:** {action_expected}"
+    assert action_plain == f"Odylith Observation: {action_expected}"
+    assert action_teaser == teaser_text
+
+    proposal_markdown, proposal_plain, confirmation = voice.render_proposal(
+        actions=[action], moment=moment,
+    )
+    assert proposal_plain == proposal_markdown
+    assert f"Odylith Proposal: The current proof is incomplete. {detail}" in proposal_markdown
+    assert f"- Casebook: update CB-242. {detail}" in proposal_markdown
+    assert confirmation == "apply this proposal"
+
+
+def test_short_observation_copy_stays_unchanged() -> None:
+    fact = GovernanceFact(
+        kind="invariant",
+        headline="The request preserves an existing lane.",
+        detail="Keep the next change within that boundary.",
+    )
+
+    headline, markdown_text, plain_text, teaser_text = voice.render_observation(
+        facts=[fact], proposal_actions=[],
+    )
+
+    expected = (
+        "The request preserves an existing lane. "
+        "Why it matters: Keep the next change within that boundary."
+    )
+    assert headline == fact.headline
+    assert markdown_text == f"**Odylith Observation:** {expected}"
+    assert plain_text == teaser_text == f"Odylith Observation: {expected}"
+
+
+def test_sentence_selection_still_skips_blanks_and_duplicates_and_limits_rows() -> None:
+    assert voice._deduped_sentences(  # noqa: SLF001
+        [
+            "",
+            None,
+            "  The selected claim is complete.  ",
+            "The selected claim is complete",
+            "selected claim",
+            "A separate constraint stays explicit.",
+            "This extra row is outside the selected limit.",
+        ],
+        limit=2,
+    ) == [
+        "The selected claim is complete.",
+        "A separate constraint stays explicit.",
+    ]
