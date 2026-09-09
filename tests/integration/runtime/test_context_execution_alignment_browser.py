@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
 import re
 from urllib.parse import quote
+from xml.etree import ElementTree
 
 import pytest
 
@@ -175,7 +178,7 @@ def test_atlas_context_execution_diagrams_render_assets_and_canonical_links(brow
         ),
         (
             "D-005",
-            ("context engine packet", "execution engine snapshot", "visible intervention", "benchmark proof"),
+            ("context engine", "execution engine", "visible intervention", "benchmark"),
         ),
         (
             "D-006",
@@ -242,12 +245,22 @@ def test_atlas_cross_stack_topology_diagrams_render_and_expose_alignment_languag
     atlas.locator("#diagramFreshness", has_text="Fresh").wait_for(timeout=15000)
     _assert_atlas_viewer_image_loaded(page)
 
+    catalog_path = Path(__file__).resolve().parents[3] / "odylith/atlas/source/catalog/diagrams.v1.json"
+    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    source_row = next(row for row in catalog["diagrams"] if row["diagram_id"] == diagram_id)
+    assert atlas.locator("#diagramTitle").inner_text() == source_row["title"]
+    assert atlas.locator("#diagramSummary").inner_text() == source_row["summary"]
+    svg_response = context.request.get(base_url + "/" + source_row["source_svg"])
+    assert svg_response.ok
+    svg_text = " ".join(ElementTree.fromstring(svg_response.text()).itertext())
+
     visible_text = "\n".join(
         [
             atlas.locator("#diagramTitle").inner_text(),
             atlas.locator("#diagramSummary").inner_text(),
             atlas.locator("#componentList").inner_text(),
             atlas.locator("#registryLinks").inner_text(),
+            svg_text,
         ]
     ).lower()
     for phrase in required_phrases:

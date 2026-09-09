@@ -29,11 +29,37 @@ public-hook lock/retry controls use an existing no-op sealed fixture, not a new
 generated package. Frozen regression and checkpoint results remain in
 `/private/tmp/odylith-greenfield-decision-recovery.logj0B/REVIEW.md`.
 
-The parallel read-only handoff review keeps CB-333's remaining admission proof
-explicit: preserved component/diagram IDs are not sufficient evidence that an
-input-free resumed packet can implement the target scope. The next public
-readback must produce an admissible next move or a concrete missing writable-target
-blocker; generic repeated narrowing does not qualify the integrated journey.
+The earlier read-only handoff review left explicit implementation admission
+unproved. Its retained intent said not to implement: an input-free resume must
+not replay that instruction or manufacture new write authority. A fresh four-step
+public-CLI control now preserves B-001 and its component while distinguishing
+review, input-free review resume, an explicit Python implementation request with
+two named target paths, and input-free implementation resume. Only the explicit
+implementation request admits implement.target_scope. Both empty-input resumes
+retain context without replaying the saved intent; all 96 published files/modes,
+active identity and transaction bytes remain exact. No application file is
+created. Calls take 0.886–0.935 seconds on this structural source-local fixture,
+not live generation or installed/native host proof. Evidence:
+/private/tmp/odylith-integrated-handoff.5iSyMI/result.json.
+
+The 139 focused handoff, memory, transaction, Turn Gate, Delivery, Surface DAG
+and intervention-status controls pass in 12.69 seconds. A wider Context/Execution
+browser run passes 16 and fails D-005's old summary-phrase assertion. Commit
+46c35484 intentionally replaced that summary with the recorded/live Delivery
+boundary; its diagram still contains Context, Execution, intervention and benchmark
+flows. Preserve the original failure. Compare rendered title and complete summary
+with catalog truth, retaining engine-identity assertions instead of demanding
+retired prose. This requires no product topology or runtime change. Native
+interventions remain degraded; complete generation quality, 60/90/120, current
+installation and independent release gates remain open.
+
+The first oracle correction still fails one of 17 checks because engine names
+are in the diagram itself, not all repeated in its metadata. The final bounded
+test reads the actual served SVG text as well as exact catalog metadata; all 17
+controls pass in 16.58 seconds. Preserve both failed receipts, not a pristine
+initial pass. Existing diagram source, rendered assets and product runtime are
+unchanged. Final settlement/browser results are retained in the same evidence
+directory; no new generation mechanism is adopted.
 
 ### Compass terminal-failure UX correction (2026-09-08)
 
