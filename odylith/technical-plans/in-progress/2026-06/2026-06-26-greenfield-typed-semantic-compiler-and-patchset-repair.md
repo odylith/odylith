@@ -1,5 +1,27 @@
 Status: In progress
 
+## Source-obligation verification and timing boundary (2026-09-09)
+
+The two-edit participant/outcome instruction alternative is rejected after one
+independently preflighted source-only trial. Participant coverage improves, but
+the proposed consent checks can pass after losing earlier evidence. Independent
+raw adjudication confirms that P1; it does not demand a speculative component
+edge or turn weak proposed checks into an ordinary-copy admission hard law.
+The source-event reference survives while the proposed responsibility and checks
+weaken its obligation. Source-event anchoring is a hypothesis, not a proven fix.
+
+The author uses 41.994 seconds; the unchanged reviewer returns null after 13.013
+seconds against 13.004 remaining. The parent fails at 55.249 seconds with all
+720 frozen dependencies unchanged and no package or consumer mutation. The
+313 passing guarded contract tests are not semantic or consumer-SLA proof.
+Keep the exact rejected evidence under
+`/private/tmp/odylith-outcome-verification.k2IfjZ/`; no second case or retry is
+authorized by that contract. Production stays at the validated source checkpoint.
+Any successor must jointly improve verification of the original source promises
+and complete author/review within the fixed 60/90/120 regime. No schema growth,
+profile sweep, example-specific patch or losing-prompt adoption is justified.
+Registry contracts and Atlas topology do not change in this diagnostic slice.
+
 ## Complete-package timing and utility adjudication (2026-09-09)
 
 Final frozen Radar proof passes 5,036 runtime checks, 1,168 install checks,
