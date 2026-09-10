@@ -51,6 +51,21 @@ and final untouched holdout are separate open release requirements.
 
 ## Current Validation
 
+Development checkpoint `33ee2fbc` is committed and pushed; it deliberately
+excludes the failed local publication and generated-view drift. Browser evaluator
+corrections are a separate wave. The URL-based lifecycle candidate is rejected
+after independent commit-alias counterexamples and removed from active source;
+its exact code and receipts remain archived. Active instrumentation retains all
+request failures without cancellation exemptions. Parsed local HTTP-error logging
+and unchanged shell assertions pass 109 controls. The accepted Radar row
+replacement is integrated; six causal controls and eight maintained cases pass
+on actual source in 18.87 seconds, with no private overlay or forced clicks.
+The static shell reader uses the existing logical layout owner. A private
+read-only browser-ID capture precedes any replacement observer implementation.
+These results do not supersede the failed full browser matrix, qualify the stale
+release dossier, recover the failed writer, or prove populated installed upgrade.
+Current receipts and limitations remain linked in CB-305.
+
 CB-339's actual first registration creates one reciprocal B-145 plan row and no
 successor; the second call makes zero decisions. Selective sync reveals a further
 gap: its active idea's Radar row remains in Finished Workstreams. The revised

@@ -149,7 +149,12 @@ def _new_page(context) -> tuple[object, list[str], list[str], list[str], list[st
 
     def _on_response(response) -> None:  # noqa: ANN001
         url = str(getattr(response, "url", "") or "")
-        if not url.startswith("http://127.0.0.1:"):
+        try:
+            parsed = urlparse(url)
+            local = parsed.scheme in {"http", "https"} and parsed.hostname in {"127.0.0.1", "localhost", "::1"}
+        except ValueError:
+            local = False
+        if not local:
             return
         status = int(getattr(response, "status", 0) or 0)
         if status >= 400:
@@ -276,32 +281,52 @@ def _run_in_browser_thread(callback) -> None:  # noqa: ANN001
 
 
 def _click_visible_radar_row(button) -> None:  # noqa: ANN001
-    """Click the visible part of a complete row, never its clipped full-box center."""
-    point = button.evaluate(
-        """node => {
-            const list = node.closest('#list'), controls = document.querySelector('.controls');
-            list.scrollTop += node.getBoundingClientRect().top - list.getBoundingClientRect().top - 8;
-            window.scrollBy(0, list.getBoundingClientRect().top - controls.getBoundingClientRect().height - 24);
+    """Click the visible part of the same row after queued window rendering."""
+    handle = button.element_handle()
+    assert handle is not None, "Radar row is absent; refusing a forced click"
+    try:
+        frame = handle.owner_frame()
+        assert frame is not None, "Radar frame is absent; refusing a forced click"
+        idea_id = handle.evaluate(
+            """node => {
+                if (!node.isConnected || !node.dataset.ideaId) return null;
+                const list = node.closest('#list'), controls = document.querySelector('.controls');
+                list.scrollTop += node.getBoundingClientRect().top - list.getBoundingClientRect().top - 8;
+                window.scrollBy(0, list.getBoundingClientRect().top - controls.getBoundingClientRect().height - 24);
+                return node.dataset.ideaId;
+            }"""
+        )
+    finally:
+        handle.dispose()
+    assert idea_id, "Radar row is absent; refusing a forced click"
+    point = frame.evaluate(
+        """async ideaId => {
+            // Scrolling dispatches an event that queues the list's rendering RAF.
+            await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+            const matches = document.querySelectorAll(`#list button[data-idea-id="${CSS.escape(ideaId)}"]`);
+            if (matches.length !== 1 || !matches[0].isConnected) return {reachable: false};
+            const node = matches[0], list = node.closest('#list'), controls = document.querySelector('.controls');
             const row = node.getBoundingClientRect(), clip = list.getBoundingClientRect();
             const left = Math.max(row.left, clip.left, 0), right = Math.min(row.right, clip.right, innerWidth);
             const top = Math.max(row.top, clip.top, controls.getBoundingClientRect().bottom, 0);
             const bottom = Math.min(row.bottom, clip.bottom, innerHeight);
             const x = (left + right) / 2, y = (top + bottom) / 2;
-            return {x: x - row.left, y: y - row.top,
-                reachable: right > left && bottom > top && node.contains(document.elementFromPoint(x, y))};
-        }"""
+            return {x, y, reachable: right > left && bottom > top && node.contains(document.elementFromPoint(x, y))};
+        }""",
+        idea_id,
     )
     assert point["reachable"], "Radar row is clipped or obstructed; refusing a forced click"
-    box = button.bounding_box()
-    assert box is not None
-    x, y = box["x"] + point["x"], box["y"] + point["y"]
-    frame = button.element_handle().owner_frame()
     if frame.parent_frame is not None:
-        assert button.page.evaluate(
-            "([frame, x, y]) => document.elementFromPoint(x, y) === frame",
-            [frame.frame_element(), x, y],
-        ), "Radar frame is clipped or obstructed; refusing a forced click"
-    button.page.mouse.click(x, y)
+        point = button.page.evaluate(
+            """([frame, point]) => {
+                const box = frame.getBoundingClientRect();
+                const x = box.left + frame.clientLeft + point.x, y = box.top + frame.clientTop + point.y;
+                return {x, y, reachable: frame.isConnected && document.elementFromPoint(x, y) === frame};
+            }""",
+            [frame.frame_element(), point],
+        )
+        assert point["reachable"], "Radar frame is clipped or obstructed; refusing a forced click"
+    button.page.mouse.click(point["x"], point["y"])
 
 
 def _select_radar_row_with_link(

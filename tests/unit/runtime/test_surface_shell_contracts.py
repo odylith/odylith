@@ -5,6 +5,7 @@ import re
 
 import pytest
 
+from odylith.runtime.domain_intelligence.greenfield_repository_write_set import greenfield_repository_layout
 from odylith.runtime.surfaces import compass_dashboard_frontend_contract
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import source_bundle_mirror
@@ -50,6 +51,8 @@ _SURFACE_LIVE_BUNDLE_MIRROR_GLOBS = (
 
 
 def _read(path: str) -> str:
+    if path == "odylith/index.html":
+        return greenfield_repository_layout(REPO_ROOT).target_path(path).read_text(encoding="utf-8")
     return (REPO_ROOT / path).read_text(encoding="utf-8")
 
 

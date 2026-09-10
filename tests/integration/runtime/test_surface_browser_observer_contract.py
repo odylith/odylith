@@ -126,3 +126,20 @@ def test_registry_readiness_requires_loaded_detail_owned_by_selection(context, m
         with pytest.raises(support.playwright_sync.TimeoutError):
             check()
     page.close()
+
+
+@pytest.mark.parametrize("origin", (
+    "http://127.0.0.1:9876", "https://127.0.0.1:9876",
+    "http://localhost:9876", "https://localhost:9876",
+    "http://[::1]:9876", "https://[::1]:9876",
+))
+@pytest.mark.parametrize("status", (404, 503))
+def test_http_errors_are_retained_across_local_origins(origin, status):
+    handlers = {}
+    page = SimpleNamespace(on=lambda name, callback: handlers.__setitem__(name, callback))
+    _page, console, errors, failed, responses = support._new_page(SimpleNamespace(new_page=lambda: page))
+    url = origin + "/missing.js"
+    handlers["response"](SimpleNamespace(url=url, status=status))
+    assert responses == [f"{status} {url}"]
+    with pytest.raises(AssertionError, match="http error responses"):
+        support._assert_clean_page(page, console, errors, failed, responses)
