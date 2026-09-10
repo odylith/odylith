@@ -1119,7 +1119,7 @@ def _global_fallback_next_text(
         )
     if active_count > 0:
         return "Immediate forcing function is to turn the active flagship lane into a named next checkpoint."
-    return "Immediate forcing function is to name the next concrete checkpoint before portfolio steering drifts."
+    return "Create or open a workstream in Radar, then Compass will summarize its progress here."
 
 
 def _scoped_fallback_risk_text(

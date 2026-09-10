@@ -17,6 +17,7 @@ import greenfield_semantic_release_score as score_module
 from greenfield_matrix_corpus_provenance import GreenfieldCaseProvenance
 from greenfield_matrix_statistics import release_slice_contract
 from greenfield_matrix_statistics import release_slice_minimum_sample_contract
+from greenfield_matrix_statistics import release_statistical_confidence_contract
 from greenfield_matrix_types import GreenfieldArtifactCounts
 from greenfield_matrix_types import GreenfieldMatrixResult
 from greenfield_matrix_types import GreenfieldQualityVerdict
@@ -38,8 +39,20 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     greenfield_operating_envelope_receipt,
 )
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    structural_design_fixture,
+)
 
 
+TEST_CONFIDENCE = {
+    **release_statistical_confidence_contract(),
+    "atomic_semantic_fidelity": 0.2,
+    "relation_fidelity": 0.2,
+    "clarification_identity": 0.2,
+    "unnecessary_question_rate_ceiling": 0.8,
+    "overall_case_success": 0.2,
+    "worst_slice_success": 0.2,
+}
 FLOORS = {
     "atomic_semantic_fidelity": 0.2,
     "relation_fidelity": 0.2,
@@ -48,6 +61,17 @@ FLOORS = {
     "overall_case_success": 0.2,
     "worst_slice_success": 0.2,
     "release_slice_minimum_samples": release_slice_minimum_sample_contract(),
+    "statistical_confidence": TEST_CONFIDENCE,
+}
+EXACT_RELEASE_FLOORS = {
+    "atomic_semantic_fidelity": 1.0,
+    "relation_fidelity": 1.0,
+    "clarification_identity": 1.0,
+    "unnecessary_question_rate_ceiling": 0.0,
+    "overall_case_success": 1.0,
+    "worst_slice_success": 1.0,
+    "release_slice_minimum_samples": release_slice_minimum_sample_contract(),
+    "statistical_confidence": release_statistical_confidence_contract(),
 }
 FIRST_PATH = (
     "Operator submits one signed permit to Registry API and reviews the accepted permit receipt"
@@ -83,48 +107,6 @@ def test_structural_release_passes_exact_commit_and_clarification() -> None:
     assert len(report["normalized_semantic_digests"]["commit"]) == 64
 
 
-def test_interval_bearing_floors_use_wilson_lower_bound_not_perfect_point_estimate() -> None:
-    case = _case("small-perfect", expectation="transaction_committed")
-
-    report = score_module.evaluate_semantic_release(
-        cases=(case,),
-        annotations={case.case_id: _commit_annotation()},
-        results=(_commit_result(case),),
-        floors={**FLOORS, "overall_case_success": 0.21},
-        _include_model_profiles=False,
-        _allow_not_applicable_metrics=True,
-    )
-
-    check = next(
-        row for row in report["floor_checks"]
-        if row["name"] == "overall_case_success"
-    )
-    assert report["overall_case_success"]["rate"] == 1.0
-    assert check["observed"] == 0.206549
-    assert check["status"] == "failed"
-
-
-def test_interval_bearing_ceiling_uses_wilson_upper_bound() -> None:
-    case = _case("small-zero", expectation="transaction_committed")
-
-    report = score_module.evaluate_semantic_release(
-        cases=(case,),
-        annotations={case.case_id: _commit_annotation()},
-        results=(_commit_result(case),),
-        floors={**FLOORS, "unnecessary_question_rate_ceiling": 0.79},
-        _include_model_profiles=False,
-        _allow_not_applicable_metrics=True,
-    )
-
-    check = next(
-        row for row in report["floor_checks"]
-        if row["name"] == "unnecessary_question_rate"
-    )
-    assert report["metrics"]["unnecessary_question_rate"]["rate"] == 0.0
-    assert check["observed"] == 0.793451
-    assert check["status"] == "failed"
-
-
 def test_structural_release_accepts_the_runtime_authored_atomic_schema(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -151,7 +133,7 @@ def test_structural_release_accepts_the_runtime_authored_atomic_schema(
         "projection_end_byte": len(quote_bytes),
         "projection_value_sha256": hashlib.sha256(quote_bytes).hexdigest(),
         "relation_order": 1,
-        "relation_role": "actor_quote",
+        "relation_role": "actor_fact_quote",
     }
     spans: list[dict[str, object]] = []
     append_atomic_source_spans(spans, authored_atomic_claims=[claim])
@@ -512,7 +494,11 @@ def test_worst_complexity_slice_failure_cannot_hide_behind_aggregate() -> None:
         for row in report["slices"]
         if row["dimension"] == "complexity_band" and row["value"] == "moderate"
     )
-    worst_check = next(row for row in report["floor_checks"] if row["name"] == "worst_slice_success")
+    worst_check = next(
+        row
+        for row in report["acceptance_checks"]
+        if row["name"] == "worst_slice_success"
+    )
     assert report["overall_case_success"]["rate"] == 0.5
     assert moderate_slice["point_estimate"] == 0.0
     assert worst_check["status"] == "failed"
@@ -665,7 +651,7 @@ def _expected_atom(
     source_occurrence: int = 0,
     projection_occurrence: int = 0,
     relation_order: int = 1,
-    relation_role: str = "actor_quote",
+    relation_role: str = "actor_fact_quote",
     category: str = "actors",
 ) -> dict[str, object]:
     start, end, digest = _span(prompt, quote, occurrence=source_occurrence)
@@ -706,7 +692,7 @@ def _actual_atom(
     source_occurrence: int = 0,
     projection_occurrence: int = 0,
     relation_order: int = 1,
-    relation_role: str = "actor_quote",
+    relation_role: str = "actor_fact_quote",
     category: str = "actors",
 ) -> dict[str, object]:
     start, end, digest = _span(prompt, quote, occurrence=source_occurrence)
@@ -848,7 +834,6 @@ def _relation_annotation(prompt: str) -> dict[str, object]:
                 "event_end_byte": len(FIRST_PATH.encode("utf-8")),
                 "event_sha256": event_sha,
                 "actor_kind": "human",
-                "actor_sha256": hashlib.sha256(b"Operator").hexdigest(),
                 "actor_fact_path": "/human_actors/0",
                 "actor_fact_sha256": hashlib.sha256(b"Operator").hexdigest(),
                 "product_owner_path": "",
@@ -858,22 +843,10 @@ def _relation_annotation(prompt: str) -> dict[str, object]:
                 "visible_result_sha256": hashlib.sha256(
                     b"accepted permit receipt"
                 ).hexdigest(),
-                "recovery_path": False,
             }
         ],
         "context_relations": [],
-        "component_responsibility_relations": [
-            {
-                "responsibility_path": "/first_path",
-                "responsibility_sha256": hashlib.sha256(
-                    b"accepted permit receipt"
-                ).hexdigest(),
-                "product_owner_path": "/title",
-                "product_owner_sha256": hashlib.sha256(b"Permit Desk").hexdigest(),
-                "first_path_event_order": 1,
-                "responsibility_source": "terminal_visible_result",
-            }
-        ],
+        "component_responsibility_relations": [],
     }
 
 
@@ -939,6 +912,7 @@ def _commit_result(
                         first_path_context_relations=semantics[
                             "first_path_context_relations"
                         ],
+                        provisional_design=semantics["provisional_design"],
                     ),
                 },
             },
@@ -954,7 +928,6 @@ def _authored_semantics(
 ) -> dict[str, object]:
     first_path = str(facts.get("first_path") or "")
     actor = str(next(iter(facts.get("human_actors", ())), ""))
-    title = str(facts.get("title") or "")
     source_start, source_end, _digest = _span(
         case.prompt,
         first_path,
@@ -973,8 +946,6 @@ def _authored_semantics(
             "event_start_byte": 0,
             "event_end_byte": len(first_path.encode("utf-8")),
             "actor_kind": "human",
-            "actor_quote": actor,
-            "actor_is_carried": False,
             "actor_fact_path": "/human_actors/0",
             "actor_fact_quote": actor,
             "owner_system_path": "",
@@ -983,24 +954,15 @@ def _authored_semantics(
             "action_verb_quote": "submits",
             "target_quote": "one signed permit",
             "visible_result_quote": visible_result,
-            "recovery_path": False,
         }
     ]
-    components = [
-        {
-            "responsibility_path": "/first_path",
-            "responsibility_quote": visible_result,
-            "owner_system_path": "/title",
-            "owner_system_quote": title,
-            "first_path_event_order": 1,
-            "responsibility_source": "terminal_visible_result",
-        }
-    ]
+    provisional_design = structural_design_fixture((1,))
     return {
         "version": AUTHORED_SEMANTICS_VERSION,
         "first_path_relations": relations,
         "first_path_context_relations": [],
-        "component_responsibility_relations": components,
+        "component_responsibility_relations": [],
+        "provisional_design": provisional_design,
     }
 
 
@@ -1151,10 +1113,10 @@ def _rich_relation_bundle(
         "component_responsibilities": ["Record the accepted receipt"],
     }
     atom_specs = (
-        ("Reviewer", "scored", "human_actors", "/human_actors/0", None, 1, "actor_quote", "actors"),
-        ("Registry API", "reference_only", "external_systems", "/external_systems/0", None, 2, "actor_quote", "dependencies"),
+        ("Reviewer", "scored", "human_actors", "/human_actors/0", None, 1, "actor_fact_quote", "actors"),
+        ("Registry API", "reference_only", "external_systems", "/external_systems/0", None, 2, "actor_fact_quote", "dependencies"),
         ("Archive API", "reference_only", "external_systems", "/external_systems/1", None, 0, "", "dependencies"),
-        ("Record Engine", "reference_only", "internal_systems", "/internal_systems/0", None, 3, "actor_quote", "dependencies"),
+        ("Record Engine", "reference_only", "internal_systems", "/internal_systems/0", None, 3, "actor_fact_quote", "dependencies"),
         ("Backup Engine", "reference_only", "internal_systems", "/internal_systems/1", None, 0, "", "dependencies"),
         ("prior state", "reference_only", "state_object", "/state_object", None, 0, "", "states"),
         ("Retain the accepted receipt", "reference_only", "operational_constraints", "/operational_constraints/0", None, 0, "", "constraints"),
@@ -1211,8 +1173,6 @@ def _rich_relation_bundle(
                 "event_start_byte": event_start,
                 "event_end_byte": event_end,
                 "actor_kind": actor_kind,
-                "actor_quote": actor,
-                "actor_is_carried": False,
                 "actor_fact_path": actor_path,
                 "actor_fact_quote": actor,
                 "owner_system_path": owner_path,
@@ -1221,7 +1181,6 @@ def _rich_relation_bundle(
                 "action_verb_quote": action,
                 "target_quote": target,
                 "visible_result_quote": visible,
-                "recovery_path": False,
             }
         )
         expected_events.append(
@@ -1233,7 +1192,6 @@ def _rich_relation_bundle(
                 "event_end_byte": event_end,
                 "event_sha256": event_sha,
                 "actor_kind": actor_kind,
-                "actor_sha256": _sha(actor),
                 "actor_fact_path": actor_path,
                 "actor_fact_sha256": _sha(actor),
                 "product_owner_path": owner_path,
@@ -1241,14 +1199,13 @@ def _rich_relation_bundle(
                 "action_verb_sha256": _sha(action),
                 "target_sha256": _sha(target) if target else "",
                 "visible_result_sha256": _sha(visible) if visible else "",
-                "recovery_path": False,
             }
         )
     context_specs = (
         ("state_object", "/state_object", "prior state", 2),
         ("external_system", "/external_systems/0", "Registry API", 2),
-        ("external_system", "/external_systems/1", "Archive API", 0),
-        ("operational_constraint", "/operational_constraints/0", "Retain the accepted receipt", 3),
+        ("external_system", "/external_systems/1", "Archive API", 2),
+        ("operational_constraint", "/operational_constraints/0", "Retain the accepted receipt", 0),
     )
     semantic_contexts: list[dict[str, object]] = []
     expected_contexts: list[dict[str, object]] = []
@@ -1274,6 +1231,9 @@ def _rich_relation_bundle(
                 "first_path_event_order": order,
             }
         )
+    provisional_design = structural_design_fixture(
+        tuple(row["order"] for row in semantic_events)
+    )
     semantics = {
         "version": AUTHORED_SEMANTICS_VERSION,
         "first_path_relations": semantic_events,
@@ -1288,6 +1248,7 @@ def _rich_relation_bundle(
                 "responsibility_source": "accepted_fact",
             }
         ],
+        "provisional_design": provisional_design,
     }
     result = _commit_result(case, atoms=actual_atoms, facts=facts)
     snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
@@ -1324,6 +1285,7 @@ def _refresh_relation_hash(result: GreenfieldMatrixResult) -> None:
         semantics["first_path_relations"],
         semantics["component_responsibility_relations"],
         first_path_context_relations=semantics["first_path_context_relations"],
+        provisional_design=semantics["provisional_design"],
     )
 
 
@@ -1353,8 +1315,6 @@ def _repeated_relation_evidence() -> tuple[GreenfieldMatrixCase, dict[str, objec
                 "event_start_byte": projection_start,
                 "event_end_byte": projection_start + len(event.encode("utf-8")),
                 "actor_kind": "human",
-                "actor_quote": "Operator",
-                "actor_is_carried": False,
                 "actor_fact_path": "/human_actors/0",
                 "actor_fact_quote": "Operator",
                 "owner_system_path": "",
@@ -1363,7 +1323,6 @@ def _repeated_relation_evidence() -> tuple[GreenfieldMatrixCase, dict[str, objec
                 "action_verb_quote": "records",
                 "target_quote": "one receipt",
                 "visible_result_quote": visible,
-                "recovery_path": False,
             }
         )
         expected_events.append(
@@ -1375,7 +1334,6 @@ def _repeated_relation_evidence() -> tuple[GreenfieldMatrixCase, dict[str, objec
                 "event_end_byte": projection_start + len(event.encode("utf-8")),
                 "event_sha256": _sha(event),
                 "actor_kind": "human",
-                "actor_sha256": _sha("Operator"),
                 "actor_fact_path": "/human_actors/0",
                 "actor_fact_sha256": _sha("Operator"),
                 "product_owner_path": "",
@@ -1383,23 +1341,15 @@ def _repeated_relation_evidence() -> tuple[GreenfieldMatrixCase, dict[str, objec
                 "action_verb_sha256": _sha("records"),
                 "target_sha256": _sha("one receipt"),
                 "visible_result_sha256": _sha(visible) if visible else "",
-                "recovery_path": False,
             }
         )
+    provisional_design = structural_design_fixture((1, 2))
     semantics = {
         "version": AUTHORED_SEMANTICS_VERSION,
         "first_path_relations": semantic_events,
         "first_path_context_relations": [],
-        "component_responsibility_relations": [
-            {
-                "responsibility_path": "/first_path",
-                "responsibility_quote": "one receipt",
-                "owner_system_path": "/title",
-                "owner_system_quote": "Repeat Desk",
-                "first_path_event_order": 2,
-                "responsibility_source": "terminal_visible_result",
-            }
-        ],
+        "component_responsibility_relations": [],
+        "provisional_design": provisional_design,
     }
     snapshot = {
         "facts": {
@@ -1412,6 +1362,7 @@ def _repeated_relation_evidence() -> tuple[GreenfieldMatrixCase, dict[str, objec
             semantic_events,
             semantics["component_responsibility_relations"],
             first_path_context_relations=[],
+            provisional_design=provisional_design,
         ),
     }
     atoms = [
@@ -1470,16 +1421,7 @@ def _repeated_relation_evidence() -> tuple[GreenfieldMatrixCase, dict[str, objec
             "version": RELATION_FIDELITY_ANNOTATION_VERSION,
             "first_path_events": expected_events,
             "context_relations": [],
-            "component_responsibility_relations": [
-                {
-                    "responsibility_path": "/first_path",
-                    "responsibility_sha256": _sha("one receipt"),
-                    "product_owner_path": "/title",
-                    "product_owner_sha256": _sha("Repeat Desk"),
-                    "first_path_event_order": 2,
-                    "responsibility_source": "terminal_visible_result",
-                }
-            ],
+            "component_responsibility_relations": [],
         },
     }
     return case, annotation, snapshot

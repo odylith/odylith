@@ -5,7 +5,7 @@
   affected component spec names its faculty, hot-path boundary, proof duty,
   and surface duty so the Odylith Discipline layer remains cross-cutting rather than a
   runtime-only feature.
-Last updated: 2026-07-20
+Last updated: 2026-09-08
 
 
 ## Purpose
@@ -16,6 +16,29 @@ requirements, and how operators inspect change history by component rather than
 only by workstream.
 
 ## Scope And Non-Goals
+### Component selection lifecycle
+`registry_selection_ui.py` owns selected-summary resolution, detail-load
+cancellation and empty presentation. An empty inventory offers Open Project;
+filters hiding existing components offer search/filter recovery. Detail and
+timeline only accept the latest selection revision, including repeated selection
+of the same component. Populated detail and forensic rendering retain their
+existing owners. CB-330 browser proof covers both source states at both widths.
+
+### Specification reading boundary
+`registry_spec_reading_ui.py` owns the Current Spec disclosure, prose and table
+layout. Shrinkable grid tracks and local token wrapping keep prose within the
+disclosure; wide tables retain their own horizontal scroll container. Registry's
+mobile filters use normal flow so Diagnostics cannot obscure the reading area;
+desktop sticky behavior and the shared header stay unchanged. The Registry
+refresh fingerprint includes the extracted reading owner so later style changes
+cannot reuse stale generated HTML.
+
+Browser proof checks paragraph Range bounds inside clipping ancestors, mobile
+heading hit-testing, normal and runtime-fallback detail, local table scrolling
+and filter/Project recovery. A clean outer-page width is insufficient. Source-local
+proof does not imply installed-release, touch/keyboard or complete copy-fidelity
+qualification.
+
 ### Registry owns
 - The canonical component manifest.
 - Component-to-workstream, component-to-diagram, and component-to-spec linkage.
@@ -41,7 +64,20 @@ only by workstream.
 - Registry treats component specs as living contracts, not static documentation.
 
 ## Runtime Contract
+### Existing-component description updates
+`odylith component update-description --id <id> --what-it-is "<description>"`
+changes only an existing inventory description, preserves all other metadata and
+`CURRENT_SPEC.md`, and refreshes Registry once. `--dry-run` neither writes nor
+refreshes. Unknown/duplicate IDs, blank input, malformed inventory and symlinks in
+the fixed manifest path fail before writing. Help remains read-only on main;
+mutations retain the product-main guard. The Component CLI family owns dispatch
+in `component_cli.py`; `component_description_update.py` owns the narrow update.
+
 ### Source truth
+- An authored `application` category stays `application` through manifest
+  loading, cached reports, validation and rendered detail. It must not alias to
+  `governance_engine`; proposed product components are not governance engines.
+  A category-normalization change invalidates both dependent cache contracts.
 - `odylith/registry/source/component_registry.v1.json`
   Canonical component manifest.
 - `odylith/registry/source/components/<component-id>/CURRENT_SPEC.md`
@@ -50,6 +86,9 @@ only by workstream.
   Derived forensic snapshots for tracked components.
 
 ### Derived and rendered artifacts
+- Mobile Topology rows use shrinkable grid tracks so complete prose and metadata
+  wrap inside the detail panel. Browser proof must inspect text bounds within
+  clipping ancestors after ordinary navigation, not only document overflow.
 - `odylith/registry/registry.html`
 - `odylith/registry/registry-payload.v1.js`
 - `odylith/registry/registry-app.v1.js`
@@ -60,6 +99,8 @@ only by workstream.
   Inventory normalization, event mapping, forensic coverage, and report model.
 - `src/odylith/runtime/surfaces/render_registry_dashboard.py`
   Registry renderer.
+- `src/odylith/runtime/surfaces/registry_spec_reading_ui.py`
+  Specification disclosure, prose and table reading layout.
 - `src/odylith/runtime/governance/sync_component_spec_requirements.py`
   Requirements-trace sync into living specs.
 - `src/odylith/runtime/governance/validate_component_registry_contract.py`
@@ -94,6 +135,17 @@ It also separates:
 
 Synthetic workspace activity is explicitly forensic-only. It must not pollute
 requirements-trace sync or replace explicit Compass narrative capture.
+
+The report collector owns the live/persisted boundary through
+`include_workspace_activity`. Default live reports retain current path observations
+for Registry, Context and detail views. Recorded-only reports skip worktree scans
+and exclude replayed workspace events before calculating timelines, counts and
+coverage. Disk and session caches distinguish the two modes. Delivery persistence
+and both phases of spec/forensics synchronization use recorded-only reports; the
+forensic writer no longer maintains a separate event filter or coverage policy.
+`ComponentEntry.as_dict()` is the single component serialization contract for
+index enrichment, artifact matching and intervention path mapping. Its copied
+list values must not mutate the original inventory entry.
 
 ## Living Spec Synchronization
 `sync_component_spec_requirements.py` keeps each component spec aligned with
@@ -252,6 +304,9 @@ exhaustive regardless of rung.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-08 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `src/odylith/runtime/governance/component_registry_intelligence.py`, `src/odylith/runtime/governance/delivery_intelligence_engine.py`, `src/odylith/runtime/governance/sync_component_spec_requirements.py`
 - **2026-07-01 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md`, `odylith/registry/source/components/registry/CURRENT_SPEC.md`
@@ -264,6 +319,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-09-08: Centralized live versus recorded evidence collection for Registry forensics and Delivery, preserving live Context coverage and stable source/spec commit readback. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-07-01: Captured source-change forensics regeneration posture. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
   During release-provenance closure, pinned-runtime Registry forensics sync
   repeated the known CB-209 failure mode by reintroducing historical scenario

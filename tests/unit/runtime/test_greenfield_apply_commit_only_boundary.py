@@ -22,7 +22,7 @@ from odylith.runtime.domain_intelligence import greenfield_release_commit
 from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence import greenfield_traceability_commit
 from odylith.runtime.domain_intelligence import proposal_memory
-from tests.unit.runtime.greenfield_proposal_fixtures import _canonical_model_authored_greenfield_fixture
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import _canonical_model_authored_greenfield_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
 
@@ -55,12 +55,15 @@ def test_create_confirm_cli_commits_transaction_without_post_confirm_generation(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     _seed_empty_governance_repo(tmp_path)
+    from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
+
+    activate_greenfield_baseline_fixture(tmp_path)
 
     def render_stubbed_surfaces(*, repo_root: Path) -> dict[str, Any]:
         for relative_path in greenfield_surface_refresh_proof.GREENFIELD_REQUIRED_SURFACE_ARTIFACTS:
             path = Path(repo_root) / relative_path
             path.parent.mkdir(parents=True, exist_ok=True)
-            if not path.is_file():
+            if relative_path == "odylith/index.html" or not path.is_file():
                 path.write_text("stubbed pre-confirm surface\n", encoding="utf-8")
         return surface_refresh_preview_fixture()
 
@@ -125,7 +128,7 @@ def test_create_confirm_cli_commits_transaction_without_post_confirm_generation(
     monkeypatch.setattr(greenfield_traceability_commit, "rebase_compiled_traceability_plan", forbidden)
     monkeypatch.setattr(proposal_memory, "record_compiled_greenfield_acceptance", forbidden)
     monkeypatch.setattr(
-        greenfield_component_commit.component_authoring.owned_surface_refresh,
+        greenfield_component_commit.component_compiled_commit.owned_surface_refresh,
         "raise_for_failed_refresh",
         forbidden,
     )

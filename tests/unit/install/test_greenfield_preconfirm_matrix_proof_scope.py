@@ -51,6 +51,26 @@ def _write(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def _write_supplement(
+    path: Path,
+    *,
+    case_id: str,
+    tags: tuple[str, ...],
+    include_leakage: bool = True,
+) -> Path:
+    row = {
+        "case_id": case_id,
+        "name": "museum conservation queue",
+        "prompt": "Create a greenfield proposal for museum conservation queue review.",
+        "required_terms": ["museum", "conservation", "queue"],
+        "tags": list(tags),
+    }
+    if include_leakage:
+        row["leakage_terms"] = ["museum conservation queue"]
+    _write(path, json.dumps({"version": "odylith.greenfield.matrix.case-file.v1", "cases": [row]}))
+    return path
+
+
 def _full_counts(module) -> object:
     return module.GreenfieldArtifactCounts(
         radar_workstreams=4,
@@ -81,6 +101,20 @@ def _passing_quality(module) -> object:
     )
 
 
+def _stage_observation(
+    profile_id: str,
+    *,
+    clarification: bool = False,
+    reviewed: bool = False,
+) -> dict[str, object]:
+    from tests.greenfield_model_profile_test_support import production_stage_observation
+
+    return production_stage_observation(
+        profile_id, response_kind="clarification_required" if clarification else "authored",
+        reviewed=reviewed,
+    )
+
+
 def _passing_matrix_result(module, *, manifest_summary: dict[str, object] | None = None) -> object:
     profile_id = module.model_profile_id_for_repair_tier("standard")
     profile = module.get_greenfield_model_profile(profile_id)
@@ -94,9 +128,14 @@ def _passing_matrix_result(module, *, manifest_summary: dict[str, object] | None
         browser_surface_proof_attempted=True,
         commit_manifest_summary=manifest_summary or {},
         evidence={
-            "case": {"id": "matrix-case"},
+            "case": {
+                "id": "matrix-case",
+                "expectation": "transaction_committed",
+                "prompt_sha256": "a" * 64,
+            },
             "model_profile": {
                 "profile_id": profile_id,
+                "stage_observation": _stage_observation(profile_id),
                 "status": "passed",
                 "issues": [],
                 "observed": {
@@ -119,9 +158,14 @@ def _passing_profile_result(module, profile_id: str, proposal_seconds: float) ->
         name=profile_id,
         proposal_seconds=proposal_seconds,
         evidence={
-            "case": {"id": profile_id},
+            "case": {
+                "id": profile_id,
+                "expectation": "transaction_committed",
+                "prompt_sha256": "a" * 64,
+            },
             "model_profile": {
                 "profile_id": profile_id,
+                "stage_observation": _stage_observation(profile_id),
                 "status": "passed",
                 "issues": [],
                 "observed": {
@@ -132,6 +176,61 @@ def _passing_profile_result(module, profile_id: str, proposal_seconds: float) ->
                     "effective_timeout_seconds": profile.model_timeout_seconds,
                     "authoring_tier": profile.repair_tier,
                 },
+            },
+        },
+    )
+
+
+def _passing_clarification_profile_result(
+    module,
+    profile_id: str,
+    proposal_seconds: float,
+    *,
+    reviewed: bool = False,
+) -> object:
+    expected_field = "first_path"
+    expected_question = "Who uses this product first, and what complete result do they see?"
+    result = _passing_profile_result(module, profile_id, proposal_seconds)
+    return replace(
+        result,
+        name=f"{profile_id}-clarification",
+        quality=replace(
+            result.quality,
+            score_basis="clarification_required_no_write_contract",
+        ),
+        evidence={
+            **dict(result.evidence or {}),
+            "model_profile": {
+                **result.evidence["model_profile"],
+                "stage_observation": _stage_observation(
+                    profile_id,
+                    clarification=True,
+                    reviewed=reviewed,
+                ),
+            },
+            "case": {
+                "id": f"{profile_id}-clarification",
+                "expectation": "clarification_required",
+                "prompt_sha256": "b" * 64,
+                "expected_clarification": {
+                    "field": expected_field,
+                    "question": expected_question,
+                },
+            },
+            "clarification": {
+                "mode": "clarification_required",
+                "question": expected_question,
+                "required_fields": [expected_field],
+                "returncode": 0,
+            },
+            "no_write": {
+                "before_record_count": 83,
+                "after_record_count": 83,
+                "changed_records": [],
+                "staged_transaction_present": False,
+                "write_audit_active": True,
+                "write_attempts": [],
+                "write_audit_error": "",
             },
         },
     )
@@ -255,6 +354,158 @@ def test_main_uses_external_case_files_instead_of_default_catalog(
     assert len(cases) == 1
     assert cases[0].name == "museum conservation queue"
     assert cases[0].leakage_terms == ("museum conservation queue",)
+
+
+def test_include_default_cases_preserves_native_assignments_before_appending_supplement(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    module = _module()
+    rescue = module.model_profile_id_for_repair_tier("rescue")
+    case_file = _write_supplement(
+        tmp_path / "supplement.json",
+        case_id="supplemental-museum-clarification",
+        tags=(f"model-profile:{rescue}",),
+    )
+    captured: dict[str, object] = {}
+    monkeypatch.setattr(module, "_execute_matrix_campaign", lambda **kwargs: captured.update(kwargs) or 0)
+
+    assert module.main(
+        [
+            "--dist-dir", str(tmp_path / "dist"), "--temp-parent", str(tmp_path),
+            "--case-file", str(case_file), "--include-default-cases",
+        ]
+    ) == 0
+
+    native = module.assign_model_profiles(module.default_cases())
+    selected = tuple(captured["selected_cases"])
+    assert selected[: len(native)] == native
+    assert module.assign_model_profiles(selected) == selected
+    assert tuple(captured["planned_cases"]) == selected
+    assert module.case_model_profile(selected[-1]) == rescue
+
+
+@pytest.mark.parametrize("case_args", ((), ("--case-file", "")))
+def test_include_default_cases_requires_a_nonempty_case_file_before_acquiring_a_lease(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    case_args: tuple[str, ...],
+) -> None:
+    module = _module()
+    monkeypatch.setattr(module, "acquire_matrix_run_lease", lambda **_kwargs: pytest.fail("lease acquired"))
+
+    with pytest.raises(RuntimeError, match="at least one --case-file is required"):
+        module.main(["--dist-dir", str(tmp_path / "dist"), "--include-default-cases", *case_args])
+
+
+@pytest.mark.parametrize(
+    "profile_mode",
+    ("absent", "unknown", "multiple"),
+)
+def test_include_default_cases_requires_one_supported_explicit_profile(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    profile_mode: str,
+) -> None:
+    module = _module()
+    profiles = tuple(module.model_profile_id_for_repair_tier(tier) for tier in ("standard", "rescue"))
+    tags = {
+        "absent": (),
+        "unknown": ("model-profile:unknown",),
+        "multiple": tuple(f"model-profile:{profile}" for profile in profiles[:2]),
+    }[profile_mode]
+    case_file = _write_supplement(tmp_path / "supplement.json", case_id="supplement", tags=tags)
+    monkeypatch.setattr(module, "_execute_matrix_campaign", lambda **_kwargs: pytest.fail("executed"))
+
+    with pytest.raises(RuntimeError, match="exactly one supported explicit model profile"):
+        module.main(
+            [
+                "--dist-dir", str(tmp_path / "dist"), "--temp-parent", str(tmp_path),
+                "--case-file", str(case_file), "--include-default-cases",
+            ]
+        )
+
+
+@pytest.mark.parametrize(
+    "case_ids",
+    (("FLOOD-SHELTER-INTAKE",), ("supplement-duplicate", "SUPPLEMENT-DUPLICATE")),
+)
+def test_include_default_cases_rejects_normalized_duplicate_ids_before_execution(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    case_ids: tuple[str, ...],
+) -> None:
+    module = _module()
+    profile = module.model_profile_id_for_repair_tier("rescue")
+    paths = tuple(
+        _write_supplement(
+            tmp_path / f"supplement-{index}.json",
+            case_id=case_id,
+            tags=(f"model-profile:{profile}",),
+        )
+        for index, case_id in enumerate(case_ids)
+    )
+    monkeypatch.setattr(module, "_execute_matrix_campaign", lambda **_kwargs: pytest.fail("executed"))
+    arguments = ["--dist-dir", str(tmp_path / "dist"), "--temp-parent", str(tmp_path)]
+    for path in paths:
+        arguments.extend(("--case-file", str(path)))
+
+    with pytest.raises(RuntimeError, match="duplicate case IDs"):
+        module.main([*arguments, "--include-default-cases"])
+
+
+def test_include_default_cases_keeps_strict_lexical_controls(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    module = _module()
+    profile = module.model_profile_id_for_repair_tier("rescue")
+    case_file = _write_supplement(
+        tmp_path / "supplement.json",
+        case_id="supplement",
+        tags=(f"model-profile:{profile}",),
+        include_leakage=False,
+    )
+    monkeypatch.setattr(module, "_execute_matrix_campaign", lambda **_kwargs: pytest.fail("executed"))
+
+    with pytest.raises(RuntimeError, match="must define leakage_terms"):
+        module.main(
+            [
+                "--dist-dir", str(tmp_path / "dist"), "--temp-parent", str(tmp_path),
+                "--case-file", str(case_file), "--include-default-cases",
+            ]
+        )
+
+
+@pytest.mark.parametrize(
+    "protected_args",
+    (
+        ("--proof-tier", "release"),
+        ("--release-audit-file", "audit.json"),
+        ("--release-audit-repo-root", "sealed"),
+        ("--sealed-release-input-root", "sealed"),
+        ("--semantic-annotations-file", "annotations.json"),
+        ("--evaluation-split-manifest", "splits.json"),
+        ("--final-holdout-run-ledger", "ledger.json"),
+        ("--implementation-revision", "a" * 40),
+        ("--distribution-provenance-file", "provenance.json"),
+    ),
+)
+def test_include_default_cases_rejects_release_inputs_before_lease_or_claim(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    protected_args: tuple[str, str],
+) -> None:
+    module = _module()
+    monkeypatch.setattr(module, "acquire_matrix_run_lease", lambda **_kwargs: pytest.fail("lease acquired"))
+
+    with pytest.raises(RuntimeError, match="invalid --include-default-cases policy"):
+        module.main(
+            [
+                "--dist-dir", str(tmp_path / "dist"), "--case-file", str(tmp_path / "unused.json"),
+                "--include-default-cases", *protected_args,
+            ]
+        )
 
 
 def test_case_file_rejects_missing_leakage_terms_before_simulation(tmp_path: Path) -> None:
@@ -883,18 +1134,169 @@ def test_model_profile_release_proof_requires_all_tiers_under_strict_budgets() -
         )
     )
 
-    proof = module.model_profile_release_proof(results, require_complete=True)
+    positives_only = module.model_profile_release_proof(results, require_complete=True)
+    assert positives_only["status"] == "failed"
+    assert positives_only["lower_capability_scope"]["status"] == "unproven"
+    assert any("clarification/no-write control" in issue for issue in positives_only["issues"])
+
+    lower_profile_id = module.model_profile_id_for_repair_tier("standard")
+    clarifications = tuple(
+        _passing_clarification_profile_result(module, module.model_profile_id_for_repair_tier(tier), 20.0)
+        for tier in ("standard", "rescue")
+    )
+    complete_results = (*results, *clarifications)
+    proof = module.model_profile_release_proof(complete_results, require_complete=True)
     assert proof["status"] == "passed"
-    standard_profile_id = module.model_profile_id_for_repair_tier("standard")
-    assert proof["profiles"][standard_profile_id]["lower_capability"] is True
-    assert module.model_profile_release_proof(results[:-1], require_complete=True)["status"] == "failed"
+    assert proof["profiles"][lower_profile_id]["lower_capability"] is True
+    assert proof["profiles"][lower_profile_id]["committed_positive_case_count"] == 1
+    assert proof["profiles"][lower_profile_id]["clarification_no_write_control_count"] == 1
+    assert proof["lower_capability_scope"]["status"] == "passed"
+    assert len(proof["lower_capability_scope"]["observed_profiles"]) == 2
+    assert proof["lower_capability_scope"]["observed_profiles"][0]["model"] == "gpt-5.6-terra"
+    assert module.model_profile_release_proof(
+        (*results[:-1], *clarifications),
+        require_complete=True,
+    )["status"] == "failed"
     breached = replace(
         results[0],
         proposal_seconds=module.get_greenfield_model_profile(
             module.model_profile_id_for_repair_tier("standard")
         ).consumer_budget_seconds,
     )
-    assert module.model_profile_release_proof((breached, *results[1:]), require_complete=True)["status"] == "failed"
+    assert module.model_profile_release_proof(
+        (breached, *results[1:], *clarifications),
+        require_complete=True,
+    )["status"] == "failed"
+
+
+def test_model_profile_release_proof_rejects_obsolete_review_demoted_clarification() -> None:
+    module = _module()
+    profile_id = module.model_profile_id_for_repair_tier("standard")
+    results = (
+        _passing_profile_result(module, profile_id, 20.0),
+        _passing_clarification_profile_result(
+            module,
+            profile_id,
+            20.0,
+            reviewed=True,
+        ),
+    )
+
+    proof = module.model_profile_release_proof(results, require_complete=False)
+
+    assert proof["status"] == "failed"
+    assert proof["profiles"][profile_id]["committed_positive_case_count"] == 1
+    assert proof["profiles"][profile_id]["clarification_no_write_control_count"] == 0
+
+
+def test_model_profile_release_proof_reports_missing_lower_profile_as_unproven() -> None:
+    module = _module()
+    results = tuple(
+        _passing_profile_result(
+            module,
+            module.model_profile_id_for_repair_tier(tier),
+            20.0,
+        )
+        for tier in ("deep",)
+    )
+
+    proof = module.model_profile_release_proof(results, require_complete=False)
+
+    assert proof["status"] == "passed"
+    assert proof["coverage_status"] == "incomplete"
+    assert proof["lower_capability_scope"] == {
+        "status": "unproven",
+        "observed_profiles": [],
+        "role": "initial_authoring",
+        "requirement": "installed_committed_positive_and_source_bound_clarification_no_write",
+    }
+    assert module.model_profile_release_proof(results, require_complete=True)["status"] == "failed"
+
+
+@pytest.mark.parametrize("mutation", ["missing", "author_model", "author_timeout", "review_path", "outcome"])
+def test_model_profile_aggregate_rechecks_private_roles_despite_passed_label(mutation: str) -> None:
+    module = _module()
+    profile_id = module.model_profile_id_for_repair_tier("standard")
+    result = _passing_profile_result(module, profile_id, 20.0)
+    evidence = dict(result.evidence)
+    profile_evidence = dict(evidence["model_profile"])
+    stages = _stage_observation(profile_id)
+    if mutation == "missing":
+        stages = {}
+    elif mutation == "author_model":
+        stages["initial_authoring"]["provider"]["model"] = "gpt-5.6-sol"
+    elif mutation == "author_timeout":
+        stages["initial_authoring"]["timeout_seconds"] = 54.0
+    elif mutation == "review_path":
+        stages["source_review"] = {}
+    else:
+        stages = _stage_observation(profile_id, clarification=True)
+    profile_evidence["stage_observation"] = stages
+    evidence["model_profile"] = profile_evidence
+
+    proof = module.model_profile_release_proof(
+        (replace(result, evidence=evidence),), require_complete=False,
+    )
+
+    assert profile_evidence["status"] == "passed"
+    assert proof["status"] == "failed"
+    assert proof["profiles"][profile_id]["committed_positive_case_count"] == 0
+
+
+def test_model_profile_release_proof_ignores_forged_lower_metadata_and_missing_provider() -> None:
+    module = _module()
+    deep_id = module.model_profile_id_for_repair_tier("deep")
+    forged = _passing_profile_result(module, deep_id, 20.0)
+    evidence = dict(forged.evidence or {})
+    evidence["model_profile"] = {**evidence["model_profile"], "lower_capability": True}
+
+    forged_proof = module.model_profile_release_proof(
+        (replace(forged, evidence=evidence),),
+        require_complete=False,
+    )
+    assert forged_proof["status"] == "passed"
+    assert forged_proof["coverage_status"] == "incomplete"
+    assert forged_proof["lower_capability_scope"]["observed_profiles"] == []
+
+    unavailable = replace(
+        forged,
+        evidence={
+            **dict(forged.evidence or {}),
+            "model_profile": {
+                **dict(forged.evidence["model_profile"]),
+                "profile_id": module.UNAVAILABLE_PROVIDER_PROFILE,
+                "observed": {
+                    **dict(forged.evidence["model_profile"]["observed"]),
+                    "profile_id": module.UNAVAILABLE_PROVIDER_PROFILE,
+                },
+            },
+        },
+    )
+    unavailable_proof = module.model_profile_release_proof(
+        (unavailable,),
+        require_complete=False,
+    )
+    assert unavailable_proof["status"] == "failed"
+    assert unavailable_proof["lower_capability_scope"]["observed_profiles"] == []
+
+
+def test_model_profile_release_proof_rejects_unbound_or_writeful_lower_control() -> None:
+    module = _module()
+    standard_id = module.model_profile_id_for_repair_tier("standard")
+    positive = _passing_profile_result(module, standard_id, 20.0)
+    control = _passing_clarification_profile_result(module, standard_id, 20.0)
+    evidence = dict(control.evidence or {})
+    evidence["case"] = {**evidence["case"], "prompt_sha256": "not-source-bound"}
+    evidence["no_write"] = {**evidence["no_write"], "write_attempts": ["open"]}
+
+    proof = module.model_profile_release_proof(
+        (positive, replace(control, evidence=evidence)),
+        require_complete=False,
+    )
+
+    assert proof["status"] == "failed"
+    assert proof["lower_capability_scope"]["status"] == "unproven"
+    assert any("source-bound no-write proof" in issue for issue in proof["issues"])
 
 
 def test_model_profile_release_proof_rejects_elapsed_tier_relabeling() -> None:
@@ -941,7 +1343,7 @@ def test_unavailable_provider_proof_requires_fast_no_write_failure() -> None:
         "write_audit_active": True,
         "write_audit_error": "",
         "write_attempts": (),
-        "subprocess_attempts": (),
+        "subprocess_attempts": ("subprocess.Popen",),
         "changed_records": (),
         "staged_transaction_present": False,
     }

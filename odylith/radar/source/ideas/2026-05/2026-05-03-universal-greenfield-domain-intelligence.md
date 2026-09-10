@@ -61,19 +61,19 @@ supersedes:
 superseded_by: 
 
 ## Problem
-Empty or thin consumer repos could dead-end on broad project intent such as building an ecommerce site because Odylith treated missing app source as a hard refusal point instead of producing a confirmation-gated governance proposal. That made the consumer lane accurate but unhelpful, and it left Radar, Registry, Atlas, program waves, release planning, and validation strategy uncaptured until the operator supplied fully-formed governance fields.
+Empty or thin consumer repos could dead-end on broad project intent such as building an ecommerce site because Odylith treated missing app source as a hard refusal point instead of producing a confirmation-gated governance proposal. That made the consumer lane accurate but unhelpful, and it left Radar, Registry, Atlas, release planning, and validation strategy uncaptured until the operator supplied fully-formed governance fields.
 
 ## Customer
 Consumer-lane operators starting a new product, research project, science or math codebase, data platform, cloud platform, security workflow, device workflow, CLI, library, app, game, or education experience before source-backed boundaries exist.
 
 ## Opportunity
-Add an Odylith-owned confirmed greenfield path that turns vague or precise project intent into concrete backlog, program waves, provisional release plan, planned Registry components, Atlas topology, assumptions, risks, and validation obligations while keeping observed source, user intent, and Odylith assumptions distinct.
+Add an Odylith-owned confirmed greenfield path that turns vague or precise project intent into concrete backlog, a provisional release plan, planned Registry components, Atlas topology, assumptions, risks, and validation obligations while keeping observed source, user intent, and Odylith assumptions distinct.
 
 ## Proposed Solution
-Create a first-class `runtime/domain_intelligence` package that makes Odylith own the evidence/schema/proposal/apply layer end to end after Product Intent Confirmation. `odylith greenfield propose` stays a no-write Product Intent Confirmation path so the host can narrate product story, actors, systems, assumptions, ambiguities, and next choices in normal chat. After confirmation, `odylith greenfield create --confirm` builds an apply-ready proposal inside Odylith, validates the same product shape, runs a deterministic greenfield Tribunal, rejects disconnected or duplicated topology, writes only through owned Radar, Registry, Atlas, release-targeting, and Compass memory paths, and performs one final Radar/Registry/Atlas/Compass refresh after all accepted artifacts exist. `propose --confirm-intent --format json` remains an optional review/export artifact, not the default host-authored write path.
+The `runtime/domain_intelligence` package owns the complete evidence-to-transaction boundary. A pinned author proposes source-cited facts, actor/action events, a terminal result, assumptions and separately labeled design. The current v53 candidate adds one read-only complete-candidate reviewer inside the same model window; its native standard-tier gate failed, so this is not an adopted winning mechanism. Deterministic code verifies exact custody, projects every governed surface in isolated staging, validates the complete package, and seals one immutable `ProductCreateTransaction` before showing `CONFIRM`, `EDIT`, or `REJECT`. The confirmation command verifies receipt, hash and preconditions, publishes exact sealed bytes, and validates readback. It never interprets evidence, calls a model, generates artifacts, rebuilds persistent projections or repairs prose after confirmation. Current publication proves journaled recovery; package-level atomic visibility remains unqualified until all canonical readers resolve one atomic generation pointer.
 
 ## Research Signals
-External ecosystem checks argue against a narrow canned project taxonomy. GitHub Octoverse 2025 shows high-volume new repository creation, AI/agent growth, TypeScript-heavy application work, Python/Jupyter AI and data-science work, and private/product repos growing alongside public open source. CNCF organizes cloud-native work around infrastructure, delivery, observability, security, AI/ML, and runtime ecosystems. Apache describes mature open-source projects across data, cloud, search, libraries, geospatial, IoT, and related categories. NASA's software and open-data surfaces show science projects built from code, data, analysis pipelines, simulation/modeling tools, visualization, reproducibility, and sustained scientific libraries. Those signals prove greenfield intent is open-world; the durable contract is therefore generic product-first narration plus Odylith-owned apply-ready proposal generation, validation, topology hygiene, release targeting, program/wave formation, and durable memory.
+External ecosystem checks argue against a narrow canned project taxonomy. GitHub Octoverse 2025 shows high-volume new repository creation, AI/agent growth, TypeScript-heavy application work, Python/Jupyter AI and data-science work, and private/product repos growing alongside public open source. CNCF organizes cloud-native work around infrastructure, delivery, observability, security, AI/ML, and runtime ecosystems. Apache describes mature open-source projects across data, cloud, search, libraries, geospatial, IoT, and related categories. NASA's software and open-data surfaces show science projects built from code, data, analysis pipelines, simulation/modeling tools, visualization, reproducibility, and sustained scientific libraries. These historical signals motivate domain-neutral onboarding within the versioned operating envelope; they do not qualify unseen-input reliability. The fixed goal requires useful governance and durable learning without Greenfield programs or execution waves.
 
 ## Scope
 - Add no-write `odylith greenfield propose` for Product Intent Confirmation.
@@ -89,18 +89,20 @@ External ecosystem checks argue against a narrow canned project taxonomy. GitHub
 - Let the host model reason over any product, science, math, research,
   infrastructure, art, education, policy, device, data, or mixed project shape;
   do not constrain the proposal to an in-code domain list.
-- Require the confirmed proposal to carry concrete backlog candidates,
-  candidate Registry components, Atlas Mermaid sources,
-  program formation, wave-to-workstream policy, release strategy, validation
-  obligations, risks, assumptions, and open questions.
+- Require the staged proposal to carry concrete backlog candidates, candidate
+  Registry components, Atlas Mermaid sources, release strategy, validation
+  obligations, risks, assumptions, and open questions before confirmation.
 - Default apply-ready greenfield scaffolds must carry a multi-view Atlas
   architecture suite, not a token diagram pair: at minimum topology,
   first-slice sequence, component ownership, state/data contract, and
   validation/release topology; domain-specific profiles should add the
   operational-risk views the prompt makes material.
 - Preserve evidence separation: observed source, user intent, and Odylith assumptions must stay distinct.
-- Keep Odylith CLI proposal generation provider-free by default; the active host
-  model performs the reasoning already happening in the chat.
+- Select one pinned profile before authoring. Bound all model roles and package
+  work within the independent 60/90/120 consumer budgets; no retry ladder or
+  post-hoc tier promotion. Call count is a replaceable mechanism, not a substitute
+  for source fidelity, useful governance or measured completion.
+- Create no Greenfield programs, execution waves or associated residue.
 - Write only after explicit confirmation and reject missing or duplicated Atlas
   topology before any governed file changes.
 - Filter Compass timeline audit entries so zero-file prompt-intervention narration does not become fake implementation history.
@@ -123,62 +125,58 @@ External ecosystem checks argue against a narrow canned project taxonomy. GitHub
 - Depends on B-141 for the v0.1.14 host/runtime integrity lane: greenfield prompt routing must preserve low-latency host behavior, Intervention Engine separation, consumer-lane feature integrity, robust upgrade migration, and generated-surface refresh proof.
 
 ## Success Metrics
-Greenfield propose returns a low-latency, provider_calls=0 Product Intent Confirmation request for any vague or precise greenfield prompt.
+Greenfield propose returns a faithful, complete and reviewable transaction candidate for supported evidence, one focused material question when necessary, or an explicit unsupported-evidence or environment outcome. A timed-out clear, supported request is a qualification failure, not successful delivery. Model calls are bounded by the preselected profile; their count does not define product success.
 Product Intent Confirmation guidance requires scannable sectioned Markdown, short paragraphs, bullets where appropriate, and plain domain terms with no code ticks or decorative bold markers.
-Greenfield create confirmed by the operator builds an apply-ready proposal inside Odylith with backlog candidates, program waves, release plan, planned Registry components, draft Atlas Mermaid sources, assumptions, risks, validation strategy, open questions, and exact governed-write evidence.
-Provider-free greenfield scaffolds include a multi-view Atlas suite with mutually traceable workstream/component links; complex physical, analytical, and operational domains can add risk, safety, telemetry, deployment-boundary, and observability/audit views without hard-coded domain families.
+Before confirmation, Greenfield stages an apply-ready proposal with backlog candidates, release plan, planned Registry components, draft Atlas Mermaid sources, assumptions, risks, validation strategy, open questions, and exact governed-write evidence.
+Greenfield scaffolds include a multi-view Atlas suite with mutually traceable workstream/component links; complex physical, analytical, and operational domains can add risk, safety, telemetry, deployment-boundary, and observability/audit views without hard-coded domain families.
 Greenfield proposals carry a project-first brief before backlog: direction options, pre-coding checkpoints, coding-readiness gates, and host-independent commands must be visible in text and JSON before apply.
 Greenfield Registry component specs stay component-owned: they must not copy project-level risk/security/compliance posture into every dossier, and each spec must name the component's own boundary, outside-boundary exclusions, collaborators, interfaces, failure modes, proof obligations, first source path, most specific child workstream anchor, and component-local diagram set instead of project-wide topology links.
-Greenfield create/apply writes through owned Radar, Registry, Atlas, release-targeting, and Compass memory paths only after --confirm, preserving user_intent evidence and source-backed truth separation.
-Apply rejects missing Mermaid source, duplicated diagram source, incomplete proposal sections, and invalid evidence tiers before any governed write.
+Greenfield create writes the exact sealed Radar, Registry, Atlas, release-targeting, and Compass bytes only after hash-bound confirmation, preserving user-intent evidence and source-backed truth separation.
+The pre-confirm compiler rejects missing Mermaid source, duplicated diagram source, incomplete proposal sections, and invalid evidence tiers before any governed write.
 Apply/create closeout leads with the project workstream and readiness gates, then names the eventual first coding workstream as a later lane rather than the immediate next action.
 Host prompt routing avoids noisy raw Observation chatter for normal greenfield intents while preserving earned intervention paths.
-Greenfield create/apply runs a deterministic proposal Tribunal before any governed write and refreshes Radar, Registry, Atlas, and Compass once after all accepted artifacts are written.
+Greenfield compilation validates and seals every artifact and persistent projection before confirmation; commit-only create publishes those bytes and verifies readback without regenerating Radar, Registry, Atlas or Compass.
 Compass timeline audit filters zero-file prompt-intervention narration so routing notes do not render as fake implementation history.
+Standard, rescue, and deep complete the full installed proposal, confirmation, readback, recovery, browser, and quality path within 60, 90, and 120 seconds respectively, with no retry, tier cascade, or post-confirm semantic work.
 
 ## Current Completion Gate
-- Confirmed greenfield creation must compile accepted intent into a lossless
-  `ConfirmedIntentIR`, then a host-reasoned `SemanticModelIR`, then a
-  deterministic `ArtifactPlanIR` before rendering any governed surface.
-  Required semantic structures include `FirstPathContract`, `DomainOntology`,
-  `ComponentContract`, `ReleaseScope`, `WorkstreamContract`,
-  `DiagramEventGraph`, and `ProofObligation`.
-- Host reasoning owns ambiguity adjudication: actor/action/object sense,
-  state-object ownership, proof obligations, domain-risk posture, deferred
-  scope, and artifact destination. Every ambiguity decision must leave a
-  decision-ledger entry with source provenance and rejected interpretations.
-- Registry, Radar, Atlas, project intelligence, release topology, and proof
-  review must render from sanctioned `ArtifactPlanIR` projection fields instead
-  of independently re-parsing loose prose or seeing each other's surface syntax.
-- The quality gate must fail closed before writes on first-path drift,
-  provisional-title leakage, wrong-domain vocabulary, malformed ownership
-  grammar, dangling punctuation, clipped sentences, duplicated words,
-  proof-token soup, repeated proof walls, repeated sentence shape across
-  surfaces, deferred-scope leakage, and missing active-release topology.
-- PM, architect, engineer, and domain-expert review must produce typed
-  `ReviewReport` findings with codes, semantic node IDs, source-map targets,
-  projection IDs, severity, and repairability. Human-readable diagnostics are
-  output only; they must not be the repair-routing API.
-- Repair must return a typed `PatchSet` against `SemanticModelIR` or
-  `ArtifactPlanIR`, not rewritten public prose. Odylith rerenders only impacted
-  projections, reruns deterministic gates, and writes records only after the
-  final manifest passes.
-- Standard path target: complete post-confirm governed artifacts under 60
-  seconds with no host rescue. Rescue path target: allow one targeted
-  host-reasoned semantic/plan patch up to 90 seconds only when a final
-  semantic/quality gate fails and the failure bundle is repairable. 120 seconds
-  is reserved for explicit premium/deep repair or CI simulation, not default
-  operator flow.
-- Failed mechanism to avoid: do not grow regex/template towers or rendered-text
-  rewrite loops as the semantic repair strategy. Regex may support mechanical
-  parsing, tokenization, and formatting behind named owners; it must not own
-  product meaning, domain classification, ambiguity resolution, or premium
-  quality judgment.
-- The proof suite must include adversarial greenfield fixtures across unrelated domains and must assert zero leakage between fixture term signatures. Release custody now requires a platform domain-leakage gate before local-release build completion, standalone installed-matrix proof, and shared release proof; fixture terms may live in tests, governed evidence, evaluation corpora, and release notes, but not in runtime or shipped guidance defaults.
-- Completion requires an end-to-end `greenfield create --confirm` proof that produces premium, domain-specific Radar workstreams, Registry component contracts, Atlas diagrams, project story, release assignment, and Tribunal evidence without adding project-specific logic to Odylith product code.
+- One model-authored direct evidence graph owns semantic selection: exact source
+  facts, ordered events, terminal result, component ownership, assumptions, and
+  ambiguities. Deterministic code may derive coordinates, hashes, actor carry,
+  exact-overlap links, transaction structure, and projections, but must not
+  reinterpret prose or invent domain meaning.
+- Registry, Radar, Atlas, Project, release topology, and Tribunal surfaces render
+  only from the sealed graph and its custody-bound structural projections. They
+  must not reparse one another's Markdown, labels, or narrative copy.
+- Every transaction-material fact must have exact eligible source custody.
+  Material ambiguity produces at most one focused question; non-material gaps
+  remain explicit assumptions. An invalid response fails closed before preview.
+- There is no semantic retry stack. Standard, rescue and deep retain their
+  preselected profiles and full installed lifecycle limits of 60, 90 and 120
+  seconds respectively. The current two-role v53 candidate failed its native
+  standard gate; neither its component tests nor a timely error qualifies it.
+- The quality gate must fail closed before confirmation on missing meaning,
+  cross-surface drift, malformed ownership, clipping, repetition, disconnected
+  topology, invalid Registry contracts, private-custody leakage, or incomplete
+  release proof. Evaluators must compare typed structure and sealed payload
+  fidelity instead of inferring quality from regex-classified prose.
+- CONFIRM is commit-only. It verifies the reviewed hash and preconditions,
+  publishes exact sealed bytes and validates readback. Before publication a
+  failure aborts safely; after observed publication it verifies or enters
+  recovery rather than silently rolling back. Any model call, evidence parsing,
+  artifact or persistent-projection generation, semantic repair, or prose repair
+  after confirmation is forbidden. All-reader atomic visibility remains open.
+- Failed mechanisms to avoid: regex/template semantic towers, rendered-text
+  rewrite loops, fixture-specific vocabulary, independently generated recovery
+  transactions, retry cascades, and stale evaluator expectations that reward a
+  superseded schema rather than consumer utility.
+- Completion requires one immutable distribution to pass fresh public standard,
+  rescue, and deep cases end to end with complete governance, browser, recovery,
+  host-parity, exact-readback, and independent quality proof. Only then may the
+  operator authorize the one-shot protected holdout.
 
 ## Validation
-- Unit tests for the Product Intent request contract, open-world confirmed proposal generation, required Mermaid sources, duplicate-topology rejection, program waves, release plan, CLI JSON, host greenfield routing, component authoring user-intent metadata, and Compass zero-file intervention chatter filtering.
+- Unit tests for Product Intent custody, materiality, complete proposal generation, meaningful diagram depth, absence of programs/waves, sealed-byte publication, CLI JSON, deterministic host confirmation, component evidence and Compass zero-file narration filtering.
 - CLI proof for `odylith greenfield propose --format json` on empty/thin repo posture.
 - Governance proof through Casebook, Radar, Registry, Atlas, and Compass refreshes.
 - Browser proof for refreshed Radar, Registry, Atlas, Casebook, and Compass surfaces after generated assets update.
@@ -2687,11 +2685,269 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   Browser-state proof, rebuilt exact dist, installed replay, recovery laws, and
   a fresh untouched holdout remain mandatory.
 
+- 2026-09-02 compact direct-evidence graph checkpoint replaces the failed v3
+  installed mechanism with one model-authored fact/event/terminal/component
+  graph and deterministic exact custody. The bounded public comparison passes
+  standard, rescue, and deep authoring in `37.463s`, `44.556s`, and `87.369s`;
+  the reduced v15 production contract passes a fresh standard call in
+  `29.524s`, complete Greenfield runtime/install proof at `594/594` and
+  `432/432`, and the normal/compact/blank/degraded Project browser matrix at
+  `4/4`. The obsolete 828-line relation compiler and redundant model-authored
+  event/proof links are removed without adding semantic regexes or retries.
+  B-142 remains in implementation until the rebuilt immutable package passes
+  the exact installed `60/90/120` transaction, recovery, browser/readback, and
+  quality matrix, followed by independent public adjudication and the
+  explicitly approved untouched holdout.
+
+- 2026-09-02 immutable-matrix correction: revision `c2208bb7e` built cleanly
+  but failed the exact installed public matrix `0/3` before confirmation because
+  two responses omitted source-present transaction-material facts and one
+  response supplied an impossible exact-quote ordinal. Intent-authoring v16 now
+  requires all five material fact classes, constrains component owners to
+  selected product-system or title facts, and leaves impossible ordinal
+  normalization to deterministic exact-byte custody. It adds no semantic regex,
+  retry, or tier cascade. Corrected standard, rescue, and deep source
+  discriminators pass in `36.362s`, `30.353s`, and `60.315s`, and widened proof
+  passes `153/153`. The mechanism remains provisional until a rebuilt immutable
+  package passes the complete installed public gate.
+
+- 2026-09-02 installed workstream-visibility correction: revision
+  `9bcdce790` completed the exact standard, rescue, and deep model calls within
+  budget in `36.589s`, `31.545s`, and `72.587s`, but failed closed `0/3` before
+  transaction staging because the project row could not cite the first-path
+  fact exclusively owned by the workflow row. Authored-workstream-semantics v4
+  preserves one semantic owner and gives the integrative project explicit
+  shared citations;
+  absent optional presentation facts fall back only to exact selected
+  product-story, first-actor, state/path, and proof facts. It adds no regex,
+  prose parser, model call, retry, or repair cascade. All three recorded public
+  responses now compile completion-ready and the authored/model suite passes
+  `122/122`. B-142 remains in implementation until a rebuilt immutable package
+  passes the complete installed public gate.
+
+- 2026-09-02 v8 event-restatement correction: immutable revision `ced54a967`
+  passed two public cases at full package quality and within budget, but the
+  rescue case failed closed after its one model call restated an event that did
+  not match the already selected exact path fact. Intent-authoring v17 removes
+  model-authored event text, ordinal, actor kind, and carry state. Ordered exact
+  first-path facts are the event spans; deterministic custody derives those
+  structural fields while the model retains the semantic actor/action/target,
+  recovery, terminal, and ownership decisions. This reduces the contract and
+  code surface without regex, retries, or post-confirm work. Source proof is
+  `81/81` focused, `610/610` complete Greenfield runtime, and `459/459`
+  install/release. B-142 remains in implementation pending the separate
+  recovery-identity correction and a rebuilt exact installed matrix.
+
+- 2026-09-02 recovery-identity source correction: the v8 installed recovery
+  gate rejected a cloned, byte-identical runtime before SIGKILL injection
+  because compiler identity included resolved absolute source paths. The
+  compiler identity v5 contract hashes the fixed logical post-confirm source
+  names and their bytes, so install-root relocation is stable while any covered
+  byte change still invalidates confirmation before writes. Focused provenance
+  and recovery proof passes `49/49`; the complete Greenfield runtime and
+  install suites pass `611/611` and `459/459`. `CB-325` records the escaped
+  proof defect and bans per-phase reauthoring, receipt rewriting, or drift-guard
+  weakening. B-142 remains in implementation until an immutable installed
+  recovery run crosses the former failure phase and the unchanged public
+  `60/90/120` matrix passes.
+
+- 2026-09-02 terminal-result contract alignment gate: exact immutable candidate
+  `1fe4209b3` failed closed during the installed recovery proof's single
+  authoring call, before compiler-identity verification, fault injection, or
+  governed writes. The direct-evidence graph accepts an exact terminal result
+  from any selected source fact, while the later authored-semantics validator
+  independently accepts only first-path, proof-boundary, or success-metric
+  evidence. Align both owners on one explicit set of selected output, path, and
+  proof fields and pin the cross-owner contract. Do not add a retry, semantic
+  regex, prose parser, fallback tier, or second model call. B-142 remains in
+  implementation until the rebuilt installed recovery proof crosses the
+  identity guard and the unchanged public `60/90/120` matrix passes.
+
+- 2026-09-02 terminal-result source correction: intent-authoring v18 and
+  authored-semantics v9 now share one typed set of eligible selected facts:
+  Product Story, Opportunity, Product View, Success Metric, First Path, and
+  Proof Boundary. The model owns the exact terminal meaning and quote;
+  deterministic code verifies only field eligibility and byte custody. The
+  selected-output regression, widened contract pack, complete Greenfield
+  runtime suite, and install suite pass `2/2`, `113/113`, `612/612`, and
+  `459/459`. No semantic regex, prose reparser, retry, extra model call, or
+  post-confirm work was added. B-142 remains in implementation pending rebuilt
+  immutable recovery and the unchanged public `60/90/120` matrix.
+
+- 2026-09-02 exact v10 recovery-provenance reopen: immutable candidate
+  `f26925486` crossed authoring and staging, then the isolated SIGKILL phase
+  failed closed before injection because `repo_root_fingerprint` still hashed
+  the absolute checkout path. No governed write occurred. Runtime identity v5
+  removed one location dependency, but this adjacent provenance field retained
+  it. Replace the path digest with a stable repository-context policy marker;
+  preserve the sealed managed-file fingerprints, active-generation identity,
+  transaction hash, receipt, and runtime-byte guards. Bump compiler identity
+  and prove relocated success plus real repository-state drift rejection. Do
+  not reauthor per phase or weaken fail-closed preconditions. B-142 remains in
+  implementation before the unchanged public `60/90/120` matrix.
+
+- 2026-09-02 recovery repository-context source correction: compiler identity
+  v6 removes the remaining absolute checkout digest and records one stable
+  repository-context policy. Safety remains content-bound through the sealed
+  write-set hash, managed before-fingerprints, active generation, transaction
+  bytes, compiler receipt, and runtime-byte identity. Relocated transaction
+  admission and real drift controls pass in the focused `65/65` proof; the
+  complete Greenfield runtime and install suites pass `614/614` and `459/459`.
+  No receipt rewrite, per-phase reauthoring, or precondition weakening was
+  added. B-142 remains in implementation pending immutable installed recovery
+  and then the unchanged public `60/90/120` matrix.
+
+- 2026-09-03 typed-fact cardinality reopen: immutable dist-v11 crossed the
+  corrected recovery provenance boundary, then the public standard-tier case
+  failed before transaction staging because the one-pass model emitted more
+  than one citation for a scalar intent field. `CB-326` identifies the owning
+  abstraction: one heterogeneous fact array cannot express scalar versus
+  repeated cardinality, so prompt prose and a downstream rejection still share
+  the contract. Replace that array with one closed typed fact object whose
+  scalar keys accept one citation or null and whose repeated keys accept
+  bounded ordered citation arrays. Remove the superseded flat contract; do not
+  add regex semantics, response rewriting, a retry, or another model call.
+  B-142 remains in implementation until the rebuilt installed recovery proof
+  and unchanged public `60/90/120` matrix pass.
+
+- 2026-09-03 typed-fact cardinality source correction: intent-authoring v19
+  makes scalar multiplicity unrepresentable with a closed fact object while
+  keeping bounded arrays for repeated facts. It removes the superseded flat
+  response path and its post-hoc singular-field rejection. Aggregate citation
+  limits, exact byte custody, one-pass model ownership, and fail-closed writes
+  remain intact; no regex, retry, response repair, or case exception was added.
+  Focused authoring/custody proof passes `140/140`, complete Greenfield runtime
+  passes `616/616`, and install/release passes `459/459`. B-142 remains in
+  implementation pending immutable installed recovery and the unchanged public
+  `60/90/120` matrix.
+
+- 2026-09-03 product-owner alias reopen: clean immutable dist-v12 accepted the
+  typed v19 fact object, then the public standard-tier case failed before
+  staging because the selected product title and one internal system shared an
+  exact source label. `CB-327` traces three duplicate identity consumers across
+  event, actor, and component custody. Replace them with one typed product-owner
+  resolver that treats a title plus one exact internal-system label as one
+  identity, preferring the narrower system path, while retaining fail-closed
+  rejection for cross-kind collisions and multiple indistinguishable internal
+  systems. Do not add prompt-only warnings, regexes, retries, or response
+  rewriting. B-142 remains in implementation pending rebuilt recovery and the
+  unchanged public `60/90/120` matrix.
+
+- 2026-09-03 product-owner alias source correction: authored-semantics v10
+  centralizes product identity for the direct graph and sealed validator. A
+  title plus one same-label internal system resolves to the narrower system
+  path; multiple internal paths and product/human collisions still fail closed.
+  Focused, complete runtime, and install/release proof passes `92/92`,
+  `618/618`, and `459/459`. A fresh one-call standard-profile authoring run on
+  the same public case passes with four grounded events in `26.465s`. No regex,
+  retry, response mutation, or extra model call was added. B-142 remains in
+  implementation pending immutable installed recovery and the unchanged public
+  `60/90/120` matrix.
+
+- 2026-09-03 v13 recovery-clone and downstream-owner reopen: immutable dist-v13
+  crossed the corrected product-owner authoring boundary and injected SIGKILL,
+  but recovery stopped because the proof clone had dereferenced the installed
+  `current` runtime symlink into a non-versioned directory. A phase-local,
+  version-bound clone corrects that harness defect and rejects external runtime
+  targets. The next installed call then exposed the same owner alias in Radar:
+  direct and sealed semantics used the canonical internal-system path, while
+  backlog citation independently rematched the component label against both
+  title and system facts. Radar now consumes the shared canonical owner map, and
+  the alias regression builds the complete proposal through all backlog rows.
+  Focused proof passes `35/35`, complete Greenfield runtime passes `618/618`,
+  and install/release passes `460/460`. No semantic regex, retry, response
+  repair, additional model call, or post-confirm interpretation was added.
+  B-142 remains in implementation pending rebuilt immutable recovery and the
+  unchanged public `60/90/120` matrix.
+
+- 2026-09-03 immutable v14 public winning-candidate proof: clean dist-v14 from
+  candidate `62bcdd8147e47874e984483b48fb1fb0a20ca413` passes the unchanged
+  installed standard, rescue, and deep cases in `44.315s`, `44.053s`, and
+  `66.854s`, inside the exact `60/90/120` proposal budgets. Commit-only create
+  completes in `1.712s`, `1.733s`, and `1.752s`; every package scores
+  release-quality `10/10`. Browser proof passes `3/3`, and installed SIGKILL
+  recovery, operator-conflict preservation, fsync rollback and retry,
+  same-hash idempotency, generation readback, and cleanup pass without issues.
+  `CB-325`, `CB-326`, and `CB-327` are fixed pending release. The winning
+  candidate keeps one model-authored direct evidence graph, exact typed custody,
+  one shared product-owner map, deterministic projection, no semantic regex,
+  no retry or tier cascade, no second model call, and no post-confirm
+  interpretation. B-142 remains in implementation because the public matrix is
+  descriptive evidence, not a universal guarantee; approved correction and
+  one-shot execution of the untouched protected revision-6 evaluation package
+  remain the next release gate.
+
+- 2026-09-03 protected evaluation contract rejection: approved access closed
+  the two independent-review P1s inside the revision-6 package, and its
+  standalone eight-case custody validator passes with zero errors. The product
+  release preflight still rejects the package because its intent-authoring v2
+  and custom manifest/corpus schemas do not match intent-authoring v19,
+  evaluation-splits v4, or final-holdout v4. Eight cases also cannot satisfy
+  the frozen minimum of four independent observations for each of three
+  complexity bands and three pinned model profiles. CB-328 owns this release
+  evidence defect. The one-shot ledger remains absent and the winning candidate
+  remains frozen. Replace the package directly with independently authored,
+  current-contract evidence; do not bridge the stale schema, lower floors, or
+  change production behavior. B-142 remains in implementation until pure
+  contract and leakage preflight pass and that replacement holdout completes
+  its single installed run.
+
+## Current-Contract Protected Holdout Adjudication (2026-09-03)
+
+- A blind 21-case final-holdout v4 package passed independent review and pure
+  release preflight, then ran exactly once against immutable dist-v14. The
+  standard, rescue, and deep maxima remained inside `60/90/120`; recovery,
+  unavailable-provider behavior, and cleanup passed. Release quality did not.
+- CB-315 owns the reproduced clarification-before-write breach. CB-323 retains
+  the two direct-evidence graph completeness failures. CB-329 owns the
+  release-only snapshot omission, duplicate evaluator semantics, and missing
+  retained proof. CB-328 is fixed
+  pending release because the stale-package class was replaced by a valid
+  current-contract package.
+- The next bounded wave must move ownership, not add rules: one pure
+  clarification decision before persistence; structurally complete terminal
+  and component relations; a release snapshot that carries every canonical
+  projection;
+  product-parser reuse for Atlas; governed-write-only observation; strict
+  point acceptance separated from achievable confidence reporting; and raw
+  artifact retention through adjudication. The disclosed corpus is regression
+  evidence only. No new blind holdout may start until focused regressions and
+  unchanged public `60/90/120` proof are green.
+
 ## Test Strategy
+- The v21 replacement makes authored and clarification responses structurally
+  exclusive, makes the first event explicitly human-owned, and removes
+  redundant actor/action restatement. Standard `terra/high` and rescue
+  `sol/high` pass the three bounded live probes in `40.259s`, `5.686s`, and
+  `56.592s`; focused, complete runtime, install/release, mirror/Atlas, and
+  semantic-regex proof pass `211`, `633`, `507`, `48`, and `4` tests. Treat
+  this as candidate evidence only. The next decision is the frozen installed
+  14-case public matrix with exact `60/90/120`, raw response retention,
+  recovery/readback, and 28 browser-state cells per accepted package. A public
+  failure rejects the mechanism; a full pass permits one newly blind holdout.
+- The current convergence checkpoint replaces the parser/repair mechanism with
+  one v20 source-cited typed graph and deletes 30 obsolete modules / 4,927
+  lines. An executed public proposal trace reports zero semantic regex callers;
+  the combined source gate passes 1,171 tests, the maintained fast/lifecycle
+  targets pass 445/208, and the full desktop/mobile browser-state contract
+  passes 28/28 with zero clipping or overflow. This evidence freezes the
+  mechanism pending immutable installed proof; do not add another parser,
+  vocabulary, retry, repair tier, second model call, or post-confirm semantics.
+- The 2,518-line generated shell stylesheet has one bounded five-line mobile
+  wrapping exception in this release. After the Greenfield release gate closes,
+  B-142 must extract coherent shell layout ownership below the red-zone limit
+  before unrelated stylesheet growth; this decomposition must preserve the
+  source/generated/bundle parity contract and rerun the 28-cell browser matrix.
 - Historical under-30 timing notes above are standard-path evidence snapshots.
   The active release contract is standard post-confirm under 60 seconds without
   host rescue, rescue under 90 seconds with one targeted semantic or plan patch,
   and 120 seconds only for explicit premium/deep repair or CI simulation.
+- The v20 immutable public candidate is a losing mechanism at `4/14`: deep
+  passed `4/4`, while standard and rescue passed `0/10` inside `60/90` seconds.
+  The next bounded wave replaces the flat authored/clarification response shape
+  and redundant actor-surface obligation, adds externally retained raw
+  adjudication evidence, then reruns the same public gate. The blind holdout
+  remains unspent until that public matrix passes every case.
 - Run focused unit tests for domain intelligence, host routing, component
   authoring, CLI dispatch, show capabilities, and Compass transaction filtering
   with the active Python interpreter, for example `python -m pytest -q
@@ -2712,3 +2968,154 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
 - Should a future signed domain-pack marketplace augment host reasoning with
   curated evidence, examples, and validators after v0.1.14 ships the open-world
   host-reasoned baseline?
+
+## V21 Rejection And V22 Ordered-Event Convergence (2026-09-03)
+
+- Reject immutable v21 wheel
+  `727e28500619a2912f6b61d59726698aafc385f15195a6d608d0b212483b6868`.
+  The public campaign stopped at `1/3` completed cases after pediatric agency
+  exposed a disconnected State and Evidence view and semiconductor custody
+  failed pre-staging under the forced human-start contract. Browser rendering,
+  latency, and commit-only behavior were not the cause.
+- V22 removes the human-start/following split and represents the selected
+  first path as one ordered list of identical typed actor/target/recovery
+  edges. Product-led workflows remain product-led; selected human users stay
+  visible as typed facts without requiring an invented human action. Exact
+  target containment, source custody, terminal result, component ownership,
+  one-call authorship, and all transaction laws remain fixed.
+- State and Evidence now draws a dotted result-to-proof edge only when the
+  exact accepted visible result is contained in the accepted proof boundary;
+  unrelated facts remain unconnected rather than gaining a fictional causal
+  edge. Focused proof passes `74/74`, Greenfield runtime `636/636`, and
+  install/release `507/507`. Live standard security and rescue semiconductor
+  proposals stage successfully; the thin assay request returns the required
+  single clarification without staging.
+- The next admissible step is one governance-synced immutable rebuild followed
+  by the complete public `14/14` `60/90/120`, quality, browser, readback, and
+  recovery gate. A repeated independent failure rejects v22. A full pass alone
+  permits commissioning one new blind holdout.
+
+## V22 Rejection And V23 Source-Bound Target Candidate (2026-09-03)
+
+- Reject v22 as a winning mechanism. After Flood passed the complete installed
+  path at `10/10` in `56.711s`, Pediatric failed pre-staging in `44.015s` when
+  its one model response selected `children served across multiple schools` as
+  an exact Customer fact and as the event target, while the narrower aligned
+  event fact did not repeat that target. The selected Product Story contained
+  both exact facts. This same public case had passed an independent v22 run, so
+  strict target-in-event containment creates a recurring nondeterministic false
+  negative. Semiconductor then passed in `42.814s`; the campaign stopped
+  because `14/14` was already impossible.
+- A bounded comparison rejected retaining strict event-only target containment
+  and rejected deleting event targets, which would erase component
+  `event_targets` and proposal/Tribunal `target_entity` meaning. V23 retains one
+  optional typed target and accepts it only when it is either an exact event
+  substring or an exact selected fact co-contained with the event by another
+  selected fact. The same predicate owns direct compilation, sealed validation,
+  atomic custody, and release scoring. It performs no tokenization, regex
+  interpretation, phrase matching, retry, repair, or additional model call.
+- The exact retained pediatric response now compiles with its target atom bound
+  to `/customer`; invented targets and selected-but-unrelated targets still fail
+  closed. A fresh one-call pediatric rescue proposal staged in `45.56s`, inside
+  the non-negotiable 90-second budget. Focused target proof passes `96/96`, the
+  complete Greenfield runtime suite passes `638/638`, and the installed-lane
+  Greenfield suite passes `509/509`.
+- V23 is not yet a winner. Freeze one immutable build and require the unchanged
+  public `14/14` `60/90/120`, `10/10`, browser, readback, and recovery gate.
+  Only that full pass permits commissioning a newly blind holdout.
+
+## V23 Rejection And V29 Qualification Gate (2026-09-04)
+
+- Reject v23. Its public run completed eleven in-budget packages, but review
+  proved adjacent target acceptance, false location dependency, repeated
+  missing-field prose, unearned expert scores, and a conditional confirmation
+  path. These are independent P1 classes even though the campaign's stopping
+  assay result was itself an evaluator false negative.
+- V29 deletes cross-fact target co-containment, uses an exact non-regex decision
+  protocol, renders absent source facts as explicit gaps, centralizes evaluator
+  receipt semantics, and replaces the accumulated authoring instructions with
+  one shorter typed contract. A fresh pediatric rescue transaction passed the
+  known discriminator in `48.79s`; semantic-retirement proof passes `80/80` and
+  the focused post-broad-gate corrections pass `31/31`.
+- The complete frozen source suite passes `3,790/3,790` in `275.35s`. The next
+  gate is deliberately unchanged: build immutable bytes, then require public
+  `14/14` quality, `60/90/120` latency, browser, readback, recovery, and three
+  independent reviews. Commission a newly blind holdout only after all public
+  evidence is green. Do not add another prompt layer, regex rule, retry, or
+  post-confirm interpretation if v29 fails.
+
+## V29 Rejection And V30 Bounded Comparison (2026-09-04)
+
+- Reject immutable v29 wheel `2c7bcd38317938ddba15a0b8668c0c1a25271818786759a35905b827b4e9ac4d`.
+  Its first public case stayed inside the deep 120-second envelope and proved
+  sealed commit-only custody plus `28/28` browser states, but canonical meaning
+  collapsed five executable human actions into one broad product event and an
+  ambiguity-only predicate emitted a redundant Component Boundary View.
+- Retain the winning parts: one model-authored source-cited graph, exact typed
+  custody, deterministic projection, exact CONFIRM/EDIT/REJECT, and commit-only
+  publication. Replace only the failed event and artifact-eligibility contracts:
+  require model-authored exact action and event-actor quotes, immediate identical
+  actor carry, and boundary views backed by distinct typed boundary evidence.
+- Falsify v30 first on the unchanged flood discriminator. It must preserve the
+  outer product capability as component ownership, yield the complete ordered
+  city-staff workflow and consent-state linkage, omit the redundant boundary
+  diagram, and pass source quality with one call. Only then rebuild immutable
+  bytes and restart the unchanged public `14/14`, `60/90/120`, browser, readback,
+  recovery, and three-review gate. Do not commission a blind holdout early.
+
+## V30 Source Qualification (2026-09-04)
+
+- The unchanged flood discriminator passed in one `49.80s` deep authoring call:
+  direct customer `city staff`, five source-ordered human events, five exact
+  action/object bindings, the broad product capability retained as component
+  ownership, and no redundant D-004. Exact hash-bound publication took `1.06s`
+  for `83` sealed writes and passed readback.
+- A thin ecommerce request returned the required one-question, no-write material
+  clarification in `13.64s`. Focused Greenfield and Compass contracts pass
+  `1,525/1,525`; deterministic diff inspection finds no added semantic regex,
+  phrase matcher, keyword rule, retry, or second model call.
+- Keep v30 provisional. The next decision gate is one immutable installed build
+  against all fourteen unchanged public cases, exact `60/90/120` tier budgets,
+  package quality, normal/empty/degraded desktop and mobile browser evidence,
+  readback, recovery, and three independent reviews. Commission a new blind
+  holdout only after that gate is entirely green.
+
+## V30 Immutable Rejection And V31 Profile Gate (2026-09-04)
+
+- Reject immutable v30 wheel
+  `d3804d736b9dab468fb352455dbc87aa30c131068e945c593822cfb8e0a23d2d`.
+  Six public cases passed at hard `10/10` with one model call, complete
+  packages, browser proof, and proposal times of `48.056-56.242s`; the seventh
+  standard case failed closed at `56.377s` before staging. Its authoring
+  observation is zero bytes, which localizes the failure to the
+  `gpt-5.6-terra/high` `55s` response envelope rather than graph compilation.
+- Preserve the V30 semantic and transaction mechanisms. V31 is a bounded
+  one-variable model-profile comparison: first test `gpt-5.6-terra/medium`,
+  then a faster single-call profile only if needed, on the exact failed request
+  and one independent standard stress request. Predict materially lower latency
+  with unchanged source-cited event completeness. Remove the losing profile;
+  add no retry, cascade, parser, phrase rule, or second call.
+- Rebuild immutable bytes only after the winning profile passes source quality
+  and focused contracts. Restart the public campaign from case one and require
+  `14/14`, exact `60/90/120` budgets, browser, recovery, readback, and three
+  independent reviews before commissioning a newly blind holdout.
+
+## V31 Source Profile Selection (2026-09-04)
+
+- `gpt-5.6-terra/medium` wins the bounded single-call comparison. The exact V30
+  failure stages a complete five-event transaction in `29.410s`, versus V30's
+  zero-response failure at `56.377s`; exact commit-only publication takes
+  `1.3s`, writes `60` sealed files, and passes readback. The independent
+  open-source security embargo stress case stages in `36.689s`, versus
+  `56.242s` on Terra high, without losing its five events, customer, evidence,
+  non-goal, or visible result.
+- Pin `greenfield-standard-gpt-5.6-terra-medium-v6`; delete the superseded
+  standard high profile instead of retaining a ladder. Rescue and deep remain
+  the explicit preselected Sol-high `90/120` profiles. Focused profile,
+  authoring, custody, and envelope proof passes `96/96`; the complete
+  Greenfield runtime, integration, and install source gate passes
+  `1,123/1,123` in `141.13s`. Live/bundle surface parity, hygiene, and Compass
+  normal/fallback/degraded browser regression proof passes `130/130`.
+- This is source qualification, not release proof. Build one clean immutable
+  V31 distribution and restart the unchanged public campaign from case one.
+  The blind holdout remains sealed.

@@ -1,17 +1,351 @@
 # Domain Intelligence
-Last updated: 2026-09-01
+Last updated: 2026-09-10
 
 
 ## Overview
 
+The shared Greenfield host decision transport must consume CONFIRM, REJECT and
+incomplete decisions before native model dispatch. Supplying developer context
+alone is not a stop mechanism. Only EDIT with supplied new evidence may continue
+into pre-confirm compilation. Native activation and user-visible completion are
+separate proof obligations from callback equality and commit-kernel correctness.
+Native source-local confirmation has nonempty sealed-byte and retry evidence;
+fixed pre-confirm author/review doubles do not establish semantic quality. Hook
+registration uses the common Codex document owner rather than an independent
+Greenfield registration format or a host-name-based claim of eligibility.
+Claude 2.1.202 also shows the full deterministic receipt in native text output
+after real publication and retry, with no inference requests. Its 96-file
+after-image and 214-file unchanged retry are mechanical proof, not live quality.
+Codex receipt visibility, installed activation and timeout/error behavior remain
+unqualified; native discovery or a successful callback alone cannot close them.
+Native Claude command-hook timeout is now a witnessed fail-open boundary: the
+hook is invoked, its output is absent, and CONFIRM reaches model dispatch without
+publication. Eligibility must include fault-safe termination and visible outcomes,
+not only successful callback behavior. CB-304 retains the counterexample.
+
+Exact decisions now use the existing foreground deadline owner with a 10-second
+inner budget beneath managed 20/30-second native hook limits. Managed expiry
+returns a blocked, hash-bound environment outcome; it must not reach model
+reasoning. Cancellation preserves an admitted interrupted publication so the
+same-hash retry re-verifies the existing journal, immutable generation and complete
+write set before closing. Actual publication drift remains fail-closed; no new
+recovery state or artifact repair is introduced. A browser-open expiry after
+verified commit keeps CLOSED and the exact reviewed-generation link. Unregistered
+hosts return read-only before repository access; callback registration still does
+not establish offer eligibility or native activation. The bounded native Claude
+control emits the full recovery reason with zero local inference requests, while
+the outer-timeout control reaches the detector once. Arbitrary host timeout,
+startup failure, trust skipping and desktop visibility remain unqualified.
+These controls do not prove authored-package quality or the 60/90/120 envelope.
+
+The published predecessor population is ordinary unactivated governance, not the
+later development JSON/journal formats: all eight current release wheels through
+v0.1.14 were inspected with asset-digest and build-provenance matching. Retained
+development recovery evidence remains protected. CB-305 now includes a concrete
+existing-install readiness failure: a public-CLI simulated upgrade succeeded but
+never activated the complete baseline required by proposal admission. The existing
+activation owner now completes only after terminal successful dashboard rendering.
+The upgrade parent retains its writer lock through the target-runtime render-only
+worker and rendering subprocesses; only the parent activates or publishes. Failure
+and incomplete result coverage cannot authorize publication. Focused lifecycle,
+completion and process-death checks pass. A frozen full runtime run passes 4,500
+tests. Strengthened installed smoke and a genuine published-v0.1.14 refusal followed
+by same-repository hosted upgrade prove baseline/readback and unavailable-author
+safety for an empty predecessor. They do not prove model quality or populated
+governance migration. Failed
+rendering may leave working drift requiring recovery; this repair does not claim
+automatic restoration or general descendant cleanup. No general
+consumer schema converter or completed migration assessment is implied.
+
+The generation store uses the sealed write-set hash as its immutable address.
+Sealed tree fingerprint reconstruction follows the same path-component order as
+live traversal, including prefix-sharing file and directory names. This preserves
+existing valid payloads and preconditions without weakening byte or mode checks.
+Exact manifest bytes are compiled after that hash and sealed inside the outer
+ProductCreateTransaction; CONFIRM validates and copies them without generating a
+manifest. The durable commit journal binds the distinct confirmation hash to the
+write set and manifest digest, owns reviewed-history resolution, and protects
+shared historical generations during abort cleanup. Legacy generation layouts
+remain preserved and require explicit migration before new-runtime recovery.
+Current source uses one presealed HTML entry for publication, with exact W,
+manifest and entry-byte custody. The journal owns admitted transaction approval;
+the publication store derives the predecessor from sealed W. Live shell writes
+use a separate working filename while immutable snapshots retain index.html.
+Completed first-run rendering activates a baseline before proposal authoring.
+Published dashboard status is now part of the existing sealed tooling payload.
+The renderer classifies all three bundle outputs, so custom HTML cannot inject
+mutable status probes through shared canonical JS filenames. Context Engine
+telemetry remains outside managed fingerprints; its last-update provenance and
+version state are captured at render time. This does not prove comprehensive
+engine health. Supported later publication captures changed status without
+mutating a pinned predecessor; canonical reopening, not automatic following of
+an immutable URL, discovers the successor. CB-305 retains installed recovery
+qualification and complete current-view UX as open obligations.
+Later writers recover interrupted creates, reject unexplained working drift,
+and publish immutable successors after successful readback. Explicit selective
+sync can admit existing authored Casebook narratives, plan bodies, living specs
+and catalog-mapped Mermaid sources under the same writer lock. The immutable
+preimage and retained publication must identify the same generation. Only the
+selected regular-file bytes may differ; modes, protected CLI-owned regions and
+all unselected managed inputs stay fixed. Selected intent is rechecked after
+the operation and against the compiled successor. Authored spec dates remain
+permitted; generated Requirements Trace content does not become authored.
+Clean writers do not perform this admission parsing. Failed refresh preserves
+authored intent and the previous published view, but may leave derived working
+drift; ordinary failed-writer recovery remains a separate CB-305 obligation.
+JSON authority and
+supersession-to-live fallback are removed. Explicit migration and interrupted
+activation proof in installed repositories remain open under CB-305. Supported
+doctor repair now validates arguments and restores only the exact missing shell
+before normal writer admission. Every writer locks before its publication-state
+read; bootstrap uses the same lock-owned activation phase. ProductCreate requires
+an active predecessor before preview and in the sealed commit contract, and direct
+compilation charges readiness verification to the existing latency budget.
+The existing shared repository read lock holds that baseline through deterministic
+staging, sealing and transaction verification; neither authoring nor review holds
+the lock. Pending-decision writes and CONFIRM retain their separate exclusive
+admission. A failed cooperating writer cannot enter the staging interval.
+The tested real Atlas/Radar crash transitions are coherent before recovery, but
+focused journal, activation, SIGKILL and carrier controls do not establish complete
+dashboard UX, clean installation or all-reader atomicity, and do not relax 60/90/120.
+Installed recovery and matrix proof must resolve active immutable bytes through
+the publication entry and prove exact transaction approval independently through
+the admitted journal. The entry must not acquire an approval field merely to
+preserve an obsolete proof fixture. The first frozen integrated rerun exposes
+sixteen install-proof and five baseline-fixture failures; it is diagnostic, not
+release acceptance. Runtime fixture correction passes seventeen focused checks;
+the two installed-proof owners now follow the publication/journal split and pass
+97 focused checks. Full integrated reruns and genuine clean installation remain
+required at that historical checkpoint; the subsequent unchanged 3,152-file tree
+passes 4,473 runtime tests and 1,111 install-unit tests, builds the full distribution
+and passes canonical clean-install/upgrade smoke. The smoke's unavailable-author
+control does not prove positive generation. Browser results retain 308 passes,
+four fixture failures and one skipped diagnostic case. Baseline activation and
+historical unactivated setup corrections now pass six Project and three focused
+Casebook/migration checks without relaxing admission. A settled full-browser rerun
+and current-simulator upgrade/recovery adjudication remain open. These checks do
+not establish native host eligibility, active-generation manual-edit reconciliation,
+complete installed activation recovery, model quality or consumer latency.
+The supported failed-upgrade path now retains the old working/published baseline:
+the install manager defers target-pin writes until activation smoke passes and
+recovers runtime/launcher on raised smoke errors. Eleven focused checks and nine
+lifecycle-simulator tests pass, including subsequent successful command admission.
+This closes that bounded source failure, not arbitrary crash or legacy migration.
+The later unchanged 3,153-file tree passes 4,473 runtime, 1,345 install
+unit/integration and 312 browser checks, with one skipped diagnostic fixture.
+Full distribution and canonical local-release smoke pass; installed readback
+confirms exact baseline identity and the corrected manager bytes. Root CLI's
+clarification fixture now proves unchanged activated publication/managed content;
+the actual migration-assessment gate remains open. These results qualify a
+development checkpoint, not native confirmation, semantic quality, complete
+consumer UX, legacy migration or the 60/90/120 contract.
+The frozen kernel revision passes 4,336 runtime tests and 1,106 install unit
+tests, with the final holdout explicitly excluded. Independent four-edge
+readback resolves the demonstrated ancestor-symlink defect. These checks do not
+establish native host parity, migration usability, complete consumer quality,
+or the browser publication law. Full receipts and failures remain at
+`/private/tmp/odylith-generation-seal-proof.90CkQs/review.md`.
+
+The capability-support Atlas projector groups each proposed component's complete
+responsibility, verification and exact supported source-action references locally.
+Repeated source IDs preserve many-to-many support, not new events, performance
+ownership or execution chronology. Actor headers and action text are separated;
+state/result/proof/non-goals remain edge-free. The old shared support graph is
+removed. No authoring, schema, model, deadline or post-confirm contract changes.
+The bounded source-local fixture passes 144 focused/native checks, 32 surface
+cells and two reading journeys; the settled tree passes 4313 runtime tests and
+1101 install tests. The earlier test-environment failure remains recorded.
+Mobile panning and maximum-density readability are not qualified. Evidence:
+`/private/tmp/odylith-atlas-local-support.ppgSjH/`.
+
+The latest bounded author-coherence revision stages one complete museum package
+in 54.296589 seconds with a 48.257923-second model interval. It passes the product
+60/55 band but misses the predeclared 50/45 headroom gate. The second case is
+cancelled; no retry or CONFIRM occurs. The candidate paragraph and test assertions
+are removed after frozen readback, so this does not change the current production
+author contract or establish a winner. Independent model triage finds no
+substantiated P0/P1 in this sample; 34 bounded browser checks pass. Required input
+meaning survives accepted evidence/readiness despite missing redundant graph
+edges. Exchange precision, shallow context detail, dense capability edges and
+mobile/copy limits remain; five artifacts are not final diagram-quality proof.
+Evidence: `/private/tmp/odylith-first-run-coherence.OpJ5Ms/actual/museum_conservation_intake/`.
+
+The preceding native Fast experiment fails to deliver a package: authoring
+takes 32.096728 seconds and review takes 14.018430 seconds, denying a proposed
+workflow/design inconsistency. The command returns an error at 46.395096 seconds;
+A plus R alone exceeds the stricter 45-second comparison headroom target. Source
+constraints survive and all 366 consumer files remain unchanged. This is neither
+a timing success nor a qualified Fast mechanism. Requested and served tier remain
+distinct; no retry, default change or deadline relaxation follows. Evidence:
+`/private/tmp/odylith-fast-execution-gate.ivieTi/actual/timing-custody-review.md`.
+
+Native admission candidate failed its standard-tier gate: authoring consumed
+50.496233 seconds, leaving 4.498808 seconds for review. The reviewer returned no
+verdict and the command failed at 55.441175 seconds before producing a complete
+package. Source-local v53 has truthful two-role receipts and fail-closed deadline
+guards, but is not a qualified winning mechanism. The earlier external
+54.974559-second pass had only 25 milliseconds of model-window headroom and did
+not establish robustness. Consumer 60/90/120 and all quality/release gates remain
+fixed. Evidence: `/private/tmp/odylith-v53-native-admission.G4DKq8/proposal-report.json`.
+
+Prewrite compilation explicitly owns a temporary refresh-root lifetime. Compass
+still renders its canonical timeline, workstreams, risks and local facts, and may
+reuse only exact validated narration. The temporary root cannot queue or launch
+detached narration jobs; a cold brief remains explicitly unavailable. Durable
+repositories retain normal background warming. No job is handed to CONFIRM.
+Three pre-fix lifecycle controls fail. The corrected source passes 4311 runtime
+tests, 1101 install tests and 34 synthetic staged-browser checks; native synthetic
+success, malformed-output and timeout controls admit no unexpected dispatches.
+These are development-lane proofs, not real-model or installed-release qualification.
+This removes extra work ownership, not the separately measured author latency.
+
 Domain Intelligence owns the Greenfield evidence-to-transaction boundary. One
-pinned authoring-model response selects source-cited facts and typed relations;
-deterministic code verifies exact custody, projects the complete governed package,
+pinned model authors source-cited facts and typed relations alongside a required,
+separately labeled provisional design. Source-local v53 uses one author and one
+read-only full-candidate reviewer inside the same 55/80/105 model windows and
+fixed 60/90/120 consumer limits. Review receives at most 20 seconds and only
+remaining time, including setup and validation; no repair call or retry follows.
+Invalid authoring and material clarification do not invoke review. Deterministic code verifies
+exact custody, binds design in the existing relation hash, projects the complete governed package,
 and validates it before confirmation. Each pending package is immutable and
-hash-addressed, and accepted bytes publish as one transaction-addressed generation.
+hash-addressed, and accepted bytes publish under journaled rollback and readback.
+All-reader atomic generation-pointer publication remains unqualified.
 Codex and Claude transport the same exact hash-bound `CONFIRM`, `EDIT`, and
 `REJECT` contract. No evidence interpretation, model call, artifact generation,
 or prose repair runs after confirmation.
+Every handled exact decision retains its approval hash through busy, stale and
+recovery outcomes, including the visible recovery text sent through host hooks.
+Retry and correction guidance carries the full hash-bound
+command; it never asks the operator to recover identity from a mutable latest
+proposal. Only a rejected bare command has no supplied hash to retain.
+
+The admitted receipt records both real roles and binds complete candidate,
+source and Product Intent hashes. Compiler and commit-only canonicalizers retain
+nested model timings while the final consumer elapsed observation remains volatile.
+Native approval and release scoring share the same metadata-only author/reviewer
+receipt validator. A claimed quality-lens pass cannot bypass current version,
+role, timing or admission requirements; scoring also binds reviewed facts to
+the committed facts summary. Independent semantic lenses still require their
+own evidence and are not inferred from a structurally valid receipt.
+Review cannot change accepted meaning, assumptions or proposed design. It hard-blocks
+material source loss, contradiction or unsafe choices, not optional implementation
+detail or weak but grammatical practical-need copy. Structural custody and model
+admission remain evidence, not a universal semantic oracle.
+
+The bounded v52 integration replaces only terminal-result location selection:
+`result_fact` identifies an eligible raw source-fact field and one-based row;
+`result_occurrence` selects strictly within that fact's exact quote. Existing
+fact compilation owns global source location and preserves raw row identities
+through exact duplicate collapse. The result inherits those verified bytes and
+canonical projection, without global result counting, remapping, or a second
+interpretation. Producer-event identity and sealed semantics remain unchanged.
+Independent custody review and 43 focused tests support this replacement.
+One actual standard proposal stages a useful 5/5/5 package in 44.982 seconds
+(one 38.908-second model call), but is rejected: matching-before-publication is
+missing from canonical source constraints and becomes only proposed sequence.
+Its five handoffs inherit that omission. The exact offline preview passes 32
+browser matrix cells, 20 diagram reading journeys and 30 handoff/selection checks;
+those checks do not establish semantic acceptance or publication. Complete source
+coverage, all-tier timing, installed creation and release qualification stay open.
+
+The design owns 4–5 logical components, 4–5 workstreams, exchanges, verification
+and one proposed first-run walkthrough;
+it supports exact source-event identities without transferring actor authority.
+Registry and Radar project it directly. Atlas preserves source context and four
+labeled proposed views: first run, exchanges, delivery dependencies and support.
+The source-only backlog projector is retired.
+The v53 candidate is not release-qualified: independent semantic regression,
+complete-package UX, exact transaction, timing and clean-distribution proof remain
+required. Synthetic fixture counts are not proof of useful product design.
+A retained v52 pre-confirm counterexample accepts an exact operator invocation
+as product_story. Its replacement requires fresh semantic qualification; a passed
+custody/structure manifest is not proof of source entailment. Component exchange
+direction also does not establish an implementation dependency. Keep exact
+exchanges and explicit workstream prerequisites under their distinct owners.
+
+System Context is a source-ownership view, not a participant inventory alone.
+The projector groups complete exact events by typed human, product or external
+performer and connects only the corresponding selected node to that group.
+Nonperforming participants stay edge-free; absent participants produce no empty
+container. Product-only sources retain their actions, objects and output purposes
+without inventing a human reviewer. Proposed First Run is the separate ordering view.
+These projections use existing relations; they do not infer performers, create
+new semantic facts or change confirmation behavior.
+
+Authored semantics v16 preserves source-event IDs independently of execution
+rank. Exact operational-constraint facts own source-precedence evidence; edges
+reference their existing one-based indexes, without a second citation store.
+Provisional design v2 owns the proposed permutation and its bounded rationale.
+The existing relation hash binds both. The explicit visible-result producer may
+occur anywhere in that walkthrough; required archive or cleanup actions are not
+dropped or moved before it. Atlas uses labeled solid source-prerequisite arrows
+and dotted proposed next steps. CLI preview, Project, semantic views and handoffs
+use the same proposed-run owner; Registry/Radar support references retain source
+IDs. Canonical and browser checks reject cross-surface order or authority drift.
+One permutation does not prove support for mutually exclusive branches, loops or
+all concurrency. Those generalization limits remain unqualified, not silently
+excluded from the product goal.
+
+Project handoff v3 keeps operational constraints and non-goals in distinct
+source-bound fields and distinct, exact-copy prompt sections. Preconfirm checks
+both bindings and the copied scope content against canonical intent. Required
+operations must never become excluded work. Authored proposals no longer expose
+synthetic re-propose commands as transaction review; their dead shaping serializer
+is removed. The transaction-owned final CONFIRM/EDIT/REJECT rail is unchanged.
+The first v51 live request stages in 48.988 seconds, but independent review rejects
+that unchanged package for these handoff defects. Corrected synthetic/browser
+evidence must not be presented as acceptance of the rejected live transaction.
+The correction passes 1034 Greenfield runtime and 1036 install/browser checks,
+plus a fresh synthetic native 32-cell matrix and exact 113-file readback. Actual
+desktop/mobile selection retains both scope categories and source line breaks;
+the owning handoff style uses pre-wrap without header or layout changes.
+Flat-workstream handoff now uses canonical allocations and explicit release
+membership, validates prerequisite closure, and selects a dependency-free task in
+canonical design order. The positional/alias fallback and dead component-handoff
+builder are removed. Handoff v3 binds the selected ID, title, component references,
+deliverable and verification separately from full release context. One shared
+scope block leads copyable Project prompts; preconfirm checks canonical bindings
+and exact visible copy. Readiness also keeps required and excluded facts distinct.
+Final proof passes 1085 Greenfield and 1035 install/Project browser tests, plus
+32 native synthetic surface cells and exact 113-file readback. Ten actual copy
+checks and Radar navigation pass across two widths. The runtime change removes
+a net 219 lines. This does not resolve semantic-role admission, general live
+quality, mobile readability or installed-release qualification.
+
+Atlas display values use one native Mermaid decimal-entity encoder, not HTML
+escaping or downstream prose repair. Entity/markup-looking input remains literal
+in node and relationship labels. Render-job selection preserves the existing
+authored authority: if both native renderer routes fail, authored views fail
+closed rather than entering the lossy static subset renderer. Legacy non-authored
+fallback is unchanged. Fresh native literal-text and seven-surface browser proof
+supports this source-local display contract, not complete visual, semantic,
+deadline or release qualification.
+
+The 2026-09-07 title-capability comparison is rejected for adoption: copying a
+product story into an accepted responsibility silently expands its source role.
+Its one under-60-second flood success does not clear that defect or establish
+complete-package quality. The v50 source-local replacement instead permits an
+empty source-capability inventory and removes terminal-to-product synthesis.
+Explicit capabilities still need exact citations and typed owners; product
+events retain their existing owners. Product story remains a description, not
+a new capability fact. Mandatory provisional design supplies package depth.
+Authored proposal validation delegates diagram custody to the existing Atlas
+validator instead of requiring a second source-component inventory. Relation
+annotation v4 reports absent optional capabilities as not applicable, never a
+fabricated passing sample; explicit omissions and required global relation
+evidence still fail closed. Older semantic contracts are not silently migrated.
+
+The unchanged flood request stages a 4/4/5 package in 36.426 seconds with one
+30.431-second standard Terra/low call, compared with the prior source-ownership
+rejection. Fresh native replay passes 32 desktop/mobile cells, ten Atlas views
+and exact 113-file readback without post-confirm generation. This is one
+development discriminator, not envelope-wide reliability or release approval.
+Independent review accepts the bounded ownership removal but rejects this flood
+package for inferred workflow order, contradictory constraint/consent exchanges
+and absent provisional sensitive-data safety planning. The separate invocation
+P1, complete-package quality, mobile usability, installed migration and untouched
+holdout gates remain open. A structural passed manifest cannot override these
+semantic/design findings.
 
 ## Boundary
 
@@ -30,27 +364,163 @@ or prose repair runs after confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-08-10 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+- **2026-09-08 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_component_owned_state.py`, `tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py`
-- **2026-08-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_create_commit.py`, `src/odylith/runtime/surfaces/greenfield_host_confirmation.py`
+- **2026-09-07 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 1 verifiable artifact reference.
   - Scope: B-142
-  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_canonical_meaning.py`, `tests/integration/runtime/test_greenfield_component_contract_preconfirm.py`
-- **2026-08-08 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`
+- **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
-  - Evidence: `src/odylith/runtime/common/prose_tail.py`, `src/odylith/runtime/domain_intelligence/greenfield_component_outputs.py`, `tests/unit/runtime/test_greenfield_code_hygiene.py`
-- **2026-08-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`
+- **2026-09-07 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
-  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py`, `tests/unit/runtime/test_greenfield_transaction_intent_authority.py`
-- **2026-08-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_event_ordering.py`
+- **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-06-greenfield-sealed-intent-cannot-prove-atomic-accepted-fact-custody.md`, `src/odylith/runtime/domain_intelligence/greenfield_atomic_fact_ledger.py`, `tests/unit/runtime/test_greenfield_prompt_workflow_custody.py`
-- **2026-08-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `src/odylith/runtime/domain_intelligence/proposal_validation.py`, `tests/unit/runtime/test_greenfield_source_component_ownership.py`
+- **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_prompt_evidence_interpretation.py`, `tests/fixtures/greenfield-release-corpus/retired-ba25-final-holdout-regressions.v1.json`
+  - Evidence: `sha256:54a42d7ec1a2fb0bbfacf5bd84e0a653a1c55c219136385a6b85a20277d60060`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_design_views.py`, `src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-09-07: Bound temporary prewrite refresh roots so Compass can render without queuing or launching detached narration. Exact-cache and explicit unavailable states remain unchanged, as does durable-repository warming. The settled source passes 4311 runtime tests, 1101 install tests and 34 synthetic staged-browser checks, plus native synthetic success/malformed/timeout controls. Real-model quality, timing and installed-release qualification remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
+
+- 2026-09-04: Qualified v30 on the unchanged flood source discriminator. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-303`, `CB-329`; Diagram: D-043)
+  One deep model call completed in `49.80s`, chose `city staff` as the direct
+  customer, preserved five independently executable human actions with exact
+  actor/action/target custody, retained the outer product capability as component
+  ownership, and emitted three useful Atlas diagrams without D-004. Exact
+  commit-only publication took `1.06s` for `83` sealed writes and passed
+  readback. The mechanism remains provisional until an immutable installed build
+  passes all public latency, quality, browser, recovery, and review gates.
+
+- 2026-09-04: Rejected v29 and bounded v30 to event fidelity plus artifact eligibility. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-303`, `CB-329`; Diagram: D-043)
+  Immutable public evidence proved the transaction kernel and `28/28` browser
+  states but rejected a graph that collapsed five human actions into one broad
+  product event and emitted an ambiguity-only self-nested boundary view. The
+  replacement keeps one source-cited model author and deterministic custody,
+  adds exact model-authored event action and event-actor quotes with immediate
+  identical actor carry, and admits a boundary artifact only for distinct
+  component, external-system, or non-goal evidence. The release evaluator must
+  accept either a canonical Mermaid edge or distinct typed containment, never a
+  generic edge quota. The unchanged flood case is the falsification gate before
+  any rebuilt public matrix.
+
+- 2026-09-03: Replaced event-only target containment with one source-bound typed target contract. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  A target remains optional and model-selected, but it is accepted only when it
+  is an exact event substring or an exact selected fact co-contained with the
+  event by another selected fact. Direct compilation, sealed validation,
+  atomic custody, and release scoring reuse the same deterministic predicate.
+  This preserves Registry component `event_targets` and proposal/Tribunal
+  `target_entity` meaning without parsing prose or adding regex, phrase rules,
+  retries, repairs, or a second model call. The exact retained Pediatric v22
+  failure now compiles, negative controls remain fail-closed, a fresh rescue
+  proposal stages in `45.56s`, and focused/runtime/install proof passes
+  `96/96`, `638/638`, and `509/509`. Immutable public `14/14` proof remains
+  required before this v23 candidate can be called a winner.
+
+- 2026-09-03: Proved the direct-evidence mechanism across the immutable public operating envelope. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-303`, `CB-325`, `CB-326`, `CB-327`; Diagram: D-043)
+  Clean dist-v14 from candidate
+  `62bcdd8147e47874e984483b48fb1fb0a20ca413` passes unchanged installed
+  standard, rescue, and deep requests in `44.315s`, `44.053s`, and `66.854s`
+  inside the exact `60/90/120` proposal budgets; commits complete in `1.712s`,
+  `1.733s`, and `1.752s`. All three packages score release-quality `10/10`,
+  browser proof passes `3/3`, and SIGKILL, operator-conflict, fsync, rollback,
+  retry, readback, idempotency, and cleanup proof passes without issues. The
+  candidate retains one source-cited model response, exact typed custody, one
+  shared product-owner projection, deterministic compilation, and commit-only
+  post-confirm publication. No semantic regex, retry cascade, second model
+  call, or post-confirm interpretation is active. Protected revision-6
+  evaluation remains untouched and is the next approval-gated release test.
+
+- 2026-09-03: Extended canonical product-owner identity through Radar and kept recovery clones trust-valid. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-325`, `CB-327`; Diagram: D-043)
+  The installed recovery harness preserves the active-version symlink and
+  rebinds it to a phase-local managed runtime, rejecting targets outside the
+  seed's version store. Radar consumes the same canonical title/internal-system
+  owner map as direct and sealed semantics instead of independently rematching
+  component labels. The alias regression now builds the complete proposal and
+  verifies every backlog owner citation. Focused, complete runtime, and
+  install/release proof passes `35/35`, `618/618`, and `460/460`. No regex,
+  retry, response rewriting, extra model call, or post-confirm interpretation
+  was introduced. Rebuilt immutable recovery and public matrix proof remain
+  open.
+
+- 2026-09-03: Unified Greenfield product-owner identity across authored and sealed semantics. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-327`; Diagram: D-043)
+  Authored-semantics v10 provides the single product-owner projection contract
+  used by direct event compilation, component ownership, and later validation.
+  An exact title plus one internal-system alias binds to the narrower system
+  path; multiple indistinguishable internal systems and product/human label
+  collisions remain invalid. Focused, complete runtime, and install/release
+  proof passes `92/92`, `618/618`, and `459/459`; a fresh one-call source-local
+  standard case passes in `26.465s`. No regex, retry, response rewriting, or
+  post-confirm interpretation was introduced. Immutable installed recovery and
+  public matrix proof remain open.
+
+- 2026-09-03: Encoded Greenfield source-fact cardinality in the model response schema. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-326`; Diagram: D-043)
+  Intent-authoring v19 replaces the heterogeneous flat fact array with one
+  closed typed object. Scalar keys accept one exact citation or null; repeated
+  keys accept bounded ordered citation arrays, and deterministic custody still
+  enforces the aggregate citation envelope. The retired flat response and its
+  downstream singular-field rejection are removed in the same change. The
+  semantic boundary remains one model call with exact quote verification and
+  no regex, retry, response rewriting, or post-confirm interpretation. Focused,
+  complete runtime, and install/release proof passes `140/140`, `616/616`, and
+  `459/459`; immutable installed recovery and public matrix proof remain open.
+
+- 2026-09-02: Made Greenfield repository provenance relocatable without weakening state preconditions. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-325`; Diagram: D-043)
+  Compiler identity v6 replaces the absolute checkout digest with the stable
+  `sealed_managed_fingerprints_and_active_generation_v1` policy marker. The
+  write boundary still verifies the sealed write-set hash, managed before-state,
+  active generation, transaction and receipt bytes, and runtime-source bytes.
+  Focused relocation and true-drift proof passes `65/65`; complete Greenfield
+  runtime and install suites pass `614/614` and `459/459`. Immutable installed
+  fault and retry proof remains required.
+
+- 2026-09-02: Unified terminal-result evidence across the direct graph and sealed semantics. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  Intent-authoring v18 and authored-semantics v9 share one typed terminal-source
+  contract: selected Product Story, Opportunity, Product View, Success Metric,
+  First Path, or Proof Boundary facts may ground the exact visible result.
+  Selected actors, states, constraints, and other facts cannot. The model still
+  chooses the exact result and source fact; deterministic code only verifies
+  its typed field and byte custody. Focused contract proof passes `113/113`,
+  the complete Greenfield runtime suite passes `612/612`, and the install suite
+  passes `459/459`. Immutable installed recovery and public-matrix proof remain
+  required.
+
+- 2026-09-02: Made post-confirm compiler identity stable across byte-identical install roots. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-325`; Diagram: D-043)
+  Compiler identity v5 hashes the fixed logical post-confirm source names and
+  their bytes instead of resolved absolute installation paths. Copying one
+  sealed seed repo into isolated recovery phases therefore preserves identity,
+  while any covered source-byte change still rejects confirmation before the
+  write boundary. Focused provenance and recovery proof passes `49/49`; the
+  complete Greenfield runtime and install suites pass `611/611` and `459/459`.
+  Immutable installed crash-recovery and public matrix proof remain required.
+
+- 2026-09-02: Bound release judgment to the canonical authored transaction instead of retired prose contracts. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  Immutable candidate `d607fc8d3` completed fresh standard, rescue, and deep
+  packages in `51.921s`, `64.916s`, and `70.079s`, inside the exact
+  `60/90/120` budgets. The correction admits authored component specs through
+  Registry's source-boundary and dated-history contract, exposes the six stable
+  Tribunal roles, checks browser story cards against the sealed typed payload,
+  and reuses one sealed transaction across recovery fault phases. Semantic
+  selection remains one model-authored direct evidence graph; no regex parser,
+  retry cascade, or post-confirm generation was introduced. Full source proof
+  passes `609` Greenfield runtime and `458` Greenfield install tests; rebuilt
+  immutable installed proof remains required.
+
+- 2026-09-01: Opened model-profile contract v3 as a bounded availability candidate. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  A three-case exact-distribution run proved that sharing one Spark binding made
+  standard, rescue, and deep fail together when that model's credits were
+  exhausted. The candidate keeps one preselected provider call and the exact
+  60/90/120 budgets while binding standard to Luna medium, rescue to Terra high,
+  and deep to Sol high. It is not release evidence until the same public cases
+  pass installed transaction, readback, browser, recovery, quality, and sealed
+  profile proof without retries or post-hoc tier promotion. The maintainer proof
+  controller must load this checked-out contract from the candidate source tree;
+  an older Odylith package installed in the host virtual environment is never
+  profile truth for a detached release candidate.
 
 - 2026-09-01: Sealed explicit coordinated-actor carry in authored-semantics v7. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   The model marks an omitted coordinated subject with occurrence zero; the
@@ -1959,9 +2429,12 @@ This section captures synchronized requirement and contract signals derived from
   source-derived outcomes; they may promote a parsed terminal choice only when
   a prior real event entails it and owns a choose/select action.
 - `greenfield_commit_transaction.py` owns the exact post-confirm runtime-source
-  inventory included in compiler identity. Lower-level commit and CLI traces
-  must each equal their explicit executed subset; new imports may not enter the
-  confirmed path through wildcard or implicit provenance.
+  inventory included in compiler identity. Identity hashes stable logical source
+  names and bytes, never deployment-root paths; byte-identical runtimes may move
+  between install roots, while any covered byte drift must fail before writes.
+  Lower-level commit and CLI traces must each equal their explicit executed
+  subset; new imports may not enter the confirmed path through wildcard or
+  implicit provenance.
 - `greenfield_repository_write_set.py` owns the exact pre-confirm repository
   mutation: approved managed paths, before/after tree fingerprints, file bytes,
   modes, file deletions, empty-directory creation/deletion, symlink refusal,
@@ -3199,7 +3672,223 @@ This section captures synchronized requirement and contract signals derived from
   installed matrix, lifecycle/recovery/host-parity, browser-state, and untouched
   one-shot holdout proof remain required.
 
+- Greenfield intent-authoring v20 consolidates the direct-evidence graph and
+  makes the pre-persistence decision boundary explicit
+  without adding another parser. The one model-authored graph must classify an
+  exactly source-cited material unknown or omission as `material_ambiguity` and
+  return the existing typed clarification sentinel before graph derivation or
+  staging. Clarifications carry no terminal object. Authored graphs select only
+  a terminal result phrase and occurrence; Domain Intelligence derives its
+  placement from the final ordered event. Component rows select only product
+  owners and align positionally with the already ordered selected
+  responsibility facts. Count mismatches, conflicting event owners, invalid
+  result custody, and unresolved material evidence fail closed. The superseded
+  terminal-order, responsibility-restatement, and conflict-only evidence fields
+  are rejected rather than adapted. This remains one source-cited model call,
+  deterministic exact custody, no semantic regex, no retry cascade, and no
+  post-confirm interpretation. Thirty obsolete parser/repair modules and 4,927
+  lines are deleted; an executed public-proposal trace finds no semantic regex
+  caller. Structured Project rendering now projects exact typed Focus, actor
+  event, First Path, capability, and product-boundary nodes instead of joining
+  them into prose. The full source gate passes `1,171` tests, maintained fast
+  and lifecycle runners pass `445` and `208`, the Chromium contract passes all
+  `28/28` desktop/mobile state cells with zero clipping or overflow, and an
+  independent review reports no P0/P1. Exact installed `60/90/120`, immutable
+  candidate, recovery/readback, and newly blind one-shot holdout proof remain
+  mandatory before release closure.
+- Authored-workstream-semantics v4 keeps evidence ownership exclusive while
+  making visibility explicit: the
+  integrative project workstream cites canonical facts owned by specialized
+  workflow, boundary, and proof rows through `shared_fact_refs`. This is a
+  citation edge, not a second semantic interpretation. When optional authored
+  presentation facts are absent, required backlog fields use exact selected
+  product-story, first-human-actor, state/path, and proof facts; a supplied
+  product view retains precedence. Specialized workstreams share only the
+  minimum canonical customer context and workflow opportunity fallback needed
+  for a complete row. Immutable revision `9bcdce790` exposed the prior false
+  exclusivity as a `0/3` installed compiler failure after in-budget model calls;
+  all three recorded responses now compile completion-ready and the
+  authored/model suite passes `122/122`. Rebuilt installed proof is pending.
+
+## Historical Greenfield V29 Semantic Ownership (superseded by current research basis)
+
+- One pinned host-model call owns the complete source-cited product graph. Its
+  compact typed contract distinguishes product outcome, work item, action
+  clause, dependency, proof boundary, visible result, and component owner.
+- Deterministic code owns exact citation custody, relation alignment, actor
+  carry state, projection, transaction integrity, confirmation, and readback.
+  It does not reinterpret product prose.
+- Event targets must be exact substrings of their own event. Cross-fact
+  co-containment is not semantic proof and is no longer accepted.
+- Missing Problem, Opportunity, or distinct Product View remains absent from
+  accepted facts. The author supplies one conservative, differentiated decision
+  assumption, visibly labeled in the required field. Product Story and gap
+  notices are never reused as semantic filler.
+- CONFIRM and REJECT use an exact hash-bound token protocol. EDIT alone accepts
+  trailing evidence and creates a new pre-confirm authoring transaction.
+- Canonical Greenfield semantic boundaries do not import regex or parser-era
+  helpers. The release evaluator reuses product-owned typed receipt contracts
+  and never promotes structural validation into independent expert approval.
+
+## Historical Greenfield V31 Standard Profile (single-call policy superseded)
+
+- Standard Greenfield authoring pins exactly one
+  `greenfield-standard-gpt-5.6-terra-medium-v6` request inside the fixed
+  60-second consumer budget and 55-second model window. Rescue and deep remain
+  explicit pre-call Sol-high profiles inside the fixed 90/120-second budgets.
+- The profile selector has no fallback ladder, retry, elapsed-time promotion,
+  or second model call. Typed source-cited meaning remains owned by the sole
+  authoring response; deterministic code owns exact custody, validation,
+  projections, transaction integrity, confirmation, and readback.
+- The V30 standard high profile is superseded after a zero-response public
+  timeout. Terra medium stages that exact request in `29.410s` and an
+  independent standard stress request in `36.689s` without losing event,
+  customer, evidence, scope, state, or result fidelity. Focused source proof
+  passes `96/96`; the complete Greenfield runtime, integration, and install
+  source gate passes `1,123/1,123`; live/bundle shell parity, hygiene, and
+  Compass normal/fallback/degraded browser proof passes `130/130`. Immutable
+  installed public proof remains pending.
+
 ## Research Basis
+
+### Current bounded correction after V31 independent rejection
+
+- Intent-authoring v37 owns typed assumptions (`applies_to`, `statement`).
+  `greenfield_authored_assumptions.py` validates their target and preserves their
+  provisional custody. Problem, Customer, Opportunity, and Product View each have exactly
+  one cited fact or one assumption; consumed decision assumptions are not
+  repeated in the generic assumptions list.
+- Radar preserves explicit canonical decision references even when two semantic
+  slots cite the same source span. Byte equality is not authority to erase a
+  fact, invent an assumption, or reject the package. Required rendered references
+  still need owned/shared custody; source validity and the fact-or-assumption
+  contract remain upstream obligations. The obsolete downstream equality veto
+  is removed rather than supplemented with field-specific exceptions.
+- Human participants are optional when no person or human role is source-stated.
+  Explicit recipients may be outside the first path; every event still requires
+  its exact source-bound performing actor. Activities and output-purpose modifiers
+  are not participants, and projections cannot infer a human from either.
+  An inferred customer is a labeled assumption, not an accepted participant or
+  Atlas node. Radar consumes the canonical customer fact or assumption instead
+  of choosing the first human. Empty-human confirmation views state the absence.
+- The model wire groups responsibility citations beside their component owner;
+  it no longer requires synchronized component and responsibility arrays.
+  Canonical facts and relations retain their exact custody and existing owner
+  resolver. The compact authoring contract separates source facts from useful
+  provisional decisions and keeps the initial actor with its action citation.
+- Pre-confirm authoring v48 permits at most two calls. Every otherwise-valid authored
+  candidate receives one source review that returns sparse whole-field corrections
+  or the exact existing clarification outcome. The existing authored result
+  properties own all correction value schemas. Initial authored status is
+  provisional, not source authority; review owns admission as well as correction,
+  and status is not a patch path. The old fact whitelist, three-part
+  response and independent 20-second review ceiling are removed. Review uses the
+  original remaining model window. Initial clarification needs one call; review
+  clarification needs two with both actual roles retained and validated. The whole
+  outcome validates again before becoming canonical. Empty corrections
+  are an exact candidate no-op; unknown, duplicate and protected paths are rejected.
+  Review preserves defensible, role-correct, consumer-usable source-grounded choices
+  rather than preferring another valid representation; material meaning, custody
+  and usefulness defects still require correction or clarification.
+  Project and Atlas distinguish contextual participants from typed human event
+  performers. Only performers enter project-intelligence operators; participant
+  presence does not create product interaction arrows or assigned actions.
+  Atlas context groups exact source event text by typed human, product or external
+  performer with a labeled performer-to-actions edge. Grouping preserves source
+  order and repeated events; off-path participants stay edge-free, and product
+  events never enter human groups. Empty participant containers are omitted;
+  product and external owners use their existing boundary nodes. This is an
+  ownership view, not a second workflow sequence or inferred interaction. The
+  separately replayed 5/5/5 proposed-design package is not production-integrated,
+  timing-qualified or a sealed transaction; current production profiles remain v48.
+  Experience proof accompanies relevant build checkpoints across Project, Radar,
+  Registry, Atlas, Casebook, Compass and shell at desktop/mobile widths, with
+  normal, empty/fallback and degraded/error coverage and explicit gaps. Rendered
+  meaning and usability are judged separately from functional assertions.
+  The 2026-09-06 audit found stale "Provider-free runtime" inventory copy despite
+  this model-based contract. An exact-ID description-update command now corrects
+  it without re-registering the component or rewriting its spec/other metadata.
+  A separate single-author 4/5/5 draft completed its model stage within 55 seconds
+  but failed independent participant-completeness review; the temporary package
+  also hid provisional assumptions. Neither draft quality nor consumer timing is
+  qualified. Independent phase/release adjudication and source entailment remain
+  fixed; a second runtime review call is a replaceable mechanism, not a user law.
+  Production v48 review is unchanged while its replacement remains unproved.
+  Review input includes the literal resolver's actual citation byte offsets and
+  64-character surrounding source context. This is a read-only binding view, not
+  new semantic evidence or a second parser. Repeated quote bytes do not establish
+  identical contextual meaning. Impossible ordinals normalize only for a uniquely
+  located quote; ambiguous repeated matches fail closed before review.
+  Source coordinates and actor types reject
+  contradictory ownership; they never infer a replacement owner or extend a quote.
+  A second failure cannot start another call. Actual call counts and both candidate
+  responses remain observable; no generic repair framework, tier promotion, or
+  post-confirm interpretation is introduced.
+  Initial non-structured provider failures retain categorical metadata and timing
+  through the existing private proof channel, without raw failed output or provider
+  detail. The public failure text and single-call failure path remain unchanged.
+  Existing shared schema properties now own external-system admission and component
+  ownership descriptions. External dependencies require source-stated product
+  exchange or operational dependence; recipient, reviewer and task-data mentions
+  alone do not qualify. Product responsibilities cite the enclosing product-owned
+  capability, not contained human events. Canonical semantic shapes remain unchanged.
+  Composite standard v10 binds a Terra-low author to a Sol-medium reviewer. Rescue v8
+  retains Terra-medium/Sol-high and deep v8 retains all-Sol-high. Original consumer
+  60/90/120 and shared model55/80/105 windows remain unchanged. Initial caps are
+  30/60/85, reserving 25/20/20 seconds; early completion leaves the entire unused
+  shared window available to review. An initial overrun fails without review or
+  acceptance. Private proof retains both actual roles and stage timing; the
+  sealed six-field observation represents the initial author and the composite
+  profile identity binds both roles. Superseded profile identities are removed,
+  with no fallback or compatibility reinterpretation. This is a development
+  candidate, not installed qualification.
+  Missing-information clarification requires empty model evidence quotes and binds
+  the complete admitted source deterministically as examined evidence. Exact text,
+  byte range and hash are preserved; this is custody, not positive entailment of
+  absence. Contradiction retains two-to-four exact distinct source citations.
+  Nonempty ambiguity quotes fail closed. Existing dimension descriptions separate
+  a missing usable workflow from unclear product responsibility/scope; the canonical
+  missing-information question wording is unchanged. Contradiction rendering keeps
+  the validated source claims visible and asks which should apply; it does not
+  reinterpret the claims from field labels. JSON carries the same existing spans.
+  Clarification receipts retain actual one- or two-call counts. Both stages reuse the same clarification
+  schema and validator; review adds no third call, fallback or deadline extension.
+- Product Intent envelope/authority v10 and authored-workstream-semantics v5
+  preserve the targeted assumption reference and hash its exact text and role.
+  Earlier staged formats require rebuilding before confirmation; there is no
+  compatibility reinterpretation or post-confirm repair.
+- Authored-semantics v13 uses the selected source-cited actor fact as the sole
+  event actor identity. Surface actor quotes and carry flags are removed, not
+  maintained as a compatibility path. Semantic-model v3 and Tribunal projections
+  use that same fact; atomic-ledger v3 event actor links cite the selected fact,
+  never an action span. Custody-ledger v7 and commit-only version checks require
+  a pre-confirm rebuild for older staged formats without semantic migration.
+- The authored relation contract removes the unsupported semantic recovery boolean and
+  component Recovery events projection. Failure tracking and actual restoration
+  stay ordinary source-cited actions. Transaction recovery remains unchanged.
+- Context and component-boundary views share one product-boundary projection;
+  neither nests a sole title-owned component inside the same product. Distinct
+  components, external dependency edges, and accepted non-goal boundaries remain.
+  A First Path Sequence requires at least two typed events. Browser proof must
+  visit every emitted diagram on desktop and mobile, capture full-page mobile
+  content, and exercise actual asset failure with readable fallback.
+- Release model claims bind sealed initial-author observations and retained actual
+  role/timing evidence. Standard and rescue have lower-capability initial authors
+  relative to all-Sol deep, not lower-capability reviewers;
+  each requires committed positive and source-bound clarification/no-write evidence.
+  The unsupported literal Luna claim is removed. All 60/90/120 deadlines remain
+  fixed. The bounded source review uses the same preselected composite profile
+  and remaining deadline, not a fallback, phrase rule, or alternate projection path.
+  Installed discovery may append explicit-profile controls only after assigning
+  the unchanged default cases independently. Strict supplemental input checks,
+  duplicate-ID rejection and exclusion of protected release/holdout inputs preserve
+  attributable coverage; discovery composition never becomes a release claim.
+- V31's four automated installed passes do not constitute independent quality
+  approval. Focused source corrections require fresh generated-package review,
+  complete immutable public proof, and independent review before a new blind
+  holdout. CB-303 and CB-306 remain evidence owners for these open gates.
+
+### Model-owned semantic basis
 
 The v0.1.15 runtime deliberately avoids a hardcoded domain catalog and
 domain-vocabulary rules. User requests can span any product, science, math,

@@ -13,11 +13,10 @@ _WHITESPACE_RE = re.compile(r"\s+")
 def normalize_release_text(
     value: Any,
     *,
-    limit: int | None = 240,
     strip_html: bool = True,
     strip_format_tokens: str = "*_`>#",
 ) -> str:
-    """Strip markdown noise from release-facing copy and optionally truncate it."""
+    """Normalize release markup without removing clauses or shortening prose."""
     token = str(value or "").strip()
     if not token:
         return ""
@@ -27,8 +26,6 @@ def normalize_release_text(
     if strip_format_tokens:
         token = re.sub(f"[{re.escape(strip_format_tokens)}]", "", token)
     token = _WHITESPACE_RE.sub(" ", token).strip(" -:")
-    if limit is not None and len(token) > limit:
-        token = token[: max(0, int(limit) - 3)].rstrip() + "..."
     return token
 
 

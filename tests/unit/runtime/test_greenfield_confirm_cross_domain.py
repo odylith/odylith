@@ -14,11 +14,13 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     combined_prompt_evidence_source,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
 )
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
+from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 
 
 _SLOP_PHRASES = (
@@ -351,6 +353,7 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
 ) -> None:
     del name
     _seed_empty_governance_repo(tmp_path)
+    activate_greenfield_baseline_fixture(tmp_path)
     source = _source(intent)
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
     provider = StructuredAuthoringProvider(
@@ -360,22 +363,25 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
             first_path_relations=[
                 {
                     "actor_kind": "human",
-                    "actor_quote": actor,
+                    "actor_fact_quote": actor,
                     "event_quote": intent["first_path"],
                     "action_verb_quote": action,
                     "target_quote": target,
                     "visible_result_quote": visible_result,
-                    "recovery_path": False,
                 }
             ],
             component_responsibility_owners=intent["internal_systems"],
-            component_responsibility_event_orders=[0] * len(intent["component_responsibilities"]),
         )
     )
+    reviewer = AdmittingReviewProvider()
     monkeypatch.setattr(
         greenfield_proposals_cli,
         "_greenfield_authoring_provider",
-        lambda **_kwargs: (provider, "test-model", "low"),
+        lambda **kwargs: (
+            (reviewer, "gpt-5.6-sol", "medium")
+            if kwargs.get("request_role") == "candidate_review"
+            else (provider, "test-model", "low")
+        ),
     )
 
     def render_preconfirm_surfaces(*, repo_root: Path) -> dict[str, Any]:
@@ -391,7 +397,7 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
         render_preconfirm_surfaces,
     )
     monkeypatch.setattr(
-        greenfield_component_commit.component_authoring.owned_surface_refresh,
+        greenfield_component_commit.component_compiled_commit.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )
@@ -414,6 +420,7 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
 
     assert rc == 0, output
     assert provider.calls == 1
+    assert reviewer.calls == 1
     assert "- validation gate: passed" in output
     accepted = json.loads(
         (tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8")
@@ -429,9 +436,23 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
     ).read_text(encoding="utf-8").splitlines()
     assert accepted["validation_gate"]["status"] == "passed"
     assert isinstance(accepted["proposal"]["semantic_model"], dict)
+    accepted_intent = accepted["proposal"]["intent"]
+    assert accepted_intent["first_path"] == intent["first_path"]
+    assert accepted_intent["human_actors"] == intent["human_actors"]
+    assert accepted_intent["component_responsibilities"] == intent["component_responsibilities"]
+    design = accepted_intent["authored_semantics"]["provisional_design"]
     assert len(list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))) >= 2
-    assert len(registry["components"]) == len(intent["component_responsibilities"])
-    assert len(list((tmp_path / "odylith/atlas/source").glob("*.mmd"))) >= 4
+    assert len(registry["components"]) == len(design["components"])
+    assert [
+        row["component_contract"]["provisional_component"]
+        for row in accepted["proposal"]["components"]
+    ] == design["components"]
+    diagram_names = [path.name for path in (tmp_path / "odylith/atlas/source").glob("*.mmd")]
+    assert len(diagram_names) == 5
+    for role in (
+        "system-context", "first-path", "component-exchanges", "delivery-dependencies", "capability-support",
+    ):
+        assert any(name.endswith(f"-{role}.mmd") for name in diagram_names)
     assert release_events
     assert compass_events and json.loads(compass_events[-1])["kind"] == "decision"
     rendered = _rendered_greenfield_text(tmp_path)

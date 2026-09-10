@@ -30,6 +30,9 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     authored_relation_set_sha256,
     combined_prompt_evidence_source,
 )
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    structural_design_fixture,
+)
 
 
 HASH = "c" * 64
@@ -150,6 +153,23 @@ def test_metamorphic_output_accepts_required_clarification_without_a_transaction
     assert evaluation["complete_group_count"] == 1
 
 
+def test_metamorphic_output_keeps_clarification_subprocess_as_diagnostic_evidence() -> None:
+    committed_case, clarification_case = _clarification_pair_cases()
+
+    evaluation = evaluate_metamorphic_outputs(
+        cases=(committed_case, clarification_case),
+        results=(
+            _result(committed_case),
+            _clarification_result(
+                clarification_case,
+                subprocess_attempts=("subprocess.Popen",),
+            ),
+        ),
+    )
+
+    assert evaluation["status"] == "passed"
+
+
 def test_metamorphic_output_rejects_clarification_without_a_frozen_oracle() -> None:
     committed_case, clarification_case = _clarification_pair_cases()
     clarification_case = replace(
@@ -246,6 +266,7 @@ def test_metamorphic_output_rejects_clarification_with_write_artifacts() -> None
             _clarification_result(
                 clarification_case,
                 changed_records=("odylith/radar/source/workstreams.v1.json",),
+                write_attempts=("open:odylith/radar/source/workstreams.v1.json",),
                 preconfirm_dry_run=True,
                 commit_manifest=True,
             ),
@@ -254,6 +275,7 @@ def test_metamorphic_output_rejects_clarification_with_write_artifacts() -> None
 
     assert evaluation["status"] == "failed"
     assert any("changed governed records before clarification" in issue for issue in evaluation["issues"])
+    assert any("attempted repository writes before clarification" in issue for issue in evaluation["issues"])
     assert any("created a dry-run receipt before clarification" in issue for issue in evaluation["issues"])
     assert any("produced a commit manifest before clarification" in issue for issue in evaluation["issues"])
 
@@ -410,8 +432,6 @@ def _typed_semantic_snapshot(
             "event_start_byte": 0,
             "event_end_byte": len(path_bytes),
             "actor_kind": "human",
-            "actor_quote": actor,
-            "actor_is_carried": False,
             "actor_fact_path": "/human_actors/0",
             "actor_fact_quote": actor,
             "owner_system_path": "",
@@ -420,7 +440,6 @@ def _typed_semantic_snapshot(
             "action_verb_quote": action,
             "target_quote": target,
             "visible_result_quote": visible_result,
-            "recovery_path": False,
         }
     ]
     contexts = [
@@ -433,21 +452,13 @@ def _typed_semantic_snapshot(
             "first_path_event_order": 1,
         }
     ]
-    components = [
-        {
-            "responsibility_path": "/first_path",
-            "responsibility_quote": visible_result,
-            "owner_system_path": "/title",
-            "owner_system_quote": str(facts["title"]),
-            "first_path_event_order": 1,
-            "responsibility_source": "terminal_visible_result",
-        }
-    ]
+    provisional_design = structural_design_fixture((1,))
     semantics = {
         "version": AUTHORED_SEMANTICS_VERSION,
         "first_path_relations": relations,
         "first_path_context_relations": contexts,
-        "component_responsibility_relations": components,
+        "component_responsibility_relations": [],
+        "provisional_design": provisional_design,
     }
     atoms = _atomic_facts(
         facts=facts,
@@ -463,8 +474,9 @@ def _typed_semantic_snapshot(
         "authored_semantics": semantics,
         "authored_relation_set_sha256": authored_relation_set_sha256(
             relations,
-            components,
+            (),
             first_path_context_relations=contexts,
+            provisional_design=provisional_design,
         ),
     }
 

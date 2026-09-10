@@ -37,9 +37,6 @@ const __ODYLITH_SHELL_REDIRECT_IN_PROGRESS__ = (function enforceShellOwnedSurfac
     }
     window.__ODYLITH_SHELL_REDIRECTING__ = true;
     window.__ODYLITH_SHELL_REDIRECT_TARGET__ = shellUrl.toString();
-    if (typeof window.stop === "function") {
-      window.stop();
-    }
     targetWindow.location.replace(shellUrl.toString());
     return true;
   } catch (_error) {
@@ -1157,25 +1154,22 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
       `;
     }
 
-    function renderList(state, rows) {
+        function casebookListPresentation({ rows, totalCount, selectedRoute, escapeHtml, displayTokenLabel }) {
       if (!rows.length) {
-        bugList.innerHTML = `
-          <div class="empty-state" role="status">
-            No Casebook entries match the current filters.
-          </div>
-        `;
-        listMeta.textContent = "0 visible";
-        detailRenderToken += 1;
-        detailPane.innerHTML = `
-          <div class="empty-state" role="status">
-            Select a different filter or search term to inspect Casebook detail.
-          </div>
-        `;
-        return;
+        const noCases = totalCount === 0;
+        const listMessage = noCases
+          ? "No Casebook cases have been recorded yet."
+          : "No Casebook entries match the current filters.";
+        const detailMessage = noCases
+          ? "When you find a defect, ask Odylith to capture it with the expected behavior, actual behavior, and reproduction steps."
+          : "Select a different filter or search term to inspect Casebook detail.";
+        return {
+          listHtml: `<div class="empty-state" role="status">${listMessage}</div>`,
+          detailHtml: `<div class="empty-state" role="status">${detailMessage}</div>`,
+          meta: "0 visible",
+        };
       }
-      const selectedRoute = resolveBugRoute(rows, state.bug) || String(rows[0].bug_route || "");
-      const selected = rows.find((row) => row.bug_route === selectedRoute) || rows[0];
-      bugList.innerHTML = rows.map((row) => {
+      const listHtml = rows.map((row) => {
         const coverage = row.intelligence_coverage && typeof row.intelligence_coverage === "object" ? row.intelligence_coverage : {};
         const capturedCount = Number(coverage.captured_count || 0);
         const totalFields = Number(coverage.total_fields || 0);
@@ -1203,7 +1197,23 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
           </button>
         `;
       }).join("");
-      listMeta.textContent = `${rows.length} visible`;
+      return { listHtml, detailHtml: null, meta: `${rows.length} visible` };
+    }
+
+
+    function renderList(state, rows) {
+      const selectedRoute = resolveBugRoute(rows, state.bug) || String(rows[0]?.bug_route || "");
+      const presentation = casebookListPresentation({
+        rows, totalCount: bugSummaries.length, selectedRoute, escapeHtml, displayTokenLabel,
+      });
+      bugList.innerHTML = presentation.listHtml;
+      listMeta.textContent = presentation.meta;
+      if (presentation.detailHtml !== null) {
+        detailRenderToken += 1;
+        detailPane.innerHTML = presentation.detailHtml;
+        return;
+      }
+      const selected = rows.find((row) => row.bug_route === selectedRoute) || rows[0];
       for (const button of bugList.querySelectorAll(".bug-row")) {
         button.addEventListener("click", () => {
           const bug = canonicalizeBugToken(button.getAttribute("data-bug") || "");

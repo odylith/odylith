@@ -1,10 +1,13 @@
-"""Supersede an active Greenfield view only after a successful managed CLI write."""
+"""Publish complete immutable successors for successful managed CLI writes."""
 
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
+from odylith.install import upgrade_dashboard_recovery
+from odylith.runtime.common import compass_log_continuation
+from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
 from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_lock
@@ -70,29 +73,119 @@ def run_with_greenfield_managed_mutation_boundary(
     *,
     repo_root: Path,
     command_tokens: Sequence[str],
-    operation: Callable[[], int],
+    operation: Callable[[int | None], int],
 ) -> int:
-    """Run one supported writer and supersede only after successful changed readback."""
+    """Keep the previous complete view selected until a successful successor is sealed."""
 
     root = Path(repo_root).expanduser().resolve()
     if not command_may_mutate_greenfield_managed_paths(command_tokens):
-        return operation()
-    state = greenfield_generation_state.read_active_generation_state(root)
-    if state is None or str(state.get("status") or "") != greenfield_generation_state.ACTIVE:
-        return operation()
+        return operation(None)
+    complete_log = compass_log_continuation.completion_requested(command_tokens)
+    if complete_log:
+        try:
+            requested_root = compass_log_continuation.completion_repo_argument(command_tokens[2:])
+        except ValueError as exc:
+            raise compass_log_continuation.CompassLogContinuationError(str(exc)) from exc
+        if Path(requested_root).expanduser().resolve() != root:
+            raise compass_log_continuation.CompassLogContinuationError("RECOVERY_REQUIRED: completion repository differs from its lease")
     try:
-        with greenfield_repository_lock.greenfield_repository_lock(root):
-            pinned = greenfield_generation_store.pin_active_greenfield_generation(root)
-            result = operation()
+        with greenfield_repository_lock.greenfield_repository_lock(root) as descriptor:
+            admitted_upgrade = None
+            admitted_authored = None
+            admitted_log = None
+            if complete_log:
+                GreenfieldCommitJournal.require_settled_journals(repo_root=root)
+                admitted_log = compass_log_continuation.require_completion(
+                    repo_root=root, repository_lock_fd=descriptor,
+                )
+                if greenfield_generation_state.active_generation_identity(root) == admitted_log.receipt["successor"]:
+                    return 0
+                pinned = admitted_log.pinned
+            elif upgrade_dashboard_recovery.is_completion_retry(command_tokens):
+                state = greenfield_generation_state.read_active_publication(root)
+                try:
+                    pinned = greenfield_generation_store.require_greenfield_working_generation(root) if state else None
+                except greenfield_generation_store.GreenfieldWorkingGenerationDriftError:
+                    pinned, admitted_upgrade = upgrade_dashboard_recovery.require_completion_retry(repo_root=root)
+                    try:
+                        GreenfieldCommitJournal.require_settled_journals(repo_root=root)
+                    except (OSError, RuntimeError, ValueError) as exc:
+                        raise upgrade_dashboard_recovery.UpgradeDashboardRecoveryError(
+                            "RECOVERY_REQUIRED: another Greenfield transaction needs attention; "
+                            "the dashboard retry and journal recovery were not run"
+                        ) from exc
+            if admitted_upgrade is None and admitted_log is None:
+                GreenfieldCommitJournal.recover_pending_journals(repo_root=root)
+                state = greenfield_generation_state.read_active_publication(root)
+                try:
+                    pinned = greenfield_generation_store.require_greenfield_working_generation(root) if state else None
+                except greenfield_generation_store.GreenfieldWorkingGenerationDriftError:
+                    if not command_tokens or command_tokens[0] != "sync":
+                        raise
+                    from odylith.runtime.domain_intelligence import greenfield_authored_sync_admission
+
+                    admitted_authored = greenfield_authored_sync_admission.require_authored_sync_admission(
+                        repo_root=root, command_tokens=command_tokens,
+                    )
+                    pinned = admitted_authored.pinned
+            active = greenfield_generation_state.active_generation_identity(root)
+            result = operation(descriptor)
+            if admitted_authored is not None:
+                admitted_authored.require_unchanged_intent(root)
+            if admitted_upgrade is not None:
+                upgrade_dashboard_recovery.require_unchanged_anchors(
+                    repo_root=root, admitted_receipt=admitted_upgrade,
+                )
             if result != 0:
+                if admitted_upgrade is not None:
+                    upgrade_dashboard_recovery.record_failed_completion(
+                        repo_root=root, repository_lock_fd=descriptor, admitted_receipt=admitted_upgrade,
+                    )
                 return result
-            expected = {str(key): str(value) for key, value in dict(pinned.manifest["after_fingerprints"]).items()}
+            admitted_log = compass_log_continuation.pending_for_publication(
+                repo_root=root, command_tokens=command_tokens, repository_lock_fd=descriptor,
+            )
+            if pinned is None:
+                # A first install can activate, then perform further managed writes.
+                if greenfield_generation_state.read_active_publication(root) is None:
+                    return result
+                pinned = greenfield_generation_store.pin_active_greenfield_generation(root)
+                active = greenfield_generation_state.active_generation_identity(root)
+            expected = dict(pinned.manifest["after_fingerprints"])
             actual = greenfield_repository_write_set.greenfield_managed_fingerprints(root)
             if actual != expected:
-                greenfield_generation_state.supersede_active_generation(
-                    repo_root=root,
-                    expected_transaction_hash=pinned.transaction_hash,
+                write_set = greenfield_repository_write_set.compile_greenfield_repository_write_set(
+                    source_root=pinned.repository_root,
+                    staged_root=root,
+                    publication_precondition=active,
                 )
+                if admitted_authored is not None:
+                    admitted_authored.require_compiled_intent(write_set)
+                manifest = greenfield_generation_store.compile_greenfield_generation_manifest(write_set)
+                generation = greenfield_generation_store.materialize_immutable_greenfield_generation(
+                    repo_root=root, write_set=write_set, manifest_text=manifest,
+                )
+                publication = greenfield_generation_state.compile_greenfield_publication_entry(
+                    write_set_hash=generation.write_set_hash,
+                    generation_manifest_sha256=generation.manifest_sha256,
+                )
+                greenfield_repository_write_set.require_greenfield_repository_after_state(
+                    repo_root=root, write_set=write_set,
+                )
+                if admitted_authored is not None:
+                    admitted_authored.require_unchanged_intent(root)
+                if admitted_log is not None:
+                    admitted_log.mark_sealed(generation)
+                greenfield_generation_store.publish_greenfield_generation(
+                    repo_root=root,
+                    generation=generation,
+                    write_set=write_set,
+                    publication_entry_text=publication,
+                )
+            if admitted_upgrade is not None:
+                upgrade_dashboard_recovery.complete_retry(repo_root=root)
+            if admitted_log is not None:
+                admitted_log.retire()
             return result
     except greenfield_repository_lock.GreenfieldRepositoryBusyError as exc:
         raise GreenfieldManagedMutationBusyError(

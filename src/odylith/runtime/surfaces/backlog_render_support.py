@@ -85,46 +85,10 @@ def _radar_route_href(
 
 
 def _extract_sections_with_body(path: Path) -> list[tuple[str, list[str]]]:
-    """Parse markdown `##` sections into ordered title/body pairs."""
+    """Read authored section spans through the shared Markdown parser."""
 
-    content = path.read_text(encoding="utf-8")
-    lines = content.splitlines()
-    sections: list[tuple[str, list[str]]] = []
-    current_title: str | None = None
-    current_lines: list[str] = []
-    for line in lines:
-        if line.startswith("## "):
-            if current_title is not None:
-                sections.append((current_title, current_lines))
-            current_title = line[3:].strip()
-            current_lines = []
-            continue
-        if current_title is not None:
-            current_lines.append(line)
-    if current_title is not None:
-        sections.append((current_title, current_lines))
-    return sections
+    return backlog_rich_text.extract_section_bodies(path.read_text(encoding="utf-8"))
 
-
-def _extract_sections_from_markdown(path: Path) -> dict[str, str]:
-    """Flatten markdown `##` sections into one summary string per heading."""
-
-    sections: dict[str, list[str]] = {}
-    current: str | None = None
-    for line in path.read_text(encoding="utf-8").splitlines():
-        if line.startswith("## "):
-            current = line[3:].strip()
-            sections.setdefault(current, [])
-            continue
-        if current is None:
-            continue
-        sections[current].append(line)
-
-    normalized: dict[str, str] = {}
-    for key, raw_lines in sections.items():
-        merged = " ".join(token.strip() for token in raw_lines if token.strip())
-        normalized[key] = backlog_rich_text.strip_display_markdown_emphasis(merged).strip()
-    return normalized
 
 
 def _split_metadata_ids(*, value: str, pattern: re.Pattern[str]) -> list[str]:
@@ -167,12 +131,6 @@ def _extract_plan_dates(plan_path: Path) -> tuple[str, str, str]:
             return created, updated, filename_date
 
     return created, "", filename_date
-
-
-def _rewrite_section_text(*, repo_root: Path, text: str) -> str:
-    """Normalize inline repo references in standalone Radar content blocks."""
-
-    return backlog_rich_text._rewrite_section_text(repo_root=repo_root, text=text)
 
 
 def _render_section_body(*, repo_root: Path, lines: list[str]) -> str:

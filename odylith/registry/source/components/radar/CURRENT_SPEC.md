@@ -5,7 +5,7 @@
   B-111 through B-117. The surface should show the umbrella, execution waves,
   release target `release-0-1-11`, and proof gates without turning Odylith Discipline
   into noisy task theater.
-Last updated: 2026-07-20
+Last updated: 2026-09-09
 
 
 ## Purpose
@@ -15,6 +15,80 @@ execution evidence into the ranked workstream view used by operators and other
 Odylith surfaces.
 
 ## Scope And Non-Goals
+### Active plan registration
+The existing plan/workstream reconciler owns missing Active Plans rows, not a
+second authoring command. Registration requires a real in-progress plan with
+unique explicit status, dates and one Backlog ID, plus an existing active
+workstream whose unique reciprocal metadata names that exact plan. Validate the
+whole missing-row batch and a non-aliased, structurally valid index before any
+insertion. Reject unsafe table delimiters and conflicting bindings; preserve
+unrelated index bytes, line endings and file mode. Registration alone must not
+create a successor, promote a workstream or rewrite authored plan content.
+CB-339's initial passing controls were falsified by four independent boundary
+cases; final acceptance requires those cases and actual reopened-plan readback.
+
+### Authored workstream previews
+The payload builder owns selection of the preview's recorded section: prefer
+Proposed Solution, then an explicitly labeled available source section. The
+browser displays that complete block. Project-wide Problem or Opportunity
+must not displace an available workstream-specific deliverable, and title words
+must not be used to invent or rewrite its meaning.
+
+CB-303 requires removal of sentence classifiers, title-based inference and
+sentence-count clipping from both list previews and selected-detail summaries.
+Authority qualifiers, conditions, punctuation and list order must survive.
+Absent content gets an honest empty state; untrusted markup must remain inert
+both in embedded payloads and in the rendered view. Long source blocks must
+remain reachable while scrolling windowed lists, not disappear because the
+virtualizer assumes every row has the same height.
+
+The owning seam is `render_backlog_ui_payload_runtime.py` for source-field
+selection, `backlog_rich_text.py` for shared Markdown syntax rendering and
+`render_backlog_ui_html_runtime.py` for layout and interaction. List previews,
+selected details and standalone documents must share the formatting owner;
+sentence or command rewriting is not Markdown rendering. Preview formatting
+must not nest active links or form controls inside the row selection button.
+Raw HTML, image fetching and executable fences do not gain authority from
+authored content; detail links retain URL validation.
+Section source spans come from the same Markdown parser, so fenced, quoted
+and nested heading-shaped text cannot manufacture top-level sections. Literal
+or escaped checklist markers must not become false completion evidence.
+Ordering rationale and implemented summaries preserve authored Markdown too;
+plain metadata normalization is not a prose rendering step.
+Proof must include distinct workstreams with repeated project framing,
+desktop/mobile rendering, unavailable runtime detail, hostile markup and a
+late condition in an unusually long windowed row. This display contract does
+not establish that Greenfield authored sufficient product verification.
+
+### Selected detail readability
+The local Radar detail grid owns the width of its header and narrative blocks.
+Its single track must fit the available content box on mobile and desktop;
+the enclosing panel's clipping must never hide ordinary prose or KPI values.
+CB-303 native 430-pixel evidence reproduces an implicit auto track wider than
+the panel. The local track must stay bounded and long metadata must wrap without
+rewriting meaning; constraining the track alone does not prevent text clipping.
+The correction does not change shared header geometry or shorten prose.
+Regression proof must measure text ranges
+and blocks against clipping ancestors, not only document width or DOM presence.
+
+### Selection and empty-state lifecycle
+`backlog_selection_ui.py` owns detail loading and cancellation. No source rows
+produces a clear explanation and an Open Project next step; zero filtered rows
+explains how to recover existing workstreams. A selection revision invalidates
+late responses even when the same workstream ID is selected again. The HTML
+renderer owns populated detail markup, not a competing empty/async path.
+CB-330 requires desktop/mobile source-empty and filtered recovery browser proof.
+
+### Standalone source fidelity
+`backlog_detail_pages.py` renders complete workstream and plan documents through
+the existing rich-text renderer. Section content and supplied rationale remain
+source-owned: no character clipping, sentence-count cap, vocabulary-specific
+paraphrase or spelling repair may replace the recorded text. Unbroken references
+wrap within the page rather than extending outside it or being hidden. Regression
+proof preserves late restrictions, list order and punctuation and measures actual
+text ranges at desktop and mobile widths. Concise source authoring is an upstream
+responsibility, not permission for the reader to discard meaning.
+
 ### Radar owns
 - The canonical Odylith workstream backlog under `odylith/radar/source/`.
 - The repo-local release-planning source subtree under
@@ -50,6 +124,11 @@ Odylith surfaces.
   only when the operator selects Rank; Score and Date modes must order rows by
   their own comparators after the fixed execution/parked/active/finished
   section grouping.
+- Greenfield provisional workstream prerequisites must reach native
+  `workstream_depends_on` record IDs before transaction sealing. The existing
+  allocation/link owner resolves canonical design keys; dependency prose and
+  Atlas arrows alone are not native Radar topology proof. No title parsing or
+  post-confirm link rebuilding is permitted.
 
 ## Runtime Contract
 ### Source truth
@@ -323,6 +402,12 @@ themselves.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142, B-145
+  - Evidence: `odylith/radar/source/ideas/2026-07/2026-07-20-assess-v0-1-15-guidance-and-browser-surface-migration.md`, `src/odylith/runtime/surfaces/backlog_rich_text.py`
+- **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-025, B-142
+  - Evidence: `src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py`, `src/odylith/runtime/governance/sync_workstream_artifacts.py`, `tests/unit/runtime/test_sync_casebook_freshness.py`
 - **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 6 verifiable artifact references.
   - Evidence: `odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_proposals.py`, `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`, plus 2 more
 - **2026-06-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
@@ -334,12 +419,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md`, `src/odylith/runtime/domain_intelligence/archetypes.py`, `src/odylith/runtime/domain_intelligence/proposal_planning.py`
-- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
-  - Scope: B-141
-  - Evidence: `odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md`, `odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md`, `src/odylith/install/runtime.py`, `src/odylith/runtime/intervention_engine/prompt_signal_runtime.py`
-- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-141
-  - Evidence: `odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md`, `odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md`, `tests/integration/runtime/test_governance_sync_performance.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

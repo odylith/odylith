@@ -7905,9 +7905,29 @@
     }
   ],
   "traceability": {
-    "code_references": [],
-    "developer_docs": [],
-    "runbooks": []
+    "code_references": [
+      "src/odylith/runtime/evaluation/odylith_benchmark_isolation.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py",
+      "src/odylith/runtime/context_engine/tooling_guidance_catalog.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_taxonomy.py",
+      "src/odylith/runtime/common/agent_runtime_contract.py",
+      "src/odylith/runtime/common/host_runtime.py",
+      "src/odylith/runtime/orchestration/subagent_router.py",
+      "src/odylith/runtime/surfaces/claude_host_prompt_bundle.py",
+      "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
+      "src/odylith/runtime/surfaces/codex_host_stop_summary.py"
+    ],
+    "developer_docs": [
+      "docs/benchmarks/REVIEWER_GUIDE.md",
+      "docs/benchmarks/FAMILIES_AND_EVALS.md",
+      "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
+      "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md"
+    ],
+    "runbooks": [
+      "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+      "odylith/runtime/SUBAGENT_OPERATIONS.md",
+      "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md"
+    ]
   },
   "version": "v1",
   "what_it_is": "Prompt-level planning and bounded fan-out engine for Codex tasks.",

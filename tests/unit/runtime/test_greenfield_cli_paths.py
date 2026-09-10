@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence import (
     greenfield_apply_diagrams,
     greenfield_create_baseline,
     greenfield_create_commit,
+    greenfield_generation_store,
     greenfield_post_confirm_handoff,
     greenfield_proposals,
     greenfield_proposals_cli,
@@ -30,15 +31,18 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 )
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.surfaces import brand_assets
-from tests.unit.runtime.greenfield_proposal_fixtures import (
-    _seed_empty_governance_repo,
-    _write_confirmed_intent,
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import (
     _canonical_model_authored_greenfield_fixture,
     approved_authored_quality_manifest_fixture,
     canonical_model_authored_intent_fixture,
+)
+from tests.unit.runtime.greenfield_proposal_fixtures import (
+    _seed_empty_governance_repo,
+    _write_confirmed_intent,
     compiled_greenfield_package_fixture,
     surface_refresh_preview_fixture,
 )
+from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 
 
 @pytest.fixture(autouse=True)
@@ -72,10 +76,6 @@ def _write_stubbed_atlas_render_outputs(repo_root: Path) -> None:
         diagram["reviewed_watch_fingerprints"] = {path: "stubbed-official-refresh" for path in watched}
         diagram["render_source_fingerprint"] = "stubbed-official-refresh"
     catalog_path.write_text(json.dumps(catalog, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-
-
-def _approved_quality_manifest() -> dict[str, object]:
-    return approved_authored_quality_manifest_fixture()
 
 
 def _stub_dashboard_refresh(monkeypatch, calls: list[dict[str, object]] | None = None) -> None:
@@ -158,7 +158,9 @@ def test_greenfield_domain_token_normalizer_keeps_common_words_legible() -> None
 
 
 def test_greenfield_completion_opens_exact_committed_project_url(tmp_path, monkeypatch) -> None:
-    monkeypatch.delenv("ODYLITH_NO_BROWSER", raising=False)
+    activate_greenfield_baseline_fixture(tmp_path)
+    for name in ("ODYLITH_NO_BROWSER", "CI", "GITHUB_ACTIONS", "BUILD_BUILDID"):
+        monkeypatch.delenv(name, raising=False)
     navigation = greenfield_post_confirm_handoff.post_confirm_navigation(tmp_path)
     opened: list[tuple[str, int]] = []
     monkeypatch.setattr(
@@ -169,13 +171,19 @@ def test_greenfield_completion_opens_exact_committed_project_url(tmp_path, monke
 
     result = greenfield_post_confirm_handoff.open_committed_dashboard(navigation)
 
-    expected_url = f"{(tmp_path / 'odylith/index.html').resolve().as_uri()}?tab=project"
+    pinned = greenfield_generation_store.pin_active_greenfield_generation(tmp_path)
+    dashboard = pinned.repository_root / "odylith/index.html"
+    assert dashboard.is_file()
+    assert dashboard != tmp_path / "odylith/index.html"
+    expected_url = f"{dashboard.resolve().as_uri()}?tab=project"
     assert result == {"status": "opened", "url": expected_url, "reason": ""}
     assert opened == [(expected_url, 2)]
 
 
 def test_greenfield_completion_browser_failure_does_not_raise(tmp_path, monkeypatch) -> None:
-    monkeypatch.delenv("ODYLITH_NO_BROWSER", raising=False)
+    activate_greenfield_baseline_fixture(tmp_path)
+    for name in ("ODYLITH_NO_BROWSER", "CI", "GITHUB_ACTIONS", "BUILD_BUILDID"):
+        monkeypatch.delenv(name, raising=False)
     navigation = greenfield_post_confirm_handoff.post_confirm_navigation(tmp_path)
     monkeypatch.setattr(
         greenfield_post_confirm_handoff.webbrowser,
@@ -189,7 +197,17 @@ def test_greenfield_completion_browser_failure_does_not_raise(tmp_path, monkeypa
     assert result["reason"] == "OSError: browser unavailable"
 
 
-def test_greenfield_completion_respects_automated_browser_opt_out(tmp_path, monkeypatch) -> None:
+@pytest.mark.parametrize("blocker,reason", [
+    ("ODYLITH_NO_BROWSER", "browser auto-open disabled by ODYLITH_NO_BROWSER"),
+    ("CI", "browser auto-open disabled in an automated environment"),
+    ("GITHUB_ACTIONS", "browser auto-open disabled in an automated environment"),
+    ("BUILD_BUILDID", "browser auto-open disabled in an automated environment"),
+])
+def test_greenfield_completion_respects_automated_browser_opt_out(tmp_path, monkeypatch, blocker, reason) -> None:
+    activate_greenfield_baseline_fixture(tmp_path)
+    for name in ("ODYLITH_NO_BROWSER", "CI", "GITHUB_ACTIONS", "BUILD_BUILDID"):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setenv(blocker, "1")
     navigation = greenfield_post_confirm_handoff.post_confirm_navigation(tmp_path)
 
     def fail_open(*_args, **_kwargs) -> bool:
@@ -200,7 +218,7 @@ def test_greenfield_completion_respects_automated_browser_opt_out(tmp_path, monk
     result = greenfield_post_confirm_handoff.open_committed_dashboard(navigation)
 
     assert result["status"] == "unavailable"
-    assert result["reason"] == "browser auto-open disabled by ODYLITH_NO_BROWSER"
+    assert result["reason"] == reason
 
 
 def test_greenfield_confirm_intent_flag_is_retired(tmp_path, capsys) -> None:
@@ -278,7 +296,7 @@ def _compiled_transaction_for_cli(tmp_path: Path):
         prewrite_package=package,
         backlog_result=package.backlog_result or {},
         intent_authority=authority,
-        quality_manifest=_approved_quality_manifest(),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
         repo_root=tmp_path,
     )
     return proposal, transaction

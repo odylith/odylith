@@ -37,6 +37,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     require_product_intent_authority,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
 )
@@ -70,32 +71,29 @@ _INTENT: dict[str, Any] = {
 _RELATIONS = (
     {
         "actor_kind": "human",
-        "actor_quote": "Dock attendant Ivo",
+        "actor_fact_quote": "Dock attendant Ivo",
         "event_quote": "Dock attendant Ivo enters a vessel tag",
         "action_verb_quote": "enters",
         "target_quote": "a vessel tag",
         "visible_result_quote": "",
-        "recovery_path": False,
     },
     {
         "actor_kind": "product",
-        "actor_quote": "Berth map",
+        "actor_fact_quote": "Berth map",
         "owner_system_quote": "Berth map",
         "event_quote": "Berth map records berth occupancy",
         "action_verb_quote": "records",
         "target_quote": "berth occupancy",
         "visible_result_quote": "",
-        "recovery_path": False,
     },
     {
         "actor_kind": "product",
-        "actor_quote": "Berth map",
+        "actor_fact_quote": "Berth map",
         "owner_system_quote": "Berth map",
         "event_quote": "Berth map shows the placement",
         "action_verb_quote": "shows",
         "target_quote": "the placement",
         "visible_result_quote": "Berth map shows the placement",
-        "recovery_path": False,
     },
 )
 
@@ -118,11 +116,11 @@ def _authored_result(source: str) -> GreenfieldModelAuthoredIntent:
                 evidence_text=source,
                 first_path_relations=_RELATIONS,
                 component_responsibility_owners=["Berth map"],
-                component_responsibility_event_orders=[2],
             )
         ),
         model_profile_id=STANDARD_PROFILE_ID,
         clock=lambda: 0.0,
+        review_provider_factory=AdmittingReviewProvider,
     )
     assert isinstance(result, GreenfieldModelAuthoredIntent)
     return result
@@ -137,6 +135,7 @@ def _authored_inputs() -> tuple[str, GreenfieldModelAuthoredIntent, dict[str, An
             result.first_path_relations,
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
+            provisional_design=result.provisional_design,
         ),
     }
     return source, result, intent
@@ -177,6 +176,7 @@ def test_authored_envelope_preserves_exact_facts_spans_relations_and_authority()
         result.first_path_relations,
         result.component_responsibility_relations,
         first_path_context_relations=result.first_path_context_relations,
+        provisional_design=result.provisional_design,
     )
 
     assert envelope["schema_version"] == PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION
@@ -251,6 +251,24 @@ def test_envelope_rejects_source_digest_or_span_rebinding() -> None:
             source_format="operator_prompt",
             authored_source_spans=rebound_projection,
             authored_atomic_claims=result.atomic_claims,
+            authored_source_sha256=result.source_sha256,
+        )
+
+
+def test_optional_human_fact_still_requires_exact_atomic_source_custody() -> None:
+    source, result, intent = _authored_inputs()
+    claims = copy.deepcopy(list(result.atomic_claims))
+    human_claim = next(claim for claim in claims if claim["field"] == "human_actors")
+    human_claim["source_start_byte"] += 1
+    human_claim["source_end_byte"] += 1
+
+    with pytest.raises(ValueError, match="atomic source custody does not match"):
+        build_product_intent_envelope(
+            intent,
+            source_text=source,
+            source_format="operator_prompt",
+            authored_source_spans=result.source_spans,
+            authored_atomic_claims=claims,
             authored_source_sha256=result.source_sha256,
         )
 

@@ -12,6 +12,7 @@ import time
 from typing import Any, Mapping
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import GreenfieldClarificationRequired
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
@@ -280,6 +281,10 @@ def _print_greenfield_clarification(exc: GreenfieldClarificationRequired, *, as_
         print(json.dumps({"mode": "clarification_required", "clarification": clarification}, indent=2, sort_keys=True))
         return
     print("Odylith needs one product decision.")
+    if isinstance(consistency, Mapping) and consistency.get("status") == "material_contradiction":
+        print("Conflicting requirements from your request:")
+        for span in consistency["source_spans"]:
+            print(f"- {json.dumps(span['text'], ensure_ascii=False)}")
     print(exc.question)
     print("Reply with one plain-language sentence. No transaction or governed records were created.")
 
@@ -349,6 +354,7 @@ def _compile_prompt_evidence_transaction(
         raise RuntimeError(
             "Greenfield proposal exhausted its shared time budget while reading evidence; no records were created."
         )
+    greenfield_generation_store.require_greenfield_working_generation(repo_root)
     provider_result = _greenfield_authoring_provider(
         repo_root=repo_root,
         profile_id=profile_id,
@@ -374,6 +380,11 @@ def _compile_prompt_evidence_transaction(
         source_language=source_language,
         prepared_evidence=prepared_evidence,
         authoring_receipt=authoring_receipt,
+        authoring_deadline=started + profile.model_timeout_seconds,
+        clock=now,
+        review_provider_factory=lambda: _greenfield_authoring_provider(
+            repo_root=repo_root, profile_id=profile_id, request_role="candidate_review",
+        )[0],
     )
     authoring_tier = str(authoring_receipt.get("tier") or "").strip()
     if authoring_tier not in {"standard", "rescue", "deep"}:
@@ -464,21 +475,22 @@ def _stage_pending_transaction_with_deadline(
     return transaction_path
 
 
-def _greenfield_authoring_provider(*, repo_root: Path, profile_id: str) -> tuple[Any, str, str]:
-    """Resolve the single semantic authoring call for a Greenfield proposal.
-
-    Greenfield never falls back to lexical inference when this provider is not
-    available. The generic reasoning layer owns host selection; this adapter
-    only pins the authoring request to its declared single-call budget.
-    """
+def _greenfield_authoring_provider(
+    *, repo_root: Path, profile_id: str, request_role: str = "initial_authoring",
+) -> tuple[Any, str, str]:
+    """Resolve one pinned author or reviewer without a lexical fallback."""
 
     profile = get_greenfield_model_profile(profile_id)
+    if request_role not in {"initial_authoring", "candidate_review"}:
+        raise ValueError("Unsupported Greenfield model request role")
+    model = profile.model if request_role == "initial_authoring" else profile.review_model
+    effort = profile.reasoning_effort if request_role == "initial_authoring" else profile.review_reasoning_effort
     configured = odylith_reasoning.reasoning_config_from_env(repo_root=repo_root)
     config = replace(
         configured,
         provider=profile.provider,
-        model=profile.model,
-        codex_reasoning_effort=profile.reasoning_effort,
+        model=model,
+        codex_reasoning_effort=effort,
     )
     provider = odylith_reasoning.provider_from_config(
         config,
@@ -491,7 +503,7 @@ def _greenfield_authoring_provider(*, repo_root: Path, profile_id: str) -> tuple
             "A verified source-cited Greenfield package could not be produced because model authoring is unavailable; "
             "no records were created."
         )
-    return provider, profile.model, profile.reasoning_effort
+    return provider, model, effort
 
 
 def _public_intent_hypothesis(candidate_intent: Mapping[str, Any]) -> dict[str, Any]:

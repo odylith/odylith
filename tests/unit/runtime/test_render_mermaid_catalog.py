@@ -224,7 +224,7 @@ def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_lis
     assert ".read-guide-body {" in html
     assert "Boxes In This Diagram" in html
     assert 'id="diagramBoxList"' in html
-    assert "function renderDiagramBoxes(diagram)" in html
+    assert "function renderDiagramBoxes(diagram, sectionEl, listEl)" in html
     assert "diagram-box-row" in html
     assert ".diagram-box-role {\n  --label-bg: #f6faf7;" in html
     assert "border-radius: 4px;" in html
@@ -235,8 +235,8 @@ def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_lis
     assert "Owning Components" in html
     assert "const componentTitleLookup = sanitizeLookupObject(tooltipLookup.component_titles);" in html
     assert "function componentDisplayName(value)" in html
-    assert "function componentResponsibilityText(component, displayName, rawName)" in html
-    assert "For the first release,\\s+this boundary" in html
+    assert all(name not in html for name in ("componentResponsibilityText", "componentNameWords", "stripLeadingComponentName", "escapeRegExp"))
+    assert 'body.textContent = description.trim() ? description : "Named responsibility in this diagram.";' in html
     assert "component-token" in html
     assert "component-description" in html
     assert "grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));" in html
@@ -315,10 +315,10 @@ def test_render_mermaid_catalog_sizes_image_box_from_diagram_dimensions() -> Non
         tooling_base_href="../index.html",
     )
 
-    assert "function applyImageBoxSizing(diagram)" in html
-    assert 'imageEl.style.width = `${dims.width}px`;' in html
-    assert 'imageEl.style.height = `${dims.height}px`;' in html
-    assert "applyImageBoxSizing(diagram);" in html
+    assert "function applyImageBoxSizing()" in html
+    assert 'imageEl.style.width = dims ? `${dims.width}px` : "";' in html
+    assert 'imageEl.style.height = dims ? `${dims.height}px` : "";' in html
+    assert "applyImageBoxSizing();" in html
 
 
 def test_render_mermaid_catalog_omits_empty_placeholder_copy() -> None:

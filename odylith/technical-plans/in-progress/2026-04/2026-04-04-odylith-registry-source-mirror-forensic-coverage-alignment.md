@@ -71,13 +71,11 @@ Related Bugs:
 - [ ] [2026-04-04-registry-live-forensics-miss-source-owned-bundle-mirror-component-activity.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-04-registry-live-forensics-miss-source-owned-bundle-mirror-component-activity.md)
 
 ## Risks & Mitigations
+
 - [ ] Risk: mirror-aware matching maps one bundle file to the wrong component.
-  - [ ] Mitigation: keep mapping deterministic and anchored to canonical
-        source-owned path prefixes only.
-- [ ] Risk: benchmark behavior changes by accident through shared dirty-path
-      helpers.
-  - [ ] Mitigation: keep the change inside Registry component evidence mapping
-        and run focused benchmark tests before closeout.
+  - [ ] Mitigation: keep mapping deterministic and anchored to canonical source-owned path prefixes only.
+- [ ] Risk: benchmark behavior changes by accident through shared dirty-path helpers.
+  - [ ] Mitigation: keep the change inside Registry component evidence mapping and run focused benchmark tests before closeout.
 
 ## Validation/Test Plan
 - [ ] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_registry_dashboard.py tests/unit/runtime/test_sync_component_spec_requirements.py`
@@ -93,3 +91,20 @@ Related Bugs:
 ## Current Outcome
 - [x] `B-045` opened to isolate Registry source-mirror forensic coverage.
 - [ ] Mapper change, regressions, and validation are in progress.
+
+## Traceability
+
+Registry forensic coverage procedure distinguishes mirror/source ownership and explicit evidence channels.
+
+### Runbooks
+
+- `docs/runbooks/odylith-governance.md`
+
+### Developer Docs
+
+- `odylith/registry/source/components/registry/CURRENT_SPEC.md`
+
+### Code References
+
+- `src/odylith/runtime/governance/component_registry_intelligence.py`
+- `src/odylith/runtime/surfaces/render_registry_dashboard.py`

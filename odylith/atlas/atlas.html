@@ -557,7 +557,7 @@
       background: #ffffff;
       overflow: hidden;
       display: grid;
-      grid-template-rows: auto 1fr;
+      grid-template-rows: auto auto minmax(560px, 1fr);
       min-height: 660px;
     }
 
@@ -594,6 +594,11 @@
       --chip-link-text-hover: #0b645f;
     }
 
+    .viewer-shell .tool-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
     .viewer-stage {
       position: relative;
       overflow: hidden;
@@ -605,6 +610,17 @@
 
     .viewer-stage.dragging {
       cursor: grabbing;
+    }
+
+    .viewer-stage:focus {
+      outline: 3px solid #0369a1;
+      outline-offset: -3px;
+    }
+
+    .viewer-instructions {
+      margin: 0;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
     }
 
     .viewer-image {
@@ -735,11 +751,6 @@
       min-width: 0;
     }
 
-    .diagram-box-name strong {
-      overflow-wrap: anywhere;
-      word-break: break-word;
-    }
-
     .diagram-box-role {
   --label-bg: #f6faf7;
   --label-border: #d7e2dc;
@@ -768,13 +779,18 @@
   font-weight: 700;
   text-transform: none;
 }
+    .diagram-box-name strong,
+    .diagram-box-role,
+    .diagram-box-description {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
     .diagram-box-role {
       width: fit-content;
       max-width: 100%;
-      overflow-wrap: anywhere;
-      word-break: break-word;
       justify-content: flex-start;
-      white-space: normal;
     }
 
     .diagram-box-description {
@@ -1055,6 +1071,12 @@
         gap: 6px;
       }
     }
+        .main > [hidden], #atlasProjectLink[hidden] { display: none; }
+    .main[data-selection-empty="true"] {
+      min-height: 0;
+      grid-template-rows: auto;
+      align-content: start;
+    }
 
     .diagram-name {
   margin: 0;
@@ -1267,10 +1289,16 @@
         <div class="stat"><p class="k" id="statStale">0</p><p class="l">Needs Update</p></div>
       </div>
 
+      <p id="diagramListStatus" class="empty-note" role="status" hidden></p>
       <ul id="diagramList" class="diagram-list"></ul>
     </aside>
 
     <main class="panel main">
+            <section id="atlasEmptyState" class="section" aria-labelledby="atlasEmptyTitle" hidden>
+        <h2 id="atlasEmptyTitle"></h2>
+        <p id="atlasEmptyMessage"></p>
+        <a id="atlasProjectLink" class="tool-btn" target="_top">Open Project</a>
+      </section>
       <section class="hero">
         <div class="hero-copy">
           <h2 id="diagramTitle" class="hero-title"></h2>
@@ -1334,7 +1362,7 @@
             <span id="zoomReadout" class="meta-pill">Zoom 100%</span>
             <span class="meta-pill">Pinch: zoom</span>
             <span class="meta-pill">Drag: pan</span>
-            <span class="meta-pill">Shortcuts: + - 0 f ↑ ↓</span>
+            <span class="meta-pill">Shortcuts: + - 0 f</span>
           </div>
           <div class="viewer-toolbar-right">
             <button id="prevDiagram" class="tool-btn" type="button">Prev</button>
@@ -1342,11 +1370,12 @@
             <button id="zoomIn" class="tool-btn" type="button">Zoom +</button>
             <button id="zoomOut" class="tool-btn" type="button">Zoom -</button>
             <button id="fit" class="tool-btn" type="button">Fit</button>
-            <button id="reset" class="tool-btn" type="button">Reset</button>
+            <button id="reset" class="tool-btn" type="button">Read at 100%</button>
           </div>
         </div>
-        <div id="viewerStage" class="viewer-stage">
-          <img id="viewerImage" class="viewer-image" alt="diagram visualization" draggable="false" />
+        <p id="viewerInstructions" class="viewer-instructions">Tab to diagram: arrows pan; Shift pans farther. +/− zoom; 0 reads at 100%; F fits. Outside diagram, ↑/↓ select.</p>
+        <div id="viewerStage" class="viewer-stage" tabindex="0" role="region" aria-labelledby="diagramTitle" aria-describedby="viewerInstructions">
+          <img id="viewerImage" class="viewer-image" alt="diagram visualization" draggable="false" hidden />
         </div>
       </section>
 
@@ -1455,7 +1484,7 @@
   }
 })();
 </script>
-  <script id="catalogData" src="mermaid-payload.v1.js?v=5e5280fefe9d"></script>
-  <script src="mermaid-app.v1.js?v=5e5280fefe9d"></script>
+  <script id="catalogData" src="mermaid-payload.v1.js?v=f5bcdc2eadd4"></script>
+  <script src="mermaid-app.v1.js?v=f5bcdc2eadd4"></script>
 </body>
 </html>

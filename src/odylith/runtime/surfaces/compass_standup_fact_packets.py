@@ -571,7 +571,7 @@ def _build_global_standup_fact_packet(
 ) -> dict[str, Any]:
     now_value = now if isinstance(now, dt.datetime) else dt.datetime.now(tz=_COMPASS_TZ)
     focused_primary = dict(ws_rows[0]) if ws_rows else {}
-    primary_label = _ws_label(focused_primary) if focused_primary else "current priority lane"
+    primary_label = _ws_label(focused_primary) if focused_primary else ""
     primary_status = str(focused_primary.get("status", "")).strip() or "unknown"
     primary_why_context = _ws_why_context(focused_primary)
     primary_purpose = primary_why_context.get("purpose", "")
@@ -587,7 +587,7 @@ def _build_global_standup_fact_packet(
     )
     primary_plan = focused_primary.get("plan", {}) if isinstance(focused_primary.get("plan"), Mapping) else {}
     primary_progress_ratio = float(primary_plan.get("progress_ratio", 0.0) or 0.0)
-    eta_days, eta_source = _estimate_remaining_days(focused_primary if focused_primary else {})
+    eta_days, eta_source = _estimate_remaining_days(focused_primary) if focused_primary else (0, "unavailable")
     execution_updates = (
         [dict(item) for item in execution_updates if isinstance(item, Mapping)]
         if isinstance(execution_updates, Sequence)
@@ -628,17 +628,20 @@ def _build_global_standup_fact_packet(
         eta_source=eta_source,
         status=primary_status,
         has_execution_signal=bool(filtered_execution_highlights or execution_highlights),
-    )
+    ) if focused_primary else ""
     latest_evidence_ts, freshness_source = _latest_evidence_marker(
         window_events=window_events,
         window_transactions=window_transactions,
         ws_id=None,
         fallback_last_activity_iso=_latest_window_activity_iso(active_ws_rows or ws_rows),
     )
-    freshness_bucket = _freshness_bucket(latest_ts=latest_evidence_ts, now=now_value)
+    freshness_bucket = (
+        _freshness_bucket(latest_ts=latest_evidence_ts, now=now_value)
+        if focused_primary or latest_evidence_ts is not None else "unknown"
+    )
     freshness_age_label = _freshness_age_label(latest_ts=latest_evidence_ts, now=now_value)
     freshness_text = _freshness_fact_text(
-        label=primary_label,
+        label=primary_label or "the repository",
         freshness_bucket=freshness_bucket,
         freshness_age_label=freshness_age_label,
         source_kind=freshness_source,
@@ -768,24 +771,23 @@ def _build_global_standup_fact_packet(
 
     executive_direction = _decapitalize_clause(
         direction_clause or "keep the dependent follow-on workstreams moving"
-    )
-    section_candidates["current_execution"].append(
-        _standup_fact(
-            section_key="current_execution",
-            voice_hint="executive",
-            priority=100,
-            text=_direction_fact_text(
-                label=primary_label,
-                status_phrase=status_phrase,
-                direction_text=executive_direction,
-            ),
-            source="workstream_metadata",
-            kind="direction",
-            workstreams=[
-                str(focused_primary.get("idea_id", "")).strip()
-            ] if focused_primary else [],
+    ) if focused_primary else ""
+    if focused_primary:
+        section_candidates["current_execution"].append(
+            _standup_fact(
+                section_key="current_execution",
+                voice_hint="executive",
+                priority=100,
+                text=_direction_fact_text(
+                    label=primary_label,
+                    status_phrase=status_phrase,
+                    direction_text=executive_direction,
+                ),
+                source="workstream_metadata",
+                kind="direction",
+                workstreams=[str(focused_primary.get("idea_id", "")).strip()],
+            )
         )
-    )
     if include_self_host_status:
         self_host_status = _self_host_status_fact(self_host_snapshot)
         if self_host_status is not None:
@@ -831,7 +833,8 @@ def _build_global_standup_fact_packet(
                 workstreams=window_coverage_ids,
             )
         )
-    section_candidates["current_execution"].append(
+    if timeline_story:
+        section_candidates["current_execution"].append(
             _standup_fact(
                 section_key="current_execution",
                 voice_hint="operator",
@@ -978,7 +981,7 @@ def _build_global_standup_fact_packet(
                 "flagship_lane": primary_label,
                 "direction": executive_direction,
                 "proof": filtered_execution_highlights[0] if filtered_execution_highlights else "",
-                "forcing_function": next_action_tokens[0] if next_action_tokens else fallback_next_text,
+                "forcing_function": next_action_tokens[0] if next_action_tokens else (fallback_next_text if focused_primary else ""),
                 "use_story": primary_use_story,
                 "architecture_consequence": primary_architecture_consequence,
                 "watch_item": fallback_risk_text,

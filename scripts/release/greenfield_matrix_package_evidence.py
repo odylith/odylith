@@ -16,12 +16,16 @@ from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import (
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import package_mapping
 from odylith.runtime.common.mermaid_text import visible_mermaid_label_quality_texts
 from odylith.runtime.common.value_coercion import normalize_string
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_PROJECTION_ORIGIN,
+)
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
     PROJECT_HANDOFF_STEP_SEQUENCE,
 )
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
+from odylith.runtime.surfaces.atlas_diagram_intelligence import parse_mermaid_graph
 from greenfield_matrix_governed_readback import governed_readback_findings
 
 
@@ -39,12 +43,12 @@ _RADAR_REQUIRED_SECTIONS = (
     "## Success Metrics",
     "## Validation",
 )
-_REGISTRY_REQUIRED_PROOF = (
+_REGISTRY_REQUIRED_SECTIONS = (
     "Source boundary",
+    "Source-custodied responsibility",
+    "Source-custodied owner relations",
     "Trace links",
-    "Successful path evidence",
-    "Blocked input evidence",
-    "Replay evidence",
+    "Feature History",
 )
 def package_evidence_findings(package: Any) -> tuple[PackageEvidenceFinding, ...]:
     """Return independent readback findings that should block premium scores."""
@@ -104,9 +108,9 @@ def _authored_project_brief_findings(
         findings.append(
             _finding("product_manager", "independent project brief has an unsupported schema version")
         )
-    if normalize_string(brief.get("projection_origin")) != "model_authored_atomic_semantics":
+    if normalize_string(brief.get("projection_origin")) != AUTHORED_PROJECTION_ORIGIN:
         findings.append(
-            _finding("product_manager", "independent project brief is not an authored atomic projection")
+            _finding("product_manager", "independent project brief is not the sealed authored projection")
         )
     for field in ("purpose", "operating_principle", "project_outcome"):
         if not normalize_string(brief.get(field)):
@@ -214,16 +218,27 @@ def _registry_findings(
             )
         )
     for artifact in specs:
-        missing = [phrase for phrase in _REGISTRY_REQUIRED_PROOF if phrase not in artifact.text]
+        missing = [phrase for phrase in _REGISTRY_REQUIRED_SECTIONS if phrase not in artifact.text]
         if missing:
-            findings.append(_finding("engineer", f"{artifact.identity} is missing proof contract text: {', '.join(missing)}"))
+            findings.append(
+                _finding(
+                    "engineer",
+                    f"{artifact.identity} is missing authored component sections: {', '.join(missing)}",
+                )
+            )
     return findings
 
 
 def _atlas_findings(*, artifacts: Sequence[RenderedArtifact], proposal: Mapping[str, Any]) -> list[PackageEvidenceFinding]:
     findings: list[PackageEvidenceFinding] = []
     diagrams = [artifact for artifact in artifacts if artifact.surface == "Atlas Mermaid"]
-    expected_diagrams = len(mapping_rows(proposal.get("diagrams")))
+    diagram_rows = tuple(mapping_rows(proposal.get("diagrams")))
+    expected_diagrams = len(diagram_rows)
+    rows_by_name = {
+        f"{normalize_string(row.get('slug'))}.mmd": row
+        for row in diagram_rows
+        if normalize_string(row.get("slug"))
+    }
     if len(diagrams) != expected_diagrams:
         findings.append(
             _finding(
@@ -233,12 +248,75 @@ def _atlas_findings(*, artifacts: Sequence[RenderedArtifact], proposal: Mapping[
             )
         )
     for artifact in diagrams:
-        labels = visible_mermaid_label_quality_texts(artifact.text)
+        labels = {
+            normalize_string(label).casefold()
+            for label in visible_mermaid_label_quality_texts(artifact.text)
+            if normalize_string(label)
+        }
+        diagram_row = rows_by_name.get(artifact.name, {})
         if len(labels) < 2:
-            findings.append(_finding("architect", f"{artifact.identity} has too few visible topology labels"))
-        if not any(operator in artifact.text for operator in ("-->", "-->>", "-.->", "==>", "->>")):
-            findings.append(_finding("architect", f"{artifact.identity} has no visible topology edge"))
+            findings.append(
+                _finding(
+                    "architect",
+                    f"{artifact.identity} does not expose two distinct typed concepts",
+                )
+            )
+        if _has_self_nested_product_component(diagram_row):
+            findings.append(
+                _finding(
+                    "architect",
+                    f"{artifact.identity} repeats the product boundary as an identically named child component",
+                )
+            )
+        if (
+            not parse_mermaid_graph(artifact.text).edges
+            and not _has_distinct_typed_containment(diagram_row)
+        ):
+            findings.append(
+                _finding(
+                    "architect",
+                    f"{artifact.identity} has neither a typed edge nor a distinct containment relation",
+                )
+            )
     return findings
+
+
+def _has_self_nested_product_component(diagram: Mapping[str, Any]) -> bool:
+    if normalize_string(diagram.get("projection_origin")) != AUTHORED_PROJECTION_ORIGIN:
+        return False
+    boxes = tuple(mapping_rows(diagram.get("diagram_boxes")))
+    product_labels = {
+        normalize_string(box.get("label")).casefold()
+        for box in boxes
+        if normalize_string(box.get("role")).casefold() == "product boundary"
+        and normalize_string(box.get("label"))
+    }
+    component_labels = {
+        normalize_string(box.get("label")).casefold()
+        for box in boxes
+        if normalize_string(box.get("role")).casefold() == "product-owned component"
+        and normalize_string(box.get("label"))
+    }
+    return bool(product_labels & component_labels)
+
+
+def _has_distinct_typed_containment(diagram: Mapping[str, Any]) -> bool:
+    if normalize_string(diagram.get("projection_origin")) != AUTHORED_PROJECTION_ORIGIN:
+        return False
+    boxes = tuple(mapping_rows(diagram.get("diagram_boxes")))
+    container_labels = {
+        normalize_string(box.get("label")).casefold()
+        for box in boxes
+        if normalize_string(box.get("role")).casefold() in {"container", "product boundary"}
+        and normalize_string(box.get("label"))
+    }
+    child_labels = {
+        normalize_string(box.get("label")).casefold()
+        for box in boxes
+        if normalize_string(box.get("role")).casefold() not in {"container", "product boundary"}
+        and normalize_string(box.get("label"))
+    }
+    return any(child != container for container in container_labels for child in child_labels)
 
 
 def _next_step_findings(package: Any) -> list[PackageEvidenceFinding]:

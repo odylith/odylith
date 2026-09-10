@@ -18,12 +18,18 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     FIRST_PATH_CONTEXT_KINDS,
     FIRST_PATH_CONTEXT_RELATION_FIELDS,
     FIRST_PATH_RELATION_FIELDS,
+    GreenfieldAuthoredSemanticsError,
     authored_relation_set_sha256,
     combined_prompt_evidence_source,
+    expected_first_path_context_event_order,
+)
+from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
+    event_target_is_source_bound,
+    intent_terminal_result_values,
 )
 
 
-RELATION_FIDELITY_ANNOTATION_VERSION = "odylith.greenfield.relation-fidelity-annotation.v2"
+RELATION_FIDELITY_ANNOTATION_VERSION = "odylith.greenfield.relation-fidelity-annotation.v4"
 RELATION_FAMILIES = (
     "first_path_events",
     "context_relations",
@@ -36,6 +42,7 @@ _SEMANTICS_FIELDS = frozenset(
         "first_path_relations",
         "first_path_context_relations",
         "component_responsibility_relations",
+        "provisional_design",
     }
 )
 _EVENT_FIELDS = frozenset(
@@ -47,7 +54,6 @@ _EVENT_FIELDS = frozenset(
         "event_end_byte",
         "event_sha256",
         "actor_kind",
-        "actor_sha256",
         "actor_fact_path",
         "actor_fact_sha256",
         "product_owner_path",
@@ -55,13 +61,11 @@ _EVENT_FIELDS = frozenset(
         "action_verb_sha256",
         "target_sha256",
         "visible_result_sha256",
-        "recovery_path",
     }
 )
 _EVENT_ACTOR_KIND_INDEX = 7
-_EVENT_OWNER_PATH_INDEX = 11
-_EVENT_OWNER_SHA_INDEX = 12
-_EVENT_VISIBLE_SHA_INDEX = 15
+_EVENT_OWNER_PATH_INDEX = 10
+_EVENT_OWNER_SHA_INDEX = 11
 _CONTEXT_FIELDS = frozenset(
     {
         "context_kind",
@@ -109,7 +113,7 @@ def annotation_relation_evidence(
 
     issues: list[str] = []
     if not isinstance(value, Mapping) or set(value) != _ANNOTATION_FIELDS:
-        return _empty_evidence("relation_fidelity must use the exact v2 typed fields")
+        return _empty_evidence("relation_fidelity must use the exact typed fields")
     if value.get("version") != RELATION_FIDELITY_ANNOTATION_VERSION:
         issues.append(
             "relation_fidelity must declare "
@@ -135,7 +139,7 @@ def annotation_relation_evidence(
     contexts, context_issues = _annotation_context_keys(
         value.get("context_relations"),
         source_bytes=source_bytes,
-        event_orders=frozenset(event_by_order),
+        first_path_relations=_mapping_rows(value.get("first_path_events")) or (),
         projection_identities=projection_identities,
     )
     issues.extend(context_issues)
@@ -173,7 +177,7 @@ def annotation_relation_evidence(
             "first_path_events": len(events),
             "context_relations": sum(selected_contexts.values()),
             "component_responsibility_relations": (
-                sum(selected_responsibilities.values()) or 1
+                sum(selected_responsibilities.values())
             ),
         },
         issues=tuple(dict.fromkeys(issues)),
@@ -206,6 +210,7 @@ def snapshot_relation_evidence(
             events,
             components,
             first_path_context_relations=contexts,
+            provisional_design=semantics.get("provisional_design"),
         )
     except (TypeError, ValueError):
         return _empty_evidence("sealed authored_semantics relation set is malformed")
@@ -221,16 +226,11 @@ def snapshot_relation_evidence(
         facts=facts,
         source_bytes=source_bytes,
     )
-    event_by_order = {
-        int(key[1]): key
-        for key in event_keys
-        if isinstance(key[1], int) and not isinstance(key[1], bool)
-    }
     context_keys, context_issues = _snapshot_context_keys(
         contexts,
         facts=facts,
         source_bytes=source_bytes,
-        event_orders=frozenset(event_by_order),
+        first_path_relations=events,
     )
     selected_contexts = _snapshot_context_facts(facts)
     context_issues = (
@@ -269,7 +269,7 @@ def snapshot_relation_evidence(
             "first_path_events": len(event_keys),
             "context_relations": sum(selected_contexts.values()),
             "component_responsibility_relations": (
-                sum(selected_responsibilities.values()) or 1
+                sum(selected_responsibilities.values())
             ),
         },
         issues=tuple(
@@ -301,7 +301,6 @@ def _annotation_event_keys(
         projection_range = _range(row.get("event_start_byte"), row.get("event_end_byte"))
         event_sha = str(row.get("event_sha256") or "")
         actor_kind = str(row.get("actor_kind") or "")
-        actor_sha = str(row.get("actor_sha256") or "")
         actor_path = str(row.get("actor_fact_path") or "")
         actor_fact_sha = str(row.get("actor_fact_sha256") or "")
         owner_path = str(row.get("product_owner_path") or "")
@@ -309,7 +308,6 @@ def _annotation_event_keys(
         action_sha = str(row.get("action_verb_sha256") or "")
         target_sha = str(row.get("target_sha256") or "")
         visible_sha = str(row.get("visible_result_sha256") or "")
-        recovery_path = row.get("recovery_path")
         if order != index:
             issues.append(f"{label} order must be contiguous and one-based")
         if not _source_hash_matches(source_bytes, source_range, event_sha):
@@ -326,14 +324,14 @@ def _annotation_event_keys(
             projection_cursor = projection_range[1]
         if actor_kind not in FIRST_PATH_ACTOR_KINDS:
             issues.append(f"{label} actor_kind is invalid")
-        if not is_sha256(actor_sha):
-            issues.append(f"{label} actor_sha256 is invalid")
         if not _actor_path_matches_kind(actor_path, actor_kind):
             issues.append(f"{label} actor fact path is invalid for its actor kind")
         if (actor_path, actor_fact_sha) not in projection_identities:
             issues.append(f"{label} actor fact identity is not atom-grounded")
-        if role_hashes.get((index, "actor_quote"), frozenset()) != frozenset({actor_sha}):
-            issues.append(f"{label} actor quote is not atom-grounded at its event order")
+        if role_hashes.get((index, "actor_fact_quote"), frozenset()) != frozenset(
+            {actor_fact_sha}
+        ):
+            issues.append(f"{label} actor fact is not atom-grounded at its event order")
         if actor_kind == "product":
             if (
                 owner_path != actor_path or owner_sha != actor_fact_sha
@@ -362,8 +360,6 @@ def _annotation_event_keys(
                 issues.append(f"{label} visible result is not atom-grounded")
         elif role_hashes.get((index, "visible_result_quote"), frozenset()):
             issues.append(f"{label} omits an atom-grounded visible result")
-        if not isinstance(recovery_path, bool):
-            issues.append(f"{label} recovery_path must be boolean")
         keys.append(
             (
                 "event",
@@ -372,7 +368,6 @@ def _annotation_event_keys(
                 *(projection_range or (-1, -1)),
                 event_sha,
                 actor_kind,
-                actor_sha,
                 actor_path,
                 actor_fact_sha,
                 owner_path,
@@ -380,7 +375,6 @@ def _annotation_event_keys(
                 action_sha,
                 target_sha,
                 visible_sha,
-                recovery_path,
             )
         )
     if len(keys) != len(set(keys)):
@@ -392,7 +386,7 @@ def _annotation_context_keys(
     value: Any,
     *,
     source_bytes: bytes,
-    event_orders: frozenset[int],
+    first_path_relations: Sequence[Mapping[str, Any]],
     projection_identities: frozenset[tuple[str, str]],
 ) -> tuple[tuple[tuple[Any, ...], ...], tuple[str, ...]]:
     rows = _mapping_rows(value)
@@ -416,9 +410,10 @@ def _annotation_context_keys(
             issues.append(f"{label} context fact identity is not atom-grounded")
         if not _source_hash_matches(source_bytes, source_range, fact_sha):
             issues.append(f"{label} context source custody is invalid")
-        if event_order is None or (
-            event_order != 0 and event_order not in event_orders
-        ) or (kind == "state_object" and event_order == 0):
+        if event_order is None or event_order != _product_context_event_order(
+            source_range=source_range,
+            first_path_relations=first_path_relations,
+        ):
             issues.append(f"{label} event linkage is invalid")
         keys.append(
             (
@@ -442,8 +437,8 @@ def _annotation_component_keys(
     projection_identities: frozenset[tuple[str, str]],
 ) -> tuple[tuple[tuple[Any, ...], ...], tuple[str, ...]]:
     rows = _mapping_rows(value)
-    if rows is None or not rows:
-        return (), ("relation_fidelity requires component responsibility ownership",)
+    if rows is None:
+        return (), ("relation_fidelity component responsibility ownership must be an array",)
     issues: list[str] = []
     keys: list[tuple[Any, ...]] = []
     for index, row in enumerate(rows, start=1):
@@ -475,13 +470,6 @@ def _annotation_component_keys(
                 responsibility_sha,
             ) not in projection_identities:
                 issues.append(f"{label} accepted responsibility is not atom-grounded")
-        elif (
-            responsibility_path != "/first_path"
-            or event is None
-            or not responsibility_sha
-            or responsibility_sha != event[_EVENT_VISIBLE_SHA_INDEX]
-        ):
-            issues.append(f"{label} terminal responsibility does not match its visible result")
         keys.append(
             (
                 "component",
@@ -519,7 +507,6 @@ def _snapshot_event_keys(
         projection_range = _range(row.get("event_start_byte"), row.get("event_end_byte"))
         event_quote = str(row.get("event_quote") or "")
         actor_kind = str(row.get("actor_kind") or "")
-        actor_quote = str(row.get("actor_quote") or "")
         actor_fact_path = str(row.get("actor_fact_path") or "")
         actor_fact_quote = str(row.get("actor_fact_quote") or "")
         owner_path = str(row.get("owner_system_path") or "")
@@ -527,7 +514,6 @@ def _snapshot_event_keys(
         action_quote = str(row.get("action_verb_quote") or "")
         target_quote = str(row.get("target_quote") or "")
         visible_quote = str(row.get("visible_result_quote") or "")
-        recovery_path = row.get("recovery_path")
         if order != index:
             issues.append(f"{label} order is not contiguous and one-based")
         if not _exact_slice(source_bytes, source_range, event_quote):
@@ -540,12 +526,15 @@ def _snapshot_event_keys(
             issues.append(f"{label} projection range does not contain its exact event")
         else:
             cursor = projection_range[1]
-        if actor_kind not in FIRST_PATH_ACTOR_KINDS or not actor_quote or actor_quote not in event_quote:
-            issues.append(f"{label} actor is not an exact typed event quote")
-        if not action_quote or action_quote not in event_quote or (target_quote and target_quote not in event_quote):
+        if actor_kind not in FIRST_PATH_ACTOR_KINDS:
+            issues.append(f"{label} actor identity is invalid")
+        if not action_quote or action_quote not in event_quote:
             issues.append(f"{label} action is not exactly grounded in its event")
-        if not isinstance(recovery_path, bool):
-            issues.append(f"{label} recovery_path is not boolean")
+        if not event_target_is_source_bound(
+            event_quote=event_quote,
+            target_quote=target_quote,
+        ):
+            issues.append(f"{label} target is not exactly grounded in its event")
         if (
             not _actor_path_matches_kind(actor_fact_path, actor_kind)
             or _projection_value(facts, actor_fact_path) != actor_fact_quote
@@ -560,8 +549,10 @@ def _snapshot_event_keys(
                 issues.append(f"{label} product owner is not bound to its exact selected fact")
         elif owner_path or owner_quote:
             issues.append(f"{label} non-product event declares a product owner")
-        if visible_quote and visible_quote not in event_quote:
-            issues.append(f"{label} visible result is not an exact event quote")
+        if visible_quote and not any(
+            visible_quote in fact for fact in intent_terminal_result_values(facts)
+        ):
+            issues.append(f"{label} visible result is not bound to an eligible source fact")
         keys.append(
             (
                 "event",
@@ -570,7 +561,6 @@ def _snapshot_event_keys(
                 *(projection_range or (-1, -1)),
                 _sha256(event_quote),
                 actor_kind,
-                _sha256(actor_quote),
                 actor_fact_path,
                 _sha256(actor_fact_quote) if actor_fact_quote else "",
                 owner_path,
@@ -578,7 +568,6 @@ def _snapshot_event_keys(
                 _sha256(action_quote) if action_quote else "",
                 _sha256(target_quote) if target_quote else "",
                 _sha256(visible_quote) if visible_quote else "",
-                recovery_path,
             )
         )
     if not keys:
@@ -593,7 +582,7 @@ def _snapshot_context_keys(
     *,
     facts: Mapping[str, Any],
     source_bytes: bytes,
-    event_orders: frozenset[int],
+    first_path_relations: Sequence[Mapping[str, Any]],
 ) -> tuple[tuple[tuple[Any, ...], ...], tuple[str, ...]]:
     issues: list[str] = []
     keys: list[tuple[Any, ...]] = []
@@ -613,9 +602,10 @@ def _snapshot_context_keys(
             issues.append(f"{label} does not match its exact selected fact")
         if not _exact_slice(source_bytes, source_range, quote):
             issues.append(f"{label} does not match its exact source range")
-        if event_order is None or (
-            event_order and event_order not in event_orders
-        ) or (kind == "state_object" and event_order == 0):
+        if event_order is None or event_order != _product_context_event_order(
+            source_range=source_range,
+            first_path_relations=first_path_relations,
+        ):
             issues.append(f"{label} has an invalid event linkage")
         keys.append(
             (
@@ -630,6 +620,23 @@ def _snapshot_context_keys(
     if len(keys) != len(set(keys)):
         issues.append("sealed context relation identities are duplicated")
     return tuple(keys), tuple(issues)
+
+
+def _product_context_event_order(
+    *,
+    source_range: tuple[int, int] | None,
+    first_path_relations: Sequence[Mapping[str, Any]],
+) -> int | None:
+    if source_range is None:
+        return None
+    try:
+        return expected_first_path_context_event_order(
+            source_start=source_range[0],
+            source_end=source_range[1],
+            first_path_relations=first_path_relations,
+        )
+    except GreenfieldAuthoredSemanticsError:
+        return None
 
 
 def _snapshot_component_keys(
@@ -663,13 +670,6 @@ def _snapshot_component_keys(
         if source == "accepted_fact":
             if _projection_value(facts, responsibility_path) != responsibility_quote:
                 issues.append(f"{label} does not match its exact responsibility fact")
-        elif source == "terminal_visible_result":
-            if (
-                responsibility_path != "/first_path"
-                or event is None
-                or str(event.get("visible_result_quote") or "") != responsibility_quote
-            ):
-                issues.append(f"{label} does not match its exact terminal visible result")
         else:
             issues.append(f"{label} has an invalid responsibility_source")
         keys.append(
@@ -683,8 +683,6 @@ def _snapshot_component_keys(
                 source,
             )
         )
-    if not keys:
-        issues.append("sealed authored_semantics has no component responsibility ownership")
     if len(keys) != len(set(keys)):
         issues.append("sealed component relation identities are duplicated")
     return tuple(keys), tuple(issues)
@@ -823,17 +821,9 @@ def _component_completeness_issues(
         for key in observed
         if len(key) == 7 and key[6] == "accepted_fact"
     )
-    terminal_count = sum(
-        1
-        for key in observed
-        if len(key) == 7 and key[6] == "terminal_visible_result"
-    )
     complete = (
         accepted == selected
-        and terminal_count == 0
         and len(observed) == sum(accepted.values())
-        if selected
-        else len(observed) == 1 and terminal_count == 1 and not accepted
     )
     if complete:
         return ()

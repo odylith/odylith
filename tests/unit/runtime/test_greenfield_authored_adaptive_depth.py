@@ -1,4 +1,4 @@
-"""Adaptive artifact depth on the sealed model-authored proposal route."""
+"""Source fidelity across required structural provisional-design projections."""
 
 from __future__ import annotations
 
@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
     STANDARD_PROFILE_ID,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
 )
@@ -33,7 +34,6 @@ def _proposal(
     intent: dict[str, Any],
     relations: list[dict[str, Any]],
     responsibility_owners: list[str],
-    responsibility_event_orders: list[int],
 ) -> dict[str, Any]:
     source = _source(intent)
     candidate = materialize_model_authored_intent(
@@ -45,11 +45,11 @@ def _proposal(
                 evidence_text=source,
                 first_path_relations=relations,
                 component_responsibility_owners=responsibility_owners,
-                component_responsibility_event_orders=responsibility_event_orders,
             )
         ),
         authoring_timeout_seconds=54,
         authoring_profile_id=STANDARD_PROFILE_ID,
+        review_provider_factory=AdmittingReviewProvider,
     )
     return greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
@@ -93,36 +93,32 @@ def _simple_proposal(tmp_path: Path) -> dict[str, Any]:
         relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Dock attendant",
+                "actor_fact_quote": "Dock attendant",
                 "event_quote": "Dock attendant enters a berth request",
                 "action_verb_quote": "enters",
                 "target_quote": "berth request",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Intake Board",
+                "actor_fact_quote": "Intake Board",
                 "owner_system_quote": "Intake Board",
                 "event_quote": "Intake Board records the berth request",
                 "action_verb_quote": "records",
                 "target_quote": "berth request",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Intake Board",
+                "actor_fact_quote": "Intake Board",
                 "owner_system_quote": "Intake Board",
                 "event_quote": "Intake Board shows a signed berth receipt",
                 "action_verb_quote": "shows",
                 "target_quote": "signed berth receipt",
                 "visible_result_quote": "signed berth receipt",
-                "recovery_path": False,
             },
         ],
         responsibility_owners=["Intake Board"],
-        responsibility_event_orders=[2],
     )
 
 
@@ -172,45 +168,40 @@ def _structured_proposal(tmp_path: Path) -> dict[str, Any]:
         relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Dock attendant",
+                "actor_fact_quote": "Dock attendant",
                 "event_quote": "Dock attendant submits a cargo request",
                 "action_verb_quote": "submits",
                 "target_quote": "cargo request",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Intake Router",
+                "actor_fact_quote": "Intake Router",
                 "owner_system_quote": "Intake Router",
                 "event_quote": "Intake Router records the cargo request",
                 "action_verb_quote": "records",
                 "target_quote": "cargo request",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "human",
-                "actor_quote": "Harbor reviewer",
+                "actor_fact_quote": "Harbor reviewer",
                 "event_quote": "Harbor reviewer approves the cargo request",
                 "action_verb_quote": "approves",
                 "target_quote": "cargo request",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Receipt Ledger",
+                "actor_fact_quote": "Receipt Ledger",
                 "owner_system_quote": "Receipt Ledger",
                 "event_quote": "Receipt Ledger publishes a signed cargo receipt",
                 "action_verb_quote": "publishes",
                 "target_quote": "signed cargo receipt",
                 "visible_result_quote": "signed cargo receipt",
-                "recovery_path": False,
             },
         ],
         responsibility_owners=["Intake Router", "Receipt Ledger"],
-        responsibility_event_orders=[2, 4],
     )
 
 
@@ -224,7 +215,6 @@ def _sparse_proposal(
     component_responsibilities: list[str],
     relations: list[dict[str, Any]],
     responsibility_owners: list[str],
-    responsibility_event_orders: list[int],
 ) -> dict[str, Any]:
     first_path = ". ".join(row["event_quote"] for row in relations) + "."
     intent = {
@@ -253,274 +243,338 @@ def _sparse_proposal(
         intent=intent,
         relations=relations,
         responsibility_owners=responsibility_owners,
-        responsibility_event_orders=responsibility_event_orders,
     )
 
 
-def _semantic_values(proposal: dict[str, Any]) -> dict[str, str]:
+def _assert_structural_design_projection_preserves_source(proposal: dict[str, Any]) -> None:
+    """Characterize structural fixture custody, not proposed-design usefulness."""
+
     intent = proposal["intent"]
-    values = {
-        f"/{field}": intent[field]
-        for field in (
-            "title",
-            "product_story",
-            "problem",
-            "customer",
-            "opportunity",
-            "product_view",
-            "state_object",
-            "first_path",
-            "proof_boundary",
-        )
-    }
-    for field in (
-        "human_actors",
-        "internal_systems",
-        "external_systems",
-        "success_metrics",
-        "evidence_requirements",
-        "non_goals",
-        "operational_constraints",
-        "component_responsibilities",
-    ):
-        values.update(
-            {
-                f"/{field}/{index}": value
-                for index, value in enumerate(intent.get(field, []))
-            }
-        )
     semantics = intent["authored_semantics"]
-    for field, quote_field in (
-        ("first_path_relations", "event_quote"),
-        ("first_path_context_relations", "fact_quote"),
-        ("component_responsibility_relations", "responsibility_quote"),
+    relations = semantics["first_path_relations"]
+    design = semantics["provisional_design"]
+    visible_package = str({
+        field: proposal[field]
+        for field in (
+            "assumptions",
+            "project_brief",
+            "project_intelligence",
+            "release_plan",
+            "backlog",
+            "components",
+            "semantic_model",
+            "diagrams",
+        )
+    })
+    for field in (
+        "title",
+        "product_story",
+        "problem",
+        "customer",
+        "opportunity",
+        "product_view",
+        "state_object",
+        "proof_boundary",
     ):
-        values.update(
-            {
-                f"/authored_semantics/{field}/{index}": row[quote_field]
-                for index, row in enumerate(semantics[field])
-            }
-        )
-    return values
-
-
-def _assert_owned_rendering(proposal: dict[str, Any]) -> None:
-    source_values = _semantic_values(proposal)
-    for row in proposal["backlog"]:
-        assert len({row["problem"], row["opportunity"], row["product_view"]}) == 3
-        contract = row["authored_workstream_semantics"]
-        owned_refs = (
-            set(contract["fact_refs"])
-            | set(contract["relation_refs"])
-            | set(contract["shared_fact_refs"])
-        )
-        rendered_text = {
-            "title": row["title"],
-            "problem": row["problem"],
-            "customer": row["customer"],
-            "opportunity": row["opportunity"],
-            "product_view": row["product_view"],
-            "success_metrics": "\n".join(row["success_metrics"]),
-            "recommended_first_slice": row["recommended_first_slice"],
-            "dependencies": "\n".join(row["dependencies"]),
-            "validation": "\n".join(row["validation"]),
-            "deferred_scope": "\n".join(row["ordering_decision"]["deferred_scope"]),
-            "scope": row["radar_sections"]["Scope"],
-            "ordering_why_now": row["ordering_decision"]["why_now"],
-            "ordering_expected_outcome": row["ordering_decision"]["expected_outcome"],
-            **{
-                f"radar_sections.{section}": body
-                for section, body in row["radar_sections"].items()
-            },
-        }
-        for field, refs in contract["rendered_field_refs"].items():
-            assert set(refs) <= owned_refs
-            assert all(source_values[ref] in rendered_text[field] for ref in refs)
-        component_refs = contract["rendered_field_refs"][
-            "radar_sections.Impacted Components"
-        ]
-        rendered_components = {
-            line.removeprefix("- ")
-            for line in row["radar_sections"]["Impacted Components"].splitlines()
-            if line.startswith("- ")
-        }
-        assert {source_values[ref] for ref in component_refs} == rendered_components
-
-
-def _assert_component_ownership_is_source_exact(proposal: dict[str, Any]) -> None:
-    intent = proposal["intent"]
-    assert {row["label"] for row in proposal["components"]} == set(
-        intent["internal_systems"]
-    )
-    assert {row["responsibility"] for row in proposal["components"]} == set(
-        intent["component_responsibilities"]
-    )
+        if intent.get(field):
+            assert intent[field] in visible_package
+    assert all(row["event_quote"] in visible_package for row in relations)
+    for field in (
+        "success_metrics",
+        "component_responsibilities",
+        "human_actors",
+        "external_systems",
+        "internal_systems",
+        "non_goals",
+        "evidence_requirements",
+        "operational_constraints",
+    ):
+        assert all(value in visible_package for value in intent.get(field, []))
     assert all(
-        row["component_contract"]["owner_system"] == row["label"]
-        for row in proposal["components"]
+        row["statement"] in visible_package for row in intent.get("assumptions", [])
     )
+    assert proposal["semantic_model"]["provisional_design"] == design
+    assert [row["label"] for row in proposal["components"]] == [
+        row["name"] for row in design["components"]
+    ]
+    assert [row["title"] for row in proposal["backlog"]] == [
+        row["title"] for row in design["workstreams"]
+    ]
+    supported_events: list[dict[str, Any]] = []
+    for index, (projected, canonical) in enumerate(
+        zip(proposal["components"], design["components"], strict=True)
+    ):
+        contract = projected["component_contract"]
+        assert projected["authority_kind"] == "provisional_design"
+        assert contract["authority_kind"] == "provisional_design"
+        assert contract["design_ref"] == f"/authored_semantics/provisional_design/components/{index}"
+        assert contract["provisional_component"] == canonical
+        assert contract["supporting_events"] == [
+            relations[order - 1] for order in canonical["supported_event_orders"]
+        ]
+        supported_events.extend(contract["supporting_events"])
+    assert all(relation in supported_events for relation in relations)
+    titles_by_key = {row["key"]: row["title"] for row in design["workstreams"]}
+    for index, (projected, canonical) in enumerate(
+        zip(proposal["backlog"], design["workstreams"], strict=True)
+    ):
+        contract = projected["provisional_workstream_contract"]
+        assert projected["authority_kind"] == projected["workstream_role"] == "provisional_design"
+        assert projected["component_focus"] == canonical["component_keys"]
+        assert contract["design_ref"] == f"/authored_semantics/provisional_design/workstreams/{index}"
+        assert contract["provisional_workstream"] == canonical
+        assert projected["dependencies"] == [
+            titles_by_key[key] for key in canonical["depends_on"]
+        ]
+        assert "actor's ownership" in projected["radar_sections"]["Design Authority"]
 
 
-def test_boundary_free_authored_project_keeps_one_complete_row_and_three_views(
+def test_boundary_free_source_keeps_complete_structural_design_projection(
     tmp_path: Path,
 ) -> None:
     proposal = _simple_proposal(tmp_path)
 
-    assert [row["workstream_role"] for row in proposal["backlog"]] == ["project"]
+    assert [row["workstream_role"] for row in proposal["backlog"]] == [
+        "provisional_design"
+    ] * 4
     assert [row["title"] for row in proposal["diagrams"]] == [
         "System Context View",
-        "First Path Sequence",
-        "State and Evidence View",
+        "Proposed First Run",
+        "Proposed Component Exchanges",
+        "Proposed Delivery Dependencies and Acceptance",
+        "Proposed Capability Support and Source Facts",
     ]
     project = proposal["backlog"][0]
-    semantics = project["authored_workstream_semantics"]
-    assert semantics["role"] == "project"
-    assert "/product_story" in semantics["fact_refs"]
-    assert "/first_path" in semantics["fact_refs"]
     assert "Berth requests are hard to review." in project["problem"]
-    assert "Dock attendants receive a reviewable berth receipt." in project["radar_sections"]["Scope"]
-    assert proposal["intent"]["first_path"] in project["product_view"]
-    assert any("signed berth receipt" in metric for metric in project["success_metrics"])
-    _assert_owned_rendering(proposal)
+    assert proposal["intent"]["product_story"] == "Dock attendants receive a reviewable berth receipt."
+    assert "Harbor Desk records one berth request and shows its receipt." in project["product_view"]
+    assert "A dock attendant sees a signed berth receipt." in project["radar_sections"]["Source Success Metrics"]
+    _assert_structural_design_projection_preserves_source(proposal)
+    workstream_titles = [row["title"] for row in proposal["backlog"]]
     assert all(
-        row["related_workstream_titles"] == ["Deliver Harbor Desk"]
+        row["related_workstream_titles"] == workstream_titles
         for row in proposal["diagrams"]
     )
 
 
-def test_structured_authored_project_adds_only_distinct_typed_workstream_roles(
+def test_one_typed_event_keeps_complete_structural_projection_without_extra_events(
+    tmp_path: Path,
+) -> None:
+    proposal = _sparse_proposal(
+        tmp_path,
+        internal_systems=["Sparse Relay"],
+        external_systems=[],
+        evidence_requirements=["Retain the request receipt."],
+        operational_constraints=["Keep the request reviewable."],
+        component_responsibilities=["Record the request."],
+        relations=[
+            {
+                "actor_kind": "human",
+                "actor_fact_quote": "Dock attendant",
+                "event_quote": "Dock attendant records a request",
+                "action_verb_quote": "records",
+                "target_quote": "request",
+                "visible_result_quote": "request receipt",
+            }
+        ],
+        responsibility_owners=["Sparse Relay"],
+    )
+
+    assert [row["title"] for row in proposal["diagrams"]] == [
+        "System Context View",
+        "Proposed First Run",
+        "Proposed Component Exchanges",
+        "Proposed Delivery Dependencies and Acceptance",
+        "Proposed Capability Support and Source Facts",
+    ]
+    assert len(proposal["semantic_model"]["first_path_contract"]["events"]) == 1
+    assert all(
+        component["component_contract"]["supporting_events"][0]["event_quote"]
+        == "Dock attendant records a request"
+        for component in proposal["components"]
+    )
+    _assert_structural_design_projection_preserves_source(proposal)
+
+
+def test_structured_source_projects_distinct_canonical_design_with_source_custody(
     tmp_path: Path,
 ) -> None:
     proposal = _structured_proposal(tmp_path)
     backlog = proposal["backlog"]
+    intent = proposal["intent"]
+    design = intent["authored_semantics"]["provisional_design"]
 
-    assert [row["workstream_role"] for row in backlog] == [
-        "project",
-        "workflow",
-        "boundary",
-        "proof",
-    ]
+    assert [row["workstream_role"] for row in backlog] == ["provisional_design"] * 4
     assert len({row["title"] for row in backlog}) == 4
-    assert backlog[-1]["component_focus"] == ["receipt-ledger"]
-    semantics = {
-        row["workstream_role"]: row["authored_workstream_semantics"]
-        for row in backlog
-    }
-    assert semantics["workflow"]["fact_refs"] == [
-        "/first_path",
-        "/opportunity",
-        "/human_actors/0",
-        "/human_actors/1",
+    assert [row["component_focus"] for row in backlog] == [
+        row["component_keys"] for row in design["workstreams"]
     ]
-    assert semantics["workflow"]["relation_refs"] == [
-        "/authored_semantics/first_path_relations/0",
-        "/authored_semantics/first_path_relations/1",
-        "/authored_semantics/first_path_relations/2",
-        "/authored_semantics/first_path_relations/3",
+    source_events = [
+        row["event_quote"]
+        for row in intent["authored_semantics"]["first_path_relations"]
     ]
-    assert set(semantics["boundary"]["fact_refs"]) == {
-        "/external_systems/0",
-        "/external_systems/1",
-        "/non_goals/0",
-        "/non_goals/1",
-        "/internal_systems/0",
-        "/internal_systems/1",
-        "/component_responsibilities/0",
-        "/component_responsibilities/1",
-    }
-    assert semantics["proof"]["fact_refs"] == [
-        "/proof_boundary",
-        "/success_metrics/0",
-        "/success_metrics/1",
-        "/evidence_requirements/0",
-        "/evidence_requirements/1",
-        "/operational_constraints/0",
-        "/operational_constraints/1",
+    assert source_events == [
+        "Dock attendant submits a cargo request",
+        "Intake Router records the cargo request",
+        "Harbor reviewer approves the cargo request",
+        "Receipt Ledger publishes a signed cargo receipt",
     ]
-    claimed_fact_refs = [
-        ref
-        for contract in semantics.values()
-        for ref in contract["fact_refs"]
-    ]
-    claimed_relation_refs = [
-        ref
-        for contract in semantics.values()
-        for ref in contract["relation_refs"]
-    ]
-    assert len(claimed_fact_refs) == len(set(claimed_fact_refs))
-    assert len(claimed_relation_refs) == len(set(claimed_relation_refs))
-    assert "Harbor reviewer approves the cargo request" in backlog[1]["product_view"]
-    assert "Keep one multi-owner cargo path reviewable." in backlog[1]["opportunity"]
-    assert "Archive Vault" in backlog[2]["opportunity"]
-    assert "A dock attendant sees the signed cargo receipt." in backlog[3]["success_metrics"]
-    _assert_owned_rendering(proposal)
-    assert semantics["project"]["shared_fact_refs"] == [
-        "/internal_systems/0",
-        "/internal_systems/1",
-    ]
-    assert semantics["workflow"]["shared_fact_refs"] == [
-        "/title",
-        "/customer",
-        "/internal_systems/0",
-        "/internal_systems/1",
-    ]
-    assert semantics["boundary"]["shared_fact_refs"] == ["/title", "/customer"]
-    assert semantics["proof"]["shared_fact_refs"] == [
-        "/title",
-        "/customer",
-        "/internal_systems/1",
-    ]
-    for row in backlog[1:]:
-        contract = row["authored_workstream_semantics"]
-        assert {"/title", "/customer"} <= set(contract["shared_fact_refs"])
-        assert not set(contract["shared_fact_refs"]) & set(contract["fact_refs"])
-        rendered_refs = {
-            ref
-            for refs in contract["rendered_field_refs"].values()
-            for ref in refs
-        }
-        assert set(contract["shared_fact_refs"]) <= rendered_refs
-        assert row["customer"] == proposal["intent"]["customer"]
-    proof_boundary = proposal["intent"]["proof_boundary"]
-    for row in backlog[1:3]:
-        assert proof_boundary not in str(row["success_metrics"])
-        assert proof_boundary not in str(row["validation"])
-        assert proof_boundary not in str(row["ordering_decision"])
-        assert proof_boundary not in row["radar_sections"]["Rollout"]
+    for row in backlog:
+        assert row["problem"] == f"Source fact — {intent['problem']}"
+        assert row["customer"] == f"Source fact — {intent['customer']}"
+        assert row["opportunity"] == f"Source fact — {intent['opportunity']}"
+        assert row["product_view"] == f"Source fact — {intent['product_view']}"
+        assert all(value in row["radar_sections"]["Non-Goals"] for value in intent["non_goals"])
+        assert all(
+            value in row["radar_sections"]["Operational Constraints"]
+            for value in intent["operational_constraints"]
+        )
+    rendered_support = "\n".join(
+        row["radar_sections"]["Source Event Support"] for row in backlog
+    )
+    assert all(event in rendered_support for event in source_events)
     assert all(
         row["recommended_first_slice"] in row["radar_sections"]["Rollout"]
         for row in backlog
     )
-    not_applicable = [
-        body
-        for row in backlog
-        for body in row["radar_sections"].values()
-        if body.startswith("- Not applicable")
-    ]
-    assert len(not_applicable) == len(set(not_applicable))
-    assert all(row["workstream_role"] in "\n".join(row["radar_sections"].values()) for row in backlog)
-    assert "No source-stated" not in "\n".join(
-        body for row in backlog for body in row["radar_sections"].values()
-    )
+    _assert_structural_design_projection_preserves_source(proposal)
 
     diagrams = {row["title"]: row for row in proposal["diagrams"]}
     assert set(diagrams) == {
         "System Context View",
-        "First Path Sequence",
-        "State and Evidence View",
-        "Component Boundary View",
+        "Proposed First Run",
+        "Proposed Component Exchanges",
+        "Proposed Delivery Dependencies and Acceptance",
+        "Proposed Capability Support and Source Facts",
     }
-    assert diagrams["System Context View"]["related_workstream_titles"] == [
-        "Deliver Cargo Relay",
-        "Run Cargo Relay first path",
-        "Define Cargo Relay boundaries",
+    assert [row["authority_kind"] for row in proposal["diagrams"]] == [
+        "source_grounded",
+        "provisional_design",
+        "provisional_design",
+        "provisional_design",
+        "provisional_design",
     ]
-    assert diagrams["State and Evidence View"]["related_workstream_titles"] == [
-        "Deliver Cargo Relay",
-        "Prove Cargo Relay release",
-    ]
-    assert all("Ownership and Proof" not in title for title in diagrams)
-    assert all("Release Proof Review" not in title for title in diagrams)
+    context_copy = str(diagrams["System Context View"])
+    assert "Vessel Registry" in context_copy
+    assert "Archive Vault" in context_copy
+
+
+def test_direct_evidence_graph_material_facts_survive_structural_design_projection(
+    tmp_path: Path,
+) -> None:
+    first_path = (
+        "Donor registers a batch. "
+        "Volunteer inspects the batch. "
+        "Supervisor releases the batch."
+    )
+    product_story = "Create a governed community exchange."
+    proof_boundary = "Supervisor releases the batch."
+    decisions = {
+        "problem": "Participants need to keep batch registration, inspection, and release connected.",
+        "customer": "Community exchange participants are the primary beneficiaries of the batch history.",
+        "opportunity": "A reviewable batch history can carry inspection evidence into the release decision.",
+        "product_view": "Participants should follow each batch from donation through inspection to release.",
+    }
+    intent = {
+        "title": "Community Exchange",
+        "product_story": product_story,
+        "state_object": "batch",
+        "first_path": first_path,
+        "proof_boundary": proof_boundary,
+        "problem": "",
+        "customer": "",
+        "opportunity": "",
+        "product_view": "",
+        "success_metrics": [],
+        "evidence_requirements": [
+            "Supervisor releases the batch.",
+            "Retain the release receipt.",
+        ],
+        "operational_constraints": [
+            "Preserve the release decision.",
+            "Keep inspection evidence reviewable.",
+        ],
+        "component_responsibilities": ["Preserve the release decision."],
+        "human_actors": ["Donor", "Volunteer", "Supervisor"],
+        "external_systems": ["Safety Registry"],
+        "internal_systems": [],
+        "assumptions": [
+            {"applies_to": field, "statement": statement}
+            for field, statement in decisions.items()
+        ],
+        "ambiguities": [],
+        "non_goals": ["Do not override a safety hold."],
+    }
+    proposal = _proposal(
+        tmp_path,
+        intent=intent,
+        relations=[
+            {
+                "actor_kind": "human",
+                "actor_fact_quote": "Donor",
+                "event_quote": "Donor registers a batch",
+                "action_verb_quote": "registers",
+                "target_quote": "a batch",
+                "visible_result_quote": "",
+            },
+            {
+                "actor_kind": "human",
+                "actor_fact_quote": "Volunteer",
+                "event_quote": "Volunteer inspects the batch",
+                "action_verb_quote": "inspects",
+                "target_quote": "the batch",
+                "visible_result_quote": "",
+            },
+            {
+                "actor_kind": "human",
+                "actor_fact_quote": "Supervisor",
+                "event_quote": "Supervisor releases the batch",
+                "action_verb_quote": "releases",
+                "target_quote": "the batch",
+                "visible_result_quote": "releases the batch",
+            },
+        ],
+        responsibility_owners=["Community Exchange"],
+    )
+
+    backlog = proposal["backlog"]
+    assert [row["workstream_role"] for row in backlog] == ["provisional_design"] * 4
+    for row in backlog:
+        for index, (field, statement) in enumerate(decisions.items()):
+            assert row[field] == f"Assumption — {statement}"
+            assert row["provisional_workstream_contract"]["decision_refs"][field] == (
+                f"/assumptions/{index}"
+            )
+        assert all(
+            statement in row["radar_sections"]["Assumptions"]
+            for statement in decisions.values()
+        )
+        assert "Do not override a safety hold." in row["radar_sections"]["Non-Goals"]
+        assert "Preserve the release decision." in row["radar_sections"]["Operational Constraints"]
+        assert "Keep inspection evidence reviewable." in row["radar_sections"]["Operational Constraints"]
+    brief_sections = {
+        section["section"]: section["must_capture"]
+        for section in proposal["project_brief"]["blueprint_sections"]
+    }
+    assert brief_sections["User problem"] == f"Assumption — {decisions['problem']}"
+    assert proposal["project_brief"]["external_systems"] == ["Safety Registry"]
+    assert [
+        row["actor_fact_quote"]
+        for row in proposal["intent"]["authored_semantics"]["first_path_relations"]
+    ] == ["Donor", "Volunteer", "Supervisor"]
+    rendered_support = "\n".join(
+        row["radar_sections"]["Source Event Support"] for row in backlog
+    )
+    assert all(
+        event in rendered_support
+        for event in (
+            "Donor registers a batch",
+            "Volunteer inspects the batch",
+            "Supervisor releases the batch",
+        )
+    )
+    assert proposal["release_plan"]["strategy"] == proof_boundary
+    _assert_structural_design_projection_preserves_source(proposal)
 
 
 def test_authored_service_readiness_keeps_nonapproval_as_a_safety_boundary(
@@ -564,36 +618,32 @@ def test_authored_service_readiness_keeps_nonapproval_as_a_safety_boundary(
         relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Coordinator",
+                "actor_fact_quote": "Coordinator",
                 "event_quote": "Coordinator records service capacity evidence",
                 "action_verb_quote": "records",
                 "target_quote": "service capacity evidence",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Readiness Ledger",
+                "actor_fact_quote": "Readiness Ledger",
                 "owner_system_quote": "Readiness Ledger",
                 "event_quote": "Readiness Ledger records review status",
                 "action_verb_quote": "records",
                 "target_quote": "review status",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Readiness Board",
+                "actor_fact_quote": "Readiness Board",
                 "owner_system_quote": "Readiness Board",
                 "event_quote": "Readiness Board shows a reviewable readiness report",
                 "action_verb_quote": "shows",
                 "target_quote": "reviewable readiness report",
                 "visible_result_quote": "reviewable readiness report",
-                "recovery_path": False,
             },
         ],
         responsibility_owners=["Readiness Ledger", "Readiness Board"],
-        responsibility_event_orders=[2, 3],
     )
 
     assert proposal["intent"]["operational_constraints"] == [safety_boundary]
@@ -601,7 +651,13 @@ def test_authored_service_readiness_keeps_nonapproval_as_a_safety_boundary(
         "Automatic operational approval is outside the first release."
     ]
     first_path_contract = proposal["semantic_model"]["first_path_contract"]
-    assert first_path_contract["raw_path"] == first_path
+    assert first_path_contract["raw_path"] == "Proposed first run:\n" + "\n".join(
+        (
+            "Coordinator records service capacity evidence",
+            "Readiness Ledger records review status",
+            "Readiness Board shows a reviewable readiness report",
+        )
+    )
     assert first_path_contract["visible_result"] == "reviewable readiness report"
     assert "automatic operational approval" not in str(first_path_contract).casefold()
 
@@ -648,40 +704,42 @@ def test_authored_solar_path_keeps_user_outcome_distinct_from_meta_proof(
         relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Homeowner",
+                "actor_fact_quote": "Homeowner",
                 "event_quote": "Homeowner connects a solar inverter and battery",
                 "action_verb_quote": "connects",
                 "target_quote": "solar inverter and battery",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Forecast Engine",
+                "actor_fact_quote": "Forecast Engine",
                 "owner_system_quote": "Forecast Engine",
                 "event_quote": "Forecast Engine computes a forecast-driven dispatch schedule",
                 "action_verb_quote": "computes",
                 "target_quote": "forecast-driven dispatch schedule",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Plan Board",
+                "actor_fact_quote": "Plan Board",
                 "owner_system_quote": "Plan Board",
                 "event_quote": f"Plan Board shows {visible_result}",
                 "action_verb_quote": "shows",
                 "target_quote": visible_result,
                 "visible_result_quote": visible_result,
-                "recovery_path": False,
             },
         ],
         responsibility_owners=["Forecast Engine", "Plan Board"],
-        responsibility_event_orders=[2, 3],
     )
 
     first_path_contract = proposal["semantic_model"]["first_path_contract"]
-    assert first_path_contract["raw_path"] == first_path
+    assert first_path_contract["raw_path"] == "Proposed first run:\n" + "\n".join(
+        (
+            "Homeowner connects a solar inverter and battery",
+            "Forecast Engine computes a forecast-driven dispatch schedule",
+            f"Plan Board shows {visible_result}",
+        )
+    )
     assert first_path_contract["visible_result"] == visible_result
     assert proof_boundary == proposal["intent"]["proof_boundary"]
     assert "Release proof succeeds" not in first_path_contract["raw_path"]
@@ -691,6 +749,8 @@ def test_authored_solar_path_keeps_user_outcome_distinct_from_meta_proof(
 def test_authored_ocean_reproducibility_stays_proof_not_component_identity(
     tmp_path: Path,
 ) -> None:
+    """Check source semantics; the synthetic design assertion covers custody only."""
+
     proof_boundary = (
         "A data steward can reproduce the accepted or rejected correction from the "
         "sensor reading, reference sample, drift estimate, correction decision, and reviewer note."
@@ -728,39 +788,35 @@ def test_authored_ocean_reproducibility_stays_proof_not_component_identity(
         relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Marine scientist",
+                "actor_fact_quote": "Marine scientist",
                 "event_quote": "Marine scientist creates a calibration review case",
                 "action_verb_quote": "creates",
                 "target_quote": "calibration review case",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Calibration Ledger",
+                "actor_fact_quote": "Calibration Ledger",
                 "owner_system_quote": "Calibration Ledger",
                 "event_quote": "Calibration Ledger records the drift estimate and correction decision",
                 "action_verb_quote": "records",
                 "target_quote": "drift estimate and correction decision",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Publication Gate",
+                "actor_fact_quote": "Publication Gate",
                 "owner_system_quote": "Publication Gate",
                 "event_quote": "Publication Gate exports a calibrated data packet",
                 "action_verb_quote": "exports",
                 "target_quote": "calibrated data packet",
                 "visible_result_quote": "calibrated data packet",
-                "recovery_path": False,
             },
         ],
         responsibility_owners=["Calibration Ledger", "Publication Gate"],
-        responsibility_event_orders=[2, 3],
     )
 
-    _assert_component_ownership_is_source_exact(proposal)
+    _assert_structural_design_projection_preserves_source(proposal)
     assert all(proof_boundary not in str(row) for row in proposal["components"])
     assert proposal["release_plan"]["strategy"] == proof_boundary
     assert proof_boundary in proposal["project_brief"]["coding_readiness_gates"]
@@ -769,6 +825,8 @@ def test_authored_ocean_reproducibility_stays_proof_not_component_identity(
 def test_authored_health_tracking_retains_safety_and_first_path_outcome(
     tmp_path: Path,
 ) -> None:
+    """Check source safety; the synthetic design assertion covers custody only."""
+
     safety_boundary = "The product must not diagnose, prescribe, or approve treatment."
     visible_result = "reviewable symptom trend and safety status"
     proposal = _proposal(
@@ -807,39 +865,35 @@ def test_authored_health_tracking_retains_safety_and_first_path_outcome(
         relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Journal user",
+                "actor_fact_quote": "Journal user",
                 "event_quote": "Journal user records a health episode",
                 "action_verb_quote": "records",
                 "target_quote": "health episode",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Episode Ledger",
+                "actor_fact_quote": "Episode Ledger",
                 "owner_system_quote": "Episode Ledger",
                 "event_quote": "Episode Ledger records symptoms and relief attempts",
                 "action_verb_quote": "records",
                 "target_quote": "symptoms and relief attempts",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Trend Board",
+                "actor_fact_quote": "Trend Board",
                 "owner_system_quote": "Trend Board",
                 "event_quote": f"Trend Board shows a {visible_result}",
                 "action_verb_quote": "shows",
                 "target_quote": visible_result,
                 "visible_result_quote": visible_result,
-                "recovery_path": False,
             },
         ],
         responsibility_owners=["Episode Ledger", "Trend Board"],
-        responsibility_event_orders=[2, 3],
     )
 
-    _assert_component_ownership_is_source_exact(proposal)
+    _assert_structural_design_projection_preserves_source(proposal)
     assert proposal["semantic_model"]["first_path_contract"]["visible_result"] == visible_result
     assert proposal["intent"]["operational_constraints"] == [safety_boundary]
     assert safety_boundary in proposal["project_brief"]["operational_constraints"]
@@ -887,36 +941,32 @@ def test_authored_robotic_safety_projects_the_reviewed_recovery_status(
         relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Floor operator",
+                "actor_fact_quote": "Floor operator",
                 "event_quote": "Floor operator reports a blocked aisle",
                 "action_verb_quote": "reports",
                 "target_quote": "blocked aisle",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Safety Ledger",
+                "actor_fact_quote": "Safety Ledger",
                 "owner_system_quote": "Safety Ledger",
                 "event_quote": "Safety Ledger records the stop decision and corrective action",
                 "action_verb_quote": "records",
                 "target_quote": "stop decision and corrective action",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Recovery Board",
+                "actor_fact_quote": "Recovery Board",
                 "owner_system_quote": "Recovery Board",
                 "event_quote": f"Recovery Board shows {visible_result}",
                 "action_verb_quote": "shows",
                 "target_quote": visible_result,
                 "visible_result_quote": visible_result,
-                "recovery_path": True,
             },
         ],
         responsibility_owners=["Safety Ledger", "Recovery Board"],
-        responsibility_event_orders=[2, 3],
     )
 
     assert proposal["semantic_model"]["first_path_contract"]["visible_result"] == visible_result
@@ -930,6 +980,8 @@ def test_authored_robotic_safety_projects_the_reviewed_recovery_status(
 def test_authored_service_goal_components_cannot_acquire_cross_domain_templates(
     tmp_path: Path,
 ) -> None:
+    """Check source isolation; the synthetic design assertion covers custody only."""
+
     proposal = _proposal(
         tmp_path,
         intent={
@@ -965,87 +1017,99 @@ def test_authored_service_goal_components_cannot_acquire_cross_domain_templates(
         relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Coordinator",
+                "actor_fact_quote": "Coordinator",
                 "event_quote": "Coordinator completes onboarding and acknowledgement",
                 "action_verb_quote": "completes",
                 "target_quote": "onboarding and acknowledgement",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Goal Planner",
+                "actor_fact_quote": "Goal Planner",
                 "owner_system_quote": "Goal Planner",
                 "event_quote": "Goal Planner records a starting plan target",
                 "action_verb_quote": "records",
                 "target_quote": "starting plan target",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Progress Ledger",
+                "actor_fact_quote": "Progress Ledger",
                 "owner_system_quote": "Progress Ledger",
                 "event_quote": "Progress Ledger records seven days of progress",
                 "action_verb_quote": "records",
                 "target_quote": "seven days of progress",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Reminder Board",
+                "actor_fact_quote": "Reminder Board",
                 "owner_system_quote": "Reminder Board",
                 "event_quote": "Reminder Board shows an adjusted plan target and one follow-up reminder",
                 "action_verb_quote": "shows",
                 "target_quote": "adjusted plan target and one follow-up reminder",
                 "visible_result_quote": "adjusted plan target and one follow-up reminder",
-                "recovery_path": False,
             },
         ],
         responsibility_owners=["Goal Planner", "Progress Ledger", "Reminder Board"],
-        responsibility_event_orders=[2, 3, 4],
     )
 
-    _assert_component_ownership_is_source_exact(proposal)
-    _assert_owned_rendering(proposal)
-    authored_facts = set(proposal["intent"]["component_responsibilities"])
-    assert all(row["source_system_description"] in authored_facts for row in proposal["components"])
+    _assert_structural_design_projection_preserves_source(proposal)
+    assert [
+        (row["actor_kind"], row["actor_fact_quote"])
+        for row in proposal["intent"]["authored_semantics"]["first_path_relations"]
+    ] == [
+        ("human", "Coordinator"),
+        ("product", "Goal Planner"),
+        ("product", "Progress Ledger"),
+        ("product", "Reminder Board"),
+    ]
+    rendered = str({
+        "project_brief": proposal["project_brief"],
+        "diagrams": proposal["diagrams"],
+    })
+    assert all(value in rendered for value in proposal["intent"]["component_responsibilities"])
+    structural_design = str(
+        proposal["intent"]["authored_semantics"]["provisional_design"]
+    ).casefold()
+    assert all(
+        leaked not in structural_design
+        for leaked in ("harbor", "berth", "cargo", "calibration", "symptom")
+    )
 
 
-def test_sparse_depth_keeps_facts_in_project_without_filler_rows(tmp_path: Path) -> None:
+def test_sparse_source_facts_remain_visible_with_structural_design_projection(
+    tmp_path: Path,
+) -> None:
     human_event = {
         "actor_kind": "human",
-        "actor_quote": "Dock attendant",
+        "actor_fact_quote": "Dock attendant",
         "event_quote": "Dock attendant submits a request",
         "action_verb_quote": "submits",
         "target_quote": "request",
         "visible_result_quote": "",
-        "recovery_path": False,
     }
     intake_event = {
         "actor_kind": "product",
-        "actor_quote": "Intake Board",
+        "actor_fact_quote": "Intake Board",
         "owner_system_quote": "Intake Board",
         "event_quote": "Intake Board records the request",
         "action_verb_quote": "records",
         "target_quote": "request",
         "visible_result_quote": "",
-        "recovery_path": False,
     }
     receipt_event = {
         "actor_kind": "product",
-        "actor_quote": "Receipt Ledger",
+        "actor_fact_quote": "Receipt Ledger",
         "owner_system_quote": "Receipt Ledger",
         "event_quote": "Receipt Ledger publishes a signed request receipt",
         "action_verb_quote": "publishes",
         "target_quote": "signed request receipt",
         "visible_result_quote": "signed request receipt",
-        "recovery_path": False,
     }
     intake_result_event = {
         **receipt_event,
-        "actor_quote": "Intake Board",
+        "actor_fact_quote": "Intake Board",
         "owner_system_quote": "Intake Board",
         "event_quote": "Intake Board publishes a signed request receipt",
     }
@@ -1060,10 +1124,8 @@ def test_sparse_depth_keeps_facts_in_project_without_filler_rows(tmp_path: Path)
                 "component_responsibilities": ["Record the request and publish its receipt."],
                 "relations": [human_event, intake_event, intake_result_event],
                 "responsibility_owners": ["Intake Board"],
-                "responsibility_event_orders": [2],
             },
-            "/external_systems/0",
-            4,
+            "Vessel Registry",
         ),
         (
             "multi-owner-only",
@@ -1078,10 +1140,8 @@ def test_sparse_depth_keeps_facts_in_project_without_filler_rows(tmp_path: Path)
                 ],
                 "relations": [human_event, intake_event, receipt_event],
                 "responsibility_owners": ["Intake Board", "Receipt Ledger"],
-                "responsibility_event_orders": [2, 3],
             },
-            "/component_responsibilities/1",
-            4,
+            "Publish the signed request receipt.",
         ),
         (
             "proof-only",
@@ -1096,23 +1156,28 @@ def test_sparse_depth_keeps_facts_in_project_without_filler_rows(tmp_path: Path)
                 "component_responsibilities": ["Record the request and publish its receipt."],
                 "relations": [human_event, intake_event, intake_result_event],
                 "responsibility_owners": ["Intake Board"],
-                "responsibility_event_orders": [2],
             },
-            "/evidence_requirements/1",
-            3,
+            "Retain the signed request receipt.",
         ),
     )
-    for name, arguments, retained_ref, expected_diagram_count in cases:
+    for name, arguments, retained_fact in cases:
         case_root = tmp_path / name
         case_root.mkdir()
         proposal = _sparse_proposal(case_root, **arguments)
-        assert [row["workstream_role"] for row in proposal["backlog"]] == ["project"]
-        assert retained_ref in proposal["backlog"][0]["authored_workstream_semantics"]["fact_refs"]
-        assert len(proposal["diagrams"]) == expected_diagram_count
+        assert [row["workstream_role"] for row in proposal["backlog"]] == [
+            "provisional_design"
+        ] * 4
+        assert len(proposal["diagrams"]) == 5
+        visible_package = str({
+            "project_brief": proposal["project_brief"],
+            "diagrams": proposal["diagrams"],
+            "semantic_model": proposal["semantic_model"],
+        })
+        assert retained_fact in visible_package
         visible_copy = "\n".join(
             str(proposal["backlog"][0][field])
             for field in ("problem", "customer", "opportunity", "product_view")
         ).lower()
         assert "none accepted" not in visible_copy
         assert "reviewers" not in visible_copy
-        _assert_owned_rendering(proposal)
+        _assert_structural_design_projection_preserves_source(proposal)

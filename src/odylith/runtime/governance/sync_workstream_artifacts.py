@@ -15,15 +15,16 @@ from __future__ import annotations
 import argparse
 import concurrent.futures
 import contextlib
+from copy import deepcopy
 from contextvars import copy_context
 from dataclasses import dataclass
+from functools import partial
 import importlib
 import io
 import json
 import os
 from pathlib import Path
 import queue
-import signal
 import subprocess
 import sys
 import threading
@@ -42,6 +43,7 @@ from odylith.runtime.governance import compass_dashboard_refresh_inputs
 from odylith.runtime.governance import dashboard_refresh_contract
 from odylith.runtime.governance import release_truth_runtime
 from odylith.runtime.governance import surface_refresh_fingerprint_dag
+from odylith.runtime.governance import sync_command_execution
 from odylith.runtime.governance import sync_generated_outputs
 from odylith.runtime.governance import sync_session as governed_sync_session
 from odylith.runtime.governance import sync_surface_render_batch
@@ -54,7 +56,6 @@ from odylith.runtime.governance.sync_argument_contract import DEFAULT_SYNC_OVERL
 from odylith.runtime.governance.sync_argument_contract import configure_sync_parser
 from odylith.runtime.governance import sync_casebook_bug_index
 from odylith.runtime.surfaces import render_mermaid_catalog_refresh
-from odylith.runtime.surfaces import host_hook_execution
 from odylith.runtime.surfaces import source_bundle_mirror
 
 
@@ -126,7 +127,6 @@ _SURFACE_DISPLAY_NAMES: Mapping[str, str] = {
     "registry": "registry",
     "casebook": "casebook",
 }
-_HEARTBEAT_INTERVAL_SECONDS = 10.0
 _HEARTBEAT_START_DELAY_SECONDS = 2.0
 _IN_PROCESS_HEARTBEAT_MODULES = frozenset(
     {
@@ -169,13 +169,6 @@ _TRUTH_ONLY_SELECTIVE_EXACT_PATHS: frozenset[str] = frozenset(
     }
 )
 
-def _active_odylith_import_roots() -> tuple[str, ...]:
-    roots: list[str] = []
-    for candidate in (Path(__file__).resolve().parents[3],):
-        token = str(candidate)
-        if token not in roots:
-            roots.append(token)
-    return tuple(roots)
 
 @dataclass(frozen=True)
 class ExecutionStep:
@@ -520,7 +513,9 @@ def _build_truth_only_selective_sync_plan(
                 next_command_on_failure=sync_failure_command,
             )
         )
-    for surface in refresh_surfaces:
+    # Compass and other runtime readers also consume the derived Casebook index.
+    # Settle its owned refresh first, preserving the other surfaces' order.
+    for surface in sorted(refresh_surfaces, key=lambda surface: surface != "casebook"):
         steps.extend(
             _dashboard_surface_steps(
                 repo_root=repo_root,
@@ -602,70 +597,6 @@ def _print_execution_plan(name: str, plan: ExecutionPlan, *, dry_run: bool, verb
         print("dry-run mode: no files written")
 
 
-def _run_command(
-    *,
-    repo_root: Path,
-    args: Sequence[str],
-    heartbeat_label: str = "",
-    timeout_seconds: float | None = None,
-) -> int:
-    env = os.environ.copy()
-    cwd = Path.cwd()
-    pythonpath_tokens: list[str] = []
-    for token in _active_odylith_import_roots():
-        if token not in pythonpath_tokens:
-            pythonpath_tokens.append(token)
-    raw_pythonpath = str(env.get("PYTHONPATH", "")).strip()
-    if raw_pythonpath:
-        for token in raw_pythonpath.split(os.pathsep):
-            normalized = str((cwd / token).resolve()) if token and not Path(token).is_absolute() else token
-            if normalized and normalized not in pythonpath_tokens:
-                pythonpath_tokens.append(normalized)
-    if pythonpath_tokens:
-        env["PYTHONPATH"] = os.pathsep.join(pythonpath_tokens)
-    tokens = [str(token) for token in args]
-    if tokens and tokens[0] == "python":
-        tokens[0] = sys.executable
-    if heartbeat_label or timeout_seconds is not None:
-        started_at = time.perf_counter()
-        last_heartbeat = started_at
-        popen_kwargs: dict[str, Any] = {
-            "cwd": str(repo_root),
-            "env": env,
-        }
-        if os.name == "posix" and not host_hook_execution.in_hook_owned_foreground_group():
-            popen_kwargs["start_new_session"] = True
-        process = subprocess.Popen(tokens, **popen_kwargs)
-        while True:
-            rc = process.poll()
-            if rc is not None:
-                return int(rc)
-            now = time.perf_counter()
-            if timeout_seconds is not None and now - started_at >= float(timeout_seconds):
-                print(
-                    f"- timeout: {heartbeat_label or 'command'} exceeded "
-                    f"{int(float(timeout_seconds))}s; terminating"
-                )
-                _terminate_process(process)
-                try:
-                    process.wait(timeout=5)
-                except subprocess.TimeoutExpired:
-                    _kill_process(process)
-                    process.wait(timeout=5)
-                return 124
-            if now - last_heartbeat >= _HEARTBEAT_INTERVAL_SECONDS:
-                print(f"- heartbeat: {heartbeat_label} still running ({int(now - started_at)}s)")
-                last_heartbeat = now
-            time.sleep(0.5)
-    completed = subprocess.run(
-        tokens,
-        cwd=str(repo_root),
-        env=env,
-        check=False,
-    )
-    return int(completed.returncode)
-
-
 def _run_callable_with_heartbeat(
     *,
     label: str,
@@ -692,7 +623,7 @@ def _run_callable_with_heartbeat(
         except queue.Empty:
             elapsed = int(time.perf_counter() - started_at)
             print(f"- heartbeat: {label} still running ({elapsed}s)")
-            timeout = max(0.01, float(_HEARTBEAT_INTERVAL_SECONDS))
+            timeout = max(0.01, float(sync_command_execution.HEARTBEAT_INTERVAL_SECONDS))
             continue
         worker.join(timeout=0.01)
         if error is not None:
@@ -839,26 +770,8 @@ def _step_materially_changed(
     return before_change_fingerprint != after_change_fingerprint
 
 
-def _terminate_process(process: subprocess.Popen[Any]) -> None:
-    process_pid = int(getattr(process, "pid", 0) or 0)
-    if os.name == "posix" and process_pid > 0:
-        try:
-            os.killpg(process_pid, signal.SIGTERM)
-            return
-        except (OSError, ProcessLookupError):
-            pass
-    process.terminate()
 
 
-def _kill_process(process: subprocess.Popen[Any]) -> None:
-    process_pid = int(getattr(process, "pid", 0) or 0)
-    if os.name == "posix" and process_pid > 0:
-        try:
-            os.killpg(process_pid, signal.SIGKILL)
-            return
-        except (OSError, ProcessLookupError):
-            pass
-    process.kill()
 
 
 def _display_sync_step_command(*, repo_root: Path, command: Sequence[str]) -> str:
@@ -880,7 +793,7 @@ def _run_command_in_process(
 ) -> int:
     tokens = tuple(str(token) for token in args)
     if timeout_seconds is not None:
-        return _run_command(
+        return sync_command_execution.run_command(
             repo_root=repo_root,
             args=tokens,
             heartbeat_label=heartbeat_label,
@@ -896,7 +809,7 @@ def _run_command_in_process(
                     callable_=lambda: int(main(list(tokens[3:])) or 0),
                 )
             return int(main(list(tokens[3:])) or 0)
-    return _run_command(
+    return sync_command_execution.run_command(
         repo_root=repo_root,
         args=tokens,
         heartbeat_label=heartbeat_label,
@@ -917,7 +830,7 @@ def _run_command_in_process_direct(
         main = getattr(module, "main", None)
         if callable(main):
             return _coerce_callable_step_result(main(list(tokens[3:])))
-    return _run_command(
+    return sync_command_execution.run_command(
         repo_root=repo_root,
         args=tokens,
         heartbeat_label=heartbeat_label,
@@ -1135,36 +1048,6 @@ def _delivery_intelligence_command(*, repo_root: Path, check_only: bool) -> tupl
     return tuple(command)
 
 
-def _surface_render_outputs(surface: str) -> tuple[str, ...]:
-    return {
-        "tooling_shell": ("odylith/index.html", "odylith/tooling-payload.v1.js", "odylith/tooling-app.v1.js"),
-        "radar": (
-            "odylith/radar/radar.html",
-            "odylith/radar/backlog-payload.v1.js",
-            "odylith/radar/backlog-app.v1.js",
-            "odylith/radar/traceability-graph.v1.json",
-        ),
-        "compass": (
-            "odylith/compass/compass.html",
-            "odylith/compass/compass-payload.v1.js",
-            "odylith/compass/compass-app.v1.js",
-            "odylith/compass/compass-style-base.v1.css",
-            "odylith/compass/compass-style-execution-waves.v1.css",
-            "odylith/compass/compass-style-surface.v1.css",
-            "odylith/compass/compass-shared.v1.js",
-            "odylith/compass/compass-state.v1.js",
-            "odylith/compass/compass-summary.v1.js",
-            "odylith/compass/compass-timeline.v1.js",
-            "odylith/compass/compass-waves.v1.js",
-            "odylith/compass/compass-workstreams.v1.js",
-            "odylith/compass/compass-ui-runtime.v1.js",
-        ),
-        "atlas": ("odylith/atlas/atlas.html", "odylith/atlas/mermaid-payload.v1.js", "odylith/atlas/mermaid-app.v1.js"),
-        "registry": ("odylith/registry/registry.html", "odylith/registry/registry-payload.v1.js", "odylith/registry/registry-app.v1.js"),
-        "casebook": ("odylith/casebook/casebook.html", "odylith/casebook/casebook-payload.v1.js", "odylith/casebook/casebook-app.v1.js"),
-    }.get(surface, ())
-
-
 def _runtime_retry_command(command: Sequence[str]) -> tuple[str, ...]:
     return _replace_runtime_mode_args(command, runtime_mode="standalone")
 
@@ -1234,7 +1117,7 @@ def _casebook_render_step(
         command=command,
         standalone_command=_runtime_retry_command(command),
         mutation_classes=("generated_surfaces",),
-        paths=_surface_render_outputs("casebook"),
+        paths=sync_generated_outputs.surface_render_outputs("casebook", repo_root=repo_root),
         next_command_on_failure=next_command_on_failure,
         timeout_seconds=_DASHBOARD_REFRESH_TIMEOUT_SECONDS,
     )
@@ -1378,7 +1261,7 @@ def _dashboard_surface_steps(
                     normalized_runtime_mode=normalized_runtime_mode,
                 ),
                 mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("compass"),
+                paths=sync_generated_outputs.surface_render_outputs("compass", repo_root=repo_root),
                 next_command_on_failure=dashboard_refresh_contract.dashboard_refresh_failure_command(
                     surface=surface,
                 ),
@@ -1412,7 +1295,7 @@ def _dashboard_surface_steps(
                 command=command,
                 standalone_command=_runtime_retry_command(command),
                 mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("radar"),
+                paths=sync_generated_outputs.surface_render_outputs("radar", repo_root=repo_root),
                 next_command_on_failure=refresh_command,
                 timeout_seconds=_DASHBOARD_REFRESH_TIMEOUT_SECONDS,
             )
@@ -1424,7 +1307,7 @@ def _dashboard_surface_steps(
                 "Render Atlas from the current Mermaid catalog state.",
                 surface=surface,
                 mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("atlas"),
+                paths=sync_generated_outputs.surface_render_outputs("atlas", repo_root=repo_root),
                 action=lambda: render_mermaid_catalog_refresh.main(
                     [
                         "--repo-root",
@@ -1454,7 +1337,7 @@ def _dashboard_surface_steps(
                 command=command,
                 standalone_command=_runtime_retry_command(command),
                 mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("registry"),
+                paths=sync_generated_outputs.surface_render_outputs("registry", repo_root=repo_root),
                 next_command_on_failure=refresh_command,
                 timeout_seconds=_DASHBOARD_REFRESH_TIMEOUT_SECONDS,
             )
@@ -1493,7 +1376,7 @@ def _dashboard_surface_steps(
                 command=command,
                 standalone_command=_runtime_retry_command(command),
                 mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("tooling_shell"),
+                paths=sync_generated_outputs.surface_render_outputs("tooling_shell", repo_root=repo_root),
                 next_command_on_failure=display_command("dashboard", "refresh", "--repo-root", ".", "--surfaces", "shell"),
                 timeout_seconds=_DASHBOARD_REFRESH_TIMEOUT_SECONDS,
             )
@@ -1669,6 +1552,7 @@ def _run_dashboard_refresh_step(
     step: ExecutionStep,
     runtime_mode: str,
     run_impl: Callable[..., int],
+    include_action_results: bool = False,
 ) -> dict[str, Any]:
     if step.action is not None:
         action_result = step.action()
@@ -1678,6 +1562,7 @@ def _run_dashboard_refresh_step(
             rc = _coerce_callable_step_result(action_result)
             return {
                 "rc": rc,
+                **({"action_result": deepcopy(dict(action_result))} if include_action_results else {}),
                 "fallback_used": False,
                 "status": str(action_result.get("status", "")).strip() or "passed",
                 "next_command": (
@@ -1746,9 +1631,11 @@ def _execute_dashboard_refresh_surface(
     steps: Sequence[ExecutionStep],
     runtime_mode: str,
     run_impl: Callable[..., int],
+    include_action_results: bool = False,
 ) -> dict[str, Any]:
     fallback_used = False
     surface_status = "passed"
+    action_results: list[dict[str, Any]] = []
     for index, step in enumerate(steps, start=1):
         print(f"- {surface} step {index}/{len(steps)}: {step.label}")
         step_result = _run_dashboard_refresh_step(
@@ -1756,9 +1643,12 @@ def _execute_dashboard_refresh_surface(
             step=step,
             runtime_mode=runtime_mode,
             run_impl=run_impl,
+            **({"include_action_results": True} if include_action_results else {}),
         )
         rc = int(step_result.get("rc", 0) or 0)
         step_status = str(step_result.get("status", "")).strip() or ("passed" if rc == 0 else "failed")
+        if "action_result" in step_result:
+            action_results.append(step_result["action_result"])
         fallback_used = fallback_used or bool(step_result.get("fallback_used"))
         if step_status == "queued":
             surface_status = "queued"
@@ -1768,6 +1658,7 @@ def _execute_dashboard_refresh_surface(
                 next_command = _display_sync_step_command(repo_root=repo_root, command=step.command)
             return {
                 "surface": surface,
+                **({"action_results": action_results} if include_action_results else {}),
                 "status": "failed",
                 "fallback_used": fallback_used,
                 "rc": int(rc),
@@ -1776,6 +1667,7 @@ def _execute_dashboard_refresh_surface(
             }
     return {
         "surface": surface,
+        **({"action_results": action_results} if include_action_results else {}),
         "status": surface_status,
         "fallback_used": fallback_used,
         "rc": 0,
@@ -1821,6 +1713,7 @@ def _run_surface_worker(
     atlas_sync: bool,
     force: bool = False,
     run_impl: Callable[..., int],
+    include_action_results: bool = False,
 ) -> tuple[str, dict[str, Any]]:
     """Execute one surface's step chain and capture its stdout.
 
@@ -1832,7 +1725,7 @@ def _run_surface_worker(
     try:
         if surface == "radar":
             _normalize_radar_source_before_surface_refresh(repo_root=repo_root)
-        outputs = _surface_render_outputs(surface)
+        outputs = sync_generated_outputs.surface_render_outputs(surface, repo_root=repo_root)
         if force:
             cache_hit = False
             cache_details = {"force": True}
@@ -1878,6 +1771,7 @@ def _run_surface_worker(
                 steps=steps,
                 runtime_mode=runtime_mode,
                 run_impl=run_impl,
+                **({"include_action_results": True} if include_action_results else {}),
             )
             if str(result.get("status", "")).strip() == "passed":
                 surface_refresh_fingerprint_dag.record_surface_refresh(
@@ -1900,6 +1794,7 @@ def _refresh_surfaces_parallel(
     atlas_sync: bool,
     force: bool,
     run_impl: Callable[..., int],
+    include_action_results: bool = False,
 ) -> list[dict[str, Any]]:
     """Refresh multiple dashboard surfaces concurrently.
 
@@ -1929,6 +1824,7 @@ def _refresh_surfaces_parallel(
                     atlas_sync=atlas_sync,
                     force=force,
                     run_impl=run_impl,
+                    **({"include_action_results": True} if include_action_results else {}),
                 )
                 future_map[future] = surface
     finally:
@@ -1977,6 +1873,9 @@ def refresh_dashboard_surfaces(
     dry_run: bool = False,
     verbose: bool = False,
     force: bool = False,
+    on_completed: Callable[[], int] | None = None,
+    repository_lock_fd: int | None = None,
+    on_results: Callable[[Sequence[Mapping[str, Any]]], None] | None = None,
 ) -> int:
     selected = normalize_dashboard_surfaces(surfaces)
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
@@ -1993,9 +1892,9 @@ def refresh_dashboard_surfaces(
     started_at = time.perf_counter()
     surface_results: list[dict[str, Any]] = []
     runtime_fallback_used = False
-    run_impl = _run_command
+    run_impl = sync_command_execution.run_command if repository_lock_fd is None else partial(sync_command_execution.run_command, pass_fds=(repository_lock_fd,))
     session_context: contextlib.AbstractContextManager[object] = contextlib.nullcontext()
-    if len(selected) == 1 and _use_runtime_fast_path(normalized_runtime_mode) and _runtime_fast_path_prerequisites_met(repo_root):
+    if repository_lock_fd is None and len(selected) == 1 and _use_runtime_fast_path(normalized_runtime_mode) and _runtime_fast_path_prerequisites_met(repo_root):
         run_impl = _run_command_in_process
         session_context = governed_sync_session.activate_sync_session(
             governed_sync_session.GovernedSyncSession(repo_root=repo_root)
@@ -2024,6 +1923,7 @@ def refresh_dashboard_surfaces(
                             atlas_sync=atlas_sync,
                             force=bool(force),
                             run_impl=run_impl,
+                            **({"include_action_results": True} if on_results is not None else {}),
                         )
                     )
                     continue
@@ -2035,6 +1935,7 @@ def refresh_dashboard_surfaces(
                         atlas_sync=atlas_sync,
                         force=bool(force),
                         run_impl=run_impl,
+                        **({"include_action_results": True} if on_results is not None else {}),
                     )
                     if output:
                         sys.stdout.write(output)
@@ -2047,59 +1948,30 @@ def refresh_dashboard_surfaces(
                 os.environ.pop(_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV, None)
             else:
                 os.environ[_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV] = previous_guard_skip
-    for result in surface_results:
-        runtime_fallback_used = runtime_fallback_used or bool(result.get("fallback_used"))
-    elapsed = time.perf_counter() - started_at
-    failures = [result for result in surface_results if str(result.get("status", "")).strip() == "failed"]
-    queued = [result for result in surface_results if str(result.get("status", "")).strip() == "queued"]
-    print("dashboard refresh completed")
-    if failures:
-        print("- outcome: failed")
-    elif queued:
-        print("- outcome: queued")
-    else:
-        print("- outcome: passed")
-    print(f"- elapsed_seconds: {elapsed:.1f}")
-    print(f"- runtime_fallback_used: {'yes' if runtime_fallback_used else 'no'}")
-    for result in surface_results:
-        surface = str(result.get("surface", "")).strip()
-        status = str(result.get("status", "")).strip() or "failed"
-        suffix = " (standalone fallback used)" if bool(result.get("fallback_used")) else ""
-        if bool(result.get("cache_hit")):
-            suffix += " (fingerprint reuse)"
-        print(f"- {surface}: {status}{suffix}")
-        if status not in {"passed", "queued"}:
-            failed_step = str(result.get("failed_step", "")).strip()
-            next_command = str(result.get("next_command", "")).strip()
-            if failed_step:
-                print(f"  failed_step: {failed_step}")
-            if next_command:
-                print(f"  next: {next_command}")
-        elif status == "queued":
-            next_command = str(result.get("next_command", "")).strip()
-            if next_command:
-                print(f"  next: {next_command}")
-    if failures:
-        return 2
-    return 0
-
-
-def _sync_surface_batch_outputs(surfaces: Sequence[str]) -> tuple[str, ...]:
-    return sync_surface_render_batch.sync_surface_batch_outputs(
-        surfaces=surfaces,
-        surface_render_outputs=_surface_render_outputs,
+    if on_results is not None:
+        on_results(deepcopy(surface_results))
+    return dashboard_refresh_contract.complete_dashboard_refresh(
+        results=surface_results, selected=selected, elapsed=time.perf_counter() - started_at,
+        runtime_fallback_used=runtime_fallback_used, on_completed=on_completed,
     )
 
 
-def _sync_surface_batch_runtime() -> sync_surface_render_batch.SyncSurfaceBatchRuntime:
+def _sync_surface_batch_outputs(surfaces: Sequence[str], *, repo_root: Path) -> tuple[str, ...]:
+    return sync_surface_render_batch.sync_surface_batch_outputs(
+        surfaces=surfaces,
+        surface_render_outputs=lambda surface: sync_generated_outputs.surface_render_outputs(surface, repo_root=repo_root),
+    )
+
+
+def _sync_surface_batch_runtime(*, repo_root: Path) -> sync_surface_render_batch.SyncSurfaceBatchRuntime:
     return sync_surface_render_batch.SyncSurfaceBatchRuntime(
         normalize_dashboard_surfaces=normalize_dashboard_surfaces,
-        surface_render_outputs=_surface_render_outputs,
+        surface_render_outputs=lambda surface: sync_generated_outputs.surface_render_outputs(surface, repo_root=repo_root),
         dashboard_surface_steps=_dashboard_surface_steps,
         execute_dashboard_refresh_surface=_execute_dashboard_refresh_surface,
         use_runtime_fast_path=_use_runtime_fast_path,
         runtime_fast_path_prerequisites_met=_runtime_fast_path_prerequisites_met,
-        run_command=_run_command,
+        run_command=sync_command_execution.run_command,
         run_command_in_process_direct=_run_command_in_process_direct,
         skip_generated_refresh_guard_env=_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV,
     )
@@ -2112,7 +1984,7 @@ def _run_sync_surface_render_batch(
     runtime_mode: str,
 ) -> int:
     return sync_surface_render_batch.run_sync_surface_render_batch(
-        runtime=_sync_surface_batch_runtime(),
+        runtime=_sync_surface_batch_runtime(repo_root=repo_root),
         repo_root=repo_root,
         surfaces=surfaces,
         runtime_mode=runtime_mode,
@@ -2431,7 +2303,7 @@ def build_sync_execution_plan(
                         runtime_mode=runtime_mode,
                     ),
                     mutation_classes=("generated_surfaces",),
-                    paths=_surface_render_outputs("atlas"),
+                    paths=sync_generated_outputs.surface_render_outputs("atlas", repo_root=repo_root),
                     next_command_on_failure=display_command("atlas", "render", "--repo-root", ".", "--fail-on-stale"),
                 ),
             ]
@@ -2483,7 +2355,7 @@ def build_sync_execution_plan(
                     runtime_mode=runtime_mode,
                 ),
                 mutation_classes=("generated_surfaces",),
-                paths=_sync_surface_batch_outputs(sync_surface_batch),
+                paths=_sync_surface_batch_outputs(sync_surface_batch, repo_root=repo_root),
                 change_watch_paths=("odylith/radar/traceability-graph.v1.json",),
                 next_command_on_failure=sync_failure_command,
             )
@@ -2502,7 +2374,7 @@ def build_sync_execution_plan(
                         runtime_mode,
                     ]
                 ),
-                paths=_surface_render_outputs("atlas"),
+                paths=sync_generated_outputs.surface_render_outputs("atlas", repo_root=repo_root),
                 next_command_on_failure=sync_failure_command,
             )
         )
@@ -2518,7 +2390,7 @@ def build_sync_execution_plan(
                     str(repo_root),
                     *_runtime_args(runtime_mode),
                 ),
-                paths=_surface_render_outputs("compass"),
+                paths=sync_generated_outputs.surface_render_outputs("compass", repo_root=repo_root),
                 next_command_on_failure=sync_failure_command,
             )
         )
@@ -2534,7 +2406,7 @@ def build_sync_execution_plan(
                     str(repo_root),
                     *_runtime_args(runtime_mode),
                 ),
-                paths=_surface_render_outputs("radar"),
+                paths=sync_generated_outputs.surface_render_outputs("radar", repo_root=repo_root),
                 next_command_on_failure=sync_failure_command,
             )
         )
@@ -2550,7 +2422,7 @@ def build_sync_execution_plan(
                     str(repo_root),
                     *_runtime_args(runtime_mode),
                 ),
-                paths=_surface_render_outputs("registry"),
+                paths=sync_generated_outputs.surface_render_outputs("registry", repo_root=repo_root),
                 next_command_on_failure=sync_failure_command,
             )
         )
@@ -2566,7 +2438,7 @@ def build_sync_execution_plan(
                     str(repo_root),
                     *_runtime_args(runtime_mode),
                 ),
-                paths=_surface_render_outputs("tooling_shell"),
+                paths=sync_generated_outputs.surface_render_outputs("tooling_shell", repo_root=repo_root),
                 next_command_on_failure=sync_failure_command,
             )
         )
@@ -2607,7 +2479,7 @@ def build_sync_execution_plan(
                         runtime_mode=runtime_mode,
                     ),
                     mutation_classes=("generated_surfaces",),
-                    paths=_surface_render_outputs("atlas"),
+                    paths=sync_generated_outputs.surface_render_outputs("atlas", repo_root=repo_root),
                     next_command_on_failure=sync_failure_command,
                 ),
             ]
@@ -2897,7 +2769,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.dry_run:
         return 0
 
-    run_impl = _run_command
+    run_impl = sync_command_execution.run_command
     runtime_fallback_used = False
     if not args.check_only and _use_runtime_fast_path(effective_runtime_mode) and _runtime_fast_path_prerequisites_met(repo_root):
         run_impl = _run_command_in_process

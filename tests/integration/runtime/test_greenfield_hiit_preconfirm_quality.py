@@ -9,7 +9,9 @@ from odylith.runtime.domain_intelligence import greenfield_proposals_cli
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
     combined_prompt_evidence_source,
 )
+from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
 )
@@ -17,22 +19,36 @@ from tests.unit.runtime.greenfield_proposal_fixtures import HIIT_CONFIRMED_INTEN
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 
 
-def test_hiit_greenfield_create_projects_model_authored_path_and_quality_under_sixty_seconds(
+def test_hiit_structured_fixture_preserves_path_and_sealed_package_under_sixty_seconds(
     tmp_path: Path,
     monkeypatch,
     capsys,
 ) -> None:
+    """Native integration with a synthetic baseline and fixed author/reviewer fixtures.
+
+    Not installation, independent semantic quality, or live-model timing proof.
+    """
     _seed_empty_governance_repo(tmp_path)
+    activate_greenfield_baseline_fixture(tmp_path)
     intent_path = tmp_path / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(HIIT_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
     prompt = "Draft a greenfield proposal for a guided HIIT interval training app"
     provider = _hiit_authoring_provider(prompt)
+    reviewer = AdmittingReviewProvider()
+
+    def authoring_provider(*, request_role="initial_authoring", **_kwargs):
+        if request_role == "initial_authoring":
+            return provider, "test-model", "low"
+        if request_role == "candidate_review":
+            return reviewer, "gpt-5.6-sol", "medium"
+        raise AssertionError(f"Unexpected Greenfield request role: {request_role}")
+
     monkeypatch.setattr(
         greenfield_proposals_cli,
         "_greenfield_authoring_provider",
-        lambda **_kwargs: (provider, "test-model", "low"),
+        authoring_provider,
     )
 
     started, rc, payload, transaction_payload = _run_proposed_transaction_create(
@@ -44,6 +60,7 @@ def test_hiit_greenfield_create_projects_model_authored_path_and_quality_under_s
 
     assert rc == 0
     assert provider.calls == 1
+    assert reviewer.calls == 1
     accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
     proposal = accepted["proposal"]
     first_path = proposal["semantic_model"]["first_path_contract"]
@@ -59,9 +76,9 @@ def test_hiit_greenfield_create_projects_model_authored_path_and_quality_under_s
     }
     assert payload["commit_manifest"]["create_elapsed_seconds"] < 60.0
     assert "whole_project_elapsed_seconds" not in payload["commit_manifest"]
-    assert len(payload["backlog"]) == 1
-    assert len(payload["components"]) == 1
-    assert len(payload["diagrams"]) == 4
+    assert len(payload["backlog"]) == 4
+    assert len(payload["components"]) == 4
+    assert len(payload["diagrams"]) == 5
     transaction_package = transaction_payload["prewrite_package"]
     assert payload["next_steps"] == transaction_package["next_steps_preview"]
     assert payload["diagrams"] == transaction_package["atlas_diagram_ids"]
@@ -91,6 +108,14 @@ def test_hiit_greenfield_create_projects_model_authored_path_and_quality_under_s
         "keeps",
         "marks",
         "saves",
+    ]
+    assert [event["text"] for event in first_path["events"]] == [
+        "A trainee chooses a workout",
+        "starts it",
+        "the timer drives each work and rest interval with audio and on-screen cues",
+        "keeps the screen awake",
+        "marks the session complete",
+        "saves the session to history with date, workout, and total time",
     ]
     assert first_path["actor"] == "trainee"
     assert first_path["visible_result"] == "session to history with date, workout, and total time"
@@ -153,7 +178,10 @@ def _hiit_authoring_provider(prompt: str) -> StructuredAuthoringProvider:
             "Workout builder",
         ],
         "assumptions": [
-            "Release 0.0.1 starts with preset interval workouts before complex custom programming."
+            {
+                "applies_to": "general",
+                "statement": "Release 0.0.1 starts with preset interval workouts before complex custom programming.",
+            }
         ],
         "ambiguities": [],
         "non_goals": [],
@@ -223,17 +251,12 @@ def _hiit_authoring_provider(prompt: str) -> StructuredAuthoringProvider:
             intent,
             evidence_text=evidence,
             first_path_relations=relations,
-            first_path_context_event_orders={
-                "/state_object": 6,
-                "/external_systems/0": 4,
-                "/operational_constraints/0": 0,
-            },
-            terminal_component_owner="the timer",
         )
     )
 
 
 def _run_proposed_transaction_create(tmp_path: Path, *, prompt: str, capsys) -> tuple[float, int, dict, dict]:
+    started = time.perf_counter()
     propose_rc = greenfield_proposals_cli.main(
         [
             "propose",
@@ -253,7 +276,6 @@ def _run_proposed_transaction_create(tmp_path: Path, *, prompt: str, capsys) -> 
     transaction_hash = str(propose_payload["product_create_transaction"]["transaction_hash"])
     transaction_file = str(propose_payload["transaction_file"])
     transaction_payload = json.loads((tmp_path / transaction_file).read_text(encoding="utf-8"))
-    started = time.perf_counter()
     rc = greenfield_proposals_cli.main(
         [
             "create",

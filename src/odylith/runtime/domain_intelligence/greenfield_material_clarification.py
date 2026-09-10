@@ -25,14 +25,20 @@ class MaterialClarification:
     required_fields: tuple[str, ...]
 
 
-def material_clarification_for_fields(fields: tuple[str, ...]) -> MaterialClarification:
-    """Render already-classified material fields as one focused question."""
+def material_clarification_for_fields(
+    fields: tuple[str, ...], *, consistency_status: str = "material_ambiguity",
+) -> MaterialClarification:
+    """Render the typed decision; contradictory claims accompany it in the receipt."""
 
     required_fields = tuple(dict.fromkeys(str(field).strip() for field in fields if str(field).strip()))
     if not required_fields:
         raise ValueError("material clarification requires at least one typed field")
     return MaterialClarification(
-        question=_material_unknown_question(required_fields),
+        question=(
+            "Which of these conflicting requirements should this project follow?"
+            if consistency_status == "material_contradiction"
+            else _material_unknown_question(required_fields)
+        ),
         required_fields=required_fields,
     )
 

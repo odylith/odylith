@@ -8,7 +8,6 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_compiled_write
 from odylith.runtime.domain_intelligence import greenfield_create_lifecycle
-from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence import greenfield_repository_lock
@@ -21,6 +20,7 @@ from odylith.runtime.domain_intelligence.greenfield_commit_journal import Greenf
 from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournalError
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldCommitInterrupted
+from odylith.runtime.surfaces.host_hook_execution import HookBudgetExpired
 
 
 class GreenfieldCreateCommitError(RuntimeError):
@@ -139,12 +139,13 @@ def commit_greenfield_create_transaction(
                 result["product_create_transaction"] = transaction_summary
                 generation = greenfield_generation_store.materialize_immutable_greenfield_generation(
                     repo_root=root,
-                    transaction_hash=transaction.transaction_hash,
                     write_set=write_set,
+                    manifest_text=transaction.prewrite_package.generation_manifest_text,
                 )
                 journal.mark_projecting(
                     result,
                     generation_manifest_sha256=generation.manifest_sha256,
+                    publication_entry_text=transaction.prewrite_package.publication_entry_text,
                 )
                 actual_result = greenfield_compiled_write.write_compiled_greenfield_package(
                     root=root,
@@ -160,14 +161,10 @@ def commit_greenfield_create_transaction(
                     lambda: greenfield_generation_store.publish_greenfield_generation(
                         repo_root=root,
                         generation=generation,
-                        expected_active_identity=write_set["active_generation_precondition"],
+                        write_set=write_set,
+                        publication_entry_text=transaction.prewrite_package.publication_entry_text,
                     ),
-                    published_probe=lambda: greenfield_generation_state.active_generation_is(
-                        repo_root=root,
-                        transaction_hash=transaction.transaction_hash,
-                        write_set_hash=str(write_set["write_set_hash"]),
-                        generation_manifest_sha256=generation.manifest_sha256,
-                    ),
+                    published_probe=journal.publication_is_active,
                 )
                 journal.mark_published(
                     result,
@@ -219,12 +216,10 @@ def commit_greenfield_create_transaction(
             and generation is not None
             and result is not None
             and transaction is not None
-            and greenfield_generation_state.active_generation_is(
-                repo_root=root,
-                transaction_hash=transaction.transaction_hash,
-                write_set_hash=str(transaction.prewrite_package.repository_write_set["write_set_hash"]),
-                generation_manifest_sha256=generation.manifest_sha256,
-            )
+            # Cancellation is not evidence of drift. Preserve the admitted
+            # interrupted phase so a same-hash retry must reverify publication.
+            and not isinstance(exc, HookBudgetExpired)
+            and journal.publication_is_active()
         ):
             try:
                 journal.mark_recovery_required(
@@ -250,7 +245,7 @@ def commit_greenfield_create_transaction(
                 exc.failure_kind
                 if isinstance(exc, GreenfieldCommitJournalError)
                 else "post_confirm_commit_interrupted"
-                if isinstance(exc, (GreenfieldCommitInterrupted, KeyboardInterrupt, SystemExit))
+                if isinstance(exc, (GreenfieldCommitInterrupted, KeyboardInterrupt, SystemExit, HookBudgetExpired))
                 else "post_confirm_commit_environment_or_io_failure"
                 if isinstance(exc, OSError)
                 else "post_confirm_commit_invariant_failure"

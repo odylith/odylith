@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 import sys
@@ -9,10 +10,18 @@ import sys
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_create_lifecycle
+from odylith.runtime.domain_intelligence.greenfield_commit_transaction import _payload_hash
 from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.domain_intelligence import greenfield_managed_mutation_boundary
+from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    product_facts_payload,
+)
 from tests.greenfield_matrix_campaign_test_support import SCRIPTS_ROOT
+from tests.greenfield_matrix_campaign_test_support import load_module
+from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 
 
 if str(SCRIPTS_ROOT) not in sys.path:
@@ -29,6 +38,160 @@ HASH = "a" * 64
 PRODUCT_FACTS_SHA256 = "c" * 64
 ATOMIC_CUSTODY_SHA256 = "d" * 64
 TRANSACTION_FILE = f".odylith/runtime/greenfield/pending/{HASH}/product-create-transaction.v1.json"
+
+
+@pytest.mark.parametrize("tamper", [None, "product", "model", "reviewer"])
+def test_dry_run_uses_real_compiler_hash_with_sealed_model_timing(tmp_path: Path, tamper: str | None) -> None:
+    from odylith.runtime.domain_intelligence import greenfield_create_transaction as compiler
+    from tests.unit.runtime.test_greenfield_create_transaction import _transaction
+
+    transaction = _transaction(tmp_path)
+    quality = dict(transaction.quality_manifest)
+    quality["elapsed_seconds"] = 12.5
+    quality["model_authoring"] = {
+        **quality["model_authoring"], "elapsed_seconds": 9.0,
+        "candidate_review": {**quality["model_authoring"]["candidate_review"], "elapsed_seconds": 3.0},
+    }
+    transaction = replace(transaction, quality_manifest=quality)
+    transaction = replace(transaction, transaction_hash=compiler.product_create_transaction_hash(transaction))
+    path = tmp_path / TRANSACTION_FILE
+    compiler.write_compiled_product_create_transaction_file(path, transaction)
+    if tamper:
+        payload = json.loads(path.read_text())
+        if tamper == "product":
+            payload["proposal"]["intent"]["first_path"] = "Forged product meaning."
+        elif tamper == "model":
+            payload["quality_manifest"]["model_authoring"]["elapsed_seconds"] += 1
+        else:
+            payload["quality_manifest"]["model_authoring"]["candidate_review"]["elapsed_seconds"] += 1
+        encoded = json.dumps(payload, sort_keys=True).encode()
+        path.write_bytes(encoded)
+        receipt_path = path.with_name(path.name + ".compiler-receipt.v1.json")
+        receipt = json.loads(receipt_path.read_text())
+        receipt["transaction_file_sha256"] = hashlib.sha256(encoded).hexdigest()
+        receipt_path.write_text(json.dumps(receipt, sort_keys=True))
+    receipt, issues = evidence_module._sealed_dry_run_receipt(
+        repo_root=tmp_path, transaction_file=TRANSACTION_FILE,
+        transaction_hash=transaction.transaction_hash, proposal_mode="product_create_transaction")
+    if tamper:
+        assert "transaction body does not match its declared transaction hash" in issues
+        assert receipt["status"] == "invalid"
+    else:
+        assert issues == ()
+        assert receipt["transaction_body_sha256"] == transaction.transaction_hash
+        assert receipt["status"] == "compiled"
+
+
+@pytest.mark.parametrize("show_result", ["passed", "failed", "missing_marker"])
+def test_installed_matrix_preserves_show_propose_sealed_confirm_journey(
+    tmp_path: Path, monkeypatch, show_result: str,
+) -> None:
+    module = load_module(SCRIPTS_ROOT / "greenfield_preconfirm_matrix.py", "matrix_installed_journey_test")
+    _path, transaction_hash = _write_transaction(tmp_path)
+    calls = []
+
+    def invoke(**kwargs):
+        command = kwargs["command"]
+        calls.append(command)
+        if "show" in command:
+            return SimpleNamespace(
+                returncode=1 if show_result == "failed" else 0,
+                stdout="missing" if show_result == "missing_marker" else "Odylith read this repo",
+                stderr="",
+            )
+        if "propose" in command:
+            return _proposal(transaction_hash)
+        assert "create" in command and "--confirm" in command
+        return _successful_create_output(tmp_path)
+
+    monkeypatch.setattr(module, "_run", invoke)
+    profile = module.get_greenfield_model_profile(module.model_profile_id_for_repair_tier("auto"))
+    raw = {}
+    if show_result == "passed":
+        execution = module._run_compiled_greenfield_create_with_receipt(
+            repo_root=tmp_path, env={"ODYLITH_GREENFIELD_MODEL_PROFILE": profile.profile_id},
+            prompt="A dispatcher records a dispatch and sees its receipt.", raw_streams=raw,
+        )
+        assert ["show" if "show" in command else command[2] for command in calls] == ["show", "propose", "create"]
+        assert execution.dry_run_receipt["transaction_hash"] == transaction_hash
+        assert not execution.output_contract_issues
+    else:
+        with pytest.raises(RuntimeError, match="capability show"):
+            module._run_compiled_greenfield_create_with_receipt(
+                repo_root=tmp_path, env={"ODYLITH_GREENFIELD_MODEL_PROFILE": profile.profile_id},
+                prompt="A dispatcher records a dispatch and sees its receipt.", raw_streams=raw,
+            )
+        assert len(calls) == 1
+    assert "show.stdout" in raw and "show.stderr" in raw
+
+
+@pytest.mark.parametrize("stage", ["propose", "create"])
+@pytest.mark.parametrize("stream", ["stdout", "stderr"])
+@pytest.mark.parametrize("token", [
+    '"reasoning_contract"', '"host_instruction"', "active-proposal.v1.json",
+    "must be non-empty", "greenfield proposal validation failed",
+    "greenfield proposal Tribunal failed", "host-side schema repair",
+])
+def test_installed_positive_journey_rejects_successful_host_repair_output(
+    tmp_path: Path, stage: str, stream: str, token: str,
+) -> None:
+    _path, transaction_hash = _write_transaction(tmp_path)
+    proposed = _proposal(transaction_hash)
+    created = SimpleNamespace(returncode=0, stdout="{}", stderr="")
+    target = proposed if stage == "propose" else created
+    if stream == "stdout":
+        payload = json.loads(target.stdout)
+        payload["leaked_contract"] = json.loads(token) if token.startswith('"') else token
+        target.stdout = json.dumps(payload)
+    else:
+        target.stderr = token
+    calls = []
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path, proposed=proposed, proposal_seconds=1,
+        invoke_create=lambda command: calls.append(command) or created,
+    )
+    assert any(token in issue for issue in execution.output_contract_issues)
+    assert bool(calls) == (stage == "create")
+    if stage == "create":
+        assert execution.create is created, "Retain the actual output instead of replacing failure evidence"
+
+
+@pytest.mark.parametrize("missing", [
+    "", "mode", "validation_gate", "dashboard_refresh",
+    "odylith/runtime/source/accepted-project.v1.json",
+    "odylith/runtime/delivery_intelligence.v4.json",
+    "odylith/radar/traceability-graph.v1.json",
+])
+def test_positive_matrix_keeps_original_confirmed_smoke_artifact_guards(tmp_path: Path, missing: str) -> None:
+    _path, transaction_hash = _write_transaction(tmp_path)
+    created = _successful_create_output(tmp_path)
+    if missing.startswith("odylith/"):
+        (tmp_path / missing).unlink()
+    elif missing:
+        payload = json.loads(created.stdout)
+        payload.pop(missing)
+        created.stdout = json.dumps(payload)
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path, proposed=_proposal(transaction_hash), proposal_seconds=1,
+        invoke_create=lambda _command: created,
+    )
+    assert bool(execution.output_contract_issues) == bool(missing)
+    if missing:
+        assert any(missing in issue for issue in execution.output_contract_issues)
+
+
+def _successful_create_output(repo_root: Path) -> SimpleNamespace:
+    for relative in (
+        "odylith/runtime/source/accepted-project.v1.json",
+        "odylith/runtime/delivery_intelligence.v4.json",
+        "odylith/radar/traceability-graph.v1.json",
+    ):
+        path = repo_root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("{}\n", encoding="utf-8")
+    return SimpleNamespace(returncode=0, stderr="", stdout=json.dumps({
+        "mode": "applied", "validation_gate": {"passed": True}, "dashboard_refresh": {"status": "passed"},
+    }))
 
 
 def test_commit_precompiled_transaction_validates_receipt_before_invoking_create(tmp_path: Path) -> None:
@@ -48,6 +211,13 @@ def test_commit_precompiled_transaction_validates_receipt_before_invoking_create
     assert execution.dry_run_receipt["transaction_hash"] == transaction_hash
     assert execution.dry_run_receipt["semantic_snapshot"]["facts"]["first_path"] == (
         "An operator records one decision and reviews the accepted receipt."
+    )
+    transaction = json.loads(_transaction_path.read_text(encoding="utf-8"))
+    assert execution.dry_run_receipt["semantic_snapshot"]["facts"] == product_facts_payload(
+        transaction["proposal"]["intent"]
+    )
+    assert execution.dry_run_receipt["semantic_snapshot"]["facts"]["title"] == (
+        "Decision Workspace"
     )
     assert execution.dry_run_receipt["semantic_snapshot"]["atomic_facts"][0]["normalized_value"] == "Operator"
     assert execution.dry_run_receipt["semantic_snapshot"]["atomic_custody_sha256"] == ATOMIC_CUSTODY_SHA256
@@ -284,6 +454,8 @@ def test_commit_precompiled_transaction_rejects_changed_transaction_bytes(tmp_pa
         ("atomic_custody", "missing a valid atomic custody hash"),
         ("write_set", "missing a valid repository write-set hash"),
         ("managed_after_state", "missing exact managed after-state fingerprints"),
+        ("generation_manifest", "missing valid sealed generation/publication bytes"),
+        ("publication_entry", "missing valid sealed generation/publication bytes"),
     ),
 )
 def test_commit_precompiled_transaction_requires_every_sealed_identity(
@@ -301,6 +473,8 @@ def test_commit_precompiled_transaction_requires_every_sealed_identity(
     elif identity == "write_set":
         transaction["prewrite_package"]["repository_write_set"]["write_set_hash"] = ""
         transaction["commit_summary"]["repository_write_set_hash"] = ""
+    elif identity in {"generation_manifest", "publication_entry"}:
+        transaction["prewrite_package"].pop(identity + "_text")
     else:
         first_path = greenfield_repository_write_set.GREENFIELD_REPOSITORY_WRITE_PATHS[0]
         transaction["prewrite_package"]["repository_write_set"]["after_fingerprints"].pop(first_path)
@@ -442,7 +616,7 @@ def test_dry_run_commit_issues_rejects_changed_generation_manifest(tmp_path: Pat
     manifest_path = (
         tmp_path
         / ".odylith/runtime/greenfield/generations"
-        / transaction_hash
+        / str(write_set["write_set_hash"])
         / "generation-manifest.v1.json"
     )
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -456,8 +630,7 @@ def test_dry_run_commit_issues_rejects_changed_generation_manifest(tmp_path: Pat
         repo_root=tmp_path,
     )
 
-    assert "active generation identity does not match the sealed transaction" in issues
-    assert "immutable generation manifest does not match the sealed managed after-state" in issues
+    assert issues == ("immutable generation readback is missing or invalid",)
 
 
 def test_dry_run_commit_issues_rejects_changed_active_generation_identity(tmp_path: Path) -> None:
@@ -468,12 +641,14 @@ def test_dry_run_commit_issues_rejects_changed_active_generation_identity(tmp_pa
         transaction_hash=transaction_hash,
         write_set=write_set,
     )
-    state_path = greenfield_generation_state.active_generation_state_path(tmp_path)
-    state = json.loads(state_path.read_text(encoding="utf-8"))
-    state["write_set_hash"] = "b" * 64
-    state.pop("record_hash")
-    state["record_hash"] = _record_hash(state)
-    state_path.write_text(_canonical_json(state), encoding="utf-8")
+    publication = greenfield_generation_state.read_active_publication(tmp_path)
+    (tmp_path / "odylith/index.html").write_text(
+        greenfield_generation_state.compile_greenfield_publication_entry(
+            write_set_hash="b" * 64,
+            generation_manifest_sha256=publication["generation_manifest_sha256"],
+        ),
+        encoding="utf-8",
+    )
 
     issues = dry_run_commit_issues(
         receipt=receipt,
@@ -484,6 +659,41 @@ def test_dry_run_commit_issues_rejects_changed_active_generation_identity(tmp_pa
     assert issues == ("active generation identity does not match the sealed transaction",)
 
 
+def test_dry_run_commit_issues_rejects_modified_publication_bytes(tmp_path: Path) -> None:
+    receipt, write_set = _compiled_receipt(tmp_path)
+    _publish_committed_generation(
+        repo_root=tmp_path, transaction_hash=str(receipt["transaction_hash"]), write_set=write_set,
+    )
+    entry = tmp_path / "odylith/index.html"
+    assert hashlib.sha256(entry.read_bytes()).hexdigest() == receipt["publication_sha256"]
+    entry.write_bytes(entry.read_bytes() + b"\n")
+
+    assert dry_run_commit_issues(
+        receipt=receipt, create_payload=_create_payload(receipt), repo_root=tmp_path,
+    ) == ("active generation readback is missing or invalid",)
+
+
+def test_generation_proof_rejects_an_unapproved_transaction_with_the_same_write_set(tmp_path: Path) -> None:
+    receipt, write_set = _compiled_receipt(tmp_path)
+    _publish_committed_generation(
+        repo_root=tmp_path, transaction_hash=str(receipt["transaction_hash"]), write_set=write_set,
+    )
+    publication = (tmp_path / "odylith/index.html").read_bytes()
+    unapproved_transaction = "b" * 64
+
+    assert evidence_module._active_generation_issues(  # noqa: SLF001
+        repo_root=tmp_path, transaction_hash=unapproved_transaction,
+        write_set_hash=str(write_set["write_set_hash"]),
+        after_fingerprints=write_set["after_fingerprints"],
+        publication_sha256=str(receipt["publication_sha256"]),
+    ) == ("immutable generation readback is missing or invalid",)
+    assert post_confirm_navigation_issues(
+        create_payload={}, repo_root=tmp_path, transaction_hash=unapproved_transaction,
+    ) == ("post-confirm navigation has no valid reviewed generation receipt",)
+    assert (tmp_path / "odylith/index.html").read_bytes() == publication
+    assert not (tmp_path / ".odylith/runtime/greenfield/create-journal" / unapproved_transaction).exists()
+
+
 def test_dry_run_commit_issues_rejects_changed_managed_repository_state(tmp_path: Path) -> None:
     receipt, write_set = _compiled_receipt(tmp_path)
     _publish_committed_generation(
@@ -491,7 +701,7 @@ def test_dry_run_commit_issues_rejects_changed_managed_repository_state(tmp_path
         transaction_hash=str(receipt["transaction_hash"]),
         write_set=write_set,
     )
-    (tmp_path / "odylith/index.html").write_text("changed after confirmation", encoding="utf-8")
+    (tmp_path / "odylith/tooling-shell.html").write_text("changed after confirmation", encoding="utf-8")
 
     issues = dry_run_commit_issues(
         receipt=receipt,
@@ -513,7 +723,7 @@ def test_dry_run_commit_issues_rejects_changed_generation_repository_state(tmp_p
     generation_index = (
         tmp_path
         / ".odylith/runtime/greenfield/generations"
-        / transaction_hash
+        / str(write_set["write_set_hash"])
         / "repository/odylith/index.html"
     )
     generation_index.write_text("changed immutable generation", encoding="utf-8")
@@ -524,7 +734,7 @@ def test_dry_run_commit_issues_rejects_changed_generation_repository_state(tmp_p
         repo_root=tmp_path,
     )
 
-    assert issues == ("immutable generation repository does not match the sealed managed after-state",)
+    assert issues == ("immutable generation readback is missing or invalid",)
 
 
 def test_confirmation_preview_requires_the_hash_bound_decision_rail() -> None:
@@ -540,17 +750,18 @@ def test_confirmation_preview_requires_the_hash_bound_decision_rail() -> None:
 
 
 def test_post_confirm_navigation_requires_the_reviewed_generation_workspace(tmp_path: Path) -> None:
+    receipt, write_set = _compiled_receipt(tmp_path)
+    transaction_hash = str(receipt["transaction_hash"])
+    _publish_committed_generation(
+        repo_root=tmp_path, transaction_hash=transaction_hash, write_set=write_set,
+    )
     dashboard = (
         tmp_path
         / ".odylith/runtime/greenfield/generations"
-        / HASH
+        / str(write_set["write_set_hash"])
         / "repository/odylith/index.html"
     ).resolve()
-    dashboard.parent.mkdir(parents=True)
-    dashboard.write_text("<html></html>", encoding="utf-8")
     compatibility_dashboard = (tmp_path / "odylith/index.html").resolve()
-    compatibility_dashboard.parent.mkdir(parents=True)
-    compatibility_dashboard.write_text("<html></html>", encoding="utf-8")
     payload = {
         "post_confirm_navigation": {
             "project": "odylith/index.html?tab=project",
@@ -562,14 +773,26 @@ def test_post_confirm_navigation_requires_the_reviewed_generation_workspace(tmp_
             "project_url": f"{dashboard.as_uri()}?tab=project",
             "view_status": "reviewed_generation",
             "compatibility_dashboard_path": str(compatibility_dashboard),
-            "generation_transaction_hash": HASH,
+            "generation_transaction_hash": transaction_hash,
         }
     }
 
     assert post_confirm_navigation_issues(
         create_payload=payload,
         repo_root=tmp_path,
-        transaction_hash=HASH,
+        transaction_hash=transaction_hash,
+    ) == ()
+
+    def later_writer(_repository_lock_fd):
+        compatibility_dashboard.with_name("tooling-shell.html").write_text("later complete shell\n", encoding="utf-8")
+        return 0
+
+    assert greenfield_managed_mutation_boundary.run_with_greenfield_managed_mutation_boundary(
+        repo_root=tmp_path, command_tokens=("dashboard", "refresh"), operation=later_writer,
+    ) == 0
+    assert greenfield_generation_state.active_generation_identity(tmp_path)["write_set_hash"] != write_set["write_set_hash"]
+    assert post_confirm_navigation_issues(
+        create_payload=payload, repo_root=tmp_path, transaction_hash=transaction_hash,
     ) == ()
 
     payload["post_confirm_navigation"]["project_url"] = "file:///wrong/index.html?tab=project"
@@ -577,7 +800,7 @@ def test_post_confirm_navigation_requires_the_reviewed_generation_workspace(tmp_
     assert post_confirm_navigation_issues(
         create_payload=payload,
         repo_root=tmp_path,
-        transaction_hash=HASH,
+        transaction_hash=transaction_hash,
     ) == (
         "post-confirm response does not expose the reviewed generation workspace routes: project_url",
     )
@@ -639,6 +862,7 @@ def _write_transaction(
     authored_semantics: dict[str, object] | None = None,
     authored_relation_set_sha256: str = "",
 ) -> tuple[Path, str]:
+    activate_greenfield_baseline_fixture(repo_root)
     path = repo_root / TRANSACTION_FILE
     staged_root = repo_root / ".transaction-stage"
     staged_index = staged_root / "odylith/index.html"
@@ -648,10 +872,16 @@ def _write_transaction(
         source_root=repo_root,
         staged_root=staged_root,
     )
+    manifest_text = greenfield_generation_store.compile_greenfield_generation_manifest(write_set)
+    publication_text = greenfield_generation_state.compile_greenfield_publication_entry(
+        write_set_hash=write_set["write_set_hash"],
+        generation_manifest_sha256=hashlib.sha256(manifest_text.encode()).hexdigest(),
+    )
     transaction = {
         "quality_manifest": {"status": "passed", "validation_status": "passed"},
         "proposal": {
             "intent": {
+                "title": "Decision Workspace",
                 "product_story": "Decision Workspace helps an operator review one governed outcome.",
                 "state_object": "A decision record tracks its evidence, status, and accepted receipt.",
                 "first_path": "An operator records one decision and reviews the accepted receipt.",
@@ -704,7 +934,11 @@ def _write_transaction(
                 else {}
             ),
         },
-        "prewrite_package": {"repository_write_set": write_set},
+        "prewrite_package": {
+            "repository_write_set": write_set,
+            "generation_manifest_text": manifest_text,
+            "publication_entry_text": publication_text,
+        },
         "commit_summary": {
             "product_facts_sha256": PRODUCT_FACTS_SHA256,
             "repository_write_set_hash": write_set["write_set_hash"],
@@ -721,9 +955,7 @@ def _seal_transaction(
     receipt_hash: str | None = None,
 ) -> str:
     transaction.pop("transaction_hash", None)
-    transaction_hash = hashlib.sha256(
-        json.dumps(transaction, ensure_ascii=True, separators=(",", ":"), sort_keys=True).encode("ascii")
-    ).hexdigest()
+    transaction_hash = _payload_hash(transaction)
     transaction["transaction_hash"] = transaction_hash
     encoded = json.dumps(transaction, sort_keys=True).encode("utf-8")
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -763,10 +995,24 @@ def _publish_committed_generation(
     transaction_hash: str,
     write_set: dict[str, object],
 ) -> None:
+    transaction = json.loads((repo_root / TRANSACTION_FILE).read_text(encoding="utf-8"))
+    package = transaction["prewrite_package"]
+    assert transaction["transaction_hash"] == transaction_hash
+    assert package["repository_write_set"] == write_set
     generation = greenfield_generation_store.materialize_immutable_greenfield_generation(
         repo_root=repo_root,
-        transaction_hash=transaction_hash,
         write_set=write_set,
+        manifest_text=package["generation_manifest_text"],
+    )
+    journal = GreenfieldCommitJournal(
+        repo_root=repo_root, transaction_hash=transaction_hash, write_set=write_set,
+    )
+    journal.prepare()
+    journal.snapshot_root.mkdir()
+    journal.mark_prepared()
+    journal.mark_projecting(
+        {}, generation_manifest_sha256=generation.manifest_sha256,
+        publication_entry_text=package["publication_entry_text"],
     )
     greenfield_repository_write_set.apply_compiled_greenfield_repository_write_set(
         repo_root=repo_root,
@@ -775,8 +1021,11 @@ def _publish_committed_generation(
     greenfield_generation_store.publish_greenfield_generation(
         repo_root=repo_root,
         generation=generation,
-        expected_active_identity=write_set["active_generation_precondition"],
+        write_set=write_set,
+        publication_entry_text=package["publication_entry_text"],
     )
+    journal.mark_published({}, generation_manifest_sha256=generation.manifest_sha256)
+    journal.mark_closed({}, generation_manifest_sha256=generation.manifest_sha256)
 
 
 def _create_payload(receipt: dict[str, object]) -> dict[str, object]:
@@ -806,8 +1055,3 @@ def _create_payload(receipt: dict[str, object]) -> dict[str, object]:
 
 def _canonical_json(value: object) -> str:
     return json.dumps(value, indent=2, sort_keys=True, ensure_ascii=True) + "\n"
-
-
-def _record_hash(state: dict[str, object]) -> str:
-    canonical = json.dumps(state, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
-    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()

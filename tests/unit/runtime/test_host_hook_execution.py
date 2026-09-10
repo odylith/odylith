@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from contextlib import suppress
+from contextlib import contextmanager, suppress
 import os
 from pathlib import Path
 import signal
@@ -161,6 +161,44 @@ def test_unsupported_thread_defers_before_work() -> None:
 
 def test_missing_command_fails_soft(tmp_path: Path) -> None:
     assert host_hook_execution.run_hook_command(command=[str(tmp_path / "absent")], cwd=tmp_path, timeout=1) is None
+
+
+def test_deadline_cannot_skip_cleanup_when_command_timeout_wins(monkeypatch, tmp_path: Path) -> None:
+    processes = []
+    launch = subprocess.Popen
+    suspend_alarm = host_hook_execution._Deadline.suspend_alarm
+
+    def tracked_launch(*args, **kwargs):
+        process = launch(*args, **kwargs)
+        processes.append(process)
+        return process
+
+    @contextmanager
+    def scheduled_suspend(deadline):
+        # Model descheduling after communicate times out but before a separate
+        # cleanup scope can disarm the asynchronous whole-hook alarm.
+        if processes:
+            time.sleep(max(0, deadline.expires_at - time.monotonic()) + 0.02)
+        with suspend_alarm(deadline):
+            yield
+
+    monkeypatch.setattr(host_hook_execution.subprocess, "Popen", tracked_launch)
+    monkeypatch.setattr(host_hook_execution._Deadline, "suspend_alarm", scheduled_suspend)
+    try:
+        with suppress(host_hook_execution.HookBudgetExpired):
+            with host_hook_execution.hook_budget(seconds=0.5):
+                host_hook_execution.run_hook_command(
+                    command=[sys.executable, "-c", "import time; time.sleep(30)"],
+                    cwd=tmp_path,
+                    timeout=0.15,
+                )
+        assert len(processes) == 1
+        assert processes[0].poll() is not None, "Whole-hook alarm skipped owned-process cleanup"
+    finally:
+        for process in processes:
+            with suppress(ProcessLookupError):
+                os.killpg(process.pid, signal.SIGKILL)
+            process.wait(timeout=1)
 
 
 def test_start_sync_and_log_share_one_monotonic_deadline(monkeypatch, tmp_path: Path) -> None:

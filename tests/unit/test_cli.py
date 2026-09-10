@@ -1,5 +1,7 @@
 import argparse
+import fcntl
 import json
+import os
 import subprocess
 import sys
 import time
@@ -11,11 +13,25 @@ import pytest
 from odylith import cli
 from odylith.runtime.common import casebook_metadata
 from odylith.runtime.governance import bug_authoring
+from odylith.runtime.domain_intelligence.greenfield_repository_lock import (
+    GreenfieldRepositoryBusyError,
+    greenfield_repository_lock,
+)
 
 
 class _TTYStream:
     def isatty(self) -> bool:
         return True
+
+
+def _assert_held_repository_lock(repo_root: Path, descriptor: int) -> None:
+    assert type(descriptor) is int
+    lock_path = repo_root / ".odylith/runtime/greenfield/create.lock"
+    assert os.path.samestat(os.fstat(descriptor), lock_path.stat())
+    with pytest.raises(GreenfieldRepositoryBusyError):
+        with greenfield_repository_lock(repo_root):
+            pytest.fail("a competing writer acquired the supplied descriptor's lock")
+    fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
 
 
 def _write_casebook_bug(
@@ -391,37 +407,6 @@ def test_greenfield_create_help_forwards_commit_only_backend_flags(capsys) -> No
     assert "--intent-file" not in output
     assert "--release" not in output
     assert "--repair-tier" not in output
-
-
-def test_greenfield_propose_command_is_provider_free(tmp_path: Path, capsys) -> None:
-    rc = cli.main(
-        [
-            "greenfield",
-            "propose",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            "Build an ecommerce site",
-            "--format",
-            "json",
-        ]
-    )
-
-    payload = json.loads(capsys.readouterr().out)
-    assert rc == 0
-    assert payload == {
-        "mode": "clarification_required",
-        "clarification": {
-            "question": "What is the first complete task the product should help a person finish, and what result should they see?",
-            "required_fields": ["first_path"],
-        },
-    }
-    assert not (tmp_path / ".odylith/runtime/greenfield").exists()
-    assert "provider_calls" not in payload
-    assert "host_reasoning_task" not in payload
-    assert "backlog" not in payload
-    assert "components" not in payload
-    assert "diagrams" not in payload
 
 
 def test_greenfield_propose_confirm_intent_json_is_provider_free(tmp_path: Path, capsys) -> None:
@@ -1482,139 +1467,6 @@ def test_install_adopt_latest_clears_stale_upgrade_spotlight_when_no_version_cha
     assert "Dashboard refreshed." in output
 
 
-def test_refresh_dashboard_after_upgrade_reenters_through_fresh_launcher(monkeypatch, tmp_path: Path, capsys) -> None:
-    repo_root = tmp_path / "repo"
-    launcher_path = repo_root / ".odylith" / "bin" / "odylith"
-    launcher_path.parent.mkdir(parents=True, exist_ok=True)
-    launcher_path.write_text("#!/bin/sh\n", encoding="utf-8")
-    captured: dict[str, object] = {}
-
-    def fake_run(command, **kwargs):  # noqa: ANN001, ANN003
-        captured["command"] = command
-        captured["kwargs"] = kwargs
-        return SimpleNamespace(returncode=0, stdout="dashboard refresh completed\n", stderr="")
-
-    monkeypatch.setattr(cli.subprocess, "run", fake_run)
-
-    refreshed, message = cli._refresh_dashboard_after_upgrade(repo_root=repo_root)  # noqa: SLF001
-    output = capsys.readouterr()
-
-    assert refreshed is True
-    assert message == "Dashboard refreshed. Open `odylith/index.html` to see what landed in this release."
-    assert captured["command"] == [
-        str(launcher_path.resolve()),
-        "dashboard",
-        "refresh",
-        "--repo-root",
-        str(repo_root),
-        "--surfaces",
-        "tooling_shell,radar,compass",
-        "--force",
-    ]
-    assert captured["kwargs"] == {
-        "cwd": str(repo_root),
-        "check": False,
-        "capture_output": True,
-        "text": True,
-    }
-    assert "Refreshing Odylith dashboard surfaces so the local shell reflects the new release." in output.out
-    assert "dashboard refresh completed" in output.out
-
-
-def test_refresh_dashboard_after_upgrade_compact_hides_launcher_refresh_plan(
-    monkeypatch, tmp_path: Path, capsys
-) -> None:
-    repo_root = tmp_path / "repo"
-    launcher_path = repo_root / ".odylith" / "bin" / "odylith"
-    launcher_path.parent.mkdir(parents=True, exist_ok=True)
-    launcher_path.write_text("#!/bin/sh\n", encoding="utf-8")
-
-    monkeypatch.setattr(
-        cli.subprocess,
-        "run",
-        lambda *args, **kwargs: SimpleNamespace(  # noqa: ANN002, ANN003
-            returncode=0,
-            stdout="dashboard refresh plan\n- stage_timing.complete: 0.1s\ndashboard refresh completed\n",
-            stderr="",
-        ),
-    )
-
-    refreshed, message = cli._refresh_dashboard_after_upgrade(  # noqa: SLF001
-        repo_root=repo_root,
-        compact_output=True,
-    )
-    output = capsys.readouterr()
-
-    assert refreshed is True
-    assert message == "Dashboard refreshed. Open `odylith/index.html` to see what landed in this release."
-    assert "draw   Refreshing dashboard." in output.out
-    assert "dashboard refresh plan" not in output.out
-    assert "stage_timing" not in output.out
-
-
-def test_refresh_dashboard_after_upgrade_returns_failure_when_launcher_refresh_fails(
-    monkeypatch, tmp_path: Path, capsys
-) -> None:
-    repo_root = tmp_path / "repo"
-    launcher_path = repo_root / ".odylith" / "bin" / "odylith"
-    launcher_path.parent.mkdir(parents=True, exist_ok=True)
-    launcher_path.write_text("#!/bin/sh\n", encoding="utf-8")
-
-    monkeypatch.setattr(
-        cli.subprocess,
-        "run",
-        lambda *args, **kwargs: SimpleNamespace(  # noqa: ANN002, ANN003
-            returncode=2,
-            stdout="dashboard refresh completed\n- outcome: failed\n",
-            stderr="compass failed\n",
-        ),
-    )
-
-    refreshed, message = cli._refresh_dashboard_after_upgrade(repo_root=repo_root)  # noqa: SLF001
-    output = capsys.readouterr()
-
-    assert refreshed is False
-    assert (
-        message
-        == "Odylith upgrade succeeded, but dashboard refresh failed. Retry with `./.odylith/bin/odylith dashboard refresh --repo-root . --force`."
-    )
-    assert "dashboard refresh completed" in output.out
-    assert "compass failed" in output.err
-
-
-def test_refresh_dashboard_after_upgrade_falls_back_to_in_process_refresh_when_launcher_is_missing(
-    monkeypatch, tmp_path: Path, capsys
-) -> None:
-    repo_root = tmp_path / "repo"
-    repo_root.mkdir()
-    captured: dict[str, object] = {}
-
-    monkeypatch.setattr(
-        cli.sync_workstream_artifacts,
-        "refresh_dashboard_surfaces",
-        lambda **kwargs: captured.update(kwargs) or 0,
-    )
-    monkeypatch.setattr(
-        cli.subprocess,
-        "run",
-        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("should use in-process fallback")),
-    )
-
-    refreshed, message = cli._refresh_dashboard_after_upgrade(repo_root=repo_root)  # noqa: SLF001
-    output = capsys.readouterr()
-
-    assert refreshed is True
-    assert message == "Dashboard refreshed. Open `odylith/index.html` to see what landed in this release."
-    assert captured == {
-        "repo_root": repo_root,
-        "surfaces": ("tooling_shell", "radar", "compass"),
-        "runtime_mode": "auto",
-        "atlas_sync": False,
-        "force": True,
-    }
-    assert "Refreshing Odylith dashboard surfaces so the local shell reflects the new release." in output.out
-
-
 def test_install_align_pin_reports_repo_pin_update(monkeypatch, tmp_path: Path, capsys) -> None:
     launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
     install_state = tmp_path / ".odylith" / "install.json"
@@ -1692,6 +1544,7 @@ def test_install_refreshes_dashboard_after_repo_state_migration(monkeypatch, tmp
     )
 
     def fake_refresh_dashboard_after_upgrade(**kwargs) -> tuple[bool, str]:  # noqa: ANN003
+        _assert_held_repository_lock(kwargs["repo_root"], kwargs["repository_lock_fd"])
         captured.update(kwargs)
         return True, "Dashboard refreshed."
 
@@ -1704,6 +1557,7 @@ def test_install_refreshes_dashboard_after_repo_state_migration(monkeypatch, tmp
     assert captured == {
         "repo_root": tmp_path,
         "compact_output": False,
+        "repository_lock_fd": captured["repository_lock_fd"],
     }
     assert "Migrated legacy repo roots into the Odylith layout before continuing." in output
     assert "Dashboard refreshed." in output
@@ -1745,6 +1599,7 @@ def test_compact_install_refreshes_dashboard_after_repo_state_migration(
     )
 
     def fake_refresh_dashboard_after_upgrade(**kwargs) -> tuple[bool, str]:  # noqa: ANN003
+        _assert_held_repository_lock(kwargs["repo_root"], kwargs["repository_lock_fd"])
         captured.update(kwargs)
         return True, "Dashboard refreshed."
 
@@ -1757,6 +1612,7 @@ def test_compact_install_refreshes_dashboard_after_repo_state_migration(
     assert captured == {
         "repo_root": tmp_path,
         "compact_output": True,
+        "repository_lock_fd": captured["repository_lock_fd"],
     }
     assert "done   Dashboard ready." in output
 
@@ -1801,6 +1657,7 @@ def test_install_fallback_preserves_upgrade_spotlight_after_hosted_state_cleanup
         )
 
     def fake_refresh_dashboard_after_upgrade(**kwargs) -> tuple[bool, str]:  # noqa: ANN003
+        _assert_held_repository_lock(kwargs["repo_root"], kwargs["repository_lock_fd"])
         captured.update(kwargs)
         return True, "Dashboard refreshed."
 
@@ -1820,7 +1677,10 @@ def test_install_fallback_preserves_upgrade_spotlight_after_hosted_state_cleanup
     assert spotlight_payload["to_version"] == "1.2.4"
     assert spotlight_payload["release_tag"] == "v1.2.4"
     assert spotlight_payload["release_url"] == "https://github.com/odylith/odylith/releases/tag/v1.2.4"
-    assert captured == {"repo_root": tmp_path, "compact_output": False}
+    assert captured == {
+        "repo_root": tmp_path, "compact_output": False,
+        "repository_lock_fd": captured["repository_lock_fd"],
+    }
     assert "Dashboard refreshed." in output
 
 
@@ -2179,31 +2039,6 @@ def test_upgrade_dry_run_prints_binding_target_metadata_and_verbose_paths(
     assert "+1 more" not in output
 
 
-def test_release_migration_gate_json_reports_registered_runtime(capsys) -> None:
-    repo_root = Path(__file__).resolve().parents[2]
-
-    rc = cli.main([
-        "release",
-        "migration-gate",
-            "--repo-root",
-            str(repo_root),
-            "--target-version",
-            "0.1.15",
-            "--json",
-        ])
-    payload = json.loads(capsys.readouterr().out)
-
-    assert rc == 0
-    assert payload["ok"] is True
-    assert payload["schema_version"] == "odylith.release-migration-gate.v1"
-    assert payload["fixture_matrix"]["v0.1.11-visible-intervention-value-engine"]["dry_run"] is True
-    assert payload["destructive_write_matrix"]["host.claude.preverified-settings"][
-        "test_install_bundle_preserves_host_settings_when_runtime_download_fails"
-    ] is True
-    assert payload["destructive_write_scenarios"]
-    assert payload["ungated_lifecycle_paths"] == []
-    assert payload["surface_migration_observer"]["schema_version"] == "odylith.surface-migration-observer.v1"
-    assert payload["surface_migration_observer"]["ok"] is True
 
 
 def test_release_group_help_includes_maintainer_commands(capsys) -> None:
@@ -4511,10 +4346,13 @@ def test_upgrade_dispatches_to_upgrade_install(monkeypatch, tmp_path: Path, caps
     def fake_refresh_dashboard_after_upgrade(
         *,
         repo_root: Path,
+        repository_lock_fd: int,
         emit_output: bool = True,
         compact_output: bool = False,
         details: dict[str, object] | None = None,
     ) -> tuple[bool, str]:
+        _assert_held_repository_lock(repo_root, repository_lock_fd)
+        refresh_capture["repository_lock_fd"] = repository_lock_fd
         refresh_capture["repo_root"] = repo_root
         refresh_capture["emit_output"] = emit_output
         refresh_capture["compact_output"] = compact_output
@@ -4620,10 +4458,12 @@ def test_upgrade_json_writes_auditable_report_and_suppresses_refresh_stdout(
     def fake_refresh_dashboard_after_upgrade(
         *,
         repo_root: Path,
+        repository_lock_fd: int,
         emit_output: bool = True,
         compact_output: bool = False,
         details: dict[str, object] | None = None,
     ) -> tuple[bool, str]:
+        _assert_held_repository_lock(repo_root, repository_lock_fd)
         assert emit_output is False
         assert compact_output is False
         assert repo_root == tmp_path / "repo"

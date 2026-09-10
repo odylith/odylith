@@ -16,13 +16,9 @@ from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import PRE
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from odylith.runtime.surfaces import brand_assets
 from tests.unit.runtime.greenfield_proposal_fixtures import compiled_greenfield_package_fixture
-from tests.unit.runtime.greenfield_proposal_fixtures import canonical_model_authored_intent_fixture
-from tests.unit.runtime.greenfield_proposal_fixtures import _canonical_model_authored_greenfield_fixture
-from tests.unit.runtime.greenfield_proposal_fixtures import approved_authored_quality_manifest_fixture
-
-
-def _approved_quality_manifest() -> dict[str, Any]:
-    return approved_authored_quality_manifest_fixture()
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import canonical_model_authored_intent_fixture
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import _canonical_model_authored_greenfield_fixture
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import approved_authored_quality_manifest_fixture
 
 
 def _compiled_transaction(repo_root: Path) -> Any:
@@ -41,7 +37,7 @@ def _compiled_transaction(repo_root: Path) -> Any:
         prewrite_package=package,
         backlog_result=package.backlog_result or {},
         intent_authority=authority,
-        quality_manifest=_approved_quality_manifest(),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
         repo_root=repo_root,
     )
 

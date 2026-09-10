@@ -24,6 +24,7 @@ from odylith.install.value_engine_migration import (
     MIGRATION_ID as VALUE_ENGINE_MIGRATION_ID,
     TARGET_VERSION as VALUE_ENGINE_TARGET_VERSION,
 )
+from odylith.install.versioning import is_at_least, normalize_version, version_key
 
 _REQUIRED_FIXTURES = (
     "dry_run",
@@ -50,6 +51,24 @@ class MigrationDefinition:
     validation_commands: tuple[str, ...]
     automatic: bool = True
     coverage_fixtures: tuple[str, ...] = _REQUIRED_FIXTURES
+
+    def covers_manifest_target(self, target_version: str) -> bool:
+        """Return whether this migration can satisfy a migration-required release.
+
+        Runtime inspections may still select historical repair migrations when a later
+        release encounters stale repo state. That does not mean the later release has a
+        registered migration contract of its own. Manifest satisfaction is intentionally
+        limited to the release train that introduced the migration so a future
+        migration_required release cannot activate because an older repair happened to
+        run.
+        """
+        target = normalize_version(target_version)
+        introduced = normalize_version(self.introduced_version)
+        if not target or not introduced or not is_at_least(target, introduced):
+            return False
+        target_key = version_key(target)
+        introduced_key = version_key(introduced)
+        return target_key[:2] == introduced_key[:2]
 
     def as_dict(self) -> dict[str, object]:
         """Return a JSON-ready definition payload."""

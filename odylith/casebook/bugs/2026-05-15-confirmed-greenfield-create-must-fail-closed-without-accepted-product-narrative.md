@@ -1093,3 +1093,20 @@
 - **Guardrail:** Fix the system-row normalization owner so meaningful explicit rows pass through unchanged or canonicalized once. Do not weaken validate_confirmed_intent, do not add scientific or industrial vocabulary, and do not patch the generated Markdown or downstream Atlas/Registry renderers to hide malformed row splits.
 - **Verification added:** Source repair widened only explicit accepted Name - responsibility system-row label custody while leaving inferred system labels conservative. Focused parser proof passed the long explicit internal-system row regression and adjacent confirmed-intent regressions, followed by the targeted confirmed-intent/system-row/prompt-source pack with 45 tests. Exact source-local industrial replay completed governed create in 39.853s with manifest passed, zero issues, 4 Radar records, 3 Registry specs, 6 Atlas diagrams, no split Method Execution Record or Review and Reproducibility Workspace labels, and disposable repos deleted. Fresh dist passed platform leakage across 224 fixture terms, then installed failed-subset replay passed the exact industrial case at hard 10/10 in 39.835s with zero issues, complete Radar/Registry/Atlas/project-brief/traceability/prompt evidence, and product-manager, architect, engineer, and domain-expert lenses green. Remaining verification: resume the 240-case discovery shards and strict release proof before any release-readiness claim.
 - **Agent guardrails:** When internal_systems fails despite visible bullets, inspect confirmed_system_name, confirmed_system_description, and completion output before changing gates or downstream artifact renderers. This failure class is a semantic-source normalization issue, not a final package quality issue.
+
+## 2026-09-03 Supersession: Direct Evidence Replaces Parser Preservation
+
+- The v20 Greenfield contract supersedes historical module-specific guardrails
+  in this record that required retaining confirmed-intent parser, text-model,
+  component-profile, or repair helpers. Those instructions documented the best
+  available ownership inside the old mechanism; they are not authority to keep
+  the mechanism after direct typed evidence made it redundant.
+- Thirty obsolete parser/repair modules and 4,927 lines are now removed. One
+  model-authored, source-cited typed graph owns product meaning; deterministic
+  code verifies byte custody, typed relationships, transaction laws, and
+  rendering. The executed public proposal path has no semantic regex caller.
+- The invariant remains fail-closed accepted product truth before publication.
+  Reintroducing the deleted modules, phrase vocabularies, prose reparsing,
+  retry/repair cascades, or post-confirm interpretation requires fresh evidence
+  that the direct mechanism fails a recurring class and a bounded comparison
+  showing the replacement wins.

@@ -10,7 +10,6 @@ from typing import Sequence
 
 from odylith.runtime.governance.delivery import scope_signal_ladder
 from odylith.runtime.surfaces import compass_standup_brief_narrator
-from odylith.runtime.surfaces import compass_standup_runtime_reuse
 from odylith.runtime.surfaces import compass_window_update_index
 
 
@@ -44,7 +43,6 @@ class CompassWindowSummaryContext:
     self_host_risks: list[dict[str, Any]]
     generated_utc: str
     reasoning_config: Any
-    prior_runtime_state: dict[str, Any]
     delivery_workstreams: dict[str, Any]
     progress_callback: Any | None
     build_window_activity: Any
@@ -55,7 +53,6 @@ class CompassWindowSummaryContext:
     scope_risk_rows: Any
     build_global_standup_fact_packet: Any
     build_scoped_standup_fact_packet: Any
-    reusable_brief_sections_for_fact_packet: Any
     brief_with_known_failure_state: Any
     inactive_scoped_standup_brief: Any
     verified_scoped_window_ids: Any
@@ -361,34 +358,7 @@ def summarize_window(
     if context.self_host_risks:
         window_kpis["critical_risks"] = int(window_kpis.get("critical_risks", 0) or 0) + len(context.self_host_risks)
     window_key = f"{int(hours)}h"
-    prior_window_runtime = compass_standup_runtime_reuse.window_runtime_state(
-        context.prior_runtime_state,
-        window_key=window_key,
-    )
-    prior_global_brief = compass_standup_runtime_reuse.window_global_brief(
-        context.prior_runtime_state,
-        window_key=window_key,
-    )
-    prior_scoped_briefs = compass_standup_runtime_reuse.window_scoped_briefs(
-        context.prior_runtime_state,
-        window_key=window_key,
-    )
-    global_reuse_fingerprint = compass_standup_runtime_reuse.global_reuse_fingerprint(
-        window_hours=hours,
-        focus_rows=focus_rows,
-        active_ws_rows=context.active_ws_rows,
-        touched_workstreams=touched_ws,
-        next_actions=focus_actions or context.next_actions,
-        recent_completed=recent_completed,
-        execution_updates=execution_update_index.get("global", []),
-        transaction_updates=transaction_update_index.get("global", []),
-        kpis=window_kpis,
-        risk_summary=risk_posture_window,
-        self_host_snapshot=context.self_host,
-    )
     standup_runtime_window: dict[str, Any] = {
-        "global_reuse_fingerprint": global_reuse_fingerprint,
-        "scoped_reuse_fingerprints": {},
         "verified_scope_ids": sorted(window_verified_ids),
         "promoted_scope_ids": sorted(window_promoted_ids),
         "scope_signals": window_scope_signals,
@@ -412,37 +382,22 @@ def summarize_window(
         self_host_risks=context.self_host_risks,
         now=context.now,
     )
-    reusable_global_sections = context.reusable_brief_sections_for_fact_packet(
-        brief=prior_global_brief,
+    standup_global = compass_standup_brief_narrator.build_standup_brief(
+        repo_root=context.repo_root,
         fact_packet=global_fact_packet,
+        generated_utc=context.generated_utc,
+        config=context.reasoning_config,
+        provider=None,
+        allow_provider=False,
+        prefer_provider=False,
     )
-    if (
-        str(prior_window_runtime.get("global_reuse_fingerprint", "")).strip() == global_reuse_fingerprint
-        and reusable_global_sections is not None
-    ):
-        standup_global = compass_standup_runtime_reuse.reuse_ready_brief(
-            brief=prior_global_brief,
-            generated_utc=context.generated_utc,
-            fingerprint=f"salient:{global_reuse_fingerprint}",
-            sections=reusable_global_sections,
-        )
-    else:
-        standup_global = compass_standup_brief_narrator.build_standup_brief(
-            repo_root=context.repo_root,
-            fact_packet=global_fact_packet,
-            generated_utc=context.generated_utc,
-            config=context.reasoning_config,
-            provider=None,
-            allow_provider=False,
-            prefer_provider=False,
-        )
-        standup_global = context.brief_with_known_failure_state(
-            repo_root=context.repo_root,
-            window_key=window_key,
-            fact_packet=global_fact_packet,
-            generated_utc=context.generated_utc,
-            brief=standup_global,
-        )
+    standup_global = context.brief_with_known_failure_state(
+        repo_root=context.repo_root,
+        window_key=window_key,
+        fact_packet=global_fact_packet,
+        generated_utc=context.generated_utc,
+        brief=standup_global,
+    )
     standup_scoped: dict[str, dict[str, Any]] = {}
     scoped_packet_index: dict[str, dict[str, Any]] = {}
     for ws in context.all_ws_payloads:
@@ -467,25 +422,6 @@ def summarize_window(
             traceability_risks=scoped_risk_rows.get("traceability", []),
             stale_diagrams=scoped_risk_rows.get("stale_diagrams", []),
         )
-        scoped_reuse_fingerprint = compass_standup_runtime_reuse.scoped_reuse_fingerprint(
-            row=ws,
-            window_hours=hours,
-            next_action_tokens=[
-                str(item.get("action", "")).strip()
-                for item in context.next_actions
-                if str(item.get("idea_id", "")).strip() == ws_id and str(item.get("action", "")).strip()
-            ][:2],
-            completed_deliverables=[
-                str(item.get("plan", "")).strip()
-                for item in recent_completed
-                if str(item.get("backlog", "")).strip() == ws_id and str(item.get("plan", "")).strip()
-            ][:2],
-            execution_updates=execution_update_index.get("by_workstream", {}).get(ws_id, []),
-            transaction_updates=transaction_update_index.get("by_workstream", {}).get(ws_id, []),
-            risk_summary=scoped_risk_summary,
-            self_host_snapshot=context.self_host,
-        )
-        standup_runtime_window["scoped_reuse_fingerprints"][ws_id] = scoped_reuse_fingerprint
         scoped_fact_packet = context.build_scoped_standup_fact_packet(
             row=ws,
             next_actions=context.next_actions,
@@ -501,23 +437,6 @@ def summarize_window(
             now=context.now,
         )
         scoped_packet_index[ws_id] = scoped_fact_packet
-        reusable_scoped_sections = context.reusable_brief_sections_for_fact_packet(
-            brief=prior_scoped_briefs.get(ws_id),
-            fact_packet=scoped_fact_packet,
-        )
-        prior_scoped_runtime = prior_window_runtime.get("scoped_reuse_fingerprints", {})
-        if (
-            isinstance(prior_scoped_runtime, Mapping)
-            and str(prior_scoped_runtime.get(ws_id, "")).strip() == scoped_reuse_fingerprint
-            and reusable_scoped_sections is not None
-        ):
-            standup_scoped[ws_id] = compass_standup_runtime_reuse.reuse_ready_brief(
-                brief=prior_scoped_briefs[ws_id],
-                generated_utc=context.generated_utc,
-                fingerprint=f"salient:{scoped_reuse_fingerprint}",
-                sections=reusable_scoped_sections,
-            )
-            continue
         standup_scoped[ws_id] = compass_standup_brief_narrator.build_standup_brief(
             repo_root=context.repo_root,
             fact_packet=scoped_fact_packet,

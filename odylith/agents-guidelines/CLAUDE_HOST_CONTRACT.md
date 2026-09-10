@@ -416,7 +416,7 @@
   delegation runs through Task-tool subagents and the checked-in
   `.claude/agents/` layer, not through `spawn_agent` host-tool calls.
 - There is no `.claude/`-native equivalent of the Codex
-  `features.codex_hooks` toggle, so Odylith capability probing for Claude
+  `features.hooks` toggle (formerly `features.codex_hooks`), so Odylith capability probing for Claude
   measures hook surface support by introspecting the live `.claude/`
   asset shape and the Claude CLI version, not by querying a single feature
   flag.

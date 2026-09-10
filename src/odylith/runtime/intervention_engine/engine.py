@@ -155,7 +155,7 @@ def _path_components(*, changed_paths: Sequence[str], components: Mapping[str, A
     matched: set[str] = set()
     trie = component_registry._build_component_path_prefix_trie(  # noqa: SLF001
         {
-            component_id: component_registry._entry_to_mutable(entry)  # noqa: SLF001
+            component_id: entry.as_dict()
             for component_id, entry in components.items()
         },
         include_spec_ref=True,

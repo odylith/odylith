@@ -95,14 +95,11 @@ Related Bugs:
 ## Risks & Mitigations
 
 - [x] Risk: one renderer loses a small bootstrap option during helper
-  - [ ] Mitigation: TODO (add explicit mitigation).
-  centralization.
+  - [ ] Mitigation: TODO (add explicit mitigation). centralization.
 - [ ] Risk: Unspecified risk (legacy backfill).
-  - [x] Mitigation: keep helper inputs explicit and cover both shell and
-    non-shell bundle variants in unit tests.
+  - [x] Mitigation: keep helper inputs explicit and cover both shell and non-shell bundle variants in unit tests.
 - [x] Risk: execution-profile normalization changes route behavior.
-  - [x] Mitigation: centralize the existing field set only and validate through
-    subagent-surface and benchmark proof.
+  - [x] Mitigation: centralize the existing field set only and validate through subagent-surface and benchmark proof.
 
 ## Validation/Test Plan
 - [x] `PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_dashboard_surface_bundle.py tests/unit/runtime/test_tooling_memory_contracts.py tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_render_backlog_ui.py tests/unit/runtime/test_render_registry_dashboard.py tests/unit/runtime/test_render_mermaid_catalog.py tests/unit/runtime/test_compass_dashboard_runtime.py tests/unit/runtime/test_compass_dashboard_shell.py tests/unit/runtime/test_subagent_surface_validation.py tests/unit/runtime/test_odylith_benchmark_runner.py tests/integration/runtime/test_surface_browser_smoke.py`

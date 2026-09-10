@@ -6941,9 +6941,19 @@
     }
   ],
   "traceability": {
-    "code_references": [],
-    "developer_docs": [],
-    "runbooks": []
+    "code_references": [
+      "src/odylith/runtime/context_engine/tooling_guidance_catalog.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_taxonomy.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_isolation.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py"
+    ],
+    "developer_docs": [
+      "docs/benchmarks/FAMILIES_AND_EVALS.md",
+      "docs/benchmarks/REVIEWER_GUIDE.md"
+    ],
+    "runbooks": [
+      "odylith/MAINTAINER_RELEASE_RUNBOOK.md"
+    ]
   },
   "version": "v1",
   "what_it_is": "Local-first LanceDB plus Tantivy retrieval backend and durable judgment-memory runtime for the Odylith Context Engine.",

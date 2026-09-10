@@ -10,6 +10,7 @@ from typing import Mapping
 
 from odylith.common.json_objects import load_json_object as _load_json
 from odylith.runtime.context_engine import odylith_context_cache
+from odylith.runtime.domain_intelligence import greenfield_managed_mutation_boundary
 from odylith.runtime.surfaces import compass_standup_brief_narrator
 
 _RUNTIME_CURRENT_JSON = "odylith/compass/runtime/current.v1.json"
@@ -56,37 +57,6 @@ def apply_terminal_state_to_runtime_payload(
     return patched_payload
 
 
-def patch_current_runtime_from_terminal_state(
-    *,
-    repo_root: Path,
-    runtime_input_fingerprint: str,
-    state_entries: Mapping[str, Any],
-) -> bool:
-    current_path = repo_root / _RUNTIME_CURRENT_JSON
-    current_payload = _load_json(current_path)
-    if not isinstance(current_payload, Mapping) or not current_payload:
-        return False
-    global_failures = _terminal_global_failures_from_runtime_payload(
-        payload=current_payload,
-        state_entries=state_entries,
-    )
-    scoped_failures = _terminal_scoped_failures_from_runtime_payload(
-        payload=current_payload,
-        state_entries=state_entries,
-    )
-    if not global_failures and not scoped_failures:
-        return False
-    return patch_current_runtime_payload(
-        repo_root=repo_root,
-        runtime_input_fingerprint=runtime_input_fingerprint,
-        runtime_generated_utc=str(current_payload.get("generated_utc", "")).strip() or _now_utc_iso(),
-        global_results={},
-        scoped_results={},
-        global_failures=global_failures,
-        scoped_failures=scoped_failures,
-    )
-
-
 def patch_current_runtime_payload(
     *,
     repo_root: Path,
@@ -96,6 +66,41 @@ def patch_current_runtime_payload(
     scoped_results: Mapping[str, Mapping[str, Mapping[str, Any]]],
     global_failures: Mapping[str, Mapping[str, Any]] | None = None,
     scoped_failures: Mapping[str, Mapping[str, Mapping[str, Any]]] | None = None,
+) -> bool:
+    """Admit and publish already-computed results without running narration."""
+
+    changed = False
+
+    def apply_results(_repository_lock_fd: int | None) -> int:
+        nonlocal changed
+        changed = _patch_current_runtime_payload_locked(
+            repo_root=repo_root,
+            runtime_input_fingerprint=runtime_input_fingerprint,
+            runtime_generated_utc=runtime_generated_utc,
+            global_results=global_results,
+            scoped_results=scoped_results,
+            global_failures=global_failures,
+            scoped_failures=scoped_failures,
+        )
+        return 0
+
+    greenfield_managed_mutation_boundary.run_with_greenfield_managed_mutation_boundary(
+        repo_root=repo_root,
+        command_tokens=("compass", "standup-brief-maintenance"),
+        operation=apply_results,
+    )
+    return changed
+
+
+def _patch_current_runtime_payload_locked(
+    *,
+    repo_root: Path,
+    runtime_input_fingerprint: str,
+    runtime_generated_utc: str,
+    global_results: Mapping[str, Mapping[str, Any]],
+    scoped_results: Mapping[str, Mapping[str, Mapping[str, Any]]],
+    global_failures: Mapping[str, Mapping[str, Any]] | None,
+    scoped_failures: Mapping[str, Mapping[str, Mapping[str, Any]]] | None,
 ) -> bool:
     current_json_path = (repo_root / _RUNTIME_CURRENT_JSON).resolve()
     current_js_path = (repo_root / _RUNTIME_CURRENT_JS).resolve()
@@ -117,7 +122,7 @@ def patch_current_runtime_payload(
         global_failures=global_failures,
         scoped_failures=scoped_failures,
     )
-    if not changed:
+    if not changed or patched_payload == payload:
         return False
     if odylith_context_cache.path_signature(current_json_path) != current_json_signature:
         return False

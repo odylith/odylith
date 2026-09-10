@@ -56,6 +56,55 @@ def test_repository_write_set_applies_exact_staged_tree(tmp_path: Path) -> None:
     ).read_text(encoding="utf-8") == "new\n"
 
 
+@pytest.mark.parametrize("root", ["odylith/registry", "src/odylith/bundle/assets/odylith"])
+@pytest.mark.parametrize("sibling", ["data.json", "data-backup.json", "data-backup/entry.json"])
+def test_repository_write_set_preserves_prefix_sharing_path_identity(
+    tmp_path: Path, root: str, sibling: str,
+) -> None:
+    source = tmp_path / "source"
+    _write(source / root / "data/entry.json", "retained nested record\n")
+    _write(source / root / sibling, "separate sibling record\n")
+
+    write_set = greenfield_repository_write_set.compile_greenfield_repository_write_set(
+        source_root=source, staged_root=source,
+    )
+
+    assert write_set["write_count"] == write_set["delete_count"] == 0
+    assert write_set["before_fingerprints"] == write_set["after_fingerprints"]
+    greenfield_repository_write_set.require_compiled_greenfield_repository_write_set(write_set)
+    greenfield_repository_write_set.require_greenfield_repository_preconditions(
+        repo_root=source, write_set=write_set,
+    )
+    greenfield_repository_write_set.require_greenfield_repository_after_state(
+        repo_root=source, write_set=write_set,
+    )
+
+
+@pytest.mark.parametrize("change", ["bytes", "mode"])
+def test_prefix_sharing_path_identity_still_rejects_source_drift(tmp_path: Path, change: str) -> None:
+    source = tmp_path / "source"
+    target = source / "odylith/registry/data/entry.json"
+    _write(target, "retained record\n")
+    target.chmod(0o644)
+    _write(source / "odylith/registry/data.json", "separate sibling\n")
+    write_set = greenfield_repository_write_set.compile_greenfield_repository_write_set(
+        source_root=source, staged_root=source,
+    )
+    if change == "bytes":
+        target.write_text("changed record\n", encoding="utf-8")
+    else:
+        target.chmod(0o640)
+
+    with pytest.raises(ValueError, match="repo preconditions changed"):
+        greenfield_repository_write_set.require_greenfield_repository_preconditions(
+            repo_root=source, write_set=write_set,
+        )
+    with pytest.raises(ValueError, match="committed repository state changed"):
+        greenfield_repository_write_set.require_greenfield_repository_after_state(
+            repo_root=source, write_set=write_set,
+        )
+
+
 def test_repository_write_set_reports_changed_after_image_root(tmp_path: Path) -> None:
     source = tmp_path / "source"
     stage = tmp_path / "stage"

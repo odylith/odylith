@@ -79,9 +79,11 @@ release.
 - [ ] `odylith release list --repo-root .`
 - [ ] `odylith release show current --repo-root .`
 - [ ] `make release-preflight [VERSION=[version]]`
-- [ ] `odylith release migration-gate --repo-root . --target-version [version]`
-      after public docs, release notes, security docs, browser surfaces, or
-      bundled managed assets change.
+- [ ] Verify the previous published release ref from release metadata, then run
+      `odylith release migration-gate --repo-root . --target-version [version] --base-ref [published_predecessor_ref]`
+      on the clean, frozen candidate. Complete the exact emitted assessments
+      for committed public docs, guidance, CLI, browser, or managed-asset changes;
+      clean Git status is not assessment evidence.
 - [ ] `make release-session-show`
 - [ ] `make release-dispatch`
 - [ ] Wait for the canonical GitHub release workflow to finish cleanly.

@@ -9,6 +9,9 @@ import json
 from pathlib import Path
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import assumption_rows
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import provisional_design_from_intent
+
 from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
     ATOMIC_FACT_LEDGER_VERSION,
     append_atomic_source_spans,
@@ -149,6 +152,11 @@ def product_facts_payload(intent: Mapping[str, Any]) -> dict[str, Any]:
         if key not in intent:
             continue
         value = intent.get(key)
+        if key == "assumptions":
+            rows = assumption_rows(value)
+            if rows:
+                payload[key] = rows
+            continue
         if key in LIST_FACT_KEYS:
             rows = _exact_string_rows(value)
             if rows:
@@ -223,6 +231,8 @@ def build_product_intent_envelope(
         authored_relations,
         component_responsibility_relations,
         first_path_context_relations=first_path_context_relations,
+        source_precedence=intent[AUTHORED_SEMANTICS_KEY]["source_precedence"],
+        provisional_design=provisional_design_from_intent(intent),
     )
     facts = product_facts_payload(intent)
     source_bytes = str(source_text or "").encode("utf-8")
@@ -760,7 +770,7 @@ def _has_fact_value(value: Any) -> bool:
     if isinstance(value, str):
         return bool(value)
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        return any(isinstance(row, str) and bool(row) for row in value)
+        return any(bool(row) for row in value)
     return value is not None
 
 

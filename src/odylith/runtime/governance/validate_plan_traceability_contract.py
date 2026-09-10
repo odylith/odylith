@@ -1,7 +1,7 @@
 """Validate implementation-plan traceability contract.
 
 Contract scope:
-- active technical plans under `odylith/technical-plans/in-progress/*.md`
+- active technical plans under `odylith/technical-plans/in-progress/`, including dated subdirectories
 - each plan must include a `## Traceability` section with:
   - `### Runbooks`
   - `### Developer Docs`
@@ -95,7 +95,7 @@ def _infer_repo_root_from_path(path: Path) -> Path | None:
 
 
 def _normalize_path_token(*, repo_root: Path, token: str) -> str:
-    raw = str(token or "").strip().strip(".,;:")
+    raw = str(token or "").strip()
     if not raw:
         return ""
     if raw.startswith("http://") or raw.startswith("https://"):
@@ -124,7 +124,7 @@ def _normalize_path_token(*, repo_root: Path, token: str) -> str:
             if rebased.exists():
                 return rel.as_posix()
             return ""
-    return path.as_posix().lstrip("./")
+    return path.as_posix()
 
 
 def _bucket_matches_path(*, bucket: str, rel_path: str) -> bool:
@@ -155,17 +155,9 @@ def _bucket_matches_path(*, bucket: str, rel_path: str) -> bool:
     return False
 
 
-def validate_plan_traceability_contract(*, repo_root: Path) -> list[str]:
+def validate_plan_traceability_contract(*, repo_root: Path, plan_paths: Sequence[Path]) -> list[str]:
+    """Validate the selected inventory; the CLI reports this same set of files."""
     errors: list[str] = []
-    plan_root = repo_root / "odylith" / "technical-plans" / "in-progress"
-    if not plan_root.is_dir():
-        errors.append(f"missing directory: {plan_root}")
-        return errors
-
-    plan_paths = sorted(path for path in plan_root.glob("*.md") if path.is_file())
-    if not plan_paths:
-        return errors
-
     for plan_path in plan_paths:
         sections = _extract_sections(plan_path)
         traceability_lines = sections.get("Traceability")
@@ -219,16 +211,29 @@ def validate_plan_traceability_contract(*, repo_root: Path) -> list[str]:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
-    errors = validate_plan_traceability_contract(repo_root=repo_root)
+    plan_root = repo_root / "odylith" / "technical-plans" / "in-progress"
+    if not plan_root.is_dir():
+        print("plan traceability contract FAILED")
+        print(f"- missing directory: {plan_root}")
+        return 2
+
+    plan_paths = sorted(path for path in plan_root.rglob("*.md") if path.is_file())
+    if not plan_paths:
+        print("plan traceability contract not applicable")
+        print(f"- no active Markdown plan files under: {plan_root}")
+        print("- plans validated: 0")
+        return 0
+
+    errors = validate_plan_traceability_contract(repo_root=repo_root, plan_paths=plan_paths)
     if errors:
         print("plan traceability contract FAILED")
+        print(f"- plans validated: {len(plan_paths)}")
         for error in errors:
             print(f"- {error}")
         return 2
 
-    plan_count = len(list((repo_root / "odylith" / "technical-plans" / "in-progress").glob("*.md")))
     print("plan traceability contract passed")
-    print(f"- plans validated: {plan_count}")
+    print(f"- plans validated: {len(plan_paths)}")
     return 0
 
 

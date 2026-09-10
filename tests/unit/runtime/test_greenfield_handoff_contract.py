@@ -16,6 +16,70 @@ from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
 )
 
 
+@pytest.mark.parametrize("constraints,non_goals", [
+    (("Keep APIv7 casing",), ()),
+    ((), ("Bulk migration",)),
+    (("Keep APIv7 casing",), ("Bulk migration",)),
+    ((), ()),
+])
+@pytest.mark.parametrize("step_id", greenfield_handoff_contract.PROJECT_HANDOFF_STEP_SEQUENCE)
+def test_handoff_keeps_required_operations_separate_from_excluded_scope(
+    constraints: tuple[str, ...], non_goals: tuple[str, ...], step_id: str,
+) -> None:
+    contract = greenfield_handoff_contract.build_project_handoff_step_contract(
+        step_id=step_id, project_title="Receipt Desk", accepted_first_path="Publish the receipt.",
+        first_release_workstream_refs=("B-042",), proof_boundary="A reviewer sees the receipt.",
+        operational_constraints=constraints, excluded_scope=non_goals,
+        implementation_target={
+            "workstream_id": "B-042", "workstream_title": "Receipt capture",
+            "deliverable": "Publish the receipt.", "verification": "A reviewer sees the receipt.",
+            "component_refs": ("receipt",),
+        },
+    )
+    assert contract["schema_version"] == "odylith.greenfield.project-handoff-step.v3"
+    assert contract["fact_bindings"]["operational_constraints"] == constraints
+    assert contract["fact_bindings"]["excluded_scope"] == non_goals
+    assert "preserve_operational_constraints" in contract["required_actions"]
+    assert greenfield_handoff_contract.project_handoff_step_contract_issues(
+        contract, expected_step_id=step_id,
+    ) == ()
+
+
+def test_handoff_scope_copy_preserves_repeated_source_bytes() -> None:
+    constraints = ("\tPreserve **café** evidence.\n", "\tPreserve **café** evidence.\n")
+    non_goals = ("  Bulk `APIv7` migration.  ",)
+    contract = greenfield_handoff_contract.build_project_handoff_step_contract(
+        step_id="choose_language", project_title="Receipt Desk", accepted_first_path="Publish the receipt.",
+        operational_constraints=constraints, excluded_scope=non_goals,
+    )
+    assert contract["fact_bindings"]["operational_constraints"] == constraints
+    assert greenfield_handoff_contract.render_project_handoff_scope(
+        operational_constraints=constraints, excluded_scope=non_goals,
+    ) == (
+        "Operational constraints — preserve these requirements:\n"
+        "\tPreserve **café** evidence.\n\n\tPreserve **café** evidence.\n\n\n"
+        "Excluded scope — preserve these exclusions:\n  Bulk `APIv7` migration.  "
+    )
+
+
+@pytest.mark.parametrize("damage", ["v1", "missing_constraints", "missing_exclusions", "scalar_constraints"])
+def test_handoff_v2_rejects_absent_or_untyped_scope_categories(damage: str) -> None:
+    contract = greenfield_handoff_contract.build_project_handoff_step_contract(
+        step_id="choose_language", project_title="Receipt Desk", accepted_first_path="Publish the receipt.",
+    )
+    if damage == "v1":
+        contract["schema_version"] = "odylith.greenfield.project-handoff-step.v1"
+    elif damage == "missing_constraints":
+        contract["fact_bindings"].pop("operational_constraints", None)
+    elif damage == "missing_exclusions":
+        contract["fact_bindings"].pop("excluded_scope")
+    else:
+        contract["fact_bindings"]["operational_constraints"] = "Keep APIv7 casing"
+    assert greenfield_handoff_contract.project_handoff_step_contract_issues(
+        contract, expected_step_id="choose_language",
+    )
+
+
 def _readiness_contract() -> dict[str, object]:
     return build_coding_readiness_contract(
         workstream_id="b-042",
@@ -83,17 +147,17 @@ def test_coding_readiness_contract_has_exact_gate_policies_and_deterministic_ren
             "and test toolchain before source planning."
         ),
         (
-            "Bind B-042 Dock Console Slice to an explicit source boundary and target files while "
-            "preserving the accepted first path exactly: Dock attendant Ivo opens "
+            "Bind B-042 Dock Console Slice to its own source boundary and target files. "
+            "Preserve this first run as release context, not the scope of this one workstream: Dock attendant Ivo opens "
             "**`berth-α`** and records the reviewed placement."
         ),
         (
-            "Preserve the authored operating and scope boundary during planning and source edits: "
-            "Latency ≤ 60 s; Do **not** schedule vessels"
+            "Operational constraints — preserve these requirements:\nLatency ≤ 60 s\n\n"
+            "Excluded scope — preserve these exclusions:\nDo **not** schedule vessels"
         ),
         (
-            "Require validation evidence before governed records refresh.\n"
-            "Authored proof boundary:\n"
+            "Prove the selected workstream before refreshing its records; withhold release readiness until release-wide proof passes.\n"
+            "Release-wide proof boundary:\n"
             "Reviewer sees the signed café receipt\n"
             "Evidence requirements:\n"
             "Keep `audit.md`; **Retain receipt**"
@@ -124,7 +188,7 @@ def test_coding_readiness_renderer_preserves_authored_terminal_punctuation_once(
     assert contract["source_facts"]["proof_boundary"] == proof_boundary
     proof_gate = render_coding_readiness_gates(contract)[-1]
     assert (
-        f"Authored proof boundary:\n{proof_boundary}\nEvidence requirements:"
+        f"Release-wide proof boundary:\n{proof_boundary}\nEvidence requirements:"
         in proof_gate
     )
     assert f"{proof_boundary}." not in proof_gate

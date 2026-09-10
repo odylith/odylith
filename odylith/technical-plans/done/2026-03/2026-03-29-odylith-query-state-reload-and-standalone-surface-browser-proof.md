@@ -61,20 +61,15 @@ Related Bugs:
 ## Risks & Mitigations
 
 - [x] Risk: the deeper route lane exposes real state drift across shell and
-  - [ ] Mitigation: TODO (add explicit mitigation).
-  child surfaces.
+  - [ ] Mitigation: TODO (add explicit mitigation). child surfaces.
 - [ ] Risk: Unspecified risk (legacy backfill).
   - [x] Mitigation: patch the route contract instead of weakening the test.
 - [x] Risk: the wider browser lane becomes brittle or slow.
-  - [x] Mitigation: keep selectors stable and scenarios focused on operator
-    routes.
+  - [x] Mitigation: keep selectors stable and scenarios focused on operator routes.
 - [x] Risk: intentional shell navigation aborts iframe document fetches and
-  - [ ] Mitigation: TODO (add explicit mitigation).
-  create browser-test noise.
+  - [ ] Mitigation: TODO (add explicit mitigation). create browser-test noise.
 - [ ] Risk: Unspecified risk (legacy backfill).
-  - [x] Mitigation: ignore only that narrow aborted local child-surface
-    document class while still failing on real request, console, page, and HTTP
-    errors.
+  - [x] Mitigation: ignore only that narrow aborted local child-surface document class while still failing on real request, console, page, and HTTP errors.
 
 ## Validation/Test Plan
 - [x] `PYTHONPATH=src .venv/bin/pytest -q tests/integration/runtime/test_surface_browser_smoke.py`

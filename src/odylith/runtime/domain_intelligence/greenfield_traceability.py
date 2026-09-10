@@ -11,6 +11,10 @@ from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
 )
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
+    PROVISIONAL_DESIGN_AUTHORITY_KIND,
+    provisional_design_from_intent,
+)
 from odylith.runtime.governance import backlog_authoring
 
 
@@ -149,13 +153,21 @@ def apply_backlog_traceability(
     proposal: Mapping[str, Any],
     plan: GreenfieldTraceabilityPlan,
 ) -> list[str]:
-    """Publish only exact authored diagram references into compiled Radar records."""
+    """Publish exact diagram and allocated design prerequisites before sealing."""
 
     if proposal.get("projection_origin") != AUTHORED_PROJECTION_ORIGIN:
         raise ValueError("Greenfield traceability publication requires a sealed authored projection")
+    dependencies = _allocated_workstream_dependencies(proposal=proposal, workstreams=plan.workstreams)
+    records = [
+        (workstream, *backlog_authoring._parse_metadata_and_sections(workstream.path))
+        for workstream in plan.workstreams
+    ]
+    for workstream, metadata, _ in records:
+        if metadata.get("idea_id") != workstream.idea_id or metadata.get("title") != workstream.title:
+            raise ValueError("Greenfield workstream allocation does not match its compiled Radar record")
     touched: list[str] = []
-    for workstream in plan.workstreams:
-        metadata, sections = backlog_authoring._parse_metadata_and_sections(workstream.path)
+    for workstream, metadata, sections in records:
+        metadata["workstream_depends_on"] = _join_ids(dependencies[workstream.idea_id])
         diagrams = plan.backlog_diagrams.get(workstream.idea_id, ())
         if diagrams:
             metadata["related_diagram_ids"] = _join_ids(
@@ -169,6 +181,81 @@ def apply_backlog_traceability(
     return touched
 
 
+def _allocated_workstream_dependencies(
+    *, proposal: Mapping[str, Any], workstreams: Sequence[CreatedWorkstream],
+) -> dict[str, tuple[str, ...]]:
+    design = provisional_design_from_intent(_mapping(proposal.get("intent")))
+    canonical_rows = {row["key"]: row for row in design["workstreams"]}
+    ids_by_key: dict[str, str] = {}
+    allocated_ids: set[str] = set()
+    allocated_paths: set[Path] = set()
+    for workstream in workstreams:
+        contract = _mapping(workstream.row.get("provisional_workstream_contract"))
+        projected = _mapping(contract.get("provisional_workstream"))
+        key = projected.get("key")
+        canonical = canonical_rows.get(key) if isinstance(key, str) else None
+        if (
+            canonical is None
+            or projected != canonical
+            or contract.get("authority_kind") != PROVISIONAL_DESIGN_AUTHORITY_KIND
+            or workstream.row.get("authority_kind") != PROVISIONAL_DESIGN_AUTHORITY_KIND
+            or workstream.title != canonical["title"]
+            or workstream.row.get("title") != canonical["title"]
+            or key in ids_by_key
+            or not workstream.idea_id
+            or workstream.idea_id in allocated_ids
+            or workstream.path.resolve() in allocated_paths
+        ):
+            raise ValueError("Greenfield workstream allocation must bind each canonical design key exactly once")
+        ids_by_key[key] = workstream.idea_id
+        allocated_ids.add(workstream.idea_id)
+        allocated_paths.add(workstream.path.resolve())
+    if ids_by_key.keys() != canonical_rows.keys():
+        raise ValueError("Greenfield workstream allocation is missing canonical design workstreams")
+    return {
+        ids_by_key[key]: tuple(ids_by_key[dependency] for dependency in row["depends_on"])
+        for key, row in canonical_rows.items()
+    }
+
+
+def allocated_workstreams(
+    *, proposal: Mapping[str, Any], created_backlog: Sequence[Mapping[str, Any]],
+) -> tuple[CreatedWorkstream, ...]:
+    """Validate exact design-key allocations and preserve canonical design order."""
+
+    workstreams = _created_workstreams(proposal=proposal, created_backlog=created_backlog)
+    dependencies = _allocated_workstream_dependencies(proposal=proposal, workstreams=workstreams)
+    by_id = {workstream.idea_id: workstream for workstream in workstreams}
+    return tuple(by_id[idea_id] for idea_id in dependencies)
+
+
+def first_executable_workstream(
+    *, proposal: Mapping[str, Any], created_backlog: Sequence[Mapping[str, Any]],
+    first_release_workstreams: Sequence[str],
+) -> CreatedWorkstream:
+    """Select a dependency-free workstream from a closed, allocated release.
+
+    Independent roots retain canonical design order as a deterministic tie-break;
+    neither allocation numbers nor source-event order imply delivery priority.
+    """
+
+    workstreams = _created_workstreams(proposal=proposal, created_backlog=created_backlog)
+    dependencies = _allocated_workstream_dependencies(proposal=proposal, workstreams=workstreams)
+    release_ids = tuple(str(item).strip().upper() for item in first_release_workstreams)
+    if not release_ids or len(set(release_ids)) != len(release_ids) or any(
+        idea_id not in dependencies for idea_id in release_ids
+    ):
+        raise ValueError("Greenfield first release must contain unique allocated workstreams")
+    release_set = set(release_ids)
+    if any(not set(dependencies[idea_id]) <= release_set for idea_id in release_ids):
+        raise ValueError("Greenfield first release has a prerequisite outside its release scope")
+    by_id = {workstream.idea_id: workstream for workstream in workstreams}
+    return next(
+        by_id[idea_id] for idea_id, prerequisites in dependencies.items()
+        if idea_id in release_set and not prerequisites
+    )
+
+
 def _created_workstreams(
     *,
     proposal: Mapping[str, Any],
@@ -176,13 +263,16 @@ def _created_workstreams(
 ) -> tuple[CreatedWorkstream, ...]:
     rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
     workstreams: list[CreatedWorkstream] = []
-    for index, created in enumerate(created_backlog):
-        row = rows[index] if index < len(rows) else {}
+    rows_by_title = {str(row.get("title", "")): row for row in rows}
+    if len(rows_by_title) != len(rows):
+        raise ValueError("Greenfield workstream allocation has duplicate proposal titles")
+    for created in created_backlog:
+        row = rows_by_title.get(str(created.get("title", "")), {})
         idea_id = str(created.get("idea_id", "")).strip().upper()
         title = str(created.get("title", "")).strip() or str(row.get("title", "")).strip()
         raw_path = str(created.get("idea_path", "")).strip()
-        if not idea_id or not raw_path:
-            continue
+        if not idea_id or not raw_path or not row:
+            raise ValueError("Greenfield workstream allocation is missing its exact record binding")
         workstreams.append(
             CreatedWorkstream(
                 idea_id=idea_id,

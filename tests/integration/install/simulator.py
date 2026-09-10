@@ -25,7 +25,8 @@ from odylith.install.managed_runtime import (
 )
 from odylith.install.manager import load_install_state, version_status
 from odylith.install.paths import repo_runtime_paths
-from odylith.install.state import load_version_pin, write_version_pin
+from odylith.install.state import install_state_path, load_version_pin, write_version_pin
+from odylith.runtime.domain_intelligence import greenfield_generation_state
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -134,6 +135,22 @@ class InstallLifecycleSimulator:
         if token not in self._releases:
             self.register_release(token)
         return cli.main(["install", "--repo-root", str(self.repo_root), "--version", str(version)])
+
+    def seed_historical_unactivated_install(self, version: str) -> None:
+        """Reconstruct pre-publication state, not execute a historical CLI or wheel."""
+        assert not install_state_path(repo_root=self.repo_root).exists()
+        assert greenfield_generation_state.read_active_publication(self.repo_root) is None
+        token = str(version).strip()
+        if token not in self._releases:
+            self.register_release(token)
+        summary = install_manager_module.install_bundle(
+            repo_root=self.repo_root, bundle_root=self.source_root, version=token,
+        )
+        _seed_first_run_surfaces(self.repo_root)
+        assert summary.version == self.status().active_version == token
+        assert greenfield_generation_state.read_active_publication(self.repo_root) is None
+        assert not (self.repo_root / "odylith/tooling-shell.html").exists()
+        assert not (self.repo_root / ".odylith/runtime/greenfield/generations").exists()
 
     def upgrade(self) -> int:
         return cli.main(["upgrade", "--repo-root", str(self.repo_root)])
@@ -354,7 +371,7 @@ class InstallLifecycleSimulator:
         del check, capture_output, text, kwargs
         version = Path(str(command[0])).expanduser().resolve().parent.parent.name
         stderr = self._smoke_failures.get(version, "")
-        return SimpleNamespace(returncode=1 if stderr else 0, stdout="", stderr=stderr)
+        return SimpleNamespace(args=command, returncode=1 if stderr else 0, stdout="", stderr=stderr)
 
     def _fake_first_run_sync(self, argv: list[str]) -> int:
         del argv

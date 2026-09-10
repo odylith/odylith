@@ -12,6 +12,7 @@ from __future__ import annotations
 import hashlib
 import os
 import re
+import stat
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -123,6 +124,10 @@ class SurfaceMigrationObserverReport:
     records: tuple[SurfaceMigrationRecord, ...]
     blocked_need_ids: tuple[str, ...]
     notes: tuple[str, ...]
+    scope_kind: str = "explicit_paths"
+    base_commit: str = ""
+    candidate_commit: str = ""
+    scope_error: str = ""
 
     def as_dict(self) -> dict[str, object]:
         return {
@@ -134,6 +139,17 @@ class SurfaceMigrationObserverReport:
             "records": [record.as_dict() for record in self.records],
             "blocked_need_ids": list(self.blocked_need_ids),
             "notes": list(self.notes),
+            "scope": {
+                "kind": self.scope_kind,
+                "base_commit": self.base_commit,
+                "candidate_commit": self.candidate_commit,
+                "error": self.scope_error,
+                "assessment_status": (
+                    "unproven" if self.scope_error else
+                    "not_applicable" if not self.needs else
+                    "passed" if self.ok else "failed"
+                ),
+            },
         }
 
 
@@ -214,11 +230,38 @@ def observe_surface_migration_needs(
     repo_root: str | Path,
     target_version: str = "",
     changed_paths: Sequence[str] | None = None,
+    base_ref: str = "",
+    require_release_scope: bool = False,
 ) -> SurfaceMigrationObserverReport:
     """Return maintainer release-gate obligations for changed product surfaces."""
     root = Path(repo_root).expanduser().resolve()
     target = normalize_version(target_version) or "current"
-    source_paths = changed_paths if changed_paths is not None else _git_changed_paths(root)
+    scope_kind = "explicit_paths"
+    base_commit = candidate_commit = scope_error = ""
+    try:
+        if base_ref and changed_paths is not None:
+            raise ValueError("Release comparison cannot be narrowed by explicit changed paths.")
+        if require_release_scope and not base_ref:
+            raise ValueError("Release comparison requires --base-ref for the verified previous published release.")
+        if changed_paths is None:
+            candidate_commit = _git_output(root, "rev-parse", "--verify", "HEAD^{commit}").decode().strip()
+            git_root = Path(os.fsdecode(_git_output(root, "rev-parse", "--show-toplevel")).rstrip("\n"))
+            if git_root.resolve() != root:
+                raise ValueError("Migration comparison requires the repository root, not a nested directory.")
+            if base_ref:
+                base_commit = _git_output(
+                    root, "rev-parse", "--verify", "--end-of-options", f"{base_ref}^{{commit}}",
+                ).decode().strip()
+            source_paths = _git_changed_paths(root, base_commit, candidate_commit)
+            scope_kind = "release_comparison" if base_ref else "working_tree"
+            if _git_output(root, "rev-parse", "--verify", "HEAD^{commit}").decode().strip() != candidate_commit:
+                raise ValueError("Candidate commit changed during migration comparison; rerun on a frozen tree.")
+        else:
+            source_paths = changed_paths
+    except ValueError as exc:
+        source_paths = ()
+        scope_kind = "unavailable"
+        scope_error = str(exc)
     paths = tuple(_normalize_path(path) for path in source_paths)
     relevant_paths = tuple(path for path in paths if path and not _ignored_path(path))
     records = _observer_records(repo_root=root)
@@ -228,6 +271,7 @@ def observe_surface_migration_needs(
             classifier=classifier,
             target_version=target,
             changed_paths=relevant_paths,
+            base_commit=base_commit,
         )
         for classifier in _CLASSIFIERS
         if any(classifier.matches(path) for path in relevant_paths)
@@ -245,13 +289,17 @@ def observe_surface_migration_needs(
         "Generated dashboard refresh is still not a release migration, but changed rendered surfaces must have a completed migration assessment.",
     )
     return SurfaceMigrationObserverReport(
-        ok=not blocked,
+        ok=not blocked and not scope_error,
         target_version=target,
         changed_paths=relevant_paths,
         needs=needs,
         records=records,
         blocked_need_ids=blocked,
         notes=notes,
+        scope_kind=scope_kind,
+        base_commit=base_commit,
+        candidate_commit=candidate_commit,
+        scope_error=scope_error,
     )
 
 
@@ -261,10 +309,11 @@ def _need_for(
     classifier: SurfaceClassifier,
     target_version: str,
     changed_paths: Sequence[str],
+    base_commit: str = "",
 ) -> SurfaceMigrationNeed:
     paths = tuple(path for path in changed_paths if classifier.matches(path))
     marker_family = f"{MARKER_PREFIX}:{target_version}:{classifier.need_id}"
-    fingerprint = _change_fingerprint(repo_root=repo_root, paths=paths)
+    fingerprint = _change_fingerprint(repo_root=repo_root, paths=paths, base_commit=base_commit)
     marker = f"{marker_family}:{fingerprint}"
     return SurfaceMigrationNeed(
         need_id=classifier.need_id,
@@ -276,7 +325,7 @@ def _need_for(
         governance_prompt=(
             "Create or complete a Radar migration-assessment workstream with "
             f"`{marker}` after assessing existing consumer installs for {classifier.label}. "
-            "The fingerprint binds the assessment to the observed changed path contents."
+            "The fingerprint binds the assessment to the comparison base, paths, modes and contents."
         ),
     )
 
@@ -285,8 +334,12 @@ def _completed_record_exists(*, records: Sequence[SurfaceMigrationRecord], marke
     return any(record.completed() and marker in record.markers for record in records)
 
 
-def _change_fingerprint(*, repo_root: Path, paths: Sequence[str]) -> str:
+def _change_fingerprint(*, repo_root: Path, paths: Sequence[str], base_commit: str = "") -> str:
     digest = hashlib.sha256()
+    if base_commit:
+        digest.update(b"release-base\0")
+        digest.update(base_commit.encode("ascii"))
+        digest.update(b"\0")
     for path in sorted(paths):
         token = _normalize_path(path)
         digest.update(token.encode("utf-8"))
@@ -297,6 +350,7 @@ def _change_fingerprint(*, repo_root: Path, paths: Sequence[str]) -> str:
                 digest.update(b"symlink\0")
                 digest.update(os.readlink(absolute).encode("utf-8", errors="surrogateescape"))
             elif absolute.is_file():
+                digest.update(f"mode:{stat.S_IMODE(absolute.stat().st_mode):o}\0".encode("ascii"))
                 if _generated_surface_asset(token) or _generated_derivative_asset(token):
                     digest.update(b"generated-surface-asset\0")
                 else:
@@ -376,28 +430,51 @@ def _field(text: str, name: str) -> str:
     return ""
 
 
-def _git_changed_paths(repo_root: Path) -> tuple[str, ...]:
+def _git_output(repo_root: Path, *args: str) -> bytes:
+    """Git discovery failure is missing proof, never an empty successful scope."""
     try:
         result = subprocess.run(
-            ["git", "status", "--porcelain", "--untracked-files=all"],
+            ["git", *args],
             cwd=repo_root,
             check=False,
-            text=True,
             stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            timeout=15,
         )
-    except OSError:
-        return ()
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise ValueError(f"Migration comparison Git discovery failed: {type(exc).__name__}.") from exc
     if result.returncode != 0:
-        return ()
-    paths: list[str] = []
-    for line in result.stdout.splitlines():
-        token = line[3:].strip()
-        if " -> " in token:
-            token = token.rsplit(" -> ", 1)[-1].strip()
-        if token:
-            paths.append(token)
-    return tuple(paths)
+        detail = result.stderr.decode("utf-8", errors="replace").strip()
+        raise ValueError(f"Migration comparison Git discovery failed: {detail or result.returncode}")
+    return result.stdout
+
+
+def _git_changed_paths(repo_root: Path, base_commit: str, candidate_commit: str) -> tuple[str, ...]:
+    # Query exactly the declared consumer-surface families. Unrelated repository
+    # content (including evaluation corpora) does not belong in migration scope.
+    pathspecs = tuple(f":(literal){path}" for path in sorted({
+        prefix for classifier in _CLASSIFIERS for prefix in classifier.prefixes
+    }))
+    tracked = _git_output(repo_root, "ls-files", "-v", "-z", "--", *pathspecs)
+    if any(entry[:1] == b"S" or entry[:1].islower() for entry in tracked.split(b"\0") if entry):
+        raise ValueError(
+            "Migration comparison cannot verify hidden tracked consumer surfaces. "
+            "Materialize the checkout and clear skip-worktree or assume-unchanged flags before assessment."
+        )
+    diff = ("diff", "--no-ext-diff", "--no-textconv", "--name-only", "--no-renames", "-z")
+    commands = [
+        (*diff, "--cached", candidate_commit, "--", *pathspecs),
+        (*diff, "--", *pathspecs),
+        ("ls-files", "--others", "--exclude-standard", "-z", "--", *pathspecs),
+    ]
+    if base_commit:
+        commands.append((*diff, base_commit, candidate_commit, "--", *pathspecs))
+    return tuple(sorted({
+        os.fsdecode(path)
+        for command in commands
+        for path in _git_output(repo_root, *command).split(b"\0")
+        if path
+    }))
 
 
 def _ignored_path(path: str) -> bool:
@@ -410,7 +487,9 @@ def _ignored_path(path: str) -> bool:
 
 
 def _normalize_path(path: str) -> str:
-    token = str(path or "").strip().replace("\\", "/")
+    token = str(path or "")
+    if os.sep != "/":
+        token = token.replace(os.sep, "/")
     while token.startswith("./"):
         token = token[2:]
     return token

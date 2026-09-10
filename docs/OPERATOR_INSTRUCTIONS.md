@@ -57,6 +57,7 @@ commits the reviewed bytes; `EDIT <hash> <corrections>` rebuilds them from new e
 | Say this | What happens |
 |---|---|
 | **"Register a component for the payments service"** | Creates a registry entry and scaffolds `CURRENT_SPEC.md`. `odylith component register --id payments --path src/payments --label "Payments"` |
+| **"Correct the payments component description"** | Updates only the existing component's inventory description and refreshes Registry; other metadata and `CURRENT_SPEC.md` stay unchanged. `odylith component update-description --id payments --what-it-is "..."` supports `--dry-run`. |
 | **"Update the component spec for payments"** | Spawns the registry-scribe subagent to edit the living spec with implementation evidence. |
 | **"What components exist?"** | Reads the component registry manifest. `odylith context <component-id>` for a specific dossier. |
 | **"Sync the component specs"** | Folds Compass requirement evidence into per-component living specs. `odylith governance sync-component-spec-requirements` |
@@ -77,7 +78,7 @@ commits the reviewed bytes; `EDIT <hash> <corrections>` rebuilds them from new e
 | Say this | What happens |
 |---|---|
 | **"Create a diagram for the checkout flow"** | Creates catalog entry and optional Mermaid source. `odylith atlas scaffold --slug checkout-flow --title "Checkout Flow" --kind flowchart` |
-| **"Update diagram D-017"** | Spawns the atlas-diagrammer subagent to edit the `.mmd` source with rendered-artifact discipline. |
+| **"Update diagram D-017"** | Updates only the supplied metadata on the existing catalog entry, then rerenders Atlas. Omitted fields stay unchanged. `odylith atlas update --diagram-id D-017 --summary "..." --code path/to/current-owner.py --watch path/to/current-owner.py` |
 | **"Render the Atlas diagrams"** | Validates the Mermaid catalog and checks diagram freshness. `odylith atlas render` |
 | **"Auto-update impacted diagrams"** | Refreshes diagrams based on change-watch metadata. `odylith atlas auto-update` |
 | **"Which diagrams are stale?"** | Reads the Atlas catalog for diagrams whose change-watch paths have been modified since last review. |
@@ -150,6 +151,13 @@ See what happened, what matters now, and what's next.
 | **"What's the execution state?"** | Reads the Execution Engine snapshot — admissibility outcome, frontier phase, active blocker, pressure signals. |
 | **"What changed recently?"** | Reads the Compass timeline events and transaction history from the runtime payload. |
 | **"Show me the execution timeline for B-073"** | Reads the workstream-scoped Compass timeline with all related events. |
+
+If a canonical log records its event but reports an incomplete refresh, do not
+repeat the append. When Odylith provides the completion command, run
+`odylith compass log --repo-root . --complete` without event fields. It completes
+only that admitted operation after checking its recorded state. Older failures
+without a completion receipt, changed inputs or unknown interruptions are refused;
+preserve their evidence rather than reconstructing or replaying the event.
 
 ---
 

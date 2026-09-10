@@ -20,6 +20,8 @@ from odylith.runtime.surfaces import generated_surface_refresh_guards
 from odylith.runtime.surfaces import governance_surface_theme
 from odylith.runtime.surfaces import registry_component_identity_ui
 from odylith.runtime.surfaces import registry_forensic_evidence_ui
+from odylith.runtime.surfaces import registry_selection_ui
+from odylith.runtime.surfaces import registry_spec_reading_ui
 from odylith.runtime.surfaces import registry_typography_ui
 from odylith.runtime.surfaces import source_bundle_mirror
 from odylith.runtime.surfaces import surface_path_helpers
@@ -690,125 +692,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     .trigger-list li {
       margin: 0;
     }
-    .spec-expand {
-      border: 1px solid #d6e3f7;
-      border-radius: 10px;
-      background: linear-gradient(180deg, #f9fcff, #ffffff);
-      overflow: hidden;
-    }
-    .spec-expand > summary {
-      list-style: none;
-      cursor: pointer;
-      padding: 10px 12px;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 8px;
-      align-items: center;
-      border-bottom: 1px solid #e3ecf9;
-      transition: background-color 120ms ease;
-    }
-    .spec-expand > summary:hover {
-      background: #f3f8ff;
-    }
-    .spec-summary-main {
-      margin: 0;
-      display: flex;
-      align-items: center;
-    }
-    .spec-summary-title {
-    }
-    .spec-summary-meta {
-      display: inline-flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      gap: 6px;
-      align-items: center;
-    }
-    .spec-expand[open] > summary {
-      border-bottom-color: #d8e5f7;
-    }
-    .spec-expand-body {
-      padding: 10px 12px;
-      display: grid;
-      gap: 10px;
-    }
-    .spec-links-block {
-      display: grid;
-      gap: 6px;
-    }
-    .spec-doc {
-      border: 1px solid #e3ecf9;
-      border-radius: 8px;
-      background: #ffffff;
-      padding: 10px;
-      display: grid;
-      gap: 8px;
-    }
-    .spec-doc h3,
-    .spec-doc h4,
-    .spec-doc h5 {
-      margin: 0;
-    }
-    .spec-doc p {
-      margin: 0;
-    }
-    .spec-doc ul {
-      margin: 0;
-      padding-left: 18px;
-      display: block;
-      list-style: disc;
-    }
-    .spec-doc li {
-      margin: 0 0 4px;
-    }
-    .spec-doc li:last-child {
-      margin-bottom: 0;
-    }
-    .spec-doc li > ul {
-      margin-top: 4px;
-      padding-left: 18px;
-      list-style-type: circle;
-    }
-    .spec-doc li > ul > li > ul {
-      list-style-type: square;
-    }
-    .spec-doc code {
-      background: #f3f6fb;
-      border: 1px solid #d9e6fa;
-      border-radius: 4px;
-      padding: 0 4px;
-    }
-    .spec-table-scroll {
-      overflow-x: auto;
-      border: 1px solid #dbe6f7;
-      border-radius: 8px;
-      background: #f8fbff;
-    }
-    .spec-table {
-      width: 100%;
-      min-width: 640px;
-      border-collapse: collapse;
-      background: #ffffff;
-    }
-    .spec-table th,
-    .spec-table td {
-      padding: 8px 10px;
-      vertical-align: top;
-      text-align: left;
-      border-bottom: 1px solid #dbe6f7;
-      border-right: 1px solid #e3ecf9;
-    }
-    .spec-table th:last-child,
-    .spec-table td:last-child {
-      border-right: 0;
-    }
-    .spec-table thead th {
-      background: #f1f6ff;
-      white-space: nowrap;
-    }
-    .spec-table tbody tr:last-child td {
-      border-bottom: 0;
-    }
+    __ODYLITH_REGISTRY_SPEC_READING_CSS__
     __ODYLITH_REGISTRY_CODE_TYPOGRAPHY__
     .answers {
       border: 1px solid #dbeafe;
@@ -956,6 +840,10 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       }
     }
     @media (max-width: 760px) {
+      .registry-filters-shell {
+        position: static;
+        top: auto;
+      }
       .registry-controls {
         grid-template-columns: 1fr;
       }
@@ -966,7 +854,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         grid-template-columns: 1fr;
       }
       .context-row {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
       }
       .context-count {
         text-align: left;
@@ -2398,10 +2286,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     }
 
     function renderDetail(row) {
-      if (!row) {
-        detailEl.innerHTML = "";
-        return;
-      }
       const workstreams = Array.isArray(row.workstreams) ? row.workstreams : [];
       const diagrams = Array.isArray(row.diagrams) ? row.diagrams : [];
       const diagramDetails = Array.isArray(row.diagram_details) ? row.diagram_details : [];
@@ -2645,29 +2529,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
 
     __ODYLITH_REGISTRY_FORENSIC_EVIDENCE_RUNTIME__
 
-    async function renderSelectedComponent(selectedId, filtered) {
-      const selectedSummary = filtered.find((row) => String(row.component_id || "").toLowerCase() === String(selectedId || "").toLowerCase()) || null;
-      if (!selectedSummary) {
-        detailEl.dataset.selectedComponent = "";
-        renderDetail(null);
-        renderTimeline(null);
-        return;
-      }
-      const expectedSelected = String(selectedId || "").trim().toLowerCase();
-      detailEl.dataset.selectedComponent = expectedSelected;
-      detailEl.innerHTML = "";
-      timelineCountEl.textContent = "";
-      timelineEl.innerHTML = "";
-      const loadedDetail = await registryDataSource.loadDetail(selectedId);
-      if (String(detailEl.dataset.selectedComponent || "") !== expectedSelected) {
-        return;
-      }
-      const selected = loadedDetail && typeof loadedDetail === "object"
-        ? { ...selectedSummary, ...loadedDetail }
-        : selectedSummary;
-      renderDetail(selected);
-      renderTimeline(selected);
-    }
+    __ODYLITH_REGISTRY_SELECTION_RUNTIME__
+    const renderSelectedComponent = createRegistrySelection({
+      detail: detailEl, timeline: timelineEl, timelineCount: timelineCountEl,
+      sourceCount: allComponents.length,
+      loadDetail: id => registryDataSource.loadDetail(id), renderDetail, renderTimeline,
+    });
 
     function applyState(requestedId, options = {}) {
       renderFilterControls();
@@ -2887,6 +2754,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         .replace("__ODYLITH_REGISTRY_DETAIL_ACTION_TONES__", detail_action_chip_semantic_css)
         .replace("__ODYLITH_REGISTRY_SECONDARY_TYPOGRAPHY__", registry_secondary_typography_css)
         .replace("__ODYLITH_REGISTRY_CODE_TYPOGRAPHY__", registry_code_typography_css)
+        .replace("__ODYLITH_REGISTRY_SPEC_READING_CSS__", registry_spec_reading_ui.css())
         .replace("__ODYLITH_REGISTRY_CONTEXT_HEADINGS__", context_heading_css)
         .replace("__ODYLITH_REGISTRY_AUX_BUTTON_TYPOGRAPHY__", auxiliary_button_css)
         .replace("__ODYLITH_REGISTRY_AUX_COPY__", auxiliary_copy_css)
@@ -2897,6 +2765,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         .replace("__ODYLITH_REGISTRY_COMPONENT_IDENTITY_CSS__", registry_component_identity_ui.css())
         .replace("__ODYLITH_REGISTRY_FORENSIC_EVIDENCE_MARKUP__", registry_forensic_evidence_ui.markup())
         .replace("__ODYLITH_REGISTRY_FORENSIC_EVIDENCE_RUNTIME__", registry_forensic_evidence_ui.runtime_js())
+        .replace("__ODYLITH_REGISTRY_SELECTION_RUNTIME__", registry_selection_ui.runtime_js())
         .replace("__ODYLITH_REGISTRY_COMPONENT_IDENTITY_RUNTIME__", registry_component_identity_ui.runtime_js())
         .replace("__ODYLITH_BRAND_HEAD__", str(payload.get("brand_head_html", "")).strip())
         .replace("__DATA__", data_json)

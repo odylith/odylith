@@ -23,6 +23,35 @@ from odylith.runtime.domain_intelligence.project_intelligence_binding import (
 from odylith.runtime.domain_intelligence.proposal_validation import format_proposal_issue_report
 
 
+_AUTHORED_TRIBUNAL_ROLES = (
+    (
+        "beneficiary_advocate",
+        "Project beneficiary advocate",
+        "Protects the person or team receiving the value.",
+    ),
+    (
+        "risk_owner",
+        "Project risk reviewer",
+        "Owns loss, harm, compliance, safety, or operational exposure.",
+    ),
+    (
+        "evidence_owner",
+        "Project proof reviewer",
+        "Decides what proof is strong enough to trust.",
+    ),
+    (
+        "implementation_owner",
+        "Project implementation owner",
+        "Owns source paths, interfaces, and build sequence.",
+    ),
+    (
+        "release_owner",
+        "Project release owner",
+        "Owns release boundary, rollback, and promotion readiness.",
+    ),
+)
+
+
 _AUTHORED_EXACT_PROJECTION_FIELDS = (
     "schema_version",
     "mode",
@@ -131,16 +160,7 @@ def _run_authored_projection_tribunal(
         )
     )
 
-    visible_actors = tuple(
-        {
-            "stable_role": "domain_operator",
-            "visible_actor": str(row.get("actor_quote") or ""),
-            "actor_source": "explicit_intent_actor",
-            "responsibility": str(row.get("event_quote") or ""),
-        }
-        for row in relations
-        if row.get("actor_kind") == "human"
-    )
+    visible_actors = _authored_visible_actors(relations)
     dimensions = {
         "typed_intent": f"checked {len(relations)} typed first-path relation(s) from the authored intent",
         "artifact_topology": (
@@ -149,7 +169,7 @@ def _run_authored_projection_tribunal(
             "for exact authored identifiers and references"
         ),
         "semantic_projection": (
-            f"checked {len(_authored_events(relations))} authored event(s) against the "
+            f"checked {len(relations)} authored event(s) against the "
             "semantic model, component sequence, and workstream projection"
         ),
         "provenance": (
@@ -168,6 +188,47 @@ def _run_authored_projection_tribunal(
         warnings=(),
         visible_actors=visible_actors,
     )
+
+
+def _authored_visible_actors(
+    relations: Sequence[Mapping[str, Any]],
+) -> tuple[dict[str, str], ...]:
+    """Expose fixed Tribunal review roles without classifying actor prose."""
+
+    human_relation = next(
+        (row for row in relations if row.get("actor_kind") == "human"),
+        None,
+    )
+    rows = [
+        {
+            "stable_role": role,
+            "visible_actor": label,
+            "actor_source": "governance_role",
+            "responsibility": responsibility,
+        }
+        for role, label, responsibility in _AUTHORED_TRIBUNAL_ROLES
+    ]
+    if isinstance(human_relation, Mapping):
+        rows.insert(
+            1,
+            {
+                "stable_role": "domain_operator",
+                "visible_actor": str(human_relation.get("actor_fact_quote") or ""),
+                "actor_source": "explicit_intent_actor",
+                "responsibility": str(human_relation.get("event_quote") or ""),
+            },
+        )
+    else:
+        rows.insert(
+            1,
+            {
+                "stable_role": "domain_operator",
+                "visible_actor": "Project workflow operator",
+                "actor_source": "governance_role",
+                "responsibility": "Checks that the workflow is operationally coherent.",
+            },
+        )
+    return tuple(rows)
 
 
 def _authored_projection_binding_issues(
@@ -226,24 +287,6 @@ def _without_project_intelligence_binding(value: Any) -> Any:
             for row in value
         ]
     return value
-
-
-def _authored_events(relations: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
-    return [
-        {
-            "index": index,
-            "actor": row.get("actor_quote"),
-            "owner_system": row.get("owner_system_quote"),
-            "action": row.get("action_verb_quote"),
-            "target_entity": row.get("target_quote"),
-            "mutation": row.get("event_quote"),
-            "visible_result": bool(row.get("visible_result_quote")),
-            "recovery_path": row.get("recovery_path"),
-            "text": row.get("event_quote"),
-            "source_kind": "accepted_first_path",
-        }
-        for index, row in enumerate(relations, start=1)
-    ]
 
 
 def raise_for_failed_greenfield_tribunal(decision: GreenfieldTribunalDecision) -> None:

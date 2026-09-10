@@ -1,11 +1,27 @@
 # Bug Index
 
-Last updated (UTC): 2026-09-09
+Last updated (UTC): 2026-09-10
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-337 | 2026-09-10 | Release migration gate forgets committed consumer surface changes | P1 | migration-runtime | FixedPendingRelease | [2026-09-10-release-migration-gate-forgets-committed-consumer-surface-changes.md](2026-09-10-release-migration-gate-forgets-committed-consumer-surface-changes.md) |
+| CB-339 | 2026-09-10 | Plan reconciliation skips a reopened active plan missing from its index | P2 | odylith | InProgress | [2026-09-10-plan-reconciliation-skips-a-reopened-active-plan-missing-from-its-index.md](2026-09-10-plan-reconciliation-skips-a-reopened-active-plan-missing-from-its-index.md) |
+| CB-340 | 2026-09-10 | Candidate release notes advertise the disabled greenfield apply flow | P1 | odylith | InProgress | [2026-09-10-candidate-release-notes-advertise-the-disabled-greenfield-apply-flow.md](2026-09-10-candidate-release-notes-advertise-the-disabled-greenfield-apply-flow.md) |
+| CB-338 | 2026-09-10 | Atlas explains one declared node twice when label formatting changes | P1 | atlas | FixedPendingRelease | [2026-09-10-atlas-explains-one-declared-node-twice-when-label-formatting-changes.md](2026-09-10-atlas-explains-one-declared-node-twice-when-label-formatting-changes.md) |
+| CB-336 | 2026-09-09 | Shared supporting references can manufacture confident workstream ownership | P1 | odylith-context-engine | Open | [2026-09-09-shared-supporting-references-can-manufacture-confident-workstream-ownership.md](2026-09-09-shared-supporting-references-can-manufacture-confident-workstream-ownership.md) |
+| CB-335 | 2026-09-09 | Risk normalization splits wrapped list items and invents missing mitigations | P1 | odylith | Open | [2026-09-09-risk-normalization-splits-wrapped-list-items-and-invents-missing-mitigations.md](2026-09-09-risk-normalization-splits-wrapped-list-items-and-invents-missing-mitigations.md) |
+| CB-334 | 2026-09-09 | Plan traceability validation skips dated active plans | P2 | odylith | Open | [2026-09-09-plan-traceability-validation-skips-dated-active-plans.md](2026-09-09-plan-traceability-validation-skips-dated-active-plans.md) |
+| CB-332 | 2026-09-08 | Session brief without new inputs erases retained workstream and intent | P1 | odylith-context-engine | FixedPendingRelease | [2026-09-08-session-brief-without-new-inputs-erases-retained-workstream-and-intent.md](2026-09-08-session-brief-without-new-inputs-erases-retained-workstream-and-intent.md) |
+| CB-331 | 2026-09-08 | Deferred shell focus return can steal governance search input | P2 | dashboard | FixedPendingRelease | [2026-09-08-deferred-shell-focus-return-can-steal-governance-search-input.md](2026-09-08-deferred-shell-focus-return-can-steal-governance-search-input.md) |
+| CB-333 | 2026-09-08 | Bootstrap delivery drops resolved workstream relations before execution handoff | P1 | odylith-context-engine | FixedPendingRelease | [2026-09-08-bootstrap-delivery-drops-resolved-workstream-relations-before-execution-handoff.md](2026-09-08-bootstrap-delivery-drops-resolved-workstream-relations-before-execution-handoff.md) |
+| CB-330 | 2026-09-07 | Fresh installed governance surfaces imply records or delivery evidence that does not exist | P2 | dashboard | FixedPendingRelease | [2026-09-07-fresh-installed-empty-governance-surfaces-imply-records-or-delivery-evidence-tha.md](2026-09-07-fresh-installed-empty-governance-surfaces-imply-records-or-delivery-evidence-tha.md) |
+| CB-328 | 2026-09-03 | Protected greenfield holdout targets a superseded evaluator contract | P1 | domain-intelligence-greenfield | FixedPendingRelease | [2026-09-03-protected-greenfield-holdout-targets-a-superseded-evaluator-contract.md](2026-09-03-protected-greenfield-holdout-targets-a-superseded-evaluator-contract.md) |
+| CB-329 | 2026-09-03 | Greenfield release proof diverges from product semantic owners | P1 | domain-intelligence-greenfield | Open | [2026-09-03-greenfield-release-proof-diverges-from-product-semantic-owners.md](2026-09-03-greenfield-release-proof-diverges-from-product-semantic-owners.md) |
+| CB-327 | 2026-09-03 | Greenfield rejects a product title that aliases its internal system | P1 | domain-intelligence | FixedPendingRelease | [2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md](2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md) |
+| CB-326 | 2026-09-03 | Greenfield flat fact arrays permit invalid singular cardinality | P1 | domain-intelligence | InProgress | [2026-09-03-greenfield-flat-fact-arrays-permit-invalid-singular-cardinality.md](2026-09-03-greenfield-flat-fact-arrays-permit-invalid-singular-cardinality.md) |
+| CB-325 | 2026-09-02 | Greenfield recovery proof bound compiler identity to absolute install path | P1 | domain-intelligence-greenfield | FixedPendingRelease | [2026-09-02-greenfield-recovery-proof-bound-compiler-identity-to-absolute-install-path.md](2026-09-02-greenfield-recovery-proof-bound-compiler-identity-to-absolute-install-path.md) |
 | CB-324 | 2026-08-09 | Source metadata bypassed product intent custody and triggered generic fallback | P1 | domain-intelligence-greenfield | FixedPendingRelease | [2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md](2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md) |
 | CB-323 | 2026-08-06 | Greenfield sealed intent cannot prove atomic accepted fact custody | P0 | domain-intelligence | InProgress | [2026-08-06-greenfield-sealed-intent-cannot-prove-atomic-accepted-fact-custody.md](2026-08-06-greenfield-sealed-intent-cannot-prove-atomic-accepted-fact-custody.md) |
 | CB-322 | 2026-08-05 | Final holdout permits mutually contradictory required and forbidden terms | P0 | release | FixedPendingRelease | [2026-08-05-final-holdout-permits-mutually-contradictory-required-and-forbidden-terms.md](2026-08-05-final-holdout-permits-mutually-contradictory-required-and-forbidden-terms.md) |
@@ -24,7 +40,7 @@ Last updated (UTC): 2026-09-09
 | CB-321 | 2026-08-04 | Final holdout consumes hidden cases before browser preflight and leaks children | P1 | release | FixedPendingRelease | [2026-08-04-final-holdout-consumes-hidden-cases-before-browser-preflight-and-leaks-children-.md](2026-08-04-final-holdout-consumes-hidden-cases-before-browser-preflight-and-leaks-children-.md) |
 | CB-308 | 2026-08-04 | Canonical validation loses trustworthy proof after long process state accumulati | P1 | odylith | Open | [2026-08-04-canonical-validation-loses-trustworthy-proof-after-long-process-state-accumulati.md](2026-08-04-canonical-validation-loses-trustworthy-proof-after-long-process-state-accumulati.md) |
 | CB-307 | 2026-08-03 | Automated greenfield create opened committed dashboard in operator browser | P2 | domain-intelligence | Open | [2026-08-03-automated-greenfield-create-opened-committed-dashboard-in-operator-browser.md](2026-08-03-automated-greenfield-create-opened-committed-dashboard-in-operator-browser.md) |
-| CB-303 | 2026-08-02 | Greenfield project surfaces repeated and clipped canonical meaning | P1 | domain-intelligence-greenfield | Open | [2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md](2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md) |
+| CB-303 | 2026-08-02 | Greenfield project surfaces repeated and clipped canonical meaning | P0 | domain-intelligence-greenfield | Open | [2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md](2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md) |
 | CB-306 | 2026-08-02 | Greenfield model profile claimed unobserved provider failure | P1 | domain-intelligence | Open | [2026-08-02-greenfield-model-profile-claimed-unobserved-provider-failure.md](2026-08-02-greenfield-model-profile-claimed-unobserved-provider-failure.md) |
 | CB-305 | 2026-08-02 | Greenfield current view readers could remain pinned to stale onboarding state | P0 | domain-intelligence | Open | [2026-08-02-greenfield-current-view-readers-could-remain-pinned-to-stale-onboarding-state.md](2026-08-02-greenfield-current-view-readers-could-remain-pinned-to-stale-onboarding-state.md) |
 | CB-304 | 2026-08-02 | Bare greenfield confirmation could commit a newer unreviewed pending transaction | P0 | domain-intelligence | Open | [2026-08-02-bare-greenfield-confirmation-could-commit-a-newer-unreviewed-pending-transaction.md](2026-08-02-bare-greenfield-confirmation-could-commit-a-newer-unreviewed-pending-transaction.md) |
@@ -317,6 +333,11 @@ Last updated (UTC): 2026-09-09
 | CB-023 | 2026-03-31 | Product repo doctor repair rewrites root agents to stale managed block | P1 | `src/odylith/install/agents.py`,
   `src/odylith/install/manager.py`, root `AGENTS.md`, maintainer
   `release-candidate` workflow, product-repo repair contract. | Open | [2026-03-31-product-repo-doctor-repair-rewrites-root-agents-to-stale-managed-block.md](2026-03-31-product-repo-doctor-repair-rewrites-root-agents-to-stale-managed-block.md) |
+| CB-019 | 2026-03-29 | Compass runtime freshness regressed brief risk and timeline trust | P1 | `src/odylith/runtime/surfaces/render_compass_dashboard.py`,
+  `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`,
+  `src/odylith/runtime/context_engine/odylith_context_engine_store.py`,
+  `src/odylith/runtime/context_engine/surface_projection_fingerprint.py`,
+  Compass runtime freshness contract, shell UX/browser proof lane. | Open | [2026-03-29-compass-runtime-freshness-regressed-brief-risk-and-timeline-trust.md](2026-03-29-compass-runtime-freshness-regressed-brief-risk-and-timeline-trust.md) |
 | CB-016 | 2026-03-28 | Release preflight fails when dist contains stale wheel | P1 | `bin/release-preflight`, release asset publisher,
   maintainer release proof lane, release asset staging contract. | Open | [2026-03-28-release-preflight-fails-when-dist-contains-stale-wheel.md](2026-03-28-release-preflight-fails-when-dist-contains-stale-wheel.md) |
 | CB-015 | 2026-03-28 | Release download cache and runtime restage lose atomicity on failure | P1 | `src/odylith/install/release_assets.py`,
@@ -697,11 +718,6 @@ Last updated (UTC): 2026-09-09
   `src/odylith/runtime/surfaces/compass_dashboard_runtime.py`,
   `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`, Compass
   standup-brief cache contract, shared local-provider selection path. | Closed | [2026-03-29-compass-standup-brief-fails-to-use-local-provider-and-stays-deterministic.md](2026-03-29-compass-standup-brief-fails-to-use-local-provider-and-stays-deterministic.md) |
-| CB-019 | 2026-03-29 | Compass runtime freshness regressed brief risk and timeline trust | P1 | `src/odylith/runtime/surfaces/render_compass_dashboard.py`,
-  `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`,
-  `src/odylith/runtime/context_engine/odylith_context_engine_store.py`,
-  `src/odylith/runtime/context_engine/surface_projection_fingerprint.py`,
-  Compass runtime freshness contract, shell UX/browser proof lane. | Closed | [2026-03-29-compass-runtime-freshness-regressed-brief-risk-and-timeline-trust.md](2026-03-29-compass-runtime-freshness-regressed-brief-risk-and-timeline-trust.md) |
 | CB-018 | 2026-03-29 | Compass live self host risk was hidden by utc date and kpi omission | P1 | `src/odylith/runtime/surfaces/compass_dashboard_shell.py`,
   `src/odylith/runtime/surfaces/compass_dashboard_runtime.py`, Compass live KPI
   render path, self-host posture risk rows, browser smoke coverage. | Closed | [2026-03-29-compass-live-self-host-risk-was-hidden-by-utc-date-and-kpi-omission.md](2026-03-29-compass-live-self-host-risk-was-hidden-by-utc-date-and-kpi-omission.md) |

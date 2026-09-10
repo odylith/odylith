@@ -24,9 +24,20 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 from greenfield_matrix_types import GreenfieldMatrixResult
 
 
-STATISTICS_VERSION = "odylith.greenfield.matrix.statistics.v2"
+STATISTICS_VERSION = "odylith.greenfield.matrix.statistics.v3"
+STATISTICAL_CONFIDENCE_VERSION = "odylith.greenfield.statistical-confidence.v1"
 _Z_95 = 1.959963984540054
 _MINIMUM_RELEASE_SLICE_SAMPLES = 4
+_CONFIDENCE_THRESHOLD_KEYS = frozenset(
+    {
+        "atomic_semantic_fidelity",
+        "relation_fidelity",
+        "clarification_identity",
+        "unnecessary_question_rate_ceiling",
+        "overall_case_success",
+        "worst_slice_success",
+    }
+)
 RELEASE_SLICE_DIMENSIONS = (
     "complexity_band",
     "evidence_format",
@@ -99,6 +110,16 @@ def outcome_statistics(
     worst = min(
         completed_slices,
         key=lambda row: (
+            float(row["point_estimate"]),
+            float(row["confidence_interval_95"]["lower"]),
+            str(row["dimension"]),
+            str(row["value"]),
+        ),
+        default=None,
+    )
+    least_confident = min(
+        completed_slices,
+        key=lambda row: (
             float(row["confidence_interval_95"]["lower"]),
             float(row["point_estimate"]),
             str(row["dimension"]),
@@ -142,7 +163,55 @@ def outcome_statistics(
         or release_contract_issues
         or coverage_issues
     )
-    passed = complete and not failing_release_slices
+    confidence_contract = release_statistical_confidence_contract() if release else {}
+    acceptance_checks = (
+        [
+            threshold_check(
+                "overall_case_success",
+                observed=_rate(passed_count, sample_count) if sample_count else None,
+                expected=1.0,
+                direction="floor",
+            ),
+            threshold_check(
+                "worst_slice_success",
+                observed=worst.get("point_estimate") if worst else None,
+                expected=1.0,
+                direction="floor",
+            ),
+        ]
+        if release
+        else []
+    )
+    confidence_checks = (
+        [
+            threshold_check(
+                "overall_case_success",
+                observed=lower if sample_count else None,
+                expected=confidence_contract.get("overall_case_success"),
+                direction="floor",
+            ),
+            threshold_check(
+                "worst_slice_success",
+                observed=(
+                    _mapping(least_confident.get("confidence_interval_95")).get("lower")
+                    if least_confident
+                    else None
+                ),
+                expected=confidence_contract.get("worst_slice_success"),
+                direction="floor",
+            ),
+        ]
+        if release
+        else []
+    )
+    acceptance_passed = all(row["status"] == "passed" for row in acceptance_checks)
+    confidence_passed = all(row["status"] == "passed" for row in confidence_checks)
+    passed = (
+        complete
+        and not failing_release_slices
+        and acceptance_passed
+        and confidence_passed
+    )
     return {
         "version": STATISTICS_VERSION,
         "status": (
@@ -168,6 +237,12 @@ def outcome_statistics(
         "release_coverage_issues": coverage_issues,
         "failing_release_slices": failing_release_slices,
         "worst_slice": worst or {},
+        "least_confident_slice": least_confident or {},
+        "acceptance_passed": acceptance_passed if release else None,
+        "acceptance_checks": acceptance_checks,
+        "confidence_passed": confidence_passed if release else None,
+        "confidence_contract": confidence_contract,
+        "confidence_checks": confidence_checks,
         "slices": slices,
     }
 
@@ -227,6 +302,111 @@ def release_slice_minimum_sample_contract_issues(value: Any) -> list[str]:
     ):
         return ["release slice minimum samples must match the published contract"]
     return []
+
+
+def release_statistical_confidence_contract() -> dict[str, Any]:
+    """Return confidence gates that are achievable at frozen release minima.
+
+    A perfect four-observation sample has a 95% Wilson lower bound of
+    0.510109, while a zero-failure sample has an upper bound of 0.489891.
+    The uniform 0.5 confidence gate is therefore the strongest simple
+    threshold supported by the published minimum. Product acceptance remains
+    separately fixed at exact 1.0 success and 0.0 unnecessary questions.
+    """
+
+    return {
+        "version": STATISTICAL_CONFIDENCE_VERSION,
+        "method": "wilson",
+        "confidence_level": 0.95,
+        "atomic_semantic_fidelity": 0.5,
+        "relation_fidelity": 0.5,
+        "clarification_identity": 0.5,
+        "unnecessary_question_rate_ceiling": 0.5,
+        "overall_case_success": 0.5,
+        "worst_slice_success": 0.5,
+    }
+
+
+def release_statistical_confidence_contract_issues(
+    value: Any,
+    *,
+    minimum_samples: Mapping[str, Mapping[str, int]] | None = None,
+) -> list[str]:
+    """Validate confidence schema and feasibility at declared sample minima."""
+
+    expected_keys = {
+        "version",
+        "method",
+        "confidence_level",
+        *_CONFIDENCE_THRESHOLD_KEYS,
+    }
+    if not isinstance(value, Mapping) or set(value) != expected_keys:
+        return ["statistical confidence must use only the v1 confidence fields"]
+    issues: list[str] = []
+    if value.get("version") != STATISTICAL_CONFIDENCE_VERSION:
+        issues.append(
+            f"statistical confidence must declare {STATISTICAL_CONFIDENCE_VERSION}"
+        )
+    if value.get("method") != "wilson" or value.get("confidence_level") != 0.95:
+        issues.append("statistical confidence must use the 95% Wilson interval")
+    for name in sorted(_CONFIDENCE_THRESHOLD_KEYS):
+        threshold = value.get(name)
+        if (
+            not isinstance(threshold, (int, float))
+            or isinstance(threshold, bool)
+            or not 0.0 <= float(threshold) <= 1.0
+        ):
+            issues.append(
+                f"statistical confidence `{name}` must be a number from 0 through 1"
+            )
+    if issues:
+        return issues
+    sample_contract = (
+        minimum_samples
+        if minimum_samples is not None
+        else release_slice_minimum_sample_contract()
+    )
+    minimum = release_statistical_confidence_sample_minimum(sample_contract)
+    if minimum <= 0:
+        return ["statistical confidence has no positive declared sample minimum"]
+    perfect_lower, _perfect_upper = wilson_interval(minimum, minimum)
+    _zero_lower, zero_upper = wilson_interval(0, minimum)
+    for name in sorted(_CONFIDENCE_THRESHOLD_KEYS - {"unnecessary_question_rate_ceiling"}):
+        if float(value[name]) > perfect_lower:
+            issues.append(
+                f"statistical confidence `{name}` cannot reach {float(value[name]):.6f} "
+                f"at the declared minimum of {minimum}; perfect evidence reaches {perfect_lower:.6f}"
+            )
+    ceiling = float(value["unnecessary_question_rate_ceiling"])
+    if ceiling < zero_upper:
+        issues.append(
+            "statistical confidence `unnecessary_question_rate_ceiling` cannot reach "
+            f"{ceiling:.6f} at the declared minimum of {minimum}; "
+            f"zero failures reach {zero_upper:.6f}"
+        )
+    return issues
+
+
+def release_statistical_confidence_sample_minimum(
+    minimum_samples: Mapping[str, Mapping[str, int]] | None = None,
+) -> int:
+    """Return the smallest positive denominator promised by release preflight."""
+
+    sample_contract = (
+        minimum_samples
+        if minimum_samples is not None
+        else release_slice_minimum_sample_contract()
+    )
+    declared_minima = [
+        int(sample_count)
+        for rows in sample_contract.values()
+        if isinstance(rows, Mapping)
+        for sample_count in rows.values()
+        if isinstance(sample_count, int)
+        and not isinstance(sample_count, bool)
+        and sample_count > 0
+    ]
+    return min(declared_minima, default=0)
 
 
 def expected_case_evidence_format(case: Any) -> str:
@@ -345,6 +525,42 @@ def wilson_interval(successes: int, sample_count: int) -> tuple[float, float]:
     center = (estimate + z2 / (2.0 * n)) / denominator
     margin = (_Z_95 / denominator) * sqrt((estimate * (1.0 - estimate) / n) + (z2 / (4.0 * n * n)))
     return round(max(0.0, center - margin), 6), round(min(1.0, center + margin), 6)
+
+
+def threshold_check(
+    name: str,
+    *,
+    observed: Any,
+    expected: Any,
+    direction: str,
+) -> dict[str, Any]:
+    """Return one fail-closed numeric floor or ceiling decision."""
+
+    if not isinstance(expected, (int, float)) or isinstance(expected, bool):
+        return {
+            "name": name,
+            "status": "unproven",
+            "observed": observed,
+            "expected": expected,
+            "issue": f"{name} has no frozen threshold",
+        }
+    if not isinstance(observed, (int, float)) or isinstance(observed, bool):
+        return {
+            "name": name,
+            "status": "unproven",
+            "observed": observed,
+            "expected": expected,
+            "issue": f"{name} is unproven (0 of 0 is not a pass)",
+        }
+    passed = observed >= expected if direction == "floor" else observed <= expected
+    symbol = ">=" if direction == "floor" else "<="
+    return {
+        "name": name,
+        "status": "passed" if passed else "failed",
+        "observed": observed,
+        "expected": expected,
+        "issue": "" if passed else f"{name} {observed:.6f} does not satisfy {symbol} {expected:.6f}",
+    }
 
 
 def _slice_row(*, dimension: str, value: str, outcomes: Sequence[bool]) -> dict[str, Any]:
@@ -483,6 +699,7 @@ def _interval_payload(lower: float, upper: float) -> dict[str, Any]:
 __all__ = [
     "RELEASE_SLICE_DIMENSIONS",
     "STATISTICS_VERSION",
+    "STATISTICAL_CONFIDENCE_VERSION",
     "expected_case_evidence_format",
     "expected_case_source_complexity",
     "outcome_statistics",
@@ -491,5 +708,9 @@ __all__ = [
     "release_slice_evidence",
     "release_slice_minimum_sample_contract",
     "release_slice_minimum_sample_contract_issues",
+    "release_statistical_confidence_contract",
+    "release_statistical_confidence_contract_issues",
+    "release_statistical_confidence_sample_minimum",
+    "threshold_check",
     "wilson_interval",
 ]

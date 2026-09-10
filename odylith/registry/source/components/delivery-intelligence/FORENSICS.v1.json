@@ -21,7 +21,7 @@
     "explicit_event_count": 100,
     "mapped_workstream_evidence_count": 100,
     "recent_path_match_count": 0,
-    "spec_history_event_count": 3,
+    "spec_history_event_count": 5,
     "status": "forensic_coverage_present",
     "timeline_event_count": 100
   },
@@ -33,6 +33,85 @@
   ],
   "spec_ref": "odylith/registry/source/components/delivery-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "src/odylith/runtime/governance/component_registry_intelligence.py",
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/governance/sync_component_spec_requirements.py"
+      ],
+      "confidence": "high",
+      "event_index": 1330,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-09-08T16:46:25-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "src/odylith/runtime/governance/delivery_intelligence_refresh.py",
+        "src/odylith/runtime/governance/proof_state/resolver.py"
+      ],
+      "confidence": "high",
+      "event_index": 1329,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "proof-state",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "proof-state",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-09-08T16:07:00-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 0,
       "artifacts": [],
@@ -6272,9 +6351,20 @@
     }
   ],
   "traceability": {
-    "code_references": [],
-    "developer_docs": [],
-    "runbooks": []
+    "code_references": [
+      "src/odylith/runtime/governance/delivery/scope_signal_ladder.py",
+      "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+      "src/odylith/runtime/context_engine/runtime_read_session.py",
+      "src/odylith/runtime/governance/sync_session.py",
+      "src/odylith/runtime/governance/sync_workstream_artifacts.py"
+    ],
+    "developer_docs": [
+      "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md"
+    ],
+    "runbooks": [
+      "docs/runbooks/odylith-governance.md",
+      "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"
+    ]
   },
   "version": "v1",
   "what_it_is": "Scope-synthesis engine that turns governed repo truth, runtime evidence, Tribunal results, and proof-state signals into one delivery snapshot consumed by sync, shell, packets, and narration.",

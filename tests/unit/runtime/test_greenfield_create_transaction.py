@@ -9,6 +9,7 @@ from typing import Any
 
 import pytest
 
+from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_backlog_commit
@@ -31,20 +32,9 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import pr
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import write_compiled_product_create_transaction_file
-from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
-    GREENFIELD_INTENT_AUTHORING_VERSION,
-)
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
-    DEEP_PROFILE_ID,
-    RESCUE_PROFILE_ID,
-    STANDARD_PROFILE_ID,
-    get_greenfield_model_profile,
-)
-from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_ENGINE_VERSION
-from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_QUALITY_MANIFEST_VERSION
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
@@ -52,7 +42,8 @@ from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.surfaces import brand_assets
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
-from tests.unit.runtime.greenfield_proposal_fixtures import materialize_typed_intent_fixture
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import approved_authored_quality_manifest_fixture
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import materialize_typed_intent_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_package_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_transaction
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
@@ -116,7 +107,9 @@ def _authored_supplier_proposal(repo_root: Path) -> tuple[dict[str, Any], dict[s
         "human_actors": ["Supplier Risk Analyst"],
         "external_systems": [],
         "internal_systems": ["Supplier Review Service"],
-        "assumptions": ["The first release supports one reviewer role."],
+        "assumptions": [
+            {"applies_to": "general", "statement": "The first release supports one reviewer role."}
+        ],
         "ambiguities": [],
         "non_goals": ["Do not automate supplier approval decisions."],
     }
@@ -126,54 +119,48 @@ def _authored_supplier_proposal(repo_root: Path) -> tuple[dict[str, Any], dict[s
         first_path_relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Supplier Risk Analyst",
+                "actor_fact_quote": "Supplier Risk Analyst",
                 "event_quote": "Supplier Risk Analyst records one supplier risk case",
                 "action_verb_quote": "records",
                 "target_quote": "one supplier risk case",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Supplier Review Service",
+                "actor_fact_quote": "Supplier Review Service",
                 "owner_system_quote": "Supplier Review Service",
                 "event_quote": "Supplier Review Service presents the supplier evidence",
                 "action_verb_quote": "presents",
                 "target_quote": "the supplier evidence",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "human",
-                "actor_quote": "Supplier Risk Analyst",
+                "actor_fact_quote": "Supplier Risk Analyst",
                 "event_quote": "Supplier Risk Analyst reviews the evidence",
                 "action_verb_quote": "reviews",
                 "target_quote": "the evidence",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "human",
-                "actor_quote": "Supplier Risk Analyst",
+                "actor_fact_quote": "Supplier Risk Analyst",
                 "event_quote": "Supplier Risk Analyst records a decision",
                 "action_verb_quote": "records",
                 "target_quote": "a decision",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Supplier Review Service",
+                "actor_fact_quote": "Supplier Review Service",
                 "owner_system_quote": "Supplier Review Service",
                 "event_quote": "Supplier Review Service shows a reviewable risk receipt",
                 "action_verb_quote": "shows",
                 "target_quote": "a reviewable risk receipt",
                 "visible_result_quote": "a reviewable risk receipt",
-                "recovery_path": False,
             },
         ],
         component_responsibility_owners=["Supplier Review Service"],
-        component_responsibility_event_orders=[5],
     )
     authority = dict(candidate.pop(PRODUCT_INTENT_AUTHORITY_KEY))
     proposal = {
@@ -207,28 +194,42 @@ def _complete_authored_supplier_proposal(
     return proposal, authority
 
 
-def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
-    idea_path = Path("/repo/odylith/radar/source/ideas/B-001.md")
+def _package(proposal: dict[str, Any], *, repo_root: Path) -> GreenfieldCompletionPackage:
     backlog_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
-    workstream_title = str(
-        (backlog_rows[0].get("title") if backlog_rows else "")
-        or "Prove supplier risk review path"
-    )
+    workstream_titles = [
+        str(row.get("title") or f"Prove supplier risk review path {index}")
+        for index, row in enumerate(backlog_rows, start=1)
+    ] or ["Prove supplier risk review path"]
+    workstream_ids = [f"B-{index:03d}" for index in range(1, len(workstream_titles) + 1)]
+    idea_paths = [
+        repo_root / f"odylith/radar/source/ideas/{idea_id}.md"
+        for idea_id in workstream_ids
+    ]
     created_backlog = [
-        {"title": workstream_title, "idea_id": "B-001", "idea_path": str(idea_path)}
+        {"title": title, "idea_id": idea_id, "idea_path": str(path)}
+        for title, idea_id, path in zip(
+            workstream_titles, workstream_ids, idea_paths, strict=True
+        )
     ]
     backlog_result = {
         "created": created_backlog,
-        "idea_files": {str(idea_path): workstream_title},
-        "backlog_index": "/repo/odylith/radar/source/INDEX.md",
-        "backlog_index_text": f"| B-001 | {workstream_title} |",
+        "idea_files": {
+            str(path): title
+            for path, title in zip(idea_paths, workstream_titles, strict=True)
+        },
+        "backlog_index": str(repo_root / "odylith/radar/source/INDEX.md"),
+        "backlog_index_text": "\n".join(
+            f"| {idea_id} | {title} |"
+            for idea_id, title in zip(workstream_ids, workstream_titles, strict=True)
+        ),
         "_candidate_idea_specs": {
-            "B-001": backlog_contract.IdeaSpec(
-                path=idea_path,
-                metadata={"idea_id": "B-001", "status": "candidate"},
+            idea_id: backlog_contract.IdeaSpec(
+                path=path,
+                metadata={"idea_id": idea_id, "status": "candidate"},
                 sections={"Problem", "Product View"},
                 section_bodies={"Problem": "Supplier risk is hard to review.", "Product View": "Review board."},
             )
+            for idea_id, path in zip(workstream_ids, idea_paths, strict=True)
         },
     }
     diagram_rows = [row for row in proposal.get("diagrams", []) if isinstance(row, dict)]
@@ -245,53 +246,32 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
         diagram_ids=diagram_ids,
     )
     atlas_catalog_rows = greenfield_apply_diagrams.render_prewrite_atlas_catalog_rows(
-        root=Path("/repo"),
+        root=repo_root,
         rows=diagram_rows,
         diagram_ids=diagram_ids,
         traceability_plan=traceability_plan,
         review_date="2026-07-07",
     )
-    component_rows = [row for row in proposal.get("components", []) if isinstance(row, Mapping)]
-    component_row = component_rows[0] if component_rows else {}
-    component_id = str(component_row.get("component_id") or "supplier-risk-service")
-    component_label = str(component_row.get("label") or "Supplier Risk Service")
-    component_path = str(component_row.get("intended_path") or "src/supplier_risk")
-    component_kind = str(component_row.get("kind") or "service")
-    component_responsibility = str(
-        component_row.get("responsibility")
-        or "Supplier Risk Service keeps supplier review state attached."
+    component_registry_preview = greenfield_apply_components.preview_prewrite_components(
+        root=repo_root,
+        proposal=proposal,
+        release_selector="0.0.1",
+        backlog_result=backlog_result,
     )
-    component_key = greenfield_traceability.component_key(
-        {"component_id": component_id, "label": component_label}
+    rendered_component_specs = greenfield_apply_components.render_prewrite_component_specs(
+        root=repo_root,
+        proposal=proposal,
+        release_selector="0.0.1",
+        backlog_result=backlog_result,
     )
-    component_diagrams = traceability_plan.component_diagrams.get(component_key, ())
-    component_handoff = {
-        "workstream_id": "B-001",
-        "workstream_title": workstream_title,
-        "implementation_prompt": "Implement the accepted supplier risk review path.",
-    }
-    component_authoring_input = {
-        "component_id": component_id,
-        "label": component_label,
-        "path": component_path,
-        "kind": component_kind,
-        "category": "application",
-        "qualification": "candidate",
-        "owner": "repo",
-        "status": "planned",
-        "product_layer": "application",
-        "sources": ("user_intent",),
-        "workstreams": ("B-001",),
-        "diagrams": component_diagrams,
-        "responsibility": component_responsibility,
-        "boundary": str(component_row.get("boundary") or "Supplier review state only."),
-        "dependencies": (),
-        "interfaces": (),
-        "validation": (),
-        "risks": (),
-        "implementation_handoff": component_handoff,
-        "component_contract": dict(component_row.get("component_contract") or {}),
-    }
+    component_ids = [str(row["component_id"]) for row in component_registry_preview]
+    component_previews = [
+        {
+            "component_id": row["component_id"],
+            "spec_path": row["spec_path"],
+        }
+        for row in component_registry_preview
+    ]
     package = GreenfieldCompletionPackage(
         proposal=proposal,
         release_selector="0.0.1",
@@ -302,37 +282,8 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
         backlog_result=backlog_result,
         prewrite_safety_preview={"status": "passed"},
         surface_refresh_preview=surface_refresh_preview_fixture(),
-        component_registry_preview=(
-            {
-                "component_id": component_id,
-                "label": component_label,
-                "spec_path": f"odylith/registry/source/components/{component_id}/CURRENT_SPEC.md",
-                "implementation_handoff": component_handoff,
-                "authoring_input": component_authoring_input,
-                "registry_entry": {
-                    "component_id": component_id,
-                    "name": component_label,
-                    "kind": component_kind,
-                    "category": "application",
-                    "qualification": "candidate",
-                    "aliases": [],
-                    "path_prefixes": [component_path],
-                    "workstreams": ["B-001"],
-                    "diagrams": list(component_diagrams),
-                    "owner": "repo",
-                    "status": "planned",
-                    "what_it_is": f"{component_label} defines the planned ownership boundary for supplier review state.",
-                    "why_tracked": "Tracked from user-stated intent because this named ownership boundary must stay understandable before source-backed behavior promotes it.",
-                    "spec_ref": f"odylith/registry/source/components/{component_id}/CURRENT_SPEC.md",
-                    "sources": ["user_intent"],
-                    "subcomponents": [],
-                    "product_layer": "application",
-                },
-            },
-        ),
-        rendered_component_specs={
-            component_label: f"# {component_label}\n\n{component_responsibility}\n",
-        },
+        component_registry_preview=component_registry_preview,
+        rendered_component_specs=rendered_component_specs,
         project_brief_record_text=f"# Supplier Risk Board Project Brief\n\n- accepted_at: {COMPILED_ACCEPTED_AT}\n",
         accepted_project_preview={
             "schema_version": "odylith.accepted_project.v1",
@@ -341,7 +292,12 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
             "accepted_at": COMPILED_ACCEPTED_AT,
             "title": "Supplier Risk Board",
             "source_launch": {"implementation_prompt": "Start B-001 from the accepted transaction package."},
-            "created": {"workstreams": [{"idea_id": "B-001"}], "components": [], "diagrams": []},
+            "created": {
+                "workstreams": [{"idea_id": idea_id} for idea_id in workstream_ids],
+                "components": component_previews,
+                "diagrams": list(diagram_ids),
+                "release_selector": "0.0.1",
+            },
             "validation_gate": {"status": "passed", "issues": []},
         },
         compass_memory_preview={
@@ -351,9 +307,9 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
             "ts_iso": COMPILED_ACCEPTED_AT,
             "author": "odylith",
             "source": "domain-intelligence",
-            "workstreams": ["B-001"],
+            "workstreams": workstream_ids,
             "artifacts": ["odylith/runtime/source/project-brief.v1.md"],
-            "components": ["supplier-risk-service"],
+            "components": component_ids,
             "evidence_tier": "user_intent",
             "work_category": "governance",
         },
@@ -383,13 +339,13 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
         },
         release_assignment_result={
             "dry_run": True,
-            "workstream_ids": ["B-001"],
+            "workstream_ids": workstream_ids,
             "events": [],
             "release": {"release_id": "release-0-0-1"},
         },
-        release_workstream_ids=("B-001",),
+        release_workstream_ids=tuple(workstream_ids),
     )
-    return _seal_test_package(package, repo_root=Path("/repo"))
+    return _seal_test_package(package, repo_root=repo_root)
 
 
 def _seal_test_package(package: GreenfieldCompletionPackage, *, repo_root: Path) -> GreenfieldCompletionPackage:
@@ -405,189 +361,6 @@ def _write_compass_memory_event(root: Path, event: Mapping[str, Any]) -> Path:
     stream_path.parent.mkdir(parents=True, exist_ok=True)
     stream_path.write_text(json.dumps(dict(event), sort_keys=True) + "\n", encoding="utf-8")
     return stream_path
-
-
-def _approved_quality_manifest(**overrides: Any) -> dict[str, Any]:
-    manifest: dict[str, Any] = {
-        "version": PRECONFIRM_QUALITY_MANIFEST_VERSION,
-        "engine": PRECONFIRM_ENGINE_VERSION,
-        "status": "passed",
-        "validation_status": "passed",
-        "issue_count": 0,
-        "hard_blocker": None,
-        "requested_repair_tier": "auto",
-        "repair_tier": "standard",
-        "budget_seconds": 60.0,
-        "elapsed_seconds": 12.3,
-        "write_transaction": {
-            "status": "not_started",
-            "rollback_guard": "enabled",
-            "prewrite_clean_before_commit": True,
-        },
-        "semantic_compiler": {
-            "version": "odylith.greenfield.authored-semantic-validation.v1",
-            "status": "passed",
-            "semantic_owner": "single_model_authoring_response",
-            "post_authoring_interpretation_calls": 0,
-        },
-        "model_authoring": _approved_model_authoring(
-            STANDARD_PROFILE_ID,
-            elapsed_seconds=12.0,
-        ),
-    }
-    manifest.update(overrides)
-    return manifest
-
-
-def _approved_model_authoring(profile_id: str, *, elapsed_seconds: float) -> dict[str, Any]:
-    profile = get_greenfield_model_profile(profile_id)
-    return {
-        "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
-        "semantic_model_call_count": 1,
-        "tier": profile.repair_tier,
-        "elapsed_seconds": elapsed_seconds,
-        "model_profile": {
-            "profile_id": profile.profile_id,
-            "provider": profile.provider,
-            "model": profile.model,
-            "reasoning_effort": profile.reasoning_effort,
-            "effective_timeout_seconds": profile.model_timeout_seconds,
-            "authoring_tier": profile.repair_tier,
-        },
-    }
-
-
-def test_quality_approval_accepts_one_model_call_and_zero_reinterpretation() -> None:
-    greenfield_create_transaction.require_product_create_transaction_quality_approved(
-        _approved_quality_manifest(
-            semantic_compiler={
-                "version": "odylith.greenfield.authored-semantic-validation.v1",
-                "status": "passed",
-                "semantic_owner": "single_model_authoring_response",
-                "post_authoring_interpretation_calls": 0,
-            },
-            model_authoring=_approved_model_authoring(
-                STANDARD_PROFILE_ID,
-                elapsed_seconds=12.0,
-            ),
-        )
-    )
-
-
-def test_quality_approval_accepts_explicit_deep_profile() -> None:
-    greenfield_create_transaction.require_product_create_transaction_quality_approved(
-        _approved_quality_manifest(
-            requested_repair_tier="deep",
-            repair_tier="deep",
-            budget_seconds=120.0,
-            semantic_compiler={
-                "version": "odylith.greenfield.authored-semantic-validation.v1",
-                "status": "passed",
-                "semantic_owner": "single_model_authoring_response",
-                "post_authoring_interpretation_calls": 0,
-            },
-            model_authoring=_approved_model_authoring(
-                DEEP_PROFILE_ID,
-                elapsed_seconds=100.0,
-            ),
-        )
-    )
-
-
-def test_quality_approval_accepts_explicit_rescue_profile() -> None:
-    greenfield_create_transaction.require_product_create_transaction_quality_approved(
-        _approved_quality_manifest(
-            requested_repair_tier="rescue",
-            repair_tier="rescue",
-            budget_seconds=90.0,
-            semantic_compiler={
-                "version": "odylith.greenfield.authored-semantic-validation.v1",
-                "status": "passed",
-                "semantic_owner": "single_model_authoring_response",
-                "post_authoring_interpretation_calls": 0,
-            },
-            model_authoring=_approved_model_authoring(
-                RESCUE_PROFILE_ID,
-                elapsed_seconds=80.0,
-            ),
-        )
-    )
-
-
-def test_quality_approval_rejects_default_route_relabelled_as_rescue() -> None:
-    with pytest.raises(ValueError, match="quality manifest is not approved"):
-        greenfield_create_transaction.require_product_create_transaction_quality_approved(
-            _approved_quality_manifest(
-                requested_repair_tier="auto",
-                repair_tier="rescue",
-                budget_seconds=90.0,
-                semantic_compiler={
-                    "version": "odylith.greenfield.authored-semantic-validation.v1",
-                    "status": "passed",
-                    "semantic_owner": "single_model_authoring_response",
-                    "post_authoring_interpretation_calls": 0,
-                },
-                model_authoring=_approved_model_authoring(
-                    RESCUE_PROFILE_ID,
-                    elapsed_seconds=50.0,
-                ),
-            )
-        )
-
-
-def test_quality_approval_rejects_profile_tier_relabeling() -> None:
-    receipt = _approved_model_authoring(DEEP_PROFILE_ID, elapsed_seconds=12.0)
-    receipt["tier"] = "standard"
-
-    with pytest.raises(ValueError, match="quality manifest is not approved"):
-        greenfield_create_transaction.require_product_create_transaction_quality_approved(
-            _approved_quality_manifest(
-                requested_repair_tier="deep",
-                repair_tier="deep",
-                budget_seconds=120.0,
-                semantic_compiler={
-                    "version": "odylith.greenfield.authored-semantic-validation.v1",
-                    "status": "passed",
-                    "semantic_owner": "single_model_authoring_response",
-                    "post_authoring_interpretation_calls": 0,
-                },
-                model_authoring=receipt,
-            )
-        )
-
-
-@pytest.mark.parametrize(
-    "retired_version",
-    (
-        "odylith.greenfield.model-intent-authoring.v1",
-        "odylith.greenfield.intent-authoring.v4",
-        "odylith.greenfield.intent-authoring.v5",
-    ),
-)
-def test_quality_approval_rejects_retired_model_authoring_versions(
-    retired_version: str,
-) -> None:
-    with pytest.raises(
-        ValueError,
-        match="pre-confirm ProductCreateTransaction quality manifest is not approved",
-    ):
-        greenfield_create_transaction.require_product_create_transaction_quality_approved(
-            _approved_quality_manifest(
-                semantic_compiler={
-                    "version": "odylith.greenfield.authored-semantic-validation.v1",
-                    "status": "passed",
-                    "semantic_owner": "single_model_authoring_response",
-                    "post_authoring_interpretation_calls": 0,
-                },
-                model_authoring={
-                    "authoring_version": retired_version,
-                    "semantic_model_call_count": 1,
-                    "tier": "standard",
-                    "elapsed_seconds": 12.0,
-                },
-            ),
-            authored_projection_verified=True,
-        )
 
 
 def _valid_idea_file_text(*, idea_id: str, title: str) -> str:
@@ -624,7 +397,7 @@ def _transaction(repo_root: Path | None = None) -> Any:
     root = repo_root or Path(tempfile.mkdtemp(prefix="odylith-authored-transaction-"))
     proposal, authority = _complete_authored_supplier_proposal(root)
     package = replace(
-        _package(proposal),
+        _package(proposal, repo_root=root),
         baseline_writes=greenfield_create_baseline.precompiled_greenfield_create_baseline_writes(root),
         brand_asset_writes=brand_assets.precompiled_brand_asset_writes(repo_root=root),
     )
@@ -636,7 +409,7 @@ def _transaction(repo_root: Path | None = None) -> Any:
         prewrite_package=package,
         backlog_result=package.backlog_result or {},
         intent_authority=authority,
-        quality_manifest=_approved_quality_manifest(),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
         repo_root=root,
     )
 
@@ -649,7 +422,7 @@ def _sealed_transaction(repo_root: Path, transaction: Any | None = None) -> Any:
 
 
 def test_compiled_memory_readback_rejects_accepted_project_drift(tmp_path: Path) -> None:
-    package = _package(_complete_authored_supplier_proposal(tmp_path)[0])
+    package = _package(_complete_authored_supplier_proposal(tmp_path)[0], repo_root=tmp_path)
     source_root = tmp_path / "odylith/runtime/source"
     source_root.mkdir(parents=True, exist_ok=True)
     accepted_project = dict(package.accepted_project_preview or {})
@@ -674,7 +447,7 @@ def test_compiled_memory_readback_rejects_accepted_project_drift(tmp_path: Path)
 
 
 def test_compiled_memory_readback_accepts_json_round_trip_equivalent_preview(tmp_path: Path) -> None:
-    package = _package(_complete_authored_supplier_proposal(tmp_path)[0])
+    package = _package(_complete_authored_supplier_proposal(tmp_path)[0], repo_root=tmp_path)
     preview = dict(package.accepted_project_preview or {})
     preview["created"] = {
         **dict(preview.get("created") or {}),
@@ -703,7 +476,7 @@ def test_compiled_memory_readback_accepts_json_round_trip_equivalent_preview(tmp
 
 
 def test_compiled_memory_readback_rejects_canonicalized_compass_component_ids(tmp_path: Path) -> None:
-    package = _package(_complete_authored_supplier_proposal(tmp_path)[0])
+    package = _package(_complete_authored_supplier_proposal(tmp_path)[0], repo_root=tmp_path)
     preview = dict(package.compass_memory_preview or {})
     preview["components"] = ["Supplier-Risk-Service"]
     package = replace(package, compass_memory_preview=preview)
@@ -731,7 +504,7 @@ def test_compiled_memory_readback_rejects_canonicalized_compass_component_ids(tm
 
 
 def test_compiled_memory_readback_rejects_compass_event_drift(tmp_path: Path) -> None:
-    package = _package(_complete_authored_supplier_proposal(tmp_path)[0])
+    package = _package(_complete_authored_supplier_proposal(tmp_path)[0], repo_root=tmp_path)
     source_root = tmp_path / "odylith/runtime/source"
     source_root.mkdir(parents=True, exist_ok=True)
     accepted_project = dict(package.accepted_project_preview or {})
@@ -756,7 +529,7 @@ def test_compiled_memory_readback_rejects_compass_event_drift(tmp_path: Path) ->
 
 
 def test_compiled_memory_readback_rejects_missing_compass_stream_event(tmp_path: Path) -> None:
-    package = _package(_complete_authored_supplier_proposal(tmp_path)[0])
+    package = _package(_complete_authored_supplier_proposal(tmp_path)[0], repo_root=tmp_path)
     source_root = tmp_path / "odylith/runtime/source"
     source_root.mkdir(parents=True, exist_ok=True)
     accepted_project = dict(package.accepted_project_preview or {})
@@ -909,7 +682,7 @@ def test_compiled_transaction_file_requires_untampered_compiler_receipt(tmp_path
 def test_product_create_transaction_json_round_trips_traceability_diagram_links() -> None:
     root = Path(tempfile.mkdtemp(prefix="odylith-authored-traceability-"))
     proposal, authority = _complete_authored_supplier_proposal(root)
-    package = _package(proposal)
+    package = _package(proposal, repo_root=root)
     transaction = build_product_create_transaction(
         proposal=proposal,
         release_selector="0.0.1",
@@ -917,7 +690,7 @@ def test_product_create_transaction_json_round_trips_traceability_diagram_links(
         prewrite_package=package,
         backlog_result=package.backlog_result or {},
         intent_authority=authority,
-        quality_manifest=_approved_quality_manifest(),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
         repo_root=root,
     )
 
@@ -927,8 +700,12 @@ def test_product_create_transaction_json_round_trips_traceability_diagram_links(
     assert isinstance(plan, greenfield_traceability.GreenfieldTraceabilityPlan)
     assert isinstance(plan.workstreams[0].path, Path)
     assert plan.diagram_links[0].diagram_id == "D-001"
-    assert plan.diagram_links[0].related_workstream_ids == ("B-001",)
-    assert plan.diagram_links[0].related_backlog_paths == ("/repo/odylith/radar/source/ideas/B-001.md",)
+    assert plan.diagram_links[0].related_workstream_ids == tuple(
+        workstream.idea_id for workstream in plan.workstreams
+    )
+    assert plan.diagram_links[0].related_backlog_paths == tuple(
+        str(workstream.path) for workstream in plan.workstreams
+    )
     assert restored.prewrite_package.atlas_diagram_ids == transaction.prewrite_package.atlas_diagram_ids
     assert restored.prewrite_package.rendered_atlas_sources == transaction.prewrite_package.rendered_atlas_sources
     assert restored.prewrite_package.atlas_catalog_rows == transaction.prewrite_package.atlas_catalog_rows
@@ -1123,107 +900,11 @@ def test_commit_product_create_transaction_rejects_missing_confirm_before_hash_o
         )
 
 
-@pytest.mark.parametrize(
-    "quality_manifest",
-    (
-        {"status": "failed", "validation_status": "passed", "issue_count": 0},
-        {"status": "passed", "validation_status": "failed", "issue_count": 0},
-        {"status": "passed", "validation_status": "passed", "issue_count": 0, "hard_blocker": "component spec"},
-        {"status": "passed", "validation_status": "passed", "issue_count": 1},
-        _approved_quality_manifest(version=""),
-        _approved_quality_manifest(engine=""),
-        _approved_quality_manifest(write_transaction={"status": "committed", "rollback_guard": "enabled"}),
-        _approved_quality_manifest(
-            write_transaction={
-                "status": "not_started",
-                "rollback_guard": "disabled",
-                "prewrite_clean_before_commit": True,
-            }
-        ),
-        _approved_quality_manifest(
-            write_transaction={
-                "status": "not_started",
-                "rollback_guard": "enabled",
-                "prewrite_clean_before_commit": False,
-            }
-        ),
-        _approved_quality_manifest(
-            write_transaction={
-                "status": "not_started",
-                "rollback_guard": "enabled",
-                "prewrite_clean_before_commit": True,
-                "commit_only": True,
-            }
-        ),
-        _approved_quality_manifest(elapsed_seconds=60.0),
-        _approved_quality_manifest(budget_seconds=90.0),
-        _approved_quality_manifest(
-            requested_repair_tier="auto",
-            repair_tier="rescue",
-            budget_seconds=90.0,
-        ),
-        _approved_quality_manifest(
-            requested_repair_tier="auto",
-            repair_tier="deep",
-            budget_seconds=120.0,
-        ),
-        _approved_quality_manifest(
-            semantic_compiler={
-                "semantic_owner": "single_model_authoring_response",
-                "post_authoring_interpretation_calls": 0,
-            }
-        ),
-        _approved_quality_manifest(
-            semantic_compiler={
-                "version": "odylith.greenfield.authored-semantic-validation.v1",
-                "status": "passed",
-                "semantic_owner": "single_model_authoring_response",
-                "post_authoring_interpretation_calls": 0,
-            },
-            model_authoring={
-                "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
-                "semantic_model_call_count": 1,
-                "tier": "standard",
-            },
-        ),
-        _approved_quality_manifest(
-            semantic_compiler={
-                "version": "odylith.greenfield.authored-semantic-validation.v1",
-                "status": "passed",
-                "semantic_owner": "single_model_authoring_response",
-                "post_authoring_interpretation_calls": 0,
-            },
-            model_authoring={
-                "authoring_version": "odylith.greenfield.intent-authoring.v4",
-                "semantic_model_call_count": 1,
-                "tier": "standard",
-            },
-        ),
-    ),
-)
-def test_build_product_create_transaction_rejects_unapproved_manifest_before_confirmation(
-    tmp_path: Path,
-    quality_manifest: Mapping[str, Any],
-) -> None:
-    base = _transaction(repo_root=tmp_path)
-    with pytest.raises(ValueError, match="pre-confirm ProductCreateTransaction quality manifest is not approved"):
-        build_product_create_transaction(
-            proposal=base.proposal,
-            release_selector=base.release_selector,
-            validation_gate=base.validation_gate,
-            prewrite_package=base.prewrite_package,
-            backlog_result=base.backlog_result,
-            intent_authority=base.intent_authority,
-            quality_manifest=quality_manifest,
-            repo_root=tmp_path,
-        )
-
-
 def test_compiled_backlog_atlas_readback_rejects_backlog_drift(tmp_path: Path) -> None:
     proposal = _complete_authored_supplier_proposal(tmp_path)[0]
     idea_path = tmp_path / "odylith/radar/source/ideas/2026-07/2026-07-07-supplier-risk-readback-path.md"
     index_path = tmp_path / "odylith/radar/source/INDEX.md"
-    package = _package(proposal)
+    package = _package(proposal, repo_root=tmp_path)
     package = replace(
         package,
         backlog_result={
@@ -1247,7 +928,7 @@ def test_compiled_backlog_atlas_readback_rejects_atlas_drift(tmp_path: Path) -> 
     idea_path = tmp_path / "odylith/radar/source/ideas/2026-07/2026-07-07-supplier-risk-readback-path.md"
     index_path = tmp_path / "odylith/radar/source/INDEX.md"
     atlas_path = tmp_path / "odylith/atlas/source/supplier-risk-flow.mmd"
-    package = _package(proposal)
+    package = _package(proposal, repo_root=tmp_path)
     package = replace(
         package,
         backlog_result={
@@ -1276,7 +957,7 @@ def test_compiled_backlog_atlas_readback_accepts_exact_atlas_catalog_rows(tmp_pa
     idea_path = tmp_path / "odylith/radar/source/ideas/2026-07/2026-07-07-supplier-risk-readback-path.md"
     index_path = tmp_path / "odylith/radar/source/INDEX.md"
     catalog_path = tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json"
-    package = _package(proposal)
+    package = _package(proposal, repo_root=tmp_path)
     package = replace(
         package,
         backlog_result={
@@ -1315,7 +996,7 @@ def test_compiled_backlog_atlas_readback_rejects_atlas_catalog_drift(tmp_path: P
     idea_path = tmp_path / "odylith/radar/source/ideas/2026-07/2026-07-07-supplier-risk-readback-path.md"
     index_path = tmp_path / "odylith/radar/source/INDEX.md"
     catalog_path = tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json"
-    package = _package(proposal)
+    package = _package(proposal, repo_root=tmp_path)
     package = replace(
         package,
         backlog_result={
@@ -1440,11 +1121,11 @@ def test_compiled_write_replays_exact_sealed_release_payloads(
     event_log_bytes = b'{"action":"add","release_id":"release-0-0-1","workstream_id":"B-001"}\n'
     release_registry_path.write_bytes(release_registry_bytes)
     event_log_path.write_bytes(event_log_bytes)
+    transaction = _transaction(repo_root=tmp_path)
     write_set = greenfield_repository_write_set.compile_greenfield_repository_write_set(
         source_root=tmp_path,
         staged_root=staged_root,
     )
-    transaction = _transaction(repo_root=tmp_path)
     transaction = replace(
         transaction,
         prewrite_package=replace(transaction.prewrite_package, repository_write_set=write_set),
@@ -1540,7 +1221,7 @@ def test_compiled_release_assignment_replay_is_idempotent(tmp_path: Path) -> Non
 
 def test_product_create_transaction_rejects_incomplete_compiled_package_before_confirm(tmp_path: Path) -> None:
     proposal, authority = _complete_authored_supplier_proposal(tmp_path)
-    package = replace(_package(proposal), next_steps_preview=None)
+    package = replace(_package(proposal, repo_root=tmp_path), next_steps_preview=None)
 
     with pytest.raises(ValueError, match="missing compiled next_steps_preview"):
         build_product_create_transaction(
@@ -1550,7 +1231,7 @@ def test_product_create_transaction_rejects_incomplete_compiled_package_before_c
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-            quality_manifest=_approved_quality_manifest(),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
             repo_root=tmp_path,
         )
 
@@ -1560,7 +1241,7 @@ def test_product_create_transaction_rejects_drift_between_reviewed_and_compiled_
 ) -> None:
     proposal, authority = _complete_authored_supplier_proposal(tmp_path)
     drifted_intent = {**proposal["intent"], "first_path": "DRIFTED PACKAGE PATH"}
-    package = replace(_package(proposal), proposal={**proposal, "intent": drifted_intent})
+    package = replace(_package(proposal, repo_root=tmp_path), proposal={**proposal, "intent": drifted_intent})
 
     with pytest.raises(ValueError, match="compiled package proposal does not match"):
         build_product_create_transaction(
@@ -1570,7 +1251,7 @@ def test_product_create_transaction_rejects_drift_between_reviewed_and_compiled_
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-            quality_manifest=_approved_quality_manifest(),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
             repo_root=tmp_path,
         )
 
@@ -1598,7 +1279,7 @@ def test_hash_verification_rejects_rehashed_compiled_package_proposal_drift(tmp_
 
 def test_product_create_transaction_rejects_missing_surface_refresh_proof_before_confirm(tmp_path: Path) -> None:
     proposal, authority = _complete_authored_supplier_proposal(tmp_path)
-    package = replace(_package(proposal), surface_refresh_preview=None)
+    package = replace(_package(proposal, repo_root=tmp_path), surface_refresh_preview=None)
 
     with pytest.raises(ValueError, match="missing compiled pre-confirm surface refresh proof"):
         build_product_create_transaction(
@@ -1608,7 +1289,7 @@ def test_product_create_transaction_rejects_missing_surface_refresh_proof_before
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-            quality_manifest=_approved_quality_manifest(),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
             repo_root=tmp_path,
         )
 
@@ -1617,7 +1298,7 @@ def test_product_create_transaction_rejects_missing_compiled_atlas_catalog_rows_
     tmp_path: Path,
 ) -> None:
     proposal, authority = _complete_authored_supplier_proposal(tmp_path)
-    package = replace(_package(proposal), atlas_catalog_rows=())
+    package = replace(_package(proposal, repo_root=tmp_path), atlas_catalog_rows=())
 
     with pytest.raises(ValueError, match="Atlas catalog rows missing or incomplete"):
         build_product_create_transaction(
@@ -1627,14 +1308,14 @@ def test_product_create_transaction_rejects_missing_compiled_atlas_catalog_rows_
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-            quality_manifest=_approved_quality_manifest(),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
             repo_root=tmp_path,
         )
 
 
 def test_product_create_transaction_rejects_missing_compiled_traceability_before_confirm(tmp_path: Path) -> None:
     proposal, authority = _complete_authored_supplier_proposal(tmp_path)
-    package = replace(_package(proposal), traceability_plan=None)
+    package = replace(_package(proposal, repo_root=tmp_path), traceability_plan=None)
 
     with pytest.raises(ValueError, match="missing compiled traceability_plan"):
         build_product_create_transaction(
@@ -1644,7 +1325,7 @@ def test_product_create_transaction_rejects_missing_compiled_traceability_before
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-            quality_manifest=_approved_quality_manifest(),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
             repo_root=tmp_path,
         )
 
@@ -1653,7 +1334,7 @@ def test_product_create_transaction_rejects_compiled_traceability_without_diagra
     tmp_path: Path,
 ) -> None:
     proposal, authority = _complete_authored_supplier_proposal(tmp_path)
-    package = _package(proposal)
+    package = _package(proposal, repo_root=tmp_path)
     traceability_plan = replace(package.traceability_plan, diagram_links=())
     package = replace(package, traceability_plan=traceability_plan)
 
@@ -1665,7 +1346,7 @@ def test_product_create_transaction_rejects_compiled_traceability_without_diagra
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-            quality_manifest=_approved_quality_manifest(),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
             repo_root=tmp_path,
         )
 
@@ -1683,11 +1364,11 @@ def test_compiled_write_uses_exact_precompiled_component_bytes(
     spec_bytes = b"# Compiled Registry Service\n\nCompiled registry service spec.\n"
     registry_path.write_bytes(registry_bytes)
     spec_path.write_bytes(spec_bytes)
+    transaction = _transaction(repo_root=tmp_path)
     write_set = greenfield_repository_write_set.compile_greenfield_repository_write_set(
         source_root=tmp_path,
         staged_root=staged_root,
     )
-    transaction = _transaction(repo_root=tmp_path)
     transaction = replace(
         transaction,
         prewrite_package=replace(transaction.prewrite_package, repository_write_set=write_set),
@@ -1699,7 +1380,12 @@ def test_compiled_write_uses_exact_precompiled_component_bytes(
     assert not hasattr(greenfield_component_commit, "component_authoring_responsibility")
     assert not hasattr(greenfield_component_commit, "component_dependency_lines")
     assert not hasattr(greenfield_component_commit, "component_risk_lines")
-    monkeypatch.setattr(greenfield_component_commit.component_authoring, "register_component", forbidden)
+    assert not hasattr(greenfield_component_commit, "component_authoring")
+    monkeypatch.setattr(
+        greenfield_component_commit.component_compiled_commit,
+        "materialize_compiled_component",
+        forbidden,
+    )
 
     result = greenfield_compiled_write.write_compiled_greenfield_package(
         root=tmp_path,

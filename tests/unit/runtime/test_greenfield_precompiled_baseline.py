@@ -13,10 +13,11 @@ from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
-from tests.unit.runtime.greenfield_proposal_fixtures import canonical_model_authored_intent_fixture
-from tests.unit.runtime.greenfield_proposal_fixtures import _canonical_model_authored_greenfield_fixture
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import canonical_model_authored_intent_fixture
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import _canonical_model_authored_greenfield_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_transaction
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
+from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 
 
 _PROMPT = "Draft a greenfield proposal for a municipal permit review workspace"
@@ -29,7 +30,7 @@ def _disable_refreshes(monkeypatch: pytest.MonkeyPatch) -> None:
         lambda **_kwargs: {"status": "passed", "test_refresh_stub": True},
     )
     monkeypatch.setattr(
-        greenfield_component_commit.component_authoring.owned_surface_refresh,
+        greenfield_component_commit.component_compiled_commit.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )
@@ -52,6 +53,7 @@ def _proposal(repo_root: Path) -> dict[str, object]:
 def _compiled_transaction(repo_root: Path, monkeypatch: pytest.MonkeyPatch) -> Any:
     _disable_refreshes(monkeypatch)
     proposal = _proposal(repo_root)
+    activate_greenfield_baseline_fixture(repo_root)
     authoring_receipt = dict(proposal.pop("_test_model_authoring_receipt"))
     return greenfield_proposals.compile_greenfield_create_transaction(
         repo_root=repo_root,

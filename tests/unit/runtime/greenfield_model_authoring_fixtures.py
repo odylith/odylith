@@ -6,8 +6,13 @@ import copy
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
+    TERMINAL_RESULT_FACT_FIELDS,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
+    _REPEATED_SOURCE_FIELDS,
+    _SINGULAR_SOURCE_FIELDS,
 )
 
 
@@ -19,12 +24,31 @@ class StructuredAuthoringProvider:
     def __init__(self, response: Mapping[str, Any] | None) -> None:
         self.response = response
         self.calls = 0
+        self.requests: list[object] = []
 
     def generate_structured(self, *, request: object) -> Mapping[str, Any] | None:
+        self.last_request_system_prompt = str(getattr(request, "system_prompt", ""))
+        self.last_request_output_schema = copy.deepcopy(
+            getattr(request, "output_schema", {})
+        )
         self.last_request_model = str(getattr(request, "model", ""))
         self.last_request_reasoning_effort = str(getattr(request, "reasoning_effort", ""))
+        self.requests.append(request)
         self.calls += 1
         return copy.deepcopy(dict(self.response)) if self.response is not None else None
+
+
+class AdmittingReviewProvider(StructuredAuthoringProvider):
+    """Independent transport double for structurally valid positive wiring cases."""
+
+    def __init__(self) -> None:
+        super().__init__({"admissible": True, "issues": []})
+
+    def generate_structured(self, *, request: object) -> Mapping[str, Any] | None:
+        assert getattr(request, "schema_name", "") == "greenfield_candidate_review"
+        assert getattr(request, "model", "") == "gpt-5.6-sol"
+        assert getattr(request, "reasoning_effort", "") == "medium"
+        return super().generate_structured(request=request)
 
 
 def authored_response(
@@ -33,158 +57,173 @@ def authored_response(
     evidence_text: str = "",
     first_path_segments: Sequence[str] | None = None,
     first_path_relations: Sequence[Mapping[str, Any]] | None = None,
-    first_path_context_event_orders: Mapping[str, int] | None = None,
     component_responsibility_owners: Sequence[str] | None = None,
-    component_responsibility_event_orders: Sequence[int] | None = None,
-    terminal_component_owner: str | None = None,
+    provisional_design: Mapping[str, Any] | None = None,
+    source_precedence: Sequence[Mapping[str, Any]] = (),
 ) -> dict[str, Any]:
     """Build a model-shaped response using quotes and occurrence ordinals only."""
 
-    facts: list[dict[str, Any]] = []
+    source_relations = tuple(
+        first_path_relations or _default_first_path_relations(intent)
+    )
+    path_segments = (
+        [str(row).strip() for row in first_path_segments]
+        if first_path_segments is not None
+        else [str(row.get("event_quote") or "").strip() for row in source_relations]
+    )
+    facts: dict[str, Any] = {
+        **{field: None for field in _SINGULAR_SOURCE_FIELDS},
+        **{field: [] for field in _REPEATED_SOURCE_FIELDS},
+    }
+    selected_facts: list[dict[str, Any]] = []
     fact_indexes: dict[str, int] = {}
     first_path_fact_indexes: list[int] = []
     for field, value in intent.items():
-        if field in {"assumptions", "ambiguities"}:
+        if field in {"assumptions", "ambiguities", "component_responsibilities"}:
             continue
         rows = (
-            list(first_path_segments)
-            if field == "first_path" and first_path_segments is not None
+            path_segments
+            if field == "first_path"
             else value if isinstance(value, list) else [value]
         )
         for row_index, row in enumerate(rows):
             quote = str(row).strip()
             if not quote:
                 continue
-            fact_index = len(facts) + 1
+            fact_index = len(selected_facts) + 1
             projection_path = f"/{field}" if not isinstance(value, list) else f"/{field}/{row_index}"
-            facts.append({"field": field, "quote": quote, "occurrence": 1})
+            citation = {"quote": quote, "occurrence": 1}
+            if field in _SINGULAR_SOURCE_FIELDS:
+                facts[field] = citation
+                source_field_row = 1
+            else:
+                facts[field].append(citation)
+                source_field_row = len(facts[field])
+            selected_facts.append({"field": field, "row": source_field_row, **citation})
             fact_indexes[projection_path] = fact_index
             if field == "first_path":
                 first_path_fact_indexes.append(fact_index)
 
-    first_path = str(intent.get("first_path") or "").strip()
     relation_rows = _relation_rows(
-        first_path_relations or _default_first_path_relations(intent),
+        source_relations,
         first_path_segments=(
-            [str(row).strip() for row in first_path_segments]
-            if first_path_segments is not None
-            else [first_path]
+            path_segments
         ),
         first_path_fact_indexes=first_path_fact_indexes,
         fact_indexes=fact_indexes,
         intent=intent,
     )
-    first_path_context_relations = _first_path_context_relation_rows(
-        intent=intent,
-        fact_indexes=fact_indexes,
-        relations=relation_rows,
-        event_orders=first_path_context_event_orders,
+    if not relation_rows:
+        raise ValueError("authored fixture requires one event")
+    terminal = _terminal_row(
+        relations=source_relations,
+        facts=selected_facts,
+        evidence_text=evidence_text,
     )
-    if evidence_text:
-        _bind_context_fact_occurrences(
-            evidence_text=evidence_text,
-            facts=facts,
-            relations=relation_rows,
-            context_relations=first_path_context_relations,
-        )
-    component_responsibility_relations = _component_responsibility_relation_rows(
+    components = _component_responsibility_relation_rows(
         intent=intent,
         fact_indexes=fact_indexes,
         owners=component_responsibility_owners,
-        event_orders=component_responsibility_event_orders,
-        relation_rows=relation_rows,
-        terminal_owner=terminal_component_owner,
     )
     return {
         "version": GREENFIELD_INTENT_AUTHORING_VERSION,
-        "status": "authored",
-        "facts": facts,
-        "first_path_relations": relation_rows,
-        "first_path_context_relations": first_path_context_relations,
-        "component_responsibility_relations": component_responsibility_relations,
-        "assumptions": list(intent.get("assumptions") or []),
-        "ambiguities": list(intent.get("ambiguities") or []),
-        "consistency_assessment": {"status": "consistent", "conflicting_quotes": []},
-        "clarification": None,
+        "result": {
+            "status": "authored",
+            "facts": facts,
+            "events": relation_rows,
+            "source_precedence": [dict(row) for row in source_precedence],
+            "terminal": terminal,
+            "components": components,
+            "assumptions": list(intent.get("assumptions") or []),
+            "ambiguities": list(intent.get("ambiguities") or []),
+            "consistency": {"status": "consistent", "evidence_quotes": []},
+            "provisional_design": copy.deepcopy(provisional_design) if provisional_design is not None
+            else structural_design_fixture(range(1, len(relation_rows) + 1)),
+        },
     }
 
 
-def _bind_context_fact_occurrences(
-    *,
-    evidence_text: str,
-    facts: Sequence[dict[str, Any]],
-    relations: Sequence[Mapping[str, Any]],
-    context_relations: Sequence[Mapping[str, Any]],
-) -> None:
-    """Make linked fixture facts cite the exact occurrence inside their event."""
+def structural_design_fixture(
+    event_orders: Sequence[int], *, first_run_event_orders: Sequence[int] | None = None,
+) -> dict[str, Any]:
+    """Synthetic design for custody/wiring tests, never product-quality evidence."""
 
-    evidence = evidence_text.encode("utf-8")
-    relations_by_order = {int(row["order"]): row for row in relations}
-    for context in context_relations:
-        event_order = int(context["first_path_event_order"])
-        if not event_order:
-            continue
-        fact = next(
-            row
-            for row in facts
-            if row["field"] == context["fact_field"]
-            and row["quote"] == context["fact_quote"]
-        )
-        relation = relations_by_order[event_order]
-        path_fact = next(
-            row
-            for row in facts
-            if row["field"] == "first_path"
-            and row["quote"] == relation["fact_quote"]
-        )
-        path_quote = str(path_fact["quote"]).encode("utf-8")
-        event_quote = str(relation["event_quote"]).encode("utf-8")
-        fact_quote = str(fact["quote"]).encode("utf-8")
-        path_start = _nth_start(evidence, path_quote, int(path_fact["occurrence"]))
-        event_start = _nth_start(
-            path_quote,
-            event_quote,
-            int(relation["event_occurrence"]),
-        )
-        fact_start = event_quote.find(fact_quote)
-        if fact_start < 0:
-            continue
-        absolute_start = path_start + event_start + fact_start
-        fact["occurrence"] = sum(
-            1
-            for offset in range(absolute_start + 1)
-            if evidence.startswith(fact_quote, offset)
-        )
+    orders = list(event_orders)
+    if not orders:
+        raise ValueError("design fixture requires source events")
+    components = [
+        {
+            "key": f"test-boundary-{index}",
+            "name": f"Structural test boundary {index}",
+            "responsibility": f"Retain the test value at boundary {index}.",
+            "supported_event_orders": orders if index == 1 else [orders[(index - 1) % len(orders)]],
+            "verification": f"Read back the exact test value assigned to boundary {index}.",
+        }
+        for index in range(1, 5)
+    ]
+    return {
+        "version": "odylith.greenfield.provisional-design.v2",
+        "authority_kind": "provisional_design",
+        "first_run": {
+            "event_orders": list(first_run_event_orders) if first_run_event_orders is not None else orders,
+            "rationale": "The fixture proposes this execution order; citation order does not establish chronology.",
+        },
+        "components": components,
+        "workstreams": [
+            {
+                "key": f"test-work-{index}",
+                "title": f"Implement structural test boundary {index}",
+                "component_keys": [row["key"]],
+                "depends_on": [f"test-work-{index - 1}"] if index > 1 else [],
+                "deliverable": f"Implement the exact-value boundary {index}.",
+                "verification": f"An independent read returns the test value from boundary {index}.",
+            }
+            for index, row in enumerate(components, 1)
+        ],
+        "exchanges": [
+            {
+                "from_component": components[index - 1]["key"],
+                "to_component": components[index]["key"],
+                "contract": f"The exact test value from boundary {index}.",
+            }
+            for index in range(1, 4)
+        ],
+    }
 
 
 def clarification_response(
     *,
     question: str,
     material_dimension: str,
-    consistency_status: str = "consistent",
-    conflicting_quotes: Sequence[str] = (),
+    evidence_quotes: Sequence[str],
+    consistency_status: str = "material_ambiguity",
 ) -> dict[str, Any]:
     """Return a clarification response; the question remains test-only metadata."""
 
     del question
     return {
         "version": GREENFIELD_INTENT_AUTHORING_VERSION,
-        "status": "clarification_required",
-        "facts": [],
-        "first_path_relations": [],
-        "first_path_context_relations": [],
-        "component_responsibility_relations": [],
-        "assumptions": [],
-        "ambiguities": [],
-        "consistency_assessment": {
-            "status": consistency_status,
-            "conflicting_quotes": [
-                {"quote": str(quote), "occurrence": 1}
-                for quote in conflicting_quotes
-            ],
+        "result": {
+            "status": "clarification_required",
+            "consistency": {
+                "status": consistency_status,
+                "evidence_quotes": [str(quote) for quote in evidence_quotes],
+            },
+            "clarification": {"material_dimension": material_dimension},
         },
-        "clarification": {"material_dimension": material_dimension},
     }
+
+
+def model_event_rows(response: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """Return mutable fixture event rows in their authored order."""
+
+    result = response.get("result")
+    events = result.get("events") if isinstance(result, Mapping) else None
+    if not isinstance(events, list) or not all(
+        isinstance(row, dict) for row in events
+    ):
+        raise ValueError("authored fixture response has no event graph")
+    return events
 
 
 def _relation_rows(
@@ -196,12 +235,12 @@ def _relation_rows(
     intent: Mapping[str, Any],
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
-    for order, relation in enumerate(relations, start=1):
+    for relation in relations:
         event_quote = str(relation.get("event_quote") or "")
-        actor_quote = str(relation.get("actor_quote") or "")
-        action_quote = str(relation.get("action_verb_quote") or "")
+        # Legacy-looking surface text is accepted only as fixture ergonomics for
+        # choosing an already-selected human/external fact; it is never emitted.
+        test_surface_actor_quote = str(relation.get("actor_quote") or "")
         target_quote = str(relation.get("target_quote") or "")
-        visible_quote = str(relation.get("visible_result_quote") or "")
         actor_kind = str(relation.get("actor_kind") or "")
         segment_index = relation.get("segment_index")
         if isinstance(segment_index, int) and not isinstance(segment_index, bool):
@@ -219,46 +258,71 @@ def _relation_rows(
             selected_segment_index = matches[0]
         if selected_segment_index < 0 or selected_segment_index >= len(first_path_fact_indexes):
             raise ValueError("authored fixture relation references an unknown first_path segment")
-        selected_segment = str(first_path_segments[selected_segment_index])
+        actor_fact_quote = _actor_fact_quote(
+            relation,
+            actor_kind=actor_kind,
+            test_surface_actor_quote=test_surface_actor_quote,
+            fact_indexes=fact_indexes,
+            intent=intent,
+        )
         rows.append(
             {
-                "order": order,
-                "fact_quote": selected_segment,
-                "event_quote": event_quote,
-                "event_occurrence": _occurrence(selected_segment, event_quote),
-                "actor_kind": actor_kind,
-                "actor_quote": actor_quote,
-                "actor_occurrence": _occurrence(event_quote, actor_quote),
-                "actor_fact_quote": _actor_fact_quote(
-                    relation,
-                    actor_kind=actor_kind,
-                    actor_quote=actor_quote,
-                    fact_indexes=fact_indexes,
-                    intent=intent,
+                "actor_fact_quote": actor_fact_quote,
+                "action_quote": str(
+                    relation.get("action_verb_quote") or event_quote
                 ),
-                "owner_system_fact_quote": _owner_system_fact_quote(
-                    relation,
-                    actor_kind=actor_kind,
-                    fact_indexes=fact_indexes,
-                    intent=intent,
-                ),
-                "action_verb_quote": action_quote,
-                "action_verb_occurrence": _occurrence(event_quote, action_quote),
                 "target_quote": target_quote,
-                "target_occurrence": _occurrence(event_quote, target_quote) if target_quote else 0,
-                "visible_result_quote": visible_quote,
-                "visible_result_occurrence": _occurrence(event_quote, visible_quote) if visible_quote else 0,
-                "recovery_path": bool(relation.get("recovery_path")),
             }
         )
     return rows
+
+
+def _terminal_row(
+    *,
+    relations: Sequence[Mapping[str, Any]],
+    facts: Sequence[Mapping[str, Any]],
+    evidence_text: str,
+) -> dict[str, Any]:
+    visible_rows = [
+        (order, str(relation.get("visible_result_quote") or ""))
+        for order, relation in enumerate(relations, start=1)
+        if str(relation.get("visible_result_quote") or "")
+    ]
+    if not visible_rows:
+        raise ValueError("authored fixture requires one terminal visible result")
+    event_order, result_quote = visible_rows[-1]
+    proof_fact = next(
+        (
+            fact
+            for fact in facts
+            if fact["field"] in TERMINAL_RESULT_FACT_FIELDS
+            and result_quote in str(fact.get("quote") or "")
+        ),
+        None,
+    )
+    if proof_fact is None:
+        raise ValueError(
+            "authored fixture terminal result requires a selected proof fact"
+        )
+    if evidence_text:
+        _nth_start(
+            evidence_text.encode("utf-8"),
+            str(proof_fact["quote"]).encode("utf-8"),
+            int(proof_fact["occurrence"]),
+        )
+    return {
+        "event_order": event_order,
+        "result_fact": {"field": proof_fact["field"], "row": proof_fact["row"]},
+        "result_quote": result_quote,
+        "result_occurrence": 1,
+    }
 
 
 def _actor_fact_quote(
     relation: Mapping[str, Any],
     *,
     actor_kind: str,
-    actor_quote: str,
+    test_surface_actor_quote: str,
     fact_indexes: Mapping[str, int],
     intent: Mapping[str, Any],
 ) -> str:
@@ -275,7 +339,9 @@ def _actor_fact_quote(
     }.get(actor_kind)
     if field is None:
         raise ValueError(f"unknown authored fixture actor_kind: {actor_kind}")
-    selected_quote = str(relation.get("actor_fact_quote") or actor_quote)
+    selected_quote = str(
+        relation.get("actor_fact_quote") or test_surface_actor_quote
+    )
     rows = [str(row) for row in intent.get(field, []) if str(row)]
     matches = [index for index, row in enumerate(rows) if row == selected_quote]
     if len(matches) != 1:
@@ -307,55 +373,11 @@ def _owner_system_fact_quote(
     raise ValueError(f"unknown authored fixture owner_system_quote: {owner}")
 
 
-def _first_path_context_relation_rows(
-    *,
-    intent: Mapping[str, Any],
-    fact_indexes: Mapping[str, int],
-    relations: Sequence[Mapping[str, Any]],
-    event_orders: Mapping[str, int] | None,
-) -> list[dict[str, Any]]:
-    overrides = dict(event_orders or {})
-    rows: list[dict[str, Any]] = []
-    for field in ("state_object", "external_systems", "operational_constraints"):
-        value = intent.get(field)
-        values = value if isinstance(value, list) else [value]
-        for index, raw in enumerate(values):
-            quote = str(raw or "").strip()
-            if not quote:
-                continue
-            path = f"/{field}/{index}" if isinstance(value, list) else f"/{field}"
-            if path in overrides:
-                event_order = overrides[path]
-            else:
-                matching_orders = [
-                    int(relation["order"])
-                    for relation in relations
-                    if quote in str(relation.get("event_quote") or "")
-                ]
-                event_order = matching_orders[0] if matching_orders else (1 if field == "state_object" else 0)
-            if not isinstance(event_order, int) or isinstance(event_order, bool) or event_order < 0:
-                raise ValueError("authored fixture context event order is invalid")
-            fact_index = fact_indexes.get(path, 0)
-            if not fact_index:
-                raise ValueError("authored fixture context fact is not selected")
-            rows.append(
-                {
-                    "fact_field": field,
-                    "fact_quote": quote,
-                    "first_path_event_order": event_order,
-                }
-            )
-    return rows
-
-
 def _component_responsibility_relation_rows(
     *,
     intent: Mapping[str, Any],
     fact_indexes: Mapping[str, int],
     owners: Sequence[str] | None,
-    event_orders: Sequence[int] | None,
-    relation_rows: Sequence[Mapping[str, Any]],
-    terminal_owner: str | None,
 ) -> list[dict[str, Any]]:
     responsibilities = [
         str(row)
@@ -364,27 +386,7 @@ def _component_responsibility_relation_rows(
     ]
     systems = [str(row) for row in intent.get("internal_systems", []) if str(row)]
     if not responsibilities:
-        if not terminal_owner:
-            raise ValueError(
-                "authored fixture must explicitly bind a terminal component owner when no responsibility fact exists"
-            )
-        terminal_order = next(
-            (
-                int(row["order"])
-                for row in reversed(tuple(relation_rows))
-                if str(row.get("visible_result_quote") or "")
-            ),
-            0,
-        )
-        if not terminal_order:
-            raise ValueError("authored fixture terminal component owner requires a visible-result event")
-        return [
-            {
-                "responsibility_fact_quote": "",
-                "independent_owner_fact_quote": "",
-                "first_path_event_order": terminal_order,
-            }
-        ]
+        return []
     if owners is None:
         raise ValueError(
             "authored fixture must explicitly bind component_responsibility_owners"
@@ -392,46 +394,32 @@ def _component_responsibility_relation_rows(
     owner_values = [str(owner) for owner in owners]
     if len(owner_values) != len(responsibilities):
         raise ValueError("authored fixture must bind every component responsibility exactly once")
-    order_values = list(event_orders) if event_orders is not None else [0] * len(responsibilities)
-    if (
-        len(order_values) != len(responsibilities)
-        or any(not isinstance(order, int) or isinstance(order, bool) or order < 0 for order in order_values)
-    ):
-        raise ValueError("authored fixture must bind each responsibility to one valid event order")
     rows: list[dict[str, Any]] = []
-    for index, (owner, event_order) in enumerate(zip(owner_values, order_values, strict=True)):
-        responsibility_fact_index = fact_indexes.get(
-            f"/component_responsibilities/{index}",
-            0,
+    for index, owner in enumerate(owner_values):
+        owner_fact_quote = _owner_fact_quote(
+            owner=owner,
+            intent=intent,
+            systems=systems,
+            fact_indexes=fact_indexes,
         )
-        linked_event = next(
-            (row for row in relation_rows if int(row["order"]) == event_order),
+        if not owner_fact_quote:
+            raise ValueError("authored fixture component responsibility owner is not a selected fact")
+        group = next(
+            (
+                row
+                for row in rows
+                if row["owner_fact_quote"] == owner_fact_quote
+            ),
             None,
         )
-        inherits_product_owner = (
-            linked_event is not None
-            and str(linked_event.get("actor_kind") or "") == "product"
-        )
-        independent_owner_fact_quote = (
-            ""
-            if inherits_product_owner
-            else _owner_fact_quote(
-                owner=owner,
-                intent=intent,
-                systems=systems,
-                fact_indexes=fact_indexes,
-            )
-        )
-        if not responsibility_fact_index or (
-            not inherits_product_owner and not independent_owner_fact_quote
-        ):
-            raise ValueError("authored fixture component responsibility owner is not a selected fact")
-        rows.append(
-            {
-                "responsibility_fact_quote": responsibilities[index],
-                "independent_owner_fact_quote": independent_owner_fact_quote,
-                "first_path_event_order": event_order,
+        if group is None:
+            group = {
+                "owner_fact_quote": owner_fact_quote,
+                "responsibilities": [],
             }
+            rows.append(group)
+        group["responsibilities"].append(
+            {"quote": responsibilities[index], "occurrence": 1}
         )
     return rows
 
@@ -465,12 +453,11 @@ def _default_first_path_relations(intent: Mapping[str, Any]) -> tuple[dict[str, 
     return (
         {
             "actor_kind": "human",
-            "actor_quote": human_actor,
+            "actor_fact_quote": human_actor,
             "event_quote": first_path,
             "action_verb_quote": first_path,
             "target_quote": "",
             "visible_result_quote": first_path,
-            "recovery_path": False,
         },
     )
 

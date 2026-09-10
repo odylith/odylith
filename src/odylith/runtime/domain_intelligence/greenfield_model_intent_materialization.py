@@ -1,16 +1,18 @@
 """Stage one source-cited model-authored Greenfield intent before confirmation.
 
-This is the shipped prompt-to-intent owner. It accepts one structured model
-result, verifies and seals its cited evidence through the Product Intent
-envelope, and stages the candidate for deterministic package compilation. It
-contains no lexical semantic fallback.
+This is the shipped prompt-to-intent owner. It accepts one fully validated
+canonical model result, verifies and seals its cited evidence through the
+Product Intent envelope, and stages the candidate for deterministic package
+compilation. It contains no lexical semantic fallback.
 """
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
+from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
+from time import monotonic
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
@@ -119,6 +121,9 @@ def materialize_model_authored_intent(
     source_language: str = "en",
     prepared_evidence: GreenfieldPreparedAuthoringEvidence | None = None,
     authoring_receipt: dict[str, Any] | None = None,
+    review_provider_factory: Callable[[], Any] | None = None,
+    authoring_deadline: float | None = None,
+    clock: Callable[[], float] = monotonic,
 ) -> dict[str, Any]:
     """Stage one model-authored intent without a parser or lexical fallback."""
 
@@ -139,10 +144,15 @@ def materialize_model_authored_intent(
         source_format=prepared.source_format,
         source_document_count=prepared.source_document_count,
         source_language=prepared.source_language,
+        review_provider_factory=review_provider_factory,
+        deadline=authoring_deadline,
+        clock=clock,
     )
     receipt = _authoring_receipt(authored)
     if isinstance(authored, GreenfieldAuthoringClarification):
-        clarification = material_clarification_for_fields(authored.required_fields)
+        clarification = material_clarification_for_fields(
+            authored.required_fields, consistency_status=authored.consistency_status,
+        )
         if authoring_receipt is not None:
             authoring_receipt.clear()
             authoring_receipt.update(receipt)
@@ -159,6 +169,8 @@ def materialize_model_authored_intent(
         authored.first_path_relations,
         authored.component_responsibility_relations,
         first_path_context_relations=authored.first_path_context_relations,
+        source_precedence=authored.source_precedence,
+        provisional_design=authored.provisional_design,
     )
     root = Path(repo_root).expanduser().resolve()
     paths = candidate_intent_stage_paths(root)
@@ -188,6 +200,7 @@ def materialize_model_authored_intent(
         markdown_source_path=paths.evidence_markdown.relative_to(root),
     )
     require_product_intent_authority(authority)
+    receipt["candidate_review"]["product_facts_sha256"] = authority["product_facts_sha256"]
     candidate = stage_candidate_intent(
         repo_root=root,
         intent=intent,
@@ -228,9 +241,13 @@ def _authoring_receipt(
     )
     return {
         "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
-        "semantic_model_call_count": 1,
+        "semantic_model_call_count": authored.semantic_model_call_count,
         "tier": authored.tier,
         "elapsed_seconds": authored.elapsed_seconds,
+        **({
+            "initial_authoring_elapsed_seconds": authored.initial_authoring_elapsed_seconds,
+            "candidate_review": deepcopy(authored.candidate_review),
+        } if isinstance(authored, GreenfieldModelAuthoredIntent) else {}),
         "model_profile": model_profile,
         "consistency_assessment": {
             "status": authored.consistency_status,
@@ -240,13 +257,7 @@ def _authoring_receipt(
 
 
 def _preserve_model_authored_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
-    copied: dict[str, Any] = {}
-    for key, value in intent.items():
-        if isinstance(value, list):
-            copied[key] = [str(item) for item in value]
-        else:
-            copied[key] = str(value or "")
-    return copied
+    return deepcopy(dict(intent))
 
 
 def _without_edit_command(value: str) -> str:

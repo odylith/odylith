@@ -38,6 +38,8 @@
         </nav>
       </div>
     </header>
+{% if status_snapshot_captured_utc %}    <p class="shell-snapshot-note">Dashboard snapshot · Status captured {{ status_snapshot_captured_utc }}. Reopen the published dashboard after a refresh to see newer status.</p>
+{% endif %}
 
     <section class="viewport" aria-live="polite">
 {% if welcome_html %}{{ welcome_html | safe }}{% endif %}

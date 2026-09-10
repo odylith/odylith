@@ -2,13 +2,118 @@ Status: In progress
 
 Created: 2026-03-29
 
-Updated: 2026-04-17
+Updated: 2026-09-07
 
 Backlog: B-025
 
 Goal: Restore trustworthy live Compass and shell behavior by hardening runtime
 freshness, removing stale brief reuse, and widening headless browser proof
 across the UX/UI, including cross-surface filter and search semantics.
+
+## Current freshness defect (2026-09-07)
+
+The exact-admission correction now has frozen source-local proof: 4312 runtime
+tests (protected holdout excluded), 1101 install/bundle tests, 47 cross-surface
+browser controls, 10 additional controls and 12 corrected identity tests pass.
+The actual dashboard matrix retains 24 passes and two literal-label oracle
+failures; four narrow corrected Compass cells establish the required timestamp
+and warning at both widths and windows. Prior page-lifecycle test errors remain
+recorded too. Retained history reads September 6 21:48 with the unavailable/
+last-ready warning. Staged tree 896c8f7b50075efc6dff346aeefae985f6d178ec and
+served bytes remain unchanged through proof. The final governance-only update
+requires strict staged validation and a focused rendered readback, not another
+runtime run against unchanged Python. CB-019 remains Open for the separate ETA,
+risk-selection and broader UX issues; this is not Greenfield release evidence.
+
+The final first-author checkpoint reproduces the same competing-owner defect at
+22:50 beside the 22:49 rejection event. Resume the already diagnosed correction:
+remove reduced-fingerprint global/scoped ready-brief admission and its obsolete
+helpers, using the existing exact-substrate narrator with foreground providers
+disabled. Characterize both windows and scopes before deletion; preserve exact
+cache generation identity, explicit unavailable/failure state, inactive scopes
+and visibly historical last-readable narration. This is a Compass trust repair,
+not a new Greenfield author experiment or a solution to semantic/latency gates.
+Evidence and red/green proof: `/private/tmp/odylith-exact-brief-reuse.PZ0Kdo/`.
+
+The source correction removes 392 net runtime lines across the two calling
+owners and the deleted 288-line reuse module. Four actual-window controls fail
+before deletion and all five pass afterward; the complete focused pack passes
+193 checks. The six deleted tests covered the superseded mechanism, while the
+existing narrator retains exact-cache, old-schema, changed-packet, scope/window
+and voice-validation controls. A synthetic offline comparison measures exact
+admission at 0.827 ms median versus 0.0066 ms for the unsafe shortcut, with zero
+real provider calls. This is not full-runtime or consumer timing evidence.
+Historical presentation, full runtime/install and cross-surface browser proof
+remain required before a source checkpoint; upstream ETA/risk semantics remain
+outside this bounded correction.
+
+CB-019 is reopened by the Greenfield continuous UX pass. Both window briefs
+retain identical older sections while the reduced-fingerprint reuse path stamps
+the new refresh time; the browser shows Generated 11:33 beside the latest failed
+authoring gate. The 14 normal routes, four actual spec-reading controls and four
+failure-discovery cells pass; that does not clear the misleading summary.
+Evidence: `/private/tmp/odylith-stage-stop-ux.P3J2Nz/review.md`.
+
+The bounded correction belongs to the existing global/scoped reuse and narrator
+admission seam. First characterize changed-substrate rejection, exact reuse,
+original generation-time preservation, and historical-brief/provider-unavailable
+presentation; retain the CB-154 last-readable-brief concern without presenting
+history as current. Compare the existing exact-substrate owner with the reduced
+reuse path and remove the losing authority. No provider retry, prose rewrite,
+new freshness framework, frozen-header redesign or broad refactor is justified.
+Require source-local behavior, structural ownership inventory and desktop/mobile
+normal, historical/fallback and degraded/error browser evidence before claiming
+this corrected. The defect is diagnosed, not fixed or release-qualified.
+
+The subsequent post-record readback also fails Casebook's metadata consistency:
+source/index Open/P1 but rendered list/detail Closed/P1, despite fresh narrative.
+Direct source projection is correct; runtime rows overwrite source status in the
+snapshot join. Preserve the failed four-cell receipt and test canonical forced
+owned refresh as recovery before selecting any source correction. A successful
+recovery would not fix the selective-sync invalidation/ordering suspect or
+qualify recurrence prevention. The latest Compass view labels historical reuse
+explicitly; this is distinct from the earlier falsely refreshed timestamp.
+Evidence: `/private/tmp/odylith-compass-reopen-readback.8QbZNV/review.md`.
+
+The canonical forced Casebook refresh then completes in 6.2 seconds with no
+runtime fallback: rendered CB-019 and its fields both read Open/P1, the new
+failure note survives, and open-case count rises from 232 to 233. This is
+owned-surface recovery, not a fix for the stale-row recurrence. Preserve the
+failed browser receipt and require a separate final readback after settlement.
+
+Before continuing the broader brief correction, fix the reproduced selective
+Casebook read inconsistency. The actual selected plan/executor and read owners
+fail in both modes: standalone Compass reads Closed then Casebook reads Open;
+auto Compass and Casebook both read Closed after source/index become Open.
+Red evidence: `/private/tmp/odylith-casebook-sync-proof.qQMDuX/red.xml`.
+Keep the correction inside existing scheduling and cache ownership: settle the
+Casebook owned refresh before other selected readers and characterize repo-owned
+path-fingerprint eviction. Do not add status overrides, an alternate renderer,
+provider calls or a new cache framework. The existing 2964-line sync module is
+red-zone debt; this safety-critical status repair permits only the small ordering
+correction, not unrelated growth or a new decomposition campaign.
+
+The ordering correction passes the two reader regressions. Separate red controls
+prove both path-fingerprint variants survive repo-specific eviction incorrectly;
+prefixing their existing cache keys with the owner repo fixes that gap without a
+new cache or status fallback. The focused suite passes 121 tests, including four
+new cases and unchanged sibling-cache reuse. Independent source review approves
+this bounded correction pending broader validation. The 2765-line projection
+search owner takes no net growth; both oversized modules remain structural debt,
+not claimed cleanup. Current evidence does not close the historical-brief defect,
+the complete UX gate, installed qualification or Greenfield's 60/90/120 gates.
+
+Frozen tree `b6d8a731865c2fe19bdf72dea4228b85d626b8b2` then passes
+4000 runtime unit tests (protected final-holdout test excluded), 1084
+install/bundle unit tests and 56 browser state controls with no tree drift.
+Evidence: `/private/tmp/odylith-casebook-sync-proof.qQMDuX/runtime-frozen.xml`
+and `/private/tmp/odylith-cb019-ux-plan.KyjRx0/matrix-review.md`.
+An earlier runtime preflight was stopped when governance was changing; it earns
+no acceptance credit. The first strict check exposes nine stale Atlas review
+fingerprints after derived Registry requirements change. Settle them through
+the canonical Atlas command, then require strict staged-byte validation and
+the final 22-control current-surface readback. Do not reopen the source patch
+or broaden into the separate brief-admission defect during this checkpoint.
 
 Current architecture rule:
 - local code selects, compresses, diffs, validates, and caches
@@ -455,42 +560,23 @@ Related Bugs:
 ## Risks & Mitigations
 
 - [ ] Risk: stricter invalidation slows Compass too much.
-  - [x] Mitigation: reuse the current runtime by exact input fingerprint and
-        rewrite today's daily history files from that reused payload instead of
-        forcing a rebuild on simple date rollover.
-- [x] Risk: a minute-scale `full` refresh path keeps draining time, credits,
-      and operator trust while pretending to be a real product contract.
-  - [x] Mitigation: retire the second refresh mode entirely and collapse
-        Compass onto one bounded refresh engine.
-- [ ] Risk: global brief freshness fix reduces resilience when provider is
-    unavailable.
-  - [ ] Mitigation: keep exact-cache reuse from the current fact packet and
-    fail closed to explicit `unavailable` otherwise.
+  - [x] Mitigation: reuse the current runtime by exact input fingerprint and rewrite today's daily history files from that reused payload instead of forcing a rebuild on simple date rollover.
+- [x] Risk: a minute-scale `full` refresh path keeps draining time, credits, and operator trust while pretending to be a real product contract.
+  - [x] Mitigation: retire the second refresh mode entirely and collapse Compass onto one bounded refresh engine.
+- [ ] Risk: global brief freshness fix reduces resilience when provider is unavailable.
+  - [ ] Mitigation: keep exact-cache reuse from the current fact packet and fail closed to explicit `unavailable` otherwise.
 - [ ] Risk: browser tests become brittle.
   - [ ] Mitigation: assert stateful user-visible contracts, not layout trivia.
 - [ ] Risk: hiding info-level diagnostics masks real maintainer conflicts.
-  - [ ] Mitigation: keep those rows in the shared traceability graph/report and
-    filter only the default operator-facing warning surfaces.
-- [ ] Risk: overly fuzzy search hides exact-id intent or leaves surprising
-      cross-surface mismatches.
-  - [ ] Mitigation: prefer exact canonical-id and alias matches first, then
-        fall back to normalized token search with browser proof for compact id
-        forms and reset behavior.
-- [ ] Risk: opportunistic live refresh changes benchmark or release-proof
-    behavior.
-  - [ ] Mitigation: freeze benchmark and release-proof lanes to explicit clean
-    snapshots with no hidden refresh path.
-- [ ] Risk: live freshness mutates tracked governance outputs during mixed
-    work.
-  - [ ] Mitigation: prefer runtime-backed refresh and explicit stale-state
-    signaling; reserve tracked-truth mutation for explicit sync and commit-time
-    repair.
-- [x] Risk: internal diagnostics or spend evidence regrows into
-      dashboard product UI.
-  - [x] Mitigation: delete the shell status presenter path, strip the
-        CSS/JS/template hooks, codify the ban in Dashboard governance and
-        skills, and prove with headless Chromium that hostile legacy diagnostic
-        payload keys do not render across tabs.
+  - [ ] Mitigation: keep those rows in the shared traceability graph/report and filter only the default operator-facing warning surfaces.
+- [ ] Risk: overly fuzzy search hides exact-id intent or leaves surprising cross-surface mismatches.
+  - [ ] Mitigation: prefer exact canonical-id and alias matches first, then fall back to normalized token search with browser proof for compact id forms and reset behavior.
+- [ ] Risk: opportunistic live refresh changes benchmark or release-proof behavior.
+  - [ ] Mitigation: freeze benchmark and release-proof lanes to explicit clean snapshots with no hidden refresh path.
+- [ ] Risk: live freshness mutates tracked governance outputs during mixed work.
+  - [ ] Mitigation: prefer runtime-backed refresh and explicit stale-state signaling; reserve tracked-truth mutation for explicit sync and commit-time repair.
+- [x] Risk: internal diagnostics or spend evidence regrows into dashboard product UI.
+  - [x] Mitigation: delete the shell status presenter path, strip the CSS/JS/template hooks, codify the ban in Dashboard governance and skills, and prove with headless Chromium that hostile legacy diagnostic payload keys do not render across tabs.
 
 ## Validation/Test Plan
 - [ ] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_compass_dashboard_runtime.py tests/unit/runtime/test_compass_standup_brief_narrator.py tests/unit/install/test_agents.py`
@@ -813,3 +899,20 @@ Related Bugs:
   risk seams, thin-packet shortening, and rejection of abstract
   manager-speak such as `forcing function`, `execution coherence`, or
   `room to tighten`
+
+## Traceability
+
+Provenance/cache diagnosis supports freshness work; the Compass spec owns exact narration reuse and failed-refresh visibility. The operational reference does not cover every Compass recovery case.
+
+### Runbooks
+
+- `odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md`
+
+### Developer Docs
+
+- `odylith/registry/source/components/compass/CURRENT_SPEC.md`
+
+### Code References
+
+- `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`
+- `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`

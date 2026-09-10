@@ -14,7 +14,12 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
     authored_projection_parity_issues,
 )
-from odylith.runtime.domain_intelligence.greenfield_text import word_count
+from odylith.runtime.domain_intelligence.greenfield_authored_atlas_view import (
+    validate_authored_atlas_view,
+)
+from odylith.runtime.domain_intelligence.greenfield_scalar_values import (
+    scalar_word_count as word_count,
+)
 from odylith.runtime.domain_intelligence.project_intelligence_binding import project_intelligence_binding_issues
 
 
@@ -321,11 +326,10 @@ def _validate_diagrams(diagrams: list[Any], *, model_authored: bool = False) -> 
                 owner=f"diagram row {index}",
                 legacy_copy_checks=not model_authored,
             )
-        _validate_diagram_components(
-            row,
-            index,
-            legacy_copy_checks=not model_authored,
-        )
+        if model_authored:
+            validate_authored_atlas_view(row, source_text=row.get("mermaid_source"))
+        else:
+            _validate_diagram_components(row, index)
         slug = str(row.get("slug", "")).strip()
         if slug in slugs:
             raise ValueError(f"diagram slug `{slug}` appears more than once")

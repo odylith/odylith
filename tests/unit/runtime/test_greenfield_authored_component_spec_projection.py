@@ -20,6 +20,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     PRODUCT_INTENT_AUTHORITY_KEY,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
 )
@@ -36,22 +37,20 @@ def _authored_proposal(tmp_path: Path) -> dict[str, object]:
     relations = (
         {
             "actor_kind": "human",
-            "actor_quote": "Planner",
+            "actor_fact_quote": "Planner",
             "event_quote": first_event,
             "action_verb_quote": "submits",
             "target_quote": "berth request",
             "visible_result_quote": "",
-            "recovery_path": False,
         },
         {
             "actor_kind": "product",
-            "actor_quote": "Berth map",
+            "actor_fact_quote": "Berth map",
             "owner_system_quote": "Berth map",
             "event_quote": second_event,
             "action_verb_quote": "records",
             "target_quote": "assigned berth",
             "visible_result_quote": "Berth 7",
-            "recovery_path": False,
         },
     )
     proof_boundary = "A planner can replay the recorded assignment and verify Berth 7."
@@ -95,6 +94,7 @@ def _authored_proposal(tmp_path: Path) -> dict[str, object]:
         ),
         authoring_timeout_seconds=60,
         authoring_profile_id=STANDARD_PROFILE_ID,
+        review_provider_factory=AdmittingReviewProvider,
     )
     proposal = build_authored_greenfield_proposal(
         observed_source={"source_posture": "operator prompt evidence"},
@@ -109,13 +109,10 @@ def _backlog_result() -> dict[str, object]:
     return {
         "created": [
             {
-                "idea_id": "B-001",
-                "title": "Harbor Planner First Release",
-            },
-            {
-                "idea_id": "B-002",
-                "title": "Harbor Planner Boundaries",
-            },
+                "idea_id": f"B-{index:03d}",
+                "title": f"Implement structural test boundary {index}",
+            }
+            for index in range(1, 5)
         ]
     }
 
@@ -148,47 +145,36 @@ def test_authored_component_spec_is_structural_and_bypasses_legacy_owners(
         backlog_result=_backlog_result(),
     )
 
-    spec = specs["Berth map"]
+    assert len(specs) == len(previews) == 4
+    spec = specs["Structural test boundary 1"]
     authoring_input = previews[0]["authoring_input"]
     assert "source_custody" not in authoring_input
-    assert "Planned path: `src/harbor-planner/berth-map`" in spec
+    assert "Proposed path: `src/harbor-planner/test-boundary-1`" in spec
+    assert "## Source-event support" in spec
     assert "## Trace links" in spec
-    assert "## Source-custodied owner relations" in spec
-    assert "### Owner system" in spec
-    assert "### Owner-bound events" in spec
-    assert "### Event targets" in spec
-    assert "### Visible results" in spec
-    assert "### Recovery events" in spec
-    assert "### State context" in spec
-    assert "### External dependencies" in spec
-    assert "### Operational constraints" in spec
+    assert "## Feature History" in spec
+    assert "(Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))" in spec
+    assert "## Proposed responsibility" in spec
+    assert "## Proposed inputs and outputs" in spec
+    assert "## Proposed verification" in spec
+    assert "### Event 1 — Planner" in spec
+    assert "### Event 2 — Berth map" in spec
     assert "> Berth map records the assigned berth and shows Berth 7" in spec
-    assert "> Keep selected route evidence with the recorded berth assignment" in spec
-    assert "> assigned berth" in spec
-    assert "> Berth 7" in spec
-    assert "> assigned berth" in spec
-    assert "> Harbor Ledger" in spec
-    assert "> Retain the recorded berth assignment." in spec
-    assert "> No source-custodied recovery event was authored for this component." in spec
+    assert "> Retain the test value at boundary 1." in spec
+    assert "> Read back the exact test value assigned to boundary 1." in spec
+    assert "Keep selected route evidence with the recorded berth assignment" not in spec
     assert "- Workstream: `B-001`" in spec
     assert "- Diagram: `D-001`" in spec
     assert set(authoring_input["component_contract"]) == {
-        "owner_system",
-        "responsibility_facts",
-        "owner_bound_events",
-        "event_targets",
-        "visible_results",
-        "recovery_events",
-        "state_context",
-        "external_dependencies",
-        "operational_constraints",
+        "authority_kind", "design_ref", "provisional_component",
+        "support_event_refs", "supporting_events", "exchanges",
     }
-    for key in ("boundary", "interfaces", "risks"):
-        assert not authoring_input[key]
-    assert authoring_input["dependencies"] == ("Harbor Ledger",)
-    assert authoring_input["validation"] == (
-        "Retain the recorded berth assignment.",
-    )
+    assert authoring_input["authority_kind"] == "provisional_design"
+    assert authoring_input["boundary"]
+    assert authoring_input["interfaces"][0].startswith("Proposed exchange —")
+    assert not authoring_input["risks"]
+    assert authoring_input["dependencies"] == []
+    assert authoring_input["validation"] == ["Read back the exact test value assigned to boundary 1."]
     for forbidden in (
         "Owned state",
         "Accepted inputs",
@@ -210,7 +196,7 @@ def test_authored_component_spec_is_structural_and_bypasses_legacy_owners(
     assert "accessibility, privacy, audit, and safety" not in spec
     assert previews[0]["validation_gate"]["status"] == "passed"
     assert previews[0]["registry_entry"]["sources"] == ["intent.authored_semantics"]
-    assert previews[0]["registry_entry"]["workstreams"] == ["B-001", "B-002"]
+    assert previews[0]["registry_entry"]["workstreams"] == ["B-001"]
 
 
 def test_authored_component_projection_fails_closed_without_exact_custody(tmp_path: Path) -> None:
@@ -232,9 +218,9 @@ def test_authored_component_projection_rejects_mutated_relation_authority(tmp_pa
     intent = mutated["intent"]
     assert isinstance(intent, dict)
     relations = intent["authored_semantics"]["first_path_relations"]
-    relations[1]["recovery_path"] = True
+    relations[1]["unsupported_classification"] = "recovery"
 
-    with pytest.raises(ValueError, match="do not match sealed Product Intent authority"):
+    with pytest.raises(ValueError, match="invalid first-path relations"):
         greenfield_apply_components.render_prewrite_component_specs(
             root=tmp_path,
             proposal=mutated,
@@ -261,8 +247,8 @@ def test_authored_component_projection_rejects_raw_custody_mapping(tmp_path: Pat
 @pytest.mark.parametrize(
     ("mutation", "message"),
     (
-        ("local_proof", "closed owner-bound component contract"),
-        ("dependencies", "dependencies drifted from typed context"),
+        ("local_proof", "projection drifted"),
+        ("dependencies", "projection drifted"),
     ),
 )
 def test_authored_component_projection_rejects_legacy_semantic_fallbacks(

@@ -746,6 +746,7 @@ def test_campaign_fails_release_proof_when_required_stressors_are_missing(
         output_dir=tmp_path / "out",
         telemetry_dir=tmp_path / "telemetry",
         release_case_files=(release_case_file,),
+        evidence_output_dir=tmp_path / "evidence",
         discovery_max_workers=1,
         require_high_variance_stressors=False,
         required_stressors=("modal-expert-lens", "registry-contract-pressure"),
@@ -967,6 +968,7 @@ def test_reaped_semantic_child_gets_exactly_one_interrupted_terminal_outcome(
         final_holdout_run_ledger=ledger,
         implementation_revision="a" * 40,
         distribution_provenance_file=provenance,
+        evidence_output_dir=tmp_path / "evidence",
     )
     child_reaped = False
 
@@ -976,6 +978,10 @@ def test_reaped_semantic_child_gets_exactly_one_interrupted_terminal_outcome(
             ledger_path=ledger,
             implementation_revision="a" * 40,
             distribution_provenance_sha256="b" * 64,
+        )
+        guard.bind_final_holdout_inputs(
+            ledger_path=ledger,
+            protected_inputs={"final_holdout": holdout, "evaluation_manifest": manifest},
         )
         child_reaped = True
         return subprocess.CompletedProcess(kwargs["command"], 137, "", "forced termination"), "interrupted"
@@ -1010,6 +1016,12 @@ def test_reaped_semantic_child_gets_exactly_one_interrupted_terminal_outcome(
     interruption_result = tmp_path / "telemetry/release-proof-holdout.interrupted.v2.json"
     assert result.status == "stopped"
     assert terminal["status"] == "interrupted"
+    retained = terminal["retained_evidence"]
+    retained_manifest = Path(retained["manifest_path"])
+    assert hashlib.sha256(retained_manifest.read_bytes()).hexdigest() == retained["manifest_sha256"]
+    retained_payload = json.loads(retained_manifest.read_text(encoding="utf-8"))
+    assert retained_payload["case_ids"] == ["final-holdout-interruption"]
+    assert retained_payload["run_id"] == terminal["run_id"]
     assert interruption_result.is_file()
     with pytest.raises(RuntimeError, match="not in its one terminalizable claimed state"):
         guard.complete_final_holdout_run(
@@ -1082,6 +1094,7 @@ def test_campaign_refuses_release_execution_when_inputs_cannot_be_sealed(tmp_pat
             telemetry_dir=tmp_path / "telemetry",
             release_case_files=(case_file,),
             release_audit_file=audit_file,
+            evidence_output_dir=tmp_path / "evidence",
         )
 
 
@@ -1261,6 +1274,7 @@ def test_campaign_builds_failed_subset_replays_from_sealed_release_cases(tmp_pat
         telemetry_dir=tmp_path / "telemetry",
         release_case_files=(case_file,),
         release_audit_file=audit_file,
+        evidence_output_dir=tmp_path / "evidence",
     )
 
     replay_sources = tuple(captured["source_case_files"])

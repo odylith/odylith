@@ -38,6 +38,9 @@ from odylith.runtime.domain_intelligence.greenfield_create_contract import (
 from odylith.runtime.domain_intelligence.greenfield_create_contract import (
     PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION,
 )
+from odylith.runtime.domain_intelligence.greenfield_create_contract import (
+    PRODUCT_CREATE_TRANSACTION_REPOSITORY_CONTEXT_POLICY,
+)
 from odylith.runtime.domain_intelligence.greenfield_create_contract import PRODUCT_CREATE_TRANSACTION_VERSION
 from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_ALLOWED_OPERATIONS
 from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_FORBIDDEN_OPERATIONS
@@ -166,6 +169,8 @@ def build_product_create_transaction(
         quality_manifest,
         authored_projection_verified=authored_projection_verified,
     )
+    if authored_projection_verified:
+        _require_candidate_review_authority_binding(quality_manifest, authority)
     transaction = ProductCreateTransaction(
         version=PRODUCT_CREATE_TRANSACTION_VERSION,
         release_selector=release_text,
@@ -176,7 +181,6 @@ def build_product_create_transaction(
         intent_authority=authority,
         quality_manifest=quality_manifest,
         compiler_provenance=build_product_create_transaction_provenance(
-            repo_root=repo_root,
             quality_manifest=quality_manifest,
         ),
         transaction_hash="",
@@ -250,12 +254,14 @@ def require_product_create_transaction_quality_approved(
     requested_tier = str(manifest.get("requested_repair_tier", "")).strip()
     active_tier = str(manifest.get("repair_tier", "")).strip()
     try:
+        if any(type(manifest.get(key)) not in (int, float) for key in ("elapsed_seconds", "budget_seconds")):
+            raise ValueError("Quality timing must be numeric")
         elapsed_seconds = float(manifest.get("elapsed_seconds"))
         budget_seconds = float(manifest.get("budget_seconds"))
         selected_profile = get_greenfield_model_profile(
             model_profile_id_for_repair_tier(requested_tier)
         )
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         elapsed_seconds = math.inf
         budget_seconds = -1.0
         selected_profile = None
@@ -275,7 +281,7 @@ def require_product_create_transaction_quality_approved(
     raw_model_authoring = manifest.get("model_authoring")
     model_authoring = raw_model_authoring if isinstance(raw_model_authoring, Mapping) else {}
     manifest_claims_authored = str(semantic_compiler.get("semantic_owner", "")).strip() == (
-        "single_model_authoring_response"
+        "validated_model_authored_intent"
     )
     authored_projection = (
         manifest_claims_authored
@@ -286,18 +292,9 @@ def require_product_create_transaction_quality_approved(
         manifest_claims_authored == authored_projection
         and ("model_authoring" in manifest) == authored_projection
     )
-    model_authoring_approved = not authored_projection or (
-        str(semantic_compiler.get("version", "")).strip()
-        == "odylith.greenfield.authored-semantic-validation.v1"
-        and str(semantic_compiler.get("status", "")).strip() == "passed"
-        and str(model_authoring.get("authoring_version", "")).strip()
-        == GREENFIELD_INTENT_AUTHORING_VERSION
-        and model_authoring.get("semantic_model_call_count") == 1
-        and _model_authoring_profile_approved(
-            model_authoring,
-            requested_repair_tier=requested_tier,
-        )
-        and semantic_compiler.get("post_authoring_interpretation_calls") == 0
+    model_authoring_approved = not authored_projection or greenfield_model_authoring_receipt_approved(
+        model_authoring=model_authoring, semantic_compiler=semantic_compiler,
+        requested_repair_tier=requested_tier,
     )
     if (
         quality_status == "passed"
@@ -316,12 +313,49 @@ def require_product_create_transaction_quality_approved(
     )
 
 
+def greenfield_model_authoring_receipt_approved(
+    *, model_authoring: Mapping[str, Any], semantic_compiler: Mapping[str, Any],
+    requested_repair_tier: str,
+) -> bool:
+    """Validate observed author/reviewer metadata, not source authority or product quality."""
+
+    return (
+        str(semantic_compiler.get("version", "")).strip()
+        == "odylith.greenfield.authored-semantic-validation.v4"
+        and str(semantic_compiler.get("status", "")).strip() == "passed"
+        and str(semantic_compiler.get("semantic_owner", "")).strip() == "validated_model_authored_intent"
+        and str(model_authoring.get("authoring_version", "")).strip()
+        == GREENFIELD_INTENT_AUTHORING_VERSION
+        and _semantic_model_call_count_approved(
+            model_authoring.get("semantic_model_call_count")
+        )
+        and _model_authoring_profile_approved(
+            model_authoring,
+            requested_repair_tier=requested_repair_tier,
+        )
+        and _candidate_review_approved(
+            model_authoring,
+            requested_repair_tier=requested_repair_tier,
+        )
+        and type(semantic_compiler.get("post_authoring_interpretation_calls")) is int
+        and semantic_compiler.get("post_authoring_interpretation_calls") == 1
+    )
+
+
+def _semantic_model_call_count_approved(value: Any) -> bool:
+    return type(value) is int and value == 2
+
+
 def _model_authoring_profile_approved(
     model_authoring: Mapping[str, Any],
     *,
     requested_repair_tier: str,
+    request_role: str = "initial_authoring",
 ) -> bool:
-    raw_observation = model_authoring.get("model_profile")
+    receipt = model_authoring if request_role == "initial_authoring" else model_authoring.get("candidate_review")
+    if not isinstance(receipt, Mapping):
+        return False
+    raw_observation = receipt.get("model_profile")
     observation = raw_observation if isinstance(raw_observation, Mapping) else {}
     if set(observation) != {
         "profile_id",
@@ -331,6 +365,9 @@ def _model_authoring_profile_approved(
         "effective_timeout_seconds",
         "authoring_tier",
     }:
+        return False
+    timeout = observation.get("effective_timeout_seconds")
+    if type(timeout) not in (int, float) or (isinstance(timeout, float) and not math.isfinite(timeout)) or timeout <= 0:
         return False
     profile_id = str(observation.get("profile_id") or "").strip()
     authoring_tier = str(model_authoring.get("tier") or "").strip().casefold()
@@ -346,14 +383,64 @@ def _model_authoring_profile_approved(
             reasoning_effort=str(observation.get("reasoning_effort") or ""),
             effective_timeout_seconds=observation.get("effective_timeout_seconds"),
             authoring_tier=str(observation.get("authoring_tier") or ""),
+            request_role=request_role,
         )
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         return False
     return (
         profile_id == expected_profile_id
         and authoring_tier == profile.repair_tier
         and not observation_issues
     )
+
+
+def _candidate_review_approved(
+    model_authoring: Mapping[str, Any], *, requested_repair_tier: str,
+) -> bool:
+    review = model_authoring.get("candidate_review")
+    if not isinstance(review, Mapping) or set(review) != {
+        "version", "status", "source_sha256", "candidate_sha256", "product_facts_sha256",
+        "elapsed_seconds", "model_profile",
+    }:
+        return False
+    if review.get("version") != "odylith.greenfield.candidate-review.v1" or review.get("status") != "admitted":
+        return False
+    for key in ("source_sha256", "candidate_sha256", "product_facts_sha256"):
+        digest = review.get(key)
+        if not isinstance(digest, str) or len(digest) != 64 or set(digest) - set("0123456789abcdef"):
+            return False
+    if not _model_authoring_profile_approved(
+        model_authoring, requested_repair_tier=requested_repair_tier, request_role="candidate_review",
+    ):
+        return False
+    initial = model_authoring.get("initial_authoring_elapsed_seconds")
+    reviewed = review.get("elapsed_seconds")
+    total = model_authoring.get("elapsed_seconds")
+    if any(
+        type(value) not in (int, float)
+        or (isinstance(value, float) and not math.isfinite(value)) or value < 0
+        for value in (initial, reviewed, total)
+    ):
+        return False
+    profile = get_greenfield_model_profile(model_authoring["model_profile"]["profile_id"])
+    return (
+        total <= profile.model_timeout_seconds
+        and initial <= total
+        and initial <= model_authoring["model_profile"]["effective_timeout_seconds"]
+        and reviewed <= profile.review_timeout_seconds <= 20.0
+        and initial + reviewed <= total
+    )
+
+
+def _require_candidate_review_authority_binding(
+    quality_manifest: Mapping[str, Any], authority: Mapping[str, Any],
+) -> None:
+    review = quality_manifest["model_authoring"]["candidate_review"]
+    if (
+        review["source_sha256"] != authority.get("markdown_source_sha256")
+        or review["product_facts_sha256"] != authority.get(PRODUCT_FACTS_HASH_KEY)
+    ):
+        raise ValueError("ProductCreateTransaction candidate review does not match its sealed Product Intent authority")
 
 
 def require_product_create_transaction_verified(transaction: ProductCreateTransaction) -> None:
@@ -371,7 +458,7 @@ def require_product_create_transaction_hash_verified(transaction: ProductCreateT
     """Verify serialized transaction integrity without granting compiler custody."""
 
     require_product_intent_authority(transaction.intent_authority)
-    _require_proposal_intent_authority_binding(transaction.proposal, transaction.intent_authority)
+    authored = _require_proposal_intent_authority_binding(transaction.proposal, transaction.intent_authority)
     _require_prewrite_package_proposal_binding(
         proposal=transaction.proposal,
         prewrite_package=transaction.prewrite_package,
@@ -382,6 +469,11 @@ def require_product_create_transaction_hash_verified(transaction: ProductCreateT
         raise ValueError(
             "ProductCreateTransaction hash mismatch; rebuild the transaction before committing governed records"
         )
+    require_product_create_transaction_quality_approved(
+        transaction.quality_manifest, authored_projection_verified=authored,
+    )
+    if authored:
+        _require_candidate_review_authority_binding(transaction.quality_manifest, transaction.intent_authority)
 
 
 def _require_proposal_intent_authority_binding(
@@ -411,7 +503,6 @@ def _require_proposal_intent_authority_binding(
 
 def build_product_create_transaction_provenance(
     *,
-    repo_root: Path,
     quality_manifest: Mapping[str, Any],
 ) -> dict[str, Any]:
     return {
@@ -419,7 +510,7 @@ def build_product_create_transaction_provenance(
         "transaction_version": PRODUCT_CREATE_TRANSACTION_VERSION,
         "phase": "pre_confirm_compile",
         "commit_policy": PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY,
-        "repo_root_fingerprint": product_create_transaction_repo_fingerprint(repo_root),
+        "repository_context_policy": PRODUCT_CREATE_TRANSACTION_REPOSITORY_CONTEXT_POLICY,
         "quality_manifest_version": str(quality_manifest.get("version", "")).strip(),
         "quality_manifest_engine": str(quality_manifest.get("engine", "")).strip(),
         "compiler_identity": product_create_transaction_compiler_identity(),
@@ -432,21 +523,13 @@ def product_create_transaction_compiler_identity() -> dict[str, Any]:
     return build_product_create_transaction_compiler_identity()
 
 
-def product_create_transaction_repo_fingerprint(repo_root: Path) -> str:
-    root = Path(repo_root).expanduser().resolve()
-    return hashlib.sha256(str(root).encode("utf-8")).hexdigest()
-
-
 def require_product_create_transaction_compiler_provenance(
     transaction: ProductCreateTransaction,
-    *,
-    repo_root: Path,
 ) -> None:
     provenance = transaction.compiler_provenance if isinstance(transaction.compiler_provenance, Mapping) else {}
     require_product_create_transaction_compiler_provenance_payload(
         provenance,
         quality_manifest=transaction.quality_manifest,
-        repo_root=repo_root,
     )
 
 
@@ -470,6 +553,7 @@ def product_create_transaction_to_dict(transaction: ProductCreateTransaction) ->
     """Return the persisted transaction payload that a commit-only create can trust."""
 
     payload = _transaction_hash_payload(transaction)
+    payload["quality_manifest"] = _json_ready(transaction.quality_manifest, preserve_timing=True)
     payload["transaction_hash"] = str(transaction.transaction_hash or "").strip()
     return payload
 
@@ -580,6 +664,12 @@ def product_create_transaction_hash(transaction: ProductCreateTransaction) -> st
 
 
 def _transaction_hash_payload(transaction: ProductCreateTransaction) -> dict[str, Any]:
+    quality_manifest = _json_ready(transaction.quality_manifest)
+    if "model_authoring" in transaction.quality_manifest:
+        # Model observations are sealed; the consumer clock continues through pending staging.
+        quality_manifest["model_authoring"] = _json_ready(
+            transaction.quality_manifest["model_authoring"], preserve_timing=True,
+        )
     return {
         "version": transaction.version,
         "release_selector": transaction.release_selector,
@@ -588,33 +678,33 @@ def _transaction_hash_payload(transaction: ProductCreateTransaction) -> dict[str
         "prewrite_package": _json_ready(transaction.prewrite_package),
         "backlog_result": _json_ready(transaction.backlog_result),
         "intent_authority": _json_ready(transaction.intent_authority),
-        "quality_manifest": _json_ready(transaction.quality_manifest),
+        "quality_manifest": quality_manifest,
         "compiler_provenance": _json_ready(transaction.compiler_provenance),
         "commit_summary": _product_create_transaction_commit_summary(transaction),
     }
 
 
-def _json_ready(value: Any) -> Any:
+def _json_ready(value: Any, *, preserve_timing: bool = False) -> Any:
     if is_dataclass(value) and not isinstance(value, type):
-        return _json_ready({field.name: getattr(value, field.name) for field in fields(value)})
+        return _json_ready({field.name: getattr(value, field.name) for field in fields(value)}, preserve_timing=preserve_timing)
     if isinstance(value, Path):
         return str(value)
     if isinstance(value, Mapping):
         result: dict[str, Any] = {}
         for key in sorted(value, key=lambda item: str(item)):
             key_text = str(key)
-            if key_text in _VOLATILE_HASH_KEYS:
+            if key_text in _VOLATILE_HASH_KEYS and not preserve_timing:
                 continue
-            result[key_text] = _json_ready(value[key])
+            result[key_text] = _json_ready(value[key], preserve_timing=preserve_timing)
         return result
     if isinstance(value, set):
         return sorted(_json_ready(item) for item in value)
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        return [_json_ready(item) for item in value]
+        return [_json_ready(item, preserve_timing=preserve_timing) for item in value]
     if hasattr(value, "as_dict") and callable(value.as_dict):
-        return _json_ready(value.as_dict())
+        return _json_ready(value.as_dict(), preserve_timing=preserve_timing)
     if hasattr(value, "__dict__") and value.__class__.__module__.startswith("odylith."):
-        return _json_ready(vars(value))
+        return _json_ready(vars(value), preserve_timing=preserve_timing)
     return value
 
 
@@ -671,11 +761,11 @@ __all__ = [
     "ProductCreateTransaction",
     "build_product_create_transaction",
     "build_product_create_transaction_provenance",
+    "greenfield_model_authoring_receipt_approved",
     "product_create_transaction_compiler_identity",
     "product_create_transaction_from_dict",
     "product_create_transaction_receipt_path",
     "product_create_transaction_hash",
-    "product_create_transaction_repo_fingerprint",
     "product_create_transaction_to_dict",
     "require_product_create_transaction_quality_approved",
     "require_product_create_transaction_compiler_provenance",

@@ -122,6 +122,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         ideas_root=ideas_root,
         stream_path=stream_path,
         workspace_activity_window_hours=registry.DEFAULT_WORKSPACE_ACTIVITY_WINDOW_HOURS,
+        include_workspace_activity=True,
     )
     report_cache_display = repo_path_resolver.display_repo_path(repo_root=repo_root, value=report_cache_path)
 

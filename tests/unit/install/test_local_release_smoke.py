@@ -2,17 +2,23 @@ from __future__ import annotations
 
 import errno
 import importlib.util
+import json
 import shutil
 import socket
 import subprocess
 import sys
 import time
 from pathlib import Path
+from types import SimpleNamespace
 from urllib.error import HTTPError
+
+import pytest
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS_ROOT = REPO_ROOT / "scripts" / "release"
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
 
 
 def _load_module(path: Path, name: str):
@@ -217,86 +223,72 @@ def test_run_reports_timeout_with_command_and_cwd(monkeypatch, tmp_path: Path) -
     assert "err" in message
 
 
-def test_greenfield_propose_create_smoke_runs_exact_release_journey(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
+@pytest.mark.parametrize("defect", ["", "success", "wrong_error", "write", "staged", "attempt", "missing_audit"])
+def test_greenfield_install_smoke_requires_author_unavailable_without_writes(
+    monkeypatch, tmp_path: Path, defect: str,
+) -> None:
     module = _module()
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
     odylith = repo_root / ".odylith" / "bin" / "odylith"
     commands: list[tuple[str, ...]] = []
-
-    for relative_path in (
-        "odylith/radar/radar.html",
-        "odylith/registry/registry.html",
-        "odylith/atlas/atlas.html",
-        "odylith/compass/compass.html",
-        "odylith/casebook/casebook.html",
-        "odylith/runtime/source/accepted-project.v1.json",
-        "odylith/runtime/delivery_intelligence.v4.json",
-        "odylith/radar/traceability-graph.v1.json",
-    ):
-        path = repo_root / relative_path
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("ok\n", encoding="utf-8")
+    finished: list[bool] = []
+    audit = SimpleNamespace(
+        environment=lambda: {"audit": "enabled"},
+        pass_fds=(42,),
+        command=lambda **kwargs: [str(kwargs["runtime_python"]), "-I", "-c", "audit", *kwargs["arguments"]],
+        finish=lambda: finished.append(True) or SimpleNamespace(
+            active=defect != "missing_audit", error="",
+            write_attempts=("open:odylith/radar/source/transient.json",) if defect == "attempt" else (),
+            subprocess_attempts=(),
+        ),
+    )
+    monkeypatch.setattr(module, "begin_installed_write_audit", lambda **kwargs: audit)
+    baseline_checks: list[Path] = []
+    monkeypatch.setattr(
+        module, "_require_greenfield_baseline",
+        lambda **kwargs: baseline_checks.append(kwargs["repo_root"]),
+    )
 
     def fake_run(**kwargs):  # noqa: ANN001
         command = tuple(str(part) for part in kwargs["command"])
         commands.append(command)
-
-        class Result:
-            if "show" in command:
-                stdout = "Odylith read this repo: no application source was found.\n"
-            elif "propose" in command:
-                stdout = (
-                    '{\n'
-                    '  "mode": "product_create_transaction",\n'
-                    '  "product_create_transaction": {"transaction_hash": "unit-transaction-hash"},\n'
-                    '  "transaction_file": ".odylith/runtime/greenfield/pending/unit-transaction-hash/product-create-transaction.v1.json"\n'
-                    '}\n'
-                )
-            elif "create" in command:
-                stdout = (
-                    '{\n'
-                    '  "mode": "applied",\n'
-                    '  "validation_gate": {"passed": true},\n'
-                    '  "dashboard_refresh": {"status": "passed"}\n'
-                    '}\n'
-                )
-            else:
-                stdout = "dashboard refresh completed\n- outcome: passed\n"
-
-        return Result()
+        if "show" in command:
+            return SimpleNamespace(returncode=0, stdout="Odylith read this repo\n", stderr="")
+        assert "propose" in command and "create" not in command
+        assert kwargs["env"]["ODYLITH_REASONING_MODE"] == "disabled"
+        assert kwargs["env"]["audit"] == "enabled" and kwargs["pass_fds"] == (42,)
+        if defect in {"write", "staged"}:
+            relative = (
+                "odylith/radar/source/unexpected.json" if defect == "write"
+                else ".odylith/runtime/greenfield/pending/unexpected/product-create-transaction.v1.json"
+            )
+            path = repo_root / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("{}\n", encoding="utf-8")
+        time.sleep(0.002)
+        payload = {"mode": "error", "error": "model authoring is unavailable; no records were created"}
+        if defect == "wrong_error":
+            payload["error"] = "unrelated installation error"
+        return SimpleNamespace(returncode=0 if defect == "success" else 2, stdout=json.dumps(payload), stderr="")
 
     monkeypatch.setattr(module, "_run", fake_run)
+    monkeypatch.setattr(module, "run_command_with_group_timeout", fake_run)
+    env = module._force_deterministic_reasoning_env({"ODYLITH_VERSION": "0.1.15"})
+    if defect:
+        with pytest.raises(RuntimeError, match="unavailable"):
+            module._greenfield_unavailable_author_smoke(repo_root=repo_root, odylith=odylith, env=env)
+    else:
+        module._greenfield_unavailable_author_smoke(repo_root=repo_root, odylith=odylith, env=env)
+    assert finished == [True]
+    assert baseline_checks == [repo_root]
+    assert commands[0] == (str(odylith), "show", "--repo-root", ".")
+    assert len(commands) == 2 and "propose" in commands[1] and "--confirm" not in commands[1]
 
-    module._greenfield_propose_apply_smoke(repo_root=repo_root, odylith=odylith, env={"ODYLITH_VERSION": "0.1.15"})
 
-    assert commands == [
-        (str(odylith), "show", "--repo-root", "."),
-        (
-            str(odylith),
-            "greenfield",
-            "propose",
-            "--repo-root",
-            ".",
-            "--prompt",
-            "warehouse dispatch planning app",
-            "--format",
-            "json",
-        ),
-        (
-            str(odylith),
-            "greenfield",
-            "create",
-            "--repo-root",
-            ".",
-            "--transaction-file",
-            ".odylith/runtime/greenfield/pending/unit-transaction-hash/product-create-transaction.v1.json",
-            "--transaction-hash",
-            "unit-transaction-hash",
-            "--confirm",
-            "--json",
-        ),
-    ]
+def test_install_smoke_does_not_claim_positive_greenfield_qualification() -> None:
+    module = _module()
+    assert "does not qualify a successful Greenfield request" in module.build_parser().description
 
 
 def _write_greenfield_guidance(repo_root: Path, text: str) -> None:
@@ -523,6 +515,14 @@ def test_upgrade_cycle_proves_dashboard_refresh_after_each_target_activation(
     monkeypatch.setattr(module, "_install_cwd", lambda root: root)
     monkeypatch.setattr(module, "_seed_legacy_compass_archive_fixture", lambda **kwargs: history_checks.append("seed"))
     monkeypatch.setattr(module, "_require_compass_history_layout", lambda **kwargs: history_checks.append("check"))
+    monkeypatch.setattr(
+        module, "_greenfield_unavailable_author_smoke",
+        lambda **kwargs: commands.append(("greenfield-ready",)),
+    )
+    monkeypatch.setattr(
+        module, "_require_greenfield_baseline",
+        lambda **kwargs: commands.append(("baseline-readback",)),
+    )
 
     module._upgrade_cycle(
         repo_root=repo_root,
@@ -541,6 +541,82 @@ def test_upgrade_cycle_proves_dashboard_refresh_after_each_target_activation(
     assert all(command[-3:] == ("refresh", "--repo-root", ".") for command in dashboard_commands)
     assert history_checks == ["seed", "check", "seed", "check", "seed", "check"]
     assert sum(1 for command in commands if command == ("bash", str(install_script))) == 4
+    for index, command in enumerate(commands):
+        if "dashboard" in command:
+            assert commands[index - 1] == ("greenfield-ready",)
+            assert commands[index + 1] == ("baseline-readback",)
+
+
+@pytest.mark.parametrize("defect", ["", "no_publication", "working_drift", "published_drift", "incomplete"])
+def test_greenfield_baseline_probe_uses_installed_readback_contract(
+    monkeypatch, tmp_path: Path, defect: str,
+) -> None:
+    from odylith import cli
+    from odylith.runtime.domain_intelligence import greenfield_create_baseline as baseline
+    from odylith.runtime.domain_intelligence import greenfield_generation_store as store
+    from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
+
+    module = _module()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    if defect != "no_publication":
+        if defect == "incomplete":
+            empty_surface = repo_root / cli._FIRST_RUN_SURFACE_OUTPUTS[1]
+            empty_surface.parent.mkdir(parents=True, exist_ok=True)
+            empty_surface.touch()
+            # Simulate a publisher defect with internally consistent but incomplete bytes.
+            with monkeypatch.context() as patch:
+                patch.setattr(baseline, "_require_completed_baseline_surfaces", lambda *args: None)
+                activate_greenfield_baseline_fixture(repo_root)
+        else:
+            activate_greenfield_baseline_fixture(repo_root)
+        generation = store.require_greenfield_working_generation(repo_root)
+        if defect in {"working_drift", "published_drift"}:
+            root = repo_root if defect == "working_drift" else generation.repository_root
+            (root / "odylith/radar/radar.html").write_text("changed\n", encoding="utf-8")
+
+    commands: list[list[str]] = []
+
+    def run_source_contract(**kwargs):  # noqa: ANN001
+        command = kwargs["command"]
+        commands.append(command)
+        assert command[:4] == [str(repo_root / ".odylith/runtime/current/bin/python"), "-I", "-B", "-c"]
+        assert kwargs["cwd"] == repo_root
+        monkeypatch.chdir(repo_root)
+        # This unit test exercises the exact probe, not an installed-wheel proof.
+        exec(command[4], {})
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(module, "_run", run_source_contract)
+    if defect:
+        expected_error = {
+            "no_publication": "no active immutable generation",
+            "working_drift": "managed files differ from the published generation",
+            "published_drift": "immutable generation bytes differ from the sealed manifest",
+            "incomplete": "requires a complete rendered surface",
+        }[defect]
+        with pytest.raises(RuntimeError, match=expected_error):
+            module._require_greenfield_baseline(repo_root=repo_root, env={})
+    else:
+        module._require_greenfield_baseline(repo_root=repo_root, env={})
+    assert len(commands) == 1
+
+
+def test_greenfield_smoke_cannot_repair_a_missing_baseline_before_readiness(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    module = _module()
+
+    def refuse_baseline(**kwargs):  # noqa: ANN001
+        raise RuntimeError("Greenfield has no active immutable generation")
+
+    monkeypatch.setattr(module, "_require_greenfield_baseline", refuse_baseline)
+    monkeypatch.setattr(module, "_run", lambda **kwargs: pytest.fail("must not run show or repair"))
+    monkeypatch.setattr(module, "begin_installed_write_audit", lambda **kwargs: pytest.fail("must not propose"))
+    with pytest.raises(RuntimeError, match="no active immutable generation"):
+        module._greenfield_unavailable_author_smoke(
+            repo_root=tmp_path, odylith=tmp_path / ".odylith/bin/odylith", env={},
+        )
 
 
 def test_install_clean_previous_release_resets_generated_install_state(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001

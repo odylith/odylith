@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import ast
+import shlex
+import subprocess
 from pathlib import Path
 
 _ROOT = Path(__file__).resolve().parents[3]
@@ -8,6 +10,35 @@ _ROOT = Path(__file__).resolve().parents[3]
 
 def _source(path: str) -> str:
     return (_ROOT / path).read_text(encoding="utf-8")
+
+
+def test_greenfield_make_targets_reference_only_live_test_files() -> None:
+    commands: dict[str, str] = {}
+    target_paths: dict[str, set[Path]] = {}
+    for target in ("greenfield-test-fast", "greenfield-test-lifecycle"):
+        result = subprocess.run(
+            ["make", "-n", target],
+            cwd=_ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode == 0, result.stderr or result.stdout
+        commands[target] = result.stdout
+        target_paths[target] = {
+            Path(token)
+            for line in result.stdout.splitlines()
+            for token in shlex.split(line)
+            if token.endswith(".py")
+        }
+
+    fast_paths = target_paths["greenfield-test-fast"]
+    lifecycle_paths = target_paths["greenfield-test-lifecycle"]
+    assert fast_paths
+    assert lifecycle_paths
+    assert all((_ROOT / path).is_file() for path in fast_paths | lifecycle_paths)
+    assert fast_paths.isdisjoint(lifecycle_paths)
+    assert '-m "not greenfield_lifecycle"' in commands["greenfield-test-fast"]
 
 
 def test_greenfield_materiality_has_one_prewrite_owner() -> None:

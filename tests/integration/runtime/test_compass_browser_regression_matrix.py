@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import datetime as dt
 import json
 from pathlib import Path
+from urllib.parse import urljoin, urlsplit
 
+from odylith.runtime.surfaces import compass_dashboard_runtime as compass_runtime
 from tests.integration.runtime.compass_browser_regression_support import (
     clone_odylith_fixture,
     covered_workstream_ids,
@@ -203,11 +206,10 @@ def test_compass_browser_source_truth_snapshot_restores_active_release_and_wave_
     write_runtime_payload(fixture_root, payload)
 
     for _pw, browser in _browser():
-        context, page, compass, console_errors, page_errors, failed_requests, bad_responses = open_compass_page(
+        with open_compass_page(
             fixture_root,
             browser,
-        )
-        try:
+        ) as (page, compass, observation):
             compass.locator("#status-banner").wait_for(timeout=15000)
             banner_text = compass.locator("#status-banner").inner_text().strip()
             assert "governed source-truth snapshot" in banner_text
@@ -226,11 +228,7 @@ def test_compass_browser_source_truth_snapshot_restores_active_release_and_wave_
                 has_text="Program and release lanes already organize these active workstreams",
             ).wait_for(timeout=15000)
 
-            console_errors[:] = [row for row in console_errors if "compass-source-truth.v1.json" not in row]
-            bad_responses[:] = [row for row in bad_responses if "compass-source-truth.v1.json" not in row]
-            _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
-        finally:
-            context.close()
+            _assert_clean_page(page, observation)
 
 
 def test_compass_browser_older_source_truth_snapshot_never_overrides_fresher_runtime(tmp_path: Path) -> None:
@@ -265,11 +263,10 @@ def test_compass_browser_older_source_truth_snapshot_never_overrides_fresher_run
     write_runtime_payload(fixture_root, payload)
 
     for _pw, browser in _browser():
-        context, page, compass, console_errors, page_errors, failed_requests, bad_responses = open_compass_page(
+        with open_compass_page(
             fixture_root,
             browser,
-        )
-        try:
+        ) as (page, compass, observation):
             wait_for_current_workstreams_or_empty(compass)
             current_ids = current_workstream_ids(compass)
             covered_ids = covered_workstream_ids(compass)
@@ -288,17 +285,7 @@ def test_compass_browser_older_source_truth_snapshot_never_overrides_fresher_run
 
             assert "governed source-truth snapshot" not in compass.locator("#status-banner").inner_text().strip()
 
-            console_errors[:] = [row for row in console_errors if "ERR_CONNECTION_" not in row]
-            failed_requests[:] = [
-                row
-                for row in failed_requests
-                if "/runtime/current.v1.json" not in row
-                and "runtime/history/" not in row.lower()
-                and "/radar/traceability-graph.v1.json" not in row
-            ]
-            _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
-        finally:
-            context.close()
+            _assert_clean_page(page, observation)
 
 
 def test_compass_browser_traceability_fallback_prioritizes_active_release_truth_when_source_snapshot_is_missing(
@@ -328,11 +315,10 @@ def test_compass_browser_traceability_fallback_prioritizes_active_release_truth_
     source_truth_path.unlink()
 
     for _pw, browser in _browser():
-        context, page, compass, console_errors, page_errors, failed_requests, bad_responses = open_compass_page(
+        with open_compass_page(
             fixture_root,
             browser,
-        )
-        try:
+        ) as (page, compass, observation):
             compass.locator("#status-banner").wait_for(timeout=15000)
             banner_text = compass.locator("#status-banner").inner_text().strip()
             assert "traceability-graph fallback" in banner_text
@@ -351,12 +337,16 @@ def test_compass_browser_traceability_fallback_prioritizes_active_release_truth_
                 has_text="Program and release lanes already organize these active workstreams",
             ).wait_for(timeout=15000)
 
-            console_errors[:] = []
-            bad_responses[:] = []
-            failed_requests[:] = [row for row in failed_requests if "runtime/history/" not in row.lower()]
-            _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
-        finally:
-            context.close()
+            expected_resource = urlsplit(urljoin(page.url, "/odylith/compass/compass-source-truth.v1.json"))
+            snapshot = observation.finish()
+            assert snapshot.complete and not snapshot.lifecycle_errors, snapshot
+            assert snapshot.native_result is not None and not snapshot.native_result.coverage_errors, snapshot
+            assert not snapshot.page_errors, snapshot.page_errors
+            assert snapshot.http_errors and all(error.status == 404 and urlsplit(error.url)._replace(query="") == expected_resource
+                                                for error in snapshot.http_errors), snapshot.http_errors
+            assert snapshot.native_failures and all(failure.http_status == 404 and urlsplit(failure.url)._replace(query="") == expected_resource
+                                                    for failure in snapshot.native_failures), snapshot.native_failures
+            assert snapshot.console_errors and set(snapshot.console_errors) == {"Failed to load resource: the server responded with a status of 404 (File not found)"}, snapshot.console_errors
 
 
 def test_compass_browser_source_truth_snapshot_keeps_release_and_current_workstream_sections_aligned(
@@ -390,11 +380,10 @@ def test_compass_browser_source_truth_snapshot_keeps_release_and_current_workstr
     write_runtime_payload(fixture_root, payload)
 
     for _pw, browser in _browser():
-        context, page, compass, console_errors, page_errors, failed_requests, bad_responses = open_compass_page(
+        with open_compass_page(
             fixture_root,
             browser,
-        )
-        try:
+        ) as (page, compass, observation):
             compass.locator("#status-banner").wait_for(timeout=15000)
             assert "governed source-truth snapshot" in compass.locator("#status-banner").inner_text().strip()
 
@@ -419,11 +408,7 @@ def test_compass_browser_source_truth_snapshot_keeps_release_and_current_workstr
                 has_text="Program and release lanes already organize these active workstreams",
             ).wait_for(timeout=15000)
 
-            console_errors[:] = [row for row in console_errors if "compass-source-truth.v1.json" not in row]
-            bad_responses[:] = [row for row in bad_responses if "compass-source-truth.v1.json" not in row]
-            _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
-        finally:
-            context.close()
+            _assert_clean_page(page, observation)
 
 
 def test_compass_browser_traceability_fallback_clears_stale_scoped_metadata_before_current_workstreams_render(
@@ -459,11 +444,10 @@ def test_compass_browser_traceability_fallback_clears_stale_scoped_metadata_befo
     source_truth_path.unlink()
 
     for _pw, browser in _browser():
-        context, page, compass, console_errors, page_errors, failed_requests, bad_responses = open_compass_page(
+        with open_compass_page(
             fixture_root,
             browser,
-        )
-        try:
+        ) as (page, compass, observation):
             compass.locator("#status-banner").wait_for(timeout=15000)
             assert "traceability-graph fallback" in compass.locator("#status-banner").inner_text().strip()
 
@@ -483,12 +467,16 @@ def test_compass_browser_traceability_fallback_clears_stale_scoped_metadata_befo
                 has_text="Program and release lanes already organize these active workstreams",
             ).wait_for(timeout=15000)
 
-            console_errors[:] = []
-            bad_responses[:] = []
-            failed_requests[:] = [row for row in failed_requests if "runtime/history/" not in row.lower()]
-            _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
-        finally:
-            context.close()
+            expected_resource = urlsplit(urljoin(page.url, "/odylith/compass/compass-source-truth.v1.json"))
+            snapshot = observation.finish()
+            assert snapshot.complete and not snapshot.lifecycle_errors, snapshot
+            assert snapshot.native_result is not None and not snapshot.native_result.coverage_errors, snapshot
+            assert not snapshot.page_errors, snapshot.page_errors
+            assert snapshot.http_errors and all(error.status == 404 and urlsplit(error.url)._replace(query="") == expected_resource
+                                                for error in snapshot.http_errors), snapshot.http_errors
+            assert snapshot.native_failures and all(failure.http_status == 404 and urlsplit(failure.url)._replace(query="") == expected_resource
+                                                    for failure in snapshot.native_failures), snapshot.native_failures
+            assert snapshot.console_errors and set(snapshot.console_errors) == {"Failed to load resource: the server responded with a status of 404 (File not found)"}, snapshot.console_errors
 
 
 def test_compass_browser_ignores_unusable_source_truth_snapshot_and_continues_to_traceability_fallback(
@@ -520,11 +508,10 @@ def test_compass_browser_ignores_unusable_source_truth_snapshot_and_continues_to
     write_runtime_payload(fixture_root, payload)
 
     for _pw, browser in _browser():
-        context, page, compass, console_errors, page_errors, failed_requests, bad_responses = open_compass_page(
+        with open_compass_page(
             fixture_root,
             browser,
-        )
-        try:
+        ) as (page, compass, observation):
             compass.locator("#status-banner").wait_for(timeout=15000)
             banner_text = compass.locator("#status-banner").inner_text().strip()
             assert "traceability-graph fallback" in banner_text
@@ -545,9 +532,169 @@ def test_compass_browser_ignores_unusable_source_truth_snapshot_and_continues_to
                 has_text="Program and release lanes already organize these active workstreams",
             ).wait_for(timeout=15000)
 
-            console_errors[:] = []
-            bad_responses[:] = []
-            failed_requests[:] = [row for row in failed_requests if "runtime/history/" not in row.lower()]
-            _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
-        finally:
-            context.close()
+            _assert_clean_page(page, observation)
+
+
+def test_compass_browser_distinguishes_governance_acceptance_from_implementation(tmp_path: Path) -> None:
+    fixture_root = clone_odylith_fixture(tmp_path)
+    render_compass_fixture(fixture_root)
+    payload = load_runtime_payload(fixture_root)
+    timestamp = str(payload.get("now_local_iso", "")).strip()
+    assert timestamp
+
+    def event(*, event_id: str, kind: str, summary: str, work_category: str) -> dict[str, object]:
+        return {
+            "id": event_id,
+            "kind": kind,
+            "ts_iso": timestamp,
+            "summary": summary,
+            "author": "odylith",
+            "files": ["odylith/radar/source/ideas/2026-09/example.md"],
+            "workstreams": [],
+            "source": "domain-intelligence" if work_category == "governance" else "assistant",
+            "session_id": "",
+            "transaction_id": "",
+            "transaction_seq": None,
+            "transaction_boundary": "",
+            "context": "",
+            "headline_hint": "",
+            "evidence_tier": "user_intent" if work_category == "governance" else "code_only",
+            "work_category": work_category,
+        }
+
+    def transaction(*, idea_id: str, transaction_id: str, events: list[dict[str, object]]) -> dict[str, object]:
+        bound_events = [{**row, "workstreams": [idea_id]} for row in events]
+        return {
+            "id": transaction_id,
+            "transaction_id": transaction_id,
+            "session_id": "",
+            "start_ts_iso": timestamp,
+            "end_ts_iso": timestamp,
+            "headline": str(bound_events[0]["summary"]),
+            "context": "",
+            "event_count": len(bound_events),
+            "files_count": 1,
+            "workstreams": [idea_id],
+            "files": ["odylith/radar/source/ideas/2026-09/example.md"],
+            "explicit_open": False,
+            "explicit_closed": False,
+            "events": bound_events,
+        }
+
+    governance_event = event(
+        event_id="event-governance",
+        kind="decision",
+        summary="Accepted the sealed Greenfield package.",
+        work_category="governance",
+    )
+    implementation_event = event(
+        event_id="event-implementation",
+        kind="implementation",
+        summary="Implemented the first runnable slice.",
+        work_category="implementation",
+    )
+    mixed_decision = event(
+        event_id="event-mixed-decision",
+        kind="decision",
+        summary="Recorded the implementation decision.",
+        work_category="governance",
+    )
+    mixed_implementation = event(
+        event_id="event-mixed-implementation",
+        kind="implementation",
+        summary="Implemented the mixed transaction slice.",
+        work_category="implementation",
+    )
+    transactions = [
+        transaction(
+            idea_id="B-991",
+            transaction_id="transaction-governance",
+            events=[governance_event],
+        ),
+        transaction(
+            idea_id="B-992",
+            transaction_id="transaction-implementation",
+            events=[implementation_event],
+        ),
+        transaction(
+            idea_id="B-993",
+            transaction_id="transaction-mixed",
+            events=[mixed_decision, mixed_implementation],
+        ),
+    ]
+    workstream_rows = []
+    for idea_id, status in (("B-991", "queued"), ("B-992", "implementation"), ("B-993", "implementation")):
+        row = _workstream_row(payload, idea_id)
+        row["title"] = f"Classification control {idea_id}"
+        row["status"] = status
+        workstream_rows.append(row)
+
+    payload["current_workstreams"] = workstream_rows
+    payload["workstream_catalog"] = workstream_rows
+    payload["release_summary"] = _release_summary(
+        active_ids=["B-991", "B-992", "B-993"],
+        completed_ids=[],
+    )
+    payload["timeline_events"] = [
+        {**governance_event, "workstreams": ["B-991"]},
+        {**implementation_event, "workstreams": ["B-992"]},
+        {**mixed_decision, "workstreams": ["B-993"]},
+        {**mixed_implementation, "workstreams": ["B-993"]},
+    ]
+    payload["timeline_transactions"] = transactions
+    payload["execution_focus"] = compass_runtime._build_execution_focus_payload(  # noqa: SLF001
+        transactions=transactions,
+        now=dt.datetime.fromisoformat(timestamp),
+    )
+    payload["verified_scoped_workstreams"] = {
+        "24h": ["B-991", "B-992", "B-993"],
+        "48h": ["B-991", "B-992", "B-993"],
+    }
+    payload["promoted_scoped_workstreams"] = {
+        "24h": ["B-991", "B-992", "B-993"],
+        "48h": ["B-991", "B-992", "B-993"],
+    }
+    write_runtime_payload(fixture_root, payload)
+    _write_source_truth_snapshot(
+        fixture_root,
+        active_ids=["B-991", "B-992", "B-993"],
+        current_ids=["B-991", "B-992", "B-993"],
+        generated_utc=str(payload.get("generated_utc", "")),
+    )
+
+    for _pw, browser in _browser():
+        with open_compass_page(
+            fixture_root,
+            browser,
+        ) as (page, compass, observation):
+            wait_for_current_workstreams_or_empty(compass)
+
+            governance_row = compass.locator(
+                'tr.ws-summary-row[data-ws-id="B-991"], tr.ws-summary-row[data-covered-ws-id="B-991"]'
+            ).first
+            governance_row.click()
+            governance_detail = compass.locator('tr.ws-detail-row[data-ws-detail="B-991"]')
+            assert "Implementation focus:" not in governance_detail.inner_text()
+
+            implementation_row = compass.locator(
+                'tr.ws-summary-row[data-ws-id="B-992"], tr.ws-summary-row[data-covered-ws-id="B-992"]'
+            ).first
+            implementation_row.click()
+            implementation_detail = compass.locator('tr.ws-detail-row[data-ws-detail="B-992"]')
+            assert "Implementation focus:" in implementation_detail.inner_text()
+
+            governance_card = compass.locator("details.tx-card", has_text="Accepted the sealed Greenfield package.")
+            governance_card.locator("summary").click()
+            governance_sections = governance_card.locator(".tx-narrative-section-title").all_inner_texts()
+            assert "GOVERNANCE DECISION" in governance_sections
+            assert "IMPLEMENTED" not in governance_sections
+
+            implementation_card = compass.locator("details.tx-card", has_text="Implemented the first runnable slice.")
+            implementation_card.locator("summary").click()
+            assert "IMPLEMENTED" in implementation_card.locator(".tx-narrative-section-title").all_inner_texts()
+
+            mixed_card = compass.locator("details.tx-card", has_text="Implemented the mixed transaction slice.")
+            mixed_card.locator("summary").click()
+            assert "IMPLEMENTED" in mixed_card.locator(".tx-narrative-section-title").all_inner_texts()
+
+            _assert_clean_page(page, observation)

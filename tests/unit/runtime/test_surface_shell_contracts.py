@@ -5,6 +5,7 @@ import re
 
 import pytest
 
+from odylith.runtime.domain_intelligence.greenfield_repository_write_set import greenfield_repository_layout
 from odylith.runtime.surfaces import compass_dashboard_frontend_contract
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import source_bundle_mirror
@@ -50,6 +51,8 @@ _SURFACE_LIVE_BUNDLE_MIRROR_GLOBS = (
 
 
 def _read(path: str) -> str:
+    if path == "odylith/index.html":
+        return greenfield_repository_layout(REPO_ROOT).target_path(path).read_text(encoding="utf-8")
     return (REPO_ROOT / path).read_text(encoding="utf-8")
 
 
@@ -69,6 +72,25 @@ def test_shell_index_declares_all_surface_tabs_and_frames() -> None:
     assert 'id="pane-project"' in html
     for frame_id in ("frame-radar", "frame-registry", "frame-casebook", "frame-atlas", "frame-compass"):
         assert f'id="{frame_id}"' in html
+
+
+@pytest.mark.parametrize(
+    "path",
+    (
+        "src/odylith/runtime/surfaces/templates/tooling_dashboard/style.css",
+        "odylith/index.html",
+        "src/odylith/bundle/assets/odylith/index.html",
+    ),
+)
+def test_tooling_shell_mobile_repository_name_wraps_without_truncation(path: str) -> None:
+    stylesheet = _read(path)
+    mobile_rules = stylesheet.split("@media (max-width: 900px)", 1)[1]
+    repo_name_rule = mobile_rules.split(".toolbar-repo-name {", 1)[1].split("}", 1)[0]
+
+    assert "overflow: visible;" in repo_name_rule
+    assert "overflow-wrap: anywhere;" in repo_name_rule
+    assert "text-overflow: clip;" in repo_name_rule
+    assert "white-space: normal;" in repo_name_rule
 
 
 @pytest.mark.parametrize(

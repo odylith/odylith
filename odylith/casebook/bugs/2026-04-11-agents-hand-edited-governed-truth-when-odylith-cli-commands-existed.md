@@ -73,6 +73,16 @@
   exact helper that owned the surface. The policy gap made the
   fast-but-wrong path feel indistinguishable from the correct path.
 
+- Recent Recurrence: On 2026-09-10, root updated B-145's allowed narrative
+  evidence but also manually advanced its governed preamble `Updated` stamp.
+  The new CB-305 authored-selective-sync guard refused that metadata difference
+  before dispatch. Exact comparison against the immutable publication identified
+  only the date change in the preamble. Root withdrew only that inadvertent
+  stamp edit, retained all narrative learning, and did not weaken the guard.
+  The next canonical refresh then refused the separately preserved failed
+  Compass working drift. Reconciliation and generated refresh remain pending;
+  restoring the authored field did not repair or authorize that failed state.
+
 - Solution: Publish a dedicated non-negotiable policy document at
   `odylith/agents-guidelines/CLI_FIRST_POLICY.md` with an explicit
   enumeration of the authoritative CLI surface, the narrow allowed

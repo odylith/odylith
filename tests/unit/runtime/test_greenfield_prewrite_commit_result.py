@@ -7,8 +7,10 @@ import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_compiled_package_contract
 from odylith.runtime.domain_intelligence import greenfield_prewrite_commit_result
-from tests.unit.runtime.greenfield_proposal_fixtures import (
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import (
     _canonical_model_authored_greenfield_fixture,
+)
+from tests.unit.runtime.greenfield_proposal_fixtures import (
     compiled_greenfield_package_fixture,
 )
 

@@ -12,7 +12,16 @@ from greenfield_matrix_package_evidence import package_evidence_findings
 from greenfield_matrix_types import GreenfieldArtifactCounts
 from greenfield_matrix_types import GreenfieldQualityVerdict
 from odylith.runtime.common.value_coercion import mapping_copy
-from odylith.runtime.domain_intelligence.artifact_tribunal_actors import tribunal_visible_actor_quality_issues
+from odylith.runtime.domain_intelligence.artifact_tribunal_actors import (
+    TRIBUNAL_STABLE_ROLES,
+    tribunal_visible_actor_quality_issues,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_PROJECTION_ORIGIN,
+)
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
+    greenfield_model_authoring_receipt_approved,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     get_greenfield_model_profile,
@@ -33,6 +42,12 @@ QUALITY_SCORE_DIMENSIONS = (
     "implementation_prompts",
     "browser_surface_proof",
     "confirmation_ux",
+    "product_manager",
+    "architect",
+    "engineer",
+    "domain_expert",
+)
+INDEPENDENT_SEMANTIC_LENS_DIMENSIONS = (
     "product_manager",
     "architect",
     "engineer",
@@ -97,9 +112,7 @@ def build_quality_verdict(
         manifest=manifest,
         create_returncode=create_returncode,
     )
-    for lens, passed in lenses.items():
-        if not passed:
-            issues.append(f"{lens} release-matrix lens failed")
+    issues.extend(_quality_lens_issues(manifest_lenses=manifest_lenses, lenses=lenses))
     scores = _quality_scores(
         manifest=manifest,
         counts=counts,
@@ -115,7 +128,7 @@ def build_quality_verdict(
         browser_surface_issues=browser_surface_issues,
         confirmation_ux_issues=confirmation_ux_issues,
     )
-    unscored_dimensions = _unscored_dimensions(scores)
+    unscored_dimensions = _automated_unscored_dimensions(scores)
     if unscored_dimensions:
         issues.append(
             "release-quality evidence is unproven for unscored dimension(s): "
@@ -131,7 +144,7 @@ def build_quality_verdict(
         external_issues=external_issues,
     )
     return GreenfieldQualityVerdict(
-        passed=not unique_issues and all(lenses.values()) and final_score == 10,
+        passed=not unique_issues and final_score == 10,
         issues=unique_issues,
         lenses=lenses,
         scores=scores,
@@ -386,10 +399,14 @@ def _quality_scores(
             create_returncode=create_returncode,
             confirmation_ux_issues=confirmation_ux_issues,
         ),
-        "product_manager": 10 if lenses.get("product_manager") else 0,
-        "architect": 10 if lenses.get("architect") else 0,
-        "engineer": 10 if lenses.get("engineer") else 0,
-        "domain_expert": 10 if lenses.get("domain_expert") else 0,
+        **{
+            lens: _independent_lens_score(
+                manifest_lenses=_manifest_lenses(manifest),
+                lens=lens,
+                passed=bool(lenses.get(lens)),
+            )
+            for lens in INDEPENDENT_SEMANTIC_LENS_DIMENSIONS
+        },
     }
 
 
@@ -500,7 +517,7 @@ def _final_quality_score(
 ) -> int:
     if create_returncode != 0 or not write_committed(manifest) or any(str(issue).strip() for issue in external_issues):
         return 0
-    if _unscored_dimensions(scores):
+    if _automated_unscored_dimensions(scores):
         return 0
     scored_dimensions = [
         int(scores.get(dimension, 0))
@@ -519,6 +536,8 @@ def _final_quality_score(
 
 def _score_basis(scores: Mapping[str, int]) -> str:
     unscored_dimensions = _unscored_dimensions(scores)
+    if any(dimension in unscored_dimensions for dimension in INDEPENDENT_SEMANTIC_LENS_DIMENSIONS):
+        return "automated_contract_independent_semantic_review_required"
     if unscored_dimensions == ("browser_surface_proof",):
         return "volume_discovery_without_browser_surface_proof"
     if unscored_dimensions:
@@ -549,16 +568,28 @@ def _score_explanation(
         explanations.append(f"Project implementation prompt findings cap release score at 4; findings={len(tuple(prompt_issues))}")
     if _manifest_issues(manifest):
         explanations.append("manifest or transaction issues cap release score at 4")
-    unscored_dimensions = _unscored_dimensions(scores)
-    if unscored_dimensions:
+    automated_unscored_dimensions = _automated_unscored_dimensions(scores)
+    if automated_unscored_dimensions:
         explanations.append(
             "release-quality score is unproven because positive evidence is missing for: "
-            + ", ".join(unscored_dimensions)
+            + ", ".join(automated_unscored_dimensions)
         )
+        return tuple(explanations)
+    independent_unscored_dimensions = tuple(
+        dimension
+        for dimension in INDEPENDENT_SEMANTIC_LENS_DIMENSIONS
+        if int(scores.get(dimension, UNSCORED_QUALITY_SCORE)) < 0
+    )
+    if independent_unscored_dimensions:
+        explanations.append(
+            "automated contract passed; independent semantic review remains required for: "
+            + ", ".join(independent_unscored_dimensions)
+        )
+        explanations.extend(_passing_score_evidence(counts, prompt_issues, lenses))
         return tuple(explanations)
     scored_values = [int(value) for value in scores.values() if int(value) >= 0]
     if score == 10 and scored_values and all(value == 10 for value in scored_values):
-        explanations.append("all brutal release-quality dimensions scored 10")
+        explanations.append("all automated and independently evidenced dimensions scored 10")
         explanations.extend(_passing_score_evidence(counts, prompt_issues, lenses))
         return tuple(explanations)
     weakest = [dimension for dimension, value in scores.items() if int(value) == score]
@@ -575,13 +606,51 @@ def _unscored_dimensions(scores: Mapping[str, int]) -> tuple[str, ...]:
     )
 
 
+def _automated_unscored_dimensions(scores: Mapping[str, int]) -> tuple[str, ...]:
+    """Return gaps owned by the automated per-case contract."""
+
+    return tuple(
+        dimension
+        for dimension in _unscored_dimensions(scores)
+        if dimension not in INDEPENDENT_SEMANTIC_LENS_DIMENSIONS
+    )
+
+
+def _lens_evidence_claimed(lenses: Mapping[str, Any], name: str) -> bool:
+    status = str(mapping_copy(lenses.get(name)).get("status", "")).strip().casefold()
+    return status not in {"", "not_applicable", "unproven"}
+
+
+def _independent_lens_score(
+    *,
+    manifest_lenses: Mapping[str, Any],
+    lens: str,
+    passed: bool,
+) -> int:
+    if not _lens_evidence_claimed(manifest_lenses, lens):
+        return UNSCORED_QUALITY_SCORE
+    return 10 if passed else 0
+
+
+def _quality_lens_issues(
+    *,
+    manifest_lenses: Mapping[str, Any],
+    lenses: Mapping[str, bool],
+) -> tuple[str, ...]:
+    return tuple(
+        f"{lens} release-matrix lens failed"
+        for lens, passed in lenses.items()
+        if _lens_evidence_claimed(manifest_lenses, lens) and not passed
+    )
+
+
 def _passing_score_evidence(
     counts: GreenfieldArtifactCounts,
     prompt_issues: Sequence[str],
     lenses: Mapping[str, bool],
 ) -> tuple[str, ...]:
     passed_lenses = ", ".join(name for name, passed in lenses.items() if passed)
-    return (
+    evidence = [
         "completion evidence: "
         f"{counts.radar_workstreams} Radar workstreams, "
         f"{counts.registry_component_specs} Registry specs, "
@@ -596,8 +665,10 @@ def _passing_score_evidence(
         f"{counts.trace_workstreams} trace workstreams, "
         f"{counts.project_implementation_prompts} Project implementation prompts, "
         f"{len(tuple(prompt_issues))} prompt findings",
-        f"expert-lens evidence: {passed_lenses} passed",
-    )
+    ]
+    if passed_lenses:
+        evidence.append(f"expert-lens evidence: {passed_lenses} passed")
+    return tuple(evidence)
 
 
 def _manifest_issues(
@@ -624,8 +695,22 @@ def _manifest_issues(
     tier_budget_seconds = _sealed_tier_budget_seconds(manifest)
     if tier_budget_seconds is None:
         issues.append("pre-confirm manifest does not declare an approved 60/90/120 repair-tier budget")
+    model_authoring = mapping_copy(manifest.get("model_authoring"))
+    if not greenfield_model_authoring_receipt_approved(
+        model_authoring=model_authoring,
+        semantic_compiler=mapping_copy(manifest.get("semantic_compiler")),
+        requested_repair_tier=str(manifest.get("requested_repair_tier", "")),
+    ):
+        issues.append("pre-confirm authoring and candidate-review receipt did not pass")
+    elif model_authoring["candidate_review"]["product_facts_sha256"] != mapping_copy(
+        manifest.get("write_transaction")
+    ).get("product_facts_sha256"):
+        issues.append("candidate-review Product Intent facts hash does not match the write transaction")
     lens_report = mapping_copy(manifest.get("quality_lenses"))
-    if str(lens_report.get("status", "")).strip() != "passed":
+    if (
+        str(lens_report.get("status", "")).strip() != "passed"
+        and not _typed_structural_validation_passed(manifest)
+    ):
         issues.append("pre-confirm quality lens report did not pass")
     return tuple(issues)
 
@@ -655,6 +740,8 @@ def _validation_gate_actor_issues(*, create_payload: Mapping[str, Any], package:
     )
     issues: list[str] = []
     source_labels: dict[str, dict[str, str]] = {}
+    proposal = mapping_copy(getattr(package, "proposal", {}))
+    authored_projection = proposal.get("projection_origin") == AUTHORED_PROJECTION_ORIGIN
     for source_name, validation_gate in sources:
         visible_actors = validation_gate.get("visible_actors")
         if not isinstance(visible_actors, Sequence) or isinstance(visible_actors, (str, bytes)):
@@ -666,11 +753,41 @@ def _validation_gate_actor_issues(*, create_payload: Mapping[str, Any], package:
             for row in rows
             if str(row.get("stable_role", "")).strip()
         }
-        issues.extend(f"{source_name} {issue}" for issue in tribunal_visible_actor_quality_issues(rows))
+        actor_issues = (
+            _authored_visible_actor_quality_issues(rows)
+            if authored_projection
+            else tribunal_visible_actor_quality_issues(rows)
+        )
+        issues.extend(f"{source_name} {issue}" for issue in actor_issues)
     if source_labels.get("create payload") and source_labels.get("accepted-project readback"):
         if source_labels["create payload"] != source_labels["accepted-project readback"]:
             issues.append("accepted-project validation gate visible actors drifted from create payload")
     return tuple(dict.fromkeys(issue for issue in issues if str(issue).strip()))
+
+
+def _authored_visible_actor_quality_issues(
+    visible_actors: Sequence[Mapping[str, Any]],
+) -> tuple[str, ...]:
+    """Validate the closed authored role contract without parsing actor labels."""
+
+    roles = [str(row.get("stable_role") or "").strip() for row in visible_actors]
+    issues: list[str] = []
+    for role in TRIBUNAL_STABLE_ROLES:
+        matching = [row for row in visible_actors if str(row.get("stable_role") or "").strip() == role]
+        if not matching:
+            issues.append(f"Tribunal visible actor missing for {role}")
+            continue
+        if len(matching) > 1:
+            issues.append(f"Tribunal visible actor duplicated for {role}")
+            continue
+        row = matching[0]
+        for field in ("visible_actor", "actor_source", "responsibility"):
+            if not clean_text(row.get(field)):
+                issues.append(f"Tribunal visible actor for {role} is missing {field}")
+    unexpected = sorted(set(roles) - set(TRIBUNAL_STABLE_ROLES))
+    if unexpected:
+        issues.append("Tribunal visible actors contain unsupported roles: " + ", ".join(unexpected))
+    return tuple(issues)
 
 
 def _browser_surface_proof_issues(
@@ -722,6 +839,25 @@ def _manifest_lenses(manifest: Mapping[str, Any]) -> Mapping[str, Any]:
 
 def _lens_passed(lenses: Mapping[str, Any], name: str) -> bool:
     return str(mapping_copy(lenses.get(name)).get("status", "")).strip() == "passed"
+
+
+def _typed_structural_validation_passed(manifest: Mapping[str, Any]) -> bool:
+    """Validate the authored receipt without promoting independent semantic lenses."""
+
+    lens_report = mapping_copy(manifest.get("quality_lenses"))
+    semantic_compiler = mapping_copy(manifest.get("semantic_compiler"))
+    model_authoring = mapping_copy(manifest.get("model_authoring"))
+    return (
+        str(manifest.get("status", "")).strip() == "passed"
+        and str(manifest.get("validation_status", "")).strip() == "passed"
+        and int(manifest.get("issue_count") or 0) == 0
+        and str(lens_report.get("status", "")).strip() == "not_applicable"
+        and str(lens_report.get("reason", "")).strip() == "typed_structural_validation"
+        and greenfield_model_authoring_receipt_approved(
+            model_authoring=model_authoring, semantic_compiler=semantic_compiler,
+            requested_repair_tier=str(manifest.get("requested_repair_tier", "")),
+        )
+    )
 
 
 def _create_failure_detail_issues(*, create_returncode: int, create_detail: str) -> tuple[str, ...]:

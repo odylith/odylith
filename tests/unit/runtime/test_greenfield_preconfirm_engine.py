@@ -170,7 +170,11 @@ def test_relation_free_proposal_is_rejected_before_prewrite() -> None:
 
 def test_transaction_compiler_seals_the_once_validated_package_without_reinterpretation(
     monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
 ) -> None:
+    from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
+
+    activate_greenfield_baseline_fixture(tmp_path)
     proposal = {
         "projection_origin": "model_authored_typed_intent",
         "intent": {"title": "Harbor Desk"},
@@ -185,7 +189,7 @@ def test_transaction_compiler_seals_the_once_validated_package_without_reinterpr
     )
 
     result = proposals.compile_greenfield_create_transaction(
-        repo_root=Path("."),
+        repo_root=tmp_path,
         proposal=proposal,
         release_selector="0.0.1",
     )
@@ -196,7 +200,11 @@ def test_transaction_compiler_seals_the_once_validated_package_without_reinterpr
 
 def test_transaction_compiler_rejects_package_drift_instead_of_rebinding(
     monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
 ) -> None:
+    from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
+
+    activate_greenfield_baseline_fixture(tmp_path)
     proposal = {
         "projection_origin": "model_authored_typed_intent",
         "intent": {"title": "Harbor Desk"},
@@ -212,7 +220,7 @@ def test_transaction_compiler_rejects_package_drift_instead_of_rebinding(
 
     with pytest.raises(ValueError, match="drifted from the sealed model-authored proposal"):
         proposals.compile_greenfield_create_transaction(
-            repo_root=Path("."),
+            repo_root=tmp_path,
             proposal=proposal,
             release_selector="0.0.1",
         )
@@ -239,7 +247,7 @@ def test_authored_package_passes_in_one_validation_pass(
         proposal_ready=True,
         model_authoring_receipt={
             "authoring_version": "odylith.greenfield.model-intent-authoring.v1",
-            "semantic_model_call_count": 1,
+            "semantic_model_call_count": 2,
             "tier": "standard",
             "elapsed_seconds": 12.0,
         },
@@ -255,11 +263,12 @@ def test_authored_package_passes_in_one_validation_pass(
     assert "repaired_issue_codes" not in result.manifest
     assert "patchset_request" not in result.manifest
     assert result.manifest["semantic_compiler"] == {
-        "version": "odylith.greenfield.authored-semantic-validation.v1",
+        "version": "odylith.greenfield.authored-semantic-validation.v4",
         "status": "passed",
-        "semantic_owner": "single_model_authoring_response",
-        "post_authoring_interpretation_calls": 0,
+        "semantic_owner": "validated_model_authored_intent",
+        "post_authoring_interpretation_calls": 1,
     }
+    assert result.manifest["model_authoring"]["semantic_model_call_count"] == 2
 
 
 def test_authored_quality_failure_is_immediate_and_unrepaired(

@@ -156,6 +156,7 @@ def render_prewrite_atlas_catalog_rows(
                 raise ValueError("authored Atlas row is missing its exact Mermaid source")
             authored_view = validate_authored_atlas_view(row, source_text=source)
             entry["projection_origin"] = row["projection_origin"]
+            entry["authority_kind"] = row["authority_kind"]
             entry["diagram_boxes"] = authored_view["diagram_boxes"]
             entry[AUTHORED_ATLAS_AUTHORITY_KEY] = deepcopy(
                 row[AUTHORED_ATLAS_AUTHORITY_KEY]

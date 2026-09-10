@@ -5,7 +5,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any, Mapping
 
 from odylith.runtime.context_engine import odylith_context_engine_delivery_surface_payload_runtime as delivery_surface_payload_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store
@@ -375,13 +375,13 @@ def _build_entry(
         errors.append(f"idea markdown missing for `{idea_id}`: {idea_path}")
         return None
 
-    section_text = backlog_render_support._extract_sections_from_markdown(idea_path)
     section_lines = backlog_render_support._extract_sections_with_body(idea_path)
     section_lookup: dict[str, list[str]] = {}
     for title, lines in section_lines:
         normalized_title = str(title or "").strip().lower()
         if normalized_title and normalized_title not in section_lookup:
             section_lookup[normalized_title] = list(lines)
+    section_text = {title: "\n".join(lines).strip() for title, lines in section_lookup.items()}
 
     def _section_html(*titles: str) -> str:
         for title in titles:
@@ -390,6 +390,17 @@ def _build_entry(
             if lines:
                 return backlog_render_support._render_section_body(repo_root=repo_root, lines=lines)
         return ""
+
+    story_source = ""
+    story_text = ""
+    for title in (
+        "Proposed Solution", "Scope", "Problem", "Opportunity", "Product View",
+        "Founder POV", "Success Metrics", "Success Metric", "Customer",
+    ):
+        body = "\n".join(section_lookup.get(title.lower(), [])).strip()
+        if body:
+            story_source, story_text = title, body
+            break
 
     spec = contract._parse_idea_spec(idea_path)
     metadata = spec.metadata
@@ -492,12 +503,13 @@ def _build_entry(
     def _display_text(value: object) -> str:
         return backlog_rich_text.strip_display_markdown_emphasis(value)
 
-    def _display_list(values: Sequence[object]) -> list[str]:
-        return [_display_text(item) for item in values if _display_text(item)]
-
-    ordering_rationale = _display_text(metadata.get("ordering_rationale", ""))
-    implemented_summary = _display_text(metadata.get("implemented_summary", ""))
-    rationale_bullets = _display_list(rationale_map.get(idea_id, []))
+    ordering_rationale = str(metadata.get("ordering_rationale", "")).strip()
+    implemented_summary = str(metadata.get("implemented_summary", "")).strip()
+    rationale_bullets = [str(item).strip() for item in rationale_map.get(idea_id, []) if str(item).strip()]
+    rationale_lines = (
+        ["- " + item.replace("\n", "\n  ") for item in rationale_bullets]
+        if len(rationale_bullets) > 1 else rationale_bullets or [ordering_rationale]
+    )
 
     return {
         "section": section,
@@ -537,19 +549,30 @@ def _build_entry(
         "confidence": str(metadata.get("confidence", "")).strip(),
         "founder_override": str(metadata.get("founder_override", "no")).strip(),
         "ordering_rationale": ordering_rationale,
+        "ordering_rationale_html": backlog_rich_text.render_section_body(
+            repo_root=repo_root, lines=[ordering_rationale],
+        ) if ordering_rationale else "",
         "implemented_summary": implemented_summary,
         "rationale_bullets": rationale_bullets,
+        "rationale_html": backlog_rich_text.render_section_body(
+            repo_root=repo_root, lines=rationale_lines,
+        ) if any(rationale_lines) else "",
         "rationale_text": " ".join(rationale_bullets).strip(),
+        "story_source": story_source,
+        "story_text": story_text,
+        "story_html": backlog_rich_text.render_section_body(
+            repo_root=repo_root, lines=story_text.splitlines(), preview=True,
+        ) if story_text else "",
         "impacted_parts": _display_text(metadata.get("impacted_parts", "")),
-        "problem": section_text.get("Problem", ""),
+        "problem": section_text.get("problem", ""),
         "problem_html": _section_html("Problem"),
-        "customer": section_text.get("Customer", ""),
+        "customer": section_text.get("customer", ""),
         "customer_html": _section_html("Customer"),
-        "opportunity": section_text.get("Opportunity", ""),
+        "opportunity": section_text.get("opportunity", ""),
         "opportunity_html": _section_html("Opportunity"),
-        "founder_pov": section_text.get("Product View", section_text.get("Founder POV", "")),
+        "founder_pov": section_text.get("product view", section_text.get("founder pov", "")),
         "founder_pov_html": _section_html("Product View", "Founder POV"),
-        "success_metrics": section_text.get("Success Metrics", section_text.get("Success Metric", "")),
+        "success_metrics": section_text.get("success metrics", section_text.get("success metric", "")),
         "success_metrics_html": _section_html("Success Metrics", "Success Metric"),
         "implemented_summary_html": (
             backlog_render_support._render_section_body(
@@ -654,6 +677,7 @@ def _backlog_summary_search_text(entry: Mapping[str, object]) -> str:
     parts = [
         str(entry.get("idea_id", "")).strip(),
         str(entry.get("title", "")).strip(),
+        str(entry.get("story_text", "")).strip(),
         str(entry.get("ordering_rationale", "")).strip(),
         str(entry.get("rationale_text", "")).strip(),
         " ".join(

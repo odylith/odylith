@@ -26,6 +26,15 @@ and independently bounded background engines retain their own lifetime. Native
 browser-descendant cleanup and automatic chat visibility remain separate proof
 obligations, not implied by command-group tests.
 
+Governed sync subprocesses use the shared command-execution owner. It preserves
+the invoking runtime's import path and explicitly forwarded lock descriptors
+when rendering another repository. Timed execution waits for child completion
+within each bounded observation interval; it does not impose an unconditional
+half-second delay on finished work. Heartbeat checks, exit-code forwarding,
+timeout termination/escalation and inherited hook-group ownership remain intact.
+This local latency contract does not certify a complete Greenfield request's
+60/90/120-second budget.
+
 Host alignment reads the existing Compass runtime posture; it does not run
 architecture evaluation or rebuild projections while preparing chat context.
 Recorded posture retains its evidence fields but is explicitly freshness-
@@ -53,7 +62,7 @@ comes from selecting facts, not cutting character windows out of their meaning.
   are first-class host families, dev/dogfood/consumer are first-class lanes,
   and host model aliases resolve to adapter families without turning Odylith Discipline
   classification into a model-consuming path.
-Last updated: 2026-08-03
+Last updated: 2026-09-09
 
 
 ## Purpose
@@ -101,6 +110,43 @@ remediation, and rendering.
 - Install, doctor, repair, on/off, sync, routing, orchestration, diagnosis,
   and surface generation are all parts of one product, not separate tools that
   happen to share a repository.
+- An upgrade's read-only activation smoke must pass before an explicitly
+  requested new version pin is written. A failed smoke result or raised smoke
+  exception restores the previous runtime and launcher, retains exact prior pin
+  bytes and permissions (including pre-existing operator target intent), and
+  records failure without publishing a successor generation. Supported commands
+  must remain usable after that recovery. Eleven focused controls and all nine
+  lifecycle-simulator tests pass under CB-305. The frozen integrated checkpoint
+  also passes 1,345 install unit/integration tests and canonical clean local-release
+  smoke, with independent installed baseline and manager-byte readback. This is
+  not arbitrary crash, missing-pin repair, or legacy generation migration proof;
+  the exact migration-assessment release gate remains open.
+
+- Upgrade dashboard completion runs in the newly activated runtime through a
+  fixed render-only worker. The admitted parent explicitly passes its repository
+  lock descriptor through the launcher and renderer children, waits for terminal
+  results, and alone activates the first baseline or publishes a successor.
+  Incomplete, queued or failed rendering is not successful upgrade completion.
+  The shared dashboard-completion owner enforces this contract for initial
+  rendering and public dashboard refresh too. Focused tests, full runtime and
+  canonical installed smoke pass. The genuine published-v0.1.14 launcher safely
+  refuses this migration-required candidate; hosted upgrade of that same empty
+  predecessor then passes complete baseline/readback and unavailable-author safety.
+  Populated migration and installed failed-render recovery remain open under
+  CB-305. The source-local completion candidate retains an exact failed-upgrade
+  receipt and admits only the advertised full dashboard retry. Repository,
+  predecessor publication, runtime selection, launcher, install state and pin
+  remain fixed anchors; working bytes must match before dispatch. A retry cannot
+  recover another pending transaction. It validates anchors before renewing a
+  failed attempt or publishing a successful successor, and removes continuation
+  authority only after published readback. Ordinary force refresh never grants
+  authority over unexplained drift. This is not arbitrary crash or same-user
+  adversary authentication. Expanded conflicts and three kernel SIGKILL controls
+  pass with simulated release payloads and rendering. The frozen source candidate
+  also passes 5,036 runtime, 1,418 install and 364 browser controls; one absent
+  Radar diagnostic is skipped. Actual installed recovery and the four current
+  migration assessments remain unqualified. These counts do not establish
+  successful model-created packages or consumer latency compliance.
 
 ### Control-plane leverage
 - Odylith is not trying to beat the underlying model weights. It is trying to
@@ -173,6 +219,12 @@ Public docs should describe these commands, not direct module entrypoints.
   routes through a lightweight proxy module.
 
 ## Coding-Agent Host Contract
+- Codex hook documents use the native top-level `hooks` event map. The common
+  capability owner emits, migrates and reads that shape; intervention status
+  uses the same reader and command matcher. Legacy flat maps are migration
+  inputs, never evidence of current native activation. Migration preserves user
+  hooks, metadata and the first preimage backup. Project trust, exact-hook trust,
+  callback execution and visible completion remain distinct proof obligations.
 - The default Odylith host contract is shared across Codex and Claude Code:
   repo-root `AGENTS.md`, the repo-local launcher `./.odylith/bin/odylith`,
   truthful `odylith ... --help`, and the grounded governance workflow should
@@ -488,6 +540,23 @@ Public docs should describe these commands, not direct module entrypoints.
   Sync must delay heartbeat emission until a step crosses a real slow-step
   threshold, and fast steps must complete without paying a steady polling lane
   or emitting misleading heartbeat chatter.
+- Active-plan traceability and risk checks must include dated subdirectories.
+  Traceability and risk checks report the same selected inventory they validate;
+  an existing empty applicable plan scope is not applicable, never a zero-check
+  pass. A missing required scope and invalid references remain failures.
+  Markdown-delimited paths retain dot-prefixed directory identity; punctuation
+  stripping must not reinterpret a source reference.
+- Risk-format normalization must preserve complete logical list items and the
+  ownership and checkbox state of their mitigations across source line wrapping;
+  wrapping alone must never generate placeholder risks or mitigations.
+  CommonMark list ancestry owns relationships across blank lines and owned
+  paragraphs, quotes, and code blocks. Inline literals and link/image labels must
+  not become live mitigation delimiters. Inline record splits must preserve
+  enclosing HTML and Markdown emphasis, including actual labels after a closed
+  container; text-token eligibility alone is insufficient. Source-preserving
+  formatting must retain code whitespace and hard breaks; whitespace-collapsed comparisons and
+  idempotency alone do not prove semantic preservation. CB-335 remains open until
+  the complete formatter, not only its paragraph adapter, meets this boundary.
 - Projection/compiler/backend writes remain single-writer and atomic. Lock
   batching is allowed, but the product must not weaken advisory-lock plus
   atomic-replace semantics in order to chase latency.

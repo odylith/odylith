@@ -159,45 +159,29 @@ Related Bugs:
 ## Risks & Mitigations
 
 - [x] Risk: short-form commands drift from `odylith context-engine`.
-  - [x] Mitigation: keep them as direct dispatch aliases into the existing
-    Context Engine main surface.
+  - [x] Mitigation: keep them as direct dispatch aliases into the existing Context Engine main surface.
 - [x] Risk: `odylith bootstrap` still feels noisy on dirty repos and weakens
-  - [ ] Mitigation: TODO (add explicit mitigation).
-      trust.
+  - [ ] Mitigation: TODO (add explicit mitigation). trust.
 - [ ] Risk: Unspecified risk (legacy backfill).
-  - [x] Mitigation: keep help text honest, preserve explicit widening signals,
-      and leave deeper bootstrap intelligence for a later slice.
+  - [x] Mitigation: keep help text honest, preserve explicit widening signals, and leave deeper bootstrap intelligence for a later slice.
 - [x] Risk: source and bundle guidance diverge.
-  - [x] Mitigation: patch source-owned and bundled copies in the same change
-      and keep install coverage on synced text.
+  - [x] Mitigation: patch source-owned and bundled copies in the same change and keep install coverage on synced text.
 - [x] Risk: richer conversation logic becomes templated and uncanny.
-  - [x] Mitigation: emit structured facts plus suppression rules, keep fallback
-      prose lightweight, and test for generic filler or repetitive branding.
+  - [x] Mitigation: emit structured facts plus suppression rules, keep fallback prose lightweight, and test for generic filler or repetitive branding.
 - [x] Risk: Tribunal-aware chatter drifts into a hidden live reasoning step and
-  - [ ] Mitigation: TODO (add explicit mitigation).
-      slows the product or contaminates benchmark lanes.
+  - [ ] Mitigation: TODO (add explicit mitigation). slows the product or contaminates benchmark lanes.
 - [ ] Risk: Unspecified risk (legacy backfill).
-  - [x] Mitigation: consume only precomputed Tribunal-backed delivery truth,
-      cache any local artifact reads, and prove benchmark required paths and
-      validation commands stay unchanged.
+  - [x] Mitigation: consume only precomputed Tribunal-backed delivery truth, cache any local artifact reads, and prove benchmark required paths and validation commands stay unchanged.
 - [x] Risk: malformed or partial Tribunal-backed packet context leaks raw
-  - [ ] Mitigation: TODO (add explicit mitigation).
-      shapes into narration or makes the closeout sound uncanny.
+  - [ ] Mitigation: TODO (add explicit mitigation). shapes into narration or makes the closeout sound uncanny.
 - [ ] Risk: Unspecified risk (legacy backfill).
-  - [x] Mitigation: normalize explicit and cached Tribunal-backed chatter
-      payloads before signal selection, fall back quietly when the shape is
-      weak, and keep focused regression coverage on malformed inputs.
+  - [x] Mitigation: normalize explicit and cached Tribunal-backed chatter payloads before signal selection, fall back quietly when the shape is weak, and keep focused regression coverage on malformed inputs.
 - [x] Risk: ambient and closeout composition quietly duplicate the same packet
-  - [ ] Mitigation: TODO (add explicit mitigation).
-      scans and metric work, adding invisible latency to every narrated turn.
+  - [ ] Mitigation: TODO (add explicit mitigation). scans and metric work, adding invisible latency to every narrated turn.
 - [ ] Risk: Unspecified risk (legacy backfill).
-  - [x] Mitigation: reuse precomputed request metrics and context-artifact
-      rows inside one conversation-bundle pass, and keep a focused regression on
-      that reuse contract.
+  - [x] Mitigation: reuse precomputed request metrics and context-artifact rows inside one conversation-bundle pass, and keep a focused regression on that reuse contract.
 - [x] Risk: closeout ids pick up unrelated dirty-worktree truth.
-  - [x] Mitigation: accept a supplied final changed-path list in the closeout
-      finalizer, and only fall back to bounded request seeds when exact final
-      paths are unavailable.
+  - [x] Mitigation: accept a supplied final changed-path list in the closeout finalizer, and only fall back to bounded request seeds when exact final paths are unavailable.
 
 ## Validation/Test Plan
 - [x] `PYTHONPATH=src python -m pytest -q tests/unit/test_cli.py tests/unit/install/test_agents.py tests/integration/install/test_manager.py`

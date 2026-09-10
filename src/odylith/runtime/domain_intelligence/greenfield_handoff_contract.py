@@ -13,7 +13,7 @@ from typing import Any
 from odylith.runtime.common.value_coercion import normalize_string
 
 
-PROJECT_HANDOFF_STEP_SCHEMA_VERSION = "odylith.greenfield.project-handoff-step.v1"
+PROJECT_HANDOFF_STEP_SCHEMA_VERSION = "odylith.greenfield.project-handoff-step.v3"
 CODING_READINESS_SCHEMA_VERSION = "odylith.greenfield.coding-readiness.v1"
 
 PROJECT_HANDOFF_STEP_SEQUENCE = (
@@ -30,6 +30,7 @@ _PROJECT_HANDOFF_REQUIRED_ACTIONS = {
         "record_runtime_assumptions",
         "define_test_approach",
         "record_tradeoffs",
+        "preserve_operational_constraints",
     ),
     "create_plan": (
         "bind_first_release_work_item",
@@ -37,14 +38,16 @@ _PROJECT_HANDOFF_REQUIRED_ACTIONS = {
         "name_target_files",
         "bind_proof_obligations",
         "list_validation_commands",
+        "preserve_operational_constraints",
         "preserve_excluded_scope",
     ),
     "build_slice": (
         "bind_first_release_work_item",
         "restate_target_files",
-        "build_accepted_first_path_only",
+        "build_selected_workstream_only",
         "validate_inputs",
         "return_structured_result",
+        "preserve_operational_constraints",
         "preserve_excluded_scope",
     ),
     "prove_behavior": (
@@ -55,12 +58,14 @@ _PROJECT_HANDOFF_REQUIRED_ACTIONS = {
         "prove_repeatability",
         "run_validation_commands",
         "stop_on_failed_validation",
+        "preserve_operational_constraints",
     ),
     "refresh_governance": (
         "bind_first_release_work_item",
         "refresh_from_implemented_behavior",
         "cite_validation_results",
         "withhold_unproven_release_readiness",
+        "preserve_operational_constraints",
     ),
 }
 
@@ -93,8 +98,10 @@ def build_project_handoff_step_contract(
     project_title: str,
     accepted_first_path: str,
     first_release_workstream_refs: Sequence[str] = (),
+    implementation_target: Mapping[str, Any] | None = None,
     proof_boundary: str = "",
     visible_result: str = "",
+    operational_constraints: Sequence[str] = (),
     excluded_scope: Sequence[str] = (),
     component_refs: Sequence[str] = (),
     verification_commands: Sequence[str] = (),
@@ -115,9 +122,11 @@ def build_project_handoff_step_contract(
             "project_title": title,
             "accepted_first_path": first_path,
             "first_release_workstream_refs": _normalized_strings(first_release_workstream_refs),
+            "implementation_target": dict(implementation_target or {}),
             "proof_boundary": _exact_text(proof_boundary),
             "visible_result": _exact_text(visible_result),
-            "excluded_scope": _exact_strings(excluded_scope),
+            "operational_constraints": _scope_facts(operational_constraints),
+            "excluded_scope": _scope_facts(excluded_scope),
             "component_refs": _normalized_strings(component_refs),
             "verification_commands": _exact_strings(verification_commands),
         },
@@ -158,9 +167,25 @@ def project_handoff_step_contract_issues(
         issues.append("is missing its project-title binding")
     if not normalize_string(bindings.get("accepted_first_path")):
         issues.append("is missing its accepted-first-path binding")
+    for field in ("operational_constraints", "excluded_scope"):
+        try:
+            _scope_facts(bindings.get(field))
+        except ValueError:
+            issues.append(f"has a missing or malformed {field} scope binding")
     workstream_refs = _normalized_strings(bindings.get("first_release_workstream_refs"))
     if expected != "choose_language" and not workstream_refs:
         issues.append("is missing its first-release workstream binding")
+    target = bindings.get("implementation_target")
+    if expected != "choose_language" or target:
+        if not isinstance(target, Mapping) or any(
+            not isinstance(target.get(field), str) or not target[field].strip()
+            for field in ("workstream_id", "workstream_title", "deliverable", "verification")
+        ):
+            issues.append("is missing its selected implementation scope")
+        elif target["workstream_id"] not in workstream_refs:
+            issues.append("selects an implementation workstream outside the release")
+        if not isinstance(target, Mapping) or not _normalized_strings(target.get("component_refs")):
+            issues.append("is missing its selected component scope")
     if expected == "prove_behavior" and not normalize_string(bindings.get("proof_boundary")):
         issues.append("is missing its proof-boundary binding")
     actions = _normalized_strings(value.get("required_actions"))
@@ -173,6 +198,39 @@ def project_handoff_step_contract_issues(
     if normalize_string(value.get("stop_policy")) != _PROJECT_HANDOFF_STOP_POLICIES[expected]:
         issues.append("does not carry the required stop policy")
     return tuple(issues)
+
+
+def render_project_handoff_scope(
+    *, operational_constraints: Sequence[str], excluded_scope: Sequence[str],
+) -> str:
+    """Keep required operations and excluded work distinct in copyable handoffs."""
+
+    constraints = "\n".join(_scope_facts(operational_constraints)) or "None stated."
+    non_goals = "\n".join(_scope_facts(excluded_scope)) or "None stated."
+    return (
+        f"Operational constraints — preserve these requirements:\n{constraints}\n\n"
+        f"Excluded scope — preserve these exclusions:\n{non_goals}"
+    )
+
+
+def render_selected_workstream_scope(target: Mapping[str, Any]) -> str:
+    """Project selected delivery facts verbatim into every copyable handoff."""
+
+    return (
+        f"Selected workstream: {target['workstream_id']} {target['workstream_title']}\n"
+        f"Selected components: {', '.join(target.get('component_refs', ()))}\n"
+        f"Selected workstream deliverable:\n{target['deliverable']}\n\n"
+        f"Selected workstream verification:\n{target['verification']}"
+    )
+
+
+def _scope_facts(value: Any) -> tuple[str, ...]:
+    if (
+        not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray))
+        or any(not isinstance(row, str) or not row.strip() for row in value)
+    ):
+        raise ValueError("Greenfield handoff scope requires an explicit source-text sequence")
+    return tuple(value)
 
 
 def build_coding_readiness_contract(
@@ -282,20 +340,15 @@ def render_coding_readiness_gates(value: Mapping[str, Any]) -> list[str]:
     constraints = _exact_strings(facts.get("operational_constraints"))
     non_goals = _exact_strings(facts.get("non_goals"))
     target_label = " ".join(value for value in (workstream_id, workstream_title) if value)
-    scope_facts = [*constraints, *non_goals]
     evidence_clause = "; ".join(evidence) if evidence else "No additional evidence requirement was authored."
-    scope_clause = (
-        "; ".join(scope_facts)
-        if scope_facts
-        else "No operational constraint or excluded scope was authored."
-    )
+    scope_clause = render_project_handoff_scope(operational_constraints=constraints, excluded_scope=non_goals)
     return [
         "Choose and record the implementation language, runtime assumptions, dependency policy, and test toolchain before source planning.",
-        f"Bind {target_label or 'the first implementation workstream'} to an explicit source boundary and target files while preserving the accepted first path exactly: {first_path}",
-        f"Preserve the authored operating and scope boundary during planning and source edits: {scope_clause}",
+        f"Bind {target_label or 'the first implementation workstream'} to its own source boundary and target files. Preserve this first run as release context, not the scope of this one workstream: {first_path}",
+        scope_clause,
         (
-            "Require validation evidence before governed records refresh.\n"
-            f"Authored proof boundary:\n{proof}\n"
+            "Prove the selected workstream before refreshing its records; withhold release readiness until release-wide proof passes.\n"
+            f"Release-wide proof boundary:\n{proof}\n"
             f"Evidence requirements:\n{evidence_clause}"
         ),
     ]
@@ -346,5 +399,7 @@ __all__ = [
     "build_project_handoff_step_contract",
     "coding_readiness_contract_issues",
     "project_handoff_step_contract_issues",
+    "render_project_handoff_scope",
+    "render_selected_workstream_scope",
     "render_coding_readiness_gates",
 ]

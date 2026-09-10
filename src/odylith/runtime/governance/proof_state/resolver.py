@@ -491,15 +491,15 @@ def _deprioritized(status: str) -> list[str]:
 def _resolved_proof_state(
     *,
     repo_root: Path,
-    snapshot: Mapping[str, Any],
     source_row: Mapping[str, Any],
     live_lane: Mapping[str, Any],
+    observe_workspace_head: bool,
 ) -> dict[str, Any]:
     source_status = _normalize_token(source_row.get("proof_status"))
     live_status = _normalize_token(live_lane.get("proof_status"))
     status = live_status if live_status in PROOF_STATUSES else (source_status if source_status in PROOF_STATUSES else "diagnosed")
     deployment_truth = normalize_deployment_truth(live_lane.get("deployment_truth"))
-    if deployment_truth.get("local_head") == "unknown":
+    if observe_workspace_head and deployment_truth.get("local_head") == "unknown":
         local_head = _current_local_head(repo_root)
         if local_head:
             deployment_truth["local_head"] = local_head
@@ -611,7 +611,9 @@ def annotate_scopes_with_proof_state(
     *,
     repo_root: Path,
     scopes: Sequence[Mapping[str, Any]],
+    observe_workspace_head: bool = True,
 ) -> list[dict[str, Any]]:
+    """Resolve proof; persisted snapshots opt out of unrecorded checkout observations."""
     root = Path(repo_root).resolve()
     bug_rows = _bug_proof_rows(root)
     plan_rows = _plan_proof_rows(root)
@@ -637,9 +639,9 @@ def annotate_scopes_with_proof_state(
             lane_id = normalize_proof_lane_id(source_row.get("lane_id"))
             proof_state = _resolved_proof_state(
                 repo_root=root,
-                snapshot=clone,
                 source_row=source_row,
                 live_lane=live_lanes.get(lane_id, {}),
+                observe_workspace_head=observe_workspace_head,
             )
             clone["proof_state"] = proof_state
             clone["claim_guard"] = build_claim_guard(proof_state)

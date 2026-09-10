@@ -8183,9 +8183,37 @@
     }
   ],
   "traceability": {
-    "code_references": [],
-    "developer_docs": [],
-    "runbooks": []
+    "code_references": [
+      "src/odylith/runtime/context_engine/tooling_guidance_catalog.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_taxonomy.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_isolation.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py",
+      "bin/dogfood-activate",
+      "bin/ga-gate",
+      "src/odylith/install/runtime.py",
+      "github/workflows/release.yml",
+      "src/odylith/install/release_assets.py",
+      "src/odylith/install/agents.py",
+      "src/odylith/runtime/common/consumer_profile.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_publication.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_tree_identity.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_execution_engine.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+      "src/odylith/runtime/surfaces/claude_host_prompt_bundle.py",
+      "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
+      "src/odylith/runtime/surfaces/codex_host_stop_summary.py"
+    ],
+    "developer_docs": [
+      "docs/benchmarks/FAMILIES_AND_EVALS.md",
+      "docs/benchmarks/REVIEWER_GUIDE.md",
+      "odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md",
+      "docs/specs/odylith-repo-integration-contract.md",
+      "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md"
+    ],
+    "runbooks": [
+      "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+      "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md"
+    ]
   },
   "version": "v1",
   "what_it_is": "Local benchmark proof subsystem that runs the Codex corpus, publishes a conservative multi-profile report, and regenerates the maintained README graph set from that same report.",

@@ -1,40 +1,22 @@
 from __future__ import annotations
 
 import json
-import shutil
+from contextlib import contextmanager
 from pathlib import Path
 
 from odylith.runtime.surfaces import render_compass_dashboard
 from odylith.runtime.surfaces import render_tooling_dashboard as tooling_dashboard_renderer
 from tests.integration.runtime.surface_browser_test_support import (
     _REPO_ROOT,
+    _copy_logical_working_fixture,
     _new_page,
     _static_server,
 )
 
 
-class _ManagedBrowserContext:
-    def __init__(self, context, server_context) -> None:  # noqa: ANN001
-        self._context = context
-        self._server_context = server_context
-        self._closed = False
-
-    def __getattr__(self, name: str):  # noqa: ANN001
-        return getattr(self._context, name)
-
-    def close(self) -> None:
-        if self._closed:
-            return
-        self._closed = True
-        try:
-            self._context.close()
-        finally:
-            self._server_context.__exit__(None, None, None)
-
-
 def clone_odylith_fixture(tmp_path: Path) -> Path:
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
     return fixture_root
 
 
@@ -148,18 +130,16 @@ def selected_scope_value(compass) -> str:  # noqa: ANN001
     return str(compass.locator("#scope-select").input_value() or "").strip()
 
 
+@contextmanager
 def open_compass_page(fixture_root: Path, browser, *, query: str = "tab=compass&window=24h&date=live"):  # noqa: ANN001
-    server_context = _static_server(root=fixture_root)
-    base_url = server_context.__enter__()
-    context = browser.new_context(viewport={"width": 1440, "height": 1100})
-    managed_context = _ManagedBrowserContext(context, server_context)
-    try:
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        response = page.goto(f"{base_url}/odylith/index.html?{query}", wait_until="domcontentloaded")
-        assert response is not None and response.ok
-        compass = page.frame_locator("#frame-compass")
-        compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
-        return managed_context, page, compass, console_errors, page_errors, failed_requests, bad_responses
-    except Exception:
-        managed_context.close()
-        raise
+    with _static_server(root=fixture_root) as base_url:
+        context = browser.new_context(viewport={"width": 1440, "height": 1100})
+        try:
+            with _new_page(context) as (page, observation):
+                response = page.goto(f"{base_url}/odylith/index.html?{query}", wait_until="domcontentloaded")
+                assert response is not None and response.ok
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                yield page, compass, observation
+        finally:
+            context.close()

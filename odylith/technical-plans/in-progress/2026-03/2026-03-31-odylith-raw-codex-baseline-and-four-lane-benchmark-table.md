@@ -230,28 +230,18 @@ Related Bugs:
 
 ## Risks & Mitigations
 
-- [ ] Risk: the new raw-agent lane makes the harness look harsher or more
-      asymmetric than the previous story.
-  - [ ] Mitigation: accept the harsher comparison honestly and explain that
-        repo-scan remains available as a secondary scaffold control rather than
-        the benchmark gate.
-- [ ] Risk: report readers confuse the repo-scan control with the raw-agent
-      control.
-  - [ ] Mitigation: rename the repo-scan lane honestly in public-facing table
-        labels and docs.
-- [ ] Risk: the corpus expansion becomes shallow box-ticking instead of real
-      coverage depth.
-  - [ ] Mitigation: add new scenarios only when they introduce a distinct
-        grounded slice, validation posture, or governance surface combination.
+- [ ] Risk: the new raw-agent lane makes the harness look harsher or more asymmetric than the previous story.
+  - [ ] Mitigation: accept the harsher comparison honestly and explain that repo-scan remains available as a secondary scaffold control rather than the benchmark gate.
+- [ ] Risk: report readers confuse the repo-scan control with the raw-agent control.
+  - [ ] Mitigation: rename the repo-scan lane honestly in public-facing table labels and docs.
+- [ ] Risk: the corpus expansion becomes shallow box-ticking instead of real coverage depth.
+  - [ ] Mitigation: add new scenarios only when they introduce a distinct grounded slice, validation posture, or governance surface combination.
 - [ ] Risk: benchmark history or graphs break on older reports.
-  - [ ] Mitigation: keep old report reading compatible while publishing the new
-        lane and labels.
+  - [ ] Mitigation: keep old report reading compatible while publishing the new lane and labels.
 - [ ] Risk: hot-path pruning improves latency by reducing grounding quality.
-  - [ ] Mitigation: add no-regression tests on recall, precision, validation,
-        and observed-path grounding for the weak families before publishing.
+  - [ ] Mitigation: add no-regression tests on recall, precision, validation, and observed-path grounding for the weak families before publishing.
 - [ ] Risk: workstream split adds more governance drift instead of less.
-  - [ ] Mitigation: update the parent, child records, Radar index, plan index,
-        and refreshed benchmark/dashboard surfaces in the same change.
+  - [ ] Mitigation: update the parent, child records, Radar index, plan index, and refreshed benchmark/dashboard surfaces in the same change.
 
 ## Validation/Test Plan
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_odylith_benchmark_graphs.py`
@@ -430,3 +420,20 @@ Related Bugs:
       30-scenario suite, close the remaining advisory governance-packet
       coverage debt, and clear the current warm/cold plus within-budget
       blockers without giving back the `926bfeab4e887ade` wins.
+
+## Traceability
+
+Isolated raw-agent comparison, live execution, and honest benchmark publication.
+
+### Runbooks
+
+- `odylith/MAINTAINER_RELEASE_RUNBOOK.md`
+
+### Developer Docs
+
+- `docs/benchmarks/REVIEWER_GUIDE.md`
+
+### Code References
+
+- `src/odylith/runtime/evaluation/odylith_benchmark_isolation.py`
+- `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`

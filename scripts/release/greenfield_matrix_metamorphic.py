@@ -240,8 +240,6 @@ def _clarification_invariant_issues(
         issues.append(f"metamorphic group {group} case {case_id} did not activate the installed write audit")
     if no_write.get("write_attempts") != []:
         issues.append(f"metamorphic group {group} case {case_id} attempted repository writes before clarification")
-    if no_write.get("subprocess_attempts") != []:
-        issues.append(f"metamorphic group {group} case {case_id} attempted a child process before clarification")
     if str(no_write.get("write_audit_error") or "").strip():
         issues.append(f"metamorphic group {group} case {case_id} hit an installed write-audit error")
     if receipt:

@@ -95,7 +95,7 @@ def _path_fingerprint(path: Path, *, repo_root: Path | None = None, glob: str = 
     if repo_root is not None:
         root = context_engine_store.Path(repo_root).resolve()
         state_token = projection_repo_state_runtime.projection_repo_state_token(repo_root=root)
-        cache_key = f"{target.resolve()}::{glob}"
+        cache_key = f"{root}:{target.resolve()}::{glob}"
         if read_session is not None and read_session.matches_repo(root):
             cached = read_session.get_or_compute(
                 namespace="path_fingerprint_lookup",
@@ -120,7 +120,7 @@ def _shallow_glob_fingerprint(path: Path, *, repo_root: Path, glob: str) -> str:
     target = context_engine_store.Path(path)
     root = context_engine_store.Path(repo_root).resolve()
     state_token = projection_repo_state_runtime.projection_repo_state_token(repo_root=root)
-    cache_key = f"{target.resolve()}::{glob}::shallow"
+    cache_key = f"{root}:{target.resolve()}::{glob}::shallow"
     read_session = runtime_read_session.active_runtime_read_session()
     if read_session is not None and read_session.matches_repo(root):
         cached = read_session.get_or_compute(

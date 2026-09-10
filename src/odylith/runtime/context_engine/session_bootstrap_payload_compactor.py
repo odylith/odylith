@@ -1,10 +1,11 @@
-"""Compact duplicate bootstrap-session path receipts before packet finalization."""
+"""Compact session delivery detail while preserving selected scope and admission."""
 
 from __future__ import annotations
 
 from typing import Any, Mapping
 
 from odylith.runtime.common.value_coercion import string_rows as _string_rows
+from odylith.runtime.common.value_coercion import mapping_copy as _mapping
 from odylith.runtime.context_engine import execution_engine_handshake
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.memory import tooling_memory_contracts
@@ -15,10 +16,6 @@ def _clean_mapping(value: Mapping[str, Any]) -> dict[str, Any]:
         for key, item in value.items()
         if item not in ("", [], {}, None)
     }
-
-
-def _mapping(value: Any) -> dict[str, Any]:
-    return {str(key): item for key, item in dict(value).items()} if isinstance(value, Mapping) else {}
 
 
 def _encode_selected_counts_token(value: Any) -> str:
@@ -39,27 +36,11 @@ def _compact_narrowing_guidance(guidance: Mapping[str, Any]) -> dict[str, Any]:
     if bool(guidance.get("required")):
         compact["required"] = True
     reason = str(guidance.get("reason", "")).strip()
-    if reason.startswith("Top candidate `") and reason.endswith("is too weak to auto-trust."):
-        reason = "Need one code or contract path."
-    elif reason.startswith("No workstream evidence matched"):
-        reason = "Need one code path."
-    elif reason.startswith("Current shared/control-plane context still needs one concrete code"):
-        reason = "Need one code or contract path."
-    elif len(reason) > 48:
-        reason = f"{reason[:45].rstrip()}..."
     if reason:
         compact["reason"] = reason
     suggested_inputs = _string_rows(guidance.get("suggested_inputs"))
     if suggested_inputs:
-        first = suggested_inputs[0]
-        compact["suggested_inputs"] = [
-            {
-                "Provide at least one implementation, test, contract, or manifest path.": "Provide one code or contract path.",
-                "Pin an explicit workstream with `--workstream B-###` when the slice is known.": "Pin `--workstream B-###` if known.",
-                "Read the highest-signal guidance source directly when the packet exposes one.": "Read the strongest cited source first.",
-                "If narrowing still fails, run the printed fallback command and then read the named source directly.": "Use the printed fallback command if narrowing fails.",
-            }.get(first, first)
-        ]
+        compact["suggested_inputs"] = suggested_inputs[:1]
     next_best_anchors = [
         {
             key: value
@@ -75,8 +56,6 @@ def _compact_narrowing_guidance(guidance: Mapping[str, Any]) -> dict[str, Any]:
     ]
     if next_best_anchors:
         compact["next_best_anchors"] = next_best_anchors[:3]
-    if compact.get("reason") in {"Need one code path.", "Need one code or contract path."} and not next_best_anchors:
-        compact.pop("suggested_inputs", None)
     return compact
 
 
@@ -350,10 +329,11 @@ def _compact_context_packet_optimization(optimization: Mapping[str, Any]) -> dic
 
 def _compact_delivery_context_packet(
     *,
-    context_packet: Mapping[str, Any],
+    payload: Mapping[str, Any],
     changed_paths: list[str],
     explicit_paths: list[str],
 ) -> dict[str, Any]:
+    context_packet = _mapping(payload.get("context_packet"))
     compact = {
         key: value
         for key, value in {
@@ -384,6 +364,12 @@ def _compact_delivery_context_packet(
     optimization = _compact_context_packet_optimization(_mapping(context_packet.get("optimization")))
     if optimization:
         compact["optimization"] = optimization
+    compact = execution_engine_handshake.attach_execution_engine_handshake(compact, payload=payload)
+    snapshot = execution_engine_handshake.compact_execution_engine_snapshot_for_packet(
+        payload=payload, context_packet=compact,
+    )
+    if snapshot:
+        compact["execution_engine"] = snapshot
     return compact
 
 
@@ -427,7 +413,7 @@ def _compact_bootstrap_delivery_payload(payload: Mapping[str, Any]) -> dict[str,
     changed_paths = _string_rows(payload.get("changed_paths"))
     explicit_paths = _string_rows(payload.get("explicit_paths"))
     context_packet = _compact_delivery_context_packet(
-        context_packet=_mapping(payload.get("context_packet")),
+        payload=payload,
         changed_paths=changed_paths,
         explicit_paths=explicit_paths,
     )
@@ -442,6 +428,8 @@ def _compact_bootstrap_delivery_payload(payload: Mapping[str, Any]) -> dict[str,
     }
     if isinstance(payload.get("session"), Mapping):
         compact["session"] = _compact_session_payload(_mapping(payload.get("session")))
+    if isinstance(payload.get("workstream_context"), Mapping) and payload["workstream_context"]:
+        compact["workstream_context"] = _mapping(payload["workstream_context"])
     if isinstance(payload.get("turn_context"), Mapping):
         turn_context = _mapping(payload.get("turn_context"))
         if turn_context:
@@ -516,18 +504,6 @@ def _compact_bootstrap_delivery_payload(payload: Mapping[str, Any]) -> dict[str,
     ]
     if recommended_tests:
         compact["recommended_tests"] = recommended_tests[:2]
-    if isinstance(compact.get("context_packet"), Mapping):
-        context_packet = execution_engine_handshake.attach_execution_engine_handshake(
-            dict(compact.get("context_packet", {})),
-            payload=payload,
-        )
-        _eg = execution_engine_handshake.compact_execution_engine_snapshot_for_packet(
-            payload=payload,
-            context_packet=context_packet,
-        )
-        compact["context_packet"] = context_packet
-        if _eg:
-            compact["context_packet"]["execution_engine"] = _eg
     return {
         key: value
         for key, value in compact.items()
@@ -584,7 +560,7 @@ def _compact_session_brief_delivery_payload(payload: Mapping[str, Any]) -> dict[
         "selection_reason": str(payload.get("selection_reason", "")).strip(),
         "selection_confidence": str(payload.get("selection_confidence", "")).strip(),
         "context_packet": _compact_delivery_context_packet(
-            context_packet=_mapping(payload.get("context_packet")),
+            payload=payload,
             changed_paths=changed_paths,
             explicit_paths=explicit_paths,
         ),

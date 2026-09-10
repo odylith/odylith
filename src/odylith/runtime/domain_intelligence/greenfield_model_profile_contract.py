@@ -1,27 +1,28 @@
 """Pinned model profiles for the supported Greenfield operating envelope.
 
-Profiles bind a real provider request to one end-to-end consumer deadline.  The
-unavailable-provider profile is deliberately outside the supported-success set;
-it exists only to prove fail-closed, no-write behavior.
+Profiles bind a complete author and read-only candidate review to one shared
+model window inside the consumer deadline. The unavailable-provider profile is
+outside the supported-success set and proves fail-closed, no-write behavior.
 """
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from types import MappingProxyType
 
 
-GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v2"
+GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v12"
 
-STANDARD_PROFILE_ID = "greenfield-standard-gpt-5.3-codex-spark-medium-v2"
-RESCUE_PROFILE_ID = "greenfield-rescue-gpt-5.3-codex-spark-high-v2"
-DEEP_PROFILE_ID = "greenfield-deep-gpt-5.3-codex-spark-high-v2"
+STANDARD_PROFILE_ID = "greenfield-standard-terra-low-complete-author-review-v12"
+RESCUE_PROFILE_ID = "greenfield-rescue-terra-medium-complete-author-review-v12"
+DEEP_PROFILE_ID = "greenfield-deep-sol-high-complete-author-review-v12"
 UNAVAILABLE_PROVIDER_PROFILE_ID = "greenfield-unavailable-provider-no-write-v1"
 
 
 @dataclass(frozen=True, slots=True)
 class GreenfieldModelProfile:
-    """One immutable provider request and its shared consumer time budget."""
+    """Pinned author and review roles inside one preselected time budget."""
 
     profile_id: str
     repair_tier: str
@@ -32,6 +33,9 @@ class GreenfieldModelProfile:
     model_timeout_seconds: float
     lower_capability: bool = False
     supported_success: bool = True
+    review_model: str = "gpt-5.6-sol"
+    review_reasoning_effort: str = "medium"
+    review_timeout_seconds: float = 20.0
 
 
 _PROFILES = MappingProxyType(
@@ -40,26 +44,27 @@ _PROFILES = MappingProxyType(
             profile_id=STANDARD_PROFILE_ID,
             repair_tier="standard",
             provider="codex-cli",
-            model="gpt-5.3-codex-spark",
-            reasoning_effort="medium",
+            model="gpt-5.6-terra",
+            reasoning_effort="low",
             consumer_budget_seconds=60.0,
-            model_timeout_seconds=45.0,
+            model_timeout_seconds=55.0,
             lower_capability=True,
         ),
         RESCUE_PROFILE_ID: GreenfieldModelProfile(
             profile_id=RESCUE_PROFILE_ID,
             repair_tier="rescue",
             provider="codex-cli",
-            model="gpt-5.3-codex-spark",
-            reasoning_effort="high",
+            model="gpt-5.6-terra",
+            reasoning_effort="medium",
             consumer_budget_seconds=90.0,
-            model_timeout_seconds=75.0,
+            model_timeout_seconds=80.0,
+            lower_capability=True,
         ),
         DEEP_PROFILE_ID: GreenfieldModelProfile(
             profile_id=DEEP_PROFILE_ID,
             repair_tier="deep",
             provider="codex-cli",
-            model="gpt-5.3-codex-spark",
+            model="gpt-5.6-sol",
             reasoning_effort="high",
             consumer_budget_seconds=120.0,
             model_timeout_seconds=105.0,
@@ -72,7 +77,6 @@ _PROFILES = MappingProxyType(
             reasoning_effort="high",
             consumer_budget_seconds=90.0,
             model_timeout_seconds=1.0,
-            lower_capability=True,
             supported_success=False,
         ),
     }
@@ -151,10 +155,21 @@ def greenfield_model_profile_observation_issues(
     reasoning_effort: str,
     effective_timeout_seconds: float,
     authoring_tier: str = "",
+    request_role: str = "initial_authoring",
 ) -> tuple[str, ...]:
     """Compare observed request metadata with the pinned pre-call profile."""
 
     profile = get_greenfield_model_profile(profile_id)
+    if request_role == "initial_authoring":
+        expected_model = profile.model
+        expected_effort = profile.reasoning_effort
+        role_cap = profile.model_timeout_seconds
+    elif request_role == "candidate_review":
+        expected_model = profile.review_model
+        expected_effort = profile.review_reasoning_effort
+        role_cap = min(profile.review_timeout_seconds, profile.model_timeout_seconds)
+    else:
+        raise ValueError(f"unsupported Greenfield model request role: {request_role}")
     observations = {
         "provider": str(provider or "").strip().casefold(),
         "model": str(model or "").strip(),
@@ -162,8 +177,8 @@ def greenfield_model_profile_observation_issues(
     }
     expected = {
         "provider": profile.provider,
-        "model": profile.model,
-        "reasoning_effort": profile.reasoning_effort,
+        "model": expected_model,
+        "reasoning_effort": expected_effort,
     }
     issues = [
         f"observed {field} does not match pinned Greenfield model profile"
@@ -171,10 +186,14 @@ def greenfield_model_profile_observation_issues(
         if value != expected[field]
     ]
     try:
-        timeout_seconds = float(effective_timeout_seconds)
-    except (TypeError, ValueError):
+        timeout_seconds = (
+            float(effective_timeout_seconds)
+            if type(effective_timeout_seconds) in (int, float)
+            else 0.0
+        )
+    except (TypeError, ValueError, OverflowError):
         timeout_seconds = 0.0
-    if not 0.0 < timeout_seconds <= profile.model_timeout_seconds:
+    if not math.isfinite(timeout_seconds) or not 0.0 < timeout_seconds <= role_cap:
         issues.append("observed effective timeout exceeds or omits the pinned Greenfield model window")
     normalized_tier = str(authoring_tier or "").strip().casefold()
     if normalized_tier and normalized_tier != profile.repair_tier:
@@ -190,6 +209,7 @@ def require_greenfield_model_profile_observation(
     reasoning_effort: str,
     effective_timeout_seconds: float,
     authoring_tier: str = "",
+    request_role: str = "initial_authoring",
 ) -> GreenfieldModelProfile:
     """Fail closed unless observed request metadata matches its profile."""
 
@@ -200,6 +220,7 @@ def require_greenfield_model_profile_observation(
         reasoning_effort=reasoning_effort,
         effective_timeout_seconds=effective_timeout_seconds,
         authoring_tier=authoring_tier,
+        request_role=request_role,
     )
     if issues:
         raise ValueError("; ".join(issues))

@@ -8,6 +8,7 @@ import pytest
 
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.surfaces import compass_standup_brief_maintenance as maintenance
+from odylith.runtime.surfaces import compass_standup_brief_maintenance_worker as worker
 
 
 def _brief(*, source: str, status: str = "ready") -> dict[str, object]:
@@ -43,45 +44,11 @@ def _signal(
     }
 
 
-def test_worker_env_absolutizes_relative_pythonpath(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.chdir(tmp_path)
-    monkeypatch.setenv("PYTHONPATH", maintenance.os.pathsep.join(["src", "vendor", "/absolute/path"]))
-
-    env = maintenance._worker_env()  # noqa: SLF001
-
-    assert env["PYTHONPATH"].split(maintenance.os.pathsep) == [
-        str(tmp_path / "src"),
-        str(tmp_path / "vendor"),
-        "/absolute/path",
-    ]
-
-
-def test_maybe_spawn_background_stays_quiet_under_pytest(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    request_path = maintenance.maintenance_request_path(repo_root=tmp_path)
-    request_path.parent.mkdir(parents=True, exist_ok=True)
-    request_path.write_text(
-        json.dumps(
-            {
-                "version": "v1",
-                "generated_utc": "2026-04-09T00:00:00Z",
-                "runtime_input_fingerprint": "runtime-fp",
-                "global": {"24h": {"fingerprint": "global-fp", "fact_packet": {}}},
-                "scoped": {},
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-    monkeypatch.setenv("PYTEST_CURRENT_TEST", "tests/unit/runtime/test_compass.py::test_example (call)")
-
-    assert maintenance.maybe_spawn_background(repo_root=tmp_path) == 0
-    assert not maintenance.maintenance_state_path(repo_root=tmp_path).exists()
 
 
 def test_enqueue_request_only_selects_active_scope_candidates(tmp_path: Path, monkeypatch) -> None:
     repo_root = tmp_path
-    state_path = maintenance.maintenance_state_path(repo_root=repo_root)
+    state_path = worker.maintenance_state_path(repo_root=repo_root)
     state_path.parent.mkdir(parents=True, exist_ok=True)
     state_path.write_text(
         json.dumps(
@@ -149,7 +116,7 @@ def test_enqueue_request_only_selects_active_scope_candidates(tmp_path: Path, mo
 
 def test_enqueue_request_keeps_failed_candidate_queued_during_retry_backoff(tmp_path: Path, monkeypatch) -> None:
     repo_root = tmp_path
-    state_path = maintenance.maintenance_state_path(repo_root=repo_root)
+    state_path = worker.maintenance_state_path(repo_root=repo_root)
     state_path.parent.mkdir(parents=True, exist_ok=True)
     state_path.write_text(
         json.dumps(
@@ -261,7 +228,7 @@ def test_enqueue_request_caps_scoped_candidates_per_window(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     repo_root = tmp_path
-    state_path = maintenance.maintenance_state_path(repo_root=repo_root)
+    state_path = worker.maintenance_state_path(repo_root=repo_root)
     state_path.parent.mkdir(parents=True, exist_ok=True)
     state_path.write_text(
         json.dumps(
@@ -395,7 +362,7 @@ def test_run_pending_request_warms_cache_and_patches_current_runtime(tmp_path: P
     current_json_path.write_text(json.dumps(current_payload, indent=2) + "\n", encoding="utf-8")
     current_js_path.write_text("window.__ODYLITH_COMPASS_RUNTIME__ = {};\n", encoding="utf-8")
 
-    request_path = maintenance.maintenance_request_path(repo_root=repo_root)
+    request_path = worker.maintenance_request_path(repo_root=repo_root)
     request_path.parent.mkdir(parents=True, exist_ok=True)
     request_path.write_text(
         json.dumps(
@@ -461,7 +428,7 @@ def test_run_pending_request_warms_cache_and_patches_current_runtime(tmp_path: P
 
     result = maintenance.run_pending_request(repo_root=repo_root)
     updated_payload = json.loads(current_json_path.read_text(encoding="utf-8"))
-    state = json.loads(maintenance.maintenance_state_path(repo_root=repo_root).read_text(encoding="utf-8"))
+    state = json.loads(worker.maintenance_state_path(repo_root=repo_root).read_text(encoding="utf-8"))
 
     assert result["warmed"] == 2
     assert result["failed"] == 0
@@ -501,7 +468,7 @@ def test_run_pending_request_does_not_patch_superseded_runtime_generation(
     )
     current_js_path.write_text("window.__ODYLITH_COMPASS_RUNTIME__ = {};\n", encoding="utf-8")
 
-    request_path = maintenance.maintenance_request_path(repo_root=repo_root)
+    request_path = worker.maintenance_request_path(repo_root=repo_root)
     request_path.parent.mkdir(parents=True, exist_ok=True)
     request_path.write_text(
         json.dumps(
@@ -582,7 +549,7 @@ def test_current_runtime_patch_aborts_when_runtime_file_changes_after_read(
 
 def test_run_pending_request_failed_scoped_result_sets_retry_backoff(tmp_path: Path, monkeypatch) -> None:
     repo_root = tmp_path
-    request_path = maintenance.maintenance_request_path(repo_root=repo_root)
+    request_path = worker.maintenance_request_path(repo_root=repo_root)
     request_path.parent.mkdir(parents=True, exist_ok=True)
     request_path.write_text(
         json.dumps(
@@ -614,7 +581,7 @@ def test_run_pending_request_failed_scoped_result_sets_retry_backoff(tmp_path: P
     )
 
     result = maintenance.run_pending_request(repo_root=repo_root)
-    state = json.loads(maintenance.maintenance_state_path(repo_root=repo_root).read_text(encoding="utf-8"))
+    state = json.loads(worker.maintenance_state_path(repo_root=repo_root).read_text(encoding="utf-8"))
     entry = state["entries"]["scoped:24h:B-021"]
     retained_request = json.loads(request_path.read_text(encoding="utf-8"))
 
@@ -633,7 +600,7 @@ def test_run_pending_request_failed_scoped_result_sets_retry_backoff(tmp_path: P
 
 def test_run_pending_request_records_skipped_result_as_terminal_without_retry(tmp_path: Path, monkeypatch) -> None:
     repo_root = tmp_path
-    request_path = maintenance.maintenance_request_path(repo_root=repo_root)
+    request_path = worker.maintenance_request_path(repo_root=repo_root)
     request_path.parent.mkdir(parents=True, exist_ok=True)
     request_path.write_text(
         json.dumps(
@@ -677,7 +644,7 @@ def test_run_pending_request_records_skipped_result_as_terminal_without_retry(tm
     )
 
     result = maintenance.run_pending_request(repo_root=repo_root)
-    state = json.loads(maintenance.maintenance_state_path(repo_root=repo_root).read_text(encoding="utf-8"))
+    state = json.loads(worker.maintenance_state_path(repo_root=repo_root).read_text(encoding="utf-8"))
     entry = state["entries"]["global:24h"]
 
     assert result["warmed"] == 0
@@ -687,90 +654,11 @@ def test_run_pending_request_records_skipped_result_as_terminal_without_retry(tm
     assert entry.get("next_retry_utc", "") == ""
 
 
-def test_pending_request_delay_seconds_waits_until_retry_window(tmp_path: Path) -> None:
-    state_entries = {
-        "scoped:24h:B-021": {
-            "fingerprint": "scope-fp",
-            "status": "failed",
-            "next_retry_utc": "2099-01-01T00:05:00Z",
-        }
-    }
-    request = {
-        "version": "v1",
-        "generated_utc": "2026-04-09T00:00:00Z",
-        "runtime_input_fingerprint": "runtime-fp",
-        "scoped": {
-            "24h": {
-                "B-021": {
-                    "fingerprint": "scope-fp",
-                    "fact_packet": {"scope_id": "B-021"},
-                }
-            }
-        },
-    }
-
-    delay = maintenance._pending_request_delay_seconds(  # noqa: SLF001
-        request=request,
-        state_entries=state_entries,
-    )
-
-    assert delay is not None
-    assert delay > 0
-
-
-def test_pending_request_payload_keeps_all_unresolved_scoped_entries() -> None:
-    request = {
-        "version": "v1",
-        "generated_utc": "2026-04-09T00:00:00Z",
-        "runtime_input_fingerprint": "runtime-fp",
-        "scoped": {
-            "24h": {
-                "B-001": {
-                    "fingerprint": "fp-B-001",
-                    "fact_packet": {"scope_id": "B-001"},
-                },
-                "B-002": {
-                    "fingerprint": "fp-B-002",
-                    "fact_packet": {"scope_id": "B-002"},
-                },
-                "B-003": {
-                    "fingerprint": "fp-B-003",
-                    "fact_packet": {"scope_id": "B-003"},
-                },
-                "B-004": {
-                    "fingerprint": "fp-B-004",
-                    "fact_packet": {"scope_id": "B-004"},
-                },
-                "B-005": {
-                    "fingerprint": "fp-B-005",
-                    "fact_packet": {"scope_id": "B-005"},
-                },
-                "B-006": {
-                    "fingerprint": "fp-B-006",
-                    "fact_packet": {"scope_id": "B-006"},
-                },
-            }
-        },
-    }
-    state_entries = {
-        "scoped:24h:B-006": {
-            "fingerprint": "stale-B-006",
-            "status": "failed",
-            "attempt_count": 2,
-        }
-    }
-
-    payload = maintenance._pending_request_payload(  # noqa: SLF001
-        request=request,
-        state_entries=state_entries,
-    )
-
-    assert list(payload["scoped"]["24h"]) == ["B-001", "B-002", "B-003", "B-004", "B-005", "B-006"]
 
 
 def test_failure_brief_for_fact_packet_uses_matching_state_entry(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     repo_root = tmp_path
-    state_path = maintenance.maintenance_state_path(repo_root=repo_root)
+    state_path = worker.maintenance_state_path(repo_root=repo_root)
     state_path.parent.mkdir(parents=True, exist_ok=True)
     state_path.write_text(
         json.dumps(
@@ -878,7 +766,7 @@ def test_run_pending_request_records_provider_failure_diagnostics_and_patches_ru
     )
     current_js_path.write_text("window.__ODYLITH_COMPASS_RUNTIME__ = {};\n", encoding="utf-8")
 
-    request_path = maintenance.maintenance_request_path(repo_root=repo_root)
+    request_path = worker.maintenance_request_path(repo_root=repo_root)
     request_path.parent.mkdir(parents=True, exist_ok=True)
     request_path.write_text(
         json.dumps(
@@ -914,7 +802,7 @@ def test_run_pending_request_records_provider_failure_diagnostics_and_patches_ru
     )
 
     result = maintenance.run_pending_request(repo_root=repo_root)
-    state = json.loads(maintenance.maintenance_state_path(repo_root=repo_root).read_text(encoding="utf-8"))
+    state = json.loads(worker.maintenance_state_path(repo_root=repo_root).read_text(encoding="utf-8"))
     payload = json.loads(current_json_path.read_text(encoding="utf-8"))
     entry = state["entries"]["scoped:24h:B-021"]
     brief = payload["standup_brief_scoped"]["24h"]["B-021"]
@@ -958,7 +846,7 @@ def test_run_pending_request_records_global_provider_unavailable_and_patches_run
     )
     current_js_path.write_text("window.__ODYLITH_COMPASS_RUNTIME__ = {};\n", encoding="utf-8")
 
-    request_path = maintenance.maintenance_request_path(repo_root=repo_root)
+    request_path = worker.maintenance_request_path(repo_root=repo_root)
     request_path.parent.mkdir(parents=True, exist_ok=True)
     request_path.write_text(
         json.dumps(
@@ -983,7 +871,7 @@ def test_run_pending_request_records_global_provider_unavailable_and_patches_run
     monkeypatch.setattr(maintenance, "_provider_for_cheap_config", lambda **_kwargs: None)
 
     result = maintenance.run_pending_request(repo_root=repo_root)
-    state = json.loads(maintenance.maintenance_state_path(repo_root=repo_root).read_text(encoding="utf-8"))
+    state = json.loads(worker.maintenance_state_path(repo_root=repo_root).read_text(encoding="utf-8"))
     payload = json.loads(current_json_path.read_text(encoding="utf-8"))
     entry = state["entries"]["global:24h"]
     brief = payload["standup_brief"]["24h"]
@@ -1018,7 +906,7 @@ def test_record_result_leaves_immediate_retry_when_provider_ladder_can_advance()
         immediate_retry=True,
     )
 
-    delay = maintenance._pending_request_delay_seconds(  # noqa: SLF001
+    delay = worker.pending_request_delay_seconds(  # noqa: SLF001
         request={
             "global": {
                 "24h": {
@@ -1035,7 +923,7 @@ def test_record_result_leaves_immediate_retry_when_provider_ladder_can_advance()
     assert delay == 0.0
 
 
-def test_stamp_request_runtime_input_fingerprint_patches_current_runtime_from_existing_failure_state(
+def test_pure_terminal_projection_retains_existing_failure_state(
     tmp_path: Path,
 ) -> None:
     repo_root = tmp_path
@@ -1063,7 +951,7 @@ def test_stamp_request_runtime_input_fingerprint_patches_current_runtime_from_ex
     )
     current_js_path.write_text("window.__ODYLITH_COMPASS_RUNTIME__ = {};\n", encoding="utf-8")
 
-    request_path = maintenance.maintenance_request_path(repo_root=repo_root)
+    request_path = worker.maintenance_request_path(repo_root=repo_root)
     request_path.parent.mkdir(parents=True, exist_ok=True)
     request_path.write_text(
         json.dumps(
@@ -1084,7 +972,7 @@ def test_stamp_request_runtime_input_fingerprint_patches_current_runtime_from_ex
         encoding="utf-8",
     )
 
-    state_path = maintenance.maintenance_state_path(repo_root=repo_root)
+    state_path = worker.maintenance_state_path(repo_root=repo_root)
     state_path.parent.mkdir(parents=True, exist_ok=True)
     state_path.write_text(
         json.dumps(
@@ -1122,7 +1010,11 @@ def test_stamp_request_runtime_input_fingerprint_patches_current_runtime_from_ex
     )
 
     request_payload = json.loads(request_path.read_text(encoding="utf-8"))
-    runtime_payload = json.loads(current_json_path.read_text(encoding="utf-8"))
+    runtime_payload = maintenance.apply_terminal_state_to_runtime_payload(
+        repo_root=repo_root,
+        payload=json.loads(current_json_path.read_text(encoding="utf-8")),
+        runtime_input_fingerprint="runtime-fp",
+    )
 
     assert request_payload["runtime_input_fingerprint"] == "runtime-fp"
     assert runtime_payload["standup_brief"]["24h"]["diagnostics"]["reason"] == "provider_error"
@@ -1130,7 +1022,7 @@ def test_stamp_request_runtime_input_fingerprint_patches_current_runtime_from_ex
     assert runtime_payload["standup_brief"]["24h"]["diagnostics"]["next_retry_utc"] == "2026-04-09T00:21:00Z"
 
 
-def test_stamp_request_runtime_input_fingerprint_keeps_ready_brief_on_provider_failure(
+def test_pure_terminal_projection_keeps_ready_brief_on_provider_failure(
     tmp_path: Path,
 ) -> None:
     repo_root = tmp_path
@@ -1176,7 +1068,7 @@ def test_stamp_request_runtime_input_fingerprint_keeps_ready_brief_on_provider_f
     )
     current_js_path.write_text("window.__ODYLITH_COMPASS_RUNTIME__ = {};\n", encoding="utf-8")
 
-    request_path = maintenance.maintenance_request_path(repo_root=repo_root)
+    request_path = worker.maintenance_request_path(repo_root=repo_root)
     request_path.parent.mkdir(parents=True, exist_ok=True)
     request_path.write_text(
         json.dumps(
@@ -1199,7 +1091,7 @@ def test_stamp_request_runtime_input_fingerprint_keeps_ready_brief_on_provider_f
         encoding="utf-8",
     )
 
-    state_path = maintenance.maintenance_state_path(repo_root=repo_root)
+    state_path = worker.maintenance_state_path(repo_root=repo_root)
     state_path.parent.mkdir(parents=True, exist_ok=True)
     state_path.write_text(
         json.dumps(
@@ -1240,7 +1132,11 @@ def test_stamp_request_runtime_input_fingerprint_keeps_ready_brief_on_provider_f
         runtime_input_fingerprint="runtime-fp",
     )
 
-    runtime_payload = json.loads(current_json_path.read_text(encoding="utf-8"))
+    runtime_payload = maintenance.apply_terminal_state_to_runtime_payload(
+        repo_root=repo_root,
+        payload=json.loads(current_json_path.read_text(encoding="utf-8")),
+        runtime_input_fingerprint="runtime-fp",
+    )
     global_brief = runtime_payload["standup_brief"]["24h"]
     scoped_brief = runtime_payload["standup_brief_scoped"]["24h"]["B-141"]
 
@@ -1262,7 +1158,7 @@ def test_stamp_request_runtime_input_fingerprint_keeps_ready_brief_on_provider_f
     )
 
 
-def test_stamp_request_runtime_input_fingerprint_patches_terminal_skipped_state_without_request(
+def test_pure_terminal_projection_retains_skipped_state_without_request(
     tmp_path: Path,
 ) -> None:
     repo_root = tmp_path
@@ -1300,7 +1196,7 @@ def test_stamp_request_runtime_input_fingerprint_patches_terminal_skipped_state_
     )
     current_js_path.write_text("window.__ODYLITH_COMPASS_RUNTIME__ = {};\n", encoding="utf-8")
 
-    state_path = maintenance.maintenance_state_path(repo_root=repo_root)
+    state_path = worker.maintenance_state_path(repo_root=repo_root)
     state_path.parent.mkdir(parents=True, exist_ok=True)
     state_path.write_text(
         json.dumps(
@@ -1336,7 +1232,11 @@ def test_stamp_request_runtime_input_fingerprint_patches_terminal_skipped_state_
         runtime_input_fingerprint="runtime-fp",
     )
 
-    updated_payload = json.loads(current_json_path.read_text(encoding="utf-8"))
+    updated_payload = maintenance.apply_terminal_state_to_runtime_payload(
+        repo_root=repo_root,
+        payload=json.loads(current_json_path.read_text(encoding="utf-8")),
+        runtime_input_fingerprint="runtime-fp",
+    )
     brief = updated_payload["standup_brief"]["24h"]
     scoped_brief = updated_payload["standup_brief_scoped"]["24h"]["B-141"]
     assert brief["diagnostics"]["reason"] == "skipped_not_worth_calling"
@@ -1369,7 +1269,7 @@ def test_run_pending_request_preserves_stamped_runtime_input_fingerprint_when_re
     )
     current_js_path.write_text("window.__ODYLITH_COMPASS_RUNTIME__ = {};\n", encoding="utf-8")
 
-    request_path = maintenance.maintenance_request_path(repo_root=repo_root)
+    request_path = worker.maintenance_request_path(repo_root=repo_root)
     request_path.parent.mkdir(parents=True, exist_ok=True)
     request_path.write_text(
         json.dumps(
@@ -1411,193 +1311,3 @@ def test_run_pending_request_preserves_stamped_runtime_input_fingerprint_when_re
 
     assert result["request_retained"] is True
     assert request_payload["runtime_input_fingerprint"] == "runtime-fp"
-
-
-def test_maybe_spawn_background_starts_worker_once(tmp_path: Path, monkeypatch) -> None:
-    monkeypatch.setenv("ODYLITH_COMPASS_STANDUP_BACKGROUND_ALLOW_IN_TESTS", "1")
-    repo_root = tmp_path
-    request_path = maintenance.maintenance_request_path(repo_root=repo_root)
-    request_path.parent.mkdir(parents=True, exist_ok=True)
-    request_path.write_text(
-        json.dumps(
-            {
-                "version": "v1",
-                "global": {
-                    "24h": {
-                        "fingerprint": "global-fp",
-                        "fact_packet": {"scope_id": "global-24h"},
-                    }
-                },
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-
-    calls: list[list[str]] = []
-
-    class _FakePopen:
-        def __init__(self, command: list[str]) -> None:
-            self.pid = 4321
-            calls.append(command)
-
-    monkeypatch.setattr(
-        maintenance.subprocess,
-        "Popen",
-        lambda command, **_kwargs: _FakePopen(list(command)),
-    )
-    monkeypatch.setattr(maintenance, "_maintenance_worker_pids", lambda **_kwargs: [])
-
-    pid = maintenance.maybe_spawn_background(repo_root=repo_root)
-    state = json.loads(maintenance.maintenance_state_path(repo_root=repo_root).read_text(encoding="utf-8"))
-
-    assert pid == 4321
-    assert calls and "odylith.runtime.surfaces.compass_standup_brief_maintenance" in calls[0]
-    assert state["active_pid"] == 4321
-    assert state["worker_epoch"]
-    assert state["worker_python_bin"]
-
-
-def test_maybe_spawn_background_restarts_stale_worker_when_worker_epoch_changes(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.setenv("ODYLITH_COMPASS_STANDUP_BACKGROUND_ALLOW_IN_TESTS", "1")
-    repo_root = tmp_path
-    request_path = maintenance.maintenance_request_path(repo_root=repo_root)
-    request_path.parent.mkdir(parents=True, exist_ok=True)
-    request_path.write_text(
-        json.dumps(
-            {
-                "version": "v1",
-                "global": {
-                    "24h": {
-                        "fingerprint": "global-fp",
-                        "fact_packet": {"scope_id": "global-24h"},
-                    }
-                },
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-    maintenance.maintenance_state_path(repo_root=repo_root).write_text(
-        json.dumps(
-            {
-                "version": "v1",
-                "active_pid": 1111,
-                "worker_epoch": "stale-epoch",
-                "worker_python_bin": "/tmp/old-python",
-                "entries": {},
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-
-    monkeypatch.setattr(maintenance, "_pid_alive", lambda pid: int(pid) == 1111)
-    terminated: list[int] = []
-    monkeypatch.setattr(maintenance, "_terminate_worker", lambda pid: terminated.append(int(pid)))
-    monkeypatch.setattr(maintenance, "_worker_epoch", lambda **_kwargs: "fresh-epoch")
-    monkeypatch.setattr(maintenance, "_worker_python_bin", lambda: "/tmp/fresh-python")
-
-    calls: list[list[str]] = []
-
-    class _FakePopen:
-        def __init__(self, command: list[str]) -> None:
-            self.pid = 4321
-            calls.append(command)
-
-    monkeypatch.setattr(
-        maintenance.subprocess,
-        "Popen",
-        lambda command, **_kwargs: _FakePopen(list(command)),
-    )
-    monkeypatch.setattr(maintenance, "_maintenance_worker_pids", lambda **_kwargs: [])
-
-    pid = maintenance.maybe_spawn_background(repo_root=repo_root)
-    state = json.loads(maintenance.maintenance_state_path(repo_root=repo_root).read_text(encoding="utf-8"))
-
-    assert pid == 4321
-    assert terminated == [1111]
-    assert calls and calls[0][0] == "/tmp/fresh-python"
-    assert state["active_pid"] == 4321
-    assert state["worker_epoch"] == "fresh-epoch"
-    assert state["worker_python_bin"] == "/tmp/fresh-python"
-
-
-def test_maybe_spawn_background_terminates_orphan_worker_before_spawning(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.setenv("ODYLITH_COMPASS_STANDUP_BACKGROUND_ALLOW_IN_TESTS", "1")
-    repo_root = tmp_path
-    request_path = maintenance.maintenance_request_path(repo_root=repo_root)
-    request_path.parent.mkdir(parents=True, exist_ok=True)
-    request_path.write_text(
-        json.dumps(
-            {
-                "version": "v1",
-                "global": {
-                    "24h": {
-                        "fingerprint": "global-fp",
-                        "fact_packet": {"scope_id": "global-24h"},
-                    }
-                },
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-
-    monkeypatch.setattr(maintenance, "_maintenance_worker_pids", lambda **_kwargs: [1111])
-    monkeypatch.setattr(maintenance, "_worker_epoch", lambda **_kwargs: "fresh-epoch")
-    monkeypatch.setattr(maintenance, "_worker_python_bin", lambda: "/tmp/fresh-python")
-
-    terminated: list[int] = []
-    monkeypatch.setattr(maintenance, "_terminate_worker", lambda pid: terminated.append(int(pid)))
-
-    calls: list[list[str]] = []
-
-    class _FakePopen:
-        def __init__(self, command: list[str]) -> None:
-            self.pid = 4321
-            calls.append(command)
-
-    monkeypatch.setattr(
-        maintenance.subprocess,
-        "Popen",
-        lambda command, **_kwargs: _FakePopen(list(command)),
-    )
-
-    pid = maintenance.maybe_spawn_background(repo_root=repo_root)
-    state = json.loads(maintenance.maintenance_state_path(repo_root=repo_root).read_text(encoding="utf-8"))
-
-    assert pid == 4321
-    assert terminated == [1111]
-    assert calls and calls[0][0] == "/tmp/fresh-python"
-    assert state["active_pid"] == 4321
-
-
-def test_maybe_spawn_background_ignores_empty_or_malformed_requests(tmp_path: Path) -> None:
-    repo_root = tmp_path
-    request_path = maintenance.maintenance_request_path(repo_root=repo_root)
-    request_path.parent.mkdir(parents=True, exist_ok=True)
-    request_path.write_text(
-        json.dumps(
-            {
-                "version": "v1",
-                "global": {"24h": {}},
-                "scoped": {"24h": {"B-021": {"fingerprint": "", "fact_packet": {}}}},
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-
-    assert maintenance.maybe_spawn_background(repo_root=repo_root) == 0

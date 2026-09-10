@@ -87,14 +87,11 @@ Related Bugs:
 ## Risks & Mitigations
 
 - [x] Risk: the stronger contract encourages noisy governance churn.
-  - [x] Mitigation: keep the workflow grounded-first, duplicate-averse, and
-        fail-closed on weak evidence.
+  - [x] Mitigation: keep the workflow grounded-first, duplicate-averse, and fail-closed on weak evidence.
 - [x] Risk: install-managed strings drift from bundled consumer guidance.
-  - [x] Mitigation: update source, bundle, and install-managed text in the same
-        slice and keep focused install assertions on the key contract phrases.
+  - [x] Mitigation: update source, bundle, and install-managed text in the same slice and keep focused install assertions on the key contract phrases.
 - [x] Risk: the autopilot language sounds broad but remains too vague to use.
-  - [x] Mitigation: spell out the exact backlog, component, Atlas, Casebook,
-        Compass, and session steps in both the guidance and supporting skills.
+  - [x] Mitigation: spell out the exact backlog, component, Atlas, Casebook, Compass, and session steps in both the guidance and supporting skills.
 
 ## Validation/Test Plan
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/install/test_agents.py tests/integration/install/test_manager.py`

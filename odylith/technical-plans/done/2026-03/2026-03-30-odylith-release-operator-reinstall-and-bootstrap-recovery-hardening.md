@@ -88,20 +88,15 @@ Related Bugs:
 ## Risks & Mitigations
 
 - [ ] Risk: launcher bootstrap recovery quietly widens consumer trust to host
-  - [ ] Mitigation: TODO (add explicit mitigation).
-      Python.
+  - [ ] Mitigation: TODO (add explicit mitigation). Python.
 - [ ] Risk: Unspecified risk (legacy backfill).
-  - [ ] Mitigation: keep the bootstrap shim inside repo-local runtime discovery
-    only and fail closed if no trusted runtime exists.
+  - [ ] Mitigation: keep the bootstrap shim inside repo-local runtime discovery only and fail closed if no trusted runtime exists.
 - [ ] Risk: a narrow refresh command drifts from the authoritative surface
-  - [ ] Mitigation: TODO (add explicit mitigation).
-      render path.
+  - [ ] Mitigation: TODO (add explicit mitigation). render path.
 - [ ] Risk: Unspecified risk (legacy backfill).
-  - [ ] Mitigation: reuse existing render helpers and runtime-mode wiring
-    instead of cloning a second render implementation.
+  - [ ] Mitigation: reuse existing render helpers and runtime-mode wiring instead of cloning a second render implementation.
 - [ ] Risk: bundle docs and source docs drift again.
-  - [ ] Mitigation: update source-owned docs and bundle mirrors in the same
-    change and keep targeted CLI coverage on the new contract.
+  - [ ] Mitigation: update source-owned docs and bundle mirrors in the same change and keep targeted CLI coverage on the new contract.
 
 ## Validation/Test Plan
 - [ ] `PYTHONPATH=src python -m pytest -q tests/unit/install/test_runtime.py tests/unit/test_cli.py tests/unit/runtime/test_auto_update_mermaid_diagrams.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_consumer_profile.py tests/unit/runtime/test_sync_cli_compat.py`

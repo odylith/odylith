@@ -11,6 +11,7 @@ from typing import Mapping
 
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.surfaces import compass_standup_brief_maintenance
+from odylith.runtime.surfaces import compass_standup_brief_maintenance_worker
 
 _DEFAULT_SETTLE_TIMEOUT_SECONDS = 75.0
 _DEFAULT_POLL_INTERVAL_SECONDS = 0.25
@@ -108,9 +109,9 @@ def settle_standup_maintenance(
                 "failed": 0,
             }
         request = odylith_context_cache.read_json_object(
-            compass_standup_brief_maintenance.maintenance_request_path(repo_root=root)
+            compass_standup_brief_maintenance_worker.maintenance_request_path(repo_root=root)
         )
-        if not compass_standup_brief_maintenance._request_has_entries(request):  # noqa: SLF001
+        if not compass_standup_brief_maintenance_worker.request_has_entries(request):  # noqa: SLF001
             return {
                 "status": "idle",
                 "request_retained": False,
@@ -121,9 +122,9 @@ def settle_standup_maintenance(
                 "failed": 0,
             }
 
-        state = compass_standup_brief_maintenance._load_state(repo_root=root)  # noqa: SLF001
+        state = compass_standup_brief_maintenance_worker.load_state(repo_root=root)  # noqa: SLF001
         active_pid = int(state.get("active_pid", 0) or 0)
-        if active_pid > 0 and compass_standup_brief_maintenance._pid_alive(active_pid):  # noqa: SLF001
+        if active_pid > 0 and compass_standup_brief_maintenance_worker.pid_alive(active_pid):  # noqa: SLF001
             if time.monotonic() >= deadline:
                 return {
                     "status": "timeout",

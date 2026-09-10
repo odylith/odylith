@@ -57,7 +57,7 @@ def _format_timestamp_date(value: Any) -> str:
     return parsed.strftime("%Y-%m-%d")
 def _release_story_title(story: Mapping[str, Any]) -> str:
     """Return the best available title for the spotlight story."""
-    return _normalize_release_copy(story.get("title") or "", limit=120) or _format_version_label(
+    return _normalize_release_copy(story.get("title") or "") or _format_version_label(
         story.get("release_tag") or story.get("to_version")
     )
 
@@ -77,7 +77,7 @@ def _release_story_hero_version(story: Mapping[str, Any]) -> str:
 
 def _release_story_label(story: Mapping[str, Any], key: str, *, fallback: str = "") -> str:
     """Read one release-story label field with normalization and fallback."""
-    return _normalize_release_copy(story.get(key) or "", limit=120) or fallback
+    return _normalize_release_copy(story.get(key) or "") or fallback
 
 
 def _release_story_notes_label(story: Mapping[str, Any]) -> str:
@@ -85,9 +85,9 @@ def _release_story_notes_label(story: Mapping[str, Any]) -> str:
     return _release_story_label(story, "notes_label", fallback="Open release notes on GitHub")
 
 
-def _append_unique_release_copy(items: list[str], value: Any, *, limit: int = 180) -> None:
+def _append_unique_release_copy(items: list[str], value: Any) -> None:
     """Append normalized release copy once, preserving the original order."""
-    token = _normalize_release_copy(value, limit=limit)
+    token = _normalize_release_copy(value)
     if token and token not in items:
         items.append(token)
 
@@ -116,7 +116,7 @@ def _release_story_body_candidates(story: Mapping[str, Any], *, limit: int = 4) 
         _append_unique_release_copy(candidates, paragraph)
         if len(candidates) >= limit:
             return candidates[:limit]
-    normalized_body = _normalize_release_copy(body, limit=None)
+    normalized_body = _normalize_release_copy(body)
     if not normalized_body:
         return candidates[:limit]
     for sentence in re.split(r"(?<=[.!?])\s+", normalized_body):
@@ -155,9 +155,9 @@ def _release_story_bullets(
         if len(bullets) >= limit:
             return bullets[:limit]
     if len(bullets) < minimum:
-        _append_unique_release_copy(bullets, detail)
-    if len(bullets) < minimum:
         _append_unique_release_copy(bullets, summary)
+    if len(bullets) < minimum:
+        _append_unique_release_copy(bullets, detail)
     if len(bullets) < minimum:
         for candidate in _release_story_body_candidates(story, limit=max(limit, minimum) + 2):
             _append_unique_release_copy(bullets, candidate)
@@ -199,8 +199,8 @@ def render_release_spotlight_html(payload: Mapping[str, Any]) -> str:
         if isinstance(raw_highlights, Sequence) and not isinstance(raw_highlights, (str, bytes, bytearray))
         else []
     )[:3]
-    summary = _normalize_release_copy(spotlight.get("summary"), limit=None)
-    detail = _normalize_release_copy(spotlight.get("detail"), limit=None)
+    summary = _normalize_release_copy(spotlight.get("summary"))
+    detail = _normalize_release_copy(spotlight.get("detail"))
     if not summary and highlights:
         summary = highlights[0]
     bullet_items = _release_story_bullets(

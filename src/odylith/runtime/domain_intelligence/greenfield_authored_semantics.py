@@ -1,4 +1,4 @@
-"""Closed source-grounded semantic relations from Greenfield model authoring."""
+"""Closed source relations and distinctly provisional Greenfield design custody."""
 
 from __future__ import annotations
 
@@ -7,10 +7,18 @@ import hashlib
 import json
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
+    event_target_is_source_bound,
+    intent_terminal_result_values,
+    intent_text_at_path,
+    intent_text_rows,
+)
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import validate_provisional_design
+from odylith.runtime.domain_intelligence.greenfield_event_ordering import validate_source_precedence
 from odylith.runtime.governance.artifact_tribunal import _bind_verified_source_custody
 
 AUTHORED_SEMANTICS_KEY = "authored_semantics"
-AUTHORED_SEMANTICS_VERSION = "odylith.greenfield.authored-semantics.v7"
+AUTHORED_SEMANTICS_VERSION = "odylith.greenfield.authored-semantics.v16"
 AUTHORED_RELATION_SET_SHA256_KEY = "authored_relation_set_sha256"
 AUTHORED_PROJECTION_ORIGIN = "model_authored_typed_intent"
 AUTHORED_SEMANTIC_ROOT = f"intent.{AUTHORED_SEMANTICS_KEY}"
@@ -28,7 +36,7 @@ ATOMIC_FACT_CATEGORIES = (
 )
 ATOMIC_POLARITIES = ("affirmed", "required", "prohibited")
 AUTHORED_RELATION_ROLES = (
-    "actor_quote",
+    "actor_fact_quote",
     "action_verb_quote",
     "target_quote",
     "visible_result_quote",
@@ -41,8 +49,6 @@ FIRST_PATH_RELATION_FIELDS = frozenset(
         "event_start_byte",
         "event_end_byte",
         "actor_kind",
-        "actor_quote",
-        "actor_is_carried",
         "actor_fact_path",
         "actor_fact_quote",
         "owner_system_path",
@@ -51,7 +57,6 @@ FIRST_PATH_RELATION_FIELDS = frozenset(
         "action_verb_quote",
         "target_quote",
         "visible_result_quote",
-        "recovery_path",
     }
 )
 FIRST_PATH_CONTEXT_RELATION_FIELDS = frozenset(
@@ -80,22 +85,13 @@ FIRST_PATH_CONTEXT_KINDS = (
     "external_system",
     "operational_constraint",
 )
-COMPONENT_RESPONSIBILITY_SOURCES = ("accepted_fact", "terminal_visible_result")
+COMPONENT_RESPONSIBILITY_SOURCES = ("accepted_fact",)
 MAX_FIRST_PATH_RELATIONS = 24
 MAX_COMPONENT_RESPONSIBILITY_RELATIONS = 32
-FIRST_PATH_ACTOR_BINDING_FIELDS = (
-    "actor_kind", "actor_quote", "actor_fact_path",
-    "actor_fact_quote", "owner_system_path", "owner_system_quote",
-)
 
 
 class GreenfieldAuthoredSemanticsError(ValueError):
     """The model's typed relations are not grounded in accepted source facts."""
-
-
-def first_path_actor_binding_identity(value: Mapping[str, Any]) -> tuple[str, ...]:
-    """Return the exact typed entity and owner binding carried between events."""
-    return tuple(str(value.get(field) or "") for field in FIRST_PATH_ACTOR_BINDING_FIELDS)
 
 
 def combined_prompt_evidence_source(*, prompt: str, edit_evidence: str) -> str:
@@ -115,8 +111,9 @@ def validate_first_path_relations(
     external_systems: Sequence[str] = (),
     internal_systems: Sequence[str] = (),
     product_title: str = "",
+    terminal_result_facts: Sequence[str] = (),
 ) -> tuple[dict[str, Any], ...]:
-    """Return ordered relations whose quoted parts are exact first-path bytes."""
+    """Return stable source-event identities, not an inferred execution order."""
 
     if (
         not isinstance(value, Sequence)
@@ -126,7 +123,8 @@ def validate_first_path_relations(
     ):
         raise GreenfieldAuthoredSemanticsError("Greenfield authoring returned invalid first-path relations")
     path = str(first_path or "")
-    owner_values = _owner_projection_values(
+    visible_result_facts = (path, *map(str, terminal_result_facts))
+    owner_values = canonical_product_owner_projection_values(
         title=product_title,
         internal_systems=internal_systems,
     )
@@ -139,7 +137,6 @@ def validate_first_path_relations(
     rows: list[dict[str, Any]] = []
     path_bytes = path.encode("utf-8")
     cursor = 0
-    human_seen = False
     visible_seen = False
     seen_source_events: set[tuple[int, int]] = set()
     seen_projection_events: set[tuple[int, int]] = set()
@@ -152,17 +149,14 @@ def validate_first_path_relations(
         event_start = raw.get("event_start_byte")
         event_end = raw.get("event_end_byte")
         actor_kind = str(raw.get("actor_kind") or "")
-        actor_quote = str(raw.get("actor_quote") or "").strip()
-        actor_is_carried = raw.get("actor_is_carried")
         actor_fact_path = str(raw.get("actor_fact_path") or "")
         actor_fact_quote = str(raw.get("actor_fact_quote") or "")
         owner_system_path = str(raw.get("owner_system_path") or "")
         owner_system_quote = str(raw.get("owner_system_quote") or "")
-        event_quote = str(raw.get("event_quote") or "").strip()
-        action_verb_quote = str(raw.get("action_verb_quote") or "").strip()
-        target_quote = str(raw.get("target_quote") or "").strip()
-        visible_result_quote = str(raw.get("visible_result_quote") or "").strip()
-        recovery_path = raw.get("recovery_path")
+        event_quote = str(raw.get("event_quote") or "")
+        action_verb_quote = str(raw.get("action_verb_quote") or "")
+        target_quote = str(raw.get("target_quote") or "")
+        visible_result_quote = str(raw.get("visible_result_quote") or "")
         if (
             order != expected_order
             or not isinstance(source_start, int)
@@ -179,8 +173,6 @@ def validate_first_path_relations(
             or event_end <= event_start
             or event_end > len(path_bytes)
             or actor_kind not in FIRST_PATH_ACTOR_KINDS
-            or not actor_quote
-            or not isinstance(actor_is_carried, bool)
             or not event_quote
             or any(
                 source_start < seen_end and seen_start < source_end
@@ -188,12 +180,10 @@ def validate_first_path_relations(
             )
             or (event_start, event_end) in seen_projection_events
             or not action_verb_quote
-            or not isinstance(recovery_path, bool)
         ):
             raise GreenfieldAuthoredSemanticsError("Greenfield authoring returned invalid first-path relations")
         require_first_path_actor_binding(
             actor_kind=actor_kind,
-            actor_quote=actor_quote,
             actor_fact_path=actor_fact_path,
             actor_fact_quote=actor_fact_quote,
             owner_system_path=owner_system_path,
@@ -201,24 +191,22 @@ def validate_first_path_relations(
             actor_values=actor_values,
             owner_values=owner_values,
         )
-        actor_is_explicit = actor_quote in event_quote
-        actor_binding = first_path_actor_binding_identity(raw)
-        previous_actor_binding = first_path_actor_binding_identity(rows[-1]) if rows else None
         if (
             path_bytes[event_start:event_end] != event_quote.encode("utf-8")
-            or actor_is_carried == actor_is_explicit
-            or (actor_is_carried and actor_binding != previous_actor_binding)
             or action_verb_quote not in event_quote
         ):
             raise GreenfieldAuthoredSemanticsError("Greenfield authoring returned ungrounded first-path relations")
-        if target_quote and target_quote not in event_quote:
+        if not event_target_is_source_bound(
+            event_quote=event_quote,
+            target_quote=target_quote,
+        ):
             raise GreenfieldAuthoredSemanticsError("Greenfield authoring returned ungrounded first-path relations")
-        if visible_result_quote and visible_result_quote not in event_quote:
+        if visible_result_quote and not any(
+            visible_result_quote in fact for fact in visible_result_facts if fact
+        ):
             raise GreenfieldAuthoredSemanticsError("Greenfield authoring returned ungrounded first-path relations")
-        if actor_kind == "human":
-            human_seen = True
         if visible_result_quote:
-            if visible_seen or expected_order != len(value):
+            if visible_seen:
                 raise GreenfieldAuthoredSemanticsError("Greenfield authoring returned an invalid terminal visible result")
             visible_seen = True
         seen_source_events.add((source_start, source_end))
@@ -232,8 +220,6 @@ def validate_first_path_relations(
                 "event_start_byte": event_start,
                 "event_end_byte": event_end,
                 "actor_kind": actor_kind,
-                "actor_quote": actor_quote,
-                "actor_is_carried": actor_is_carried,
                 "actor_fact_path": actor_fact_path,
                 "actor_fact_quote": actor_fact_quote,
                 "owner_system_path": owner_system_path,
@@ -242,31 +228,32 @@ def validate_first_path_relations(
                 "action_verb_quote": action_verb_quote,
                 "target_quote": target_quote,
                 "visible_result_quote": visible_result_quote,
-                "recovery_path": recovery_path,
             }
         )
-    if rows[0]["actor_kind"] != "human" or not human_seen or not visible_seen:
-        raise GreenfieldAuthoredSemanticsError("Greenfield authoring did not type a human path with a visible result")
+    if not visible_seen:
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring did not type a path with a visible result"
+        )
     return tuple(rows)
 
 
-def _owner_projection_values(
+def canonical_product_owner_projection_values(
     *,
     title: str,
     internal_systems: Sequence[str],
 ) -> dict[str, str]:
+    """Resolve a title alias to one system while rejecting duplicate systems."""
     values: dict[str, str] = {}
     quote_paths: dict[str, str] = {}
-    owner_rows = [
-        (f"/internal_systems/{index}", str(value))
-        for index, value in enumerate(internal_systems)
-    ]
+    owner_rows = [(f"/internal_systems/{index}", str(value)) for index, value in enumerate(internal_systems)]
     owner_rows.append(("/title", str(title or "")))
     for path, quote in owner_rows:
         if not quote:
             continue
         existing_path = quote_paths.get(quote)
         if existing_path is not None and existing_path != path:
+            if path == "/title" and existing_path.startswith("/internal_systems/"):
+                continue
             raise GreenfieldAuthoredSemanticsError(
                 "Greenfield authored semantics contain duplicate labels for distinct product owners"
             )
@@ -302,7 +289,6 @@ def _actor_projection_values(
 def require_first_path_actor_binding(
     *,
     actor_kind: str,
-    actor_quote: str,
     actor_fact_path: str,
     actor_fact_quote: str,
     owner_system_path: str,
@@ -315,15 +301,6 @@ def require_first_path_actor_binding(
     if actor_values.get(actor_fact_path) != (actor_kind, actor_fact_quote):
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring returned an unbound first-path actor fact"
-        )
-    exact_actor_paths = tuple(
-        path
-        for path, (_, quote) in actor_values.items()
-        if quote == actor_quote
-    )
-    if exact_actor_paths and actor_fact_path not in exact_actor_paths:
-        raise GreenfieldAuthoredSemanticsError(
-            "Greenfield authoring ignored an exact selected actor fact"
         )
     if actor_kind != "product":
         if owner_system_path or owner_system_quote:
@@ -384,6 +361,15 @@ def overlapping_first_path_event_orders(
     return frozenset(orders)
 
 
+def expected_first_path_context_event_order(
+    *, source_start: Any, source_end: Any, first_path_relations: Sequence[Mapping[str, Any]]
+) -> int:
+    orders = overlapping_first_path_event_orders(
+        source_start=source_start, source_end=source_end, first_path_relations=first_path_relations
+    )
+    return next(iter(orders)) if len(orders) == 1 else 0
+
+
 def _canonical_owner_path(path: str) -> bool:
     if path == "/title":
         return True
@@ -404,8 +390,10 @@ def authored_semantics_mapping(
     component_responsibility_relations: Sequence[Mapping[str, Any]] = (),
     *,
     first_path_context_relations: Sequence[Mapping[str, Any]] = (),
+    source_precedence: Sequence[Mapping[str, Any]] = (),
+    provisional_design: Mapping[str, Any],
 ) -> dict[str, Any]:
-    """Serialize verified relations beside, but never instead of, source facts."""
+    """Serialize source relations and tagged design without replacing source facts."""
 
     return {
         "version": AUTHORED_SEMANTICS_VERSION,
@@ -416,6 +404,12 @@ def authored_semantics_mapping(
         "component_responsibility_relations": [
             dict(row) for row in component_responsibility_relations
         ],
+        "source_precedence": [dict(row) for row in source_precedence],
+        "provisional_design": validate_provisional_design(
+            provisional_design, event_orders=tuple(row["order"] for row in relations),
+            source_precedence=source_precedence,
+            result_event_order=next((row["order"] for row in relations if row["visible_result_quote"]), None),
+        ),
     }
 
 
@@ -428,7 +422,7 @@ def authored_component_relation_facts(
 ) -> tuple[dict[str, Any], ...]:
     """Group exact product-event relations into the sole authored component contract."""
 
-    owner_values = _owner_projection_values(
+    owner_values = canonical_product_owner_projection_values(
         title=title,
         internal_systems=internal_systems,
     )
@@ -485,11 +479,6 @@ def authored_component_relation_facts(
         raise GreenfieldAuthoredSemanticsError(
             "model-authored component relation references an unselected owner"
         )
-    if not ordered_owners:
-        raise GreenfieldAuthoredSemanticsError(
-            "model-authored intent did not establish a viable component projection"
-        )
-
     rows: list[dict[str, Any]] = []
     for owner_path in ordered_owners:
         owner = owner_values[owner_path]
@@ -523,13 +512,6 @@ def authored_component_relation_facts(
                         str(event.get("visible_result_quote") or "")
                         for event in events
                         if str(event.get("visible_result_quote") or "")
-                    )
-                ),
-                "recovery_events": list(
-                    dict.fromkeys(
-                        str(event.get("event_quote") or "")
-                        for event in events
-                        if bool(event.get("recovery_path")) and str(event.get("event_quote") or "")
                     )
                 ),
             }
@@ -573,11 +555,6 @@ def validate_first_path_context_relations(
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authored semantics left first-path context facts unadjudicated"
         )
-    event_orders = {
-        int(row["order"])
-        for row in first_path_relations
-        if isinstance(row.get("order"), int) and not isinstance(row.get("order"), bool)
-    }
     sealed: list[dict[str, Any]] = []
     for raw, (expected_kind, expected_path, expected_quote) in zip(value, expected, strict=True):
         if not isinstance(raw, Mapping) or set(raw) != FIRST_PATH_CONTEXT_RELATION_FIELDS:
@@ -587,14 +564,10 @@ def validate_first_path_context_relations(
         source_start = raw.get("source_start_byte")
         source_end = raw.get("source_end_byte")
         event_order = raw.get("first_path_event_order")
-        overlapping_orders = overlapping_first_path_event_orders(
+        expected_event_order = expected_first_path_context_event_order(
             source_start=source_start,
             source_end=source_end,
             first_path_relations=first_path_relations,
-        )
-        contradicted_event_link = bool(
-            len(overlapping_orders) > 1
-            or (overlapping_orders and event_order not in overlapping_orders)
         )
         if (
             raw.get("context_kind") != expected_kind
@@ -609,9 +582,7 @@ def validate_first_path_context_relations(
             or not isinstance(event_order, int)
             or isinstance(event_order, bool)
             or event_order < 0
-            or (event_order and event_order not in event_orders)
-            or contradicted_event_link
-            or (expected_kind == "state_object" and not event_order)
+            or event_order != expected_event_order
         ):
             raise GreenfieldAuthoredSemanticsError(
                 "Greenfield authored first-path context relation does not match its accepted fact"
@@ -779,36 +750,25 @@ def _authored_relations_from_intent(
             "first_path_relations",
             "first_path_context_relations",
             "component_responsibility_relations",
+            "source_precedence",
+            "provisional_design",
         }
     ):
         raise GreenfieldAuthoredSemanticsError("Greenfield authored semantics are malformed")
     relations = semantics.get("first_path_relations")
     if not isinstance(relations, Sequence) or isinstance(relations, (str, bytes, bytearray)):
         raise GreenfieldAuthoredSemanticsError("Greenfield authored semantics are malformed")
-    actor_values = intent.get("human_actors")
+    actor_values = intent.get("human_actors", ())
     if not isinstance(actor_values, Sequence) or isinstance(actor_values, (str, bytes, bytearray)):
         raise GreenfieldAuthoredSemanticsError("Greenfield authored semantics are missing typed human actors")
     first_path_relations = validate_first_path_relations(
         relations,
         first_path=str(intent.get("first_path") or ""),
         human_actors=tuple(str(row) for row in actor_values if str(row)),
-        external_systems=tuple(
-            str(row)
-            for row in intent.get("external_systems", ())
-            if str(row)
-        )
-        if isinstance(intent.get("external_systems"), Sequence)
-        and not isinstance(intent.get("external_systems"), (str, bytes, bytearray))
-        else (),
-        internal_systems=tuple(
-            str(row)
-            for row in intent.get("internal_systems", ())
-            if str(row)
-        )
-        if isinstance(intent.get("internal_systems"), Sequence)
-        and not isinstance(intent.get("internal_systems"), (str, bytes, bytearray))
-        else (),
+        external_systems=intent_text_rows(intent.get("external_systems")),
+        internal_systems=intent_text_rows(intent.get("internal_systems")),
         product_title=str(intent.get("title") or ""),
+        terminal_result_facts=intent_terminal_result_values(intent),
     )
     context_relations = validate_first_path_context_relations(
         semantics.get("first_path_context_relations"),
@@ -820,6 +780,20 @@ def _authored_relations_from_intent(
         intent=intent,
         first_path_relations=first_path_relations,
     )
+    try:
+        source_precedence = validate_source_precedence(
+            semantics["source_precedence"],
+            event_orders=tuple(row["order"] for row in first_path_relations),
+            operational_constraints=intent_text_rows(intent.get("operational_constraints")),
+        )
+        validate_provisional_design(
+            semantics["provisional_design"],
+            event_orders=tuple(row["order"] for row in first_path_relations),
+            source_precedence=source_precedence,
+            result_event_order=next(row["order"] for row in first_path_relations if row["visible_result_quote"]),
+        )
+    except ValueError as exc:
+        raise GreenfieldAuthoredSemanticsError(str(exc)) from exc
     return first_path_relations, context_relations, component_relations
 
 
@@ -880,13 +854,9 @@ def validate_component_responsibility_relations(
     expected_paths = tuple(
         f"/component_responsibilities/{index}" for index in range(len(responsibilities))
     )
-    if expected_paths and len(value) != len(expected_paths):
+    if len(value) != len(expected_paths):
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authored semantics left component responsibilities without typed owners"
-        )
-    if not expected_paths and len(value) != 1:
-        raise GreenfieldAuthoredSemanticsError(
-            "Greenfield authored semantics do not establish a viable component projection"
         )
     systems_value = intent.get("internal_systems")
     systems = (
@@ -895,7 +865,7 @@ def validate_component_responsibility_relations(
         and not isinstance(systems_value, (str, bytes, bytearray))
         else ()
     )
-    owner_values = _owner_projection_values(
+    owner_values = canonical_product_owner_projection_values(
         title=str(intent.get("title") or ""),
         internal_systems=systems,
     )
@@ -943,20 +913,6 @@ def validate_component_responsibility_relations(
                 raise GreenfieldAuthoredSemanticsError(
                     "Greenfield authored semantics assign contradictory owners to one product event"
                 )
-        if responsibility_source == "terminal_visible_result":
-            if (
-                expected_paths
-                or responsibility_path != "/first_path"
-                or linked_event is None
-                or not str(linked_event.get("visible_result_quote") or "")
-                or str(raw.get("responsibility_quote") or "")
-                != str(linked_event.get("visible_result_quote") or "")
-            ):
-                raise GreenfieldAuthoredSemanticsError(
-                    "Greenfield authored terminal component responsibility is malformed"
-                )
-            rows.append(dict(raw))
-            continue
         expected_path = expected_paths[index] if index < len(expected_paths) else ""
         responsibility = responsibilities[index] if index < len(responsibilities) else ""
         if (
@@ -978,8 +934,10 @@ def authored_relation_set_sha256(
     component_responsibility_relations: Sequence[Mapping[str, Any]] = (),
     *,
     first_path_context_relations: Sequence[Mapping[str, Any]] = (),
+    source_precedence: Sequence[Mapping[str, Any]] = (),
+    provisional_design: Mapping[str, Any] | None = None,
 ) -> str:
-    """Hash the complete ordered relation contract without interpreting its language."""
+    """Bind source relations and provisional design in one semantic custody hash."""
 
     if isinstance(relations, (str, bytes, bytearray)):
         raise GreenfieldAuthoredSemanticsError("Greenfield authored relation custody is malformed")
@@ -1004,12 +962,26 @@ def authored_relation_set_sha256(
         ):
             raise GreenfieldAuthoredSemanticsError("Greenfield authored relation custody is malformed")
         context_payload.append(dict(relation))
+    precedence_payload = []
+    for row in source_precedence:
+        if not isinstance(row, Mapping) or set(row) != {"before_event", "after_event", "constraint_index"}:
+            raise GreenfieldAuthoredSemanticsError("Greenfield source precedence custody is malformed")
+        precedence_payload.append(dict(row))
+    if not first_path_payload and (component_payload or context_payload or precedence_payload or provisional_design is not None):
+        raise GreenfieldAuthoredSemanticsError("Greenfield authored design requires source relations")
+    design_payload = validate_provisional_design(
+        provisional_design, event_orders=tuple(row["order"] for row in first_path_payload),
+        source_precedence=precedence_payload,
+        result_event_order=next((row["order"] for row in first_path_payload if row["visible_result_quote"]), None),
+    ) if first_path_payload else None
     canonical = json.dumps(
         {
             "version": AUTHORED_SEMANTICS_VERSION,
             "first_path_relations": first_path_payload,
             "first_path_context_relations": context_payload,
             "component_responsibility_relations": component_payload,
+            "source_precedence": precedence_payload,
+            "provisional_design": design_payload,
         },
         ensure_ascii=True,
         separators=(",", ":"),
@@ -1056,6 +1028,8 @@ def require_relation_authority_parity(
         relations,
         component_relations,
         first_path_context_relations=context_relations,
+        source_precedence=intent[AUTHORED_SEMANTICS_KEY]["source_precedence"],
+        provisional_design=intent[AUTHORED_SEMANTICS_KEY]["provisional_design"],
     )
     if sealed_digest != expected:
         raise GreenfieldAuthoredSemanticsError(
@@ -1082,6 +1056,8 @@ def authored_source_custody(
             relations,
             component_relations,
             first_path_context_relations=context_relations,
+            source_precedence=intent[AUTHORED_SEMANTICS_KEY]["source_precedence"],
+            provisional_design=intent[AUTHORED_SEMANTICS_KEY]["provisional_design"],
         ),
     )
 
@@ -1127,8 +1103,6 @@ FIRST_PATH_RELATION_SCHEMA: dict[str, Any] = {
             "event_start_byte": {"type": "integer", "minimum": 0},
             "event_end_byte": {"type": "integer", "minimum": 1},
             "actor_kind": {"type": "string", "enum": list(FIRST_PATH_ACTOR_KINDS)},
-            "actor_quote": {"type": "string"},
-            "actor_is_carried": {"type": "boolean"},
             "actor_fact_path": {"type": "string"},
             "actor_fact_quote": {"type": "string"},
             "owner_system_path": {"type": "string"},
@@ -1137,7 +1111,6 @@ FIRST_PATH_RELATION_SCHEMA: dict[str, Any] = {
             "action_verb_quote": {"type": "string"},
             "target_quote": {"type": "string"},
             "visible_result_quote": {"type": "string"},
-            "recovery_path": {"type": "boolean"},
         },
     },
 }
@@ -1174,7 +1147,6 @@ __all__ = [
     "COMPONENT_RESPONSIBILITY_RELATION_FIELDS",
     "FIRST_PATH_CONTEXT_RELATION_FIELDS",
     "FIRST_PATH_CONTEXT_RELATION_SCHEMA",
-    "FIRST_PATH_ACTOR_BINDING_FIELDS",
     "FIRST_PATH_RELATION_SCHEMA",
     "GREENFIELD_PRECONFIRM_STAGING_MARKER",
     "GreenfieldAuthoredSemanticsError",
@@ -1184,10 +1156,11 @@ __all__ = [
     "authored_source_custody",
     "authored_projection_relations",
     "authored_visible_result",
+    "canonical_product_owner_projection_values",
     "combined_prompt_evidence_source",
     "component_responsibility_relations_from_intent",
+    "expected_first_path_context_event_order",
     "first_path_context_relations_from_intent",
-    "first_path_actor_binding_identity",
     "first_path_relations_from_intent",
     "overlapping_first_path_event_orders",
     "require_first_path_actor_binding",

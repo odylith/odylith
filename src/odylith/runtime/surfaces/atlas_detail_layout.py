@@ -117,19 +117,19 @@ DETAIL_LAYOUT_CSS = r"""
       min-width: 0;
     }
 
-    .diagram-box-name strong {
+    __ODYLITH_ATLAS_DIAGRAM_BOX_ROLE_LABEL__
+    .diagram-box-name strong,
+    .diagram-box-role,
+    .diagram-box-description {
+      white-space: pre-wrap;
       overflow-wrap: anywhere;
       word-break: break-word;
     }
 
-    __ODYLITH_ATLAS_DIAGRAM_BOX_ROLE_LABEL__
     .diagram-box-role {
       width: fit-content;
       max-width: 100%;
-      overflow-wrap: anywhere;
-      word-break: break-word;
       justify-content: flex-start;
-      white-space: normal;
     }
 
     .diagram-box-description {
@@ -412,6 +412,44 @@ DETAIL_LAYOUT_HTML = r"""
 """
 
 DETAIL_RUNTIME_HELPERS_JS = r"""
+    function renderDiagramBoxes(diagram, sectionEl, listEl) {
+      listEl.replaceChildren();
+      const boxes = Array.isArray(diagram.diagram_boxes)
+        ? diagram.diagram_boxes.filter((box) => box && typeof box === "object")
+        : [];
+      sectionEl.hidden = !boxes.length;
+      boxes.forEach((box, index) => {
+        const row = document.createElement("article");
+        row.className = "diagram-box-row";
+
+        const number = document.createElement("span");
+        number.className = "diagram-box-index";
+        number.textContent = String(index + 1);
+
+        const name = document.createElement("div");
+        name.className = "diagram-box-name";
+        const heading = document.createElement("strong");
+        heading.textContent = String(box.label ?? "");
+        name.appendChild(heading);
+        const roleText = String(box.role ?? "");
+        if (roleText.trim()) {
+          const role = document.createElement("span");
+          role.className = "diagram-box-role";
+          role.textContent = roleText;
+          name.appendChild(role);
+        }
+
+        const description = document.createElement("p");
+        description.className = "diagram-box-description";
+        description.textContent = String(box.description ?? "");
+
+        row.appendChild(number);
+        row.appendChild(name);
+        row.appendChild(description);
+        listEl.appendChild(row);
+      });
+    }
+
     function componentLookupKey(value) {
       return String(value || "")
         .trim()

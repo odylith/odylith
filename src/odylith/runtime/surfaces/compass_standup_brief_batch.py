@@ -1160,6 +1160,7 @@ def _provider_failure_brief_for_packet(
         generated_utc=generated_utc,
         provider=provider,
         fallback_reason="provider_error",
+        diagnostics=narrator._diagnostics_with_local_fallback(fact_packet=fact_packet),  # noqa: SLF001
     )
 
 

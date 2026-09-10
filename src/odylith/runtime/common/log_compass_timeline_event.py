@@ -16,12 +16,15 @@ import datetime as dt
 import json
 from pathlib import Path
 import re
+import sys
 from typing import Any
 from typing import Mapping
 from typing import Sequence
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common import compass_log_continuation
 from odylith.runtime.common import repo_path_resolver
+from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance.proof_state.contract import DEPLOYMENT_TRUTH_FIELDS
@@ -45,18 +48,21 @@ _SOFT_REGISTRY_DIAGNOSTIC_PREFIXES: tuple[str, ...] = (
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
+    tokens = list(sys.argv[1:] if argv is None else argv)
     parser = argparse.ArgumentParser(
         prog="odylith compass log",
         description="Append a Compass timeline stream event for host-aware audit visibility.",
+        allow_abbrev=False,
     )
     parser.add_argument("--repo-root", default=".", help="Repository root.")
+    parser.add_argument("--complete", action="store_true", help="Complete an admitted canonical log's failed refresh without appending again; only --repo-root may accompany this option.")
     parser.add_argument(
         "--stream",
         default=agent_runtime_contract.AGENT_STREAM_PATH,
         help="Output JSONL stream path (local runtime artifact).",
     )
-    parser.add_argument("--kind", required=True, choices=_KIND_CHOICES, help="Event kind.")
-    parser.add_argument("--summary", required=True, help="Crisp event summary sentence.")
+    parser.add_argument("--kind", required="--complete" not in tokens, choices=_KIND_CHOICES, help="Event kind.")
+    parser.add_argument("--summary", required="--complete" not in tokens, help="Crisp event summary sentence.")
     parser.add_argument(
         "--workstream",
         action="append",
@@ -141,7 +147,13 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--published-source-commit", default="", help="Optional deployment-truth published source commit.")
     parser.add_argument("--runner-fingerprint", default="", help="Optional deployment-truth runner fingerprint.")
     parser.add_argument("--last-live-failing-commit", default="", help="Optional deployment-truth last live failing commit.")
-    return parser.parse_args(argv)
+    args = parser.parse_args(tokens)
+    if args.complete:
+        try:
+            compass_log_continuation.completion_repo_argument(tokens)
+        except ValueError as exc:
+            parser.error(str(exc))
+    return args
 
 
 def _resolve(repo_root: Path, token: str) -> Path:
@@ -244,10 +256,9 @@ def _canonical_kind(raw: str) -> str | None:
     return _KIND_CANONICAL.get(token)
 
 
-def append_event(
+def prepare_event(
     *,
     repo_root: Path,
-    stream_path: Path,
     kind: str,
     summary: str,
     workstream_values: Sequence[str],
@@ -273,6 +284,7 @@ def append_event(
     work_category: str = "",
     deployment_truth: Mapping[str, Any] | None = None,
 ) -> dict[str, object]:
+    """Prepare validated event fields without appending or refreshing surfaces."""
     canonical_kind = _canonical_kind(kind)
     if not canonical_kind:
         choices = ", ".join(_KIND_CHOICES)
@@ -404,17 +416,42 @@ def append_event(
             if value
         }
 
-    line = json.dumps(payload, sort_keys=True)
-    stream_path.parent.mkdir(parents=True, exist_ok=True)
-    with stream_path.open("a", encoding="utf-8") as handle:
-        handle.write(f"{line}\n")
-
     return payload
 
 
-def main(argv: Sequence[str] | None = None) -> int:
+def append_event(
+    *, repo_root: Path, stream_path: Path, repository_lock_fd: int | None = None, **event_fields: Any,
+) -> dict[str, object]:
+    """Validate once, then append; only an admitted canonical log earns continuation."""
+    payload = prepare_event(repo_root=repo_root, **event_fields)
+    event = (json.dumps(payload, sort_keys=True) + "\n").encode("utf-8")
+    if (repository_lock_fd is not None
+            and stream_path == repo_root / compass_log_continuation.STREAM_PATH
+            and greenfield_generation_state.read_active_publication(repo_root) is not None):
+        admitted = compass_log_continuation.prepare_append(
+            repo_root=repo_root, event=event, repository_lock_fd=repository_lock_fd,
+        )
+        compass_log_continuation.append_prepared(admitted)
+    else:
+        # Direct API/custom-stream callers retain their existing append semantics;
+        # no prospective recovery receipt is claimed for these writes.
+        stream_path.parent.mkdir(parents=True, exist_ok=True)
+        with stream_path.open("ab") as handle:
+            handle.write(event)
+    return payload
+
+
+def main(argv: Sequence[str] | None = None, *, repository_lock_fd: int | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
+    if args.complete:
+        try:
+            return compass_log_continuation.require_completion(
+                repo_root=repo_root, repository_lock_fd=repository_lock_fd,
+            ).render()
+        except RuntimeError as exc:
+            print(str(exc))
+            return 1
     stream_path = _resolve(repo_root, str(args.stream))
     manifest_token = str(args.manifest).strip()
     manifest_path = (
@@ -426,6 +463,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         payload = append_event(
             repo_root=repo_root,
             stream_path=stream_path,
+            repository_lock_fd=repository_lock_fd,
             kind=str(args.kind),
             summary=str(args.summary),
             workstream_values=list(args.workstream),
@@ -469,13 +507,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(f"- artifacts: {len(payload.get('artifacts', []))}")
     print(f"- components: {len(payload.get('components', []))}")
     try:
-        owned_surface_refresh.raise_for_failed_refresh(
-            repo_root=repo_root,
-            surface="compass",
-            operation_label="Compass timeline append",
-        )
+        if (repository_lock_fd is not None
+                and stream_path == repo_root / compass_log_continuation.STREAM_PATH
+                and (repo_root / compass_log_continuation.RECEIPT_PATH).exists()):
+            compass_log_continuation.require_completion(
+                repo_root=repo_root, repository_lock_fd=repository_lock_fd,
+            ).render()
+        else:
+            owned_surface_refresh.raise_for_failed_refresh(
+                repo_root=repo_root, surface="compass", operation_label="Compass timeline append",
+            )
     except RuntimeError as exc:
         print(str(exc))
+        if (repo_root / compass_log_continuation.RECEIPT_PATH).exists():
+            print("Complete only the recorded refresh with `odylith compass log --repo-root . --complete`; do not repeat the append.")
         return 1
     workstreams = payload.get("workstreams", [])
     first_workstream = str(workstreams[0]).strip() if isinstance(workstreams, list) and workstreams else ""

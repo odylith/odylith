@@ -311,114 +311,114 @@ def test_first_install_launchpad_stays_primary_path_and_never_leaks_upgrade_popu
     _render_shell(repo_root, monkeypatch)
 
     with _repo_browser_context(repo_root) as (base_url, context):
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        _install_clipboard_probe(page)
-        page.set_viewport_size({"width": 1440, "height": 900})
-        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
-        assert response is not None and response.ok
+        with _new_page(context) as (page, observation):
+            _install_clipboard_probe(page)
+            page.set_viewport_size({"width": 1440, "height": 900})
+            response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+            assert response is not None and response.ok
 
-        welcome = page.locator("#shellWelcomeState")
-        welcome.wait_for(timeout=15000)
-        assert welcome.get_attribute("aria-hidden") in {None, "false"}
-        assert page.locator("#shellUpgradeSpotlight").count() == 0
-        assert page.locator("#upgradeReopen").is_hidden()
-        assert page.locator("#welcomeReopen").is_hidden()
-        assert page.locator(".toolbar-version").inner_text().strip() == "v1.2.3"
-        assert page.locator(".welcome-title").inner_text().strip() == "Odylith is installed"
-        assert page.locator(".welcome-card-title").inner_text().strip() == "Ask for the repo-aware tour"
-        assert page.locator(".welcome-chip").count() == 0
-        assert page.locator(".welcome-card-slice").count() == 0
-        assert page.locator(".welcome-slice-path code").count() == 0
-        assert page.locator("#shellWelcomeState [data-welcome-tab]").count() == 0
-        dismiss = page.locator("#welcomeDismiss")
-        assert dismiss.inner_text().strip() == "Close"
+            welcome = page.locator("#shellWelcomeState")
+            welcome.wait_for(timeout=15000)
+            assert welcome.get_attribute("aria-hidden") in {None, "false"}
+            assert page.locator("#shellUpgradeSpotlight").count() == 0
+            assert page.locator("#upgradeReopen").is_hidden()
+            assert page.locator("#welcomeReopen").is_hidden()
+            assert page.locator(".toolbar-version").inner_text().strip() == "v1.2.3"
+            assert page.locator(".welcome-title").inner_text().strip() == "Odylith is installed"
+            assert page.locator(".welcome-card-title").inner_text().strip() == "Ask for the repo-aware tour"
+            assert page.locator(".welcome-chip").count() == 0
+            assert page.locator(".welcome-card-slice").count() == 0
+            assert page.locator(".welcome-slice-path code").count() == 0
+            assert page.locator("#shellWelcomeState [data-welcome-tab]").count() == 0
+            dismiss = page.locator("#welcomeDismiss")
+            assert dismiss.inner_text().strip() == "Close"
 
-        handle_box = page.locator("#gridBriefToggle").bounding_box()
-        welcome_box = welcome.bounding_box()
-        dismiss_box = dismiss.bounding_box()
-        head_box = page.locator(".welcome-state-head").bounding_box()
-        launchpad_grid_box = page.locator(".welcome-guide-grid").bounding_box()
-        explainer_box = page.locator(".welcome-explainer-strip").bounding_box()
-        prompt_box = page.locator(".welcome-prompt-card").bounding_box()
-        process_box = page.locator(".welcome-process-card").bounding_box()
-        assert handle_box is not None
-        assert welcome_box is not None
-        assert dismiss_box is not None
-        assert head_box is not None
-        assert launchpad_grid_box is not None
-        assert explainer_box is not None
-        assert prompt_box is not None
-        assert process_box is not None
-        assert welcome_box["x"] >= (handle_box["x"] + handle_box["width"] - 1)
-        assert dismiss_box["width"] >= 78
-        assert dismiss_box["x"] > head_box["x"] + head_box["width"]
-        assert abs(explainer_box["x"] - launchpad_grid_box["x"]) < 2
-        assert abs(explainer_box["width"] - launchpad_grid_box["width"]) < 2
-        assert abs(prompt_box["y"] - process_box["y"]) < 2
-        assert explainer_box["y"] > prompt_box["y"]
-        assert explainer_box["y"] + explainer_box["height"] <= 900
-        step_labels = [
-            label.strip()
-            for label in page.locator(".welcome-step-process .welcome-step-copy").all_inner_texts()
-        ]
-        assert step_labels == [
-            "Paste the prompt into Codex or Claude.",
-            "Read the repo-aware report.",
-            "Choose the first grounded next move.",
-        ]
-        step_metrics = page.evaluate(
-            "() => Array.from(document.querySelectorAll('.welcome-step-process')).map((node) => {"
-            "  const card = node.getBoundingClientRect();"
-            "  const index = node.querySelector('.welcome-step-index').getBoundingClientRect();"
-            "  const copy = node.querySelector('.welcome-step-copy').getBoundingClientRect();"
-            "  return {"
-            "    cardRight: card.right,"
-            "    indexLeft: index.left,"
-            "    indexRight: index.right,"
-            "    copyLeft: copy.left,"
-            "    copyRight: copy.right"
-            "  };"
-            "})"
-        )
-        for item in step_metrics:
-            assert item["indexLeft"] < item["copyLeft"]
-            assert item["indexRight"] < item["copyLeft"]
-            assert item["copyRight"] <= item["cardRight"]
+            handle_box = page.locator("#gridBriefToggle").bounding_box()
+            welcome_box = welcome.bounding_box()
+            dismiss_box = dismiss.bounding_box()
+            head_box = page.locator(".welcome-state-head").bounding_box()
+            launchpad_grid_box = page.locator(".welcome-guide-grid").bounding_box()
+            explainer_box = page.locator(".welcome-explainer-strip").bounding_box()
+            prompt_box = page.locator(".welcome-prompt-card").bounding_box()
+            process_box = page.locator(".welcome-process-card").bounding_box()
+            assert handle_box is not None
+            assert welcome_box is not None
+            assert dismiss_box is not None
+            assert head_box is not None
+            assert launchpad_grid_box is not None
+            assert explainer_box is not None
+            assert prompt_box is not None
+            assert process_box is not None
+            assert welcome_box["x"] >= (handle_box["x"] + handle_box["width"] - 1)
+            assert dismiss_box["width"] >= 78
+            assert dismiss_box["x"] > head_box["x"] + head_box["width"]
+            assert abs(explainer_box["x"] - launchpad_grid_box["x"]) < 2
+            assert abs(explainer_box["width"] - launchpad_grid_box["width"]) < 2
+            assert abs(prompt_box["y"] - process_box["y"]) < 2
+            assert explainer_box["y"] > prompt_box["y"]
+            assert explainer_box["y"] + explainer_box["height"] <= 900
+            step_labels = [
+                label.strip()
+                for label in page.locator(".welcome-step-process .welcome-step-copy").all_inner_texts()
+            ]
+            assert step_labels == [
+                "Paste the prompt into Codex or Claude.",
+                "Read the repo-aware report.",
+                "Choose the first grounded next move.",
+            ]
+            step_metrics = page.evaluate(
+                "() => Array.from(document.querySelectorAll('.welcome-step-process')).map((node) => {"
+                "  const card = node.getBoundingClientRect();"
+                "  const index = node.querySelector('.welcome-step-index').getBoundingClientRect();"
+                "  const copy = node.querySelector('.welcome-step-copy').getBoundingClientRect();"
+                "  return {"
+                "    cardRight: card.right,"
+                "    indexLeft: index.left,"
+                "    indexRight: index.right,"
+                "    copyLeft: copy.left,"
+                "    copyRight: copy.right"
+                "  };"
+                "})"
+            )
+            for item in step_metrics:
+                assert item["indexLeft"] < item["copyLeft"]
+                assert item["indexRight"] < item["copyLeft"]
+                assert item["copyRight"] <= item["cardRight"]
 
-        _click_visible(page.locator("#welcomeCopyPrompt"))
-        page.locator("#welcomeCopyStatus", has_text="Prompt copied. Paste it into your agent.").wait_for(
-            timeout=15000
-        )
-        writes = _clipboard_writes(page)
-        assert writes
-        assert writes[-1] == "Odylith, show me what you can do."
+            _click_visible(page.locator("#welcomeCopyPrompt"))
+            page.locator("#welcomeCopyStatus", has_text="Prompt copied. Paste it into your agent.").wait_for(
+                timeout=15000
+            )
+            writes = _clipboard_writes(page)
+            assert writes
+            assert writes[-1] == "Odylith, show me what you can do."
 
-        _click_visible(page.locator("#welcomeDismiss"))
-        page.wait_for_function(
-            "() => { const node = document.getElementById('shellWelcomeState'); return Boolean(node && node.hidden); }",
-            timeout=15000,
-        )
-        page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
-        assert page.locator("#upgradeReopen").is_hidden()
+            _click_visible(page.locator("#welcomeDismiss"))
+            page.wait_for_function(
+                "() => { const node = document.getElementById('shellWelcomeState'); return Boolean(node && node.hidden); }",
+                timeout=15000,
+            )
+            page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
+            assert page.locator("#upgradeReopen").is_hidden()
 
-        page.reload(wait_until="domcontentloaded")
-        page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
-        page.wait_for_function(
-            "() => { const node = document.getElementById('shellWelcomeState'); return Boolean(node && node.hidden); }",
-            timeout=15000,
-        )
-        assert page.locator("#upgradeReopen").is_hidden()
+            page.reload(wait_until="domcontentloaded")
+            page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
+            page.wait_for_function(
+                "() => { const node = document.getElementById('shellWelcomeState'); return Boolean(node && node.hidden); }",
+                timeout=15000,
+            )
+            assert page.locator("#upgradeReopen").is_hidden()
 
-        _click_visible(page.locator("#welcomeReopen"))
-        welcome.wait_for(timeout=15000)
-        page.keyboard.press("Escape")
-        page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
+            _click_visible(page.locator("#welcomeReopen"))
+            welcome.wait_for(timeout=15000)
+            page.keyboard.press("Escape")
+            page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
 
-        _click_visible(page.locator("#welcomeReopen"))
-        welcome.wait_for(timeout=15000)
-        assert page.locator("#shellWelcomeState [data-welcome-tab]").count() == 0
+            _click_visible(page.locator("#welcomeReopen"))
+            welcome.wait_for(timeout=15000)
+            assert page.locator("#shellWelcomeState [data-welcome-tab]").count() == 0
 
-        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            _assert_clean_page(page, observation)
 
 
 def test_first_install_launchpad_reopens_after_same_path_reinstall(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -435,31 +435,31 @@ def test_first_install_launchpad_reopens_after_same_path_reinstall(tmp_path: Pat
     _render_shell(repo_root, monkeypatch)
 
     with _repo_browser_context(repo_root) as (base_url, context):
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
-        assert response is not None and response.ok
-        page.locator("#shellWelcomeState").wait_for(timeout=15000)
-        assert page.locator("#welcomeReopen").is_hidden()
+        with _new_page(context) as (page, observation):
+            response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+            assert response is not None and response.ok
+            page.locator("#shellWelcomeState").wait_for(timeout=15000)
+            assert page.locator("#welcomeReopen").is_hidden()
 
-        _click_visible(page.locator("#welcomeDismiss"))
-        page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
+            _click_visible(page.locator("#welcomeDismiss"))
+            page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
 
-        _seed_consumer_repo(
-            repo_root,
-            focus_path="src/billing",
-            existing_truth=False,
-            active_version="1.2.3",
-            activation_history=["1.2.3"],
-            installed_utc="2026-04-27T20:03:21+00:00",
-        )
-        _render_shell(repo_root, monkeypatch)
-        response = page.goto(base_url + "/odylith/index.html?fresh-install=1", wait_until="domcontentloaded")
-        assert response is not None and response.ok
-        page.locator("#shellWelcomeState").wait_for(timeout=15000)
-        assert page.locator("#shellWelcomeState").get_attribute("aria-hidden") in {None, "false"}
-        assert page.locator("#welcomeReopen").is_hidden()
+            _seed_consumer_repo(
+                repo_root,
+                focus_path="src/billing",
+                existing_truth=False,
+                active_version="1.2.3",
+                activation_history=["1.2.3"],
+                installed_utc="2026-04-27T20:03:21+00:00",
+            )
+            _render_shell(repo_root, monkeypatch)
+            response = page.goto(base_url + "/odylith/index.html?fresh-install=1", wait_until="domcontentloaded")
+            assert response is not None and response.ok
+            page.locator("#shellWelcomeState").wait_for(timeout=15000)
+            assert page.locator("#shellWelcomeState").get_attribute("aria-hidden") in {None, "false"}
+            assert page.locator("#welcomeReopen").is_hidden()
 
-        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            _assert_clean_page(page, observation)
 
 
 def test_first_install_launchpad_hides_git_notice_and_keeps_mental_model_visible(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -476,41 +476,41 @@ def test_first_install_launchpad_hides_git_notice_and_keeps_mental_model_visible
     _render_shell(repo_root, monkeypatch)
 
     with _repo_browser_context(repo_root) as (base_url, context):
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        page.set_viewport_size({"width": 2048, "height": 1000})
-        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
-        assert response is not None and response.ok
+        with _new_page(context) as (page, observation):
+            page.set_viewport_size({"width": 2048, "height": 1000})
+            response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+            assert response is not None and response.ok
 
-        welcome = page.locator("#shellWelcomeState")
-        welcome.wait_for(timeout=15000)
-        assert page.locator(".welcome-card-notice .welcome-card-kicker", has_text="Git missing").count() == 0
-        assert "Git missing" not in welcome.inner_text()
-        assert "Odylith needs attention in this repository" not in welcome.inner_text()
-        assert page.locator(".welcome-explainer-title").inner_text().strip() == "How Odylith thinks about a repo"
+            welcome = page.locator("#shellWelcomeState")
+            welcome.wait_for(timeout=15000)
+            assert page.locator(".welcome-card-notice .welcome-card-kicker", has_text="Git missing").count() == 0
+            assert "Git missing" not in welcome.inner_text()
+            assert "Odylith needs attention in this repository" not in welcome.inner_text()
+            assert page.locator(".welcome-explainer-title").inner_text().strip() == "How Odylith thinks about a repo"
 
-        metrics = page.evaluate(
-            "() => {"
-            "  const box = (selector) => {"
-            "    const rect = document.querySelector(selector).getBoundingClientRect();"
-            "    return {top: rect.top, right: rect.right, bottom: rect.bottom, height: rect.height};"
-            "  };"
-            "  return {"
-            "    welcome: box('#shellWelcomeState'),"
-            "    title: box('.welcome-title'),"
-            "    prompt: box('.welcome-prompt-card'),"
-            "    explainer: box('.welcome-explainer-strip'),"
-            "    scrollWidth: document.documentElement.scrollWidth,"
-            "    clientWidth: document.documentElement.clientWidth"
-            "  };"
-            "}"
-        )
-        assert metrics["scrollWidth"] <= metrics["clientWidth"] + 1
-        assert metrics["title"]["height"] < 64
-        assert metrics["prompt"]["top"] > metrics["title"]["bottom"]
-        assert metrics["explainer"]["bottom"] <= 1000
-        assert metrics["welcome"]["right"] <= 2048
+            metrics = page.evaluate(
+                "() => {"
+                "  const box = (selector) => {"
+                "    const rect = document.querySelector(selector).getBoundingClientRect();"
+                "    return {top: rect.top, right: rect.right, bottom: rect.bottom, height: rect.height};"
+                "  };"
+                "  return {"
+                "    welcome: box('#shellWelcomeState'),"
+                "    title: box('.welcome-title'),"
+                "    prompt: box('.welcome-prompt-card'),"
+                "    explainer: box('.welcome-explainer-strip'),"
+                "    scrollWidth: document.documentElement.scrollWidth,"
+                "    clientWidth: document.documentElement.clientWidth"
+                "  };"
+                "}"
+            )
+            assert metrics["scrollWidth"] <= metrics["clientWidth"] + 1
+            assert metrics["title"]["height"] < 64
+            assert metrics["prompt"]["top"] > metrics["title"]["bottom"]
+            assert metrics["explainer"]["bottom"] <= 1000
+            assert metrics["welcome"]["right"] <= 2048
 
-        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            _assert_clean_page(page, observation)
 
 
 def test_first_install_launchpad_fits_narrow_viewport(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -526,57 +526,57 @@ def test_first_install_launchpad_fits_narrow_viewport(tmp_path: Path, monkeypatc
     _render_shell(repo_root, monkeypatch)
 
     with _repo_browser_context(repo_root) as (base_url, context):
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        page.set_viewport_size({"width": 390, "height": 844})
-        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
-        assert response is not None and response.ok
+        with _new_page(context) as (page, observation):
+            page.set_viewport_size({"width": 390, "height": 844})
+            response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+            assert response is not None and response.ok
 
-        welcome = page.locator("#shellWelcomeState")
-        welcome.wait_for(timeout=15000)
-        assert page.locator(".welcome-title").inner_text().strip() == "Odylith is installed"
-        assert page.locator(".welcome-prompt-text").inner_text().strip() == '"Odylith, show me what you can do."'
-        assert page.locator("#welcomeCopyPrompt").is_visible()
-        assert page.locator("#welcomeDismiss").inner_text().strip() == "Close"
+            welcome = page.locator("#shellWelcomeState")
+            welcome.wait_for(timeout=15000)
+            assert page.locator(".welcome-title").inner_text().strip() == "Odylith is installed"
+            assert page.locator(".welcome-prompt-text").inner_text().strip() == '"Odylith, show me what you can do."'
+            assert page.locator("#welcomeCopyPrompt").is_visible()
+            assert page.locator("#welcomeDismiss").inner_text().strip() == "Close"
 
-        dimensions = page.evaluate(
-            "() => ({"
-            "scrollWidth: document.documentElement.scrollWidth,"
-            "clientWidth: document.documentElement.clientWidth,"
-            "welcome: (() => {"
-            "  const rect = document.getElementById('shellWelcomeState').getBoundingClientRect();"
-            "  return {left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom};"
-            "})(),"
-            "title: (() => {"
-            "  const rect = document.querySelector('.welcome-title').getBoundingClientRect();"
-            "  return {left: rect.left, right: rect.right, top: rect.top};"
-            "})(),"
-            "dismiss: (() => {"
-            "  const rect = document.getElementById('welcomeDismiss').getBoundingClientRect();"
-            "  return {left: rect.left, right: rect.right, bottom: rect.bottom};"
-            "})(),"
-            "prompt: (() => {"
-            "  const rect = document.querySelector('.welcome-prompt-block').getBoundingClientRect();"
-            "  return {left: rect.left, right: rect.right};"
-            "})(),"
-            "handles: Array.from(document.querySelectorAll('.brief-handle')).map((node) => {"
-            "  const rect = node.getBoundingClientRect();"
-            "  return {left: rect.left, right: rect.right};"
-            "})"
-            "})"
-        )
-        assert dimensions["scrollWidth"] <= dimensions["clientWidth"] + 1
-        assert dimensions["welcome"]["left"] >= 0
-        assert dimensions["welcome"]["right"] <= 390
-        assert max(handle["right"] for handle in dimensions["handles"]) <= dimensions["welcome"]["left"]
-        assert dimensions["title"]["left"] >= dimensions["welcome"]["left"]
-        assert dimensions["title"]["right"] <= dimensions["welcome"]["right"]
-        assert dimensions["title"]["top"] > dimensions["dismiss"]["bottom"]
-        assert dimensions["dismiss"]["left"] >= dimensions["welcome"]["left"]
-        assert dimensions["dismiss"]["right"] <= dimensions["welcome"]["right"]
-        assert dimensions["prompt"]["left"] >= dimensions["welcome"]["left"]
-        assert dimensions["prompt"]["right"] <= dimensions["welcome"]["right"]
+            dimensions = page.evaluate(
+                "() => ({"
+                "scrollWidth: document.documentElement.scrollWidth,"
+                "clientWidth: document.documentElement.clientWidth,"
+                "welcome: (() => {"
+                "  const rect = document.getElementById('shellWelcomeState').getBoundingClientRect();"
+                "  return {left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom};"
+                "})(),"
+                "title: (() => {"
+                "  const rect = document.querySelector('.welcome-title').getBoundingClientRect();"
+                "  return {left: rect.left, right: rect.right, top: rect.top};"
+                "})(),"
+                "dismiss: (() => {"
+                "  const rect = document.getElementById('welcomeDismiss').getBoundingClientRect();"
+                "  return {left: rect.left, right: rect.right, bottom: rect.bottom};"
+                "})(),"
+                "prompt: (() => {"
+                "  const rect = document.querySelector('.welcome-prompt-block').getBoundingClientRect();"
+                "  return {left: rect.left, right: rect.right};"
+                "})(),"
+                "handles: Array.from(document.querySelectorAll('.brief-handle')).map((node) => {"
+                "  const rect = node.getBoundingClientRect();"
+                "  return {left: rect.left, right: rect.right};"
+                "})"
+                "})"
+            )
+            assert dimensions["scrollWidth"] <= dimensions["clientWidth"] + 1
+            assert dimensions["welcome"]["left"] >= 0
+            assert dimensions["welcome"]["right"] <= 390
+            assert max(handle["right"] for handle in dimensions["handles"]) <= dimensions["welcome"]["left"]
+            assert dimensions["title"]["left"] >= dimensions["welcome"]["left"]
+            assert dimensions["title"]["right"] <= dimensions["welcome"]["right"]
+            assert dimensions["title"]["top"] > dimensions["dismiss"]["bottom"]
+            assert dimensions["dismiss"]["left"] >= dimensions["welcome"]["left"]
+            assert dimensions["dismiss"]["right"] <= dimensions["welcome"]["right"]
+            assert dimensions["prompt"]["left"] >= dimensions["welcome"]["left"]
+            assert dimensions["prompt"]["right"] <= dimensions["welcome"]["right"]
 
-        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            _assert_clean_page(page, observation)
 
 
 def test_shell_never_renders_internal_status_across_tabs(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -594,14 +594,14 @@ def test_shell_never_renders_internal_status_across_tabs(tmp_path: Path, monkeyp
     )
 
     with _repo_browser_context(repo_root) as (base_url, context):
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        for tab in ("radar", "registry", "casebook", "atlas", "compass"):
-            response = page.goto(f"{base_url}/odylith/index.html?tab={tab}", wait_until="domcontentloaded")
-            assert response is not None and response.ok
-            _wait_for_shell_tab(page, tab)
-            _assert_shell_internal_status_absent(page)
+        with _new_page(context) as (page, observation):
+            for tab in ("radar", "registry", "casebook", "atlas", "compass"):
+                response = page.goto(f"{base_url}/odylith/index.html?tab={tab}", wait_until="domcontentloaded")
+                assert response is not None and response.ok
+                _wait_for_shell_tab(page, tab)
+                _assert_shell_internal_status_absent(page)
 
-        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            _assert_clean_page(page, observation)
 
 
 def test_empty_repo_launchpad_stays_honest_and_never_invents_a_fake_path(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -617,15 +617,15 @@ def test_empty_repo_launchpad_stays_honest_and_never_invents_a_fake_path(tmp_pat
     _render_shell(repo_root, monkeypatch)
 
     with _repo_browser_context(repo_root) as (base_url, context):
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
-        assert response is not None and response.ok
+        with _new_page(context) as (page, observation):
+            response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+            assert response is not None and response.ok
 
-        page.locator("#shellWelcomeState").wait_for(timeout=15000)
-        assert page.locator(".welcome-card-slice").count() == 0
-        assert page.locator(".welcome-slice-path code").count() == 0
+            page.locator("#shellWelcomeState").wait_for(timeout=15000)
+            assert page.locator(".welcome-card-slice").count() == 0
+            assert page.locator(".welcome-slice-path code").count() == 0
 
-        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            _assert_clean_page(page, observation)
 
 
 def test_shell_cheatsheet_drawer_filters_and_copies_commands(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -635,107 +635,107 @@ def test_shell_cheatsheet_drawer_filters_and_copies_commands(tmp_path: Path, mon
     _render_shell(repo_root, monkeypatch)
 
     with _repo_browser_context(repo_root) as (base_url, context):
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        _install_clipboard_probe(page)
-        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
-        assert response is not None and response.ok
+        with _new_page(context) as (page, observation):
+            _install_clipboard_probe(page)
+            response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+            assert response is not None and response.ok
 
-        assert page.locator("text=Internal Diagnostic Snapshot").count() == 0
-        assert page.locator("text=Maintainer Benchmark Lane").count() == 0
+            assert page.locator("text=Internal Diagnostic Snapshot").count() == 0
+            assert page.locator("text=Maintainer Benchmark Lane").count() == 0
 
-        _click_visible(page.locator("#odylithToggle", has_text="Cheatsheet"))
-        page.locator("#agentCheatsheetSearch").wait_for(timeout=15000)
-        page.locator(".cheatsheet-card-title", has_text="Create a Radar backlog item").wait_for(timeout=15000)
-        assert page.locator("#agentCheatsheetEmpty").count() == 0
+            _click_visible(page.locator("#odylithToggle", has_text="Cheatsheet"))
+            page.locator("#agentCheatsheetSearch").wait_for(timeout=15000)
+            page.locator(".cheatsheet-card-title", has_text="Create a Radar backlog item").wait_for(timeout=15000)
+            assert page.locator("#agentCheatsheetEmpty").count() == 0
 
-        search = page.locator("#agentCheatsheetSearch")
-        search.fill("developer note")
-        page.locator(".cheatsheet-card-title", has_text="Add a developer note").wait_for(timeout=15000)
-        assert page.locator(".cheatsheet-card", has_text="Create a Radar backlog item").first.is_hidden()
-        assert page.locator("#agentCheatsheetEmpty").count() == 0
+            search = page.locator("#agentCheatsheetSearch")
+            search.fill("developer note")
+            page.locator(".cheatsheet-card-title", has_text="Add a developer note").wait_for(timeout=15000)
+            assert page.locator(".cheatsheet-card", has_text="Create a Radar backlog item").first.is_hidden()
+            assert page.locator("#agentCheatsheetEmpty").count() == 0
 
-        note_card = page.locator(".cheatsheet-card", has_text="Add a developer note").first
-        _click_visible(note_card.locator("button", has_text="Copy prompt"))
-        page.locator("#agentCheatsheetCopyStatus", has_text="Prompt copied.").wait_for(timeout=15000)
-        writes = _clipboard_writes(page)
-        assert writes
-        assert writes[-1] == 'Create a developer note titled "Compass refresh drift".'
+            note_card = page.locator(".cheatsheet-card", has_text="Add a developer note").first
+            _click_visible(note_card.locator("button", has_text="Copy prompt"))
+            page.locator("#agentCheatsheetCopyStatus", has_text="Prompt copied.").wait_for(timeout=15000)
+            writes = _clipboard_writes(page)
+            assert writes
+            assert writes[-1] == 'Create a developer note titled "Compass refresh drift".'
 
-        search.fill("deep refresh")
-        page.locator(".cheatsheet-card-title", has_text="Deep-refresh Compass").wait_for(timeout=15000)
-        assert page.locator(".cheatsheet-card", has_text="Add a developer note").first.is_hidden()
+            search.fill("deep refresh")
+            page.locator(".cheatsheet-card-title", has_text="Deep-refresh Compass").wait_for(timeout=15000)
+            assert page.locator(".cheatsheet-card", has_text="Add a developer note").first.is_hidden()
 
-        deep_refresh_card = page.locator(".cheatsheet-card", has_text="Deep-refresh Compass").first
-        _click_visible(deep_refresh_card.locator("button", has_text="Copy CLI"))
-        page.locator("#agentCheatsheetCopyStatus", has_text="CLI equivalent copied.").wait_for(timeout=15000)
-        writes = _clipboard_writes(page)
-        assert writes
-        assert writes[-1] == "odylith compass deep-refresh --repo-root ."
+            deep_refresh_card = page.locator(".cheatsheet-card", has_text="Deep-refresh Compass").first
+            _click_visible(deep_refresh_card.locator("button", has_text="Copy CLI"))
+            page.locator("#agentCheatsheetCopyStatus", has_text="CLI equivalent copied.").wait_for(timeout=15000)
+            writes = _clipboard_writes(page)
+            assert writes
+            assert writes[-1] == "odylith compass deep-refresh --repo-root ."
 
-        search.fill("watch-transactions")
-        page.locator(".cheatsheet-card-title", has_text="Keep Compass warm").wait_for(timeout=15000)
-        assert page.locator(".cheatsheet-card", has_text="Add a developer note").first.is_hidden()
+            search.fill("watch-transactions")
+            page.locator(".cheatsheet-card-title", has_text="Keep Compass warm").wait_for(timeout=15000)
+            assert page.locator(".cheatsheet-card", has_text="Add a developer note").first.is_hidden()
 
-        watch_card = page.locator(".cheatsheet-card", has_text="Keep Compass warm").first
-        _click_visible(watch_card.locator("button", has_text="Copy CLI"))
-        page.locator("#agentCheatsheetCopyStatus", has_text="CLI equivalent copied.").wait_for(timeout=15000)
-        writes = _clipboard_writes(page)
-        assert writes
-        assert writes[-1] == "odylith compass watch-transactions --repo-root ."
+            watch_card = page.locator(".cheatsheet-card", has_text="Keep Compass warm").first
+            _click_visible(watch_card.locator("button", has_text="Copy CLI"))
+            page.locator("#agentCheatsheetCopyStatus", has_text="CLI equivalent copied.").wait_for(timeout=15000)
+            writes = _clipboard_writes(page)
+            assert writes
+            assert writes[-1] == "odylith compass watch-transactions --repo-root ."
 
-        search.fill("target release")
-        page.locator(".cheatsheet-card-title", has_text="Create a target release").wait_for(timeout=15000)
-        assert page.locator(".cheatsheet-card", has_text="Create programs and waves").first.is_hidden()
+            search.fill("target release")
+            page.locator(".cheatsheet-card-title", has_text="Create a target release").wait_for(timeout=15000)
+            assert page.locator(".cheatsheet-card", has_text="Create programs and waves").first.is_hidden()
 
-        release_create_card = page.locator(".cheatsheet-card", has_text="Create a target release").first
-        _click_visible(release_create_card.locator("button", has_text="Copy CLI"))
-        page.locator("#agentCheatsheetCopyStatus", has_text="CLI equivalent copied.").wait_for(timeout=15000)
-        writes = _clipboard_writes(page)
-        assert writes
-        assert writes[-1] == (
-            "odylith release create release-v0-1-15 --version 0.1.15 --tag v0.1.15 "
-            '--name "v0.1.15 stabilization" --status planning --alias current --repo-root .'
-        )
+            release_create_card = page.locator(".cheatsheet-card", has_text="Create a target release").first
+            _click_visible(release_create_card.locator("button", has_text="Copy CLI"))
+            page.locator("#agentCheatsheetCopyStatus", has_text="CLI equivalent copied.").wait_for(timeout=15000)
+            writes = _clipboard_writes(page)
+            assert writes
+            assert writes[-1] == (
+                "odylith release create release-v0-1-15 --version 0.1.15 --tag v0.1.15 "
+                '--name "v0.1.15 stabilization" --status planning --alias current --repo-root .'
+            )
 
-        search.fill("ship target")
-        page.locator(".cheatsheet-card-title", has_text="Assign a workstream to a release").wait_for(timeout=15000)
-        assert page.locator(".cheatsheet-card", has_text="Create programs and waves").first.is_hidden()
+            search.fill("ship target")
+            page.locator(".cheatsheet-card-title", has_text="Assign a workstream to a release").wait_for(timeout=15000)
+            assert page.locator(".cheatsheet-card", has_text="Create programs and waves").first.is_hidden()
 
-        release_card = page.locator(".cheatsheet-card", has_text="Assign a workstream to a release").first
-        _click_visible(release_card.locator("button", has_text="Copy CLI"))
-        page.locator("#agentCheatsheetCopyStatus", has_text="CLI equivalent copied.").wait_for(timeout=15000)
-        writes = _clipboard_writes(page)
-        assert writes
-        assert writes[-1] == "odylith release add B-067 0.1.11 --repo-root ."
+            release_card = page.locator(".cheatsheet-card", has_text="Assign a workstream to a release").first
+            _click_visible(release_card.locator("button", has_text="Copy CLI"))
+            page.locator("#agentCheatsheetCopyStatus", has_text="CLI equivalent copied.").wait_for(timeout=15000)
+            writes = _clipboard_writes(page)
+            assert writes
+            assert writes[-1] == "odylith release add B-067 0.1.11 --repo-root ."
 
-        search.fill("umbrella execution")
-        page.locator(".cheatsheet-card-title", has_text="Create programs and waves").wait_for(timeout=15000)
-        assert page.locator(".cheatsheet-card", has_text="Assign a workstream to a release").first.is_hidden()
+            search.fill("umbrella execution")
+            page.locator(".cheatsheet-card-title", has_text="Create programs and waves").wait_for(timeout=15000)
+            assert page.locator(".cheatsheet-card", has_text="Assign a workstream to a release").first.is_hidden()
 
-        wave_card = page.locator(".cheatsheet-card", has_text="Create programs and waves").first
-        _click_visible(wave_card.locator("button", has_text="Copy CLI"))
-        page.locator("#agentCheatsheetCopyStatus", has_text="CLI copied.").wait_for(timeout=15000)
-        writes = _clipboard_writes(page)
-        assert writes
-        assert writes[-1] == "odylith program next B-021 --repo-root ."
+            wave_card = page.locator(".cheatsheet-card", has_text="Create programs and waves").first
+            _click_visible(wave_card.locator("button", has_text="Copy CLI"))
+            page.locator("#agentCheatsheetCopyStatus", has_text="CLI copied.").wait_for(timeout=15000)
+            writes = _clipboard_writes(page)
+            assert writes
+            assert writes[-1] == "odylith program next B-021 --repo-root ."
 
-        search.fill("")
-        _click_visible(page.locator('[data-cheatsheet-filter="validate"]'))
-        page.locator(".cheatsheet-card-title", has_text="Check self-host posture").wait_for(timeout=15000)
-        assert page.locator(".cheatsheet-card", has_text="Create a Radar backlog item").first.is_hidden()
-        assert page.locator("#agentCheatsheetEmpty").count() == 0
+            search.fill("")
+            _click_visible(page.locator('[data-cheatsheet-filter="validate"]'))
+            page.locator(".cheatsheet-card-title", has_text="Check self-host posture").wait_for(timeout=15000)
+            assert page.locator(".cheatsheet-card", has_text="Create a Radar backlog item").first.is_hidden()
+            assert page.locator("#agentCheatsheetEmpty").count() == 0
 
-        search.fill("zzzzzz-no-cheatsheet-match")
-        assert page.locator(".cheatsheet-card:visible").count() == 0
-        assert page.locator("#agentCheatsheetEmpty").count() == 0
+            search.fill("zzzzzz-no-cheatsheet-match")
+            assert page.locator(".cheatsheet-card:visible").count() == 0
+            assert page.locator("#agentCheatsheetEmpty").count() == 0
 
-        page.keyboard.press("Escape")
-        page.wait_for_function(
-            "() => { const drawer = document.getElementById('odylithDrawer'); return Boolean(drawer && !drawer.classList.contains('open')); }",
-            timeout=15000,
-        )
+            page.keyboard.press("Escape")
+            page.wait_for_function(
+                "() => { const drawer = document.getElementById('odylithDrawer'); return Boolean(drawer && !drawer.classList.contains('open')); }",
+                timeout=15000,
+            )
 
-        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            _assert_clean_page(page, observation)
 
 
 def test_incremental_upgrade_spotlight_has_clear_exits_and_clean_reopen_path(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -768,69 +768,69 @@ def test_incremental_upgrade_spotlight_has_clear_exits_and_clean_reopen_path(tmp
     _render_shell(repo_root, monkeypatch)
 
     with _repo_browser_context(repo_root) as (base_url, context):
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
-        assert response is not None and response.ok
+        with _new_page(context) as (page, observation):
+            response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+            assert response is not None and response.ok
 
-        spotlight = page.locator("#shellUpgradeSpotlight")
-        spotlight.wait_for(timeout=15000)
-        assert page.locator("#shellWelcomeState").count() == 0
-        assert page.locator(".toolbar-version").inner_text().strip() == "v1.2.3"
-        assert page.locator("#toolbarVersionStoryLink").count() == 0
-        assert page.locator("#upgradeSpotlightTitle").inner_text().strip() == "v1.2.3"
-        upgrade_dismiss = page.locator("#upgradeSpotlightDismiss")
-        assert upgrade_dismiss.inner_text().strip() == "Close"
-        upgrade_dismiss_box = upgrade_dismiss.bounding_box()
-        assert upgrade_dismiss_box is not None
-        assert upgrade_dismiss_box["width"] >= 82
-        assert "Upgrade complete." not in page.locator("#shellUpgradeSpotlight .upgrade-spotlight-main").inner_text()
-        assert (
-            "The dashboard is already refreshed, so the repo is ready to use immediately."
-            not in page.locator("#shellUpgradeSpotlight .upgrade-spotlight-main").inner_text()
-        )
-        assert "From v1.2.2" not in page.locator("#shellUpgradeSpotlight").inner_text()
-        assert "Now v1.2.3" not in page.locator("#shellUpgradeSpotlight").inner_text()
-        assert (
-            page.locator("#shellUpgradeSpotlight .upgrade-spotlight-link").get_attribute("href")
-            == "https://github.com/odylith/odylith/blob/v1.2.3/odylith/runtime/source/release-notes/v1.2.3.md"
-        )
-        assert page.locator("#shellUpgradeSpotlight .upgrade-spotlight-link").get_attribute("target") == "_blank"
-        assert page.locator("#shellUpgradeSpotlight .upgrade-spotlight-secondary-link").count() == 0
-        assert "Close this note with the X" not in page.locator("#shellUpgradeSpotlight").inner_text()
+            spotlight = page.locator("#shellUpgradeSpotlight")
+            spotlight.wait_for(timeout=15000)
+            assert page.locator("#shellWelcomeState").count() == 0
+            assert page.locator(".toolbar-version").inner_text().strip() == "v1.2.3"
+            assert page.locator("#toolbarVersionStoryLink").count() == 0
+            assert page.locator("#upgradeSpotlightTitle").inner_text().strip() == "v1.2.3"
+            upgrade_dismiss = page.locator("#upgradeSpotlightDismiss")
+            assert upgrade_dismiss.inner_text().strip() == "Close"
+            upgrade_dismiss_box = upgrade_dismiss.bounding_box()
+            assert upgrade_dismiss_box is not None
+            assert upgrade_dismiss_box["width"] >= 82
+            assert "Upgrade complete." not in page.locator("#shellUpgradeSpotlight .upgrade-spotlight-main").inner_text()
+            assert (
+                "The dashboard is already refreshed, so the repo is ready to use immediately."
+                not in page.locator("#shellUpgradeSpotlight .upgrade-spotlight-main").inner_text()
+            )
+            assert "From v1.2.2" not in page.locator("#shellUpgradeSpotlight").inner_text()
+            assert "Now v1.2.3" not in page.locator("#shellUpgradeSpotlight").inner_text()
+            assert (
+                page.locator("#shellUpgradeSpotlight .upgrade-spotlight-link").get_attribute("href")
+                == "https://github.com/odylith/odylith/blob/v1.2.3/odylith/runtime/source/release-notes/v1.2.3.md"
+            )
+            assert page.locator("#shellUpgradeSpotlight .upgrade-spotlight-link").get_attribute("target") == "_blank"
+            assert page.locator("#shellUpgradeSpotlight .upgrade-spotlight-secondary-link").count() == 0
+            assert "Close this note with the X" not in page.locator("#shellUpgradeSpotlight").inner_text()
 
-        _click_visible(page.locator("#upgradeSpotlightDismiss"))
-        page.wait_for_function(
-            "() => { const node = document.getElementById('shellUpgradeSpotlight'); return Boolean(node && node.hidden); }",
-            timeout=15000,
-        )
-        page.locator("#upgradeReopen", has_text="v1.2.3").wait_for(timeout=15000)
-        assert page.locator("#welcomeReopen").is_hidden()
+            _click_visible(page.locator("#upgradeSpotlightDismiss"))
+            page.wait_for_function(
+                "() => { const node = document.getElementById('shellUpgradeSpotlight'); return Boolean(node && node.hidden); }",
+                timeout=15000,
+            )
+            page.locator("#upgradeReopen", has_text="v1.2.3").wait_for(timeout=15000)
+            assert page.locator("#welcomeReopen").is_hidden()
 
-        page.reload(wait_until="domcontentloaded")
-        page.locator("#upgradeReopen", has_text="v1.2.3").wait_for(timeout=15000)
-        page.wait_for_function(
-            "() => { const node = document.getElementById('shellUpgradeSpotlight'); return Boolean(node && node.hidden); }",
-            timeout=15000,
-        )
+            page.reload(wait_until="domcontentloaded")
+            page.locator("#upgradeReopen", has_text="v1.2.3").wait_for(timeout=15000)
+            page.wait_for_function(
+                "() => { const node = document.getElementById('shellUpgradeSpotlight'); return Boolean(node && node.hidden); }",
+                timeout=15000,
+            )
 
-        _click_visible(page.locator("#upgradeReopen"))
-        spotlight.wait_for(timeout=15000)
-        page.keyboard.press("Escape")
-        page.locator("#upgradeReopen", has_text="v1.2.3").wait_for(timeout=15000)
+            _click_visible(page.locator("#upgradeReopen"))
+            spotlight.wait_for(timeout=15000)
+            page.keyboard.press("Escape")
+            page.locator("#upgradeReopen", has_text="v1.2.3").wait_for(timeout=15000)
 
-        _click_visible(page.locator("#upgradeReopen"))
-        page.locator("#shellUpgradeSpotlight").click(position={"x": 12, "y": 12})
-        page.locator("#upgradeReopen", has_text="v1.2.3").wait_for(timeout=15000)
+            _click_visible(page.locator("#upgradeReopen"))
+            page.locator("#shellUpgradeSpotlight").click(position={"x": 12, "y": 12})
+            page.locator("#upgradeReopen", has_text="v1.2.3").wait_for(timeout=15000)
 
-        _click_visible(page.locator("#tab-registry"))
-        _wait_for_shell_tab(page, "registry")
-        page.frame_locator("#frame-registry").locator("h1", has_text="Component Registry").wait_for(timeout=15000)
-        page.reload(wait_until="domcontentloaded")
-        _wait_for_shell_tab(page, "registry")
-        page.frame_locator("#frame-registry").locator("h1", has_text="Component Registry").wait_for(timeout=15000)
-        page.locator("#upgradeReopen", has_text="v1.2.3").wait_for(timeout=15000)
+            _click_visible(page.locator("#tab-registry"))
+            _wait_for_shell_tab(page, "registry")
+            page.frame_locator("#frame-registry").locator("h1", has_text="Component Registry").wait_for(timeout=15000)
+            page.reload(wait_until="domcontentloaded")
+            _wait_for_shell_tab(page, "registry")
+            page.frame_locator("#frame-registry").locator("h1", has_text="Component Registry").wait_for(timeout=15000)
+            page.locator("#upgradeReopen", has_text="v1.2.3").wait_for(timeout=15000)
 
-        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            _assert_clean_page(page, observation)
 
 
 def test_incremental_upgrade_suppresses_starter_guide_until_the_user_reopens_it(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -856,26 +856,26 @@ def test_incremental_upgrade_suppresses_starter_guide_until_the_user_reopens_it(
     _render_shell(repo_root, monkeypatch)
 
     with _repo_browser_context(repo_root) as (base_url, context):
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
-        assert response is not None and response.ok
+        with _new_page(context) as (page, observation):
+            response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+            assert response is not None and response.ok
 
-        page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
-        page.wait_for_function(
-            "() => { const node = document.getElementById('shellWelcomeState'); return Boolean(node && node.hidden); }",
-            timeout=15000,
-        )
-        assert page.locator("#welcomeReopen").is_hidden()
+            page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
+            page.wait_for_function(
+                "() => { const node = document.getElementById('shellWelcomeState'); return Boolean(node && node.hidden); }",
+                timeout=15000,
+            )
+            assert page.locator("#welcomeReopen").is_hidden()
 
-        _click_visible(page.locator("#upgradeSpotlightDismiss"))
-        page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
-        page.locator("#upgradeReopen", has_text="v1.2.3").wait_for(timeout=15000)
+            _click_visible(page.locator("#upgradeSpotlightDismiss"))
+            page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
+            page.locator("#upgradeReopen", has_text="v1.2.3").wait_for(timeout=15000)
 
-        _click_visible(page.locator("#welcomeReopen"))
-        page.locator("#shellWelcomeState").wait_for(timeout=15000)
-        assert page.locator(".welcome-title").inner_text().strip() == "Odylith is installed"
+            _click_visible(page.locator("#welcomeReopen"))
+            page.locator("#shellWelcomeState").wait_for(timeout=15000)
+            assert page.locator(".welcome-title").inner_text().strip() == "Odylith is installed"
 
-        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            _assert_clean_page(page, observation)
 
 
 def test_shell_delivery_payload_does_not_render_status_summary_cards(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -953,22 +953,22 @@ def test_shell_delivery_payload_does_not_render_status_summary_cards(tmp_path: P
     )
 
     with _repo_browser_context(repo_root) as (base_url, context):
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
-        assert response is not None and response.ok
+        with _new_page(context) as (page, observation):
+            response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+            assert response is not None and response.ok
 
-        _click_visible(page.locator("#odylithToggle", has_text="Cheatsheet"))
-        page.locator("#agentCheatsheetSearch").wait_for(timeout=15000)
-        assert page.locator(".odylith-summary-card", has_text=_legacy_ui_phrase("Latest", "Governed", "Packet")).count() == 0
-        assert page.locator("text=Serial host execution").count() == 0
-        assert page.locator("text=recover.current_blocker").count() == 0
-        assert page.locator("text=waiting approval").count() == 0
-        assert page.locator("text=explore.broad_reset").count() == 0
-        assert page.locator("text=render_compass_dashboard").count() == 0
-        assert page.locator("text=resume:B-072").count() == 0
-        _assert_shell_internal_status_absent(page)
+            _click_visible(page.locator("#odylithToggle", has_text="Cheatsheet"))
+            page.locator("#agentCheatsheetSearch").wait_for(timeout=15000)
+            assert page.locator(".odylith-summary-card", has_text=_legacy_ui_phrase("Latest", "Governed", "Packet")).count() == 0
+            assert page.locator("text=Serial host execution").count() == 0
+            assert page.locator("text=recover.current_blocker").count() == 0
+            assert page.locator("text=waiting approval").count() == 0
+            assert page.locator("text=explore.broad_reset").count() == 0
+            assert page.locator("text=render_compass_dashboard").count() == 0
+            assert page.locator("text=resume:B-072").count() == 0
+            _assert_shell_internal_status_absent(page)
 
-        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            _assert_clean_page(page, observation)
 
 
 def test_release_spotlight_and_release_note_links_work_in_browser(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -1009,21 +1009,21 @@ def test_release_spotlight_and_release_note_links_work_in_browser(tmp_path: Path
                 body="<!doctype html><html><body><h1>Mock GitHub release note</h1></body></html>",
             ),
         )
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
-        assert response is not None and response.ok
+        with _new_page(context) as (page, observation):
+            response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+            assert response is not None and response.ok
 
-        page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
-        with page.expect_popup() as popup_info:
-            _click_visible(page.locator("#shellUpgradeSpotlight .upgrade-spotlight-link"))
-        popup = popup_info.value
-        popup.wait_for_load_state("domcontentloaded")
-        assert popup.locator("h1").inner_text().strip() == "Mock GitHub release note"
-        assert popup.url.endswith("/odylith/runtime/source/release-notes/v1.2.3.md")
-        popup.close()
-        page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
+            page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
+            with page.expect_popup() as popup_info:
+                _click_visible(page.locator("#shellUpgradeSpotlight .upgrade-spotlight-link"))
+            popup = popup_info.value
+            popup.wait_for_load_state("domcontentloaded")
+            assert popup.locator("h1").inner_text().strip() == "Mock GitHub release note"
+            assert popup.url.endswith("/odylith/runtime/source/release-notes/v1.2.3.md")
+            popup.close()
+            page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
 
-        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            _assert_clean_page(page, observation)
 
 
 def test_authored_v0_1_10_release_note_drives_upgrade_popup_copy(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -1055,24 +1055,24 @@ def test_authored_v0_1_10_release_note_drives_upgrade_popup_copy(tmp_path: Path,
     _render_shell(repo_root, monkeypatch)
 
     with _repo_browser_context(repo_root) as (base_url, context):
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
-        assert response is not None and response.ok
+        with _new_page(context) as (page, observation):
+            response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+            assert response is not None and response.ok
 
-        page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
-        assert page.locator("#shellWelcomeState").count() == 0
-        assert page.locator(".toolbar-version").inner_text().strip() == "v0.1.10"
-        assert page.locator(".upgrade-spotlight-title-copy").inner_text().strip() == "Boringly Trustworthy"
-        assert page.locator(".upgrade-spotlight-title-version").inner_text().strip() == "v0.1.10"
-        assert "Compass refresh now sticks to one bounded runtime contract" in page.locator(
-            "#shellUpgradeSpotlight"
-        ).inner_text()
-        assert (
-            page.locator("#shellUpgradeSpotlight .upgrade-spotlight-link").get_attribute("href")
-            == "https://github.com/odylith/odylith/blob/v0.1.10/odylith/runtime/source/release-notes/v0.1.10.md"
-        )
+            page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
+            assert page.locator("#shellWelcomeState").count() == 0
+            assert page.locator(".toolbar-version").inner_text().strip() == "v0.1.10"
+            assert page.locator(".upgrade-spotlight-title-copy").inner_text().strip() == "Boringly Trustworthy"
+            assert page.locator(".upgrade-spotlight-title-version").inner_text().strip() == "v0.1.10"
+            assert "Compass refresh now sticks to one bounded runtime contract" in page.locator(
+                "#shellUpgradeSpotlight"
+            ).inner_text()
+            assert (
+                page.locator("#shellUpgradeSpotlight .upgrade-spotlight-link").get_attribute("href")
+                == "https://github.com/odylith/odylith/blob/v0.1.10/odylith/runtime/source/release-notes/v0.1.10.md"
+            )
 
-        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            _assert_clean_page(page, observation)
 
 
 def test_authored_v0_1_11_release_note_drives_upgrade_popup_copy(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -1104,30 +1104,30 @@ def test_authored_v0_1_11_release_note_drives_upgrade_popup_copy(tmp_path: Path,
     _render_shell(repo_root, monkeypatch)
 
     with _repo_browser_context(repo_root) as (base_url, context):
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
-        assert response is not None and response.ok
+        with _new_page(context) as (page, observation):
+            response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+            assert response is not None and response.ok
 
-        page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
-        spotlight_text = page.locator("#shellUpgradeSpotlight").inner_text()
-        assert page.locator("#shellWelcomeState").count() == 0
-        assert page.locator(".toolbar-version").inner_text().strip() == "v0.1.11"
-        assert (
-            page.locator(".upgrade-spotlight-title-copy").inner_text().strip()
-            == "Governed Execution Goes Multi-Host"
-        )
-        assert page.locator(".upgrade-spotlight-title-version").inner_text().strip() == "v0.1.11"
-        assert "Claude Code is first-class" in spotlight_text
-        assert "Execution is governed" in spotlight_text
-        assert "Benchmarks got teeth" in spotlight_text
-        assert "not ready to publish" not in spotlight_text
-        assert "Compass still needs to clear" not in spotlight_text
-        assert (
-            page.locator("#shellUpgradeSpotlight .upgrade-spotlight-link").get_attribute("href")
-            == "https://github.com/odylith/odylith/blob/v0.1.11/odylith/runtime/source/release-notes/v0.1.11.md"
-        )
+            page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
+            spotlight_text = page.locator("#shellUpgradeSpotlight").inner_text()
+            assert page.locator("#shellWelcomeState").count() == 0
+            assert page.locator(".toolbar-version").inner_text().strip() == "v0.1.11"
+            assert (
+                page.locator(".upgrade-spotlight-title-copy").inner_text().strip()
+                == "Governed Execution Goes Multi-Host"
+            )
+            assert page.locator(".upgrade-spotlight-title-version").inner_text().strip() == "v0.1.11"
+            assert "Claude Code is first-class" in spotlight_text
+            assert "Execution is governed" in spotlight_text
+            assert "Benchmarks got teeth" in spotlight_text
+            assert "not ready to publish" not in spotlight_text
+            assert "Compass still needs to clear" not in spotlight_text
+            assert (
+                page.locator("#shellUpgradeSpotlight .upgrade-spotlight-link").get_attribute("href")
+                == "https://github.com/odylith/odylith/blob/v0.1.11/odylith/runtime/source/release-notes/v0.1.11.md"
+            )
 
-        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            _assert_clean_page(page, observation)
 
 
 def test_persistent_version_story_does_not_render_a_toolbar_link(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -1159,15 +1159,15 @@ def test_persistent_version_story_does_not_render_a_toolbar_link(tmp_path: Path,
     _render_shell(repo_root, monkeypatch)
 
     with _repo_browser_context(repo_root) as (base_url, context):
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
-        assert response is not None and response.ok
+        with _new_page(context) as (page, observation):
+            response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+            assert response is not None and response.ok
 
-        page.reload(wait_until="domcontentloaded")
-        assert page.locator("#toolbarVersionStoryLink").count() == 0
-        assert not (repo_root / "odylith" / "release-notes").exists()
+            page.reload(wait_until="domcontentloaded")
+            assert page.locator("#toolbarVersionStoryLink").count() == 0
+            assert not (repo_root / "odylith" / "release-notes").exists()
 
-        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            _assert_clean_page(page, observation)
 
 
 def test_upgrade_recovery_pill_expires_after_ten_minutes_even_without_rerender(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -1193,9 +1193,9 @@ def test_upgrade_recovery_pill_expires_after_ten_minutes_even_without_rerender(t
     _render_shell(repo_root, monkeypatch)
 
     with _repo_browser_context(repo_root) as (base_url, context):
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        page.add_init_script(
-            """
+        with _new_page(context) as (page, observation):
+            page.add_init_script(
+                """
             (() => {
               const realDate = Date;
               const shiftedNow = realDate.now() + (11 * 60 * 1000);
@@ -1212,150 +1212,20 @@ def test_upgrade_recovery_pill_expires_after_ten_minutes_even_without_rerender(t
               window.Date = MockDate;
             })();
             """
-        )
-        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
-        assert response is not None and response.ok
+            )
+            response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+            assert response is not None and response.ok
 
-        page.wait_for_function(
-            "() => { const node = document.getElementById('shellUpgradeSpotlight'); return Boolean(node && node.hidden); }",
-            timeout=15000,
-        )
-        assert page.locator("#upgradeReopen").is_hidden()
-        assert page.locator("#toolbarVersionStoryLink").count() == 0
+            page.wait_for_function(
+                "() => { const node = document.getElementById('shellUpgradeSpotlight'); return Boolean(node && node.hidden); }",
+                timeout=15000,
+            )
+            assert page.locator("#upgradeReopen").is_hidden()
+            assert page.locator("#toolbarVersionStoryLink").count() == 0
 
-        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
-
-
-def test_open_shell_auto_reloads_after_dashboard_refresh_and_updates_version_label(
-    tmp_path: Path, monkeypatch
-) -> None:  # noqa: ANN001
-    repo_root = tmp_path / "upgrade-auto-refresh"
-    repo_root.mkdir()
-    _seed_consumer_repo(
-        repo_root,
-        focus_path="src/billing",
-        existing_truth=True,
-        active_version="1.2.2",
-        activation_history=["1.2.2"],
-    )
-    _render_shell(repo_root, monkeypatch)
-
-    with _repo_browser_context(repo_root) as (base_url, context):
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
-        assert response is not None and response.ok
-
-        assert page.locator(".toolbar-version").inner_text().strip() == "v1.2.2"
-        assert page.locator("#shellUpgradeSpotlight").count() == 0
-
-        write_install_state(
-            repo_root=repo_root,
-            payload={
-                "active_version": "1.2.3",
-                "activation_history": ["1.2.2", "1.2.3"],
-                "installed_versions": {
-                    "1.2.3": {
-                        "runtime_root": str(repo_root / ".odylith" / "runtime" / "versions" / "1.2.3"),
-                        "verification": {"wheel_sha256": "wheel-1.2.3"},
-                    }
-                },
-                "last_known_good_version": "1.2.3",
-            },
-        )
-        write_version_pin(repo_root=repo_root, version="1.2.3")
-        write_upgrade_spotlight(
-            repo_root=repo_root,
-            from_version="1.2.2",
-            to_version="1.2.3",
-            release_tag="v1.2.3",
-            release_url="https://example.com/releases/v1.2.3",
-            release_published_at="2026-03-30T14:00:00Z",
-            release_body="Upgrade note body.",
-            highlights=("Cleaner upgrade messaging.", "Release note comes first."),
-        )
-        _render_shell(repo_root, monkeypatch)
-
-        _wait_for_toolbar_version(page, "v1.2.3")
-        page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
-        assert page.locator("#upgradeSpotlightTitle").inner_text().strip() == "v1.2.3"
-
-        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            _assert_clean_page(page, observation)
 
 
-def test_open_shell_auto_reload_reopens_new_upgrade_spotlight_after_prior_dismissal(
-    tmp_path: Path, monkeypatch
-) -> None:  # noqa: ANN001
-    repo_root = tmp_path / "upgrade-auto-refresh-dismissal-scope"
-    repo_root.mkdir()
-    _seed_consumer_repo(
-        repo_root,
-        focus_path="src/billing",
-        existing_truth=True,
-        active_version="1.2.2",
-        activation_history=["1.2.1", "1.2.2"],
-    )
-    write_upgrade_spotlight(
-        repo_root=repo_root,
-        from_version="1.2.1",
-        to_version="1.2.2",
-        release_tag="v1.2.2",
-        release_url="https://example.com/releases/v1.2.2",
-        release_published_at="2026-03-29T14:00:00Z",
-        release_body="Prior upgrade note body.",
-        highlights=("Prior release note.",),
-    )
-    _render_shell(repo_root, monkeypatch)
-
-    with _repo_browser_context(repo_root) as (base_url, context):
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
-        assert response is not None and response.ok
-
-        page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
-        assert page.locator("#upgradeSpotlightTitle").inner_text().strip() == "v1.2.2"
-
-        _click_visible(page.locator("#upgradeSpotlightDismiss"))
-        page.locator("#upgradeReopen", has_text="v1.2.2").wait_for(timeout=15000)
-        page.reload(wait_until="domcontentloaded")
-        page.locator("#upgradeReopen", has_text="v1.2.2").wait_for(timeout=15000)
-        page.wait_for_function(
-            "() => { const node = document.getElementById('shellUpgradeSpotlight'); return Boolean(node && node.hidden); }",
-            timeout=15000,
-        )
-
-        write_install_state(
-            repo_root=repo_root,
-            payload={
-                "active_version": "1.2.3",
-                "activation_history": ["1.2.1", "1.2.2", "1.2.3"],
-                "installed_versions": {
-                    "1.2.3": {
-                        "runtime_root": str(repo_root / ".odylith" / "runtime" / "versions" / "1.2.3"),
-                        "verification": {"wheel_sha256": "wheel-1.2.3"},
-                    }
-                },
-                "last_known_good_version": "1.2.3",
-            },
-        )
-        write_version_pin(repo_root=repo_root, version="1.2.3")
-        write_upgrade_spotlight(
-            repo_root=repo_root,
-            from_version="1.2.2",
-            to_version="1.2.3",
-            release_tag="v1.2.3",
-            release_url="https://example.com/releases/v1.2.3",
-            release_published_at="2026-03-30T14:00:00Z",
-            release_body="New upgrade note body.",
-            highlights=("New release note.",),
-        )
-        _render_shell(repo_root, monkeypatch)
-
-        _wait_for_toolbar_version(page, "v1.2.3")
-        page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
-        assert page.locator("#upgradeSpotlightTitle").inner_text().strip() == "v1.2.3"
-        assert page.locator("#upgradeReopen").is_hidden()
-
-        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
 def test_welcome_dismiss_persists_with_session_storage_fallback_when_local_storage_is_blocked(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -1371,23 +1241,23 @@ def test_welcome_dismiss_persists_with_session_storage_fallback_when_local_stora
     _render_shell(repo_root, monkeypatch)
 
     with _repo_browser_context(repo_root) as (base_url, context):
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        _block_storage(page, block_local=True, block_session=False)
-        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
-        assert response is not None and response.ok
+        with _new_page(context) as (page, observation):
+            _block_storage(page, block_local=True, block_session=False)
+            response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+            assert response is not None and response.ok
 
-        page.locator("#shellWelcomeState").wait_for(timeout=15000)
-        _click_visible(page.locator("#welcomeDismiss"))
-        page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
+            page.locator("#shellWelcomeState").wait_for(timeout=15000)
+            _click_visible(page.locator("#welcomeDismiss"))
+            page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
 
-        page.reload(wait_until="domcontentloaded")
-        page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
-        page.wait_for_function(
-            "() => { const node = document.getElementById('shellWelcomeState'); return Boolean(node && node.hidden); }",
-            timeout=15000,
-        )
+            page.reload(wait_until="domcontentloaded")
+            page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
+            page.wait_for_function(
+                "() => { const node = document.getElementById('shellWelcomeState'); return Boolean(node && node.hidden); }",
+                timeout=15000,
+            )
 
-        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            _assert_clean_page(page, observation)
 
 
 def test_welcome_dismiss_still_closes_immediately_when_all_storage_is_blocked(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -1403,20 +1273,20 @@ def test_welcome_dismiss_still_closes_immediately_when_all_storage_is_blocked(tm
     _render_shell(repo_root, monkeypatch)
 
     with _repo_browser_context(repo_root) as (base_url, context):
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        _block_storage(page, block_local=True, block_session=True)
-        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
-        assert response is not None and response.ok
+        with _new_page(context) as (page, observation):
+            _block_storage(page, block_local=True, block_session=True)
+            response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+            assert response is not None and response.ok
 
-        page.locator("#shellWelcomeState").wait_for(timeout=15000)
-        _click_visible(page.locator("#welcomeDismiss"))
-        page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
+            page.locator("#shellWelcomeState").wait_for(timeout=15000)
+            _click_visible(page.locator("#welcomeDismiss"))
+            page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
 
-        page.reload(wait_until="domcontentloaded")
-        page.locator("#shellWelcomeState").wait_for(timeout=15000)
-        assert page.locator("#welcomeReopen").is_hidden()
+            page.reload(wait_until="domcontentloaded")
+            page.locator("#shellWelcomeState").wait_for(timeout=15000)
+            assert page.locator("#welcomeReopen").is_hidden()
 
-        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            _assert_clean_page(page, observation)
 
 
 def test_cli_install_renders_a_browser_valid_first_run_launchpad(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -1452,16 +1322,16 @@ def test_cli_install_renders_a_browser_valid_first_run_launchpad(tmp_path: Path,
 
     assert rc == 0
     with _repo_browser_context(repo_root) as (base_url, context):
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
-        assert response is not None and response.ok
-        page.locator("#shellWelcomeState").wait_for(timeout=15000)
-        assert page.locator(".toolbar-version").inner_text().strip() == "v1.2.3"
-        assert page.locator(".welcome-title").inner_text().strip() == "Odylith is installed"
-        assert page.locator("#shellUpgradeSpotlight").count() == 0
-        assert page.locator(".welcome-card-slice").count() == 0
-        assert page.locator(".welcome-slice-path code").count() == 0
-        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        with _new_page(context) as (page, observation):
+            response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+            assert response is not None and response.ok
+            page.locator("#shellWelcomeState").wait_for(timeout=15000)
+            assert page.locator(".toolbar-version").inner_text().strip() == "v1.2.3"
+            assert page.locator(".welcome-title").inner_text().strip() == "Odylith is installed"
+            assert page.locator("#shellUpgradeSpotlight").count() == 0
+            assert page.locator(".welcome-card-slice").count() == 0
+            assert page.locator(".welcome-slice-path code").count() == 0
+            _assert_clean_page(page, observation)
 
 
 def test_cli_install_adopt_latest_renders_a_browser_valid_incremental_upgrade_note(
@@ -1544,16 +1414,16 @@ def test_cli_install_adopt_latest_renders_a_browser_valid_incremental_upgrade_no
     assert refresh_capture["surfaces"] == ("tooling_shell", "radar", "compass")
     assert refresh_capture["runtime_mode"] == "auto"
     with _repo_browser_context(repo_root) as (base_url, context):
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
-        assert response is not None and response.ok
-        page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
-        assert page.locator(".toolbar-version").inner_text().strip() == "v1.2.3"
-        assert page.locator("#upgradeSpotlightTitle").inner_text().strip() == "v1.2.3"
-        assert page.locator("#upgradeReopen").is_hidden()
-        assert page.locator("#shellWelcomeState").count() == 0
-        assert not (repo_root / "odylith" / "release-notes").exists()
-        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        with _new_page(context) as (page, observation):
+            response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+            assert response is not None and response.ok
+            page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
+            assert page.locator(".toolbar-version").inner_text().strip() == "v1.2.3"
+            assert page.locator("#upgradeSpotlightTitle").inner_text().strip() == "v1.2.3"
+            assert page.locator("#upgradeReopen").is_hidden()
+            assert page.locator("#shellWelcomeState").count() == 0
+            assert not (repo_root / "odylith" / "release-notes").exists()
+            _assert_clean_page(page, observation)
 
 
 def test_cli_upgrade_renders_a_browser_valid_incremental_upgrade_note(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -1640,16 +1510,16 @@ def test_cli_upgrade_renders_a_browser_valid_incremental_upgrade_note(tmp_path: 
     assert refresh_capture["surfaces"] == ("tooling_shell", "radar", "compass")
     assert refresh_capture["runtime_mode"] == "auto"
     with _repo_browser_context(repo_root) as (base_url, context):
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
-        assert response is not None and response.ok
-        page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
-        assert page.locator(".toolbar-version").inner_text().strip() == "v1.2.3"
-        assert page.locator("#upgradeSpotlightTitle").inner_text().strip() == "v1.2.3"
-        assert page.locator("#upgradeReopen").is_hidden()
-        assert page.locator("#shellWelcomeState").count() == 0
-        assert not (repo_root / "odylith" / "release-notes").exists()
-        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        with _new_page(context) as (page, observation):
+            response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+            assert response is not None and response.ok
+            page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
+            assert page.locator(".toolbar-version").inner_text().strip() == "v1.2.3"
+            assert page.locator("#upgradeSpotlightTitle").inner_text().strip() == "v1.2.3"
+            assert page.locator("#upgradeReopen").is_hidden()
+            assert page.locator("#shellWelcomeState").count() == 0
+            assert not (repo_root / "odylith" / "release-notes").exists()
+            _assert_clean_page(page, observation)
 
 
 def test_internal_release_note_page_is_not_rendered(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -1692,11 +1562,17 @@ def test_internal_release_note_page_is_not_rendered(tmp_path: Path, monkeypatch)
     assert not (repo_root / "odylith" / "release-notes").exists()
 
     with _repo_browser_context(repo_root) as (base_url, context):
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        response = page.goto(base_url + "/odylith/release-notes/1.2.3.html", wait_until="domcontentloaded")
-        assert response is not None
-        assert response.status == 404
-        assert page_errors == []
-        assert failed_requests == []
-        assert any("404" in entry for entry in console_errors)
-        assert any("/odylith/release-notes/1.2.3.html" in entry for entry in bad_responses)
+        with _new_page(context) as (page, observation):
+            response = page.goto(base_url + "/odylith/release-notes/1.2.3.html", wait_until="domcontentloaded")
+            assert response is not None
+            assert response.status == 404
+            expected_error_url = base_url + "/odylith/release-notes/1.2.3.html"
+            snapshot = observation.finish()
+            assert snapshot.complete and not snapshot.lifecycle_errors, snapshot
+            assert snapshot.native_result is not None and not snapshot.native_result.coverage_errors, snapshot
+            assert not snapshot.page_errors, snapshot.page_errors
+            assert snapshot.http_errors and all(error.status == 404 and error.url == expected_error_url
+                                                for error in snapshot.http_errors), snapshot.http_errors
+            assert snapshot.native_failures and all(failure.http_status == 404 and failure.url == expected_error_url
+                                                    for failure in snapshot.native_failures), snapshot.native_failures
+            assert snapshot.console_errors and set(snapshot.console_errors) == {"Failed to load resource: the server responded with a status of 404 (File not found)"}, snapshot.console_errors

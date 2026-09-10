@@ -171,22 +171,15 @@ Related Bugs:
 ## Risks & Mitigations
 
 - [ ] Risk: the developer-first story outruns the actual proof.
-  - [ ] Mitigation: keep README and the public graphs anchored to the current
-        report ids until a stronger proof rerun exists.
+  - [ ] Mitigation: keep README and the public graphs anchored to the current report ids until a stronger proof rerun exists.
 - [ ] Risk: new corpus growth is still too Odylith-product-specific.
-  - [ ] Mitigation: add explicit code-and-test slices with public validators
-        and familiar bug-fix or feature-repair shapes.
+  - [ ] Mitigation: add explicit code-and-test slices with public validators and familiar bug-fix or feature-repair shapes.
 - [ ] Risk: prompt-handoff fixes reduce latency by dropping necessary truth.
-  - [ ] Mitigation: preserve required-path recall and tighten support-doc
-        ranking instead of hard-pruning blindly.
-- [ ] Risk: restored guidance memory improves packet quality but reintroduces
-      warm/cold slice drift.
-  - [ ] Mitigation: make candidate ordering deterministic and treat
-        cross-profile boundedness as a hard engineering requirement before
-        publication.
+  - [ ] Mitigation: preserve required-path recall and tighten support-doc ranking instead of hard-pruning blindly.
+- [ ] Risk: restored guidance memory improves packet quality but reintroduces warm/cold slice drift.
+  - [ ] Mitigation: make candidate ordering deterministic and treat cross-profile boundedness as a hard engineering requirement before publication.
 - [ ] Risk: Registry, Radar, Atlas, and Compass drift again.
-  - [ ] Mitigation: update the benchmark source-of-truth surfaces in the same
-        change and rerender the generated surfaces together.
+  - [ ] Mitigation: update the benchmark source-of-truth surfaces in the same change and rerender the generated surfaces together.
 
 ## Validation/Test Plan
 
@@ -365,3 +358,20 @@ Related Bugs:
 - [ ] The next follow-on still needs the new developer-core scenarios,
       richer family diagnostics, and a pinned-dogfood shipped baseline after
       the current source-local pass is folded into the release lane.
+
+## Traceability
+
+Benchmark corpus proof and publication; current family taxonomy and guidance-memory owner.
+
+### Runbooks
+
+- `odylith/MAINTAINER_RELEASE_RUNBOOK.md`
+
+### Developer Docs
+
+- `docs/benchmarks/FAMILIES_AND_EVALS.md`
+
+### Code References
+
+- `src/odylith/runtime/evaluation/odylith_benchmark_taxonomy.py`
+- `src/odylith/runtime/context_engine/tooling_guidance_catalog.py`

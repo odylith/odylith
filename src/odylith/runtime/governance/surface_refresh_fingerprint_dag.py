@@ -22,6 +22,7 @@ _VERSION = "v1"
 _REGISTRY_RENDERER_INPUTS = (
     Path("src/odylith/runtime/surfaces/render_registry_dashboard.py"),
     Path("src/odylith/runtime/surfaces/registry_forensic_evidence_ui.py"),
+    Path("src/odylith/runtime/surfaces/registry_spec_reading_ui.py"),
 )
 _RADAR_RENDERER_INPUTS = (
     Path("src/odylith/runtime/governance/build_traceability_graph.py"),

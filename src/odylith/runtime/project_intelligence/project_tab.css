@@ -1085,7 +1085,7 @@
   display: block;
   grid-column: 2;
   grid-row: 1 / span 2;
-  white-space: normal;
+  white-space: pre-wrap;
   overflow-wrap: anywhere;
   border: 1px solid #dbeafe;
   border-radius: 8px;

@@ -69,14 +69,11 @@ Related Bugs:
 ## Risks & Mitigations
 
 - [x] Risk: the new wording could imply pinned health even when trust is
-  - [ ] Mitigation: TODO (add explicit mitigation).
-      degraded.
+  - [ ] Mitigation: TODO (add explicit mitigation). degraded.
 - [ ] Risk: Unspecified risk (legacy backfill).
-  - [x] Mitigation: keep release eligibility explicitly fail-closed in the
-        shared status contract.
+  - [x] Mitigation: keep release eligibility explicitly fail-closed in the shared status contract.
 - [x] Risk: `doctor` and `version` could drift again if they derive posture
-  - [ ] Mitigation: TODO (add explicit mitigation).
-      independently.
+  - [ ] Mitigation: TODO (add explicit mitigation). independently.
 - [ ] Risk: Unspecified risk (legacy backfill).
   - [x] Mitigation: route both through the same runtime-status helper.
 

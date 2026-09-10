@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from xml.etree import ElementTree
+
+import pytest
 
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import render_backlog_ui
@@ -15,12 +18,13 @@ def _load_backlog_payload(root: Path) -> dict[str, object]:
     return json.loads(payload_js.split(" = ", 1)[1].rsplit(";", 1)[0])
 
 
-def _seed_backlog_render_repo(root: Path) -> None:
-    (root / "src" / "odylith").mkdir(parents=True, exist_ok=True)
-    (root / "pyproject.toml").write_text(
-        "[project]\nname = \"odylith\"\nversion = \"0.1.11\"\n",
-        encoding="utf-8",
-    )
+def _seed_backlog_render_repo(root: Path, *, product_repo: bool = True) -> None:
+    if product_repo:
+        (root / "src" / "odylith").mkdir(parents=True, exist_ok=True)
+        (root / "pyproject.toml").write_text(
+            "[project]\nname = \"odylith\"\nversion = \"0.1.11\"\n",
+            encoding="utf-8",
+        )
     (root / "odylith" / "registry" / "source").mkdir(parents=True, exist_ok=True)
     (root / "odylith" / "registry" / "source" / "component_registry.v1.json").write_text(
         "{\"version\": \"v1\", \"components\": []}\n",
@@ -109,33 +113,19 @@ def _seed_backlog_render_repo(root: Path) -> None:
     )
 
 
-def test_rewrite_section_text_normalizes_removed_plain_paths() -> None:
-    text = "See odylith/casebook/SPEC.md and scripts/compass_dashboard_runtime.py."
-    rewritten = render_backlog_ui._rewrite_section_text(repo_root=REPO_ROOT, text=text)
-
-    assert "odylith/casebook/SPEC.md" not in rewritten
-    assert "scripts/compass_dashboard_runtime.py" not in rewritten
-    assert "odylith/registry/source/components/casebook/CURRENT_SPEC.md" in rewritten
-    assert "odylith/registry/source/components/compass/CURRENT_SPEC.md" in rewritten
-
-
-def test_rewrite_section_text_rewrites_removed_pytest_commands() -> None:
-    text = "Run `pytest -q tests/scripts/test_sync_workstream_artifacts.py`."
-    rewritten = render_backlog_ui._rewrite_section_text(repo_root=REPO_ROOT, text=text)
-
-    assert "tests/scripts/test_sync_workstream_artifacts.py" not in rewritten
-    assert "`odylith sync --repo-root . --check-only --runtime-mode standalone`" in rewritten
+@pytest.mark.parametrize("text", [
+    "See odylith/casebook/SPEC.md and scripts/compass_dashboard_runtime.py.",
+    "Run `pytest -q tests/scripts/test_sync_workstream_artifacts.py`.",
+    "Point maintainers to python -m scripts.run_clean_snapshot_strict_sync --repo-root . when needed.",
+])
+def test_render_section_body_preserves_authored_paths_and_commands(text: str) -> None:
+    rendered = render_backlog_ui._render_section_body(repo_root=REPO_ROOT, lines=[text])
+    root = ElementTree.fromstring("<div>" + rendered + "</div>")
+    assert "".join(root.itertext()).strip() == text.replace("`", "")
+    assert not hasattr(render_backlog_ui, "_rewrite_section_text")
 
 
-def test_rewrite_section_text_rewrites_removed_snapshot_command() -> None:
-    text = "Point maintainers to python -m scripts.run_clean_snapshot_strict_sync --repo-root . when needed."
-    rewritten = render_backlog_ui._rewrite_section_text(repo_root=REPO_ROOT, text=text)
-
-    assert "python -m scripts.run_clean_snapshot_strict_sync" not in rewritten
-    assert "odylith sync --check-only --check-clean --runtime-mode standalone --repo-root ." in rewritten
-
-
-def test_render_section_body_splits_inline_numbered_steps() -> None:
+def test_render_section_body_keeps_inline_numbered_prose_in_its_paragraph() -> None:
     html = render_backlog_ui._render_section_body(
         repo_root=REPO_ROOT,
         lines=[
@@ -147,17 +137,14 @@ def test_render_section_body_splits_inline_numbered_steps() -> None:
         ],
     )
 
-    assert "<p>The first path is</p>" in html
-    assert '<ol class="inline-steps">' in html
-    assert "<li>User opens the product and starts capture.</li>" in html
-    assert "<li>User performs one bounded input.</li>" in html
-    assert "<li>User stops capture.</li>" in html
-    assert "<li>The product shows the reviewed result.</li>" in html
-    assert "<p>No broader automation is in scope yet.</p>" in html
-    assert html.index('<ol class="inline-steps">') < html.index("No broader automation")
+    assert html.strip() == (
+        "<p>The first path is: 1. User opens the product and starts capture. "
+        "2. User performs one bounded input. 3. User stops capture. "
+        "4. The product shows the reviewed result. No broader automation is in scope yet.</p>"
+    )
 
 
-def test_render_section_body_splits_inline_numbered_steps_inside_bullets() -> None:
+def test_render_section_body_preserves_inline_numbered_prose_inside_a_bullet() -> None:
     html = render_backlog_ui._render_section_body(
         repo_root=REPO_ROOT,
         lines=[
@@ -170,36 +157,39 @@ def test_render_section_body_splits_inline_numbered_steps_inside_bullets() -> No
     )
 
     assert "<ul>" in html
-    assert '<ol class="inline-steps">' in html
-    assert "<p>Proof path</p>" in html
-    assert "<li>User stops capture.</li>" in html
-    assert "<p>If this fails, implementation should pause.</p>" in html
+    root = ElementTree.fromstring(html)
+    assert len(root.findall("li")) == 1
+    assert root.find("li").text == (
+        "Proof path: 1. User opens the product and starts capture. "
+        "2. User performs one bounded input. 3. User stops capture. "
+        "4. The product shows the reviewed result. If this fails, implementation should pause."
+    )
 
 
-def test_render_section_body_strips_literal_markdown_emphasis_markers() -> None:
+def test_render_section_body_renders_authored_markdown_emphasis() -> None:
     html = render_backlog_ui._render_section_body(
         repo_root=REPO_ROOT,
         lines=["**Account owner:** wants a clean operational summary without raw emphasis tokens."],
     )
 
     assert "**" not in html
-    assert "<p>Account owner: wants a clean operational summary without raw emphasis tokens.</p>" in html
+    assert "<p><strong>Account owner:</strong> wants a clean operational summary without raw emphasis tokens.</p>" in html
 
 
-def test_extract_sections_from_markdown_strips_display_emphasis_tokens(tmp_path: Path) -> None:
+def test_extract_section_bodies_preserves_authored_emphasis_tokens(tmp_path: Path) -> None:
     idea = tmp_path / "idea.md"
     idea.write_text(
         "## Customer\n**Account owner:** wants clean UI text.\n\n## Problem\n__Raw emphasis__ leaks.\n",
         encoding="utf-8",
     )
 
-    sections = render_backlog_ui._extract_sections_from_markdown(idea)
+    sections = dict(render_backlog_ui._extract_sections_with_body(idea))
 
-    assert sections["Customer"] == "Account owner: wants clean UI text."
-    assert sections["Problem"] == "Raw emphasis leaks."
+    assert sections["Customer"] == ["**Account owner:** wants clean UI text.", ""]
+    assert sections["Problem"] == ["__Raw emphasis__ leaks."]
 
 
-def test_render_plan_html_normalizes_legacy_meta_row_paths(tmp_path: Path) -> None:
+def test_render_plan_html_preserves_authored_legacy_meta_row_paths(tmp_path: Path) -> None:
     repo_root = tmp_path
     plan_path = repo_root / "odylith" / "technical-plans" / "in-progress" / "2026-03-26-test-plan.md"
     plan_path.parent.mkdir(parents=True)
@@ -233,17 +223,10 @@ def test_render_plan_html_normalizes_legacy_meta_row_paths(tmp_path: Path) -> No
         },
     )
 
-    assert "scripts/render_compass_dashboard.py" not in html
-    assert "odylith/surfaces/DASHBOARD_SPEC.md" not in html
-    assert "python -m scripts.run_clean_snapshot_strict_sync" not in html
-    assert "tests/scripts/test_sync_workstream_artifacts.py" not in html
-    assert "odylith/registry/source/components/compass/CURRENT_SPEC.md" in html
-    assert "odylith/registry/source/components/dashboard/CURRENT_SPEC.md" in html
-    assert "odylith sync --check-only --check-clean --runtime-mode standalone --repo-root ." in html
-    assert "odylith sync --repo-root . --check-only --runtime-mode standalone" in html
-    assert "<code>odylith/registry/source/components/compass/CURRENT_SPEC.md</code>" in html
-    assert "<code>odylith/registry/source/components/dashboard/CURRENT_SPEC.md</code>" in html
-    assert "<code>odylith sync --check-only --check-clean --runtime-mode standalone --repo-root .</code>" in html
+    assert "<code>scripts/render_compass_dashboard.py</code>" in html
+    assert "<code>odylith/surfaces/DASHBOARD_SPEC.md</code> is stale and must not survive." in html
+    assert "<code>python -m scripts.run_clean_snapshot_strict_sync --repo-root .</code> is retired." in html
+    assert "<code>pytest -q tests/scripts/test_sync_workstream_artifacts.py</code>" in html
 
 
 def test_render_plan_html_traceability_cards_are_repo_bounded_and_stateful(tmp_path: Path) -> None:
@@ -360,10 +343,8 @@ def test_render_idea_spec_html_uses_rich_text_for_decision_basis_and_implemented
         },
     )
 
-    assert "tests/scripts/test_sync_workstream_artifacts.py" not in html
-    assert "python -m scripts.run_clean_snapshot_strict_sync" not in html
-    assert "<code>odylith sync --repo-root . --check-only --runtime-mode standalone</code>" in html
-    assert "<code>odylith sync --check-only --check-clean --runtime-mode standalone --repo-root .</code>" in html
+    assert "<code>pytest -q tests/scripts/test_sync_workstream_artifacts.py</code>" in html
+    assert "<code>python -m scripts.run_clean_snapshot_strict_sync --repo-root .</code>" in html
 
 
 def test_render_idea_spec_html_places_product_view_below_problem(tmp_path: Path) -> None:
@@ -426,7 +407,7 @@ def test_render_idea_spec_html_places_product_view_below_problem(tmp_path: Path)
     assert problem_idx < decision_idx < customer_idx
 
 
-def test_render_idea_spec_html_compacts_inventory_blobs_in_reader_sections(tmp_path: Path) -> None:
+def test_render_idea_spec_html_preserves_inventory_and_rationale_source(tmp_path: Path) -> None:
     repo_root = tmp_path
     idea_path = repo_root / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "2026-04-08-blob-example.md"
     idea_path.parent.mkdir(parents=True)
@@ -439,6 +420,12 @@ def test_render_idea_spec_html_compacts_inventory_blobs_in_reader_sections(tmp_p
         "Every claim maps back to source evidence, reviewer action, state transition, validation output, "
         "deferred scope, and a clear implementation stop condition before broader planning proceeds."
     )
+    rationale_bullets = [
+        f"why now: {long_inventory}",
+        "tradeoff: Define Boundary keeps sample product focused on one releaseable path while delaying scope not accepted in the confirmation.",
+        "deferred for now: anything outside this proof boundary waits: broad unproven scope.",
+        "ranking basis: Sample Product release readiness depends on preserving the confirmed product story, domain state, evidence, and proof boundary.",
+    ]
     idea_path.write_text(
         "\n".join(
             (
@@ -482,26 +469,24 @@ def test_render_idea_spec_html_compacts_inventory_blobs_in_reader_sections(tmp_p
             "status": "queued",
             "ordering_score": 42,
             "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-blob-example.md",
-            "rationale_bullets": [
-                f"why now: {long_inventory}",
-                "tradeoff: Define Boundary keeps sample product focused on one releaseable path while delaying scope not accepted in the confirmation.",
-                "deferred for now: anything outside this proof boundary waits: broad unproven scope.",
-                "ranking basis: Sample Product release readiness depends on preserving the confirmed product story, domain state, evidence, and proof boundary.",
-            ],
+            "rationale_bullets": rationale_bullets,
         },
     )
 
-    assert "Make product-owned systems explicit." in html
-    assert "Keep external systems separate." in html
-    assert "releaseable" not in html
-    assert "Keep the first release focused on the accepted path" in html
-    assert "Scope outside the accepted proof boundary waits for explicit evidence." in html
-    assert "Release readiness depends on the product story" in html
-    assert "Converts Long Source Records Into A Consistent Domain View" not in html
-    assert "Ranks Items By Recency" not in html
+    for title in ("Opportunity", "Why Now"):
+        section = html.split(f"<h2>{title}</h2>", 1)[1].split("</section>", 1)[0]
+        positions = []
+        for sentence in long_inventory.split(". "):
+            assert sentence in section, sentence
+            positions.append(section.index(sentence))
+        assert positions == sorted(positions)
+    rationale = html.split("<h2>Decision Basis</h2>", 1)[1].split("</article>", 1)[0]
+    rendered_items = ElementTree.fromstring(f"<div>{rationale}</div>").findall("./ul/li")
+    assert [" ".join(" ".join(item.itertext()).split()) for item in rendered_items] == rationale_bullets
+    assert "…" not in rationale
 
 
-def test_render_section_body_splits_dense_single_paragraph_prose() -> None:
+def test_render_section_body_preserves_dense_single_paragraph_prose() -> None:
     html = render_backlog_ui._render_section_body(
         repo_root=REPO_ROOT,
         lines=[
@@ -512,10 +497,49 @@ def test_render_section_body_splits_dense_single_paragraph_prose() -> None:
         ],
     )
 
-    assert html.count("<p>") == 4
+    assert html.count("<p>") == 1
     assert "<code>generated_utc</code>" in html
     assert "bounded refresh" in html
     assert "<code>pytest</code>" in html
+
+
+@pytest.mark.parametrize("section_title", ["Problem", "Validation"])
+def test_render_idea_spec_html_preserves_complete_late_constraints(
+    tmp_path: Path, section_title: str,
+) -> None:
+    sentences = [
+        "An operator reads every recorded observation before deciding whether an item can proceed to the next stage.",
+        "The record retains the original measurement, its observer and its collection time so another person can review the same evidence.",
+        "A separate reviewer checks the item against its recorded requirements and records any unresolved uncertainty without changing the original observation.",
+        "The visible result includes the decision and the evidence that supports it, including the final restriction stated at the end of this paragraph.",
+        "Do not publish the result until the independent reviewer has accepted the complete record.",
+    ]
+    final_paragraph = "A rejected item remains available for inspection. Rejection must never be presented as successful publication."
+    checklist = [
+        "Preserve the first observation and its original owner.",
+        "Verify that the final result remains unpublished when its review is incomplete.",
+    ]
+    idea = tmp_path / "full-record.md"
+    idea.write_text(
+        "---\nidea_id: B-996\ntitle: Full record\nstatus: queued\n---\n\n"
+        f"## {section_title}\n{' '.join(sentences)}\n\n{final_paragraph}\n\n"
+        + "\n".join(f"- [ ] {item}" for item in checklist) + "\n",
+        encoding="utf-8",
+    )
+    html = render_backlog_ui._render_idea_spec_html(
+        repo_root=tmp_path, index_output_path=tmp_path / "radar.html",
+        entry={"idea_id": "B-996", "title": "Full record", "idea_file": "full-record.md"},
+    )
+    section = html.split(f"<h2>{section_title}</h2>", 1)[1].split("</section>", 1)[0]
+    expected = [*sentences, *final_paragraph.split(". "), *checklist]
+    positions = []
+    for text in expected:
+        assert text in section, text
+        positions.append(section.index(text))
+    assert positions == sorted(positions)
+    assert section.count('class="check-text"') == 2
+    assert section.count('type="checkbox"') == 2
+    assert "…" not in section
 
 
 def test_render_section_body_keeps_wrapped_bullets_in_single_list_item() -> None:
@@ -529,8 +553,10 @@ def test_render_section_body_keeps_wrapped_bullets_in_single_list_item() -> None
     )
 
     assert "<ul>" in html
-    assert "<li>Primary: operators relying on <code>doctor --repair</code> or <code>reinstall --latest</code> to recover the repo in place.</li>" in html
-    assert "<li>Secondary: maintainers proving the release path.</li>" in html
+    items = ElementTree.fromstring(html).findall("li")
+    assert len(items) == 2
+    assert " ".join("".join(items[0].itertext()).split()) == "Primary: operators relying on doctor --repair or reinstall --latest to recover the repo in place."
+    assert items[1].text == "Secondary: maintainers proving the release path."
 
 
 def test_render_section_body_keeps_command_only_checklist_items_inline_and_wrapped() -> None:
@@ -619,11 +645,14 @@ def test_render_backlog_ui_normalizes_compact_workstream_search_queries() -> Non
     assert "const token = canonicalizeIdeaId(ideaId);" in html
 
 
-def test_render_backlog_ui_omits_empty_placeholder_copy() -> None:
+def test_render_backlog_ui_explains_empty_source_and_filtered_results() -> None:
     html = render_backlog_ui._render_html(payload={"entries": []})
 
     assert "Select a workstream from the ranked list." not in html
-    assert "No workstreams match current filters." not in html
+    assert "No workstreams yet" in html
+    assert "No matching workstreams" in html
+    assert "Change your search or filters" in html
+    assert 'href="../index.html?tab=project" target="_top"' in html
     assert "Loading workstream detail…" not in html
     assert "No finished execution data yet." not in html
     assert "No completed execution samples in this window." not in html
@@ -675,27 +704,25 @@ def test_render_backlog_ui_places_product_view_below_problem() -> None:
     assert problem_idx < decision_idx < customer_idx
 
 
-def test_render_backlog_ui_keeps_decision_basis_labeling_self_contained() -> None:
+def test_render_backlog_ui_uses_authored_decision_basis_without_inferred_labels() -> None:
     html = render_backlog_ui._render_html(payload={"entries": []})
 
     assert "function humanizeToken(token)" in html
-    assert 'return humanizeToken(label);' in html
-    assert 'replace(/^[-*]\\s+/, "")' in html
-    assert "function compactNarrativeForDetail(value)" in html
+    assert 'function decisionBasisLabel' not in html
+    assert 'function renderDecisionBasisLine' not in html
+    assert "function compactNarrativeForDetail(value)" not in html
+    assert 'row.rationale_html' in html
+    assert "escapeHtml(line)" in html
     assert 'class="bullets decision-bullets"' in html
-    assert "decision-basis-label" in html
-    assert "decision-basis-copy" in html
-    assert "text-transform: none;" in html
-    assert "letter-spacing: 0em;" in html
-    assert "font-size: 0.88rem;" in html
-    assert "font-weight: 700;" in html
-    assert "grid-template-columns: minmax(128px, 178px) minmax(0, 1fr);" in html
-    assert "text-transform: uppercase;" not in html[html.index(".decision-basis-label") : html.index(".decision-basis-copy")]
+    assert "decision-basis-label" not in html
+    assert "decision-basis-copy" not in html
+    assert "grid-template-columns: minmax(128px, 178px) minmax(0, 1fr);" not in html
 
 
 def test_render_backlog_ui_includes_release_filters_summary_cards_and_release_chips() -> None:
     html = render_backlog_ui._render_html(payload={"entries": []})
 
+    assert 'function escapeHtml(value) {\n      return String(value ?? "")' in html
     assert '<select id="type">' in html
     assert '<option value="umbrella">Umbrella</option>' in html
     assert '<option value="child">Child</option>' in html
@@ -880,51 +907,18 @@ def test_render_backlog_ui_side_rail_keeps_only_core_row_chips() -> None:
     assert "const waveChips = executionWaveRoleChips(row);" not in html
 
 
-def test_render_backlog_ui_side_rail_adds_one_paragraph_story_summary() -> None:
+def test_render_backlog_ui_side_rail_projects_authored_story_block() -> None:
     html = render_backlog_ui._render_html(payload={"entries": []})
 
     assert 'function rowStorySummary(row)' in html
-    assert 'function workstreamStoryParagraph(row)' in html
-    assert 'function workstreamStoryLines(row)' in html
-    assert 'function isTitleEchoStorySentence(row, value)' in html
-    assert 'function fitStorySentences(lines)' in html
-    assert "const ROW_STORY_MAX_SENTENCES = 2;" in html
-    assert "const ROW_STORY_MAX_CHARS = 300;" in html
-    assert "const ROW_STORY_SENTENCE_MAX_CHARS = 260;" in html
-    assert "const LOW_VALUE_STORY_PATTERNS = [" in html
-    assert 'function storySentence(value)' in html
-    assert 'function expectedOutcomeStorySentence(row)' in html
-    assert 'function isLowValueStorySentence(value)' in html
-    assert 'function isProgramStoryRow(row)' in html
-    assert "function shortenAtReadableBoundary(value, maxChars = 180)" in html
-    assert '<div class="row-story" aria-label="Workstream story summary">' in html
-    assert '<p class="row-story-text">${escapeHtml(story)}</p>' in html
-    assert "const story = workstreamStoryParagraph(row);" in html
-    assert '<span class="row-story-label">${escapeHtml(label)}</span>' not in html
-    assert '["For", user || "The named project user"]' not in html
-    assert '["Needs", problem || "A clearer bounded problem to solve"]' not in html
-    assert '["Proves", proof || "The release result reviewers should be able to trust"]' not in html
-    assert ".replace(/\\*\\*/g, \"\")" in html
-    assert "generic process abstraction" in html
-    assert "accepted product path" in html
-    assert "state changes through the first path" in html
-    assert "planning prose" in html
-    assert "state boundary" in html
-    assert "review boundary" in html
-    assert "is the next owned capability to make concrete" in html
-    assert "needs a clean ownership line" in html
-    assert "turns the slice into reviewable evidence" in html
-    assert "must prove its part of the first release" not in html
-    assert "const primaryCandidates =" in html
-    assert "const candidates = [...primaryCandidates, titleLine];" in html
-    assert "storySentence(row.problem)" in html
-    assert "storySentence(row.founder_pov)" not in html
-    assert "storySentence(row.success_metrics)" in html
-    assert "const BACKLOG_LIST_ROW_HEIGHT = 214;" in html
-    assert ".row-story {" in html
-    assert ".row-story-line {" not in html
-    assert ".row-story-line::before {" not in html
-    assert "-webkit-line-clamp: 1;" not in html
+    assert 'row.story_text' in html
+    assert 'row.story_source' in html
+    assert 'Authored workstream summary' in html
+    assert 'No authored workstream summary yet.' in html
+    assert 'white-space: pre-wrap' in html
+    assert 'LOW_VALUE_STORY_PATTERNS' not in html
+    assert 'workstreamStoryParagraph' not in html
+    assert 'titleNarrativeSentence' not in html
 
 
 def test_render_backlog_ui_places_registry_components_inside_topology_board() -> None:
@@ -961,10 +955,10 @@ def test_render_backlog_ui_uses_full_width_copy_and_consistent_detail_spacing() 
     assert "padding: 14px 16px;" in html
     assert ".detail-copy > p {" in html
     assert "max-width: 100%;" in html
-    assert ".detail-pair-grid {" in html
-    assert ".detail-pair-card {" in html
+    assert ".detail-pair-grid {" not in html
+    assert ".detail-pair-card {" not in html
     assert ".detail-copy ol {" in html
-    assert ".detail-copy .inline-steps {" in html
+    assert ".detail-copy .inline-steps {" not in html
 
 
 def test_render_backlog_ui_keeps_unknown_execution_wave_progress_unknown() -> None:
@@ -975,21 +969,17 @@ def test_render_backlog_ui_keeps_unknown_execution_wave_progress_unknown() -> No
     assert 'Object.prototype.hasOwnProperty.call(plan, "display_progress_ratio")' in html
 
 
-def test_render_backlog_ui_runtime_fallback_can_split_inline_numbered_steps() -> None:
+def test_render_backlog_ui_runtime_fallback_preserves_blocks_without_sentence_reparsing() -> None:
     html = render_backlog_ui._render_html(payload={"entries": []})
 
-    assert "function splitInlineOrderedSteps(value)" in html
     assert "function readableTextHtml(value" in html
-    assert "function cleanRenderedHtml(value)" in html
-    assert "function textFromRenderedHtml(value)" in html
-    assert "function structuredPairListHtml(value)" in html
-    assert "const structured = structuredPairListHtml(value);" in html
-    assert "const rawValue = compactPlainText(value) || textFromRenderedHtml(rich);" in html
-    assert "const compactValue = compactNarrativeForDetail(rawValue);" in html
-    assert "const rich = cleanRenderedHtml(renderedHtml);" in html
+    assert "function splitInlineOrderedSteps" not in html
+    assert "function compactNarrativeForDetail" not in html
+    assert "function structuredPairListHtml" not in html
+    assert 'const rich = String(renderedHtml || "").trim();' in html
     assert 'return `<div class="detail-copy">${readableTextHtml(value, fallback)}</div>`;' in html
-    assert "function orderingRationaleBlockHtml(row)" in html
     assert 'return `<div class="detail-copy">${rich}</div>`;' in html
+    assert 'return `<p class="source-text">${escapeHtml(text)}</p>`;' in html
 
 
 def test_render_backlog_ui_skips_cached_rebuild_before_snapshot_load(
@@ -1049,7 +1039,7 @@ def test_render_backlog_ui_emits_runtime_contract(tmp_path: Path) -> None:
     assert payload["runtime_contract"]["built_from"] == "surface_render"
 
 
-def test_render_backlog_ui_payload_strips_emphasis_from_visible_text(tmp_path: Path) -> None:
+def test_render_backlog_ui_payload_keeps_source_and_renders_emphasis_for_display(tmp_path: Path) -> None:
     _seed_backlog_render_repo(tmp_path)
     idea_path = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "2026-04-11-cached-render.md"
     content = idea_path.read_text(encoding="utf-8")
@@ -1077,10 +1067,13 @@ def test_render_backlog_ui_payload_strips_emphasis_from_visible_text(tmp_path: P
     assert rc == 0
     payload = _load_backlog_payload(tmp_path)
     entry = payload["entries"][0]
-    assert entry["ordering_rationale"] == "prove cached radar render reuse"
-    assert entry["customer"] == "Operators: running repeated syncs."
+    assert entry["ordering_rationale"] == "**prove cached radar render reuse**"
+    assert "<strong>prove cached radar render reuse</strong>" in entry["ordering_rationale_html"]
+    assert entry["customer"] == "**Operators:** running repeated syncs."
+    assert "<strong>Operators:</strong>" in entry["customer_html"]
     assert "**" not in entry["customer_html"]
     detail_shard = (tmp_path / "odylith" / "radar" / "backlog-detail-shard-001.v1.js").read_text(
         encoding="utf-8"
     )
-    assert "**Operators" not in detail_shard
+    assert "**Operators" in detail_shard
+    assert "<strong>Operators:</strong>" in detail_shard

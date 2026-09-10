@@ -1,53 +1,29 @@
-"""Render Registry records from the closed authored component projection.
+"""Render proposed Registry contracts after exact source-and-design parity.
 
-The model-authored relation set is the only semantic authority. This module
-renders its owner-bound component facts and structural trace links without
-inventing local boundaries, interfaces, dependencies, risks, or proof claims.
+The canonical design owns proposed responsibilities, exchanges, and proof. Exact
+support events retain source actors; they are not owner-bound component facts.
 """
 
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from copy import deepcopy
+import datetime as dt
 from pathlib import Path
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
-    AUTHORED_PROJECTION_ORIGIN,
-    AUTHORED_SEMANTIC_ROOT,
-    authored_source_custody,
-    first_path_relations_from_intent,
+    AUTHORED_PROJECTION_ORIGIN, AUTHORED_SEMANTIC_ROOT,
+    authored_source_custody, first_path_relations_from_intent,
 )
+from odylith.runtime.domain_intelligence.greenfield_authored_proposal import authored_projection_parity_issues
 from odylith.runtime.domain_intelligence.greenfield_apply_diagrams import allocated_diagram_ids
-from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
-    PRODUCT_INTENT_AUTHORITY_KEY,
-)
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
+from odylith.runtime.domain_intelligence.greenfield_provisional_package import provisional_exchange_text
 from odylith.runtime.governance import artifact_tribunal
 
 
-_AUTHORED_COMPONENT_CONTRACT_FIELDS = frozenset(
-    {
-        "owner_system",
-        "responsibility_facts",
-        "owner_bound_events",
-        "event_targets",
-        "visible_results",
-        "recovery_events",
-        "state_context",
-        "external_dependencies",
-        "operational_constraints",
-    }
-)
-_UNBOUND_COMPONENT_FIELDS = (
-    "boundary",
-    "interfaces",
-    "risks",
-    "security_compliance",
-)
-
-
 def is_authored_component_projection(proposal: Mapping[str, Any]) -> bool:
-    """Return whether a proposal carries the complete authored authority marker."""
-
     if proposal.get("projection_origin") != AUTHORED_PROJECTION_ORIGIN:
         return False
     intent = proposal.get("intent")
@@ -57,233 +33,154 @@ def is_authored_component_projection(proposal: Mapping[str, Any]) -> bool:
 
 
 def build_authored_component_authoring_inputs(
-    *,
-    root: Path,
-    proposal: Mapping[str, Any],
-    release_selector: str,
+    *, root: Path, proposal: Mapping[str, Any], release_selector: str,
     backlog_result: Mapping[str, Any],
 ) -> tuple[dict[str, Any], ...]:
-    """Project exact authored component fields into Registry authoring inputs."""
+    """Require full deterministic parity before issuing Registry input rows."""
 
     if not is_authored_component_projection(proposal):
         raise ValueError("authored component input projection requires authored semantics")
-    components = tuple(
-        row
-        for row in _mapping_sequence(proposal.get("components"))
-        if str(row.get("release_scope") or "").strip().casefold()
-        not in {"deferred", "out_of_scope", "external"}
-    )
-    if not components:
-        raise ValueError("model-authored component projection requires a first-release component")
-    intent = proposal.get("intent")
-    authority = proposal.get(PRODUCT_INTENT_AUTHORITY_KEY)
+    issues = authored_projection_parity_issues(proposal)
+    if issues:
+        raise ValueError("; ".join(issues))
+    intent, authority = proposal.get("intent"), proposal.get(PRODUCT_INTENT_AUTHORITY_KEY)
     if not isinstance(intent, Mapping) or not isinstance(authority, Mapping):
         raise ValueError("model-authored component projection is missing sealed Product Intent authority")
     source_custody = authored_source_custody(intent=intent, authority=authority)
-
     workstreams_by_component, workstream_titles = _component_workstream_links(
-        proposal=proposal,
-        backlog_result=backlog_result,
+        proposal=proposal, backlog_result=backlog_result,
     )
     diagrams_by_component = _component_diagram_links(root=root, proposal=proposal)
     rows: list[dict[str, Any]] = []
-    for component in components:
+    for component in _mapping_sequence(proposal.get("components")):
         component_id = _required_scalar(component, "component_id")
-        if component.get("projection_origin") != AUTHORED_PROJECTION_ORIGIN:
-            raise ValueError(f"authored component `{component_id}` lost its projection origin")
-        label = _required_scalar(component, "label")
-        path = _required_scalar(component, "intended_path")
-        responsibility = _required_scalar(component, "responsibility")
-        contract = _authored_component_contract(
-            component,
-            component_id=component_id,
-            label=label,
-            responsibility=responsibility,
-        )
         workstreams = tuple(workstreams_by_component.get(component_id, ()))
-        if not workstreams:
-            raise ValueError(f"authored component `{component_id}` has no exact workstream trace link")
         diagrams = tuple(diagrams_by_component.get(component_id, ()))
-        if not diagrams:
-            raise ValueError(f"authored component `{component_id}` has no exact diagram trace link")
-        handoff = {
-            "workstream_id": workstreams[0],
-            "workstream_title": workstream_titles.get(workstreams[0], ""),
-            "release_selector": str(release_selector or "").strip(),
+        if not workstreams or not diagrams:
+            raise ValueError(f"provisional component `{component_id}` requires exact workstream and diagram trace links")
+        row = {
+            **deepcopy(dict(component)),
+            "path": _required_scalar(component, "intended_path"),
+            "category": "application", "owner": "repo", "product_layer": "application",
+            "sources": (AUTHORED_SEMANTIC_ROOT,),
+            "workstreams": workstreams, "diagrams": diagrams, "risks": (),
+            "implementation_handoff": {
+                "workstream_id": workstreams[0],
+                "workstream_title": workstream_titles[workstreams[0]],
+                "release_selector": str(release_selector or "").strip(),
+            },
+            "source_custody": source_custody,
         }
-        rows.append(
-            {
-                "component_id": component_id,
-                "label": label,
-                "path": path,
-                "kind": _required_scalar(component, "kind"),
-                "category": "application",
-                "status": _required_scalar(component, "status"),
-                "qualification": _required_scalar(component, "qualification"),
-                "owner": "repo",
-                "product_layer": "application",
-                "sources": (AUTHORED_SEMANTIC_ROOT,),
-                "workstreams": workstreams,
-                "diagrams": diagrams,
-                "responsibility": responsibility,
-                "boundary": "",
-                "dependencies": tuple(contract["external_dependencies"]),
-                "interfaces": (),
-                "validation": tuple(contract["operational_constraints"]),
-                "risks": (),
-                "implementation_handoff": handoff,
-                "component_contract": contract,
-                "projection_origin": AUTHORED_PROJECTION_ORIGIN,
-                "source_custody": source_custody,
-            }
-        )
+        _provisional_component_contract(row)
+        rows.append(row)
     return tuple(rows)
 
 
 def build_authored_component_registry_entry(row: Mapping[str, Any]) -> dict[str, Any]:
-    """Build a Registry manifest row without interpreting authored prose."""
-
     _require_authored_custody(row)
-    component_id = _required_scalar(row, "component_id")
-    label = _required_scalar(row, "label")
-    path = _required_scalar(row, "path")
-    kind = _required_scalar(row, "kind")
-    responsibility = _required_scalar(row, "responsibility")
-    sources = list(_required_sequence(row, "sources"))
-    workstreams = list(_required_sequence(row, "workstreams"))
-    diagrams = list(_sequence(row.get("diagrams")))
+    _provisional_component_contract(row)
+    component_id, label = _required_scalar(row, "component_id"), _required_scalar(row, "label")
     return {
-        "component_id": component_id,
-        "name": label,
-        "kind": kind,
-        "category": _required_scalar(row, "category"),
-        "qualification": _required_scalar(row, "qualification"),
-        "aliases": [],
-        "path_prefixes": [path],
-        "workstreams": workstreams,
-        "diagrams": diagrams,
-        "owner": _required_scalar(row, "owner"),
-        "status": _required_scalar(row, "status"),
-        "what_it_is": (
-            f"{label} is a planned Registry {kind}. "
-            f"Source-custodied responsibility: {responsibility}"
-        ),
+        "component_id": component_id, "name": label,
+        "kind": _required_scalar(row, "kind"), "category": _required_scalar(row, "category"),
+        "qualification": _required_scalar(row, "qualification"), "aliases": [],
+        "path_prefixes": [_required_scalar(row, "path")],
+        "workstreams": list(_required_sequence(row, "workstreams")),
+        "diagrams": list(_required_sequence(row, "diagrams")),
+        "owner": _required_scalar(row, "owner"), "status": _required_scalar(row, "status"),
+        "what_it_is": f"{label} is a proposed logical component. Proposed responsibility: {row['responsibility']}",
         "why_tracked": (
-            "Tracked because the accepted typed intent supplies exact component facts "
-            "and first-release trace links."
+            "The provisional design assigns this capability a delivery and verification contract. "
+            "Source-event support does not establish implementation or transfer actor ownership."
         ),
         "spec_ref": f"odylith/registry/source/components/{component_id}/CURRENT_SPEC.md",
-        "sources": sources,
-        "subcomponents": [],
+        "sources": list(_required_sequence(row, "sources")), "subcomponents": [],
         "product_layer": _required_scalar(row, "product_layer"),
     }
 
 
 def build_authored_component_spec(row: Mapping[str, Any]) -> str:
-    """Render one typed component contract without a narrative inference pass."""
+    """Keep proposed design and unchanged source-event support visibly separate."""
 
     _require_authored_custody(row)
-    component_id = _required_scalar(row, "component_id")
-    label = _required_scalar(row, "label")
-    path = _required_scalar(row, "path")
-    kind = _required_scalar(row, "kind")
-    status = _required_scalar(row, "status")
-    qualification = _required_scalar(row, "qualification")
-    responsibility = _required_scalar(row, "responsibility")
-    workstreams = _required_sequence(row, "workstreams")
-    diagrams = _sequence(row.get("diagrams"))
+    contract = _provisional_component_contract(row)
+    component = contract["provisional_component"]
+    workstreams, diagrams = _required_sequence(row, "workstreams"), _required_sequence(row, "diagrams")
+    lines = [
+        f"# {row['label']}", "",
+        "> Proposed logical component; no implementation or deployment is asserted.", "",
+        "## Component Snapshot", "",
+        f"- Component ID: `{row['component_id']}`", f"- Kind: `{row['kind']}`",
+        f"- Status: `{row['status']}`", f"- Qualification: `{row['qualification']}`",
+        f"- Proposed path: `{row['path']}`",
+        f"- Design authority: `{AUTHORED_SEMANTIC_ROOT}.provisional_design`", "",
+        "## Proposed responsibility", "", _evidence_block(component["responsibility"]), "",
+        "## Proposed inputs and outputs", "",
+        *([_evidence_block(provisional_exchange_text(exchange)) for exchange in contract["exchanges"]]
+          or ["No component exchanges are proposed for this capability."]), "",
+        "## Proposed verification", "", _evidence_block(component["verification"]), "",
+        "## Source-event support", "",
+        "These exact source events support the design; their actors retain ownership of their actions.", "",
+    ]
+    for reference, event in zip(contract["support_event_refs"], contract["supporting_events"], strict=True):
+        lines.extend([
+            f"### Event {event['order']} — {event['actor_fact_quote']}", "",
+            f"- Source relation: `{reference}`", f"- Source actor kind: `{event['actor_kind']}`", "",
+            _evidence_block(event["event_quote"]), "",
+        ])
+    lines.extend([
+        "## Trace links", "", f"- Canonical design row: `{contract['design_ref']}`",
+        *[f"- Workstream: `{value}`" for value in workstreams],
+        *[f"- Diagram: `{value}`" for value in diagrams], "",
+        "## Feature History", "", _feature_history_line(workstreams[0]), "",
+    ])
+    return "\n".join(lines)
+
+
+def _provisional_component_contract(row: Mapping[str, Any]) -> Mapping[str, Any]:
     contract = row.get("component_contract")
-    if not isinstance(contract, Mapping):
-        raise ValueError(f"authored component `{component_id}` is missing its typed component contract")
+    fields = {"authority_kind", "design_ref", "provisional_component", "support_event_refs", "supporting_events", "exchanges"}
+    if (
+        row.get("projection_origin") != AUTHORED_PROJECTION_ORIGIN
+        or row.get("authority_kind") != "provisional_design"
+        or not isinstance(contract, Mapping) or set(contract) != fields
+        or contract.get("authority_kind") != "provisional_design"
+    ):
+        raise ValueError("Registry component requires the closed provisional design contract")
+    component = contract.get("provisional_component")
+    if not isinstance(component, Mapping):
+        raise ValueError("Registry component is missing its canonical provisional row")
+    checks = {
+        "component_id": component.get("key"), "label": component.get("name"),
+        "responsibility": component.get("responsibility"),
+        "validation": [component.get("verification")], "kind": "component",
+    }
+    if any(row.get(key) != value for key, value in checks.items()):
+        raise ValueError("Registry component drifted from its canonical proposed fields")
+    exchanges = contract.get("exchanges")
+    if not isinstance(exchanges, list) or any(not isinstance(item, Mapping) for item in exchanges):
+        raise ValueError("Registry component has malformed proposed exchanges")
+    if row.get("interfaces") != [provisional_exchange_text(item) for item in exchanges]:
+        raise ValueError("Registry component drifted from its proposed exchanges")
+    if row.get("dependencies") != []:
+        raise ValueError("Registry component cannot infer dependencies from proposed exchanges")
+    events, orders = contract.get("supporting_events"), component.get("supported_event_orders")
+    if not isinstance(events, list) or any(not isinstance(event, Mapping) for event in events):
+        raise ValueError("Registry component has malformed source-event support")
+    if [event.get("order") for event in events] != orders:
+        raise ValueError("Registry component drifted from its source-event support")
+    if contract.get("support_event_refs") != [
+        f"/authored_semantics/first_path_relations/{order - 1}" for order in orders
+    ]:
+        raise ValueError("Registry component drifted from exact source-event references")
+    return contract
 
-    contract = _authored_component_contract(
-        row,
-        component_id=component_id,
-        label=label,
-        responsibility=responsibility,
-    )
-    owner_system = _required_contract_text(contract, "owner_system", component_id=component_id)
-    responsibility_facts = _required_contract_facts(
-        contract,
-        "responsibility_facts",
-        component_id=component_id,
-    )
-    owner_bound_events = _contract_facts(contract, "owner_bound_events", component_id=component_id)
-    event_targets = _contract_facts(contract, "event_targets", component_id=component_id)
-    visible_results = _contract_facts(contract, "visible_results", component_id=component_id)
-    recovery_events = _contract_facts(contract, "recovery_events", component_id=component_id)
-    state_context = _contract_facts(contract, "state_context", component_id=component_id)
-    external_dependencies = _contract_facts(
-        contract,
-        "external_dependencies",
-        component_id=component_id,
-    )
-    operational_constraints = _contract_facts(
-        contract,
-        "operational_constraints",
-        component_id=component_id,
-    )
 
-    return "\n".join(
-        [
-            f"# {label}",
-            "",
-            f"> Candidate Registry component projected from `{AUTHORED_SEMANTIC_ROOT}`.",
-            "",
-            "## Component Snapshot",
-            "",
-            f"- Component ID: `{component_id}`",
-            f"- Kind: `{kind}`",
-            f"- Status: `{status}`",
-            f"- Qualification: `{qualification}`",
-            f"- Planned path: `{path}`",
-            f"- Semantic authority: `{AUTHORED_SEMANTIC_ROOT}`",
-            "",
-            "## Source-custodied responsibility",
-            "",
-            _relation_facts(responsibility_facts, relation_label="responsibility fact"),
-            "",
-            "## Source-custodied owner relations",
-            "",
-            "### Owner system",
-            "",
-            _evidence_block(owner_system),
-            "",
-            "### Owner-bound events",
-            "",
-            _relation_facts(owner_bound_events, relation_label="owner-bound event"),
-            "",
-            "### Event targets",
-            "",
-            _relation_facts(event_targets, relation_label="event target"),
-            "",
-            "### Visible results",
-            "",
-            _relation_facts(visible_results, relation_label="visible result"),
-            "",
-            "### Recovery events",
-            "",
-            _relation_facts(recovery_events, relation_label="recovery event"),
-            "",
-            "### State context",
-            "",
-            _relation_facts(state_context, relation_label="state context fact"),
-            "",
-            "### External dependencies",
-            "",
-            _relation_facts(external_dependencies, relation_label="external dependency"),
-            "",
-            "### Operational constraints",
-            "",
-            _relation_facts(operational_constraints, relation_label="operational constraint"),
-            "",
-            "## Trace links",
-            "",
-            f"- Semantic source: `{AUTHORED_SEMANTIC_ROOT}`",
-            *[f"- Workstream: `{workstream}`" for workstream in workstreams],
-            *([f"- Diagram: `{diagram}`" for diagram in diagrams] or ["- Diagram: no authored component link"]),
-            "",
-        ]
+def _feature_history_line(workstream_id: str) -> str:
+    plan_href = f"odylith/radar/radar.html?view=plan&workstream={workstream_id}"
+    return (
+        f"- {dt.date.today().isoformat()}: Initial provisional component projected from sealed Product Intent. "
+        f"(Plan: [{workstream_id}]({plan_href}))"
     )
 
 
@@ -297,7 +194,7 @@ def _required_scalar(row: Mapping[str, Any], key: str) -> str:
     value = row.get(key)
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"authored component projection requires `{key}`")
-    return value.strip()
+    return value
 
 
 def _mapping_sequence(value: Any) -> tuple[Mapping[str, Any], ...]:
@@ -316,154 +213,41 @@ def _required_sequence(row: Mapping[str, Any], key: str) -> tuple[str, ...]:
 def _sequence(value: Any) -> tuple[str, ...]:
     if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
         return ()
-    return tuple(item.strip() for item in value if isinstance(item, str) and item.strip())
-
-
-def _ordered_values(values: Sequence[str]) -> tuple[str, ...]:
-    rows: list[str] = []
-    seen: set[str] = set()
-    for value in values:
-        if value and value not in seen:
-            rows.append(value)
-            seen.add(value)
-    return tuple(rows)
-
-
-def _authored_component_contract(
-    component: Mapping[str, Any],
-    *,
-    component_id: str,
-    label: str,
-    responsibility: str,
-) -> dict[str, Any]:
-    contract = component.get("component_contract")
-    if not isinstance(contract, Mapping) or set(contract) != _AUTHORED_COMPONENT_CONTRACT_FIELDS:
-        raise ValueError(
-            f"authored component `{component_id}` requires the closed owner-bound component contract"
-        )
-    owner_system = _required_contract_text(contract, "owner_system", component_id=component_id)
-    responsibility_facts = _required_contract_facts(
-        contract,
-        "responsibility_facts",
-        component_id=component_id,
-    )
-    for key in (
-        "owner_bound_events",
-        "event_targets",
-        "visible_results",
-        "recovery_events",
-        "state_context",
-        "external_dependencies",
-        "operational_constraints",
-    ):
-        _contract_facts(contract, key, component_id=component_id)
-    if owner_system != label:
-        raise ValueError(f"authored component `{component_id}` owner system must match its label exactly")
-    if responsibility != "; ".join(responsibility_facts):
-        raise ValueError(
-            f"authored component `{component_id}` responsibility must exactly join its responsibility facts"
-        )
-    if _sequence(component.get("dependencies")) != _contract_facts(
-        contract,
-        "external_dependencies",
-        component_id=component_id,
-    ):
-        raise ValueError(f"authored component `{component_id}` dependencies drifted from typed context")
-    if _sequence(component.get("validation")) != _contract_facts(
-        contract,
-        "operational_constraints",
-        component_id=component_id,
-    ):
-        raise ValueError(f"authored component `{component_id}` validation drifted from typed context")
-    if any(component.get(key) not in (None, "", [], ()) for key in _UNBOUND_COMPONENT_FIELDS):
-        raise ValueError(f"authored component `{component_id}` contains unbound local semantics")
-    if component.get("kind") != "component":
-        raise ValueError(f"authored component `{component_id}` kind must remain implementation-neutral")
-    return dict(contract)
-
-
-def _required_contract_text(contract: Mapping[str, Any], key: str, *, component_id: str) -> str:
-    value = contract.get(key)
-    if not isinstance(value, str) or not value:
-        raise ValueError(f"authored component `{component_id}` requires contract field `{key}`")
-    return value
-
-
-def _required_contract_facts(
-    contract: Mapping[str, Any],
-    key: str,
-    *,
-    component_id: str,
-) -> tuple[str, ...]:
-    values = _contract_facts(contract, key, component_id=component_id)
-    if not values:
-        raise ValueError(f"authored component `{component_id}` requires contract field `{key}`")
-    return values
-
-
-def _contract_facts(
-    contract: Mapping[str, Any],
-    key: str,
-    *,
-    component_id: str,
-) -> tuple[str, ...]:
-    value = contract.get(key)
-    if not isinstance(value, list) or any(not isinstance(item, str) or not item for item in value):
-        raise ValueError(f"authored component `{component_id}` contract field `{key}` must be exact text facts")
-    return tuple(value)
+    return tuple(item for item in value if isinstance(item, str) and item)
 
 
 def _component_workstream_links(
-    *,
-    proposal: Mapping[str, Any],
-    backlog_result: Mapping[str, Any],
+    *, proposal: Mapping[str, Any], backlog_result: Mapping[str, Any],
 ) -> tuple[dict[str, tuple[str, ...]], dict[str, str]]:
-    proposal_rows = _mapping_sequence(proposal.get("backlog"))
-    created_rows = _mapping_sequence(backlog_result.get("created"))
-    if len(created_rows) < len(proposal_rows):
+    proposal_rows, created_rows = _mapping_sequence(proposal.get("backlog")), _mapping_sequence(backlog_result.get("created"))
+    if len(created_rows) != len(proposal_rows):
         raise ValueError("authored component projection is missing allocated workstream links")
     links: dict[str, list[str]] = {}
     titles: dict[str, str] = {}
-    for index, proposal_row in enumerate(proposal_rows):
-        created = created_rows[index]
+    for proposed, created in zip(proposal_rows, created_rows, strict=True):
         workstream_id = _required_scalar(created, "idea_id")
-        titles[workstream_id] = _required_scalar(proposal_row, "title")
-        for component_id in _sequence(proposal_row.get("component_focus")):
+        titles[workstream_id] = _required_scalar(proposed, "title")
+        for component_id in _sequence(proposed.get("component_focus")):
             links.setdefault(component_id, []).append(workstream_id)
-    return (
-        {component_id: _ordered_values(workstreams) for component_id, workstreams in links.items()},
-        titles,
-    )
+    return ({key: tuple(dict.fromkeys(values)) for key, values in links.items()}, titles)
 
 
-def _component_diagram_links(
-    *,
-    root: Path,
-    proposal: Mapping[str, Any],
-) -> dict[str, tuple[str, ...]]:
+def _component_diagram_links(*, root: Path, proposal: Mapping[str, Any]) -> dict[str, tuple[str, ...]]:
     diagram_rows = _mapping_sequence(proposal.get("diagrams"))
     diagram_ids = allocated_diagram_ids(root, len(diagram_rows), rows=diagram_rows)
     links: dict[str, list[str]] = {}
     for diagram, diagram_id in zip(diagram_rows, diagram_ids, strict=True):
         for component_id in _sequence(diagram.get("related_components")):
             links.setdefault(component_id, []).append(diagram_id)
-    return {component_id: _ordered_values(diagrams) for component_id, diagrams in links.items()}
+    return {key: tuple(dict.fromkeys(values)) for key, values in links.items()}
 
 
 def _evidence_block(value: str) -> str:
     return "\n".join(f"> {line}" for line in value.splitlines())
 
 
-def _relation_facts(values: Sequence[str], *, relation_label: str) -> str:
-    if not values:
-        return f"> No source-custodied {relation_label} was authored for this component."
-    return "\n\n".join(_evidence_block(value) for value in values)
-
-
 __all__ = [
-    "AUTHORED_SEMANTIC_ROOT",
-    "build_authored_component_authoring_inputs",
-    "build_authored_component_registry_entry",
-    "build_authored_component_spec",
+    "AUTHORED_SEMANTIC_ROOT", "build_authored_component_authoring_inputs",
+    "build_authored_component_registry_entry", "build_authored_component_spec",
     "is_authored_component_projection",
 ]

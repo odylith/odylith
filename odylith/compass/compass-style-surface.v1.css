@@ -184,6 +184,8 @@
       min-width: 0;
     }
     .hour-event {
+      min-width: 0;
+      overflow-wrap: anywhere;
       border: 1px solid #e2e8f0;
       border-radius: 10px;
       padding: 7px 9px;

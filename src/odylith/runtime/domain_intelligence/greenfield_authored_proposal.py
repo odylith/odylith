@@ -14,28 +14,33 @@ from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence import greenfield_programs
-from odylith.runtime.domain_intelligence.greenfield_artifact_depth import (
-    plan_greenfield_artifact_depth,
-)
 from odylith.runtime.domain_intelligence.greenfield_authored_atlas_view import (
     build_authored_atlas_diagrams,
 )
-from odylith.runtime.domain_intelligence.greenfield_authored_backlog import (
-    build_authored_backlog,
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_first_run_relations,
+    authored_first_run_text,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
     AUTHORED_SEMANTICS_KEY,
     authored_component_relation_facts,
-    authored_semantics_mapping,
     authored_visible_result,
     component_responsibility_relations_from_intent,
     first_path_context_relations_from_intent,
     first_path_relations_from_intent,
 )
-from odylith.runtime.domain_intelligence.greenfield_command_text import shell_quote
-from odylith.runtime.domain_intelligence.greenfield_intent_shaping_prompt import (
-    accepted_intent_shaping_prompt,
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
+    provisional_design_from_intent,
+)
+from odylith.runtime.domain_intelligence.greenfield_provisional_package import (
+    build_provisional_backlog,
+    build_provisional_components,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
+    assumption_preview_values,
+    assumption_rows,
+    decision_copy,
 )
 from odylith.runtime.domain_intelligence.project_intelligence_binding import (
     PROJECT_INTELLIGENCE_BINDING_KEY,
@@ -78,12 +83,9 @@ def build_authored_greenfield_proposal(
     first_path_context_relations = first_path_context_relations_from_intent(confirmed_intent)
     release = str(release_selector or "").strip() or greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR
     title = _required_text(confirmed_intent, "title")
-    command_prompt = accepted_intent_shaping_prompt(
-        confirmed_intent,
-        fallback_title=title,
-    )
     product_slug = slugify(title) or "greenfield-project"
-    first_path = _required_text(confirmed_intent, "first_path")
+    first_path = authored_first_run_text(confirmed_intent)
+    first_run_relations = authored_first_run_relations(confirmed_intent)
     state_object = _required_text(confirmed_intent, "state_object")
     proof_boundary = _required_text(confirmed_intent, "proof_boundary")
     product_story = _required_text(confirmed_intent, "product_story")
@@ -91,22 +93,14 @@ def build_authored_greenfield_proposal(
     internal_systems = _strings(confirmed_intent.get("internal_systems"))
     external_systems = _strings(confirmed_intent.get("external_systems"))
     non_goals = _strings(confirmed_intent.get("non_goals"))
-    assumptions = _strings(confirmed_intent.get("assumptions"))
+    assumptions = assumption_rows(confirmed_intent.get("assumptions", []))
     ambiguities = _strings(confirmed_intent.get("ambiguities"))
     operational_constraints = _strings(confirmed_intent.get("operational_constraints"))
     evidence_requirements = _strings(confirmed_intent.get("evidence_requirements"))
     success_metrics = _strings(confirmed_intent.get("success_metrics"))
-    artifact_depth = plan_greenfield_artifact_depth(
-        actor_count=len(_unique(human_actors)),
-        internal_system_count=len(_unique(internal_systems)),
-        external_system_count=len(_unique(external_systems)),
-        ambiguity_count=len(_unique(ambiguities)),
-        non_goal_count=len(_unique(non_goals)),
-        evidence_requirement_count=len(_unique(evidence_requirements)),
-        operational_constraint_count=len(_unique(operational_constraints)),
-    )
+    provisional_design = provisional_design_from_intent(confirmed_intent)
     visible_result = authored_visible_result(relations)
-    components = _components(
+    source_components = _source_components(
         title=title,
         product_slug=product_slug,
         internal_systems=internal_systems,
@@ -114,41 +108,18 @@ def build_authored_greenfield_proposal(
         component_responsibility_relations=component_responsibility_relations,
         first_path_context_relations=first_path_context_relations,
     )
-    all_diagram_slugs = {
+    components = build_provisional_components(intent=confirmed_intent, product_slug=product_slug)
+    diagram_slugs = {
         "context": f"{product_slug}-system-context",
         "sequence": f"{product_slug}-first-path",
-        "state_evidence": f"{product_slug}-state-evidence",
-        "component_boundaries": f"{product_slug}-component-boundaries",
+        "component_exchanges": f"{product_slug}-component-exchanges",
+        "delivery_dependencies": f"{product_slug}-delivery-dependencies",
+        "capability_support": f"{product_slug}-capability-support",
     }
-    backlog = build_authored_backlog(
-        title=title,
-        first_path=first_path,
-        product_story=product_story,
-        problem=_text(confirmed_intent.get("problem")),
-        customer=_text(confirmed_intent.get("customer")),
-        opportunity=_text(confirmed_intent.get("opportunity")),
-        product_view=_text(confirmed_intent.get("product_view")),
-        state_object=state_object,
-        human_actors=human_actors,
-        internal_systems=internal_systems,
-        success_metrics=success_metrics,
-        visible_result=visible_result,
-        proof_boundary=proof_boundary,
-        external_systems=external_systems,
-        evidence_requirements=evidence_requirements,
-        non_goals=non_goals,
-        operational_constraints=operational_constraints,
-        assumptions=assumptions,
-        ambiguities=ambiguities,
-        components=components,
-        relations=relations,
-        context_relations=first_path_context_relations,
-        component_responsibility_relations=component_responsibility_relations,
-        diagram_slugs=all_diagram_slugs,
-        workstream_roles=artifact_depth.workstream_roles,
+    backlog = build_provisional_backlog(
+        intent=confirmed_intent,
+        diagram_slugs=diagram_slugs,
     )
-    diagram_roles = artifact_depth.diagram_roles
-    diagram_slugs = {role: all_diagram_slugs[role] for role in diagram_roles}
     semantic_model = _semantic_model(
         title=title,
         state_object=state_object,
@@ -162,10 +133,13 @@ def build_authored_greenfield_proposal(
         operational_constraints=operational_constraints,
         components=components,
         backlog=backlog,
-        relations=relations,
+        relations=first_run_relations,
+        provisional_design=provisional_design,
+        source_precedence=confirmed_intent[AUTHORED_SEMANTICS_KEY]["source_precedence"],
     )
     diagrams = build_authored_atlas_diagrams(
         title=title,
+        product_story=product_story,
         diagram_slugs=diagram_slugs,
         human_actors=human_actors,
         external_systems=external_systems,
@@ -173,11 +147,13 @@ def build_authored_greenfield_proposal(
         state_object=state_object,
         visible_result=visible_result,
         proof_boundary=proof_boundary,
-        components=components,
+        components=source_components,
         backlog=backlog,
         relations=relations,
-        context_relations=first_path_context_relations,
-        diagram_roles=diagram_roles,
+        provisional_design=provisional_design,
+        diagram_roles=tuple(diagram_slugs),
+        source_precedence=confirmed_intent[AUTHORED_SEMANTICS_KEY]["source_precedence"],
+        operational_constraints=operational_constraints,
     )
     intent = _intent_copy(confirmed_intent)
     intent.update(
@@ -187,11 +163,7 @@ def build_authored_greenfield_proposal(
             "reasoning_mode": "model_authored_typed_intent",
             "evidence_tier": "user_intent",
             "summary": product_story,
-            AUTHORED_SEMANTICS_KEY: authored_semantics_mapping(
-                relations,
-                component_responsibility_relations,
-                first_path_context_relations=first_path_context_relations,
-            ),
+            AUTHORED_SEMANTICS_KEY: copy.deepcopy(confirmed_intent[AUTHORED_SEMANTICS_KEY]),
         }
     )
     validation_strategy = _unique([*success_metrics, proof_boundary, *evidence_requirements])
@@ -206,7 +178,7 @@ def build_authored_greenfield_proposal(
         "observed_source": dict(observed_source),
         "classification": {
             "method": "model_authored_typed_intent",
-            "fit_policy": "Project only verified source-cited facts and typed relations.",
+            "fit_policy": "Keep verified source facts separate from the required provisional design.",
             "provider_calls": 0,
         },
         "greenfield_ux": {
@@ -214,7 +186,10 @@ def build_authored_greenfield_proposal(
             "write_guardrail": "No product records are written until CONFIRM publishes the sealed transaction.",
             "next_best_action": "Review the sealed project package and choose CONFIRM, EDIT, or REJECT.",
         },
-        "assumptions": _assumption_rows([*assumptions, *ambiguities]),
+        "assumptions": _assumption_rows([
+            *assumptions,
+            *({"applies_to": "general", "statement": value} for value in ambiguities),
+        ]),
         "open_questions": [],
         "risks": [],
         "security_compliance": {},
@@ -222,7 +197,7 @@ def build_authored_greenfield_proposal(
         "project_brief": _project_brief(
             title=title,
             product_story=product_story,
-            problem=_text(confirmed_intent.get("problem")),
+            problem=decision_copy(confirmed_intent, "problem"),
             first_path=first_path,
             visible_result=visible_result,
             proof_boundary=proof_boundary,
@@ -232,7 +207,7 @@ def build_authored_greenfield_proposal(
             non_goals=non_goals,
             operational_constraints=operational_constraints,
             evidence_requirements=evidence_requirements,
-            command_prompt=command_prompt,
+            assumptions=assumptions,
         ),
         "project_intelligence": _project_intelligence(
             title=title,
@@ -245,12 +220,13 @@ def build_authored_greenfield_proposal(
             state_object=state_object,
             visible_result=visible_result,
             proof_boundary=proof_boundary,
-            human_actors=human_actors,
+            relations=relations,
             internal_systems=internal_systems,
             external_systems=external_systems,
             operational_constraints=operational_constraints,
             evidence_requirements=evidence_requirements,
             success_metrics=success_metrics,
+            assumptions=assumptions,
         ),
         "release_plan": _release_plan(
             title=title,
@@ -264,10 +240,7 @@ def build_authored_greenfield_proposal(
         "components": components,
         "semantic_model": semantic_model,
         "diagrams": diagrams,
-        "apply_commands": [
-            f"odylith greenfield propose --repo-root . --prompt {shell_quote(command_prompt)}",
-            "# CONFIRM publishes the exact sealed transaction; EDIT rebuilds from new evidence; REJECT writes nothing.",
-        ],
+        "apply_commands": [],
     }
     return proposal
 
@@ -316,7 +289,7 @@ def _without_binding(field: str, value: Any) -> Any:
     return value
 
 
-def _components(
+def _source_components(
     *,
     title: str,
     product_slug: str,
@@ -454,24 +427,25 @@ def _semantic_model(
     components: Sequence[Mapping[str, Any]],
     backlog: Sequence[Mapping[str, Any]],
     relations: Sequence[Mapping[str, Any]],
+    provisional_design: Mapping[str, Any],
+    source_precedence: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
     events = [
         {
             "index": index,
-            "actor": _text(row.get("actor_quote")),
+            "source_event_order": row["order"],
+            "actor": _text(row.get("actor_fact_quote")),
             "owner_system": _text(row.get("owner_system_quote")),
             "action": _text(row.get("action_verb_quote")),
             "target_entity": _text(row.get("target_quote")),
             "mutation": _text(row.get("event_quote")),
             "visible_result": bool(_text(row.get("visible_result_quote"))),
-            "recovery_path": bool(row.get("recovery_path")),
             "text": _text(row.get("event_quote")),
-            "source_kind": "accepted_first_path",
+            "source_kind": "proposed_first_run",
         }
         for index, row in enumerate(relations, start=1)
     ]
     first_event = relations[0]
-    recovery = next((_text(row.get("event_quote")) for row in relations if bool(row.get("recovery_path"))), "")
     component_refs = []
     for component in components:
         contract = component.get("component_contract") if isinstance(component.get("component_contract"), Mapping) else {}
@@ -480,14 +454,9 @@ def _semantic_model(
             {
                 "component_id": component_id,
                 "label": str(component.get("label") or ""),
-                "semantic_axis": "authored",
+                "semantic_axis": "provisional_design",
                 "release_scope": str(component.get("release_scope") or "first_release"),
-                "owner_system": _text(contract.get("owner_system")),
-                "responsibility_facts": _strings(contract.get("responsibility_facts")),
-                "owner_bound_events": _strings(contract.get("owner_bound_events")),
-                "event_targets": _strings(contract.get("event_targets")),
-                "visible_results": _strings(contract.get("visible_results")),
-                "recovery_events": _strings(contract.get("recovery_events")),
+                "component_contract": copy.deepcopy(contract),
             }
         )
     workstreams = [
@@ -501,16 +470,16 @@ def _semantic_model(
         for row in backlog
     ]
     return {
-        "schema_version": "odylith.greenfield.semantic_model.v1",
+        "schema_version": "odylith.greenfield.semantic_model.v3",
         "first_path_contract": {
-            "actor": _text(first_event.get("actor_quote")),
+            "authority_kind": "provisional_design",
+            "actor": _text(first_event.get("actor_fact_quote")),
             "action": _text(first_event.get("action_verb_quote")),
             "entity": state_object,
             "mutation": "",
             "required_fields": [],
             "persistence": "",
             "visible_result": visible_result,
-            "recovery_path": recovery,
             "deferred_scope": [],
             "capability": first_path,
             "raw_path": first_path,
@@ -528,6 +497,8 @@ def _semantic_model(
             "domain_terms": [],
         },
         "components": component_refs,
+        "provisional_design": copy.deepcopy(provisional_design),
+        "source_precedence": [dict(row) for row in source_precedence],
         "workstreams": workstreams,
         "diagram_event_graph": {
             "events": events,
@@ -556,13 +527,19 @@ def _project_brief(
     non_goals: Sequence[str],
     operational_constraints: Sequence[str],
     evidence_requirements: Sequence[str],
-    command_prompt: str,
+    assumptions: Sequence[Mapping[str, str]],
 ) -> dict[str, Any]:
+    problem_statement = problem
+    assumption_values = assumption_preview_values(assumptions)
     sections = [
         _brief_section("Product outcome", product_story, "The accepted product outcome."),
-        _brief_section("User problem", problem or product_story, "The source-stated reason for the product."),
-        _brief_section("First path", first_path, "The accepted first complete user path."),
-        _brief_section("Visible result", visible_result, "The terminal result typed in the first-path relation."),
+        _brief_section(
+            "User problem",
+            problem_statement,
+            "The source-stated need or an explicitly provisional decision assumption.",
+        ),
+        _brief_section("First path", first_path, "One proposed walkthrough constrained by source evidence."),
+        _brief_section("Visible result", visible_result, "The source result bound to its producing action."),
         _brief_section("Proof", proof_boundary, "The accepted release proof boundary."),
     ]
     if operational_constraints:
@@ -571,11 +548,19 @@ def _project_brief(
         )
     if non_goals:
         sections.append(_brief_section("Non-goals", "; ".join(non_goals), "Explicitly excluded scope."))
+    if assumption_values:
+        sections.append(
+            _brief_section(
+                "Proposed assumptions",
+                "\n".join(assumption_values),
+                "Advisory and unverified; additional source evidence is required before acceptance.",
+            )
+        )
     return {
         "schema_version": "odylith.greenfield.project_brief.v1",
         "projection_origin": AUTHORED_PROJECTION_ORIGIN,
         "operational_constraints": list(operational_constraints),
-        "purpose": problem or product_story,
+        "purpose": problem_statement,
         "operating_principle": product_story,
         "project_outcome": visible_result,
         "blueprint_sections": sections,
@@ -583,14 +568,7 @@ def _project_brief(
         "customization_prompts": [],
         "pre_coding_checkpoints": [],
         "coding_readiness_gates": _unique([proof_boundary, *evidence_requirements]),
-        "host_independent_paths": [
-            {
-                "path": "Review the creation-ready transaction",
-                "command": f"odylith greenfield propose --repo-root . --prompt {shell_quote(command_prompt)}",
-                "works_in": "shell, Codex, Claude Code",
-                "use_when": "Review the sealed package before choosing CONFIRM, EDIT, or REJECT.",
-            }
-        ],
+        "host_independent_paths": [],
         "actors": list(human_actors),
         "internal_systems": list(internal_systems),
         "external_systems": list(external_systems),
@@ -610,12 +588,13 @@ def _project_intelligence(
     state_object: str,
     visible_result: str,
     proof_boundary: str,
-    human_actors: Sequence[str],
+    relations: Sequence[Mapping[str, Any]],
     internal_systems: Sequence[str],
     external_systems: Sequence[str],
     operational_constraints: Sequence[str],
     evidence_requirements: Sequence[str],
     success_metrics: Sequence[str],
+    assumptions: Sequence[Mapping[str, str]],
 ) -> dict[str, Any]:
     return {
         "schema_version": "odylith.greenfield.project_intelligence.v1",
@@ -631,11 +610,14 @@ def _project_intelligence(
         "scope": [first_path],
         "ontology": _unique([title, state_object, *internal_systems, *external_systems]),
         "state": [state_object],
-        "operators": list(human_actors),
+        "operators": _unique([
+            _required_text(row, "actor_fact_quote")
+            for row in relations if row.get("actor_kind") == "human"
+        ]),
         "constraints": list(operational_constraints),
         "source_of_truth_map": [],
         "evidence": _unique([proof_boundary, *evidence_requirements]),
-        "assumptions": [],
+        "assumptions": assumption_preview_values(assumptions),
         "topology": _unique([*internal_systems, *external_systems]),
         "validation_obligations": _unique([proof_boundary, *success_metrics]),
         "metrics": list(success_metrics),
@@ -673,15 +655,16 @@ def _release_plan(
     }
 
 
-def _assumption_rows(values: Sequence[str]) -> list[dict[str, str]]:
+def _assumption_rows(values: Sequence[Mapping[str, str]]) -> list[dict[str, str]]:
     return [
         {
             "id": f"A-{index:03d}",
-            "assumption": value,
+            "assumption": value["statement"],
+            "applies_to": value["applies_to"],
             "impact": "Advisory only; it is not accepted product truth.",
             "validate_with": "Additional source evidence is required before acceptance.",
         }
-        for index, value in enumerate(_unique(values), start=1)
+        for index, value in enumerate(assumption_rows(values), start=1)
     ]
 
 
@@ -690,11 +673,7 @@ def _brief_section(section: str, value: str, why: str) -> dict[str, str]:
 
 
 def _intent_copy(intent: Mapping[str, Any]) -> dict[str, Any]:
-    return {
-        str(key): list(value) if isinstance(value, list) else value
-        for key, value in intent.items()
-        if key != AUTHORED_SEMANTICS_KEY
-    }
+    return copy.deepcopy({key: value for key, value in intent.items() if key != AUTHORED_SEMANTICS_KEY})
 
 
 def _required_text(value: Mapping[str, Any], key: str) -> str:

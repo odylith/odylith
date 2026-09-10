@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from odylith.runtime.surfaces import dashboard_ui_primitives
+from odylith.runtime.surfaces import render_tooling_dashboard
 from odylith.runtime.surfaces import tooling_dashboard_frontend_contract as contract
 
 
@@ -30,6 +31,36 @@ def _seed_tooling_shell_assets(tmp_path: Path) -> Path:
 
 def test_tooling_shell_header_contract_matches_current_source() -> None:
     contract.assert_tooling_shell_header_contract()
+
+
+def test_release_spotlight_styles_have_one_loaded_owner() -> None:
+    base_css = contract._template_asset_path("style.css").read_text(encoding="utf-8")
+    spotlight_css = contract._template_asset_path("release_spotlight.css").read_text(encoding="utf-8")
+
+    assert "upgrade-spotlight" not in base_css
+    assert contract.load_tooling_shell_style_css().count(spotlight_css.rstrip("\n")) == 1
+    assert ".upgrade-spotlight-stage[hidden]" in spotlight_css
+    assert "@keyframes upgrade-spotlight-rise" in spotlight_css
+    assert "@media (max-width: 960px)" in spotlight_css
+
+
+def test_release_spotlight_style_changes_invalidate_shell_fingerprint(monkeypatch: pytest.MonkeyPatch) -> None:
+    spotlight_path = contract._template_asset_path("release_spotlight.css")
+    before = render_tooling_dashboard._refresh_guard_code_fingerprint()
+    original_read_bytes = Path.read_bytes
+    read_paths = []
+
+    def changed_spotlight(path: Path) -> bytes:
+        value = original_read_bytes(path)
+        if path == spotlight_path:
+            read_paths.append(path)
+            return value + b"\n/* changed spotlight */\n"
+        return value
+
+    monkeypatch.setattr(Path, "read_bytes", changed_spotlight)
+
+    assert render_tooling_dashboard._refresh_guard_code_fingerprint() != before
+    assert read_paths == [spotlight_path]
 
 
 def test_tooling_shell_header_contract_rejects_template_drift(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

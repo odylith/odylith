@@ -184,7 +184,7 @@ except RuntimeError:
 raise SystemExit(0)
 """
     environment = os.environ.copy()
-    environment["PYTHONPATH"] = str(SCRIPTS_ROOT)
+    environment["PYTHONPATH"] = os.pathsep.join((str(SCRIPTS_ROOT), str(REPO_ROOT / "src")))
 
     result = subprocess.run(
         [sys.executable, "-c", child_program],
@@ -218,7 +218,7 @@ lease = lease_module.acquire_matrix_run_lease(
 os.kill(os.getpid(), signal.SIGKILL)
 """
     environment = os.environ.copy()
-    environment["PYTHONPATH"] = str(SCRIPTS_ROOT)
+    environment["PYTHONPATH"] = os.pathsep.join((str(SCRIPTS_ROOT), str(REPO_ROOT / "src")))
 
     result = subprocess.run(
         [sys.executable, "-c", child_program],

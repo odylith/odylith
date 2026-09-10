@@ -73,3 +73,20 @@ surface freshness.
 - [ ] Whether the eventual v0.1.12 implementation should also expose a
       `--release-note` override for assignment event text; this slice keeps the
       first contract intentionally narrow.
+
+## Traceability
+
+Grounded backlog intake with an explicit optional release selector; release assignment remains separately owned.
+
+### Runbooks
+
+- `docs/runbooks/odylith-governance.md`
+
+### Developer Docs
+
+- `odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md`
+
+### Code References
+
+- `src/odylith/runtime/governance/backlog_authoring.py`
+- `src/odylith/runtime/governance/release_planning_authoring.py`

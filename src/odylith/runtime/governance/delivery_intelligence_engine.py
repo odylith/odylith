@@ -27,6 +27,7 @@ from odylith.runtime.governance import component_registry_intelligence as regist
 from odylith.runtime.governance.delivery import scope_signal_ladder
 from odylith.runtime.governance import operator_readout
 from odylith.runtime.governance import proof_state
+from odylith.runtime.governance.proof_state import ledger as proof_state_ledger
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import stable_generated_utc
@@ -89,10 +90,6 @@ def _resolve(repo_root: Path, token: str) -> Path:
     """Resolve one delivery-intelligence path token against the repo root."""
 
     return repo_path_resolver.resolve_repo_path(repo_root=repo_root, value=token)
-
-
-def _read_json(path: Path) -> dict[str, Any]:
-    return load_json_object(path)
 
 
 def _normalize_event_artifacts(values: Iterable[str], *, repo_root: Path | None = None) -> list[str]:
@@ -657,7 +654,7 @@ def _load_workstream_contexts(*, ideas_root: Path) -> dict[str, dict[str, Any]]:
 
 
 def _load_catalog(*, repo_root: Path, catalog_path: Path) -> list[dict[str, Any]]:
-    payload = _read_json(catalog_path)
+    payload = load_json_object(catalog_path)
     rows = payload.get("diagrams", []) if isinstance(payload.get("diagrams"), list) else []
     cleaned: list[dict[str, Any]] = []
     for row in rows:
@@ -667,7 +664,7 @@ def _load_catalog(*, repo_root: Path, catalog_path: Path) -> list[dict[str, Any]
 
 
 def _load_traceability_rows(*, repo_root: Path, path: Path) -> dict[str, dict[str, Any]]:
-    payload = _read_json(path)
+    payload = load_json_object(path)
     rows = payload.get("workstreams", []) if isinstance(payload.get("workstreams"), list) else []
     result: dict[str, dict[str, Any]] = {}
     for row in rows:
@@ -2453,6 +2450,7 @@ def build_delivery_intelligence_artifact(
     max_review_age_days: int = DEFAULT_MAX_REVIEW_AGE_DAYS,
     control_posture_override: Mapping[str, Any] | None = None,
     odylith_reasoning_override: Mapping[str, Any] | None = None,
+    include_workspace_activity: bool = True,
 ) -> dict[str, Any]:
     repo_root = Path(str(repo_root)).expanduser().resolve()
     manifest_path = _resolve(repo_root, registry.DEFAULT_MANIFEST_PATH)
@@ -2469,6 +2467,7 @@ def build_delivery_intelligence_artifact(
         catalog_path=catalog_path,
         ideas_root=ideas_root,
         stream_path=stream_path,
+        include_workspace_activity=include_workspace_activity,
     )
     timelines = registry.build_component_timelines(
         component_index=report.components,
@@ -2487,11 +2486,11 @@ def build_delivery_intelligence_artifact(
         for row in catalog_rows
         if registry.normalize_diagram_id(str(row.get("diagram_id", "")))
     }
-    control_posture = dict(control_posture_override) if isinstance(control_posture_override, Mapping) else _read_json(control_posture_path)
+    control_posture = dict(control_posture_override) if isinstance(control_posture_override, Mapping) else load_json_object(control_posture_path)
     if isinstance(odylith_reasoning_override, Mapping):
         odylith_reasoning_payload = dict(odylith_reasoning_override)
     else:
-        odylith_reasoning_payload = _read_json(odylith_reasoning_path)
+        odylith_reasoning_payload = load_json_object(odylith_reasoning_path)
 
     scopes: list[dict[str, Any]] = []
 
@@ -2586,6 +2585,7 @@ def build_delivery_intelligence_artifact(
     scopes = proof_state.annotate_scopes_with_proof_state(
         repo_root=repo_root,
         scopes=scopes,
+        observe_workspace_head=False,
     )
     scopes = scope_signal_ladder.annotate_delivery_scope_signals(
         scopes=scopes,
@@ -2715,7 +2715,7 @@ def load_delivery_intelligence_artifact(
     """
 
     target = output_path or _resolve(repo_root, DEFAULT_OUTPUT_PATH)
-    payload = _read_json(target)
+    payload = load_json_object(target)
     if payload and not validate_delivery_intelligence_artifact(payload):
         return payload
     return build_delivery_intelligence_artifact(repo_root=repo_root)
@@ -2813,6 +2813,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "odylith/atlas/source/catalog/diagrams.v1.json",
                 "odylith/radar/traceability-graph.v1.json",
                 *agent_runtime_contract.candidate_stream_tokens(),
+                proof_state_ledger.proof_surfaces_path(repo_root=repo_root),
                 DEFAULT_CONTROL_POSTURE_PATH,
                 DEFAULT_ODYLITH_REASONING_PATH,
                 "src/odylith/runtime/governance",
@@ -2831,6 +2832,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     payload = build_delivery_intelligence_artifact(
         repo_root=repo_root,
         max_review_age_days=int(args.max_review_age_days),
+        include_workspace_activity=False,
     )
     payload["generated_utc"] = stable_generated_utc.resolve_for_json_file(
         output_path=output_path,

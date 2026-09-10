@@ -22,24 +22,15 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     product_intent_authority_snapshot_hash,
 )
 from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import atomic_fact_ledger_hash
-from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
-    AUTHORED_PROJECTION_ORIGIN,
-)
-from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
-    GREENFIELD_INTENT_AUTHORING_VERSION,
-)
-from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
-    STANDARD_PROFILE_ID,
-    get_greenfield_model_profile,
-)
+from odylith.runtime.domain_intelligence.greenfield_authored_proposal import build_authored_greenfield_proposal
 from tests.unit.runtime.greenfield_proposal_fixtures import compiled_greenfield_package_fixture
-from tests.unit.runtime.greenfield_proposal_fixtures import canonical_model_authored_intent_fixture
-from tests.unit.runtime.greenfield_proposal_fixtures import _canonical_model_authored_greenfield_fixture
-from tests.unit.runtime.greenfield_proposal_fixtures import approved_authored_quality_manifest_fixture
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import canonical_model_authored_intent_fixture
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import _canonical_model_authored_greenfield_fixture
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import approved_authored_quality_manifest_fixture
 
 
-def _approved_quality_manifest() -> dict[str, Any]:
-    return approved_authored_quality_manifest_fixture()
+def _approved_quality_manifest(authority: dict[str, Any]) -> dict[str, Any]:
+    return approved_authored_quality_manifest_fixture(intent_authority=authority)
 
 
 def _recorded_authority(tmp_path: Path) -> tuple[Path, dict[str, Any], dict[str, Any]]:
@@ -70,7 +61,7 @@ def _transaction(tmp_path: Path, *, authority: dict[str, Any] | None = None) -> 
         prewrite_package=package,
         backlog_result=package.backlog_result or {},
         intent_authority=intent_authority,
-        quality_manifest=_approved_quality_manifest(),
+        quality_manifest=_approved_quality_manifest(intent_authority),
         repo_root=tmp_path,
     )
 
@@ -81,7 +72,7 @@ def test_product_create_transaction_carries_confirmed_intent_authority_block(tmp
     payload = product_create_transaction_to_dict(transaction)
 
     persisted = payload["intent_authority"]
-    assert persisted["version"] == "odylith.product-intent-authority.v7"
+    assert persisted["version"] == "odylith.product-intent-authority.v10"
     assert persisted["origin"] == "verified_typed_envelope"
     assert persisted["decision"] == "confirmed_intent_accepted"
     assert persisted["fact_authority"] == "product_facts"
@@ -93,7 +84,7 @@ def test_product_create_transaction_carries_confirmed_intent_authority_block(tmp
     assert persisted["source_format"] == "operator_prompt"
     assert persisted["materiality_status"] == "passed"
     assert persisted["material_custody_sha256"]
-    assert persisted["atomic_ledger_version"] == "odylith.product-intent-atomic-facts.v2"
+    assert persisted["atomic_ledger_version"] == "odylith.product-intent-atomic-facts.v3"
     assert persisted["atomic_facts"]
     assert persisted["atomic_custody_sha256"] == atomic_fact_ledger_hash(persisted["atomic_facts"])
     assert persisted["operating_envelope"]["status"] == "supported"
@@ -110,7 +101,6 @@ def test_product_create_transaction_carries_confirmed_intent_authority_block(tmp
 def test_serialized_authored_transaction_contains_only_sealed_component_relation_identity(
     tmp_path: Path,
 ) -> None:
-    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
     candidate = canonical_model_authored_intent_fixture(tmp_path)
     authority = dict(candidate[PRODUCT_INTENT_AUTHORITY_KEY])
     intent = {
@@ -118,38 +108,13 @@ def test_serialized_authored_transaction_contains_only_sealed_component_relation
         for key, value in candidate.items()
         if key != PRODUCT_INTENT_AUTHORITY_KEY
     }
-    proposal = {
-        "projection_origin": AUTHORED_PROJECTION_ORIGIN,
-        "intent": intent,
-        PRODUCT_INTENT_AUTHORITY_KEY: authority,
-        "backlog": [],
-        "components": [],
-        "diagrams": [],
-    }
+    proposal = build_authored_greenfield_proposal(
+        observed_source={"source_posture": "operator prompt evidence"},
+        release_selector="0.0.1", confirmed_intent=intent,
+    )
+    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = authority
     package = compiled_greenfield_package_fixture(proposal, repo_root=tmp_path)
-    quality_manifest = {
-        **_approved_quality_manifest(),
-        "semantic_compiler": {
-            "version": "odylith.greenfield.authored-semantic-validation.v1",
-            "status": "passed",
-            "semantic_owner": "single_model_authoring_response",
-            "post_authoring_interpretation_calls": 0,
-        },
-        "model_authoring": {
-            "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
-            "semantic_model_call_count": 1,
-            "tier": "standard",
-            "elapsed_seconds": 1.0,
-            "model_profile": {
-                "profile_id": profile.profile_id,
-                "provider": profile.provider,
-                "model": profile.model,
-                "reasoning_effort": profile.reasoning_effort,
-                "effective_timeout_seconds": profile.model_timeout_seconds,
-                "authoring_tier": profile.repair_tier,
-            },
-        },
-    }
+    quality_manifest = _approved_quality_manifest(authority)
     transaction = build_product_create_transaction(
         proposal=proposal,
         release_selector="0.0.1",
@@ -203,16 +168,33 @@ def test_product_create_transaction_rejects_v4_authority_for_sealed_retry(tmp_pa
         _transaction(tmp_path, authority=legacy)
 
 
-def test_product_create_transaction_rejects_v6_authority_without_owner_inference(
+@pytest.mark.parametrize(
+    ("authority_version", "envelope_version", "ledger_version", "atomic_version"),
+    (
+        (6, 6, 5, None),
+        (7, 7, 6, None),
+        (8, 8, 6, None),
+        (9, 9, 6, 2),
+    ),
+)
+def test_product_create_transaction_rejects_legacy_authority_without_reinterpretation(
     tmp_path: Path,
+    authority_version: int,
+    envelope_version: int,
+    ledger_version: int,
+    atomic_version: int | None,
 ) -> None:
     _path, _facts, authority = _recorded_authority(tmp_path)
     legacy = {
         **authority,
-        "version": "odylith.product-intent-authority.v6",
-        "envelope_schema_version": "odylith.product-intent-envelope.v6",
-        "ledger_version": "odylith.product-intent-custody-ledger.v5",
+        "version": f"odylith.product-intent-authority.v{authority_version}",
+        "envelope_schema_version": f"odylith.product-intent-envelope.v{envelope_version}",
+        "ledger_version": f"odylith.product-intent-custody-ledger.v{ledger_version}",
     }
+    if atomic_version is not None:
+        legacy["atomic_ledger_version"] = (
+            f"odylith.product-intent-atomic-facts.v{atomic_version}"
+        )
     legacy["authority_snapshot_sha256"] = product_intent_authority_snapshot_hash(legacy)
 
     with pytest.raises(ValueError, match="unsupported version; rebuild the proposal before confirmation"):
@@ -306,7 +288,7 @@ def test_product_create_transaction_rejects_material_fact_without_resolvable_spa
 def test_product_create_transaction_rejects_tampered_material_evidence_text(tmp_path: Path) -> None:
     _path, _facts, authority = _recorded_authority(tmp_path)
     material_fields = json.loads(json.dumps(authority["material_fields"]))
-    material_fields["human_actors"]["source_span_refs"][0]["evidence_text"] = "tampered evidence"
+    material_fields["first_path"]["source_span_refs"][0]["evidence_text"] = "tampered evidence"
     mutated = {
         **authority,
         "material_fields": material_fields,
@@ -383,7 +365,7 @@ def test_transaction_rejects_typed_intent_drift_from_its_sealed_authority(tmp_pa
             prewrite_package=package,
             backlog_result=package.backlog_result or {},
             intent_authority=authority,
-            quality_manifest=_approved_quality_manifest(),
+            quality_manifest=_approved_quality_manifest(authority),
             repo_root=tmp_path,
         )
 

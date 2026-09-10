@@ -15,6 +15,7 @@ from odylith.runtime.context_engine import odylith_context_engine_hot_path_packe
 from odylith.runtime.context_engine import odylith_context_engine_packet_summary_runtime
 from odylith.runtime.context_engine import odylith_context_engine_runtime_learning_runtime as runtime_learning_runtime
 from odylith.runtime.context_engine import session_bootstrap_payload_compactor
+from odylith.runtime.context_engine import session_workstream_selection
 from odylith.runtime.context_engine import tooling_context_packet_builder
 from odylith.runtime.context_engine import turn_context_runtime
 
@@ -156,65 +157,25 @@ def build_session_brief(
         else []
     )
     stage_started = time.perf_counter()
-    impact_selection = _hot_path_workstream_selection(impact) if hot_path else {}
-    if hot_path and str(workstream or "").strip():
-        explicit_workstream = str(workstream or "").strip().upper()
-        selection_reason = f"Using explicit workstream override `{explicit_workstream}`."
-        selection = {
-            "state": "explicit",
-            "reason": selection_reason,
-            "why_selected": selection_reason,
-            "selected_workstream": {"entity_id": explicit_workstream},
-            "top_candidate": {"entity_id": explicit_workstream},
-            "score_gap": None,
-            "confidence": "explicit",
-            "candidate_count": len(candidate_workstreams),
-            "ambiguity_class": "explicit",
-            "strong_candidate_count": 1,
-            "competing_candidates": [],
-        }
-    elif hot_path and impact_selection:
-        selection = impact_selection
-    else:
-        try:
-            connection = context_engine_store._connect(root)
-        except RuntimeError:
-            explicit_workstream = str(workstream or "").strip().upper()
-            top_candidate = dict(candidate_workstreams[0]) if candidate_workstreams else {}
-            competing_candidates = [dict(row) for row in candidate_workstreams[1:4]]
-            selection_reason = (
-                f"Explicit workstream `{explicit_workstream}` cannot resolve because runtime projections are unavailable."
-                if explicit_workstream
-                else "Runtime projections are unavailable for deterministic session routing."
-            )
-            selection = {
-                "state": "none",
-                "reason": selection_reason,
-                "why_selected": selection_reason,
-                "selected_workstream": {},
-                "top_candidate": top_candidate if not explicit_workstream else {},
-                "score_gap": None,
-                "confidence": "none",
-                "candidate_count": len(candidate_workstreams),
-                "ambiguity_class": "runtime_unavailable",
-                "strong_candidate_count": sum(
-                    1
-                    for row in candidate_workstreams
-                    if int(dict(row.get("evidence", {})).get("strong_signal_count", 0) or 0) > 0
-                ),
-                "competing_candidates": competing_candidates,
-            }
-        else:
-            try:
-                judgment_workstream_hint = context_engine_store._load_judgment_workstream_hint(repo_root=root, changed_paths=effective_paths)
-                selection = context_engine_store._workstream_selection(
-                    connection=connection,
-                    candidates=candidate_workstreams,
-                    explicit_workstream=str(workstream or "").strip(),
-                    judgment_hint=judgment_workstream_hint,
-                )
-            finally:
-                connection.close()
+    input_free_resume = bool(str(session_id or "").strip()) and not hot_path and not any((
+        workstream, intent, changed_paths, claimed_paths, generated_surfaces,
+        visible_text, active_tab, user_turn_id, supersedes_turn_id, use_working_tree,
+        family_hint, validation_command_hints, impact_override is not None,
+    ))
+    retained_context = (
+        context_engine_store._load_session_state(repo_root=root, session_id=effective_session_id) or {}
+        if input_free_resume else {}
+    )
+    selection = session_workstream_selection.select_session_workstream(
+        repo_root=root,
+        candidate_workstreams=candidate_workstreams,
+        changed_paths=effective_paths,
+        explicit_workstream=workstream,
+        retained_workstream=str(retained_context.get("workstream", "")),
+        hot_path=hot_path,
+        impact_selection=_hot_path_workstream_selection(impact) if hot_path else {},
+    )
+    resumed_context = selection.get("ambiguity_class") == "retained_session"
     stage_timings["selection"] = context_engine_store._elapsed_stage_ms(stage_started)
     selection_state = str(selection.get("state", "")).strip()
     selected_workstream = (
@@ -267,7 +228,7 @@ def build_session_brief(
             repo_dirty_paths=path_scope["repo_dirty_paths"],
             analysis_paths=effective_paths,
             generated_surfaces=generated_surfaces,
-            intent=intent,
+            intent=str(retained_context.get("intent", "")) if resumed_context else intent,
             turn_context=turn_context_runtime.compact_turn_context(normalized_turn_context),
             claim_mode=claim_mode,
             selection_state=selection_state,

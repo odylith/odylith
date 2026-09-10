@@ -116,7 +116,12 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   observer before release closeout. This is a maintainer release-gate
   obligation only: do not add it to consumer-safe `odylith/agents-guidelines/`,
   shared `odylith/skills/`, or bundled install assets. Run
-  `odylith release migration-gate --repo-root . --target-version <version>`
+  `odylith release migration-gate --repo-root . --target-version <version> --base-ref <published-predecessor-ref>`
+  on the clean, frozen candidate. Verify the predecessor against published
+  release metadata; a reserved local tag or HEAD's parent is not that proof.
+  The gate reports both resolved endpoint commits and refuses unavailable
+  Git scope or hidden tracked consumer surfaces. It includes committed changes;
+  a clean working tree alone cannot satisfy assessment. Use the emitted scope
   and complete the exact emitted
   `migration-observer:<version>:<surface>:<fingerprint>` Radar marker in
   maintainer governance before claiming release readiness.

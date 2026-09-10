@@ -121,6 +121,7 @@ def test_campaign_never_promotes_release_without_an_audited_source_corpus(tmp_pa
         telemetry_dir=tmp_path / "telemetry",
         volume_case_files=(tmp_path / "volume-01.json",),
         release_case_files=(tmp_path / "release.json",),
+        evidence_output_dir=tmp_path / "evidence",
         discovery_max_workers=2,
     )
 
@@ -131,6 +132,25 @@ def test_campaign_never_promotes_release_without_an_audited_source_corpus(tmp_pa
     assert [tier["tier"] for tier in payload["tiers"]] == ["volume-discovery", "release-proof"]
     assert [command_arg(command, "--proof-tier") for command in calls] == ["discovery"]
     assert payload["tiers"][-1]["stop_reason"].startswith("tier-release-corpus-invalid:")
+
+
+def test_campaign_api_rejects_release_scope_without_external_evidence_dir(tmp_path: Path) -> None:
+    module = matrix_campaign_runner_module("greenfield_matrix_campaign_runner_release_scope_evidence_required")
+    output_dir = tmp_path / "out"
+    telemetry_dir = tmp_path / "telemetry"
+
+    with pytest.raises(RuntimeError, match="external evidence output directory"):
+        module.run_campaign(
+            dist_dir=tmp_path / "dist",
+            version="0.1.15",
+            temp_parent=tmp_path / "tmp",
+            output_dir=output_dir,
+            telemetry_dir=telemetry_dir,
+            release_case_files=(tmp_path / "release.json",),
+        )
+
+    assert not output_dir.exists()
+    assert not telemetry_dir.exists()
 
 
 def test_semantic_release_shard_does_not_require_a_source_corpus_audit(tmp_path: Path) -> None:
@@ -154,6 +174,7 @@ def test_semantic_release_shard_does_not_require_a_source_corpus_audit(tmp_path:
         final_holdout_run_ledger=tmp_path / "final-holdout-run.v1.json",
         implementation_revision="a" * 40,
         distribution_provenance_file=tmp_path / "build-provenance.v1.json",
+        evidence_output_dir=tmp_path / "evidence",
     )
 
     failure = shard_runner._tier_case_file_preflight_failure(  # noqa: SLF001
@@ -164,6 +185,66 @@ def test_semantic_release_shard_does_not_require_a_source_corpus_audit(tmp_path:
     )
 
     assert failure is None
+
+
+def test_parent_interruption_leaves_claimed_ledger_when_evidence_cannot_be_sealed(
+    tmp_path: Path,
+) -> None:
+    module = matrix_campaign_runner_module("greenfield_matrix_campaign_runner_interruption_evidence_blocker")
+    shard_runner = sys.modules["greenfield_matrix_campaign_shard_runner"]
+    guard = sys.modules["greenfield_final_holdout_guard"]
+    holdout = tmp_path / "final-holdout.json"
+    evaluation_manifest = tmp_path / "evaluation-manifest.json"
+    write_case_file(holdout, name="interrupted holdout", case_id="interrupted-holdout", stressors=())
+    evaluation_manifest.write_text("{}\n", encoding="utf-8")
+    ledger = tmp_path / "run-ledger.json"
+    guard.claim_final_holdout_run(
+        ledger_path=ledger,
+        implementation_revision="a" * 40,
+        distribution_provenance_sha256="b" * 64,
+    )
+    guard.bind_final_holdout_inputs(
+        ledger_path=ledger,
+        protected_inputs={
+            "final_holdout": holdout,
+            "evaluation_manifest": evaluation_manifest,
+        },
+    )
+    real_evidence = tmp_path / "real-evidence"
+    real_evidence.mkdir()
+    unsafe_evidence = tmp_path / "evidence"
+    unsafe_evidence.symlink_to(real_evidence, target_is_directory=True)
+    shard = module.CampaignShard(
+        tier="release-proof",
+        case_file=holdout,
+        proof_tier="release",
+        install_mode="full",
+        include_browser_proof=True,
+        stop_after_failures=0,
+        stop_after_cluster_failures=0,
+        require_high_variance_stressors=False,
+        required_stressors=(),
+        release_input_snapshot_root=tmp_path,
+        semantic_annotations_file=holdout,
+        evaluation_split_manifest=evaluation_manifest,
+        final_holdout_run_ledger=ledger,
+        implementation_revision="a" * 40,
+        distribution_provenance_file=tmp_path / "build-provenance.v1.json",
+        evidence_output_dir=unsafe_evidence,
+    )
+
+    terminalized = shard_runner._terminalize_reaped_semantic_child(  # noqa: SLF001
+        shard=shard,
+        result_path=tmp_path / "interrupted-result.json",
+        temp_parent=tmp_path / "matrix-temp",
+    )
+
+    assert terminalized is False
+    assert guard.read_final_holdout_run(ledger)["status"] == "claimed"
+    assert "retained evidence was not safely sealed" in shard_runner._semantic_holdout_lifecycle_issue(  # noqa: SLF001
+        shard=shard,
+        shard_passed=False,
+    )
 
 
 def test_partial_semantic_release_contract_still_requires_a_source_corpus_audit(tmp_path: Path) -> None:
@@ -225,6 +306,7 @@ def test_campaign_starts_semantic_child_before_any_protected_input_read(
     protected_paths = {holdout.resolve(), manifest.resolve()}
     shard_runner = sys.modules["greenfield_matrix_campaign_shard_runner"]
     guard = sys.modules["greenfield_final_holdout_guard"]
+    artifacts = sys.modules["greenfield_matrix_release_artifacts"]
     guard_sha256 = guard._sha256_file  # noqa: SLF001
 
     def protected_hash(path):  # noqa: ANN001
@@ -239,7 +321,7 @@ def test_campaign_starts_semantic_child_before_any_protected_input_read(
         child_started = True
         result_path = Path(command_arg(command, "--output-json"))
         ledger_path = Path(command_arg(command, "--final-holdout-run-ledger"))
-        guard.claim_final_holdout_run(
+        claimed = guard.claim_final_holdout_run(
             ledger_path=ledger_path,
             implementation_revision=command_arg(command, "--implementation-revision"),
             distribution_provenance_sha256="f" * 64,
@@ -252,10 +334,42 @@ def test_campaign_starts_semantic_child_before_any_protected_input_read(
             },
         )
         write_payload(result_path, status="passed")
+        evidence_root = artifacts.prepare_retained_evidence_output_dir(
+            output_dir=Path(command_arg(command, "--evidence-output-dir")),
+            temp_parent=Path(command_arg(command, "--temp-parent")),
+        )
+        retained_case = artifacts.begin_retained_case_evidence(
+            evidence_root=evidence_root,
+            case_id="semantic-holdout",
+        )
+        for stream in (
+            "propose.stdout.txt",
+            "propose.stderr.txt",
+            "create.stdout.txt",
+            "create.stderr.txt",
+        ):
+            artifacts.record_retained_case_text(retained_case, f"commands/{stream}", "")
+        artifacts.record_retained_case_json(
+            retained_case,
+            "semantic/proposal-payload.v1.json",
+            {"status": "passed"},
+        )
+        result_payload = json.loads(result_path.read_text(encoding="utf-8"))
+        artifacts.finalize_retained_case_evidence(
+            case=retained_case,
+            repo_root=tmp_path / "ephemeral-case-repo",
+            result_payload=result_payload,
+        )
+        retained_manifest = artifacts.write_retained_evidence_manifest(
+            root=evidence_root,
+            expected_case_ids=("semantic-holdout",),
+            run_id=claimed["run_id"],
+        )
         guard.complete_final_holdout_run(
             ledger_path=ledger_path,
             result_path=result_path,
             outcome="passed",
+            retained_evidence_manifest=retained_manifest,
         )
         return subprocess.CompletedProcess(command, 0, "passed shard", ""), ""
 
@@ -294,6 +408,7 @@ def test_campaign_starts_semantic_child_before_any_protected_input_read(
         evaluation_split_manifest=manifest,
         final_holdout_run_ledger=tmp_path / "final-holdout-run.v1.json",
         implementation_revision="a" * 40,
+        evidence_output_dir=tmp_path / "evidence",
         require_release_readiness=True,
         require_high_variance_stressors=True,
     )
@@ -448,6 +563,7 @@ def test_campaign_rejects_individually_inadequate_release_case_files_before_unio
         telemetry_dir=tmp_path / "telemetry",
         release_case_files=(first, second),
         release_audit_file=tmp_path / "audit.json",
+        evidence_output_dir=tmp_path / "evidence",
     )
 
     assert evaluated_case_counts == [1, 1]
@@ -504,6 +620,7 @@ def test_campaign_filters_union_audits_for_each_release_shard_before_union_valid
         telemetry_dir=tmp_path / "telemetry",
         release_case_files=(first, second),
         release_audit_file=audit_file,
+        evidence_output_dir=tmp_path / "evidence",
     )
 
     assert evaluations == [
@@ -539,6 +656,7 @@ def test_campaign_finishes_discovery_tiers_before_rejecting_an_unproven_release(
         volume_case_files=(tmp_path / "volume-01.json",),
         deep_volume_case_files=(tmp_path / "deep-volume-01.json", tmp_path / "deep-volume-02.json"),
         release_case_files=(tmp_path / "release.json",),
+        evidence_output_dir=tmp_path / "evidence",
         discovery_max_workers=1,
         regression_max_workers=2,
         volume_max_workers=3,

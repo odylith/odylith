@@ -30,6 +30,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     product_intent_authority_from_envelope,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
 )
@@ -67,32 +68,30 @@ def _authored_stage_inputs(repo_root: Path) -> tuple[dict[str, object], dict[str
         if str(row)
     ) + "."
     result = author_greenfield_intent(
+        review_provider_factory=AdmittingReviewProvider,
         evidence_text=evidence,
         provider=StructuredAuthoringProvider(
             authored_response(
                 intent,
                 evidence_text=evidence,
                 component_responsibility_owners=["Evidence Ledger"],
-                component_responsibility_event_orders=[2],
                 first_path_relations=[
                     {
                         "actor_kind": "human",
-                        "actor_quote": actor,
+                        "actor_fact_quote": actor,
                         "event_quote": first_event,
                         "action_verb_quote": "records",
                         "target_quote": "café evidence AND OR provenance",
                         "visible_result_quote": "",
-                        "recovery_path": False,
                     },
                     {
                         "actor_kind": "product",
-                        "actor_quote": "Evidence Ledger",
+                        "actor_fact_quote": "Evidence Ledger",
                         "owner_system_quote": "Evidence Ledger",
                         "event_quote": visible_event,
                         "action_verb_quote": "shows",
                         "target_quote": "the receipt",
                         "visible_result_quote": visible_event,
-                        "recovery_path": False,
                     },
                 ],
             )
@@ -106,6 +105,7 @@ def _authored_stage_inputs(repo_root: Path) -> tuple[dict[str, object], dict[str
             result.first_path_relations,
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
+            provisional_design=result.provisional_design,
         ),
     }
     profile = get_greenfield_model_profile(RESCUE_PROFILE_ID)

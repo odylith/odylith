@@ -14,10 +14,14 @@ import json
 import os
 from pathlib import Path
 import re
+import secrets
 from typing import Any
 
+from greenfield_matrix_release_artifacts import retained_evidence_manifest_issues
 
-FINAL_HOLDOUT_RUN_LEDGER_VERSION = "odylith.greenfield.final-holdout-run.v2"
+
+FINAL_HOLDOUT_RUN_LEDGER_VERSION = "odylith.greenfield.final-holdout-run.v3"
+LEGACY_FINAL_HOLDOUT_RUN_LEDGER_VERSION = "odylith.greenfield.final-holdout-run.v2"
 _REVISION_RE = re.compile(r"[0-9a-f]{40}")
 _SHA256_RE = re.compile(r"[0-9a-f]{64}")
 _INPUT_LABEL_RE = re.compile(r"[a-z][a-z0-9_]{0,63}")
@@ -46,6 +50,7 @@ def claim_final_holdout_run(
         "protected_inputs": {},
         "implementation_revision": revision,
         "distribution_provenance_sha256": provenance_sha256,
+        "run_id": secrets.token_hex(32),
         "claimed_at_utc": _now_utc(),
     }
     ledger.parent.mkdir(parents=True, exist_ok=True)
@@ -97,13 +102,18 @@ def complete_final_holdout_run(
     ledger_path: Path,
     result_path: Path,
     outcome: str,
+    retained_evidence_manifest: Path | None = None,
 ) -> dict[str, Any]:
     """Bind the terminal proof payload without allowing a second claim."""
 
     ledger = _safe_file(ledger_path, label="final holdout run ledger")
     result = _safe_file(result_path, label="final holdout result")
     payload = _json_object(ledger)
-    if payload.get("version") != FINAL_HOLDOUT_RUN_LEDGER_VERSION or payload.get("status") != "claimed":
+    ledger_version = str(payload.get("version") or "")
+    if ledger_version not in {
+        FINAL_HOLDOUT_RUN_LEDGER_VERSION,
+        LEGACY_FINAL_HOLDOUT_RUN_LEDGER_VERSION,
+    } or payload.get("status") != "claimed":
         raise RuntimeError("final holdout run ledger is not in its one terminalizable claimed state")
     terminal = str(outcome or "").strip().casefold()
     if terminal not in {"passed", "failed", "interrupted"}:
@@ -114,10 +124,36 @@ def complete_final_holdout_run(
         or not payload.get("protected_inputs")
     ):
         raise RuntimeError("a passing final holdout run requires bound protected inputs")
+    retained: dict[str, str] = {}
+    if ledger_version == FINAL_HOLDOUT_RUN_LEDGER_VERSION:
+        run_id = str(payload.get("run_id") or "")
+        if not _SHA256_RE.fullmatch(run_id):
+            raise RuntimeError("final holdout run ledger has no valid current-run binding")
+        if retained_evidence_manifest is None:
+            raise RuntimeError("a terminal final holdout run requires retained release evidence")
+        manifest = _safe_file(retained_evidence_manifest, label="retained evidence manifest")
+        manifest_sha256 = _sha256_file(manifest)
+        evidence_issues = retained_evidence_manifest_issues(
+            manifest,
+            require_passed_cases=terminal == "passed",
+            expected_run_id=run_id,
+        )
+        if evidence_issues:
+            raise RuntimeError("retained release evidence is invalid: " + "; ".join(evidence_issues))
+        manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+        if not manifest_payload.get("case_ids"):
+            raise RuntimeError("retained release evidence is invalid: terminal evidence contains no cases")
+        if _sha256_file(manifest) != manifest_sha256:
+            raise RuntimeError("retained release evidence changed while it was being validated")
+        retained = {
+            "manifest_path": str(manifest),
+            "manifest_sha256": manifest_sha256,
+        }
     completed = {
         **payload,
         "status": terminal,
         "result_sha256": _sha256_file(result),
+        **({"retained_evidence": retained} if retained else {}),
         "completed_at_utc": _now_utc(),
     }
     _replace_json(ledger, completed)
@@ -204,6 +240,7 @@ def _now_utc() -> str:
 
 __all__ = [
     "FINAL_HOLDOUT_RUN_LEDGER_VERSION",
+    "LEGACY_FINAL_HOLDOUT_RUN_LEDGER_VERSION",
     "bind_final_holdout_inputs",
     "claim_final_holdout_run",
     "complete_final_holdout_run",

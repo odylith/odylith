@@ -56,16 +56,18 @@ def test_load_json_object_variants_fail_open_or_return_none(tmp_path: Path) -> N
 def test_normalize_release_text_strips_markup_and_respects_html_flag() -> None:
     value = "  [Ship it](https://example.invalid) <b>now</b> with `proof`  "
 
-    assert normalize_release_text(value, limit=None) == "Ship it now with proof"
-    assert normalize_release_text(value, limit=None, strip_html=False) == "Ship it <bnow</b with proof"
+    assert normalize_release_text(value) == "Ship it now with proof"
+    assert normalize_release_text(value, strip_html=False) == "Ship it <bnow</b with proof"
 
 
-def test_normalize_release_text_truncates_and_normalizes_release_version() -> None:
-    value = "Long release note " * 40
+def test_normalize_release_text_preserves_complete_copy_and_release_version() -> None:
+    value = (
+        "The reviewed package includes the catalog, diagrams, component specifications, "
+        "workstream responsibilities, source references, and the evidence needed to "
+        "understand how the first usable path serves its intended users. "
+        "Publication never grants authority to reinterpret that evidence."
+    )
 
-    normalized = normalize_release_text(value, limit=40)
-
-    assert normalized.endswith("...")
-    assert len(normalized) == 40
+    assert normalize_release_text(value) == value
     assert normalize_release_version("v0.1.10") == "0.1.10"
     assert normalize_release_version("0.1.10") == "0.1.10"

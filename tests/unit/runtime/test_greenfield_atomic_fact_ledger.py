@@ -14,7 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     PRODUCT_INTENT_AUTHORITY_KEY,
 )
-from tests.unit.runtime.greenfield_proposal_fixtures import (
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import (
     canonical_model_authored_intent_fixture,
 )
 

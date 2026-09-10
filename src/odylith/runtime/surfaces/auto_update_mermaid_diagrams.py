@@ -25,6 +25,8 @@ from typing import Any, Mapping, Sequence
 from odylith.runtime.common import diagram_freshness
 from odylith.runtime.common import generated_refresh_guard
 from odylith.runtime.common import repo_path_resolver
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import AUTHORED_PROJECTION_ORIGIN
+from odylith.runtime.domain_intelligence.greenfield_authored_atlas_view import is_authored_atlas_view
 from odylith.runtime.surfaces import generated_flowchart_assets
 from odylith.runtime.surfaces import mermaid_worker_session as _mermaid_worker_session
 from odylith.runtime.surfaces import surface_path_helpers
@@ -467,6 +469,8 @@ def _classify_diagram_items(
                     "source_png": source_png,
                 }
             )
+            if is_authored_atlas_view(item):
+                render_jobs[-1]["projection_origin"] = AUTHORED_PROJECTION_ORIGIN
             render_ids.append(diagram_id)
             continue
         review_only_ids.append(diagram_id)
@@ -656,7 +660,8 @@ def _render_diagrams_batch(
                 cli_version=cli_version,
             )
         except Exception as fallback_exc:
-            if generated_flowchart_assets.render_generated_flowchart_assets(
+            # The subset renderer cannot preserve sealed authored labels/topology.
+            if not is_authored_atlas_view(job) and generated_flowchart_assets.render_generated_flowchart_assets(
                 repo_root=repo_root,
                 source_mmd=str(job.get("source_mmd", "")).strip(),
                 source_svg=str(job.get("source_svg", "")).strip(),

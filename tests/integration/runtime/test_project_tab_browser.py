@@ -8,28 +8,41 @@ from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
 )
+from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import preview_project_dashboard_payload
 from odylith.runtime.project_intelligence import assets
 from odylith.runtime.project_intelligence import builder as project_intelligence_builder
 from odylith.runtime.project_intelligence import presenter as project_intelligence_presenter
 from tests.integration.runtime.surface_browser_test_support import (
     _assert_clean_page,
     _browser,
+    _failure_screenshot_path,
     _new_page,
     _static_server,
 )
-from tests.unit.runtime.greenfield_proposal_fixtures import (
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import (
     _canonical_model_authored_greenfield_fixture,
+)
+from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
+from tests.unit.runtime.greenfield_proposal_fixtures import (
     _seed_empty_governance_repo,
     commit_precompiled_greenfield_proposal,
     stub_preconfirm_surface_refresh,
+)
+from tests.unit.runtime.test_greenfield_authored_project_dashboard import (
+    PROPOSED_FIRST_RUN,
+    _accepted_preview,
+    _handoff_scope_proposal,
+    _result_first_proposal,
+    _source_launch_context,
 )
 
 
 def _write_greenfield_project_page(tmp_path: Path, monkeypatch) -> Path:  # noqa: ANN001
     _seed_empty_governance_repo(tmp_path)
+    activate_greenfield_baseline_fixture(tmp_path)
     stub_preconfirm_surface_refresh(monkeypatch)
     monkeypatch.setattr(
-        greenfield_component_commit.component_authoring.owned_surface_refresh,
+        greenfield_component_commit.component_compiled_commit.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )
@@ -90,6 +103,7 @@ def _write_project_page(page_path: Path, payload: dict[str, object]) -> Path:
                 "  --surface-identifier-font-size: 14px;",
                 "  --surface-identifier-font-weight: 500;",
                 "}",
+                "* { box-sizing: border-box; }",
                 "body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #eef6ff; }",
                 "</style>",
                 "<style>",
@@ -151,12 +165,12 @@ def _degraded_project_payload() -> dict[str, object]:
                     "Keep the last verified permit decision visible until the unavailable source is restored.",
                 )
             ],
-            "current": [
+            "current": (
                 "The last verified permit decision remains available with its complete evidence explanation."
-            ],
-            "desired": [
+            ),
+            "desired": (
                 "The unavailable source returns and the operator can reconcile the next decision without ambiguity."
-            ],
+            ),
             "host_handoff_title": "How to continue in the host chat",
             "host_handoff_note": "Use the bounded recovery prompt after reviewing the degraded evidence.",
             "host_handoff_steps": [
@@ -305,15 +319,44 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
         """(node) => {
             const narrativeParagraphs = Array.from(node.querySelectorAll(":scope > p"));
             const list = node.querySelector(".project-story-records");
-            const contract = node.querySelector(".project-story-contract-card p");
+            const contract = node.querySelector(".project-story-contract-body");
             const rows = Array.from(node.querySelectorAll(".project-story-contract-card"));
-            const bodies = rows.map((row) => String(row.querySelector("p")?.innerText || "").trim());
+            const capabilityCard = node.querySelector('[data-semantic-slot="owned_capabilities"]');
+            const capabilityBody = capabilityCard?.querySelector(':scope > .project-story-contract-body');
+            const capabilityHeading = capabilityCard?.querySelector(':scope > h3');
+            const pathCard = node.querySelector('[data-semantic-slot="first_path"]');
+            const pathBody = pathCard?.querySelector(':scope > .project-story-contract-body');
+            const pathHeading = pathCard?.querySelector(':scope > h3');
+            const bodies = rows.map(
+              (row) => String(row.querySelector(".project-story-contract-body")?.innerText || "").trim()
+            );
             return {
               narrativeParagraphCount: narrativeParagraphs.length,
               listFontSize: list ? window.getComputedStyle(list).fontSize : "",
               contractFontSize: contract ? window.getComputedStyle(contract).fontSize : "",
               rowCount: rows.length,
+              capabilityChildCount: capabilityCard?.children.length || 0,
+              capabilityBodyLeft: capabilityBody?.getBoundingClientRect().left || 0,
+              capabilityHeadingRight: capabilityHeading?.getBoundingClientRect().right || 0,
+              capabilityColumns: capabilityCard ? window.getComputedStyle(capabilityCard).gridTemplateColumns.split(' ').length : 0,
+              pathChildCount: pathCard?.children.length || 0,
+              pathBodyLeft: pathBody?.getBoundingClientRect().left || 0,
+              pathHeadingRight: pathHeading?.getBoundingClientRect().right || 0,
+              pathColumns: pathCard ? window.getComputedStyle(pathCard).gridTemplateColumns.split(' ').length : 0,
               distinctBodyCount: new Set(bodies.map((body) => body.toLocaleLowerCase())).size,
+              focusEventCount: node.ownerDocument.querySelectorAll(
+                '[data-authored-fact-list="focus"] [data-authored-fact-item]'
+              ).length,
+              firstPathEventCount: node.querySelectorAll(
+                '[data-authored-fact-list="first_path"] [data-authored-fact-item]'
+              ).length,
+              actorEventCount: node.ownerDocument.querySelectorAll(
+                '[data-authored-fact-list="actor"] [data-authored-fact-item]'
+              ).length,
+              capabilityCount: node.querySelectorAll(
+                '[data-authored-fact-list="owned_capabilities"] [data-authored-fact-item]'
+              ).length,
+              boundaryGroupCount: node.querySelectorAll("[data-authored-boundary-group]").length,
               semanticSlots: rows.map((row) => String(row.dataset.semanticSlot || "")),
               rowLefts: rows.map((row) => Math.round(row.getBoundingClientRect().left)),
               rowTops: rows.map((row) => Math.round(row.getBoundingClientRect().top)),
@@ -323,10 +366,21 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
         }"""
     )
     assert story_layout["narrativeParagraphCount"] == 0
-    assert story_layout["listFontSize"] == ""
+    assert story_layout["listFontSize"] == "14px"
     assert story_layout["contractFontSize"] == "14px"
     assert story_layout["rowCount"] == 5
+    assert story_layout["capabilityChildCount"] == 2
+    assert story_layout["pathChildCount"] == 2
+    if story_layout["capabilityColumns"] == 2:
+        assert story_layout["capabilityBodyLeft"] > story_layout["capabilityHeadingRight"]
+    if story_layout["pathColumns"] == 2:
+        assert story_layout["pathBodyLeft"] > story_layout["pathHeadingRight"]
     assert story_layout["distinctBodyCount"] == 5
+    assert story_layout["focusEventCount"] >= 1
+    assert story_layout["firstPathEventCount"] == story_layout["focusEventCount"]
+    assert story_layout["actorEventCount"] >= 1
+    assert story_layout["capabilityCount"] >= 1
+    assert story_layout["boundaryGroupCount"] >= 1
     assert story_layout["semanticSlots"] == [
         "user_problem",
         "first_path",
@@ -339,11 +393,13 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
     assert story_layout["firstRowColumns"] != ""
     assert int(story_layout["scrollDelta"]) <= 4
 
-    assert _clipped_project_text(page) == []
+    _assert_project_sections_do_not_overflow(page, [".project-product-story", ".project-host-handoff"])
 
 
 def _assert_project_sections_do_not_overflow(page, selectors: list[str]) -> None:  # noqa: ANN001
     assert _clipped_project_text(page) == []
+    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+    assert page.locator(".project-pane").evaluate("node => node.scrollWidth <= node.clientWidth")
     for selector in selectors:
         locator = page.locator(selector)
         assert locator.count() >= 1
@@ -366,12 +422,17 @@ def _run_greenfield_project_tab_browser_check(tmp_path: Path, monkeypatch, *, co
     with _static_server(root=tmp_path) as base_url:
         for _pw, browser in _browser():
             context = browser.new_context(viewport=viewport)
-            page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
             try:
-                response = page.goto(base_url + "/index.html", wait_until="domcontentloaded")
-                assert response is not None and response.ok
-                _assert_greenfield_project_tab_layout(page, compact=compact)
-                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+                with _new_page(context) as (page, observation):
+                    response = page.goto(base_url + "/index.html", wait_until="domcontentloaded")
+                    assert response is not None and response.ok
+                    _assert_greenfield_project_tab_layout(page, compact=compact)
+                    screenshot = _failure_screenshot_path(f"project-{viewport['width']}")
+                    if screenshot is None:
+                        screenshot = tmp_path / f"project-{viewport['width']}.png"
+                    screenshot.parent.mkdir(parents=True, exist_ok=True)
+                    page.screenshot(path=str(screenshot), full_page=True)
+                    _assert_clean_page(page, observation)
             finally:
                 context.close()
 
@@ -384,19 +445,116 @@ def test_project_tab_renders_accepted_greenfield_story_in_compact_browser(tmp_pa
     _run_greenfield_project_tab_browser_check(tmp_path, monkeypatch, compact=True)
 
 
+def test_project_handoff_scope_is_visible_and_copyable_at_both_widths(tmp_path: Path) -> None:
+    cases = (
+        ("constraints", ("Preserve APIv7 casing",), ()),
+        ("non-goals", (), ("Batch Æther migration",)),
+        ("mixed", ("Preserve APIv7 casing",), ("Batch Æther migration",)),
+        ("empty", (), ()),
+    )
+    payloads = {}
+    for name, constraints, non_goals in cases:
+        proposal = _handoff_scope_proposal(constraints=constraints, non_goals=non_goals)
+        payload = preview_project_dashboard_payload(
+            root=tmp_path,
+            proposal=proposal,
+            accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
+            source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
+        )
+        payloads[name] = payload
+        _write_project_page(tmp_path / f"{name}.html", payload)
+    with _static_server(root=tmp_path) as base_url:
+        for _pw, browser in _browser():
+            for viewport in ({"width": 1440, "height": 1100}, {"width": 430, "height": 932}):
+                for name, constraints, non_goals in cases:
+                    context = browser.new_context(viewport=viewport)
+                    try:
+                        with _new_page(context) as (page, observation):
+                            response = page.goto(base_url + f"/{name}.html", wait_until="domcontentloaded")
+                            assert response is not None and response.ok
+                            prompts = page.locator(".project-host-prompt code")
+                            assert prompts.count() == 5
+                            expected_block = (
+                                "Operational constraints — preserve these requirements:\n"
+                                + ("\n".join(constraints) if constraints else "None stated.")
+                                + "\n\nExcluded scope — preserve these exclusions:\n"
+                                + ("\n".join(non_goals) if non_goals else "None stated.")
+                            )
+                            for index, handoff in enumerate(payloads[name]["host_handoff_prompts"]):
+                                prompt = prompts.nth(index)
+                                assert prompt.is_visible()
+                                assert prompt.text_content() == handoff["prompt"]
+                                copied_text = prompt.evaluate("""node => {
+                              const range = document.createRange();
+                              range.selectNodeContents(node);
+                              const selection = window.getSelection();
+                              selection.removeAllRanges();
+                              selection.addRange(range);
+                              return selection.toString();
+                            }""")
+                                assert copied_text == handoff["prompt"]
+                                assert copied_text.startswith("Selected workstream: B-701")
+                                assert copied_text.endswith(expected_block)
+                            _assert_project_sections_do_not_overflow(page, [".project-host-handoff"])
+                            page.evaluate("window.getSelection().removeAllRanges()")
+                            page.locator(".project-host-prompt").first.screenshot(
+                                path=str(tmp_path / f"handoff-{name}-{viewport['width']}.png"),
+                            )
+                            _assert_clean_page(page, observation)
+                    finally:
+                        context.close()
+
+
+def test_project_tab_result_first_source_renders_labeled_proposed_order_at_both_widths(tmp_path: Path) -> None:
+    proposal = _result_first_proposal()
+    payload = preview_project_dashboard_payload(
+        root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
+        source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
+    )
+    _write_project_page(tmp_path / "index.html", payload)
+    expected_events = PROPOSED_FIRST_RUN.splitlines()[1:]
+    with _static_server(root=tmp_path) as base_url:
+        for _pw, browser in _browser():
+            for viewport in ({"width": 1440, "height": 1100}, {"width": 430, "height": 932}):
+                context = browser.new_context(viewport=viewport)
+                try:
+                    with _new_page(context) as (page, observation):
+                        response = page.goto(base_url + "/index.html", wait_until="domcontentloaded")
+                        assert response is not None and response.ok
+                        for key in ("focus", "first_path"):
+                            sequence = page.locator(f'[data-authored-fact-list="{key}"]')
+                            assert sequence.get_attribute("data-authority-kind") == "provisional_design"
+                            items = sequence.locator("[data-authored-fact-item]")
+                            assert items.all_text_contents() == expected_events
+                            assert items.evaluate_all("nodes => nodes.map(node => node.dataset.eventOrder)") == ["2", "1"]
+                        assert page.locator("[data-proposed-first-run-label]").all_text_contents() == [
+                            "Proposed first run:", "Proposed first run:",
+                        ]
+                        card = page.locator('[data-semantic-slot="first_path"]')
+                        assert card.locator(":scope > *").count() == 2
+                        assert card.locator(":scope > .project-story-contract-body").count() == 1
+                        _assert_project_sections_do_not_overflow(page, [".project-product-story", ".project-host-handoff"])
+                        card.screenshot(path=str(tmp_path / f"proposed-first-run-{viewport['width']}.png"))
+                        page.screenshot(path=str(tmp_path / f"project-{viewport['width']}.png"), full_page=True)
+                        _assert_clean_page(page, observation)
+                finally:
+                    context.close()
+
+
 def test_project_tab_clipping_probe_detects_a_clipping_parent(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _write_greenfield_project_page(tmp_path, monkeypatch)
     with _static_server(root=tmp_path) as base_url:
         for _pw, browser in _browser():
             context = browser.new_context(viewport={"width": 430, "height": 932})
-            page, _console_errors, _page_errors, _failed_requests, _bad_responses = _new_page(context)
             try:
-                response = page.goto(base_url + "/index.html", wait_until="domcontentloaded")
-                assert response is not None and response.ok
-                card = page.locator(".project-story-contract-card").first
-                card.evaluate("(node) => { node.style.maxHeight = '24px'; node.style.overflow = 'hidden'; }")
+                with _new_page(context) as (page, observation):
+                    response = page.goto(base_url + "/index.html", wait_until="domcontentloaded")
+                    assert response is not None and response.ok
+                    card = page.locator(".project-story-contract-card").first
+                    card.evaluate("(node) => { node.style.maxHeight = '24px'; node.style.overflow = 'hidden'; }")
 
-                assert _clipped_project_text(page)
+                    assert _clipped_project_text(page)
+                    _assert_clean_page(page, observation)
             finally:
                 context.close()
 
@@ -429,12 +587,14 @@ def test_project_tab_blank_and_degraded_states_wrap_at_desktop_and_mobile_widths
             for filename, selectors, terminal_text in cases:
                 for viewport in viewports:
                     context = browser.new_context(viewport=viewport)
-                    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
                     try:
-                        response = page.goto(f"{base_url}/{filename}", wait_until="domcontentloaded")
-                        assert response is not None and response.ok
-                        assert terminal_text in page.locator(".project-surface").inner_text()
-                        _assert_project_sections_do_not_overflow(page, selectors)
-                        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+                        with _new_page(context) as (page, observation):
+                            response = page.goto(f"{base_url}/{filename}", wait_until="domcontentloaded")
+                            assert response is not None and response.ok
+                            assert terminal_text in page.locator(".project-surface").inner_text()
+                            assert "['The" not in page.locator(".project-surface").inner_text()
+                            _assert_project_sections_do_not_overflow(page, selectors)
+                            page.screenshot(path=str(tmp_path / f"{Path(filename).stem}-{viewport['width']}.png"), full_page=True)
+                            _assert_clean_page(page, observation)
                     finally:
                         context.close()

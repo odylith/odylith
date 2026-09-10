@@ -1320,11 +1320,12 @@ def run_refresh(
             if emit_output:
                 _print_terminal_result(result)
             return result
-        return _wait_for_terminal(
+        result = _wait_for_terminal(
             repo_root=root,
             request_id=str(existing.get("request_id", "")).strip(),
             settle_standup_maintenance=True,
         )
+        return {**result, "coalesced": True}
 
     result = _enqueue_request(
         repo_root=root,

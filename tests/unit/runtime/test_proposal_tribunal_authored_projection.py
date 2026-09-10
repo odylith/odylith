@@ -18,6 +18,9 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.project_intelligence_binding import (
     attach_project_intelligence_bindings,
 )
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    structural_design_fixture,
+)
 
 
 def _authored_proposal() -> dict[str, object]:
@@ -29,8 +32,6 @@ def _authored_proposal() -> dict[str, object]:
         "event_start_byte": 0,
         "event_end_byte": len(first_path.encode("utf-8")),
         "actor_kind": "human",
-        "actor_quote": "Dock attendant",
-        "actor_is_carried": False,
         "actor_fact_path": "/human_actors/0",
         "actor_fact_quote": "Dock attendant",
         "owner_system_path": "",
@@ -39,7 +40,6 @@ def _authored_proposal() -> dict[str, object]:
         "action_verb_quote": "records",
         "target_quote": "berth occupancy",
         "visible_result_quote": "sees receipt",
-        "recovery_path": False,
     }
     intent = {
         "title": "Harbor Desk",
@@ -83,6 +83,7 @@ def _authored_proposal() -> dict[str, object]:
                     "first_path_event_order": 1,
                 },
             ),
+            provisional_design=structural_design_fixture((1,)),
         ),
     }
     return attach_project_intelligence_bindings(
@@ -109,29 +110,76 @@ def test_authored_typed_projection_passes_structural_tribunal() -> None:
     assert all(value.startswith("checked ") for value in decision.dimensions.values())
     assert decision.visible_actors == (
         {
+            "stable_role": "beneficiary_advocate",
+            "visible_actor": "Project beneficiary advocate",
+            "actor_source": "governance_role",
+            "responsibility": "Protects the person or team receiving the value.",
+        },
+        {
             "stable_role": "domain_operator",
             "visible_actor": "Dock attendant",
             "actor_source": "explicit_intent_actor",
             "responsibility": "Dock attendant records berth occupancy and sees receipt",
         },
+        {
+            "stable_role": "risk_owner",
+            "visible_actor": "Project risk reviewer",
+            "actor_source": "governance_role",
+            "responsibility": "Owns loss, harm, compliance, safety, or operational exposure.",
+        },
+        {
+            "stable_role": "evidence_owner",
+            "visible_actor": "Project proof reviewer",
+            "actor_source": "governance_role",
+            "responsibility": "Decides what proof is strong enough to trust.",
+        },
+        {
+            "stable_role": "implementation_owner",
+            "visible_actor": "Project implementation owner",
+            "actor_source": "governance_role",
+            "responsibility": "Owns source paths, interfaces, and build sequence.",
+        },
+        {
+            "stable_role": "release_owner",
+            "visible_actor": "Project release owner",
+            "actor_source": "governance_role",
+            "responsibility": "Owns release boundary, rollback, and promotion readiness.",
+        },
     )
     assert proposal["security_compliance"] == {}
+    assert len(proposal["components"]) == 4
     component = proposal["components"][0]
     assert set(component["component_contract"]) == {
-        "owner_system",
-        "responsibility_facts",
-        "owner_bound_events",
-        "event_targets",
-        "visible_results",
-        "recovery_events",
-        "state_context",
-        "external_dependencies",
-        "operational_constraints",
+        "authority_kind",
+        "design_ref",
+        "provisional_component",
+        "support_event_refs",
+        "supporting_events",
+        "exchanges",
     }
-    assert component["boundary"] == ""
+    semantics = proposal["intent"][AUTHORED_SEMANTICS_KEY]
+    assert component["component_id"] == "test-boundary-1"
+    assert component["authority_kind"] == "provisional_design"
+    assert component["component_contract"]["provisional_component"] == semantics[
+        "provisional_design"
+    ]["components"][0]
+    assert component["component_contract"]["support_event_refs"] == [
+        "/authored_semantics/first_path_relations/0"
+    ]
+    assert component["component_contract"]["supporting_events"] == semantics[
+        "first_path_relations"
+    ]
+    assert component["boundary"] == (
+        "Proposed logical ownership; no implementation or deployment is asserted."
+    )
     assert component["dependencies"] == []
-    assert component["interfaces"] == []
-    assert component["validation"] == []
+    assert component["interfaces"] == [
+        "Proposed exchange — test-boundary-1 → test-boundary-2: "
+        "The exact test value from boundary 1."
+    ]
+    assert component["validation"] == [
+        "Read back the exact test value assigned to boundary 1."
+    ]
 
 
 @pytest.mark.parametrize(
@@ -159,9 +207,6 @@ def test_authored_typed_projection_passes_structural_tribunal() -> None:
         ),
         lambda proposal: proposal["components"][0]["component_contract"].update(
             {"visible_results": ["Fabricated result"]}
-        ),
-        lambda proposal: proposal["components"][0]["component_contract"].update(
-            {"recovery_events": ["Fabricated recovery"]}
         ),
         lambda proposal: proposal["backlog"].append(dict(proposal["backlog"][0])),
     ),
@@ -252,7 +297,9 @@ def _rename_backlog_projection_everywhere(proposal) -> None:
             id="greenfield-ux",
         ),
         pytest.param(
-            lambda proposal: proposal["apply_commands"].__setitem__(0, "todo"),
+            lambda proposal: proposal["apply_commands"].append(
+                "odylith greenfield propose --repo-root . --prompt 'replacement'"
+            ),
             id="apply-command",
         ),
         pytest.param(_rename_backlog_projection_everywhere, id="coordinated-backlog-rename"),

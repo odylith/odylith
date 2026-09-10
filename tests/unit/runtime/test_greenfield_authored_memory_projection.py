@@ -17,6 +17,9 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
     PRODUCT_INTENT_AUTHORITY_KEY,
 )
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    structural_design_fixture,
+)
 
 
 FIRST_PATH = (
@@ -32,7 +35,7 @@ def _relation(
     order: int,
     event: str,
     actor_kind: str,
-    actor: str,
+    actor_fact_quote: str,
     action: str,
     target: str,
     visible_result: str = "",
@@ -47,21 +50,16 @@ def _relation(
         "event_start_byte": start,
         "event_end_byte": start + len(event_bytes),
         "actor_kind": actor_kind,
-        "actor_quote": actor,
-        "actor_is_carried": False,
         "actor_fact_path": (
             "/internal_systems/0" if actor_kind == "product" else "/human_actors/0"
         ),
-        "actor_fact_quote": (
-            "Meridian Engine" if actor_kind == "product" else "Registry Custodian"
-        ),
+        "actor_fact_quote": actor_fact_quote,
         "owner_system_path": "/internal_systems/0" if actor_kind == "product" else "",
         "owner_system_quote": "Meridian Engine" if actor_kind == "product" else "",
         "event_quote": event,
         "action_verb_quote": action,
         "target_quote": target,
         "visible_result_quote": visible_result,
-        "recovery_path": False,
     }
 
 
@@ -71,7 +69,7 @@ def _proposal() -> dict[str, object]:
             order=1,
             event=EVENT_ONE,
             actor_kind="human",
-            actor="Registry Custodian",
+            actor_fact_quote="Registry Custodian",
             action="QuOrates",
             target="one Æther packet",
         ),
@@ -79,7 +77,7 @@ def _proposal() -> dict[str, object]:
             order=2,
             event=EVENT_TWO,
             actor_kind="product",
-            actor="Meridian Engine",
+            actor_fact_quote="Meridian Engine",
             action="vitrifies",
             target="it",
             visible_result="Ω-Receipt",
@@ -100,16 +98,6 @@ def _proposal() -> dict[str, object]:
             "non_goals": ["Do not infer batch migration"],
             "authored_semantics": authored_semantics_mapping(
                 relations,
-                (
-                    {
-                        "responsibility_path": "/first_path",
-                        "responsibility_quote": "Ω-Receipt",
-                        "owner_system_path": "/internal_systems/0",
-                        "owner_system_quote": "Meridian Engine",
-                        "first_path_event_order": 2,
-                        "responsibility_source": "terminal_visible_result",
-                    },
-                ),
                 first_path_context_relations=(
                     {
                         "context_kind": "operational_constraint",
@@ -121,6 +109,7 @@ def _proposal() -> dict[str, object]:
                         "first_path_event_order": 0,
                     },
                 ),
+                provisional_design=structural_design_fixture((1, 2)),
             ),
         },
         "observed_source": {"source_posture": "operator prompt"},

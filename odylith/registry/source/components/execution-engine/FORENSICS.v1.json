@@ -7866,9 +7866,17 @@
     }
   ],
   "traceability": {
-    "code_references": [],
-    "developer_docs": [],
-    "runbooks": []
+    "code_references": [
+      "src/odylith/runtime/surfaces/claude_host_prompt_bundle.py",
+      "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
+      "src/odylith/runtime/surfaces/codex_host_stop_summary.py"
+    ],
+    "developer_docs": [
+      "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md"
+    ],
+    "runbooks": [
+      "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md"
+    ]
   },
   "version": "v1",
   "what_it_is": "Constraint-aware execution runtime that materializes task contracts, admissibility decisions, frontiers, closure, receipts, contradiction records, and host-aware execution hints before Odylith acts.",

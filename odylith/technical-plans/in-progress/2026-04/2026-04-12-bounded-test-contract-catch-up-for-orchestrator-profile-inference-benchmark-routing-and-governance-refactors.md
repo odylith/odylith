@@ -188,3 +188,22 @@ Related Bugs:
 - Compass refresh remediation command updated from
   `odylith compass refresh --repo-root . --wait` to
   `odylith dashboard refresh --repo-root . --surfaces compass`.
+
+## Traceability
+
+Routing/profile operations cover one test cluster, not every historical test repair; preserve the original assertion intent for all clusters.
+
+### Runbooks
+
+- `odylith/runtime/SUBAGENT_OPERATIONS.md`
+
+### Developer Docs
+
+- `odylith/agents-guidelines/VALIDATION_AND_TESTING.md`
+
+### Code References
+
+- `tests/unit/runtime/test_subagent_reasoning_ladder.py`
+- `tests/unit/runtime/test_hygiene.py`
+- `src/odylith/runtime/evaluation/benchmark_compare.py`
+- `src/odylith/runtime/governance/sync_workstream_artifacts.py`

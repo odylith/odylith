@@ -311,7 +311,7 @@ def test_refresh_runtime_artifacts_reuses_initial_input_fingerprint_for_fresh_bu
         lambda **_kwargs: None,
     )
     monkeypatch.setattr(
-        render_compass_dashboard.compass_standup_brief_maintenance,
+        render_compass_dashboard.compass_standup_brief_maintenance_worker,
         "maybe_spawn_background",
         lambda **_kwargs: None,
     )
@@ -509,7 +509,8 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     assert "<strong>Release history:</strong>" in workstreams_js
     assert "No active workstreams yet. Create or open one from Radar, then Compass will summarize it here." in workstreams_js
     assert "No additional current workstreams. Program and release lanes already cover the active work." not in workstreams_js
-    assert "Program and release lanes already organize these active workstreams" in workstreams_js
+    assert '"Program and release lanes" : "Release targets"' in workstreams_js
+    assert '"Wave" : "Plan"' in workstreams_js
     assert "All current workstreams are already represented in Programs or Release Targets." not in workstreams_js
     assert "No active workstreams in this scope." in workstreams_js
     assert "const rows = scopedRows;" not in workstreams_js
@@ -1159,7 +1160,7 @@ def test_refresh_runtime_artifacts_shell_safe_stamps_and_spawns_narration_mainte
         _apply_terminal_state,
     )
     monkeypatch.setattr(
-        render_compass_dashboard.compass_standup_brief_maintenance,
+        render_compass_dashboard.compass_standup_brief_maintenance_worker,
         "maybe_spawn_background",
         lambda **kwargs: spawned.append(Path(kwargs["repo_root"]).resolve()) or 4321,
     )

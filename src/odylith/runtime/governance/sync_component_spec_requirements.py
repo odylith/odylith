@@ -651,19 +651,9 @@ def _write_forensics_for_targets(
     expected_forensics_paths: set[Path] = set()
     flat_spec_dirs: set[Path] = set()
     per_component_specs_roots: set[Path] = set()
-    persisted_events = [
-        event
-        for event in report.mapped_events
-        if str(event.kind or "").strip().lower() != "workspace_activity"
-    ]
     persisted_timelines = component_registry.build_component_timelines(
         component_index=components,
-        mapped_events=persisted_events,
-    )
-    persisted_coverage = component_registry.build_component_forensic_coverage(
-        component_index=components,
-        mapped_events=persisted_events,
-        repo_root=repo_root,
+        mapped_events=report.mapped_events,
     )
     for component_id in targets:
         entry = components.get(component_id)
@@ -684,7 +674,7 @@ def _write_forensics_for_targets(
         forensics_rel = repo_path_resolver.display_repo_path(repo_root=repo_root, value=forensics_path)
         payload = _forensics_payload(
             entry=entry,
-            coverage=persisted_coverage.get(component_id, _empty_forensic_coverage()),
+            coverage=report.forensic_coverage.get(component_id, _empty_forensic_coverage()),
             timeline=persisted_timelines.get(component_id, []),
             traceability=traceability_index.get(
                 component_id,
@@ -732,6 +722,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         catalog_path=catalog_path,
         ideas_root=ideas_root,
         stream_path=stream_path,
+        include_workspace_activity=False,
     )
     ignored_prefixes: tuple[str, ...] = (
         "missing stream path",
@@ -844,6 +835,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             catalog_path=catalog_path,
             ideas_root=ideas_root,
             stream_path=stream_path,
+            include_workspace_activity=False,
         )
         timelines = component_registry.build_component_timelines(
             component_index=components,

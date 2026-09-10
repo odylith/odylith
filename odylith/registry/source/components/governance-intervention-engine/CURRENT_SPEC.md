@@ -15,7 +15,53 @@
   platform seamless" may rank voice or integration inspection affordances, but
   it must still stay silent when no hard law is violated and no immediate
   user-visible value is earned.
-Last updated: 2026-07-20
+Last updated: 2026-09-09
+
+## Foreground hook lifetime
+
+Both host adapters use `host_hook_execution.run_hook_command` for owned
+foreground subprocesses. Within a whole-hook budget, one alarm-suspended
+command lifetime covers launch, communication and cleanup. Communication uses
+the remaining monotonic deadline; deadline expiry cannot interrupt entry into
+cleanup. The caller's alarm is restored afterward, and work outside the command
+remains subject to the whole-hook alarm. A child process group remains owned
+after its leader exits, with the existing TERM grace before forced cleanup.
+Budget expiry remains a distinct cancellation outcome, never a successful
+closeout. CB-242 carries the scheduling regression and cross-host proof;
+configured or trusted hooks still require separate visible-delivery evidence.
+
+## Explicit current closeout and pending replay
+
+An explicit `visible-intervention --phase stop_summary --include-closeout`
+with a supplied summary displays that current Assist through the existing
+visible-quality gate. Historical replay cannot replace it. Pending messages
+remain stored and unconfirmed for a subsequent recovery request; confirming the
+current text cannot confirm text that was not shown. A useful closeout does not
+need a generic visibility Observation prepended to it.
+
+The renderer preserves the complete supplied summary and punctuation. It does
+not clip characters or invent the next action. This is manual, host-authored
+narration, not source-fact admission, native activation proof or permission to
+publish a proposal. Input-free replay and normal live Observation/Proposal
+selection retain their existing owners and eligibility contracts.
+
+## Native activation proof boundary
+
+Codex configuration, native hook trust, callback execution and chat visibility
+are separate evidence. The capability reader uses the native feature registry's
+`hooks` key, with the older `codex_hooks` alias only when that is what the registry
+exposes. The low-latency status reader parses the actual TOML features table;
+comments, strings, unrelated tables, malformed input and explicit disablement
+cannot establish readiness. Neither reader grants trust or starts a model turn.
+
+Configured Codex assets yield `baseline_safe_hooks_configured` compatibility and
+`Activation: unverified` status, not a native-ready claim. Status exits nonzero
+until activation is proven; this is not permission to modify native trust.
+Review of exact non-managed hook definitions belongs to the user's native
+`/hooks` flow. New or changed definitions require review again. Manual transcript
+confirmation remains useful fallback evidence but cannot promote native
+activation. CB-242 stays open for matching-runtime installed execution and
+earned automatic visible delivery; CB-304 owns confirmation fault safety.
 
 
 ## Purpose

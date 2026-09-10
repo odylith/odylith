@@ -8,13 +8,27 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
+    AUTHORED_SEMANTICS_KEY,
     GreenfieldAuthoredSemanticsError,
+    authored_visible_result,
     component_responsibility_relations_from_intent,
     first_path_context_relations_from_intent,
     first_path_relations_from_intent,
 )
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_first_run_relations,
+    authored_first_run_text,
+)
 from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
     build_project_handoff_step_contract,
+    render_project_handoff_scope,
+    render_selected_workstream_scope,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
+    decision_copy,
+)
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
+    provisional_design_from_intent,
 )
 from odylith.runtime.project_intelligence.product_story_contract import (
     PRODUCT_STORY_CARD_SLOTS,
@@ -34,6 +48,7 @@ def build_authored_greenfield_payload(
         )
     intent = _required_mapping(proposal, "intent")
     relations = first_path_relations_from_intent(intent)
+    first_run_relations = authored_first_run_relations(intent)
     context_relations = first_path_context_relations_from_intent(intent)
     component_relations = component_responsibility_relations_from_intent(intent)
     if not relations:
@@ -43,7 +58,7 @@ def build_authored_greenfield_payload(
 
     title = _required_text(intent, "title")
     product_story = _required_text(intent, "product_story")
-    first_path = _required_text(intent, "first_path")
+    first_path = authored_first_run_text(intent)
     proof_boundary = _required_text(intent, "proof_boundary")
     human_actors = _text_values(intent.get("human_actors"))
     internal_systems = _text_values(intent.get("internal_systems"))
@@ -52,8 +67,8 @@ def build_authored_greenfield_payload(
     operational_constraints = _text_values(intent.get("operational_constraints"))
     evidence_requirements = _text_values(intent.get("evidence_requirements"))
     success_metrics = _text_values(intent.get("success_metrics"))
-    visible_result = _required_relation_text(relations[-1], "visible_result_quote")
-    event_quotes = [_required_relation_text(row, "event_quote") for row in relations]
+    visible_result = authored_visible_result(relations)
+    event_quotes = [_required_relation_text(row, "event_quote") for row in first_run_relations]
 
     release_plan = _mapping(proposal.get("release_plan"))
     observed = _mapping(proposal.get("observed_source"))
@@ -65,7 +80,7 @@ def build_authored_greenfield_payload(
     release = _first_text(release_plan, "label", "selector") or "first proposed release"
     validation = _statement_values(proposal.get("validation_strategy"))
     assumptions = _statement_values(
-        proposal.get("assumptions"),
+        [row for row in _mapping_rows(proposal.get("assumptions")) if row.get("applies_to") != "problem"],
         keys=("statement", "assumption"),
     )
     questions = _statement_values(
@@ -73,7 +88,7 @@ def build_authored_greenfield_payload(
         keys=("question", "statement"),
     )
     risk_items = _authored_risk_rows(proposal.get("risks"))
-    actors = authored_actor_rows(human_actors=human_actors, relations=relations)
+    actors = authored_actor_rows(human_actors=human_actors, relations=first_run_relations)
     jobs = _job_rows(backlog=backlog, accepted=accepted)
     governance_titles = _governance_titles(
         backlog=backlog,
@@ -85,15 +100,20 @@ def build_authored_greenfield_payload(
         first_path=first_path,
         proof_boundary=proof_boundary,
         visible_result=visible_result,
-        event_quotes=event_quotes,
         components=components,
-        jobs=jobs,
-        excluded_scope=_unique([*operational_constraints, *non_goals]),
+        operational_constraints=operational_constraints,
+        excluded_scope=non_goals,
         context=_mapping(proposal.get("_source_launch") or proposal.get("source_launch")),
     )
     open_items = _unique([*questions, *assumptions])
+    if questions and assumptions:
+        open_label = "Open questions and assumptions"
+    elif assumptions:
+        open_label = "Assumptions"
+    else:
+        open_label = "Open questions"
     known = _unique([product_story, first_path, visible_result, proof_boundary])
-    unknown = open_items
+    unknown = questions
     sections = ["product_story"]
     if actors:
         sections.append("participants")
@@ -114,14 +134,15 @@ def build_authored_greenfield_payload(
         ],
         "focus_label": "Accepted focus" if accepted_project else "Proposed focus",
         "focus": first_path,
-        "open_label": "Open questions",
+        "open_label": open_label,
         "open": open_items or ["No authored open question."],
         "product_story_title": "Product Story",
         "product_story_note": "",
         "product_story": _product_story(
             title=title,
             product_story=product_story,
-            problem=_first_text(intent, "problem") or product_story,
+            problem=decision_copy(intent, "problem"),
+            internal_systems=internal_systems,
             first_path=first_path,
             proof_boundary=proof_boundary,
             visible_result=visible_result,
@@ -137,21 +158,21 @@ def build_authored_greenfield_payload(
         "risk_note": "Only risks explicitly present in the model-authored proposal appear here.",
         "risk_items": risk_items,
         "scenario": [
-            "Model-authored first path",
+            "Proposed first run",
             title,
             first_path,
-            "The ordered event facts below are the validated authored path.",
+            "This proposed walkthrough preserves source actions and their stated prerequisites.",
             "\n".join(event_quotes),
         ],
         "scenario_details": [
-            ("First path", first_path),
+            ("Proposed first run", first_path),
             ("Visible result", visible_result),
             ("Proof boundary", proof_boundary),
         ],
         "actors": actors,
         "participants": actors,
         "participants_title": "Who participates?",
-        "participants_note": "Human actors typed in the model-authored product intent.",
+        "participants_note": "Source-stated people; only assigned first-path actions are shown.",
         "jobs": jobs,
         "jobs_title": f"What is proposed for {release}?",
         "jobs_note": "Model-authored workstreams allocated to the first release.",
@@ -225,7 +246,7 @@ def build_authored_greenfield_payload(
         "known": known,
         "unknown": unknown,
         "confidence": "Medium",
-        "blockers": [(item, "Open", "authored intent") for item in unknown[:4]],
+        "blockers": [(item, "Open", "authored intent") for item in questions[:4]],
         "sections": sections,
         "work_state_kicker": "Status now",
         "state_title": "Where does this stand?",
@@ -246,7 +267,7 @@ def build_authored_greenfield_payload(
         "authored_facts": {
             "title": title,
             "product_story": product_story,
-            "first_path": first_path,
+            "first_path": _required_text(intent, "first_path"),
             "proof_boundary": proof_boundary,
             "visible_result": visible_result,
             "human_actors": list(human_actors),
@@ -257,8 +278,10 @@ def build_authored_greenfield_payload(
             "evidence_requirements": list(evidence_requirements),
             "success_metrics": list(success_metrics),
             "first_path_relations": [dict(row) for row in relations],
+            "source_precedence": [dict(row) for row in intent[AUTHORED_SEMANTICS_KEY]["source_precedence"]],
             "first_path_context_relations": [dict(row) for row in context_relations],
             "component_responsibility_relations": [dict(row) for row in component_relations],
+            "provisional_design": provisional_design_from_intent(intent),
             "validation_strategy": validation,
         },
     }
@@ -274,6 +297,7 @@ def _product_story(
     visible_result: str,
     human_actors: Sequence[str],
     components: Sequence[Mapping[str, Any]],
+    internal_systems: Sequence[str],
     external_systems: Sequence[str],
     non_goals: Sequence[str],
     event_quotes: Sequence[str],
@@ -285,10 +309,11 @@ def _product_story(
         "First Path": first_path,
         "Product Boundary": authored_product_boundary(
             components=components,
+            internal_systems=internal_systems,
             external_systems=external_systems,
             non_goals=non_goals,
         ),
-        "Owned Capabilities": "; ".join(capabilities),
+        "Owned Capabilities": "\n".join(capabilities),
         "Proof": proof_boundary,
     }
     return {
@@ -297,7 +322,11 @@ def _product_story(
         "paragraphs": [product_story, *event_quotes],
         "supporting_records": [],
         "release_contract": [
-            {"label": label, "semantic_slot": slot, "body": bodies[label]}
+            {
+                "label": "Proposed capabilities" if slot == "owned_capabilities" else label,
+                "semantic_slot": slot,
+                "body": bodies[label],
+            }
             for label, slot in PRODUCT_STORY_CARD_SLOTS
         ],
         "actors": [
@@ -322,9 +351,9 @@ def authored_actor_rows(
         ]
         rows.append(
             (
-                "Human actor",
+                "Human actor" if events else "Participant",
                 actor,
-                "\n".join(events) or "Named in the model-authored product intent.",
+                "\n".join(events) or "Named in project evidence; no first-path action is assigned.",
             )
         )
     return rows
@@ -337,6 +366,10 @@ def authored_component_capabilities(
 
     rows: list[str] = []
     for component in components:
+        if component.get("authority_kind") != "provisional_design":
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield dashboard capability requires explicit provisional design authority"
+            )
         label = _required_text(component, "label")
         responsibility = _required_text(component, "responsibility")
         row = f"{label}: {responsibility}"
@@ -346,28 +379,31 @@ def authored_component_capabilities(
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield dashboard requires an authored component capability"
         )
-    return tuple(rows)
+    return ("Proposed capabilities:", *rows)
 
 
 def authored_product_boundary(
     *,
     components: Sequence[Mapping[str, Any]],
+    internal_systems: Sequence[str],
     external_systems: Sequence[str],
     non_goals: Sequence[str],
 ) -> str:
-    """Render exact ownership, external, and exclusion facts as one boundary card."""
+    """Keep proposed logical boundaries distinct from source-stated dependencies."""
 
     labels = [_required_text(component, "label") for component in components]
     if not labels:
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield dashboard requires an authored product boundary"
         )
-    rows = [f"Product-owned systems: {'; '.join(labels)}."]
+    rows = ["Proposed logical components (not deployment commitments):", *labels]
+    if internal_systems:
+        rows.extend(("Source-stated systems:", *internal_systems))
     if external_systems:
-        rows.append(f"External systems: {'; '.join(external_systems)}.")
+        rows.extend(("External systems:", *external_systems))
     if non_goals:
-        rows.append(f"Excluded from the first release: {'; '.join(non_goals)}.")
-    return " ".join(rows)
+        rows.extend(("Excluded from the first release:", *non_goals))
+    return "\n".join(rows)
 
 
 def _actor_body(actor: str, rows: Sequence[tuple[str, str, str]]) -> str:
@@ -384,14 +420,14 @@ def _job_rows(
 ) -> list[tuple[str, str, str, str]]:
     created = _mapping(accepted.get("created"))
     created_rows = _mapping_rows(created.get("workstreams"))
+    created_by_title = {_first_text(row, "title"): row for row in created_rows}
     rows: list[tuple[str, str, str, str]] = []
-    for index, item in enumerate(backlog[:6]):
-        created_row = created_rows[index] if index < len(created_rows) else {}
+    for item in backlog:
+        created_row = created_by_title.get(_first_text(item, "title"), {})
         title = _first_text(item, "title", "name") or "Authored workstream"
         body = _first_text(
             item,
-            "product_view",
-            "problem",
+            "deliverable",
             "recommended_first_slice",
         ) or title
         reference = _first_text(
@@ -446,7 +482,7 @@ def _claim_evidence(
     values = (
         ("Project identity", title),
         ("Product story", product_story),
-        ("First path", first_path),
+        ("Proposed first run", first_path),
         ("Visible result", visible_result),
         ("Proof boundary", proof_boundary),
     )
@@ -469,23 +505,23 @@ def _source_launch(
     first_path: str,
     proof_boundary: str,
     visible_result: str,
-    event_quotes: Sequence[str],
     components: Sequence[Mapping[str, Any]],
-    jobs: Sequence[tuple[str, str, str, str]],
+    operational_constraints: Sequence[str],
     excluded_scope: Sequence[str],
     context: Mapping[str, Any],
 ) -> dict[str, Any]:
-    event_sequence = " | ".join(event_quotes)
     component_ids = [
         value
         for row in components
         if (value := _first_text(row, "component_id", "id"))
     ]
-    job_ids = [row[3] for row in jobs if len(row) >= 4 and row[3]]
-    target = _first_text(context, "start_workstream_id", "project_workstream_id")
+    target = _mapping(context.get("implementation_target"))
+    workstream_refs = _text_values(context.get("first_release_workstream_ids"))
     verification_commands = _text_values(context.get("verification_commands"))
-    component_text = ", ".join(component_ids) or "the authored component boundary"
-    job_text = ", ".join(job_ids) or target or "the authored first workstream"
+    release_context = (
+        f"Release context — not the scope of this one workstream:\n{first_path}\n\n"
+        f"Release proof boundary:\n{proof_boundary}\n\nRelease visible result:\n{visible_result}"
+    )
     prompts = [
         {
             "step_id": "choose_language",
@@ -493,7 +529,7 @@ def _source_launch(
             "when": "Use this before creating the first source-editable plan.",
             "prompt": (
                 f"Choose and record the implementation language and runtime for {title}. "
-                f"Preserve this model-authored first path exactly: {first_path}"
+                f"Use the selected workstream as the first implementation scope.\n\n{release_context}"
             ),
             "result": "The implementation runtime is explicit before source planning.",
             "stop": "Stop after the language and runtime are recorded.",
@@ -503,8 +539,8 @@ def _source_launch(
             "label": "Open first implementation plan",
             "when": "Use this after the implementation runtime is explicit.",
             "prompt": (
-                f"Create the first implementation plan for {title} and {job_text}. "
-                f"Preserve these ordered typed events exactly: {event_sequence}"
+                "Create the first implementation plan for the selected workstream.\n"
+                f"Keep the plan bounded to this workstream.\n\n{release_context}"
             ),
             "result": "The first source boundary and its proof obligations are planned.",
             "stop": "Stop before source edits until the plan is accepted.",
@@ -514,53 +550,60 @@ def _source_launch(
             "label": "Implement first runnable slice",
             "when": "Use this only after the first implementation plan is accepted.",
             "prompt": (
-                f"Implement the smallest runnable slice for {title}. Keep component IDs {component_text}. "
-                f"Preserve the authored first path exactly: {first_path}"
+                "Implement the selected workstream using its bound component IDs.\n"
+                f"Do not implement other release workstreams in this slice.\n\n{release_context}"
             ),
-            "result": "The smallest authored path exists as runnable source.",
-            "stop": "Stop when the authored path is runnable and no excluded scope was added.",
+            "result": "The selected workstream deliverable exists as runnable source.",
+            "stop": "Stop when the selected deliverable is implemented and no excluded scope was added.",
         },
         {
             "step_id": "prove_behavior",
             "label": "Run authored proof",
             "when": "Use this after the first runnable slice exists.",
             "prompt": (
-                f"Validate {title} against this authored proof boundary: {proof_boundary}. "
-                f"Confirm this terminal visible result exactly: {visible_result}. "
-                "Run every verification command bound to this typed handoff step."
+                "Validate the selected workstream against its selected verification.\n\n"
+                "Run every verification command bound to this handoff. Record remaining release "
+                f"proof without claiming it has passed.\n\n{release_context}"
             ),
             "verification_commands": list(verification_commands),
-            "result": "The authored path has reviewer-visible validation evidence.",
-            "stop": "Stop if the proof boundary or terminal visible result is not satisfied.",
+            "result": "The selected workstream has reviewer-visible validation evidence.",
+            "stop": "Stop if the selected workstream verification is not satisfied.",
         },
         {
             "step_id": "refresh_governance",
             "label": "Refresh governed records",
             "when": "Use this only after the authored proof passes.",
             "prompt": (
-                f"Refresh governed project records for {title}. Preserve component IDs {component_text} "
-                f"and workstream IDs {job_text}."
+                "Refresh governed records for the selected workstream and its bound components. "
+                f"Preserve the full release membership: {', '.join(workstream_refs)}. "
+                "Keep unimplemented workstreams open and withhold release readiness."
             ),
             "result": "Governed records reflect the validated source implementation.",
             "stop": "Stop after refreshed records validate against the implemented source.",
         },
     ]
-    workstream_refs = _unique([*job_ids, target])
+    scope_copy = render_project_handoff_scope(
+        operational_constraints=operational_constraints, excluded_scope=excluded_scope,
+    )
     for row in prompts:
+        selected_copy = render_selected_workstream_scope(target) if target else ""
+        row["prompt"] = f"{selected_copy}\n\n{row['prompt']}\n\n{scope_copy}"
         row["contract"] = build_project_handoff_step_contract(
             step_id=str(row["step_id"]),
             project_title=title,
             accepted_first_path=first_path,
             first_release_workstream_refs=workstream_refs,
+            implementation_target=target,
             proof_boundary=proof_boundary,
             visible_result=visible_result,
+            operational_constraints=operational_constraints,
             excluded_scope=excluded_scope,
             component_refs=component_ids,
             verification_commands=verification_commands,
         )
     return {
         "title": "First source creation sequence",
-        "note": "This sequence carries the validated model-authored facts into source work without reinterpreting them.",
+        "note": "Plan and prove the first dependency-free workstream; the complete first run remains release context.",
         "steps": [row["label"] for row in prompts],
         "prompts": prompts,
     }
@@ -575,9 +618,10 @@ def _governance_titles(
     titles: dict[str, str] = {}
     created = _mapping(accepted.get("created"))
     created_workstreams = _mapping_rows(created.get("workstreams"))
+    created_by_title = {_first_text(row, "title"): row for row in created_workstreams}
     created_diagrams = _sequence(created.get("diagrams"))
-    for index, row in enumerate(backlog):
-        created_row = created_workstreams[index] if index < len(created_workstreams) else {}
+    for row in backlog:
+        created_row = created_by_title.get(_first_text(row, "title"), {})
         reference = _first_text(row, "idea_id", "workstream_id", "id") or _first_text(
             created_row,
             "idea_id",

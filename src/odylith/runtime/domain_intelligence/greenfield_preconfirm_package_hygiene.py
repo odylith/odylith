@@ -5,8 +5,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text
-from odylith.runtime.domain_intelligence.greenfield_text import text_values
+from odylith.runtime.common.value_coercion import normalize_string as clean_text
+from odylith.runtime.domain_intelligence.greenfield_scalar_values import (
+    nested_text_values as text_values,
+)
 
 
 def same_component_artifact_path(expected: str, actual: str) -> bool:

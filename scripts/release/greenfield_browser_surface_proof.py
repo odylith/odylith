@@ -7,15 +7,47 @@ from typing import Any
 from urllib.parse import quote
 from urllib.parse import urlparse
 
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_PROJECTION_ORIGIN,
+)
+from greenfield_browser_authored_contract import (
+    AUTHORED_STRUCTURE_EXPRESSION,
+    atlas_degraded_state_assertion_issues as _atlas_degraded_state_assertion_issues,
+    atlas_diagram_coverage_issues as _atlas_diagram_coverage_issues,
+    atlas_error_state_assertion_issues as _atlas_error_state_assertion_issues,
+    atlas_state_assertion_issues as _atlas_state_assertion_issues,
+)
+from greenfield_browser_authored_contract import authored_structure_issues, story_rows_match_payload
+from greenfield_browser_capture import capture_state_screenshot as _capture_state_screenshot
 from local_release_smoke import _serve_directory
+
 BROWSER_SURFACE_PROOF_SCOPE = "per_case_headless_generated_surface_state_matrix"
-BROWSER_PROJECT_MOBILE_VIEWPORT = {"width": 430, "height": 932}
+BROWSER_VIEWPORTS = {
+    "desktop": {"width": 1440, "height": 1100},
+    "mobile": {"width": 430, "height": 932},
+}
+BROWSER_PROJECT_MOBILE_VIEWPORT = BROWSER_VIEWPORTS["mobile"]
 BROWSER_SURFACE_EXPECTATIONS = (
     ("radar", "#frame-radar", "h1", "Backlog Workstream Radar"),
     ("registry", "#frame-registry", "h1", "Component Registry"),
     ("casebook", "#frame-casebook", ".hero-title", "Casebook"),
     ("atlas", "#frame-atlas", "h1", "Atlas"),
     ("compass", "#frame-compass", "h1", "Executive Compass"),
+)
+BROWSER_REQUIRED_SURFACE_STATES = {
+    "project": ("normal",),
+    "radar": ("normal", "invalid-recovery"),
+    "registry": ("normal", "invalid-recovery"),
+    "casebook": ("normal", "empty", "invalid-recovery"),
+    "atlas": ("normal", "degraded", "error", "invalid-recovery"),
+    "compass": ("normal", "invalid-recovery"),
+    "shell": ("normal", "invalid-recovery"),
+}
+BROWSER_REQUIRED_COVERAGE = frozenset(
+    (viewport, surface, state)
+    for viewport in BROWSER_VIEWPORTS
+    for surface, states in BROWSER_REQUIRED_SURFACE_STATES.items()
+    for state in states
 )
 
 
@@ -32,7 +64,7 @@ def browser_runtime_preflight_issues() -> tuple[str, ...]:
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(headless=True)
             try:
-                for viewport in ({"width": 1440, "height": 1100}, BROWSER_PROJECT_MOBILE_VIEWPORT):
+                for viewport in BROWSER_VIEWPORTS.values():
                     context = browser.new_context(viewport=viewport)
                     context.close()
             finally:
@@ -42,7 +74,12 @@ def browser_runtime_preflight_issues() -> tuple[str, ...]:
     return ()
 
 
-def browser_surface_proof_issues(*, repo_root: Path, timeout_ms: int = 15000) -> tuple[str, ...]:
+def browser_surface_proof_issues(
+    *,
+    repo_root: Path,
+    timeout_ms: int = 15000,
+    screenshot_output_dir: Path | None = None,
+) -> tuple[str, ...]:
     """Return browser-level generated-surface state issues for a generated repo."""
 
     try:
@@ -54,67 +91,28 @@ def browser_surface_proof_issues(*, repo_root: Path, timeout_ms: int = 15000) ->
     root = Path(repo_root).expanduser().resolve()
     server, base_url = _serve_directory(root)
     issues: list[str] = []
+    covered: set[tuple[str, str, str]] = set()
+    if screenshot_output_dir is None:
+        issues.append("browser surface proof requires a retained screenshot output directory")
     try:
         try:
             with sync_playwright() as playwright:
                 browser = playwright.chromium.launch(headless=True)
                 try:
-                    context = browser.new_context(viewport={"width": 1440, "height": 1100})
-                    try:
-                        issues.extend(
-                            _project_generated_state_issues(
+                    for viewport_name, viewport in BROWSER_VIEWPORTS.items():
+                        context = browser.new_context(viewport=viewport)
+                        try:
+                            viewport_issues = _viewport_surface_issues(
                                 context=context,
                                 base_url=base_url,
+                                viewport=viewport_name,
                                 timeout_ms=timeout_ms,
+                                screenshot_output_dir=screenshot_output_dir,
+                                covered=covered,
                             )
-                        )
-                        for tab, frame_selector, heading_selector, heading_text in BROWSER_SURFACE_EXPECTATIONS:
-                            issues.extend(
-                                _route_surface_issues(
-                                    context=context,
-                                    base_url=base_url,
-                                    tab=tab,
-                                    frame_selector=frame_selector,
-                                    heading_selector=heading_selector,
-                                    heading_text=heading_text,
-                                    timeout_ms=timeout_ms,
-                                )
-                            )
-                        issues.extend(
-                            _atlas_generated_state_issues(
-                                context=context,
-                                base_url=base_url,
-                                timeout_ms=timeout_ms,
-                            )
-                        )
-                        issues.extend(
-                            _invalid_route_recovery_issues(
-                                context=context,
-                                base_url=base_url,
-                                timeout_ms=timeout_ms,
-                            )
-                        )
-                        issues.extend(
-                            _empty_filter_state_issues(
-                                context=context,
-                                base_url=base_url,
-                                timeout_ms=timeout_ms,
-                            )
-                        )
-                    finally:
-                        context.close()
-                    mobile_context = browser.new_context(viewport=BROWSER_PROJECT_MOBILE_VIEWPORT)
-                    try:
-                        issues.extend(
-                            f"mobile viewport: {issue}"
-                            for issue in _project_generated_state_issues(
-                                context=mobile_context,
-                                base_url=base_url,
-                                timeout_ms=timeout_ms,
-                            )
-                        )
-                    finally:
-                        mobile_context.close()
+                            issues.extend(f"{viewport_name} viewport: {issue}" for issue in viewport_issues)
+                        finally:
+                            context.close()
                 finally:
                     browser.close()
         except PlaywrightError as exc:
@@ -122,7 +120,108 @@ def browser_surface_proof_issues(*, repo_root: Path, timeout_ms: int = 15000) ->
     finally:
         server.shutdown()
         server.server_close()
+    issues.extend(_missing_coverage_issues(covered))
     return tuple(dict.fromkeys(issue for issue in issues if str(issue).strip()))
+
+
+def _viewport_surface_issues(
+    *,
+    context: Any,
+    base_url: str,
+    viewport: str,
+    timeout_ms: int,
+    screenshot_output_dir: Path | None,
+    covered: set[tuple[str, str, str]],
+) -> tuple[str, ...]:
+    issues: list[str] = []
+    issues.extend(
+        _project_generated_state_issues(
+            context=context,
+            base_url=base_url,
+            timeout_ms=timeout_ms,
+            screenshot_output_dir=screenshot_output_dir,
+            coverage_cells=((viewport, "project", "normal"), (viewport, "shell", "normal")),
+            covered=covered,
+        )
+    )
+    for tab, frame_selector, heading_selector, heading_text in BROWSER_SURFACE_EXPECTATIONS:
+        if tab == "atlas":
+            continue
+        issues.extend(
+            _route_surface_issues(
+                context=context,
+                base_url=base_url,
+                tab=tab,
+                frame_selector=frame_selector,
+                heading_selector=heading_selector,
+                heading_text=heading_text,
+                timeout_ms=timeout_ms,
+                screenshot_output_dir=screenshot_output_dir,
+                coverage_cell=(viewport, tab, "normal"),
+                covered=covered,
+            )
+        )
+    issues.extend(
+        _atlas_generated_state_issues(
+            context=context,
+            base_url=base_url,
+            timeout_ms=timeout_ms,
+            screenshot_output_dir=screenshot_output_dir,
+            coverage_cell=(viewport, "atlas", "normal"),
+            covered=covered,
+        )
+    )
+    issues.extend(
+        _atlas_generated_state_issues(
+            context=context,
+            base_url=base_url,
+            timeout_ms=timeout_ms,
+            screenshot_output_dir=screenshot_output_dir,
+            coverage_cell=(viewport, "atlas", "error"),
+            covered=covered,
+            degrade_svg=True,
+            fail_png=True,
+        )
+    )
+    issues.extend(
+        _atlas_generated_state_issues(
+            context=context,
+            base_url=base_url,
+            timeout_ms=timeout_ms,
+            screenshot_output_dir=screenshot_output_dir,
+            coverage_cell=(viewport, "atlas", "degraded"),
+            covered=covered,
+            degrade_svg=True,
+        )
+    )
+    issues.extend(
+        _invalid_route_recovery_issues(
+            context=context,
+            base_url=base_url,
+            viewport=viewport,
+            timeout_ms=timeout_ms,
+            screenshot_output_dir=screenshot_output_dir,
+            covered=covered,
+        )
+    )
+    issues.extend(
+        _empty_filter_state_issues(
+            context=context,
+            base_url=base_url,
+            timeout_ms=timeout_ms,
+            screenshot_output_dir=screenshot_output_dir,
+            coverage_cell=(viewport, "casebook", "empty"),
+            covered=covered,
+        )
+    )
+    return tuple(issues)
+
+
+def _missing_coverage_issues(covered: set[tuple[str, str, str]]) -> tuple[str, ...]:
+    return tuple(
+        f"browser surface proof skipped required coverage cell: {'/'.join(cell)}"
+        for cell in sorted(BROWSER_REQUIRED_COVERAGE - covered)
+    )
 
 
 def _route_surface_issues(
@@ -134,18 +233,31 @@ def _route_surface_issues(
     heading_selector: str,
     heading_text: str,
     timeout_ms: int,
+    screenshot_output_dir: Path | None = None,
+    coverage_cell: tuple[str, str, str] = ("desktop", "radar", "normal"),
+    covered: set[tuple[str, str, str]] | None = None,
 ) -> tuple[str, ...]:
     issues: list[str] = []
-    page, runtime_issues = _new_page(context, issue_prefix=f"browser surface {tab}")
+    page, runtime_issues = _new_page(
+        context,
+        issue_prefix=f"browser surface {tab}",
+        screenshot_output_dir=screenshot_output_dir,
+        coverage_cells=(coverage_cell,),
+        covered=covered,
+    )
     try:
         response = page.goto(f"{base_url}/odylith/index.html?tab={tab}", wait_until="domcontentloaded")
         if response is None or not response.ok:
             issues.append(f"browser surface {tab} did not load shell route")
             return tuple(issues)
+        _dismiss_shell_obstructions(page)
         page.locator(f"#tab-{tab}").wait_for(timeout=timeout_ms)
         if page.locator(f"#tab-{tab}").get_attribute("aria-selected") != "true":
             issues.append(f"browser surface {tab} did not select its shell tab")
-        page.frame_locator(frame_selector).locator(heading_selector, has_text=heading_text).wait_for(timeout=timeout_ms)
+        frame = page.frame_locator(frame_selector)
+        frame.locator(heading_selector, has_text=heading_text).wait_for(timeout=timeout_ms)
+        issues.extend(_layout_issues(page.locator("body"), label="tooling shell"))
+        issues.extend(_layout_issues(frame.locator("body"), label=tab))
     except Exception as exc:
         issues.append(f"browser surface {tab} failed routed render: {type(exc).__name__}: {exc}")
     finally:
@@ -154,31 +266,47 @@ def _route_surface_issues(
     return tuple(issues)
 
 
-def _project_generated_state_issues(*, context: Any, base_url: str, timeout_ms: int) -> tuple[str, ...]:
-    page, runtime_issues = _new_page(context, issue_prefix="browser surface project generated state")
+def _project_generated_state_issues(
+    *,
+    context: Any,
+    base_url: str,
+    timeout_ms: int,
+    screenshot_output_dir: Path | None = None,
+    coverage_cells: tuple[tuple[str, str, str], ...] = (("desktop", "project", "normal"),),
+    covered: set[tuple[str, str, str]] | None = None,
+) -> tuple[str, ...]:
+    page, runtime_issues = _new_page(
+        context,
+        issue_prefix="browser surface project generated state",
+        screenshot_output_dir=screenshot_output_dir,
+        coverage_cells=coverage_cells,
+        covered=covered,
+    )
     issues: list[str] = []
     try:
         response = page.goto(f"{base_url}/odylith/index.html?tab=project", wait_until="domcontentloaded")
         if response is None or not response.ok:
             issues.append("browser surface project did not load shell route")
             return tuple(issues)
+        _dismiss_shell_obstructions(page)
         page.locator("#tab-project").wait_for(timeout=timeout_ms)
         if page.locator("#tab-project").get_attribute("aria-selected") != "true":
             issues.append("browser surface project did not select its shell tab")
         page.locator("#pane-project .project-surface").wait_for(timeout=timeout_ms)
         page.locator("#pane-project .project-product-story").wait_for(timeout=timeout_ms)
         page.locator("#pane-project .project-host-handoff").wait_for(timeout=timeout_ms)
+        issues.extend(_layout_issues(page.locator("body"), label="tooling shell"))
         project_state = page.locator("#pane-project").evaluate(
             """(node) => {
                 const prompts = Array.from(node.querySelectorAll(".project-host-prompt"));
-                const storyBodies = Array.from(node.querySelectorAll(".project-story-contract-card p"))
+                const storyBodies = Array.from(node.querySelectorAll(".project-story-contract-body"))
                   .map((item) => String(item.innerText || "").trim())
                   .filter(Boolean);
                 const storyRows = Array.from(node.querySelectorAll(".project-story-contract-card"))
                   .map((item) => ({
                     label: String(item.querySelector("h3")?.innerText || "").trim(),
                     semantic_slot: String(item.dataset.semanticSlot || "").trim(),
-                    body: String(item.querySelector("p")?.innerText || "").trim()
+                    body: String(item.querySelector(".project-story-contract-body")?.innerText || "").trim()
                   }))
                   .filter((item) => item.label || item.body);
                 const clippedText = Array.from(
@@ -199,6 +327,12 @@ def _project_generated_state_issues(*, context: Any, base_url: str, timeout_ms: 
                   return false;
                 });
                 const text = String(node.innerText || "");
+                const projectPayload = (window.__ODYLITH_TOOLING_DATA__ || {}).project_intelligence || {};
+                const expectedPromptLabels = (Array.isArray(projectPayload.host_handoff_prompts)
+                  ? projectPayload.host_handoff_prompts
+                  : [])
+                  .map((row) => String(row && row.label || "").trim())
+                  .filter(Boolean);
                 return {
                   promptCount: prompts.length,
                   storyBodyCount: storyBodies.length,
@@ -209,13 +343,8 @@ def _project_generated_state_issues(*, context: Any, base_url: str, timeout_ms: 
                   clippedTextCount: clippedText.length,
                   hasPromptGrid: Boolean(node.querySelector(".project-host-prompt-grid")),
                   hasBlankState: text.includes("Project not defined yet"),
-                  hasImplementationPrompts: [
-                    "Choose implementation language",
-                    "Create first implementation plan",
-                    "Build smallest runnable slice",
-                    "Add tests and proof",
-                    "Refresh governed records"
-                  ].every((label) => text.includes(label)),
+                  hasImplementationPrompts: expectedPromptLabels.length >= 5
+                    && expectedPromptLabels.every((label) => text.includes(label)),
                   maxPromptOverflow: prompts.reduce(
                     (max, card) => Math.max(max, card.scrollWidth - card.clientWidth),
                     0
@@ -224,6 +353,7 @@ def _project_generated_state_issues(*, context: Any, base_url: str, timeout_ms: 
                 };
             }"""
         )
+        authored_structure = page.locator("#pane-project").evaluate(AUTHORED_STRUCTURE_EXPRESSION)
         payload_state = page.evaluate(
             """() => {
                 const payload = window.__ODYLITH_TOOLING_DATA__ || {};
@@ -234,7 +364,12 @@ def _project_generated_state_issues(*, context: Any, base_url: str, timeout_ms: 
                 return {
                   origin: project && project.projection && project.projection.origin || "",
                   promptCount: prompts.length,
-                  emptyPrompts: prompts.filter((row) => !String(row && row.prompt || "").trim()).length
+                  emptyPrompts: prompts.filter((row) => !String(row && row.prompt || "").trim()).length,
+                  storyRows: project && project.product_story
+                    && Array.isArray(project.product_story.release_contract)
+                    ? project.product_story.release_contract
+                    : [],
+                  authoredFacts: project && project.authored_facts || {}
                 };
             }"""
         )
@@ -263,6 +398,13 @@ def _project_generated_state_issues(*, context: Any, base_url: str, timeout_ms: 
                 story_rows=(
                     project_state.get("storyRows", ()) if isinstance(project_state, dict) else ()
                 ),
+                payload_story_rows=(
+                    payload_state.get("storyRows", ()) if isinstance(payload_state, dict) else ()
+                ),
+                authored_structure=authored_structure,
+                payload_authored_facts=(
+                    payload_state.get("authoredFacts", {}) if isinstance(payload_state, dict) else {}
+                ),
             )
         )
     except Exception as exc:
@@ -288,9 +430,12 @@ def _project_state_assertion_issues(
     distinct_story_body_count: int = 5,
     clipped_text_count: int = 0,
     story_rows: Any = (),
+    payload_story_rows: Any = (),
+    authored_structure: Any = None,
+    payload_authored_facts: Any = None,
 ) -> tuple[str, ...]:
     issues: list[str] = []
-    if payload_origin != "accepted greenfield project":
+    if payload_origin != AUTHORED_PROJECTION_ORIGIN:
         issues.append("browser surface project payload is not accepted greenfield project state")
     if payload_prompt_count < 5:
         issues.append("browser surface project payload exposes fewer than five implementation prompts")
@@ -310,10 +455,33 @@ def _project_state_assertion_issues(
         issues.append("browser surface project pane overflows horizontally")
     if rendered_story_body_count != 5:
         issues.append("browser surface project did not render all five Product Story bodies")
-    if distinct_story_body_count != rendered_story_body_count:
-        issues.append("browser surface project repeated Product Story body copy")
     rows = [row for row in story_rows if isinstance(row, dict)] if isinstance(story_rows, (list, tuple)) else []
     issues.extend(_project_story_binding_issues(rows))
+    expected_rows = (
+        [row for row in payload_story_rows if isinstance(row, dict)]
+        if isinstance(payload_story_rows, (list, tuple))
+        else []
+    )
+    structured_slots = (
+        ("first_path", "product_boundary", "owned_capabilities")
+        if isinstance(authored_structure, dict) and isinstance(payload_authored_facts, dict)
+        else ()
+    )
+    if expected_rows and not story_rows_match_payload(
+        rows,
+        expected_rows,
+        structured_slots=structured_slots,
+    ):
+        issues.append("browser surface project Product Story cards drifted from the sealed payload")
+    if payload_origin == AUTHORED_PROJECTION_ORIGIN and (
+        authored_structure is not None or payload_authored_facts is not None
+    ):
+        issues.extend(
+            authored_structure_issues(
+                authored_structure,
+                payload_authored_facts,
+            )
+        )
     if clipped_text_count:
         issues.append("browser surface project clips visible text")
     return tuple(issues)
@@ -326,12 +494,11 @@ def _project_story_binding_issues(rows: list[dict[str, Any]]) -> tuple[str, ...]
         "user problem": ("User Problem", "user_problem"),
         "first path": ("First Path", "first_path"),
         "product boundary": ("Product Boundary", "product_boundary"),
-        "owned capabilities": ("Owned Capabilities", "owned_capabilities"),
+        "proposed capabilities": ("Proposed Capabilities", "owned_capabilities"),
         "proof": ("Proof", "proof"),
     }
     issues: list[str] = []
     seen: set[str] = set()
-    bodies: set[str] = set()
     for row in rows:
         raw_label = str(row.get("label") or "").strip()
         label_key = raw_label.casefold()
@@ -352,10 +519,6 @@ def _project_story_binding_issues(rows: list[dict[str, Any]]) -> tuple[str, ...]
         body = str(row.get("body") or "").strip()
         if not body:
             issues.append(f"greenfield Project Product Story `{canonical_label}` card is empty")
-        elif body.casefold() in bodies:
-            issues.append("greenfield Project Product Story repeats body copy across semantic cards")
-        else:
-            bodies.add(body.casefold())
     if rows:
         for key, (canonical_label, _slot) in expected.items():
             if key not in seen:
@@ -363,7 +526,62 @@ def _project_story_binding_issues(rows: list[dict[str, Any]]) -> tuple[str, ...]
     return tuple(issues)
 
 
-def _invalid_route_recovery_issues(*, context: Any, base_url: str, timeout_ms: int) -> tuple[str, ...]:
+def _layout_issues(root: Any, *, label: str) -> tuple[str, ...]:
+    """Check readable viewport fit without pixel snapshots or copy dictionaries."""
+
+    state = root.evaluate(
+        """(node) => {
+            const doc = node.ownerDocument;
+            const viewportWidth = doc.documentElement.clientWidth;
+            const text = String(node.innerText || "").trim();
+            const clipped = Array.from(node.querySelectorAll("h1, h2, h3, p, [role='status'], [role='alert']"))
+              .filter((item) => {
+                const style = doc.defaultView.getComputedStyle(item);
+                if (style.display === "none" || style.visibility === "hidden") return false;
+                const clipsX = style.overflowX === "hidden" || style.overflowX === "clip";
+                const clipsY = style.overflowY === "hidden" || style.overflowY === "clip";
+                const lineClamp = Number.parseInt(style.webkitLineClamp || "0", 10);
+                if (lineClamp > 0) return false;
+                return (clipsX && item.scrollWidth > item.clientWidth + 4)
+                  || (clipsY && item.scrollHeight > item.clientHeight + 4);
+              });
+            return {
+              horizontalOverflow: Math.max(0, node.scrollWidth - viewportWidth),
+              clippedTextCount: clipped.length,
+              visibleCopyLength: text.length
+            };
+        }"""
+    )
+    return _layout_assertion_issues(
+        label=label,
+        horizontal_overflow=int(state.get("horizontalOverflow", 0) if isinstance(state, dict) else 0),
+        clipped_text_count=int(state.get("clippedTextCount", 0) if isinstance(state, dict) else 0),
+        visible_copy_length=int(state.get("visibleCopyLength", 0) if isinstance(state, dict) else 0),
+    )
+
+
+def _layout_assertion_issues(
+    *, label: str, horizontal_overflow: int, clipped_text_count: int, visible_copy_length: int
+) -> tuple[str, ...]:
+    issues: list[str] = []
+    if horizontal_overflow > 4:
+        issues.append(f"browser surface {label} overflows the viewport horizontally")
+    if clipped_text_count:
+        issues.append(f"browser surface {label} clips visible status or content copy")
+    if visible_copy_length < 12:
+        issues.append(f"browser surface {label} does not expose meaningful visible copy")
+    return tuple(issues)
+
+
+def _invalid_route_recovery_issues(
+    *,
+    context: Any,
+    base_url: str,
+    viewport: str,
+    timeout_ms: int,
+    screenshot_output_dir: Path | None = None,
+    covered: set[tuple[str, str, str]] | None = None,
+) -> tuple[str, ...]:
     issues: list[str] = []
     issues.extend(
         _active_selection_recovery_issues(
@@ -376,6 +594,9 @@ def _invalid_route_recovery_issues(*, context: Any, base_url: str, timeout_ms: i
             invalid_value="B-999999",
             detail_selector='#detail [data-kpi="workstream-id"] .v',
             timeout_ms=timeout_ms,
+            screenshot_output_dir=screenshot_output_dir,
+            coverage_cell=(viewport, "radar", "invalid-recovery"),
+            covered=covered,
         )
     )
     issues.extend(
@@ -389,12 +610,51 @@ def _invalid_route_recovery_issues(*, context: Any, base_url: str, timeout_ms: i
             invalid_value="does-not-exist",
             detail_selector="#detail .component-name",
             timeout_ms=timeout_ms,
+            screenshot_output_dir=screenshot_output_dir,
+            coverage_cell=(viewport, "registry", "invalid-recovery"),
+            covered=covered,
         )
     )
-    issues.extend(_atlas_invalid_route_issues(context=context, base_url=base_url, timeout_ms=timeout_ms))
-    issues.extend(_casebook_invalid_route_issues(context=context, base_url=base_url, timeout_ms=timeout_ms))
-    issues.extend(_compass_invalid_route_issues(context=context, base_url=base_url, timeout_ms=timeout_ms))
-    issues.extend(_unknown_tab_recovery_issues(context=context, base_url=base_url, timeout_ms=timeout_ms))
+    issues.extend(
+        _atlas_invalid_route_issues(
+            context=context,
+            base_url=base_url,
+            timeout_ms=timeout_ms,
+            screenshot_output_dir=screenshot_output_dir,
+            coverage_cell=(viewport, "atlas", "invalid-recovery"),
+            covered=covered,
+        )
+    )
+    issues.extend(
+        _casebook_invalid_route_issues(
+            context=context,
+            base_url=base_url,
+            timeout_ms=timeout_ms,
+            screenshot_output_dir=screenshot_output_dir,
+            coverage_cell=(viewport, "casebook", "invalid-recovery"),
+            covered=covered,
+        )
+    )
+    issues.extend(
+        _compass_invalid_route_issues(
+            context=context,
+            base_url=base_url,
+            timeout_ms=timeout_ms,
+            screenshot_output_dir=screenshot_output_dir,
+            coverage_cell=(viewport, "compass", "invalid-recovery"),
+            covered=covered,
+        )
+    )
+    issues.extend(
+        _unknown_tab_recovery_issues(
+            context=context,
+            base_url=base_url,
+            timeout_ms=timeout_ms,
+            screenshot_output_dir=screenshot_output_dir,
+            coverage_cell=(viewport, "shell", "invalid-recovery"),
+            covered=covered,
+        )
+    )
     return tuple(issues)
 
 
@@ -409,20 +669,32 @@ def _active_selection_recovery_issues(
     invalid_value: str,
     detail_selector: str,
     timeout_ms: int,
+    screenshot_output_dir: Path | None = None,
+    coverage_cell: tuple[str, str, str] = ("desktop", "radar", "invalid-recovery"),
+    covered: set[tuple[str, str, str]] | None = None,
 ) -> tuple[str, ...]:
-    page, runtime_issues = _new_page(context, issue_prefix=f"browser surface {surface}")
+    page, runtime_issues = _new_page(
+        context,
+        issue_prefix=f"browser surface {surface}",
+        screenshot_output_dir=screenshot_output_dir,
+        coverage_cells=(coverage_cell,),
+        covered=covered,
+    )
     issues: list[str] = []
     try:
         response = page.goto(base_url, wait_until="domcontentloaded")
         if response is None or not response.ok:
             issues.append(f"browser surface {surface} did not load invalid route")
             return tuple(issues)
+        _dismiss_shell_obstructions(page)
         frame = page.frame_locator(frame_selector)
         frame.locator(active_selector).wait_for(timeout=timeout_ms)
         active = str(frame.locator(active_selector).first.get_attribute(active_attribute) or "").strip()
         if not active or active.lower() == invalid_value.lower():
             issues.append(f"browser surface {surface} did not recover to a valid selection")
         frame.locator(detail_selector).wait_for(timeout=timeout_ms)
+        issues.extend(_layout_issues(page.locator("body"), label="tooling shell"))
+        issues.extend(_layout_issues(frame.locator("body"), label=coverage_cell[1]))
     except Exception as exc:
         issues.append(f"browser surface {surface} failed recovery render: {type(exc).__name__}: {exc}")
     finally:
@@ -431,8 +703,22 @@ def _active_selection_recovery_issues(
     return tuple(issues)
 
 
-def _casebook_invalid_route_issues(*, context: Any, base_url: str, timeout_ms: int) -> tuple[str, ...]:
-    page, runtime_issues = _new_page(context, issue_prefix="browser surface casebook invalid bug")
+def _casebook_invalid_route_issues(
+    *,
+    context: Any,
+    base_url: str,
+    timeout_ms: int,
+    screenshot_output_dir: Path | None = None,
+    coverage_cell: tuple[str, str, str] = ("desktop", "casebook", "invalid-recovery"),
+    covered: set[tuple[str, str, str]] | None = None,
+) -> tuple[str, ...]:
+    page, runtime_issues = _new_page(
+        context,
+        issue_prefix="browser surface casebook invalid bug",
+        screenshot_output_dir=screenshot_output_dir,
+        coverage_cells=(coverage_cell,),
+        covered=covered,
+    )
     issues: list[str] = []
     try:
         response = page.goto(
@@ -442,6 +728,7 @@ def _casebook_invalid_route_issues(*, context: Any, base_url: str, timeout_ms: i
         if response is None or not response.ok:
             issues.append("browser surface casebook invalid bug did not load invalid route")
             return tuple(issues)
+        _dismiss_shell_obstructions(page)
         casebook = page.frame_locator("#frame-casebook")
         casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=timeout_ms)
         if casebook.locator("button.bug-row").count() > 0:
@@ -453,8 +740,12 @@ def _casebook_invalid_route_issues(*, context: Any, base_url: str, timeout_ms: i
                 issues.append("browser surface casebook invalid bug did not recover to a valid selection")
             casebook.locator("#detailPane .detail-title").wait_for(timeout=timeout_ms)
         else:
-            casebook.locator("#listMeta", has_text="0 visible").wait_for(timeout=timeout_ms)
-            casebook.locator("#detailPane", has_text="Select a different filter").wait_for(timeout=timeout_ms)
+            empty_status = casebook.locator("#detailPane [role='status']")
+            empty_status.wait_for(timeout=timeout_ms)
+            if len(str(empty_status.inner_text(timeout=timeout_ms)).split()) < 3:
+                issues.append("browser surface casebook invalid route does not explain its empty recovery")
+        issues.extend(_layout_issues(page.locator("body"), label="tooling shell"))
+        issues.extend(_layout_issues(casebook.locator("body"), label="casebook"))
     except Exception as exc:
         issues.append(f"browser surface casebook invalid bug failed recovery render: {type(exc).__name__}: {exc}")
     finally:
@@ -463,46 +754,135 @@ def _casebook_invalid_route_issues(*, context: Any, base_url: str, timeout_ms: i
     return tuple(issues)
 
 
-def _atlas_generated_state_issues(*, context: Any, base_url: str, timeout_ms: int) -> tuple[str, ...]:
-    page, runtime_issues = _new_page(context, issue_prefix="browser surface atlas generated state")
+def _atlas_generated_state_issues(
+    *,
+    context: Any,
+    base_url: str,
+    timeout_ms: int,
+    screenshot_output_dir: Path | None = None,
+    coverage_cell: tuple[str, str, str] = ("desktop", "atlas", "normal"),
+    covered: set[tuple[str, str, str]] | None = None,
+    degrade_svg: bool = False,
+    fail_png: bool = False,
+    initial_diagram: str = "",
+) -> tuple[str, ...]:
+    page, runtime_issues = _new_page(
+        context,
+        issue_prefix="browser surface atlas generated state",
+        screenshot_output_dir=screenshot_output_dir,
+        coverage_cells=(coverage_cell,),
+        covered=covered,
+    )
     issues: list[str] = []
     try:
-        response = page.goto(f"{base_url}/odylith/index.html?tab=atlas", wait_until="domcontentloaded")
+        if degrade_svg:
+            page.route(
+                "**/odylith/atlas/source/*.svg",
+                lambda route: route.fulfill(
+                    status=200,
+                    content_type="image/svg+xml",
+                    body="<svg",
+                ),
+            )
+        if fail_png:
+            page.route(
+                "**/odylith/atlas/source/*.png",
+                lambda route: route.fulfill(status=200, content_type="image/png", body="broken"),
+            )
+        selected = f"&diagram={quote(initial_diagram)}" if initial_diagram else ""
+        response = page.goto(
+            f"{base_url}/odylith/index.html?tab=atlas{selected}", wait_until="domcontentloaded"
+        )
         if response is None or not response.ok:
             issues.append("browser surface atlas generated state did not load shell route")
             return tuple(issues)
+        _dismiss_shell_obstructions(page)
         frame = _content_frame(page=page, frame_selector="#frame-atlas", timeout_ms=timeout_ms)
         if frame is None:
             issues.append("browser surface atlas generated state did not expose iframe content")
             return tuple(issues)
-        frame.locator("button[data-diagram]").first.wait_for(timeout=timeout_ms)
-        frame.locator(".diagram-item.active button[data-diagram]").first.wait_for(timeout=timeout_ms)
-        frame.locator("#viewerImage[src]").first.wait_for(timeout=timeout_ms)
-        frame.wait_for_function(
-            """() => {
-                const image = document.querySelector("#viewerImage");
-                return Boolean(image && image.getAttribute("src") && image.complete);
-            }""",
-            timeout=timeout_ms,
-        )
-        active_button = frame.locator(".diagram-item.active button[data-diagram]").first
-        image_state = frame.locator("#viewerImage").first.evaluate(
-            """(image) => ({
-                loaded: Boolean(image.complete && (image.naturalWidth || image.naturalHeight)),
-                src: String(image.currentSrc || image.src || "")
-            })"""
-        )
-        issues.extend(
-            _atlas_state_assertion_issues(
-                diagram_count=frame.locator("button[data-diagram]").count(),
-                stat_total_text=str(frame.locator("#statTotal").inner_text(timeout=timeout_ms)),
-                active_diagram=str(active_button.get_attribute("data-diagram") or ""),
-                displayed_diagram=str(frame.locator("#diagramId").inner_text(timeout=timeout_ms)),
-                displayed_title=str(frame.locator("#diagramTitle").inner_text(timeout=timeout_ms)),
-                image_src=str(image_state.get("src", "") if isinstance(image_state, dict) else ""),
-                image_loaded=bool(image_state.get("loaded", False) if isinstance(image_state, dict) else False),
+        buttons = frame.locator("button[data-diagram]")
+        buttons.first.wait_for(timeout=timeout_ms)
+        if initial_diagram:
+            recovered = str(frame.locator("#diagramId").inner_text(timeout=timeout_ms)).strip()
+            if not recovered or recovered.upper() == initial_diagram.upper():
+                issues.append("browser surface atlas invalid diagram did not recover to a valid diagram")
+        diagram_count = buttons.count()
+        expected_diagrams: list[str] = []
+        visited_diagrams: list[str] = []
+        for index in range(diagram_count):
+            button = buttons.nth(index)
+            expected = str(button.get_attribute("data-diagram") or "").strip()
+            expected_diagrams.append(expected)
+            button.click()
+            frame.wait_for_function(
+                """(diagramId) => String(document.querySelector("#diagramId")?.textContent || "").trim().toUpperCase() === diagramId.toUpperCase()""",
+                arg=expected,
+                timeout=timeout_ms,
             )
-        )
+            active_button = frame.locator(".diagram-item.active button[data-diagram]").first
+            displayed = str(frame.locator("#diagramId").inner_text(timeout=timeout_ms)).strip()
+            visited_diagrams.append(displayed)
+            if fail_png:
+                error = frame.locator("#viewerAssetError").first
+                error.wait_for(state="visible", timeout=timeout_ms)
+                error_state = error.evaluate(
+                    """(alert) => ({
+                        role: alert.getAttribute("role") || "",
+                        text: alert.textContent || "",
+                        visible: !alert.hidden,
+                        imageHidden: Boolean(document.querySelector("#viewerImage")?.hidden)
+                    })"""
+                )
+                issues.extend(
+                    _atlas_error_state_assertion_issues(
+                        alert_text=str(error_state.get("text", "")),
+                        alert_role=str(error_state.get("role", "")),
+                        alert_visible=bool(error_state.get("visible", False)),
+                        image_hidden=bool(error_state.get("imageHidden", False)),
+                    )
+                )
+                continue
+            frame.wait_for_function(
+                """() => {
+                    const image = document.querySelector("#viewerImage");
+                    return Boolean(image && image.complete && (image.naturalWidth || image.naturalHeight));
+                }""",
+                timeout=timeout_ms,
+            )
+            image_state = frame.locator("#viewerImage").first.evaluate(
+                """(image) => ({
+                    fallbackApplied: image.dataset.fallbackApplied === "1",
+                    loaded: Boolean(image.complete && (image.naturalWidth || image.naturalHeight)),
+                    src: String(image.currentSrc || image.src || "")
+                })"""
+            )
+            issues.extend(
+                _atlas_state_assertion_issues(
+                    diagram_count=diagram_count,
+                    stat_total_text=str(frame.locator("#statTotal").inner_text(timeout=timeout_ms)),
+                    active_diagram=str(active_button.get_attribute("data-diagram") or ""),
+                    displayed_diagram=displayed,
+                    displayed_title=str(frame.locator("#diagramTitle").inner_text(timeout=timeout_ms)),
+                    image_src=str(image_state.get("src", "") if isinstance(image_state, dict) else ""),
+                    image_loaded=bool(image_state.get("loaded", False) if isinstance(image_state, dict) else False),
+                )
+            )
+            if degrade_svg:
+                issues.extend(
+                    _atlas_degraded_state_assertion_issues(
+                        image_src=str(image_state.get("src", "") if isinstance(image_state, dict) else ""),
+                        image_loaded=bool(image_state.get("loaded", False) if isinstance(image_state, dict) else False),
+                        fallback_applied=bool(
+                            image_state.get("fallbackApplied", False)
+                            if isinstance(image_state, dict)
+                            else False
+                        ),
+                    )
+                )
+        issues.extend(_atlas_diagram_coverage_issues(expected_diagrams, visited_diagrams))
+        issues.extend(_layout_issues(page.locator("body"), label="tooling shell"))
+        issues.extend(_layout_issues(frame.locator("body"), label="atlas"))
     except Exception as exc:
         issues.append(f"browser surface atlas generated state failed render: {type(exc).__name__}: {exc}")
     finally:
@@ -511,38 +891,42 @@ def _atlas_generated_state_issues(*, context: Any, base_url: str, timeout_ms: in
     return tuple(issues)
 
 
-def _atlas_invalid_route_issues(*, context: Any, base_url: str, timeout_ms: int) -> tuple[str, ...]:
-    page, runtime_issues = _new_page(context, issue_prefix="browser surface atlas invalid diagram")
-    issues: list[str] = []
-    invalid_diagram = "D-999999"
-    try:
-        response = page.goto(
-            f"{base_url}/odylith/index.html?tab=atlas&diagram={invalid_diagram}",
-            wait_until="domcontentloaded",
-        )
-        if response is None or not response.ok:
-            issues.append("browser surface atlas invalid diagram did not load invalid route")
-            return tuple(issues)
-        frame = _content_frame(page=page, frame_selector="#frame-atlas", timeout_ms=timeout_ms)
-        if frame is None:
-            issues.append("browser surface atlas invalid diagram did not expose iframe content")
-            return tuple(issues)
-        frame.locator("button[data-diagram]").first.wait_for(timeout=timeout_ms)
-        frame.locator("#diagramId").wait_for(timeout=timeout_ms)
-        displayed = str(frame.locator("#diagramId").inner_text(timeout=timeout_ms)).strip()
-        if not displayed or displayed.upper() == invalid_diagram:
-            issues.append("browser surface atlas invalid diagram did not recover to a valid diagram")
-        frame.locator("#viewerImage[src]").first.wait_for(timeout=timeout_ms)
-    except Exception as exc:
-        issues.append(f"browser surface atlas invalid diagram failed recovery render: {type(exc).__name__}: {exc}")
-    finally:
-        issues.extend(runtime_issues())
-        page.close()
-    return tuple(issues)
+def _atlas_invalid_route_issues(
+    *,
+    context: Any,
+    base_url: str,
+    timeout_ms: int,
+    screenshot_output_dir: Path | None = None,
+    coverage_cell: tuple[str, str, str] = ("desktop", "atlas", "invalid-recovery"),
+    covered: set[tuple[str, str, str]] | None = None,
+) -> tuple[str, ...]:
+    return _atlas_generated_state_issues(
+        context=context,
+        base_url=base_url,
+        timeout_ms=timeout_ms,
+        screenshot_output_dir=screenshot_output_dir,
+        coverage_cell=coverage_cell,
+        covered=covered,
+        initial_diagram="D-999999",
+    )
 
 
-def _compass_invalid_route_issues(*, context: Any, base_url: str, timeout_ms: int) -> tuple[str, ...]:
-    page, runtime_issues = _new_page(context, issue_prefix="browser surface compass invalid query")
+def _compass_invalid_route_issues(
+    *,
+    context: Any,
+    base_url: str,
+    timeout_ms: int,
+    screenshot_output_dir: Path | None = None,
+    coverage_cell: tuple[str, str, str] = ("desktop", "compass", "invalid-recovery"),
+    covered: set[tuple[str, str, str]] | None = None,
+) -> tuple[str, ...]:
+    page, runtime_issues = _new_page(
+        context,
+        issue_prefix="browser surface compass invalid query",
+        screenshot_output_dir=screenshot_output_dir,
+        coverage_cells=(coverage_cell,),
+        covered=covered,
+    )
     issues: list[str] = []
     try:
         response = page.goto(
@@ -552,10 +936,13 @@ def _compass_invalid_route_issues(*, context: Any, base_url: str, timeout_ms: in
         if response is None or not response.ok:
             issues.append("browser surface compass invalid query did not load invalid route")
             return tuple(issues)
+        _dismiss_shell_obstructions(page)
         compass = page.frame_locator("#frame-compass")
         compass.locator("h1", has_text="Executive Compass").wait_for(timeout=timeout_ms)
         compass.locator("#scope-pill", has_text="Global").wait_for(timeout=timeout_ms)
         compass.locator("button[data-window].active").first.wait_for(timeout=timeout_ms)
+        issues.extend(_layout_issues(page.locator("body"), label="tooling shell"))
+        issues.extend(_layout_issues(compass.locator("body"), label="compass"))
     except Exception as exc:
         issues.append(f"browser surface compass invalid query failed recovery render: {type(exc).__name__}: {exc}")
     finally:
@@ -564,14 +951,29 @@ def _compass_invalid_route_issues(*, context: Any, base_url: str, timeout_ms: in
     return tuple(issues)
 
 
-def _unknown_tab_recovery_issues(*, context: Any, base_url: str, timeout_ms: int) -> tuple[str, ...]:
-    page, runtime_issues = _new_page(context, issue_prefix="browser shell unknown tab")
+def _unknown_tab_recovery_issues(
+    *,
+    context: Any,
+    base_url: str,
+    timeout_ms: int,
+    screenshot_output_dir: Path | None = None,
+    coverage_cell: tuple[str, str, str] = ("desktop", "shell", "invalid-recovery"),
+    covered: set[tuple[str, str, str]] | None = None,
+) -> tuple[str, ...]:
+    page, runtime_issues = _new_page(
+        context,
+        issue_prefix="browser shell unknown tab",
+        screenshot_output_dir=screenshot_output_dir,
+        coverage_cells=(coverage_cell,),
+        covered=covered,
+    )
     issues: list[str] = []
     try:
         response = page.goto(f"{base_url}/odylith/index.html?tab=radar", wait_until="domcontentloaded")
         if response is None or not response.ok:
             issues.append("browser shell unknown tab could not load Radar for a recovery token")
             return tuple(issues)
+        _dismiss_shell_obstructions(page)
         radar = page.frame_locator("#frame-radar")
         radar.locator("button[data-idea-id].active").wait_for(timeout=timeout_ms)
         active = str(radar.locator("button[data-idea-id].active").first.get_attribute("data-idea-id") or "").strip()
@@ -585,6 +987,7 @@ def _unknown_tab_recovery_issues(*, context: Any, base_url: str, timeout_ms: int
         if response is None or not response.ok:
             issues.append("browser shell unknown tab did not load")
             return tuple(issues)
+        _dismiss_shell_obstructions(page)
         page.locator("#tab-radar").wait_for(timeout=timeout_ms)
         if page.locator("#tab-radar").get_attribute("aria-selected") != "true":
             issues.append("browser shell unknown tab did not recover to Radar")
@@ -595,6 +998,7 @@ def _unknown_tab_recovery_issues(*, context: Any, base_url: str, timeout_ms: int
             '#detail [data-kpi="workstream-id"] .v',
             has_text=active,
         ).wait_for(timeout=timeout_ms)
+        issues.extend(_layout_issues(page.locator("body"), label="tooling shell"))
     except Exception as exc:
         issues.append(f"browser shell unknown tab failed recovery render: {type(exc).__name__}: {exc}")
     finally:
@@ -603,19 +1007,41 @@ def _unknown_tab_recovery_issues(*, context: Any, base_url: str, timeout_ms: int
     return tuple(issues)
 
 
-def _empty_filter_state_issues(*, context: Any, base_url: str, timeout_ms: int) -> tuple[str, ...]:
-    page, runtime_issues = _new_page(context, issue_prefix="browser surface casebook empty filter")
+def _empty_filter_state_issues(
+    *,
+    context: Any,
+    base_url: str,
+    timeout_ms: int,
+    screenshot_output_dir: Path | None = None,
+    coverage_cell: tuple[str, str, str] = ("desktop", "casebook", "empty"),
+    covered: set[tuple[str, str, str]] | None = None,
+) -> tuple[str, ...]:
+    page, runtime_issues = _new_page(
+        context,
+        issue_prefix="browser surface casebook empty filter",
+        screenshot_output_dir=screenshot_output_dir,
+        coverage_cells=(coverage_cell,),
+        covered=covered,
+    )
     issues: list[str] = []
     try:
         response = page.goto(f"{base_url}/odylith/index.html?tab=casebook", wait_until="domcontentloaded")
         if response is None or not response.ok:
             issues.append("browser surface casebook empty filter did not load")
             return tuple(issues)
+        _dismiss_shell_obstructions(page)
         casebook = page.frame_locator("#frame-casebook")
         casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=timeout_ms)
         casebook.locator("#searchInput").fill("zzzzzz-no-casebook-match")
-        casebook.locator("#listMeta", has_text="0 visible").wait_for(timeout=timeout_ms)
-        casebook.locator("#detailPane", has_text="Select a different filter").wait_for(timeout=timeout_ms)
+        casebook.locator("#listMeta").wait_for(timeout=timeout_ms)
+        casebook.locator("#detailPane [role='status']").wait_for(timeout=timeout_ms)
+        if casebook.locator("button.bug-row:visible").count():
+            issues.append("browser surface casebook empty filter still renders matching entries")
+        empty_copy = str(casebook.locator("#detailPane [role='status']").inner_text(timeout=timeout_ms)).strip()
+        if len(empty_copy.split()) < 3:
+            issues.append("browser surface casebook empty filter does not explain the empty state")
+        issues.extend(_layout_issues(page.locator("body"), label="tooling shell"))
+        issues.extend(_layout_issues(casebook.locator("body"), label="casebook"))
     except Exception as exc:
         issues.append(f"browser surface casebook empty filter failed render: {type(exc).__name__}: {exc}")
     finally:
@@ -631,51 +1057,24 @@ def _content_frame(*, page: Any, frame_selector: str, timeout_ms: int) -> Any | 
     return frame_element.content_frame()
 
 
-def _atlas_state_assertion_issues(
+def _dismiss_shell_obstructions(page: Any) -> None:
+    """Expose the selected surface before layout checks and retained screenshots."""
+
+    for selector in ("#upgradeSpotlightDismiss", "#welcomeDismiss", "#gridBriefClose", "#odylithClose"):
+        control = page.locator(selector)
+        if control.count() and control.first.is_visible():
+            control.first.click()
+
+
+def _new_page(
+    context: Any,
     *,
-    diagram_count: int,
-    stat_total_text: str,
-    active_diagram: str,
-    displayed_diagram: str,
-    displayed_title: str,
-    image_src: str,
-    image_loaded: bool,
-) -> tuple[str, ...]:
-    issues: list[str] = []
-    if diagram_count <= 0:
-        issues.append("browser surface atlas rendered no generated diagram buttons")
-    stat_total = _non_negative_int(stat_total_text)
-    if stat_total <= 0:
-        issues.append("browser surface atlas rendered no generated diagram count")
-    elif diagram_count > 0 and stat_total != diagram_count:
-        issues.append("browser surface atlas generated diagram count disagrees with rendered list")
-    active = str(active_diagram or "").strip()
-    displayed = str(displayed_diagram or "").strip()
-    if not active:
-        issues.append("browser surface atlas has no active generated diagram")
-    if not displayed:
-        issues.append("browser surface atlas did not hydrate the selected diagram id")
-    elif active and displayed.upper() != active.upper():
-        issues.append("browser surface atlas selected diagram id disagrees with active list state")
-    if len(str(displayed_title or "").strip().split()) < 2:
-        issues.append("browser surface atlas did not hydrate a meaningful generated diagram title")
-    parsed = urlparse(str(image_src or ""))
-    if "/odylith/atlas/source/" not in (parsed.path or "") or not (parsed.path or "").endswith((".svg", ".png")):
-        issues.append("browser surface atlas viewer did not load a generated diagram asset")
-    if not image_loaded:
-        issues.append("browser surface atlas generated diagram asset did not finish loading")
-    return tuple(issues)
-
-
-def _non_negative_int(value: str) -> int:
-    try:
-        number = int(str(value or "").strip())
-    except ValueError:
-        return 0
-    return max(0, number)
-
-
-def _new_page(context: Any, *, issue_prefix: str) -> tuple[Any, Any]:
+    issue_prefix: str,
+    screenshot_output_dir: Path | None = None,
+    screenshot_name: str = "",
+    coverage_cells: tuple[tuple[str, str, str], ...] = (),
+    covered: set[tuple[str, str, str]] | None = None,
+) -> tuple[Any, Any]:
     page = context.new_page()
     console_errors: list[str] = []
     page_errors: list[str] = []
@@ -693,6 +1092,22 @@ def _new_page(context: Any, *, issue_prefix: str) -> tuple[Any, Any]:
         issues.extend(f"{issue_prefix} page error: {message}" for message in page_errors)
         issues.extend(f"{issue_prefix} request failed: {message}" for message in failed_requests)
         issues.extend(f"{issue_prefix} bad response: {message}" for message in bad_responses)
+        if screenshot_output_dir is not None:
+            names = tuple("-".join(cell) for cell in coverage_cells) or (screenshot_name,)
+            for name in names:
+                try:
+                    _capture_state_screenshot(
+                        page=page,
+                        output_dir=screenshot_output_dir,
+                        state_name=name,
+                    )
+                except Exception as exc:
+                    issues.append(f"{issue_prefix} screenshot capture failed: {type(exc).__name__}: {exc}")
+                    continue
+                if covered is not None:
+                    covered.update(cell for cell in coverage_cells if "-".join(cell) == name)
+        elif coverage_cells:
+            issues.append(f"{issue_prefix} has no retained screenshot destination")
         return tuple(issues)
 
     return page, _runtime_issues
@@ -742,7 +1157,10 @@ def _is_expected_local_abort(*, url: str, error_text: str, resource_type: str) -
 
 
 __all__ = [
+    "BROWSER_REQUIRED_COVERAGE",
+    "BROWSER_REQUIRED_SURFACE_STATES",
     "BROWSER_SURFACE_EXPECTATIONS",
     "BROWSER_SURFACE_PROOF_SCOPE",
+    "BROWSER_VIEWPORTS",
     "browser_surface_proof_issues",
 ]

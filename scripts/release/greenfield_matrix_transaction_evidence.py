@@ -16,6 +16,11 @@ from odylith.runtime.domain_intelligence import greenfield_create_lifecycle
 from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
+from odylith.runtime.domain_intelligence.greenfield_commit_transaction import _payload_hash
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    product_facts_payload,
+)
 
 
 DRY_RUN_RECEIPT_VERSION = "odylith.greenfield.matrix.dry-run-receipt.v2"
@@ -26,25 +31,10 @@ POST_CONFIRM_NAVIGATION = {
     "atlas": "odylith/index.html?tab=atlas",
     "compass": "odylith/index.html?tab=compass&date=live",
 }
-SEMANTIC_FACT_KEYS = (
-    "product_story",
-    "state_object",
-    "first_path",
-    "proof_boundary",
-    "problem",
-    "customer",
-    "opportunity",
-    "product_view",
-    "success_metrics",
-    "component_responsibilities",
-    "human_actors",
-    "external_systems",
-    "internal_systems",
-    "assumptions",
-    "ambiguities",
-    "non_goals",
-    "evidence_requirements",
-    "operational_constraints",
+_HOST_REPAIR_OUTPUT_TOKENS = (
+    '"reasoning_contract"', '"host_instruction"', "active-proposal.v1.json",
+    "must be non-empty", "greenfield proposal validation failed",
+    "greenfield proposal Tribunal failed", "host-side schema repair",
 )
 
 
@@ -57,6 +47,7 @@ class CompiledCreateExecution:
     create_seconds: float
     dry_run_receipt: Mapping[str, Any]
     proposal_payload: Mapping[str, Any]
+    output_contract_issues: tuple[str, ...] = ()
 
 
 def commit_precompiled_transaction(
@@ -73,6 +64,16 @@ def commit_precompiled_transaction(
     except (TypeError, ValueError):
         proposal_returncode = 1
     proposed_payload = _json_mapping(getattr(proposed, "stdout", ""))
+    output_issues = _positive_journey_output_issues(proposed, stage="propose", repo_root=repo_root)
+    if output_issues:
+        return CompiledCreateExecution(
+            create=_error_result("; ".join(output_issues)),
+            proposal_seconds=proposal_seconds,
+            create_seconds=0.0,
+            dry_run_receipt=_receipt(status="proposal_contract_failed"),
+            proposal_payload=proposed_payload,
+            output_contract_issues=output_issues,
+        )
     if proposal_returncode != 0:
         return CompiledCreateExecution(
             create=proposed,
@@ -145,7 +146,33 @@ def commit_precompiled_transaction(
         create_seconds=round(time.perf_counter() - started, 3),
         dry_run_receipt=receipt,
         proposal_payload=proposed_payload,
+        output_contract_issues=_positive_journey_output_issues(create, stage="create", repo_root=repo_root),
     )
+
+
+def _positive_journey_output_issues(result: Any, *, stage: str, repo_root: Path) -> tuple[str, ...]:
+    if getattr(result, "returncode", 1) != 0:
+        return ()
+    output = "\n".join(str(getattr(result, stream, "") or "") for stream in ("stdout", "stderr"))
+    issues = [
+        f"greenfield {stage} exposed a host-side repair contract: {token}"
+        for token in _HOST_REPAIR_OUTPUT_TOKENS if token in output
+    ]
+    if stage == "create":
+        payload = _json_mapping(getattr(result, "stdout", ""))
+        if payload.get("mode") != "applied":
+            issues.append("greenfield create did not return applied mode")
+        for field in ("validation_gate", "dashboard_refresh"):
+            if field not in payload:
+                issues.append(f"greenfield create omitted {field}")
+        for relative in (
+            "odylith/runtime/source/accepted-project.v1.json",
+            "odylith/runtime/delivery_intelligence.v4.json",
+            "odylith/radar/traceability-graph.v1.json",
+        ):
+            if not (repo_root / relative).is_file():
+                issues.append(f"greenfield create did not write {relative}")
+    return tuple(issues)
 
 
 def confirmation_preview_issues(*, proposal_payload: Mapping[str, Any]) -> tuple[str, ...]:
@@ -210,12 +237,13 @@ def post_confirm_navigation_issues(
     navigation = _mapping(create_payload.get("post_confirm_navigation"))
     missing = [key for key, value in POST_CONFIRM_NAVIGATION.items() if navigation.get(key) != value]
     root = Path(repo_root).expanduser().resolve()
-    dashboard = (
-        root
-        / ".odylith/runtime/greenfield/generations"
-        / transaction_hash
-        / "repository/odylith/index.html"
-    ).resolve()
+    try:
+        reviewed = GreenfieldCommitJournal.pin_reviewed_generation(
+            repo_root=root, transaction_hash=transaction_hash,
+        )
+    except (OSError, RuntimeError, ValueError):
+        return ("post-confirm navigation has no valid reviewed generation receipt",)
+    dashboard = (reviewed.repository_root / "odylith/index.html").resolve()
     expected = {
         "dashboard_path": str(dashboard),
         "project_url": f"{dashboard.as_uri()}?tab=project",
@@ -257,6 +285,7 @@ def dry_run_commit_issues(
         "product facts hash": expected_product_facts,
         "atomic custody hash": str(receipt.get("atomic_custody_sha256") or "").strip(),
         "repository write-set hash": expected_write_set,
+        "publication bytes hash": str(receipt.get("publication_sha256") or "").strip(),
     }
     invalid = [label for label, value in required_digests.items() if not _is_sha256(value)]
     if invalid:
@@ -308,6 +337,7 @@ def dry_run_commit_issues(
             transaction_hash=expected_transaction,
             write_set_hash=expected_write_set,
             after_fingerprints=expected_after,
+            publication_sha256=str(receipt["publication_sha256"]),
         )
     )
     return tuple(dict.fromkeys(issues))
@@ -349,13 +379,7 @@ def _sealed_dry_run_receipt(
     atomic_custody_sha256 = str(authority.get("atomic_custody_sha256") or "").strip()
     repository_write_set_hash = str(repository_write_set.get("write_set_hash") or "").strip()
     after_fingerprints = _fingerprint_mapping(repository_write_set.get("after_fingerprints"))
-    body_transaction_hash = _sha256_json(
-        {
-            key: value
-            for key, value in transaction.items()
-            if key != "transaction_hash"
-        }
-    )
+    body_transaction_hash = _payload_hash(transaction)
     receipt.update(
         {
             "transaction_file": str(transaction_path.relative_to(Path(repo_root).resolve())),
@@ -375,6 +399,19 @@ def _sealed_dry_run_receipt(
         }
     )
     issues: list[str] = []
+    try:
+        manifest_text = prewrite_package.get("generation_manifest_text")
+        greenfield_generation_store.require_sealed_greenfield_generation_manifest(
+            manifest_text, write_set=repository_write_set,
+        )
+        publication = greenfield_generation_state.require_sealed_greenfield_publication_entry(
+            prewrite_package.get("publication_entry_text"),
+            write_set_hash=repository_write_set_hash,
+            generation_manifest_sha256=hashlib.sha256(manifest_text.encode("utf-8")).hexdigest(),
+        )
+        receipt["publication_sha256"] = publication["publication_sha256"]
+    except (TypeError, ValueError):
+        issues.append("pre-confirm transaction is missing valid sealed generation/publication bytes")
     declared_transaction_hash = str(transaction.get("transaction_hash") or "").strip()
     if declared_transaction_hash != transaction_hash:
         issues.append("transaction file hash does not match the propose response")
@@ -416,11 +453,10 @@ def _semantic_snapshot(transaction: Mapping[str, Any]) -> dict[str, Any]:
     proposal = _mapping(transaction.get("proposal"))
     intent = _mapping(proposal.get("intent"))
     authored_semantics = intent.get("authored_semantics")
-    facts = {
-        key: intent[key]
-        for key in SEMANTIC_FACT_KEYS
-        if key in intent and _has_semantic_value(intent.get(key))
-    }
+    try:
+        facts = product_facts_payload(intent)
+    except ValueError:
+        return {}
     if not all(key in facts for key in ("product_story", "state_object", "first_path", "proof_boundary")):
         return {}
     authority = _mapping(transaction.get("intent_authority"))
@@ -456,31 +492,24 @@ def _semantic_snapshot(transaction: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
-def _has_semantic_value(value: Any) -> bool:
-    if isinstance(value, str):
-        return bool(value.strip())
-    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        return bool(value)
-    return isinstance(value, Mapping) and bool(value)
-
-
 def _active_generation_issues(
     *,
     repo_root: Path,
     transaction_hash: str,
     write_set_hash: str,
     after_fingerprints: Mapping[str, str],
+    publication_sha256: str,
 ) -> tuple[str, ...]:
     root = Path(repo_root).expanduser().resolve()
     issues: list[str] = []
     try:
-        state = greenfield_generation_state.read_active_generation_state(root)
+        state = greenfield_generation_state.active_generation_identity(root)
     except (OSError, RuntimeError, ValueError):
         return ("active generation readback is missing or invalid",)
-    if state is None:
+    if state["status"] != greenfield_generation_state.ACTIVE:
         return ("active generation readback is missing or invalid",)
     try:
-        pinned = greenfield_generation_store.pin_greenfield_generation(
+        pinned = GreenfieldCommitJournal.pin_reviewed_generation(
             repo_root=root,
             transaction_hash=transaction_hash,
         )
@@ -488,9 +517,9 @@ def _active_generation_issues(
         return ("immutable generation readback is missing or invalid",)
     expected_identity = {
         "status": greenfield_generation_state.ACTIVE,
-        "transaction_hash": transaction_hash,
         "write_set_hash": write_set_hash,
         "generation_manifest_sha256": pinned.manifest_sha256,
+        "publication_sha256": publication_sha256,
     }
     observed_identity = {
         key: str(state.get(key) or "").strip()
@@ -498,7 +527,7 @@ def _active_generation_issues(
     }
     if observed_identity != expected_identity:
         issues.append("active generation identity does not match the sealed transaction")
-    if pinned.transaction_hash != transaction_hash or pinned.write_set_hash != write_set_hash:
+    if pinned.write_set_hash != write_set_hash:
         issues.append("immutable generation identity does not match the sealed transaction")
     manifest_after = _fingerprint_mapping(pinned.manifest.get("after_fingerprints"))
     if manifest_after != dict(after_fingerprints):
@@ -594,7 +623,6 @@ def _is_sha256(value: str) -> bool:
 
 __all__ = [
     "DRY_RUN_RECEIPT_VERSION",
-    "SEMANTIC_FACT_KEYS",
     "CompiledCreateExecution",
     "commit_precompiled_transaction",
     "dry_run_commit_issues",

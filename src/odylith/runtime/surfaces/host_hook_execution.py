@@ -30,8 +30,8 @@ class _Deadline:
 
     @contextmanager
     def suspend_alarm(self) -> Iterator[None]:
-        # Launch must return its ownership handle; cleanup must finish even when
-        # communicate's timeout wins the race with the whole-hook alarm.
+        # communicate owns the command timeout. The alarm must not interrupt
+        # launch, timeout handling, or entry into owned-process cleanup.
         signal.setitimer(signal.ITIMER_REAL, 0.0)
         try:
             yield
@@ -139,8 +139,8 @@ def run_hook_command(
         env[_FOREGROUND_GROUP_ENV] = "1"
     process: subprocess.Popen[str] | None = None
     try:
-        try:
-            with deadline.suspend_alarm() if deadline is not None else nullcontext():
+        with deadline.suspend_alarm() if deadline is not None else nullcontext():
+            try:
                 process = subprocess.Popen(
                     command,
                     cwd=str(cwd),
@@ -150,16 +150,15 @@ def run_hook_command(
                     text=True,
                     start_new_session=os.name == "posix",
                 )
-            if deadline is not None:
-                timeout = min(timeout, deadline.remaining())
-            stdout, stderr = process.communicate(timeout=timeout)
-            return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
-        finally:
-            if process is not None:
-                with deadline.suspend_alarm() if deadline is not None else nullcontext():
+                if deadline is not None:
+                    timeout = min(timeout, deadline.remaining())
+                stdout, stderr = process.communicate(timeout=timeout)
+                return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
+            finally:
+                if process is not None:
                     _finish_owned_process(process)
-            if deadline is not None:
-                deadline.remaining()
+                if deadline is not None:
+                    deadline.remaining()
     except (OSError, subprocess.SubprocessError):
         if deadline is not None:
             deadline.remaining()

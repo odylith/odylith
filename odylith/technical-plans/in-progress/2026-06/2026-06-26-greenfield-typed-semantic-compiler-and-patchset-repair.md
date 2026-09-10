@@ -1,5 +1,901 @@
 Status: In progress
 
+## Keep Atlas node identity separate from display copy (2026-09-10)
+
+CB-338 captures a screenshot-discovered defect after the frozen browser suite
+passes: a declared Mermaid node is rediscovered under a different display label.
+Three independent multiline labels reproduce the duplicate; case-sensitive IDs
+remain distinct. Preserve the existing node ID across inventory passes, retain
+graph-only discovery, and author the missing D-042 explanations in catalog source.
+Do not add vocabulary rules, label normalization or a new parser. Require focused
+identity/coverage controls, fresh runtime/browser proof and reviewed desktop/mobile
+screenshots before closing this bounded Atlas correction.
+
+The bounded candidate adds five net lines to the existing 1,077-line owner and
+no regex or helper. Four expanded counterexamples fail before the change; all
+59 focused identity, metadata, catalog and D-042 coverage checks pass afterward.
+The oversized catalog test is unchanged; ten new identity cases have a separate
+104-line owner. Independent review runs the eleven new controls and finds no
+bounded P0/P1. Ten real-shell desktop/mobile checks pass with exact D-042 text,
+and root reviews all eighteen screenshots. The shared correction removes 27
+redundant explanation rows across 18 diagrams; all 47 diagrams remain fresh.
+This frozen candidate passes 5,058 runtime, 1,437 install, 180 CLI and 376 browser
+checks, with zero failures/errors and one documented Radar fixture-state skip.
+All 3,204 inputs match after every process completes; CB-338 is fixed pending
+release. Evidence: `/private/tmp/odylith-migration-release-scope.nOTGQD/atlas-*-full.xml`.
+Record and push this bounded checkpoint without changing qualified source/tests.
+Older related-case caption text ending in `semanti` remains a separate visible
+quality caveat; these checks are not whole-product prose closure. Exact migration
+assessment, generated semantic quality, 60/90/120 and native desktop delivery
+remain open, and the protected final holdout is not ready to run.
+
+## Preserve migration assessment across commits (2026-09-10)
+
+The bounded implementation passes 85 focused controls and independent review.
+Published-predecessor comparison uses endpoint trees, not ancestry or merge-base;
+relevant hidden tracked files fail as unavailable evidence. The real comparison
+now identifies 808 changed paths and all five incomplete assessment families.
+No exact assessment is waived or marked complete. Frozen broad validation passes
+5,047 runtime, 1,437 install, 180 CLI and 376 browser checks; one Radar browser
+case lacks its required fixture state and is skipped. All 3,201 proof inputs match
+after terminal completion. CB-337 is fixed pending release; CB-338 separately
+owns the Atlas explanation defect found during screenshot review. Keep semantic
+quality, 60/90/120, actual populated migration and host-delivery gates open.
+
+CB-337 records a newly verified release-proof gap: on clean `5fbc51b3`, the
+canonical migration gate returns success with no observed paths or needs.
+Independent review confirms that its dirty-only observer conflicts with the
+clean-checkout release workflow. Committing a change is not migration assessment.
+The GitHub latest-release endpoint still identifies published `v0.1.14`; the
+local tag resolves to `fae446995e13e12409e50f944a336dbc846db90a`.
+
+Bound the correction to release comparison custody: require a validated explicit
+predecessor reference, report resolved base/candidate commits, include committed
+and local changes, and fail closed on unavailable Git scope. Retain the existing
+surface classifiers and exact completed-marker requirements. Do not select an
+arbitrary tag, use HEAD's parent, or bless old class-level assessments.
+
+The pre-change migration runtime was 1,371 lines and mixed install execution with
+release evidence checks. Its release report/check now has a dedicated owner
+with direct callers and no forwarding shim. Shared target eligibility belongs
+to the existing migration definition, not copied helpers. The 4,158-line
+CLI receives only safety-critical argument/dispatch wiring; no new release logic
+belongs there. Existing 1,541/4,948-line migration/CLI tests must not grow: put
+new scope controls in a focused owner and move relevant tests where appropriate.
+
+Require real-Git dirty-to-committed, exact assessment, changed-after-assessment,
+deletion/rename, missing-base and invalid-Git controls before broad install/CLI
+proof. Preserve `/private/tmp/odylith-migration-release-scope.nOTGQD/` and all
+earlier failures. This is an open release gate, not a change to Greenfield
+meaning, model profiles, timing limits, or final-holdout order.
+
+## Installed status and exact-retry evidence (2026-09-09)
+
+The complete distribution from clean pushed `cd64d7ce` passes all twelve artifact
+checksums, with all six reviewed production owners matching its wheel. The
+unchanged installed recovery harness passes against a fresh consumer. The real
+renderer succeeds before the single synthetic completion failure; the previous
+publication remains complete and exact. Its advertised installed-launcher retry
+succeeds in 5.4744 seconds, publishes a successor and clears the receipt without
+changing runtime, pin, launchers or seeded operator bytes/modes.
+
+All 48 real surface views pass: six tabs, file/HTTP, desktop/mobile, before retry
+and after recovery. No browser errors or external requests are recorded; normal
+browsing does not mutate either observed state. Root inspected screenshots across
+all six surfaces. All thirteen recorded command groups are terminal. Retain
+`/private/tmp/odylith-installed-upgrade-recovery.DGvhVK/run-gdfzgmiw/` and the prior
+failed consumer; do not rerun this successful witness without a diagnosed reason.
+
+This is same-version empty-source recovery after a post-success completion fault,
+not a real failed renderer, installed SIGKILL, populated published-predecessor
+transition, public signing, semantic quality, automatic desktop chat delivery or
+60/90/120 acceptance. CB-305 and the full goal remain open. Next evidence belongs
+to current broader regressions/migration qualification and the remaining
+model-quality/host gates, without changing their limits or accessing the final
+replacement holdout early.
+
+## Publish captured status without coupling live telemetry (2026-09-09)
+
+The bounded candidate moves browser status acquisition into the existing sealed
+tooling payload for every bundle that touches managed outputs. This includes
+initial installation and custom HTML sharing canonical JS files. Independent
+review and a failing custom-output control replaced the insufficient HTML-only
+classification before qualification. Direct-live exports keep their supported
+policy overrides and probes; no engine is disabled and mutable telemetry is not
+added to transaction fingerprints. Context Engine last-update provenance is not
+a claim of complete engine health. Render-cache inputs capture status changes
+without making an otherwise unchanged publication inadmissible.
+
+Published views carry a capture-time note and remain exact after later writes.
+Canonical reopening resolves the successor; automatic successor discovery stays
+open. Initial file/HTTP, desktop/mobile, current/absent/failed-status proof passes
+12 cases, and direct-live/onboarding proof passes 23. Screenshot review found
+the warning banner blocking mobile starter-guide Close; a failing click control
+precedes its layer-order correction. The final expanded focused pack passes
+175 controls in 56.16 seconds; all eleven changed source/test hashes match after
+terminal completion. Final independent source review finds no remaining bounded
+P0/P1. Existing oversized-file debt remains open. Retain all reports in
+`/private/tmp/odylith-snapshot-status-proof.uZUBBA/`.
+
+The clean distribution and unchanged installed witness now pass at `cd64d7ce`,
+within the scope recorded above. Preserve the old failed consumer and receipt.
+Do not use these shell-level controls as
+proof of model quality, populated migration, automatic chat delivery, the
+60/90/120 contract or final release acceptance. All broader gates remain active;
+the protected replacement holdout remains untouched.
+
+## Close the installed snapshot dependency gap (2026-09-09)
+
+The full clean distribution at pushed `39a5f102` passes its twelve asset hashes
+and matches the five changed production source owners. Fresh installation,
+memory-pack activation, doctor and complete baseline readback pass. After the
+actual installed renderer succeeds, the single synthetic completion failure
+retains the original publication and yields valid exact-state retry authority.
+The first desktop file browser pass reaches all six content-ready surfaces but
+finds a missing snapshot-local Context Engine status script. Its clean-page
+assertion fails before HTTP, mobile or the emitted retry runs. This is a genuine
+integration failure, not permission to waive resource errors or read mutable
+runtime state from an immutable package.
+
+Read-only diagnosis binds the missing dependency to the initial publication,
+not the later injected failure. The shell names a mutable runtime companion
+that its immutable generation does not contain. Keep live telemetry independent;
+test a browser-status snapshot in the existing sealed shell payload rather than
+adding continuously changing telemetry to transaction fingerprints. Cover the
+same version-status probe pattern without claiming a second observed failure.
+Prove dependency closure, admission stability during telemetry updates, and fresh
+status after supported dashboard publication before rerunning the installed proof.
+No source correction has run. Preserve the unchanged failed
+consumer and receipt in
+`/private/tmp/odylith-installed-upgrade-recovery.DGvhVK/run-199egbdb/`.
+The proof is same-version with a synthetic post-success render failure, not
+published-predecessor migration, partial render recovery or 60/90/120 evidence.
+All broader semantic, host, quality, migration and untouched-holdout gates remain
+open. CB-305 owns this finding; no new workstream or alternate architecture is
+introduced by the failed test.
+
+## Resume the exact failed upgrade without broad rollback (2026-09-09)
+
+Current manager rollback cannot restore already committed pin, guidance and
+migration changes. Extending it over those surfaces would require a substantially
+larger rollback and conflict mechanism. The bounded candidate instead retains
+install-owned completion authority for the exact failed state. It keeps the
+target runtime and the old complete publication, admits only the advertised
+full dashboard refresh under the existing writer lock, and rejects changed
+working bytes, activation anchors or another pending transaction before writes.
+Success publishes one complete successor; ordinary failure can renew only the
+working fingerprint, never the fixed activation anchors. Interrupted or modified
+state without a matching receipt remains an explicit recovery outcome.
+
+This replaces the prior recommendation to restore a coherent predecessor; it
+does not relax generic drift admission or introduce a general recovery API.
+One real-manager positive and four CLI refusal controls initially fail; the first
+candidate run passes 11 upgrade/CLI controls, with 123 adjacent kernel controls
+also passing. Independent source review is accepted but does not establish
+behavioral closure. Expanded repeated-failure, anchor-mutation and journal-conflict
+controls exposed one safe refusal with an uncaught CLI exception. Correcting only
+that reporting path yields 92 focused passes. Three real SIGKILL cases pass twice:
+the old complete view survives interruption before publication; the new complete
+view survives interruption after publication, and stale retry authority cannot
+overwrite later edits. All six killed processes are reaped. Final bounded review
+finds no actionable P0/P1. These use simulated release payloads and rendering.
+Frozen broad proof now passes 5,036 runtime, 1,418 install and 364 browser
+controls, with one absent-diagnostic skip. All 2,921 tracked inputs remain exact.
+Root CLI retains 175 passes and the migration-assessment failure; no release gate
+is waived. Actual installed failed-render recovery remains required. Evidence:
+`/private/tmp/odylith-upgrade-recovery-red.kzoi27/`.
+Expanded and interruption receipts are retained in
+`/private/tmp/odylith-upgrade-recovery-expanded.t6RaNu/` and
+`/private/tmp/odylith-upgrade-recovery-crash.wQl2iB/`.
+
+Qualification and corrected retention evidence live at
+`/private/tmp/odylith-upgrade-recovery-qualification.SwzaFE/`.
+Repository pytest teardown deleted the original crash fixture roots, contrary to
+their handoff claim. The same three unchanged tests pass outside that teardown
+scope, and root verifies all three replacement recovery repositories remain.
+Do not equate recorded fixture paths with retained artifacts or broad browser XML
+with retained screenshots. Preserve these nonterminal fixtures. The four open
+migration markers are guidance-and-skills:3bf4ee8b3e7f,
+operator-cli-contracts:8fd748b419c2, browser-surfaces:aa610acac409, and
+install-managed-assets:6fba56c545f3 for version 0.1.15; actual assessments,
+not marker declarations, must justify completion.
+
+Keep all semantic, 60/90/120, model-profile, host-parity, populated-install,
+consumer-quality and protected-final-holdout gates unchanged and open.
+
+## Finish publication proof and repair the actual retry boundary (2026-09-09)
+
+The immutable generation and sole HTML entry are already implemented. Keep that
+mechanism: the expanded actual-shell test passes file/HTTP navigation across all
+six tabs, desktop/mobile, normal state and three SIGKILL publication intervals.
+Both cases pass in 206.07 seconds with 96 content-ready surface observations;
+101 focused kernel controls pass. This closes the two-tab coverage limitation,
+not installed all-reader or end-to-end consumer acceptance. Evidence remains in
+`/private/tmp/odylith-all-surface-publication.hxeGBg/`.
+
+Independent review tightened the final Compass predicate to reject total-runtime
+fallback while permitting legitimate no-risk content. The final frozen test plus
+adjacent normal/corrupt/cached-entry carrier controls passes 20 cases in 218.60
+seconds; all 96 tab observations have zero recorded browser errors. Normal and
+crash reads leave fixture bytes unchanged. Source-review acceptance and final
+desktop Project/mobile Compass inspection remain bounded to these views.
+
+The next concrete P1 is failed-upgrade recovery. The exact emitted dashboard
+refresh retry cannot pass current admission after the failed renderer leaves
+partial working output, although a clean-control retry publishes successfully.
+The old published view and operator bytes stay safe. Preserve the private failing
+expectation and exact command/state receipt in
+`/private/tmp/odylith-failed-refresh-retry.Pihtyr/`.
+Use the existing upgrade/dashboard completion and rollback/staging owners to
+leave an admissible predecessor on failure. Do not relax the generic drift guard,
+invent a broad recovery platform, or fix only the mocked Radar file. Require
+actual pin/runtime/asset failure controls and operator-conflict preservation
+before adoption. Final installed population, all-reader, model-quality, native
+host eligibility, 60/90/120 and protected-holdout gates remain unchanged and open.
+
+Proof isolation caveat: context lookup for CB-305 fell back to a search including
+tests without a protected-test exclusion. No protected-test content appeared in
+the returned results, and the final corpus/build/ledger were not opened or run,
+but tool-level non-access to that test cannot be certified for this turn. Use
+already-grounded exact paths with exclusions while that backend is unavailable;
+retain the caveat for final independent adjudication.
+
+## Stronger author profile did not meet the fixed window (2026-09-09)
+
+Independent follow-up rules out a time-band mismatch: both disclosed 343-byte,
+one-document trials selected the predeclared standard profile. Their authored
+dimensions yield bounded structural complexity; that is not proof of semantic
+admission or feasible timing. Raising the time band would be inflation. No
+grounded lossless work reduction was established, so another retry or profile
+sweep is not justified by this diagnosis.
+
+The one private Astra/low candidate attempt fails its initial author call at
+55.020713 seconds without returning a candidate. The parent reports failure at
+55.265066 seconds, with one call and no reviewer, package or publication. Both
+root and independent terminal review reject advancement. All 722 frozen inputs
+remain unchanged; 316 no-provider checks pass. The shipped v53 prompt, schema,
+full-candidate Sol/medium reviewer, production profiles and 60/90/120 limits stay
+unchanged. The distinct diagnostic profile is not eligible for release claims.
+
+Do not retry this attempt, sweep profiles, extend deadlines, or infer semantic
+quality or a model-speed cause from null output. The stronger-capability and
+availability evidence justified measuring the candidate, not adopting it.
+Preserve `/private/tmp/odylith-profile-comparison.Bd02Or/` and its exact contract
+`196198a238fde679ced284cb12f3d679d90eaedd24a3b590085f7581540320df`.
+The prior citation-pooling and whitespace-compaction evidence also rules out an
+unearned representation rewrite. A successor must identify the owning obligation
+improvement or actual work removed before another live comparison; none is a
+qualified winner yet. Keep all full-goal gates and protected holdouts open.
+
+Independent provider-boundary diagnosis also finds no config-only direct shortcut.
+Current profiles require codex-cli; generic HTTP adapters do not preserve every
+requested effort/schema contract, and direct API eligibility is unestablished.
+The prior author trace does not attribute the long in-turn interval to CLI
+overhead. A no-network comparison now passes one characterization in 0.07 seconds:
+model/schema/timeout match, HTTP omits requested effort despite recording it in
+metadata, and all three Greenfield profile guards reject that provider. No live
+provider or real credential is used. A live direct-profile candidate would still
+require an equivalent reviewed request contract and explicit endpoint, model and
+credential eligibility. Do not add a new transport platform or weaken
+profile custody to force this alternative through. Evidence is retained in
+`/private/tmp/odylith-profile-comparison.Bd02Or/provider-boundary.md`.
+
+## Stop the prompt-rewording approach (2026-09-09)
+
+The source-led obligation-allocation candidate also fails independent utility
+adjudication and the shared model deadline. It retains the participants and source
+actions, but verification again reduces preservation to finding current evidence,
+and loses the earlier adverse-case controls. Authoring takes 41.688 seconds;
+review returns null with 13.311 seconds remaining; total failure is 55.264 seconds.
+No production prompt, schema, profile, package or pending generation is changed.
+
+Two localized instruction alternatives have not resolved this recurring class.
+Do not continue with another wording patch, retry or example. Select a separately
+grounded mechanism or pinned-profile comparison that can jointly meet source
+fidelity, outcome verification and the fixed 60/90/120 regime. Keep full independent
+review of the complete candidate: generating new design in the final review call
+would leave that prose without the current admission coverage. No speed cause or
+replacement winner is established. Preserve the exact rejected source-only trial
+and independent adjudication at `/private/tmp/odylith-source-obligation.VPCORa/`.
+
+## Source-obligation verification and timing boundary (2026-09-09)
+
+The two-edit participant/outcome instruction alternative is rejected after one
+independently preflighted source-only trial. Participant coverage improves, but
+the proposed consent checks can pass after losing earlier evidence. Independent
+raw adjudication confirms that P1; it does not demand a speculative component
+edge or turn weak proposed checks into an ordinary-copy admission hard law.
+The source-event reference survives while the proposed responsibility and checks
+weaken its obligation. Source-event anchoring is a hypothesis, not a proven fix.
+
+The author uses 41.994 seconds; the unchanged reviewer returns null after 13.013
+seconds against 13.004 remaining. The parent fails at 55.249 seconds with all
+720 frozen dependencies unchanged and no package or consumer mutation. The
+313 passing guarded contract tests are not semantic or consumer-SLA proof.
+Keep the exact rejected evidence under
+`/private/tmp/odylith-outcome-verification.k2IfjZ/`; no second case or retry is
+authorized by that contract. Production stays at the validated source checkpoint.
+Any successor must jointly improve verification of the original source promises
+and complete author/review within the fixed 60/90/120 regime. No schema growth,
+profile sweep, example-specific patch or losing-prompt adoption is justified.
+Registry contracts and Atlas topology do not change in this diagnostic slice.
+
+## Complete-package timing and utility adjudication (2026-09-09)
+
+Final frozen Radar proof passes 5,036 runtime checks, 1,168 install checks,
+three Greenfield CLI checks and 361 browser checks with one existing skip.
+All 3,194 selected inputs match before/mid/after. Independent pointer review
+passes all eight obstruction/recovery variants and accepts the helper without
+product CSS changes. The source correction removes 746 net lines across five
+production owners; no semantic model, profile, deadline, dependency or schema
+is added. Preserve /private/tmp/odylith-radar-final-gate.ANcrqg/ as the exact
+frozen code/test evidence. Subsequent governance-only closeout and migration
+assessment require their own refreshed readback and CLI proof; do not present
+them as bytes from that earlier freeze. The broader generic CLI check identifies
+two current migration-assessment fingerprints; extend finished assessment
+B-145 without changing B-142's active lifecycle. This is a development
+checkpoint, not a winning semantic-authoring mechanism or release completion.
+
+The first frozen broad gate passes 5,036 runtime, 1,168 install and nine
+CLI/governance checks with all 3,194 selected inputs unchanged. Browser proof
+has 352 passes, one failure and one existing skip. Independent capture and a
+physical-click counterfactual locate the failure in the test helper: complete
+rows exceed the compact scroller, and its forced fallback clicks non-row
+content. No product selection misrouting is established. Both shared helper
+callers now use a checked visible point without force or event dispatch.
+All 21 authored-story browser controls pass, including eight normal/windowed,
+desktop/mobile and surface/shell-obstruction variants. Covered rows cannot
+change selection; removing the test cover restores ordinary interaction.
+The original compact execution-wave route and layout assertions also pass
+unchanged. Preserve the initial mixed gate and two test-setup mistakes
+(ambiguous active-button selector and an unmounted negative target), not as
+product defects. Repeat the frozen broad gate before checkpointing; this
+does not close the generated-verification P1 or the full release goal.
+
+The bounded Radar correction now has independent acceptance and 114 focused
+passes on MarkdownIt 4 in 34.89 seconds. The syntax owner, active payload
+adapters and browser use complete authored content without sentence or command
+rewriting. Section extraction shares Markdown token spans; fenced headings and
+literal checklist markers cannot change source structure or completion state.
+The actual retained-package audit copy passes 32 state cells and ten exact row
+comparisons, with all 116 sealed-original files unchanged. Root confirms
+distinct deliverables and mobile wrapping visually. This is not publication or
+semantic-quality acceptance. Freeze the settled source and governance, run full
+runtime/install/browser proof, then commit and push only after the gate passes.
+
+Independent Markdown reading controls expand the same owning correction to
+the shared backlog formatter. Direct reuse would preserve a second sentence
+parser: code containing inline step numbers becomes a list, code underscores
+are removed, nested lists flatten and balanced link targets are truncated.
+Ordinary Markdown is also literal in the first preview candidate. Replace
+that formatter with the already declared MarkdownIt dependency, raw HTML
+disabled and URL validation retained; remove obsolete command/prose rewriting
+and token-count paragraph logic from its active callers. Preview formatting
+must stay noninteractive inside row buttons, with no image fetch or fence
+execution. Keep complete source text beside formatted output. This is one
+syntax-rendering ownership correction, not new product interpretation or a
+new model role. Prove both supported dependency majors, causal structure and
+security controls, all Radar reading consumers, and then the frozen broad gate.
+
+The Radar candidate passes 83 focused checks, but independent review finds a
+new P2 before the broad freeze: desktop-to-mobile resize clears offscreen row
+measurements while retaining raw scroll offset, moving selected B-092 out of
+view. The initial resize test resets scroll to zero and misses this behavior.
+Preserve a meaningful row anchor when recalculating layout; require the
+selected-row and late-condition controls before accepting the correction.
+Retain windowing and complete prose. No broader virtualization framework or
+waiver is justified, and the earlier focused pass is not final acceptance.
+
+The next proposed composition is rejected before dispatch. The exact retained
+v54 prompt did produce better proposed checks, but its shelter candidate repeats
+the previously adjudicated P1 omission of contextual human participants:
+displaced residents remain state/action targets while human_actors contains only
+city staff. Root and two independent readers corroborate this. The changed
+exact-row reviewer can remove unsupported surplus facts but cannot restore
+missing participants. Its observed timing does not earn repeating a known
+semantic failure. No new live call, version/prompt restoration or adoption occurs.
+Retain the useful evidence that existing verification/assumption fields suffice;
+the next mechanism decision must address missing meaning as well as insufficient
+outcome proof, without extra runtime calls or a new hard block on ordinary copy.
+
+Current bounded implementation removes Radar's discovered sentence/title
+recomposition phase. The payload should carry existing authored Proposed Solution
+content into a workstream preview, with an explicit source-field fallback; the
+view must preserve complete blocks and authority labels without lexical filters,
+invented title narratives or character clipping. The shared detail callers of
+the obsolete shortening helpers must migrate too. Long-block reachability in
+the virtualized rail, safe markup, and ordinary/empty/degraded state proof are
+required before accepting this owner change. No semantic model or canonical
+schema changes belong to this presentation correction.
+
+One independently preapproved standard attempt at f5cc976e now meets the timing
+constraint: the actual proposal returns in 54.913950 seconds, including two
+model calls and a complete 116-file sealed package. All frozen inputs, approved
+import origins, raw-to-accepted correspondence and sealed hashes pass independent
+readback. The 49.820284-second model metadata precedes proof emission; the entire
+external duration is below55 and conservatively covers those tails. Review takes
+12.911110 seconds. No publication occurs, and the reviewer changes no candidate
+values. This is unpublished mixed-bootstrap/source-local feasibility, not proof
+of reliable timing, correction value, host parity or a released installation.
+
+Three reviewers reject complete quality despite faithful source meaning. The
+P1 is product verification: a package promising preservation can satisfy every
+proposed check by creating and linking initial entries while losing later
+evidence. Existing design verification fields reach downstream surfaces; first
+establish whether weak author content, review scope or projection ownership
+causes the gap. Compare only bounded alternatives that make a broken requested
+outcome fail its proposed acceptance checks. Do not introduce domain vocabulary,
+another model call, an architecture mandate or a schema for this example.
+
+The 32-cell desktop/mobile state matrix passes but does not close P2 findings:
+repeated Radar previews, unreadable default mobile Atlas labels, and readiness
+checks limited to references rather than usable evidence. Preserve all pending
+bytes and the exact rejected package. There is no retry, CONFIRM, publication or
+production adoption from this result. Evidence and all three review boundaries:
+/private/tmp/odylith-completion-package.DGzOhE/REVIEW.md.
+
+Next proof must distinguish outcome-verifying checks from object-existence
+checks across independent disclosed examples, preserve explicit assumptions
+and optional-design advisories, and still meet consumer60/90/120 and model55/80/105.
+Final holdout, all-reader atomicity, installed lifecycle, profile/host parity and
+the full release completion standard remain unchanged.
+
+## Current checkpoint proof (2026-09-09)
+
+The integrated correction now passes the frozen full gate: 5,002 runtime tests
+in 490.12 seconds, 1,168 install tests, 340 browser checks with one unchanged
+fixture-specific skip, ten current-record desktop/mobile checks and three root
+CLI checks. All 3,191 selected source and proof inputs remain identical before,
+during and after the run. Every process is terminal before the freeze is lifted.
+The unchanged hotfile guard passes after real duplicate-loop removal; no size
+exception or scoring rule is added. CB-334/335/336, CB-242 and CB-119 retain the
+causal failures and rejected candidates below and in their Casebook records.
+
+This is a stable source checkpoint, not completion of B-142. No new live model
+attempt or final holdout ran. A fresh complete package within the fixed selected
+deadline, host/profile qualification, all-reader atomic publication proof, full
+distribution and clean install, phase adjudication and final untouched holdout
+remain open. Automatic delivery in the current desktop session is unverified;
+the five hooks are already reviewed, trusted and enabled, with no user approval
+pending. Read-only model-free retained-candidate timing is not consumer-SLA proof.
+
+## Active-plan coverage correction (2026-09-09)
+
+Current bounded candidate: 84 focused checks pass, with 67 formatter/validator
+checks also passing on Markdown 4 (the main environment uses Markdown 3).
+The actual CLI validates 25 active reference plans and 95 active/completed risk
+plans. The current 95-plan source/render audit reports zero changes, placeholder
+growth or idempotency failures. This supersedes earlier candidate evidence below.
+The last independent finding exposed a P1 whole-section bypass around ordinary
+HTML: six causal formatter/validator controls now pass after removing that bypass.
+Uncertain enclosure text remains local; unrelated records are still checked.
+Final independent re-review passes 26 asserted boundary/reporting controls with
+no actionable finding. Governed refresh passed. The frozen wider gate finished
+with 4,783 runtime passes and ten failures, 1,168 install passes, and 340 browser
+passes with one fixture skip; all 3,188 selected paths stayed unchanged. Four
+supplemental Casebook readbacks pass after opening the intended detail disclosure.
+No new live Greenfield attempt or release claim follows from this mixed gate.
+
+## Integrated runtime corrections (2026-09-09)
+
+The size failure is corrected without a cap exception: a single ordered typed
+pass replaces the duplicate direct/traceability loops in the same owner. Scope
+is now 1,571 lines versus the unchanged 1,576 cap; the existing evidence module
+is unchanged. Five pre-refactor characterization checks preserve ordering,
+defaults and cache immutability. The final focused set passes 227 in 83.53
+seconds, full hygiene passes 56, independent controls pass 22 and all fourteen
+probe outputs remain byte-identical. Independent equivalence review and a
+fresh frozen full gate still precede a stable checkpoint. No new abstraction,
+scoring layer, filename rule or repository-wide decomposition claim is added.
+
+Independent equivalence review now accepts the consolidation: 41 checks pass
+in 26.55 seconds, including fourteen hash-verified comparisons with the accepted
+collector and five ordering/default/cache characterizations. Source writers and
+reviewers are terminal. Only the fresh frozen integration gate remains for this
+bounded checkpoint; the full Greenfield release obligations remain open.
+
+The fresh frozen gate has 4,996 runtime passes and one structural failure:
+the scope owner is 1,587 lines against its maintained 1,576 ceiling. All
+3,191 selected files remain unchanged across the run. Install has 1,168 passes;
+browser has 340 passes and one fixture-only skip; current Casebook readback
+has ten passes and root CLI has three. The prior ten runtime failures are
+cleared, but the new size failure prevents a stable checkpoint. Consolidate
+the duplicated direct/traceability evidence work or move that cohesive phase
+to its existing path-evidence owner, without formatting tricks or raising the
+ceiling. Prove the existing full hygiene module before repeating expensive
+integration checks. Source/test changes remain uncommitted pending this gate.
+
+Current CB-336 replacement uses the existing path matcher to collect support
+owners for each changed path. Its 43 overlap/locality/authority controls fail
+before the second correction and pass afterward; the combined focused suite
+passes 222 checks in 83.35 seconds. The two source owners gain thirteen net lines,
+with no new scoring or filename rule. Independent re-review and the frozen
+runtime/install/browser gate remain required. Earlier rejection evidence below
+is retained to explain why equal-target grouping was removed.
+
+Independent re-review now accepts the revised source: 22 checks pass, with
+fourteen additional baseline/current probe replays and no actionable finding.
+The collector remains O(references times changed paths), with one additional
+support-matching pass. Source and test writers are terminal. Refresh governed
+truth, run its non-mutating gate, then freeze the whole tree for full runtime,
+install and desktop/mobile normal/fallback/degraded browser proof.
+
+CB-242 now has a causal cleanup-entry race test: the old whole-hook alarm could
+skip subprocess cleanup after the command timeout fired. One alarm-suspended
+command lifetime removes that window without increasing deadlines or reducing
+TERM grace. Sixteen ownership and seventy cross-host controls pass; independent
+review reproduces the old leak by a different line-trace method and accepts the
+correction. The targeted intervention/dashboard browser set passes 45 controls.
+
+CB-336's first candidate is rejected by independent mixed watch/exact evidence:
+equal-target grouping demotes exact-file supporters but leaves a directory
+supporter falsely dedicated, creating a new confident choice with zero strong
+signals. Sharedness must be derived over references actually matching each
+changed path, with unrelated subtrees and true owners preserved. The wider gate
+is held until causal correction and independent re-review; 179 focused passes
+did not establish that relationship boundary.
+
+Context owner discipline: the scope and path-evidence modules were 1,576 and
+1,004 lines before this safety-critical routing repair. The proposed exception
+does not satisfy the maintained non-expanding inventory, so a bounded structural
+correction is now required in this change. Prefer removing the duplicate direct
+and traceability path-evidence pass over new abstractions. If a phase moves,
+use the existing path-evidence owner with a clear input/output contract; preserve
+cold/cached equivalence, explicit/code/contract ownership and narrowing. No
+forwarding module, alias wall or unrelated growth is allowed. This does not
+claim that all pre-existing Context Engine size debt is resolved.
+
+CB-336 owns a separate context-selection defect: a runbook shared by three
+workstreams plus unequal component memberships produces a confident unique
+choice with zero strong ownership signals. Preserve the supporting references,
+but use their actual cross-workstream relationships before inferring ownership.
+Do not add filename lists, new score layers or blanket weak-evidence suppression.
+The bounded source correction passes 179 focused controls, including genuine
+code/contract and dedicated-document positives. It reuses the existing shared
+evidence path and keeps ambiguity classifications; shared-only memory cannot
+invent ownership. The source delta is eleven net lines, with no new score
+system. Independent review and the full frozen gate remain outstanding.
+
+CB-119 distinguishes two reviewed corpus support-declaration updates from this
+product defect. Exact packet-codec, empty and ambiguous-input tests must use
+controlled premises while retaining separate real-repo semantic proof. Valid
+new code links must not be removed to recreate historical ambiguity.
+The six exact contracts and five live semantic cases now have a dedicated
+321-line test owner; 19 focused checks pass, including the unchanged runtime
+warmup regression. Their original expected IDs, encoded counts and small graph
+counts are preserved. Independent review accepts that bounded test/corpus slice,
+with 16 additional targeted passes. Canonical corpus mirroring passed and all
+30 corpus/publication controls now pass; the initial mirror failure is retained.
+
+Freeze source and proof inputs after both corrections, then rerun the full runtime and
+governance gates before a stable checkpoint. The final holdout remains unrun;
+the diagnostic fallback-search scope limitation is recorded in the private
+evidence report and must not be represented as proof of module non-access.
+
+## Active-plan correction history
+
+The initial focused correction passed 46 controls. Traceability now validates
+all 25 active plans, with grounded current owners and scoped operational links.
+The audit uncovered missing operational documentation; the governance and
+Greenfield runbooks now describe existing CLI authoring, validation, confirmation,
+and recovery boundaries without asserting release qualification. Historical
+modules were not restored. Partial runbook coverage remains explicitly labeled.
+
+CB-335 owns a second genuine failure: physical-line risk formatting invents
+placeholders and detaches wrapped mitigations. The first indented-line grouping
+candidate was rejected after valid lazy continuations and literal examples still
+failed. CommonMark paragraph/block spans replace that grouping and heading scan.
+On the actual 95-plan inventory, 30 candidate rewrites preserve all non-whitespace
+source tokens and rendered HTML, add no placeholders, and are idempotent; the
+canonical writer applied those formatting-only changes. The risk CLI passes.
+Independent review then rejects the partial CommonMark adapter: it still lets
+blank lines and opaque children terminate risk ownership, interprets inline-code
+labels as live mitigations, and collapses significant Markdown whitespace. All
+16 new public counterexample controls fail before the next source edit. Replace
+the physical-line renderer with actual list ancestry and source-preserving edits;
+do not retain that renderer beneath a new parsing adapter. CB-335 remains Open.
+Focused proof does not yet qualify the wider regression or release gate.
+
+Current-reference validation also reproduced a dot-path identity defect: two
+punctuation-stripping operations turned `.github` into `github` and invalidated
+`./src` references. Both are removed; Path owns relative-path normalization.
+No model role, profile, timing cap, confirmation authority, or holdout changed.
+
+The wait correction and coupled governance are committed and pushed at
+b62b3f56. Final staged validation required one review-only Atlas refresh;
+all 47 diagrams are fresh. The final Casebook readback passes on desktop
+and mobile. This is a stable bounded checkpoint, not Greenfield release proof.
+
+The CB-334 source correction and all 25 active reference sections are present;
+its actual CLI passes. The adjacent risk validator now distinguishes missing
+scope, empty applicable scope, and the exact counted validation inventory.
+CB-335 remains open pending the wider proof of this bounded formatter correction;
+its independent source re-review has passed. Refresh governed surfaces and freeze the whole tree.
+Do not weaken rules, restore retired paths, or use this checkpoint as permission
+for an unreviewed live Greenfield retry. No protected holdout access is included.
+
+## Completion-wait implementation checkpoint (2026-09-09)
+
+The frozen broader gate is now terminal: runtime 4717 passed; install 1168
+passed; browser 340 passed and one skipped fixture-only Radar diagnostic cell.
+All 3179 hashed tracked/owned files are unchanged. This closes the bounded
+wait-correction regression gate, not a live request or release phase. Record
+the newly diagnosed zero-plan traceability coverage gap separately; its current
+exit-zero result is not acceptable proof for B-142 or the other dated plans.
+The coverage gap is captured as CB-334. Use the existing plan-discovery
+contract for its bounded correction; do not broaden the Greenfield mechanism.
+Checkpoint the reviewed source and current governance without marking the
+overall goal complete or preapproving another live attempt.
+
+The preceding goal wave made progress: the diagnosed wait delay is now removed
+in a 105-line command owner, with direct adoption and no compatibility shims.
+Four genuine before-fix failures become passes; the focused sync, hook and
+upgrade transport pack passes 103 controls. All twelve final owner controls
+also pass independent review. The production-owner local compilation replay
+takes 5.369247 seconds with 116 verified after-image files, unchanged product
+facts, no provider calls and no consumer changes. The interim hook-status reply
+only reconfirmed known trust; it did not advance Greenfield qualification.
+
+Freeze source and generated truth, then run full runtime (excluding the
+protected final-holdout module before collection) and full applicable browser
+coverage. Preserve all failures. Only checkpoint after those gates and governed
+readback; no new live experiment is preapproved by local timing evidence.
+Consumer 60/90/120, model 55/80/105, reviewer20, semantic quality, all engines,
+transaction safety, host parity, clean install and final holdout remain fixed.
+The prior 60.516840-second live attempt remains failed.
+
+## Live package rejection and local tail diagnosis (2026-09-09)
+
+The one independently approved live attempt at pushed source ca1ed52c is
+terminal: error/no preview after 60.516840 seconds. Its author and reviewer
+return in 39.298001 and 14.528926 seconds; their sum is not independent
+whole-phase timing proof. Review admits unchanged. Independent adjudication
+finds no substantive defect in that admitted candidate but cannot qualify a
+sealed package because none is retained. Five candidate staging files change;
+no pending transaction, generation publication, retry or holdout access occurs.
+Do not adopt the exact-row mechanism or relabel this as a successful request.
+
+A no-provider local compilation profile places most of the tail in staged
+surface refresh. A bounded baseline/completion-aware-wait/baseline triplet takes
+6.046942/5.223923/6.040746 seconds with the same product-facts hash and 116
+after-image files; all consumer snapshots remain unchanged. Preserve the first
+profiler's post-compilation dataclass-reporting TypeError separately.
+
+Next, replace unconditional polling sleep in the shared sync command owner
+with bounded completion-aware waiting. Independent review accepts the narrow
+contract: suppress only TimeoutExpired, retain heartbeat/deadline checks,
+exit codes, termination escalation and inherited hook groups. First add causal
+zero/nonzero completion-at-0.03s controls, make still-running timeout doubles
+faithful, and retain real process-group tests. Respect oversized-file ownership
+discipline without broad architecture churn. This is a local performance
+candidate, not stricter deadline enforcement or proof of standard60 success.
+No new live attempt is preapproved. All original quality, 60/90/120, phase,
+host, browser, installed-release and final-holdout gates remain open.
+
+## Live preflight correction checkpoint (2026-09-09)
+
+The preceding goal pass made progress: it rejected an incomplete freeze before
+dispatch, preserved interrupted proof output, bound actual consumer execution
+inputs, and passed 440 related source checks. Final independent review accepts
+the remaining directory-symlink correction with its causal control and twelve
+passing runner checks. The intervening hook review reconfirmed five trusted,
+enabled definitions; it did not qualify this existing desktop session.
+
+Commit the bounded source/governance correction, then freeze the one actual
+Terra/low author and Sol/medium exact-row reviewer complete-package attempt.
+Require independent approval of that exact freeze before dispatch. Preserve
+standard consumer60/model55/reviewer20, at most two calls, no retry, no CONFIRM
+and no protected-holdout access. Stop on the first latency, admission, integrity
+or independently grounded quality failure. A successful preview still requires
+semantic and browser review and establishes feasibility only, not release.
+All original phase, multi-profile, UX, transaction, distribution, reliability
+and final-holdout requirements remain open.
+
+## Package readback review (2026-09-09)
+
+Both bounded corrections now pass independent re-review, including independent
+14-test readback and 46-test overlay runs in separate processes. Twelve causal
+readback failures are eliminated while the real unchanged sealed package still
+passes. The maintained hash fix retains its 423-check regression evidence.
+This closes evaluator preparation, not live quality or timing qualification.
+
+The preceding goal pass made progress: 46 custody controls, actual sealed
+synthetic-package propagation, and 423 related release/transaction checks pass.
+Independent review accepts the canonical hash correction but requires the
+external evaluator to reject denial/malformed withdrawals and compare rebuilt
+envelope authority with the transaction and its two proposal projections.
+The actual artifact's three authorities already match; the gap is in proof.
+Close these two bounded findings with causal controls and re-review, then commit
+the source correction and governance before the single frozen live feasibility
+attempt. No live call or production mechanism adoption is authorized by the
+synthetic evidence alone. All original semantic, timing, UX and release gates
+remain unchanged; the hook review is complete but desktop activation unverified.
+
+## Complete-package feasibility preflight (2026-09-09)
+
+The two custody controls now pass with the existing 44, and independent review
+accepts the bounded overlay. The actual synthetic CLI produces a sealed package
+with five justified workstreams/components and five diagrams without publishing.
+Raw/final, typed-envelope and accepted-record correspondence checks pass before
+the maintained dry-run helper incorrectly rejects the body hash. The real
+commit-only loader verifies the unchanged package: the evaluator hashes volatile
+consumer timing unlike the compiler/commit contract. Reuse the existing hash
+owner and prove real compiled input plus semantic and nested-model-timing tamper
+rejection. Keep the first failed readback, package and original provider record.
+
+The previous goal pass made progress: it prepared the actual author/reviewer
+overlay, passed 44 no-provider controls, installed a fresh synthetic consumer
+baseline, and obtained an independent finding that changes the next action.
+No live package call or complete synthetic CLI proposal has run.
+
+Independent review reproduces a source-custody rebound that raw row checks miss:
+withdrawing an internal-system alias moves event and component ownership to a
+different title citation even though both structural validations pass. Before
+freezing the experiment, preserve the initial validated first-path, contextual
+and component-responsibility relations and check the exact merged argument sent
+to final validation for mutation. Require failing-before/passing-after controls,
+then independent re-review and actual synthetic CLI/package correspondence.
+The conservative relation check is a bounded feasibility restriction, not a
+general-purpose withdrawal algorithm. No lexical exception, schema expansion,
+new model role, larger deadline or production adoption is planned.
+
+All original semantic, complete-package, consumer60/90/120, model55/80/105,
+reviewer20, whole-product UX, host, release and protected-holdout gates remain
+open. Evidence: `/private/tmp/odylith-retraction-package.38qOEC/`.
+
+## Exact-row component comparison outcome (2026-09-09)
+
+All six predeclared controls pass root and independent semantic adjudication
+with exactly six Sol/medium calls, no retries and unchanged frozen inputs. Two
+controls withdraw only the unsupported human classification; two retain real
+non-performing recipients unchanged. The negatives correctly deny missing
+matching-before-publication authority and an operator invocation used as a
+singular product story. Full measured reviewer roles take 16.809991, 16.186344,
+16.350920, 15.960882, 15.010641 and 17.260914 seconds, all within the existing
+20-second cap. Remaining source and proposed design stay exact on admissions.
+
+This supports the bounded retraction hypothesis on these development controls,
+not production adoption, unseen reliability, a speedup, generated package quality
+or consumer-SLA qualification. No product source/profile/schema changes, third
+runtime call, publication or holdout access. Retain the initial preparation
+failure, rejected freeze, six causal preflight failures and corrected 28-check
+proof alongside all live requests/results and independent decisions:
+`/private/tmp/odylith-retraction-review.Kd7T7o/REVIEW.md`.
+
+Only one separately predeclared complete actual author-to-review/package
+feasibility test is earned, with its own freeze and independent preflight under
+standard model55/consumer60 and reviewer20. It must carry the corrected candidate
+as real package authority while retaining the original model response and exact
+review receipt; an adapter returning the old pre-review authored object is not
+proof. Rescue80/90, deep105/120 and all semantic, UX, atomicity, engine-activation
+and release obligations remain unchanged and open.
+
+## Bounded exact-row admission comparison (2026-09-09)
+
+The installed purpose-as-person rejection motivates one external discriminator,
+not production adoption. Historical full/sparse correction could rewrite values
+and sometimes dropped valid recipients. Independent history review finds one
+narrowly distinct hypothesis: retain complete source/design admission, but allow
+the reviewer to withdraw only exact enumerated unsupported source-fact rows. It
+cannot introduce semantic values, replace prose, rewrite events or change design.
+Unreferenced or non-performing people are not inherently invalid; final source
+coverage remains mandatory and missing/replacement-required meaning must deny.
+
+Twenty-two no-provider controls pass. The actual surplus row can be withdrawn
+with unchanged workflow, context and design, while deleting a referenced actor
+fails structural binding. A valid non-performing recipient can also be deleted
+without structural failure: this explicitly disproves treating schema success
+as semantic proof. Six predeclared source/candidate controls cover the actual
+failure, a real recipient, equivalent action wording, missing source precedence
+and an invocation wrongly assigned as product story. The old invocation control
+lacks current complete-design fields, so its preparation fails before any input
+or provider call; the replacement is an explicitly constructed development
+control on the current candidate, not a weakened production validator.
+
+Independent preflight rejects the first frozen harness before any call: deleting
+rows can leave valid numeric precedence/terminal references bound to different
+source citations, and the role clock excludes its verification tail. Six causal
+controls fail against that harness, including equal quote bytes at different
+occurrences. The external correction preserves exact bound citations and event
+rows without remapping, calculates dispatch headroom after request preparation,
+and includes verification in the 20-second role clock. All 28 no-provider checks
+then pass. Preserve the rejected freeze and first failures; a fresh independently
+approved freeze remains required. Production code and live inputs are unchanged.
+
+Retain Sol/medium, at most 20 seconds and one call per control, stop at first
+failure, and require exact frozen-input preflight plus independent adjudication
+between calls. No third call, retry, model sweep, sealing or publication. A pass
+would only earn a separately declared actual author/review package feasibility
+test inside standard55/60; rescue80/90, deep105/120 and every quality/UX/release
+obligation remain fixed. Contract and raw evidence:
+`/private/tmp/odylith-retraction-review.Kd7T7o/acceptance.md`.
+
+## Installed rescue-profile semantic boundary (2026-09-09)
+
+The unchanged 41c89d6d distribution builds completely and passes all twelve
+checksums. Fresh consumer baseline, guidance, no-write negative control, sync
+readback and installed import isolation pass. The predeclared existing
+rescue90/model80 semiconductor lab custody request then fails in 50.088195
+seconds with no package or governed-path changes. Its author takes 37.879944
+seconds; the reviewer takes 10.925066 seconds and correctly rejects the exact
+phrase “engineering review” as an unsupported human actor. Pre-generation
+annotations and independent adjudication agree: it is a proof purpose.
+
+This is semantic authoring failure, not timeout or escaped admission. Frozen
+inputs stay unchanged, and only the declared author/reviewer calls occur. No
+retry, profile escalation, confirmation, publication or protected-holdout access.
+The accepted contract, installed identity, full receipts, initial setup/preflight
+failures and proof limits are retained in
+`/private/tmp/odylith-rescue-profile-proof.vA5ms8/REVIEW.md`.
+
+Do not count rejection within the deadline as consumer success. More time alone
+does not correct the diagnosed exact-quote/wrong-role failure. A replacement is
+not selected: first compare the owning abstraction with retained failed
+mechanisms, including the retired three-disposition reviewer. No unchanged
+corrective-review retry, lexical actor filter, admission removal or model sweep
+is justified by this result. All 60/90/120, generated-quality, native delivery,
+whole-product UX and release gates remain fixed and open.
+
+## Existing proposed-carrier fidelity (2026-09-09)
+
+Outcome: reject the low-effort reviewer after the first and only call returns
+null at 20.031191 seconds with provider timeout and unchanged inputs. No profile
+change, retry or later control. Independent review accepts stopping; this does
+not establish a general latency cause or qualify the unchanged mechanism.
+The separate Project correction preserves existing assumptions in an advisory
+blueprint section and Project intelligence, with no new schema or gate. Root
+rejected the initial coding-gate placement. Final-shape baseline reproduction
+fails at the missing section; current source passes 50 focused checks and 17
+fixture browser controls. Independent patch review accepts. The full frozen
+runtime suite passes all 4,708 tests in 339.95 seconds, with unchanged tracked
+tree and new-test hashes. Evidence and checkpoint limits:
+`/private/tmp/odylith-review-low-effort.j0i9Kv/REVIEW.md`.
+
+One separately bounded timing comparison changes only the existing complete
+candidate review's Sol reasoning effort from medium to low. Reuse the five
+unchanged, previously adjudicated development controls; stop at the first wrong
+verdict, unsubstantiated witness, provider failure or result over 10 seconds.
+The runtime role cap remains 20 seconds. Ten seconds is an experiment-advance
+criterion targeting a retained 44.169-second author's remaining window, not
+proof that the observed 50.496-second author can fit. Maximum five calls, one
+per control, independently reviewed before advancing. No production profile or
+prompt change, no retries, and no holdout access. Predeclared comparison:
+`/private/tmp/odylith-review-low-effort.j0i9Kv/acceptance.md`.
+
+Independent audit isolates one representation loss: general assumptions are
+omitted from the durable Project brief and Project intelligence. First reproduce
+that loss with existing typed assumptions and verification; then pass the same
+authored values through the existing Project views with explicit proposed,
+unverified authority. Radar, Registry, Atlas and selected-handoff controls must
+retain their current verification values. No new schema, semantic classifier,
+model call, runtime quality blocker or post-CONFIRM work belongs to this fix.
+Main owns governance and the separate timing comparison; one bounded worker owns
+the existing proposal builder and its cross-surface regression. The previous
+v54 prompt remains rejected; actual generated quality and the complete consumer
+time gates must still be proved together before promotion.
+
+## Retained first-user quality adjudication (2026-09-09)
+
+Independent review rejects the retained 50.334-second installed shelter preview
+as a complete quality pass: its functional scope survives, but proportional
+privacy/risk obligations are missing. No P0 is established by this review. Keep
+the unpublished transaction unchanged. The projection hardcodes empty risk
+fields; no dashboard reinterpretation or source-keyword rules are justified.
+Existing assumptions and verification fields can represent safeguards, but the
+prior v54 authoring experiment failed review on time and remains rejected.
+Current v53 is unqualified, not a winning mechanism.
+
+One bounded correction preserves existing provider metadata before rejecting a
+late reviewer response. Four causal regression failures become 211 focused
+passes, and independent correction review accepts. The frozen broad run has
+4,705 passes and one stale Release forensic sidecar; its diff is exactly the new
+Compass decision logged after sync. Refresh through the owning CLI and validate
+that record without weakening the test. Seventeen browser checks pass. Preserve
+the failed broad receipt; no complete green rerun is claimed by these counts.
+This does not improve latency or qualify package quality. No prompt, profile,
+schema, model call, retry or 60/90/120 limit changes. Evidence and next-proof
+boundaries: `/private/tmp/odylith-review-evidence.mf25A6/REVIEW.md`.
+
 ## Active-session registration repair (2026-09-08)
 
 The bounded comparison identifies a live architecture evaluation behind
@@ -78,16 +974,3207 @@ Evidence: /private/tmp/odylith-active-intervention-repair.HfhM0b/.
 
 Created: 2026-06-26
 
-Updated: 2026-08-06
+Updated: 2026-09-08
 
 Backlog: B-142
 
-Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It
-must turn imperfect initial evidence into a coherent governed project without
-writing unconfirmed artifacts or needing product interpretation, quality repair,
-or generated content after confirmation.
+Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It must turn imperfect initial evidence into a coherent governed project without writing unconfirmed artifacts or needing product interpretation, quality repair, or generated content after confirmation.
 
-## Current Product Contract (2026-07-29)
+## Current Convergence Contract (2026-09-04)
+
+### Hash-bound recovery handoff (2026-09-08)
+
+Next, compare the existing shared foreground deadline at the deterministic
+decision boundary against delayed resolution/publication/rejection. Predict a
+blocked environment outcome with the same approval hash before the managed
+host timeout, without later routing or model work. Keep hard-kill and externally
+shortened host timeouts outside that inference. Exact unregistered-host commands
+must return a read-only outcome without accessing pending data. This bounded
+comparison does not qualify write offers or complete native-host safety.
+
+The bounded comparison fixes 15 causal deadline/unknown-host failures. Real
+publication controls reject the first candidate because cancellation records a
+terminal recovery state and blocks same-hash retry. Keep cancellation distinct
+from diagnosed drift, preserving the existing interrupted journal and its strict
+verification path. The corrected callback/journal pack passes 90 checks; the
+expanded deadline pack passes 32, including both sides of durable publication,
+operator-drift preservation and successful commit despite stalled browser opening.
+Native Claude returns complete blocked recovery with zero inference requests when
+the inner deadline wins; a native outer timeout still reaches the local detector.
+Do not turn this bounded improvement into host-eligibility, consumer-timing or
+package-quality acceptance. Receipts: /private/tmp/odylith-decision-deadline.txhOc6/.
+
+CB-304's callback loses known approval identity in failure responses and suggests
+a bare confirmation retry that its own safety gate refuses. Preserve the parsed
+hash in the existing shared response owner and make shown retry/edit commands
+complete. Do not weaken exact-command admission or add model reasoning, implicit
+latest-transaction selection, retries, schemas or a host-specific duplicate.
+Require red-before/green-after failure controls for both hosts and a busy/retry
+round trip against the real lock and kernel. This bounded UX correction does not
+qualify native activation, host timeout safety, unknown-host offer eligibility,
+live package quality or the unchanged 60/90/120 consumer envelope.
+
+The focused gate now passes 82 controls in 17.90 seconds after 11 causal red
+assertions. The response constructor requires explicit identity at every branch;
+no new helper, parser, model call, schema or retry path is introduced. Four
+public-hook lock/retry controls use an existing no-op sealed fixture, not a new
+generated package. Frozen regression and checkpoint results remain in
+`/private/tmp/odylith-greenfield-decision-recovery.logj0B/REVIEW.md`.
+
+The earlier read-only handoff review left explicit implementation admission
+unproved. Its retained intent said not to implement: an input-free resume must
+not replay that instruction or manufacture new write authority. A fresh four-step
+public-CLI control now preserves B-001 and its component while distinguishing
+review, input-free review resume, an explicit Python implementation request with
+two named target paths, and input-free implementation resume. Only the explicit
+implementation request admits implement.target_scope. Both empty-input resumes
+retain context without replaying the saved intent; all 96 published files/modes,
+active identity and transaction bytes remain exact. No application file is
+created. Calls take 0.886–0.935 seconds on this structural source-local fixture,
+not live generation or installed/native host proof. Evidence:
+/private/tmp/odylith-integrated-handoff.5iSyMI/result.json.
+
+The 139 focused handoff, memory, transaction, Turn Gate, Delivery, Surface DAG
+and intervention-status controls pass in 12.69 seconds. A wider Context/Execution
+browser run passes 16 and fails D-005's old summary-phrase assertion. Commit
+46c35484 intentionally replaced that summary with the recorded/live Delivery
+boundary; its diagram still contains Context, Execution, intervention and benchmark
+flows. Preserve the original failure. Compare rendered title and complete summary
+with catalog truth, retaining engine-identity assertions instead of demanding
+retired prose. This requires no product topology or runtime change. Native
+interventions remain degraded; complete generation quality, 60/90/120, current
+installation and independent release gates remain open.
+
+The first oracle correction still fails one of 17 checks because engine names
+are in the diagram itself, not all repeated in its metadata. The final bounded
+test reads the actual served SVG text as well as exact catalog metadata; all 17
+controls pass in 16.58 seconds. Preserve both failed receipts, not a pristine
+initial pass. Existing diagram source, rendered assets and product runtime are
+unchanged. Final settlement/browser results are retained in the same evidence
+directory; no new generation mechanism is adopted.
+
+### Compass terminal-failure UX correction (2026-09-08)
+
+Delivery checkpoint `46c35484` is pushed and passes its actual one-pass source/spec
+commit gate. A later whole-tree check detects a separate background brief retry
+removing local-fact fallback diagnostics from the current Compass JSON/JS. Preserve
+that failure and stop only the identified owned laboratory worker; a passing
+before/after file hash does not establish process quiescence. Existing foreground
+refresh enriches unavailable diagnostics from its fact packet, but batch provider
+failure does not. A fresh bundle-to-runtime control fails with missing fallback
+title. Adopt the existing fact-packet enrichment at the batch failure owner; avoid
+patcher-side stale-fact carry-forward, new narration, retries or schema changes.
+This is a bounded terminal-state UX safety correction in the existing 2062-line
+batch owner, not unrelated feature growth. Keep its unchanged 2076-line guard and
+existing decomposition obligation; require scoped/global failure controls,
+ready-brief preservation, mismatched-generation guards and rendered degraded-state
+proof. Evidence and terminal checkpoint results remain in
+`/private/tmp/odylith-delivery-activity-boundary.fR20lE/REVIEW.md`.
+
+### Recorded activity ownership correction (2026-09-08)
+
+Four real source/spec sync-and-commit controls reproduce stale Delivery on both
+refresh entrypoints. Registry now owns live versus recorded-only collection,
+including separate disk/session cache identities and coherent coverage. Delivery
+persistence opts out of workspace observations; direct live fallback, Registry and
+Context keep them. Spec synchronization adopts the same boundary in its initial
+and post-update report builds, removing its prior local filter and duplicated
+coverage recomputation. An initial missed post-update call failed the existing
+CB-232 control and was corrected before broad validation. Fixture setup failures
+preceded the four causal reds and are not counted as product defects.
+
+The existing Registry/Delivery collection seam is preferable to a Delivery-local
+filter or globally disabling workspace activity. This is a narrow provenance
+safety correction in the existing large owners, not new feature growth. Their
+bounded follow-up remains separating collection/cache/report ownership from
+scope synthesis with complete snapshot characterization; do not add wrappers,
+normalizers, schema layers or semantic rules. Final focused proof passes 63
+controls in 2.87 seconds. Independent review accepts the bounded correction after
+11 controls in 1.67 seconds with no remaining P0/P1/P2. Its case-variant replay
+finding was reproduced twice before aligning event-kind handling with the existing
+normalization contract and invalidating old report caches. Frozen broad/browser
+proof and actual one-pass maintainer commit/readback remain required.
+The first selected sync additionally catches a direct private-cache caller in
+Registry validation omitted from the initial inventory. Its 17 failing controls
+share one missing mode argument; the validator now explicitly uses the live mode.
+Inventory private cache consumers as well as public builders at this boundary.
+The first frozen runtime run passes 4609 controls and fails only the pinned
+hotfile-size guard (381.92 seconds, unchanged full input hash). Preserve that
+failure. Remove the duplicate Registry component serializer in favor of
+`ComponentEntry.as_dict()` at all three consumers, including intervention path
+mapping, and remove Delivery's forwarding-only JSON helper in favor of its
+existing shared loader. Full-field and list-isolation characterization precedes
+the cleanup. Registry is now 2760 lines and Delivery 2897, both below unchanged
+pins; no cap exception, cosmetic compression or new module is required. Rerun
+focused, performance and full runtime proof before final browser/commit gates.
+Keep the pinned hotfile inventory test in the focused pack before future broad
+runs. The expanded focused pack now passes 121 controls in 4.08 seconds, including
+intervention behavior/performance and the unchanged size guard. Independent review
+accepts using the existing serializers instead of increasing caps.
+The final frozen runtime rerun passes all 4611 controls in 355.93 seconds. Full
+tracked source, tests, configuration and governance bytes retain SHA-256
+`032712708a11443636b5ab87b15646f7f748d2d7703e90962c213d618f05d28f`
+before and after the run. The original failure receipt remains immutable.
+Final rendered-browser, mirror, staged-readiness and actual one-pass clean-head
+results are recorded in the linked evidence report; do not treat the runtime
+pass alone as any of those gates or perform a second settlement if readback fails.
+Evidence: `/private/tmp/odylith-delivery-activity-boundary.fR20lE/`.
+The full capability-map journey, native intervention delivery, semantic quality,
+60/90/120, current installed release proof and untouched holdout gates stay open.
+
+### Delivery proof identity and memory-cache correction (2026-09-08)
+
+The bounded correction keeps unrecorded checkout observations out of persisted
+Delivery snapshots while retaining live Context fallback and explicit proof
+revisions. Independent review also reproduces stale normal refresh after a
+proof-ledger-only change: both existing cache guards omit that input. They now
+watch the existing canonical ledger path. No new engine, schema, provider call,
+transaction behavior, semantic rule or deadline change is introduced.
+
+The actual Git commit regression fails before the identity correction; both
+normal cache entrypoints fail before ledger dependency correction. All 35 focused
+controls now pass, including linked source changes and live Context identity.
+The superseded broad run was stopped after 2779 passes with unchanged inputs;
+it is not full-suite evidence. Final independent review accepts the bounded fix
+after eight controls and a fresh-process lightweight-cache check, with no remaining
+P0/P1/P2 finding in this slice. Frozen broad proof passes 4599 runtime tests in
+353.22 seconds and 42 browser checks in 57.39 seconds, with all tracked
+source/test/configuration/governance inputs unchanged and six HTML mirrors equal.
+Staged readiness passes, but actual clean-head check-only after source commit
+`b359963c` still fails Delivery freshness. Two synthetic workspace-activity events
+disappear when the source/spec changes are committed, altering evidence and queue
+ordering; Registry and Atlas remain current. This differs from the prior inferred
+HEAD-only failure and matches the persisted/live ownership class in CB-232.
+Keep one-pass integration unqualified, preserve the first artifact and comparison,
+and diagnose the separate Delivery activity boundary without blind refresh/commit
+loops or weakening live visibility. Receipts:
+`/private/tmp/odylith-delivery-proof-identity.9mIIEr/REVIEW.md`.
+
+The 2898-line Delivery owner receives only proof-provenance safety changes in
+this pass. Before unrelated growth, separate evidence collection from scope
+synthesis with characterization of complete snapshots and both refresh guards;
+do not introduce forwarding wrappers or duplicate normalizers. Existing Atlas
+flows retain the same resolver/Delivery/Context owners and edges. This correction
+does not close native interventions, generation quality, 60/90/120 reliability,
+current installed release proof or the untouched holdout gate.
+
+Independent diagnosis permits one clean-source settlement refresh as a bounded
+development-checkpoint workaround, not a one-pass ownership fix. Source/spec
+changes are already committed; only diagnostic/generated records may follow.
+Require unchanged zero synthetic-workspace events and freshness before and after
+that record-only commit. Stop if it fails again; do not repeat settlement loops.
+
+### Post-commit integrated freshness finding (2026-09-08)
+
+Pushed checkpoint `5db5485b` passes staged readiness and 42 final shell/intervention
+browser controls, but clean-head check-only then finds Delivery Intelligence stale.
+Registry remains current. The read-only comparison isolates exactly 44 changed
+`deployment_truth.local_head` fields and no other semantic difference. Proof State
+fills unknown recorded identity from the current Git checkout; the persisted
+Delivery artifact therefore invalidates across a commit that includes that artifact.
+
+Bound the next correction to recorded proof identity versus live checkout
+observation at the existing Proof State/Delivery seam. Preserve explicitly recorded
+revisions, current-context observation, source-change invalidation and all claim
+guards. Test metadata-only commit stability, actual proof/source changes and live
+identity before adopting a correction. Do not remove live-head fallback globally,
+because existing live-context tests require it; do not mask arbitrary freshness
+differences or repeat refresh/commit loops. This is a locally diagnosed integration
+gap, not an implemented or independently adjudicated fix. Evidence:
+`/private/tmp/odylith-proposed-verification.nn9Msk/delivery-clean-head-diff.json`.
+
+### Proposed-verification comparison: no integrated preview (2026-09-08)
+
+One frozen v54 author-prompt candidate asks for meaningful success/failure checks
+and proportionate proposed controls through existing verification and assumption
+fields. No schema, reviewer, model profile, call ceiling or deadline changes.
+After 145 focused controls pass, the complete source-local proposal returns no
+preview in 55.411078 seconds: author 35.177988 seconds; reviewer null after
+19.826509 seconds against 19.805631 seconds remaining. No maintained no-write-root
+hash changes; the prior sealed pending transaction remains byte-identical.
+
+The raw candidate contains more useful negative checks and a visibly proposed
+staff-access obligation. This demonstrates field capacity, not complete-package
+quality, generalization or causation for the timeout. Reject this candidate for
+adoption, remove its production prompt/version and candidate-only test, and retain
+the original evidence. Do not retry, raise a budget, bypass review or claim v53 is
+a qualified fallback. A further generation experiment needs a new evidence-backed
+deadline feasibility decision, not another prompt/schema iteration. Evidence:
+`/private/tmp/odylith-proposed-verification.nn9Msk/`.
+
+The whole capability map, including Memory, remains the acceptance boundary
+below. Native automatic intervention delivery is still separately unproven under
+CB-242. Neither useful raw model output nor a manually relayed Assist establishes
+a smooth integrated consumer journey. Keep 60/90/120 fixed, preserve all relevant
+engine handoffs and the untouched final holdout, and qualify complete behavior
+before further architecture expansion.
+
+### Requested Fast-service feasibility and current visibility (2026-09-08)
+
+The manual visibility check also reproduces current-summary loss: old replay
+wins before the current result is composed. CB-242 bounds the correction to
+the existing manual renderer and visibility broker. Explicit current closeout
+copy stays whole, retains the quality gate and cannot acknowledge undisplayed
+pending messages. Input-free replay remains available. This fixes a presentation
+handoff; it cannot close native trust/activation or the wider integration gate.
+
+Focused validation passes 55 cross-host presentation/recording controls. Frozen
+follow-through passes 4593 runtime tests and 42 targeted browser checks with all
+1825 input hashes unchanged. The exact current Assist is manually rendered and
+confirmed in the actual session. No native delivery, installed rollout, complete
+Greenfield quality or SLA qualification is inferred. Evidence:
+`/private/tmp/odylith-integrated-visibility-check.aOCzSb/`.
+
+One isolated installed comparison requests Fast service with unchanged Terra/low
+authoring, Sol/medium complete-candidate review and the standard 60/55-second
+consumer/model limits. Native configuration accepts the per-process request;
+the actual server-served tier is not observed. The preview seals in 50.333816
+seconds with five workstreams, five components, five diagrams and 56 planned
+writes. This is staging feasibility, not full-lifecycle timing, reliability or
+proof that Fast service caused the difference. No global defaults change and
+no production profile is promoted. Evidence:
+`/private/tmp/odylith-fast-service-preflight.tGGNwq/installed-result.json`.
+
+Local package inspection finds weak display/review-only verification and no
+proposed privacy/access-control obligations for sensitive medical and consent
+information. This repeats the disclosed v50 quality concern. It is not an
+independently adjudicated P0 contradiction or grounds for inventing source facts.
+The requested review route remains local-only; independent adjudication is
+outstanding. Preserve the pending transaction unchanged and unpublished. Trace
+the existing assumption/verification ownership before proposing a bounded
+correction; do not add a safety keyword filter, a new schema or another review
+call without evidence that the existing contract is insufficient.
+
+The operator's renewed whole-product/visibility request keeps the integrated
+acceptance below fixed. Fresh comparison of the actual session shows the old
+launcher reporting ready while the corrected reader reports degraded with
+three unrecognized hooks. Both see only the prior two manually confirmed Assist
+events and no Observation/Proposal events. CB-242 remains open; configuration,
+manual fallback and automated delivery are separate evidence claims. Use a
+matching runtime/configuration and native exact-definition review before a
+fresh-session delivery qualification. Never mix new hooks with the old runtime
+or silently alter host trust. Analysis/advisory discovery, orchestration,
+taxonomies, evaluation and lifecycle support must remain available in their
+owning phases; this does not require invoking every capability on every request.
+
+### Installed positive journey boundary (2026-09-08)
+
+One predeclared default development case now exercises the actual pinned full
+distribution, without source substitutions or retries. It stops before preview
+after 56.272514 seconds: author 44.169103 seconds; reviewer null after 10.830552
+seconds against its remaining 10.812170-second allowance. All maintained
+no-write-root hashes, including pending transactions, remain unchanged. This
+reproduces CB-303 on the installed path, not a successful under-60-second journey.
+No publication, generated-project browser, resumed-session or semantic-quality
+claim follows. Retain the first result under
+`/private/tmp/odylith-installed-journey.lYB7hH/`; do not turn it into another
+native retry or architecture change. CB-242 separately retains the automatic
+intervention-delivery gap. The full integrated acceptance below stays unchanged;
+At this checkpoint the next candidate required an endpoint/deadline preflight.
+The separately recorded Fast-service comparison above adds new bounded evidence;
+it does not relax 60/90/120 or justify a larger schema.
+
+### Current distribution and installed baseline proof (2026-09-08)
+
+Clean pushed revision `76e523cda0a602af224940de0bb44e54c73283f1` now has a
+complete local distribution: wheel, three platform runtimes, three memory packs,
+installer, manifest, provenance, SBOM and attribution. All twelve checksummed
+assets verify. This is the documented local unsigned build, not signed release
+qualification. Fresh hosted-style installation takes 29.815 seconds and the actual
+managed launcher reports pinned 0.1.15 with healthy full-local-memory operation.
+Guidance, unavailable-author no-write, sync and immutable baseline readback pass.
+Both hosts have complete installed static registration. Codex correctly stays
+unverified with no chat evidence; native trust, dispatch and visible delivery are
+still open. Four installed confirmation, capability and memory modules match
+current source bytes under isolated Python imports. The first import probe used
+a nonexistent shortened module name; preserve its failure and the corrected
+supplemental receipt rather than reinstalling or changing production code.
+
+Twelve installed-baseline browser cells pass: five governance shell routes and
+Casebook empty filtering, each on desktop and mobile, with eighteen screenshots.
+This is not generated-project or complete accessibility/interaction proof. Visual
+inspection also finds the fresh Compass timeline dominated by setup-file events
+(243 local changes and a 232-event group before product work). Retain that
+onboarding-density finding under CB-303; do not hide the underlying audit or add
+phrase filters without diagnosing the event owner. Evidence and the reusable
+installed candidate are retained under
+`/private/tmp/odylith-current-dist-proof.BQ24A9/`. All build, install and browser
+process handles are terminal; their HTTP servers are closed. Preserve the
+candidate for the next installed lifecycle/semantic gate. Native activation,
+live quality, 60/90/120, independent adjudication and the holdout remain open.
+
+### Integrated consumer journey (2026-09-08)
+
+Bounded onboarding correction under CB-303: replace timeline-detail filename-based
+suppression and the inaccessible 24-event tail with expandable grouping of the
+existing `local_change` event type. Share the renderer between standalone and
+transaction details; preserve raw payloads, counts, user edits and non-local
+events. Do not add an installation receipt schema, model call or filename list.
+Characterize desktop/mobile, empty/single/dense, mixed decision/failure, and
+transaction states before the patch, then run the applicable surface matrix.
+Keep upstream event selection and narration classification explicitly outside
+this presentation-only claim. Evidence lives at
+`/private/tmp/odylith-compass-event-density.d5G6Wj/`.
+
+The full product capability inventory, including memory, is an integration
+acceptance requirement, not a request for a new engine framework. Preserve the
+existing owners and exercise their relevant handoffs: installation/trust and
+startup; Context/Memory retrieval and resumption; Domain Intelligence and
+Reasoning/Tribunal custody; Discipline/Turn Gate and Execution admission;
+sealed publication and recovery; Delivery/Proof State, topology and Surface DAG
+agreement; all governance surfaces and dashboard navigation; earned visible
+Observation, Proposal and Assist. Keep every engine available, but do not force
+every engine into every phase or generate prohibited Greenfield programs/waves.
+The unchanged 60/90/120 envelope includes the real consumer path, not isolated
+model latency. Artifact counts alone remain insufficient quality evidence.
+
+Require normal, empty/fallback, degraded/error, EDIT, REJECT, retry, interruption,
+recovery and resumed-session evidence. Source meaning, assumptions, constraints,
+approval identity and proof posture must survive every relevant handoff. Reuse
+existing acceptance owners; record actual gaps before proposing replacements.
+
+The bounded native-Claude publication probe isolated CB-332: an input-free
+session read overwrote a live saved workstream and intent. The source-local repair
+now retains canonically revalidated workstream context and the saved intent
+without replaying it as a current instruction. New scope, expiry and missing
+anchor controls stay fail-closed. Two original positive regressions fail before
+the repair; all 23 resumption controls and 96 focused context tests pass after it.
+The same public CLI journey recovers B-001 and its component/diagram dossier,
+preserving all 96 sealed files/modes, active identity and transaction bytes.
+Evidence: `/private/tmp/odylith-claude-confirmation.5ntA3g/persistence-after-publication-readback.json`;
+the separate `persistence-before-*` receipts retain the original failure.
+Frozen runtime proof passes 4544 tests, and 31 targeted browser integration
+checks pass across normal/empty/error navigation and publication recovery.
+The 3162-file pre/post-run fingerprint is unchanged; JUnit receipts are retained
+under `/private/tmp/odylith-session-resume-proof.45l4zG/`. CB-332 is fixed pending
+release. At that checkpoint bootstrap still lacked the target component in its
+general execution handoff, and the resumed packet still requested narrower
+execution context; neither was fixed by session retention. This structural
+author/reviewer fixture does not qualify human package quality or live model
+timing. CB-242 retains the separate intervention visibility complaint and
+manual-only recovery evidence. Its fresh actual-session check reports degraded
+activation: the original checkout still has the ignored flat hook document,
+while the repaired checkpoint has the native wrapper. Matching-runtime installed
+activation, fresh-session delivery and fault qualification remain required.
+
+### Resolved workstream handoff repair (2026-09-08)
+
+CB-333 isolates the next boundary without changing the Greenfield generation
+mechanism. The resolved dossier survives packet assembly but bootstrap delivery
+drops it. Descriptive-row caps also hide canonical relation identities. Following
+CB-029, preserve selected typed references rather than adding a model or reparsing
+prose. The existing dossier owner now retains all related IDs separately from
+bounded detail, and bootstrap/session brief share one Execution attachment owner.
+The old bootstrap-only attachment, phrase rewriting, clipping and duplicate
+mapping helper are removed: ten fewer production lines across three existing
+files. Canonical IDs survive without inventing writable paths or replaying intent.
+
+Proof passes 144 focused tests, 4563 full runtime tests and 31 targeted browser
+integration cases. The 1825-file runtime/test/config fingerprint is unchanged
+across broad validation. The independent public CLI journey preserves the exact
+component and all five diagram IDs in bootstrap and resume, with all 96 sealed
+bytes/modes, active identity and transaction bytes unchanged. Receipts are in
+`/private/tmp/odylith-session-handoff-proof.S3jUS4/` and the native-Claude fixture's
+`handoff-after-*` files. Pre-confirm author/reviewer doubles still exclude semantic
+quality and generation-timing claims. Restored references increase delivered
+output to 15159/14220 pretty-printed bytes; no new provider call or publication
+operation is introduced. The resumed packet still requests narrower execution
+context. CB-242 remains open with degraded actual-session activation; manual
+verified-result Assist copy does not prove automatic native delivery. Preserve
+the full integration acceptance, live 60/90/120 and untouched-holdout gates.
+
+### Native confirmation prompt termination (2026-09-08)
+
+The current Codex 0.153.4 registry adds a bounded compatibility correction:
+recognize the native `hooks` feature key, retain older alias support by observed
+capability, and replace the status line regex with TOML parsing. Native discovery
+finds all five generated project hooks but marks each untrusted. Static
+configuration therefore reports `unverified`, not native-ready; manual visible
+recovery cannot promote that claim. The 91-test focused runtime/install selection
+passes. CB-242 retains this evidence at
+`/private/tmp/odylith-native-hooks-current.B6Bxhe/` and stays open. No new engine,
+trust mutation, model call or Greenfield timing/semantic mechanism is added.
+Frozen follow-through passes 4583 runtime, 1382 install and 67 targeted browser
+checks with identical 1825-file input fingerprints. The install suite includes
+all 120 first-governance-command orders. This is source-local contract proof,
+not matching-runtime native activation or a current distribution qualification.
+The actual session still reports degraded hooks and prior manual-only visibility.
+
+Native nonempty confirmation now publishes 95 sealed writes with 96 after-image
+files independently matched byte-for-byte and by mode. Retry preserves all 204
+publication/journal files and returns the same callback receipt, with no inference
+request. This uses fixed author/review transport doubles before confirmation;
+it is transaction evidence, not live semantic quality or latency qualification.
+The corrected native file comparison also identifies a separate registration
+defect: the flat event document is ignored, while the wrapped hooks map executes.
+The emitter, migration writer, capability reader and intervention-status reader
+now share that document contract. Migration preserves custom entries, metadata
+and first backups; duplicate status-side matcher helpers are removed. Five
+new controls fail before the repair; the expanded host/install selection passes
+134 tests afterward. Expanded runtime/install runs expose one stale forensic
+sidecar and two retired flat-document test assertions; settle them through the
+existing owners before rerunning. A real Claude 2.1.202 control now publishes
+95 writes, independently matches 96 after-image files and modes, and preserves
+214 publication/pending/journal files on retry. The complete receipt is visible
+in native text output with no inference. Both hosts still require installed
+activation and timeout/error qualification; Codex completion visibility and
+unknown-host offer eligibility remain open. Do not replace a missing completion view
+with a post-confirm model turn. Preserve failed control setup and the rejected
+no-op publication fixture in CB-304 rather than counting them as successes.
+
+The settled reruns now pass 4521 runtime and 1382 install checks. Browser recovery
+accounts for all 327 collected nodes: 326 passes and one skipped diagnostic fixture;
+the original run stopped on a terminal output-pipe error, not an assertion failure.
+CB-304 retains the exact receipts. Native Claude timeout injection nevertheless
+proves fail-open model dispatch, and Codex exit-code-2/stderr still hides the receipt.
+Neither transport can be declared fully qualified from successful callback tests.
+
+CB-304 now has a real Codex protocol comparison against a loopback-only model
+request detector. With witnessed inline hook invocation, context-only output
+reaches model dispatch; a blocking UserPromptSubmit decision ends the native turn
+with zero inference requests and zero tokens. Replace context-only continuation
+for consumed Greenfield decisions in the existing shared host payload owner.
+Only EDIT carrying new evidence may continue into a pre-confirm compilation.
+Preserve exact hashes, sealed-byte publication, recovery outcomes and the kernel.
+No provider/schema change or semantic retry is part of this repair. Native
+installed activation and Codex visible receipt delivery remain required; native
+Codex JSON output alone does not display the receipt. Claude publication evidence
+is retained at `/private/tmp/odylith-claude-confirmation.5ntA3g/`.
+The first four file-based controls never invoked their hook and remain invalid
+termination evidence. Report: `/private/tmp/odylith-native-confirmation-control.xvEV2h/`.
+
+### Shell focus ownership correction (2026-09-08)
+
+The upgrade checkpoint is committed and pushed as ddb65494. CB-331 now records
+a separate, proved UX defect behind a plausible cross-surface failure mechanism:
+Starter Guide dismissal can move focus away from a subsequently chosen child
+input. A passive trace observes the theft; four controlled browser cells prove
+that the original deferred callback can lose insertion on both Radar and Registry.
+This does not establish the exact unrecorded interleaving in the two historical
+timeouts. Evidence: `/private/tmp/odylith-registry-empty-replay.Anv7ST/focus-causal-review.md`.
+Replace only the deferred focus in the existing shell close/open actions with
+synchronous focus return. Preserve filters, header, accessible recovery controls
+and timeouts. Add desktop/mobile regressions for a new focus choice before the
+next animation frame; require red-before/green-after, unchanged empty-state and
+onboarding controls, then frozen broader browser and bundle proof. No semantic
+mechanism, generation deadline or transaction-kernel expansion is part of this fix.
+
+The three delayed focus callbacks are now removed (six fewer source lines), with
+the existing action retaining focus ownership. All ten valid old-source controls
+fail and all ten corrected-source controls plus twelve unchanged empty-state
+cases pass (22 in 60.99 seconds); the focused unit/header pack passes 86 in 1.88
+seconds. The initial six invalid upgrade fixtures are retained as setup failures:
+their Radar seed incorrectly created product-repo markers. Optional fixture-only
+markers now keep these consumer controls truthful without mocking eligibility.
+Independent review and frozen full-browser/bundle validation precede checkpoint
+acceptance. The remaining Greenfield semantic, host, timing and holdout gates
+are still open.
+
+Independent review identifies the same delayed-focus class in Cheatsheet opening.
+Bound the remaining check to that existing 100-line owner: choose child or drawer
+focus after opening but before the next native frame, then preserve ordinary
+search focus/selection and Escape return. Compare before/after before freezing;
+no generic focus manager, filter changes or wider accessibility redesign is needed.
+
+The Cheatsheet controls reproduce all four failures before its callback removal.
+All fourteen focus controls, twelve original empty-state cases and three ordinary
+Cheatsheet/upgrade/storage-error controls pass afterward: 29 in 74.16 seconds.
+Review accepts the source changes and requests an explicit retained-value check,
+now added before final proof. The two source owners shrink by eight lines in total;
+the only remaining animation frame in them measures status layout, not focus.
+
+The final frozen tree passes 4,500 runtime tests, 1,382 install tests and 326
+browser cases, including all fourteen focus controls. One absent-fixture Radar
+diagnostic check is explicitly skipped, not accepted coverage. Full distribution
+build and clean-install/upgrade/unavailable-author smoke pass; both changed shell
+templates in the wheel match source bytes. The tree hash remains
+61ad0f33f48b0f9cde14d675e92fd51992def91db2addae6633f47c82dcc4961
+through the end of all runs. CB-331 is FixedPendingRelease for 0.1.15, not closed.
+Proof: `/private/tmp/odylith-focus-release-proof.u1JhmF/README.md`.
+These checks qualify the four-callback repair, not the unresolved semantic,
+native-host, timing or untouched-holdout gates. Do not rerun or tune generation
+against the protected holdout or treat adjacent test volume as convergence of the
+author/reviewer mechanism. The existing endpoint decision remains unresolved.
+
+### Upgrade readiness repair and installed proof gate (2026-09-08)
+
+The readiness repair now has empty-predecessor installed proof. The current
+upgrade parent retains its existing writer lock through a fixed render-only worker
+launched by the target runtime. Only that descriptor is inherited by renderer
+subprocesses; the parent alone activates the initial baseline or publishes the
+successful successor. Closing an owner does not explicitly unlock surviving
+children. One shared dashboard-completion owner requires exactly one successful
+terminal result per selected surface; queued or malformed coverage cannot activate
+the baseline. Upgrade refresh failure returns nonzero and cannot publish partial
+output as success. No semantic parser, repair loop or general dispatch bypass was
+added. The lock capability is not authentication against a same-UID attacker.
+
+The original readiness simulator now passes all 10 cases in 19.52 seconds. Shared
+completion/baseline/renderer controls pass 127 tests in 1.79 seconds; real descriptor
+transport and process-death controls pass 25 in 8.79 seconds; the focused CLI owner
+passes six. The root CLI migration-assessment failure is preserved. These receipts
+live in `/private/tmp/odylith-sole-entry-final-proof.VaQSHc/`. They do not replace
+installed upgrade, recovery, model quality, host parity or latency evidence.
+
+The unchanged 3,157-file tree f7f2b86293112672984cab5fc8e3fb222ec1df90516eb3c6130e79dd0f866f92
+passes 4,500 runtime tests and full distribution build. Strengthened canonical
+local-release smoke verifies readiness before manual refresh. An independent
+published-v0.1.14 installation preserves source bytes, pin and active runtime on
+the exact migration-required refusal, then the hosted installer upgrades that same
+repository and passes complete baseline/readback and unavailable-author safety.
+The candidate manifest is unchanged. Reports and preserved source bytes are at
+`/private/tmp/odylith-published-upgrade-proof.hxW8Sw/`. This empty predecessor has
+no Atlas diagrams; it is not populated-diagram migration or model quality proof.
+
+The broad install run records 1,379 passes and three stale callback failures;
+browser records 310 passes, two failures and one known diagnostic skip. Two test
+callbacks now accept the explicit lock descriptor. The historical Casebook browser
+fixture now publishes its real refresh through the public dashboard writer instead
+of bypassing publication. All 80 tests in those three owners pass in 13.96 seconds,
+with original assertions preserved and an added successor/readback assertion.
+The separate Registry filtered-empty timeout did not recur in ten exact unchanged
+executions or eleven neighboring controls. Its cause remains unclassified; do not
+call it fixed or weaken the two-second assertion. Preserve passive failure-state
+capture during the next required frozen browser run. The original broad receipt
+remains failing. Report: `/private/tmp/odylith-registry-empty-replay.Anv7ST/review.md`.
+The final install unit lane passes all 1,156 tests in 101.04 seconds. A combined
+browser-owner run records twelve passes and the same filtered-empty timeout on
+desktop Radar instead of Registry. This cross-surface recurrence now warrants
+capturing shell navigation, focus and input events; its cause is not yet proved.
+The successful installed-witness consumer is cleaned, with reports and archived
+source bytes retained. Next: commit the upgrade development checkpoint with these
+qualification boundaries, then resolve the recurring input failure from captured
+behavior. Do not assert full browser or release acceptance. Keep the exact migration assessment open until its
+consumer compatibility scope is evidenced; a clean worktree is not qualification.
+Keep failed-render working-drift recovery and broader descendant cleanup explicitly
+open; do not claim that a nonzero exit itself restores the previous working tree.
+
+### Published predecessor evidence (2026-09-08)
+
+Checkpoint a3641597 is pushed after frozen proof and staged governance validation.
+Independent inspection of all eight currently published wheels (v0.1.7-v0.1.14),
+with asset digest and build-provenance matching, establishes ordinary unactivated
+governance as the published predecessor population. The JSON publication and
+v3/v4 journals originate only in later unreleased development commits. A general
+converter for those formats is not an established consumer release prerequisite;
+their retained evidence and recorded-runtime recovery obligations remain protected.
+
+The original falsified product path was narrower: a complete unactivated 0.1.14-shaped
+installation upgrades successfully to 0.1.15 and reports Dashboard ready but has
+no active publication. The public-CLI simulator witness fails in 0.69 seconds;
+ordinary upgrade refresh bypasses the existing first-run activation owner.
+The repair above reuses that owner and its repository lock to make a successful existing-install
+upgrade ready for Greenfield, without reparsing source or introducing another
+migration framework. Prove the actual published v0.1.14 runtime/launcher route,
+hosted existing-install refresh, preserved consumer truth, exact baseline readback,
+proposal readiness and failure recovery. Synthetic upgrade success is insufficient.
+Only then reassess the exact migration fingerprints. Evidence:
+`/private/tmp/odylith-sole-entry-final-proof.VaQSHc/predecessor-populations-review.md`
+and `published-predecessor-activation-before.xml`. Full quality, 60/90/120, host
+parity, current-generation dirty-edit disposition and the untouched holdout stay
+separate obligations; none is weakened by this population finding.
+
+### Close interrupted-publication visibility before release proof (2026-09-08)
+
+The disclosed stopped-writer dashboard counterexample now passes: three SIGKILL
+phases and twelve actual Atlas/Radar observations before recovery remain on one
+complete generation. This is protected-transition proof, not complete UX or SLA
+acceptance. The inactive-writer race and interrupted-shell doctor admission gap
+are corrected in their existing lock/baseline owners; 47 focused controls pass.
+Direct compilation now requires a complete published baseline before staging;
+the shared ProductCreate write contract rejects an unactivated predecessor both
+before preview and in the receipt-bound commit loader. Local admission time is
+charged to the existing budget. No new selector, retry loop or semantic role exists.
+Independent review then reproduced a failed writer entering between readiness and
+staging. The existing shared read lock now spans readiness through deterministic
+sealing and transaction verification, after the model pair and before pending
+decision writes. Forty focused controls pass; no new lock primitive or reader
+snapshot was introduced. Busy admission remains an explicit no-write outcome.
+Independent replay of the unchanged original race witness now stops the writer
+before any partial bytes or transaction exist (0.304 seconds); exact evidence is
+`/private/tmp/odylith-staging-admission-replay.tfbRn5/review.md`.
+
+The first broad runtime diagnostic remains 4,404 passed and 23 failed. After
+governance settlement, the unchanged 3,152-file tree completes 4,468 runtime
+passes with five failures and 1,090 install passes with sixteen failures. The
+runtime controls now assert unchanged publication/baseline bytes and route their
+operator edit through the real successor boundary; all seventeen tests in those
+two files pass. Installed proof still assumes approval resides in the old JSON
+publication record, beneath fixtures missing the newly required entry bytes.
+Those two existing proof owners now use journal-owned approval and sealed entry
+bytes; all 97 focused install tests pass, including five new missing/altered
+publication controls and the preserved wrong-transaction negatives. The first
+migration replay exposed five fixture layout mistakes, also retained as evidence.
+Main reviewed the four-file change; no runtime generation mechanism changed.
+The hotfile regression is removed by a genuine shared output-owner move, with
+140 focused passes and the original limit unchanged. The next 3,152-file freeze
+retains hash 690aeff51247879f4e8505a6e6f327a613b4ff82ad3d75614f9173c6314e6410
+before and after 4,473 runtime passes, 1,111 install-unit passes, the full local
+distribution build and successful canonical clean-install/upgrade smoke.
+The smoke includes a deliberately unavailable author, not positive generation.
+Browser proof records 308 passed, four failed and one skipped. Three Project
+failures need explicit fixture activation; all six Project tests now pass in
+10.68 seconds. The historical Casebook fixture accidentally used today's activated
+installation under old metadata; an explicitly unactivated historical setup
+preserves the original migration and browser laws, with three focused passes in
+5.13 seconds. Retain both the original failures and independent adjudication.
+Two current-simulator direct-pin-edit failures still require the supported upgrade
+and failure-recovery path to be proved before calling this a stable checkpoint.
+The actual --to/--write-pin path now reveals a P1: failed activation smoke restores
+the old runtime but leaves its newly written managed pin behind, keeping P unchanged
+while blocking subsequent writer admission. Correct the existing install activation
+owner and prove exact pre-operation pin/working-state recovery, including exceptions;
+retain previously established operator pin intent. Do not publish a failed successor
+or relax drift admission. The initial simulator file has two passes and seven failures,
+including six other direct-edit setup scenarios whose intended contracts remain owed.
+The manager now defers that pin write until read-only activation smoke passes and
+routes raised smoke exceptions through existing runtime/launcher recovery. Eleven
+focused checks pass in 8.53 seconds, including exact custom pin byte/mode preservation,
+pre-existing operator target intent, unchanged P/working readback and a successful
+subsequent upgrade. All nine lifecycle-simulator tests now pass in 13.75 seconds
+after explicit shared historical seeding and supported current upgrade setup.
+The browser fixture adopts the same historical seed; original migration/refusal
+assertions remain. Missing-pin refusal is not claimed as missing-pin repair, and
+this correction does not qualify arbitrary crash or filesystem rollback.
+The final 3,153-file frozen tree retains hash
+f4faa73fe26cae7c4a056ea7a47b91a06d1def3a1a8961a45a2a17fa949cea5e
+before and after 4,473 runtime passes, 1,345 install unit/integration passes and
+312 browser passes with one known diagnostic skip. The full distribution and
+canonical local-release smoke pass; its owned installation root is cleaned.
+Independent installed readback verifies the fixed manager bytes and exact baseline.
+The post-freeze root clarification fixture now preserves an activated baseline
+instead of requiring absent runtime state; its test and isolated imports move to
+the existing Greenfield CLI owner. Root CLI records 391 passes and one remaining
+real migration-assessment failure. Keep that gate open: legacy publication and
+nonterminal journal migration are not covered by historical no-migration wording.
+A development checkpoint is not release acceptance. The static Project fixture
+and two-surface crash coverage do not replace a genuine all-surface successful
+Greenfield journey. Evidence: `/private/tmp/odylith-sole-entry-final-proof.VaQSHc/`.
+
+Current source now integrates the sole HTML publication entry, pre-confirm entry
+sealing, admitted-journal publication evidence, physical working-shell ownership,
+complete first-install baseline activation and immutable later-writer successors.
+This replaces the JSON authority rather than mirroring it. W seals the exact
+predecessor; the publication store validates W instead of accepting a separately
+rebound predecessor. Current reads use immutable bytes, while reviewed T links
+remain journal-owned. Old layouts fail closed without destroying recovery evidence.
+
+Focused evidence includes 23 journal checks, four real SIGKILL protected-entry
+checks, 16 activation controls, and 30 reader/codec plus 18 production-carrier
+browser cells. The carrier report preserves the initial out-of-bound child-resource
+fixture failure and interrupted run. The separate actual dashboard crash gate is
+recorded in `/private/tmp/odylith-generation-seal-proof.90CkQs/real-dashboard-crash/review.md`.
+Keep the implementation unqualified until installed activation recovery and legacy
+migration, actual all-surface browser crash checks,
+and the remaining full-browser and install-integration checks pass. Runtime and
+install-unit suites plus local distribution/smoke are now green at the frozen hash
+above; they do not close those distinct obligations.
+The full goal, source fidelity, useful package depth, host confirmation eligibility,
+60/90/120 and protected holdout gates remain unchanged and open. Evidence:
+`/private/tmp/odylith-generation-seal-proof.90CkQs/publication-carrier-review.md`.
+
+The following receipts describe the preceding immutable-storage checkpoint.
+
+The first production integration now addresses immutable generations by the
+existing sealed write-set hash, not the later confirmation hash. The compiler
+seals exact generation-manifest text after the write set and before the outer
+transaction. The commit loader validates its complete binding; CONFIRM copies
+those bytes. The existing durable journal remains the transaction-to-generation
+history owner. No second index, random ID, model role, or semantic schema was added.
+Cleanup now checks active and historical journal references before removing a
+shared generation. Legacy active state and nonterminal transaction-addressed
+journals fail closed with an explicit migration requirement; old closed journals
+and generation bytes stay in place. A complete upgrade migration is still owed.
+
+Initial integrated proof passes 130 kernel, transaction, provenance, and recovery
+tests in 29.55 seconds. New controls cover exact manifest copying with generation
+disabled, invalid sealed manifests, same-write-set/different-transaction rejection,
+historical navigation after pending cleanup, and preservation of another closed
+transaction's noncurrent generation during abort cleanup. The first new admission
+test expected the wrong exception; the actual code correctly rejected the changed
+active-generation precondition before writes. That test expectation was corrected.
+Release-reader migration passes 101 focused checks in 1.47 seconds: observations
+pin the sealed write set, published history requires its transaction receipt, and
+retained evidence selects the preconfirm write-set address instead of current state.
+Independent review also reproduced an inherited ancestor-symlink escape through
+reviewed navigation. The sole generation-path owner now rejects it; the expanded
+17-case seal suite passes in 1.54 seconds. The independent review's unchanged
+four-edge script then passes in 0.68 seconds; no further P0/P1 was demonstrated
+within that bounded kernel review, not across Greenfield as a whole.
+
+The frozen source passes 4,336 runtime tests in 338.18 seconds and 1,106 install
+unit tests in 78.53 seconds. Preserve the initial runtime invocation failure:
+four default-provider checks failed because a governance-only environment
+override was applied to pytest. The exact four pass unchanged with that override
+removed; the complete rerun also passes without product edits. Browser validation
+reports 292 passed, one failed, and one skipped in 852.81 seconds. The failure
+expects blank Registry detail instead of the existing no-matches recovery panel.
+CB-330, the Registry spec and source history confirm that assertion is obsolete.
+The exact test now passes in 1.52 seconds after requiring visible recovery,
+absence of stale/retired detail, working Reset and canonical reselection; no
+runtime or served content changed. Both screenshots were independently and
+main-reviewed. Preserve the original full-run failure. The skipped
+Radar diagnostic fixture does not establish that case. Evidence:
+`/private/tmp/odylith-generation-seal-proof.90CkQs/review.md`.
+
+That storage checkpoint did not close CB-305. The sole browser-readable entry,
+publication-entry versus shell ownership, immutable first baseline, explicit
+activation/migration, and later-writer successors still need joint integration.
+At that preceding checkpoint, JSON was still the only current authority. The
+in-progress replacement above removes it; keep the stopped-writer browser
+counterexample open until the actual integrated consumer route passes.
+
+The bounded browser comparison selects one canonical HTML publication entry
+for production integration, not release acceptance. Four file/HTTP desktop/mobile
+schedules pass in 47.69 seconds: 36 coherent normal/history observations and
+20 corruption/environment outcomes. Delayed iframe loads and a second partial
+writer after later success remain pinned. A two-case coarse-Last-Modified
+comparison passes in 4.89 seconds; HTTP needs a no-store read of that same entry
+to avoid a stale cached selector. Direct-file browsing consumes the atomic entry.
+No competing JSON pointer is active in the prototype. Existing generation-store,
+journal, sealed-byte and clean-install integration are not tested by its synthetic
+writer. No empty baseline or polished missing-file recovery UX is claimed.
+Evidence: `/private/tmp/odylith-dashboard-pointer-comparison.a7ZCxp/review.md`.
+
+Next ownership move: use the existing generation store and journal; allocate or
+derive a pre-confirm generation identity without a transaction-hash self-reference;
+seal the exact publication bytes; separate publication-entry ownership from full
+immutable shell bytes in write-set, precondition, rollback and readback contracts;
+migrate the old JSON authority explicitly; initialize an immutable baseline; and
+publish immutable successors after successful later writers instead of returning
+to mutable live paths. Preserve exact reviewed-hash links and define activation
+for already-open legacy tabs. Do not copy the experimental snapshot subsystem
+into production, retain both pointers, or generate the router after CONFIRM.
+The acyclic storage and manifest owners are now integrated in production source;
+the browser-entry replacement was not integrated at that checkpoint. The current
+source and tested transition above replace this historical state; full release
+qualification still requires the complete consumer route and operating envelope.
+Preserve failed prototype receipts and keep fixture storage bounded; repeated
+full copies exhausted the local disk before recoverable archival and isolated-copy
+hardlinks reduced the final four-cell fixture batch to 474 MiB.
+
+CB-305 now has a real-browser stopped-writer counterexample. An isolated copy
+of the real shell and Atlas/Radar pages carries exactly two sealed HTML markers.
+After SIGKILL at the first atomic file write, desktop and mobile shell navigation
+show the new Atlas version alongside the old Radar version. After-pointer
+controls show one new version across both surfaces. The normal-image run has
+zero page errors/bad HTTP responses; both fixtures reach terminal recovery.
+The unchanged kernel suite passes 114 tests in 26.09 seconds but does not cover
+this stopped-before-recovery browser interval. Evidence:
+`/private/tmp/odylith-confirm-read-proof.4PUYEv/consumer-normal-red.xml`.
+
+Reject the helper-only alternative: a journal guard passed three direct-helper
+tests, but both production handoff callers supply hashes and bypass that branch.
+The draft was removed completely. An opener-only check also cannot protect later
+browser fetches after its lock is released. The bounded next comparison must
+place generation routing at the actual shell/child-resource boundary against
+the same crash control, preserve exact reviewed-generation links, and include
+initial/no-generation, old/new, failure/recovery, and later-writer behavior.
+Do not claim package-level atomicity while canonical readers use mutable siblings.
+This is not permission to build a general transaction platform or change model
+roles, semantic schemas, package depth, or the fixed 60/90/120 deadlines.
+
+CB-304 separately retains host eligibility and native callback proof. The 17
+Python callback tests pass, but two no-model offer probes show CONFIRM is emitted
+without eligibility checks. No successful unsupported-host write was claimed.
+Require explicit host-facing capability and real installed callback evidence;
+do not confuse provider identity with host capability or restrict separately
+authorized manual CLI by an environment flag. Independent reports:
+`/private/tmp/odylith-host-confirmation-proof.czLkUO/`. Final holdout, clean release
+distribution, complete semantics/UX and timing qualification remain unproved.
+
+### Preserve Atlas action boundaries at the browser owner (2026-09-08)
+
+The earlier Context proof retained action words but exposed joined metadata
+headings. Authored catalog loading already preserves the exact fields; the
+browser's second text cleaner deletes inline tokens and collapses line breaks.
+The bounded replacement is literal box-field rendering in the existing
+atlas_detail_layout owner, with explicit DOM arguments and CSS line preservation.
+Remove the competing box renderer from the 3041-line catalog template. Do not
+change source meaning, graph edges, schemas, model roles or the 60/90/120 budget.
+
+Require failing-before/passing-after exact text and line-geometry controls across
+desktop/mobile normal, PNG fallback, image error and empty states; repeated
+actions and markup-looking text must remain inert and complete. Existing authored
+catalog readback, package/transaction, Atlas interaction and bundle/install proof
+must stay green. A frozen independent review must inspect actual screenshots.
+This is a source-local readability/fidelity slice, not timing or release proof.
+Evidence root: /private/tmp/odylith-atlas-box-metadata.otiHwT/.
+
+The detail owner now holds the sole box DOM builder; the catalog renderer shrinks
+from 3041 to 3003 lines, with no net source growth across the two owners. Exact
+field rendering and CSS line preservation replace the second text-cleaning pass.
+Independent baseline proof has 12 metadata/line failures and two empty passes.
+The first correction passes 97 of 100 checks but exposes three mobile role-label
+overflows: the shared primitive's later nowrap overrides the local wrapping rule.
+Correcting CSS order, without changing tests or fields, passes all 100 controls.
+Preserve that first failure and its missing screenshots (incorrect environment
+name); the corrected run uses the established capture setting.
+
+Broader source-local proof passes 104 package/transaction/Atlas, 1101 install,
+17 bundle and nine Project/shell checks. Fresh independent readback compiles a
+synthetic Context view through the actual catalog loader and renderer: all six
+desktop/mobile normal, PNG-fallback and image-error cells preserve exact fields,
+repeated actions and visible line separation. Its source and served hashes stay
+unchanged; the fixture is archived and removed, and owned processes terminate.
+Preserve the driver's pre-browser import failure separately. These are metadata
+and interaction proofs, not native diagram quality or model-generated usefulness.
+The initial wider Atlas matrix passes 46 checks but overlaps surface refresh;
+rerun the final matrix against settled surfaces before committing. Timing and
+the full semantic, transaction, host, holdout and release gates remain open.
+
+### Remove the remaining standalone Radar prose reinterpretation (2026-09-08)
+
+Two new source-fidelity controls reproduce loss of late publication restrictions
+and checklist content in standalone workstream specs. Four real-renderer browser
+controls also reproduce unbroken-text overflow in plan and spec pages at desktop
+and mobile widths. The old compaction test passes because it explicitly expects
+detail deletion and vocabulary-specific rewriting; preserve that historical
+result, then replace that mechanism expectation with complete source preservation.
+
+The owning module is backlog_detail_pages.py, currently 1245 lines. Remove its
+six private compaction helpers and their regex import, route both spec section
+sites through the existing rich-text renderer, and retain the supplied rationale.
+Use inherited text wrapping on both standalone pages; do not hide overflow, insert
+ellipsis, rewrite historical evidence or add a semantic repair layer. This should
+remove the source-loss class and shrink the owner below 1200 lines. Require exact
+late-constraint/list proof, text-range browser geometry, normal/empty/fallback
+controls and a fresh readback of the originally failing mobile B-142 plan.
+Evidence: radar-fidelity under the model-context audit root below.
+
+The deletion now shrinks the source owner from 1245 to 1142 lines. All 48 focused
+Radar unit checks and 15 desktop/mobile browser checks pass, including complete
+source text and normal, empty and unavailable-runtime fallback controls. The
+initial unit run passed 47 and failed the migrated rationale test's XML fragment:
+it selected an article through a section closing tag. Preserve that failure; the
+test-only boundary correction leaves exact source words, punctuation and list
+order checks intact. No new runtime parser, model role or schema was introduced.
+Broader package/rendering/transaction proof passes 155 controls; all 1101 install
+tests and 17 bundle/mirror checks pass. Independent readback passes four cells:
+the original B-142 plan and a long source spec at both widths. The two historical
+phrases remain exact; the 76px mobile page overflow becomes zero. Late review
+restrictions, rejection meaning, ordered checklists and supplied rationale remain
+visible. Source and served hashes stay unchanged and owned processes terminate.
+Preserve the original 7/8 failure separately. This closes the bounded source-local
+Radar fidelity/wrapping defect, not complete Greenfield UX or timing qualification.
+
+The separate three-alternative timing audit finds only about 3.1 milliseconds of
+local work between the laboratory author duration and review allowance. There is
+no demonstrated seconds-scale local scheduling opportunity; full review depends
+on the completed candidate. Prior one-call admission, source-only review, profile
+switching and compaction experiments do not earn another unchanged attempt.
+An explicit API transport remains conditional on the existing endpoint question,
+truthful model/effort identity and absolute-deadline preflight. No transport is
+adopted and no speedup is claimed. Preserve all deadlines and release obligations.
+Evidence: next-mechanism-review.md under the same audit root.
+
+### Re-adjudicate the failure before changing its mechanism (2026-09-08)
+
+Independent participant-impact review qualifies the laboratory's earlier P1.
+The missing borrower entry would omit a dedicated participant card, context node
+and actor-category atom, but the source events, checkout target, first-run text
+and registration contract retain the borrower relationship. No laboratory package
+was staged, so material consumer loss is unproven. This matches the earlier
+displaced-resident adjudication below. Preserve both original reports and the
+failed 60/55 experiment; do not retroactively admit the candidate. Inventory
+coverage and relationship fidelity need separate controls. A complete list with
+wrong ownership or a lost relationship must still fail semantic quality.
+
+The native-context audit also establishes no attributable latency cause. The
+application's system_prompt is CLI user-message input; ignore-user-config skips
+the user config file and does not promise payload-only context. The retained
+22,789 counter is total reported tokens used, not an input-token breakdown.
+Installed skill presence is not proof of transmitted context or its cost. Prior
+instruction-removal experiments failed; do not repeat them, strip safeguards,
+sweep profiles or infer speed from byte counts. The debug prompt renderer has
+unverified exec parity and is not native-wire evidence.
+
+These findings remove two unsupported reasons for architectural change; they do
+not solve serial author/review budget pressure. Keep 60/90/120, complete-package
+depth, immutable review and the full release gates. Correct the separate Context
+view claim that source-list order is first-path execution order at its existing
+presentation owner. Consider repetition/layout only through bounded visual
+comparison; do not add source relationships to make a diagram connected.
+Evidence: /private/tmp/odylith-model-context-audit.TeldnU/native-context-review.md
+and participant-impact-review.md. No generation or holdout access occurred.
+
+The Context correction now states that listing order does not establish execution
+order. Three human/product/external reverse-walk controls fail on the old copy
+and pass after the one description change; the focused Atlas/package pack passes
+61 controls. Exact labels, graph topology and the other four views are unchanged.
+Preserve the initial invalid test selector separately from this corrected run.
+Independent presentation review does not earn a broader layout rewrite; defer
+the title-only story label until its information-access tradeoff has visual proof.
+Broader package/staging/transaction proof passes 207 tests; bundle mirrors pass
+nine. The first install run passes 1100 and fails one process-group signal-zero
+probe with PermissionError. Preserve it: an isolated owned-group diagnostic then
+terminates both processes in 0.010704 seconds with explicit absence, and the
+unchanged full rerun passes all 1101 in 69.34 seconds. No cleanup-test or runtime
+change is made, and the original permission error's cause remains unproven.
+
+Eighteen synthetic Atlas browser cells pass across three owner types, two widths
+and normal/PNG-fallback/image-error states. Context Mermaid and all four other
+diagram rows equal baseline. Preserve the initial 0/18 whitespace-oracle failure
+and browser-only correction: the existing metadata heading collapses separate
+action lines, a deferred readability limitation rather than lost source words.
+The new explanation is visible and unclipped. Maintainer governance has 24/26
+initial cells plus two corrected Radar-only readbacks against unchanged complete
+text; do not relabel it a pristine 26/26 run. Current decisions and original
+historical brief notices/timestamps are readable. All owned proof processes stop.
+These close bounded source-local copy and governance visibility, not diagram-depth,
+full consumer UX, semantic generalization, timing, distribution or release gates.
+Reports: context-browser/review.md and governance-browser/review.md under the
+audit root. Final checkpoint settlement must preserve tested source bytes.
+
+Final focal governance readback is 7/8, not a clean pass. Mobile Radar has 76px
+of page-wide overflow from two historical Validation phrases whose text boxes
+fit but whose unbroken text does not. Both phrases already exist in the prior
+HEAD; every current-section segment remains readable. Preserve this P2 finding
+and the failed receipt. Its owning fix is generic plan text wrapping, not source
+rewriting or a Greenfield semantic rule. No historical browser comparison or
+full mobile acceptance is claimed. See final-readback/overflow-diagnostic-review.md
+under the governance browser evidence above. All owned browser work is terminal.
+
+Neither OPENAI_API_KEY nor ANTHROPIC_API_KEY is present in this shell; no secret
+values were read. Ask whether an existing configured API-backed endpoint is
+available before pursuing a direct-transport comparison with separate usage
+charges. This is an untested alternative, not a measured speedup, adopted adapter,
+relaxed host contract or reason to stop other safe goal work. No new model call,
+provider implementation, profile change or protected holdout access is earned by
+this checkpoint alone. Serial quality and budget reliability remain unresolved.
+
+### Laboratory discriminator rejected under the product deadline (2026-09-08)
+
+The sole ordinary-native laboratory attempt fails to deliver a package. Authoring
+returns in 44.882774 seconds; immutable whole-candidate review receives 10.113837
+seconds and times out after 10.125710 with no verdict. The consumer interval is
+56.237771 seconds, native exit 2, two real dispatches, no retry or records. This
+fails the actual 60/55 success contract, not an extra 50/45 headroom threshold.
+Backend latency cause and network attempts remain unobserved.
+
+The returned candidate preserves all four assistant actions, catalogue dependency,
+scan/register/print/handover runtime edges, correct slip producer and post-result
+handover. Registration-before-scanner delivery remains distinct and coherent.
+Independent model triage identifies a P1 canonical participant-inventory omission:
+the borrower survives as a target and design participant but is absent from
+facts.human_actors. Do not call that total meaning loss or action transfer, and do
+not treat the null reviewer response as admission. No staged diagrams or consumer
+dashboard exist to qualify quality, artifact counts or rendered UX.
+
+The new runner preserves its failed receipt despite signal-0 PermissionError;
+that original process observation remains unknown. Later independent process-table
+readback finds exact owned PIDs and PGID absent, all 356 baseline files unchanged,
+and exact request/output/source custody. Six no-backend controls and three native
+fake controls passed before live, with 659 focused source tests. After preserving
+the actual evidence and frozen-state audit, remove only the candidate paragraph
+and its three assertions: source/tests again equal e984badac; 60 focused restored
+controls pass. No production mechanism, profile, schema or deadline is changed.
+
+This rejects the bounded candidate for joint delivery, not proof that its
+coherence wording is useless or that 60 seconds is impossible. Do not retry it,
+add another prompt condition, weaken full-candidate review, expand model roles,
+or claim a winning mechanism. The next mechanism decision must address repeated
+serial author/review deadline failure and complete canonical participant ownership
+with a bounded alternative, not another unchanged qualification attempt. The full
+goal, 60/90/120 and protected final holdout remain unchanged. Evidence:
+`/private/tmp/odylith-laboratory-coherence.0hy3hl/terminal-review.md`.
+
+### Next bounded product-deadline discriminator (2026-09-07)
+
+After the Compass checkpoint, test the exact former first-run coherence
+paragraph once on the disclosed laboratory control that was never dispatched.
+This is a new prospective test, not resumption of the rejected museum campaign.
+The museum met product 60/55 but failed its frozen extra headroom gate; retain
+that outcome and its incomplete diagram/copy/UX quality. The earlier instruction
+directly addresses the observed conflict between a proposed walk and its own
+inputs; no simpler lossless sorting replacement has been established.
+
+Keep schemas, source custody, complete author and immutable full-candidate
+review, models and consumer 60/90/120 unchanged. Use ordinary native execution
+and 60/55 for this control, with headroom diagnostic only. Preserve runtime
+scan/register/print/handover order, the existing catalogue and the opposite
+registration-before-scanner delivery requirement without conflating them.
+Freeze requests, source and a preflight-proved process harness before dispatch;
+permit one A-to-R attempt, no repair, retry, CONFIRM or holdout access. Inspect
+actual meaning, complete artifacts and rendered quality before any retention
+decision. A pass adds bounded development evidence, not reliability or release
+qualification. This supersedes the candidate-retirement decision prospectively,
+without altering the old failure or claiming a causal timing improvement.
+Decision and remaining quality controls:
+`/private/tmp/odylith-exact-brief-reuse.PZ0Kdo/next-mechanism-decision.md`.
+
+### First-author comparison rejected (2026-09-07)
+
+The sole actual Sol/low attempt times out in initial authoring: 55.011981 seconds
+against 54.999692 available. The native CLI returns an error at 56.212644 seconds,
+with one real call and no structured response, reviewer or package. Cancel the
+Terra baseline; do not retry or widen the profile search. The independent terminal
+audit verifies both 356-file consumers and the frozen source/request identity
+unchanged. Exact owned processes are absent. A post-return permission error in
+the harness's process-group observation left its final result and after-inventory
+unwritten; preserve this separately from the native author timeout. Later read-only
+checks establish absence, not an originally successful harness completion.
+
+Nine no-backend guard checks and four native fake controls passed before the real
+call. The first fake preflight correctly rejected cross-profile loading earlier
+than its test expected; preserve that oracle failure and its corrected successor.
+Neither fake staging nor a timely error establishes consumer success. No returned
+meaning exists to adjudicate, and no trace establishes the backend timeout cause.
+Production remains unchanged; the full quality, timing, UX and release goal stays
+open. Evidence: `/private/tmp/odylith-first-author-pair.xJTUW5/terminal-review.md`.
+
+Keep the first-pass coherence/latency problem in scope. This result does not earn
+another model sweep, downstream repair layer or relaxed deadline. The earlier
+54.3-second complete staging remains bounded feasibility evidence under 60/55,
+not a qualified mechanism or a substitute for end-to-end quality proof. The next
+mechanism decision must address a diagnosed recurring failure, with a bounded
+comparison that measures actual consumer utility and not an extra timing proxy.
+
+The following preserves the predeclared comparison, not permission to rerun it.
+
+Compare Terra/low with Sol/low under the current complete-author and immutable
+binary-review contract. Only the first author model and truthful experimental
+profile identity differ. Keep both prompts, schemas, source, reviewer, ordinary
+native execution settings, model 55 and consumer 60 fixed. Older Sol/low v20
+semantic failures and Sol/medium v41 author timeout remain negative evidence;
+neither tested this exact complete-candidate contract. Do not retry or tune the
+rejected second-call finalizer, add a repair stage or weaken 60/90/120.
+
+Use the already disclosed seed-exchange evidence and pre-output source/design
+annotations. Run the isolated Sol candidate once first; failure cancels the
+baseline. Only a complete timely candidate independently cleared through actual
+package and rendered UX readback permits one Terra baseline run. Preserve all
+failures. A passing pair demonstrates bounded feasibility, not production
+adoption or release qualification. Source stays unchanged while the experiment
+runs; no CONFIRM, holdout access, new production branch or profile sweep.
+Contract: `/private/tmp/odylith-first-author-pair.xJTUW5/acceptance.md`.
+
+### Design-finalization comparison rejected (2026-09-07)
+
+The first and only actual control times out with no structured response or final
+candidate. Sol/medium receives 19.999708417 seconds; the scoped role ends at
+20.011249708 seconds after one provider-method call. Independent readback verifies
+all 172 frozen dependencies, exact request/source/assumption hashes, HEAD f1bf7405
+and the planned-governance diff. Controls 1-5 are cancelled; no retry, publication
+or production change follows. Fifteen no-backend controls had passed before the
+call. Keep the initial policy, test-selector and interpreter preflight errors
+alongside their pre-call corrections, not as passing initial proof.
+
+Reject full-design finalization under this fixed second-role allocation. There
+is no returned meaning to adjudicate and no trace separating server, reasoning
+or output time; do not attribute the timeout to copying design bytes. This is
+not a consumer 60-second run, a proof of impossibility, or permission to change
+60/90/120. Do not tune this failed prompt/schema, increase its cap or add another
+repair stage. The next decision remains first-pass author/design coherence and
+joint native-package quality/latency, not another downstream correction loop.
+Terminal review: `/private/tmp/odylith-design-finalization.lRaKfE/terminal-review.md`.
+
+The first post-record check passes 32 controls but fails the Release forensics
+freshness control; strict sync identifies eight stale generated Registry sidecars
+after the narrower plan/Casebook refresh. Preserve those failures and settle the
+existing governance dependencies through canonical sync before checkpoint proof.
+No product or test-code fix is indicated by this known settlement dependency.
+
+The following preserves the predeclared comparison, not permission to rerun it.
+
+The binary review correctly rejects the retained Fast candidate's incompatible
+proposed first run, but cannot recover that provisional decision. Compare one
+complete design replacement inside the existing second call, keeping accepted
+source and assumptions immutable. The reviewer still sees all meaning and choices;
+source loss, contradictory assumptions and materially unsafe behavior still deny.
+The replacement uses the existing design schema, not a patch language or extra
+model role. A revised design is second-call-authored, not independently reviewed.
+
+Freeze six disclosed controls: the actual design conflict, unchanged museum and
+G4 positives, source loss, an immutable assumption reversal, and the same conflict
+with only constraint-sentence placement changed. Keep Sol/medium, one call capped
+at 20 seconds per control, and the actual 60/90/120 consumer and 55/80/105 model
+bounds. Stop on the first failure; do not tune around it. Isolated control success
+earns only a complete native comparison, not adoption or consumer timing proof.
+Production stays unchanged. Prior broad repairs lost sound meaning/assumptions or
+exceeded latency; current preflight restores an omitted unsafe-behavior obligation
+and the existing non-temporal event-ID wording before any calls. Exact contract:
+`/private/tmp/odylith-design-finalization.lRaKfE/acceptance.md`.
+
+### Product timing and local-support projection (2026-09-07)
+
+Keep consumer 60/90/120 and model 55/80/105 fixed. Preserve prior frozen 50/45
+experiment rejections, but use that extra headroom diagnostically in future
+product qualification, not as an unstated replacement release floor. A timely
+error is still failure; one 54.3-second staged package is not reliability proof.
+
+D005 replaces cross-component support arrows with local responsibility, exact
+source-action references and verification. Existing canonical support identities
+remain authoritative; repeated IDs do not create events or transfer ownership.
+No new schema, source interpretation, model call or post-confirm work is added.
+The retained-response fixture seals a fresh 5/5/5 package and passes 32 surface
+cells plus two readable-zoom journeys. Canonical semantics and the other four
+diagram rows are identical to the retained source package. The first wide-strip
+layout and one SVG-test-oracle error remain preserved. Focused/native proof
+passes 144 checks; the corrected full runtime run passes 4313 tests and install
+passes 1101, with the settled tree frozen. The first worker-disable invocation
+failure is preserved. Both terminal fixture directories are archived and moved
+recoverably to Trash. Evidence: `/private/tmp/odylith-atlas-local-support.ppgSjH/`.
+
+This resolves the bounded crossing mechanism, not all diagram quality or the
+generation mechanism. D001 detail, mobile/copy quality, maximum-density reading,
+first-pass semantics and timing reliability, distribution/host/recovery and
+independent final semantic/holdout qualification remain open. Do not repeat the
+failed author experiment or turn this fixture replay into a live quality claim.
+
+### Source-first ownership comparison (2026-09-07)
+
+The first-run clarification comparison is terminal and rejected. Its sole real
+museum attempt stages the complete package in 54.296589 seconds with a verified
+48.257923-second model interval: within product 60/55, outside the frozen 50/45
+headroom gate. Two real dispatches occur; the second case is cancelled. No retry
+or CONFIRM follows. After independent readback, the paragraph and its three test
+assertions are removed, restoring production source/tests exactly to 23144bb4.
+This is useful evidence that complete staging can fit this product band, not a
+qualified latency distribution or a winning mechanism. The full goal stays open.
+
+The sample retains all five conservator actions, required report inputs and
+post-report archive work. Its accepted required-evidence atom and readiness/handoff
+retain the input constraint, although the annotation's expected 2/3-to-4 graph
+edges are absent. Report that expectation as unmet without inventing global
+source loss. Model triage finds no substantiated P0/P1; P2 exchange precision,
+isolated source-attribution and copy limits remain. Thirty-four bounded browser
+checks pass, but the disconnected/repetitive D-001, crossing-heavy D-005 and
+mobile summary density do not qualify the requested final UX/diagram quality.
+Evidence: `/private/tmp/odylith-first-run-coherence.OpJ5Ms/actual/museum_conservation_intake/`.
+
+The next decision must address the measured joint first-pass quality and serial
+author/reviewer timing constraint. No further prompt-condition stack, unchanged
+retry, arbitrary profile sweep or new schema is earned by this result. Preserve
+the failed comparison and independently corrected annotations. Do not convert
+the experimental 50/45 rejection into a claim that the product 60/55 failed, and
+do not promote this one 60/55 sample to reliability or release qualification.
+
+The Fast discriminator is now terminal and rejected. On pushed checkpoint
+`a3215f14`, the live author returns in 32.096728 seconds and full review denies in
+14.018430 seconds; the CLI returns an error at 46.395096 seconds with no package.
+A plus R alone exceeds the 45-second comparison headroom target. All 366 consumer
+files and the frozen source/request dependencies remain unchanged; two real
+dispatches and no retry or CONFIRM occur. Requested Fast is not observed serving
+tier, and these unpaired runs cannot establish causal acceleration. Evidence:
+`/private/tmp/odylith-fast-execution-gate.ivieTi/actual/timing-custody-review.md`.
+
+The new quality finding concerns provisional design, not lost source ordering:
+the first run respects all four explicit source edges but conflicts with its own
+recorded-identity exchange into inspection. Do not turn this into a universal
+domain rule or infer event precedence from workstream delivery prerequisites.
+Component exchanges and supported-event IDs also do not generally specify runtime
+preconditions; automatically sorting that topology would revive an invalid owner.
+Keep the failed candidate immutable. Before another implementation or paid run,
+compare a bounded ownership improvement against the existing mechanism using
+positive, negative and equivalent-source controls; no new schema, repair role,
+profile sweep or prompt exception is earned solely by this one failure.
+
+The now-rejected hypothesis was a clarification of the existing author contract:
+the proposed walkthrough must be feasible under its own proposed runtime inputs,
+exchanges and verification, without promoting delivery prerequisites or arbitrary
+exchange direction into runtime laws. Freeze one revision and two independently
+annotated disclosed development controls before any dispatch: a real runtime
+producer/consumer input and a contrasting delivery-only or non-temporal exchange.
+Keep schema, reviewer, model/profile and deadlines unchanged. Allow one native
+attempt per control and reject the revision on source loss, invented ordering,
+design inconsistency, weak complete-package utility or failed timing/headroom.
+Do not follow a rejection with another condition stack or repair role. This is
+a historical comparison contract, not a production fix or permission to repair
+either retained candidate. Review: `/private/tmp/odylith-fast-execution-gate.ivieTi/actual-semantic-review.md`.
+
+The temporary-root correction now has bounded source-local approval: 4311 runtime
+tests, 1101 install tests and 34 synthetic staged-browser checks pass. The exact
+native synthetic path passes success, malformed-output and 55-second timeout
+controls with respectively two, one and one fake dispatches, no unexpected calls
+and no pre-confirm governed writes. Independent readback verifies the complete
+sealed candidate and consumer inventories. Preserve the first runtime failure
+from stale Release forensics; the passing full run followed canonical governance
+settlement on a frozen tree. Evidence: `/private/tmp/odylith-staging-lifetime-proof.biKspe/`
+and `/private/tmp/odylith-fast-execution-gate.ivieTi/synthetic-preflight-review.md`.
+This closes the diagnosed transient-job ownership defect in the development lane,
+not real-model latency or full Greenfield quality. Remaining staged UX findings
+include an obscured D-004 edge label, uneven diagram depth, dense mobile chrome,
+unknown Registry spec date and awkward cold-Compass planning copy. Keep them in
+the package-quality gate. Do not repeat full runtime tests for narrative-only
+settlement; verify the unchanged tested code and focused governed projections.
+
+Before the next live experiment, preserve the original acceptance and synthetic
+receipts and bind a prerequisite addendum into a fresh frozen contract. The
+candidate includes the lifecycle correction; Fast is only the provider-request
+delta on that corrected tree, not the sole difference from historical G4. Require
+fresh current-checkpoint preflight before dispatch. Neither synthetic timing nor
+one live success can establish a causal speedup, generalization or release.
+
+Preflight stop: successful synthetic staging attempts two additional Compass
+global narration requests (48h and 24h) from the temporary prewrite repository.
+Both were refused before model execution; the 6.193-second staged result is not
+a passing experiment. Resolve the mismatch against the existing shell-safe
+foreground and Briefs Voice contracts before any live Fast comparison. Preserve
+all surfaces, exact-cache truth and explicit non-ready states; do not introduce
+a fallback narrator or hide provider work outside the request accounting.
+This finding does not explain the prior author latency. Evidence:
+`/private/tmp/odylith-fast-execution-gate.ivieTi/readiness-report.md`.
+
+The bounded correction assigns temporary-root lifetime to the existing Compass
+refresh contract. The prewrite root registers that lifetime explicitly; narration
+enqueue and spawn must both honor it across parallel surface workers. Ordinary
+durable-root warming and all foreground evidence/rendering remain unchanged.
+No path-name heuristic, new refresh profile, fallback narrator, global environment
+switch or post-confirm handoff is allowed. Prefer this to joining extra narration
+inside the already pressured model budget. The 1447-line maintenance owner receives
+only the two lifecycle guards as a safety-critical repair; its wider decomposition
+remains outside this slice. Require red/green staging, nested/exception/thread and
+durable-root controls, then native synthetic, full runtime and rendered cold-state
+proof before closing this defect. The initial existing-request test used an invalid
+empty request and passed spuriously; its corrected valid request fails before the
+fix, alongside the enqueue and absent-lifetime-contract controls.
+
+The preceding predeclared discriminator requested Fast execution for one unchanged
+native standard-tier author/full-review proposal. The current request inventory
+finds no duplicate evidence or candidate submission worth removing; citation and
+relationship repetition has distinct custody obligations. Prior schema pooling,
+base-instruction removal and source-only parallel review do not justify another
+equivalent experiment.
+
+Keep Terra/low authoring, Sol/medium full review, both exact prompts/schemas,
+source evidence, two-call ceiling and 60/90/120 fixed. Official Codex documentation
+describes Fast as 1.5x model speed at 2.5x ChatGPT credit consumption, not an SLA.
+Only an external process-local invocation requests it; no global configuration,
+runtime profile or default changes. Record requested versus actually observed
+serving tier honestly. Before paid dispatch, exercise the complete fake-return
+native staging path under its exact interpreter, including imports and final
+validation, plus malformed/timeout/no-write controls and independent preflight.
+The experiment requires a complete staged package within 50 seconds and its
+full model interval within 45 seconds, plus independent no-P0/P1 source/package
+review. These stronger comparison thresholds demand headroom while preserving
+the product deadlines. Failure ends this candidate without retry or promotion;
+one pass is feasibility only and cannot replace later quality, browser, host,
+cost or holdout gates. Contract and evidence owner:
+`/private/tmp/odylith-fast-execution-gate.ivieTi/acceptance.md`.
+
+Current decision: stop qualification of the native sequential v53 candidate.
+Independent review finds no P0/P1 in its retained author output and verifies
+367/367 consumer files unchanged, zero added files and no pending transaction.
+The one authorized author-only timing diagnostic is now terminal: the process
+returns in 37.046533 seconds, below its predeclared 45-second slow threshold.
+Turn start is observed at 0.259797 seconds and turn completion at 36.308574;
+no tool items are emitted. Reported usage is 20509 input, 1806 output and 516
+reasoning-output tokens, with zero cached input. Provider construction and request
+serialization precede the measured window; the opaque in-turn interval cannot
+separate server queue, prefill, reasoning and decode. Post-return validation fails
+on the diagnostic's missing local jsonschema dependency. Preserve that harness
+failure, not a passing diagnostic. Frozen source, inputs and all 367 consumer
+files remain unchanged; no reviewer, retry, staging or publication follows.
+The slow-path diagnosis is inconclusive and this unchanged allocation must not
+be rerun automatically. No product performance improvement or winning mechanism
+is established. Evidence: `/private/tmp/odylith-author-latency-trace.8pibFp/`.
+
+The bounded safety/readability checkpoint passes 4308 runtime tests with the
+protected holdout excluded, 1101 install tests, 15 overlapping Project/mirror
+checks, 27 focused browser checks, 26 cross-surface cells and two actual B-142
+reading cells. Radar's local track and wrapping rules remove unreachable mobile
+prose without changing meaning or shared chrome. Keep the native failure and
+remaining release gates open; commit this validated checkpoint as unqualified.
+
+One frozen standard request fails at 55.441175 seconds: authoring consumes
+50.496233 seconds, leaving the reviewer 4.498808 seconds; no review verdict or
+complete package returns. Two actual calls, no retry and unchanged source are
+recorded. The fixed model deadline correctly prevents staging. Error latency
+inside 60 seconds is not a passing consumer outcome. The earlier 25-millisecond
+model-window margin was insufficient evidence of robustness.
+
+Preserve truthful two-role receipts, deadline guards and the failed gate. Do not
+extend 60/90/120, reserve less authoring time without improving author latency,
+restore the known source-loss-prone one-call admission, or repeat a profile sweep.
+Inspect retained requests, responses and provider timing evidence before choosing
+one falsifiable alternative. A mechanism change must improve complete-package
+quality and timing together; no new schema or repair role is earned by this failure
+alone. Final receipt guards pass 151 tests after the 527-test integration run.
+Maintainer UX passes 26 matrix and two corrected D-043 reading cells, with the
+initial harness selector failure preserved; no consumer package exists to review.
+Evidence: `/private/tmp/odylith-v53-native-admission.G4DKq8/`.
+
+The following entries preserve the decisions preceding that failed native gate.
+
+Native integration also requires exact serializer parity in the existing
+commit-only hash owner: retain nested author/reviewer receipt timings in both
+canonicalizers while leaving the final consumer clock volatile. Real CLI
+staging tests exposed the mismatch; retain their failing evidence until the
+same sealed package reloads without weakening integrity checks.
+
+The actual combined-author/full-review feasibility gate passed independent
+semantic and clock/custody review in 54.974559 seconds, with only 0.025441 seconds
+remaining in the model window. This is not native consumer timing or robustness.
+Integrate that unchanged reviewer at the validated-author boundary, preserve all
+candidate values, record two real roles, and enforce one absolute model deadline
+including reviewer setup and validation. No reviewer after clarification or
+invalid authoring, no retry/repair, and no semantic work after confirmation.
+Bind admission to the candidate and sealed intent; replace the one-call receipt
+contract rather than hiding a second call behind it. Limit implementation to
+authoring/review, pinned profiles, materialization, public deadline, manifest and
+transaction approval. Focused integrity/deadline tests and independent review
+precede one frozen native complete-package quality/timing/browser gate. Stop
+qualification on failure; 60/90/120 stays fixed. CB-303 remains Open/P0.
+Evidence: `/private/tmp/odylith-author-review-window.hS6MWH/review.md`.
+
+Full-candidate result: all five frozen predicates pass independent review in
+17.081, 8.259, 9.044, 10.653 and 9.045 seconds, exactly five calls with all 114
+dependencies unchanged. The reviewer admits practical proposed choices and
+denies assumption/design contradictions, actual source loss and invocation
+misclassification. This is a bounded component result, not a quality floor.
+Before changing six production receipt/deadline owners, run one no-write actual
+combined-author→full-review feasibility check under one absolute 55-second model
+window, with R capped at min(20 seconds, remaining time). Preserve actual author
+bytes, at most two calls, no repair/retry or native one-call receipt bypass.
+Failure stops this candidate before integration. Passing only earns truthful
+native integration and the unchanged complete-package/60/90/120 gate; it does not
+qualify consumer timing. Evidence: `/private/tmp/odylith-full-candidate-admission.S1Nl1i/review.md`.
+Clock contract: `/private/tmp/odylith-author-review-window.hS6MWH/acceptance.md`.
+The rejected no-call clock preflight is preserved: enforce R's post-return
+deadline, distinguish final audit-summary I/O from timed candidate work, and
+bind canonical candidate bytes to the persisted actual A response on both sides
+of structural validation before refreezing. No model outcome informed this fix.
+
+Full-candidate discriminator: source-only admission cannot judge choices that it
+never receives, and moving those choices to the designer leaves the same hole.
+Compare one binary reviewer with explicitly separated accepted-source and
+proposed-decision namespaces, preserving every value. Review proposed choices
+for material incompatibility, not source quotation or preferred wording. Freeze
+five controls: the independently accepted source/design candidate, an assumption
+constraint reversal, a single component-responsibility reversal, actual v52
+constraint loss, and invocation-as-product-story. Retain Sol/medium, one witness,
+20 seconds per control and no retry. Any wrong verdict or timeout rejects this
+candidate before authoring integration. Even a pass is only component evidence;
+the next adoption gate must measure one complete package within 60/90/120, not
+sum historical role times. No fourth role, repair cascade, production change,
+profile sweep, broader quality claim or protected-holdout use.
+Contract: `/private/tmp/odylith-full-candidate-admission.S1Nl1i/acceptance.md`.
+
+Source-authority result: all three frozen controls pass root and independent
+review in 14.183, 9.095 and 13.047 seconds, with three actual calls and all 111
+dependency hashes unchanged. The reviewer admits accepted source meaning and
+correctly denies the actual lost prerequisite and invocation-as-story. This
+qualifies only those component controls. Because excluded proposed decisions
+can contain unsafe choices, source admission cannot authorize joining/sealing.
+Keep production unchanged and resolve that remaining authority obligation before
+a complete source-first joined-package comparison; do not add a fourth role,
+reuse the old full-packet join gate, or spend another run on isolated source
+success. The original actual package remains rejected and CB-303 Open/P0.
+Evidence: `/private/tmp/odylith-source-authority-review.KqkwhW/review.md`.
+
+Current bounded decision: correct CB-303's source-constraint loss severity to P0
+under the fixed goal; preserve historical P1 labels as historical evidence.
+Source-first results support a hypothesis, not an accepted replacement. Before
+another source/designer run, compare source-only reviewer authority on three
+retained controls: the wrongly denied source positive, actual v52 constraint
+omission and invocation-as-story negative. Preserve accepted fields and evidence
+exactly; exclude proposed decisions and their generation instructions from this
+role. Keep the binary prompt/schema, model and 20-second cap unchanged. Any
+wrong verdict or timeout ends this candidate, without retry or tuning. Passing
+cannot judge excluded design safety or authorize joining/sealing; the next useful
+authoring gate would be a complete joined package, not another source-only
+success. No production mechanism, profile, header or 60/90/120 change.
+The initial no-call preflight omitted a substantive customer-role prohibition
+and lacked explicit post-return timing enforcement; preserve that rejected
+contract and use the corrected frozen successor without changing live controls.
+Contract: `/private/tmp/odylith-source-authority-review.KqkwhW/acceptance.md`.
+
+v52 result: the existing-owner terminal replacement passes independent custody
+review. One actual 5-task/5-component/5-diagram proposal stages in 44.982 seconds,
+with one 38.908-second author call, but fails the unchanged source-quality gate:
+matching-before-publication is missing as a required edge and survives only as
+proposed sequence. Canonical surfaces and all five handoffs inherit the omission.
+Do not confirm or retry this package. Keep the bounded custody improvement and
+the full-package rejection separate. The next mechanism decision belongs to
+source-constraint coverage, not downstream reconstruction from design, another
+keyword rule, or the already rejected three-disposition reviewer. Review existing
+source-first evidence before choosing a bounded comparison; no new architecture
+is adopted by this note. Frozen runtime proof has 4025 passes and one initially
+stale Registry forensic check; owned refresh settles it and all 96 Registry,
+source/bundle and sync checks pass. Install proof has 1075 passes, and offline preview proof
+32 matrix + 20 diagram reading + 30 handoff/selection checks. Refresh governed
+metadata and rerun its owning checks before commit. Diagram quality is uneven;
+simple context and dense support views are not highest-quality qualification.
+No goal or deadline narrowing.
+Evidence: `/private/tmp/odylith-v52-terminal-reference.BTfmyS/semantic-review.md`.
+
+Integration slice: replace the existing terminal resolver and author schema with
+the accepted selected-fact reference, not the experimental source-first pipeline.
+Preserve raw field-row aliases through exact source-fact duplicate collapse so
+later rows cannot shift and identical duplicates need no extra rejection.
+Characterize strict local occurrences, Unicode bytes, invalid roles/references,
+non-event proof/story results and sealed downstream behavior. Keep the one-call
+profile and all deadlines fixed; no compatibility adapter or reviewer stage.
+Runtime, installed, complete-package quality and browser proof must distinguish
+this source-local v52 integration from the earlier two source-only observations.
+
+Boundary result: both actual terminal-reference source controls pass independent
+review in 30.741 and 24.790 seconds, preserving all five coordinator actions,
+four required edges and exact result custody. Retain this candidate for a focused
+replacement in the existing resolver, with downstream characterization; do not
+ship the old-shape comparison adapter or two interpretations. The three-disposition
+reviewer fails two of four frozen predicates (false document-order contradiction
+and positive timeout); retire it without another repair stage or prompt/cap sweep.
+Its two correct hard-block witnesses remain evidence, not overall qualification.
+Do not turn every grammatical but weak practical-need assumption into a universal
+repair blocker. Preserve the frozen experiment's original expectation, while
+keeping goal-defined hard blockers and unresolved P0/P1 release findings distinct
+from advisory copy improvements. Production and all consumer timing/package gates
+remain unchanged. Reports:
+`/private/tmp/odylith-terminal-reference-boundary.b4SSSF/review.md` and
+`/private/tmp/odylith-review-disposition-boundary.l2u3qQ/review.md`.
+
+Boundary comparison, not production integration: one terminal reference inherits
+an eligible selected fact's source custody and resolves its result phrase locally.
+Fifteen no-provider controls pass before two fixed original/equivalent source calls
+at unchanged Terra/low, at most 35 seconds each. Compare reviewer dispositions on
+four frozen controls at unchanged Sol/medium, at most 20 seconds each. Source facts
+and proposed decisions retain separate authority; weak proposed copy remains
+unresolved and cannot join or seal. The affirmative copy control is explicitly
+hand-authored development evidence, not an actual generated package. No new repair
+stage, retry, production schema migration or profile sweep. All observed failures
+remain in their denominators. These component gates do not qualify the combined
+pipeline, 4–5/4–5/5+ useful package depth, consumer 60/90/120 or release. Contracts:
+`/private/tmp/odylith-terminal-reference-boundary.b4SSSF/acceptance.md` and
+`/private/tmp/odylith-review-disposition-boundary.l2u3qQ/acceptance.md`.
+
+Allocation result: zero accepted joins from two related requests, four actual
+calls and no retry. Both authors return within 35 seconds; complete model-stage
+attempts end in 33.235 and 48.902 seconds inside 55. Independent review diagnoses
+one duplicate result-location binding failure and one over-blocking source
+verdict about visibly proposed problem copy. No source outcome reversal is
+established. The second design supplies useful 5/4 depth with P2 walkthrough
+precision, not complete-package qualification. All 118 frozen hashes match.
+Do not promote the allocation or launch another cap/profile sweep. Characterize
+one canonical result reference and separation of source admission from proposed
+decision quality next; neither hypothesis is an adopted refactor. Production
+v51, consumer 60/90/120 and all release obligations remain unchanged.
+Evidence: `/private/tmp/odylith-source-allocation-comparison.y8GFVV/review.md`.
+
+Bounded allocation decision: keep source-first ownership provisional and compare
+one 35/20/20 role allocation inside the unchanged 55-second model window. Repeated
+30-second author cutoffs establish availability risk, not a diagnosed semantic
+schema failure. The failed equivalent-source probe already ran outside the repo;
+repository instructions do not explain that timeout. No context-isolation patch,
+schema compaction, new parser, profile sweep or broad rewrite is justified here.
+This supersedes only the earlier requirement to change the semantic mechanism
+before any new experiment, not its failed gate or prohibition on retrying that
+frozen run. Two fixed original/equivalent development requests run once each,
+with unchanged prompts, models and schemas; retain every outcome. Both joins must
+pass independent source/design review within 55 seconds or the allocation is not
+promoted. This is not a paired speed study, complete-package gate or release floor.
+No production profile changes. Consumer 60/90/120, full package depth and all
+remaining release obligations stay fixed. Contract:
+`/private/tmp/odylith-source-allocation-comparison.y8GFVV/acceptance.md`.
+
+Current decision: the successor pipeline does not clear its equivalent-source
+model-stage gate. One actual source-only Terra/low call times out at an effective
+29.898 seconds; role time is 29.922 seconds and adapter time 29.924 seconds,
+inside the absolute 30-second stop. No packet exists, so design and the
+single-witness reviewer were not called. Exact evidence/prompt/schema and frozen
+input/source identity are verified by root and independent review. Preserve the
+independently equivalent-source annotation and three reviewer-control passes
+below, but do not infer semantic
+drift, a formatting cause, or an end-to-end reviewer result from no response.
+No retry, cap/profile change, production integration or holdout access follows.
+Stop this pinned pipeline's qualification. Before another live campaign, diagnose
+the source-author availability/latency owner and make a bounded falsifiable
+mechanism decision; do not turn the same allocation into a retry/profile sweep.
+All consumer 60/90/120, complete-package/UX and release gates remain fixed/open.
+Evidence: `/private/tmp/odylith-equivalent-source-stage.nYLAfl/review.md`.
+
+Independent timing review measures only 1.773 ms of pre-dispatch setup for the
+failed author; CLI startup, transport, backend waiting and generation remain
+undifferentiated. The actual stdin grows by only 59 UTF-8 bytes with unchanged
+prompt/schema/profile; that establishes no cause. Do not redesign the source
+graph or add an observability framework from this evidence alone. Details:
+`/private/tmp/odylith-equivalent-source-stage.nYLAfl/latency-evidence.md`.
+
+Fresh seven-surface desktop/mobile readback again passes 14 normal route cells,
+four spec-reading controls and four failure-discovery cells. It strengthens the
+Compass caveat into a confirmed freshness defect: identical older brief sections
+are presented with a new Generated 11:33 label beside the current failed gate.
+CB-019 is reopened under the existing B-025 freshness plan; no separate UX
+architecture or Greenfield workstream is created. This is not full UX acceptance
+and the newer governance-record refresh is outside that frozen browser window.
+Evidence: `/private/tmp/odylith-stage-stop-ux.P3J2Nz/review.md`.
+
+The single-witness successor now passes three independently adjudicated
+component controls at the same Sol/medium 20-second cap: isolated invocation
+denial in 10.377 seconds, matched valid-purpose acceptance in 13.839 seconds and
+denial of the exact retained Harbor negative in 7.114 seconds. Harbor is denied
+for unsupported recording ownership; the isolated pair supplies purpose-role
+evidence. Only denial enumeration changes; affirmative semantic coverage stays
+complete. The prior timeout's cause remains unknown, and these observations do
+not establish an accuracy rate or causal speed improvement. Four no-provider
+adapter controls pass. No production change or deadline relaxation occurred.
+This earned the separately frozen equivalent-source model-stage comparison above,
+which failed before reviewer dispatch; it did not earn integration or complete
+package/SLA proof. Remaining semantic controls stay open.
+Evidence: `/private/tmp/odylith-admission-witness.zqZ1kN/review.md`.
+
+Prior exhaustive-verdict allocation: do not adopt that candidate. Its next
+required retained-negative control returned no verdict: one Sol/medium call
+timed out at an effective 19.895-second allowance; the adapter stopped in
+19.922 seconds inside the absolute 20-second limit. Root and independent review
+verified unchanged prompt/schema/roles, exact request/input equality and hashes.
+The localized purpose-positive was not called; no retry, expanded cap, production
+change or holdout access occurred. This is verdict-availability failure, not
+semantic false acceptance or a diagnosis of the provider's underlying delay.
+Preserve the successful observation below but do not extend it into qualification.
+A successor requires a separately grounded latency/ownership improvement and
+bounded prediction; do not run more controls or sweep profiles for this allocation.
+Evidence: `/private/tmp/odylith-source-verdict-controls.U5bS1i/review.md`.
+
+The accompanying fresh governed UX readback passes 14 normal desktop/mobile
+routes and four spec-reading controls, not full experience acceptance. Compass's
+latest timeline reports the failed gate while its older timestamped standup
+still uses optimistic checkpoint/ETA language. Preserve that visible caveat and
+inspect brief evidence/selection/freshness before any correction; do not rewrite
+narration or call a provider merely to replace an unfavorable observation.
+Evidence: `/private/tmp/odylith-continuous-ux.bSorfa/readback/result.json`.
+
+The installed Harbor pair remains a localized purpose-role discriminator, not a
+whole-source positive: both responses omit the explicit records-before-shows
+constraint and source-precedence edge. Stop the proposed reviewer-only 20-second
+retry before any provider call. A larger cap alone is not a new mechanism. Retain
+the original failed 10-second attempt and unchanged controls.
+
+One external source-first run now passes independent source/design adjudication:
+source authoring takes 24.806 seconds, then read-only verdict 16.065 and design
+19.623 run concurrently. The actual model critical path is 44.459 seconds with
+three calls, frozen source and one unchanged packet identity across both roles
+and the guarded join. All five human-owned actions, household scope, four cited
+edges and publication identity survive; five proposed components/workstreams
+deliver usable behavior. Ten no-provider ownership/harness controls pass.
+
+That observation earned the retained negative gate, which subsequently failed
+as recorded above, not production adoption or complete consumer timing.
+Verification remains mostly happy-path and
+reference-centric. Require wrong-role rejection without losing valid purpose,
+actor/dependency, constraints and non-path capability preservation before the
+candidate displaces the current owner. Complete sealed packages, installed
+creation/recovery/host parity and seven-surface UX still need proof within the
+unchanged 60/90/120 limits. No production profile, call-count contract, transaction
+or holdout changes are made. Evidence: `/private/tmp/odylith-source-first-ownership.8PtR5k/review.md`.
+
+### Fresh installed empty-state UX (2026-09-07)
+
+The residual Registry reading correction now passes 20 desktop/mobile browser
+controls and independent visual review: mobile filters no longer cover the empty
+heading, and spec prose stays within its disclosure while tables scroll locally.
+The broader frozen surface suite passes 270 checks. An actual-source cache control
+then reproduces missing invalidation for the extracted spec-reading owner. The
+existing Registry refresh fingerprint now includes that owner, and all 16 focused
+cache/owned-refresh controls pass after the correction.
+The installed baseline remains unchanged; source-local proof is not a fresh
+installed-release or complete accessibility claim. The dashboard header stays
+frozen. Evidence: `/private/tmp/odylith-registry-reading-proof.Lw8Pja/`.
+
+The exact 4ce8cd2f install passes 16 desktop/mobile route and layout cells with
+unchanged governed bytes, but independent screenshot review rejects the empty
+experience. CB-330 records Atlas displaying a broken preview and blank diagram
+metadata, Compass estimating roughly six days with no active workstreams, and
+Casebook suggesting filters when no cases exist. Radar and Registry blank-panel
+guidance and mobile density also remain weak. Clear Project onboarding and
+unanchored-route recovery are verified; do not misreport the visual defects as
+regressions caused by the last Atlas reading change.
+
+Next bounded UX correction must distinguish absent source records from filtered
+results at the existing surface owners. Require failing empty-state assertions
+before changes, then preserve populated, fallback and error behavior at both
+widths. Do not redesign the frozen header, add a shared framework for this case,
+or treat the automated route pass as human-quality acceptance. Evidence lives in
+`/private/tmp/odylith-installed-checkpoint.tefox7/installed-empty-browser-reviewed/`
+and the retained earlier diagnostic screenshots.
+
+The correction began with red browser controls: Atlas four,
+Casebook four, and Radar/Registry eight failures; Compass has six red fact and
+narration controls while its source-backed estimates remain green. The diagnosed
+owners are Atlas selection lifecycle, Compass no-workstream facts, Casebook list
+presentation and Radar/Registry async selection. Replace the obsolete paths in
+those owners; no global empty-state framework or semantic parser change is
+needed. A late Radar response must not restore detail after filters remove its
+selection. Keep mobile KPI density explicitly unresolved by this bounded wave.
+Final source-local proof passes 28 empty/invalid route cells, six Project
+recoveries and independent desktop/mobile review of all seven surfaces. A fresh
+four-workstream, four-component, five-diagram synthetic package passes 32 browser
+state cells and 113 exact sealed/published files. Its diagnostic 35.080 seconds
+is not model-authoring or consumer SLA evidence. CB-330 is FixedPendingRelease.
+The retained installed 4ce8cd2f screenshots remain baseline evidence.
+
+Exact clean 4ca2f3d5 now builds and fresh-installs the complete local 0.1.15
+distribution. Fourteen changed surface modules match isolated installed bytes;
+audited author-unavailable refusal has zero write or subprocess attempts and no
+changed records or staged transaction. Actual installed browser automation passes
+28 empty/invalid-route cells and six Project recoveries with unchanged installed
+and governed bytes. Screenshot review still finds the mobile Registry Diagnostics
+chip overlapping its empty heading, so this is not complete UX acceptance.
+Positive installed creation, recovery, host parity, semantic quality and consumer
+latency remain separate open gates. Proof: `/private/tmp/odylith-empty-state-installed.BLYtlC/`.
+Six terminal or rejected prior test fixtures were moved whole to recoverable
+Trash storage; their reports and screenshots remain in place with an exact path
+mapping in `/private/tmp/odylith-empty-state-proof.kJuowo/cleanup-completed.md`.
+
+The first visually reviewed isolated run had 28 passing DOM cells but still
+invented stale progress with no workstream or event. Freshness admission now
+requires a real workstream or timestamp, retaining genuine stale scopes, global
+evidence and independent risks; 212 Compass controls pass. A separate first
+fixture spawned background narration outside its in-process guard and is invalid
+for no-model proof. Both failed attempts remain explicit in the proof bundle.
+Keep synthetic background isolation separate from production engine policy.
+
+### Exact distribution install checkpoint (2026-09-07)
+
+Clean pushed 4ce8cd2f builds the complete local 0.1.15 distribution. The real
+nested fresh install, version, doctor and capability checks pass, and isolated
+installed Atlas module hashes match source. The unchanged local smoke then
+fails because it disables model authoring while expecting a generated proposal.
+CB-181 is reopened with the retained failure and exact build provenance at
+`/private/tmp/odylith-installed-checkpoint.tefox7/install-result.json`.
+Resolve this proof-owner mismatch without weakening the required positive
+installed propose/confirm journey, adding an author fallback, or relabeling
+synthetic/no-model evidence as semantic release acceptance. This is packaging
+and diagnosis progress only; installed creation, recovery, host parity and
+semantic qualification remain open. Keep 60/90/120 and the holdout gate fixed.
+
+Selected correction: installation smoke owns the disabled-author refusal and
+no-write boundary; the mandatory same-distribution installed matrix owns the
+positive show/propose/confirm journey and all transferred anti-host-repair
+output checks. Browser, readback and crash/retry gates remain required. No new
+model fallback, semantic mechanism or generic proof framework is authorized.
+Test the two owners independently before running the fresh deterministic install;
+a passing install is not a Greenfield quality or consumer-latency claim.
+
+The correction passes 148 focused controls and all 1075 install tests. A second
+fresh install of the same frozen distribution passes installation in 28.872
+seconds, then audited author-unavailable refusal in 1.074 seconds with zero write
+or subprocess attempts, unchanged governed records and no staged transaction.
+The positive matrix retains every unique prior completion/output/artifact check;
+the obsolete smoke owner and receipt-dropping wrapper are deleted. Harness code
+is net eight lines smaller. CB-181 is FixedPendingRelease for this bounded fix,
+not Greenfield acceptance. No runtime, model profile, source semantics, deadline
+or dashboard-header change occurred. The release topology was reviewed and its
+installed-matrix-before-publication boundary remains unchanged.
+
+### Atlas reading and semantic authority boundary (2026-09-07)
+
+Keep the full-diagram overview and make native-size reading an explicit Atlas
+viewer action. One viewport owner must own transforms, image sizing, pointer,
+pinch and keyboard input. When the stage is focused, arrow keys pan without
+switching diagrams; filter entry must not change the viewport. Empty/error
+states disable unavailable reading actions and retain recovery navigation.
+The oversized catalog renderer must shrink rather than accumulate another input
+path. Freeze the dashboard header, sealed diagram content and 60/90/120 budgets.
+Require desktop/mobile normal, fallback and error controls plus the broader
+surface matrix and install checks. Initial eight red controls are retained in
+`/private/tmp/odylith-atlas-reading-proof.BD4j5N/baseline.xml`.
+
+Implemented in one viewport owner, removing 242 lines from the catalog renderer
+with net 28 lines across the three runtime files. The first passing controls
+missed iframe visibility and disabled appearance; screenshot review drove eight
+further red cases before explicit Read reveal and scoped disabled styling.
+Final frozen proof: 74 focused controls, 1139 runtime checks and 1116 install/
+dashboard browser checks. The two broad suites contain 2255 checks; the focused
+suite overlaps runtime and is not an additional unique count. A fresh synthetic
+consumer passes 32 seven-surface state cells and 113 exact sealed/readback files;
+20 native desktop/mobile journeys cover five actual SVGs and five PNG fallbacks.
+Independent review approves this bounded reading correction. Diagnostic elapsed
+time is not consumer SLA proof; semantics, full accessibility and release gates
+remain open. Evidence and recoverable consumer cleanup are recorded in
+`/private/tmp/odylith-atlas-reading-proof.BD4j5N/review.md`.
+
+The subsequent goal audit corrects the earlier authority-choice framing. Both
+goal attachments already require exact source support and correct semantic role
+for accepted facts, alongside independent qualification of probabilistic model
+quality. This is not an outstanding operator-permission choice, nor a mandate
+for a separate NLI model, reviewer call or universal semantic oracle. Current
+source still promotes model-selected quotations into product claims and accepted
+facts without independent role evidence. Keep the known CB-303 invocation-as-story
+P1 and semantic qualification open; an aggregate score cannot waive that defect.
+The retained invocation-negative and genuine-purpose-positive pair now reproduce
+the gap on exact installed 4ca2f3d5: both seal and pass quality; the request to
+create a proposal incorrectly becomes accepted Project purpose. Genuine purpose
+is preserved by the positive control. All 458 loaded modules match the wheel;
+two fixture responses make zero live provider calls, no network attempt and no
+CONFIRM or governed-record publication. This is an admission diagnostic, not
+live-model frequency or SLA evidence. A successor must first reject the negative
+and retain the positive. Do not repeat rejected story-elimination,
+capability-promotion or NLI paths. The two pending diagnostic fixtures are
+preserved under `/private/tmp/odylith-empty-state-installed.BLYtlC/semantic-controls/`.
+
+### Flat-workstream handoff correction (2026-09-07)
+
+CB-303 records a concrete consumer handoff mismatch: allocation position invents
+a project umbrella, skips a valid standalone workstream, and conflates one coding
+slice with the whole release. Replace that positional owner with the existing
+typed workstream dependencies and allocation bindings. Keep the Project brief
+project-wide and make the selected first task's scope explicit across CLI,
+Project, Registry and preconfirm checks. Delete the old hierarchy selection;
+do not add a planning engine, model call or semantic prose rules. Validate flat
+and reordered dependencies, invalid bindings, full-release versus first-task
+scope, and the desktop/mobile governance matrix before accepting the correction.
+This P2 correction does not close the separate P1 semantic-role admission gap.
+The 60/90/120 limits and complete-package quality bar remain unchanged.
+
+The correction is implemented and independently reviewed. Handoff v3 binds one
+canonical dependency-free task across Project, CLI and preconfirm checks; exact
+release membership replaces positional and alias/slug fallback selection. Dead
+component-handoff code is removed. Shared task scope leads every copyable Project
+prompt and cannot disagree with an independently reconstructed canonical target.
+The runtime is a net 219 lines smaller. Final proof passes 1085 Greenfield and
+1035 install/Project browser tests, 32 native seven-surface cells and exact
+113-file readback. The earlier 19 incomplete-fixture failures are corrected with
+canonical allocations, not skipped. Forward dependencies select B-004 instead
+of first-allocated B-001; all four release tasks remain separate. Ten selected-copy
+checks and exact Radar navigation pass at both widths. Evidence:
+`/private/tmp/odylith-flat-handoff-final.GZmPFj/review.md`.
+
+No fresh Greenfield provider call or holdout access occurred. The semantic review
+rejects deleting product_story: it can uniquely carry product purpose, so the
+change would move or hide inference rather than solve role admission. The P1,
+mobile density/Atlas fit, complete live quality and installed-release gates remain
+open. Do not confuse a 68.121-second synthetic compile-and-browser diagnostic with
+consumer request latency or acceptance of the previously rejected live package.
+
+### Event-order authority candidate (2026-09-07)
+
+The bounded external comparison accepts source-event identities plus exact-cited
+precedence and one explicitly proposed first-run walkthrough. Source precedence
+alone would stop false arrows but leave capability-list requests without a useful
+first path. Delivery prerequisites are not runtime ordering evidence. Eighteen
+structural controls pass before one new Terra/low author call completes in 36.396
+seconds. Independent raw-response review confirms four exact prerequisites,
+independent preparations, publication bound to document event 1 and proposed
+path [2,3,5,4,1], with coherent five-component/five-workstream design. Complete
+behavior and household scope remain despite two noncritical copy/citation issues.
+Evidence: `/private/tmp/odylith-event-order-authority.qTFzOp/review.md`.
+
+The source-local implementation now uses author v51, semantics v16 and design v2.
+Existing operational-constraint facts own source-precedence citations; no second
+citation store or runtime review call is added. One shared proposed-run projection
+feeds CLI preview, Project, semantic views and readiness/handoff. Registry/Radar
+support IDs remain source identities. Atlas distinguishes solid source prerequisites
+from dotted proposed next steps. The older ordering owners and Tribunal's redundant
+event reconstruction are removed, not retained as alternate paths.
+
+A fresh post-result counterexample overruled 989 passing Greenfield checks:
+publishing a report then archiving evidence could not satisfy the inherited
+result-last restriction. Remove that restriction and the Project final-row lookup,
+not required source actions. Preserve explicit result-producer custody and source
+precedence. The 64-edge and 1000-character rationale bounds remain unchanged.
+Mutually exclusive branches remain an unqualified limit, not an approved envelope
+exclusion or a reason to build generic workflow machinery in this wave.
+
+The frozen implementation passes 999 Greenfield and 1035 install/browser/convergence
+checks. Its one standard production CLI seed request stages in 48.988 seconds,
+including one 43.491-second author call. Independent review accepts the ordering
+discriminator, four components/workstreams and five differentiated diagrams, but
+rejects the complete package before CONFIRM. The handoff misclassifies required
+constraints as exclusions, and a supposed sealed-review command regenerates from
+incomplete synthetic evidence. Preserve that unchanged rejected package:
+`/private/tmp/odylith-v51-event-order-native.CfUUIh/rejection-review.md`.
+
+The bounded correction is implemented: handoff v2 separates canonical constraints
+from non-goals through typed and copyable content; the synthetic re-propose path
+and dead serializer are deleted. The transaction-owned final decision rail stays
+unchanged. Actual browser selection exposed whitespace collapse, fixed by one
+handoff-only style rule with no header/layout change. Independent review accepts
+the correction. Fresh proof passes 1034 Greenfield runtime and 1036 install/browser
+checks, plus a separate synthetic native 32-cell/113-file exact readback matrix.
+Eight category/viewport controls prove selected-copy fidelity; 14 current maintainer
+surface cells pass. A stale command-mutation test was corrected and the full runtime
+suite rerun. Evidence: `/private/tmp/odylith-v51-handoff-ux.6Epb8V/review.md`.
+No new author call or rejected-response replay occurred. Separate P2 next-step debt
+remains: flat workstreams acquire an invented project/child hierarchy and inconsistent
+implementation scope. Mobile initial-fit readability and KPI-first density remain
+visible limitations, not proof passes disguised as premium UX.
+Consumer 60/90/120, useful 4-5/4-5/5+ depth, semantic/design quality, native live
+acceptance, installed-release proof and the untouched final holdout remain fixed.
+
+### Continuous experience gate (2026-09-06)
+
+Bounded Atlas UX checkpoint (2026-09-07): explicit catalog activation in the
+stacked layout now reveals and focuses the named viewer shell, putting Prev/Next
+first in keyboard tab order. Initial load, filtering, Prev/Next, desktop selection
+and the frozen outer header retain their scroll/focus/layout contracts. The four
+failing baseline controls now pass; 147 focused renderer/browser checks and all
+1006 install unit checks pass. Independent review approves the bounded change.
+A fresh unchanged v50 response replay passes all 32 seven-surface cells and exact
+113-file readback with source and whole consumer bytes unchanged. Its 60.708-second
+diagnostic includes baseline creation and browser checks; it is not a consumer
+request timing measurement. No author call, response repair, semantic change or
+holdout access occurred. Mobile initial-fit text, KPI-first density and the
+previously recorded untested states remain open. Evidence:
+`/private/tmp/odylith-atlas-selection-ux.FIhrmE/`.
+
+Optional source ownership checkpoint (2026-09-07): source-local v50 removes the
+obsolete mandatory capability inventory and terminal-to-product fallback.
+Explicit source capabilities and typed product events keep their owners;
+product story stays a description and required proposed design supplies depth.
+The first native consumer attempt exposed the same assumption in generic
+diagram validation; authored proposals now use the existing Atlas authority
+validator. The native red test precedes that correction. Frozen runtime/install
+proof passes 1451 checks; after removing two contradictory prompt instructions,
+111 focused checks pass. A stale wording assertion was corrected after the live
+call had already been dispatched; preserve that process deviation rather than
+claiming clean-gated release proof. The one unchanged standard flood request
+stages 4/4/5 in 36.426 seconds (one Terra/low call, 30.431 seconds). There is no
+retry, promotion, response repair or CONFIRM in that live consumer.
+
+Both the synthetic human-only control and an unchanged live-response replay
+pass fresh 32-cell desktop/mobile matrices and ten Atlas views each; these are
+separate packages, not 64 independent product examples. The live replay reads
+back all 113 sealed files exactly with no consumer drift or post-confirm work.
+Independent synthetic UX review finds no new P0/P1 but retains mobile diagram
+readability, KPI-stack depth and below-fold error feedback. Source ownership is
+improved. Independent live-package review rejects three P1 classes: capability
+list order promoted to a workflow, contradictory constraint/consent exchanges,
+and missing provisional privacy/safety planning for sensitive records. Preserve
+the exact response; do not patch it or retry. Invocation-as-story, design quality, installed migration,
+remaining UX states and final untouched holdout remain release blockers.
+Evidence: `/private/tmp/odylith-optional-source-ownership.R4S1X4/review.md` and
+`/private/tmp/odylith-v50-live-package-browser.Y7dRYQ/`. Do not retune the flood
+response or weaken floors. Preserve fixed 60/90/120 and compare the next owning
+abstraction only against diagnosed, independently reviewed failure classes.
+
+Review-reserve comparison (2026-09-07): the one-shot complete Luna/low draft
+times out at 25.021/25 seconds with the unchanged complete-author contract and
+exact flood source. The predeclared Sol/high review reserve is never used.
+Reject this allocation; no retry, model sweep, production profile change,
+transaction or holdout access. Frozen hashes and actual provider identity match.
+Evidence: `/private/tmp/odylith-complete-draft-budget.OXyZLC/`. The next design
+question is removal of duplicated semantic claims, not more bounded-review
+variants or role promotion of product-story text. Any removal must preserve
+complete typed source meaning and useful visible packages before adoption.
+
+Semantic admission comparison (2026-09-07): clean b8b2b06f still admits the
+unchanged invocation-as-product fixture before confirmation. Reject the exact
+local DeBERTa-small NLI alternative: its two independently annotated controls
+both fail the predeclared thresholds and the wrong role scores above the valid
+role (0.789 versus 0.701). Cold CPU inference is 4.220 seconds, but latency alone
+is not utility and its 512-token context cannot cover the fixed envelope. Do not
+tune thresholds, truncate evidence or add a second NLI model to this comparison.
+Production stays unchanged; no fresh generative call or holdout access occurred.
+Evidence: `/private/tmp/odylith-semantic-ownership-wave.RnXYrF/`. This eliminates
+one unsuitable mechanism; it does not close semantic or experience gates.
+
+Literal-label checkpoint (2026-09-07): native Mermaid decimal encoding replaces
+HTML escaping in the existing owner; nine rendered punctuation and literal-text
+controls preserve node/edge text without injection. Authored Atlas retains its
+authority marker through rendering and cannot fall through to the lossy static
+subset renderer. Red controls precede both fixes. Frozen diff 3a1d1b71 at 8c259fee
+passes 150 focused and 1545 broader checks, the unchanged 32-cell native consumer
+matrix and ten supplemental Atlas views. All 115 sealed/published files and whole
+consumer bytes match. The exact semiconductor response is replayed unchanged;
+there are no new model calls, semantic edits or post-confirm generation. Four
+separate Project browser tests pass normal/blank/degraded and negative clipping
+controls; these do not fill native-package Project empty/error cells. Root sees
+the corrected apostrophe in the D-004 SVG/PNG, but mobile initial-fit readability,
+edge routing, Registry unknown spec date, populated Casebook, ready Compass, full
+accessibility and independent final visual adjudication remain open. Evidence:
+`/private/tmp/odylith-atlas-label-proof.USpFbp/`. The diagnostic's 67.642 seconds
+includes fresh baseline and browser proof, not consumer-request latency. Next:
+resolve invocation admission and duplicated source-capability ownership without
+role promotion or reinstating a failed reviewer. All 60/90/120, quality, custody,
+distribution and untouched holdout gates remain fixed.
+
+Product-context checkpoint (2026-09-07): typed performer grouping fixes the empty
+product-only System Context without a schema or source-author change. The red
+product-only control is preserved; 31 owned checks and 1517 broader checks pass.
+Fresh unchanged-response replay passes the existing 32-cell desktop/mobile matrix
+and ten supplemental Atlas views with 115 sealed files and whole consumer bytes
+exact. The original worker-exit baseline failure remains failed; its separately
+declared continuation proves an idle-backoff interval, not ready Compass narration.
+Evidence: `/private/tmp/odylith-product-context-readback.teTwap/`. Retain literal
+apostrophe-entity leakage in D-004 and tiny mobile initial-fit type as UX debt;
+next format-owner work needs rendered punctuation controls, not output repair.
+Independent final review rates the apostrophe-entity leak P1 for the overall
+human-readable package, while approving the context patch itself. Keep that
+blocker rather than using the earlier P2 assessment to qualify the package.
+Project empty/error, populated Casebook, ready Compass and full accessibility
+remain unproved. Do not expand this checkpoint into release or semantic approval.
+
+The operator requires UX and experience checks throughout building, across
+Project, Radar, Registry, Atlas, Casebook, Compass and the dashboard shell.
+Each relevant checkpoint must combine bounded functional browser checks with
+rendered-content and navigation review at desktop and mobile widths, including
+normal, empty/fallback and degraded/error coverage. Record the exact state map
+and untested cells; a passing DOM assertion is not human-quality evidence.
+Check meaning, useful detail, readability, reachable navigation and recovery.
+Distinguish native scroll/zoom from inaccessible clipping. Keep these checks in
+the existing validation path, without a second UI framework or a redesign sweep.
+The package-depth, source-custody and fixed 60/90/120 gates remain unchanged.
+
+Experience checkpoint (2026-09-07): the exact Registry category owner now keeps
+`application` intact and invalidates both dependent caches; the existing Radar
+escaper preserves numeric zero and false. Frozen diff f9b5f419 at HEAD 668b94e6
+passed all 4776 runtime/install tests and the existing native 32-cell desktop/
+mobile seven-surface matrix, with source fingerprints and sealed/published bytes
+unchanged. Focused category and value checks separately passed 26 and 52 tests
+(overlapping scopes, not additive). Evidence:
+`/private/tmp/odylith-v49-ux-fidelity-proof.JdaH6G/`. Actual mobile detail review
+also confirmed inaccessible Registry Topology clipping, now recorded in CB-303
+before its fix. A single mobile grid-track change then passed 45 focused checks
+after two mobile failures on the unchanged layout; normal/fallback complete
+paragraph bounds and desktop preservation are proved in
+`/private/tmp/odylith-registry-mobile-topology.rxVIw8/`.
+Preserve exact state-map gaps: this is not
+all-state, live-model quality, installed-release or consumer-timing proof.
+
+The retained consumer also passed one ordinary-control mobile six-surface
+journey with sampled keyboard focus and Atlas native-asset error recovery.
+Atlas feedback is reachable, but seven upward scrolls from the selected list
+leave a discoverability issue; its source-link direction copy is inaccurate.
+Casebook populated detail, ready Compass narration and exhaustive accessibility
+remain unproved. Evidence: `/private/tmp/odylith-v49-journey-review.C0tbzh/`.
+Keep those bounded UX findings separate from the semantic admission blocker.
+
+Final combined checkpoint: 119 focused checks passed on frozen diff b6013c58.
+The 32-cell native run had zero UI issues but failed its whole-consumer unchanged
+inventory gate when Compass cache/request/state/lock files changed. Independent
+diagnosis attributes this to the pre-transaction baseline refresh's detached
+narration worker, not browser or Greenfield commit writes. Post-worker readback
+proves all 113 sealed artifacts still exact. Preserve the
+failure and establish baseline settlement before another clean full-proof claim;
+do not disable Compass, exclude the files to force a pass, or call this consumer
+timing qualification. Evidence: `/private/tmp/odylith-v49-ux-checkpoint.UrKsTr/`.
+
+### Required package depth and current blocker (2026-09-05)
+
+Ownership comparison terminal decision: reject this prototype for adoption. It
+silently promotes a product-story selection into an accepted source responsibility;
+the invocation and user-need controls expose that error. A direct reference would
+preserve provenance but cannot alone establish capability entailment. Keep production
+v49 unchanged and stop provider calls on this candidate. The successful exact-case
+generation is retained, not upgraded to complete-package quality: the live design
+also has an unowned/duplicated constraint exchange and missing contextual residents.
+Continue the separately grounded, owner-local Atlas context omission correction;
+do not combine it with an unproved semantic contract migration.
+
+Fresh complete-package review rejects the staged semiconductor System Context as
+an empty people group plus a product node. Source roles and proposed 5/5 design
+pass, but only four diagrams are useful. Fix the owning projection using existing
+typed performers and exact events, not invented context semantics or diagram-count
+padding; characterize all owner kinds, mixed/nonperforming participants and full
+text before desktop/mobile readback. No shared-dashboard redesign is authorized by
+this defect. The separate external title-capability prototype passes nine no-call
+structural controls and stages a fresh flood request in 44.509 seconds with one
+38.085-second standard call. That is bounded candidate evidence only. The known
+invocation-role admission still fails; do not mark the feature qualified.
+
+Complete-author discriminator (2026-09-07): unchanged c9ebbc95 rejects the exact
+flood-shelter request in 40.898 seconds but stages the exact semiconductor control
+in 45.013 seconds, each with one standard Terra/low call and frozen source. The
+flood author preserves five human events and useful 5/5 provisional design but
+separately reassigns four human clauses as product responsibilities. Its first
+enabling clause also exposes an overbroad containment explanation. Retain the
+sound rejection; do not weaken the guard. Before production edits, compare a
+bounded ownership candidate outside the runtime: reuse the existing product story
+for the title-owned capability, preserve typed event performers, and keep narrower
+internal-system responsibilities explicitly source-bound. Test the retained pair,
+one-event enablement, distinct internal ownership, contradictory/unselected owners
+and rejection of the superseded title citation list. Then allow one unchanged-tier
+live flood generation only if those structural controls are clean. No retry,
+holdout, new reviewer, post-CONFIRM generation or deadline promotion. This does not
+solve the separate invocation-as-product semantic-admission P1. Record each result
+before the next call; any semantic or useful-package regression rejects adoption.
+Evidence: `/private/tmp/odylith-v49-live-author.Gk0OMf/` and
+`/private/tmp/odylith-capability-owner-comparison.V15hgz/`.
+
+Admission discriminator result (2026-09-07): the independent read-only
+codex-cli/Sol-medium verdict timed out on its first retained negative at
+10.021 seconds against the predeclared 10-second cap. No verdict was returned;
+the positive control was not called. Source and input fingerprints stayed
+unchanged. Reject this exact alternative for adoption, with no retry, relaxed
+deadline or production semantic change. Accuracy, successful generation and
+consumer timing remain unproved. Both control annotations were independently
+approved before the call. Full evidence is retained under
+`/private/tmp/odylith-v49-admission-comparison.9oIvGH/`.
+
+Bounded admission comparison (2026-09-07): clean pushed HEAD 668b94e6 reproduces
+the exact invocation-as-product P1 through the full pre-confirm path, with no
+publication. Keep v49 unchanged while comparing three mechanisms: current
+single-author structural admission; canonical removal of redundant narrative
+ownership; and one independent, read-only semantic verdict. Narrative removal
+alone cannot address actor, state, opportunity, dependency or terminal-role
+errors. The verdict experiment must detect the retained wrong-role candidate
+and preserve the valid control without returning replacement content. Use one
+pinned profile, at most one 10-second verdict call per control, no retry and no
+holdout. A failure rejects this experiment; success earns only the remaining
+retained semantic controls, not production adoption. Existing 55/80/105 model
+windows and 60/90/120 consumer deadlines do not change; no composed timing
+estimate qualifies an end-to-end request. Read-only diagnosis does not itself
+solve successful generation after a rejected author candidate.
+
+Final source-local checkpoint proof (2026-09-07): frozen diff c449520f passed
+1508 Greenfield/Atlas-renderer unit checks in 155.30 seconds and a separate,
+overlapping 35 Project/Atlas-browser and Registry checks in 16.75 seconds.
+The fresh native package passed all 32 existing browser cells plus exact sealed
+and committed Radar prerequisite node/edge readback, Atlas relation parity and
+absence of invented component dependencies. All source/new-file hashes remained
+unchanged. Evidence: `/private/tmp/odylith-v49-checkpoint-proof.1g3mPk/` and
+`/private/tmp/odylith-v49-final-browser.FEteRu/`. Governance refresh passed with
+47 fresh Atlas diagrams and zero stale. This is a development checkpoint, not
+semantic, installed-release or 60/90/120 model-timing qualification. The P1 and
+P2 findings below stay open; no live provider or holdout was used.
+
+Current integration (2026-09-06): v49 is an unqualified source-local candidate,
+not a release win. One pinned author returns cited source facts plus a required,
+separately labeled provisional design. Semantics v14 carries that design in the
+existing relation hash and sealed transaction; candidate sidecars remain diagnostic
+views, not another persisted meaning owner. Profile v11 uses the full 55/80/105
+model windows inside unchanged 60/90/120 consumer deadlines, without review,
+retry or promotion. Required design produces 4–5 workstreams, 4–5 logical
+components and five source/design Atlas views. The obsolete runtime source
+reviewer and 1,139-line source-only backlog projector are removed from the fresh
+path. The orphaned count-driven artifact-depth planner and its five obsolete
+role-selection tests are also removed after confirming no production caller;
+the required design carrier owns this choice now. Git preserves their history.
+
+Continuous experience inspection found a real presenter mismatch: the Project
+structured renderer still substituted source-owned responsibilities for proposed
+components even after its scalar dashboard payload had changed. The canonical
+design now reaches that presenter; proposed capabilities and source-stated
+systems remain distinct, and job cards copy exact distinct deliverables. Atlas
+catalog compilation now preserves the source/design authority sealed in its
+display hash. Browser oracles check visible proposed labels and canonical
+content instead of blessing SVG/card counts. These are code and focused-test
+results, not semantic-author qualification.
+
+Frozen integration at base 8896c6c4 and diff a917c26e passed 1455 Greenfield
+runtime/install tests in 140.77 seconds; a separate overlapping Project-browser
+and Registry run passed 27 tests. The first frozen run remains recorded as
+1423 passed / 30 failed. Its obsolete two-call/source-only fixture expectations
+were migrated while preserving source/custody and negative transaction controls.
+A new Project regression failed before the capability body wrapper fix and
+passed afterward. Evidence: `/private/tmp/odylith-v49-final-integration.xfA6PO/`.
+
+The fresh production-baseline source-rendering proof passed actual compile,
+seal/reload, exact-byte commit and the existing seven-surface 32-cell browser
+matrix, with zero reported issues. Ten separate fresh-page Atlas captures plus
+zoom/pan checks retain each emitted diagram. The earlier bare-source run lacked
+installed baseline assets, repeating a documented V40 diagnostic mistake; do not
+add baseline generation to the transaction. Neither run is installed-release or
+model-quality/timing evidence. Full state maps and human findings are retained
+at `/private/tmp/odylith-v49-baseline-browser.LxmHuk/visual-review.md`.
+
+Human review exposed three concrete projection defects despite those passing
+checks: invented component dependencies from exchange direction, Atlas browser
+truncation of complete responsibility clauses, and canonical workstream
+prerequisites missing from native Radar topology. The first two losing
+interpretations are removed: component projection checks pass 29 tests, and
+the Atlas responsibility/browser checks pass 55 tests with a 58-line production
+deletion. The existing pre-confirm allocation/link owner now preserves exact
+dependency IDs; 21 focused checks include native sealed readback and malformed
+allocation rejection. Rerun integration and browser proof on the new frozen
+tree. Retain Registry category-label, Radar zero-count and initial-fit
+diagram-readability P2s without expanding this wave into a dashboard redesign.
+D-046's outdated flow is corrected: projection and rendering precede sealing,
+while CONFIRM performs journaled publication and exact readback only. D-043 now
+labels the open semantic-role gate explicitly instead of implying it is proved.
+
+Semantic qualification is stopped on a reproduced P1: an exact operator
+invocation assigned to product_story passes the full fixture-backed pre-confirm
+Tribunal and seals a pending 4/4/5 package. No CONFIRM occurred. This is the
+already documented V35/V36 failure class, not a newly discovered vocabulary
+edge. Source-span custody is not entailment, and another prompt sentence does
+not independently enforce that role. Live-model failure frequency is unmeasured.
+The exact fixture/request, standalone reproduction and gate/hash evidence remain
+in `/private/tmp/odylith-v49-semantic-admission-audit.zCv1Ds/`.
+Before further authoring changes, compare bounded alternatives against this
+admission defect and the six retained reviewer regression classes:
+wrong owner, citation prefix collision, recipient/external confusion, unsupported
+opportunity, invocation mistaken for product, and first-path/terminal mismatch.
+Their original examples are retained in the reviewer tests at baseline 8896c6c4;
+synthetic design fixtures prove custody/wiring only, not those semantic outcomes.
+Independent adjudication, clean distribution, host parity and the untouched
+replacement holdout remain mandatory. No provider call, holdout, publication or
+fresh timing/generalization claim occurred in this integration wave. Do not add
+invocation rules, downstream story substitution, another repair cascade, a
+larger deadline or a relaxed quality floor.
+
+The following preview and v48 entries are retained historical evidence, not the
+current candidate's qualification.
+
+Current preview result (2026-09-06): the temporary view now renders the existing
+canonical Problem, Customer, Opportunity and Product View as explicit facts or
+assumptions; source/design bytes and production owners are unchanged. Eleven
+no-call tests and six desktop/mobile normal, empty and Mermaid-failure states
+pass, with exact visible-content and keyboard checks on the same six cells.
+Root and independent visual review confirm the decision cards are readable.
+The hidden-decisions P1 is closed only in this development preview. The review
+also identifies P2 inconsistent accepted-fact wording in a candidate diagram
+and mobile relationships hidden behind uncued horizontal scrolling. Five useful,
+detailed diagrams are not yet proved. General-assumption visual behavior is not
+proved by this input, which has only decision-specific assumptions. Evidence:
+`/private/tmp/odylith-greenfield-decision-view.BxNrwx/report.md`.
+
+Consumer-level adjudication distinguishes representation coverage from actual
+meaning: residents remain registration subjects and all five city-staff actions
+survive, so a new independent review does not substantiate the earlier P1 solely
+from the missing actor-list entry. Preserve the prior failed inventory gate and
+review disagreement; do not turn that experiment into a pass. No schema rename,
+evaluator mutation, retry, provider call, production adoption or timing claim
+follows. The next comparison must declare its consumer-semantic proof boundary
+before execution. Settle stage-correct diagram labels and usable navigation at
+their presentation owners, then pursue complete-package integration under the
+existing source/proposed authority, generalization, transaction, 60/90/120 and
+release gates. Keep all-surface experience checks active; this prototype does
+not reprove the dashboard or clear the earlier Compass visibility gap.
+
+Latest discriminator (2026-09-06): the unchanged Sol/medium source reviewer
+audits the retained complete-author candidate once in 8.611 seconds, inside its
+16.936-second remainder, but returns no corrections. The explicit participant
+inventory still omits displaced residents. All five staff actions, exact objects,
+source custody and unchanged proposed-plan support joins survive; structural
+assembly remains 4/5/5. This rejects semantic coverage, not timing feasibility.
+Evidence: `/private/tmp/odylith-greenfield-complete-review.tDanXi/`, including
+predeclared acceptance, frozen inputs and independent rejection in
+`adjudication.md`. Exit0 means only structural checks pending independent review.
+No retry or fresh integrated run is earned; do not add separately timed author
+and review runs into a consumer timing claim. Production v48 and 60/90/120 are
+unchanged. The schema already represents contextual participants, so no new role
+schema or canonical rename is justified solely by this omission. Any next change
+must demonstrate better coverage on positive, negative and equivalent-source
+controls without vocabulary patches or another repair layer. The separate
+preview-assumption P1 remains: show the canonical Problem, Customer, Opportunity
+and Product View facts and all typed assumptions with explicit authority labels.
+Do not derive missing decisions from proposed-plan prose.
+
+Comparison result (2026-09-06): one Terra/low call completed in 38.064 seconds;
+the frozen driver took 38.492 seconds and produced four Radar drafts, five
+Registry drafts and five diagrams. Exact citations and all freeze receipts pass.
+Independent review nevertheless finds P1 participant loss: displaced residents
+survive as targets/state but disappear from the contextual participant inventory.
+The temporary package view also omits the proposed Opportunity/assumptions, a
+separate P1 projection defect. Reporting-input wording is P2 underspecification,
+not an exhaustive-topology gate. Six prototype desktop/mobile normal, empty and
+render-error states pass; this does not clear the human-quality defects.
+Evidence: `/private/tmp/odylith-greenfield-single-author.KWkJsD/`.
+The comparison stops here without retry, adoption or timing-qualified consumer
+success. Preserve the source/design separation and these failure classes for the
+next bounded decision; do not add a resident-specific rule or repair this fixture.
+Production v48 and the full 60/90/120, package-depth and release gates are unchanged.
+The Registry copy correction is implemented through the exact-ID update owner;
+28 updater tests prove metadata/spec preservation and symlink refusal. Complete
+checkpoint CLI/install and all-surface experience receipts are retained at
+`/private/tmp/odylith-component-description-checkpoint.FdtsSg/`; consult terminal
+reports for their exact outcome and coverage, not the candidate's browser preview.
+
+Declared comparison (2026-09-06): re-reading both original goals corrects a
+mechanism constraint that had been treated as a product invariant. Independent
+phase/release adjudication and entailed source facts are mandatory; a second
+model call on every consumer request is not. V48 review has caught real defects
+and remains production behavior, but its role may be replaced only with evidence.
+Compare one complete source-plus-proposed-plan author with deterministic custody
+and independent offline semantic/product review, inside the unchanged standard
+55-second model / 60-second consumer bounds. Keep Terra/low, source schema and the
+existing separate proposed-plan shape; no model sweep, retry or tier promotion.
+This challenges the runtime review role, not the requirement for semantic truth.
+Stop on the first timeout, custody failure or reviewer-caught P0/P1. A successful
+model-stage result only earns normal-package integration and the existing
+positive, negative, equivalent-source, browser, transaction and release gates.
+Source/proposed authority must stay separate; no sealed package is claimed from
+the temporary draft. Protected holdouts stay closed. In parallel, close the
+Registry copy P1 with an exact existing-component description-update command,
+preserving other metadata and the already-correct spec rather than re-registering.
+
+Last checkpoint (2026-09-06, package replay and context projection): the retained
+validated source plus the separate v2 proposed plan produces five Radar drafts,
+five logical Registry drafts and five Atlas views, versus the current 1/1/3.
+Six desktop/mobile normal, empty and Mermaid-failure replay states pass; all five
+diagrams render as SVG, with complete fallback source and tables. Sixteen exact
+replay/custody/negative controls pass. Independent semantic and consumer-quality
+reviews find no substantiated P0/P1 in this draft. These are review drafts, not
+production-governed records, a sealed transaction or new model timing evidence.
+Retain `/private/tmp/odylith-greenfield-draft-package.iYRD5L/output-v2/` and
+`browser-evidence-v5/`; canonical draft digest
+`96029216294576d3b603911a45cc2a1b0940aa1e0a93a9bf6ed8b117cf003559`.
+Do not splice the separately retained source and plan into consumer success.
+
+The context view is truthful but disconnected inventory, not self-nested product
+ownership in this replay. The selected narrow source change uses its existing
+typed human relations to render one grouped exact-event box per performer and a
+`performs` edge. Off-path participants receive no edge; product events never enter
+human groups; product/external boundaries stay unchanged. This adds an ownership
+lens rather than another per-event sequence. Context eligibility for cases without
+useful relations remains open; no artifact-depth rewrite is included. Source facts,
+model roles/calls, source schemas, transaction laws and 60/90/120 are unchanged.
+Citation co-location was considered and deferred: it reduces positional coupling
+but has no demonstrated latency benefit. No new model/profile/prompt sweep is run.
+The explicit proposed-design mechanism earns further integration work, not
+production adoption: normal proposal parity, Registry/Radar contracts, sealed
+publication, fresh timing, independent generalization and installed release proof
+remain required. The first frozen broad run is retained at
+`/private/tmp/odylith-context-ownership-source-proof.DClQA3/`: 4,628 pass and one
+fails because Release `FORENSICS.v1.json` is stale after governance changes.
+The tracked tree stays byte-identical during that run. Refresh CLI-owned evidence
+before repeating qualification; do not alter the failing freshness test.
+After that refresh, the frozen source gate passes 4,629 tests in 495.64 seconds
+at `/private/tmp/odylith-context-ownership-source-qualified.ofCUB2/`; JUnit SHA
+`947bb3655915989f5b25a2f3b546a91ad086c5b93ef8c0ead53489ce13df1ec2`.
+The renderer blob is `e26b29cda1e065287922fa2a9efe9ed9df42f02a`.
+The separate cross-surface browser gate passes 25 tests in 33.34 seconds.
+The actual generated maintainer dashboard review retains 14 desktop/mobile
+normal captures and six Casebook empty / Atlas PNG-fallback / asset-error
+captures at `/private/tmp/odylith-governance-ux-checkpoint.nproHe/`.
+One pre-existing P1 remains: Registry's selected Domain Intelligence description
+claims "Provider-free runtime" despite model-based authoring and source review.
+Existing CLI discovery exposes register and refresh, not metadata update; record
+the missing governed update path rather than hand-editing the manifest (CB-104).
+P2 follow-ups are initial Atlas 19% legibility, blank Radar KPI values and mobile
+KPI-first density. No inaccessible clipping was found in the sampled views.
+Mobile Registry after-scroll detail, keyboard/screen-reader, transient loading,
+every state permutation and installed parity are not proved by these captures.
+These are source and bounded UX evidence, not complete-package timing, release
+qualification or a clean UX verdict. CB-303 remains open.
+
+Prior wave outcome (2026-09-06, author-latency comparison): no planning candidate
+has earned production integration. The explicit experimental role map is
+Luna/medium source author, Terra/low parallel planner and Sol/medium mandatory
+reviewer, with at most three calls inside model 55s / consumer 60s. Source prompt,
+schema and custody are unchanged. General planner/reviewer instructions now
+require executable deliverables and minimum-necessary data exchange; this is a
+combined feasibility comparison, not a causal model-only comparison.
+The author returns null at 30.021/30 seconds while the planner returns in 24.897s.
+Total 30.025s, two observed calls, no source review, final support join or package.
+Thirty-three temporary boundary/profile/separation tests pass. Evidence:
+`/private/tmp/odylith-greenfield-luna-plan.fRtkui/`, driver SHA
+`75687162082c7d0fed4be69ac1a70b73a82ecadb1781e7fa22cc5f3d62c87478`,
+contract SHA `a643485fd78063e90c633e2ea287b12af9f7ad3d68bcfa1fea0242186273325f`,
+result SHA `6fe9dd5b7e4f52978cc1f2b50251c50a4d03bf4ca08a938b4b26a7c2d4062995`.
+The experimental identity never enters production-profile qualification; the
+existing profile selects only the validator's structural tier before the retained
+result identity is replaced. Actual role observations are authoritative (CB-306).
+
+Independent raw-plan review confirms both earlier P1s are removed: five working
+capability deliveries replace design-only tasks, and reporting receives placement
+and consent status rather than sensitive constraint details or consent contents.
+Two newly asserted P1s were withdrawn after exact-text adjudication: the plan does
+not claim automatic identifier generation, and its explicit intake-to-matcher
+exchange already owns household-needs transfer. Do not invent contradictions or
+require every contract field to repeat on every surface. Identifier provenance,
+intake-needs acceptance coverage and sensitive-constraint access/minimum-field
+policy remain P2 advisories. No substantiated raw-plan P0/P1 remains; the missing
+source/review/join and complete package still prevent qualification.
+
+One source-only diagnostic keeps the failed request/model/effort/30s cap, adds
+documented JSON event capture and removes concurrency. It returns in 25.504s
+(25.530s including driver work), observing no tool calls, 16,272 input tokens,
+1,220 output tokens and 635 reasoning-output tokens. No reviewer runs; this is
+neither a successful transaction nor evidence that concurrency caused the timeout.
+Evidence is under `author-transport-diagnostic/`, result SHA
+`54b9634ed5d16ecdf7cab9bd6ac2aa68a1749a1ad8045dba6845b7d592b34954`.
+The one task-only base-instruction comparison then returns null at 30.023/30s.
+Its trace contains only thread/turn start, no completed usage or observed tool
+work. Neither input-token savings nor latency improvement is established.
+Evidence: `/private/tmp/odylith-greenfield-lean-role.6H1HBb/source-control/`,
+result SHA `8659b2c41ead15d123a980ea88395886a46c3228e4c39257da1f4984bca0141d`.
+The documented instruction override was call-local; global settings, production
+runtime, profiles, source schemas and operating envelope remain unchanged.
+Reject both allocations for adoption. Do not start a model/effort/prompt sweep,
+infer timeout causality from null output, or splice separately timed successes
+into consumer proof. The next candidate must improve the measured critical path
+and produce a complete independently reviewed package inside the existing tier;
+token reduction alone is not an admission gate. Keep the generic planner-quality
+learning, not the failed allocation. Installed depth and release gates remain open.
+
+Prior wave outcome (2026-09-06): the first parallel experiment fails when source authoring
+returns null at 30.012/30 seconds. The independent planner returns in 20.642
+seconds, but source review never runs. Two observed calls, total 30.015 seconds,
+no publication and no complete package. Ten temporary source-support boundary
+tests pass. Evidence: `/private/tmp/odylith-greenfield-parallel-plan.oaoavx/`,
+result SHA `486492077f9b4cd0628b974d0edd61384083a99b9bc7661ceb7aeadf92d3aacd`.
+Stop this wave; do not retry the candidate or weaken the fixed deadlines.
+
+Independent review of the raw, unreviewed plan finds five meaningfully distinct
+logical components with source-backed support, but two P1 admission blockers:
+all five Radar tasks can close on designs/maps without delivering working product
+behavior, and reporting exchanges broaden exposure of medical/accessibility
+details and consent-evidence references beyond the source request. Matching also
+lacks a clear owner or explicit assumption for capacity input (P2). These are
+isolated planner findings, not a claim about an accepted or sealed package.
+The next implementation decision must address the source-authoring latency
+bottleneck while retaining independent review, executable deliverables/proof,
+and minimum necessary data exchange. A lower artifact count, a design-document
+self-check, a faster but unsafe plan, or an arbitrary provider-timeout exemption
+cannot satisfy the goal. No additional mechanism or profile is selected here.
+Production stays at the source-qualified v48 checkpoint; installed package depth,
+generalization, clean-install qualification and final adjudication remain open.
+
+Latest discriminator (2026-09-06): the reviewer-owned provisional-plan alternative
+preserves the initial request and all accepted-source validation. Its 18 temporary
+boundary tests pass. The one authorized standard attempt returns a source-valid
+initial candidate in 27.551/30 seconds, then times out in review at 27.446 seconds
+against the measured 27.428-second remainder. Total model time is 55.020/55 seconds;
+two calls, no plan response, no publication, no runtime adoption, no holdout access.
+This allocation is exercised and rejected on timing, not on unobserved plan quality.
+Evidence: `/private/tmp/odylith-greenfield-review-planning.fu76cy/`, result SHA
+`25ca8d5af5cbfa1dbd27005eca6dccb37522a974ebad280514902ef397e8b75a`.
+Do not retry it or raise its cap. One unchanged source-review control against
+the retained initial candidate and identical cap passes in16.658 seconds. It
+corrects the participant inventory and clears task data incorrectly labeled as
+an operating constraint; full source validation passes. Private transport output
+is retained under `baseline-review-control/`; result SHA
+`9185319751253563fd74aaa33e392117055725418134b77056cf80160c7ad9d3`.
+This demonstrates that the existing reviewer fits this sample's window, not
+that the control plus an earlier author is a new end-to-end run or that the
+candidate timeout has a proven causal explanation. Preserve the working source
+review; evaluate only a bounded mechanism that avoids adding plan authorship to
+its critical path. A concurrent planner is under independent design adjudication,
+not production-qualified by this result. Independent semantic adjudication selects
+one temporary concurrent-planner discriminator: unchanged initial source author
+and an evidence-only provisional planner run concurrently within30 seconds, then
+the mandatory independent reviewer audits both within the remaining55-second
+model window. The consumer deadline stays60 seconds; this predeclared experimental
+profile has at most three calls, no retries or tier promotion. Production's
+two-call profiles remain unchanged. The planner cites complete source actions by
+quote/occurrence. After source corrections are fully validated, each support span
+must lie inside exactly one final first-path span and contain that event's action
+and nonempty target, not merely its verb;
+the union covers every event without changing its performer. Keep the three-list
+component/workstream/exchange plan; reject a compact1:1 work-package replacement
+because it conflates component and delivery ownership. A pass only earns full
+package integration and positive/negative/equivalent-source quality evidence;
+it is not release proof. Stop on any timeout, ambiguous binding, padded proposal
+or source/proposal contamination. No new production runtime code exists.
+
+The operator now explicitly requires 4–5 actionable Radar workstreams, 4–5
+candidate Registry components, and at least five detailed Atlas diagrams for a
+complete Greenfield proposal. This supersedes treating smaller artifact sets as
+sufficient completion evidence. The original source-fidelity, visible-assumption,
+bounded-input and 60/90/120-second requirements remain fixed. Component count does
+not require separate services or deployments: proposed logical ownership must be
+useful and reviewable without pretending that an implementation already exists.
+Counts are necessary, not sufficient; repeated tasks, empty component contracts,
+and decorative diagrams do not satisfy the requirement. Material clarification
+remains a distinct no-write outcome, not a completed governance package.
+
+The source-qualified and pushed v48 checkpoint is
+`8d4afc082d9f879d118839103b57523f7642ee79`, not a release-qualified winner.
+Its first immutable installed case completes in 105.588/120 seconds, with exact
+publication/readback, passing browser mechanics, passing crash/retry/fsync/conflict
+recovery and terminal simulation cleanup. The campaign stops after that one case,
+with fourteen cases unattempted. It fails the existing Atlas connectivity check.
+Evidence: `/private/tmp/odylith-v48-public15-evidence.0XPNDS/result.json`.
+Do not repair this by fabricating interaction arrows or exempting a named fixture.
+
+Package inspection also exposes a product-depth limitation independent of that
+check. The count-based artifact selector offers at most four fixed Radar roles and
+four Atlas views. The Radar projector narrows those further through fixed role
+conditions. Components group only source-named product/system owners; the accepted
+enclosing capability does not provide an explicit provisional component design.
+In the retained installed package, all five human actions survive but one Registry
+paragraph owns the whole product and its event, state and result sections are
+empty. Existing perfect structural depth/usefulness scores do not establish
+consumer quality. This is CB-303, not permission to weaken its actor-custody laws.
+
+Next bounded comparison: retain the current package as baseline and compare one
+compact, pre-confirm provisional planning contract against direct package authoring.
+Prefer reuse of existing source facts, event identities, assumption custody,
+review and transaction sealing. A design proposal may organize supported behavior;
+it must not create an accepted actor, external dependency, safety authority or
+source-stated responsibility. Keep actual human action ownership unchanged.
+Require useful deliverables, candidate responsibilities/interfaces/proof and five
+distinct diagram questions, with all cross-surface relationships attributable to
+the reviewed plan. Do not add semantic regex, a second planning owner, a third call,
+a profile ladder or a new framework. Reject an alternative that cannot meet the
+same timing and semantic controls; do not preserve two production interpretations.
+
+Before production adoption, compare a rich request, a small coherent request,
+equivalent wording, and a material-ambiguity negative. Verify the full retained
+consumer package and actual timing, not schema acceptance or manually authored
+examples. Independent review and all existing later release gates remain required.
+The protected holdout remains closed. No new runtime mechanism is qualified by
+this diagnosis or the operator's new counts.
+
+The independent semantic reviewer recommends a single explicitly provisional plan
+with component responsibilities/supporting event indexes/verification, workstream
+deliverables/component references/dependencies/verification, and component exchange
+contracts. Separate input/output lists would duplicate those exchanges and are
+rejected. Existing assumptions cannot hold relationships without prose reparsing;
+direct model-authored Markdown/Mermaid would duplicate meaning across surfaces and
+is also rejected. This is an ownership recommendation, not semantic or latency proof.
+
+The first unsealed discriminator adds that compact plan to the unchanged source
+authoring response and existing two-call deep profile. It fails its initial
+85-second cap in 85.016 seconds with a null response and provider code `timeout`.
+No second call, proposal publication, runtime patch, profile change or holdout
+access occurs. Stop this additive candidate; do not repeat it or extend its cap.
+No generated plan exists, so its semantic quality and the cause of the timeout
+are unproven. This does not establish that every bounded planning mechanism is
+infeasible. The source input is the public request text rather than the installed
+evidence wrapper; this is a development discriminator, not a paired installed
+latency measurement or an end-to-end qualification.
+Evidence: `/private/tmp/odylith-greenfield-planning-comparison.ijzGCG/`;
+driver SHA `cab257c6825ee37e6ca33876ee087b024efd04684af55733a57d4e56fb0add6b`,
+contract SHA `6d8d97c17c809ee313854b5ba74c2ce1dacb6e7b9fbeea772f2639055804b365`,
+result SHA `edc60436f137efa3a043b5070a0e9dedca155636adec52fe7bec4ebe3280fc40`.
+The retained installed baseline's actual model stages are 64.944 seconds initial
+and 30.238 seconds review; its 105.588-second total is not spare generation time.
+Any next alternative must replace work or demonstrably improve its allocation,
+not append another stage. No model grid, fallback ladder or evaluator exemption.
+All 24 focused artifact-depth, assumption, ownership-conflict and package-evidence
+tests still pass on unchanged runtime code, demonstrating preserved baseline laws,
+not satisfaction of the new package requirement. Preserve this diagnosed
+checkpoint and refresh its owned governance surfaces before more implementation.
+
+The next representation review rejects citation pooling as an unearned expansion.
+The retained initial response is 3,083 minified bytes; pooling its 33 quote uses
+into 20 references saves only 583 bytes (18.91%). The plan's schema-valid response
+floor is already 836 bytes before meaningful text or exchanges. These are wire
+measurements, not latency proof. Preserve locally self-describing source citations
+and the existing reviewer rather than introducing cross-reference misbinding risk.
+The next discriminator changes only computation allocation: the same provisional
+plan with existing standard Terra/low authoring and Sol/medium review, initial cap
+30 seconds, shared model window 55 seconds, consumer budget 60 seconds. No retry
+ladder, deeper-tier promotion or production adoption is permitted by this proposal.
+
+That standard attempt cannot assess the mechanism: the provider returns null in
+0.028 seconds because the sandbox prevents local CLI state/database initialization.
+The diagnostic then reports a schema error against null; the retained provider
+metadata establishes an environment failure, not semantic failure or a timeout.
+Evidence: `flood-shelter-intake-standard` under the retained planning comparison;
+contract SHA `3bec2ca7a6ea827ee6d1a5ca517686019f36845b2b05d78826fdaf62397391c7`,
+initial-result SHA `2adea4e8054bbd7e9ab7b2e7e5f123ff8d40edafaecba043317a2b025da2b8fc`.
+A separately retained, identical-driver rerun is rejected before process launch
+by the permission reviewer because model-service data egress needs explicit
+authorization. Do not bypass it through another transport, provider or relocated
+CLI state. That permission boundary is historical: the operator subsequently
+explicitly authorizes the model-data test and further in-scope execution without
+approval waiting. The identical-driver standard run then reaches its initial
+30-second deadline and returns null in 30.015 seconds with provider code `timeout`.
+No second call, generated plan, publication or runtime patch occurs. Reject this
+initial-author additive-plan configuration; do not retry it or promote its tier.
+This is measured timing failure, not a semantic verdict or a proved latency cause.
+Evidence: `/private/tmp/odylith-greenfield-standard-discriminator.3l5UvG/`;
+driver SHA `ca806068f46e94a4f7f24bd7b16f8b5fc4b556be31739429a425d8804f2d3797`,
+contract SHA `91e0f2b7db8590475f1a853138e46e28975eaab01f591eb66b7702a28bf065f1`,
+result SHA `d7ef07049982d73b73a64b0d44fa2bd4c3b2e741f722081e21bbd396ca08c238`.
+Source-qualified v48 remains the last implemented mechanism, with its installed
+depth failure and all later gates still open. A review-stage planning alternative
+must first preserve mandatory accepted-source review and bind its plan to final
+corrected event identities; moving unverified claims into proposal prose is not a
+quality improvement. Independent ownership adjudication precedes that comparison.
+
+The operator explicitly requires an achievable, finite release goal without
+overengineering. Release claims cover the published operating envelope and the
+frozen evaluation population, not perfect interpretation of every possible input.
+The original goal already distinguishes probabilistic semantic quality from
+deterministic transaction laws. Do not convert a passing corpus into a universal
+guarantee, relabel model timeouts as successful requests, or weaken a failed gate.
+
+- Fixed: the selected 60/90/120-second end-to-end budget, source custody and
+  semantic entailment, useful differentiated complete outputs, at most one
+  material question, explicit assumptions, exact sealed-byte confirmation, and
+  zero post-confirm semantic/model/generation/repair work.
+- Provisional: one pre-confirm call, quote-only decision wording, model roles,
+  response shape, and internal repair. The goal requires bounded calls and
+  internal recovery of repairable quality defects; it does not require exactly
+  one call. Earlier sections calling these choices fixed mechanism laws are
+  superseded by this contract. The bounded candidate described below is a
+  mechanism hypothesis, not a new goal requirement.
+- Change only an owner implicated by observed failures. Compare one bounded
+  alternative against the retained failure and an independent/equivalent control;
+  inspect consumer output before a full suite or distribution build. Reject a
+  candidate that misses fidelity, quality, or the original time tier. Delete the
+  losing path instead of keeping alternatives or introducing a repair framework.
+- Finish when the existing source, immutable installed public, transaction and
+  recovery, desktop/mobile browser, independent P0/P1 review, and untouched
+  holdout gates pass their frozen floors, followed by committed/pushed evidence
+  and terminal cleanup. Do not expand into platform extraction, new governance
+  hierarchies, or unrelated feature work.
+
+Active candidate (2026-09-05): v48 adds only the independently tested reviewer
+materiality instruction. It preserves sound, role-correct, consumer-usable choices
+while retaining mandatory correction/clarification of material defects. The sound
+pediatric candidate is preserved exactly in23.428/30s; prefix custody is corrected
+in13.343/25s without losing any of five actions, and false thin admission becomes
+first_path clarification in7.160/25s. All three reviewer-only controls pass
+independent P0/P1 review. Evidence:
+`/private/tmp/odylith-v47-review-materiality.tAZlVj`.
+This earns integration, not qualification. Models, schemas, calls, original
+60/90/120 budgets and transaction behavior stay unchanged. Require fresh complete
+rescue and standard requests before full source and installed release gates.
+The prior v47 development checkpoint is committed and pushed as
+`dddcac5911318382c28599793e6304f84f401f22`, with310 focused tests passing and the
+rescue latency failure explicitly retained; it is not a release-qualified winner.
+Fresh v48 normal requests pass timing and independent canonical/package review:
+rescue46.037/90s with80 writes, standard47.800/60s with83 writes; all role-proof
+checks pass. Standard/rescue missingness and contradiction controls independently
+pass in5.983/60,5.518/90,6.476/60s, one call and zero project files each. Source:
+`abba424bde70de771ea01157aa90b2c252b7a7c455b921511833303bd40efa36`.
+Browser review then exposes a P1 projection overclaim despite24 mechanically clean
+cells/36 PNGs: Atlas describes non-performing participants as first-path actors
+and draws generic person-to-product interaction arrows; Project calls all parties
+human actors and project intelligence promotes the whole inventory to operators.
+Both independent reviewers agree the canonical guardian/therapist inventory is
+defensible; the false performer/interaction claim belongs to projection, not
+source extraction. Retain failed sealed packages. Do not change v48 authoring,
+models, schemas or timing. Correct only Project and Atlas projections using the
+existing typed human-event relations; retain all contextual participants and
+source actions, remove inferred interaction edges, and restrict operator output
+to actual performers. Require generic performer/nonperformer/alias controls plus
+freshly compiled/rendered complete packages before resuming larger qualification.
+Browser evidence: `/private/tmp/v48-pediatric-rescue-core-browser.JWFyFc`, report
+SHA `361a560b7df4f0526fe18021eb31cd98979fb9df12b11f70b5a0604b01927a9c`.
+
+The bounded projection correction now passes 54 focused tests and independent
+code, complete-package semantic, and core-browser reviews with no P0/P1. Fresh
+rescue completes in 57.137/90 seconds with 80 sealed writes; standard completes
+in 44.524/60 with 83. Both read back successfully and their private role/timing
+receipts pass. Source fingerprint:
+`3c0a4db25d1f688edcac5c5203a03656ae58c05716f4a380ce9f96d4802334c2`.
+Evidence roots are `v48-pediatric-projection` and `v48-apprenticeship-projection`
+under `/private/tmp/odylith-v47-integrated.gRQqXl`. Contextual people remain visible;
+only typed performers become operators or first-path actors. No inferred
+person-to-product edges remain, and typed action sequences are unchanged.
+Each core-browser review passes 12 desktop/mobile cells with 18 PNGs:
+`/private/tmp/v48-pediatric-projection-core-browser.Lh1EEv/browser-proof-report.md`
+(SHA `1634155ecfc0f6993b7d2b007c1e8d78552554fe2e8c72910d22db344c61521b`) and
+`/private/tmp/v48-apprenticeship-projection-core-browser.UF361Q/browser-proof-report.md`
+(SHA `a1dafd7ec47df03475adcb2c69ef2a51fba748c5c4198727c91a6637d8c0571b`).
+Servers and browsers are closed. This earns the frozen full source gate, not an
+installed/full-shell/empty-state or release claim. Keep the existing public,
+profile, recovery and untouched holdout gates; add no new mechanism or evaluator.
+
+The frozen full source gate returns 4,603 passed and one failed in422.85 seconds;
+tracked diff remains exactly unchanged. Evidence:
+`/private/tmp/odylith-v48-source-gate.FWIj2W/run-contract.json`.
+The campaign-summary unit test supplies a synthetic passed result without private
+model-stage evidence; the strict aggregate correctly rejects it. Scope that test
+to campaign orchestration with both passing and failing profile-proof dependencies;
+retain separate real-validator rejection tests. Do not relax aggregate evidence.
+Qualification also needs the already-planned rescue clarification supplement.
+There is no supported retained-report merger. Add only an explicit discovery-only
+case-composition option to the existing CLI: assign the unchanged public fourteen
+first, then append strictly loaded, explicitly profiled controls; reject duplicate
+identities and any release/holdout input before execution. Preserve ordinary
+case-file replacement and every native lexical check. Version the unrun rescue
+supplement to the current canonical first-path question before execution, retaining
+its old unrun bytes. No new evaluator, schema, provider or product mechanism.
+This proof-only correction passes83 profile/scope tests and12 campaign tests,
+including both profile-proof terminal outcomes and five unchanged strict
+missing/forged-stage negatives. Independent review finds no weakening.
+The command adds no module or report merger; native assignment equality and later
+reassignment stability are tested, as are duplicate, lexical, empty-input and
+protected-input rejection. The new unrun supplement is
+`/private/tmp/v44-rescue-clarification-case-file.MEWVkE/rescue-clarification-supplement.v2.json`,
+SHA `666ccd7fc3f0b47ae133997d1b4add95a717dde76c4616861de9de5ea156dc47`.
+It retains rescue-v8, first_path and the identical public source; it is profile
+coverage, not independent generalization. Freeze again for full source proof.
+The second frozen gate passes all4,623 tests in426.49 seconds, with tracked diff
+SHA `fd70946064c95ff425cfc2e8a01a02487c4b7e9eedf896ae624c8f580b605ab8`
+unchanged. Retained proof:
+`/private/tmp/odylith-v48-source-qualified.emGLho/run-contract.json`, JUnit SHA
+`62b28326595310f64b4df191161b0a4a71289a5723fdb8fd51557f591e37b84f`.
+This qualifies a stable source checkpoint and one immutable installed campaign;
+it does not establish installed public/profile/recovery/full-browser or holdout
+success. Preserve the failed first run. No further runtime/test edits are planned
+before the existing public14 plus explicit rescue control gate.
+
+Retained v47 evidence: v47 replaces the correction-only review outcome
+with corrections or the exact existing material clarification schema. V46's first
+thin-input control incorrectly authored a package; independent review identified
+the protected authored discriminator as a semantic-admission ownership defect.
+One bounded alternative now independently passes the retained thin negative in
+8.181/25 seconds and preserves the clean five-action apprenticeship candidate
+exactly in 11.998/25 seconds. These are reviewer-only controls, not qualification.
+Evidence: `/private/tmp/odylith-v46-review-admission.taDLWn`.
+Both authoring stages use the same clarification schema and canonical validator;
+no status patch, new semantic field, third call, or fallback is added. Initial
+clarification remains one call; review clarification may use two, with both actual
+roles and timing retained. Standard-v10, rescue-v8 and deep-v8 profiles, source
+bindings, reserves, consumer 60/90/120 and shared 55/80/105 windows are unchanged.
+The former correction-only route is removed. Focused runtime proof passes 131
+tests. Fresh normal-CLI standard/rescue clarification, contradiction, and both
+complete packages must pass independently before larger qualification resumes.
+First v47 integrated thin-input controls pass independently: standard 5.578/60,
+rescue 6.425/90, one call each, exact first_path question, no project files or
+staging. Independent contradiction completes safely in 7.775/60 with exact opposing
+claims, but its label-only question is P1 non-actionable. Stop complete-package
+controls and fix only the clarification handoff: retain the validated conflicting
+claims in the visible response and ask which applies, without semantic inference
+or another call. Evidence: `/private/tmp/odylith-v47-integrated.gRQqXl`, fingerprint
+`9d20f610b48c1e935a15706b2ba90a295ef52478449a79c850907559f7337273`.
+The focused runtime and role-proof gate passed 300 tests before this UX finding.
+Independent bounded comparison accepts verbatim opposing claims plus one fixed
+choice question for both notice and retention conflicts, with unchanged thin-input
+wording. Implement only the status handoff and existing-span display; the schema,
+model prompts, roles and deadlines do not change. Also carry actual call count on
+the clarification object so the receipt cannot silently report one after review.
+Fresh controls must use the new source fingerprint; the earlier failed view stays
+retained, not overwritten.
+Final v47 context controls pass independently at fingerprint
+`954bcc1a34ee22bba94d3a51a572881bac16519d626161bf80aba0c97b7282d2`:
+standard thin 6.134/60, rescue thin 6.780/90, contradiction 6.530/60, all one-call
+and zero project files. Complete apprenticeship passes independent package review
+in 51.515/60 with 83 sealed writes/readback and tx
+`3d87675a966090d710d7ec94ba1e7c2c791b7dbd08e2a52d84ce568140f10adc`.
+Its core browser proof passes 12 cells/18 PNGs with no P0/P1 at
+`/private/tmp/v47-apprenticeship-core-browser.zBTGSX`; installed/full-shell/empty
+proof remains unclaimed. Rescue pediatric then fails at 80.282/90 without staging:
+the semantically sound initial candidate takes 31.109s; Sol-high review times out
+after 48.912s against 48.889 remaining. This is a failed request, not tier success.
+Stop larger qualification. An exact-request, same-cap reviewer-only diagnostic
+adds only documented JSON event capture and completes in 38.630s, observing no
+tool calls, 19,943 input tokens and 1,455 reasoning output tokens. Evidence:
+`/private/tmp/odylith-v47-review-trace.EPoQZk`. It does not qualify the failed run
+or establish a latency cause; the original timeout remains retained.
+Compare one bounded alternative using the already-proved standard Sol-medium
+review role on this exact candidate and the retained prefix-custody negative,
+each capped at 25s, current schema/prompt/source bindings unchanged. Retain rescue
+initial author and original 90/80 budget; do not change production until both
+controls pass independent semantic review. No effort/model grid or new provider
+framework is authorized by this diagnosis.
+That alternative is rejected on its first control: Sol-medium returns no response
+at 25.014/25 seconds on the sound pediatric candidate. The predeclared stop rule
+cancels the prefix-custody control; no rescue profile change is earned. Evidence:
+`/private/tmp/odylith-v47-rescue-medium.0jkRjX/pediatric-preservation`.
+Do not repeat the same effort comparison or promote a timeout to another tier.
+Next inspect request bulk for a lossless encoding improvement, not a new semantic
+schema. Any candidate must preserve the complete contract, pass the retained
+failure and a negative control under fixed caps, then pass fresh end-to-end proof.
+Higher-credit Fast mode was documented but is not enabled or part of this profile.
+Measured request encoding is not adopted as a latency fix: replacing 14 repeated
+citation schemas by one local reference would save 2,080 of 25,662 application
+bytes (8.11%), with no measured latency benefit. No compaction layer is added.
+Independent adjudication classifies all three edits from the 38.630s trace as
+advisory alternatives: customer lens, evidence selection and participant inventory.
+This is unnecessary review churn, not proof of the earlier timeout's cause.
+Compare one instruction-only alternative preserving defensible, role-correct,
+consumer-usable choices while still correcting material meaning/custody/usefulness
+defects. Reviewer-only controls are the retained sound pediatric candidate
+(existing rescue Sol-high role, fixed 30s), known prefix-custody defect and false
+thin-input admission (existing standard Sol-medium role, 25s each). Stop at first
+timing or semantic failure. Require preservation plus correction/clarification of
+both negatives and independent review before production changes. Do not change
+models, schemas, profile deadlines, call counts or transaction behavior.
+Prior v45 positive proof cannot qualify v47. The current contract is in
+`docs/specs/greenfield-operating-envelope.md`.
+
+### Retained mechanism evidence (historical decisions, not current instructions)
+
+The sequence below preserves failed approaches and attributable proof. Statements
+about a then-current mechanism or next step are historical and superseded by the
+active candidate and fixed convergence contract above.
+
+V36's shared nonempty component contract passes fresh
+flood in 38.277 seconds and semiconductor in 47.511 seconds, preserving complete
+stories and five actor-owned actions. Both commit 83 sealed writes with readback.
+Independent review closes flood but rejects semiconductor's invented human:
+the schema, admission check, and materiality contract required a human even though
+all source actions belong to the product. V37 removes that artificial requirement
+and reuses targeted assumptions for a provisional Customer. Radar consumes that
+explicit decision instead of inferring the Customer from the first human.
+
+The current mechanism remains one source-cited author plus one review of exactly
+product_story and components, capped at 20 seconds inside the original model
+window. The full candidate validates again; every event retains source-bound actor
+custody. No new reviewer field, call, regex, retry framework, or post-confirm work
+is added. Product-only, external-only, and invalid-actor/customer controls precede
+fresh semiconductor/flood package review. Then freeze for complete source and
+immutable installed proof. CB-303 retains all failed experiments and raw evidence.
+The broad v36 baseline passes 4,485 tests with one Atlas renderer size failure;
+correct that ownership without weakening the size guard or degraded-asset behavior.
+
+V37 now passes the narrow source discriminator: the same frozen source produces the unchanged
+flood and semiconductor proposals in 44.189 and 35.053 seconds, both with two
+calls, 83 committed sealed writes, and verified readback. Semiconductor commit-only
+publication takes 1.12 seconds. Independent committed-artifact/diagram review has
+no open P0/P1 on either case. Product-only and external-only behavior, customer
+assumption custody, and invalid actor references have focused proof. Freeze this
+mechanism for full source and immutable installed validation; do not add new
+architecture or promote the source qualification to a release/generalization claim.
+
+The frozen post-v37 complete source gate passes 4,497 tests in 534.12 seconds:
+all runtime and install unit tests, HIIT pre-confirm integration, and the Compass
+browser regression matrix. The earlier Atlas size failure is closed without
+raising its cap. Preserve this stable checkpoint, then build one immutable local
+distribution for the unchanged public 14-case clean-install, browser, recovery,
+and model-profile gate. The final untouched holdout remains closed.
+
+That immutable installed gate rejects v37 on its first flood case in 53.599
+seconds: a complete accepted Product View equals Product Story, and Radar's
+stale value-equality filter deletes its pointer before requiring the citation.
+The correction under evaluation is removal of that downstream semantic veto,
+not another author/reviewer schema or call. First replay the exact retained
+response and independent citation controls, then inspect actual rendered
+repetition before another fresh installed attempt. Separate installed recovery
+proof passes; public semantic/browser/model-profile quality remains unproven.
+The isolated veto removal now passes 1,195 Greenfield runtime/install regressions
+in 125.94 seconds, plus 262 focused checks. The exact failed response replays to
+83 committed sealed writes with readback; three generic citation controls fail
+before and pass after. Keep authoring v37, both model calls, schemas and budgets
+unchanged. The bounded desktop/mobile Project/Radar/Atlas review has no P0/P1,
+including diagram fallback/error states. Commit and rebuild this correction;
+the earlier 4,497-test full gate remains historical evidence before this one-file
+correction, and only the new installed run can qualify the new distribution.
+
+The new installed run (`43ce49b58`) is rejected by independent review: the third
+case again publishes an activity-purpose fragment as a human actor. Five automated
+passes do not overrule this P1. Flood and pediatric have independent no-P0/P1
+reviews; the interrupted run and all raw evidence remain retained. V37 is not a
+winning mechanism. The bounded comparison concerns source ownership of human
+selections. Independent adjudication rejects graph-use enforcement because an
+explicit output recipient may perform no first-path event. V38 instead gives the
+existing second review the shared human-selection schema. It may correct the
+complete human array; event bindings and other protected fields remain immutable
+and the whole candidate revalidates. The exact failed semantic payload, with only
+its wire-version tag transposed, passes one new live review in 8.986 seconds inside
+its original 10.254 seconds remaining. The false human is removed; all five product
+events are byte-identical. This is retained-candidate review proof, not a fresh
+request or installed qualification. Preserve explicit off-path recipients and
+performing humans; reject dangling event references. Keep the citation-veto
+deletion, transaction laws, call count, and 60/90/120 tiers fixed; do not expand
+into advisory repetition findings.
+
+V38 closes the false-human discriminator and preserves an explicit recipient in
+a fresh standard request (`43.932s` including commit), but a fresh semiconductor
+candidate has contradictory surface actor quotes. It is not committed. A bounded
+whole-candidate reviewer exceeds its original 20-second window on the first
+comparison and is rejected before implementation. V40 therefore removes the
+redundant actor_quote/actor_is_carried mechanism rather than widening review or
+adding syntax rules. Each event has one source-cited typed actor fact; original
+event/action/target/result text and custody remain unchanged. Event actor atoms,
+semantic-model and Tribunal projections, and proof readers use that same identity.
+Closed versions reject earlier staged formats; no semantic conversion runs after
+confirmation. Validate explicit aliases, omitted subjects, actor changes, external
+ownership, unselected actors, and the two retained failures before another build.
+Keep the existing bounded story/component/human review and 60/90/120 limits.
+Retain all failed evidence and unchanged quality floors; the protected final
+population remains unopened and must use the current annotation contract.
+
+V40 fresh semiconductor has independent complete-package no-P0/P1 review with a
+55.270-second rescue proposal and verified 83-write commit. Fresh flood takes
+75.638 seconds including commit under deep120; independent semantic, source-byte,
+hash, and exact sealed-file review finds no P0/P1.
+A new two-human standard control takes 44.719 seconds including commit and keeps
+both human identities and ordered actions, but its boundary diagram repeats the
+sole product as a nested component. The older context-only correction left a
+second projection owner active. Share product-boundary rendering across both
+views, retain non-goals/external edges/distinct components, and prove a newly
+sealed replay of the exact accepted model response. Do not widen semantic review,
+add a classifier, or edit the failed sealed package. Only after independent review
+and the full source gate may this candidate enter another immutable installed gate.
+
+V40 source qualification is now complete: the shared boundary projection closes
+the new two-human control's P1 in independently reviewed desktop/mobile normal,
+PNG-fallback, and explicit asset-error states. The frozen full source gate passes
+4,518 tests in 444.86 seconds. Git recovery after the external volume disappeared
+preserved the exact pre-test working diff and restored the same pushed base; no
+source requalification is needed for that metadata-only repair. Save the stable
+checkpoint, build immutable bytes, and run the unchanged installed public 14-case
+plus recovery/browser/profile gate. Do not alter the mechanism absent a diagnosed
+gate failure or consume the final untouched population before those gates pass.
+
+The first v40 immutable gate is rejected: installed flood passes in 70.544 seconds
+with independent no-P0/P1 review; pediatric returns no package in 81.805 seconds
+before any semantic validation, and its empty observation omits the provider
+failure cause. Automatic recovery setup separately rejects a non-product event
+used as component responsibility before any injected crash. The next work is
+bounded diagnosis, not another architecture: retain initial failure metadata at
+the existing proof FD, capture the two failed paths, and compare only an owner
+actually implicated by that evidence. Do not extend rescue90, count no-package
+as success, consume the holdout, or rerun the full campaign without clean controls.
+
+The captured failure isolates a missing feedback edge: the existing reviewer was
+not told that component validation had rejected human actions as product ownership.
+Passing that actual error fixes the retained case in 9.419 seconds and a fresh
+apprenticeship case in 45.543 seconds including commit. Source/admission/custody
+controls pass 97 tests. Failure observations now retain categorical metadata without
+raw failed provider output. An independent standard security control commits in
+59.770 seconds with no observed P0/P1, but only 0.230 seconds of margin.
+The apprenticeship package still has two independently observed P1s: a review
+recipient becomes a false external dependency, and Opportunity repeats an action
+instead of a source-supported benefit or useful assumption. Stop field-by-field
+review expansion. Compare one sparse correction response over existing facts,
+assumptions and components; keep events/first path/terminal immutable and validate
+the whole candidate afterward. This temporary comparison must correct the failures
+together within the existing review allowance and preserve an independent control.
+Do not repeat V39's full-candidate echo, add another call, extend a tier, or retain
+both review paths. Full qualification remains closed until this discriminator is
+clean. Reviewer findings must identify actual source/consumer harm in full context;
+missing optional implementation depth is not a new release gate.
+
+V41 removes the old field-limited review response. The shared-schema sparse review
+corrects all material failures on the retained candidate and preserves an accepted
+security control exactly; 219 focused/dependent tests and independent integration
+review pass. Fresh qualification is not clean: medium/medium exhausts its 55-second
+model window, while temporary low/low and low/medium configurations finish in
+48.485 and 50.596 seconds including commit but retain false semantic roles in the
+generated package. Reject both configurations and add no mixed-stage machinery.
+One final model-only comparison uses Sol medium for both existing calls under the
+unchanged 60/55/20-second limits. It must preserve complete source roles and useful
+package decisions with at least five seconds consumer margin. If it fails, stop
+configuration tuning and reconsider the reviewer ownership rather than accumulate
+exceptions. Shipped profiles are unchanged; full source/installed qualification
+and the untouched final population remain closed.
+
+The final Sol/medium configuration comparison times out on its initial call
+(`55.045s` CLI, no package). Configuration tuning is closed without adoption.
+Compare a temporary source-frame-first partition next: facts/assumptions/materiality
+have one model owner, followed by an event/component owner bound to those facts.
+Keep canonical value schemas, full validation, two calls, Terra medium, model55,
+consumer60 and commit-only publication unchanged. Require material role fidelity,
+the complete human workflow, useful decisions and five seconds consumer margin
+before considering production changes. The failing draft/correct path is not
+replaced on architectural preference alone.
+
+The source-frame-first partition also fails: its 42.867-second attempt preserves
+false external roles and assigns human event fragments to the product. It stages
+nothing and is rejected without production adoption. A narrower contract mismatch
+is now isolated: external-system and component schema properties lack the admission
+meaning expected by their projections. Description-only retained review corrects
+the dependency and ownership errors in 16.166 seconds, and a 19.425-second positive
+control preserves an explicit external integration and human recipient. Independent
+review supports one fresh integrated candidate, not qualification. V42 adopts only
+those tested descriptions on existing shared properties and removes the superseded
+external-system prompt definition. No new fields, calls, profiles, deadlines or
+parser rules. The mentor provenance entry is advisory, not a standalone P1; actual
+dependency and ownership errors remain blocking. Fresh standard60 semantic/time
+controls must pass before source/installed qualification or the untouched population.
+
+Fresh v42 standard controls at `/private/tmp/odylith-v42-integrated.zv8YUh` now
+commit apprenticeship in 55.073 seconds (83 writes) and the explicit-integration
+control in 45.692 seconds (87 writes). Independent semantic review finds no P0/P1
+in either complete package. The sparse review preserves both initial candidates
+unchanged; neither initial candidate repeats the original admission errors.
+The material-clarification control returns one focused first-path question in
+8.585 seconds with one model call and no governed writes. A reordered equivalent
+integration source commits in 41.331 seconds (87 writes); independent review finds
+no P0/P1. Its extra general dispatcher participant is advisory. The omitted Atlas
+edge is a truthful change in exact citation-overlap evidence, not loss of an action,
+state transition, or product obligation; the initial P1 interpretation was withdrawn
+after reading the canonical field and renderer contracts. All four attempts share frozen source fingerprint
+`36198b54342e2e5fed8ab5ab2eb27fdf9d7c0100e2f98b1501a2289178ce4ad3`.
+Focused tests pass 241 disjoint checks. The apprenticeship core browser scope
+passes 12 desktop/mobile normal/fallback/error cells with 18 retained PNGs and no
+independently observed P0/P1, at `/private/tmp/v42-apprenticeship-core-browser.4t8rPJ`.
+These are source-local controls, not installed qualification; the bare consumer
+does not include installer-owned Casebook/context/version baseline assets.
+Freeze v42 for the unchanged full source gate, followed by one immutable installed
+public/recovery/browser/profile gate if it passes. Do not add typed transitions or
+change source selection merely to equalize optional citation-overlap diagrams.
+The frozen full source gate now passes 4,534 tests in 421.35 seconds. The tracked
+working diff stays identical before/after; JUnit and run identity are retained at
+`/private/tmp/odylith-v42-source-gate.GZCdpq`. V42 is source-qualified, not an
+installed winner. Save the checkpoint and build one immutable distribution for
+the unchanged 14-case public gate plus recovery, browser and profile proof.
+
+The v42 immutable gate rejects wheel
+`6b124b8e9f3e8580e89037d24858f95a10e6da1c8b81a14bc77e637bff66691b`
+from pushed `5884c843487beff7a10f8f33489fc67843cfc3c6`: installed flood passes
+in 63.845 seconds under deep120, with independent no-P0/P1 semantic and full
+browser review. Pediatric returns no package in 81.410 seconds under rescue90:
+initial authoring consumes about 70.617 of 80 model seconds, then mandatory review
+times out after 9.399 against its remaining 9.383-second allowance. The retained
+initial candidate independently has no semantic P0/P1; the failure is review
+starvation, not rejection of its meaning. Installed SIGKILL, same-hash retries,
+operator-conflict preservation, fsync rollback and cleanup all pass. Evidence:
+`/private/tmp/odylith-v42-public14-evidence.ckA1jV`. The candidate remains rejected
+for installed qualification; no final holdout is opened.
+Do not repeat v35 validation-only conditional review or accept a draft after a
+failed review. Reserving 20 seconds would cap this observed 70.6-second draft at
+60 and merely move the failure. Compare one lower-cost source-review role with
+unchanged v42 field meanings, original remaining cap and whole validation. Earlier
+low-cost reviews failed semantic admission; the v42 schema descriptions now own
+that meaning, so the role must re-prove the structurally-valid false-story,
+false-dependency and wrong-opportunity controls, not just a no-op. This is a
+temporary review-only diagnostic: no production profile/stage change or sealing
+until quality and time evidence supports it.
+
+The single Terra/low review substitution also times out: 9.403 seconds against
+the exact 9.382743-second allowance, with no response or publication. Reject it;
+the stop-on-failure discriminator never exercises its semantic-negative control.
+Evidence: `/private/tmp/odylith-v42-review-role.550rnd`. Do not expand into a
+review-model ladder. The next bounded alternative gives the two mandatory stages
+explicit budget ownership: use the already source-proven Terra/medium author and
+reviewer inside the unchanged rescue90/model80 envelope, cap initial authoring at
+60 seconds and preserve up to 20 seconds for review. This is not merely truncating
+the observed Sol/high draft. First compare the exact pediatric source, then require
+the existing structurally-valid semantic-negative control and full independent
+adjudication. Keep the prototype unsealed; no production profile or schema change,
+no release gate retry, and no holdout access until this discriminator earns them.
+
+That bounded alternative passes its unsealed semantic discriminator at
+`/private/tmp/odylith-v42-budget-owner.ne7vkv`: fresh pediatric authoring takes
+36.167/60 seconds and review 7.172/20, for 43.425 seconds overall. Independent
+review finds no P0/P1. Full coordination scope survives despite optional fact
+inventory differences and a different valid readiness checkpoint. The deliberately
+corrupted apprenticeship input passes structural validation; review corrects all
+three material semantic errors in 12.730/20 seconds without losing the five human
+events or enclosing product capability. This earns one integrated candidate, not
+release qualification. V43 replaces only rescue with the versioned Terra-medium
+profile, retains consumer90/model80, reserves review20 and caps initial60. Standard
+and deep remain unchanged. Actual initial timing is retained privately; no canonical
+shape, prompt, extra call or post-confirm mechanism changes. Verify fresh normal-CLI
+packages, one-call clarification and profile/custody tests before another full gate.
+
+Fresh v43 normal-CLI packages commit pediatric in 48.756 seconds and apprenticeship
+in 49.424 seconds under preselected rescue90. Both retain exact-byte readback and
+frozen source fingerprint `c16ad1e43aefe14d0a09dfbd2145c818f94ec518f9da76518d01b2839f4a2405`.
+Independent complete-package review accepts apprenticeship with no P0/P1 but
+rejects pediatric: `exception review` is an activity misclassified as terminal
+result, propagated into Project, Registry and Atlas while proof is `visit evidence`.
+The correct initial cap/review reservation fixes observed latency, not this semantic
+defect. Stop qualification; no build or holdout retry. Evidence is under
+`/private/tmp/odylith-v42-integrated.zv8YUh/v43-pediatric` and `v43-apprenticeship`.
+The recurring owning abstraction is the review whitelist: previous field-limited
+reviews omitted human roles, then other facts, and now terminal meaning. Do not add
+another terminal-specific rule or correction cascade. Compare one unsealed sparse
+review contract derived from the existing authored schema for every authored
+semantic field, with whole-field replacements and complete revalidation. Status
+remains the authored execution discriminator; source meaning is not protected from
+review merely because its initial structure validates. Require the actual failed
+terminal candidate, accepted multi-actor candidate, and known semantic-negative
+control within the existing review20 cap before replacing the old review contract.
+
+The schema-derived sparse review produces no response in its first 20-second
+discriminator (20.020 seconds observed); reject that attempt without exercising
+the later controls or adopting the contract. Evidence:
+`/private/tmp/odylith-v43-schema-review.rSiJUv/pediatric-terminal`.
+The next bounded comparison changes internal allocation, not the consumer goal:
+reserve review time before initial authoring, but let review use unused time within
+the original shared model deadline instead of imposing an independent 20-second
+ceiling. The rejected call is not retried or relabeled as success. A new unsealed
+retained-candidate comparison preselects a 49-second review allowance, below the
+unused portion of this observed 80-second model window after its 30.545-second
+initial call. This is not fresh end-to-end timing proof; require fresh integrated
+and independent controls before adoption. No extra model call, provider switch,
+60/90/120 extension, fixture rule or post-confirm work is permitted.
+CB-306 also retains two newly exposed proof obligations: authenticated private
+stage timing and a separate installed rescue clarification control. The existing
+14 public case identities and assignments remain unchanged; these gaps cannot be
+hidden by unit-test success or relabeling profile capability.
+
+The larger unused-window allowance demonstrates terminal repair (34.742 seconds)
+but does not qualify the Terra-medium all-fields reviewer. Independent controls
+reject preservation: the positive review (12.187 seconds) rewrites sound Problem
+and Opportunity assumptions into capability prescriptions; the negative review
+(22.643 seconds) fixes the three injected errors but removes the explicit board
+recipient and weakens decision differentiation. Both structurally validate, so
+reject this reviewer instead of weakening adjudication or adding role keywords.
+The remaining bounded role comparison uses the existing stronger Sol-high model
+only for review after Terra-medium authoring, with the same schema-derived sparse
+contract and unused shared-window allowance. No production mixed-role profile is
+introduced until preservation and correction controls pass. No extra call,
+consumer-budget extension, model ladder or framework is authorized by this test.
+
+All three Sol-high review comparisons pass independent semantic adjudication
+without P0/P1: accepted apprenticeship preservation 11.409 seconds, its three-error
+negative 23.777 seconds, and pediatric terminal repair 22.500 seconds. Evidence:
+`/private/tmp/odylith-v43-sol-review.Yx4OiW`. The pediatric result becomes observable
+visit evidence, matching its proof boundary, and retains all six coordination
+topics and cross-school beneficiaries. These are unsealed reviewer-role results,
+not integrated consumer timing or package qualification.
+This earns v44: replace the narrow reviewer with the tested schema-derived sparse
+contract, keep the same two-call mechanism, and make preselected roles explicit.
+Standard/rescue use Terra-medium authors and Sol-high reviewers; deep uses Sol-high
+for both. Profiles v8 retain consumer60/90/120 and model55/80/105. Initial authoring
+caps 40/60/85 reserve 15/20/20 for review, which may use all unused shared time.
+Lower capability describes standard/rescue's initial-author role relative to deep,
+not all calls. Each still requires actual positive and material clarification
+evidence at the same semantic floor. No fourth production profile is needed.
+Wire private role/timing validation through existing release evidence and add the
+missing rescue clarification using the existing case-file route. Require fresh
+normal-CLI packages and independent quality review before expensive qualification.
+
+The first fresh v44 standard apprenticeship request rejects in 55.282 seconds
+without staging or commit. Initial Terra-medium authoring takes 30.178/40 seconds;
+Sol-high review returns no response and times out at 24.839 against its remaining
+24.820 seconds. Frozen source fingerprint:
+`49ade2b0138d026590debb8b6e92c4173e4622c36449172463eba57d80dd1cde`.
+Evidence: `/private/tmp/odylith-v44-integrated.P3aT9G/apprenticeship-standard`.
+This rejects the integrated standard configuration; do not retry it, promote the
+request to rescue, open the holdout or build a distribution. Keep the qualified
+review contract while testing one narrower cost hypothesis: Terra-low initial
+authoring capped at 30 seconds reserves 25 of the same model55 window for the
+unchanged Sol-high reviewer. Prior low drafts were fast (24.494 seconds) but
+their old low/medium whitelist reviewers left semantic errors. That failed review
+ownership is now removed; the stronger all-field reviewer must demonstrate that
+it can preserve/correct a fresh lower-cost draft. This is an unsealed comparison,
+not a production profile switch, extra call, deadline extension or model ladder.
+Require independent semantic cleanliness and model-stage time below 50 seconds
+before any integrated standard-profile adoption; stop on the first failed control.
+
+The faster draft meets time (24.437-second author, 13.883-second review, 38.425
+overall) but fails custody. Both independent reviewers withdraw the earlier
+person-as-state objection: apprentices can be the governed subject entity rather
+than the performing actor. The real P1 is occurrence 1 binding `apprentices` to
+bytes44-55 inside `apprenticeship`, rather than the standalone action target at
+bytes128-139 (occurrence2). Review adds the same invalid actor citation; canonical
+state context consequently has event order0. Evidence:
+`/private/tmp/odylith-v44-fast-draft.pkfAQG`. Do not adopt the fast draft or change
+the semantic floor. Stop model-effort tuning. Compare a read-only resolved-citation
+view in the existing mandatory reviewer input: actual compiler offsets and exact
+surrounding source context, so selected occurrence—not floating quote text—is
+adjudicated. Keep the same sparse correction output, literal resolver, full
+validation and existing model window. No word-boundary heuristic, ordinal
+auto-correction, new semantic schema or call is part of this comparison. Require
+the actual prefix-collision negative and a retained clean preservation control.
+
+Both binding-view reviewer controls pass independent P0/P1 adjudication. The
+prefix-collision negative completes in 28.629 seconds (provider28.465/30), repairs
+the standalone beneficiary occurrence and state binding, and preserves all five
+actions, board recipient, assumptions and ownership. The retained clean control
+completes in 21.659 seconds (provider21.574/30), with only sound proof-boundary
+narrowing. Evidence: `/private/tmp/odylith-v44-resolved-review.nkfAL2`.
+Its first wrapper preflight made zero provider calls; `preflight-audit.json`
+corrects the stale counter, and that directory is not semantic evidence. These
+are unsealed reviewer-only controls, never summed historical end-to-end timing.
+They earn bounded v45 integration: expose the existing literal resolver's actual
+byte locations and 64-character source surroundings, append the tested review
+instruction, and keep schema, final validation and two calls unchanged. No new
+parser, semantic boundary rule, automatic correction or repair route is added.
+The v16 impossible-ordinal fallback is superseded: only a uniquely located exact
+quote can normalize; an ambiguous invalid ordinal fails closed before review.
+Standard's preselected profile becomes Terra-low/Sol-high v9, initial30 and
+review-reserve25 inside the fixed model55/consumer60. This candidate combines the
+bounded faster draft with the independently tested source-binding review; fresh
+integrated evidence must prove both quality and time before any build. Rescue
+remains Terra-medium/Sol-high v8 and deep all-Sol-high v8. Stop on a fresh consumer
+failure; no holdout or expensive qualification until those controls are clean.
+
+The first fresh v45 standard request rejects in 55.302 seconds with no staging
+or commit. The initial Terra-low draft takes 22.349/30 seconds; mandatory Sol-high
+review returns no structured response, timing out at 32.676 against 32.649
+remaining. The citation view is present with exact byte locations and source
+context. Frozen fingerprint:
+`972acbfa68ea833b0e1172f3ecc5a4aaa11ad2dfd3d3339d177417aa9f0e5141`.
+Evidence: `/private/tmp/odylith-v45-integrated.AbXfnC/apprenticeship-standard`.
+Focused v45 checks pass 246 disjoint tests, but that does not establish consumer
+success. Reject this standard configuration and stop rescue/build/full-suite/
+holdout work. The timeout proves no bounded review result; its small enforcement
+overshoot does not show that the model was almost finished. Audit the provider
+path and prior mechanisms before selecting a single review-cost comparison.
+
+The bounded provider audit finds exactly one Codex CLI review subprocess, no
+Odylith retry/cascade, and correct remaining-budget accounting. The bare consumer
+contains no repo instructions. Internal model/queue/CLI event timing is not
+retained, so the precise internal delay is unknown. Independent semantic review
+finds no P0/P1 in the retained initial draft: all five complete actor actions,
+board recipient in the final target, readiness result, ownership and useful
+assumptions are retained. Actor-inventory omissions are advisory where the full
+relationship remains in its owning event; do not inflate that into a new defect.
+Compare one genuinely untested cheaper reviewer setting: Sol-medium with the same
+v45 prompt, all-field schema, literal binding view and validation. Earlier
+Sol-medium failed during initial authoring, while the earlier medium reviewer
+was Terra under the removed narrow contract. First require the actual retained
+clean v45 draft and actual prefix-collision negative, each reviewer-only under25
+seconds, with independent no-P0/P1 adjudication. Stop on the first failed control.
+Only both clean results earn a fresh full standard candidate; that must complete
+proposal plus commit within55 seconds, leaving at least5 seconds inside consumer60.
+No further effort ladder or prompt/schema change if this comparison fails.
+
+Both Sol-medium controls pass independent semantic adjudication: the clean v45
+draft completes in 24.504 seconds (provider24.419/25), and the prefix collision
+repairs in 20.083 seconds (provider19.911/25). The negative binds both apprentice
+citations to the standalone entity at bytes128-139, retains all five coordinator
+events and board recipient, and adds source-stated signoff evidence. The clean
+control preserves all relationships and assumptions with sound view/result
+narrowing. Its actual prompt, schema and payload exactly equal the failed v45
+review. Evidence: `/private/tmp/odylith-v45-review-medium.LNkTLr`, frozen source
+`abaf99c44ba5b8b8720b61ad4480fd4fb27408473fbc33c8c8592db747961fdf`.
+These are reviewer-only results, never summed into fresh end-to-end timing.
+Standard profile v10 now preselects Terra-low/Sol-medium; authoring v45, rescue v8,
+deep v8, reserves and all consumer/model deadlines are unchanged. No runtime code
+or semantic prompt/schema change is needed. One fresh standard package must now
+pass independent quality and finish within55 seconds; otherwise stop this family.
+
+Fresh normal-CLI standard-v10 passes at46.170/60 seconds (proposal45.283,
+commit0.887), with83 sealed writes, exact readback and transaction
+`5668b0acdfe1e155c81e2d9e1663095c3d530446627a124dd5cfe8963caf1814`.
+Initial Terra-low takes24.619 seconds; Sol-medium review takes14.805 seconds and
+only narrows proof to certification readiness. Fresh rescue-v8 pediatric passes
+at45.069/90 (proposal44.142,commit0.927), with80 writes and transaction
+`307c6047de61a3252a6aaecf0605e595cdac9aac1bb104ec223617846fe9aaa8`.
+Terra-medium takes22.524 seconds; Sol-high review16.341 replaces the activity
+terminal with visit evidence. Both complete packages pass independent P0/P1
+review across source, canonical meaning and actual Project/Radar/Registry/Atlas.
+The release role/timing validator accepts both actual private observations against
+their sealed initial-author metadata. All four controls below share frozen source
+`f309bad51ad4499790d179945b8d4bab7c233ef06ac79e3aaa3684eb7a14c845` at
+`/private/tmp/odylith-v45-integrated.AbXfnC`.
+Standard browser core proof passes12 desktop/mobile cells and18 screenshots at
+`/private/tmp/v45-apprenticeship-core-browser.rrEiOc`: allthree diagrams are
+selected under normal, PNG fallback and explicit asset error. No P0/P1; installed
+baseline/empty-state/full-shell qualification is not claimed.
+
+Clarification controls prevent qualification. Standard returns a source-bound
+product_boundary question in7.164 seconds rather than the frozen first_path gap;
+the generic boundary question does not elicit the missing usable workflow.
+Rescue selects first_path but fails in6.450 seconds because its consistency quote
+appends a space to a source sentence followed by newline. Neither stages or commits
+a package. The successful package role comparison is complete; do not reopen model
+tuning. Diagnose the separate absence/clarification owner before one minimal
+contract repair. Preserve strict source custody, exact contradictory sides, one
+focused question, no extra call and all60/90/120 deadlines. No build or holdout yet.
+
+Independent clarification diagnosis confirms a contract gap, not a clear violation
+of the old bare enum by the standard author. Both dimensions were permitted with
+no definitions or priority; the boundary question nevertheless fails the frozen
+workflow control. The rescue false negative belongs to model-recopied evidence,
+not to the literal matcher. Do not add whitespace-equivalent matching.
+V46 changes only this owner: material_ambiguity returns no model evidence quotes,
+and the compiler binds the entire admitted original input with exact bytes/text/
+hash. This establishes examined-source custody, not positive entailment of missing
+information. Nonempty ambiguity quotes remain invalid. Contradiction still needs
+two-to-four exact distinct source citations; no normalization or bypass is added.
+The existing material_dimension schema defines first_path as missing usable
+actor/task/result and product_boundary as competing or unclear product-owned
+responsibility/scope limit. No fixture vocabulary, runtime semantic rule, extra
+call, role/deadline change or new framework is allowed. Full-source clarification
+JSON may repeat up to the bounded64KiB input; retain that explicit cost rather than
+inventing a second lossy excerpt mechanism. Require focused status/custody tests,
+fresh standard/rescue workflow clarifications and a contradictory-source control,
+then fresh full packages before any qualification. The package mechanism remains
+unchanged; v45 proof is retained but cannot qualify a new v46 build.
+
+The first fresh v46 standard clarification control fails its required outcome.
+Initial authoring18.965s treats the operator's building request as a product event;
+Sol-medium review31.754s replaces it with the topic noun prediction but retains
+authored status. Proposal stages80 writes in56.488s. The generic diagnostic driver
+then automatically confirms the test transaction in0.862s, totaling57.350/60;
+these writes are confined to the isolated test consumer, never a user project.
+Evidence: `/private/tmp/odylith-v46-integrated.aOU3hc/clarification-standard`,
+transaction`8381a0ffd4d6d2f006d100a87b35cfd2ff8cd55e255c84ed247297693c88ca83`,
+frozen source`7360085605c816f92bc545acf8f175d006e120833249ca181a3f06bf53f0cc6b`.
+Retain the failed package. The driver is separately corrected to retain an
+unexpected staged transaction but never auto-confirm a clarification-expectation
+case; its original SHA remains in that failed run's contract. Stop the remaining
+v46 controls, build and holdout. The reviewer can correct every semantic field
+except the initial authored discriminator, and has no valid way to ask for missing
+material information. Audit whether semantic admission—not only field repair—must
+belong to this mandatory review, reusing the existing clarification contract rather
+than adding parsing rules or another model stage. No next mechanism is adopted yet.
+
+Independent adjudication confirms P1: the emitted Project/Radar/Registry promote
+the topic noun prediction into a claimed complete workflow, visible result and
+proof, despite no source-grounded usable actor/task/result. Labeled assumptions
+do not cure that accepted-path error. One unsealed admission-owner comparison is
+authorized: allow the existing mandatory reviewer either its unchanged sparse
+corrections or the exact existing clarification result schema, within one typed
+result wrapper. The first model's authored status is provisional, not source
+authority; no arbitrary status patch or new semantic field is added. Use the same
+Sol-medium role, source bindings and validation. Require the actual v46 thin-input
+negative to return first_path clarification and the retained clean apprenticeship
+to remain authored with its meaning intact; each gets one reviewer-only call under
+25 seconds. Stop on the first timing or semantic failure. Passing earns integration
+evaluation only; production stays unchanged until then. The two-call ceiling and
+60/90/120 consumer limits remain fixed.
+
+Atlas renderer size exception: the existing oversized `render_mermaid_catalog.py`
+owns the client script that overwrote the generated-only failure-state fix.
+The viewer asset lifecycle now has one 39-line template owner; the renderer drops
+from 3,377 to 3,358 lines under the unchanged 3,363 cap, and generated bytes stay
+identical. Focused hygiene/render proof passes 201 tests. B-142 retains the broader
+client-template decomposition obligation before unrelated renderer feature growth;
+do not broaden this convergence pass into a new Atlas framework.
+
+## Product Contract Baseline (2026-07-29)
 
 Greenfield is not a generic mutation platform or an open-ended semantic rescue
 engine. Its bounded contract is:
@@ -157,11 +4244,14 @@ above.
 
 ## Latency Budget
 
-- Standard path: under 60 seconds, no host repair needed.
-- Rescue path: up to 90 seconds only when a final semantic or quality gate
-  fails and a targeted host-model semantic or plan patch can likely fix it.
-- Premium/deep repair and CI simulation: 120 seconds only when explicitly
-  selected. This is not the normal operator path.
+- Standard: 60 seconds end to end.
+- Explicit rescue: 90 seconds end to end.
+- Explicit deep: 120 seconds end to end.
+
+Select the tier before authoring. A failed or slow standard attempt never
+acquires a rescue/deep extension. Any future bounded pre-confirm repair must fit
+the original selected tier, total-call cap, and cost limit; it is not permission
+for retries until success. Current runtime profiles remain unchanged.
 
 ## Non-Goals
 
@@ -1320,38 +5410,14 @@ above.
 
 ## Risks & Mitigations
 
-- [ ] Risk: Host reasoning improves semantic quality but makes normal creates
-      slower or nondeterministic.
-  - [ ] Mitigation: Keep one standard semantic compiler call, use deterministic
-        planning/rendering/custody, and reserve host repair for final-gate rescue.
+- [ ] Risk: Host reasoning improves semantic quality but makes normal creates slower or nondeterministic.
+  - [ ] Mitigation: Keep one standard semantic compiler call, use deterministic planning/rendering/custody, and reserve host repair for final-gate rescue.
 - [ ] Risk: Typed repair becomes another wrapper around rendered text.
-  - [ ] Mitigation: Tests must fail if a repair mutates rendered Markdown,
-        Radar prose, Registry prose, Atlas labels, Compass entries, or release
-        proof strings directly.
+  - [ ] Mitigation: Tests must fail if a repair mutates rendered Markdown, Radar prose, Registry prose, Atlas labels, Compass entries, or release proof strings directly.
 - [ ] Risk: Artifact lenses produce readable diagnostics but cannot drive repair.
-  - [ ] Mitigation: Every lens finding must carry a finding code, semantic node
-        ID, source-map target, projection ID, severity, and repairability.
-        The first shared `tribunal_lens.py` contract now pins that custody
-      metadata at judgment time for greenfield PM, architect, engineer, and
-      domain-expert lenses instead of reconstructing it later from prose.
-      The 2026-07-01 source-address checkpoint adds an executable
-      `ProjectionSourceAddress` contract in `greenfield_artifact_plan.py`:
-      dict projections require a named field, row projections require a row
-      index plus field, list projections may target whole-list facts or indexed
-      rows only, and broad roots such as `proposal.backlog`, `components`,
-      `project_brief`, non-indexed list tails, or preview-only paths cannot
-      become PatchSet operations. Package and lens findings now become plan
-      patches only when that source address exists;
-      identifiable Registry spec copy defects map back to
-      `components[n].component_contract.produced_outputs`, while unsupported
-      package repetition stays fail-closed instead of advertising a fake root
-      patch. This is the next typed-IR repair substrate step, but broader
-      renderer context starvation and full source-span IDs remain open.
-- [ ] Risk: The architecture record passes while generated artifacts remain
-      below the premium human bar.
-  - [ ] Mitigation: Completion requires fresh high-variance end-to-end
-        simulations, validators, timing evidence, and PM/architect/engineer/
-        domain-expert artifact-quality reports.
+  - [ ] Mitigation: Every lens finding must carry a finding code, semantic node ID, source-map target, projection ID, severity, and repairability. The first shared `tribunal_lens.py` contract now pins that custody metadata at judgment time for greenfield PM, architect, engineer, and domain-expert lenses instead of reconstructing it later from prose. The 2026-07-01 source-address checkpoint adds an executable `ProjectionSourceAddress` contract in `greenfield_artifact_plan.py`: dict projections require a named field, row projections require a row index plus field, list projections may target whole-list facts or indexed rows only, and broad roots such as `proposal.backlog`, `components`, `project_brief`, non-indexed list tails, or preview-only paths cannot become PatchSet operations. Package and lens findings now become plan patches only when that source address exists; identifiable Registry spec copy defects map back to `components[n].component_contract.produced_outputs`, while unsupported package repetition stays fail-closed instead of advertising a fake root patch. This is the next typed-IR repair substrate step, but broader renderer context starvation and full source-span IDs remain open.
+- [ ] Risk: The architecture record passes while generated artifacts remain below the premium human bar.
+  - [ ] Mitigation: Completion requires fresh high-variance end-to-end simulations, validators, timing evidence, and PM/architect/engineer/ domain-expert artifact-quality reports.
 
 ## Validation
 
@@ -4136,3 +8202,527 @@ above.
       installed consumer, fresh unseen standard/rescue/deep success within the
       exact 60/90/120 budgets, independent public adjudication, explicit operator
       approval, and the one-shot protected holdout.
+    - 2026-09-01 model-profile availability reopen: exact distribution
+      `5694d9854` built cleanly, then three new public cases assigned across
+      standard, rescue, and deep all failed before typed validation because the
+      three supported-success profiles shared one exhausted Spark credit pool.
+      No transaction or governed write occurred. Schema-only availability proof
+      passed for Luna medium, Terra high, and Sol high in 3.58-4.95 seconds, so
+      model-profile contract v3 binds those models to standard, rescue, and deep
+      respectively without changing the single-call architecture or the exact
+      60/90/120 budgets. The candidate wins only if the same public cases pass
+      the complete installed transaction, recovery, browser, quality, and sealed
+      request-parity gates without retries or post-hoc tier promotion. The final
+      holdout remains untouched.
+    - 2026-09-01 proof-attribution correction: the first v3 matrix attempt
+      stopped before install or provider execution because the controller loaded
+      the host venv's installed v2 profile contract. The release wrapper now
+      prepends the detached candidate's checked-out `src` root, with a regression
+      assertion that keeps the controller and candidate revision identical. No
+      consumer transaction or write occurred; rerun the same three public cases
+      from a rebuilt immutable candidate before judging the model bindings.
+    - 2026-09-02 compact direct-evidence graph checkpoint: the exact v3 public
+      installed run failed `0/3`, while a bounded one-call alternative over the
+      same standard, rescue, and deep prompts passed typed source validation in
+      `37.463s`, `44.556s`, and `87.369s`. The candidate response owns selected
+      facts, ordered actor/action events, one terminal result, and component
+      ownership; deterministic code owns only exact coordinates, actor carry,
+      overlap links, and sealed atomic custody. The superseded 828-line relation
+      compiler is deleted, and no semantic regex parser, repair retry, or tier
+      cascade remains on this authoring boundary. A fresh standard production
+      call exposed a redundant proof-fact list that could contradict the already
+      selected exact result occurrence. Intent-authoring v15 removes that field
+      and binds terminal custody to the narrowest containing selected fact, with
+      authored order as the exact-span tie-breaker. The saved failing response
+      then validated unchanged apart from the removed field, and a fresh v15
+      standard response passed in `29.524s`. Focused proof is `75/75`; widened
+      proof is `162/162`; the complete Greenfield runtime and install suites are
+      `594/594` and `432/432`; and the Project browser matrix is `4/4`. The
+      mechanism wins only if a rebuilt immutable distribution passes the
+      complete installed public `60/90/120` proposal, transaction, readback,
+      recovery, browser, quality, and sealed profile gates. The protected
+      holdout remains untouched and still requires explicit operator approval
+      after public adjudication.
+    - 2026-09-02 first immutable-matrix correction: candidate `c2208bb7e`
+      built cleanly but failed the exact installed public matrix `0/3` before
+      confirmation. Standard and deep omitted transaction-material facts that
+      were present in the source; rescue cited an impossible ordinal for an
+      exact repeated quote. Intent-authoring v16 explicitly requires all five
+      material fields, assigns coordinate arithmetic to deterministic custody
+      by normalizing an impossible ordinal to the first identical byte match,
+      and requires component owners to be selected `internal_systems` or title
+      facts. This preserves model ownership of meaning without adding semantic
+      regexes, retries, or repair cascades. Fresh standard, rescue, and deep
+      source discriminators pass in `36.362s`, `30.353s`, and `60.315s`; the
+      widened safety/profile set passes `153/153`. Rebuild once and rerun the
+      complete installed public gate before changing the mechanism again.
+    - 2026-09-02 workstream-visibility correction: immutable candidate
+      `9bcdce790` completed the exact public model calls in `36.589s`,
+      `31.545s`, and `72.587s`, but failed proposal compilation `0/3` because
+      the workflow row exclusively owned `/first_path` while the required
+      project first slice could not cite it. The direct graph itself was valid.
+      Authored-workstream-semantics v4 keeps single semantic ownership and
+      exposes specialized facts to the integrative project row through
+      explicit shared refs; when optional
+      presentation facts are absent, project and workflow fields may use only
+      exact selected product-story, first-actor, state/path, and proof facts.
+      No regex, prose reconstruction, retry, or additional model call is
+      permitted. The three recorded public responses compile completion-ready,
+      the sparse all-role discriminator passes, and authored/model proof is
+      `122/122`. Rebuild the immutable candidate and require the full installed
+      matrix before accepting this correction.
+    - 2026-09-02 full-package proof and evaluator correction: immutable
+      candidate `d607fc8d3` completed the fresh public standard, rescue, and
+      deep cases in `51.921s`, `64.916s`, and `70.079s`, within the exact
+      `60/90/120` budgets, and each case committed the complete expected
+      governance package. The semantic mechanism therefore crossed the
+      transaction, commit, readback, and product-depth frontier; aggregate
+      release status remained `0/3` because one real Registry admission gap
+      and several retired evaluator assumptions failed after create. The
+      bounded correction adds Registry's source boundary and dated plan-linked
+      `Feature History`, exposes all six fixed Tribunal review roles, accepts
+      the canonical authored origin and valid labeled dotted Mermaid edge,
+      compares rendered Product Story cards to their sealed typed payload, and
+      reuses one sealed transaction across independent recovery fault phases.
+      It does not add a semantic regex, parser, model retry, tier cascade, or
+      post-confirm generation path. Full source proof is `609/609` Greenfield
+      runtime and `458/458` Greenfield install tests. Freeze this mechanism and
+      rebuild one immutable candidate; only a fresh exact installed matrix may
+      justify another mechanism change. The protected holdout remains untouched.
+    - 2026-09-02 v7 typed-validation proof correction: immutable candidate
+      `3367d913c` completed public standard, rescue, and deep proposals in
+      `45.516s`, `47.311s`, and `80.295s` and commit-only create in `1.825s`,
+      `1.734s`, and `1.993s`. Every runtime pre-confirm report passed and each
+      complete package committed, but the release scorer treated the authored
+      route's explicit typed-structural replacement for legacy prose lenses as
+      failure. One browser case also compared sealed multiline text with the
+      browser's whitespace-collapsed rendering. The bounded correction accepts
+      typed structural validation only when its manifest, single-model owner,
+      zero post-authoring interpretation count, and zero-issue report all pass;
+      independent package evidence remains a hard lens gate. Browser proof now
+      normalizes whitespace only while retaining exact labels, semantic slots,
+      and content tokens. Focused proof is `32/32`; the full Greenfield install
+      unit suite is `459/459`. Freeze the semantic mechanism and rerun the exact
+      installed matrix from a rebuilt immutable candidate.
+    - 2026-09-02 v8 duplicate-event correction: immutable candidate
+      `ced54a967` passed two public packages at full `10/10` quality and within
+      their `60/120` budgets, while rescue returned in `29.853s` but rejected
+      one event that did not ground against its separately selected first-path
+      fact. Intent-authoring v17 removes the redundant event text, ordinal,
+      actor kind, and carry fields. Ordered exact path facts now are the event
+      spans; custody derives their order, coordinates, actor kind, and immediate
+      carry state without authoring or repairing meaning. The model retains
+      action/target, actor identity, recovery, terminal, and component decisions.
+      Focused, complete runtime, and install proof passes `81/81`, `610/610`,
+      and `459/459`. No semantic regex, parser, retry, tier cascade, or
+      post-confirm work was added. The v8 recovery runtime-identity mismatch is
+      a separate open gate; correct it before rebuilding and rerunning the exact
+      installed matrix. The protected holdout remains untouched.
+    - 2026-09-02 recovery identity v5 correction: `CB-325` traced the installed
+      recovery abort to a location-dependent code fingerprint. The receipt
+      guard had hashed resolved absolute source paths, so copying the entire
+      prepared seed repo to an isolated fault-phase root changed identity even
+      when every covered runtime byte was identical. The bounded correction
+      hashes logical post-confirm source names plus content, removes the now
+      unexecuted shared fingerprint helper from the post-confirm inventory, and
+      bumps compiler identity to v5. Relocation equality and mutated-byte
+      inequality are both pinned; focused proof passes `49/49`, complete
+      Greenfield runtime passes `611/611`, and install/release passes `459/459`.
+      Do not weaken runtime-drift rejection, regenerate a transaction per fault
+      phase, or rewrite its receipt. Freeze these bytes into one immutable
+      package and require recovery to cross SIGKILL, conflict, fsync rollback,
+      idempotent retry, and readback before rerunning the unchanged public
+      `60/90/120` matrix. The protected holdout remains untouched.
+    - 2026-09-02 terminal-result contract drift: the first exact immutable
+      recovery rerun from `1fe4209b3` stopped during authoring, before reaching
+      the corrected identity guard or writing records. The direct graph already
+      proves that the terminal quote belongs to a selected fact, but the later
+      authored-semantics validator maintains a narrower, independently encoded
+      allowlist that omits selected Product Story, Opportunity, and Product View
+      output facts. Replace the duplicate restriction with one shared typed
+      terminal-source contract and add a selected-output characterization test.
+      This repair must not introduce regex semantics, prose recomposition,
+      retries, extra model calls, or post-confirm work. Rebuild and rerun the
+      isolated installed recovery proof before the full public matrix; keep the
+      protected holdout untouched.
+    - 2026-09-02 terminal-result source resolution: intent-authoring v18 and
+      authored-semantics v9 now share the explicit eligible field set. Selected
+      Product Story, Opportunity, Product View, Success Metric, First Path, and
+      Proof Boundary facts may ground the exact terminal result; other selected
+      fact types may not. The model still owns the meaning, quote, and selected
+      evidence, while deterministic code verifies type and byte custody only.
+      The new selected-output regression and widened contract pack pass, as do
+      all `612` Greenfield runtime and `459` install tests. Freeze these bytes,
+      rerun isolated installed recovery first, and only then rerun the unchanged
+      public `60/90/120` matrix. The protected holdout remains untouched.
+    - 2026-09-02 exact v10 recovery-provenance reopen: clean immutable candidate
+      `f26925486` reached the installed SIGKILL phase but rejected its copied
+      seed before fault injection because compiler provenance still bound
+      `repo_root_fingerprint` to the absolute checkout path. Runtime-source
+      identity v5 fixed only the parallel code-fingerprint field. The losing
+      absolute-path mechanism adds no repository-state protection: the sealed
+      write set already verifies managed before-fingerprints and active
+      generation identity at the write boundary. Replace the path digest with
+      one stable repository-context policy marker, retain every content and
+      generation precondition, bump compiler identity, and add relocation plus
+      true-drift controls. Rebuild and rerun the isolated fault proof before the
+      public matrix; keep the protected holdout untouched.
+    - 2026-09-02 recovery repository-context source resolution: compiler
+      identity v6 removes the final absolute checkout digest from provenance and
+      replaces it with the stable
+      `sealed_managed_fingerprints_and_active_generation_v1` policy marker.
+      Repository safety remains owned by the sealed write-set hash, exact
+      managed before-fingerprints, active generation, transaction and receipt
+      bytes, and runtime-source identity. Focused relocation and true-drift
+      proof passes `65/65`; complete Greenfield runtime and install proof passes
+      `614/614` and `459/459`. Freeze these bytes into a new immutable candidate
+      and rerun the isolated recovery proof before the public matrix. The
+      protected holdout remains untouched.
+    - 2026-09-03 typed-fact cardinality reopen: immutable dist-v11 reached the
+      public standard-tier authoring call with the corrected recovery
+      provenance, but no transaction was staged because the flat `facts` array
+      contained multiple citations for one scalar intent field. `CB-326` owns
+      this failure class. Replace the mixed array with one schema-enforced fact
+      object: scalar keys admit one exact citation or null, repeated keys admit
+      bounded ordered arrays, and clarification uses the typed empty sentinel.
+      Delete the old flat-array validator and fixture shape in the same change.
+      Preserve the single semantic model pass, exact quote custody, fail-closed
+      writes, and the exact `60/90/120` profiles; do not add retries, regexes,
+      response repair, or case-specific exceptions. Rebuild only after focused,
+      complete runtime, and install proof passes, then rerun isolated recovery
+      before the unchanged public matrix. The protected holdout remains
+      untouched.
+    - 2026-09-03 typed-fact cardinality source resolution: intent-authoring v19
+      replaces the heterogeneous fact list with one closed typed object. Each
+      scalar key accepts one exact citation or null, each repeated key accepts
+      a bounded ordered array, and deterministic compilation retains the total
+      256-citation gate. The flat response contract and post-hoc scalar
+      multiplicity branch are deleted together. Focused authoring/custody proof
+      passes `140/140`, complete Greenfield runtime passes `616/616`, and
+      install/release passes `459/459`; compilation, diff, and regex-boundary
+      checks pass. Freeze and rebuild these bytes, rerun isolated installed
+      recovery, and only then run the unchanged public `60/90/120` matrix. The
+      protected holdout remains untouched.
+    - 2026-09-03 product-owner alias reopen: clean immutable dist-v12 crossed
+      the v19 cardinality boundary, then the same standard-tier public case
+      stopped before staging with `ambiguous product owner`. The model selected
+      one exact label as both product title and internal system, which is one
+      real product identity projected through two typed facts, not two owners.
+      `CB-327` owns the defect. Replace the independent event, actor, and
+      component quote indexes with one shared product-owner resolver that
+      canonicalizes only a title plus one same-label internal system onto the
+      narrower system path. Preserve rejection for cross-kind label collisions
+      and multiple indistinguishable internal systems. Add no regex, prompt-only
+      duplicate rule, retry, response mutation, or second model call. Rerun
+      focused and full source proof, rebuild once, and require installed
+      recovery before the public `60/90/120` matrix. The protected holdout
+      remains untouched.
+    - 2026-09-03 product-owner alias source resolution: authored-semantics v10
+      makes one resolver authoritative for product owner identity across direct
+      event compilation, component ownership, and later sealed validation. It
+      canonicalizes only an exact title plus one internal-system alias to the
+      narrower system path and preserves fail-closed rejection for multiple
+      indistinguishable internal systems or cross-kind collisions. Focused
+      proof passes `92/92`, full Greenfield runtime passes `618/618`, and
+      install/release passes `459/459`. A fresh source-local standard-profile
+      call on the same public case authored four grounded events in `26.465s`.
+      Freeze these bytes, rerun immutable installed recovery, and only then run
+      the public `60/90/120` matrix. The protected holdout remains untouched.
+    - 2026-09-03 v13 recovery-clone and downstream-owner reopen: clean dist-v13
+      crossed authoring, staging, and SIGKILL injection, then the cloned launcher
+      rejected its copied runtime because default `copytree` dereferenced the
+      active-version link into a directory named `current`. Preserve symlinks,
+      require one seed runtime under managed `versions`, and rebind `current` to
+      the phase-local copy. The corrected harness then reached the one installed
+      model call and exposed an adjacent copy of the title/internal-system alias
+      rule in Radar component citation. Feed Radar the same canonical owner map
+      used by direct and sealed semantics, and prove the alias through complete
+      proposal/backlog projection. Focused proof passes `35/35`, full Greenfield
+      runtime passes `618/618`, and install/release passes `460/460`. Add no
+      regex, retry, response rewrite, additional model call, or post-confirm
+      work. Rebuild once and require the full recovery gate before the unchanged
+      public matrix. The protected holdout remains untouched.
+    - 2026-09-03 immutable v14 public winning-candidate proof: clean dist-v14
+      from candidate `62bcdd8147e47874e984483b48fb1fb0a20ca413`
+      passes the unchanged installed standard, rescue, and deep cases in
+      `44.315s`, `44.053s`, and `66.854s`, inside their exact `60/90/120`
+      proposal budgets. Commit-only create completes in `1.712s`, `1.733s`,
+      and `1.752s`; every package scores release-quality `10/10`. Browser proof
+      passes `3/3`; installed SIGKILL recovery, operator-conflict preservation,
+      fsync rollback and retry, same-hash idempotency, generation readback, and
+      cleanup pass without issues. Mark `CB-325`, `CB-326`, and `CB-327` fixed
+      pending release. Freeze candidate semantics: one model-authored direct
+      evidence graph, exact typed custody, one shared product-owner map,
+      deterministic projection, no semantic regex, no retry or tier cascade,
+      no second model call, and no post-confirm interpretation. This is the
+      public winning candidate, not final universal or release closure. Keep
+      B-142 in progress, do not tune against protected data, and require explicit
+      approval before correcting and executing the untouched protected
+      revision-6 evaluation package once.
+    - 2026-09-03 protected evaluation contract rejection: after approval, the
+      package-local corrections removed non-model-selected supporting spans
+      from scoring and separated one mixed normal/recovery event; the corrected
+      eight-case package passes its own offline validator with zero errors. The
+      live release evaluator rejects it before product execution because it
+      targets intent-authoring v2 and custom protected schemas rather than
+      intent-authoring v19, evaluation-splits v4, and final-holdout v4. It also
+      cannot meet the frozen four-sample minimum for each published complexity
+      band and model profile. Record this as CB-328, preserve the absent
+      one-shot ledger, and keep candidate `62bcdd8147e47874e984483b48fb1fb0a20ca413`
+      frozen. The next admissible step is a fresh independently authored and
+      reviewed current-contract package that passes pure contract, leakage,
+      slice, hash, and ledger preflight. Do not add an evaluator adapter stack,
+      reduce floors, count disclosed public cases as blind evidence, or change
+      production behavior before that gate.
+    - 2026-09-03 current-contract protected-run adjudication: blind package
+      `68f8a2570f74dbd4d9b721b33da75a92365d7383ca76255db7c5eb93c0d36742`
+      passed independent review and pure v4 preflight, then consumed its
+      one-shot ledger and failed. The exact `60/90/120` latency contract,
+      recovery, provider-unavailable, and cleanup gates passed. Product truth
+      still failed at three product owners: material clarification crossed
+      staging in GFH19-014; one direct graph returned an invalid terminal
+      result; and one omitted a selected component responsibility. Bounded
+      call-path inspection subsequently localized the missing `/title` atomic
+      rebind to the release-only snapshot builder, not the sealed product
+      transaction. Independent
+      adjudication also separated evaluator-owned failures: an Atlas arrow
+      whitelist disagreed with the product parser, relation scoring rejected
+      runtime-valid state-object order zero and zeroed whole families, the
+      write observer treated cleanup/subprocess activity as governed writes,
+      Wilson bounds were compared to unattainable perfect finite-sample
+      thresholds, and raw artifacts were cleaned before adjudication. CB-315
+      and CB-323 own the product recurrence; CB-329 owns the release snapshot
+      omission and other evaluator divergence.
+      Retire this corpus to regression. The next wave is restricted to one
+      pre-write clarification decision, one complete shared semantic contract,
+      canonical parser reuse, governed-write observation, achievable
+      confidence reporting separate from strict product acceptance, and raw
+      evidence retention. Delete superseded duplicate owners; add no semantic
+      regex, phrase list, prompt tower, retry cascade, second model call, or
+      post-confirm interpretation. Require disclosed-regression and public
+      proof before commissioning a newly blinded holdout.
+    - 2026-09-03 v20 convergence checkpoint: one source-cited typed graph now
+      owns material clarification, terminal selection, ordered actor/action
+      events, and component responsibility binding. Deterministic code owns
+      byte custody and transaction laws only. The losing parser/repair regime
+      is being removed rather than wrapped: 30 obsolete modules and 4,927 lines
+      are deleted, and an executed public proposal trace reports zero semantic
+      regex callers. Exact typed authored facts now render directly into Project
+      DOM nodes; the 28-cell desktop/mobile normal, empty/fallback, and
+      degraded/invalid matrix passes without clipping, overflow, or semantic
+      mismatch. Retained release evidence is mandatory for passed, failed, and
+      interrupted v3 outcomes and is bound to a unique claim run id. Combined
+      source proof passes 1,171 tests; maintained fast/lifecycle targets pass
+      445/208; independent review reports no P0/P1. Freeze this mechanism and
+      proceed only through immutable installed `60/90/120`, recovery/readback,
+      then one newly blind holdout. The 2,518-line shell stylesheet receives a
+      narrow five-line release-safety exception; B-142 owns post-release
+      decomposition before any unrelated style growth.
+    - 2026-09-03 v20 immutable public result: candidate wheel
+      `5539fbf7244920541a61827b07839244a857faa8ec12e587b101a286a2cc3b1f`
+      is rejected at `4/14`. Deep passed `4/4`; standard and rescue passed
+      `0/10` inside their declared budgets. Safety, recovery, retained evidence,
+      cleanup, and reached browser cases passed, so this wave does not reopen
+      commit or rendering architecture. Replace only the authoring response
+      contract: make authored versus clarification structurally exclusive,
+      require non-empty canonical fact/event/component minima in the authored
+      branch, remove redundant event-local actor wording in favor of the typed
+      actor-fact edge, and retain raw model/request evidence externally for
+      failed-case adjudication. Run focused source proof before rebuilding a new
+      immutable public candidate. Do not commission another blind holdout until
+      the public `60/90/120` matrix is fully green.
+    - 2026-09-03 bounded profile comparison: v21 made the prior failing public
+      standard case structurally executable in `38.797s`, but low reasoning
+      produced a semantically invalid human actor. Treat that as a failed
+      mechanism, not a passing fixture. Promote the already measured
+      `gpt-5.6-sol/high` author across standard, rescue, and deep while retaining
+      one call and the exact `60/90/120` consumer ceilings. The immutable v20
+      evidence predicts higher fidelity because this profile passed `4/4` with
+      a `53.766s` worst proposal; falsify that prediction on three formerly
+      failing public cases before running the complete matrix.
+    - 2026-09-03 v21 bounded replacement result: the all-`sol/high` prediction
+      is falsified for the standard lane because a real call exceeded its
+      55-second model window. Standard now pins `gpt-5.6-terra/high`; rescue and
+      deep retain `gpt-5.6-sol/high`. The exclusive authored-or-clarification
+      schema, human-start/following event structure, canonical actor edge, and
+      non-redundant action fact pass three independent live public probes:
+      security disclosure authored in `40.259s`, assay correctly requested one
+      no-package clarification in `5.686s`, and semiconductor custody authored
+      on rescue in `56.592s`. Focused, runtime, install/release, mirror/Atlas,
+      and semantic-regex gates pass `211`, `633`, `507`, `48`, and `4` tests;
+      executed proposal tracing finds zero semantic regex authority. Freeze
+      these bytes and proceed to an immutable installed public `14/14` run with
+      complete retained model, transaction, recovery, and 28-cell browser
+      evidence. Do not commission the new blind holdout unless all public cases
+      pass. Reject v21 on a repeated public failure instead of adding another
+      rule, retry, repair, or prompt layer.
+    - 2026-09-03 v21 immutable rejection and v22 ordered-event replacement:
+      immutable wheel
+      `727e28500619a2912f6b61d59726698aafc385f15195a6d608d0b212483b6868`
+      stopped at `1/3` completed public cases. Pediatric agency exposed a real
+      disconnected State and Evidence view despite clean browser rendering;
+      semiconductor custody failed before staging because the schema forced a
+      human-first event not present in the product-led source. V22 removes the
+      human-start/following split and uses one ordered event list with a common
+      actor/target/recovery shape. Human users remain selected facts but no
+      invented human action is required. Exact target containment remains
+      fail-closed, authored-semantics v11 removes the duplicate downstream
+      human-path rule, and Atlas adds only a dotted result-to-proof edge for
+      exact source containment. The formerly failing semiconductor request and
+      an independent security request now stage in one call; the thin assay
+      request correctly returns one no-write clarification. Focused,
+      Greenfield runtime, and install gates pass `74`, `636`, and `507` tests.
+      Rebuild immutable bytes and require the complete public `14/14` gate
+      before commissioning any new blind holdout. Add no regex, phrase list,
+      retry, repair path, or second model call.
+    - 2026-09-03 v22 public rejection and v23 target-binding comparison: Flood
+      passed the installed v22 path at `10/10` in `56.711s`, but Pediatric
+      failed pre-staging in `44.015s` when the model selected an exact Customer
+      target that was co-contained with the aligned event by Product Story but
+      was not repeated inside the narrower event fact. Pediatric had passed a
+      prior independent v22 call, establishing a stochastic false-negative
+      class rather than a fixture defect. Semiconductor passed in `42.814s`;
+      stop the campaign because `14/14` was already impossible. Reject strict
+      event-only containment; also reject target deletion because downstream
+      Registry component, proposal, and Tribunal surfaces consume that typed
+      meaning. V23 accepts a target only as an exact event substring or an exact
+      selected fact co-contained with the event by another selected fact. One
+      shared deterministic predicate now governs compilation, sealed
+      validation, atomic custody, and release scoring. The exact retained
+      failure compiles, invented and unrelated-selected targets fail closed, a
+      fresh Pediatric rescue call stages in `45.56s`, and focused/runtime/install
+      proof passes `96`, `638`, and `509` tests. Freeze and rerun the complete
+      immutable public gate; no blind holdout before `14/14`.
+    - 2026-09-04 v23 rejection and v29 bounded replacement: the installed v23
+      campaign completed eleven in-budget packages before a valid assay
+      material-ambiguity clarification hit an evaluator contract mismatch.
+      Independent review still rejects v23 for adjacent target acceptance,
+      location-as-dependency drift, repeated missing-field prose, unearned
+      expert scores, and conditional confirmation parsing. V29 deletes the
+      cross-fact target mechanism, makes CONFIRM/REJECT exact token protocols,
+      renders missing semantic fields as visible gaps, and replaces the
+      729-word accumulated authoring instruction block with one 497-word typed
+      contract. A fresh pediatric rescue transaction passes the discriminator
+      in `48.79s` with one source-bound action, `visit evidence` as proof/result,
+      and no false school dependency. Canonical semantic boundaries remain
+      regex-free (`80/80` retirement/hygiene proof). The initial broad gate
+      passed `3,787/3,790`; all three classified corrections pass `31/31`, and
+      the final frozen source rerun passes `3,790/3,790` in `275.35s`. Commit
+      and build immutable bytes, then require public `14/14` plus three
+      independent reviews. Do not consume a new blind holdout until every
+      public gate is green.
+    - 2026-09-04 v29 immutable rejection and v30 bounded replacement: clean
+      wheel `2c7bcd38317938ddba15a0b8668c0c1a25271818786759a35905b827b4e9ac4d`
+      failed the first public case after an in-budget `70.411s` deep authoring
+      call and clean commit-only publication. It collapsed five executable
+      city-staff actions into one product-owned capability event, then emitted
+      an ambiguity-driven Component Boundary View containing the product inside
+      an identically named component. Preserve the one-call direct graph and
+      transaction kernel. Restore only source-exact event action and event-actor
+      choices, restrict omitted actors to immediate identical carry, keep outer
+      product capability in component ownership, and make boundary artifacts
+      conditional on distinct typed boundary evidence. Replace the evaluator's
+      universal edge quota with typed edge-or-distinct-containment judgment.
+      First prove the unchanged flood discriminator; then run focused/full
+      source proof before another immutable public campaign. Add no regex,
+      lexical rule set, retry cascade, second model call, or post-confirm repair.
+
+## V30 Source Qualification Result (2026-09-04)
+
+- The flood falsification case now produces five ordered human events with exact
+  event-actor, action, and target custody in `49.80s`; the coordinating product
+  capability remains component-owned and D-004 is absent.
+- Commit-only publication remains unchanged and completed in `1.06s` with `83`
+  sealed writes plus verified readback. A thin request produced one no-write
+  clarification in `13.64s`.
+- Source qualification is green (`1,525/1,525` focused contracts). Freeze only
+  after governance projection and checkpoint review, then prove the same bytes
+  through the complete immutable public matrix. Do not change the mechanism in
+  response to a release-evaluator defect; reject it only for repeated product
+  failures or regressions against the fixed outcome.
+
+## V30 Public Rejection And V31 Bounded Alternative (2026-09-04)
+
+- Immutable V30 completed six public packages at hard `10/10`, but the seventh
+  standard request failed before staging at `56.377s`. The zero-byte retained
+  authoring observation and absent transaction show that the sole
+  `gpt-5.6-terra/high` call reached its `55s` deadline without a usable
+  response. No semantic compiler, evaluator, confirmation, or commit-only path
+  participated in the failure.
+- Falsifiable V31 prediction: reducing the standard profile to
+  `gpt-5.6-terra/medium` will stage the exact package-supply-chain request with
+  the complete source-ordered action set and at least `10s` consumer-budget
+  margin, while an independent standard stress case preserves the V30 event,
+  provenance, diagram, and Project-quality invariants.
+- Compare only single-call profiles. If Terra medium misses latency or semantic
+  quality, test one faster supported profile under the same evidence. Retain
+  exactly one winner and delete the losing configuration. A retry, reasoning
+  ladder, prompt cascade, regex/phrase rule, second model call, or post-confirm
+  repair is out of scope and would violate the fixed mechanism laws.
+- After focused source proof, build V31 once and restart the unchanged public
+  `14/14` gate from case one. The new blind holdout remains sealed until public
+  quality, `60/90/120`, normal/empty/degraded desktop/mobile browser, recovery,
+  readback, and all three independent reviews are green.
+
+## V31 Source Profile Decision (2026-09-04)
+
+- Accept Terra medium as the sole standard-profile candidate. The exact failed
+  package-supply-chain request stages in `29.410s` with five source-ordered
+  actor/action/target relations, exception-state linkage, approval result, and
+  release-readiness proof. Hash-bound commit-only publication completes in
+  `1.3s`, writes the `60` sealed bytes, and verifies readback without model,
+  generation, repair, or prose interpretation after CONFIRM.
+- The independent security-embargo case stages in `36.689s`, improving on the
+  V30 `56.242s` result while preserving its five events, maintainer customer,
+  evidence requirements, non-goal, and advisory-readiness result. Both cases
+  retain one semantic call. The observed margins falsify the need for a Luna or
+  second-profile comparison at this gate.
+- Replace the old standard profile with
+  `greenfield-standard-gpt-5.6-terra-medium-v6`; do not leave Terra high as an
+  alternate path. Profile, authoring, path-custody, and operating-envelope
+  proof passes `96/96`; the complete Greenfield runtime, integration, and
+  install source gate passes `1,123/1,123` in `141.13s`. Live/bundle surface
+  parity, hygiene, and Compass normal/fallback/degraded browser regression proof
+  passes `130/130`. Proceed through the immutable build and a fresh public
+  campaign from case one; keep the blind holdout sealed.
+
+## V31 Independent Rejection (2026-09-04)
+
+- The paused ledger contains three completed passes; resumption preserves their
+  exact case identities and original profile assignments. Port berth completes
+  in 43.830 seconds with commit-only publication in 2.172 seconds, bringing
+  automated public evidence to four passes. Stop the campaign when independent
+  review identifies the recurring P1 failures below.
+- CB-303: required Radar decisions cannot be repeated missing-fact placeholders.
+  Use conservative, explicitly labeled model assumptions tied to supplied
+  evidence without admitting them as source facts. Preserve the source-backed
+  decision path when distinct facts exist. Preserve failed-run tracking as an
+  action without asserting unsupported recovery meaning.
+- CB-306: remove the stale Luna proof claim. Require observed standard Terra
+  semantic safety controls, separately from missing-provider behavior, while
+  preserving the existing profiles and exact 60/90/120 budgets.
+- Falsifiable bounded gate: missing optional problem/opportunity/view evidence
+  yields useful differentiated assumptions, explicit facts retain custody,
+  tracking a failure does not invent recovery, and an explicit recovery action
+  survives. Negative and equivalent-source controls must preserve these results.
+  Inspect the generated human-visible package before broader validation. Keep
+  source frozen during each live comparison and commission no blind holdout
+  until all independent P0/P1 findings and the complete public gate are clear.
+
+## Traceability
+
+Current proposal/confirmation/recovery operations and versioned semantic/timing boundaries; historical post-confirm repair paths are superseded.
+
+### Runbooks
+
+- `docs/runbooks/odylith-greenfield.md`
+
+### Developer Docs
+
+- `docs/specs/greenfield-operating-envelope.md`
+
+### Code References
+
+- `src/odylith/runtime/domain_intelligence/greenfield_proposals.py`
+- `src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py`
+- `src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py`

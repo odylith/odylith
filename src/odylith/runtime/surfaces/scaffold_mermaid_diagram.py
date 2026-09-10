@@ -60,7 +60,9 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _parse_components(tokens: list[str]) -> list[dict[str, str]]:
+def parse_components(tokens: list[str]) -> list[dict[str, str]]:
+    """Parse repeated Atlas component arguments into catalog rows."""
+
     components: list[dict[str, str]] = []
     for token in tokens:
         raw = str(token or "").strip()
@@ -429,7 +431,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(args.repo_root).resolve()
     try:
-        components = _parse_components(args.component)
+        components = parse_components(args.component)
         rc, logs = scaffold_diagram(
             repo_root=repo_root,
             catalog=str(args.catalog),

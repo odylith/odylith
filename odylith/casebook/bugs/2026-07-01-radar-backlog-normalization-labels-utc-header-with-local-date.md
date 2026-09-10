@@ -1,5 +1,7 @@
 - Bug ID: CB-212
 
+- Related Rendered-Date Evidence (2026-09-09): The fresh Greenfield Radar audit displays Created Date and Index Updated as 2026-09-08 while the unchanged authored date and index source are 2026-09-09. Its payload distinguishes idea_date=2026-09-09 from idea_date_display=2026-09-08. This is a separate date-only presentation path, not recurrence of the repaired source normalizer. Preserve the evidence and investigate calendar-date versus timestamp ownership before changing formatting. No date correction is claimed by the authored-preview refactor. Evidence: /private/tmp/odylith-radar-authored-proof.cEUc92/readback-3/screenshots/desktop-radar-authored-reading.png and the copied source/payload; the sealed original remains unchanged.
+
 - Status: Open
 
 - Created: 2026-07-01

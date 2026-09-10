@@ -283,9 +283,11 @@ def _add_workstream_path_evidence(
     target_path: str,
     source_kind: str,
     match_type: str,
+    shared_support: bool = False,
 ) -> None:
     evidence = candidate["evidence"]
     profile = _path_signal_profile(changed_path)
+    shared = shared_support or bool(profile["shared"])
     category = str(profile["category"])
     counters = evidence["counters"]
     counters_key = f"{source_kind}_{match_type}"
@@ -307,15 +309,15 @@ def _add_workstream_path_evidence(
     }
     base_weight = (
         _shared_path_weight(source_kind, match_type)
-        if bool(profile["shared"])
+        if shared
         else int(direct_weights.get((source_kind, match_type), 40))
     )
     evidence["score"] += base_weight + int(profile["weight"])
-    if ((source_kind in {"direct", "trace_code"} and not bool(profile["shared"])) or category in {"implementation", "contract", "build"}):
+    if not shared and (source_kind in {"direct", "trace_code"} or category in {"implementation", "contract", "build"}):
         evidence["strong_signal_count"] += 1
     else:
         evidence["weak_signal_count"] += 1
-    if bool(profile["shared"]):
+    if shared:
         evidence["broad_shared_signal_count"] += 1
     else:
         evidence["non_shared_signal_count"] += 1

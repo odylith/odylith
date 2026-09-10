@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 import hashlib
 import json
 from pathlib import Path
@@ -17,7 +18,7 @@ from odylith.install.fs import fsync_file
 from odylith.runtime.domain_intelligence import greenfield_generation_state
 
 
-GREENFIELD_REPOSITORY_WRITE_SET_VERSION = "odylith.greenfield.repository_write_set.v3"
+GREENFIELD_REPOSITORY_WRITE_SET_VERSION = "odylith.greenfield.repository_write_set.v4"
 GREENFIELD_REPOSITORY_WRITE_SET_PHASE = "pre_confirm_compile"
 MAX_SEALED_GENERATION_BYTES = 256 * 1024 * 1024
 GREENFIELD_REPOSITORY_WRITE_PATHS = (
@@ -38,15 +39,45 @@ GREENFIELD_REPOSITORY_WRITE_PATHS = (
 _DIGEST_PATTERN = re.compile(r"[0-9a-f]{64}")
 
 
-def compile_greenfield_repository_write_set(*, source_root: Path, staged_root: Path) -> dict[str, Any]:
+@dataclass(frozen=True)
+class GreenfieldRepositoryLayout:
+    """Resolve logical sealed paths against one observed publication layout."""
+
+    repo_root: Path
+    publication_protected: bool
+
+    def target_path(self, logical_path: str) -> Path:
+        if not _is_managed_path(logical_path):
+            raise ValueError(f"Greenfield logical path escapes the managed boundary: {logical_path}")
+        relative = (
+            "odylith/tooling-shell.html"
+            if self.publication_protected and logical_path == "odylith/index.html"
+            else logical_path
+        )
+        return self.repo_root / relative
+
+
+def greenfield_repository_layout(repo_root: Path) -> GreenfieldRepositoryLayout:
+    root = Path(repo_root).expanduser().resolve()
+    return GreenfieldRepositoryLayout(
+        repo_root=root,
+        publication_protected=greenfield_generation_state.read_active_publication(root) is not None,
+    )
+
+
+def compile_greenfield_repository_write_set(
+    *, source_root: Path, staged_root: Path, publication_precondition: Mapping[str, str] | None = None,
+) -> dict[str, Any]:
     """Capture exact staged bytes, deletions, and source-tree preconditions."""
 
     source = Path(source_root).expanduser().resolve()
     staged = Path(staged_root).expanduser().resolve()
-    source_files = _managed_file_states(source)
-    staged_files = _managed_file_states(staged)
-    source_dirs = _managed_directories(source)
-    staged_dirs = _managed_directories(staged)
+    source_layout = greenfield_repository_layout(source)
+    staged_layout = greenfield_repository_layout(staged)
+    source_files = _managed_file_states(source_layout)
+    staged_files = _managed_file_states(staged_layout)
+    source_dirs = _managed_directories(source_layout)
+    staged_dirs = _managed_directories(staged_layout)
 
     writes = [
         _write_entry(
@@ -79,9 +110,12 @@ def compile_greenfield_repository_write_set(*, source_root: Path, staged_root: P
         "version": GREENFIELD_REPOSITORY_WRITE_SET_VERSION,
         "phase": GREENFIELD_REPOSITORY_WRITE_SET_PHASE,
         "managed_paths": list(GREENFIELD_REPOSITORY_WRITE_PATHS),
-        "before_fingerprints": _managed_fingerprints(source),
-        "after_fingerprints": _managed_fingerprints(staged),
-        "active_generation_precondition": greenfield_generation_state.active_generation_identity(source),
+        "before_fingerprints": _managed_fingerprints(source_layout),
+        "after_fingerprints": _managed_fingerprints(staged_layout),
+        "active_generation_precondition": greenfield_generation_state.require_active_generation_identity(
+            publication_precondition if publication_precondition is not None
+            else greenfield_generation_state.active_generation_identity(source)
+        ),
         "after_image": after_image,
         "directories": directories,
         "directory_deletes": directory_deletes,
@@ -169,13 +203,16 @@ def require_compiled_greenfield_repository_write_set(value: object) -> dict[str,
     return payload
 
 
-def require_greenfield_repository_preconditions(*, repo_root: Path, write_set: object) -> dict[str, Any]:
+def require_greenfield_repository_preconditions(
+    *, repo_root: Path, write_set: object, layout: GreenfieldRepositoryLayout | None = None,
+) -> dict[str, Any]:
     """Reject a compiled transaction when governed source changed after compilation."""
 
     payload = require_compiled_greenfield_repository_write_set(write_set)
     root = Path(repo_root).expanduser().resolve()
+    layout = _require_repository_layout(root, layout)
     expected = _fingerprint_mapping(payload.get("before_fingerprints"), label="before")
-    actual = _managed_fingerprints(root)
+    actual = _managed_fingerprints(layout)
     changed = [path for path in GREENFIELD_REPOSITORY_WRITE_PATHS if actual[path] != expected[path]]
     if changed:
         raise ValueError(
@@ -194,13 +231,16 @@ def require_greenfield_repository_preconditions(*, repo_root: Path, write_set: o
     return payload
 
 
-def require_greenfield_repository_after_state(*, repo_root: Path, write_set: object) -> dict[str, Any]:
+def require_greenfield_repository_after_state(
+    *, repo_root: Path, write_set: object, layout: GreenfieldRepositoryLayout | None = None,
+) -> dict[str, Any]:
     """Verify that a prior sealed write still owns the entire managed boundary."""
 
     payload = require_compiled_greenfield_repository_write_set(write_set)
     root = Path(repo_root).expanduser().resolve()
+    layout = _require_repository_layout(root, layout)
     expected = _fingerprint_mapping(payload.get("after_fingerprints"), label="after")
-    actual = _managed_fingerprints(root)
+    actual = _managed_fingerprints(layout)
     changed = [path for path in GREENFIELD_REPOSITORY_WRITE_PATHS if actual[path] != expected[path]]
     if changed:
         raise ValueError(
@@ -218,7 +258,8 @@ def apply_compiled_greenfield_repository_write_set(
     """Apply sealed bytes and validate final tree fingerprints."""
 
     root = Path(repo_root).expanduser().resolve()
-    payload = require_greenfield_repository_preconditions(repo_root=root, write_set=write_set)
+    layout = greenfield_repository_layout(root)
+    payload = require_greenfield_repository_preconditions(repo_root=root, write_set=write_set, layout=layout)
     directories = _mapping_rows(payload.get("directories"), label="directories")
     directory_deletes = _mapping_rows(payload.get("directory_deletes"), label="directory_deletes")
     writes = _mapping_rows(payload.get("writes"), label="writes")
@@ -227,11 +268,11 @@ def apply_compiled_greenfield_repository_write_set(
 
     synced_directories: set[Path] = set()
     for row in directories:
-        target = _target_path(root=root, token=str(row["path"]), allow_missing=True)
+        target = _target_path(layout=layout, token=str(row["path"]), allow_missing=True)
         target.mkdir(parents=True, exist_ok=True)
         _fsync_directory_chain(root=root, target=target, synced=synced_directories)
     for row in writes:
-        target = _target_path(root=root, token=str(row["path"]), allow_missing=True)
+        target = _target_path(layout=layout, token=str(row["path"]), allow_missing=True)
         atomic_write_bytes(
             target,
             _decoded_after_image_bytes(after_files[str(row["path"])]),
@@ -241,18 +282,18 @@ def apply_compiled_greenfield_repository_write_set(
         fsync_file(target)
         fsync_directory(target.parent)
     for row in deletes:
-        target = _target_path(root=root, token=str(row["path"]), allow_missing=False)
+        target = _target_path(layout=layout, token=str(row["path"]), allow_missing=False)
         target.unlink()
         fsync_directory(target.parent)
     for row in directory_deletes:
-        target = _target_path(root=root, token=str(row["path"]), allow_missing=True)
+        target = _target_path(layout=layout, token=str(row["path"]), allow_missing=True)
         if not target.is_dir():
             raise RuntimeError(f"compiled repository directory delete target is missing: {row['path']}")
         target.rmdir()
         fsync_directory(target.parent)
 
     try:
-        require_greenfield_repository_after_state(repo_root=root, write_set=payload)
+        require_greenfield_repository_after_state(repo_root=root, write_set=payload, layout=layout)
     except ValueError as exc:
         message = str(exc).replace(
             "ProductCreateTransaction committed repository state changed after confirmation",
@@ -283,16 +324,17 @@ def materialize_compiled_greenfield_after_image(
     if root.is_symlink() or (root.exists() and (not root.is_dir() or any(root.iterdir()))):
         raise ValueError("Greenfield generation destination must be a new empty directory")
     root.mkdir(parents=True, exist_ok=True)
+    layout = GreenfieldRepositoryLayout(repo_root=root, publication_protected=False)
     after_image = payload["after_image"]
     directories = _mapping_rows(after_image.get("directories"), label="after-image directories")
     files = _require_after_image(payload)
     synced: set[Path] = set()
     for row in sorted(directories, key=lambda item: (len(Path(str(item["path"])).parts), str(item["path"]))):
-        target = _target_path(root=root, token=str(row["path"]), allow_missing=True)
+        target = _target_path(layout=layout, token=str(row["path"]), allow_missing=True)
         target.mkdir(parents=True, exist_ok=True)
         _fsync_directory_chain(root=root, target=target, synced=synced)
     for path, row in files.items():
-        target = _target_path(root=root, token=path, allow_missing=True)
+        target = _target_path(layout=layout, token=path, allow_missing=True)
         atomic_write_bytes(
             target,
             _decoded_after_image_bytes(row),
@@ -301,7 +343,7 @@ def materialize_compiled_greenfield_after_image(
         )
         fsync_file(target)
         fsync_directory(target.parent)
-    require_greenfield_repository_after_state(repo_root=root, write_set=payload)
+    require_greenfield_repository_after_state(repo_root=root, write_set=payload, layout=layout)
     fsync_directory(root)
     return {
         "version": str(after_image["version"]),
@@ -351,7 +393,7 @@ def greenfield_repository_write_paths(write_set: object) -> tuple[str, ...]:
 def greenfield_managed_fingerprints(repo_root: Path) -> dict[str, str]:
     """Fingerprint the complete managed boundary used by generation readers."""
 
-    return _managed_fingerprints(Path(repo_root).expanduser().resolve())
+    return _managed_fingerprints(greenfield_repository_layout(repo_root))
 
 
 def greenfield_repository_recovery_paths(write_set: object) -> tuple[str, ...]:
@@ -371,7 +413,7 @@ def require_greenfield_repository_recovery_preconditions(*, repo_root: Path, wri
     payload = require_compiled_greenfield_repository_write_set(write_set)
     root = Path(repo_root).expanduser().resolve()
     expected = _fingerprint_mapping(payload.get("before_fingerprints"), label="before")
-    actual = _managed_fingerprints(root)
+    actual = _managed_fingerprints(greenfield_repository_layout(root))
     changed = [
         path
         for path in greenfield_repository_recovery_paths(payload)
@@ -423,10 +465,11 @@ def _compile_after_image(
     }
 
 
-def _managed_file_states(root: Path) -> dict[str, tuple[bytes, int]]:
+def _managed_file_states(layout: GreenfieldRepositoryLayout) -> dict[str, tuple[bytes, int]]:
+    root = layout.repo_root
     files: dict[str, tuple[bytes, int]] = {}
     for token in GREENFIELD_REPOSITORY_WRITE_PATHS:
-        target = root / token
+        target = layout.target_path(token)
         _reject_symlink(target, root=root)
         if target.is_file():
             files[token] = (target.read_bytes(), stat.S_IMODE(target.stat().st_mode))
@@ -436,17 +479,18 @@ def _managed_file_states(root: Path) -> dict[str, tuple[bytes, int]]:
         for candidate in sorted(target.rglob("*")):
             _reject_symlink(candidate, root=root)
             if candidate.is_file():
-                files[candidate.relative_to(root).as_posix()] = (
+                files[f"{token}/{candidate.relative_to(target).as_posix()}"] = (
                     candidate.read_bytes(),
                     stat.S_IMODE(candidate.stat().st_mode),
                 )
     return files
 
 
-def _managed_directories(root: Path) -> set[str]:
+def _managed_directories(layout: GreenfieldRepositoryLayout) -> set[str]:
+    root = layout.repo_root
     directories: set[str] = set()
     for token in GREENFIELD_REPOSITORY_WRITE_PATHS:
-        target = root / token
+        target = layout.target_path(token)
         _reject_symlink(target, root=root)
         if not target.is_dir():
             continue
@@ -454,48 +498,60 @@ def _managed_directories(root: Path) -> set[str]:
         for candidate in sorted(target.rglob("*")):
             _reject_symlink(candidate, root=root)
             if candidate.is_dir():
-                directories.add(candidate.relative_to(root).as_posix())
+                directories.add(f"{token}/{candidate.relative_to(target).as_posix()}")
     return directories
 
 
-def _managed_fingerprints(root: Path) -> dict[str, str]:
-    return {token: _tree_fingerprint(root=root, token=token) for token in GREENFIELD_REPOSITORY_WRITE_PATHS}
+def _managed_fingerprints(layout: GreenfieldRepositoryLayout) -> dict[str, str]:
+    return {token: _tree_fingerprint(layout=layout, token=token) for token in GREENFIELD_REPOSITORY_WRITE_PATHS}
 
 
-def _tree_fingerprint(*, root: Path, token: str) -> str:
-    target = root / token
+def _tree_fingerprint(*, layout: GreenfieldRepositoryLayout, token: str) -> str:
+    root = layout.repo_root
+    target = layout.target_path(token)
     _reject_symlink(target, root=root)
     rows: list[dict[str, Any]] = []
     if target.is_file():
-        rows.append(_file_fingerprint_row(root=root, path=target))
+        rows.append(_file_fingerprint_row(path=target, logical_path=token))
     elif target.is_dir():
         rows.append({"kind": "directory", "path": token})
         for candidate in sorted(target.rglob("*")):
             _reject_symlink(candidate, root=root)
             if candidate.is_dir():
-                rows.append({"kind": "directory", "path": candidate.relative_to(root).as_posix()})
+                rows.append({"kind": "directory", "path": f"{token}/{candidate.relative_to(target).as_posix()}"})
             elif candidate.is_file():
-                rows.append(_file_fingerprint_row(root=root, path=candidate))
+                rows.append(_file_fingerprint_row(
+                    path=candidate, logical_path=f"{token}/{candidate.relative_to(target).as_posix()}",
+                ))
     else:
         rows.append({"kind": "missing", "path": token})
     canonical = json.dumps(rows, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
-def _file_fingerprint_row(*, root: Path, path: Path) -> dict[str, Any]:
+def _file_fingerprint_row(*, path: Path, logical_path: str) -> dict[str, Any]:
     return {
         "kind": "file",
-        "path": path.relative_to(root).as_posix(),
+        "path": logical_path,
         "sha256": _sha256(path.read_bytes()),
         "mode": stat.S_IMODE(path.stat().st_mode),
     }
 
 
-def _target_path(*, root: Path, token: str, allow_missing: bool) -> Path:
-    path = Path(token)
-    if path.is_absolute() or ".." in path.parts or not _is_managed_path(token):
-        raise RuntimeError(f"compiled repository write escapes the managed boundary: {token}")
-    target = root / path
+def _require_repository_layout(
+    root: Path, layout: GreenfieldRepositoryLayout | None,
+) -> GreenfieldRepositoryLayout:
+    if layout is None:
+        return greenfield_repository_layout(root)
+    if layout.repo_root != root:
+        raise ValueError("Greenfield repository layout belongs to a different root")
+    return layout
+
+
+def _target_path(*, layout: GreenfieldRepositoryLayout, token: str, allow_missing: bool) -> Path:
+    root = layout.repo_root
+    target = layout.target_path(token)
+    path = target.relative_to(root)
     current = root
     for part in path.parts[:-1]:
         current = current / part
@@ -603,7 +659,9 @@ def _after_image_fingerprints(
             rows.append({"kind": "directory", "path": token})
             descendants = sorted(
                 set(path for path in directories if path.startswith(token + "/"))
-                | set(path for path in files if path.startswith(token + "/"))
+                | set(path for path in files if path.startswith(token + "/")),
+                # Match live tree traversal without changing stored precondition hashes.
+                key=lambda path: Path(path).parts,
             )
             for path in descendants:
                 if path in directories:
@@ -668,10 +726,12 @@ __all__ = [
     "GREENFIELD_REPOSITORY_WRITE_PATHS",
     "GREENFIELD_REPOSITORY_WRITE_SET_PHASE",
     "GREENFIELD_REPOSITORY_WRITE_SET_VERSION",
+    "GreenfieldRepositoryLayout",
     "MAX_SEALED_GENERATION_BYTES",
     "apply_compiled_greenfield_repository_write_set",
     "compile_greenfield_repository_write_set",
     "greenfield_managed_fingerprints",
+    "greenfield_repository_layout",
     "greenfield_repository_recovery_paths",
     "greenfield_repository_write_paths",
     "materialize_compiled_greenfield_after_image",

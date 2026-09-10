@@ -6309,9 +6309,16 @@
     }
   ],
   "traceability": {
-    "code_references": [],
-    "developer_docs": [],
-    "runbooks": []
+    "code_references": [
+      "src/odylith/runtime/context_engine/tooling_guidance_catalog.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_taxonomy.py"
+    ],
+    "developer_docs": [
+      "docs/benchmarks/FAMILIES_AND_EVALS.md"
+    ],
+    "runbooks": [
+      "odylith/MAINTAINER_RELEASE_RUNBOOK.md"
+    ]
   },
   "version": "v1",
   "what_it_is": "Optional Vespa-backed remote retrieval and sync contract that can augment or replace local lookup when explicitly configured.",

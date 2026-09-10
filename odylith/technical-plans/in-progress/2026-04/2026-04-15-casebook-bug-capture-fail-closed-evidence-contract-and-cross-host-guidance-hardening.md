@@ -115,3 +115,20 @@ Related Bugs:
 - [ ] `./.odylith/bin/odylith validate backlog-contract --repo-root .`
 - [ ] `./.odylith/bin/odylith validate component-registry --repo-root .`
 - [ ] `git diff --check`
+
+## Traceability
+
+Evidence-complete Casebook intake, honest failure capture, validation, and CLI-owned publication.
+
+### Runbooks
+
+- `docs/runbooks/odylith-governance.md`
+
+### Developer Docs
+
+- `odylith/registry/source/components/casebook/CURRENT_SPEC.md`
+
+### Code References
+
+- `src/odylith/runtime/governance/bug_authoring.py`
+- `src/odylith/runtime/intervention_engine/apply.py`

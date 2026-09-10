@@ -37,9 +37,6 @@ const __ODYLITH_SHELL_REDIRECT_IN_PROGRESS__ = (function enforceShellOwnedSurfac
     }
     window.__ODYLITH_SHELL_REDIRECTING__ = true;
     window.__ODYLITH_SHELL_REDIRECT_TARGET__ = shellUrl.toString();
-    if (typeof window.stop === "function") {
-      window.stop();
-    }
     targetWindow.location.replace(shellUrl.toString());
     return true;
   } catch (_error) {
@@ -1655,10 +1652,6 @@ function renderComponentListButton(row, selectedId) {
     }
 
     function renderDetail(row) {
-      if (!row) {
-        detailEl.innerHTML = "";
-        return;
-      }
       const workstreams = Array.isArray(row.workstreams) ? row.workstreams : [];
       const diagrams = Array.isArray(row.diagrams) ? row.diagrams : [];
       const diagramDetails = Array.isArray(row.diagram_details) ? row.diagram_details : [];
@@ -2242,29 +2235,35 @@ function renderComponentListButton(row, selectedId) {
       `;
     }
 
-    async function renderSelectedComponent(selectedId, filtered) {
-      const selectedSummary = filtered.find((row) => String(row.component_id || "").toLowerCase() === String(selectedId || "").toLowerCase()) || null;
-      if (!selectedSummary) {
-        detailEl.dataset.selectedComponent = "";
-        renderDetail(null);
-        renderTimeline(null);
-        return;
-      }
-      const expectedSelected = String(selectedId || "").trim().toLowerCase();
-      detailEl.dataset.selectedComponent = expectedSelected;
-      detailEl.innerHTML = "";
-      timelineCountEl.textContent = "";
-      timelineEl.innerHTML = "";
-      const loadedDetail = await registryDataSource.loadDetail(selectedId);
-      if (String(detailEl.dataset.selectedComponent || "") !== expectedSelected) {
-        return;
-      }
-      const selected = loadedDetail && typeof loadedDetail === "object"
-        ? { ...selectedSummary, ...loadedDetail }
-        : selectedSummary;
-      renderDetail(selected);
-      renderTimeline(selected);
+    function createRegistrySelection({ detail, timeline, timelineCount, sourceCount, loadDetail, renderDetail, renderTimeline }) {
+      let revision = 0;
+      return async function selectComponent(selectedId, filtered) {
+        const currentRevision = ++revision;
+        const expectedId = String(selectedId || "").trim().toLowerCase();
+        const summary = filtered.find(row => String(row.component_id || "").trim().toLowerCase() === expectedId);
+        detail.dataset.selectedComponent = summary ? expectedId : "";
+        if (!summary) {
+          renderTimeline(null);
+          detail.innerHTML = sourceCount === 0
+            ? `<section class="empty" role="status"><h2>No components yet</h2><p>Registry will show the components defined for this project.</p><p><a href="../index.html?tab=project" target="_top">Open Project</a> to start from your project intent.</p></section>`
+            : `<section class="empty" role="status"><h2>No matching components</h2><p>Change your search or reset the filters to see components already in Registry.</p></section>`;
+          return;
+        }
+        detail.innerHTML = "";
+        timelineCount.textContent = "";
+        timeline.innerHTML = "";
+        const loaded = await loadDetail(selectedId);
+        if (currentRevision !== revision) return;
+        const selected = loaded && typeof loaded === "object" ? { ...summary, ...loaded } : summary;
+        renderDetail(selected);
+        renderTimeline(selected);
+      };
     }
+    const renderSelectedComponent = createRegistrySelection({
+      detail: detailEl, timeline: timelineEl, timelineCount: timelineCountEl,
+      sourceCount: allComponents.length,
+      loadDetail: id => registryDataSource.loadDetail(id), renderDetail, renderTimeline,
+    });
 
     function applyState(requestedId, options = {}) {
       renderFilterControls();

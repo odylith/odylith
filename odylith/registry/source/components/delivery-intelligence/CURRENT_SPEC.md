@@ -1,5 +1,5 @@
 # Delivery Intelligence
-Last updated: 2026-07-20
+Last updated: 2026-09-08
 
 
 ## Purpose
@@ -44,6 +44,8 @@ and chatter can consume without rebuilding divergent summaries.
 ### Owning modules
 - `src/odylith/runtime/governance/delivery_intelligence_engine.py`
   Main snapshot builder and persisted delivery artifact writer.
+- `src/odylith/runtime/governance/delivery_intelligence_refresh.py`
+  Lightweight sync entrypoint with the same cache-input contract as the writer.
 - `src/odylith/runtime/delivery/delivery_intelligence_narrator.py`
   Compact narrative shaping and bounded summarization helpers.
 - `odylith/runtime/delivery_intelligence.v4.json`
@@ -72,6 +74,22 @@ Delivery snapshots may include:
 
 The snapshot is additive. Missing richer diagnosis or proof-state artifacts
 must degrade to explicit absence rather than silent invention.
+
+Persisted proof snapshots retain recorded deployment identity, not an inferred
+current checkout revision. Missing recorded `local_head` stays `unknown`; the
+live Context consumer separately retains checkout observation. Both Delivery
+refresh guards watch the canonical proof-surfaces ledger as well as governed
+source inputs. An artifact-only commit must remain current, but a changed recorded
+proof revision must invalidate the cache even without a Git commit. Check-only
+continues to compare the entire stable rendered payload without masking revisions.
+
+Persisted refresh and check-only request recorded-only Registry reports. Temporary
+`workspace_activity` observations are excluded before component, workstream,
+diagram and aggregate synthesis. Real recorded decisions and proof changes still
+invalidate the snapshot. Direct live builds and missing/invalid-artifact fallback
+retain workspace observations; ordinary Registry and Context views remain live.
+Source/spec changes and their synchronized Delivery artifact must survive one
+commit together without a second settlement refresh.
 
 ## Scope Signal Ladder Contract
 Delivery Intelligence owns the product's one shared scope-escalation contract.
@@ -132,6 +150,7 @@ all consume one escalation truth instead of re-deriving urgency locally.
   snapshots for bounded ambient and closeout narration.
 
 ## Validation Playbook
+- `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_delivery_workspace_activity_boundary.py`
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_delivery_intelligence_engine.py`
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_tribunal_engine.py tests/unit/runtime/test_tooling_context_packet_builder.py`
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_registry_dashboard.py tests/unit/runtime/test_render_tooling_dashboard.py`
@@ -141,10 +160,14 @@ all consume one escalation truth instead of re-deriving urgency locally.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- No synchronized requirement or contract signals yet.
+- **2026-09-08 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `src/odylith/runtime/governance/component_registry_intelligence.py`, `src/odylith/runtime/governance/delivery_intelligence_engine.py`, `src/odylith/runtime/governance/sync_component_spec_requirements.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-09-08: Separated recorded Delivery evidence from live workspace observations at the Registry collection owner, with source/spec commit and cache-isolation controls. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
+- 2026-09-08: Corrected commit self-staleness and proof-ledger cache invalidation while preserving recorded provenance, live Context identity and claim guards. Both normal refresh entrypoints are covered by causal regressions. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-04-08: Promoted Delivery Intelligence into first-class Registry truth so Tribunal-trigger, proof-state, shell, packet, and chatter consumers stop depending on an untracked scope-synthesis seam. (Plan: [B-062](odylith/radar/radar.html?view=plan&workstream=B-062))
 - 2026-04-09: Added the shared Scope Signal Ladder so Delivery Intelligence now owns one deterministic contract for scope visibility, promotion, and provider-neutral compute budgets across Compass, Radar, Registry, Atlas, and shell consumers. (Plan: [B-071](odylith/radar/radar.html?view=plan&workstream=B-071))
 - 2026-04-09: Clarified the boundary that Delivery Intelligence supplies shared posture and scope signals, while Execution Engine owns next-action admissibility and execution policy. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))

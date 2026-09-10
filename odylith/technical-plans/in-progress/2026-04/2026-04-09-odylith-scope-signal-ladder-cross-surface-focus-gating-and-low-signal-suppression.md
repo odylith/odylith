@@ -187,3 +187,20 @@ Related Bugs:
   mix is now `35 cache / 0 deterministic`. The ladder rollout no longer shares
   a live-narration blocker with Compass; the remaining miss is cold wall-clock
   overhead upstream of the ladder contract.
+
+## Traceability
+
+Quiet-scope diagnosis and shared rung/budget ownership; surfaces do not invent their own urgency.
+
+### Runbooks
+
+- `docs/runbooks/odylith-governance.md`
+
+### Developer Docs
+
+- `odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md`
+
+### Code References
+
+- `src/odylith/runtime/governance/delivery/scope_signal_ladder.py`
+- `src/odylith/runtime/governance/delivery_intelligence_engine.py`

@@ -1,4 +1,4 @@
-%% Reviewed 2026-07-02 after local release packaging gained source-local Registry forensics freshness preflight.
+%% Reviewed 2026-09-09: failed completion retries only its recorded state under the existing writer lock.
 flowchart TD
     maintainer["Maintainer workspace"]
     devvalidate["dev-validate<br/>detached source-local current workspace"]
@@ -24,6 +24,17 @@ flowchart TD
         consumer_rt["Consumer repo toolchain"]
     end
 
+    subgraph upgrade_completion["Existing-install upgrade completion"]
+        upgrade_parent["Admitted upgrade parent<br/>holds repository writer lock"]
+        target_render["Target runtime<br/>fixed dashboard rendering"]
+        render_leaves["Rendering subprocesses<br/>inherit only the writer descriptor"]
+        complete_render{"All selected renders<br/>completed successfully?"}
+        publish_ready["Parent verifies and publishes complete view<br/>then clears completed retry receipt"]
+        render_failure["Retain target runtime and exact failure receipt<br/>previous complete dashboard stays published"]
+        retry_check{"Recorded project and activation unchanged<br/>and no other pending transaction?"}
+        retry_refused["Refuse retry without writes<br/>preserve edits and recovery evidence"]
+    end
+
     maintainer --> canonical
     maintainer --> devvalidate
     devvalidate --> forensicpreflight
@@ -39,6 +50,15 @@ flowchart TD
     detect --> verify
     verify --> stage
     stage --> launcher
+    managed --> upgrade_parent
+    upgrade_parent -->|activate target runtime| target_render
+    target_render --> render_leaves
+    render_leaves --> complete_render
+    complete_render -->|yes; parent resumes| publish_ready
+    complete_render -->|no| render_failure
+    render_failure -->|operator runs reported dashboard retry under lock| retry_check
+    retry_check -->|yes; same fixed render operation| target_render
+    retry_check -->|no| retry_refused
 
     shell --> odylith_cmd
     shell --> consumer_cmd

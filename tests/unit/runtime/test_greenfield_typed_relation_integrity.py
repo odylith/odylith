@@ -19,8 +19,10 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     build_product_intent_envelope,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
+    model_event_rows,
 )
 
 
@@ -54,7 +56,20 @@ def _harbor_case() -> tuple[str, dict[str, object], dict[str, object]]:
         "human_actors": ["Dock attendant Ivo"],
         "external_systems": ["Tide Authority API"],
         "internal_systems": ["Harbor Registry", "berth map"],
-        "assumptions": [],
+        "assumptions": [
+            {
+                "applies_to": "problem",
+                "statement": "Dock attendants need berth requests to retain reviewable clearance and placement evidence.",
+            },
+            {
+                "applies_to": "customer",
+                "statement": "Dock attendants are the primary beneficiaries of the approved placement.",
+            },
+            {
+                "applies_to": "product_view",
+                "statement": "Harbor Relay gives dock attendants one reviewable path from request through approved placement.",
+            },
+        ],
         "ambiguities": [],
     }
     response = authored_response(
@@ -63,49 +78,39 @@ def _harbor_case() -> tuple[str, dict[str, object], dict[str, object]]:
         first_path_relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Dock attendant Ivo",
+                "actor_fact_quote": "Dock attendant Ivo",
                 "event_quote": segments[0],
                 "action_verb_quote": "submits",
                 "target_quote": "a berth request",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "external_system",
-                "actor_quote": "Tide Authority API",
+                "actor_fact_quote": "Tide Authority API",
                 "event_quote": segments[1],
                 "action_verb_quote": "supplies",
                 "target_quote": "clearance",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Harbor Registry",
+                "actor_fact_quote": "Harbor Registry",
                 "owner_system_quote": "Harbor Registry",
                 "event_quote": segments[2],
                 "action_verb_quote": "records",
                 "target_quote": "approved berth state",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "The berth map",
+                "actor_fact_quote": "berth map",
                 "owner_system_quote": "berth map",
                 "event_quote": segments[3],
                 "action_verb_quote": "shows",
                 "target_quote": "the approved placement",
                 "visible_result_quote": segments[3],
-                "recovery_path": False,
             },
         ],
-        first_path_context_event_orders={
-            "/state_object": 3,
-            "/external_systems/0": 2,
-            "/operational_constraints/0": 0,
-        },
-        terminal_component_owner="berth map",
     )
     return evidence, intent, response
 
@@ -129,19 +134,21 @@ def _author(
         evidence_text=evidence,
         provider=StructuredAuthoringProvider(response),
         clock=lambda: 0.0,
+        review_provider_factory=AdmittingReviewProvider,
     )
     assert isinstance(result, GreenfieldModelAuthoredIntent)
     return result
 
 
-def test_named_product_event_rejects_another_selected_product_owner() -> None:
+def test_typed_product_owner_edge_is_authoritative_without_name_reparsing() -> None:
     evidence, _intent, response = _harbor_case()
-    relations = response["first_path_relations"]
-    assert isinstance(relations, list)
-    relations[2]["owner_system_fact_quote"] = "berth map"
+    relations = model_event_rows(response)
+    relations[2]["actor_fact_quote"] = "berth map"
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="product event owner"):
-        _author(evidence, response)
+    result = _author(evidence, response)
+
+    assert result.first_path_relations[2]["actor_fact_quote"] == "berth map"
+    assert result.first_path_relations[2]["owner_system_quote"] == "berth map"
 
 
 def test_named_product_event_accepts_its_exact_selected_owner() -> None:
@@ -155,24 +162,19 @@ def test_named_product_event_accepts_its_exact_selected_owner() -> None:
 
 def test_external_event_actor_must_reference_a_selected_external_fact() -> None:
     evidence, _intent, response = _harbor_case()
-    relations = response["first_path_relations"]
-    assert isinstance(relations, list)
-    relations[1]["actor_fact_quote"] = "Harbor Relay"
+    relations = model_event_rows(response)
+    relations[1]["actor_fact_quote"] = "Absent Harbor Relay"
 
     with pytest.raises(GreenfieldModelAuthoringError, match="actor fact"):
         _author(evidence, response)
 
 
-def test_exact_external_actor_cannot_be_retyped_as_product_authority() -> None:
+def test_exact_external_actor_kind_is_derived_from_its_selected_fact() -> None:
     evidence, _intent, response = _harbor_case()
-    relations = response["first_path_relations"]
-    assert isinstance(relations, list)
-    relations[1]["actor_kind"] = "product"
-    relations[1]["actor_fact_quote"] = "Harbor Relay"
-    relations[1]["owner_system_fact_quote"] = "Harbor Relay"
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="exact selected actor fact"):
-        _author(evidence, response)
+    result = _author(evidence, response)
+
+    assert result.first_path_relations[1]["actor_kind"] == "external_system"
 
 
 def test_product_pronoun_uses_an_explicit_selected_actor_fact() -> None:
@@ -190,7 +192,24 @@ def test_product_pronoun_uses_an_explicit_selected_actor_fact() -> None:
         "success_metrics": [segments[2]],
         "human_actors": ["Analyst Aya"],
         "internal_systems": ["Review Engine"],
-        "assumptions": [],
+        "assumptions": [
+            {
+                "applies_to": "problem",
+                "statement": "Analysts need submitted cases to retain a reviewable receipt.",
+            },
+            {
+                "applies_to": "customer",
+                "statement": "Analysts are the primary beneficiaries of the case receipt.",
+            },
+            {
+                "applies_to": "opportunity",
+                "statement": "A visible case receipt can make intake status easier to verify.",
+            },
+            {
+                "applies_to": "product_view",
+                "statement": "Relay Console lets analysts submit a case and see its receipt.",
+            },
+        ],
         "ambiguities": [],
     }
     response = authored_response(
@@ -199,45 +218,40 @@ def test_product_pronoun_uses_an_explicit_selected_actor_fact() -> None:
         first_path_relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Analyst Aya",
+                "actor_fact_quote": "Analyst Aya",
                 "event_quote": segments[0],
                 "action_verb_quote": "submits",
                 "target_quote": "a case",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Review Engine",
+                "actor_fact_quote": "Review Engine",
                 "owner_system_quote": "Review Engine",
                 "event_quote": segments[1],
                 "action_verb_quote": "receives",
                 "target_quote": "it",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "It",
+                "actor_fact_quote": "Review Engine",
                 "owner_system_quote": "Review Engine",
                 "event_quote": segments[2],
                 "action_verb_quote": "shows",
                 "target_quote": "a receipt",
                 "visible_result_quote": segments[2],
-                "recovery_path": False,
             },
         ],
-        terminal_component_owner="Review Engine",
     )
 
     result = _author(prompt, response)
 
-    assert result.first_path_relations[2]["actor_quote"] == "It"
     assert result.first_path_relations[2]["actor_fact_path"] == "/internal_systems/0"
     assert result.first_path_relations[2]["actor_fact_quote"] == "Review Engine"
 
 
-def test_coordinated_clauses_preserve_carried_actors_and_every_action() -> None:
+def test_coordinated_clauses_preserve_actor_facts_and_every_action() -> None:
     first_path = (
         "Contractor Lina uploads a permit packet, reviews the extracted address, "
         "then Permit Relay stores the approved packet and shows Lina an accepted receipt"
@@ -268,54 +282,49 @@ def test_coordinated_clauses_preserve_carried_actors_and_every_action() -> None:
     response = authored_response(
         intent,
         evidence_text=evidence,
-        first_path_segments=[first_path],
+        first_path_segments=list(events),
         first_path_relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Contractor Lina",
+                "actor_fact_quote": "Contractor Lina",
                 "event_quote": events[0],
                 "action_verb_quote": "uploads",
                 "target_quote": "a permit packet",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "human",
-                "actor_quote": "Contractor Lina",
+                "actor_fact_quote": "Contractor Lina",
                 "event_quote": events[1],
                 "action_verb_quote": "reviews",
                 "target_quote": "the extracted address",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Permit Relay",
+                "actor_fact_quote": "Permit Relay",
                 "owner_system_quote": "Permit Relay",
                 "event_quote": events[2],
                 "action_verb_quote": "stores",
                 "target_quote": "the approved packet",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Permit Relay",
+                "actor_fact_quote": "Permit Relay",
                 "owner_system_quote": "Permit Relay",
                 "event_quote": events[3],
                 "action_verb_quote": "shows",
                 "target_quote": "an accepted receipt",
                 "visible_result_quote": events[3],
-                "recovery_path": False,
             },
         ],
         component_responsibility_owners=["Permit Relay", "Permit Relay"],
-        component_responsibility_event_orders=[3, 4],
     )
 
     result = _author(evidence, response)
 
-    assert [row["actor_quote"] for row in result.first_path_relations] == [
+    assert [row["actor_fact_quote"] for row in result.first_path_relations] == [
         "Contractor Lina",
         "Contractor Lina",
         "Permit Relay",
@@ -334,63 +343,6 @@ def test_coordinated_clauses_preserve_carried_actors_and_every_action() -> None:
     ] == ["uploads", "reviews", "stores", "shows"]
 
 
-@pytest.mark.parametrize(
-    ("context_path", "wrong_order"),
-    (
-        ("/state_object", 1),
-        ("/external_systems/0", 0),
-    ),
-)
-def test_context_links_reject_wrong_or_false_independent_event_orders(
-    context_path: str,
-    wrong_order: int,
-) -> None:
-    evidence, _intent, response = _harbor_case()
-    fact_field = {
-            "/state_object": "state_object",
-            "/external_systems/0": "external_systems",
-            "/operational_constraints/0": "operational_constraints",
-        }[context_path]
-    fact_quote = {
-            "/state_object": "approved berth state",
-            "/external_systems/0": "Tide Authority API",
-            "/operational_constraints/0": "Do not place a berth without clearance",
-        }[context_path]
-    context = response["first_path_context_relations"]
-    assert isinstance(context, list)
-    row = next(
-        item
-        for item in context
-        if item["fact_field"] == fact_field and item["fact_quote"] == fact_quote
-    )
-    row["first_path_event_order"] = wrong_order
-
-    with pytest.raises(GreenfieldModelAuthoringError, match="context link"):
-        _author(evidence, response)
-
-
-def test_separate_source_context_uses_the_explicit_typed_event_reference() -> None:
-    evidence, _intent, response = _harbor_case()
-    context = response["first_path_context_relations"]
-    assert isinstance(context, list)
-    row = next(
-        item
-        for item in context
-        if item["fact_field"] == "operational_constraints"
-        and item["fact_quote"] == "Do not place a berth without clearance"
-    )
-    row["first_path_event_order"] = 2
-
-    result = _author(evidence, response)
-
-    constraint = next(
-        item
-        for item in result.first_path_context_relations
-        if item["context_kind"] == "operational_constraint"
-    )
-    assert constraint["first_path_event_order"] == 2
-
-
 def test_sealed_separate_source_context_rejects_an_unknown_event_order() -> None:
     evidence, _intent, response = _harbor_case()
     result = _author(evidence, response)
@@ -407,6 +359,7 @@ def test_sealed_separate_source_context_rejects_an_unknown_event_order() -> None
             result.first_path_relations,
             result.component_responsibility_relations,
             first_path_context_relations=context_relations,
+            provisional_design=result.provisional_design,
         ),
     }
 
@@ -447,7 +400,24 @@ def _repeated_event_case() -> tuple[str, dict[str, object]]:
         "proof_boundary": terminal,
         "success_metrics": [terminal],
         "human_actors": ["Operator Ada"],
-        "assumptions": [],
+        "assumptions": [
+            {
+                "applies_to": "problem",
+                "statement": "Operators need repeated submissions to preserve reviewable work.",
+            },
+            {
+                "applies_to": "customer",
+                "statement": "Operators are the primary beneficiaries of the retry receipt.",
+            },
+            {
+                "applies_to": "opportunity",
+                "statement": "A visible receipt can make retry outcomes easier to verify.",
+            },
+            {
+                "applies_to": "product_view",
+                "statement": "Retry Console lets operators resubmit work and see the resulting receipt.",
+            },
+        ],
         "ambiguities": [],
     }
     prompt = (
@@ -461,42 +431,34 @@ def _repeated_event_case() -> tuple[str, dict[str, object]]:
             {
                 "segment_index": 0,
                 "actor_kind": "human",
-                "actor_quote": "Operator Ada",
+                "actor_fact_quote": "Operator Ada",
                 "event_quote": repeated,
                 "action_verb_quote": "submits",
                 "target_quote": "request",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "segment_index": 1,
                 "actor_kind": "human",
-                "actor_quote": "Operator Ada",
+                "actor_fact_quote": "Operator Ada",
                 "event_quote": repeated,
                 "action_verb_quote": "submits",
                 "target_quote": "request",
                 "visible_result_quote": "",
-                "recovery_path": True,
             },
             {
                 "segment_index": 2,
                 "actor_kind": "product",
-                "actor_quote": "Retry Console",
+                "actor_fact_quote": "Retry Console",
                 "owner_system_quote": "Retry Console",
                 "event_quote": terminal,
                 "action_verb_quote": "shows",
                 "target_quote": "receipt",
                 "visible_result_quote": terminal,
-                "recovery_path": False,
             },
         ],
-        terminal_component_owner="Retry Console",
     )
-    path_facts = [
-        row
-        for row in response["facts"]
-        if row["field"] == "first_path"
-    ]
+    path_facts = response["result"]["facts"]["first_path"]
     path_facts[1]["occurrence"] = 2
     return prompt, response
 
@@ -511,6 +473,7 @@ def test_repeated_event_text_at_distinct_source_and_projection_coordinates_seals
             result.first_path_relations,
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
+            provisional_design=result.provisional_design,
         ),
     }
     envelope = build_product_intent_envelope(
@@ -552,6 +515,7 @@ def test_true_duplicate_event_coordinates_fail_sealed_validation() -> None:
             relations,
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
+            provisional_design=result.provisional_design,
         ),
     }
 
@@ -579,6 +543,7 @@ def test_partially_overlapping_source_event_coordinates_fail_sealed_validation()
             relations,
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
+            provisional_design=result.provisional_design,
         ),
     }
 
@@ -616,7 +581,24 @@ def test_utf8_multiactor_path_preserves_meaning_when_source_order_differs() -> N
         "human_actors": ["Analyst Zoë", "Reviewer Béla"],
         "external_systems": ["Æther API"],
         "internal_systems": ["Café Console"],
-        "assumptions": [],
+        "assumptions": [
+            {
+                "applies_to": "problem",
+                "statement": "Reviewers need dossier evidence to remain reviewable across submission, attestation, and approval.",
+            },
+            {
+                "applies_to": "customer",
+                "statement": "Dossier reviewers are the primary beneficiaries of the review receipt.",
+            },
+            {
+                "applies_to": "opportunity",
+                "statement": "A visible receipt can make the completed dossier path easier to verify.",
+            },
+            {
+                "applies_to": "product_view",
+                "statement": "Café Relay lets analysts and reviewers follow a dossier through to a visible receipt.",
+            },
+        ],
         "ambiguities": [],
     }
     response = authored_response(
@@ -625,53 +607,44 @@ def test_utf8_multiactor_path_preserves_meaning_when_source_order_differs() -> N
         first_path_relations=[
             {
                 "actor_kind": "human",
-                "actor_quote": "Analyst Zoë",
+                "actor_fact_quote": "Analyst Zoë",
                 "event_quote": segments[0],
                 "action_verb_quote": "submits",
                 "target_quote": "dossier",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "external_system",
-                "actor_quote": "Æther API",
+                "actor_fact_quote": "Æther API",
                 "event_quote": segments[1],
                 "action_verb_quote": "supplies",
                 "target_quote": "attestation",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "human",
-                "actor_quote": "Reviewer Béla",
+                "actor_fact_quote": "Reviewer Béla",
                 "event_quote": segments[2],
                 "action_verb_quote": "approves",
                 "target_quote": "dossier",
                 "visible_result_quote": "",
-                "recovery_path": False,
             },
             {
                 "actor_kind": "product",
-                "actor_quote": "Café Console",
+                "actor_fact_quote": "Café Console",
                 "owner_system_quote": "Café Console",
                 "event_quote": segments[3],
                 "action_verb_quote": "shows",
                 "target_quote": "réceipt",
                 "visible_result_quote": segments[3],
-                "recovery_path": False,
             },
         ],
-        first_path_context_event_orders={
-            "/state_object": 1,
-            "/external_systems/0": 2,
-        },
-        terminal_component_owner="Café Console",
     )
 
     result = _author(evidence, response)
 
     assert result.intent["human_actors"] == ["Analyst Zoë", "Reviewer Béla"]
-    assert result.first_path_relations[1]["actor_quote"] == "Æther API"
+    assert result.first_path_relations[1]["actor_fact_quote"] == "Æther API"
     assert result.first_path_relations[2]["source_start_byte"] < result.first_path_relations[1][
         "source_start_byte"
     ]

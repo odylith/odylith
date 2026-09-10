@@ -1,5 +1,5 @@
 # Release
-Last updated: 2026-08-08
+Last updated: 2026-09-09
 
 
 ## Purpose
@@ -458,84 +458,62 @@ governed subsystem.
 - Local release smoke should prove the installer from a nested repo directory
   as well as the repo root so the zero-friction repo-root detection contract
   does not silently regress.
-- Local release smoke must also exercise both fresh greenfield journeys:
-  install into an empty repo, run `odylith show`, run
-  `odylith greenfield propose --format json`, apply that exact proposal file
-  with confirmation, require a passed Tribunal and first coding handoff, assert
-  Radar/Registry/Atlas/Compass surfaces exist, and reject host-side schema
-  repair loop strings. A second fresh repo must run confirmed
-  `odylith greenfield create` so the one-command shortcut cannot drift from the
-  explicit propose/apply path.
-- The shared release proof lane must run the installed greenfield release matrix
-  after local release smoke and persist the matrix payload as
-  `greenfield-post-confirm-matrix.v1.json` in the dist directory. The standard
-  leg must cover at least ten high-variance domains, including retained escaped
-  regressions from prior installed audits, stay under the 60 second
-  standard budget for every create, write complete governed records, pass all
-  expert lenses, satisfy strict case-required domain-anchor coverage, and score
-  10/10 across the release matrix dimensions. The matrix must also run
-  persisted-artifact custody checks: Project implementation prompts must be
-  scored from generated `odylith/tooling-payload.v1.js` readback, persisted
-  project-brief Markdown must be structurally checked, and generated-domain
-  terms actually present in readback artifacts must be rescanned against
-  protected platform source and dist custody. Required domain-coverage anchors
-  that are already native to platform custody must be resolved through one
-  selected-vocabulary baseline scan and reused during per-case readback; the
-  matrix must not rescan source or runtime archives once per generated term or
-  once per case when a single generated-readback vocabulary scan can preserve
-  case attribution.
-  The matrix must parse persisted governed readback, not count arbitrary
-  nonempty files. Release proof requires valid release catalogs/events, program
-  wave records with generated workstream coverage, Compass source/runtime
-  records with meaningful payload, generated surface payload globals, and
-  persisted source-launch readback. Missing readback blocks the owning quality
-  dimension before any 10/10 claim.
-  The matrix must also run per-case headless generated browser state proof for
-  the Project shell pane, Radar, Registry, Atlas, Compass, Casebook, and
-  tooling-shell surfaces. That browser lane must cover normal shell routes,
-  Project prompt-card readback,
-  invalid-query recovery, and Casebook empty/filter fallback, must provision
-  Playwright Chromium through the maintained proof wrapper, and must fail
-  closed if Playwright or Chromium remains unavailable in the proof environment.
-  The exact matrix interpreter must import Playwright and launch Chromium before
-  a one-shot semantic holdout ledger is claimed. Campaign interruption must set
-  the shared shard stop signal, terminate the active process group, remove its
-  temporary project root, and terminalize a claimed holdout as `interrupted`;
-  no child process or reusable `claimed` ledger may survive cancellation.
-  The matrix must include rescue smoke by default when post-confirm repair behavior
-  changes. That smoke must
-  run the packaged CLI in `--repair-tier auto`, inject one exact-token internal
-  typed final-gate finding, prove auto-escalation from standard to the 90 second
-  rescue budget, write the expected governed records, return a passed final
-  manifest, and record the repaired semantic issue code. The release harness
-  must keep standard matrix creates free of the internal probe token and must
-  apply that token only to the rescue-smoke create subprocess. Source-local
-  rescue tests, opt-in-only smoke, synthetic installed-engine probes, local
-  release smoke alone, a standalone matrix target that the release lane does not
-  invoke, and probe-env leakage into the wrong matrix leg do not substitute for
-  this installed release proof. The rescue-smoke result is wiring proof only.
-  Release proof must also include a separate host-planned structured rescue leg
-  when natural rescue quality is claimed: the leg must emit a typed semantic or
-  artifact-plan PatchSet with no deterministic replacement fact, call an
-  explicit reasoning provider, preserve the patch-plan or provider-failure
-  summary in the final clean manifest as `last_repair_patchset_request`, avoid the
-  deterministic rescue-probe issue code, finish under the 90 second rescue
-  budget, and write the same governed record floor as the standard matrix.
-  Provider-planned operations are the preferred proof. If the provider times
-  out, natural rescue quality may still pass only when the PatchSet operation
-  names a schema-owned semantic or artifact-plan target, the accepted proposal
-  already carries an exact source-owned value for that target, the manifest
-  records `structured_patch_fallback.status=applied` with provider-failure
-  metadata, the semantic-patch ledger records the applied or idempotent fact,
-  and the final post-confirm quality gate passes before governed writes.
-  Empty replacement facts without an executable provider plan or source-anchored
-  fallback, missing `last_repair_patchset_request`, missing semantic-patch
-  ledger evidence, or a clean standard matrix plus synthetic rescue smoke is
-  not enough to claim natural rescue quality.
-  Explicit empty-list replacement facts are valid only when the PatchSet target
-  is a list-valued semantic field and the structured plan records a provider
-  decision ledger; a blank, absent, or prose-only replacement fact remains a
-  release blocker.
+- Local release smoke owns deterministic installation and unavailable-author
+  boundary proof: install into an empty repo, run `odylith show`, require public
+  `greenfield propose --format json` to refuse when authoring is disabled, and
+  verify no governed-byte changes or sealed transaction. A passing standalone
+  smoke is not positive Greenfield qualification.
+- The mandatory same-distribution installed matrix owns the positive journey:
+  `show`, public `greenfield propose --format json`, then hash-bound
+  `greenfield create --confirm` of the exact sealed transaction. Successful
+  proposal and creation output must reject host-side schema repair loops,
+  internal host instructions, reasoning contracts and active-proposal paths.
+  Exact readback, first coding handoff, generated-surface browser checks and
+  installed recovery remain release gates; no title-only create shortcut or
+  hidden model fallback substitutes for this journey.
+- The shared Greenfield release proof lane must run an installed, immutable
+  candidate after local release smoke and retain its matrix payload outside any
+  disposable generated repository. Every commit-capable request inside the
+  declared operating envelope must pass exact proposal budgets: standard within
+  `60s`, rescue within `90s`, and explicit deep/premium work within `120s`.
+  These are separately selected profiles, never sequential budget extensions.
+  The current authored path has initial authoring and full-candidate review;
+  source-bound material clarification has one author call and no review. Both
+  authored roles share the sealed `55/80/105s` model window. Review, including
+  setup and validation, receives at most `20s` and only the remaining window.
+  Release observation must validate both actual roles, their provider/model/
+  effort identity, full source/candidate binding and available timing evidence;
+  a larger permitted call count alone is not qualification. The native stage
+  observation does not contain absolute inter-stage timestamps or the separate
+  sealed review receipt, so those facts require their own evidence. Historical
+  experimental review is not current-protocol acceptance. Material ambiguity
+  must return one focused clarification before staging or governed mutation.
+  `CONFIRM` must remain commit-only: receipt/hash/precondition verification,
+  sealed-byte publication, explicit failure recovery, and readback only, with no model call,
+  semantic interpretation, content generation, or prose repair.
+  Never silently roll back an observed published generation. Current native
+  quality, internal repair, all-profile timing and release qualification remain
+  open; deterministic test observations do not establish model performance.
+  Release acceptance is strict and separate from finite-sample confidence:
+  exact product laws remain zero-tolerance while confidence bounds describe
+  evidence strength and cannot override acceptance. Evaluators must call the
+  canonical product owners for Atlas topology, typed relation order, semantic
+  snapshots, and governed-write scope instead of maintaining parallel parsers.
+  Persisted readback, raw generated artifacts, logs, and screenshots must remain
+  hash-valid through independent adjudication for every terminal v3 outcome.
+  Each claim receives a unique run id; stale or mismatched evidence cannot
+  terminalize a newer claim. Release-scope execution requires an explicit
+  external evidence directory before it can mutate output or telemetry.
+  Campaign interruption must stop the process group and seal truthful
+  interruption evidence; if that evidence cannot be sealed, the ledger stays
+  claimed and the run fails closed.
+  Browser proof must exercise Project, Radar, Registry, Atlas, Compass,
+  Casebook, and the tooling shell across normal, empty/fallback, and
+  degraded/invalid-recovery states at desktop and 430px mobile widths. The
+  fixed matrix contains 32 required cells and rejects missing cells, document
+  or pane overflow, clipped/hidden text, stale payload binding, malformed
+  content, and any rendered typed fact whose count, order, or value differs
+  from the same generated repository's authored facts.
 - The local release asset builder, standalone greenfield matrix target, and
   shared release proof lane must run the platform domain-leakage guard against
   current runtime/source guidance, release tooling, and built release assets
@@ -630,25 +608,37 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-08-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+- **2026-09-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_prompt_evidence_interpretation.py`, `tests/fixtures/greenfield-release-corpus/retired-ba25-final-holdout-regressions.v1.json`
-- **2026-08-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_greenfield_matrix_transaction_evidence.py`
+- **2026-09-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-04-final-holdout-ledger-revision-is-not-bound-to-distribution-provenance.md`, `odylith/casebook/bugs/2026-08-04-semantic-release-recovery-selection-requires-source-audit-binding.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
-- **2026-08-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-model-profile-claimed-unobserved-provider-failure.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `tests/unit/install/test_greenfield_preconfirm_matrix_campaign.py`
+- **2026-09-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-04-semantic-holdout-release-preflight-requires-unrelated-source-audit.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_greenfield_matrix_campaign_release_scope.py`
-- **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`
+- **2026-09-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_canonical_meaning.py`, `src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py`, `src/odylith/runtime/domain_intelligence/greenfield_confirmed_title_completion.py`
-- **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-model-profile-claimed-unobserved-provider-failure.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
-- **2026-08-01 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py`, `tests/unit/install/test_greenfield_preconfirm_matrix.py`, `tests/unit/runtime/test_greenfield_generated_prose_shape.py`
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_direct_evidence_graph.py`
+- **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/casebook/bugs/2026-09-02-greenfield-recovery-proof-bound-compiler-identity-to-absolute-install-path.md`, `odylith/casebook/bugs/2026-09-03-greenfield-flat-fact-arrays-permit-invalid-singular-cardinality.md`, `odylith/casebook/bugs/2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md`, plus 2 more
+- **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-09-02-greenfield-recovery-proof-bound-compiler-identity-to-absolute-install-path.md`, `odylith/casebook/bugs/2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_backlog.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-09-02: Bound Greenfield release scoring to authenticated typed validation and visible browser text. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
+  The authored route may replace legacy prose-lens receipts only when its
+  manifest, validation status, zero issue count, single-model semantic owner,
+  and zero post-authoring interpretation count all pass. Independent package
+  evidence continues to gate each release dimension. Browser proof compares
+  exact card labels, semantic slots, and content after HTML-visible whitespace
+  collapse, so presentation newlines cannot masquerade as semantic drift.
+  Immutable v7 completed all public proposals and commits inside `60/90/120`;
+  rebuilt exact-distribution proof remains required.
+
 - 2026-08-04: Corrected the release identity gate so external human contributors retain their original Git authorship while maintainer credentials remain pinned to `freedom-research`. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005); Bug: `CB-320`)
   The history validator now rejects partial or mismatched maintainer identity
   and explicit assistant/model/coding-tool-branded identity signatures or

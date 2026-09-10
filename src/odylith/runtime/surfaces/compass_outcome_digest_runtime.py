@@ -330,9 +330,9 @@ def _build_outcome_digest_global(
     primary_benefit = primary_why_context.get("benefit", "")
     primary_use_story = primary_why_context.get("use_story", "") or primary_purpose
     primary_architecture_consequence = primary_why_context.get("architecture_consequence", "") or primary_benefit
-    primary_label = _ws_label(focused_primary) if focused_primary else "current priority lane"
+    primary_label = _ws_label(focused_primary) if focused_primary else ""
     primary_status = str(focused_primary.get("status", "")).strip() if isinstance(focused_primary, Mapping) else "unknown"
-    eta_days, eta_source = _estimate_remaining_days(focused_primary if isinstance(focused_primary, Mapping) else {})
+    eta_days, eta_source = _estimate_remaining_days(focused_primary) if focused_primary else (0, "unavailable")
 
     active_ids = [
         str(row.get("idea_id", "")).strip()
@@ -440,7 +440,7 @@ def _build_outcome_digest_global(
         f"{highlight_clause}"
         f"Timeline: {_timeline_clause(eta_days=eta_days, eta_source=eta_source, status=primary_status, has_execution_signal=has_execution_signal)}; "
         f"{focus_clause}."
-    )
+    ) if focused_primary else "Current execution: No active workstreams."
     why_focus = _narrative_excerpt(
         primary_use_story or "focused execution remains prerequisite for dependent follow-on workstreams.",
         max_sentences=1,
@@ -452,7 +452,7 @@ def _build_outcome_digest_global(
         max_sentences=1,
         max_chars=280,
     )
-    why_benefit_line = f"Why this matters: {why_focus} Architecture consequence: {impact_focus}"
+    why_benefit_line = f"Why this matters: {why_focus} Architecture consequence: {impact_focus}" if focused_primary else ""
 
     action_tokens: list[str] = []
     for item in next_actions:
@@ -473,13 +473,15 @@ def _build_outcome_digest_global(
         else:
             next_line = f"Next planned: {action_tokens[0]}; then {action_tokens[1]}."
     else:
-        next_line = "Next planned: prioritize remaining active-plan checklist items."
+        next_line = (
+            "Next planned: prioritize remaining active-plan checklist items."
+            if focused_primary
+            else "Next planned: Create or open a workstream in Radar, then Compass will summarize its progress here."
+        )
     risk_line = f"Risks to watch: {_periodize(_risk_phrase(risks_summary))}"
 
     return [
-        _normalize_sentence(completed_line),
-        _normalize_sentence(current_execution_line),
-        _normalize_sentence(next_line),
-        _normalize_sentence(why_benefit_line),
-        _normalize_sentence(risk_line),
+        _normalize_sentence(line)
+        for line in (completed_line, current_execution_line, next_line, why_benefit_line, risk_line)
+        if line
     ]

@@ -27,6 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 )
 from odylith.runtime.governance import artifact_tribunal
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
 )
@@ -60,32 +61,29 @@ def _materialized_authored_intent(tmp_path: Path) -> dict[str, Any]:
     relations = [
         {
             "actor_kind": "human",
-            "actor_quote": "Dock attendant Ivo",
+            "actor_fact_quote": "Dock attendant Ivo",
             "event_quote": "Dock attendant Ivo enters a vessel tag",
             "action_verb_quote": "enters",
             "target_quote": "a vessel tag",
             "visible_result_quote": "",
-            "recovery_path": False,
         },
         {
             "actor_kind": "product",
-            "actor_quote": "the berth recorder",
+            "actor_fact_quote": "Berth recorder",
             "owner_system_quote": "Berth recorder",
             "event_quote": "the berth recorder records berth occupancy",
             "action_verb_quote": "records",
             "target_quote": "berth occupancy",
             "visible_result_quote": "",
-            "recovery_path": False,
         },
         {
             "actor_kind": "product",
-            "actor_quote": "the berth map",
+            "actor_fact_quote": "Berth map",
             "owner_system_quote": "Berth map",
             "event_quote": "the berth map shows the placement",
             "action_verb_quote": "shows",
             "target_quote": "the placement",
             "visible_result_quote": "the berth map shows the placement",
-            "recovery_path": False,
         },
     ]
     source = ". ".join(
@@ -107,6 +105,7 @@ def _materialized_authored_intent(tmp_path: Path) -> dict[str, Any]:
         ),
         authoring_timeout_seconds=84,
         authoring_profile_id=RESCUE_PROFILE_ID,
+        review_provider_factory=AdmittingReviewProvider,
     )
 
 
@@ -138,6 +137,7 @@ def test_product_intent_authority_binds_complete_ordered_authored_relation_set(t
         relations,
         component_relations,
         first_path_context_relations=context_relations,
+        provisional_design=candidate["authored_semantics"]["provisional_design"],
     )
 
 
@@ -292,15 +292,15 @@ def test_proposal_construction_rejects_older_authored_semantics_without_inferenc
         )
 
 
-@pytest.mark.parametrize("mutation", ("recovery", "omission"))
+@pytest.mark.parametrize("mutation", ("removed_classification", "omission"))
 def test_transaction_compilation_rejects_mutated_relation_set(
     tmp_path: Path,
     mutation: str,
 ) -> None:
     candidate = _materialized_authored_intent(tmp_path)
     mutated, relations = _mutated_relations(candidate)
-    if mutation == "recovery":
-        relations[0]["recovery_path"] = True
+    if mutation == "removed_classification":
+        relations[0]["unsupported_classification"] = "recovery"
     else:
         del relations[1]
         relations[1]["order"] = 2
@@ -310,7 +310,11 @@ def test_transaction_compilation_rejects_mutated_relation_set(
         PRODUCT_INTENT_AUTHORITY_KEY: candidate[PRODUCT_INTENT_AUTHORITY_KEY],
     }
 
-    expected_error = "do not match sealed Product Intent authority"
+    expected_error = (
+        "invalid first-path relations"
+        if mutation == "removed_classification"
+        else "first run must include every source event exactly once"
+    )
     with pytest.raises(GreenfieldAuthoredSemanticsError, match=expected_error):
         greenfield_proposals.compile_greenfield_create_transaction(
             repo_root=tmp_path,

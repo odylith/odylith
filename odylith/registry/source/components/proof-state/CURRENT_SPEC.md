@@ -6,7 +6,7 @@
   and release-proof claims before allowing stronger completion language.
 - False proof clearance, false visible-UX claims, and public product claims
   without benchmark proof are release-blocking failures for v0.1.11.
-Last updated: 2026-07-20
+Last updated: 2026-09-08
 
 
 ## Purpose
@@ -122,6 +122,18 @@ When one lane resolves cleanly, `proof_state` is additive and must include:
 - Reproducing the same failure fingerprint after a claimed fix marks the prior
   blocker-resolution hypothesis as falsified in runtime state.
 
+### Recorded identity versus live checkout observation
+- Persisted Delivery snapshots contain recorded deployment identity. Missing
+  `local_head` remains `unknown`; committing the snapshot must not make its own
+  proof identity stale.
+- Live Context may observe the current checkout only when recorded identity is
+  absent. Explicit recorded revisions remain authoritative in both modes.
+- Both normal Delivery refresh entrypoints watch the canonical proof-surfaces
+  ledger, alongside their existing source inputs. A recorded proof revision
+  change must refresh persisted output even when checkout HEAD is unchanged.
+- This distinction never weakens source precedence, fingerprint memory, frontier
+  checks, claim guards or whole-payload freshness validation.
+
 ## Drift And Claim Guard
 - If the same fingerprint remains open and recent activity skews toward
   non-`primary_blocker` categories, the shared readout should emit a
@@ -157,10 +169,13 @@ When one lane resolves cleanly, `proof_state` is additive and must include:
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- No synchronized requirement or contract signals yet.
+- **2026-09-08 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `src/odylith/runtime/governance/delivery_intelligence_refresh.py`, `src/odylith/runtime/governance/proof_state/resolver.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-09-08: Separated recorded Delivery proof identity from live Context checkout observation and included proof memory in both Delivery refresh caches. Real Git commit, ledger-change, linked-source and Context controls preserve the boundary. Full Greenfield and native intervention qualification remain separate. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-04-09: Bound proof-state blocker posture into Delivery Intelligence's shared Scope Signal Ladder so live frontier or unsafe-closeout truth can outrank ordinary activity across Compass, Radar, Registry, Atlas, and shell consumers. (Plan: [B-071](odylith/radar/radar.html?view=plan&workstream=B-071))
 - 2026-04-08: Promoted the live-proof blocker frontier, falsification memory, and claim-tier contract into a first-class Registry component so delivery, diagnosis, packets, shell, Compass, Registry, and chatter can share one authoritative proof-state lane. (Plan: [B-062](odylith/radar/radar.html?view=plan&workstream=B-062))
 - 2026-04-09: Clarified that Proof State resolves blocker and claim-tier truth, while Execution Engine consumes that truth when deciding the next admissible move. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))

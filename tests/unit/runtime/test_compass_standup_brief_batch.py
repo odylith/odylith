@@ -7,6 +7,7 @@ from pathlib import Path
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.surfaces import compass_standup_brief_batch as batch
 from odylith.runtime.surfaces import compass_standup_brief_narrator as narrator
+from odylith.runtime.surfaces import compass_standup_brief_runtime_patch as runtime_patch
 
 
 class _QueuedProvider:
@@ -863,6 +864,7 @@ def test_build_brief_bundle_skips_provider_for_nonwinner_summary_churn(tmp_path:
 
 def test_build_brief_bundle_surfaces_provider_failure(tmp_path: Path) -> None:
     packet = _fact_packet(idea_id="B-902", window="24h")
+    scoped_packet = _fact_packet(idea_id="B-903", window="24h")
     provider = _QueuedProvider(
         [None],
         failure_codes=["credits_exhausted"],
@@ -872,7 +874,7 @@ def test_build_brief_bundle_surfaces_provider_failure(tmp_path: Path) -> None:
     results = batch.build_brief_bundle(
         repo_root=tmp_path,
         global_fact_packets_by_window={"24h": packet},
-        scoped_fact_packets_by_window={},
+        scoped_fact_packets_by_window={"24h": {"B-903": scoped_packet}},
         generated_utc=_generated_utc(),
         runtime_packet_fingerprint="runtime-fp-902",
         config=_reasoning_config(),
@@ -882,6 +884,22 @@ def test_build_brief_bundle_surfaces_provider_failure(tmp_path: Path) -> None:
     assert results["global"]["24h"]["status"] == "unavailable"
     assert results["global"]["24h"]["diagnostics"]["reason"] == "credits_exhausted"
     assert provider.calls == 1
+
+    patched, changed = runtime_patch.runtime_payload_with_brief_results(
+        payload={}, global_results={}, scoped_results={},
+        global_failures=results["global"], scoped_failures=results["scoped"],
+    )
+    assert changed
+    for brief, idea_id in (
+        (patched["standup_brief"]["24h"], "B-902"),
+        (patched["standup_brief_scoped"]["24h"]["B-903"], "B-903"),
+    ):
+        assert brief["status"] == "unavailable"
+        assert brief["diagnostics"]["fallback_title"] == "Local runtime facts"
+        assert brief["diagnostics"]["fallback_digest"]
+        assert all(idea_id in line for line in brief["diagnostics"]["fallback_digest"])
+        assert brief["source"] == "unavailable"
+        assert narrator.brief_to_digest_lines(brief) != brief["diagnostics"]["fallback_digest"]
 
 
 def test_build_brief_bundle_repairs_missing_batch_entries(tmp_path: Path) -> None:

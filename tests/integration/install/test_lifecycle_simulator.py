@@ -11,6 +11,7 @@ from odylith.install.casebook_metadata_migration import (
     STATUS_FSM_MIGRATION_ID as CASEBOOK_STATUS_FSM_MIGRATION_ID,
 )
 from odylith.runtime.surfaces import auto_update_mermaid_diagrams
+from odylith.runtime.domain_intelligence import greenfield_generation_store
 
 from tests.integration.install.simulator import InstallLifecycleSimulator, VerifiedReleaseLifecycleSimulator
 
@@ -139,8 +140,7 @@ def test_lifecycle_simulator_covers_first_install_upgrade_and_rollback(tmp_path:
     assert sim.pin().odylith_version == "1.2.3"
     assert sim.status().detached is False
 
-    sim.write_pin("1.2.4")
-    assert sim.upgrade() == 0
+    assert sim.upgrade_to("1.2.4", write_pin=True) == 0
     assert sim.state()["active_version"] == "1.2.4"
     assert sim.pin().odylith_version == "1.2.4"
     assert sim.active_runtime_name() == "1.2.4"
@@ -168,7 +168,7 @@ def test_lifecycle_simulator_proves_historical_upgrades_to_0_1_13(tmp_path: Path
         sim = InstallLifecycleSimulator(tmp_path=case_root, monkeypatch=monkeypatch)
         sim.register_release(target_version)
 
-        assert sim.install(from_version) == 0
+        sim.seed_historical_unactivated_install(from_version)
         legacy_bug_path = _write_legacy_casebook_metadata_bug(sim.repo_root)
 
         if from_version == "0.1.10":
@@ -228,7 +228,7 @@ def test_lifecycle_simulator_proves_historical_upgrades_to_0_1_14(tmp_path: Path
         sim = InstallLifecycleSimulator(tmp_path=case_root, monkeypatch=monkeypatch)
         sim.register_release(target_version)
 
-        assert sim.install(from_version) == 0
+        sim.seed_historical_unactivated_install(from_version)
         legacy_bug_path = _write_legacy_casebook_metadata_bug(sim.repo_root)
         _write_legacy_atlas_surface(sim.repo_root)
         sim.write_pin(target_version)
@@ -280,7 +280,7 @@ def test_lifecycle_simulator_proves_historical_upgrades_to_0_1_15(tmp_path: Path
         sim = InstallLifecycleSimulator(tmp_path=case_root, monkeypatch=monkeypatch)
         sim.register_release(target_version, migration_required=True)
 
-        assert sim.install(from_version) == 0
+        sim.seed_historical_unactivated_install(from_version)
         _write_legacy_casebook_metadata_bug(sim.repo_root)
         _write_legacy_atlas_surface(sim.repo_root)
         sim.write_pin(target_version)
@@ -318,12 +318,19 @@ def test_lifecycle_simulator_blocks_migration_release_activation(tmp_path: Path,
     sim = InstallLifecycleSimulator(tmp_path=tmp_path, monkeypatch=monkeypatch)
     sim.register_release("1.2.4", migration_required=True)
 
-    assert sim.install("1.2.3") == 0
+    # The operator's tracked request predates installation; the real install
+    # publishes that intent instead of editing an already activated baseline.
     sim.write_pin("1.2.4")
+    assert sim.install("1.2.3") == 0
+    assert sim.pin().odylith_version == "1.2.4"
+    publication = (sim.repo_root / "odylith/index.html").read_bytes()
+    greenfield_generation_store.require_greenfield_working_generation(sim.repo_root)
 
     assert sim.upgrade() == 2
     assert sim.status().active_version == "1.2.3"
     assert sim.pin().odylith_version == "1.2.4"
+    assert (sim.repo_root / "odylith/index.html").read_bytes() == publication
+    greenfield_generation_store.require_greenfield_working_generation(sim.repo_root)
 
 
 def test_lifecycle_simulator_recovers_after_failed_upgrade_smoke(tmp_path: Path, monkeypatch) -> None:
@@ -331,16 +338,18 @@ def test_lifecycle_simulator_recovers_after_failed_upgrade_smoke(tmp_path: Path,
     sim.register_release("1.2.4")
 
     assert sim.install("1.2.3") == 0
-    sim.write_pin("1.2.4")
+    publication = (sim.repo_root / "odylith/index.html").read_bytes()
     sim.fail_smoke_for("1.2.4")
 
-    assert sim.upgrade() == 1
+    assert sim.upgrade_to("1.2.4", write_pin=True) == 1
     assert sim.status().active_version == "1.2.3"
     assert sim.active_runtime_name() == "1.2.3"
 
     failed_events = [entry for entry in sim.install_ledger() if entry.get("operation") == "upgrade" and entry.get("status") == "failed"]
     assert len(failed_events) == 1
     assert failed_events[0]["target_version"] == "1.2.4"
+    assert (sim.repo_root / "odylith/index.html").read_bytes() == publication
+    greenfield_generation_store.require_greenfield_working_generation(sim.repo_root)
 
 
 def test_lifecycle_simulator_exercises_source_local_override_and_repair(tmp_path: Path, monkeypatch) -> None:
@@ -373,9 +382,8 @@ def test_verified_release_lifecycle_simulator_exercises_runtime_staging_path(tmp
     sim.register_verified_release("1.2.4")
 
     assert sim.install("1.2.3") == 0
-    sim.write_pin("1.2.4")
 
-    assert sim.upgrade() == 0
+    assert sim.upgrade_to("1.2.4", write_pin=True) == 0
     status = sim.status()
     state = sim.state()
     assert status.active_version == "1.2.4"
@@ -393,11 +401,13 @@ def test_verified_release_lifecycle_simulator_preserves_previous_runtime_after_f
     sim.register_verified_release("1.2.4")
 
     assert sim.install("1.2.3") == 0
-    sim.write_pin("1.2.4")
+    publication = (sim.repo_root / "odylith/index.html").read_bytes()
     sim.fail_smoke_for("1.2.4")
 
-    assert sim.upgrade() == 1
+    assert sim.upgrade_to("1.2.4", write_pin=True) == 1
     status = sim.status()
     assert status.active_version == "1.2.3"
     assert sim.active_runtime_name() == "1.2.3"
     assert sim.runtime_install_marker("1.2.4").endswith("odylith-1.2.4-py3-none-any.whl")
+    assert (sim.repo_root / "odylith/index.html").read_bytes() == publication
+    greenfield_generation_store.require_greenfield_working_generation(sim.repo_root)

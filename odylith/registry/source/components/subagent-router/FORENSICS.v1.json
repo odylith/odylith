@@ -7997,9 +7997,24 @@
     }
   ],
   "traceability": {
-    "code_references": [],
-    "developer_docs": [],
-    "runbooks": []
+    "code_references": [
+      "src/odylith/runtime/common/agent_runtime_contract.py",
+      "src/odylith/runtime/common/host_runtime.py",
+      "src/odylith/runtime/orchestration/subagent_router.py",
+      "src/odylith/install/manager.py",
+      "src/odylith/runtime/surfaces/claude_host_prompt_bundle.py",
+      "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
+      "src/odylith/runtime/surfaces/codex_host_stop_summary.py"
+    ],
+    "developer_docs": [
+      "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
+      "docs/specs/odylith-repo-integration-contract.md",
+      "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md"
+    ],
+    "runbooks": [
+      "odylith/runtime/SUBAGENT_OPERATIONS.md",
+      "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md"
+    ]
   },
   "version": "v1",
   "what_it_is": "Bounded leaf-routing engine that selects local vs delegated execution and the requested model plus reasoning posture.",

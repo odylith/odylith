@@ -159,9 +159,8 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
       : {};
     const versionStateHref = String(payload.version_state_href || "").trim();
     const versionStateGlobalName = String(payload.version_state_global_name || "__ODYLITH_VERSION_STATE__").trim() || "__ODYLITH_VERSION_STATE__";
-    let latestVersionState = window[versionStateGlobalName] && typeof window[versionStateGlobalName] === "object"
-      ? window[versionStateGlobalName]
-      : null;
+    const statusSnapshot = payload.status_snapshot || null;
+    let latestVersionState = statusSnapshot ? statusSnapshot.version_state : window[versionStateGlobalName] || null;
     let versionStateProbeTimer = 0;
     let versionStateProbeInFlight = false;
     const runtimeProbeStateGlobalName = liveRefreshPayload
@@ -337,9 +336,7 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
       setUpgradeSpotlightDismissed(true);
       setUpgradeSpotlightHidden(true);
       if (upgradeReopen && !upgradeReopen.hidden) {
-        window.requestAnimationFrame(() => {
-          upgradeReopen.focus();
-        });
+        upgradeReopen.focus();
       }
     }
 
@@ -348,9 +345,7 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
       setUpgradeSpotlightDismissed(false);
       setUpgradeSpotlightHidden(false);
       if (upgradeSpotlightDismiss) {
-        window.requestAnimationFrame(() => {
-          upgradeSpotlightDismiss.focus();
-        });
+        upgradeSpotlightDismiss.focus();
       }
     }
 
@@ -426,6 +421,7 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
     }
 
     function scheduleShellRefreshPoll(delayMs = 4000) {
+      if (statusSnapshot) return;
       if (!payloadScript || !payloadScript.src || (!shellPayloadGeneratedUtc && !shellPayloadRefreshFingerprint)) return;
       if (shellRefreshTimer) {
         window.clearTimeout(shellRefreshTimer);
@@ -440,6 +436,7 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
     }
 
     function checkForShellRefresh() {
+      if (statusSnapshot) return;
       if (!payloadScript || !payloadScript.src || (!shellPayloadGeneratedUtc && !shellPayloadRefreshFingerprint)) return;
       if (shellRefreshInFlight) return;
       if (document.hidden) {
@@ -481,7 +478,7 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
 
     function liveRefreshEnabled() {
       return Boolean(
-        liveRefreshPayload
+        !statusSnapshot && liveRefreshPayload
         && liveRefreshPayload.enabled
         && String(liveRefreshPayload.state_href || "").trim()
       );
@@ -491,12 +488,6 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
       if (!liveRefreshPayload) return 20000;
       const parsed = Number.parseInt(String(liveRefreshPayload.poll_interval_ms || ""), 10);
       return Number.isFinite(parsed) && parsed >= 5000 ? parsed : 20000;
-    }
-
-    function liveRefreshWorktree() {
-      return liveRefreshPayload && liveRefreshPayload.worktree && typeof liveRefreshPayload.worktree === "object"
-        ? liveRefreshPayload.worktree
-        : null;
     }
 
     function liveRefreshSurfacePolicies() {
@@ -523,10 +514,6 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
       if (!liveRefreshPayload) return 45000;
       const parsed = Number.parseInt(String(liveRefreshPayload.auto_reload_min_interval_ms || ""), 10);
       return Number.isFinite(parsed) && parsed >= 1000 ? parsed : 45000;
-    }
-
-    function liveRefreshPolicyId() {
-      return liveRefreshPayload ? String(liveRefreshPayload.policy_id || "").trim() : "";
     }
 
     function runtimeSurfaceAutoReloadEnabled(tab) {
@@ -577,6 +564,7 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
     }
 
     function runtimeReloadableForTab(tab) {
+      if (statusSnapshot) return Boolean(panes[String(tab || "").trim().toLowerCase()]);
       if (!liveRefreshPayload || !Array.isArray(liveRefreshPayload.reloadable_tabs)) return false;
       return liveRefreshPayload.reloadable_tabs.includes(String(tab || "").trim().toLowerCase());
     }
@@ -754,7 +742,7 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
     }
 
     function versionStateProbeEnabled() {
-      return Boolean(versionStateHref);
+      return Boolean(!statusSnapshot && versionStateHref);
     }
 
     function scheduleVersionStateProbe(delayMs = 5000) {
@@ -1394,9 +1382,7 @@ const payload = window["__ODYLITH_TOOLING_DATA__"] || {};
         }
         setWelcomeHidden(true);
         if (welcomeReopen && !welcomeReopen.hidden) {
-          window.requestAnimationFrame(() => {
-            welcomeReopen.focus();
-          });
+          welcomeReopen.focus();
         }
       });
     }
@@ -1943,12 +1929,10 @@ initToolingShellQuickTooltips();
 
   if (toggle && drawer && searchInput) {
     toggle.addEventListener("click", () => {
-      window.requestAnimationFrame(() => {
-        if (drawer.classList.contains("open")) {
-          searchInput.focus();
-          searchInput.select();
-        }
-      });
+      if (drawer.classList.contains("open")) {
+        searchInput.focus();
+        searchInput.select();
+      }
     });
   }
 

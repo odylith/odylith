@@ -15,7 +15,21 @@
   the B-110 workstream anchor when measuring the v0.1.11 Odylith Discipline program,
   so Context/Execution adoption metrics can distinguish real ambiguity from a
   missing program tag.
-Last updated: 2026-08-01
+Last updated: 2026-09-09
+
+## Supporting context and workstream ownership
+
+Documentation and runbooks may support several workstreams without identifying
+an exclusive owner. Selection must preserve that cross-workstream relationship:
+extra component or diagram memberships cannot turn shared support alone into a
+confident choice. Sharedness comes from distinct projected owners whose typed
+support references match each changed path, including overlapping directory and
+exact-file references; unrelated subtrees remain separate. It does not come
+from a growing filename list or equal reference spelling. Explicit workstream selection,
+genuine implementation or contract evidence, and independently bounded
+documentation ownership remain valid. Retained memory must not bypass the
+shared-only ambiguity boundary. CB-336 tracks the candidate correction and its
+positive, negative, duplicate, renamed-reference and ordering controls.
 
 
 ## Purpose
@@ -132,6 +146,17 @@ Public entrypoint: `odylith context-engine`
   summaries, bootstrap packets, hot-path packets, context dossiers, and
   runtime surfaces should consume that shared snapshot instead of locally
   deriving policy posture.
+- Dossier delivery keeps the full typed `related_entity_ids` map independently
+  of its descriptive-row budget. Bootstrap and session brief retain that dossier
+  and share the existing execution attachment owner. The handshake consumes only
+  resolved workstream relations and preserves every selected component identity;
+  a display limit must not hide a noncanonical identity or truncate target scope.
+  These identities are context, not writable targets or renewed instructions.
+  Complete narrowing copy is preserved without phrase substitution or clipping.
+  CB-333 proof: 144 focused tests, 4563 frozen runtime tests, 31 browser integration
+  cases, and public bootstrap/resume readback preserving all 96 sealed files.
+  Native-host visibility, full-profile next-action admission and release timing
+  remain separate obligations.
 - When a packet is guidance-behavior-relevant, packet builders attach the
   compact `guidance_behavior_summary` first and the handshake carries its
   validator command as recommended validation. The summary remains a compact
@@ -177,6 +202,12 @@ Public entrypoint: `odylith context-engine`
   Build a compact governance and delivery-truth packet.
 - `session-brief`
   Build one deterministic session dossier and refresh the session heartbeat.
+  A full-profile read with only an explicit session ID may recover a live saved
+  workstream through current canonical projections. Retained intent remains
+  session context, never a new turn instruction or execution permission. New
+  scope inputs take precedence; expired/missing sessions and missing anchors
+  do not inherit it. The `session_workstream_selection.py` phase owns selection
+  for both session packet forms; agent hot-path behavior is unchanged (CB-332).
 - `bootstrap-session`
   Build a compact fresh-session bootstrap packet with docs, commands, and test
   recommendations.
@@ -586,6 +617,9 @@ evidence is missing or drifting.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-025, B-142
+  - Evidence: `src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py`, `src/odylith/runtime/governance/sync_workstream_artifacts.py`, `tests/unit/runtime/test_sync_casebook_freshness.py`
 - **2026-08-01 · Implementation:** Implementation evidence linked this component to governed work with 5 verifiable artifact references.
   - Evidence: `odylith/casebook/bugs/2026-08-01-fresh-install-compact-guidance-omitted-greenfield-commit-only-boundary.md`, `odylith/runtime/source/release-notes/v0.1.15.md`, `src/odylith/install/bootstrap_assets.py`, `tests/unit/install/test_manager.py`, plus 1 more
 - **2026-05-06 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
@@ -599,9 +633,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-04-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-110
   - Evidence: `odylith/runtime/source/optimization-evaluation-corpus.v1.json`, `odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md`
-- **2026-04-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
-  - Scope: B-110, B-111, B-112, B-113
-  - Evidence: `odylith/runtime/source/discipline-evaluation-corpus.v1.json`, `odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md`, `src/odylith/runtime/discipline/contract.py`, `src/odylith/runtime/governance/validate_discipline.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

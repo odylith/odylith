@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 import datetime as dt
 from pathlib import Path
 
+import pytest
+
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
+    authored_projection_parity_issues,
     build_authored_greenfield_proposal,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_radar_ordering import (
@@ -20,6 +24,9 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
     materialize_model_authored_intent,
 )
+from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+    GreenfieldModelAuthoringError,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     RESCUE_PROFILE_ID,
 )
@@ -28,12 +35,18 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 )
 from odylith.runtime.governance import backlog_authoring
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
 )
 
 
-def _authored_proposal(tmp_path: Path, *, non_goals: list[str]) -> dict[str, object]:
+def _authored_proposal(
+    tmp_path: Path,
+    *,
+    non_goals: list[str],
+    decision_overrides: Mapping[str, object] | None = None,
+) -> dict[str, object]:
     first_path = "Dock attendant records berth occupancy and sees a signed berth receipt"
     intent = {
         "title": "Harbor Desk",
@@ -56,16 +69,16 @@ def _authored_proposal(tmp_path: Path, *, non_goals: list[str]) -> dict[str, obj
         "ambiguities": [],
         "non_goals": non_goals,
     }
+    intent.update(decision_overrides or {})
     relations = (
         {
             "actor_kind": "human",
-            "actor_quote": "Dock attendant",
+            "actor_fact_quote": "Dock attendant",
             "owner_system_quote": "",
             "event_quote": first_path,
             "action_verb_quote": "records",
             "target_quote": "berth occupancy",
             "visible_result_quote": "sees a signed berth receipt",
-            "recovery_path": False,
         },
     )
     prompt = "\n".join(
@@ -93,6 +106,7 @@ def _authored_proposal(tmp_path: Path, *, non_goals: list[str]) -> dict[str, obj
         ),
         authoring_timeout_seconds=84.0,
         authoring_profile_id=RESCUE_PROFILE_ID,
+        review_provider_factory=AdmittingReviewProvider,
     )
     proposal = build_authored_greenfield_proposal(
         observed_source={},
@@ -102,6 +116,88 @@ def _authored_proposal(tmp_path: Path, *, non_goals: list[str]) -> dict[str, obj
     proposal[PRODUCT_INTENT_AUTHORITY_KEY] = candidate[PRODUCT_INTENT_AUTHORITY_KEY]
     assert AUTHORED_SEMANTICS_KEY in proposal["intent"]
     return proposal
+
+
+@pytest.mark.parametrize(
+    ("field", "source_field", "shared_value"),
+    (
+        (
+            "problem",
+            "product_story",
+            "Dock attendants receive a reviewable berth receipt.",
+        ),
+        (
+            "opportunity",
+            "first_path",
+            "Dock attendant records berth occupancy and sees a signed berth receipt",
+        ),
+        (
+            "product_view",
+            "product_story",
+            "Dock attendants receive a reviewable berth receipt.",
+        ),
+    ),
+)
+def test_explicit_decision_pointer_survives_equal_story_or_path_bytes(
+    tmp_path: Path,
+    field: str,
+    source_field: str,
+    shared_value: str,
+) -> None:
+    proposal = _authored_proposal(
+        tmp_path,
+        non_goals=[],
+        decision_overrides={field: shared_value},
+    )
+    project = proposal["backlog"][0]
+    semantics = project["provisional_workstream_contract"]
+
+    assert proposal["intent"][field] == proposal["intent"][source_field] == shared_value
+    assert semantics["decision_refs"][field] == f"/{field}"
+    assert shared_value in project[field]
+    authority = proposal[PRODUCT_INTENT_AUTHORITY_KEY]
+    source_bound_paths = {
+        link["path"]
+        for atom in authority["atomic_facts"]
+        for link in atom["projection_links"]
+    }
+    assert {f"/{field}", f"/{source_field}"} <= source_bound_paths
+
+
+@pytest.mark.parametrize(
+    "decision_overrides",
+    (
+        {"product_view": ""},
+        {
+            "assumptions": [
+                {
+                    "applies_to": "product_view",
+                    "statement": "The workspace should keep receipt evidence together.",
+                }
+            ]
+        },
+    ),
+    ids=("missing", "fact-and-assumption"),
+)
+def test_equal_value_custody_does_not_relax_decision_fact_xor_assumption(
+    tmp_path: Path,
+    decision_overrides: Mapping[str, object],
+) -> None:
+    with pytest.raises(
+        GreenfieldModelAuthoringError,
+        match="product_view requires one fact or one assumption",
+    ):
+        _authored_proposal(
+            tmp_path,
+            non_goals=[],
+            decision_overrides=decision_overrides,
+        )
+
+
+def test_rendered_decision_ref_must_remain_owned_by_its_canonical_decision(tmp_path: Path) -> None:
+    proposal = _authored_proposal(tmp_path, non_goals=[])
+    proposal["backlog"][0]["provisional_workstream_contract"]["decision_refs"]["product_view"] = "/product_story"
+    assert any("`backlog` projection drifted" in issue for issue in authored_projection_parity_issues(proposal))
 
 
 def test_authored_backlog_rationale_reaches_rendering_without_placeholder_copy(
@@ -124,21 +220,15 @@ def test_authored_backlog_rationale_reaches_rendering_without_placeholder_copy(
     assert decision["version"] == AUTHORED_ORDERING_DECISION_VERSION
     assert decision["tradeoff"] == ""
     assert decision["deferred_scope"] == [non_goal]
-    assert decision["ranking_basis"] == (
-        "Dock attendant records berth occupancy and sees a signed berth receipt"
-    )
+    assert decision["ranking_basis"] == first["recommended_first_slice"]
     assert row_args.ordering_rationale == decision["ranking_basis"]
-    assert rationale_lines[0] == "- why now: Provide one reviewable berth workflow."
-    assert rationale_lines[1] == (
-        "- expected outcome: Harbor Desk records berth occupancy."
-    )
+    assert rationale_lines[0] == "- why now: Source fact — Provide one reviewable berth workflow."
+    assert rationale_lines[1] == f"- expected outcome: {first['recommended_first_slice']}"
     assert rationale_lines[2] == f"- deferred for now: {non_goal}"
-    assert rationale_lines[3].endswith(
-        "Dock attendant records berth occupancy and sees a signed berth receipt"
-    )
+    assert rationale_lines[3].endswith(first["recommended_first_slice"])
     assert "TBD" not in "\n".join(rationale_lines)
     sections = first["radar_sections"]
-    assert [row["workstream_role"] for row in proposal["backlog"]] == ["project"]
+    assert [row["workstream_role"] for row in proposal["backlog"]] == ["provisional_design"] * 4
     assert non_goal in sections["Non-Goals"]
     assert non_goal not in sections["Risks"]
     assert non_goal not in sections["Migration/Compatibility"]
