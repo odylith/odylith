@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import json
-import shutil
 from pathlib import Path
 
 from odylith.runtime.surfaces import render_compass_dashboard
 from odylith.runtime.surfaces import render_tooling_dashboard as tooling_dashboard_renderer
 from tests.integration.runtime.surface_browser_test_support import (
     _REPO_ROOT,
+    _copy_logical_working_fixture,
     _new_page,
     _static_server,
 )
@@ -34,7 +34,7 @@ class _ManagedBrowserContext:
 
 def clone_odylith_fixture(tmp_path: Path) -> Path:
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
     return fixture_root
 
 

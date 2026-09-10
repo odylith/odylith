@@ -82,6 +82,7 @@ def run_with_greenfield_managed_mutation_boundary(
     try:
         with greenfield_repository_lock.greenfield_repository_lock(root) as descriptor:
             admitted_upgrade = None
+            admitted_authored = None
             if upgrade_dashboard_recovery.is_completion_retry(command_tokens):
                 state = greenfield_generation_state.read_active_publication(root)
                 try:
@@ -98,9 +99,21 @@ def run_with_greenfield_managed_mutation_boundary(
             if admitted_upgrade is None:
                 GreenfieldCommitJournal.recover_pending_journals(repo_root=root)
                 state = greenfield_generation_state.read_active_publication(root)
-                pinned = greenfield_generation_store.require_greenfield_working_generation(root) if state else None
+                try:
+                    pinned = greenfield_generation_store.require_greenfield_working_generation(root) if state else None
+                except greenfield_generation_store.GreenfieldWorkingGenerationDriftError:
+                    if not command_tokens or command_tokens[0] != "sync":
+                        raise
+                    from odylith.runtime.domain_intelligence import greenfield_authored_sync_admission
+
+                    admitted_authored = greenfield_authored_sync_admission.require_authored_sync_admission(
+                        repo_root=root, command_tokens=command_tokens,
+                    )
+                    pinned = admitted_authored.pinned
             active = greenfield_generation_state.active_generation_identity(root)
             result = operation(descriptor)
+            if admitted_authored is not None:
+                admitted_authored.require_unchanged_intent(root)
             if admitted_upgrade is not None:
                 upgrade_dashboard_recovery.require_unchanged_anchors(
                     repo_root=root, admitted_receipt=admitted_upgrade,
@@ -125,6 +138,8 @@ def run_with_greenfield_managed_mutation_boundary(
                     staged_root=root,
                     publication_precondition=active,
                 )
+                if admitted_authored is not None:
+                    admitted_authored.require_compiled_intent(write_set)
                 manifest = greenfield_generation_store.compile_greenfield_generation_manifest(write_set)
                 generation = greenfield_generation_store.materialize_immutable_greenfield_generation(
                     repo_root=root, write_set=write_set, manifest_text=manifest,
@@ -136,6 +151,8 @@ def run_with_greenfield_managed_mutation_boundary(
                 greenfield_repository_write_set.require_greenfield_repository_after_state(
                     repo_root=root, write_set=write_set,
                 )
+                if admitted_authored is not None:
+                    admitted_authored.require_unchanged_intent(root)
                 greenfield_generation_store.publish_greenfield_generation(
                     repo_root=root,
                     generation=generation,

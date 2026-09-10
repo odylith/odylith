@@ -13,12 +13,14 @@ from odylith.runtime.context_engine import odylith_control_state
 from odylith.runtime.governance import sync_casebook_bug_index
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.surfaces import compass_standup_brief_maintenance
+from odylith.runtime.surfaces import compass_standup_brief_maintenance_worker
 from odylith.runtime.surfaces import compass_transaction_runtime
 from odylith.runtime.surfaces import render_casebook_dashboard
 from odylith.runtime.surfaces import render_compass_dashboard
 from odylith.runtime.surfaces import render_mermaid_catalog
 from odylith.runtime.surfaces import render_tooling_dashboard as tooling_dashboard_renderer
 from tests.integration.runtime.surface_browser_test_support import (
+    _copy_logical_working_fixture,
     _REPO_ROOT,
     _assert_clean_page,
     _assert_single_visible_pane,
@@ -632,7 +634,7 @@ def test_shell_runtime_status_stays_hidden_across_tab_switches(browser_context) 
 
 def test_shell_compass_tab_dedupes_stale_runtime_status_to_compass_notice(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
 
     runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
     runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
@@ -700,7 +702,7 @@ def test_shell_compass_tab_dedupes_stale_runtime_status_to_compass_notice(tmp_pa
 
 def test_shell_compass_tab_surfaces_failed_full_refresh_warning(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
 
     runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
     runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
@@ -1118,7 +1120,7 @@ def test_casebook_first_bug_rows_load_details_without_dead_shards(browser_contex
 
 def test_casebook_proof_control_panel_stays_pinned_to_the_selected_bug_lane(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
 
     bug_root = fixture_root / "odylith" / "casebook" / "bugs"
     bug_root.mkdir(parents=True, exist_ok=True)
@@ -1573,7 +1575,7 @@ def test_compass_scope_window_and_detail_behavior_in_compact_viewport(compact_br
 
 def test_compass_scoped_brief_missing_shows_global_live_brief_with_notice(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
 
     runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
     runtime_json_path = runtime_dir / "current.v1.json"
@@ -1722,7 +1724,7 @@ def test_compass_scoped_brief_missing_shows_global_live_brief_with_notice(tmp_pa
 
 def test_compass_quiet_catalog_scope_reports_quiet_window_instead_of_missing_brief(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
 
     runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
     runtime_json_path = runtime_dir / "current.v1.json"
@@ -1838,7 +1840,7 @@ def test_compass_quiet_catalog_scope_reports_quiet_window_instead_of_missing_bri
 
 def test_compass_dropdown_excludes_unverified_governance_only_scope_and_scoped_timeline_stays_empty(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
 
     runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
     runtime_json_path = runtime_dir / "current.v1.json"
@@ -2078,7 +2080,7 @@ def test_radar_sort_filter_switches_between_date_score_and_rank_without_hiding_s
     tmp_path,
 ) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
 
     payload_path = fixture_root / "odylith" / "radar" / "backlog-payload.v1.js"
     payload_text = payload_path.read_text(encoding="utf-8")
@@ -2195,7 +2197,7 @@ def test_registry_default_order_prefers_high_scope_signal_without_hiding_low_sig
     tmp_path,
 ) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
 
     payload_path = fixture_root / "odylith" / "registry" / "registry-payload.v1.js"
     payload_text = payload_path.read_text(encoding="utf-8")
@@ -2315,7 +2317,7 @@ def test_refreshed_compass_artifacts_do_not_show_stale_unavailable_brief(
     tmp_path,
 ) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
 
     runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
     runtime_json_path = runtime_dir / "current.v1.json"
@@ -2461,7 +2463,7 @@ def test_compass_unavailable_brief_hides_copy_button_and_stays_compact(
     tmp_path,
 ) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
 
     runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
     runtime_json_path = runtime_dir / "current.v1.json"
@@ -2634,7 +2636,7 @@ def test_compass_live_brief_warm_poll_reasons_match_retry_policy(browser_context
 
 def test_compass_provider_deferred_warm_poll_only_rerenders_brief(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
     fixture_context_engine_dir = fixture_root / ".odylith" / "runtime"
     fixture_context_engine_dir.mkdir(parents=True, exist_ok=True)
     source_runtime_dir = _REPO_ROOT / ".odylith" / "runtime"
@@ -2783,7 +2785,7 @@ def test_shell_safe_compass_refresh_artifacts_enqueue_background_warm_without_fo
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
 
     runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
     shutil.rmtree(runtime_dir / "history", ignore_errors=True)
@@ -2807,7 +2809,7 @@ def test_shell_safe_compass_refresh_artifacts_enqueue_background_warm_without_fo
 
     monkeypatch.setattr(odylith_reasoning, "provider_from_config", _provider_from_config)
     monkeypatch.setattr(
-        render_compass_dashboard.compass_standup_brief_maintenance,
+        compass_standup_brief_maintenance_worker,
         "maybe_spawn_background",
         lambda **kwargs: spawned.append(str(kwargs["repo_root"])) or 4321,
     )
@@ -2824,7 +2826,7 @@ def test_shell_safe_compass_refresh_artifacts_enqueue_background_warm_without_fo
     assert provider.calls == 0
     assert spawned == [str(fixture_root.resolve())]
     request_payload = json.loads(
-        compass_standup_brief_maintenance.maintenance_request_path(repo_root=fixture_root).read_text(encoding="utf-8")
+        compass_standup_brief_maintenance_worker.maintenance_request_path(repo_root=fixture_root).read_text(encoding="utf-8")
     )
     assert sorted((request_payload.get("global") or {}).keys()) == ["24h", "48h"]
     result = compass_standup_brief_maintenance.run_pending_request(repo_root=fixture_root)
@@ -2898,7 +2900,7 @@ def test_shell_safe_compass_refresh_artifacts_enqueue_background_warm_without_fo
 
 def test_compass_scoped_provider_deferred_shows_global_live_brief_with_notice(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
 
     runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
     runtime_json_path = runtime_dir / "current.v1.json"
@@ -3006,7 +3008,7 @@ def test_compass_scoped_provider_deferred_shows_global_live_brief_with_notice(tm
 
 def test_compass_scoped_provider_deferred_can_borrow_wider_global_live_brief(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
 
     runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
     runtime_json_path = runtime_dir / "current.v1.json"
@@ -3167,7 +3169,7 @@ def test_casebook_detail_stacks_cleanly_in_compact_viewport(compact_browser_cont
 
 def test_compass_live_window_anchors_to_loaded_snapshot_time(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
 
     runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
     runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
@@ -3269,7 +3271,7 @@ def test_compass_live_window_anchors_to_loaded_snapshot_time(tmp_path) -> None: 
 
 def test_compass_legacy_archived_timeline_day_is_ignored(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
 
     runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
     history_dir = runtime_dir / "history"
@@ -3397,7 +3399,7 @@ def test_compass_legacy_archived_timeline_day_is_ignored(tmp_path) -> None:  # n
 
 def test_compass_timeline_mixed_local_batch_falls_back_to_transaction_headline(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
 
     runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
     runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
@@ -3491,7 +3493,7 @@ def test_compass_timeline_mixed_local_batch_falls_back_to_transaction_headline(t
 
 def test_compass_timeline_hides_internal_sync_transactions_and_collapsed_meta(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
 
     runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
     runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
@@ -3573,7 +3575,7 @@ def test_compass_timeline_hides_internal_sync_transactions_and_collapsed_meta(tm
 
 def test_compass_timeline_transaction_chips_keep_checkpoint_anchor_workstream(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
 
     runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
     runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
@@ -3645,7 +3647,7 @@ def test_compass_timeline_transaction_chips_keep_checkpoint_anchor_workstream(tm
 
 def test_compass_scoped_live_view_prefers_latest_non_empty_audit_day(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
 
     runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
     runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
@@ -3746,7 +3748,7 @@ def test_compass_scoped_live_view_prefers_latest_non_empty_audit_day(tmp_path) -
 
 def test_compass_live_timeline_keeps_prior_window_day_while_hiding_future_hours(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
 
     runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
     runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
@@ -3880,7 +3882,7 @@ def test_compass_live_timeline_keeps_prior_window_day_while_hiding_future_hours(
 
 def test_compass_reload_prefers_fresher_runtime_json_over_stale_preloaded_js(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
 
     runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
     runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
@@ -3980,7 +3982,7 @@ def test_compass_reload_prefers_fresher_runtime_json_over_stale_preloaded_js(tmp
 
 def test_compass_reconciles_release_targets_from_live_traceability_when_runtime_snapshot_is_stale(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
 
     traceability_path = fixture_root / "odylith" / "radar" / "traceability-graph.v1.json"
     runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
@@ -4133,7 +4135,7 @@ def test_compass_reconciles_release_targets_from_live_traceability_when_runtime_
 
 def test_compass_release_targets_show_checklist_label_instead_of_fake_zero_progress(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
     _write_fixture_current_release_assignments(fixture_root, "B-068")
     _rewrite_fixture_workstream_status(fixture_root, idea_id="B-068", status="implementation")
     traceability_path = fixture_root / "odylith" / "radar" / "traceability-graph.v1.json"
@@ -4228,7 +4230,7 @@ def test_compass_release_targets_show_checklist_label_instead_of_fake_zero_progr
 
 def test_compass_release_targets_show_tracked_execution_percent_for_partial_progress(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
     _write_fixture_current_release_assignments(fixture_root, "B-068")
     _rewrite_fixture_workstream_status(fixture_root, idea_id="B-068", status="implementation")
     traceability_path = fixture_root / "odylith" / "radar" / "traceability-graph.v1.json"

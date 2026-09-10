@@ -77,6 +77,7 @@ def _refresh_guard_code_fingerprint() -> str:
         Path(str(project_intelligence_presenter.__file__ or "")),
         Path(str(Path(project_intelligence_presenter.__file__ or "").with_name("project_tab.css"))),
         Path(__file__).parent / "templates" / "tooling_dashboard" / "style.css",
+        Path(__file__).parent / "templates" / "tooling_dashboard" / "release_spotlight.css",
         Path(str(tooling_dashboard_runtime_builder.__file__ or "")),
         Path(str(tooling_dashboard_shell_presenter.__file__ or "")),
         Path(str(dashboard_shell_links.__file__ or "")),

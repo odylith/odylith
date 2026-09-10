@@ -89,6 +89,7 @@ def load_tooling_shell_style_css() -> str:
     base_css = dashboard_ui_primitives.resolve_surface_shell_template_tokens(
         _template_asset_path("style.css").read_text(encoding="utf-8")
     ).rstrip("\n")
+    spotlight_css = _template_asset_path("release_spotlight.css").read_text(encoding="utf-8").rstrip("\n")
     project_css = dashboard_ui_primitives.resolve_surface_shell_template_tokens(
         project_intelligence_assets.load_project_tab_css()
     ).rstrip("\n")
@@ -99,6 +100,7 @@ def load_tooling_shell_style_css() -> str:
     return "\n\n".join(
         (
             base_css,
+            spotlight_css,
             project_css,
             cheatsheet_css,
             _tooling_shell_shared_typography_css(),

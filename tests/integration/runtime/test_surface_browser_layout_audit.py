@@ -3,9 +3,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import re
-import shutil
 
 from tests.integration.runtime.surface_browser_test_support import (
+    _copy_logical_working_fixture,
     _assert_clean_page,
     _browser,
     _select_casebook_bug_with_detail_selector,
@@ -14,6 +14,7 @@ from tests.integration.runtime.surface_browser_test_support import (
     _select_registry_component_with_detail_selector,
     _new_page,
     _static_server,
+    _wait_for_registry_detail_id,
     _wait_for_shell_query_param,
     browser_context,
     compact_browser_context,
@@ -679,7 +680,7 @@ def _write_registry_payload(path: Path, payload: dict[str, object]) -> None:
 
 def test_registry_compacts_sentence_shaped_component_names_without_losing_identity(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
 
     payload_path = fixture_root / "odylith" / "registry" / "registry-payload.v1.js"
     payload = _load_registry_payload(payload_path)
@@ -1059,6 +1060,11 @@ def _assert_shared_deep_link_buttons_keep_style_contract(  # noqa: ANN001
     registry = page.frame_locator("#frame-registry")
     registry.locator("h1", has_text="Component Registry").wait_for(timeout=15000)
     registry_style = _synthetic_anchor_button_style(registry, "body", "detail-action-chip")
+    selected_component = registry.locator("button[data-component].active")
+    selected_component.wait_for(timeout=15000)
+    component_id = str(selected_component.get_attribute("data-component") or "").strip()
+    assert component_id, "expected the active Registry component to own its loaded detail"
+    _wait_for_registry_detail_id(registry, component_id)
 
     response = page.goto(base_url + "/odylith/index.html?tab=casebook", wait_until="domcontentloaded")
     assert response is not None and response.ok

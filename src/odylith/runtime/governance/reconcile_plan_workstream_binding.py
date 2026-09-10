@@ -2,11 +2,11 @@
 
 This command is intentionally conservative and deterministic:
 - scope is limited to touched/new active plans,
+- missing active-index rows are registered only from explicit reciprocal metadata,
 - stale active-index rows whose in-progress plan file no longer exists are
   skipped instead of creating successor workstreams,
 - queued links are promoted to planning and moved into execution table,
-- already-active links repair execution-table placement when drift leaves them in
-  the ranked backlog,
+- reciprocal already-active links repair execution-table status and placement,
 - finished links are rebound through a new successor workstream,
 - all writes occur in canonical markdown sources.
 """
@@ -140,7 +140,19 @@ def _slugify(value: str) -> str:
     return token or "workstream"
 
 
-def _parse_metadata_and_sections(path: Path) -> tuple[dict[str, str], dict[str, str]]:
+def plan_metadata_preamble(text: str) -> str:
+    """Return the exact metadata region using the plan owner's section boundary."""
+    lines: list[str] = []
+    for line in text.splitlines(keepends=True):
+        if _SECTION_RE.match(line):
+            break
+        lines.append(line)
+    return "".join(lines)
+
+
+def _parse_metadata_and_sections(
+    path: Path, *, unique_keys: Sequence[str] = (),
+) -> tuple[dict[str, str], dict[str, str]]:
     metadata: dict[str, str] = {}
     sections: dict[str, list[str]] = {}
     in_metadata = True
@@ -159,6 +171,8 @@ def _parse_metadata_and_sections(path: Path) -> tuple[dict[str, str], dict[str, 
             if not line or line.startswith("#") or ":" not in line:
                 continue
             key, value = line.split(":", 1)
+            if key.strip() in unique_keys and key.strip() in metadata:
+                raise ValueError(f"{path}: duplicate metadata key `{key.strip()}`")
             metadata[key.strip()] = value.strip()
             continue
 
@@ -413,65 +427,55 @@ def _remove_active_row_and_rewrite_rationale(
     return target_row
 
 
-def _normalize_backlog_index_layout(backlog_index_path: Path, *, today: dt.date) -> None:
-    snapshot = backlog_contract._build_backlog_index_snapshot(backlog_index_path)  # noqa: SLF001
-    active_rows = backlog_contract.rows_as_mapping(
-        section=snapshot.get("active", {}),
-        expected_headers=backlog_contract._INDEX_COLS,
-    )
-    existing_reorder = {
-        str(key): (
-            str(value.get("heading", "")).strip(),
-            [str(line) for line in value.get("lines", [])]
-            if isinstance(value, Mapping) and isinstance(value.get("lines"), list)
-            else [],
-        )
-        for key, value in dict(snapshot.get("reorder_sections", {})).items()
-        if isinstance(snapshot.get("reorder_sections"), Mapping) and isinstance(value, Mapping)
-    }
-    active_ids = {str(row.get("idea_id", "")).strip() for row in active_rows}
-    formatted_active_rows: list[list[str]] = []
-    rationale_sections: list[tuple[str, str, list[str]]] = []
-    for rank, row in enumerate(active_rows, start=1):
-        idea_id = str(row.get("idea_id", "")).strip()
-        formatted_active_rows.append(
-            [
-                str(rank),
-                idea_id,
-                str(row.get("title", "")).strip(),
-                str(row.get("priority", "")).strip(),
-                str(row.get("ordering_score", "")).strip(),
-                str(row.get("commercial_value", "")).strip(),
-                str(row.get("product_impact", "")).strip(),
-                str(row.get("market_value", "")).strip(),
-                str(row.get("sizing", "")).strip(),
-                str(row.get("complexity", "")).strip(),
-                str(row.get("status", "")).strip(),
-                str(row.get("link", "")).strip(),
-            ]
-        )
-        _existing_heading, existing_lines = existing_reorder.get(idea_id, ("", []))
-        rationale_sections.append((idea_id, f"{idea_id} (rank {rank})", existing_lines))
-    rationale_sections.extend(backlog_authoring._preserved_reorder_sections(snapshot, active_ids=active_ids))  # noqa: SLF001
-    rewritten = backlog_authoring._rewrite_active_backlog_section(  # noqa: SLF001
-        backlog_index_path=backlog_index_path,
-        active_rows=formatted_active_rows,
-        reorder_sections=rationale_sections,
-        today=today,
-    )
-    backlog_index_path.write_text(rewritten, encoding="utf-8")
+def _execution_repair_layout(
+    backlog_index_path: Path, *, repo_root: Path, idea_id: str,
+) -> tuple[list[str], dict[str, tuple[int, list[tuple[int, list[str]]]]]]:
+    """Locate a unique existing row without accepting ambiguous write targets."""
 
-    refreshed_snapshot = backlog_contract._build_backlog_index_snapshot(backlog_index_path)  # noqa: SLF001
-    execution_rows = backlog_contract.rows_as_mapping(
-        section=refreshed_snapshot.get("execution", {}),
-        expected_headers=backlog_contract._INDEX_COLS,
-    )
-    _rewrite_execution_section(backlog_index_path, execution_rows=execution_rows, today=today)
+    if not backlog_index_path.resolve().is_relative_to(repo_root.resolve()):
+        raise ValueError(f"{backlog_index_path}: cannot repair an index outside the repository")
+    if backlog_index_path.resolve() != backlog_index_path.absolute() or backlog_index_path.stat().st_nlink != 1:
+        raise ValueError(f"{backlog_index_path}: cannot repair an index alias")
+    lines = backlog_index_path.read_bytes().decode("utf-8").splitlines(keepends=True)
+    snapshot = backlog_contract._build_backlog_index_snapshot(backlog_index_path)  # noqa: SLF001
+    if sum(line.strip() in _EXECUTION_SECTION_TITLES for line in lines) != 1:
+        raise ValueError(f"{backlog_index_path}: expected exactly one execution section")
+    tables: dict[str, tuple[int, list[tuple[int, list[str]]]]] = {}
+    seen_ids: set[str] = set()
+    for name in ("active", "execution", "finished", "parked"):
+        section = snapshot[name]
+        title = "## " + section["section_title"]
+        count = sum(line.strip() == title for line in lines)
+        if name == "parked" and count == 0:
+            continue
+        if count != 1 or section.get("error") or tuple(section.get("headers", ())) != backlog_contract._INDEX_COLS:
+            raise ValueError(f"{backlog_index_path}: invalid or duplicate {name} table")
+        start, end = _find_section_bounds(lines, title)
+        indexes = [idx for idx in range(start + 1, end) if lines[idx].strip().startswith("|")]
+        if len(indexes) < 2 or indexes != list(range(indexes[0], indexes[-1] + 1)):
+            raise ValueError(f"{backlog_index_path}: expected one contiguous {name} table")
+        cells = [_split_table_cells(lines[idx].strip()) for idx in indexes]
+        if any(len(row) != _BACKLOG_ROW_COL_COUNT or not lines[idx].strip().endswith("|") for idx, row in zip(indexes, cells)):
+            raise ValueError(f"{backlog_index_path}: malformed {name} table row")
+        if any(len(cell.strip(":")) < 3 or set(cell.strip(":")) != {"-"} for cell in cells[1]):
+            raise ValueError(f"{backlog_index_path}: malformed {name} table separator")
+        rows = list(zip(indexes[2:], cells[2:]))
+        for _idx, row in rows:
+            if not _WORKSTREAM_RE.fullmatch(row[1]) or row[1] in seen_ids:
+                raise ValueError(f"{backlog_index_path}: invalid or duplicate workstream row")
+            seen_ids.add(row[1])
+            if name == "execution" or row[1] == idea_id:
+                int(row[4])  # Validate ordering before any ranked-source rewrite.
+        tables[name] = (indexes[1], rows)
+    if idea_id not in seen_ids:
+        raise ValueError(f"{backlog_index_path}: missing existing row for {idea_id}")
+    return lines, tables
 
 
 def _move_active_row_to_execution_status(
     backlog_index_path: Path,
     *,
+    repo_root: Path,
     idea_id: str,
     status: str,
     today: dt.date,
@@ -479,6 +483,25 @@ def _move_active_row_to_execution_status(
     normalized_status = str(status or "").strip().lower()
     if normalized_status not in {"planning", "implementation"}:
         raise ValueError(f"unsupported execution status `{status}`")
+
+    lines, tables = _execution_repair_layout(backlog_index_path, repo_root=repo_root, idea_id=idea_id)
+    source, source_idx, cells = next(
+        (name, idx, row) for name, (_separator, rows) in tables.items() for idx, row in rows if row[1] == idea_id
+    )
+    if source != "active":
+        if source == "execution" and cells[_BACKLOG_STATUS_COL_INDEX] == normalized_status:
+            return False
+        cells[0], cells[_BACKLOG_STATUS_COL_INDEX] = "-", normalized_status
+        separator, execution_rows = tables["execution"]
+        ordering = lambda row: (_EXECUTION_STATUS_ORDER.get(row[_BACKLOG_STATUS_COL_INDEX].lower(), 99), -int(row[4]), row[1])
+        remaining = [(idx, row) for idx, row in execution_rows if idx != source_idx]
+        insert_at = next((idx for idx, row in remaining if ordering(cells) < ordering(row)),
+                         remaining[-1][0] + 1 if remaining else separator + 1)
+        newline = "\r\n" if lines[separator].endswith("\r\n") else "\n"
+        lines[source_idx] = ""
+        lines.insert(insert_at, _format_table_row(cells) + newline)
+        backlog_index_path.write_bytes("".join(lines).encode("utf-8"))
+        return True
 
     target_row = _remove_active_row_and_rewrite_rationale(
         backlog_index_path,
@@ -530,6 +553,111 @@ def _update_plan_index_backlog(plan_index_path: Path, *, plan_path: str, backlog
             text += "\n"
         plan_index_path.write_text(text, encoding="utf-8")
     return changed
+
+
+def _prepare_active_plan_row(
+    *, repo_root: Path, plan_path: str,
+    ideas: Mapping[str, backlog_contract.IdeaSpec],
+) -> dict[str, str]:
+    """Validate one explicit reciprocal binding before its batch can write."""
+
+    if any(char in plan_path for char in "|\r\n`"):
+        raise ValueError(f"{plan_path!r}: registration cannot represent unsafe table delimiters")
+    active_root = repo_root.resolve() / "odylith/technical-plans/in-progress"
+    candidate = repo_root / plan_path
+    resolved = candidate.resolve()
+    if (
+        not plan_path.startswith("odylith/technical-plans/in-progress/")
+        or not resolved.is_relative_to(active_root)
+        or resolved != candidate.absolute()
+        or resolved.suffix != ".md"
+        or not resolved.is_file()
+    ):
+        raise ValueError(f"{plan_path}: registration requires a regular file inside the active-plan tree")
+    metadata, _sections = _parse_metadata_and_sections(
+        resolved, unique_keys=backlog_contract._PLAN_COLS[1:],
+    )
+    if metadata.get("Status") != "In progress":
+        raise ValueError(f"{plan_path}: registration requires explicit `Status: In progress`")
+    for key in ("Created", "Updated"):
+        value = metadata.get(key, "")
+        try:
+            valid_date = dt.date.fromisoformat(value).isoformat() == value
+        except ValueError:
+            valid_date = False
+        if not valid_date:
+            raise ValueError(f"{plan_path}: registration requires an explicit YYYY-MM-DD `{key}` date")
+    if metadata["Updated"] < metadata["Created"]:
+        raise ValueError(f"{plan_path}: Updated must not precede Created")
+    backlog_id = metadata.get("Backlog", "")
+    if not _WORKSTREAM_RE.fullmatch(backlog_id):
+        raise ValueError(f"{plan_path}: registration requires exactly one explicit Backlog workstream id")
+    spec = ideas.get(backlog_id)
+    if spec is None:
+        raise ValueError(f"{plan_path}: registration requires an existing active reciprocal binding for {backlog_id}")
+    workstream, _sections = _parse_metadata_and_sections(
+        spec.path, unique_keys=("idea_id", "status", "promoted_to_plan"),
+    )
+    if (
+        workstream.get("idea_id") != backlog_id
+        or workstream.get("status") not in {"planning", "implementation"}
+        or workstream.get("promoted_to_plan", "") != plan_path
+    ):
+        raise ValueError(f"{plan_path}: registration requires an existing active reciprocal binding for {backlog_id}")
+    return {"Plan": plan_path, **{key: metadata[key] for key in backlog_contract._PLAN_COLS[1:]}}
+
+
+def _prepare_active_plan_registration(
+    *, repo_root: Path, plan_index_path: Path, plan_paths: Sequence[str],
+    ideas: Mapping[str, backlog_contract.IdeaSpec],
+) -> tuple[list[dict[str, str]], bytes | None]:
+    """Prepare the entire missing-row batch without writing before lifecycle preflight."""
+
+    rows = [_prepare_active_plan_row(repo_root=repo_root, plan_path=path, ideas=ideas) for path in plan_paths]
+    if not rows:
+        return [], None
+    if not plan_index_path.resolve().is_relative_to(repo_root.resolve()):
+        raise ValueError(f"{plan_index_path}: registration cannot write an index outside the repository")
+    if plan_index_path.resolve() != plan_index_path.absolute() or plan_index_path.stat().st_nlink != 1:
+        raise ValueError(f"{plan_index_path}: registration cannot write an index alias")
+    original = plan_index_path.read_bytes()
+    lines = original.decode("utf-8").splitlines(keepends=True)
+    if sum(line.strip() == "## Active Plans" for line in lines) != 1:
+        raise ValueError(f"{plan_index_path}: registration requires exactly one Active Plans section")
+    snapshot = backlog_contract.load_plan_index_snapshot(plan_index_path)
+    section = snapshot.get("active", {})
+    if section.get("error") or tuple(section.get("headers", ())) != backlog_contract._PLAN_COLS:
+        raise ValueError(f"{plan_index_path}: registration requires a valid Active Plans table")
+    new_backlogs = {row["Backlog"] for row in rows}
+    new_paths = {row["Plan"] for row in rows}
+    if len(new_backlogs) != len(rows):
+        raise ValueError(f"{plan_index_path}: conflicting registration bindings")
+    seen_backlogs: set[str] = set()
+    for cells in section.get("rows", ()):
+        if len(cells) != len(backlog_contract._PLAN_COLS):
+            raise ValueError(f"{plan_index_path}: malformed Active Plans row")
+        existing_id = cells[4].strip().strip("`")
+        if (
+            not _WORKSTREAM_RE.fullmatch(existing_id) or existing_id in seen_backlogs
+            or existing_id in new_backlogs or cells[0].strip().strip("`") in new_paths
+        ):
+            raise ValueError(f"{plan_index_path}: conflicting Active Plans binding")
+        seen_backlogs.add(existing_id)
+    active_start, active_end = _find_section_bounds(lines, "## Active Plans")
+    table_start = next(idx for idx in range(active_start + 1, active_end) if lines[idx].strip().startswith("|"))
+    table_end = table_start
+    while table_end < active_end and lines[table_end].strip().startswith("|"):
+        table_end += 1
+    if table_end - table_start != len(section.get("rows", ())) + 2:
+        raise ValueError(f"{plan_index_path}: registration requires one contiguous Active Plans table")
+    newline = "\r\n" if lines[table_start].endswith("\r\n") else "\n"
+    prefix = "".join(lines[:table_end])
+    insertion = "".join(_format_table_row([
+        f"`{row['Plan']}`", row["Status"], row["Created"], row["Updated"], f"`{row['Backlog']}`",
+    ]) + newline for row in rows)
+    if not prefix.endswith("\n"):
+        insertion = newline + insertion
+    return rows, (prefix + insertion + "".join(lines[table_end:])).encode("utf-8")
 
 
 def _build_successor_metadata(
@@ -719,6 +847,32 @@ def reconcile_plan_workstream_binding(
     if idea_errors:
         raise ValueError("; ".join(idea_errors))
 
+    # Deleted/moved plans are not registration requests. Prepare all remaining
+    # missing rows, then preflight their lifecycle alongside existing bindings.
+    missing_paths = [path for path in touched_plan_paths if path not in rows_by_plan and (repo_root / path).exists()]
+    registration_rows, registration_content = _prepare_active_plan_registration(
+        repo_root=repo_root, plan_index_path=plan_index_path, plan_paths=missing_paths, ideas=ideas,
+    )
+    registered = {row["Plan"]: row for row in registration_rows}
+    candidate_rows = [*active_rows, *registration_rows]
+    for plan_path in touched_plan_paths:
+        row = rows_by_plan.get(plan_path, registered.get(plan_path, {}))
+        spec = ideas.get(str(row.get("Backlog", "")).strip().strip("`"))
+        if spec is None or spec.status.lower() not in {"queued", "planning", "implementation"}:
+            continue
+        if _active_plan_block_reason(repo_root=repo_root, plan_path=plan_path):
+            continue
+        if (sum(item.get("Plan") == plan_path for item in candidate_rows) != 1
+                or sum(str(item.get("Backlog", "")).strip().strip("`") == spec.idea_id for item in candidate_rows) != 1):
+            raise ValueError(f"{plan_index_path}: execution repair requires a unique indexed active-plan binding")
+        metadata, _sections = _parse_metadata_and_sections(
+            spec.path, unique_keys=("idea_id", "status", "promoted_to_plan"),
+        )
+        if (metadata.get("idea_id") != spec.idea_id or metadata.get("status") != spec.status
+                or (spec.status != "queued" and metadata.get("promoted_to_plan") != plan_path)):
+            raise ValueError(f"{spec.path}: execution repair requires an exact reciprocal active-plan binding")
+        _execution_repair_layout(backlog_index_path, repo_root=repo_root, idea_id=spec.idea_id)
+
     today = dt.datetime.now(dt.timezone.utc).date()
     implementation_evidence_paths = governance.collect_implementation_evidence_paths(
         repo_root=repo_root,
@@ -726,11 +880,20 @@ def reconcile_plan_workstream_binding(
         include_git=True,
     )
     has_implementation_evidence = bool(implementation_evidence_paths)
+    if registration_content is not None:
+        plan_index_path.write_bytes(registration_content)
 
     for plan_path in touched_plan_paths:
         row = rows_by_plan.get(plan_path)
         if row is None:
-            continue
+            row = registered.get(plan_path)
+            if row is None:
+                continue
+            decisions.append(governance.PlanBindingDecision(
+                plan_path=plan_path, backlog_before=row["Backlog"], backlog_after=row["Backlog"],
+                action="registered_active_plan_row",
+                details="Registered the existing reciprocal binding from explicit active-plan metadata.",
+            ))
 
         backlog_before = str(row.get("Backlog", "")).strip().strip("`")
         if backlog_before in {"", "-"}:
@@ -792,6 +955,7 @@ def reconcile_plan_workstream_binding(
             spec.path.write_text(text, encoding="utf-8")
             _move_active_row_to_execution_status(
                 backlog_index_path,
+                repo_root=repo_root,
                 idea_id=spec.idea_id,
                 status=next_status,
                 today=today,
@@ -830,22 +994,9 @@ def reconcile_plan_workstream_binding(
             continue
 
         if status in {"planning", "implementation"}:
-            promoted = str(spec.metadata.get("promoted_to_plan", "")).strip()
-            if promoted != plan_path:
-                text = spec.path.read_text(encoding="utf-8")
-                text = _replace_metadata_value(text, key="promoted_to_plan", value=plan_path)
-                spec.path.write_text(text, encoding="utf-8")
-                decisions.append(
-                    governance.PlanBindingDecision(
-                        plan_path=plan_path,
-                        backlog_before=spec.idea_id,
-                        backlog_after=spec.idea_id,
-                        action="rebound_promoted_plan",
-                        details="Aligned `promoted_to_plan` to touched active plan path.",
-                    )
-                )
             moved = _move_active_row_to_execution_status(
                 backlog_index_path,
+                repo_root=repo_root,
                 idea_id=spec.idea_id,
                 status=status,
                 today=today,
@@ -863,7 +1014,6 @@ def reconcile_plan_workstream_binding(
                         ),
                     )
                 )
-            _normalize_backlog_index_layout(backlog_index_path, today=today)
             continue
 
         if status == "finished":
@@ -925,8 +1075,9 @@ def reconcile_plan_workstream_binding(
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
-    plan_index_path = _resolve(repo_root, str(args.plan_index))
-    backlog_index_path = _resolve(repo_root, str(args.backlog_index))
+    # Preserve aliases until the writer checks the actual requested path.
+    plan_index_path = repo_root / Path(str(args.plan_index).strip())
+    backlog_index_path = repo_root / Path(str(args.backlog_index).strip())
     ideas_root = _resolve(repo_root, str(args.ideas_root))
     stream_path = _resolve(repo_root, str(args.stream))
 
@@ -950,7 +1101,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(f"- decisions: {len(decisions)}")
     print(f"- successors_created: {len(successors)}")
     for row in decisions:
-        if row.action in {"queued_to_planning", "queued_to_implementation", "finished_to_successor", "rebound_promoted_plan"}:
+        if row.action in {"queued_to_planning", "queued_to_implementation", "finished_to_successor", "rebound_promoted_plan", "registered_active_plan_row"}:
             print(f"- action: {row.action} ({row.backlog_before} -> {row.backlog_after}) plan={row.plan_path}")
     return 0
 

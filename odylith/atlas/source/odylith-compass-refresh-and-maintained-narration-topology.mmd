@@ -1,4 +1,5 @@
 %% Reviewed 2026-04-10 for B-025 to make the governed Compass refresh and brief contract substrate-first, delta-first, daemon-backed, and zero-foreground-provider.
+%% 2026-09-10 CB-305: detached request custody, native worker identity and guarded immutable publication; installed recovery remains unqualified.
 flowchart TB
   subgraph Entry["1. Operator Entry"]
     CLI["odylith compass refresh<br/>odylith compass watch-transactions"]
@@ -28,21 +29,32 @@ flowchart TB
     Worth{"Worth calling provider?"}
     CacheHit["Exact substrate cache replay"]
     Skip["Skip provider explicitly<br/>skipped_not_worth_calling"]
+    Inline["Pure foreground result projection<br/>enclosing refresh owns publication"]
   end
 
   subgraph Provider["5. Background Narration"]
     Enqueue["Enqueue one packet-level bundle"]
+    Identity["Verify native worker arguments and loaded epoch<br/>unknown identity cannot authorize replacement"]
+    Cached{"Exact detached result already cached?"}
     Bundle["One provider bundle<br/>global + verified scoped entries together"]
     Repair["One subset repair max"]
     Salvage["Persist valid entries immediately<br/>salvage partial good output"]
     Diagnostics["Bound provider diagnostics<br/>explicit state and debug artifacts"]
-    Backoff["Budget/capacity/provider failures -> slow retry lane"]
-    Patch{"Runtime fingerprint still current?"}
-    PatchYes["Patch warmed provider/cache results into live runtime"]
-    PatchNo["Do not patch newer truth"]
+    Backoff["Record failures and retry deadline<br/>poll request identity cheaply until due"]
   end
 
-  subgraph Guardrails["6. Product Guardrails"]
+  subgraph Publication["6. Result Publication"]
+    Lease{"Repository writer lock acquired?"}
+    Busy["Keep request and computed cache<br/>retry after the competing writer"]
+    Patch{"Runtime fingerprint still current?"}
+    PatchYes["Write matching JSON and JavaScript<br/>seal a complete immutable successor"]
+    Publish["Advance the canonical dashboard entry"]
+    Consume["Consume only the exact processed request<br/>retain a newer foreground request"]
+    PatchNo["Do not replace newer runtime truth<br/>keep exact cached results reusable"]
+    Failure["Preserve the selected complete generation and failure evidence<br/>never roll back an observed successor"]
+  end
+
+  subgraph Guardrails["7. Product Guardrails"]
     Truth["LLM writes, local code thinks"]
     Rules["No raw-packet prompting<br/>no per-scope provider fanout<br/>no fuzzy/non-exact replay<br/>no synthetic fallback narration"]
     Targets["Targets<br/>hot daemon refresh < 50ms median<br/>cold shell-safe refresh < 1s median"]
@@ -61,11 +73,18 @@ flowchart TB
   NoProvider --> Build --> Budget --> Delta --> Worth
   Worth -->|Exact match| CacheHit
   Worth -->|No winner change| Skip
-  Worth -->|Meaningful change| Enqueue --> Bundle --> Repair --> Salvage --> Diagnostics --> Backoff --> Patch
+  Worth -->|Meaningful change| Enqueue --> Identity --> Cached
+  Cached -->|Yes| Lease
+  Cached -->|No| Bundle --> Repair --> Salvage --> Diagnostics --> Backoff --> Lease
+  Lease -->|No| Busy
+  Lease -->|Yes| Patch
   Patch -->|Yes| PatchYes
   Patch -->|No| PatchNo
-  CacheHit --> PatchYes
-  Skip --> PatchYes
+  PatchYes --> Publish --> Consume
+  PatchYes -->|Write or seal fails| Failure
+  Publish -->|Publication fails| Failure
+  CacheHit --> Inline
+  Skip --> Inline
 
   OneLane --> Truth
   OneLane --> Rules

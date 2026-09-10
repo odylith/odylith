@@ -23,6 +23,7 @@ from odylith.runtime.context_engine import odylith_context_engine_workspace_daem
 from odylith.runtime.context_engine.surface_projection_fingerprint import default_surface_projection_input_fingerprint
 from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.surfaces import compass_standup_brief_maintenance
+from odylith.runtime.surfaces import compass_standup_brief_maintenance_worker
 from odylith.runtime.surfaces import compass_standup_brief_narrator
 from odylith.runtime.surfaces import compass_standup_brief_voice_validation
 from odylith.runtime.surfaces import dashboard_surface_bundle
@@ -730,7 +731,7 @@ def refresh_runtime_artifacts(
         detail={"message": "wrote the current runtime snapshot and history files"},
     )
     if normalized_profile == compass_refresh_contract.DEFAULT_REFRESH_PROFILE:
-        compass_standup_brief_maintenance.maybe_spawn_background(repo_root=repo_root)
+        compass_standup_brief_maintenance_worker.maybe_spawn_background(repo_root=repo_root)
     if str(runtime_mode).strip().lower() != "standalone" and _runtime_daemon_available(repo_root=repo_root):
         _record_daemon_cached_runtime_payload(
             repo_root=repo_root,

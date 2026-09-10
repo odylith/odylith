@@ -24,6 +24,16 @@ Browser proof checks these visible values and source actors on desktop/mobile;
 unit or DOM-count success does not establish complete-package human quality.
 
 ## Scope And Non-Goals
+### Complete release copy
+The upgrade spotlight must preserve complete authored titles, summaries and
+selected highlights through note loading, installer fallback and presentation.
+Character clipping is not a display policy: it can remove a publication constraint
+or create a fragment. Keep bounded item selection and responsive wrapping, without
+changing the frozen dashboard header. CB-340's four real-browser failures show
+that source-note correctness and mirror equality do not prove rendered fidelity.
+The shared release-text owner must normalize markup without shortening prose;
+desktop/mobile authored and fallback readback must prove the resulting contract.
+
 ### Cross-surface experience proof
 Every generated-surface change requires desktop/mobile browser checks of normal,
 empty or fallback, and degraded/error states, followed by independent screenshot

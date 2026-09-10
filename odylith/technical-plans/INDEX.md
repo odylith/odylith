@@ -31,6 +31,7 @@ Last updated (UTC): 2026-06-26
 | `odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md` | In progress | 2026-04-18 | 2026-04-18 | `B-126` |
 | `odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md` | In progress | 2026-05-01 | 2026-05-01 | `B-141` |
 | `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md` | In progress | 2026-06-26 | 2026-06-26 | `B-142` |
+| `odylith/technical-plans/in-progress/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md` | In progress | 2026-07-20 | 2026-09-09 | `B-145` |
 
 ## Parked Plans
 

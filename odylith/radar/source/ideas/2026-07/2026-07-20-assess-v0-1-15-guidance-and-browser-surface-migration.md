@@ -1,4 +1,4 @@
-status: finished
+status: implementation
 
 idea_id: B-145
 
@@ -28,7 +28,7 @@ confidence: High
 
 founder_override: no
 
-promoted_to_plan: odylith/technical-plans/done/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md
+promoted_to_plan: odylith/technical-plans/in-progress/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md
 
 execution_model: standard
 
@@ -61,6 +61,14 @@ supersedes:
 superseded_by:
 
 ## Problem
+The clean candidate at `bbe312144e75bdde37d1fa93f569d9d27df06eb0` changes 809
+consumer-sensitive paths relative to published v0.1.14 at
+`fae446995e13e12409e50f944a336dbc846db90a`. CB-337 established that earlier
+dirty-only checks could forget committed changes. This assessment is reopened:
+its historical bindings do not qualify the current release-wide comparison.
+
+Historical bindings from earlier snapshots, retained for traceability only:
+
 The v0.1.15 release changes managed guidance, browser-rendered governance surfaces, and install-managed assets. Existing consumer installs need an explicit assessment before promotion. Evidence markers: `migration-observer:0.1.15:guidance-and-skills:1dbd05321562`; `migration-observer:0.1.15:guidance-and-skills:5cf1c66e46da`; `migration-observer:0.1.15:browser-surfaces:e400b39b824e`; `migration-observer:0.1.15:browser-surfaces:835aaa4f49de`; `migration-observer:0.1.15:browser-surfaces:9a4db93486ab`; `migration-observer:0.1.15:browser-surfaces:e64341855d69`; `migration-observer:0.1.15:browser-surfaces:28bfbc30ae65`; `migration-observer:0.1.15:browser-surfaces:068dac56194b`; `migration-observer:0.1.15:browser-surfaces:341c9fc14c4e`; `migration-observer:0.1.15:public-docs-and-release-guidance:b91b6c7e0995`; `migration-observer:0.1.15:install-managed-assets:352b7f58e4df`; `migration-observer:0.1.15:install-managed-assets:fae6b20b969f`; `migration-observer:0.1.15:install-managed-assets:46796f8138f3`; `migration-observer:0.1.15:install-managed-assets:87c9b491c829`.
 
 ## Customer
@@ -70,12 +78,16 @@ Odylith operators upgrading managed guidance, skill, Atlas, and Casebook browser
 Make upgrade impact explicit, reversible, and traceable rather than relying on implicit regenerated assets.
 
 ## Proposed Solution
-Assess the final changed-path set, bind the exact fingerprints to this record, and verify that consumer-owned governance source remains untouched by upgrade, reinstall, doctor, and dashboard refresh.
+Compare the published predecessor and complete candidate trees, map each
+classified path to its compatibility decision and proof, and exercise the actual
+published runtime with populated governance. Bind final fingerprints only after
+the assessment is complete; do not infer source preservation from an empty repo.
 
 ## Scope
 - Managed guidance and skill surfaces.
 - Browser-rendered Atlas, Casebook, Compass, Radar, and Registry surfaces.
 - Install-managed project and bundle assets.
+- Operator CLI contracts and public release guidance.
 
 ## Non-Goals
 - Do not migrate or rewrite consumer-owned Radar, Registry, Atlas, Casebook, or Compass source records.
@@ -83,21 +95,34 @@ Assess the final changed-path set, bind the exact fingerprints to this record, a
 
 ## Risks
 - Domain/compliance/policy risk: Browser and guidance changes can alter operator-visible behavior and navigation; assessment must cover accessibility, migration compatibility, and no-data-loss posture.
-- Security posture: No secrets or customer content. Use only deterministic local inspection; do not mutate consumer repositories while assessing migration exposure.
+- Security posture: No secrets or customer content. Run migration witnesses only
+  in explicitly owned temporary consumers, preserving source bytes, modes and
+  recovery evidence. Do not mutate user-owned consumer projects.
 
 ## Dependencies
-- Release migration gate and the completed installed Greenfield release campaign.
+- CB-337 release-comparison custody, CB-338 Atlas identity correction, and the
+  populated published-predecessor witness. Greenfield semantic release proof
+  remains independently required; historical campaign totals are not current proof.
 
 ## Success Metrics
-All final observer markers resolve to this finished assessment; `odylith release migration-gate --repo-root . --target-version 0.1.15` passes; consumer-owned source remains unchanged while managed runtime, guidance, and generated assets refresh through normal recovery paths.
+Every final classified path has an explicit compatibility decision and current
+evidence; the exact predecessor-bound migration gate passes; populated authored
+source bytes and modes survive managed replacement; upgraded governance is
+readable in the installed desktop/mobile dashboard. No required empty check passes.
 
 ## Validation
-- Recalculate the migration gate against the final dirty path set.
-- Confirm the installed Greenfield campaign completed 200 of 200 cases with no product-path failures.
+- Run `odylith release migration-gate --repo-root . --target-version 0.1.15 --base-ref v0.1.14`
+  against the clean final candidate, with the predecessor resolved from published metadata.
+- Verify the complete distribution, published-predecessor identity, nonzero
+  authored source inventory, exact source preservation and installed readback.
+- Inspect real desktop/mobile populated views; retain the broader normal,
+  empty/fallback and degraded/error proof with its exact candidate boundaries.
 - Run `git diff --check` before the release checkpoint.
 
 ## Rollout
-- Ship through the standard managed install, upgrade, reinstall, doctor, runtime-refresh, and dashboard-refresh paths. No consumer source migration is required.
+- Qualify standard managed paths before release. The published v0.1.14 launcher
+  may refuse a target migration it does not register; validate the hosted
+  continuation on that same preserved consumer. Do not reset it or bypass the gate.
 
 ## Why Now
 The release gate observed these consumer-visible changes in the current diff; the assessment must bind the exact final fingerprints before promotion.
@@ -109,20 +134,58 @@ Assess the changed guidance and browser surfaces, record compatibility and rollb
 - `odylith`
 
 ## Interface Changes
-- No new consumer command or source schema. Existing managed refresh paths remain the interface.
+- Include the additive `component update-description` contract and distinguish
+  consumer commands from maintainer-only release-comparison options. Current
+  CONFIRM publishes a complete sealed package without generating or repairing it.
 
 ## Migration/Compatibility
-- Existing consumer-owned governance source stays in place. The Greenfield
-  profile documentation and regenerated governance views change no stored
-  consumer schema or source truth. Managed guidance, runtime, public docs, and
-  generated browser assets refresh normally; rollback returns the managed
-  runtime and assets without source-data migration.
+- Consumer-owned source preservation is an invariant to prove, not an assumption
+  inherited from older assessments. Managed runtime/guidance replacement and
+  derived-view refresh have different ownership from authored records.
+- Never roll back an already observed published package silently. Preserve an
+  explicit recovery outcome when publication or readback cannot complete safely.
+- Released v0.1.14 predates the later sealed-generation architecture. Do not add
+  an unreleased development-journal converter to this actual predecessor assessment.
 
 ## Test Strategy
-- The migration gate validates the completed marker binding. The installed Greenfield campaign validates the affected managed runtime and release assets end to end.
+- The gate proves exact assessment binding, not compatibility by itself. Pair
+  it with independently reviewed path coverage, installed migration witnesses,
+  source/mode preservation and rendered readback. Keep semantic/SLA gates separate.
 
 ## Open Questions
-- None. The final observed path set is assessed and does not require a source-data migration.
+- Does the actual published predecessor preserve populated authored records and
+  deliver nonempty, readable upgraded surfaces through the supported continuation?
+- Does each of the five current path classes have sufficient version-bound
+  evidence, including current host guidance and recovery limitations?
+
+## Current release-wide evidence (2026-09-09)
+
+The frozen clean candidate comparison identifies guidance/skills (134 paths),
+operator CLI (65), public docs (30), browser surfaces (577), and install-managed
+assets (132). Classes overlap; 809 paths are distinct. All five assessments
+remain incomplete. The full report and candidate distribution are retained in
+`/private/tmp/odylith-populated-predecessor-proof.0JeIRw/`.
+
+All twelve local distribution checksums pass; build provenance records clean
+`bbe31214`, and all 3,204 frozen source inputs remain unchanged after the build.
+This is a complete local unsigned candidate, not a published release or populated
+upgrade proof. Current post-CB-338 source passes 5,058 runtime, 1,437 install,
+180 CLI and 376 browser checks with one documented Radar fixture-state skip.
+The earlier actual published-predecessor and same-version recovery witnesses
+used empty governance sources; neither closes the populated migration gap.
+
+Retain historical decisions below without treating their fingerprints or test
+totals as approval of this reopened scope. No current completion markers have
+been added. Greenfield quality, 60/90/120, current-desktop automatic delivery and
+the protected final holdout remain open.
+
+The coverage review found current, not historical, release-note references to
+disabled Greenfield apply and post-apply refresh. CB-340 owns their correction;
+two red controls precede matching authored/bundled copy and nine passing tests.
+Rendered and independent proof remain pending. CB-339 separately records that
+the existing reconciliation command skips a reopened plan missing from Active
+Plans; its validator correctly fails. Repair that canonical owner instead of
+hand-editing the index or treating zero reconciliation decisions as completion.
 
 ## 2026-09-06 Component Description Command Assessment
 

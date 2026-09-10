@@ -311,7 +311,7 @@ def test_refresh_runtime_artifacts_reuses_initial_input_fingerprint_for_fresh_bu
         lambda **_kwargs: None,
     )
     monkeypatch.setattr(
-        render_compass_dashboard.compass_standup_brief_maintenance,
+        render_compass_dashboard.compass_standup_brief_maintenance_worker,
         "maybe_spawn_background",
         lambda **_kwargs: None,
     )
@@ -1160,7 +1160,7 @@ def test_refresh_runtime_artifacts_shell_safe_stamps_and_spawns_narration_mainte
         _apply_terminal_state,
     )
     monkeypatch.setattr(
-        render_compass_dashboard.compass_standup_brief_maintenance,
+        render_compass_dashboard.compass_standup_brief_maintenance_worker,
         "maybe_spawn_background",
         lambda **kwargs: spawned.append(Path(kwargs["repo_root"]).resolve()) or 4321,
     )

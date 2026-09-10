@@ -6,13 +6,13 @@ import json
 from pathlib import Path
 import pytest
 import re
-import shutil
 import time
 from urllib.parse import quote
 
 from odylith.runtime.surfaces import render_backlog_ui
 
 from tests.integration.runtime.surface_browser_test_support import (
+    _copy_logical_working_fixture,
     _assert_atlas_selection,
     _assert_casebook_counts,
     _assert_casebook_selection,
@@ -66,7 +66,7 @@ def test_browser_thread_preserves_skip_outcomes() -> None:
 
 def _ready_compass_fixture_root(tmp_path: Path) -> Path:
     fixture_root = tmp_path / "fixture"
-    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _copy_logical_working_fixture(_REPO_ROOT, fixture_root)
     runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
     runtime_json_path = runtime_dir / "current.v1.json"
     runtime_js_path = runtime_dir / "current.v1.js"

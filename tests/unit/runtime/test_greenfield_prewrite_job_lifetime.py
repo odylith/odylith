@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_prewrite_stage_root import (
 )
 from odylith.runtime.surfaces import compass_refresh_contract as contract
 from odylith.runtime.surfaces import compass_standup_brief_maintenance as maintenance
+from odylith.runtime.surfaces import compass_standup_brief_maintenance_worker as worker
 
 
 def _enqueue(root: Path) -> dict:
@@ -29,7 +30,7 @@ def _enqueue(root: Path) -> dict:
 def test_prewrite_does_not_enqueue_background_narration(tmp_path: Path) -> None:
     with staged_greenfield_prewrite_root(tmp_path) as stage:
         assert _enqueue(stage) == {}
-        assert not maintenance.maintenance_request_path(repo_root=stage).exists()
+        assert not worker.maintenance_request_path(repo_root=stage).exists()
 
 
 def test_prewrite_does_not_launch_existing_request(
@@ -37,9 +38,9 @@ def test_prewrite_does_not_launch_existing_request(
 ) -> None:
     monkeypatch.delenv("ODYLITH_COMPASS_STANDUP_BACKGROUND_DISABLE", raising=False)
     monkeypatch.setenv("ODYLITH_COMPASS_STANDUP_BACKGROUND_ALLOW_IN_TESTS", "1")
-    monkeypatch.setattr(maintenance, "_maintenance_worker_pids", lambda **_: [])
-    monkeypatch.setattr(maintenance, "_pid_alive", lambda _: False)
-    monkeypatch.setattr(maintenance, "_worker_epoch", lambda **_: "test-epoch")
+    monkeypatch.setattr(worker, "maintenance_worker_pids", lambda **_: [])
+    monkeypatch.setattr(worker, "pid_alive", lambda _: False)
+    monkeypatch.setattr(worker, "current_worker_epoch", lambda **_: "test-epoch")
     calls = []
 
     def spawn(*args, **kwargs):
@@ -47,18 +48,18 @@ def test_prewrite_does_not_launch_existing_request(
         return SimpleNamespace(pid=4242)
 
     with staged_greenfield_prewrite_root(tmp_path) as stage:
-        request = maintenance.maintenance_request_path(repo_root=stage)
+        request = worker.maintenance_request_path(repo_root=stage)
         request.parent.mkdir(parents=True, exist_ok=True)
         request.write_text(
             '{"global":{"24h":{"fingerprint":"staged-input","fact_packet":{"window":"24h"}}}}',
             encoding="utf-8",
         )
-        monkeypatch.setattr(maintenance.subprocess, "Popen", spawn)
-        assert maintenance.maybe_spawn_background(repo_root=stage) == 0
+        monkeypatch.setattr(worker.subprocess, "Popen", spawn)
+        assert worker.maybe_spawn_background(repo_root=stage) == 0
         assert calls == []
 
     assert _enqueue(tmp_path)
-    assert maintenance.maybe_spawn_background(repo_root=tmp_path) == 4242
+    assert worker.maybe_spawn_background(repo_root=tmp_path) == 4242
     assert len(calls) == 1
     assert calls[0][1]["cwd"] == str(tmp_path)
 

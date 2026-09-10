@@ -7,36 +7,67 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import os
 from pathlib import Path
 import re
+import shutil
 import threading
 import traceback
-from typing import Iterator
+from typing import Callable, Iterator
 from urllib.parse import parse_qs, urlparse
 
 import pytest
+
+from odylith.runtime.domain_intelligence.greenfield_repository_write_set import greenfield_repository_layout
 
 playwright_sync = pytest.importorskip("playwright.sync_api")
 
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
-_LOCAL_SURFACE_HTML_RE = re.compile(
-    r"^http://127\.0\.0\.1:\d+/odylith/(radar|registry|casebook|atlas|compass)/[^?#]+\.html(?:[?#].*)?$"
-)
-_LOCAL_COMPASS_HISTORY_JSON_RE = re.compile(
-    r"^http://127\.0\.0\.1:\d+/odylith/compass/runtime/history/(?:index|\d{4}-\d{2}-\d{2})\.v1\.json(?:[?#].*)?$"
-)
-_LOCAL_COMPASS_RUNTIME_JSON_RE = re.compile(
-    r"^http://127\.0\.0\.1:\d+/odylith/compass/runtime/current\.v1\.(?:json|js)(?:[?#].*)?$"
-)
-_LOCAL_COMPASS_SOURCE_TRUTH_JSON_RE = re.compile(
-    r"^http://127\.0\.0\.1:\d+/odylith/compass/compass-source-truth\.v1\.json(?:[?#].*)?$"
-)
-_LOCAL_DETAIL_SHARD_JS_RE = re.compile(
-    r"^http://127\.0\.0\.1:\d+/odylith/(?:radar/(?:backlog-detail|backlog-document)|registry/registry-detail|casebook/casebook-detail)-shard-\d+\.v1\.js(?:[?#].*)?$"
-)
 _EXTERNAL_MERMAID_CDN_REQUEST_RE = re.compile(
     r"^GET https://cdn\.jsdelivr\.net/npm/mermaid@11/dist/mermaid\.min\.js(?:\s+.*)?$"
 )
 _SHELL_QUERY_PARAM_TIMEOUT_MS = 60000
+
+
+def _copy_logical_working_fixture(
+    source_root: Path,
+    fixture_root: Path,
+    *,
+    include_file: Callable[[Path], bool] | None = None,
+) -> dict[str, Path]:
+    """Copy a mutable logical view, never the source's sealed browser entry.
+
+    Returned paths retain physical source provenance when the working shell is
+    mapped to index.html. Neither publication state nor immutable generations
+    belong to this disposable, deliberately inactive fixture.
+    """
+    source_root = source_root.resolve()
+    source_dir = source_root / "odylith"
+    shell = greenfield_repository_layout(source_root).target_path("odylith/index.html")
+    if shell.is_symlink() or not shell.is_file():
+        raise ValueError("Browser fixture requires a regular logical working shell")
+    if b"odylith-publication" in shell.read_bytes():
+        raise ValueError("Browser fixture logical working shell is a publication carrier")
+    sources = {"index.html": shell}
+    directories = []
+    for path in sorted(source_dir.rglob("*")):
+        relative = path.relative_to(source_dir)
+        if relative.as_posix() in {"index.html", "tooling-shell.html"}:
+            continue
+        if path.is_symlink():
+            raise ValueError(f"Browser fixture source contains an unsafe symlink: {relative}")
+        if path.is_dir():
+            directories.append(relative)
+        elif path.is_file() and (include_file is None or include_file(relative)):
+            sources[relative.as_posix()] = path
+    destination = fixture_root / "odylith"
+    destination.mkdir(parents=True, exist_ok=False)
+    if include_file is None:
+        for relative in directories:
+            (destination / relative).mkdir(parents=True, exist_ok=True)
+    for relative, source in sources.items():
+        target = destination / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+    return sources
 
 
 @contextlib.contextmanager
@@ -112,40 +143,9 @@ def _new_page(context) -> tuple[object, list[str], list[str], list[str], list[st
         page_errors.append(str(error))
 
     def _on_request_failed(request) -> None:  # noqa: ANN001
-        url = str(getattr(request, "url", "") or "")
-        if not url or url.startswith(("about:", "data:", "blob:")):
-            return
-        resource_type = str(getattr(request, "resource_type", "") or "").strip().lower()
-        failure = getattr(request, "failure", None)
-        error_text = ""
-        if callable(failure):
-            payload = failure() or {}
-            if isinstance(payload, dict):
-                error_text = str(payload.get("errorText") or "").strip()
-        lowered_error = error_text.lower()
-        if (
-            resource_type == "document"
-            and _LOCAL_SURFACE_HTML_RE.match(url)
-            and (not lowered_error or "err_aborted" in lowered_error or "abort" in lowered_error)
-        ):
-            return
-        if _LOCAL_COMPASS_HISTORY_JSON_RE.match(url) and (
-            not lowered_error or "err_aborted" in lowered_error or "abort" in lowered_error
-        ):
-            return
-        if _LOCAL_COMPASS_RUNTIME_JSON_RE.match(url) and (
-            not lowered_error or "err_aborted" in lowered_error or "abort" in lowered_error
-        ):
-            return
-        if _LOCAL_COMPASS_SOURCE_TRUTH_JSON_RE.match(url) and (
-            not lowered_error or "err_aborted" in lowered_error or "abort" in lowered_error
-        ):
-            return
-        if _LOCAL_DETAIL_SHARD_JS_RE.match(url) and (
-            not lowered_error or "err_aborted" in lowered_error or "abort" in lowered_error
-        ):
-            return
-        failed_requests.append(f"{request.method} {url} {error_text}".strip())
+        failure = request.failure
+        error_text = failure if failure is not None else "<unknown failure>"
+        failed_requests.append(f"{request.method} {request.url} {error_text}")
 
     def _on_response(response) -> None:  # noqa: ANN001
         url = str(getattr(response, "url", "") or "")
@@ -462,6 +462,11 @@ def _select_radar_workstream(radar, idea_id: str) -> None:  # noqa: ANN001
     _wait_for_radar_detail_id(radar, idea_id)
 
 
+def _wait_for_registry_detail_id(registry, component_id: str) -> None:  # noqa: ANN001
+    """Wait for the selected component's detail, not its loading-state row."""
+    registry.locator(f'#detail[data-selected-component="{component_id}"] .component-name').wait_for(timeout=15000)
+
+
 def _select_registry_component_with_detail_selector(
     page,
     *,
@@ -482,6 +487,7 @@ def _select_registry_component_with_detail_selector(
         button.click()
         _wait_for_shell_query_param(page, tab="registry", key="component", value=component_id)
         registry.locator(f'button[data-component="{component_id}"].active').wait_for(timeout=15000)
+        _wait_for_registry_detail_id(registry, component_id)
         registry.locator(detail_ready_selector).wait_for(timeout=15000)
         if _locator_appears(registry.locator(f"#detail {detail_selector}"), timeout=selector_timeout):
             return registry, component_id
@@ -699,6 +705,7 @@ def _assert_registry_selection(page, component_id: str) -> None:  # noqa: ANN001
     registry = page.frame_locator("#frame-registry")
     registry.locator("h1", has_text="Component Registry").wait_for(timeout=15000)
     registry.locator(f'button[data-component="{component_id}"].active').wait_for(timeout=15000)
+    _wait_for_registry_detail_id(registry, component_id)
 
 
 def _assert_atlas_selection(page, *, workstream: str, diagram_id: str) -> None:  # noqa: ANN001

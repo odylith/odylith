@@ -668,217 +668,8 @@
   }
 }
 
-.shell-upgrade-spotlight-open {
-  overflow: hidden;
-}
-
-.upgrade-spotlight-stage {
-  position: absolute;
-  inset: 18px;
-  z-index: 60;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-}
-
-.upgrade-spotlight-backdrop {
-  appearance: none;
-  position: absolute;
-  inset: 0;
-  border: 0;
-  border-radius: 24px;
-  background: transparent;
-  box-shadow: none;
-  backdrop-filter: none;
-  cursor: pointer;
-}
-
-.upgrade-spotlight {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  gap: 16px;
-  width: min(760px, 100%);
-  padding: 30px 30px 28px;
-  border: 1px solid rgba(191, 211, 243, 0.34);
-  border-radius: 30px;
-  background:
-    radial-gradient(circle at 100% 0%, rgba(125, 211, 252, 0.16) 0%, transparent 24%),
-    radial-gradient(circle at 0% 100%, rgba(96, 165, 250, 0.18) 0%, transparent 28%),
-    linear-gradient(155deg, #274d8c 0%, #1d4382 46%, #163a72 100%);
-  box-shadow: 0 28px 70px rgba(10, 28, 56, 0.26);
-  color: #f8fbff;
-  overflow: hidden;
-  animation: upgrade-spotlight-rise 320ms cubic-bezier(.2, .9, .2, 1);
-}
-
-.upgrade-spotlight-main {
-  display: grid;
-  gap: 14px;
-  min-width: 0;
-  align-content: start;
-  margin: 0;
-  padding-right: 104px;
-}
-
-.upgrade-spotlight-meta-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.upgrade-spotlight-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 10px;
-  border: 1px solid rgba(232, 242, 255, 0.24);
-  border-radius: 999px;
-  background: rgba(239, 246, 255, 0.12);
-  color: rgba(248, 251, 255, 0.92);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-.upgrade-spotlight-title {
-  margin: 0;
-  max-width: 15ch;
-  font-size: clamp(32px, 4.4vw, 50px);
-  line-height: 0.96;
-  letter-spacing: -0.05em;
-  color: #ffffff;
-}
-
-.upgrade-spotlight-title-copy,
-.upgrade-spotlight-title-version {
-  display: block;
-}
-
-.upgrade-spotlight-title-version {
-  margin-top: 10px;
-  font-size: clamp(24px, 3vw, 34px);
-  line-height: 1;
-  letter-spacing: -0.03em;
-  color: rgba(229, 240, 255, 0.94);
-}
-
-.upgrade-spotlight-story-summary,
-.upgrade-spotlight-list,
-.upgrade-spotlight-meta {
-  margin: 0;
-}
-
-.upgrade-spotlight-story-summary {
-  max-width: 44ch;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.6;
-  color: rgba(248, 251, 255, 0.92);
-}
-
-.upgrade-spotlight-action-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.upgrade-spotlight-list {
-  max-width: 48ch;
-  padding-left: 18px;
-  display: grid;
-  gap: 10px;
-  color: rgba(233, 242, 255, 0.88);
-  font-size: 15px;
-  line-height: 1.55;
-}
-
-.upgrade-spotlight-list li::marker {
-  color: #a5ccff;
-}
-
-.upgrade-spotlight-meta {
-  color: rgba(228, 239, 255, 0.68);
-  font-size: 11px;
-}
-
-.upgrade-spotlight-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 42px;
-  padding: 0 18px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: #ffffff;
-  color: #1c447f;
-  font-weight: 700;
-  text-decoration: none;
-  box-shadow: 0 14px 32px rgba(11, 26, 52, 0.24);
-}
-
-.upgrade-spotlight-link:hover,
-.upgrade-spotlight-link:focus-visible {
-  background: #eff6ff;
-  color: #163f7b;
-}
-
-.upgrade-spotlight-dismiss {
-  appearance: none;
-  position: absolute;
-  top: 18px;
-  right: 18px;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  min-width: 88px;
-  height: 38px;
-  border: 1px solid rgba(165, 196, 235, 0.9);
-  border-radius: 999px;
-  padding: 0 14px 0 12px;
-  background: #eef7ff;
-  color: #143e7a;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: 0;
-  cursor: pointer;
-  box-shadow: 0 14px 28px rgba(10, 24, 45, 0.18);
-}
-
-.upgrade-spotlight-dismiss::before {
-  content: "\00d7";
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 1;
-  transform: translateY(-1px);
-}
-
-.upgrade-spotlight-dismiss:hover,
-.upgrade-spotlight-dismiss:focus-visible {
-  border-color: rgba(128, 171, 224, 0.98);
-  background: #ddecff;
-  color: #0f3467;
-  transform: scale(1.02);
-}
-
-.upgrade-spotlight-stage[hidden],
-.upgrade-spotlight[hidden],
 .welcome-state[hidden] {
   display: none !important;
-}
-
-@keyframes upgrade-spotlight-rise {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.985);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
 }
 
 .welcome-state {
@@ -1480,24 +1271,6 @@
 }
 
 @media (max-width: 960px) {
-  .upgrade-spotlight-stage {
-    inset: 12px;
-    padding: 16px;
-  }
-
-  .upgrade-spotlight {
-    grid-template-columns: minmax(0, 1fr);
-    padding: 58px 20px 20px;
-  }
-
-  .upgrade-spotlight-title {
-    max-width: none;
-  }
-
-  .upgrade-spotlight-main {
-    padding-right: 0;
-  }
-
   .welcome-state {
     inset: 12px 12px auto calc(12px + var(--brief-handle-width) + 10px);
     width: auto;
@@ -2544,6 +2317,247 @@
         width: calc(100% - var(--brief-handle-width));
       }
     }
+
+/* Keep the Close control outside the viewport-bounded content scrollport. */
+.shell-upgrade-spotlight-open {
+  overflow: hidden;
+}
+
+.upgrade-spotlight-stage {
+  position: absolute;
+  inset: 18px;
+  z-index: 60;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  place-items: center;
+  padding: 24px;
+}
+
+.upgrade-spotlight-backdrop {
+  appearance: none;
+  position: absolute;
+  inset: 0;
+  border: 0;
+  border-radius: 24px;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  cursor: pointer;
+}
+
+.upgrade-spotlight {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  gap: 16px;
+  width: min(760px, 100%);
+  min-height: 0;
+  max-height: 100%;
+  padding: 30px 30px 28px;
+  border: 1px solid rgba(191, 211, 243, 0.34);
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(125, 211, 252, 0.16) 0%, transparent 24%),
+    radial-gradient(circle at 0% 100%, rgba(96, 165, 250, 0.18) 0%, transparent 28%),
+    linear-gradient(155deg, #274d8c 0%, #1d4382 46%, #163a72 100%);
+  box-shadow: 0 28px 70px rgba(10, 28, 56, 0.26);
+  color: #f8fbff;
+  overflow: hidden;
+  animation: upgrade-spotlight-rise 320ms cubic-bezier(.2, .9, .2, 1);
+}
+
+.upgrade-spotlight-main {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  overflow-wrap: anywhere;
+  align-content: start;
+  margin: 0;
+  padding-right: 104px;
+}
+
+.upgrade-spotlight-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.upgrade-spotlight-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border: 1px solid rgba(232, 242, 255, 0.24);
+  border-radius: 999px;
+  background: rgba(239, 246, 255, 0.12);
+  color: rgba(248, 251, 255, 0.92);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.upgrade-spotlight-title {
+  margin: 0;
+  max-width: 15ch;
+  font-size: clamp(32px, 4.4vw, 50px);
+  line-height: 0.96;
+  letter-spacing: -0.05em;
+  color: #ffffff;
+}
+
+.upgrade-spotlight-title-copy,
+.upgrade-spotlight-title-version {
+  display: block;
+}
+
+.upgrade-spotlight-title-version {
+  margin-top: 10px;
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: rgba(229, 240, 255, 0.94);
+}
+
+.upgrade-spotlight-story-summary,
+.upgrade-spotlight-list,
+.upgrade-spotlight-meta {
+  margin: 0;
+}
+
+.upgrade-spotlight-story-summary {
+  max-width: 44ch;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.6;
+  color: rgba(248, 251, 255, 0.92);
+}
+
+.upgrade-spotlight-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.upgrade-spotlight-list {
+  max-width: 48ch;
+  padding-left: 18px;
+  display: grid;
+  gap: 10px;
+  color: rgba(233, 242, 255, 0.88);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.upgrade-spotlight-list li::marker {
+  color: #a5ccff;
+}
+
+.upgrade-spotlight-meta {
+  color: rgba(228, 239, 255, 0.68);
+  font-size: 11px;
+}
+
+.upgrade-spotlight-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: #ffffff;
+  color: #1c447f;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 14px 32px rgba(11, 26, 52, 0.24);
+}
+
+.upgrade-spotlight-link:hover,
+.upgrade-spotlight-link:focus-visible {
+  background: #eff6ff;
+  color: #163f7b;
+}
+
+.upgrade-spotlight-dismiss {
+  appearance: none;
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 88px;
+  height: 38px;
+  border: 1px solid rgba(165, 196, 235, 0.9);
+  border-radius: 999px;
+  padding: 0 14px 0 12px;
+  background: #eef7ff;
+  color: #143e7a;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+  cursor: pointer;
+  box-shadow: 0 14px 28px rgba(10, 24, 45, 0.18);
+}
+
+.upgrade-spotlight-dismiss::before {
+  content: "\00d7";
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+.upgrade-spotlight-dismiss:hover,
+.upgrade-spotlight-dismiss:focus-visible {
+  border-color: rgba(128, 171, 224, 0.98);
+  background: #ddecff;
+  color: #0f3467;
+  transform: scale(1.02);
+}
+
+.upgrade-spotlight-stage[hidden],
+.upgrade-spotlight[hidden] {
+  display: none !important;
+}
+
+@keyframes upgrade-spotlight-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 960px) {
+  .upgrade-spotlight-stage {
+    inset: 12px;
+    padding: 16px;
+  }
+
+  .upgrade-spotlight {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 58px 20px 20px;
+  }
+
+  .upgrade-spotlight-title {
+    max-width: none;
+  }
+
+  .upgrade-spotlight-main {
+    padding-right: 0;
+  }
+}
 
 .project-pane {
   overflow: auto;
@@ -4381,7 +4395,7 @@ html, body {
         </nav>
       </div>
     </header>
-    <p class="shell-snapshot-note">Dashboard snapshot · Status captured 2026-09-10T05:48:25Z. Reopen the published dashboard after a refresh to see newer status.</p>
+    <p class="shell-snapshot-note">Dashboard snapshot · Status captured 2026-09-10T07:19:55Z. Reopen the published dashboard after a refresh to see newer status.</p>
 
 
     <section class="viewport" aria-live="polite">
@@ -4413,8 +4427,8 @@ html, body {
         <div class="project-chips"><span class="project-label-chip project-label-chip-neutral">coding-agent governance</span><span class="project-label-chip project-label-chip-success">Source-backed runtime</span><span class="project-label-chip project-label-chip-neutral">High complexity</span></div>
       </div>
       <aside class="project-hero-rail">
-        <section class="project-focus-card"><p>Current focus</p><h2>Greenfield typed semantic compiler and patchset repair</h2></section>
-        <section class="project-open-card"><p>Open risks</p><ul><li>Shared supporting references can manufacture confident workstream ownership</li><li>Risk normalization splits wrapped list items and invents missing mitigations</li><li>Greenfield release proof diverges from product semantic owners</li><li>Greenfield flat fact arrays permit invalid singular cardinality</li></ul></section>
+        <section class="project-focus-card"><p>Current focus</p><h2>Workstream lineage reopen update for <a class="project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-145" data-tooltip="Assess v0.1.15 guidance and browser surface migration" aria-label="Assess v0.1.15 guidance and browser surface migration">B-145</a></h2></section>
+        <section class="project-open-card"><p>Open risks</p><ul><li>Candidate release notes advertise the disabled greenfield apply flow</li><li>Shared supporting references can manufacture confident workstream ownership</li><li>Risk normalization splits wrapped list items and invents missing mitigations</li><li>Greenfield release proof diverges from product semantic owners</li></ul></section>
       </aside>
     </div>
   </header>
@@ -4423,23 +4437,23 @@ html, body {
     <main class="project-main">
       <section class="project-panel project-product-story">
         <div class="project-panel-head"><h2>Product Story</h2></div>
-        <article class="project-story-narrative"><h3>How Odylith helps repository operators keep coding-agent work grounded, governed, validated, and remembered across sessions</h3><p>Odylith helps repository operators keep coding-agent work grounded, governed, validated, and remembered across sessions.</p><p>The first usable workflow for 0.1.15 is cross-host hook latency budget and fast-path startup and universal greenfield domain intelligence. The next move is to reconnect Registry, Radar, Atlas, Compass, and the benchmark docs to the current scope.</p><p>Release 0.1.15 is coherent when the product workflow, owned boundaries, topology, and validation evidence agree before implementation readiness is claimed. The first open risk is Shared supporting references can manufacture confident workstream ownership from casebook: P1 · Open.</p><p>After the product story is clear, Radar turns the active work into <a class="project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-141" data-tooltip="Cross-host hook latency budget and fast-path startup" aria-label="Cross-host hook latency budget and fast-path startup">B-141</a> Cross-host hook latency budget and fast-path startup and <a class="project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-142" data-tooltip="Universal greenfield domain intelligence" aria-label="Universal greenfield domain intelligence">B-142</a> Universal greenfield domain intelligence. Registry records anchor that work in Odylith, Dashboard, Radar, and Atlas. Atlas records give reviewers Product Governance Loop, Context And Agent Execution Stack, and Diagnosis And Remediation Loop. Evidence stays bounded to Compass runtime state, Radar workstreams, Registry component records, Atlas topology records, and Casebook risk records, so the story does not outrun the source records.</p><ul class="project-story-records"><li>Radar carries <a class="project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-141" data-tooltip="Cross-host hook latency budget and fast-path startup" aria-label="Cross-host hook latency budget and fast-path startup">B-141</a> Cross-host hook latency budget and fast-path startup and <a class="project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-142" data-tooltip="Universal greenfield domain intelligence" aria-label="Universal greenfield domain intelligence">B-142</a> Universal greenfield domain intelligence.</li><li>Registry names the owned boundaries as Odylith, Dashboard, Radar, and Atlas.</li><li>Atlas gives reviewers Product Governance Loop, Context And Agent Execution Stack, and Diagnosis And Remediation Loop.</li><li>Evidence is bounded by Compass runtime state, Radar workstreams, Registry component records, Atlas topology records, and Casebook risk records.</li></ul></article>
+        <article class="project-story-narrative"><h3>How Odylith helps repository operators keep coding-agent work grounded, governed, validated, and remembered across sessions</h3><p>Odylith helps repository operators keep coding-agent work grounded, governed, validated, and remembered across sessions.</p><p>The first usable workflow for 0.1.15 is cross-host hook latency budget and fast-path startup and universal greenfield domain intelligence. The next move is to reconnect Registry, Radar, Atlas, Compass, and the benchmark docs to the current scope.</p><p>Release 0.1.15 is coherent when the product workflow, owned boundaries, topology, and validation evidence agree before implementation readiness is claimed. The first open risk is Candidate release notes advertise the disabled greenfield apply flow from casebook: P1 · InProgress.</p><p>After the product story is clear, Radar turns the active work into <a class="project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-141" data-tooltip="Cross-host hook latency budget and fast-path startup" aria-label="Cross-host hook latency budget and fast-path startup">B-141</a> Cross-host hook latency budget and fast-path startup and <a class="project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-142" data-tooltip="Universal greenfield domain intelligence" aria-label="Universal greenfield domain intelligence">B-142</a> Universal greenfield domain intelligence. Registry records anchor that work in Odylith, Dashboard, Radar, and Atlas. Atlas records give reviewers Product Governance Loop, Context And Agent Execution Stack, and Diagnosis And Remediation Loop. Evidence stays bounded to Compass runtime state, Radar workstreams, Registry component records, Atlas topology records, and Casebook risk records, so the story does not outrun the source records.</p><ul class="project-story-records"><li>Radar carries <a class="project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-141" data-tooltip="Cross-host hook latency budget and fast-path startup" aria-label="Cross-host hook latency budget and fast-path startup">B-141</a> Cross-host hook latency budget and fast-path startup and <a class="project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-142" data-tooltip="Universal greenfield domain intelligence" aria-label="Universal greenfield domain intelligence">B-142</a> Universal greenfield domain intelligence.</li><li>Registry names the owned boundaries as Odylith, Dashboard, Radar, and Atlas.</li><li>Atlas gives reviewers Product Governance Loop, Context And Agent Execution Stack, and Diagnosis And Remediation Loop.</li><li>Evidence is bounded by Compass runtime state, Radar workstreams, Registry component records, Atlas topology records, and Casebook risk records.</li></ul></article>
       </section>
-      <section class="project-panel project-participants"><div class="project-panel-head"><h2>Who participates?</h2><p>People who decide, change, and review the current work.</p></div><div class="project-card-grid project-actor-grid"><article class="project-actor-card"><h3>Operator</h3><span>Moves recovering work forward by choosing the next action and clearing blockers.</span></article><article class="project-actor-card"><h3>Maintainer</h3><span>Changes source or governance records only after checking Registry, Radar, Compass, Atlas, and Casebook evidence.</span></article><article class="project-actor-card"><h3>Reviewer</h3><span>Checks risk ownership, validation gaps, and contradiction paths.</span></article></div></section>
-      <section class="project-panel project-answer-strip" aria-label="Project summary table"><div class="project-answer-table"><table><tbody><tr><th scope="row">Who uses it?</th><td><strong>repository operators and coding agents</strong><p>Operators request repo work; agents execute it under Odylith controls.</p></td></tr><tr><th scope="row">What changes?</th><td><strong>coding-agent work</strong><p>Work moves from request to action with grounding, governance, validation, and memory.</p></td></tr><tr><th scope="row">What matters now?</th><td><strong>Benchmark Corpus Expansion</strong><p>Reconnect Registry, Radar, Atlas, Compass, and the benchmark docs to the current scope.</p></td></tr><tr><th scope="row">What risk matters?</th><td><strong>Shared supporting references can manufacture confident workstream ownership</strong><p>83 critical blockers remain open.</p></td></tr><tr><th scope="row">What proves it?</th><td><strong>State, work, shape, and risk evidence</strong><p>Compass shows state; Radar shows active work; Registry and Atlas show shape and topology; Casebook shows open risks.</p></td></tr></tbody></table></div></section>
+      <section class="project-panel project-participants"><div class="project-panel-head"><h2>Who participates?</h2><p>People who decide, change, and review the current work.</p></div><div class="project-card-grid project-actor-grid"><article class="project-actor-card"><h3>Operator</h3><span>Moves validating work forward by choosing the next action and clearing blockers.</span></article><article class="project-actor-card"><h3>Maintainer</h3><span>Changes source or governance records only after checking Registry, Radar, Compass, Atlas, and Casebook evidence.</span></article><article class="project-actor-card"><h3>Reviewer</h3><span>Checks risk ownership, validation gaps, and contradiction paths.</span></article></div></section>
+      <section class="project-panel project-answer-strip" aria-label="Project summary table"><div class="project-answer-table"><table><tbody><tr><th scope="row">Who uses it?</th><td><strong>repository operators and coding agents</strong><p>Operators request repo work; agents execute it under Odylith controls.</p></td></tr><tr><th scope="row">What changes?</th><td><strong>coding-agent work</strong><p>Work moves from request to action with grounding, governance, validation, and memory.</p></td></tr><tr><th scope="row">What matters now?</th><td><strong>Benchmark Corpus Expansion</strong><p>Reconnect Registry, Radar, Atlas, Compass, and the benchmark docs to the current scope.</p></td></tr><tr><th scope="row">What risk matters?</th><td><strong>Candidate release notes advertise the disabled greenfield apply flow</strong><p>84 critical blockers remain open.</p></td></tr><tr><th scope="row">What proves it?</th><td><strong>State, work, shape, and risk evidence</strong><p>Compass shows state; Radar shows active work; Registry and Atlas show shape and topology; Casebook shows open risks.</p></td></tr></tbody></table></div></section>
 
       <section class="project-panel project-scenario">
-        <div class="project-panel-head"><h2>Current recovering work</h2><p>Summarized from 0.1.15, 2 active workstreams, 12 runtime actions, and 5 evidence sources.</p></div>
+        <div class="project-panel-head"><h2>Current validating work</h2><p>Summarized from 0.1.15, 2 active workstreams, 12 runtime actions, and 5 evidence sources.</p></div>
         <div class="project-scenario-body">
-          <article class="project-scenario-cover"><strong>0.1.15 recovering work</strong><span>2 active workstreams; 12 runtime actions; 83 critical blockers.</span></article>
-          <article class="project-scenario-copy"><p><b>Active work</b><span>Greenfield typed semantic compiler and patchset repair</span></p><p><b>Next move</b><span>Reconnect Registry, Radar, Atlas, Compass, and the benchmark docs to the current scope.</span></p><p><b>Proof boundary</b><span>Compass runtime state, Radar workstreams, Registry component records, Atlas topology records, and Casebook risk records</span></p><p><b>Open risk</b><span>83 critical blockers remain open.</span></p></article>
+          <article class="project-scenario-cover"><strong>0.1.15 validating work</strong><span>2 active workstreams; 12 runtime actions; 84 critical blockers.</span></article>
+          <article class="project-scenario-copy"><p><b>Active work</b><span>Workstream lineage reopen update for <a class="project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-145" data-tooltip="Assess v0.1.15 guidance and browser surface migration" aria-label="Assess v0.1.15 guidance and browser surface migration">B-145</a></span></p><p><b>Next move</b><span>Reconnect Registry, Radar, Atlas, Compass, and the benchmark docs to the current scope.</span></p><p><b>Proof boundary</b><span>Compass runtime state, Radar workstreams, Registry component records, Atlas topology records, and Casebook risk records</span></p><p><b>Open risk</b><span>84 critical blockers remain open.</span></p></article>
         </div>
       </section>
-      <section class="project-panel"><div class="project-panel-head"><h2>What is active for 0.1.15?</h2><p>Generated from 2 release workstreams, 12 runtime actions, and 83 critical blockers.</p></div><div class="project-job-grid"><article class="project-job-card"><h3><a class="project-job-title-link" target="_top" href="?tab=radar&amp;workstream=B-141" aria-label="Open B-141 in Radar">Cross-host hook latency budget and fast-path startup</a></h3><p><a class="project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-141" data-tooltip="Cross-host hook latency budget and fast-path startup" aria-label="Cross-host hook latency budget and fast-path startup">B-141</a> is implementation in 0.1.15; priority P1.</p><div class="project-job-meta"><span class="project-job-workstream"><a class="project-workstream-chip project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-141" data-tooltip="Cross-host hook latency budget and fast-path startup" aria-label="Open B-141 in Radar">B-141</a></span><span class="project-label-chip project-label-chip-neutral">Current release</span></div></article><article class="project-job-card"><h3><a class="project-job-title-link" target="_top" href="?tab=radar&amp;workstream=B-142" aria-label="Open B-142 in Radar">Universal greenfield domain intelligence</a></h3><p><a class="project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-142" data-tooltip="Universal greenfield domain intelligence" aria-label="Universal greenfield domain intelligence">B-142</a> is implementation in 0.1.15; priority P1.</p><div class="project-job-meta"><span class="project-job-workstream"><a class="project-workstream-chip project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-142" data-tooltip="Universal greenfield domain intelligence" aria-label="Open B-142 in Radar">B-142</a></span><span class="project-label-chip project-label-chip-neutral">Current release</span></div></article><article class="project-job-card"><h3>Complex-Repo Benchmark Corpus Expansion and Frontier Improvement</h3><p>Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into the current scope</p><div class="project-job-meta"><span class="project-label-chip project-label-chip-neutral">Next action</span></div></article><article class="project-job-card"><h3>Resolve Shared supporting references can manufacture confident workstream ownership</h3><p>P1 · Open. Source: casebook.</p><div class="project-job-meta"><span class="project-label-chip project-label-chip-warning">Open risk</span></div></article><article class="project-job-card"><h3>Resolve Risk normalization splits wrapped list items and invents missing mitigations</h3><p>P1 · Open. Source: casebook.</p><div class="project-job-meta"><span class="project-label-chip project-label-chip-warning">Open risk</span></div></article></div></section>
+      <section class="project-panel"><div class="project-panel-head"><h2>What is active for 0.1.15?</h2><p>Generated from 2 release workstreams, 12 runtime actions, and 84 critical blockers.</p></div><div class="project-job-grid"><article class="project-job-card"><h3><a class="project-job-title-link" target="_top" href="?tab=radar&amp;workstream=B-141" aria-label="Open B-141 in Radar">Cross-host hook latency budget and fast-path startup</a></h3><p><a class="project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-141" data-tooltip="Cross-host hook latency budget and fast-path startup" aria-label="Cross-host hook latency budget and fast-path startup">B-141</a> is implementation in 0.1.15; priority P1.</p><div class="project-job-meta"><span class="project-job-workstream"><a class="project-workstream-chip project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-141" data-tooltip="Cross-host hook latency budget and fast-path startup" aria-label="Open B-141 in Radar">B-141</a></span><span class="project-label-chip project-label-chip-neutral">Current release</span></div></article><article class="project-job-card"><h3><a class="project-job-title-link" target="_top" href="?tab=radar&amp;workstream=B-142" aria-label="Open B-142 in Radar">Universal greenfield domain intelligence</a></h3><p><a class="project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-142" data-tooltip="Universal greenfield domain intelligence" aria-label="Universal greenfield domain intelligence">B-142</a> is implementation in 0.1.15; priority P1.</p><div class="project-job-meta"><span class="project-job-workstream"><a class="project-workstream-chip project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-142" data-tooltip="Universal greenfield domain intelligence" aria-label="Open B-142 in Radar">B-142</a></span><span class="project-label-chip project-label-chip-neutral">Current release</span></div></article><article class="project-job-card"><h3>Complex-Repo Benchmark Corpus Expansion and Frontier Improvement</h3><p>Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into the current scope</p><div class="project-job-meta"><span class="project-label-chip project-label-chip-neutral">Next action</span></div></article><article class="project-job-card"><h3>Resolve Candidate release notes advertise the disabled greenfield apply flow</h3><p>P1 · InProgress. Source: casebook.</p><div class="project-job-meta"><span class="project-label-chip project-label-chip-warning">Open risk</span></div></article><article class="project-job-card"><h3>Resolve Shared supporting references can manufacture confident workstream ownership</h3><p>P1 · Open. Source: casebook.</p><div class="project-job-meta"><span class="project-label-chip project-label-chip-warning">Open risk</span></div></article></div></section>
       <p class="project-section-kicker">Status now</p>
-      <section class="project-panel"><div class="project-panel-head"><h2>Where does this stand?</h2><p>Current state is projected from the recovering source records.</p></div><div class="project-state-grid"><article><h3>Current state</h3><div class="project-prose-lines"><p>Greenfield typed semantic compiler and patchset repair.</p><p>Current release: 0.1.15.</p><p>Worktree: unknown with 0 meaningful and 0 generated changed paths.</p></div></article><strong>to</strong><article><h3>Desired state</h3><div class="project-prose-lines"><p>The Project page explains Odylith from Registry, Radar, Compass, Atlas, Casebook before users open expert records.</p></div></article></div></section>
+      <section class="project-panel"><div class="project-panel-head"><h2>Where does this stand?</h2><p>Current state is projected from the validating source records.</p></div><div class="project-state-grid"><article><h3>Current state</h3><div class="project-prose-lines"><p>Workstream lineage reopen update for <a class="project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-145" data-tooltip="Assess v0.1.15 guidance and browser surface migration" aria-label="Assess v0.1.15 guidance and browser surface migration">B-145</a>.</p><p>Current release: 0.1.15.</p><p>Worktree: unknown with 0 meaningful and 0 generated changed paths.</p></div></article><strong>to</strong><article><h3>Desired state</h3><div class="project-prose-lines"><p>The Project page explains Odylith from Registry, Radar, Compass, Atlas, Casebook before users open expert records.</p></div></article></div></section>
       <section class="project-panel"><div class="project-panel-head"><h2>What should move next?</h2><p>The next action comes from runtime state, active workstreams, and open blockers.</p></div></section>
-      <section class="project-panel"><div class="project-panel-head"><h2>What is known and unproven?</h2><p>Confidence is point-in-time; maturity is operational product.</p></div><div class="project-proof-grid"><article><h3>Known from source records</h3><ul><li>Identity: Odylith (source-backed).</li><li>Project: Odylith helps repository operators keep coding-agent work grounded, governed, validated, and remembered across sessions. (source-backed).</li><li>Focus: Greenfield typed semantic compiler and patchset repair (operational).</li><li>Release: 0.1.15 (operational).</li><li>Next: Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into the current scope (source-backed).</li></ul></article><article><h3>Unresolved in current projection</h3><ul><li>Plan: 26 active plans (stale).</li><li>Shared supporting references can manufacture confident workstream ownership</li><li>Risk normalization splits wrapped list items and invents missing mitigations</li><li>Greenfield release proof diverges from product semantic owners</li><li>Greenfield flat fact arrays permit invalid singular cardinality</li></ul></article><article><h3>Confidence</h3><strong>Medium</strong><span class="project-meter"><i></i></span><p></p></article></div></section>
+      <section class="project-panel"><div class="project-panel-head"><h2>What is known and unproven?</h2><p>Confidence is point-in-time; maturity is operational product.</p></div><div class="project-proof-grid"><article><h3>Known from source records</h3><ul><li>Identity: Odylith (source-backed).</li><li>Project: Odylith helps repository operators keep coding-agent work grounded, governed, validated, and remembered across sessions. (source-backed).</li><li>Focus: Workstream lineage reopen update for <a class="project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-145" data-tooltip="Assess v0.1.15 guidance and browser surface migration" aria-label="Assess v0.1.15 guidance and browser surface migration">B-145</a> (operational).</li><li>Release: 0.1.15 (operational).</li><li>Next: Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into the current scope (source-backed).</li></ul></article><article><h3>Unresolved in current projection</h3><ul><li>Candidate release notes advertise the disabled greenfield apply flow</li><li>Shared supporting references can manufacture confident workstream ownership</li><li>Risk normalization splits wrapped list items and invents missing mitigations</li><li>Greenfield release proof diverges from product semantic owners</li></ul></article><article><h3>Confidence</h3><strong>Medium</strong><span class="project-meter"><i></i></span><p></p></article></div></section>
 
     </main>
   </div>
@@ -4483,7 +4497,7 @@ html, body {
     </section>
   </main>
 
-  <script id="toolingDashboardData" src="tooling-payload.v1.js?v=4d6763fd1789"></script>
-  <script src="tooling-app.v1.js?v=4d6763fd1789"></script>
+  <script id="toolingDashboardData" src="tooling-payload.v1.js?v=f041e480caba"></script>
+  <script src="tooling-app.v1.js?v=f041e480caba"></script>
 </body>
 </html>

@@ -6,7 +6,7 @@
   and release-gate posture, but should suppress weak Odylith Discipline noise.
 - Compass entries should preserve workstream ids B-110 through B-117 and the
   benchmark gates that feed future session priors.
-Last updated: 2026-09-08
+Last updated: 2026-09-10
 
 
 ## Purpose
@@ -16,6 +16,36 @@ of what changed, what is active, what risks or cases dominate, and what the
 standup-level summary should be.
 
 ## Scope And Non-Goals
+### Asynchronous result custody
+The maintenance worker owns detached process identity, request replacement and
+cleanup. It verifies native argument boundaries for the interpreter, module and
+repository before replacing a worker, and observes exit before launching another.
+Unknown process inventory or identity cannot authorize a signal or replacement.
+The process epoch describes loaded code, not a later disk edit.
+
+Exact cached results are reusable before provider availability is checked. Busy
+or failed application retains the request, computed cache and recorded diagnostics;
+provider backoff polls request identity without repeatedly entering full repository
+publication. Completion consumes only the exact processed request, preserving a
+newer foreground replacement. Narration runs outside the repository writer lock.
+
+`compass_standup_brief_runtime_patch.py` is the sole asynchronous managed-result
+writer. It acquires the shared publication boundary before checking runtime identity,
+writes matching JSON and JavaScript, and publishes a complete immutable successor.
+Foreground request stamping changes only the pending request; inline result
+projection is pure inside the enclosing refresh. An identical result does not
+publish another generation. Failure before publication leaves the old view intact;
+an already observed successor must never be rolled back. Neither outcome authorizes
+adoption of partial working files.
+
+CB-305's bounded source proof passes 488 integrated controls and 73 independent
+lifecycle controls. Real Darwin children cover ambiguous sibling-directory names,
+wrong-root signal refusal and termination; Linux native reads have mocked coverage
+only. Provider-free real Compass/shell browser proof covers empty, ready and failed
+publications at desktop/mobile sizes over file and HTTP, including retained-brief
+readability and unchanged predecessors. This does not establish recovery of the
+preserved real failure, installed behavior, full governance UX or chat delivery.
+
 ### No-workstream evidence boundary
 The global fact packet and legacy outcome digest must not estimate an empty
 workstream mapping or invent a priority, direction or forcing function. Actual

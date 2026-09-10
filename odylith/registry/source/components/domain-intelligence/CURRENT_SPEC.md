@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-09-09
+Last updated: 2026-09-10
 
 
 ## Overview
@@ -58,6 +58,9 @@ automatic restoration or general descendant cleanup. No general
 consumer schema converter or completed migration assessment is implied.
 
 The generation store uses the sealed write-set hash as its immutable address.
+Sealed tree fingerprint reconstruction follows the same path-component order as
+live traversal, including prefix-sharing file and directory names. This preserves
+existing valid payloads and preconditions without weakening byte or mode checks.
 Exact manifest bytes are compiled after that hash and sealed inside the outer
 ProductCreateTransaction; CONFIRM validates and copies them without generating a
 manifest. The durable commit journal binds the distinct confirmation hash to the
@@ -79,7 +82,18 @@ mutating a pinned predecessor; canonical reopening, not automatic following of
 an immutable URL, discovers the successor. CB-305 retains installed recovery
 qualification and complete current-view UX as open obligations.
 Later writers recover interrupted creates, reject unexplained working drift,
-and publish immutable successors after successful readback. JSON authority and
+and publish immutable successors after successful readback. Explicit selective
+sync can admit existing authored Casebook narratives, plan bodies, living specs
+and catalog-mapped Mermaid sources under the same writer lock. The immutable
+preimage and retained publication must identify the same generation. Only the
+selected regular-file bytes may differ; modes, protected CLI-owned regions and
+all unselected managed inputs stay fixed. Selected intent is rechecked after
+the operation and against the compiled successor. Authored spec dates remain
+permitted; generated Requirements Trace content does not become authored.
+Clean writers do not perform this admission parsing. Failed refresh preserves
+authored intent and the previous published view, but may leave derived working
+drift; ordinary failed-writer recovery remains a separate CB-305 obligation.
+JSON authority and
 supersession-to-live fallback are removed. Explicit migration and interrupted
 activation proof in installed repositories remain open under CB-305. Supported
 doctor repair now validates arguments and restores only the exact missing shell

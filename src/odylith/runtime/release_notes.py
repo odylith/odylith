@@ -90,7 +90,7 @@ def _heading_title(body: str) -> str:
         heading = re.match(r"^#\s+(?P<text>.+)$", line)
         if heading is None:
             continue
-        return _normalize_text(heading.group("text"), limit=120)
+        return _normalize_text(heading.group("text"))
     return ""
 
 
@@ -173,14 +173,14 @@ def load_release_notes_source(*, repo_root: str | Path, version: str) -> Release
     paragraphs = _paragraphs(normalized_body, limit=2)
     summary = _normalize_text(front_matter.get("summary") or "") or (paragraphs[0] if paragraphs else "")
     return ReleaseNotesSource(
-        version=_normalize_text(front_matter.get("version") or version, limit=64).lstrip("v"),
-        title=_normalize_text(front_matter.get("title") or "", limit=120) or _heading_title(normalized_body),
-        published_at=_normalize_text(front_matter.get("published_at") or "", limit=64),
+        version=_normalize_text(front_matter.get("version") or version).lstrip("v"),
+        title=_normalize_text(front_matter.get("title") or "") or _heading_title(normalized_body),
+        published_at=_normalize_text(front_matter.get("published_at") or ""),
         summary=summary,
         highlights=highlights,
         body=normalized_body,
-        note_link_label=_normalize_text(front_matter.get("note_link_label") or "", limit=120),
-        external_link_label=_normalize_text(front_matter.get("external_link_label") or "", limit=120),
-        reopen_label=_normalize_text(front_matter.get("reopen_label") or "", limit=120),
+        note_link_label=_normalize_text(front_matter.get("note_link_label") or ""),
+        external_link_label=_normalize_text(front_matter.get("external_link_label") or ""),
+        reopen_label=_normalize_text(front_matter.get("reopen_label") or ""),
         source_path=path,
     )

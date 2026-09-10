@@ -134,7 +134,7 @@ def _release_placeholder_markers(*, version: str) -> set[str]:
 
 
 def _release_copy_is_placeholder(value: Any, *, version: str) -> bool:
-    token = _normalize_release_note_text(value, limit=240)
+    token = _normalize_release_note_text(value)
     if not token:
         return False
     normalized = re.sub(r"[^a-z0-9]", "", token.lower())
@@ -152,7 +152,7 @@ def _clean_release_story_highlights(raw_highlights: Any, *, version: str) -> lis
         return []
     cleaned: list[str] = []
     for raw_item in raw_highlights:
-        token = _normalize_release_note_text(raw_item, limit=180)
+        token = _normalize_release_note_text(raw_item)
         if not token or _release_copy_is_placeholder(token, version=version) or token in cleaned:
             continue
         cleaned.append(token)
@@ -672,10 +672,10 @@ def _release_note_paragraphs(body: str, *, limit: int) -> list[str]:
             numbered = re.match(r"^\d+\.\s+(?P<text>.+)$", line)
             if numbered:
                 line = str(numbered.group("text") or "").strip()
-            normalized = _normalize_release_note_text(line, limit=260)
+            normalized = _normalize_release_note_text(line)
             if normalized:
                 lines.append(normalized)
-        paragraph = _normalize_release_note_text(" ".join(lines), limit=260)
+        paragraph = _normalize_release_note_text(" ".join(lines))
         if paragraph and paragraph not in paragraphs:
             paragraphs.append(paragraph)
         if len(paragraphs) >= limit:

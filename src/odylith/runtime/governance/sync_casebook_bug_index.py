@@ -113,31 +113,44 @@ def _bug_title(*, fields: dict[str, str], path: Path) -> str:
 
 def _parse_bug_fields(path: Path) -> dict[str, str]:
     """Parse the metadata fields from one Casebook markdown bug file."""
-    fields: dict[str, str] = {}
+    return {key: value for key, value, _raw in parse_bug_field_blocks(path.read_text(encoding="utf-8"))}
+
+
+def parse_bug_field_blocks(text: str) -> tuple[tuple[str, str, str], ...]:
+    """Keep field occurrences and source bytes alongside the index's field values.
+
+    Admission must distinguish duplicate metadata from a single field; the index
+    retains its historical last-field-wins projection through `_parse_bug_fields`.
+    """
+    fields: list[tuple[str, str, str]] = []
     current_key: str | None = None
     current_lines: list[str] = []
-    for raw in path.read_text(encoding="utf-8").splitlines():
+    source_lines: list[str] = []
+    for raw in text.splitlines(keepends=True):
         stripped = raw.strip()
         if stripped.startswith("#"):
             if current_key is not None:
-                fields[current_key] = "\n".join(line.rstrip() for line in current_lines).strip()
+                fields.append((current_key, "\n".join(current_lines).strip(), "".join(source_lines)))
                 current_key = None
                 current_lines = []
+                source_lines = []
             continue
         match = _BUG_METADATA_LINE_RE.fullmatch(stripped)
         if match is not None:
             if current_key is not None:
-                fields[current_key] = "\n".join(line.rstrip() for line in current_lines).strip()
+                fields.append((current_key, "\n".join(current_lines).strip(), "".join(source_lines)))
             current_key = str(match.group(1)).strip()
             initial = str(match.group(2)).rstrip()
             current_lines = [initial] if initial else []
+            source_lines = [raw]
             continue
         if current_key is None:
             continue
         current_lines.append(raw.rstrip())
+        source_lines.append(raw)
     if current_key is not None:
-        fields[current_key] = "\n".join(line.rstrip() for line in current_lines).strip()
-    return fields
+        fields.append((current_key, "\n".join(current_lines).strip(), "".join(source_lines)))
+    return tuple(fields)
 
 
 def _should_skip_bug_markdown(*, bug_root: Path, path: Path) -> bool:

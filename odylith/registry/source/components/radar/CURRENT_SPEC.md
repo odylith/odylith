@@ -15,6 +15,18 @@ execution evidence into the ranked workstream view used by operators and other
 Odylith surfaces.
 
 ## Scope And Non-Goals
+### Active plan registration
+The existing plan/workstream reconciler owns missing Active Plans rows, not a
+second authoring command. Registration requires a real in-progress plan with
+unique explicit status, dates and one Backlog ID, plus an existing active
+workstream whose unique reciprocal metadata names that exact plan. Validate the
+whole missing-row batch and a non-aliased, structurally valid index before any
+insertion. Reject unsafe table delimiters and conflicting bindings; preserve
+unrelated index bytes, line endings and file mode. Registration alone must not
+create a successor, promote a workstream or rewrite authored plan content.
+CB-339's initial passing controls were falsified by four independent boundary
+cases; final acceptance requires those cases and actual reopened-plan readback.
+
 ### Authored workstream previews
 The payload builder owns selection of the preview's recorded section: prefer
 Proposed Solution, then an explicitly labeled available source section. The

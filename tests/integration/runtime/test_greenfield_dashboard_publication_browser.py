@@ -20,7 +20,7 @@ from odylith.runtime.domain_intelligence import greenfield_repository_lock
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set as kernel
 from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
 from tests.integration.runtime.surface_browser_test_support import (
-    _assert_clean_page, _browser, _new_page, _static_server, playwright_sync,
+    _assert_clean_page, _browser, _copy_logical_working_fixture, _new_page, _static_server, playwright_sync,
 )
 from tests.unit.runtime.test_greenfield_commit_journal import _kill_commit_child
 
@@ -45,25 +45,19 @@ def _tree_hashes(root):
     return {str(path.relative_to(root)): _hash(path) for path in root.rglob("*") if path.is_file()}
 
 
-def _copy_frontend(source, destination):
-    """Reuse the disclosed actual-shell counterexample's bounded asset selection."""
-    hashes = {}
-    for path in source.rglob("*"):
-        if not path.is_file() or path.suffix not in {".html", ".js", ".css", ".svg", ".png", ".woff", ".woff2", ".json"}:
-            continue
-        relative = path.relative_to(source)
-        if any(part in {"source", "bugs", "skills", "technical-plans", "agents-guidelines"} for part in relative.parts) and path.suffix not in {".svg", ".png"}:
-            continue
-        target = destination / relative
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(path, target)
-        hashes[str(relative)] = _hash(path)
-    return hashes
+def _frontend_asset(relative: Path) -> bool:
+    if relative.suffix not in {".html", ".js", ".css", ".svg", ".png", ".woff", ".woff2", ".json"}:
+        return False
+    return not any(
+        part in {"source", "bugs", "skills", "technical-plans", "agents-guidelines"}
+        for part in relative.parts
+    ) or relative.suffix in {".svg", ".png"}
 
 
 def _protected_dashboard(tmp_path):
     root, stage = tmp_path / "repo", tmp_path / "stage"
-    source_hashes = _copy_frontend(SOURCE / "odylith", root / "odylith")
+    sources = _copy_logical_working_fixture(SOURCE, root, include_file=_frontend_asset)
+    source_hashes = {path.relative_to(SOURCE / "odylith").as_posix(): _hash(path) for path in sources.values()}
     for relative in SURFACES.values():
         path = root / relative
         html = path.read_text(encoding="utf-8")
