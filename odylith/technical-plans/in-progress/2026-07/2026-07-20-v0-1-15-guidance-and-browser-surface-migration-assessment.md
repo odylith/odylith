@@ -51,6 +51,34 @@ and final untouched holdout are separate open release requirements.
 
 ## Current Validation
 
+CI at `6beb35a4` also reports missing Playwright browser executables during
+fixture setup. The bounded prerequisite correction installs matching Chromium
+and system dependencies through the same Hatch interpreter before the unchanged
+test command. Every preexisting workflow byte is preserved. Local CLI dry-run
+checks do not prove Ubuntu provisioning; remote CI and actual browser outcomes
+remain required, with no skip, threshold or assertion changes.
+
+Checkpoint `64d68cfa` is pushed. Its portable root shell and matching payload
+come from an independently verified successful generation and the existing
+committed bundle, not the failed working carrier. An isolated proposed Git tree
+passes all 59 unchanged shell contracts; exact blobs, modes and sixteen local
+references are independently checked. This is a two-file shell checkpoint against
+existing checked-in child views, not a unified generation export, browser pass,
+supported consumer Git migration or release qualification. The live publication
+is unchanged. Required source validation passes; governed refresh remains blocked.
+
+Two private native-browser captures now distinguish the six retained abort
+histories and demonstrate actual forced process isolation. Pending fragment and
+history actions remain unproved; the forced child return raises TargetClosedError.
+A bounded test-only native-ID observer candidate is being built separately from
+the active strict observer. It must retain raw errors, reject missing coverage,
+never skip a failed immediate successor or borrow a later unrelated departure,
+and pass independent controls before adoption. No target-attachment framework
+or broader cancellation eligibility is authorized. Separately, CB-305's bounded
+prospective Compass-log completion candidate must prove durable append-once
+custody and explicit completion without reappending; it cannot authorize recovery
+of the existing receipt-less failed proof tree. Neither candidate is accepted.
+
 Development checkpoint `33ee2fbc` is committed and pushed; it deliberately
 excludes the failed local publication and generated-view drift. Browser evaluator
 corrections are a separate wave. The URL-based lifecycle candidate is rejected
