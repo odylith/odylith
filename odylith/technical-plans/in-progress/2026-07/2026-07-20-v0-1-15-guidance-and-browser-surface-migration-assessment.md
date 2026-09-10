@@ -79,11 +79,16 @@ collection is 439 cases across 35 modules, including every prior case: 438 main
 surface cases and one separate install-coupled Casebook upgrade. Execution remains
 pending; do not promote the targeted gates to comprehensive UX proof.
 
-One CI preparation step now installs pinned Mermaid 11.12.0 and its package's
+CI preparation installs pinned Mermaid 11.12.0 and its package's
 pinned default Puppeteer browsers into runner-owned paths before unchanged tests.
 Runtime on-demand installation remains disabled. Two actual local SVG/PNG render
 tests pass against the existing explicit-root package; fresh Linux provisioning
-and the remaining CI failures are not yet qualified.
+and the remaining CI failures are not yet qualified. Checkpoint 14b441bb exposes
+an invalid job-level runner context before any CI job starts. Local actionlint
+reproduces all three errors. A runner-executed GITHUB_ENV configuration step now
+provides the same values to subsequent install/test steps; actionlint passes.
+The prior review missed this context boundary. Keep the rejected run and lint
+receipts in CB-305; neither lint nor package availability proves suite success.
 
 The corrected prospective Compass completion candidate is independently accepted:
 168 focused compatibility passes plus six fresh actual-owner controls. Structured

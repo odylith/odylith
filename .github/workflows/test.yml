@@ -26,11 +26,6 @@ jobs:
     needs: identity
     permissions:
       contents: read
-    env:
-      ODYLITH_MERMAID_CLI_ROOT: ${{ runner.temp }}/odylith-mermaid/node_modules/@mermaid-js/mermaid-cli
-      ODYLITH_ALLOW_MERMAID_NPX_INSTALL: "0"
-      PUPPETEER_CACHE_DIR: ${{ runner.temp }}/odylith-puppeteer
-      npm_config_cache: ${{ runner.temp }}/odylith-mermaid-npm
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
@@ -46,6 +41,13 @@ jobs:
         run: hatch env create
       - name: Install Chromium and browser system dependencies
         run: hatch run python -m playwright install --with-deps chromium
+      - name: Configure Mermaid runtime paths
+        run: |
+          printf '%s\n' \
+            "ODYLITH_MERMAID_CLI_ROOT=$RUNNER_TEMP/odylith-mermaid/node_modules/@mermaid-js/mermaid-cli" \
+            "ODYLITH_ALLOW_MERMAID_NPX_INSTALL=0" \
+            "PUPPETEER_CACHE_DIR=$RUNNER_TEMP/odylith-puppeteer" \
+            "npm_config_cache=$RUNNER_TEMP/odylith-mermaid-npm" >> "$GITHUB_ENV"
       - name: Install pinned Mermaid renderer and its headless browser
         run: |
           npm install --prefix "$RUNNER_TEMP/odylith-mermaid" \
