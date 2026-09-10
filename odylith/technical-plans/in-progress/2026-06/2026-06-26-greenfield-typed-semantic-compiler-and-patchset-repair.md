@@ -1,5 +1,38 @@
 Status: In progress
 
+## Stronger author profile did not meet the fixed window (2026-09-09)
+
+The one private Astra/low candidate attempt fails its initial author call at
+55.020713 seconds without returning a candidate. The parent reports failure at
+55.265066 seconds, with one call and no reviewer, package or publication. Both
+root and independent terminal review reject advancement. All 722 frozen inputs
+remain unchanged; 316 no-provider checks pass. The shipped v53 prompt, schema,
+full-candidate Sol/medium reviewer, production profiles and 60/90/120 limits stay
+unchanged. The distinct diagnostic profile is not eligible for release claims.
+
+Do not retry this attempt, sweep profiles, extend deadlines, or infer semantic
+quality or a model-speed cause from null output. The stronger-capability and
+availability evidence justified measuring the candidate, not adopting it.
+Preserve `/private/tmp/odylith-profile-comparison.Bd02Or/` and its exact contract
+`196198a238fde679ced284cb12f3d679d90eaedd24a3b590085f7581540320df`.
+The prior citation-pooling and whitespace-compaction evidence also rules out an
+unearned representation rewrite. A successor must identify the owning obligation
+improvement or actual work removed before another live comparison; none is a
+qualified winner yet. Keep all full-goal gates and protected holdouts open.
+
+Independent provider-boundary diagnosis also finds no config-only direct shortcut.
+Current profiles require codex-cli; generic HTTP adapters do not preserve every
+requested effort/schema contract, and direct API eligibility is unestablished.
+The prior author trace does not attribute the long in-turn interval to CLI
+overhead. A no-network comparison now passes one characterization in 0.07 seconds:
+model/schema/timeout match, HTTP omits requested effort despite recording it in
+metadata, and all three Greenfield profile guards reject that provider. No live
+provider or real credential is used. A live direct-profile candidate would still
+require an equivalent reviewed request contract and explicit endpoint, model and
+credential eligibility. Do not add a new transport platform or weaken
+profile custody to force this alternative through. Evidence is retained in
+`/private/tmp/odylith-profile-comparison.Bd02Or/provider-boundary.md`.
+
 ## Stop the prompt-rewording approach (2026-09-09)
 
 The source-led obligation-allocation candidate also fails independent utility
