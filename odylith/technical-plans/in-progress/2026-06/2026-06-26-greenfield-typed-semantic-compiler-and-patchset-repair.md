@@ -1,5 +1,23 @@
 Status: In progress
 
+## Stop the prompt-rewording approach (2026-09-09)
+
+The source-led obligation-allocation candidate also fails independent utility
+adjudication and the shared model deadline. It retains the participants and source
+actions, but verification again reduces preservation to finding current evidence,
+and loses the earlier adverse-case controls. Authoring takes 41.688 seconds;
+review returns null with 13.311 seconds remaining; total failure is 55.264 seconds.
+No production prompt, schema, profile, package or pending generation is changed.
+
+Two localized instruction alternatives have not resolved this recurring class.
+Do not continue with another wording patch, retry or example. Select a separately
+grounded mechanism or pinned-profile comparison that can jointly meet source
+fidelity, outcome verification and the fixed 60/90/120 regime. Keep full independent
+review of the complete candidate: generating new design in the final review call
+would leave that prose without the current admission coverage. No speed cause or
+replacement winner is established. Preserve the exact rejected source-only trial
+and independent adjudication at `/private/tmp/odylith-source-obligation.VPCORa/`.
+
 ## Source-obligation verification and timing boundary (2026-09-09)
 
 The two-edit participant/outcome instruction alternative is rejected after one
