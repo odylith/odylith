@@ -18,7 +18,7 @@ from types import SimpleNamespace
 from typing import Iterator, Mapping, Sequence
 
 from odylith import __version__
-from odylith.install import migration_runtime, upgrade_dashboard, upgrade_reporting
+from odylith.install import migration_runtime, upgrade_dashboard, upgrade_dashboard_recovery, upgrade_reporting
 from odylith.runtime.common.dirty_overlap import summarize_dirty_overlap
 from odylith.runtime.common.command_surface import (
     ensure_nested_subcommand_repo_root_args,
@@ -26,7 +26,7 @@ from odylith.runtime.common.command_surface import (
 )
 from odylith.runtime.common.environment import env_flag_enabled
 from odylith.runtime.common.repo_shape import PRODUCT_REPO_ROLE, repo_role_from_local_shape
-from odylith.runtime.domain_intelligence import greenfield_managed_mutation_boundary
+from odylith.runtime.domain_intelligence import greenfield_generation_store, greenfield_managed_mutation_boundary
 from odylith.runtime.governance import dashboard_refresh_contract
 from odylith.runtime.surfaces import tooling_dashboard_version_state
 
@@ -1876,6 +1876,10 @@ def _cmd_upgrade(args: argparse.Namespace) -> int:
         report=report,
         started_at=command_started_at,
     )
+    if not refreshed:
+        upgrade_dashboard_recovery.record_failed_completion(
+            repo_root=requested_repo_root, repository_lock_fd=args.repository_lock_fd,
+        )
     if output_json:
         print(json.dumps(report, indent=2, sort_keys=True))
         return 0 if refreshed else 1
@@ -4144,6 +4148,10 @@ def main(argv: list[str] | None = None) -> int:
     except greenfield_managed_mutation_boundary.GreenfieldManagedMutationBusyError as exc:
         print(str(exc), file=sys.stderr)
         return 75
+    except (upgrade_dashboard_recovery.UpgradeDashboardRecoveryError,
+            greenfield_generation_store.GreenfieldWorkingGenerationDriftError) as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
 
 
 if __name__ == "__main__":

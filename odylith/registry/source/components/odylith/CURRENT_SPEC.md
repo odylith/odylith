@@ -132,8 +132,21 @@ remediation, and rendering.
   canonical installed smoke pass. The genuine published-v0.1.14 launcher safely
   refuses this migration-required candidate; hosted upgrade of that same empty
   predecessor then passes complete baseline/readback and unavailable-author safety.
-  Populated migration and automatic failed-render working-drift recovery remain
-  open under CB-305. Descriptor validation is not same-UID caller authentication.
+  Populated migration and installed failed-render recovery remain open under
+  CB-305. The source-local completion candidate retains an exact failed-upgrade
+  receipt and admits only the advertised full dashboard retry. Repository,
+  predecessor publication, runtime selection, launcher, install state and pin
+  remain fixed anchors; working bytes must match before dispatch. A retry cannot
+  recover another pending transaction. It validates anchors before renewing a
+  failed attempt or publishing a successful successor, and removes continuation
+  authority only after published readback. Ordinary force refresh never grants
+  authority over unexplained drift. This is not arbitrary crash or same-user
+  adversary authentication. Expanded conflicts and three kernel SIGKILL controls
+  pass with simulated release payloads and rendering. The frozen source candidate
+  also passes 5,036 runtime, 1,418 install and 364 browser controls; one absent
+  Radar diagnostic is skipped. Actual installed recovery and the four current
+  migration assessments remain unqualified. These counts do not establish
+  successful model-created packages or consumer latency compliance.
 
 ### Control-plane leverage
 - Odylith is not trying to beat the underlying model weights. It is trying to

@@ -77,6 +77,26 @@ class GreenfieldCommitJournal:
         return str(self.root) if self.root.exists() else ""
 
     @classmethod
+    def require_settled_journals(cls, *, repo_root: Path) -> None:
+        """A later upgrade continuation cannot also recover a different transaction."""
+        root = Path(repo_root).expanduser().resolve()
+        parent = root / ".odylith/runtime/greenfield/create-journal"
+        for path in (parent, *parent.parents):
+            if path == root:
+                break
+            if path.is_symlink():
+                raise RuntimeError("RECOVERY_REQUIRED: unsafe Greenfield journal path")
+        if not parent.exists():
+            return
+        for entry in parent.iterdir():
+            if entry.is_symlink() or not entry.is_dir():
+                raise RuntimeError("RECOVERY_REQUIRED: unsafe Greenfield journal entry")
+            if entry.name == "manual-recovery":
+                continue
+            if _read_journal_record(entry).get("state") != "closed":
+                raise RuntimeError("RECOVERY_REQUIRED: another Greenfield transaction needs recovery first")
+
+    @classmethod
     def recover_pending_journals(cls, *, repo_root: Path, excluding_transaction_hash: str = "") -> None:
         """Settle stranded transactions before another create checks preconditions."""
 

@@ -1,5 +1,54 @@
 Status: In progress
 
+## Resume the exact failed upgrade without broad rollback (2026-09-09)
+
+Current manager rollback cannot restore already committed pin, guidance and
+migration changes. Extending it over those surfaces would require a substantially
+larger rollback and conflict mechanism. The bounded candidate instead retains
+install-owned completion authority for the exact failed state. It keeps the
+target runtime and the old complete publication, admits only the advertised
+full dashboard refresh under the existing writer lock, and rejects changed
+working bytes, activation anchors or another pending transaction before writes.
+Success publishes one complete successor; ordinary failure can renew only the
+working fingerprint, never the fixed activation anchors. Interrupted or modified
+state without a matching receipt remains an explicit recovery outcome.
+
+This replaces the prior recommendation to restore a coherent predecessor; it
+does not relax generic drift admission or introduce a general recovery API.
+One real-manager positive and four CLI refusal controls initially fail; the first
+candidate run passes 11 upgrade/CLI controls, with 123 adjacent kernel controls
+also passing. Independent source review is accepted but does not establish
+behavioral closure. Expanded repeated-failure, anchor-mutation and journal-conflict
+controls exposed one safe refusal with an uncaught CLI exception. Correcting only
+that reporting path yields 92 focused passes. Three real SIGKILL cases pass twice:
+the old complete view survives interruption before publication; the new complete
+view survives interruption after publication, and stale retry authority cannot
+overwrite later edits. All six killed processes are reaped. Final bounded review
+finds no actionable P0/P1. These use simulated release payloads and rendering.
+Frozen broad proof now passes 5,036 runtime, 1,418 install and 364 browser
+controls, with one absent-diagnostic skip. All 2,921 tracked inputs remain exact.
+Root CLI retains 175 passes and the migration-assessment failure; no release gate
+is waived. Actual installed failed-render recovery remains required. Evidence:
+`/private/tmp/odylith-upgrade-recovery-red.kzoi27/`.
+Expanded and interruption receipts are retained in
+`/private/tmp/odylith-upgrade-recovery-expanded.t6RaNu/` and
+`/private/tmp/odylith-upgrade-recovery-crash.wQl2iB/`.
+
+Qualification and corrected retention evidence live at
+`/private/tmp/odylith-upgrade-recovery-qualification.SwzaFE/`.
+Repository pytest teardown deleted the original crash fixture roots, contrary to
+their handoff claim. The same three unchanged tests pass outside that teardown
+scope, and root verifies all three replacement recovery repositories remain.
+Do not equate recorded fixture paths with retained artifacts or broad browser XML
+with retained screenshots. Preserve these nonterminal fixtures. The four open
+migration markers are guidance-and-skills:3bf4ee8b3e7f,
+operator-cli-contracts:8fd748b419c2, browser-surfaces:aa610acac409, and
+install-managed-assets:6fba56c545f3 for version 0.1.15; actual assessments,
+not marker declarations, must justify completion.
+
+Keep all semantic, 60/90/120, model-profile, host-parity, populated-install,
+consumer-quality and protected-final-holdout gates unchanged and open.
+
 ## Finish publication proof and repair the actual retry boundary (2026-09-09)
 
 The immutable generation and sole HTML entry are already implemented. Keep that

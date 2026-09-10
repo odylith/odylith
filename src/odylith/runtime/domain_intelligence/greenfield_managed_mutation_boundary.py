@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
+from odylith.install import upgrade_dashboard_recovery
 from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
 from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_generation_store
@@ -80,12 +81,35 @@ def run_with_greenfield_managed_mutation_boundary(
         return operation(None)
     try:
         with greenfield_repository_lock.greenfield_repository_lock(root) as descriptor:
-            GreenfieldCommitJournal.recover_pending_journals(repo_root=root)
-            state = greenfield_generation_state.read_active_publication(root)
-            pinned = greenfield_generation_store.require_greenfield_working_generation(root) if state else None
+            admitted_upgrade = None
+            if upgrade_dashboard_recovery.is_completion_retry(command_tokens):
+                state = greenfield_generation_state.read_active_publication(root)
+                try:
+                    pinned = greenfield_generation_store.require_greenfield_working_generation(root) if state else None
+                except greenfield_generation_store.GreenfieldWorkingGenerationDriftError:
+                    pinned, admitted_upgrade = upgrade_dashboard_recovery.require_completion_retry(repo_root=root)
+                    try:
+                        GreenfieldCommitJournal.require_settled_journals(repo_root=root)
+                    except (OSError, RuntimeError, ValueError) as exc:
+                        raise upgrade_dashboard_recovery.UpgradeDashboardRecoveryError(
+                            "RECOVERY_REQUIRED: another Greenfield transaction needs attention; "
+                            "the dashboard retry and journal recovery were not run"
+                        ) from exc
+            if admitted_upgrade is None:
+                GreenfieldCommitJournal.recover_pending_journals(repo_root=root)
+                state = greenfield_generation_state.read_active_publication(root)
+                pinned = greenfield_generation_store.require_greenfield_working_generation(root) if state else None
             active = greenfield_generation_state.active_generation_identity(root)
             result = operation(descriptor)
+            if admitted_upgrade is not None:
+                upgrade_dashboard_recovery.require_unchanged_anchors(
+                    repo_root=root, admitted_receipt=admitted_upgrade,
+                )
             if result != 0:
+                if admitted_upgrade is not None:
+                    upgrade_dashboard_recovery.record_failed_completion(
+                        repo_root=root, repository_lock_fd=descriptor, admitted_receipt=admitted_upgrade,
+                    )
                 return result
             if pinned is None:
                 # A first install can activate, then perform further managed writes.
@@ -118,6 +142,8 @@ def run_with_greenfield_managed_mutation_boundary(
                     write_set=write_set,
                     publication_entry_text=publication,
                 )
+            if admitted_upgrade is not None:
+                upgrade_dashboard_recovery.complete_retry(repo_root=root)
             return result
     except greenfield_repository_lock.GreenfieldRepositoryBusyError as exc:
         raise GreenfieldManagedMutationBusyError(

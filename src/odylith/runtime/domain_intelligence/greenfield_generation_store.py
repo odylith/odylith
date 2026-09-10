@@ -22,6 +22,10 @@ GREENFIELD_GENERATION_MANIFEST_VERSION = "odylith.greenfield.immutable-generatio
 _DIGEST = re.compile(r"[0-9a-f]{64}")
 
 
+class GreenfieldWorkingGenerationDriftError(RuntimeError):
+    """Working bytes differ from a verified immutable publication."""
+
+
 @dataclass(frozen=True)
 class PinnedGreenfieldGeneration:
     write_set_hash: str
@@ -191,7 +195,7 @@ def require_greenfield_working_generation(repo_root: Path) -> PinnedGreenfieldGe
 
     generation = pin_active_greenfield_generation(repo_root)
     if greenfield_repository_write_set.greenfield_managed_fingerprints(repo_root) != generation.manifest["after_fingerprints"]:
-        raise RuntimeError(
+        raise GreenfieldWorkingGenerationDriftError(
             "RECOVERY_REQUIRED: managed files differ from the published generation; "
             "the requested operation was not run"
         )
@@ -268,6 +272,7 @@ def _require_digest(value: Any, *, label: str) -> str:
 
 __all__ = [
     "GREENFIELD_GENERATION_MANIFEST_VERSION",
+    "GreenfieldWorkingGenerationDriftError",
     "PinnedGreenfieldGeneration",
     "compile_greenfield_generation_manifest",
     "generation_root",
