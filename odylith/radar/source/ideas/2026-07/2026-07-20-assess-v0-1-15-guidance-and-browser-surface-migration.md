@@ -171,3 +171,36 @@ views settled. It introduces no additional command, schema, source-data
 migration, or runtime behavior. Existing consumer-owned governance source
 remains preserved; normal Radar/dashboard refresh and managed-asset replacement
 are sufficient for the derived surfaces represented by this fingerprint.
+
+## 2026-09-09 Authored Radar Presentation Assessment
+
+The Radar correction replaces prose rewriting with shared, non-executable
+Markdown presentation, complete source projection, measured row heights and
+resize-anchor preservation. It changes no consumer source schema or stored
+data. Existing authored records remain owned by the consumer repository;
+regenerating richer views does not require rewriting them. Both already
+supported Markdown dependency majors pass the same 114 focused controls.
+
+Managed upgrades continue to stage and verify runtime assets before atomic
+activation. Normal Radar/dashboard refresh rebuilds derived views. If an older
+launcher reports a failed refresh after successful activation, rerun
+`odylith dashboard refresh --repo-root .` through the active repo-local launcher.
+Rollback can restore a previously verified runtime; derived views can then be
+regenerated without source-data conversion. The bundled security documentation
+and browser copies describe and deliver this presentation contract. No new
+migration, installer bypass or consumer source rewrite is required.
+
+The frozen source passes 5,036 runtime, 1,168 install and 361 browser checks
+with one existing browser fixture skip; three Greenfield root-CLI checks also
+pass. Independent source, Markdown-safety, resize and physical-pointer controls
+are accepted. All 3,194 selected inputs match before/mid/after. Evidence is at
+`/private/tmp/odylith-radar-final-gate.ANcrqg/`; initial failures and focused
+controls remain at `/private/tmp/odylith-radar-authored-proof.cEUc92/`.
+This assessment covers presentation compatibility and recovery, not a fresh
+installed Greenfield campaign, semantic quality acceptance or full release
+readiness. Bind the observer's final fingerprints after governance refresh.
+
+Completed bindings after the governed source and generated views settled:
+
+- `migration-observer:0.1.15:browser-surfaces:87d800962b1a`
+- `migration-observer:0.1.15:install-managed-assets:14febb0b2fab`

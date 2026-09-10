@@ -11,7 +11,7 @@ from odylith.runtime.surfaces import backlog_selection_ui
 
 
 def _render_html(*, payload: dict[str, object]) -> str:
-    data_blob = json.dumps(payload, ensure_ascii=True, indent=2)
+    data_blob = json.dumps(payload, ensure_ascii=True, indent=2).replace("<", "\\u003c")
     template = """<!doctype html>
 <html lang="en">
 <head>
@@ -473,7 +473,15 @@ def _render_html(*, payload: dict[str, object]) -> str:
     }
 
     .row-story { margin-top: 9px; padding-top: 9px; border-top: 1px solid #edf2f7; }
-    .row-story-text { color: #475569; font-size: 12px; line-height: 1.42; margin: 0; overflow-wrap: break-word; word-break: normal; }
+    .row-story-source { display: block; color: #64748b; font-size: 11px; margin-bottom: 4px; }
+    .row-story-text { color: #475569; font-size: 12px; line-height: 1.42; margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; word-break: normal; }
+    .row-story-rich { white-space: normal; }
+    .row-story-rich > :first-child { margin-top: 0; }
+    .row-story-rich > :last-child { margin-bottom: 0; }
+    .row-story-rich ul, .row-story-rich ol { padding-left: 20px; }
+    .row-story-rich pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+    .row-story-rich .check-item { display: flex; align-items: start; gap: 6px; }
+    .source-text { white-space: pre-wrap; }
 
     __ODYLITH_RADAR_CHIP_SURFACE__
     __ODYLITH_RADAR_CHIP_TYPOGRAPHY__
@@ -604,15 +612,8 @@ def _render_html(*, payload: dict[str, object]) -> str:
     }
 
     .decision-bullets { list-style: none; padding-left: 0; }
-    .decision-bullets li { display: grid; grid-template-columns: minmax(128px, 178px) minmax(0, 1fr); gap: 8px 18px; padding: 10px 0; border-top: 1px solid #e2e8f0; margin: 0; }
+    .decision-bullets li { padding: 10px 0; border-top: 1px solid #e2e8f0; margin: 0; }
     .decision-bullets li:first-child { border-top: 0; padding-top: 0; }
-    .decision-basis-label { align-self: start; color: #52657c; font-size: 0.88rem; font-weight: 700; line-height: 1.35; letter-spacing: 0em; text-transform: none; padding-top: 0.12rem; overflow-wrap: anywhere; }
-    .decision-basis-copy { min-width: 0; }
-
-    @media (max-width: 760px) {
-      .decision-bullets li { grid-template-columns: 1fr; gap: 3px; padding: 10px 0; }
-      .decision-basis-label { padding-top: 0; }
-    }
 
     __ODYLITH_RADAR_READABLE_COPY__
 
@@ -1057,6 +1058,9 @@ def _render_html(*, payload: dict[str, object]) -> str:
     const BACKLOG_LIST_OVERSCAN = 24;
     const BACKLOG_LIST_ROW_HEIGHT = 214;
     const BACKLOG_LIST_HEADER_HEIGHT = 40;
+    const backlogListRowHeights = new Map();
+    let backlogListMeasuredWidth = 0;
+    let backlogListAnchor = null;
     let latestRenderedRows = [];
     let latestListWindowKey = "";
     let listScrollFrame = 0;
@@ -1085,12 +1089,16 @@ def _render_html(*, payload: dict[str, object]) -> str:
       });
     }
     el.list.addEventListener("scroll", () => {
+      captureBacklogListAnchor();
       if (latestRenderedRows.length <= BACKLOG_LIST_WINDOW_THRESHOLD) return;
       if (listScrollFrame) return;
       listScrollFrame = window.requestAnimationFrame(() => {
         listScrollFrame = 0;
         renderList(latestRenderedRows, { fromScroll: true });
       });
+    });
+    window.addEventListener("resize", () => {
+      renderList(latestRenderedRows, { preserveListScroll: true });
     });
 
     function uniqueValues(field) {
@@ -1291,298 +1299,15 @@ def _render_html(*, payload: dict[str, object]) -> str:
         .replaceAll("'", "&#039;");
     }
 
-    function compactPlainText(value) {
-      return String(value || "")
-        .replace(/<[^>]+>/g, " ")
-        .replace(/&nbsp;/g, " ")
-        .replace(/&amp;/g, "&")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/&quot;/g, '"')
-        .replace(/&#039;/g, "'")
-        .replace(/\\*\\*/g, "")
-        .replace(/__/g, "")
-        .replace(/`([^`]*)`/g, "$1")
-        .replace(/\\s+/g, " ")
-        .replace(/^[-*]\\s+/, "")
-        .trim();
-    }
-
-    function cleanRenderedHtml(value) {
-      return String(value || "")
-        .replace(/\\*\\*/g, "")
-        .replace(/__/g, "")
-        .replace(/`([^`]*)`/g, "$1")
-        .replace(/<p>\\s*<\\/p>/g, "")
-        .trim();
-    }
-
-    function textFromRenderedHtml(value) {
-      return compactPlainText(cleanRenderedHtml(value));
-    }
-
-    function structuredPairListItems(value) {
-      const normalized = compactPlainText(value);
-      if (!normalized || normalized.length > 1800) return [];
-      const parts = normalized
-        .split(/\\s*;\\s+/)
-        .map((token) => token.trim().replace(/\\.$/, ""))
-        .filter(Boolean);
-      if (parts.length < 2) return [];
-      const rows = [];
-      for (const part of parts) {
-        const match = /^([^:.!?]{2,90}):\\s+(.{6,})$/.exec(part);
-        if (!match) return [];
-        const label = match[1].replace(/\\s+/g, " ").trim();
-        const body = match[2].replace(/\\s+/g, " ").trim();
-        if (!label || !body || label.split(/\\s+/).length > 8) return [];
-        rows.push({ label, body });
-      }
-      return rows.length >= 2 ? rows : [];
-    }
-
-    function structuredPairListHtml(value) {
-      const rows = structuredPairListItems(value);
-      if (!rows.length) return "";
-      return `
-        <div class="detail-pair-grid">
-          ${rows.map((row) => `
-            <article class="detail-pair-card">
-              <h4>${escapeHtml(row.label)}</h4>
-              <p>${escapeHtml(row.body)}</p>
-            </article>
-          `).join("")}
-        </div>
-      `;
-    }
-
-    function firstUsefulSentence(value, maxChars = 150) {
-      const normalized = compactPlainText(value);
-      if (!normalized) return "";
-      const withoutInlineSteps = normalized.replace(/\\s+\\d{1,2}\\.\\s+/g, " ");
-      const sentence = (withoutInlineSteps.match(/[^.!?]+[.!?]+|[^.!?]+$/) || [withoutInlineSteps])[0] || "";
-      let compact = String(sentence || withoutInlineSteps).trim();
-      if (compact.length > maxChars) {
-        compact = `${compact.slice(0, Math.max(0, maxChars - 1)).replace(/\\s+\\S*$/, "")}…`;
-      }
-      return compact;
-    }
-
-    const ROW_STORY_MAX_SENTENCES = 2;
-    const ROW_STORY_MAX_CHARS = 300;
-    const ROW_STORY_SENTENCE_MAX_CHARS = 260;
-    const LOW_VALUE_STORY_PATTERNS = [/\\bgeneric process abstraction\\b/i, /\\baccepted product path\\b/i, /\\bsource-backed behavior\\b/i, /\\bfirst implementation plan\\b/i, /\\bimplementation plan should\\b/i, /\\bfirst release is trustworthy only when\\b/i, /\\brelease readiness depends on\\b/i, /\\brelease readiness\\b/i, /\\bstate changes through the first path\\b/i, /\\bplanning prose\\b/i, /\\bstate boundary\\b/i, /\\breview boundary\\b/i, /\\bproof boundary\\b/i, /\\bbefore source work starts\\b/i, /\\bbefore implementation starts\\b/i, /\\bcoding claims are trusted\\b/i, /\\brelease records preserve\\b/i, /\\brelease readiness needs evidence\\b/i, /\\bwithout trusting implementation claims\\b/i, /\\bcannot be trusted if state,\\s*evidence/i];
 
     function rowStorySummary(row) {
-      const story = workstreamStoryParagraph(row);
-      return story ? `<div class="row-story" aria-label="Workstream story summary"><p class="row-story-text">${escapeHtml(story)}</p></div>` : "";
-    }
-
-    function workstreamStoryParagraph(row) { const lines = fitStorySentences(workstreamStoryLines(row)); return lines.length ? lines.join(" ") : normalizeNarrativeSentence(titleNarrativeSentence(row)); }
-
-    function workstreamStoryLines(row) {
-      const titleLine = titleNarrativeSentence(row);
-      const problemLine = storySentence(row.problem);
-      const expectedLine = expectedOutcomeStorySentence(row);
-      const primaryCandidates = isProgramStoryRow(row) ? [problemLine, expectedLine, storySentence(row.opportunity), storySentence(row.success_metrics)] : [problemLine, storySentence(row.opportunity), expectedLine, storySentence(row.success_metrics), roleNarrativeSentence(row.customer)]; const candidates = [...primaryCandidates, titleLine];
-      const lines = [];
-      const seen = new Set();
-      candidates.forEach((candidate) => {
-        const text = normalizeNarrativeSentence(candidate);
-        if (!text || isLowValueStorySentence(text)) return;
-        if (lines.length === 0 && isTitleEchoStorySentence(row, text) && primaryCandidates.some((primary) => normalizeNarrativeSentence(primary))) return;
-        const key = text.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-        if (!key || seen.has(key)) return;
-        seen.add(key);
-        lines.push(text);
-      });
-      return lines;
-    }
-
-    function isProgramStoryRow(row) { const title = compactPlainText(row && row.title); const type = compactPlainText(row && (row.workstream_type || row.type)); return /^(Establish|Govern|Guide|Shape)\\s+.+?\\s+Program$/i.test(title) || /umbrella|program/i.test(type); }
-
-    function isTitleEchoStorySentence(row, value) { const title = normalizeSearchToken(row && row.title); const text = normalizeSearchToken(value); return Boolean(title && text && (text === title || text.startsWith(`${title} `))); }
-
-    function expectedOutcomeStorySentence(row) { return storySentence(rationaleValue(row, "expected outcome")); }
-    function rationaleValue(row, wantedLabel) {
-      const wanted = normalizeSearchToken(wantedLabel);
-      const values = Array.isArray(row && row.rationale_bullets) ? row.rationale_bullets : [];
-      for (const raw of values) {
-        const match = compactPlainText(raw).match(/^([^:]{2,80}):\\s*(.+)$/);
-        if (match && normalizeSearchToken(match[1]) === wanted) return match[2];
-      }
-      return "";
-    }
-
-    function fitStorySentences(lines) {
-      const fitted = [];
-      let totalLength = 0;
-      for (const line of lines) {
-        const compact = conciseStoryLine(line);
-        if (!compact) continue;
-        const nextLength = totalLength + compact.length + (fitted.length ? 1 : 0);
-        if (fitted.length && nextLength > ROW_STORY_MAX_CHARS) break;
-        fitted.push(compact);
-        totalLength = nextLength;
-        if (fitted.length >= ROW_STORY_MAX_SENTENCES) break;
-      }
-      return fitted;
-    }
-
-    function conciseStoryLine(value) { const sentence = normalizeNarrativeSentence(shortenAtReadableBoundary(value, ROW_STORY_SENTENCE_MAX_CHARS)); return sentence.length > ROW_STORY_SENTENCE_MAX_CHARS ? normalizeNarrativeSentence(shortenAtWordBoundary(sentence, ROW_STORY_SENTENCE_MAX_CHARS)) : sentence; }
-
-    function roleNarrativeSentence(value) {
-      const text = firstSemicolonSegment(value);
-      const match = text.match(/^([^:]{2,80}):\\s*(.+)$/);
-      if (!match) return conciseNarrativeSentence(text);
-      const actor = match[1].trim();
-      const body = lowerFirst(match[2].trim());
-      return normalizeNarrativeSentence(`${actor} ${body}`);
-    }
-
-    function conciseNarrativeSentence(value) {
-      let text = cleanStoryCandidate(firstSemicolonSegment(value));
-      text = shortenAtReadableBoundary(text, ROW_STORY_SENTENCE_MAX_CHARS);
-      const sentence = (text.match(/[^.!?]+[.!?]+|[^.!?]+$/) || [text])[0] || "";
-      return normalizeNarrativeSentence(sentence);
-    }
-
-    function storySentence(value) {
-      let text = cleanStoryCandidate(value);
-      if (!text) return "";
-      const inlineBullets = splitInlineBulletText(text);
-      if (inlineBullets.length) text = inlineBullets[0];
-      const firstSentence = firstStorySentence(text);
-      let sentence = String(firstSentence || "").replace(/\\s+/g, " ").trim();
-      for (const boundary of [", but ", ", while ", "; however ", "; meanwhile "]) {
-        const index = sentence.toLowerCase().indexOf(boundary);
-        if (index >= 90 && index <= 220) {
-          sentence = sentence.slice(0, index).trim();
-          break;
-        }
-      }
-      sentence = sentence.replace(/(\\.\\.\\.|…)$/g, "").replace(/[,:;]+$/g, "").trim();
-      if (isLowValueStorySentence(sentence)) return "";
-      return normalizeNarrativeSentence(sentence);
-    }
-
-    function cleanStoryCandidate(value) {
-      return compactPlainText(value).replace(/^(why now|expected outcome|tradeoff|deferred for now|ranking basis|first path|proof required):\\s*/i, "").replace(/^the first complete path (the product must prove|to prove should be)\\s*:?\\s*/i, "").replace(/\\breleaseable\\b/gi, "releasable").trim();
-    }
-
-    function firstStorySentence(value) { const text = compactPlainText(value).replace(/\\s+\\d{1,2}\\.\\s+/g, " "); const sentence = text ? (text.match(/[^.!?]+[.!?]+|[^.!?]+$/) || [text])[0] : ""; return String(sentence || text).trim(); }
-
-    function isLowValueStorySentence(value) {
-      const text = compactPlainText(value);
-      return !text || text.length < 18 || LOW_VALUE_STORY_PATTERNS.some((pattern) => pattern.test(text)) || (/^(the|this)\\s+(accepted|proposed|current)\\s+/i.test(text) && /\\b(proposal|direction|plan)\\b/i.test(text)) || (/\\b(state|evidence|ownership|boundary|proof)\\.?$/i.test(text) && /,\\s*\\w+/.test(text));
-    }
-
-    function shortenAtReadableBoundary(value, maxChars = 180) {
-      const text = compactPlainText(value);
-      if (!text || text.length <= maxChars) return text;
-      const colonIndex = text.indexOf(": ");
-      if (colonIndex >= 24 && colonIndex <= Math.min(140, maxChars)) {
-        const head = text.slice(0, colonIndex).trim();
-        if (head.length >= 18) return head;
-      }
-      const boundaries = [
-        " because ",
-        ", because ",
-        ", but ",
-        ", while ",
-        "; however ",
-        "; meanwhile ",
-        " unless ",
-        " until ",
-        " before ",
-        " after ",
-      ];
-      for (const boundary of boundaries) {
-        const index = text.toLowerCase().indexOf(boundary);
-        if (index >= 70 && index <= maxChars) {
-          return text.slice(0, index).trim();
-        }
-      }
-      return shortenAtWordBoundary(text, maxChars);
-    }
-
-    function shortenAtWordBoundary(value, maxChars) {
-      const text = compactPlainText(value);
-      if (!text || text.length <= maxChars) return text;
-      const sentenceIndex = Math.max(text.lastIndexOf(". ", maxChars), text.lastIndexOf("? ", maxChars), text.lastIndexOf("! ", maxChars));
-      if (sentenceIndex >= 70) return text.slice(0, sentenceIndex + 1).trim();
-      return text.slice(0, Math.max(0, maxChars)).replace(/\\s+\\S*$/, "").trim();
-    }
-
-    function detailSentenceHead(value) {
-      const text = compactPlainText(value).replace(/[.!?]+$/, "").trim();
-      if (!text) return "";
-      const colonIndex = text.indexOf(": ");
-      if (colonIndex >= 20 && colonIndex <= 160) {
-        const head = text.slice(0, colonIndex).trim();
-        if (head.length >= 18) return normalizeNarrativeSentence(head);
-      }
-      return normalizeNarrativeSentence(shortenAtReadableBoundary(text));
-    }
-
-    function compactNarrativeForDetail(value) {
-      const text = compactPlainText(value);
-      if (!text || text.length <= 420) return text;
-      const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
-      const heads = [];
-      const seen = new Set();
-      sentences.forEach((sentence) => {
-        const head = detailSentenceHead(sentence);
-        const key = normalizeSearchToken(head);
-        if (!head || !key || seen.has(key)) return;
-        seen.add(key);
-        heads.push(head);
-      });
-      if (heads.length) return heads.slice(0, 3).join(" ");
-      return normalizeNarrativeSentence(shortenAtReadableBoundary(text));
-    }
-
-    function firstSemicolonSegment(value) {
-      const text = compactPlainText(value);
-      if (!text) return "";
-      return String(text.split(/\\s*;\\s*/).find((item) => item.trim()) || text).trim();
-    }
-
-    function titleNarrativeSentence(row) {
-      const title = compactPlainText(row && row.title);
-      const program = title.match(/^(Establish|Govern|Guide|Shape)\\s+(.+?)\\s+Program$/i);
-      if (program) {
-        return "Sets the first release story, ownership boundaries, and proof bar before source work begins.";
-      }
-      const prove = title.match(/^Prove\\s+(.+)$/i);
-      if (prove) {
-        return `${prove[1].trim()} is the next owned capability to make concrete: inputs, outputs, failure cases, and validation evidence.`;
-      }
-      const boundary = title.match(/^Define\\s+(.+?)\\s+Boundary$/i);
-      if (boundary) {
-        return `${boundary[1].trim()} needs a clean ownership line: what it owns, what it receives, what it produces, and what stays out.`;
-      }
-      const proof = title.match(/^Prepare\\s+(.+?)\\s+Release Proof$/i);
-      if (proof) {
-        return `${proof[1].trim()} turns the slice into reviewable evidence: scenario result, source records, validation output, non-goals, and decision.`;
-      }
-      return title;
-    }
-
-    function normalizeNarrativeSentence(value) {
-      let text = compactPlainText(value)
-        .replace(/^[-*]\\s+/, "")
-        .replace(/^:\\s*/, "")
-        .trim();
-      if (!text) return "";
-      text = text[0].toUpperCase() + text.slice(1);
-      return /[.!?]$/.test(text) ? text : `${text}.`;
-    }
-
-    function lowerFirst(value) {
-      const text = String(value || "").trim();
-      if (!text) return "";
-      return text[0].toLowerCase() + text.slice(1);
+      const text = typeof row.story_text === "string" ? row.story_text : "";
+      const source = typeof row.story_source === "string" ? row.story_source : "";
+      const label = text && source ? `<span class="row-story-source">${escapeHtml(source)}</span>` : "";
+      const rich = typeof row.story_html === "string" ? row.story_html : "";
+      const body = rich ? `<div class="row-story-text row-story-rich">${rich}</div>`
+        : `<p class="row-story-text">${escapeHtml(text || "No authored workstream summary yet.")}</p>`;
+      return `<div class="row-story" aria-label="Authored workstream summary">${label}${body}</div>`;
     }
 
     function tooltipLookupPayload() {
@@ -2411,7 +2136,37 @@ def _render_html(*, payload: dict[str, object]) -> str:
     }
 
     function backlogListItemHeight(item) {
-      return item && item.kind === "header" ? BACKLOG_LIST_HEADER_HEIGHT : BACKLOG_LIST_ROW_HEIGHT;
+      if (item && item.kind === "header") return BACKLOG_LIST_HEADER_HEIGHT;
+      return backlogListRowHeights.get(item.key) || BACKLOG_LIST_ROW_HEIGHT;
+    }
+
+    function measureBacklogListRows() {
+      const width = el.list.clientWidth;
+      if (width !== backlogListMeasuredWidth) {
+        backlogListRowHeights.clear();
+        backlogListMeasuredWidth = width;
+        latestListWindowKey = "";
+      }
+      el.list.querySelectorAll(".row").forEach((button) => {
+        const style = window.getComputedStyle(button);
+        const height = button.getBoundingClientRect().height + parseFloat(style.marginTop) + parseFloat(style.marginBottom);
+        backlogListRowHeights.set(`row:${button.dataset.ideaId}`, height);
+      });
+    }
+
+    function captureBacklogListAnchor() {
+      // A resize has already reflowed the DOM; keep the last pre-resize reading position.
+      if (el.list.clientWidth !== backlogListMeasuredWidth) return;
+      const clip = el.list.getBoundingClientRect();
+      const visible = [...el.list.querySelectorAll(".row")].filter((button) => {
+        const box = button.getBoundingClientRect();
+        return box.top < clip.bottom && box.bottom > clip.top;
+      });
+      const anchor = visible.find((button) => button.dataset.ideaId === state.selectedIdeaId)
+        || visible.find((button) => elementFullyVisibleWithinContainer(el.list, button)) || visible[0];
+      backlogListAnchor = anchor
+        ? { ideaId: anchor.dataset.ideaId, offset: anchor.getBoundingClientRect().top - clip.top }
+        : null;
     }
 
     function buildBacklogListItems(rows) {
@@ -2462,7 +2217,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
       const viewportHeight = Math.max(1, Number(el.list.clientHeight || 640));
       const scrollTop = Number(el.list.scrollTop || 0);
       const top = backlogListOffsetForIndex(items, selectedIndex);
-      const bottom = top + BACKLOG_LIST_ROW_HEIGHT;
+      const bottom = top + backlogListItemHeight(items[selectedIndex]);
       if (top >= scrollTop && bottom <= (scrollTop + viewportHeight)) return;
       el.list.scrollTop = Math.max(0, top - Math.max(24, Math.round(viewportHeight * 0.3)));
     }
@@ -2474,12 +2229,11 @@ def _render_html(*, payload: dict[str, object]) -> str:
       return elementRect.top >= containerRect.top && elementRect.bottom <= containerRect.bottom;
     }
 
-    function resolveBacklogListWindow(items) {
+    function resolveBacklogListWindow(items, scrollTop = Number(el.list.scrollTop || 0)) {
       if (items.length <= BACKLOG_LIST_WINDOW_THRESHOLD) {
         return { beforePx: 0, afterPx: 0, items, key: `all:${items.length}` };
       }
       const viewportHeight = Math.max(1, Number(el.list.clientHeight || 640));
-      const scrollTop = Number(el.list.scrollTop || 0);
       const startPx = Math.max(0, scrollTop - (BACKLOG_LIST_OVERSCAN * BACKLOG_LIST_ROW_HEIGHT));
       const endPx = scrollTop + viewportHeight + (BACKLOG_LIST_OVERSCAN * BACKLOG_LIST_ROW_HEIGHT);
       let cursorPx = 0;
@@ -2519,12 +2273,24 @@ def _render_html(*, payload: dict[str, object]) -> str:
       if (!rows.some((row) => row.idea_id === state.selectedIdeaId)) {
         state.selectedIdeaId = rows[0].idea_id;
       }
+      const resizeAnchor = backlogListAnchor && el.list.clientWidth !== backlogListMeasuredWidth
+        ? { ...backlogListAnchor } : null;
+      measureBacklogListRows();
       const items = buildBacklogListItems(rows);
-      if (!options.fromScroll && !options.preserveListScroll) {
+      let anchorScrollTop;
+      if (resizeAnchor) {
+        const index = items.findIndex((item) => item.kind === "row" && item.row.idea_id === resizeAnchor.ideaId);
+        if (index >= 0) {
+          const room = el.list.clientHeight - backlogListItemHeight(items[index]);
+          resizeAnchor.offset = Math.max(Math.min(0, room), Math.min(resizeAnchor.offset, Math.max(0, room)));
+          anchorScrollTop = Math.max(0, backlogListOffsetForIndex(items, index) - resizeAnchor.offset);
+        }
+      } else if (!options.fromScroll && !options.preserveListScroll) {
         ensureBacklogSelectionVisible(items, state.selectedIdeaId);
       }
-      const windowed = resolveBacklogListWindow(items);
+      const windowed = resolveBacklogListWindow(items, anchorScrollTop);
       if (options.fromScroll && windowed.key === latestListWindowKey) {
+        captureBacklogListAnchor();
         return;
       }
       latestListWindowKey = windowed.key;
@@ -2562,147 +2328,35 @@ def _render_html(*, payload: dict[str, object]) -> str:
           });
         }
       });
+      measureBacklogListRows();
+      if (resizeAnchor) {
+        const anchor = [...el.list.querySelectorAll(".row")].find((button) => button.dataset.ideaId === resizeAnchor.ideaId);
+        if (anchor) {
+          el.list.scrollTop = anchorScrollTop;
+          el.list.scrollTop += anchor.getBoundingClientRect().top - el.list.getBoundingClientRect().top - resizeAnchor.offset;
+        }
+      }
+      captureBacklogListAnchor();
     }
 
     function toBulletHtml(row) {
+      if (row.rationale_html) return `<div class="detail-copy">${row.rationale_html}</div>`;
       const bullets = Array.isArray(row.rationale_bullets) ? row.rationale_bullets.filter(Boolean) : [];
       const lines = bullets.length ? bullets : [row.ordering_rationale || "No decision basis recorded."];
       if (lines.length === 1) {
-        return `<p>${escapeHtml(compactNarrativeForDetail(lines[0]))}</p>`;
+        return readableTextHtml(lines[0]);
       }
-      return `<ul class="bullets decision-bullets">${lines.map((line) => renderDecisionBasisLine(line)).join("")}</ul>`;
+      return `<ul class="bullets decision-bullets">${lines.map((line) => `<li class="source-text">${escapeHtml(line)}</li>`).join("")}</ul>`;
     }
 
-    function decisionBasisLabel(label) {
-      const token = String(label || "").trim().toLowerCase().replace(/^[-*]\\s+/, "");
-      if (token === "why now" || token === "why this moved") return "Why now";
-      if (token === "expected outcome" || token === "expected value capture") return "Expected outcome";
-      if (token === "tradeoff" || token === "cost/risk tradeoff") return "Tradeoff";
-      if (token === "deferred for now" || token === "what is deferred and why") return "Deferred for now";
-      if (token === "ranking basis" || token === "override note") return "Ranking basis";
-      return humanizeToken(label);
-    }
-
-    function renderDecisionBasisLine(line) {
-      const raw = String(line || "").trim();
-      const match = raw.match(/^([^:]+):\\s*(.+)$/);
-      if (!match) return `<li><span class="decision-basis-copy">${escapeHtml(compactNarrativeForDetail(raw))}</span></li>`;
-      const [, label, body] = match;
-      return [
-        "<li>",
-        `<span class="decision-basis-label">${escapeHtml(decisionBasisLabel(label))}</span>`,
-        `<span class="decision-basis-copy">${escapeHtml(compactNarrativeForDetail(body))}</span>`,
-        "</li>",
-      ].join("");
-    }
-
-    function splitInlineBulletText(value) {
-      const raw = String(value || "").trim();
-      if (!raw) return [];
-      const normalized = raw.replace(/\\s+/g, " ").trim();
-      const looksLikeInlineList = normalized.startsWith("- ")
-        || normalized.includes(". - ")
-        || normalized.includes("; - ")
-        || normalized.includes("? - ")
-        || normalized.includes("! - ");
-      if (!looksLikeInlineList) return [];
-      const body = normalized.startsWith("- ") ? normalized.slice(2) : normalized;
-      return body
-        .split(/\\s+-\\s+/)
-        .map((token) => token.trim())
-        .filter(Boolean);
-    }
-
-    function sentenceChunks(value) {
-      const normalized = String(value || "").replace(/\\s+/g, " ").trim();
-      if (!normalized) return [];
-      if (normalized.length < 420) return [normalized];
-      const sentences = normalized.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [normalized];
-      if (sentences.length < 3) return [normalized];
-      const chunks = [];
-      let current = "";
-      sentences.forEach((sentence) => {
-        const token = String(sentence || "").trim();
-        if (!token) return;
-        const startsNewThought = /^(Another|Fresh|Release|Canonical|The same day|Today|Now|Meanwhile|Finally|Instead|Primary:|Secondary:)\\b/.test(token);
-        if (current && (startsNewThought || current.length >= 260)) {
-          chunks.push(current.trim());
-          current = token;
-        } else {
-          current = current ? `${current} ${token}` : token;
-        }
-      });
-      if (current) chunks.push(current.trim());
-      return chunks.length > 1 ? chunks : [normalized];
-    }
-
-    function splitInlineOrderedSteps(value) {
-      const normalized = String(value || "").replace(/\\s+/g, " ").trim();
-      if (!normalized) return null;
-      const regex = /(^|[^\\w.])(\\d{1,2})\\.\\s+/g;
-      const matches = [];
-      let match = null;
-      while ((match = regex.exec(normalized)) !== null) {
-        matches.push({
-          number: Number(match[2]),
-          start: match.index + String(match[1] || "").length,
-          end: regex.lastIndex,
-        });
-      }
-      if (matches.length < 2 || matches[0].number !== 1) return null;
-      const selected = [];
-      let expected = 1;
-      for (const row of matches) {
-        if (row.number !== expected) break;
-        selected.push(row);
-        expected += 1;
-      }
-      if (selected.length < 2) return null;
-      const intro = normalized.slice(0, selected[0].start).replace(/[ :]+$/g, "");
-      const steps = [];
-      let tail = "";
-      selected.forEach((row, index) => {
-        const next = selected[index + 1];
-        let body = normalized.slice(row.end, next ? next.start : normalized.length).trim();
-        if (index + 1 === selected.length) {
-          const sentences = body.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [body];
-          const cleanSentences = sentences.map((sentence) => String(sentence || "").trim()).filter(Boolean);
-          if (cleanSentences.length > 1) {
-            const possibleTail = cleanSentences.slice(1).join(" ").trim();
-            if (/^(No |If |Then |After |Everything |Anything )/.test(possibleTail)) {
-              body = cleanSentences[0];
-              tail = possibleTail;
-            }
-          }
-        }
-        if (body) steps.push(body);
-      });
-      if (steps.length < 2) return null;
-      return { intro, steps, tail };
-    }
 
     function readableTextHtml(value, fallback = "Not captured in the idea spec yet.") {
-      const raw = compactPlainText(value) || compactPlainText(fallback) || "Not captured in the idea spec yet.";
-      const ordered = splitInlineOrderedSteps(raw);
-      if (ordered) {
-        const intro = ordered.intro
-          ? sentenceChunks(ordered.intro).map((line) => `<p>${escapeHtml(line)}</p>`).join("")
-          : "";
-        const steps = `<ol class="inline-steps">${ordered.steps.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ol>`;
-        const tail = ordered.tail
-          ? sentenceChunks(ordered.tail).map((line) => `<p>${escapeHtml(line)}</p>`).join("")
-          : "";
-        return intro + steps + tail;
-      }
-      const bullets = splitInlineBulletText(raw);
-      if (bullets.length) {
-        return `<ul class="bullets">${bullets.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul>`;
-      }
-      return sentenceChunks(raw).map((line) => `<p>${escapeHtml(line)}</p>`).join("");
+      const text = String(value || fallback || "").trim();
+      return `<p class="source-text">${escapeHtml(text)}</p>`;
     }
 
     function successMetricsHtml(row) {
-      const renderedHtml = cleanRenderedHtml(row && row.success_metrics_html || "");
+      const renderedHtml = String(row && row.success_metrics_html || "").trim();
       if (renderedHtml) {
         return `<div class="detail-copy">${renderedHtml}</div>`;
       }
@@ -2710,28 +2364,14 @@ def _render_html(*, payload: dict[str, object]) -> str:
         ? row.success_metrics_items.map((token) => String(token || "").trim()).filter(Boolean)
         : [];
       const raw = String(row.success_metrics || "").trim();
-      const inlineMetrics = explicitMetrics.length ? [] : splitInlineBulletText(raw);
-      const metrics = explicitMetrics.length ? explicitMetrics : inlineMetrics;
-      const shouldRenderList = explicitMetrics.length > 0
-        || metrics.length > 1
-        || (metrics.length === 1 && raw.startsWith("- "));
-      if (shouldRenderList) {
-        return `<div class="detail-copy"><ul class="bullets">${metrics.map((metric) => `<li>${escapeHtml(metric)}</li>`).join("")}</ul></div>`;
+      if (explicitMetrics.length) {
+        return `<div class="detail-copy"><ul class="bullets">${explicitMetrics.map((metric) => `<li>${escapeHtml(metric)}</li>`).join("")}</ul></div>`;
       }
       return `<div class="detail-copy">${readableTextHtml(raw)}</div>`;
     }
 
     function summarySectionHtml(value, fallback, renderedHtml = "") {
-      const structured = structuredPairListHtml(value);
-      if (structured) {
-        return `<div class="detail-copy">${structured}</div>`;
-      }
-      const rich = cleanRenderedHtml(renderedHtml);
-      const rawValue = compactPlainText(value) || textFromRenderedHtml(rich);
-      const compactValue = compactNarrativeForDetail(rawValue);
-      if (compactValue && rawValue && normalizeSearchToken(compactValue) !== normalizeSearchToken(rawValue)) {
-        return `<div class="detail-copy">${readableTextHtml(compactValue, fallback)}</div>`;
-      }
+      const rich = String(renderedHtml || "").trim();
       if (rich) {
         return `<div class="detail-copy">${rich}</div>`;
       }
@@ -2739,16 +2379,15 @@ def _render_html(*, payload: dict[str, object]) -> str:
     }
 
     function orderingRationaleBlockHtml(row) {
-      const raw = compactPlainText(row && row.ordering_rationale);
+      const raw = String(row && row.ordering_rationale || "").trim();
       if (!raw) return "";
       const rawKey = normalizeSearchToken(raw);
       const opportunityKey = normalizeSearchToken(row && row.opportunity);
       if (rawKey && rawKey === opportunityKey) return "";
-      const compactValue = compactNarrativeForDetail(raw);
       return [
         '<section class="block">',
         "<h3>Ordering Rationale</h3>",
-        `<div class="detail-copy">${readableTextHtml(compactValue || raw)}</div>`,
+        summarySectionHtml(raw, "", row.ordering_rationale_html),
         "</section>",
       ].join("");
     }
@@ -3799,31 +3438,6 @@ def _render_html(*, payload: dict[str, object]) -> str:
   max-width: 100%;
 }
 
-.detail-pair-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 10px;
-}
-
-.detail-pair-card {
-  border: 1px solid #dbe7fb;
-  border-radius: 10px;
-  background: linear-gradient(180deg, #f8fbff, #ffffff);
-  padding: 11px 12px;
-}
-
-.detail-pair-card h4 {
-  margin: 0 0 5px;
-  font-size: 0.92rem;
-  line-height: 1.25;
-  color: #172554;
-}
-
-.detail-pair-card p {
-  margin: 0;
-  color: #475569;
-  line-height: 1.45;
-}
 
 .detail-copy ul {
   margin: 0;
@@ -3839,9 +3453,6 @@ def _render_html(*, payload: dict[str, object]) -> str:
   gap: 8px;
 }
 
-.detail-copy .inline-steps {
-  list-style-position: outside;
-}
 
 .detail-copy li {
   margin: 0;

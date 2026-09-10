@@ -5,7 +5,7 @@
   B-111 through B-117. The surface should show the umbrella, execution waves,
   release target `release-0-1-11`, and proof gates without turning Odylith Discipline
   into noisy task theater.
-Last updated: 2026-09-08
+Last updated: 2026-09-09
 
 
 ## Purpose
@@ -15,6 +15,39 @@ execution evidence into the ranked workstream view used by operators and other
 Odylith surfaces.
 
 ## Scope And Non-Goals
+### Authored workstream previews
+The payload builder owns selection of the preview's recorded section: prefer
+Proposed Solution, then an explicitly labeled available source section. The
+browser displays that complete block. Project-wide Problem or Opportunity
+must not displace an available workstream-specific deliverable, and title words
+must not be used to invent or rewrite its meaning.
+
+CB-303 requires removal of sentence classifiers, title-based inference and
+sentence-count clipping from both list previews and selected-detail summaries.
+Authority qualifiers, conditions, punctuation and list order must survive.
+Absent content gets an honest empty state; untrusted markup must remain inert
+both in embedded payloads and in the rendered view. Long source blocks must
+remain reachable while scrolling windowed lists, not disappear because the
+virtualizer assumes every row has the same height.
+
+The owning seam is `render_backlog_ui_payload_runtime.py` for source-field
+selection, `backlog_rich_text.py` for shared Markdown syntax rendering and
+`render_backlog_ui_html_runtime.py` for layout and interaction. List previews,
+selected details and standalone documents must share the formatting owner;
+sentence or command rewriting is not Markdown rendering. Preview formatting
+must not nest active links or form controls inside the row selection button.
+Raw HTML, image fetching and executable fences do not gain authority from
+authored content; detail links retain URL validation.
+Section source spans come from the same Markdown parser, so fenced, quoted
+and nested heading-shaped text cannot manufacture top-level sections. Literal
+or escaped checklist markers must not become false completion evidence.
+Ordering rationale and implemented summaries preserve authored Markdown too;
+plain metadata normalization is not a prose rendering step.
+Proof must include distinct workstreams with repeated project framing,
+desktop/mobile rendering, unavailable runtime detail, hostile markup and a
+late condition in an unusually long windowed row. This display contract does
+not establish that Greenfield authored sufficient product verification.
+
 ### Selected detail readability
 The local Radar detail grid owns the width of its header and narrative blocks.
 Its single track must fit the available content box on mobile and desktop;
@@ -357,6 +390,9 @@ themselves.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142, B-145
+  - Evidence: `odylith/radar/source/ideas/2026-07/2026-07-20-assess-v0-1-15-guidance-and-browser-surface-migration.md`, `src/odylith/runtime/surfaces/backlog_rich_text.py`
 - **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-025, B-142
   - Evidence: `src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py`, `src/odylith/runtime/governance/sync_workstream_artifacts.py`, `tests/unit/runtime/test_sync_casebook_freshness.py`
@@ -371,9 +407,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md`, `src/odylith/runtime/domain_intelligence/archetypes.py`, `src/odylith/runtime/domain_intelligence/proposal_planning.py`
-- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
-  - Scope: B-141
-  - Evidence: `odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md`, `odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md`, `src/odylith/install/runtime.py`, `src/odylith/runtime/intervention_engine/prompt_signal_runtime.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

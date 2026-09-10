@@ -1846,7 +1846,15 @@ h1 {
     }
 
     .row-story { margin-top: 9px; padding-top: 9px; border-top: 1px solid #edf2f7; }
-    .row-story-text { color: #475569; font-size: 12px; line-height: 1.42; margin: 0; overflow-wrap: break-word; word-break: normal; }
+    .row-story-source { display: block; color: #64748b; font-size: 11px; margin-bottom: 4px; }
+    .row-story-text { color: #475569; font-size: 12px; line-height: 1.42; margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; word-break: normal; }
+    .row-story-rich { white-space: normal; }
+    .row-story-rich > :first-child { margin-top: 0; }
+    .row-story-rich > :last-child { margin-bottom: 0; }
+    .row-story-rich ul, .row-story-rich ol { padding-left: 20px; }
+    .row-story-rich pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+    .row-story-rich .check-item { display: flex; align-items: start; gap: 6px; }
+    .source-text { white-space: pre-wrap; }
 
     span.chip {
   --label-bg: #f7faf8;
@@ -2165,15 +2173,8 @@ h1 {
     }
 
     .decision-bullets { list-style: none; padding-left: 0; }
-    .decision-bullets li { display: grid; grid-template-columns: minmax(128px, 178px) minmax(0, 1fr); gap: 8px 18px; padding: 10px 0; border-top: 1px solid #e2e8f0; margin: 0; }
+    .decision-bullets li { padding: 10px 0; border-top: 1px solid #e2e8f0; margin: 0; }
     .decision-bullets li:first-child { border-top: 0; padding-top: 0; }
-    .decision-basis-label { align-self: start; color: #52657c; font-size: 0.88rem; font-weight: 700; line-height: 1.35; letter-spacing: 0em; text-transform: none; padding-top: 0.12rem; overflow-wrap: anywhere; }
-    .decision-basis-copy { min-width: 0; }
-
-    @media (max-width: 760px) {
-      .decision-bullets li { grid-template-columns: 1fr; gap: 3px; padding: 10px 0; }
-      .decision-basis-label { padding-top: 0; }
-    }
 
     .meta-row-val, .block p, .block ul, .block li, .bullets, .bullets li, .detail-copy p, .detail-copy ul, .detail-copy li, .detail-copy .check-text, .analytics-toggle-sub, .graph-sub, .graph-empty {
   font-size: 15px;
@@ -2209,31 +2210,6 @@ h1 {
   max-width: 100%;
 }
 
-.detail-pair-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 10px;
-}
-
-.detail-pair-card {
-  border: 1px solid #dbe7fb;
-  border-radius: 10px;
-  background: linear-gradient(180deg, #f8fbff, #ffffff);
-  padding: 11px 12px;
-}
-
-.detail-pair-card h4 {
-  margin: 0 0 5px;
-  font-size: 0.92rem;
-  line-height: 1.25;
-  color: #172554;
-}
-
-.detail-pair-card p {
-  margin: 0;
-  color: #475569;
-  line-height: 1.45;
-}
 
 .detail-copy ul {
   margin: 0;
@@ -2249,9 +2225,6 @@ h1 {
   gap: 8px;
 }
 
-.detail-copy .inline-steps {
-  list-style-position: outside;
-}
 
 .detail-copy li {
   margin: 0;
@@ -2591,7 +2564,7 @@ h1 {
   }
 })();
 </script>
-  <script id="backlogData" src="backlog-payload.v1.js?v=48fabf332526"></script>
-  <script src="backlog-app.v1.js?v=48fabf332526"></script>
+  <script id="backlogData" src="backlog-payload.v1.js?v=75c8c503fe7d"></script>
+  <script src="backlog-app.v1.js?v=75c8c503fe7d"></script>
 </body>
 </html>

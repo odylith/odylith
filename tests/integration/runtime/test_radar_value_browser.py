@@ -20,7 +20,7 @@ def test_radar_html_escaping_preserves_values_and_missing_blanks(browser_context
     html = render_backlog_ui._render_html(payload={"entries": []})  # noqa: SLF001
     escape_function = html[
         html.index("    function escapeHtml(value) {"):
-        html.index("    function compactPlainText(value) {")
+        html.index("    function rowStorySummary(row) {")
     ]
     cases = [
         (0, "0"), (False, "false"), (True, "true"), (3, "3"), (-2.5, "-2.5"),

@@ -275,6 +275,35 @@ def _run_in_browser_thread(callback) -> None:  # noqa: ANN001
         raise AssertionError(str(error.get("traceback") or error["exc"])) from error["exc"]
 
 
+def _click_visible_radar_row(button) -> None:  # noqa: ANN001
+    """Click the visible part of a complete row, never its clipped full-box center."""
+    point = button.evaluate(
+        """node => {
+            const list = node.closest('#list'), controls = document.querySelector('.controls');
+            list.scrollTop += node.getBoundingClientRect().top - list.getBoundingClientRect().top - 8;
+            window.scrollBy(0, list.getBoundingClientRect().top - controls.getBoundingClientRect().height - 24);
+            const row = node.getBoundingClientRect(), clip = list.getBoundingClientRect();
+            const left = Math.max(row.left, clip.left, 0), right = Math.min(row.right, clip.right, innerWidth);
+            const top = Math.max(row.top, clip.top, controls.getBoundingClientRect().bottom, 0);
+            const bottom = Math.min(row.bottom, clip.bottom, innerHeight);
+            const x = (left + right) / 2, y = (top + bottom) / 2;
+            return {x: x - row.left, y: y - row.top,
+                reachable: right > left && bottom > top && node.contains(document.elementFromPoint(x, y))};
+        }"""
+    )
+    assert point["reachable"], "Radar row is clipped or obstructed; refusing a forced click"
+    box = button.bounding_box()
+    assert box is not None
+    x, y = box["x"] + point["x"], box["y"] + point["y"]
+    frame = button.element_handle().owner_frame()
+    if frame.parent_frame is not None:
+        assert button.page.evaluate(
+            "([frame, x, y]) => document.elementFromPoint(x, y) === frame",
+            [frame.frame_element(), x, y],
+        ), "Radar frame is clipped or obstructed; refusing a forced click"
+    button.page.mouse.click(x, y)
+
+
 def _select_radar_row_with_link(
     radar,
     link_selector: str,
@@ -291,11 +320,7 @@ def _select_radar_row_with_link(
         idea_id = str(button.get_attribute("data-idea-id") or "").strip()
         if not idea_id:
             continue
-        button.scroll_into_view_if_needed()
-        try:
-            button.click(timeout=3000)
-        except Exception:
-            button.click(force=True)
+        _click_visible_radar_row(button)
         radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=idea_id).wait_for(timeout=15000)
         links = radar.locator(f"#detail {link_selector}")
         if links.count():
@@ -376,11 +401,7 @@ def _select_radar_workstream_with_detail_selector(
         idea_id = str(button.get_attribute("data-idea-id") or "").strip()
         if not idea_id:
             continue
-        button.scroll_into_view_if_needed()
-        try:
-            button.click(timeout=3000)
-        except Exception:
-            button.click(force=True)
+        _click_visible_radar_row(button)
         _wait_for_shell_query_param(page, tab="radar", key="workstream", value=idea_id)
         radar.locator(detail_ready_selector).wait_for(timeout=15000)
         if _locator_appears(radar.locator(f"#detail {detail_selector}"), timeout=selector_timeout):

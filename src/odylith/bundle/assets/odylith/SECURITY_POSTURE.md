@@ -1,5 +1,5 @@
 # Security Posture
-Last updated: 2026-05-05
+Last updated: 2026-09-09
 
 ## Purpose
 
@@ -103,6 +103,21 @@ Odylith does not claim full protection against:
 - Mermaid helper workers shut down cleanly or get killed on timeout.
 - Launcher repair avoids recursive wrapper loops that previously left blocked
   Python shells behind.
+
+### Authored Radar content
+
+- The shared Markdown renderer formats source syntax without executing it.
+  Raw HTML is disabled; unsafe link schemes and all data URLs remain inert.
+- Images render their descriptions without fetching remote content. Row
+  previews contain no active links, form inputs or Mermaid activation inside
+  their selection buttons. Details retain safe links, disabled checklist
+  controls and the existing Mermaid display path; code fences are not commands.
+- Escaped and entity-encoded checklist markers remain literal text, not
+  evidence of completion. Section boundaries come from Markdown syntax tokens,
+  not headings inside fenced code or a second prose parser.
+- Source text is retained alongside rendered views. These controls establish
+  presentation safety, not semantic truth or sufficiency of proposed proof.
+  CB-303 carries the causal controls and release-proof boundary.
 
 ### Greenfield governance safety
 

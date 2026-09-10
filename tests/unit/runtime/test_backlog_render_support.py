@@ -49,7 +49,7 @@ def test_radar_route_href_keeps_relative_target_and_query_state(tmp_path: Path) 
     assert href == "standalone-pages.v1.html?view=plan&workstream=B-073"
 
 
-def test_extract_sections_from_markdown_flattens_section_copy(tmp_path: Path) -> None:
+def test_extract_section_bodies_preserves_source_lines(tmp_path: Path) -> None:
     path = tmp_path / "idea.md"
     path.write_text(
         "\n".join(
@@ -69,9 +69,9 @@ def test_extract_sections_from_markdown_flattens_section_copy(tmp_path: Path) ->
         encoding="utf-8",
     )
 
-    sections = backlog_render_support._extract_sections_from_markdown(path)  # noqa: SLF001
+    sections = dict(backlog_render_support._extract_sections_with_body(path))  # noqa: SLF001
 
     assert sections == {
-        "Problem": "First line. Second line.",
-        "Success Metrics": "- one - two",
+        "Problem": ["First line.", "Second line.", ""],
+        "Success Metrics": ["- one", "- two"],
     }

@@ -1,5 +1,125 @@
 Status: In progress
 
+## Complete-package timing and utility adjudication (2026-09-09)
+
+Final frozen Radar proof passes 5,036 runtime checks, 1,168 install checks,
+three Greenfield CLI checks and 361 browser checks with one existing skip.
+All 3,194 selected inputs match before/mid/after. Independent pointer review
+passes all eight obstruction/recovery variants and accepts the helper without
+product CSS changes. The source correction removes 746 net lines across five
+production owners; no semantic model, profile, deadline, dependency or schema
+is added. Preserve /private/tmp/odylith-radar-final-gate.ANcrqg/ as the exact
+frozen code/test evidence. Subsequent governance-only closeout and migration
+assessment require their own refreshed readback and CLI proof; do not present
+them as bytes from that earlier freeze. The broader generic CLI check identifies
+two current migration-assessment fingerprints; extend finished assessment
+B-145 without changing B-142's active lifecycle. This is a development
+checkpoint, not a winning semantic-authoring mechanism or release completion.
+
+The first frozen broad gate passes 5,036 runtime, 1,168 install and nine
+CLI/governance checks with all 3,194 selected inputs unchanged. Browser proof
+has 352 passes, one failure and one existing skip. Independent capture and a
+physical-click counterfactual locate the failure in the test helper: complete
+rows exceed the compact scroller, and its forced fallback clicks non-row
+content. No product selection misrouting is established. Both shared helper
+callers now use a checked visible point without force or event dispatch.
+All 21 authored-story browser controls pass, including eight normal/windowed,
+desktop/mobile and surface/shell-obstruction variants. Covered rows cannot
+change selection; removing the test cover restores ordinary interaction.
+The original compact execution-wave route and layout assertions also pass
+unchanged. Preserve the initial mixed gate and two test-setup mistakes
+(ambiguous active-button selector and an unmounted negative target), not as
+product defects. Repeat the frozen broad gate before checkpointing; this
+does not close the generated-verification P1 or the full release goal.
+
+The bounded Radar correction now has independent acceptance and 114 focused
+passes on MarkdownIt 4 in 34.89 seconds. The syntax owner, active payload
+adapters and browser use complete authored content without sentence or command
+rewriting. Section extraction shares Markdown token spans; fenced headings and
+literal checklist markers cannot change source structure or completion state.
+The actual retained-package audit copy passes 32 state cells and ten exact row
+comparisons, with all 116 sealed-original files unchanged. Root confirms
+distinct deliverables and mobile wrapping visually. This is not publication or
+semantic-quality acceptance. Freeze the settled source and governance, run full
+runtime/install/browser proof, then commit and push only after the gate passes.
+
+Independent Markdown reading controls expand the same owning correction to
+the shared backlog formatter. Direct reuse would preserve a second sentence
+parser: code containing inline step numbers becomes a list, code underscores
+are removed, nested lists flatten and balanced link targets are truncated.
+Ordinary Markdown is also literal in the first preview candidate. Replace
+that formatter with the already declared MarkdownIt dependency, raw HTML
+disabled and URL validation retained; remove obsolete command/prose rewriting
+and token-count paragraph logic from its active callers. Preview formatting
+must stay noninteractive inside row buttons, with no image fetch or fence
+execution. Keep complete source text beside formatted output. This is one
+syntax-rendering ownership correction, not new product interpretation or a
+new model role. Prove both supported dependency majors, causal structure and
+security controls, all Radar reading consumers, and then the frozen broad gate.
+
+The Radar candidate passes 83 focused checks, but independent review finds a
+new P2 before the broad freeze: desktop-to-mobile resize clears offscreen row
+measurements while retaining raw scroll offset, moving selected B-092 out of
+view. The initial resize test resets scroll to zero and misses this behavior.
+Preserve a meaningful row anchor when recalculating layout; require the
+selected-row and late-condition controls before accepting the correction.
+Retain windowing and complete prose. No broader virtualization framework or
+waiver is justified, and the earlier focused pass is not final acceptance.
+
+The next proposed composition is rejected before dispatch. The exact retained
+v54 prompt did produce better proposed checks, but its shelter candidate repeats
+the previously adjudicated P1 omission of contextual human participants:
+displaced residents remain state/action targets while human_actors contains only
+city staff. Root and two independent readers corroborate this. The changed
+exact-row reviewer can remove unsupported surplus facts but cannot restore
+missing participants. Its observed timing does not earn repeating a known
+semantic failure. No new live call, version/prompt restoration or adoption occurs.
+Retain the useful evidence that existing verification/assumption fields suffice;
+the next mechanism decision must address missing meaning as well as insufficient
+outcome proof, without extra runtime calls or a new hard block on ordinary copy.
+
+Current bounded implementation removes Radar's discovered sentence/title
+recomposition phase. The payload should carry existing authored Proposed Solution
+content into a workstream preview, with an explicit source-field fallback; the
+view must preserve complete blocks and authority labels without lexical filters,
+invented title narratives or character clipping. The shared detail callers of
+the obsolete shortening helpers must migrate too. Long-block reachability in
+the virtualized rail, safe markup, and ordinary/empty/degraded state proof are
+required before accepting this owner change. No semantic model or canonical
+schema changes belong to this presentation correction.
+
+One independently preapproved standard attempt at f5cc976e now meets the timing
+constraint: the actual proposal returns in 54.913950 seconds, including two
+model calls and a complete 116-file sealed package. All frozen inputs, approved
+import origins, raw-to-accepted correspondence and sealed hashes pass independent
+readback. The 49.820284-second model metadata precedes proof emission; the entire
+external duration is below55 and conservatively covers those tails. Review takes
+12.911110 seconds. No publication occurs, and the reviewer changes no candidate
+values. This is unpublished mixed-bootstrap/source-local feasibility, not proof
+of reliable timing, correction value, host parity or a released installation.
+
+Three reviewers reject complete quality despite faithful source meaning. The
+P1 is product verification: a package promising preservation can satisfy every
+proposed check by creating and linking initial entries while losing later
+evidence. Existing design verification fields reach downstream surfaces; first
+establish whether weak author content, review scope or projection ownership
+causes the gap. Compare only bounded alternatives that make a broken requested
+outcome fail its proposed acceptance checks. Do not introduce domain vocabulary,
+another model call, an architecture mandate or a schema for this example.
+
+The 32-cell desktop/mobile state matrix passes but does not close P2 findings:
+repeated Radar previews, unreadable default mobile Atlas labels, and readiness
+checks limited to references rather than usable evidence. Preserve all pending
+bytes and the exact rejected package. There is no retry, CONFIRM, publication or
+production adoption from this result. Evidence and all three review boundaries:
+/private/tmp/odylith-completion-package.DGzOhE/REVIEW.md.
+
+Next proof must distinguish outcome-verifying checks from object-existence
+checks across independent disclosed examples, preserve explicit assumptions
+and optional-design advisories, and still meet consumer60/90/120 and model55/80/105.
+Final holdout, all-reader atomicity, installed lifecycle, profile/host parity and
+the full release completion standard remain unchanged.
+
 ## Current checkpoint proof (2026-09-09)
 
 The integrated correction now passes the frozen full gate: 5,002 runtime tests

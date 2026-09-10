@@ -1,6 +1,6 @@
 Status: Done
 Created: 2026-07-20
-Updated: 2026-08-03
+Updated: 2026-09-09
 Backlog: B-145
 
 # v0.1.15 Guidance And Browser Surface Migration Assessment
@@ -33,6 +33,13 @@ upgrade.
 - No secrets or customer content are introduced by the assessed surfaces.
 
 ## Evidence
+- The 2026-09-09 authored Radar presentation assessment in B-145 covers the
+  shared Markdown renderer, complete source projection, long-row measurement
+  and resize anchoring. The frozen source passes 5,036 runtime, 1,168 install
+  and 361 browser checks with one existing browser skip, plus three Greenfield
+  CLI checks. It requires normal managed replacement and generated-view
+  refresh, not a consumer schema or stored-data migration. This is not a fresh
+  installed Greenfield campaign or full release qualification.
 - The release migration observer fingerprints are recorded in B-145.
 - `D-023` describes the managed runtime release and install flow.
 - `D-042` describes migration planning, application, ledger, and release-gate
