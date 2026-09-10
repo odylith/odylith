@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
+from contextlib import contextmanager
 from dataclasses import replace
 import hashlib
 import json
@@ -48,6 +49,37 @@ from tests.unit.runtime.greenfield_proposal_fixtures import compiled_greenfield_
 from tests.unit.runtime.greenfield_authored_proposal_fixtures import canonical_model_authored_intent_fixture
 from tests.unit.runtime.greenfield_authored_proposal_fixtures import _canonical_model_authored_greenfield_fixture
 from tests.unit.runtime.greenfield_authored_proposal_fixtures import approved_authored_quality_manifest_fixture
+
+
+@contextmanager
+def _executed_source_files(source_root: Path) -> Iterator[set[Path]]:
+    """Observe current-thread Python calls while source paths remain frozen.
+
+    Relative filenames bind to cwd at each call. Resolution is deferred until
+    the prior tracer is restored; live symlink retargeting is not covered.
+    """
+
+    filenames: set[str] = set()
+    executed: set[Path] = set()
+
+    def trace(frame: Any, event: str, _argument: Any) -> None:
+        if event == "call":
+            filename = frame.f_code.co_filename
+            filenames.add(
+                filename if os.path.isabs(filename) else os.path.join(os.getcwd(), filename)
+            )
+        return None
+
+    previous_trace = sys.gettrace()
+    sys.settrace(trace)
+    try:
+        yield executed
+    finally:
+        sys.settrace(previous_trace)
+        for filename in filenames:
+            source_path = Path(filename).resolve()
+            if source_path.is_relative_to(source_root):
+                executed.add(source_path)
 
 
 def _transaction(repo_root: Path) -> Any:
@@ -105,6 +137,140 @@ def _rewrite_sealed_transaction(path: Path, payload: Mapping[str, Any]) -> str:
         encoding="utf-8",
     )
     return str(rewritten["transaction_hash"])
+
+
+@pytest.mark.parametrize("raises", (False, True))
+def test_executed_source_observer_covers_nested_and_exception_calls(
+    tmp_path: Path, raises: bool,
+) -> None:
+    namespace: dict[str, Any] = {"sys": sys}
+    definitions = {
+        "leaf.py": "def leaf():\n    assert sys._getframe().f_trace is None\n    return 7\n",
+        "nested.py": "def outer():\n    def nested():\n        return leaf()\n    return nested\n",
+        "handled.py": (
+            "def handled():\n    try:\n        fail()\n"
+            "    except ValueError:\n        return leaf()\n"
+        ),
+        "failure.py": "def fail():\n    raise ValueError('handled failure')\n",
+        "escaping.py": "def escape():\n    raise ValueError('escaping failure')\n",
+    }
+    for filename, definition in definitions.items():
+        exec(compile(definition, str(tmp_path / filename), "exec"), namespace)
+    nested = namespace["outer"]()
+    original_trace = sys.gettrace()
+
+    def prior_trace(_frame: Any, _event: str, _argument: Any) -> None:
+        return None
+
+    caught = None
+    try:
+        sys.settrace(prior_trace)
+        try:
+            with _executed_source_files(tmp_path) as executed:
+                assert nested() == 7
+                assert namespace["handled"]() == 7
+                if raises:
+                    namespace["escape"]()
+        except ValueError as error:
+            caught = str(error)
+        assert sys.gettrace() is prior_trace
+    finally:
+        sys.settrace(original_trace)
+
+    assert sys.gettrace() is original_trace
+    assert caught == ("escaping failure" if raises else None)
+    expected = {tmp_path / filename for filename in definitions if filename != "escaping.py"}
+    if raises:
+        expected.add(tmp_path / "escaping.py")
+    assert executed == expected
+
+
+@pytest.mark.parametrize("raises", (False, True))
+def test_executed_source_observer_binds_relative_calls_and_generator_resumes_to_cwd(
+    tmp_path: Path, raises: bool,
+) -> None:
+    source_root = tmp_path / "source"
+    directories = [source_root / name for name in ("first cwd", "second cwd", "third cwd")]
+    for directory in directories:
+        directory.mkdir(parents=True)
+    namespace: dict[str, Any] = {}
+    for filename, definition in (
+        ("relative.py", "def relative():\n    return 7\n"),
+        ("generator.py", "def generate():\n    yield 1\n    yield 2\n"),
+        (str(source_root / "absolute.py"), "def absolute():\n    return 11\n"),
+        (str(tmp_path / "source-outside.py"), "def outside():\n    return 13\n"),
+    ):
+        exec(compile(definition, filename, "exec"), namespace)
+    generator = namespace["generate"]()
+    original_cwd, original_trace = Path.cwd(), sys.gettrace()
+
+    def prior_trace(_frame: Any, _event: str, _argument: Any) -> None:
+        return None
+
+    caught = None
+    try:
+        sys.settrace(prior_trace)
+        try:
+            with _executed_source_files(source_root) as executed:
+                for index, directory in enumerate(directories[:2], 1):
+                    os.chdir(directory)
+                    assert next(generator) == index
+                    assert namespace["relative"]() == 7
+                    assert namespace["absolute"]() == 11
+                    assert namespace["outside"]() == 13
+                os.chdir(directories[2])
+                with pytest.raises(StopIteration):
+                    next(generator)
+                if raises:
+                    raise ValueError("yielded body failed")
+        except ValueError as error:
+            caught = str(error)
+        assert sys.gettrace() is prior_trace
+    finally:
+        sys.settrace(original_trace)
+        os.chdir(original_cwd)
+
+    assert sys.gettrace() is original_trace
+    assert Path.cwd() == original_cwd
+    assert caught == ("yielded body failed" if raises else None)
+    assert executed == {
+        source_root / "absolute.py",
+        *(directory / "relative.py" for directory in directories[:2]),
+        *(directory / "generator.py" for directory in directories),
+    }
+
+
+def test_executed_source_observer_resolves_unique_paths_only_after_restoring_trace(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    namespace: dict[str, Any] = {}
+    filename = tmp_path / "repeated.py"
+    exec(compile("def repeated():\n    return 7\n", str(filename), "exec"), namespace)
+    original_trace, original_resolve = sys.gettrace(), Path.resolve
+    resolutions: list[Path] = []
+
+    def prior_trace(_frame: Any, _event: str, _argument: Any) -> None:
+        return None
+
+    def resolve_after_restoration(path: Path, *args: Any, **kwargs: Any) -> Path:
+        assert sys.gettrace() is prior_trace
+        resolutions.append(path)
+        return original_resolve(path, *args, **kwargs)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(Path, "resolve", resolve_after_restoration)
+        try:
+            sys.settrace(prior_trace)
+            with _executed_source_files(tmp_path) as executed:
+                for _ in range(3):
+                    assert namespace["repeated"]() == 7
+                assert resolutions == []
+            assert sys.gettrace() is prior_trace
+        finally:
+            sys.settrace(original_trace)
+    assert sys.gettrace() is original_trace
+    assert executed == {filename}
+    assert resolutions.count(filename) == 1
 
 
 def test_product_create_transaction_provenance_carries_compiler_identity(tmp_path: Path) -> None:
@@ -193,27 +359,13 @@ def test_postconfirm_receipt_covers_executed_runtime(tmp_path: Path) -> None:
     sealed_transaction = load_sealed_product_create_commit(transaction_path)
     source_root = Path(__file__).resolve().parents[3] / "src" / "odylith"
     expected = {source_root / path for path in _POSTCONFIRM_RUNTIME_SOURCE_FILES}
-    executed: set[Path] = set()
-
-    def trace(frame: Any, event: str, _argument: Any) -> Any:
-        if event == "call":
-            source_path = Path(frame.f_code.co_filename).resolve()
-            if source_path.is_relative_to(source_root):
-                executed.add(source_path)
-        return trace
-
-    previous_trace = sys.gettrace()
-    sys.settrace(trace)
-    try:
+    with _executed_source_files(source_root) as executed:
         result = greenfield_create_commit.commit_greenfield_create_transaction(
             repo_root=tmp_path,
             transaction_file=transaction_path,
             transaction_hash=sealed_transaction.transaction_hash,
             confirm=True,
         )
-    finally:
-        sys.settrace(previous_trace)
-
     assert result["repository_write_set"]["status"] == "passed"
     assert executed
     expected_untraced = {
@@ -240,18 +392,7 @@ def test_postconfirm_receipt_covers_canonical_create_adapter(tmp_path: Path, cap
     greenfield_create_transaction.write_compiled_product_create_transaction_file(transaction_path, transaction)
     source_root = Path(__file__).resolve().parents[3] / "src" / "odylith"
     expected = {source_root / path for path in _POSTCONFIRM_RUNTIME_SOURCE_FILES}
-    executed: set[Path] = set()
-
-    def trace(frame: Any, event: str, _argument: Any) -> Any:
-        if event == "call":
-            source_path = Path(frame.f_code.co_filename).resolve()
-            if source_path.is_relative_to(source_root):
-                executed.add(source_path)
-        return trace
-
-    previous_trace = sys.gettrace()
-    sys.settrace(trace)
-    try:
+    with _executed_source_files(source_root) as executed:
         result = greenfield_create_cli.main(
             [
                 "create",
@@ -264,9 +405,6 @@ def test_postconfirm_receipt_covers_canonical_create_adapter(tmp_path: Path, cap
                 "--confirm",
             ]
         )
-    finally:
-        sys.settrace(previous_trace)
-
     assert result == 0
     capsys.readouterr()
     assert source_root / "runtime/domain_intelligence/greenfield_create_cli.py" in executed
@@ -480,31 +618,18 @@ def test_host_and_cli_accept_the_same_hash_with_opaque_product_evidence(
         (source_root / relative_path).resolve()
         for relative_path in _POSTCONFIRM_RUNTIME_SOURCE_FILES
     }
-    executed: set[Path] = set()
-
-    def trace(frame: Any, event: str, _argument: Any) -> Any:
-        if event == "call":
-            source_path = Path(frame.f_code.co_filename).resolve()
-            if source_path.is_relative_to(source_root):
-                executed.add(source_path)
-        return trace
-
-    previous_trace = sys.gettrace()
     decision_started = time.perf_counter()
-    sys.settrace(trace)
-    try:
+    with _executed_source_files(source_root) as executed:
         decision = greenfield_host_confirmation.maybe_handle_greenfield_decision(
             repo_root=tmp_path,
             host_family=host,
             prompt=f"CONFIRM {rewritten_hash}",
         )
-    finally:
-        sys.settrace(previous_trace)
-    first_decision_diagnostics = {
+    first_decision_diagnostics = json.dumps({
         "host": host,
         "elapsed_seconds": time.perf_counter() - decision_started,
         "decision": decision,
-    }
+    }, sort_keys=True)
     assert decision is not None, first_decision_diagnostics
     assert decision["status"] == "CLOSED", first_decision_diagnostics
     assert decision["transaction_hash"] == rewritten_hash, first_decision_diagnostics

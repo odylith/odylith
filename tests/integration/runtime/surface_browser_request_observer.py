@@ -308,22 +308,23 @@ class RequestLedger:
                         candidates.append((identifier, successor, None))
         else:
             removal = self._frames[source.frame].removed
-            for position, (frame_id, loader) in enumerate(source.lineage[1:], start=1):
+            for position, (frame_id, loader) in enumerate(source.lineage):
                 document = self._document(frame_id, loader)
                 next_navigation = self._next_navigation(frame_id, document)
                 if next_navigation is None:
                     continue
                 identifier, successor = next_navigation
-                if removal is not None and self._ready(successor, origin):
+                departure = successor.commit if position == 0 else removal
+                if departure is not None and successor.loader != loader and self._ready(successor, origin):
                     in_flight = successor.start < failure.index < successor.commit
-                    departing = successor.start < removal < successor.commit
+                    departing = successor.start < departure and (position == 0 or departure < successor.commit)
                     barrier = any(document.commit < event < successor.commit for event in self._frames[frame_id].transitions)
                     # Final loader equality cannot prove continuity across A-to-B-to-A commits.
-                    interrupted = any(source.start < event < removal
+                    interrupted = any(source.start < event < departure
                                       for lower_id, _ in source.lineage[:position]
                                       for event in self._frames[lower_id].transitions)
                     if in_flight and departing and not barrier and not interrupted:
-                        candidates.append((identifier, successor, removal))
+                        candidates.append((identifier, successor, None if position == 0 else removal))
         if not candidates:
             return None
         identifier, successor, removal = candidates[0]

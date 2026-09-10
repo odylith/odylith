@@ -7,6 +7,45 @@ Backlog: B-145
 
 ## Current bounded checkpoint (2026-09-10)
 
+Current Radar source already projects each workstream's authored Proposed
+Solution into its card and retains project context in detail. Eleven current
+projection controls pass; the old package's repeated cards do not justify a
+second renderer fix. Qualify the existing desktop/mobile and fallback owner in
+the comprehensive browser run. Source-grounded custody verification and bounded
+internal quality correction remain unclosed (CB-303).
+
+Corrected server admission now produces five original smoke passes in 10.637
+seconds against the verified generation. All 34 raw Script cancellations have
+native same-frame replacement evidence; none are discarded. Source, fixture and
+worker custody are unchanged. Independent review finds no bounded P0/P1, and all
+327 matching-hash observer/resource/bundle controls pass. This supports a bounded
+navigation checkpoint; the complete desktop/mobile normal/fallback/degraded
+matrix remains open (CB-305).
+
+The confirmation-observer comparison preserves the same 15-file execution
+inventory with substantially lower measured local cost, but naive deferred
+relative paths lose call-time working-directory identity. Two controls establish
+lexical anchoring before deferred resolution. All three provenance-test tracers
+now share that observer and preserve full failure diagnostics. The 107-case
+provenance/host/deadline pack passes, with independent bounded acceptance.
+Production deadlines, runtime inventories and consumer timing claims remain
+unchanged; the original Linux interruption phase is still unproved (CB-304).
+
+The original-five passive browser capture exposes a fixture-admission mistake:
+the custody check pins generation021a9f86, but served URLs use181cf3dd and the
+module-name routing guard silently skips setup. Its five failures cannot judge
+the intended candidate. Require exact test-file routing and actual HTTP-byte
+identity before another browser admission; preserve original assertions and the
+failed run. Separate raw-evidence review confirms the earlier 17-case run's five
+smokes also served181cf3dd, so its candidate-falsification claim is withdrawn.
+Correctly routed candidate integration remains unproved (CB-305).
+
+Completed Linux8fb narrows CI to10 failed,7,914 passed and one skipped. HIIT,
+both spaced-worker variants and attribution no longer fail; a Radar selection
+race recurs. Host confirmations still stop around10.001 seconds and their dict
+diagnostics remain truncated. Compare a lower-overhead call observer with equal
+execution inventory, not a larger callback or consumer deadline (CB-304).
+
 The complete-draft verification-delta comparison is rejected on its one native
 attempt: null/timeout, 18.095894 seconds owner elapsed and18.096123 through the
 receipt against18.077313 available. All111 frozen dependencies are unchanged.
