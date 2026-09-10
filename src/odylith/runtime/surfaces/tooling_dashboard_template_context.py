@@ -17,6 +17,7 @@ class ToolingDashboardTemplateContext:
     shell_title: str
     shell_subtitle: str
     shell_version_label: str
+    status_snapshot_captured_utc: str
     brand_head_html: str
     shell_brand_lockup_href: str
     shell_brand_icon_href: str
@@ -63,6 +64,7 @@ def build_template_context(
         shell_title=shell_title,
         shell_subtitle=shell_subtitle,
         shell_version_label=shell_version_label,
+        status_snapshot_captured_utc=str(payload.get("status_snapshot", {}).get("captured_utc", "")).strip(),
         brand_head_html=str(payload.get("brand_head_html", "")).strip(),
         shell_brand_lockup_href=str(payload.get("shell_brand_lockup_href", "")).strip(),
         shell_brand_icon_href=str(payload.get("shell_brand_icon_href", "")).strip(),

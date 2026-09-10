@@ -256,6 +256,18 @@
   position: relative;
 }
 
+.shell-snapshot-note {
+  margin: 0;
+  padding: 4px 16px;
+  color: var(--muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.shell:has(> .shell-snapshot-note) {
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
 .shell-runtime-status {
   --surface-frame-width: calc(100% - var(--brief-handle-width));
   --surface-shell-width: min(var(--surface-shell-max-width), var(--surface-frame-width));
@@ -273,7 +285,7 @@
   right: auto;
   width: var(--status-inline-size);
   max-width: var(--status-content-width);
-  z-index: 11;
+  z-index: 3;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;

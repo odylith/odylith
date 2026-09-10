@@ -26,6 +26,18 @@ flowchart TB
       review -- "denied, unavailable or late" --> denied
     end
 
+    subgraph status_lane["Shell status acquisition: first install and later packages"]
+      direction LR
+      bundle_scope["Renderer classifies the complete shell bundle<br/>HTML, payload and controls<br/>Before canonical output mapping"]
+      captured_status["Managed shell snapshot<br/>Version state and Context Engine last-update provenance<br/>Captured in sealed tooling payload; no live status probes"]
+      live_telemetry["Independent live telemetry<br/>Remains mutable outside the managed package"]
+      direct_live["Isolated direct-live export<br/>Retains live status probes"]
+      bundle_scope -- "any bundle member is managed" --> captured_status
+      bundle_scope -- "no bundle member is managed" --> direct_live
+      live_telemetry -- "capture at render time" --> captured_status
+      live_telemetry -- "live status" --> direct_live
+    end
+
     subgraph transaction_lane["Reviewed transaction boundary"]
       direction LR
       write_set["Sealed repository write set<br/>Complete after-image and preconditions<br/>Write-set hash addresses the generation"]
@@ -35,11 +47,16 @@ flowchart TB
       decision["One operator decision<br/>CONFIRM, EDIT, or REJECT the hash<br/>No synthetic regeneration-as-review command"]
       confirm["Commit-only CONFIRM<br/>Verify and write sealed bytes;<br/>no model, parser, generation, or repair"]
       publish["Publish exact sealed HTML entry<br/>Journal retains admitted transaction evidence<br/>Readers pin immutable shell and child resources"]
+      observed["Opened or historical snapshot<br/>Pinned package and captured status<br/>No automatic successor discovery"]
+      navigate["Navigate the canonical entry<br/>Resolve the current published package"]
       later["Successful later update<br/>Recover creates and verify working bytes first<br/>Publish a complete immutable successor"]
       recovery["Recovery boundary<br/>Rollback snapshot, journal,<br/>interrupt cleanup, and safe retry"]
       write_set --> generation_manifest --> entry --> sealed --> decision --> confirm --> publish
       publish --> later
       later -. "fresh predecessor-bound transition" .-> publish
+      publish --> observed
+      observed -- "new canonical-entry navigation" --> navigate
+      navigate -- "published successor, when available" --> observed
       confirm -. "failure or interruption" .-> recovery
     end
 
@@ -57,6 +74,8 @@ flowchart TB
     end
 
     ambiguity -- "yes" --> custody
+    baseline -. "status acquisition" .-> bundle_scope
+    staged_surfaces -. "status acquisition" .-> bundle_scope
     timing --> write_set
     quality --> evaluator
     publish --> retained
@@ -67,13 +86,14 @@ flowchart TB
     classDef constraint fill:#FFF8E6,stroke:#F6D98B,color:#132033,stroke-width:1px;
     classDef invalid fill:#FFF1F0,stroke:#F7B4AE,color:#132033,stroke-width:1px;
     class request,baseline,model_pass,typed_graph primary;
-    class custody,review,projections,staged_surfaces,quality,timing execution;
-    class write_set,generation_manifest,entry,sealed,decision,confirm,publish,later,recovery,owners,evaluator,acceptance,confidence,retained governance;
+    class custody,review,projections,staged_surfaces,quality,timing,bundle_scope,live_telemetry,direct_live execution;
+    class write_set,generation_manifest,entry,sealed,decision,confirm,publish,observed,navigate,captured_status,later,recovery,owners,evaluator,acceptance,confidence,retained governance;
     class ambiguity,drift constraint;
     class clarify,denied,replace invalid;
 
     style evidence_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
     style projection_lane fill:#F8FFFE,stroke:#A7E9E3,stroke-width:1px,color:#293D52
+    style status_lane fill:#F8FFFE,stroke:#A7E9E3,stroke-width:1px,color:#293D52
     style transaction_lane fill:#FCFBFF,stroke:#DDD6FE,stroke-width:1px,color:#293D52
     style proof_lane fill:#FFFCF3,stroke:#F6D98B,stroke-width:1px,color:#293D52
     linkStyle default stroke:#9FB2C8,stroke-width:1.25px

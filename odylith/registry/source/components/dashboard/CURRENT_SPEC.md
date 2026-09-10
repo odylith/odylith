@@ -225,7 +225,9 @@ Default refresh may stay optimized, but a green check must never be based on a
 stale cache whose input fingerprint missed changed source bytes.
 
 After install or upgrade, Dashboard must write the runtime version sidecar and
-force the default shell-facing refresh. A shell payload that still shows an
+force the default shell-facing refresh. Published shells capture version state
+in their sealed payload; they do not request mutable runtime companions from
+an immutable generation. A direct-live export that still shows an
 older version than `odylith version` must surface a warning with the
 authoritative source, the shell generated timestamp, the version-state check
 timestamp, and the narrow recovery command:
@@ -233,7 +235,24 @@ timestamp, and the narrow recovery command:
 `odylith sync --proceed-with-overlap` recovery for shell-only drift.
 
 ### Live-refresh policy contract
-Dashboard owns the shell-side policy that decides when a currently open tab may
+Dashboard classifies the complete generated HTML, payload and control bundle
+before canonical-path remapping. If any output belongs to the managed package,
+status acquisition belongs to that rendered snapshot, including first install,
+staging and custom HTML that shares the canonical payload filename. The payload
+captures version state and Context Engine last-update provenance; existing
+surface-status projection owns Compass warnings. This is not comprehensive
+engine-health evidence. Live telemetry files stay independently mutable and
+outside transaction fingerprints. Changed captured inputs invalidate the render
+cache, not admission against an unchanged published generation.
+
+Published views show a compact capture-time note. They do not poll missing
+sidecars or their own immutable payload, and they do not claim automatic
+successor discovery. Reopening the canonical entry resolves the current complete
+publication; an already-open or explicitly pinned predecessor remains coherent.
+Status warnings must not intercept the starter guide's Close control.
+
+When every generated output is outside managed ownership, the existing
+direct-live export contract applies. Dashboard owns the policy that decides when a currently open tab may
 reload against fresher local runtime state without mutating tracked Odylith
 truth.
 
@@ -425,6 +444,9 @@ artifacts to that header.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `src/odylith/runtime/surfaces/render_tooling_dashboard.py`, `tests/integration/runtime/test_tooling_snapshot_status_browser.py`, `tests/unit/runtime/test_tooling_status_snapshot.py`
 - **2026-09-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_greenfield_matrix_transaction_evidence.py`
@@ -440,12 +462,10 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/casebook/bugs/2026-09-02-greenfield-recovery-proof-bound-compiler-identity-to-absolute-install-path.md`, `odylith/casebook/bugs/2026-09-03-greenfield-flat-fact-arrays-permit-invalid-singular-cardinality.md`, `odylith/casebook/bugs/2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md`, plus 2 more
-- **2026-09-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-09-02-greenfield-recovery-proof-bound-compiler-identity-to-absolute-install-path.md`, `odylith/casebook/bugs/2026-09-03-greenfield-rejects-a-product-title-that-aliases-its-internal-system.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_backlog.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-09-09: Moved published-shell status acquisition into the sealed tooling payload while retaining independently mutable telemetry and direct-live exports. Whole-bundle ownership includes custom HTML sharing canonical assets. Captured status is labelled, canonical reopening advances coherently, and warning layers no longer block starter-guide dismissal. Source-local browser and admission controls qualify this bounded correction; new-distribution installed recovery and complete Greenfield release proof remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-305`)
 - 2026-08-04: Bound Product Boundary to the typed Greenfield visible result instead of a path-shaped project-brief outcome, and kept terminal deferred scope in Product Boundary rather than repeating it in First Path. The exact installed-matrix failure now yields five complete, semantically distinct cards in source-local proof; clean installed proof remains pending. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
 - 2026-08-04: Corrected installed Project browser proof so intentional CSS uppercase labels retain their canonical five-card identity while unknown, missing, mismatched, and reused semantic slots still fail. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
 - 2026-08-03: Bound each Project Product Story card to a distinct typed semantic slot, reused the same judgment in pre-confirm and installed browser proof, and expanded Playwright coverage to accepted, blank, and degraded desktop/mobile states with no overflow, line clamp, or hidden text. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)

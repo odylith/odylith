@@ -1,5 +1,65 @@
 Status: In progress
 
+## Publish captured status without coupling live telemetry (2026-09-09)
+
+The bounded candidate moves browser status acquisition into the existing sealed
+tooling payload for every bundle that touches managed outputs. This includes
+initial installation and custom HTML sharing canonical JS files. Independent
+review and a failing custom-output control replaced the insufficient HTML-only
+classification before qualification. Direct-live exports keep their supported
+policy overrides and probes; no engine is disabled and mutable telemetry is not
+added to transaction fingerprints. Context Engine last-update provenance is not
+a claim of complete engine health. Render-cache inputs capture status changes
+without making an otherwise unchanged publication inadmissible.
+
+Published views carry a capture-time note and remain exact after later writes.
+Canonical reopening resolves the successor; automatic successor discovery stays
+open. Initial file/HTTP, desktop/mobile, current/absent/failed-status proof passes
+12 cases, and direct-live/onboarding proof passes 23. Screenshot review found
+the warning banner blocking mobile starter-guide Close; a failing click control
+precedes its layer-order correction. The final expanded focused pack passes
+175 controls in 56.16 seconds; all eleven changed source/test hashes match after
+terminal completion. Final independent source review finds no remaining bounded
+P0/P1. Existing oversized-file debt remains open. Retain all reports in
+`/private/tmp/odylith-snapshot-status-proof.uZUBBA/`.
+
+After stable source/governance checkpoint, build a new clean distribution and
+rerun the unchanged installed recovery witness against a fresh consumer. Preserve
+the old failed consumer and receipt. Do not use these shell-level controls as
+proof of model quality, populated migration, automatic chat delivery, the
+60/90/120 contract or final release acceptance. All broader gates remain active;
+the protected replacement holdout remains untouched.
+
+## Close the installed snapshot dependency gap (2026-09-09)
+
+The full clean distribution at pushed `39a5f102` passes its twelve asset hashes
+and matches the five changed production source owners. Fresh installation,
+memory-pack activation, doctor and complete baseline readback pass. After the
+actual installed renderer succeeds, the single synthetic completion failure
+retains the original publication and yields valid exact-state retry authority.
+The first desktop file browser pass reaches all six content-ready surfaces but
+finds a missing snapshot-local Context Engine status script. Its clean-page
+assertion fails before HTTP, mobile or the emitted retry runs. This is a genuine
+integration failure, not permission to waive resource errors or read mutable
+runtime state from an immutable package.
+
+Read-only diagnosis binds the missing dependency to the initial publication,
+not the later injected failure. The shell names a mutable runtime companion
+that its immutable generation does not contain. Keep live telemetry independent;
+test a browser-status snapshot in the existing sealed shell payload rather than
+adding continuously changing telemetry to transaction fingerprints. Cover the
+same version-status probe pattern without claiming a second observed failure.
+Prove dependency closure, admission stability during telemetry updates, and fresh
+status after supported dashboard publication before rerunning the installed proof.
+No source correction has run. Preserve the unchanged failed
+consumer and receipt in
+`/private/tmp/odylith-installed-upgrade-recovery.DGvhVK/run-199egbdb/`.
+The proof is same-version with a synthetic post-success render failure, not
+published-predecessor migration, partial render recovery or 60/90/120 evidence.
+All broader semantic, host, quality, migration and untouched-holdout gates remain
+open. CB-305 owns this finding; no new workstream or alternate architecture is
+introduced by the failed test.
+
 ## Resume the exact failed upgrade without broad rollback (2026-09-09)
 
 Current manager rollback cannot restore already committed pin, guidance and

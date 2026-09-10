@@ -274,7 +274,7 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "shellRuntimeStatusReload" in html
     assert "shellRuntimeStatusDismiss" in html
     assert "runtimeStatusReopen" not in html
-    assert "The shell refreshes itself as Odylith updates local surfaces." in html
+    assert "Reopen the dashboard after Odylith refreshes local surfaces." in html
     assert "Add a workstream file under" not in html
     assert "welcome-record-grid" not in html
     assert "Open Radar view" not in html
@@ -494,8 +494,8 @@ def test_render_tooling_dashboard_includes_self_host_payload(tmp_path: Path, mon
     assert '"runtime_source": "pinned_runtime"' in payload_js
     assert '"shell_repo_name": "odylith"' in payload_js
     assert '"shell_version_label": "v0.1.0"' in payload_js
-    assert '"version_state_href": "../.odylith/runtime/odylith-version-state.v1.js"' in payload_js
-    assert '"version_state_global_name": "__ODYLITH_VERSION_STATE__"' in payload_js
+    assert '"version_state_href": ""' in payload_js
+    assert '"status_snapshot":' in payload_js
     assert '"compass_href": "compass/compass.html?v=' in payload_js
     version_state = json.loads(
         (tmp_path / ".odylith" / "runtime" / "odylith-version-state.v1.json").read_text(encoding="utf-8")
@@ -507,7 +507,7 @@ def test_render_tooling_dashboard_includes_self_host_payload(tmp_path: Path, mon
     assert "window[\"__ODYLITH_VERSION_STATE__\"]" in version_state_js
 
 
-def test_render_tooling_dashboard_enables_passive_live_refresh_for_consumer_repo(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_render_tooling_dashboard_enables_passive_live_refresh_for_direct_consumer_export(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     monkeypatch.setattr(
         renderer.delivery_surface_payload_runtime,
@@ -520,15 +520,15 @@ def test_render_tooling_dashboard_enables_passive_live_refresh_for_consumer_repo
         lambda **kwargs: ["src/example_component/service.py", "odylith/registry/registry-payload.v1.js"],
     )
 
-    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/export/index.html"])
 
     assert rc == 0
-    payload_js = _load_externalized_payload_js(tmp_path / "odylith" / "tooling-payload.v1.js")
+    payload_js = _load_externalized_payload_js(tmp_path / "odylith/export/tooling-payload.v1.js")
     live_refresh = dict(payload_js["live_refresh"])
     assert live_refresh["enabled"] is True
     assert live_refresh["mode"] == "passive_runtime_probe"
     assert live_refresh["policy_id"] == "balanced"
-    assert live_refresh["state_href"] == "../.odylith/runtime/odylith-context-engine-state.v1.js"
+    assert live_refresh["state_href"] == "../../.odylith/runtime/odylith-context-engine-state.v1.js"
     assert live_refresh["reloadable_tabs"] == ["radar", "registry", "compass", "casebook"]
     assert live_refresh["surface_policies"]["compass"]["auto_reload"] is True
     assert live_refresh["surface_policies"]["atlas"]["auto_reload"] is False
@@ -676,7 +676,7 @@ def test_render_tooling_dashboard_projects_failed_compass_refresh_into_shell_sta
     assert "Next: odylith dashboard refresh --repo-root . --surfaces compass" in compass_status["meta"]
 
 
-def test_render_tooling_dashboard_disables_live_refresh_for_product_repo(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_render_tooling_dashboard_disables_live_refresh_for_direct_product_export(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     _seed_product_repo_posture(tmp_path)
     monkeypatch.setattr(
@@ -689,10 +689,10 @@ def test_render_tooling_dashboard_disables_live_refresh_for_product_repo(tmp_pat
         "collect_git_changed_paths",
         lambda **kwargs: (_ for _ in ()).throw(AssertionError("product repo live refresh should stay benchmark-frozen")),
     )
-    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/export/index.html"])
 
     assert rc == 0
-    payload_js = _load_externalized_payload_js(tmp_path / "odylith" / "tooling-payload.v1.js")
+    payload_js = _load_externalized_payload_js(tmp_path / "odylith/export/tooling-payload.v1.js")
     live_refresh = dict(payload_js["live_refresh"])
     assert live_refresh["enabled"] is False
     assert live_refresh["policy_id"] == "proof_frozen"
@@ -718,7 +718,7 @@ def test_render_tooling_dashboard_shows_detached_product_repo_version_readout(tm
     assert '"shell_version_label": "source-local"' in payload_js
 
 
-def test_render_tooling_dashboard_enables_balanced_live_refresh_for_detached_source_local(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_render_tooling_dashboard_enables_balanced_live_refresh_for_direct_detached_export(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     _seed_product_repo_source_local_posture(tmp_path)
     monkeypatch.setattr(
@@ -731,17 +731,17 @@ def test_render_tooling_dashboard_enables_balanced_live_refresh_for_detached_sou
         "collect_git_changed_paths",
         lambda **kwargs: ["src/odylith/runtime/surfaces/render_tooling_dashboard.py"],
     )
-    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/export/index.html"])
 
     assert rc == 0
-    payload_js = _load_externalized_payload_js(tmp_path / "odylith" / "tooling-payload.v1.js")
+    payload_js = _load_externalized_payload_js(tmp_path / "odylith/export/tooling-payload.v1.js")
     live_refresh = dict(payload_js["live_refresh"])
     assert live_refresh["enabled"] is True
     assert live_refresh["policy_id"] == "balanced"
     assert live_refresh["reloadable_tabs"] == ["radar", "registry", "compass", "casebook"]
 
 
-def test_render_tooling_dashboard_allows_explicit_full_dev_live_refresh_override(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_render_tooling_dashboard_allows_explicit_full_dev_live_refresh_for_direct_export(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     source_path = tmp_path / "odylith" / "runtime" / "source" / "tooling_shell.v1.json"
     payload = json.loads(source_path.read_text(encoding="utf-8"))
@@ -758,10 +758,10 @@ def test_render_tooling_dashboard_allows_explicit_full_dev_live_refresh_override
         lambda **kwargs: [],
     )
 
-    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/export/index.html"])
 
     assert rc == 0
-    payload_js = _load_externalized_payload_js(tmp_path / "odylith" / "tooling-payload.v1.js")
+    payload_js = _load_externalized_payload_js(tmp_path / "odylith/export/tooling-payload.v1.js")
     live_refresh = dict(payload_js["live_refresh"])
     assert live_refresh["enabled"] is True
     assert live_refresh["policy_id"] == "full_dev"

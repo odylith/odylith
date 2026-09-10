@@ -24,6 +24,7 @@ from odylith.runtime.context_engine import odylith_context_engine_delivery_surfa
 from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.context_engine import odylith_context_engine_runtime_artifacts
 from odylith.runtime.context_engine import odylith_control_state
+from odylith.runtime.domain_intelligence.greenfield_repository_write_set import GREENFIELD_REPOSITORY_WRITE_PATHS
 from odylith.runtime.domain_intelligence.greenfield_repository_write_set import greenfield_repository_layout
 from odylith.runtime.governance import agent_governance_intelligence
 from odylith.runtime.governance import workstream_inference as ws_inference
@@ -437,6 +438,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     repo_root = Path(args.repo_root).resolve()
     layout = greenfield_repository_layout(repo_root)
     output_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.output)
+    # First-install and staged shells need the same custody as later generations.
+    # Adjacent payload/control files may be managed even when the HTML is not.
+    planned_bundle = dashboard_surface_bundle.build_paths(output_path=output_path, asset_prefix="tooling")
+    snapshot_owned = any(
+        path == layout.target_path("odylith/index.html")
+        or any(path.is_relative_to(repo_root / token) for token in GREENFIELD_REPOSITORY_WRITE_PATHS)
+        for path in (planned_bundle.html_path, planned_bundle.payload_js_path, planned_bundle.control_js_path)
+    )
     if output_path == repo_root / "odylith/index.html":
         output_path = layout.target_path("odylith/index.html")
     if output_path.is_symlink():
@@ -454,7 +463,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         registry_path=registry_path,
         casebook_path=casebook_path,
     )
-    tooling_dashboard_version_state.persist_version_state(repo_root=repo_root)
+    version_state = tooling_dashboard_version_state.persist_version_state(repo_root=repo_root)
+    status_snapshot = {
+        "captured_utc": version_state["generated_utc"],
+        "version_state": version_state,
+        "context_updated_utc": str(
+            odylith_context_engine_runtime_artifacts.read_runtime_state(repo_root=repo_root).get("updated_utc", "")
+        ).strip(),
+    } if snapshot_owned else None
     skip_rebuild, input_fingerprint, _cached_metadata, bundle_paths, output_paths = (
         generated_surface_refresh_guards.should_skip_surface_rebuild(
             repo_root=repo_root,
@@ -465,6 +481,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             extra={
                 "runtime_mode": str(args.runtime_mode).strip().lower() or "auto",
                 "renderer_code_fingerprint": _refresh_guard_code_fingerprint(),
+                "status_snapshot_inputs": {
+                    "context_updated_utc": status_snapshot["context_updated_utc"],
+                    "version_state": {key: value for key, value in version_state.items() if key != "generated_utc"},
+                } if status_snapshot else None,
             },
         )
     )
@@ -502,18 +522,22 @@ def main(argv: Sequence[str] | None = None) -> int:
         ),
         version_state_href=(
             surface_path_helpers.relative_href(output_path=output_path, target=version_state_path)
-            if version_state_path.exists()
+            if not snapshot_owned and version_state_path.exists()
             else ""
         ),
-        version_state_global_name=tooling_dashboard_version_state.VERSION_STATE_GLOBAL_NAME,
+        version_state_global_name=tooling_dashboard_version_state.VERSION_STATE_GLOBAL_NAME if not snapshot_owned else "",
     )
     runtime_payload = dict(build_result.runtime_payload)
-    runtime_payload["live_refresh"] = _build_live_refresh_payload(
-        repo_root=repo_root,
-        output_path=output_path,
-        self_host_payload=self_host_payload,
-        shell_source_payload=shell_source_payload,
-    )
+    if status_snapshot is not None:
+        runtime_payload["status_snapshot"] = status_snapshot
+        runtime_payload.pop("live_refresh", None)
+    else:
+        runtime_payload["live_refresh"] = _build_live_refresh_payload(
+            repo_root=repo_root,
+            output_path=output_path,
+            self_host_payload=self_host_payload,
+            shell_source_payload=shell_source_payload,
+        )
     runtime_payload["surface_runtime_status"] = tooling_dashboard_surface_status.build_surface_runtime_status(
         repo_root=repo_root,
         shell_rendered_utc=tooling_dashboard_surface_status.now_utc(),
@@ -522,7 +546,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         repo_root=repo_root,
         shell_payload=runtime_payload,
     )
-    if bool(runtime_payload["live_refresh"].get("enabled")):
+    if bool(runtime_payload.get("live_refresh", {}).get("enabled")):
         odylith_context_engine_runtime_artifacts.ensure_state_js_probe_asset(repo_root=repo_root)
     _prune_release_note_pages(output_path=output_path)
     runtime_payload["generated_utc"] = stable_generated_utc.resolve_for_js_assignment_file(

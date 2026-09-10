@@ -18,7 +18,7 @@ from odylith.install.state import version_pin_path
 from odylith.runtime import release_notes
 
 STARTER_PROMPT = "Odylith, show me what you can do."
-AUTO_REFRESH_NOTE = "The shell refreshes itself as Odylith updates local surfaces."
+AUTO_REFRESH_NOTE = "Reopen the dashboard after Odylith refreshes local surfaces."
 LATEST_INSTALL_COMMAND = "curl -fsSL https://odylith.ai/install.sh | bash"
 _LEGACY_CONSUMER_UPGRADE_VERSIONS = frozenset({"0.1.0", "0.1.1"})
 _LAUNCHER_BOOTSTRAP_MARKER = "odylith_launcher_bootstrap_upgrade"

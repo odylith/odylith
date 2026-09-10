@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "a3d2fdab5101f7ab6e9cf401408b619b27f6d738cb438f751c4bebd9cca62f04",
+    "digest": "8fee92d93413cc0658256fb3615a379fdd732c2002a9a6c6cda11942b9e12d9c",
     "file_count": 315,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -14420,7 +14420,8 @@
       "component_names": [
         "Domain Intelligence",
         "Greenfield transaction boundary",
-        "Release proof"
+        "Release proof",
+        "Shell snapshot status"
       ],
       "related_component_ids": []
     },
@@ -26224,5 +26225,5 @@
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-09-10 03:05:33Z"
+  "generated_utc": "2026-09-10 03:56:52Z"
 }

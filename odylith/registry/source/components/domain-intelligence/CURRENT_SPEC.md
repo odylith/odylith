@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-09-08
+Last updated: 2026-09-09
 
 
 ## Overview
@@ -69,6 +69,15 @@ manifest and entry-byte custody. The journal owns admitted transaction approval;
 the publication store derives the predecessor from sealed W. Live shell writes
 use a separate working filename while immutable snapshots retain index.html.
 Completed first-run rendering activates a baseline before proposal authoring.
+Published dashboard status is now part of the existing sealed tooling payload.
+The renderer classifies all three bundle outputs, so custom HTML cannot inject
+mutable status probes through shared canonical JS filenames. Context Engine
+telemetry remains outside managed fingerprints; its last-update provenance and
+version state are captured at render time. This does not prove comprehensive
+engine health. Supported later publication captures changed status without
+mutating a pinned predecessor; canonical reopening, not automatic following of
+an immutable URL, discovers the successor. CB-305 retains installed recovery
+qualification and complete current-view UX as open obligations.
 Later writers recover interrupted creates, reject unexplained working drift,
 and publish immutable successors after successful readback. JSON authority and
 supersession-to-live fallback are removed. Explicit migration and interrupted
