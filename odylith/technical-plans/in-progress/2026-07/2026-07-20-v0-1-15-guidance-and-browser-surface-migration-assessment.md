@@ -7,6 +7,50 @@ Backlog: B-145
 
 ## Current bounded checkpoint (2026-09-10)
 
+The release-observation correction now passes 208 focused tests and all 1,327
+install unit tests, with independent bounded acceptance. Current author/review
+evidence qualifies; the historical experimental receipt still fails three
+current-protocol checks. Production behavior and 60/90/120 are unchanged. This
+removes a stale qualification obstacle, not the need for fresh generated-package
+quality and real installed performance evidence (CB-329).
+
+The single passive history capture rejects the missing-early-native-start
+hypothesis: all three exact successor starts follow their aborts. Both deliberate
+fault controls correctly remain strict errors. No visible route failure or safe
+small shell remedy is established; avoid repeating the capture, adding another
+observer event, or accepting later success as causal evidence (CB-305).
+
+The completed 439-case browser gate has 437 passes, one history-navigation
+failure and one explicit absent-state skip. Inputs are unchanged and owned
+workers are gone. The three failed Document requests have successful same-frame
+successors, but those requests start after cancellation; retain the strict
+observation boundary and inspect shell restoration before adding another rule.
+Full browser acceptance remains open (CB-305).
+
+Full Linux CI at c9507756 now passes both unchanged Codex/Claude confirmation
+checks and no longer emits the old tracer/deadline warning. Eight other failures
+remain: seven browser cases and the stale release dossier. This is actual host
+test advancement, not current desktop activation or consumer timing (CB-304).
+
+Independent package-level re-adjudication corrects the historical DGzOhE custody
+finding to P2/advisory: complete canonical obligations and readiness/handoff
+gates retain preservation. Local verification could be more specific, but an
+exhaustive executable specification is not required of every provisional field.
+Do not redesign authoring solely to satisfy that overstrong P1. Failed trials
+stay failed, and bounded internal repair remains a genuine unmet requirement
+(CB-303).
+
+The release profile observer still assumes one author call and ignores review.
+Correct that existing owner to qualify current two-role authored evidence and
+one-role clarification, binding the complete candidate/source and available
+identity/deadline evidence. Historical experimental review cannot become a
+current-protocol positive. Then qualify fresh complete packages against the
+unchanged 60/90/120 limits, 4–5 workstreams, 4–5 components and at least five
+useful detailed diagrams; counts alone do not prove utility (CB-329).
+
+The following entries preserve earlier checkpoint evidence; the explicit
+package-level adjudication above supersedes their specific custody P1 claim.
+
 Current Radar source already projects each workstream's authored Proposed
 Solution into its card and retains project context in detail. Eleven current
 projection controls pass; the old package's repeated cards do not justify a

@@ -162,7 +162,7 @@ def model_profile_release_proof(
             "provider": contract.provider,
             "model": contract.model,
             "reasoning_effort": contract.reasoning_effort,
-            "maximum_semantic_model_calls": 1,
+            "maximum_semantic_model_calls": 2,
             "consumer_budget_seconds": contract.consumer_budget_seconds,
             "lower_capability": contract.lower_capability,
             "lower_capability_role": "initial_authoring" if contract.lower_capability else "not_applicable",
@@ -426,9 +426,11 @@ def _mapping(value: Any) -> Mapping[str, Any]:
 
 
 def _float_value(value: Any) -> float:
+    if type(value) not in (int, float):
+        return 0.0
     try:
         return float(value)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         return 0.0
 
 

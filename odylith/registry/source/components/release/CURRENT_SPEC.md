@@ -470,12 +470,24 @@ governed subsystem.
   disposable generated repository. Every commit-capable request inside the
   declared operating envelope must pass exact proposal budgets: standard within
   `60s`, rescue within `90s`, and explicit deep/premium work within `120s`.
-  These are separate one-call reasoning profiles, never a sequential retry or
-  repair cascade. Material ambiguity must return one focused clarification
-  before candidate, transaction, subprocess, or prompt-side persistence.
+  These are separately selected profiles, never sequential budget extensions.
+  The current authored path has initial authoring and full-candidate review;
+  source-bound material clarification has one author call and no review. Both
+  authored roles share the sealed `55/80/105s` model window. Review, including
+  setup and validation, receives at most `20s` and only the remaining window.
+  Release observation must validate both actual roles, their provider/model/
+  effort identity, full source/candidate binding and available timing evidence;
+  a larger permitted call count alone is not qualification. The native stage
+  observation does not contain absolute inter-stage timestamps or the separate
+  sealed review receipt, so those facts require their own evidence. Historical
+  experimental review is not current-protocol acceptance. Material ambiguity
+  must return one focused clarification before staging or governed mutation.
   `CONFIRM` must remain commit-only: receipt/hash/precondition verification,
-  sealed-byte publication, rollback, and readback only, with no model call,
+  sealed-byte publication, explicit failure recovery, and readback only, with no model call,
   semantic interpretation, content generation, or prose repair.
+  Never silently roll back an observed published generation. Current native
+  quality, internal repair, all-profile timing and release qualification remain
+  open; deterministic test observations do not establish model performance.
   Release acceptance is strict and separate from finite-sample confidence:
   exact product laws remain zero-tolerance while confidence bounds describe
   evidence strength and cannot override acceptance. Evaluators must call the

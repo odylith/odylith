@@ -101,68 +101,18 @@ def _passing_quality(module) -> object:
     )
 
 
-def _clarification_result() -> dict[str, object]:
-    return {
-        "status": "clarification_required",
-        "consistency": {
-            "status": "material_ambiguity",
-            "evidence_quotes": [],
-        },
-        "clarification": {"material_dimension": "first_path"},
-    }
-
-
 def _stage_observation(
     profile_id: str,
     *,
     clarification: bool = False,
     reviewed: bool = False,
 ) -> dict[str, object]:
-    from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import GREENFIELD_INTENT_AUTHORING_VERSION
-    from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import get_greenfield_model_profile
+    from tests.greenfield_model_profile_test_support import production_stage_observation
 
-    profile = get_greenfield_model_profile(profile_id)
-    initial = {
-        "profile_id": profile_id, "request_role": "initial_authoring",
-        "model": profile.model, "reasoning_effort": profile.reasoning_effort,
-        "timeout_seconds": profile.model_timeout_seconds,
-        "elapsed_seconds": 5.0,
-        "provider": {
-            "provider": profile.provider, "model": profile.model,
-            "reasoning_effort": profile.reasoning_effort,
-        },
-    }
-    response_result = _clarification_result() if clarification else {"status": "authored"}
-    has_review = reviewed
-    observation = {
-        "version": "odylith.greenfield.model-proof-observation.v2",
-        "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
-        "semantic_model_call_count": 2 if has_review else 1,
-        "response": {
-            "version": GREENFIELD_INTENT_AUTHORING_VERSION,
-            "result": response_result,
-        },
-        "initial_authoring": initial,
-    }
-    if has_review:
-        observation["initial_response"] = {
-            "version": GREENFIELD_INTENT_AUTHORING_VERSION,
-            "result": {"status": "authored"},
-        }
-        observation["source_review"] = {
-            "profile_id": profile_id, "request_role": "source_review",
-            "model": "gpt-5.6-sol",
-            "reasoning_effort": "medium",
-            "timeout_seconds": profile.model_timeout_seconds - 5.0, "elapsed_seconds": 5.0,
-            "provider": {
-                "provider": profile.provider, "model": "gpt-5.6-sol",
-                "reasoning_effort": "medium",
-            },
-            "response": {
-                "result": response_result if clarification else {"corrections": []},
-            },
-        }
-    return observation
+    return production_stage_observation(
+        profile_id, response_kind="clarification_required" if clarification else "authored",
+        reviewed=reviewed,
+    )
 
 
 def _passing_matrix_result(module, *, manifest_summary: dict[str, object] | None = None) -> object:
