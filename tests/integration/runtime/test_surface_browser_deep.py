@@ -800,6 +800,7 @@ def test_registry_search_filters_reset_and_detail_actions(browser_context) -> No
 
         qualification_value = _first_non_default_option(registry, "#qualificationFilter")
         if not qualification_value:
+            _assert_clean_page(page, observation)
             pytest.skip("Registry fixture does not currently expose non-default qualification filters.")
         registry.locator("#qualificationFilter").select_option(qualification_value)
         qualification_count = registry.locator("button[data-component]").count()
@@ -808,6 +809,7 @@ def test_registry_search_filters_reset_and_detail_actions(browser_context) -> No
         registry.locator("#resetFilters").click()
         category_value = _first_non_default_option(registry, "#categoryFilter")
         if not category_value:
+            _assert_clean_page(page, observation)
             pytest.skip("Registry fixture does not currently expose non-default category filters.")
         registry.locator("#categoryFilter").select_option(category_value)
         category_count = registry.locator("button[data-component]").count()
@@ -893,6 +895,7 @@ def test_radar_search_selection_and_cross_surface_detail_links(browser_context) 
         radar.locator("#query").fill("")
         phase_value, phase_count = _first_filter_value_with_results(radar, "#phase", "button[data-idea-id]")
         if not phase_value:
+            _assert_clean_page(page, observation)
             pytest.skip("Radar fixture does not currently expose non-default phase filters with results.")
         assert 0 < phase_count <= baseline_count
 
@@ -924,6 +927,7 @@ def test_radar_topology_relation_chips_route_to_their_own_workstream_ids(browser
             )
         ]
         if not relation_ids:
+            _assert_clean_page(page, observation)
             pytest.skip("Radar fixture does not currently expose B-048 relation chips.")
 
         for target_id in relation_ids:
@@ -967,6 +971,7 @@ def test_radar_topology_relation_clicks_self_heal_incompatible_filters(browser_c
             or ""
         ).strip()
         if not target_id:
+            _assert_clean_page(page, observation)
             pytest.skip("Radar fixture does not currently expose a B-048 child relation chip.")
 
         radar.locator("#section").select_option(source_section)
@@ -1064,6 +1069,7 @@ def test_casebook_search_filters_and_empty_state(browser_context) -> None:  # no
 
         severity_value = _first_non_default_option(casebook, "#severityFilter")
         if not severity_value:
+            _assert_clean_page(page, observation)
             pytest.skip("Casebook fixture does not currently expose non-default severity filters.")
         casebook.locator("#severityFilter").select_option(severity_value)
         severity_count = casebook.locator("button.bug-row").count()
@@ -1072,6 +1078,7 @@ def test_casebook_search_filters_and_empty_state(browser_context) -> None:  # no
         _reset_select_to_first_option(casebook, "#severityFilter")
         status_value = _first_non_default_option(casebook, "#statusFilter")
         if not status_value:
+            _assert_clean_page(page, observation)
             pytest.skip("Casebook fixture does not currently expose non-default status filters.")
         casebook.locator("#statusFilter").select_option(status_value)
         status_count = casebook.locator("button.bug-row").count()
@@ -1367,11 +1374,13 @@ def test_atlas_navigation_filters_and_context_links(browser_context) -> None:  #
                 continue
 
         if not narrowed_by_id_query:
+            _assert_clean_page(page, observation)
             pytest.skip("Atlas fixture does not currently expose a narrowing diagram-id substring query.")
 
         atlas.locator("#search").fill("")
         workstream_value = _first_non_default_option(atlas, "#workstreamFilter")
         if not workstream_value:
+            _assert_clean_page(page, observation)
             pytest.skip("Atlas fixture does not currently expose non-default workstream filters.")
         atlas.locator("#workstreamFilter").select_option(workstream_value)
         filtered_total = _atlas_total(atlas)
@@ -1476,6 +1485,7 @@ def test_compass_scope_window_and_detail_behavior_in_compact_viewport(compact_br
 
         scope_value = _first_scope_option_with_scoped_brief(compass, window_token="24h")
         if not scope_value or not re.fullmatch(r"B-\d{3,}", scope_value):
+            _assert_clean_page(page, observation)
             pytest.skip("Compass fixture does not currently expose non-global workstream scope options.")
         compass.locator("#scope-select").select_option(scope_value)
         _wait_for_shell_query_param(page, tab="compass", key="scope", value=scope_value)

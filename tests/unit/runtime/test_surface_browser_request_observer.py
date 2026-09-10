@@ -569,6 +569,43 @@ def test_owned_observation_finishes_once_before_clean_assertion_returns():
     assert context.actions == ["new_page", "detach", "close"]
 
 
+def test_applicability_skip_after_clean_assertion_preserves_skip_outcome():
+    context = PublicContext()
+    with pytest.raises(pytest.skip.Exception, match="fixture does not expose this scenario"):
+        with observation_owner.PageObservation(context) as (page, observation):
+            observation_owner.assert_clean_page(page, observation)
+            pytest.skip("fixture does not expose this scenario")
+    assert observation.snapshot.complete and not observation.snapshot.errors
+    assert context.actions == ["new_page", "detach", "close"]
+
+
+@pytest.mark.parametrize("failure", ("http", "native", "cutoff"))
+def test_observed_failure_prevents_applicability_skip(monkeypatch, failure):
+    context = PublicContext()
+    reached_skip = []
+    if failure == "cutoff":
+        def cutoff(_observer):
+            raise RuntimeError("cutoff failed")
+        monkeypatch.setattr(NativeRequestObserver, "cutoff", cutoff)
+    expected = {"http": "http error responses", "native": "net::ERR_CONNECTION_RESET", "cutoff": "cutoff failed"}
+    with pytest.raises(observation_owner.ObservationFailure, match=expected[failure]):
+        with observation_owner.PageObservation(context) as (page, observation):
+            if failure == "http":
+                page.emit("response", SimpleNamespace(status=503, url=BASE + "/required"))
+            elif failure == "native":
+                context.native("Network.requestWillBeSent", requestId="request", frameId="main", loaderId="loader",
+                               type="Document", request={"url": BASE + "/required"})
+                context.native("Network.loadingFailed", requestId="request",
+                               errorText="net::ERR_CONNECTION_RESET", canceled=False)
+            observation_owner.assert_clean_page(page, observation)
+            reached_skip.append(True)
+            pytest.skip("fixture does not expose this scenario")
+    assert not reached_skip
+    assert observation.snapshot.errors
+    assert observation.snapshot.complete is (failure != "cutoff")
+    assert context.actions == ["new_page", "detach", "close"]
+
+
 @pytest.mark.parametrize("faults", (("attach",), ("Page.enable",), ("attach", "close"), ("Page.enable", "detach", "close")))
 def test_owned_observation_setup_failure_closes_page_and_preserves_combined_faults(faults):
     context = PublicContext(*faults)

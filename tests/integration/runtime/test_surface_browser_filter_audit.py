@@ -190,6 +190,7 @@ def test_compass_filter_audit_preserves_valid_audit_day_across_window_changes(br
         max_day = str(audit_bounds["max"] or "").strip()
         target_day = max_day if max_day and max_day != current_day else min_day if min_day and min_day != current_day else ""
         if not target_day:
+            _assert_clean_page(page, observation)
             pytest.skip("Compass fixture does not currently expose multiple valid audit days.")
 
         compass.locator("#audit-day-input").evaluate(

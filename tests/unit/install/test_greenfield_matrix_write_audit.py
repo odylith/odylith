@@ -5,6 +5,8 @@ from pathlib import Path
 import subprocess
 import sys
 
+import pytest
+
 from tests.greenfield_matrix_campaign_test_support import SCRIPTS_ROOT
 
 
@@ -95,18 +97,49 @@ def test_write_audit_keeps_real_events_when_child_forges_a_clean_record(tmp_path
     assert "open:odylith/radar/source/workstreams.v1.json" in evidence.write_attempts
 
 
-def test_write_audit_records_child_process_diagnostic(tmp_path: Path) -> None:
+@pytest.mark.parametrize("close_fds", [True, False])
+def test_write_audit_records_child_process_diagnostic(tmp_path: Path, record_property, close_fds: bool) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
 
     completed, evidence = _run_audited(
         repo_root,
-        "import subprocess, sys\nsubprocess.run([sys.executable, '-c', 'pass'], check=True)",
+        "import subprocess, sys\n"
+        f"subprocess.run([sys.executable, '-c', 'pass'], check=True, close_fds={close_fds!r})",
     )
 
     assert completed.returncode == 0, completed.stderr
     assert evidence.active is True
-    assert evidence.subprocess_attempts == ("subprocess.Popen",)
+    record_property("subprocess_attempts", evidence.subprocess_attempts)
+    record_property("audit_platform", sys.platform)
+    record_property("close_fds", close_fds)
+    # Popen may also emit its native spawn event; neither event is filtered.
+    assert evidence.subprocess_attempts in (
+        ("subprocess.Popen",),
+        ("subprocess.Popen", "os.posix_spawn"),
+    )
+
+
+@pytest.mark.skipif(not hasattr(os, "posix_spawn"), reason="os.posix_spawn is unavailable")
+def test_write_audit_records_direct_posix_spawn(tmp_path: Path, record_property) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+
+    completed, evidence = _run_audited(
+        repo_root,
+        "import os, sys\n"
+        "pid = os.posix_spawn(sys.executable, [sys.executable, '-c', 'pass'], os.environ)\n"
+        "_, status = os.waitpid(pid, 0)\n"
+        "assert os.waitstatus_to_exitcode(status) == 0",
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert evidence.active is True
+    record_property("subprocess_attempts", evidence.subprocess_attempts)
+    record_property("audit_platform", sys.platform)
+    assert evidence.subprocess_attempts == ("os.posix_spawn",)
+    assert evidence.write_attempts == ()
+    assert evidence.error == ""
 
 
 def test_write_audit_detects_relative_governed_write_with_directory_fd(tmp_path: Path) -> None:

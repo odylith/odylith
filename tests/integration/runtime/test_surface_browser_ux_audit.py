@@ -279,6 +279,7 @@ def test_radar_default_warning_cards_hide_maintainer_traceability_diagnostics(br
         }"""
         )
         if not diagnostic:
+            _assert_clean_page(page, observation)
             pytest.skip("Radar fixture does not currently expose maintainer-only traceability diagnostics.")
 
         source_id = str(diagnostic["idea_id"])
@@ -430,6 +431,7 @@ def test_compass_cross_surface_links_round_trip_cleanly(browser_context) -> None
         _wait_for_compass_ready(compass)
         component_actions = _collect_compass_component_actions(compass)
         if not component_actions:
+            _assert_clean_page(page, observation)
             pytest.skip("Compass fixture does not currently expose row detail component links.")
 
         for action in component_actions:

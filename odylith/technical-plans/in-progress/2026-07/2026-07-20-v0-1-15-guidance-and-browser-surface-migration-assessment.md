@@ -75,9 +75,25 @@ initial 31-caller inventory was incomplete. Their eight desktop/mobile cases
 pass in 13.26 seconds after migration to the same owner, with UI bodies and all
 six frozen input hashes/modes preserved. Recursive helper-consumer inventory
 finds no remaining legacy caller in the inspected src/tests cone. Current
-collection is 439 cases across 35 modules, including every prior case: 438 main
-surface cases and one separate install-coupled Casebook upgrade. Execution remains
-pending; do not promote the targeted gates to comprehensive UX proof.
+collection is 439 cases across 35 modules, including every prior case. The frozen
+438-case main matrix now completes: 432 passed and six failed in 1,136.696 seconds.
+Five smoke observations reject 45 unproved root-loader Script cancellations;
+one historical applicability skip exits before explicit observation completion.
+The separate simulator-backed Casebook upgrade passes once in 3.939 seconds.
+All 3,227 input hashes/modes, served publication and retained stream/carrier match;
+teardown/resource receipts are clean. This is not a green full matrix or actual
+published-predecessor proof. CB-305 retains all traces and the source-first
+redirect comparison plus caller-owned skip-completion correction boundaries.
+
+The skip-completion correction now covers all 16 applicability exits without
+changing the observer or UI behavior. Lifecycle validation passes 216 controls;
+the exact formerly failing Radar case finishes cleanly and remains one fixture
+applicability skip, not a feature pass. The five smoke failures remain open.
+
+The source-first redirect comparison does not yet close those five failures.
+Removing the two premature stop calls fixes native ordering, but same-frame
+resource replacement remains outside current qualification. Both variants retain
+three failures in the fixed private comparison; no production change is adopted.
 
 CI preparation installs pinned Mermaid 11.12.0 and its package's
 pinned default Puppeteer browsers into runner-owned paths before unchanged tests.
@@ -89,6 +105,18 @@ reproduces all three errors. A runner-executed GITHUB_ENV configuration step now
 provides the same values to subsequent install/test steps; actionlint passes.
 The prior review missed this context boundary. Keep the rejected run and lint
 receipts in CB-305; neither lint nor package availability proves suite success.
+
+Current 43b07030 CI successfully provisions Linux Chromium and the pinned Mermaid
+runtime; its suite remains pending. The earlier 5a18d1c9 run completes with 29
+failures, 7,674 passes and one skip: all previous 28 failures persist, plus one
+Radar selection-race request/route-callback count mismatch. It adds no Compass
+completion failure ID; root-cause adjudication is still required.
+
+The three diagnosed audit/browser-opening fixture expectations now have a
+test-only correction with 39 focused passes under CI environment flags. Exact
+process events and all four automated-opening refusals remain enforced; product
+policies are unchanged. This does not prove the pending Linux suite or resolve
+the distinct worker-startup, host-confirmation and route-race failures.
 
 The corrected prospective Compass completion candidate is independently accepted:
 168 focused compatibility passes plus six fresh actual-owner controls. Structured

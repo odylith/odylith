@@ -1890,6 +1890,7 @@ def test_atlas_bad_cross_surface_route_self_heals_to_full_catalog(browser_contex
         related_workstreams = set(_atlas_related_workstreams(atlas))
         candidate_workstreams = [token for token in _atlas_workstream_options(atlas) if token not in {"all", *related_workstreams}]
         if not candidate_workstreams:
+            _assert_clean_page(page, observation)
             pytest.skip("Atlas fixture does not currently expose a mismatched workstream route scenario.")
         mismatched_workstream = candidate_workstreams[0]
 
@@ -1937,6 +1938,7 @@ def test_atlas_tab_switch_restores_atlas_state_instead_of_leaking_radar_scope(br
         related_workstreams = set(_atlas_related_workstreams(atlas))
         candidate_workstreams = [token for token in _atlas_workstream_options(atlas) if token not in {"all", *related_workstreams}]
         if not candidate_workstreams:
+            _assert_clean_page(page, observation)
             pytest.skip("Atlas fixture does not currently expose a mismatched workstream route scenario.")
         mismatched_workstream = candidate_workstreams[0]
 
@@ -1945,6 +1947,7 @@ def test_atlas_tab_switch_restores_atlas_state_instead_of_leaking_radar_scope(br
         radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
         radar_row = radar.locator(f'button[data-idea-id="{mismatched_workstream}"]')
         if radar_row.count() == 0:
+            _assert_clean_page(page, observation)
             pytest.skip(f"Radar fixture does not currently expose workstream {mismatched_workstream}.")
         radar_row.first.click()
         radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=mismatched_workstream).wait_for(timeout=15000)

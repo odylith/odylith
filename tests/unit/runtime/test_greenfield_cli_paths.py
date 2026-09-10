@@ -159,7 +159,8 @@ def test_greenfield_domain_token_normalizer_keeps_common_words_legible() -> None
 
 def test_greenfield_completion_opens_exact_committed_project_url(tmp_path, monkeypatch) -> None:
     activate_greenfield_baseline_fixture(tmp_path)
-    monkeypatch.delenv("ODYLITH_NO_BROWSER", raising=False)
+    for name in ("ODYLITH_NO_BROWSER", "CI", "GITHUB_ACTIONS", "BUILD_BUILDID"):
+        monkeypatch.delenv(name, raising=False)
     navigation = greenfield_post_confirm_handoff.post_confirm_navigation(tmp_path)
     opened: list[tuple[str, int]] = []
     monkeypatch.setattr(
@@ -181,7 +182,8 @@ def test_greenfield_completion_opens_exact_committed_project_url(tmp_path, monke
 
 def test_greenfield_completion_browser_failure_does_not_raise(tmp_path, monkeypatch) -> None:
     activate_greenfield_baseline_fixture(tmp_path)
-    monkeypatch.delenv("ODYLITH_NO_BROWSER", raising=False)
+    for name in ("ODYLITH_NO_BROWSER", "CI", "GITHUB_ACTIONS", "BUILD_BUILDID"):
+        monkeypatch.delenv(name, raising=False)
     navigation = greenfield_post_confirm_handoff.post_confirm_navigation(tmp_path)
     monkeypatch.setattr(
         greenfield_post_confirm_handoff.webbrowser,
@@ -195,8 +197,17 @@ def test_greenfield_completion_browser_failure_does_not_raise(tmp_path, monkeypa
     assert result["reason"] == "OSError: browser unavailable"
 
 
-def test_greenfield_completion_respects_automated_browser_opt_out(tmp_path, monkeypatch) -> None:
+@pytest.mark.parametrize("blocker,reason", [
+    ("ODYLITH_NO_BROWSER", "browser auto-open disabled by ODYLITH_NO_BROWSER"),
+    ("CI", "browser auto-open disabled in an automated environment"),
+    ("GITHUB_ACTIONS", "browser auto-open disabled in an automated environment"),
+    ("BUILD_BUILDID", "browser auto-open disabled in an automated environment"),
+])
+def test_greenfield_completion_respects_automated_browser_opt_out(tmp_path, monkeypatch, blocker, reason) -> None:
     activate_greenfield_baseline_fixture(tmp_path)
+    for name in ("ODYLITH_NO_BROWSER", "CI", "GITHUB_ACTIONS", "BUILD_BUILDID"):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setenv(blocker, "1")
     navigation = greenfield_post_confirm_handoff.post_confirm_navigation(tmp_path)
 
     def fail_open(*_args, **_kwargs) -> bool:
@@ -207,7 +218,7 @@ def test_greenfield_completion_respects_automated_browser_opt_out(tmp_path, monk
     result = greenfield_post_confirm_handoff.open_committed_dashboard(navigation)
 
     assert result["status"] == "unavailable"
-    assert result["reason"] == "browser auto-open disabled by ODYLITH_NO_BROWSER"
+    assert result["reason"] == reason
 
 
 def test_greenfield_confirm_intent_flag_is_retired(tmp_path, capsys) -> None:
