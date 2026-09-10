@@ -54,7 +54,20 @@ flowchart TB
     Failure["Preserve the selected complete generation and failure evidence<br/>never roll back an observed successor"]
   end
 
-  subgraph Guardrails["7. Product Guardrails"]
+  subgraph LogCompletion["7. Canonical Log Completion"]
+    Log["odylith compass log<br/>canonical stream in an active generation"]
+    Admit["Admitted repository writer<br/>record exact custody before append"]
+    Append["Append and fsync the original event once"]
+    LogRefresh["Existing captured foreground refresh"]
+    Terminal{"Exact originating terminal result?"}
+    Handled["Recorded failed checkpoint<br/>retain original event and published view"]
+    Rendered["Rendered custody<br/>retain even after late capture teardown error"]
+    Complete["odylith compass log --complete<br/>verify receipt, inputs and exact working bytes"]
+    LogPublish["Existing generation owner seals and publishes<br/>retire the exact completion receipt"]
+    Refuse["Refuse unknown interruption or changed custody<br/>never replay the append or adopt historical drift"]
+  end
+
+  subgraph Guardrails["8. Product Guardrails"]
     Truth["LLM writes, local code thinks"]
     Rules["No raw-packet prompting<br/>no per-scope provider fanout<br/>no fuzzy/non-exact replay<br/>no synthetic fallback narration"]
     Targets["Targets<br/>hot daemon refresh < 50ms median<br/>cold shell-safe refresh < 1s median"]
@@ -85,6 +98,15 @@ flowchart TB
   Publish -->|Publication fails| Failure
   CacheHit --> Inline
   Skip --> Inline
+
+  Log --> Admit --> Append --> LogRefresh --> Terminal
+  Terminal -->|Owned failure| Handled --> Complete
+  Terminal -->|Owned success| Rendered --> LogPublish
+  Terminal -->|Missing or foreign| Refuse
+  Complete -->|Handled failure, unchanged anchors| LogRefresh
+  Complete -->|Already rendered or sealed| LogPublish
+  Complete -->|Absent receipt or changed inputs| Refuse
+  LogPublish -->|Failure| Failure
 
   OneLane --> Truth
   OneLane --> Rules

@@ -51,6 +51,30 @@ and final untouched holdout are separate open release requirements.
 
 ## Current Validation
 
+CI run `34477764869` at pushed checkpoint `351ce72b` completes with 28 failures,
+7,574 passes and one skip in 3,318.69 seconds after successful Chromium/system
+library provisioning. CB-305 retains exact failure groups; not all proposal
+failures can be attributed to the two explicit missing-Mermaid cases.
+
+Native lifecycle ownership and 31 caller migrations are independently accepted
+with 166 synthetic passes and unchanged 35-file hashes. Mutable-list and URL
+discard paths are removed. One integrated live pass records 26 passes and six
+failures in 102.10 seconds. The prior nine and eight maintained live controls
+pass. Two real popup interactions expose the whole-context coverage assumption;
+four intended Compass 404 checks reject legitimate cache-buster queries. Make
+only the typed page-scope and expected-resource assertion corrections, preserving
+unknown-target gaps and unrelated errors, then rerun the frozen bounded gate
+before the full matrix. All 32 teardowns pass with no observed resource residue.
+
+The corrected prospective Compass completion candidate is independently accepted:
+168 focused compatibility passes plus six fresh actual-owner controls. Structured
+request custody preserves terminal pid=0 and rejects foreign/coalesced outcomes.
+Capture setup fallback cannot replay execution; delivered success survives a
+late cleanup error without cache/render re-entry on explicit completion. Prior
+counterexamples remain. This is not historical or installed recovery. Existing
+publication and archived log bytes remain unchanged; Registry forensic
+regeneration still refuses. CB-305 records exact receipts and limits.
+
 CI at `6beb35a4` also reports missing Playwright browser executables during
 fixture setup. The bounded prerequisite correction installs matching Chromium
 and system dependencies through the same Hatch interpreter before the unchanged

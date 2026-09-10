@@ -46,6 +46,35 @@ publications at desktop/mobile sizes over file and HTTP, including retained-brie
 readability and unchanged predecessors. This does not establish recovery of the
 preserved real failure, installed behavior, full governance UX or chat delivery.
 
+### Append-once log completion
+For a canonical `compass log` inside an active managed generation, the admitted
+repository writer prepares exact continuation custody before appending and
+fsyncing the event. Event preparation belongs to the log owner; refresh and
+publication remain with their existing owners. Direct API, custom-stream and
+unactivated writes retain their previous semantics without this receipt.
+
+`odylith compass log --repo-root . --complete` accepts no append payload or
+receipt path. It verifies the original repository, executing runtime, published
+base, exact stream prefix/event/mode, managed authored inputs and recorded working
+bytes. Only a complete prepared append or an exact recorded terminal phase can
+continue; unknown interruptions, foreign requests and changed inputs refuse.
+Completion never appends again or rolls back an observed successor.
+
+Refresh custody uses the actual originating request ID, terminal state, status,
+integer return code and non-coalesced provenance. Terminal `pid=0` is not foreign
+ownership. Result transport is opt-in; ordinary refresh callers retain their
+existing API. Capture setup failure may fall back before execution, but execution
+or teardown errors never trigger implicit replay. Exact delivered success remains
+rendered custody after a later capture error, preserving that exception; explicit
+completion then only seals, publishes and retires, without cache or render re-entry.
+
+CB-305's corrected source candidate passes 168 focused checks; independent proof
+repeats those and adds six actual-owner controls. Expensive rendering is replaced
+in these synthetic repositories. This is not installed/browser qualification,
+whole-environment custody, or authority to recover older receipt-less drift.
+If receipt removal succeeds but directory fsync fails, an already-published
+successor stays selected; another receipt-less completion refuses.
+
 ### No-workstream evidence boundary
 The global fact packet and legacy outcome digest must not estimate an empty
 workstream mapping or invent a priority, direction or forcing function. Actual

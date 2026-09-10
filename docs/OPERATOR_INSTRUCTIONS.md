@@ -152,6 +152,13 @@ See what happened, what matters now, and what's next.
 | **"What changed recently?"** | Reads the Compass timeline events and transaction history from the runtime payload. |
 | **"Show me the execution timeline for B-073"** | Reads the workstream-scoped Compass timeline with all related events. |
 
+If a canonical log records its event but reports an incomplete refresh, do not
+repeat the append. When Odylith provides the completion command, run
+`odylith compass log --repo-root . --complete` without event fields. It completes
+only that admitted operation after checking its recorded state. Older failures
+without a completion receipt, changed inputs or unknown interruptions are refused;
+preserve their evidence rather than reconstructing or replaying the event.
+
 ---
 
 ## Validate and Sync

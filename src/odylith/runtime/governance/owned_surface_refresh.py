@@ -10,12 +10,14 @@ Atlas/Casebook visibility in sync without widening into full governance sync.
 from __future__ import annotations
 
 import contextlib
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 import io
 import os
 from pathlib import Path
 import sys
 import tempfile
+from typing import Any
 
 from odylith.runtime.common.command_surface import display_command
 from odylith.runtime.surfaces import dashboard_shell_links
@@ -62,7 +64,10 @@ def refresh_owned_surface(*, repo_root: Path, surface: str) -> int:
     return refresh_owned_surfaces(repo_root=repo_root, surfaces=(surface,))
 
 
-def refresh_owned_surfaces(*, repo_root: Path, surfaces: tuple[str, ...] | list[str]) -> int:
+def refresh_owned_surfaces(
+    *, repo_root: Path, surfaces: tuple[str, ...] | list[str],
+    on_results: Callable[[Sequence[Mapping[str, Any]]], None] | None = None,
+) -> int:
     from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
     from odylith.runtime.governance import sync_workstream_artifacts
 
@@ -74,15 +79,21 @@ def refresh_owned_surfaces(*, repo_root: Path, surfaces: tuple[str, ...] | list[
         surfaces=tuple(policy.surface for policy in policies),
         runtime_mode="auto",
         atlas_sync=any(policy.atlas_sync for policy in policies),
+        **({"on_results": on_results} if on_results is not None else {}),
     )
 
 
-def raise_for_failed_refresh(*, repo_root: Path, surface: str, operation_label: str, detail: str = "") -> None:
+def raise_for_failed_refresh(
+    *, repo_root: Path, surface: str, operation_label: str, detail: str = "", retry_command: tuple[str, ...] = (),
+    on_results: Callable[[Sequence[Mapping[str, Any]]], None] | None = None,
+) -> None:
     raise_for_failed_refreshes(
         repo_root=repo_root,
         surfaces=(surface,),
         operation_label=operation_label,
         detail=detail,
+        retry_command=retry_command,
+        **({"on_results": on_results} if on_results is not None else {}),
     )
 
 
@@ -92,16 +103,22 @@ def raise_for_failed_refreshes(
     surfaces: tuple[str, ...] | list[str],
     operation_label: str,
     detail: str = "",
+    retry_command: tuple[str, ...] = (),
+    on_results: Callable[[Sequence[Mapping[str, Any]]], None] | None = None,
 ) -> None:
     policies = _policies_for_surfaces(surfaces)
-    refresh_rc, refresh_output = _run_owned_surface_refresh_captured(repo_root=repo_root, policies=policies)
+    refresh_rc, refresh_output = _run_owned_surface_refresh_captured(
+        repo_root=repo_root, policies=policies,
+        **({"on_results": on_results} if on_results is not None else {}),
+    )
     if refresh_rc == 0:
         return
     refresh_detail = _compact_refresh_detail(refresh_output)
     suffix = f" {detail.strip()}" if str(detail).strip() else ""
     output_suffix = f" Refresh output: {refresh_detail}" if refresh_detail else ""
     surface_names = ", ".join(policy.surface for policy in policies)
-    retry_commands = "; ".join(display_command(*policy.retry_command) for policy in policies)
+    retry_commands = (display_command(*retry_command) if retry_command
+                      else "; ".join(display_command(*policy.retry_command) for policy in policies))
     raise RuntimeError(
         f"{operation_label.strip()} succeeded, but the {surface_names} surface refresh did not fully complete; "
         f"retry with `{retry_commands}`.{suffix}{output_suffix}"
@@ -128,11 +145,14 @@ def _run_owned_surface_refresh_captured(
     *,
     repo_root: Path,
     policies: tuple[OwnedSurfaceRefreshPolicy, ...],
+    on_results: Callable[[Sequence[Mapping[str, Any]]], None] | None = None,
 ) -> tuple[int, str]:
     """Run refresh with Python and subprocess stdout/stderr hidden from operator chat."""
 
     stdout_fd = 1
     stderr_fd = 2
+    result_options = {"on_results": on_results} if on_results is not None else {}
+    refresh_started = False
     try:
         with tempfile.TemporaryFile(mode="w+t", encoding="utf-8") as captured:
             sys.stdout.flush()
@@ -143,9 +163,11 @@ def _run_owned_surface_refresh_captured(
                 os.dup2(captured.fileno(), stdout_fd)
                 os.dup2(captured.fileno(), stderr_fd)
                 with contextlib.redirect_stdout(captured), contextlib.redirect_stderr(captured):
+                    refresh_started = True
                     refresh_rc = refresh_owned_surfaces(
                         repo_root=repo_root,
                         surfaces=tuple(policy.surface for policy in policies),
+                        **result_options,
                     )
                     captured.flush()
             finally:
@@ -156,11 +178,14 @@ def _run_owned_surface_refresh_captured(
             captured.seek(0)
             return refresh_rc, captured.read()
     except OSError:
+        if refresh_started:
+            raise
         captured_output = io.StringIO()
         with contextlib.redirect_stdout(captured_output), contextlib.redirect_stderr(captured_output):
             refresh_rc = refresh_owned_surfaces(
                 repo_root=repo_root,
                 surfaces=tuple(policy.surface for policy in policies),
+                **result_options,
             )
         return refresh_rc, captured_output.getvalue()
 

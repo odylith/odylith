@@ -6,6 +6,7 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 
 from odylith.install import upgrade_dashboard_recovery
+from odylith.runtime.common import compass_log_continuation
 from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
 from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_generation_store
@@ -79,11 +80,28 @@ def run_with_greenfield_managed_mutation_boundary(
     root = Path(repo_root).expanduser().resolve()
     if not command_may_mutate_greenfield_managed_paths(command_tokens):
         return operation(None)
+    complete_log = compass_log_continuation.completion_requested(command_tokens)
+    if complete_log:
+        try:
+            requested_root = compass_log_continuation.completion_repo_argument(command_tokens[2:])
+        except ValueError as exc:
+            raise compass_log_continuation.CompassLogContinuationError(str(exc)) from exc
+        if Path(requested_root).expanduser().resolve() != root:
+            raise compass_log_continuation.CompassLogContinuationError("RECOVERY_REQUIRED: completion repository differs from its lease")
     try:
         with greenfield_repository_lock.greenfield_repository_lock(root) as descriptor:
             admitted_upgrade = None
             admitted_authored = None
-            if upgrade_dashboard_recovery.is_completion_retry(command_tokens):
+            admitted_log = None
+            if complete_log:
+                GreenfieldCommitJournal.require_settled_journals(repo_root=root)
+                admitted_log = compass_log_continuation.require_completion(
+                    repo_root=root, repository_lock_fd=descriptor,
+                )
+                if greenfield_generation_state.active_generation_identity(root) == admitted_log.receipt["successor"]:
+                    return 0
+                pinned = admitted_log.pinned
+            elif upgrade_dashboard_recovery.is_completion_retry(command_tokens):
                 state = greenfield_generation_state.read_active_publication(root)
                 try:
                     pinned = greenfield_generation_store.require_greenfield_working_generation(root) if state else None
@@ -96,7 +114,7 @@ def run_with_greenfield_managed_mutation_boundary(
                             "RECOVERY_REQUIRED: another Greenfield transaction needs attention; "
                             "the dashboard retry and journal recovery were not run"
                         ) from exc
-            if admitted_upgrade is None:
+            if admitted_upgrade is None and admitted_log is None:
                 GreenfieldCommitJournal.recover_pending_journals(repo_root=root)
                 state = greenfield_generation_state.read_active_publication(root)
                 try:
@@ -124,6 +142,9 @@ def run_with_greenfield_managed_mutation_boundary(
                         repo_root=root, repository_lock_fd=descriptor, admitted_receipt=admitted_upgrade,
                     )
                 return result
+            admitted_log = compass_log_continuation.pending_for_publication(
+                repo_root=root, command_tokens=command_tokens, repository_lock_fd=descriptor,
+            )
             if pinned is None:
                 # A first install can activate, then perform further managed writes.
                 if greenfield_generation_state.read_active_publication(root) is None:
@@ -153,6 +174,8 @@ def run_with_greenfield_managed_mutation_boundary(
                 )
                 if admitted_authored is not None:
                     admitted_authored.require_unchanged_intent(root)
+                if admitted_log is not None:
+                    admitted_log.mark_sealed(generation)
                 greenfield_generation_store.publish_greenfield_generation(
                     repo_root=root,
                     generation=generation,
@@ -161,6 +184,8 @@ def run_with_greenfield_managed_mutation_boundary(
                 )
             if admitted_upgrade is not None:
                 upgrade_dashboard_recovery.complete_retry(repo_root=root)
+            if admitted_log is not None:
+                admitted_log.retire()
             return result
     except greenfield_repository_lock.GreenfieldRepositoryBusyError as exc:
         raise GreenfieldManagedMutationBusyError(

@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import concurrent.futures
 import contextlib
+from copy import deepcopy
 from contextvars import copy_context
 from dataclasses import dataclass
 from functools import partial
@@ -1553,6 +1554,7 @@ def _run_dashboard_refresh_step(
     step: ExecutionStep,
     runtime_mode: str,
     run_impl: Callable[..., int],
+    include_action_results: bool = False,
 ) -> dict[str, Any]:
     if step.action is not None:
         action_result = step.action()
@@ -1562,6 +1564,7 @@ def _run_dashboard_refresh_step(
             rc = _coerce_callable_step_result(action_result)
             return {
                 "rc": rc,
+                **({"action_result": deepcopy(dict(action_result))} if include_action_results else {}),
                 "fallback_used": False,
                 "status": str(action_result.get("status", "")).strip() or "passed",
                 "next_command": (
@@ -1630,9 +1633,11 @@ def _execute_dashboard_refresh_surface(
     steps: Sequence[ExecutionStep],
     runtime_mode: str,
     run_impl: Callable[..., int],
+    include_action_results: bool = False,
 ) -> dict[str, Any]:
     fallback_used = False
     surface_status = "passed"
+    action_results: list[dict[str, Any]] = []
     for index, step in enumerate(steps, start=1):
         print(f"- {surface} step {index}/{len(steps)}: {step.label}")
         step_result = _run_dashboard_refresh_step(
@@ -1640,9 +1645,12 @@ def _execute_dashboard_refresh_surface(
             step=step,
             runtime_mode=runtime_mode,
             run_impl=run_impl,
+            **({"include_action_results": True} if include_action_results else {}),
         )
         rc = int(step_result.get("rc", 0) or 0)
         step_status = str(step_result.get("status", "")).strip() or ("passed" if rc == 0 else "failed")
+        if "action_result" in step_result:
+            action_results.append(step_result["action_result"])
         fallback_used = fallback_used or bool(step_result.get("fallback_used"))
         if step_status == "queued":
             surface_status = "queued"
@@ -1652,6 +1660,7 @@ def _execute_dashboard_refresh_surface(
                 next_command = _display_sync_step_command(repo_root=repo_root, command=step.command)
             return {
                 "surface": surface,
+                **({"action_results": action_results} if include_action_results else {}),
                 "status": "failed",
                 "fallback_used": fallback_used,
                 "rc": int(rc),
@@ -1660,6 +1669,7 @@ def _execute_dashboard_refresh_surface(
             }
     return {
         "surface": surface,
+        **({"action_results": action_results} if include_action_results else {}),
         "status": surface_status,
         "fallback_used": fallback_used,
         "rc": 0,
@@ -1705,6 +1715,7 @@ def _run_surface_worker(
     atlas_sync: bool,
     force: bool = False,
     run_impl: Callable[..., int],
+    include_action_results: bool = False,
 ) -> tuple[str, dict[str, Any]]:
     """Execute one surface's step chain and capture its stdout.
 
@@ -1762,6 +1773,7 @@ def _run_surface_worker(
                 steps=steps,
                 runtime_mode=runtime_mode,
                 run_impl=run_impl,
+                **({"include_action_results": True} if include_action_results else {}),
             )
             if str(result.get("status", "")).strip() == "passed":
                 surface_refresh_fingerprint_dag.record_surface_refresh(
@@ -1784,6 +1796,7 @@ def _refresh_surfaces_parallel(
     atlas_sync: bool,
     force: bool,
     run_impl: Callable[..., int],
+    include_action_results: bool = False,
 ) -> list[dict[str, Any]]:
     """Refresh multiple dashboard surfaces concurrently.
 
@@ -1813,6 +1826,7 @@ def _refresh_surfaces_parallel(
                     atlas_sync=atlas_sync,
                     force=force,
                     run_impl=run_impl,
+                    **({"include_action_results": True} if include_action_results else {}),
                 )
                 future_map[future] = surface
     finally:
@@ -1863,6 +1877,7 @@ def refresh_dashboard_surfaces(
     force: bool = False,
     on_completed: Callable[[], int] | None = None,
     repository_lock_fd: int | None = None,
+    on_results: Callable[[Sequence[Mapping[str, Any]]], None] | None = None,
 ) -> int:
     selected = normalize_dashboard_surfaces(surfaces)
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
@@ -1910,6 +1925,7 @@ def refresh_dashboard_surfaces(
                             atlas_sync=atlas_sync,
                             force=bool(force),
                             run_impl=run_impl,
+                            **({"include_action_results": True} if on_results is not None else {}),
                         )
                     )
                     continue
@@ -1921,6 +1937,7 @@ def refresh_dashboard_surfaces(
                         atlas_sync=atlas_sync,
                         force=bool(force),
                         run_impl=run_impl,
+                        **({"include_action_results": True} if on_results is not None else {}),
                     )
                     if output:
                         sys.stdout.write(output)
@@ -1933,6 +1950,8 @@ def refresh_dashboard_surfaces(
                 os.environ.pop(_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV, None)
             else:
                 os.environ[_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV] = previous_guard_skip
+    if on_results is not None:
+        on_results(deepcopy(surface_results))
     return dashboard_refresh_contract.complete_dashboard_refresh(
         results=surface_results, selected=selected, elapsed=time.perf_counter() - started_at,
         runtime_fallback_used=runtime_fallback_used, on_completed=on_completed,

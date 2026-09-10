@@ -2730,7 +2730,10 @@ def _cmd_lane_status(args: argparse.Namespace) -> int:
 
 
 def _cmd_compass_log(args: argparse.Namespace) -> int:
-    return _run_module_main(_COMPASS_LOG_MODULE, ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded))
+    return _module_attr(_COMPASS_LOG_MODULE, "main")(
+        ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded),
+        repository_lock_fd=getattr(args, "repository_lock_fd", None),
+    )
 
 
 def _cmd_compass_refresh(args: argparse.Namespace) -> int:
@@ -3904,7 +3907,7 @@ def _dispatch_main(argv: list[str] | None = None, *, repository_lock_fd: int | N
                     return _cmd_compass_restore_history(args)
                 return _cmd_compass_watch_transactions(args)
             if compass_command == "log":
-                return _cmd_compass_log(argparse.Namespace(repo_root=repo_root, forwarded=forwarded))
+                return _cmd_compass_log(argparse.Namespace(repo_root=repo_root, forwarded=forwarded, repository_lock_fd=repository_lock_fd))
             if compass_command == "refresh":
                 refresh_parser = build_parser()
                 refresh_args = refresh_parser.parse_args(tokens)
