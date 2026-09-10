@@ -64,7 +64,9 @@ No transitional states. Do not replace one slop class with another.
   live source and every shipped mirror in the same change.
 - For maintainer product-surface changes that can affect already-installed
   consumer repos, run `odylith release migration-gate --repo-root .
-  --target-version <version>` and satisfy the exact emitted
+  --target-version <version> --base-ref <published-predecessor-ref>` on a
+  clean, frozen candidate. Verify the predecessor against published release
+  metadata, not local tag ordering. Satisfy the exact emitted
   `migration-observer:<version>:<surface>:<fingerprint>` Radar marker before
   release closeout.
 - Keep that migration-observer rule maintainer-only. Do not mirror it into

@@ -18,7 +18,7 @@ from types import SimpleNamespace
 from typing import Iterator, Mapping, Sequence
 
 from odylith import __version__
-from odylith.install import migration_runtime, upgrade_dashboard, upgrade_dashboard_recovery, upgrade_reporting
+from odylith.install import migration_release_gate, migration_runtime, upgrade_dashboard, upgrade_dashboard_recovery, upgrade_reporting
 from odylith.runtime.common.dirty_overlap import summarize_dirty_overlap
 from odylith.runtime.common.command_surface import (
     ensure_nested_subcommand_repo_root_args,
@@ -2503,9 +2503,10 @@ def _cmd_release(args: argparse.Namespace) -> int:
             else:
                 print(reason, file=sys.stderr)
             return 2
-        report = migration_runtime.validate_release_migration_gate(
+        report = migration_release_gate.validate_release_migration_gate(
             repo_root=args.repo_root,
             target_version=str(getattr(args, "target_version", "") or "").strip(),
+            base_ref=str(getattr(args, "base_ref", "") or "").strip(),
         )
         if bool(getattr(args, "json", False)):
             print(json.dumps(report.as_dict(), indent=2, sort_keys=True))
@@ -2531,6 +2532,7 @@ def _cmd_release(args: argparse.Namespace) -> int:
                 f"missing={', '.join(destructive_missing) or 'none'}"
             )
             observer = report.surface_migration_observer
+            print(f"- comparison scope: {observer.scope_kind}; base={observer.base_commit or 'unavailable'}; candidate={observer.candidate_commit or 'unavailable'}")
             print(
                 "- surface migration observer: "
                 f"needs={len(observer.needs)}; "
@@ -3317,6 +3319,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     release_migration_gate.add_argument("--repo-root", default=".", help="Odylith product repo root.")
     release_migration_gate.add_argument("--target-version", default="", help="Release version under migration-gate review.")
+    release_migration_gate.add_argument("--base-ref", default="", help="Verified previous published release ref; required for release comparison.")
     release_migration_gate.add_argument("--json", action="store_true", help="Emit the migration gate report as JSON.")
 
     program = subparsers.add_parser("program", help="Create and maintain umbrella execution-wave programs.")

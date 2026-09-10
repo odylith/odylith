@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "100e1ab807f5799d92457dedf2103a6847466153f0f80316bad7cadeadcb94aa",
+    "digest": "4dd2dcb1cc4b7549a426aa84e82c1ee05da99a426f6e090448ed052706b6e192",
     "file_count": 315,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -8699,6 +8699,7 @@
       "workstream_merged_from": [],
       "related_diagram_ids": [
         "D-023",
+        "D-042",
         "D-043",
         "D-045",
         "D-046",
@@ -8790,7 +8791,7 @@
       "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.14 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 1,
-        "linked_diagram_count": 5,
+        "linked_diagram_count": 6,
         "runbook_count": 1,
         "developer_doc_count": 1,
         "code_reference_count": 3
@@ -14398,7 +14399,8 @@
       "owner": "freedom-research",
       "file": "odylith/atlas/source/migration-runtime-upgrade-transaction-flow.mmd",
       "related_workstreams": [
-        "B-127"
+        "B-127",
+        "B-142"
       ],
       "component_names": [
         "Migration Runtime",
@@ -21991,6 +21993,11 @@
     },
     {
       "source": "B-142",
+      "target": "diagram:D-042",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-142",
       "target": "diagram:D-043",
       "edge_type": "diagram_linkage"
     },
@@ -26080,7 +26087,7 @@
     },
     "B-142": {
       "linked_plan_count": 1,
-      "linked_diagram_count": 5,
+      "linked_diagram_count": 6,
       "runbook_count": 1,
       "developer_doc_count": 1,
       "code_reference_count": 3
@@ -26174,7 +26181,7 @@
       "category": "topology_conflict",
       "message": "B-142: autofix skipped `related_diagram_ids` due to metadata conflict",
       "idea_id": "B-142",
-      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md: current='D-043' candidate='D-023,D-043,D-045,D-046,D-047'. Reason: inferred from Mermaid catalog related_backlog/related_workstreams.",
+      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md: current='D-043' candidate='D-023,D-042,D-043,D-045,D-046,D-047'. Reason: inferred from Mermaid catalog related_backlog/related_workstreams.",
       "source": "odylith/radar/traceability-autofix-report.v1.json"
     }
   ],
@@ -26200,7 +26207,7 @@
     },
     "connectivity": {
       "spine_node_count": 262,
-      "structural_edge_count": 1713,
+      "structural_edge_count": 1714,
       "connected_component_count": 3,
       "largest_component_size": 260,
       "isolated_node_count": 2,
@@ -26219,11 +26226,11 @@
     "execution_program_count": 5,
     "execution_wave_count": 30,
     "node_count": 428,
-    "edge_count": 1931,
+    "edge_count": 1932,
     "warning_count": 7,
     "warning_item_count": 7,
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-09-10 04:15:47Z"
+  "generated_utc": "2026-09-10 05:48:18Z"
 }

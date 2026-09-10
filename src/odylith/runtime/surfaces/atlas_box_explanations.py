@@ -801,6 +801,7 @@ def extract_diagram_boxes_from_mermaid(
     """Extract visible flowchart containers and node boxes from Mermaid source."""
     boxes: list[DiagramBoxExplanation] = []
     seen: set[str] = set()
+    explicit_node_ids: set[str] = set()
     container_stack: list[str] = []
     graph = atlas_diagram_intelligence.parse_mermaid_graph(source_text)
     context = DiagramBoxContext(
@@ -855,8 +856,8 @@ def extract_diagram_boxes_from_mermaid(
                 container_stack.append(label)
             continue
         for match in _NODE_LABEL_RE.finditer(line):
-            node_id = str(match.group("id") or "").strip().lower()
-            if node_id in {"subgraph", "flowchart", "graph", "style", "classdef", "linkstyle"}:
+            node_id = str(match.group("id") or "").strip()
+            if node_id.lower() in {"subgraph", "flowchart", "graph", "style", "classdef", "linkstyle"}:
                 continue
             label = _first_label_match(match)
             key = _label_key(label)
@@ -888,7 +889,11 @@ def extract_diagram_boxes_from_mermaid(
                 )
             )
             seen.add(display_key or key)
+            explicit_node_ids.add(node_id)
     for node_id in graph.node_ids():
+        # Both parsers see these nodes, but may format their display labels differently.
+        if node_id in explicit_node_ids:
+            continue
         label = graph.label(node_id)
         key = _label_key(label)
         if not label or not key or key in seen:

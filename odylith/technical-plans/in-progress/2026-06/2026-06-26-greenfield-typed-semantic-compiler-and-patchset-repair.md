@@ -1,5 +1,74 @@
 Status: In progress
 
+## Keep Atlas node identity separate from display copy (2026-09-10)
+
+CB-338 captures a screenshot-discovered defect after the frozen browser suite
+passes: a declared Mermaid node is rediscovered under a different display label.
+Three independent multiline labels reproduce the duplicate; case-sensitive IDs
+remain distinct. Preserve the existing node ID across inventory passes, retain
+graph-only discovery, and author the missing D-042 explanations in catalog source.
+Do not add vocabulary rules, label normalization or a new parser. Require focused
+identity/coverage controls, fresh runtime/browser proof and reviewed desktop/mobile
+screenshots before closing this bounded Atlas correction.
+
+The bounded candidate adds five net lines to the existing 1,077-line owner and
+no regex or helper. Four expanded counterexamples fail before the change; all
+59 focused identity, metadata, catalog and D-042 coverage checks pass afterward.
+The oversized catalog test is unchanged; ten new identity cases have a separate
+104-line owner. Independent review runs the eleven new controls and finds no
+bounded P0/P1. Ten real-shell desktop/mobile checks pass with exact D-042 text,
+and root reviews all eighteen screenshots. The shared correction removes 27
+redundant explanation rows across 18 diagrams; all 47 diagrams remain fresh.
+This frozen candidate passes 5,058 runtime, 1,437 install, 180 CLI and 376 browser
+checks, with zero failures/errors and one documented Radar fixture-state skip.
+All 3,204 inputs match after every process completes; CB-338 is fixed pending
+release. Evidence: `/private/tmp/odylith-migration-release-scope.nOTGQD/atlas-*-full.xml`.
+Record and push this bounded checkpoint without changing qualified source/tests.
+Older related-case caption text ending in `semanti` remains a separate visible
+quality caveat; these checks are not whole-product prose closure. Exact migration
+assessment, generated semantic quality, 60/90/120 and native desktop delivery
+remain open, and the protected final holdout is not ready to run.
+
+## Preserve migration assessment across commits (2026-09-10)
+
+The bounded implementation passes 85 focused controls and independent review.
+Published-predecessor comparison uses endpoint trees, not ancestry or merge-base;
+relevant hidden tracked files fail as unavailable evidence. The real comparison
+now identifies 808 changed paths and all five incomplete assessment families.
+No exact assessment is waived or marked complete. Frozen broad validation passes
+5,047 runtime, 1,437 install, 180 CLI and 376 browser checks; one Radar browser
+case lacks its required fixture state and is skipped. All 3,201 proof inputs match
+after terminal completion. CB-337 is fixed pending release; CB-338 separately
+owns the Atlas explanation defect found during screenshot review. Keep semantic
+quality, 60/90/120, actual populated migration and host-delivery gates open.
+
+CB-337 records a newly verified release-proof gap: on clean `5fbc51b3`, the
+canonical migration gate returns success with no observed paths or needs.
+Independent review confirms that its dirty-only observer conflicts with the
+clean-checkout release workflow. Committing a change is not migration assessment.
+The GitHub latest-release endpoint still identifies published `v0.1.14`; the
+local tag resolves to `fae446995e13e12409e50f944a336dbc846db90a`.
+
+Bound the correction to release comparison custody: require a validated explicit
+predecessor reference, report resolved base/candidate commits, include committed
+and local changes, and fail closed on unavailable Git scope. Retain the existing
+surface classifiers and exact completed-marker requirements. Do not select an
+arbitrary tag, use HEAD's parent, or bless old class-level assessments.
+
+The pre-change migration runtime was 1,371 lines and mixed install execution with
+release evidence checks. Its release report/check now has a dedicated owner
+with direct callers and no forwarding shim. Shared target eligibility belongs
+to the existing migration definition, not copied helpers. The 4,158-line
+CLI receives only safety-critical argument/dispatch wiring; no new release logic
+belongs there. Existing 1,541/4,948-line migration/CLI tests must not grow: put
+new scope controls in a focused owner and move relevant tests where appropriate.
+
+Require real-Git dirty-to-committed, exact assessment, changed-after-assessment,
+deletion/rename, missing-base and invalid-Git controls before broad install/CLI
+proof. Preserve `/private/tmp/odylith-migration-release-scope.nOTGQD/` and all
+earlier failures. This is an open release gate, not a change to Greenfield
+meaning, model profiles, timing limits, or final-holdout order.
+
 ## Installed status and exact-retry evidence (2026-09-09)
 
 The complete distribution from clean pushed `cd64d7ce` passes all twelve artifact
@@ -172,6 +241,13 @@ already-grounded exact paths with exclusions while that backend is unavailable;
 retain the caveat for final independent adjudication.
 
 ## Stronger author profile did not meet the fixed window (2026-09-09)
+
+Independent follow-up rules out a time-band mismatch: both disclosed 343-byte,
+one-document trials selected the predeclared standard profile. Their authored
+dimensions yield bounded structural complexity; that is not proof of semantic
+admission or feasible timing. Raising the time band would be inflation. No
+grounded lossless work reduction was established, so another retry or profile
+sweep is not justified by this diagnosis.
 
 The one private Astra/low candidate attempt fails its initial author call at
 55.020713 seconds without returning a candidate. The parent reports failure at

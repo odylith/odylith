@@ -6,6 +6,8 @@ Last updated (UTC): 2026-09-10
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-337 | 2026-09-10 | Release migration gate forgets committed consumer surface changes | P1 | migration-runtime | FixedPendingRelease | [2026-09-10-release-migration-gate-forgets-committed-consumer-surface-changes.md](2026-09-10-release-migration-gate-forgets-committed-consumer-surface-changes.md) |
+| CB-338 | 2026-09-10 | Atlas explains one declared node twice when label formatting changes | P1 | atlas | FixedPendingRelease | [2026-09-10-atlas-explains-one-declared-node-twice-when-label-formatting-changes.md](2026-09-10-atlas-explains-one-declared-node-twice-when-label-formatting-changes.md) |
 | CB-336 | 2026-09-09 | Shared supporting references can manufacture confident workstream ownership | P1 | odylith-context-engine | Open | [2026-09-09-shared-supporting-references-can-manufacture-confident-workstream-ownership.md](2026-09-09-shared-supporting-references-can-manufacture-confident-workstream-ownership.md) |
 | CB-335 | 2026-09-09 | Risk normalization splits wrapped list items and invents missing mitigations | P1 | odylith | Open | [2026-09-09-risk-normalization-splits-wrapped-list-items-and-invents-missing-mitigations.md](2026-09-09-risk-normalization-splits-wrapped-list-items-and-invents-missing-mitigations.md) |
 | CB-334 | 2026-09-09 | Plan traceability validation skips dated active plans | P2 | odylith | Open | [2026-09-09-plan-traceability-validation-skips-dated-active-plans.md](2026-09-09-plan-traceability-validation-skips-dated-active-plans.md) |

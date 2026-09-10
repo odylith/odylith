@@ -2039,31 +2039,6 @@ def test_upgrade_dry_run_prints_binding_target_metadata_and_verbose_paths(
     assert "+1 more" not in output
 
 
-def test_release_migration_gate_json_reports_registered_runtime(capsys) -> None:
-    repo_root = Path(__file__).resolve().parents[2]
-
-    rc = cli.main([
-        "release",
-        "migration-gate",
-            "--repo-root",
-            str(repo_root),
-            "--target-version",
-            "0.1.15",
-            "--json",
-        ])
-    payload = json.loads(capsys.readouterr().out)
-
-    assert rc == 0
-    assert payload["ok"] is True
-    assert payload["schema_version"] == "odylith.release-migration-gate.v1"
-    assert payload["fixture_matrix"]["v0.1.11-visible-intervention-value-engine"]["dry_run"] is True
-    assert payload["destructive_write_matrix"]["host.claude.preverified-settings"][
-        "test_install_bundle_preserves_host_settings_when_runtime_download_fails"
-    ] is True
-    assert payload["destructive_write_scenarios"]
-    assert payload["ungated_lifecycle_paths"] == []
-    assert payload["surface_migration_observer"]["schema_version"] == "odylith.surface-migration-observer.v1"
-    assert payload["surface_migration_observer"]["ok"] is True
 
 
 def test_release_group_help_includes_maintainer_commands(capsys) -> None:

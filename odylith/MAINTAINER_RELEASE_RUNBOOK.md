@@ -135,6 +135,15 @@ Run the targets in this order.
    `source-local` changes before they land on the canonical release commit.
    The canonical wheel build frontend is Hatch.
 
+   Run `odylith release migration-gate --repo-root . --target-version X.Y.Z --base-ref <published-predecessor-ref>`
+   on that same clean, frozen candidate. Verify the predecessor using published
+   release metadata before invoking the command; reserved tags and HEAD's parent
+   are not substitutes. The gate compares the two resolved endpoint trees even
+   when release preparation used sibling commits, and includes local changes for
+   development diagnostics. Missing Git scope or hidden tracked consumer files
+   cannot pass. Complete each exact emitted migration-assessment marker; committing
+   the candidate does not erase its obligations.
+
 5. `make release-session-show`
    Confirm the sticky session fields, especially `version`, `tag`, and
    `head_sha`, before dispatch.

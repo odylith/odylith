@@ -6,7 +6,7 @@
   affordances, admissible action, proof, compact learning, benchmark evidence,
   updated priors, and the cross-system loop through Context, Execution,
   Memory, Intervention, Tribunal, Surfaces, and Benchmarks.
-Last updated: 2026-09-08
+Last updated: 2026-09-10
 
 
 ## Purpose
@@ -177,6 +177,9 @@ implementation activity. Important fields include:
 - diagram-box explanations shown separately from owning Registry components:
   Atlas derives every flowchart container and inner node from Mermaid source,
   then overlays any catalog-authored `diagram_boxes` copy by label
+- an explicitly emitted node is not rediscovered by the graph pass under a
+  differently formatted label. That join uses the original case-sensitive
+  Mermaid node ID; graph-only node discovery remains available.
 - catalog-authored `diagram_boxes` descriptions must be clear complete
   sentences; terse placeholders are invalid because the generated detail pane
   is an operator reading surface, not an internal shorthand dump
@@ -411,6 +414,8 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-09-10: Preserve explicit node identity across Atlas inventory passes so multiline labels do not produce duplicate explanations. The 59 focused controls cover graph-only nodes, case sensitivity, containers, sequence actors and authored D-042 copy. Ten real-shell desktop/mobile checks pass; eighteen screenshots are reviewed. Frozen broad proof passes 5,058 runtime, 1,437 install, 180 CLI and 376 browser checks, with one documented fixture-state skip and all 3,204 inputs unchanged. This closes the bounded correction pending release, not general Atlas or Greenfield quality. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: CB-338)
 - 2026-09-08: Assigned literal box-field presentation to the existing Atlas detail owner, removing browser text reinterpretation and preserving authored action line boundaries. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-09-03: Added a fail-closed `odylith atlas update` writer for existing catalog entries. The command preserves omitted fields, replaces only explicit metadata, rejects unknown ids and unsafe paths, and removes the hand-edit escape hatch that left stale change-watch ownership in D-043, D-045, and D-046. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-329`)
 - 2026-07-07: Cleaned generic Atlas evidence-node explanation copy. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-220`)
