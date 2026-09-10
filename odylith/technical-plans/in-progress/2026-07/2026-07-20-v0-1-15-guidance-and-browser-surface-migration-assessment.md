@@ -5,6 +5,72 @@ Backlog: B-145
 
 # v0.1.15 Guidance And Browser Surface Migration Assessment
 
+## Current bounded checkpoint (2026-09-10)
+
+Newer Linux run 34496071745 at 92e7d6d6 narrows the red suite to 13 failures,
+7,911 passes and one unnamed skip: no new failed IDs, five removed and thirteen
+persistent. Worker and host causes are still not printed in that revision.
+The local spaced-worker fixture now preserves the interpreter's whole
+environment through a directory alias; both unchanged variants pass once in
+0.62 seconds after an independent venv comparison. This is not Linux-cause
+proof. No production deadline, observer acceptance or publication policy changes
+belong to the seven-file stable fixture/diagnostic/governance checkpoint.
+
+The third complete-reference fixture passes all six rendered surfaces after
+normal Atlas synchronization, but the single 17-case browser qualification is
+still red: five original smoke failures and twelve passing controls in 32.80
+seconds. All 46 canceled resources precede their successor network request;
+the first smoke additionally samples an unselected Radar tab. Do not accept or
+commit the four navigation-candidate source/test files from synthetic proof.
+The stable checkpoint is limited to independently supported fixture diagnostics,
+environment corrections, attribution and governance evidence. CB-305 retains
+all three preparations and the exact final report.
+
+Detached fixture-worker evidence narrows the diagnosis: Compass publishes a
+coherent fresh successor before the browsers, with matching sealed readback.
+The foreground generation hash was not captured. No lock-only publication
+defect is established. Descendant-only cleanup checks missed that worker;
+archive preservation and exact native-root containment followed separately.
+Do not turn this diagnostic counterevidence into another production rewrite.
+
+The complete-reference replacement fixture resolves all missing paths but retains
+22 stale Atlas records, so its render returns 2 and zero browser cases execute.
+Next use the existing opt-in Atlas synchronization owner on a separate complete
+fixture; preserve the freshness gate, actual source immutability, and exact
+generated fixture-mirror ownership. Both failed preparations remain evidence.
+The separate fixed-author HIIT integration now establishes its real-publication
+synthetic baseline and one explicit existing reviewer stub before exercising the
+unchanged workflow: one case passes in 7.02 seconds, including original 4/4/5,
+sealed readback, event text and 60-second bounds. This is not live-model timing
+or actual installation proof. Details and receipts remain in CB-305.
+
+Linux run 34491249084 at 43b07030 completes with 18 failures and 7,898 passes.
+All fourteen prior rendering/proposal failed IDs disappear after actual Mermaid
+provisioning, with their test files unchanged; the full suite is still red.
+The later worker/host diagnostic tests retain first failure evidence without
+altering runtime deadlines, tracing, identity, receipt or cleanup requirements.
+Canonical license-audit regeneration corrects the existing markdown-it-py
+direct/transitive classification only; three attribution checks pass.
+
+The source correction deletes six premature-stop lines. The existing native
+observer admits exact same-frame resource replacement through its established
+loader/origin/successor/continuity contract; 351 private independent controls and
+323 maintained actual-source controls pass. No file-origin or unexplained-abort
+waiver is added. A real six-surface render then fails Atlas because the isolated
+fixture lacks repository code referenced by its copied authored catalog. Five
+surfaces pass; zero browser cases run. Preserve that failed fixture and prepare a
+separate complete-reference snapshot before one replacement render/browser gate.
+Do not treat the failed fixture, synthetic controls or previous 432/6 matrix as
+current complete UX acceptance. Evidence and exact boundaries are recorded in
+CB-305 and /Users/freedom/.codex/odylith-rendered-stop-proof.7dePhR/actual/REPORT.md.
+
+CB-303 records the distinct independent verification-sufficiency gap. No new
+semantic mechanism/profile/prompt, deadline relaxation or reviewer call is
+authorized by this browser checkpoint. Historical publication recovery, current
+Linux failures, fresh generated-package quality/SLA, actual populated-predecessor
+upgrade, automatic desktop chat delivery and the untouched final release gate
+remain open. Existing plan lifecycle and governed preamble remain unchanged.
+
 ## Goal
 Qualify v0.1.15 compatibility against the actual published predecessor across
 the full committed change set. Reopened after CB-337 proved that dirty-only

@@ -9,6 +9,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import time
 from typing import Any
 
 import pytest
@@ -489,6 +490,7 @@ def test_host_and_cli_accept_the_same_hash_with_opaque_product_evidence(
         return trace
 
     previous_trace = sys.gettrace()
+    decision_started = time.perf_counter()
     sys.settrace(trace)
     try:
         decision = greenfield_host_confirmation.maybe_handle_greenfield_decision(
@@ -498,6 +500,14 @@ def test_host_and_cli_accept_the_same_hash_with_opaque_product_evidence(
         )
     finally:
         sys.settrace(previous_trace)
+    first_decision_diagnostics = {
+        "host": host,
+        "elapsed_seconds": time.perf_counter() - decision_started,
+        "decision": decision,
+    }
+    assert decision is not None, first_decision_diagnostics
+    assert decision["status"] == "CLOSED", first_decision_diagnostics
+    assert decision["transaction_hash"] == rewritten_hash, first_decision_diagnostics
     cli_result = greenfield_create_cli.main(
         [
             "create",
@@ -511,9 +521,6 @@ def test_host_and_cli_accept_the_same_hash_with_opaque_product_evidence(
         ]
     )
 
-    assert decision is not None
-    assert decision["status"] == "CLOSED"
-    assert decision["transaction_hash"] == rewritten_hash
     assert cli_result == 0
     assert "Odylith committed the validated Greenfield package." in capsys.readouterr().out
     assert executed <= admitted_runtime

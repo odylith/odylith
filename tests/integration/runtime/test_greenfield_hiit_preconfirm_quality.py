@@ -9,7 +9,9 @@ from odylith.runtime.domain_intelligence import greenfield_proposals_cli
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
     combined_prompt_evidence_source,
 )
+from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
     StructuredAuthoringProvider,
     authored_response,
 )
@@ -22,18 +24,31 @@ def test_hiit_structured_fixture_preserves_path_and_sealed_package_under_sixty_s
     monkeypatch,
     capsys,
 ) -> None:
-    """Native integration with a fixed author fixture, not live semantic/timing proof."""
+    """Native integration with a synthetic baseline and fixed author/reviewer fixtures.
+
+    Not installation, independent semantic quality, or live-model timing proof.
+    """
     _seed_empty_governance_repo(tmp_path)
+    activate_greenfield_baseline_fixture(tmp_path)
     intent_path = tmp_path / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(HIIT_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
     prompt = "Draft a greenfield proposal for a guided HIIT interval training app"
     provider = _hiit_authoring_provider(prompt)
+    reviewer = AdmittingReviewProvider()
+
+    def authoring_provider(*, request_role="initial_authoring", **_kwargs):
+        if request_role == "initial_authoring":
+            return provider, "test-model", "low"
+        if request_role == "candidate_review":
+            return reviewer, "gpt-5.6-sol", "medium"
+        raise AssertionError(f"Unexpected Greenfield request role: {request_role}")
+
     monkeypatch.setattr(
         greenfield_proposals_cli,
         "_greenfield_authoring_provider",
-        lambda **_kwargs: (provider, "test-model", "low"),
+        authoring_provider,
     )
 
     started, rc, payload, transaction_payload = _run_proposed_transaction_create(
@@ -45,6 +60,7 @@ def test_hiit_structured_fixture_preserves_path_and_sealed_package_under_sixty_s
 
     assert rc == 0
     assert provider.calls == 1
+    assert reviewer.calls == 1
     accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
     proposal = accepted["proposal"]
     first_path = proposal["semantic_model"]["first_path_contract"]

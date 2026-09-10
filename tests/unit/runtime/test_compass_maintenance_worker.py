@@ -359,9 +359,9 @@ def test_actual_child_with_spaced_executable_and_repository_is_identified_and_st
     plain_root = tmp_path / "repository with spaces"
     suffixed_root = tmp_path / "repository with spaces --emit-output"
     repo, other = (suffixed_root, plain_root) if root_contains_flag else (plain_root, suffixed_root)
-    executable = tmp_path / "runtime directory" / "python"
-    executable.parent.mkdir()
-    executable.symlink_to(sys.executable)
+    runtime_directory = tmp_path / "runtime directory"
+    runtime_directory.symlink_to(sys.prefix, target_is_directory=True)
+    executable = runtime_directory / Path(sys.executable).relative_to(sys.prefix)
     request, brief = _fixture(repo)
     _cache(repo, request, brief)
     monkeypatch.setattr(worker, "worker_python_bin", lambda: str(executable))
@@ -369,7 +369,7 @@ def test_actual_child_with_spaced_executable_and_repository_is_identified_and_st
         child = subprocess.Popen(
             [str(executable), "-m", "odylith.runtime.surfaces.compass_standup_brief_maintenance",
              "--repo-root", str(repo)] + ([] if root_contains_flag else ["--emit-output"]),
-            env=worker.worker_env(), stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
+            env=worker.worker_env(), stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         )
         try:
             deadline = time.monotonic() + 5.0
@@ -379,7 +379,12 @@ def test_actual_child_with_spaced_executable_and_repository_is_identified_and_st
                 if state.get("entries", {}).get("global:24h", {}).get("status") == "ready":
                     break
                 time.sleep(0.02)
-            assert child.poll() is None
+            returncode = child.poll()
+            stdout, stderr = child.communicate(timeout=2) if returncode is not None else (b"", b"")
+            assert returncode is None, (
+                f"worker exited during startup: returncode={returncode}\nlast_state={state!r}\n"
+                f"stdout={stdout!r}\nstderr={stderr!r}"
+            )
             assert state["active_pid"] == child.pid
             observed = worker._native_process_argv(child.pid)
             assert observed is not None
