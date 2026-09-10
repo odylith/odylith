@@ -1,5 +1,30 @@
 Status: In progress
 
+## Installed status and exact-retry evidence (2026-09-09)
+
+The complete distribution from clean pushed `cd64d7ce` passes all twelve artifact
+checksums, with all six reviewed production owners matching its wheel. The
+unchanged installed recovery harness passes against a fresh consumer. The real
+renderer succeeds before the single synthetic completion failure; the previous
+publication remains complete and exact. Its advertised installed-launcher retry
+succeeds in 5.4744 seconds, publishes a successor and clears the receipt without
+changing runtime, pin, launchers or seeded operator bytes/modes.
+
+All 48 real surface views pass: six tabs, file/HTTP, desktop/mobile, before retry
+and after recovery. No browser errors or external requests are recorded; normal
+browsing does not mutate either observed state. Root inspected screenshots across
+all six surfaces. All thirteen recorded command groups are terminal. Retain
+`/private/tmp/odylith-installed-upgrade-recovery.DGvhVK/run-gdfzgmiw/` and the prior
+failed consumer; do not rerun this successful witness without a diagnosed reason.
+
+This is same-version empty-source recovery after a post-success completion fault,
+not a real failed renderer, installed SIGKILL, populated published-predecessor
+transition, public signing, semantic quality, automatic desktop chat delivery or
+60/90/120 acceptance. CB-305 and the full goal remain open. Next evidence belongs
+to current broader regressions/migration qualification and the remaining
+model-quality/host gates, without changing their limits or accessing the final
+replacement holdout early.
+
 ## Publish captured status without coupling live telemetry (2026-09-09)
 
 The bounded candidate moves browser status acquisition into the existing sealed
@@ -23,9 +48,9 @@ terminal completion. Final independent source review finds no remaining bounded
 P0/P1. Existing oversized-file debt remains open. Retain all reports in
 `/private/tmp/odylith-snapshot-status-proof.uZUBBA/`.
 
-After stable source/governance checkpoint, build a new clean distribution and
-rerun the unchanged installed recovery witness against a fresh consumer. Preserve
-the old failed consumer and receipt. Do not use these shell-level controls as
+The clean distribution and unchanged installed witness now pass at `cd64d7ce`,
+within the scope recorded above. Preserve the old failed consumer and receipt.
+Do not use these shell-level controls as
 proof of model quality, populated migration, automatic chat delivery, the
 60/90/120 contract or final release acceptance. All broader gates remain active;
 the protected replacement holdout remains untouched.

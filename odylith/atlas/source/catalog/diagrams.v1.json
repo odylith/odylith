@@ -2363,7 +2363,7 @@
         "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md": "da20bb2c778974ea69ef1474dbe41a4b42de3617d4ef1875a493543786b02175",
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "509f277a5b77fc104a92794c1834c633fbbcc4effa583bff0f19d5784de4bd0f",
         "odylith/technical-plans/done/2026-03/2026-03-28-odylith-managed-runtime-bundles-and-supported-platform-contract.md": "1f23b5b159f92612c4dd52b7fe1e077d5842a9e6439b59b6c42c617111ccf45b",
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "5e3fb4b7e7001690a7727dca5557ee65596be28b15ecd0f4e193d1ed10c4f047",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "19339c6a1f7b177dac9399b733d384608958559c5946b2fab6f8eaa0a2311b95",
         "odylith/casebook/bugs/2026-03-28-public-consumer-install-depends-on-machine-python.md": "892477de3906a35157275d8aaa2f9cfc259dd2efb76222fa7247461d011a1ea6",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "3d1a07c5b70e21d50e239a4e495a030dd0cc3c510d8091131ad15abae1be77f5",
         "odylith/registry/source/components/release/CURRENT_SPEC.md": "b169bd16607e32577aa1e25acd8d4b1442f6bb473d4d854ccccb18b537930982",
@@ -4361,7 +4361,7 @@
         "src/odylith/runtime/surfaces/templates/tooling_dashboard/control.js": "8955112d35a2f0b1dce033a1647fbf45be9ac5e67f1f5fcda4f6a4bb064c2bd4",
         "src/odylith/runtime/context_engine/odylith_context_engine_runtime_artifacts.py": "da9ed067cb57af1a3d37dd4015f85c1cc83ad7c1bd2693b634b838da9618ebc2",
         "odylith/registry/source/components/dashboard/CURRENT_SPEC.md": "d26ea6dfdb3a5984b458d42d20864b782f5aae133a81222eaf22538c4c8fb7df",
-        "odylith/casebook/bugs/2026-08-02-greenfield-current-view-readers-could-remain-pinned-to-stale-onboarding-state.md": "a7704653d4f807833327540f31faaf23dea254b3c640becd9292f9817063e6f7"
+        "odylith/casebook/bugs/2026-08-02-greenfield-current-view-readers-could-remain-pinned-to-stale-onboarding-state.md": "914608733199f0a5367d5e77127b30adb2d7b1258ea84f954ad66d3a5029bc9e"
       }
     },
     {
