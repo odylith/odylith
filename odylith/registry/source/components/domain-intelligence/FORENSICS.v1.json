@@ -7,12 +7,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 772,
-    "mapped_workstream_evidence_count": 680,
+    "explicit_event_count": 773,
+    "mapped_workstream_evidence_count": 681,
     "recent_path_match_count": 0,
     "spec_history_event_count": 307,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 772
+    "timeline_event_count": 773
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -20,6 +20,43 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-02-greenfield-current-view-readers-could-remain-pinned-to-stale-onboarding-state.md"
+      ],
+      "confidence": "high",
+      "event_index": 1380,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-09-09T18:58:44-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 2,
       "artifacts": [

@@ -1,5 +1,42 @@
 Status: In progress
 
+## Finish publication proof and repair the actual retry boundary (2026-09-09)
+
+The immutable generation and sole HTML entry are already implemented. Keep that
+mechanism: the expanded actual-shell test passes file/HTTP navigation across all
+six tabs, desktop/mobile, normal state and three SIGKILL publication intervals.
+Both cases pass in 206.07 seconds with 96 content-ready surface observations;
+101 focused kernel controls pass. This closes the two-tab coverage limitation,
+not installed all-reader or end-to-end consumer acceptance. Evidence remains in
+`/private/tmp/odylith-all-surface-publication.hxeGBg/`.
+
+Independent review tightened the final Compass predicate to reject total-runtime
+fallback while permitting legitimate no-risk content. The final frozen test plus
+adjacent normal/corrupt/cached-entry carrier controls passes 20 cases in 218.60
+seconds; all 96 tab observations have zero recorded browser errors. Normal and
+crash reads leave fixture bytes unchanged. Source-review acceptance and final
+desktop Project/mobile Compass inspection remain bounded to these views.
+
+The next concrete P1 is failed-upgrade recovery. The exact emitted dashboard
+refresh retry cannot pass current admission after the failed renderer leaves
+partial working output, although a clean-control retry publishes successfully.
+The old published view and operator bytes stay safe. Preserve the private failing
+expectation and exact command/state receipt in
+`/private/tmp/odylith-failed-refresh-retry.Pihtyr/`.
+Use the existing upgrade/dashboard completion and rollback/staging owners to
+leave an admissible predecessor on failure. Do not relax the generic drift guard,
+invent a broad recovery platform, or fix only the mocked Radar file. Require
+actual pin/runtime/asset failure controls and operator-conflict preservation
+before adoption. Final installed population, all-reader, model-quality, native
+host eligibility, 60/90/120 and protected-holdout gates remain unchanged and open.
+
+Proof isolation caveat: context lookup for CB-305 fell back to a search including
+tests without a protected-test exclusion. No protected-test content appeared in
+the returned results, and the final corpus/build/ledger were not opened or run,
+but tool-level non-access to that test cannot be certified for this turn. Use
+already-grounded exact paths with exclusions while that backend is unavailable;
+retain the caveat for final independent adjudication.
+
 ## Stronger author profile did not meet the fixed window (2026-09-09)
 
 The one private Astra/low candidate attempt fails its initial author call at

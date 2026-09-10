@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+from contextlib import nullcontext
 import hashlib
 import json
 import os
 from pathlib import Path
 import shutil
 import signal
+from urllib.parse import urlparse
+
+import pytest
 
 from odylith.install.fs import atomic_write_text
 from odylith.runtime.domain_intelligence import greenfield_generation_state as state
@@ -15,12 +19,21 @@ from odylith.runtime.domain_intelligence import greenfield_generation_store as s
 from odylith.runtime.domain_intelligence import greenfield_repository_lock
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set as kernel
 from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
-from tests.integration.runtime.surface_browser_test_support import _assert_clean_page, _browser, _new_page, _static_server
+from tests.integration.runtime.surface_browser_test_support import (
+    _assert_clean_page, _browser, _new_page, _static_server, playwright_sync,
+)
 from tests.unit.runtime.test_greenfield_commit_journal import _kill_commit_child
 
 
 SOURCE = Path(__file__).resolve().parents[3]
-SURFACES = {"atlas": "odylith/atlas/atlas.html", "radar": "odylith/radar/radar.html"}
+SURFACES = {
+    "project": "odylith/index.html",
+    "registry": "odylith/registry/registry.html",
+    "casebook": "odylith/casebook/casebook.html",
+    "atlas": "odylith/atlas/atlas.html",
+    "radar": "odylith/radar/radar.html",
+    "compass": "odylith/compass/compass.html",
+}
 MARKER = '<aside id="publication-proof" style="position:fixed;bottom:12px;left:12px;z-index:999999;background:white;color:black;border:2px solid black;padding:12px">BASELINE</aside>'
 
 
@@ -74,15 +87,17 @@ def _protected_dashboard(tmp_path):
         ))
         assert ">BASELINE</aside>" in (generation.repository_root / relative).read_text(encoding="utf-8")
     transition = kernel.compile_greenfield_repository_write_set(source_root=root, staged_root=stage)
-    assert transition["write_count"] == 2
+    assert transition["write_count"] == len(SURFACES)
     assert {row["path"] for row in transition["writes"]} == set(SURFACES.values())
     return root, generation, transition, source_hashes
 
 
-def _observe_dashboard(root, evidence, phase, expected_hash, expected_marker):
+def _observe_dashboard(root, evidence, phase, expected_hash, expected_marker, protocol):
     observations = []
     try:
-        with _static_server(root=root) as base_url:
+        server = _static_server(root=root) if protocol == "http" else nullcontext(None)
+        with server as base_url:
+            entry_url = base_url + "/odylith/index.html" if base_url else (root / "odylith/index.html").as_uri()
             for _pw, browser in _browser():
                 for width in (1440, 430):
                     context = browser.new_context(viewport={"width": width, "height": 1000})
@@ -92,23 +107,38 @@ def _observe_dashboard(root, evidence, phase, expected_hash, expected_marker):
                         page.on("request", lambda request: requested.append(request.url))
                         row = {"width": width, "phase": phase, "surfaces": {}}
                         observations.append(row)
+                        page.goto(entry_url + "?tab=project", wait_until="networkidle")
+                        assert set(page.locator('[role="tab"][data-tab]').evaluate_all(
+                            'nodes => nodes.map(node => node.dataset.tab)')) == set(SURFACES)
+                        expected_prefix = "/.odylith/runtime/greenfield/generations/" + expected_hash + "/repository/"
                         for surface, relative in SURFACES.items():
-                            page.goto(base_url + "/odylith/index.html?tab=" + surface, wait_until="networkidle")
-                            frame = page.frame_locator("#frame-" + surface)
+                            page.locator("#tab-" + surface).click()
+                            page.locator(f'#tab-{surface}[aria-selected="true"]').wait_for()
+                            frame = page if surface == "project" else page.frame_locator("#frame-" + surface)
                             marker = frame.locator("#publication-proof")
                             marker.wait_for(state="visible", timeout=15000)
                             if surface == "atlas":
                                 frame.locator("#diagramId").wait_for()
-                                page.wait_for_function("""() => {
-                                    const image = document.querySelector('#frame-atlas').contentDocument.querySelector('#viewerImage');
-                                    return image && image.complete && image.naturalWidth > 0;
-                                }""", timeout=15000)
-                            else:
+                                viewer = frame.locator("#viewerImage")
+                                playwright_sync.expect(viewer).to_have_js_property("complete", True, timeout=15000)
+                                playwright_sync.expect(viewer).not_to_have_js_property("naturalWidth", 0, timeout=15000)
+                            elif surface == "radar":
                                 frame.locator("#list button[data-idea-id]").first.wait_for(timeout=15000)
+                            elif surface == "registry":
+                                frame.locator("button[data-component]").first.wait_for(timeout=15000)
+                                frame.locator("#detail > *").first.wait_for(timeout=15000)
+                            elif surface == "casebook":
+                                frame.locator(".bug-row").first.wait_for(timeout=15000)
+                                frame.locator("#detailPane .detail-title").wait_for(timeout=15000)
+                            elif surface == "compass":
+                                frame.locator('body[data-surface-ready="ready"]').wait_for(timeout=15000)
+                                frame.locator("#risk-list .risk, #risk-list .empty").first.wait_for(timeout=15000)
+                                frame.locator("#digest-list > *").first.wait_for(timeout=15000)
+                                assert "Runtime data unavailable." not in frame.locator("#digest-list").inner_text()
+                                assert "Runtime Unavailable" not in frame.locator("#kpi-grid").inner_text()
                             row["surfaces"][surface] = {"marker": marker.inner_text(), "shell_url": page.url,
-                                "child_url": page.locator("#frame-" + surface).evaluate("node => node.contentWindow.location.href")}
+                                "child_url": page.url if surface == "project" else page.locator("#frame-" + surface).element_handle().content_frame().url}
                             page.screenshot(path=str(evidence / f"{phase}-{width}-{surface}.png"))
-                            expected_prefix = "/.odylith/runtime/greenfield/generations/" + expected_hash + "/repository/"
                             assert expected_prefix + "odylith/index.html" in page.url
                             assert expected_prefix + relative in row["surfaces"][surface]["child_url"]
                             assert row["surfaces"][surface]["marker"] == expected_marker
@@ -117,6 +147,10 @@ def _observe_dashboard(root, evidence, phase, expected_hash, expected_marker):
                         assert not any(
                             "/generations/" in url and expected_hash not in url for url in requested
                         ), requested
+                        local = [url for url in requested if urlparse(url).scheme == "file" or
+                                 (base_url and url.startswith(base_url + "/"))]
+                        assert all(urlparse(url).path == urlparse(entry_url).path or expected_prefix in urlparse(url).path
+                                   for url in local), local
                         _assert_clean_page(page, *errors)
                     finally:
                         context.close()
@@ -125,12 +159,19 @@ def _observe_dashboard(root, evidence, phase, expected_hash, expected_marker):
     return observations
 
 
-def test_actual_dashboard_remains_one_generation_after_killed_writer_before_recovery(tmp_path):
-    evidence = Path(os.environ.get("ODYLITH_PUBLICATION_CRASH_EVIDENCE", str(tmp_path / "evidence")))
+@pytest.mark.parametrize("protocol", ["file", "http"])
+def test_actual_dashboard_remains_one_generation_after_killed_writer_before_recovery(tmp_path, protocol):
+    evidence = Path(os.environ.get("ODYLITH_PUBLICATION_CRASH_EVIDENCE", str(tmp_path / "evidence"))) / protocol
     evidence.mkdir(parents=True, exist_ok=False)
     root, baseline, write_set, source_hashes = _protected_dashboard(tmp_path)
     (evidence / "source-assets.json").write_text(json.dumps(source_hashes, indent=2) + "\n", encoding="utf-8")
-    all_rows = []
+    (evidence / "fixture.json").write_text(json.dumps({
+        "root": str(root), "stage": str(tmp_path / "stage"), "protocol": protocol,
+        "baseline_write_set_hash": baseline.write_set_hash, "next_write_set_hash": write_set["write_set_hash"],
+    }, indent=2) + "\n", encoding="utf-8")
+    before_normal = _tree_hashes(root)
+    all_rows = _observe_dashboard(root, evidence, "normal", baseline.write_set_hash, "BASELINE", protocol)
+    assert _tree_hashes(root) == before_normal
     for phase in ("first_write", "before_pointer", "after_pointer"):
         child = _kill_commit_child(root=root, write_set=write_set, mode=phase)
         assert child.returncode == -signal.SIGKILL, child.stderr
@@ -140,11 +181,12 @@ def test_actual_dashboard_remains_one_generation_after_killed_writer_before_reco
         before = _tree_hashes(root)
         selected_hash = write_set["write_set_hash"] if phase == "after_pointer" else baseline.write_set_hash
         selected_marker = "SEALED NEXT" if phase == "after_pointer" else "BASELINE"
-        compatibility = {surface: ">SEALED NEXT</aside>" in (root / relative).read_text(encoding="utf-8")
+        layout = kernel.greenfield_repository_layout(root)
+        compatibility = {surface: ">SEALED NEXT</aside>" in layout.target_path(relative).read_text(encoding="utf-8")
                          for surface, relative in SURFACES.items()}
-        assert compatibility == ({"atlas": True, "radar": False} if phase == "first_write" else {"atlas": True, "radar": True})
+        assert sum(compatibility.values()) == (1 if phase == "first_write" else len(SURFACES))
         try:
-            all_rows.extend(_observe_dashboard(root, evidence, phase, selected_hash, selected_marker))
+            all_rows.extend(_observe_dashboard(root, evidence, phase, selected_hash, selected_marker, protocol))
             assert _tree_hashes(root) == before
             assert json.loads(journal.state_path.read_text(encoding="utf-8")) == before_record
         finally:
@@ -164,5 +206,5 @@ def test_actual_dashboard_remains_one_generation_after_killed_writer_before_reco
             else:
                 kernel.require_greenfield_repository_preconditions(repo_root=root, write_set=write_set)
                 journal.discard_recovered_abort()
-    assert len(all_rows) == 6
+    assert len(all_rows) == 8
     assert {relative: _hash(SOURCE / "odylith" / relative) for relative in source_hashes} == source_hashes
