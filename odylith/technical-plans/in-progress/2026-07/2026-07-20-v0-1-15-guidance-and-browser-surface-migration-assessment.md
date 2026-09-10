@@ -7,6 +7,43 @@ Backlog: B-145
 
 ## Current bounded checkpoint (2026-09-10)
 
+The complete-draft verification-delta comparison is rejected on its one native
+attempt: null/timeout, 18.095894 seconds owner elapsed and18.096123 through the
+receipt against18.077313 available. All111 frozen dependencies are unchanged.
+No candidate or prose exists to assess; do not retry or adopt this mechanism.
+Production remains unchanged, and successful internal quality correction within
+60/90/120 remains a central unclosed obligation (CB-303).
+
+A private complete-draft/delta-output comparison now targets CB-303's internal
+verification-repair gap. Only existing verification text may change; all other
+meaning and structural authority stay frozen. Its original remaining 18.077313
+seconds include correction validation and receipt. This experimentally changes
+the online reviewer role, so new text lacks a separate online model review and
+requires independent adjudication before advancement. It does not adopt a new
+production mechanism or relax the full consumer and release proof obligations.
+
+The Document observation-policy correction now has independent acceptance:
+four baseline denial controls fail, then all 220 maintained controls pass.
+Four retained native-sequence replays additionally preserve redirect/manual-stop
+results and reject cancellation followed only later by successful navigation.
+This is not a fresh browser run. The separate resource/stop-removal candidate,
+original smoke failures and complete browser acceptance remain open (CB-305).
+
+The subsequent capture-only five-case diagnostic records four passes and one
+private assertion failure in 6.43 seconds. Navigation-start identity is observable,
+but the earlier abort-before-request order does not recur. Its deliberate failed
+Document followed by later success exposes an intentionally weak supersession
+policy, not causal displacement. Root now requires in-flight replacement in the
+existing Document owner, with genuine positive and non-vacuous negative controls.
+The same-document assertion failure belongs to child/root scope discrimination.
+No complete browser acceptance or new event/classifier follows from this capture.
+
+CB-303 separately corrects a proposed online/release-policy conflation: repairable
+quality must improve internally before preview; stricter binary denial alone is
+not successful Greenfield creation. The current two-call mechanism has no repair
+iteration. The private criterion proposal remains held, with no semantic changes
+or model calls. This does not relax quality, independent review or 60/90/120.
+
 Newer Linux run 34496071745 at 92e7d6d6 narrows the red suite to 13 failures,
 7,911 passes and one unnamed skip: no new failed IDs, five removed and thirteen
 persistent. Worker and host causes are still not printed in that revision.

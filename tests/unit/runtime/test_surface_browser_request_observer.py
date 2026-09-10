@@ -85,8 +85,8 @@ class Flow:
 def test_exact_distinct_loader_success_reconciles_document_abort_without_url_identity(url, order):
     flow = Flow()
     flow.nav("aborted")
-    flow.fail("aborted")
     flow.nav("successor", url=url)
+    flow.fail("aborted")
     flow.response("successor")
     if order == "same-document-event":
         flow.emit("Page.navigatedWithinDocument", frameId="main", url=BASE + "/history-mutated")
@@ -95,13 +95,45 @@ def test_exact_distinct_loader_success_reconciles_document_abort_without_url_ide
     flow.commit("successor")
     if order != "finish-before-commit":
         flow.finish("successor")
+    raw_events, raw_failures = flow.ledger.observations, flow.ledger.failures
     result = flow.ledger.cutoff()
     assert result.errors == ()
     assert len(result.cancellations) == 1
     proof = result.cancellations[0]
     assert (proof.request_id, proof.replacement_id) == ("aborted", "successor")
-    assert proof.loader_id != proof.replacement_loader_id
-    assert flow.ledger.failures[0].reason == "net::ERR_ABORTED"
+    assert (proof.loader_id, proof.replacement_loader_id) == ("aborted-loader", "successor-loader")
+    assert proof.frame_id == proof.replacement_frame_id == "main"
+    assert proof.removal_index is None
+    successor_start = next(event.index for event in raw_events if event.method == "Network.requestWillBeSent"
+                           and json.loads(event.payload)["requestId"] == "successor")
+    assert successor_start < proof.failure_index == raw_failures[0].index < proof.commit_index
+    assert flow.ledger.observations == raw_events and flow.ledger.failures == raw_failures
+    assert raw_failures[0].reason == "net::ERR_ABORTED" and raw_failures[0].canceled
+    assert raw_failures[0].http_status is None
+
+
+@pytest.mark.parametrize("frame", ("main", "child"))
+@pytest.mark.parametrize("timing", ("before-successor-start", "after-successor-commit"))
+def test_document_abort_outside_successor_inflight_interval_stays_raw_failure(frame, timing):
+    flow = Flow()
+    if frame == "child":
+        flow.child()
+    flow.nav("aborted", frame)
+    if timing == "before-successor-start":
+        flow.fail("aborted")
+    flow.nav("successor", frame)
+    flow.response("successor")
+    flow.commit("successor")
+    if timing == "after-successor-commit":
+        flow.fail("aborted")
+    flow.finish("successor")
+    raw_events, raw_failures = flow.ledger.observations, flow.ledger.failures
+    result = flow.ledger.cutoff()
+    assert result.errors == (f"aborted {BASE}/aborted.html net::ERR_ABORTED",)
+    assert result.cancellations == result.coverage_errors == ()
+    assert flow.ledger.observations == raw_events
+    assert flow.ledger.failures == raw_failures
+    assert len(raw_failures) == 1 and raw_failures[0].canceled
 
 
 @pytest.mark.parametrize("counterexample", (
@@ -119,7 +151,6 @@ def test_document_abort_requires_unbroken_immediate_native_successor(counterexam
     if counterexample == "already-committed-source":
         flow.response("aborted")
         flow.commit("aborted")
-    flow.fail("aborted", reason=None if counterexample == "unknown-reason" else "net::ERR_CONNECTION_RESET" if counterexample == "reset" else "net::ERR_ABORTED", canceled=counterexample != "not-canceled")
     if counterexample == "unmatched-transition":
         flow.emit("Page.frameNavigated", frame={"id": "main", "loaderId": "unrepresented", "url": BASE + "/failed.html"})
     if counterexample == "old-loader-commit":
@@ -127,6 +158,7 @@ def test_document_abort_requires_unbroken_immediate_native_successor(counterexam
     target_url = {"different-port": "http://127.0.0.1:9999/selected", "different-host": "http://localhost:9876/selected", "different-scheme": "https://127.0.0.1:9876/selected"}.get(counterexample, BASE + "/selected")
     flow.nav("successor", "child" if counterexample == "different-frame" else "main",
              loader="aborted-loader" if counterexample == "same-loader" else None, url=target_url)
+    flow.fail("aborted", reason=None if counterexample == "unknown-reason" else "net::ERR_CONNECTION_RESET" if counterexample == "reset" else "net::ERR_ABORTED", canceled=counterexample != "not-canceled")
     if counterexample != "missing-response":
         flow.response("successor")
     if counterexample == "same-document-only":
@@ -148,8 +180,8 @@ def test_document_abort_requires_unbroken_immediate_native_successor(counterexam
 def test_redirects_are_one_identity_history_and_cannot_erase_origin_or_http_errors(target, status):
     flow = Flow()
     flow.nav("aborted")
-    flow.fail("aborted")
     flow.nav("successor")
+    flow.fail("aborted")
     flow.redirect("successor", target, status)
     flow.redirect("successor", BASE + "/final")
     flow.complete("successor")
@@ -168,10 +200,10 @@ def test_all_http_errors_remain_errors_even_with_exact_abort_or_loading_finished
     flow = Flow()
     flow.nav("error", url=origin + "/required")
     flow.response("error", status)
+    flow.nav("later")
     flow.fail("error")
     flow.commit("error")
     flow.finish("error")
-    flow.nav("later")
     flow.complete("later")
     result = flow.assert_failed()
     assert any(f"HTTP {status}" in error for error in result.errors)
@@ -328,6 +360,7 @@ def test_resource_abort_cannot_borrow_future_departure_or_later_ancestor_success
 def test_coverage_gaps_permanently_fail_interval_even_after_a_qualifying_replacement(gap):
     flow = Flow()
     flow.nav("aborted")
+    flow.nav("successor")
     flow.fail("aborted")
     if gap == "unknown-request":
         flow.emit("Network.loadingFinished", requestId="missing")
@@ -345,7 +378,6 @@ def test_coverage_gaps_permanently_fail_interval_even_after_a_qualifying_replace
         flow.emit("Target.targetDestroyed", targetId="target")
     else:
         flow.emit("Inspector.detached", reason="target_closed")
-    flow.nav("successor")
     flow.complete("successor")
     assert any("coverage failure" in error for error in flow.assert_failed().errors)
 
@@ -376,8 +408,8 @@ def test_unknown_structured_error_does_not_expose_mutable_failure_audit():
 def test_explicit_port_zero_is_not_default_port_origin():
     flow = Flow(original_url="http://127.0.0.1/original")
     flow.nav("aborted", url="http://127.0.0.1:0/source")
-    flow.fail("aborted")
     flow.nav("successor", url="http://127.0.0.1/target")
+    flow.fail("aborted")
     flow.complete("successor")
     flow.assert_failed()
 
@@ -392,8 +424,8 @@ def test_malformed_seed_parent_cannot_lend_ancestor_ownership():
 def test_late_root_or_unscoped_target_loss_invalidates_prior_qualification(gap):
     flow = Flow()
     flow.nav("aborted")
-    flow.fail("aborted")
     flow.nav("successor")
+    flow.fail("aborted")
     flow.complete("successor")
     if gap == "root-removed":
         flow.remove("main")
@@ -416,11 +448,11 @@ def test_http_error_in_originating_ancestor_cannot_lend_cancellation_authority()
 def test_raw_failure_is_immutable_and_post_cutoff_events_cannot_rewrite_result():
     flow = Flow()
     flow.nav("aborted")
+    flow.nav("late")
     params = {"requestId": "aborted", "errorText": "net::ERR_ABORTED", "canceled": True}
     flow.ledger.ingest("Network.loadingFailed", params)
     params["errorText"] = "changed-by-caller"
     result = flow.ledger.cutoff()
-    flow.nav("late")
     flow.complete("late")
     flow.fail("aborted", "cleanup-error", False)
     assert flow.ledger.cutoff() is result
@@ -865,6 +897,7 @@ def test_uncovered_descendants_and_root_loss_stay_sticky_after_popup_closes(gap)
     flow = Flow()
     flow.child()
     flow.nav("aborted")
+    flow.nav("replacement")
     flow.fail("aborted")
     flow.emit("Target.targetCreated", targetInfo=_ordinary_page_info(openerId="target", openerFrameId="child"))
     flow.emit("Target.targetDestroyed", targetId="popup")
@@ -877,6 +910,5 @@ def test_uncovered_descendants_and_root_loss_stay_sticky_after_popup_closes(gap)
         flow.emit("Target.targetDestroyed", targetId="target")
     else:
         flow.emit("Inspector.detached", reason="lost target")
-    flow.nav("replacement")
     flow.complete("replacement")
     assert flow.assert_failed().coverage_errors

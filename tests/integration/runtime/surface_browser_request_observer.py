@@ -301,7 +301,8 @@ class RequestLedger:
             next_navigation = self._next_navigation(source.frame, source)
             if next_navigation is not None:
                 identifier, successor = next_navigation
-                if successor.loader != source.loader and self._ready(successor, origin):
+                if (successor.loader != source.loader and self._ready(successor, origin)
+                        and successor.start < failure.index < successor.commit):
                     transitions = self._frames[source.frame].transitions
                     if not any(source.start < event < successor.commit for event in transitions):
                         candidates.append((identifier, successor, None))
