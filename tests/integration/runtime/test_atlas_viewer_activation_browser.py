@@ -51,97 +51,97 @@ def test_explicit_selection_reveals_viewer_without_load_or_filter_focus_theft(
     browser_context, width: int, height: int, state: str,
 ) -> None:  # noqa: ANN001
     base_url, context = browser_context
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    page.set_viewport_size({"width": width, "height": height})
-    asset_requests = []
-    asset_state = state
-    svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100"><text x="10" y="50">Record validated</text></svg>'
-    png = base64.b64decode(
-        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII="
-    )
+    with _new_page(context) as (page, observation):
+        page.set_viewport_size({"width": width, "height": height})
+        asset_requests = []
+        asset_state = state
+        svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100"><text x="10" y="50">Record validated</text></svg>'
+        png = base64.b64decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII="
+        )
 
-    def asset(route):  # noqa: ANN001
-        asset_requests.append(route.request.url)
-        is_png = route.request.url.endswith(".png")
-        body = png if is_png else svg
-        if asset_state == "error" or (asset_state == "fallback" and not is_png):
-            body = b"invalid image"
-        route.fulfill(status=200, content_type="image/png" if is_png else "image/svg+xml", body=body)
+        def asset(route):  # noqa: ANN001
+            asset_requests.append(route.request.url)
+            is_png = route.request.url.endswith(".png")
+            body = png if is_png else svg
+            if asset_state == "error" or (asset_state == "fallback" and not is_png):
+                body = b"invalid image"
+            route.fulfill(status=200, content_type="image/png" if is_png else "image/svg+xml", body=body)
 
-    page.route("**/selection-*.svg", asset)
-    page.route("**/selection-*.png", asset)
-    page.route("**/odylith/atlas/atlas.html*", lambda route: route.fulfill(
-        status=200, content_type="text/html", body=_viewer_html(),
-    ))
-    response = page.goto(base_url + "/odylith/index.html?tab=atlas", wait_until="networkidle")
-    assert response is not None and response.ok
-    atlas = page.frame_locator("#frame-atlas")
-    atlas.locator('button[data-diagram="D-002"]').wait_for()
-    assert atlas.locator("body").evaluate("() => window.scrollY") == 0
-    assert not atlas.locator(".viewer-shell").evaluate("node => document.activeElement === node")
-    header = page.locator("header.toolbar").bounding_box()
-    tabs = page.locator("nav.tabs").bounding_box()
-    outer_scroll = page.evaluate("window.scrollY")
+        page.route("**/selection-*.svg", asset)
+        page.route("**/selection-*.png", asset)
+        page.route("**/odylith/atlas/atlas.html*", lambda route: route.fulfill(
+            status=200, content_type="text/html", body=_viewer_html(),
+        ))
+        response = page.goto(base_url + "/odylith/index.html?tab=atlas", wait_until="networkidle")
+        assert response is not None and response.ok
+        atlas = page.frame_locator("#frame-atlas")
+        atlas.locator('button[data-diagram="D-002"]').wait_for()
+        assert atlas.locator("body").evaluate("() => window.scrollY") == 0
+        assert not atlas.locator(".viewer-shell").evaluate("node => document.activeElement === node")
+        header = page.locator("header.toolbar").bounding_box()
+        tabs = page.locator("nav.tabs").bounding_box()
+        outer_scroll = page.evaluate("window.scrollY")
 
-    for activation, diagram_id in [("click", "D-002"), ("keyboard", "D-001")]:
-        button = atlas.locator(f'button[data-diagram="{diagram_id}"]')
-        button.scroll_into_view_if_needed()
-        before_scroll = atlas.locator("body").evaluate("() => window.scrollY")
-        if activation == "click":
-            button.click()
-        else:
-            button.focus()
-            button.press("Enter")
-        atlas.locator("#diagramId", has_text=diagram_id).wait_for()
-        image = atlas.locator("#viewerImage")
-        error = atlas.locator("#viewerAssetError")
-        if state == "error":
-            error.wait_for(state="visible")
-        else:
-            page.wait_for_function("""() => {
+        for activation, diagram_id in [("click", "D-002"), ("keyboard", "D-001")]:
+            button = atlas.locator(f'button[data-diagram="{diagram_id}"]')
+            button.scroll_into_view_if_needed()
+            before_scroll = atlas.locator("body").evaluate("() => window.scrollY")
+            if activation == "click":
+                button.click()
+            else:
+                button.focus()
+                button.press("Enter")
+            atlas.locator("#diagramId", has_text=diagram_id).wait_for()
+            image = atlas.locator("#viewerImage")
+            error = atlas.locator("#viewerAssetError")
+            if state == "error":
+                error.wait_for(state="visible")
+            else:
+                page.wait_for_function("""() => {
                 const image = document.querySelector('#frame-atlas').contentDocument.querySelector('#viewerImage');
                 return image.complete && image.naturalWidth > 0;
             }""")
-            assert error.is_hidden()
-            assert image.get_attribute("src").endswith(".png" if state == "fallback" else ".svg")
+                assert error.is_hidden()
+                assert image.get_attribute("src").endswith(".png" if state == "fallback" else ".svg")
 
-        screenshot = _failure_screenshot_path(f"atlas-{width}-{state}-{activation}")
-        if screenshot:
-            screenshot.parent.mkdir(parents=True, exist_ok=True)
-            page.screenshot(path=str(screenshot))
-        _assert_in_frame(page, atlas.locator(".viewer-toolbar"))
-        assert page.locator("header.toolbar").bounding_box() == header
-        assert page.locator("nav.tabs").bounding_box() == tabs
-        assert page.evaluate("window.scrollY") == outer_scroll
+            screenshot = _failure_screenshot_path(f"atlas-{width}-{state}-{activation}")
+            if screenshot:
+                screenshot.parent.mkdir(parents=True, exist_ok=True)
+                page.screenshot(path=str(screenshot))
+            _assert_in_frame(page, atlas.locator(".viewer-toolbar"))
+            assert page.locator("header.toolbar").bounding_box() == header
+            assert page.locator("nav.tabs").bounding_box() == tabs
+            assert page.evaluate("window.scrollY") == outer_scroll
+            if state == "error":
+                _assert_in_frame(page, error)
+                assert "source links below" not in error.inner_text()
+            else:
+                _assert_in_frame(page, image)
+            if width == 430:
+                assert atlas.locator(".viewer-shell").evaluate("node => document.activeElement === node")
+                assert atlas.locator(".viewer-shell").get_attribute("aria-labelledby") == "diagramTitle"
+                page.keyboard.press("Tab")
+                assert atlas.locator("#prevDiagram").evaluate("node => document.activeElement === node")
+            else:
+                assert button.evaluate("node => document.activeElement === node")
+                assert atlas.locator("body").evaluate("() => window.scrollY") == before_scroll
+
+        assert any(url.endswith(".png") for url in asset_requests) == (state != "normal")
         if state == "error":
-            _assert_in_frame(page, error)
-            assert "source links below" not in error.inner_text()
-        else:
-            _assert_in_frame(page, image)
-        if width == 430:
-            assert atlas.locator(".viewer-shell").evaluate("node => document.activeElement === node")
-            assert atlas.locator(".viewer-shell").get_attribute("aria-labelledby") == "diagramTitle"
-            page.keyboard.press("Tab")
-            assert atlas.locator("#prevDiagram").evaluate("node => document.activeElement === node")
-        else:
-            assert button.evaluate("node => document.activeElement === node")
-            assert atlas.locator("body").evaluate("() => window.scrollY") == before_scroll
-
-    assert any(url.endswith(".png") for url in asset_requests) == (state != "normal")
-    if state == "error":
-        asset_state = "normal"
-        previous = atlas.locator("#prevDiagram")
-        previous.click()
-        scroll = atlas.locator("body").evaluate("() => window.scrollY")
-        page.wait_for_function("""() => {
+            asset_state = "normal"
+            previous = atlas.locator("#prevDiagram")
+            previous.click()
+            scroll = atlas.locator("body").evaluate("() => window.scrollY")
+            page.wait_for_function("""() => {
             const image = document.querySelector('#frame-atlas').contentDocument.querySelector('#viewerImage');
             return image.complete && image.naturalWidth > 0;
         }""")
-        assert atlas.locator("#viewerAssetError").is_hidden()
-        assert previous.evaluate("node => document.activeElement === node")
-        assert atlas.locator("body").evaluate("() => window.scrollY") == scroll
-    # The existing no-match contract preserves selection, but not viewer focus.
-    atlas.locator("#search").fill("no-match-selection-control")
-    assert atlas.locator("button[data-diagram]").count() == 1
-    assert atlas.locator("#search").evaluate("node => document.activeElement === node")
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            assert atlas.locator("#viewerAssetError").is_hidden()
+            assert previous.evaluate("node => document.activeElement === node")
+            assert atlas.locator("body").evaluate("() => window.scrollY") == scroll
+        # The existing no-match contract preserves selection, but not viewer focus.
+        atlas.locator("#search").fill("no-match-selection-control")
+        assert atlas.locator("button[data-diagram]").count() == 1
+        assert atlas.locator("#search").evaluate("node => document.activeElement === node")
+        _assert_clean_page(page, observation)

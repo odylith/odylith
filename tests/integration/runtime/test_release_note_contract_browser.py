@@ -41,49 +41,49 @@ def test_v0_1_15_spotlight_preserves_sealed_confirmation_highlight(
     with _static_server(root=tmp_path) as base_url:
         for _pw, browser in _browser():
             with browser.new_context(viewport={"width": width, "height": 932}) as context:
-                page, *errors = _new_page(context)
-                response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
-                assert response is not None and response.ok
-                spotlight = page.locator("#shellUpgradeSpotlight")
-                spotlight.wait_for(timeout=15000)
-                copy = spotlight.inner_text()
-                assert note.highlights[0] in copy
-                assert "Greenfield apply" not in copy
-                assert "CONFIRM publishes only the exact reviewed package" in copy
-                highlight = spotlight.get_by_text(note.highlights[0], exact=True)
-                assert highlight.count() == 1
-                highlight.scroll_into_view_if_needed()
-                assert highlight.is_visible()
-                assert highlight.evaluate("""element => {
+                with _new_page(context) as (page, observation):
+                    response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+                    assert response is not None and response.ok
+                    spotlight = page.locator("#shellUpgradeSpotlight")
+                    spotlight.wait_for(timeout=15000)
+                    copy = spotlight.inner_text()
+                    assert note.highlights[0] in copy
+                    assert "Greenfield apply" not in copy
+                    assert "CONFIRM publishes only the exact reviewed package" in copy
+                    highlight = spotlight.get_by_text(note.highlights[0], exact=True)
+                    assert highlight.count() == 1
+                    highlight.scroll_into_view_if_needed()
+                    assert highlight.is_visible()
+                    assert highlight.evaluate("""element => {
                     const box = element.getBoundingClientRect();
                     return element.scrollWidth <= element.clientWidth + 1
                         && box.left >= 0 && box.right <= window.innerWidth + 1;
                 }""")
-                capture = _failure_screenshot_path(f"release-note-current-{source}-{width}")
-                if capture is not None:
-                    capture.parent.mkdir(parents=True, exist_ok=True)
-                    page.screenshot(path=str(capture), full_page=True)
-                last_highlight = spotlight.get_by_text(note.highlights[-1], exact=True)
-                last_highlight.scroll_into_view_if_needed()
-                assert last_highlight.evaluate("""element => {
+                    capture = _failure_screenshot_path(f"release-note-current-{source}-{width}")
+                    if capture is not None:
+                        capture.parent.mkdir(parents=True, exist_ok=True)
+                        page.screenshot(path=str(capture), full_page=True)
+                    last_highlight = spotlight.get_by_text(note.highlights[-1], exact=True)
+                    last_highlight.scroll_into_view_if_needed()
+                    assert last_highlight.evaluate("""element => {
                     const box = element.getBoundingClientRect();
                     const viewport = element.closest('.upgrade-spotlight-main').getBoundingClientRect();
                     return box.top >= viewport.top - 1 && box.bottom <= viewport.bottom + 1
                         && box.left >= viewport.left - 1 && box.right <= viewport.right + 1;
                 }""")
-                notes_link = spotlight.get_by_role("link", name=note.note_link_label, exact=True)
-                notes_link.scroll_into_view_if_needed()
-                assert notes_link.is_visible()
-                if capture is not None:
-                    page.screenshot(path=str(capture.with_stem(capture.stem + "-end")), full_page=True)
-                page.locator("#upgradeSpotlightDismiss").click(timeout=5000)
-                page.locator("#upgradeReopen").click()
-                assert note.highlights[0] in spotlight.inner_text()
-                page.keyboard.press("Escape")
-                assert not spotlight.is_visible()
-                page.locator("#upgradeReopen").click()
-                assert note.highlights[-1] in spotlight.inner_text()
-                _assert_clean_page(page, *errors)
+                    notes_link = spotlight.get_by_role("link", name=note.note_link_label, exact=True)
+                    notes_link.scroll_into_view_if_needed()
+                    assert notes_link.is_visible()
+                    if capture is not None:
+                        page.screenshot(path=str(capture.with_stem(capture.stem + "-end")), full_page=True)
+                    page.locator("#upgradeSpotlightDismiss").click(timeout=5000)
+                    page.locator("#upgradeReopen").click()
+                    assert note.highlights[0] in spotlight.inner_text()
+                    page.keyboard.press("Escape")
+                    assert not spotlight.is_visible()
+                    page.locator("#upgradeReopen").click()
+                    assert note.highlights[-1] in spotlight.inner_text()
+                    _assert_clean_page(page, observation)
 
 
 @pytest.mark.parametrize("width", [1440, 430])
@@ -112,17 +112,17 @@ def test_installer_fallback_keeps_complete_copy_without_authored_note(
     with _static_server(root=tmp_path) as base_url:
         for _pw, browser in _browser():
             with browser.new_context(viewport={"width": width, "height": 932}) as context:
-                page, *errors = _new_page(context)
-                page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
-                spotlight = page.locator("#shellUpgradeSpotlight")
-                spotlight.wait_for(timeout=15000)
-                assert complete_copy in spotlight.inner_text()
-                point = spotlight.get_by_text(complete_copy, exact=True)
-                assert point.count() == 1
-                point.scroll_into_view_if_needed()
-                assert point.evaluate("element => element.scrollWidth <= element.clientWidth + 1")
-                page.locator("#upgradeSpotlightDismiss").click(timeout=5000)
-                assert not spotlight.is_visible()
-                page.locator("#upgradeReopen").click()
-                assert complete_copy in spotlight.inner_text()
-                _assert_clean_page(page, *errors)
+                with _new_page(context) as (page, observation):
+                    page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+                    spotlight = page.locator("#shellUpgradeSpotlight")
+                    spotlight.wait_for(timeout=15000)
+                    assert complete_copy in spotlight.inner_text()
+                    point = spotlight.get_by_text(complete_copy, exact=True)
+                    assert point.count() == 1
+                    point.scroll_into_view_if_needed()
+                    assert point.evaluate("element => element.scrollWidth <= element.clientWidth + 1")
+                    page.locator("#upgradeSpotlightDismiss").click(timeout=5000)
+                    assert not spotlight.is_visible()
+                    page.locator("#upgradeReopen").click()
+                    assert complete_copy in spotlight.inner_text()
+                    _assert_clean_page(page, observation)

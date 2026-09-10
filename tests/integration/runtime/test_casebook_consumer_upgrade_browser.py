@@ -170,33 +170,33 @@ def test_dirty_consumer_upgrade_normalizes_casebook_and_browser_stale_url_state(
     assert "TestHarnessInfraRegressi" not in payload_text
 
     with _static_server(root=sim.repo_root) as base_url:
-        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-        response = page.goto(
-            base_url
-            + "/odylith/index.html?tab=casebook&bug=CB-998&status=ForwardFixUpdatedLocallyPendingPlatformReleaseDeploy",
-            wait_until="domcontentloaded",
-        )
-        assert response is not None and response.ok
-        page.locator("#upgradeSpotlightDismiss").click()
-        page.locator("#shellUpgradeSpotlight").wait_for(state="hidden", timeout=15000)
-        casebook = page.frame_locator("#frame-casebook")
-        casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
-        casebook.locator('button.bug-row.active[data-bug="CB-998"]').wait_for(timeout=15000)
-        assert casebook.locator("#statusFilter").input_value() == ""
-        assert casebook.locator("#listMeta").inner_text().strip() != "0 visible"
-        facts = casebook.locator("#detailPane .summary-fact").evaluate_all(
-            """nodes => Object.fromEntries(nodes.map((node) => [
+        with _new_page(context) as (page, observation):
+            response = page.goto(
+                base_url
+                + "/odylith/index.html?tab=casebook&bug=CB-998&status=ForwardFixUpdatedLocallyPendingPlatformReleaseDeploy",
+                wait_until="domcontentloaded",
+            )
+            assert response is not None and response.ok
+            page.locator("#upgradeSpotlightDismiss").click()
+            page.locator("#shellUpgradeSpotlight").wait_for(state="hidden", timeout=15000)
+            casebook = page.frame_locator("#frame-casebook")
+            casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
+            casebook.locator('button.bug-row.active[data-bug="CB-998"]').wait_for(timeout=15000)
+            assert casebook.locator("#statusFilter").input_value() == ""
+            assert casebook.locator("#listMeta").inner_text().strip() != "0 visible"
+            facts = casebook.locator("#detailPane .summary-fact").evaluate_all(
+                """nodes => Object.fromEntries(nodes.map((node) => [
               (node.querySelector(".summary-fact-label")?.textContent || "").trim(),
               (node.querySelector(".summary-fact-value")?.textContent || "").trim(),
             ]))"""
-        )
-        assert facts["Status"] == "Fixed pending release"
-        assert facts["Type"] == "Deployment"
-        screenshot = _failure_screenshot_path("historical-dirty-upgrade-stale-status-recovery")
-        if screenshot is not None:
-            screenshot.parent.mkdir(parents=True, exist_ok=True)
-            page.screenshot(path=str(screenshot), full_page=True)
-        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            )
+            assert facts["Status"] == "Fixed pending release"
+            assert facts["Type"] == "Deployment"
+            screenshot = _failure_screenshot_path("historical-dirty-upgrade-stale-status-recovery")
+            if screenshot is not None:
+                screenshot.parent.mkdir(parents=True, exist_ok=True)
+                page.screenshot(path=str(screenshot), full_page=True)
+            _assert_clean_page(page, observation)
 
     report_payload = json.loads(_report_path.read_text(encoding="utf-8"))
     assert report_payload["change_review"]["manual_review_required"]["paths"] == ["consumer-notes.md"]

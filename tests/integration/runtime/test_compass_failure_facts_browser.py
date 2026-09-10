@@ -45,22 +45,22 @@ def test_batch_provider_failure_keeps_local_facts_visible_without_history(tmp_pa
             for _pw, browser in _browser():
                 context = browser.new_context(viewport={"width": width, "height": 1100})
                 try:
-                    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-                    response = page.goto(base_url + "/odylith/index.html?tab=compass&window=24h&date=live")
-                    assert response is not None and response.ok
-                    compass = page.frame_locator("#frame-compass")
-                    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
-                    _assert_compass_live_state(compass, window_token="24h")
-                    facts = compass.locator("#digest-list .brief-fallback-digest")
-                    facts.wait_for(state="visible", timeout=15000)
-                    assert facts.locator(".brief-fallback-title").text_content() == "Local runtime facts"
-                    assert facts.locator(".brief-fallback-title").inner_text() == "LOCAL RUNTIME FACTS"
-                    assert facts.locator("li").all_text_contents() == ["Current: " + fact]
-                    assert compass.locator("#digest-list .standup-brief-sections").count() == 0
-                    assert facts.evaluate("node => node.scrollWidth <= node.clientWidth + 1")
-                    facts.scroll_into_view_if_needed()
-                    page.screenshot(path=str(tmp_path / "fallback-visible.png"), full_page=True)
-                    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+                    with _new_page(context) as (page, observation):
+                        response = page.goto(base_url + "/odylith/index.html?tab=compass&window=24h&date=live")
+                        assert response is not None and response.ok
+                        compass = page.frame_locator("#frame-compass")
+                        compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                        _assert_compass_live_state(compass, window_token="24h")
+                        facts = compass.locator("#digest-list .brief-fallback-digest")
+                        facts.wait_for(state="visible", timeout=15000)
+                        assert facts.locator(".brief-fallback-title").text_content() == "Local runtime facts"
+                        assert facts.locator(".brief-fallback-title").inner_text() == "LOCAL RUNTIME FACTS"
+                        assert facts.locator("li").all_text_contents() == ["Current: " + fact]
+                        assert compass.locator("#digest-list .standup-brief-sections").count() == 0
+                        assert facts.evaluate("node => node.scrollWidth <= node.clientWidth + 1")
+                        facts.scroll_into_view_if_needed()
+                        page.screenshot(path=str(tmp_path / "fallback-visible.png"), full_page=True)
+                        _assert_clean_page(page, observation)
                 finally:
                     context.close()
 

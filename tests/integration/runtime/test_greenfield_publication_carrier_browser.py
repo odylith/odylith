@@ -86,31 +86,31 @@ def test_production_publication_carrier_preserves_generation_or_reports_corrupti
         for _pw, browser in _browser():
             context = browser.new_context(viewport={"width": width, "height": 1000})
             try:
-                page, *errors = _new_page(context)
-                requests = []
-                page.on("request", lambda request: requests.append(request.url))
-                page.goto(entry_url + "?tab=registry#retained-fragment", wait_until="domcontentloaded")
-                if state == "normal":
-                    page.get_by_role("heading", name="Carrier A", exact=True).wait_for()
-                    assert page.frame_locator("#child").locator("#child").inner_text() == "Child A"
-                    target_path = "/.odylith/runtime/greenfield/generations/" + generation.write_set_hash + "/repository/odylith/"
-                    assert target_path in urlparse(page.url).path
-                    assert urlparse(page.url).query == "tab=registry"
-                    assert urlparse(page.url).fragment == "retained-fragment"
-                    assert any(target_path + "registry/carrier.css" in url for url in requests)
-                    assert any(target_path + "registry/child.html" in url for url in requests)
-                    assert not any(entries["B"][1].write_set_hash in url for url in requests)
-                else:
-                    page.get_by_role("heading", name="Project unavailable", exact=True).wait_for()
-                    assert page.get_by_role("status").inner_text() == (
-                        "The published view could not be opened. No partial project is shown. Reload after recovery."
-                    )
-                    assert page.get_by_role("button", name="Reload", exact=True).is_visible()
-                    assert not any("/generations/" in url for url in requests)
-                    assert page.locator("iframe").count() == 0
-                assert not page.locator("body").evaluate("node => node.scrollWidth > innerWidth + 1")
-                _capture(page, f"publication-carrier-{protocol}-{width}-{state}")
-                _assert_clean_page(page, *errors)
+                with _new_page(context) as (page, observation):
+                    requests = []
+                    page.on("request", lambda request: requests.append(request.url))
+                    page.goto(entry_url + "?tab=registry#retained-fragment", wait_until="domcontentloaded")
+                    if state == "normal":
+                        page.get_by_role("heading", name="Carrier A", exact=True).wait_for()
+                        assert page.frame_locator("#child").locator("#child").inner_text() == "Child A"
+                        target_path = "/.odylith/runtime/greenfield/generations/" + generation.write_set_hash + "/repository/odylith/"
+                        assert target_path in urlparse(page.url).path
+                        assert urlparse(page.url).query == "tab=registry"
+                        assert urlparse(page.url).fragment == "retained-fragment"
+                        assert any(target_path + "registry/carrier.css" in url for url in requests)
+                        assert any(target_path + "registry/child.html" in url for url in requests)
+                        assert not any(entries["B"][1].write_set_hash in url for url in requests)
+                    else:
+                        page.get_by_role("heading", name="Project unavailable", exact=True).wait_for()
+                        assert page.get_by_role("status").inner_text() == (
+                            "The published view could not be opened. No partial project is shown. Reload after recovery."
+                        )
+                        assert page.get_by_role("button", name="Reload", exact=True).is_visible()
+                        assert not any("/generations/" in url for url in requests)
+                        assert page.locator("iframe").count() == 0
+                    assert not page.locator("body").evaluate("node => node.scrollWidth > innerWidth + 1")
+                    _capture(page, f"publication-carrier-{protocol}-{width}-{state}")
+                    _assert_clean_page(page, observation)
             finally:
                 context.close()
     assert _snapshot(repo) == before
@@ -124,23 +124,23 @@ def test_http_cached_entry_rechecks_current_publication_before_latching(tmp_path
         for _pw, browser in _browser():
             context = browser.new_context(viewport={"width": width, "height": 1000})
             try:
-                page, *errors = _new_page(context)
-                carrier_requests = []
+                with _new_page(context) as (page, observation):
+                    carrier_requests = []
 
-                def response(route):
-                    carrier_requests.append(route.request.resource_type)
-                    # Retained old navigation response, followed by the current production entry.
-                    name = "A" if route.request.is_navigation_request() else "B"
-                    route.fulfill(status=200, content_type="text/html", body=entries[name][0])
+                    def response(route):
+                        carrier_requests.append(route.request.resource_type)
+                        # Retained old navigation response, followed by the current production entry.
+                        name = "A" if route.request.is_navigation_request() else "B"
+                        route.fulfill(status=200, content_type="text/html", body=entries[name][0])
 
-                page.route(base_url + "/odylith/index.html?tab=project", response)
-                page.goto(base_url + "/odylith/index.html?tab=project", wait_until="domcontentloaded")
-                page.get_by_role("heading", name="Carrier B", exact=True).wait_for()
-                assert page.frame_locator("#child").locator("#child").inner_text() == "Child B"
-                assert entries["B"][1].write_set_hash in page.url
-                assert carrier_requests == ["document", "fetch"]
-                _capture(page, f"publication-carrier-http-{width}-fresh-read")
-                _assert_clean_page(page, *errors)
+                    page.route(base_url + "/odylith/index.html?tab=project", response)
+                    page.goto(base_url + "/odylith/index.html?tab=project", wait_until="domcontentloaded")
+                    page.get_by_role("heading", name="Carrier B", exact=True).wait_for()
+                    assert page.frame_locator("#child").locator("#child").inner_text() == "Child B"
+                    assert entries["B"][1].write_set_hash in page.url
+                    assert carrier_requests == ["document", "fetch"]
+                    _capture(page, f"publication-carrier-http-{width}-fresh-read")
+                    _assert_clean_page(page, observation)
             finally:
                 context.close()
     assert _snapshot(repo) == before

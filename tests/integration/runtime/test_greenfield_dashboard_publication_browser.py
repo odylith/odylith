@@ -96,56 +96,64 @@ def _observe_dashboard(root, evidence, phase, expected_hash, expected_marker, pr
                 for width in (1440, 430):
                     context = browser.new_context(viewport={"width": width, "height": 1000})
                     try:
-                        page, *errors = _new_page(context)
-                        requested = []
-                        page.on("request", lambda request: requested.append(request.url))
-                        row = {"width": width, "phase": phase, "surfaces": {}}
-                        observations.append(row)
-                        page.goto(entry_url + "?tab=project", wait_until="networkidle")
-                        assert set(page.locator('[role="tab"][data-tab]').evaluate_all(
-                            'nodes => nodes.map(node => node.dataset.tab)')) == set(SURFACES)
-                        expected_prefix = "/.odylith/runtime/greenfield/generations/" + expected_hash + "/repository/"
-                        for surface, relative in SURFACES.items():
-                            page.locator("#tab-" + surface).click()
-                            page.locator(f'#tab-{surface}[aria-selected="true"]').wait_for()
-                            frame = page if surface == "project" else page.frame_locator("#frame-" + surface)
-                            marker = frame.locator("#publication-proof")
-                            marker.wait_for(state="visible", timeout=15000)
-                            if surface == "atlas":
-                                frame.locator("#diagramId").wait_for()
-                                viewer = frame.locator("#viewerImage")
-                                playwright_sync.expect(viewer).to_have_js_property("complete", True, timeout=15000)
-                                playwright_sync.expect(viewer).not_to_have_js_property("naturalWidth", 0, timeout=15000)
-                            elif surface == "radar":
-                                frame.locator("#list button[data-idea-id]").first.wait_for(timeout=15000)
-                            elif surface == "registry":
-                                frame.locator("button[data-component]").first.wait_for(timeout=15000)
-                                frame.locator("#detail > *").first.wait_for(timeout=15000)
-                            elif surface == "casebook":
-                                frame.locator(".bug-row").first.wait_for(timeout=15000)
-                                frame.locator("#detailPane .detail-title").wait_for(timeout=15000)
-                            elif surface == "compass":
-                                frame.locator('body[data-surface-ready="ready"]').wait_for(timeout=15000)
-                                frame.locator("#risk-list .risk, #risk-list .empty").first.wait_for(timeout=15000)
-                                frame.locator("#digest-list > *").first.wait_for(timeout=15000)
-                                assert "Runtime data unavailable." not in frame.locator("#digest-list").inner_text()
-                                assert "Runtime Unavailable" not in frame.locator("#kpi-grid").inner_text()
-                            row["surfaces"][surface] = {"marker": marker.inner_text(), "shell_url": page.url,
-                                "child_url": page.url if surface == "project" else page.locator("#frame-" + surface).element_handle().content_frame().url}
-                            page.screenshot(path=str(evidence / f"{phase}-{width}-{surface}.png"))
-                            assert expected_prefix + "odylith/index.html" in page.url
-                            assert expected_prefix + relative in row["surfaces"][surface]["child_url"]
-                            assert row["surfaces"][surface]["marker"] == expected_marker
-                        row["requests"] = requested
-                        row["errors"] = errors
-                        assert not any(
-                            "/generations/" in url and expected_hash not in url for url in requested
-                        ), requested
-                        local = [url for url in requested if urlparse(url).scheme == "file" or
-                                 (base_url and url.startswith(base_url + "/"))]
-                        assert all(urlparse(url).path == urlparse(entry_url).path or expected_prefix in urlparse(url).path
-                                   for url in local), local
-                        _assert_clean_page(page, *errors)
+                        with _new_page(context) as (page, observation):
+                            requested = []
+                            page.on("request", lambda request: requested.append(request.url))
+                            row = {"width": width, "phase": phase, "surfaces": {}}
+                            observations.append(row)
+                            page.goto(entry_url + "?tab=project", wait_until="networkidle")
+                            assert set(page.locator('[role="tab"][data-tab]').evaluate_all(
+                                'nodes => nodes.map(node => node.dataset.tab)')) == set(SURFACES)
+                            expected_prefix = "/.odylith/runtime/greenfield/generations/" + expected_hash + "/repository/"
+                            for surface, relative in SURFACES.items():
+                                page.locator("#tab-" + surface).click()
+                                page.locator(f'#tab-{surface}[aria-selected="true"]').wait_for()
+                                frame = page if surface == "project" else page.frame_locator("#frame-" + surface)
+                                marker = frame.locator("#publication-proof")
+                                marker.wait_for(state="visible", timeout=15000)
+                                if surface == "atlas":
+                                    frame.locator("#diagramId").wait_for()
+                                    viewer = frame.locator("#viewerImage")
+                                    playwright_sync.expect(viewer).to_have_js_property("complete", True, timeout=15000)
+                                    playwright_sync.expect(viewer).not_to_have_js_property("naturalWidth", 0, timeout=15000)
+                                elif surface == "radar":
+                                    frame.locator("#list button[data-idea-id]").first.wait_for(timeout=15000)
+                                elif surface == "registry":
+                                    frame.locator("button[data-component]").first.wait_for(timeout=15000)
+                                    frame.locator("#detail > *").first.wait_for(timeout=15000)
+                                elif surface == "casebook":
+                                    frame.locator(".bug-row").first.wait_for(timeout=15000)
+                                    frame.locator("#detailPane .detail-title").wait_for(timeout=15000)
+                                elif surface == "compass":
+                                    frame.locator('body[data-surface-ready="ready"]').wait_for(timeout=15000)
+                                    frame.locator("#risk-list .risk, #risk-list .empty").first.wait_for(timeout=15000)
+                                    frame.locator("#digest-list > *").first.wait_for(timeout=15000)
+                                    assert "Runtime data unavailable." not in frame.locator("#digest-list").inner_text()
+                                    assert "Runtime Unavailable" not in frame.locator("#kpi-grid").inner_text()
+                                row["surfaces"][surface] = {"marker": marker.inner_text(), "shell_url": page.url,
+                                    "child_url": page.url if surface == "project" else page.locator("#frame-" + surface).element_handle().content_frame().url}
+                                page.screenshot(path=str(evidence / f"{phase}-{width}-{surface}.png"))
+                                assert expected_prefix + "odylith/index.html" in page.url
+                                assert expected_prefix + relative in row["surfaces"][surface]["child_url"]
+                                assert row["surfaces"][surface]["marker"] == expected_marker
+                            row["requests"] = requested
+                            assert not any(
+                                "/generations/" in url and expected_hash not in url for url in requested
+                            ), requested
+                            local = [url for url in requested if urlparse(url).scheme == "file" or
+                                     (base_url and url.startswith(base_url + "/"))]
+                            assert all(urlparse(url).path == urlparse(entry_url).path or expected_prefix in urlparse(url).path
+                                       for url in local), local
+                            snapshot = observation.finish()
+                            row["errors"] = {
+                                "console": snapshot.console_errors,
+                                "page": snapshot.page_errors,
+                                "http": [{"status": error.status, "url": error.url} for error in snapshot.http_errors],
+                                "native": snapshot.native_result.errors if snapshot.native_result else None,
+                                "complete": snapshot.complete,
+                                "lifecycle": snapshot.lifecycle_errors,
+                            }
+                            _assert_clean_page(page, observation)
                     finally:
                         context.close()
     finally:

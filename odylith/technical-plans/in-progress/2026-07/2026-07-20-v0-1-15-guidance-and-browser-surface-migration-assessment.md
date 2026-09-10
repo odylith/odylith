@@ -58,13 +58,32 @@ failures can be attributed to the two explicit missing-Mermaid cases.
 
 Native lifecycle ownership and 31 caller migrations are independently accepted
 with 166 synthetic passes and unchanged 35-file hashes. Mutable-list and URL
-discard paths are removed. One integrated live pass records 26 passes and six
-failures in 102.10 seconds. The prior nine and eight maintained live controls
-pass. Two real popup interactions expose the whole-context coverage assumption;
-four intended Compass 404 checks reject legitimate cache-buster queries. Make
-only the typed page-scope and expected-resource assertion corrections, preserving
-unknown-target gaps and unrelated errors, then rerun the frozen bounded gate
-before the full matrix. All 32 teardowns pass with no observed resource residue.
+discard paths are removed. The initial integrated pass retains 26 passes and six
+failures in 102.10 seconds. Two bounded corrections now pass independent review
+with 342 synthetic checks in 1.46 seconds and the exact ordered 32 live cases in
+101.63 seconds. All 35 frozen hashes/modes remain unchanged; every teardown passes
+with no sampled resource residue. Ordinary separate pages are outside the
+observed-Page-plus-descendant-frame transport scope, not cancellation evidence.
+Unknown/contained/prerender targets remain gaps. Four deliberate Compass 404
+assertions tolerate query cache busters only, retaining raw evidence and exact
+origin/path/status/fragment plus unrelated-error rejection. UI assertions and
+interactions are unchanged. The full browser matrix and separate popup transport
+remain unproved. Exact receipts and retained reds are linked in CB-305.
+
+Full-matrix preparation then catches two omitted transitive Atlas callers; the
+initial 31-caller inventory was incomplete. Their eight desktop/mobile cases
+pass in 13.26 seconds after migration to the same owner, with UI bodies and all
+six frozen input hashes/modes preserved. Recursive helper-consumer inventory
+finds no remaining legacy caller in the inspected src/tests cone. Current
+collection is 439 cases across 35 modules, including every prior case: 438 main
+surface cases and one separate install-coupled Casebook upgrade. Execution remains
+pending; do not promote the targeted gates to comprehensive UX proof.
+
+One CI preparation step now installs pinned Mermaid 11.12.0 and its package's
+pinned default Puppeteer browsers into runner-owned paths before unchanged tests.
+Runtime on-demand installation remains disabled. Two actual local SVG/PNG render
+tests pass against the existing explicit-root package; fresh Linux provisioning
+and the remaining CI failures are not yet qualified.
 
 The corrected prospective Compass completion candidate is independently accepted:
 168 focused compatibility passes plus six fresh actual-owner controls. Structured
@@ -74,6 +93,9 @@ late cleanup error without cache/render re-entry on explicit completion. Prior
 counterexamples remain. This is not historical or installed recovery. Existing
 publication and archived log bytes remain unchanged; Registry forensic
 regeneration still refuses. CB-305 records exact receipts and limits.
+
+The following entries retain historical checkpoints and their then-current
+limitations; the current qualification state is stated above.
 
 CI at `6beb35a4` also reports missing Playwright browser executables during
 fixture setup. The bounded prerequisite correction installs matching Chromium

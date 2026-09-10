@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import json
+from contextlib import contextmanager
 
 import pytest
 
@@ -49,42 +50,43 @@ def _metadata_html(*, empty: bool) -> str:
     )
 
 
+@contextmanager
 def _open_metadata(browser_context, width: int, state: str):  # noqa: ANN001
     base_url, context = browser_context
-    page, *errors = _new_page(context)
-    page.set_viewport_size({"width": width, "height": 1100 if width == 1440 else 932})
-    png = base64.b64decode(
-        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII="
-    )
+    with _new_page(context) as (page, observation):
+        page.set_viewport_size({"width": width, "height": 1100 if width == 1440 else 932})
+        png = base64.b64decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII="
+        )
 
-    def asset(route):  # noqa: ANN001
-        is_png = route.request.url.endswith(".png")
-        body = png if is_png else _SVG
-        if state == "error" or (state == "fallback" and not is_png):
-            body = b"invalid image"
-        route.fulfill(status=200, content_type="image/png" if is_png else "image/svg+xml", body=body)
+        def asset(route):  # noqa: ANN001
+            is_png = route.request.url.endswith(".png")
+            body = png if is_png else _SVG
+            if state == "error" or (state == "fallback" and not is_png):
+                body = b"invalid image"
+            route.fulfill(status=200, content_type="image/png" if is_png else "image/svg+xml", body=body)
 
-    page.route("**/metadata-preview.svg", asset)
-    page.route("**/metadata-preview.png", asset)
-    page.route("**/odylith/atlas/atlas.html*", lambda route: route.fulfill(
-        status=200, content_type="text/html", body=_metadata_html(empty=state == "empty"),
-    ))
-    response = page.goto(base_url + "/odylith/index.html?tab=atlas", wait_until="networkidle")
-    assert response is not None and response.ok
-    assert page.locator("#tab-atlas").get_attribute("aria-selected") == "true"
-    atlas = page.frame_locator("#frame-atlas")
-    if state == "error":
-        atlas.locator("#viewerAssetError").wait_for(state="visible")
-        assert atlas.locator("#viewerImage").is_hidden()
-        assert atlas.locator("#reset").is_disabled()
-    elif state != "empty":
-        page.wait_for_function("""() => {
+        page.route("**/metadata-preview.svg", asset)
+        page.route("**/metadata-preview.png", asset)
+        page.route("**/odylith/atlas/atlas.html*", lambda route: route.fulfill(
+            status=200, content_type="text/html", body=_metadata_html(empty=state == "empty"),
+        ))
+        response = page.goto(base_url + "/odylith/index.html?tab=atlas", wait_until="networkidle")
+        assert response is not None and response.ok
+        assert page.locator("#tab-atlas").get_attribute("aria-selected") == "true"
+        atlas = page.frame_locator("#frame-atlas")
+        if state == "error":
+            atlas.locator("#viewerAssetError").wait_for(state="visible")
+            assert atlas.locator("#viewerImage").is_hidden()
+            assert atlas.locator("#reset").is_disabled()
+        elif state != "empty":
+            page.wait_for_function("""() => {
             const image=document.querySelector('#frame-atlas').contentDocument.querySelector('#viewerImage');
             return image && image.complete && image.naturalWidth > 0;
         }""")
-        assert atlas.locator("#viewerImage").get_attribute("src").endswith(".png" if state == "fallback" else ".svg")
-        assert atlas.locator("#viewerAssetError").is_hidden()
-    return page, atlas, errors
+            assert atlas.locator("#viewerImage").get_attribute("src").endswith(".png" if state == "fallback" else ".svg")
+            assert atlas.locator("#viewerAssetError").is_hidden()
+        yield page, atlas, observation
 
 
 def _capture(page, name: str, measurement: dict) -> None:  # noqa: ANN001
@@ -120,8 +122,7 @@ def _text_bounds(target):  # noqa: ANN001
 @pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
 @pytest.mark.parametrize("state", ["normal", "fallback", "error"])
 def test_box_metadata_keeps_exact_supplied_text_inert(browser_context, width: int, state: str) -> None:  # noqa: ANN001
-    page, atlas, errors = _open_metadata(browser_context, width, state)
-    try:
+    with _open_metadata(browser_context, width, state) as (page, atlas, observation):
         rows = atlas.locator(".diagram-box-row")
         assert rows.count() == 2
         row = rows.first
@@ -140,16 +141,13 @@ def test_box_metadata_keeps_exact_supplied_text_inert(browser_context, width: in
         assert not atlas.locator("body").evaluate("() => Boolean(window.__atlas_box_injected__)")
         assert all(not row["clipped"] and not row["hidden"] for row in geometry.values()), geometry
         assert not atlas.locator("body").evaluate("body => body.scrollWidth > innerWidth+1")
-        _assert_clean_page(page, *errors)
-    finally:
-        page.close()
+        _assert_clean_page(page, observation)
 
 
 @pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
 @pytest.mark.parametrize("state", ["normal", "fallback", "error"])
 def test_source_action_lines_are_visually_separate_in_order(browser_context, width: int, state: str) -> None:  # noqa: ANN001
-    page, atlas, errors = _open_metadata(browser_context, width, state)
-    try:
+    with _open_metadata(browser_context, width, state) as (page, atlas, observation):
         heading = atlas.locator(".diagram-box-row").nth(1).locator(".diagram-box-name strong")
         heading.scroll_into_view_if_needed()
         measurement = heading.evaluate("""(target,lines) => {
@@ -174,15 +172,12 @@ def test_source_action_lines_are_visually_separate_in_order(browser_context, wid
             assert min(rect["top"] for rect in current["rects"]) >= max(rect["bottom"] for rect in previous["rects"]) - 1, measurement
         assert measurement["text"] == _ACTIONS["label"]
         assert not measurement["bounds"]["clipped"] and not measurement["bounds"]["hidden"], measurement
-        _assert_clean_page(page, *errors)
-    finally:
-        page.close()
+        _assert_clean_page(page, observation)
 
 
 @pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
 def test_empty_atlas_has_no_box_metadata_or_injected_action_rows(browser_context, width: int) -> None:  # noqa: ANN001
-    page, atlas, errors = _open_metadata(browser_context, width, "empty")
-    try:
+    with _open_metadata(browser_context, width, "empty") as (page, atlas, observation):
         empty = atlas.locator("#atlasEmptyState")
         assert empty.is_visible() and "No diagrams yet" in empty.inner_text()
         assert atlas.locator(".diagram-box-row").count() == 0
@@ -192,6 +187,4 @@ def test_empty_atlas_has_no_box_metadata_or_injected_action_rows(browser_context
         assert atlas.locator("#reset").is_disabled()
         assert not atlas.locator("body").evaluate("body => body.scrollWidth > innerWidth+1")
         _capture(page, f"atlas-box-empty-{width}", {"text": empty.inner_text(), "rows": 0})
-        _assert_clean_page(page, *errors)
-    finally:
-        page.close()
+        _assert_clean_page(page, observation)

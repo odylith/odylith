@@ -94,26 +94,26 @@ def test_intervention_status_text_is_browser_visible_for_unproven_and_chat_confi
         )
     )
 
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    page.set_content(
-        "<!doctype html><html><body>"
-        f"<section id='unproven'><pre>{escape(unproven)}</pre></section>"
-        f"<section id='proven'><pre>{escape(proven)}</pre></section>"
-        "</body></html>",
-        wait_until="domcontentloaded",
-    )
+    with _new_page(context) as (page, observation):
+        page.set_content(
+            "<!doctype html><html><body>"
+            f"<section id='unproven'><pre>{escape(unproven)}</pre></section>"
+            f"<section id='proven'><pre>{escape(proven)}</pre></section>"
+            "</body></html>",
+            wait_until="domcontentloaded",
+        )
 
-    page.locator("#unproven", has_text="Chat visibility: waiting for chat confirmation").wait_for(timeout=15000)
-    page.locator("#unproven", has_text="still need to appear in assistant text").wait_for(timeout=15000)
-    page.locator("#proven", has_text="Chat visibility: confirmed in this session").wait_for(timeout=15000)
-    page.locator("#proven", has_text="assistant_chat_transcript").wait_for(timeout=15000)
-    for section in ("#unproven", "#proven"):
-        page.locator(section, has_text="Activation: unverified").wait_for(timeout=15000)
-        page.locator(section, has_text="exact hook definition in /hooks").wait_for(timeout=15000)
-    page.locator("#proven", has_text="Chat confirmations recorded on this probe: 1").wait_for(
-        timeout=15000
-    )
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        page.locator("#unproven", has_text="Chat visibility: waiting for chat confirmation").wait_for(timeout=15000)
+        page.locator("#unproven", has_text="still need to appear in assistant text").wait_for(timeout=15000)
+        page.locator("#proven", has_text="Chat visibility: confirmed in this session").wait_for(timeout=15000)
+        page.locator("#proven", has_text="assistant_chat_transcript").wait_for(timeout=15000)
+        for section in ("#unproven", "#proven"):
+            page.locator(section, has_text="Activation: unverified").wait_for(timeout=15000)
+            page.locator(section, has_text="exact hook definition in /hooks").wait_for(timeout=15000)
+        page.locator("#proven", has_text="Chat confirmations recorded on this probe: 1").wait_for(
+            timeout=15000
+        )
+        _assert_clean_page(page, observation)
 
 
 def test_intervention_status_browser_distinguishes_ledger_visible_session_with_pending_hidden_beat(
@@ -156,26 +156,26 @@ def test_intervention_status_browser_distinguishes_ledger_visible_session_with_p
         )
     )
 
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    page.set_content(
-        "<!doctype html><html><body>"
-        f"<section id='pending'><pre>{escape(rendered)}</pre></section>"
-        "</body></html>",
-        wait_until="domcontentloaded",
-    )
+    with _new_page(context) as (page, observation):
+        page.set_content(
+            "<!doctype html><html><body>"
+            f"<section id='pending'><pre>{escape(rendered)}</pre></section>"
+            "</body></html>",
+            wait_until="domcontentloaded",
+        )
 
-    page.locator("#pending", has_text="Chat visibility: recorded with pending chat confirmation").wait_for(
-        timeout=15000
-    )
-    page.locator("#pending", has_text="waiting-for-chat event(s)").wait_for(timeout=15000)
-    page.locator("#pending", has_text="assistant_fallback_ready").wait_for(timeout=15000)
-    page.locator("#pending", has_text="Visibility ledger: 2 recent event(s), 1 recorded-visible event(s), 0 confirmed-in-chat event(s), 1 waiting").wait_for(
-        timeout=15000
-    )
-    page.locator("#pending", has_text="Next assistant-visible replay:").wait_for(timeout=15000)
-    page.locator("#pending", has_text="Later hidden proof still needs chat.").wait_for(timeout=15000)
-    assert "Additional pending replay blocks:" not in page.locator("#pending").inner_text()
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        page.locator("#pending", has_text="Chat visibility: recorded with pending chat confirmation").wait_for(
+            timeout=15000
+        )
+        page.locator("#pending", has_text="waiting-for-chat event(s)").wait_for(timeout=15000)
+        page.locator("#pending", has_text="assistant_fallback_ready").wait_for(timeout=15000)
+        page.locator("#pending", has_text="Visibility ledger: 2 recent event(s), 1 recorded-visible event(s), 0 confirmed-in-chat event(s), 1 waiting").wait_for(
+            timeout=15000
+        )
+        page.locator("#pending", has_text="Next assistant-visible replay:").wait_for(timeout=15000)
+        page.locator("#pending", has_text="Later hidden proof still needs chat.").wait_for(timeout=15000)
+        assert "Additional pending replay blocks:" not in page.locator("#pending").inner_text()
+        _assert_clean_page(page, observation)
 
 
 def test_intervention_status_browser_prefers_ambient_replay_block(
@@ -219,19 +219,19 @@ def test_intervention_status_browser_prefers_ambient_replay_block(
         )
     )
 
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    page.set_content(
-        "<!doctype html><html><body>"
-        f"<section id='pending'><pre>{escape(rendered)}</pre></section>"
-        "</body></html>",
-        wait_until="domcontentloaded",
-    )
+    with _new_page(context) as (page, observation):
+        page.set_content(
+            "<!doctype html><html><body>"
+            f"<section id='pending'><pre>{escape(rendered)}</pre></section>"
+            "</body></html>",
+            wait_until="domcontentloaded",
+        )
 
-    page.locator("#pending", has_text="Next assistant-visible replay:").wait_for(timeout=15000)
-    page.locator("#pending", has_text="Odylith History:").wait_for(timeout=15000)
-    page.locator("#pending", has_text="Browser status should not lead with this generic intervention.").wait_for(timeout=15000)
-    assert "Additional pending replay blocks:" not in page.locator("#pending").inner_text()
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        page.locator("#pending", has_text="Next assistant-visible replay:").wait_for(timeout=15000)
+        page.locator("#pending", has_text="Odylith History:").wait_for(timeout=15000)
+        page.locator("#pending", has_text="Browser status should not lead with this generic intervention.").wait_for(timeout=15000)
+        assert "Additional pending replay blocks:" not in page.locator("#pending").inner_text()
+        _assert_clean_page(page, observation)
 
 
 def test_visible_intervention_fallback_markdown_is_transcript_visible_in_compact_browser(
@@ -247,69 +247,69 @@ def test_visible_intervention_fallback_markdown_is_transcript_visible_in_compact
         prompt="ZERO ambient highlights, ZERO intervention blocks, and ZERO Assist visible in my chat.",
     )
 
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    page.set_content(
-        "<!doctype html><html><head><style>"
-        "body{margin:0;font-family:Arial,sans-serif;background:#fff;color:#111827;}"
-        ".chat{width:min(100vw,430px);padding:12px;}"
-        ".message{border:1px solid #d1d5db;border-radius:8px;padding:10px;white-space:pre-wrap;overflow-wrap:anywhere;}"
-        "</style></head><body>"
-        f"<main class='chat'><article id='assistant-message' class='message'>{escape(rendered)}</article></main>"
-        "</body></html>",
-        wait_until="domcontentloaded",
-    )
+    with _new_page(context) as (page, observation):
+        page.set_content(
+            "<!doctype html><html><head><style>"
+            "body{margin:0;font-family:Arial,sans-serif;background:#fff;color:#111827;}"
+            ".chat{width:min(100vw,430px);padding:12px;}"
+            ".message{border:1px solid #d1d5db;border-radius:8px;padding:10px;white-space:pre-wrap;overflow-wrap:anywhere;}"
+            "</style></head><body>"
+            f"<main class='chat'><article id='assistant-message' class='message'>{escape(rendered)}</article></main>"
+            "</body></html>",
+            wait_until="domcontentloaded",
+        )
 
-    message = page.locator("#assistant-message")
-    message.wait_for(timeout=15000)
-    message.locator("text=Odylith Observation").wait_for(timeout=15000)
-    message.locator("text=You should see guidance when it matters").wait_for(timeout=15000)
-    rendered_text = message.inner_text().strip()
-    assert rendered_text.startswith("---\n\n**Odylith Observation:**")
-    assert not rendered_text.lstrip().startswith("{")
-    assert "You should see guidance when it matters" in rendered_text
-    assert "Codex" not in rendered_text
-    assert "Claude" not in rendered_text
-    assert "Show the next Odylith" not in rendered_text
-    assert "chat-proved" not in rendered_text
-    assert "hook" not in rendered_text
-    assert "payload" not in rendered_text
-    assert "ledger" not in rendered_text
-    assert "broker" not in rendered_text
-    assert "Odylith is tracking this signal" not in rendered_text
-    assert rendered_text.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
-    _assert_node_has_no_horizontal_overflow(message)
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        message = page.locator("#assistant-message")
+        message.wait_for(timeout=15000)
+        message.locator("text=Odylith Observation").wait_for(timeout=15000)
+        message.locator("text=You should see guidance when it matters").wait_for(timeout=15000)
+        rendered_text = message.inner_text().strip()
+        assert rendered_text.startswith("---\n\n**Odylith Observation:**")
+        assert not rendered_text.lstrip().startswith("{")
+        assert "You should see guidance when it matters" in rendered_text
+        assert "Codex" not in rendered_text
+        assert "Claude" not in rendered_text
+        assert "Show the next Odylith" not in rendered_text
+        assert "chat-proved" not in rendered_text
+        assert "hook" not in rendered_text
+        assert "payload" not in rendered_text
+        assert "ledger" not in rendered_text
+        assert "broker" not in rendered_text
+        assert "Odylith is tracking this signal" not in rendered_text
+        assert rendered_text.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
+        _assert_node_has_no_horizontal_overflow(message)
+        _assert_clean_page(page, observation)
 
 
 def test_d038_atlas_visibility_broker_flow_renders_in_shell(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(
-        base_url + "/odylith/index.html?tab=atlas&diagram=D-038",
-        wait_until="domcontentloaded",
-    )
-    assert response is not None and response.ok
+    with _new_page(context) as (page, observation):
+        response = page.goto(
+            base_url + "/odylith/index.html?tab=atlas&diagram=D-038",
+            wait_until="domcontentloaded",
+        )
+        assert response is not None and response.ok
 
-    atlas = page.frame_locator("#frame-atlas")
-    atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
-    atlas.locator("#diagramId", has_text="D-038").wait_for(timeout=15000)
-    atlas.locator("#diagramTitle", has_text="Conversation Observation And Governed Proposal Flow").wait_for(
-        timeout=15000
-    )
-    _wait_for_shell_query_param(page, tab="atlas", key="diagram", value="D-038")
-    _assert_atlas_viewer_image_loaded(page)
+        atlas = page.frame_locator("#frame-atlas")
+        atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
+        atlas.locator("#diagramId", has_text="D-038").wait_for(timeout=15000)
+        atlas.locator("#diagramTitle", has_text="Conversation Observation And Governed Proposal Flow").wait_for(
+            timeout=15000
+        )
+        _wait_for_shell_query_param(page, tab="atlas", key="diagram", value="D-038")
+        _assert_atlas_viewer_image_loaded(page)
 
-    visible_summary = atlas.locator("#diagramSummary").inner_text()
-    visible_components = atlas.locator("#componentList").inner_text().lower()
-    registry_links = atlas.locator("#registryLinks").inner_text().lower()
+        visible_summary = atlas.locator("#diagramSummary").inner_text()
+        visible_components = atlas.locator("#componentList").inner_text().lower()
+        registry_links = atlas.locator("#registryLinks").inner_text().lower()
 
-    assert "proposition ledger" in visible_summary.lower()
-    assert "conflict graph" in visible_summary.lower()
-    assert "subset optimizer" in visible_summary.lower()
-    assert "bootstrap adjudication report" in visible_summary.lower()
-    assert "odylith risks, history, insight, observation, proposal, or assist" in visible_summary.lower()
-    assert "governance-intervention-engine" in visible_components
-    assert "execution-engine" in visible_components
-    assert "governance-intervention-engine" in registry_links
-    assert "execution-engine" in registry_links
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        assert "proposition ledger" in visible_summary.lower()
+        assert "conflict graph" in visible_summary.lower()
+        assert "subset optimizer" in visible_summary.lower()
+        assert "bootstrap adjudication report" in visible_summary.lower()
+        assert "odylith risks, history, insight, observation, proposal, or assist" in visible_summary.lower()
+        assert "governance-intervention-engine" in visible_components
+        assert "execution-engine" in visible_components
+        assert "governance-intervention-engine" in registry_links
+        assert "execution-engine" in registry_links
+        _assert_clean_page(page, observation)

@@ -65,108 +65,108 @@ def _assert_atlas_viewer_image_loaded(page) -> None:  # noqa: ANN001
 
 def test_registry_execution_engine_hard_cut_is_visible_and_alias_free(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(
-        base_url + "/odylith/index.html?tab=registry&component=execution-engine",
-        wait_until="domcontentloaded",
-    )
-    assert response is not None and response.ok
+    with _new_page(context) as (page, observation):
+        response = page.goto(
+            base_url + "/odylith/index.html?tab=registry&component=execution-engine",
+            wait_until="domcontentloaded",
+        )
+        assert response is not None and response.ok
 
-    registry = page.frame_locator("#frame-registry")
-    registry.locator("h1", has_text="Component Registry").wait_for(timeout=15000)
-    _wait_for_shell_query_param(page, tab="registry", key="component", value="execution-engine")
-    registry.locator('button[data-component="execution-engine"].active').wait_for(timeout=15000)
-    registry.locator("#detail .component-name", has_text="Execution Engine").wait_for(timeout=15000)
+        registry = page.frame_locator("#frame-registry")
+        registry.locator("h1", has_text="Component Registry").wait_for(timeout=15000)
+        _wait_for_shell_query_param(page, tab="registry", key="component", value="execution-engine")
+        registry.locator('button[data-component="execution-engine"].active').wait_for(timeout=15000)
+        registry.locator("#detail .component-name", has_text="Execution Engine").wait_for(timeout=15000)
 
-    detail_text = registry.locator("#detail").inner_text().strip()
-    assert "Constraint-aware execution runtime" in detail_text
-    active_button_text = registry.locator('button[data-component="execution-engine"].active').inner_text().lower()
-    assert "execution-engine" in active_button_text
-    assert "execution-governance" not in detail_text.lower()
+        detail_text = registry.locator("#detail").inner_text().strip()
+        assert "Constraint-aware execution runtime" in detail_text
+        active_button_text = registry.locator('button[data-component="execution-engine"].active').inner_text().lower()
+        assert "execution-engine" in active_button_text
+        assert "execution-governance" not in detail_text.lower()
 
-    diagnostics = registry.locator("#diagnostics")
-    if diagnostics.count() and not diagnostics.evaluate("(node) => node.hidden"):
-        assert "execution-governance" not in diagnostics.inner_text().lower()
+        diagnostics = registry.locator("#diagnostics")
+        if diagnostics.count() and not diagnostics.evaluate("(node) => node.hidden"):
+            assert "execution-governance" not in diagnostics.inner_text().lower()
 
-    registry.locator("#search").fill("execution-engine")
-    _wait_for_frame_locator_count(page, "#frame-registry", "button[data-component]", 1)
-    registry.locator('button[data-component="execution-engine"].active').wait_for(timeout=15000)
+        registry.locator("#search").fill("execution-engine")
+        _wait_for_frame_locator_count(page, "#frame-registry", "button[data-component]", 1)
+        registry.locator('button[data-component="execution-engine"].active').wait_for(timeout=15000)
 
-    registry.locator("#search").fill("execution-governance")
-    _wait_for_frame_locator_count(page, "#frame-registry", "button[data-component]", 0)
-    empty_status = registry.locator("#detail").get_by_role("status")
-    empty_status.get_by_role("heading", name="No matching components", exact=True).wait_for(timeout=15000)
-    assert empty_status.locator("p").inner_text() == (
-        "Change your search or reset the filters to see components already in Registry."
-    )
-    assert registry.locator("#detail .component-name").count() == 0
-    assert registry.locator("#detail").get_attribute("data-selected-component") == ""
-    empty_text = registry.locator("#detail").inner_text().lower()
-    assert "execution-governance" not in empty_text
-    assert "constraint-aware execution runtime" not in empty_text
-    empty_capture = _failure_screenshot_path("registry-retired-alias-no-results")
-    if empty_capture is not None:
-        page.screenshot(path=str(empty_capture), full_page=True)
+        registry.locator("#search").fill("execution-governance")
+        _wait_for_frame_locator_count(page, "#frame-registry", "button[data-component]", 0)
+        empty_status = registry.locator("#detail").get_by_role("status")
+        empty_status.get_by_role("heading", name="No matching components", exact=True).wait_for(timeout=15000)
+        assert empty_status.locator("p").inner_text() == (
+            "Change your search or reset the filters to see components already in Registry."
+        )
+        assert registry.locator("#detail .component-name").count() == 0
+        assert registry.locator("#detail").get_attribute("data-selected-component") == ""
+        empty_text = registry.locator("#detail").inner_text().lower()
+        assert "execution-governance" not in empty_text
+        assert "constraint-aware execution runtime" not in empty_text
+        empty_capture = _failure_screenshot_path("registry-retired-alias-no-results")
+        if empty_capture is not None:
+            page.screenshot(path=str(empty_capture), full_page=True)
 
-    registry.locator("#resetFilters").click()
-    assert registry.locator("#search").input_value() == ""
-    registry.locator('button[data-component="execution-engine"]').click(timeout=15000)
-    registry.locator('button[data-component="execution-engine"].active').wait_for(timeout=15000)
-    registry.locator("#detail .component-name", has_text="Execution Engine").wait_for(timeout=15000)
-    assert registry.locator("#detail").get_attribute("data-selected-component") == "execution-engine"
-    assert registry.locator("#detail").get_by_role("status").count() == 0
-    assert "Constraint-aware execution runtime" in registry.locator("#detail").inner_text()
-    assert registry.locator('button[data-component="execution-governance"]').count() == 0
-    assert "execution-governance" not in registry.locator("#detail").inner_text().lower()
-    restored_capture = _failure_screenshot_path("registry-canonical-reset-recovery")
-    if restored_capture is not None:
-        page.screenshot(path=str(restored_capture), full_page=True)
+        registry.locator("#resetFilters").click()
+        assert registry.locator("#search").input_value() == ""
+        registry.locator('button[data-component="execution-engine"]').click(timeout=15000)
+        registry.locator('button[data-component="execution-engine"].active').wait_for(timeout=15000)
+        registry.locator("#detail .component-name", has_text="Execution Engine").wait_for(timeout=15000)
+        assert registry.locator("#detail").get_attribute("data-selected-component") == "execution-engine"
+        assert registry.locator("#detail").get_by_role("status").count() == 0
+        assert "Constraint-aware execution runtime" in registry.locator("#detail").inner_text()
+        assert registry.locator('button[data-component="execution-governance"]').count() == 0
+        assert "execution-governance" not in registry.locator("#detail").inner_text().lower()
+        restored_capture = _failure_screenshot_path("registry-canonical-reset-recovery")
+        if restored_capture is not None:
+            page.screenshot(path=str(restored_capture), full_page=True)
 
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        _assert_clean_page(page, observation)
 
 
 def test_atlas_context_execution_diagrams_render_assets_and_canonical_links(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(
-        base_url + "/odylith/index.html?tab=atlas&diagram=D-030",
-        wait_until="domcontentloaded",
-    )
-    assert response is not None and response.ok
+    with _new_page(context) as (page, observation):
+        response = page.goto(
+            base_url + "/odylith/index.html?tab=atlas&diagram=D-030",
+            wait_until="domcontentloaded",
+        )
+        assert response is not None and response.ok
 
-    atlas = page.frame_locator("#frame-atlas")
-    atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
-    atlas.locator("#diagramId", has_text="D-030").wait_for(timeout=15000)
-    atlas.locator("#diagramTitle", has_text="Execution Engine Stack").wait_for(timeout=15000)
-    atlas.locator("#diagramFreshness", has_text="Fresh").wait_for(timeout=15000)
-    _assert_atlas_viewer_image_loaded(page)
-    registry_links_text = atlas.locator("#registryLinks").inner_text().lower()
-    assert "execution-engine" in registry_links_text
-    visible_contract_text = "\n".join(
-        [
-            atlas.locator("#diagramTitle").inner_text(),
-            atlas.locator("#diagramSummary").inner_text(),
-            atlas.locator("#componentList").inner_text(),
-            atlas.locator("#registryLinks").inner_text(),
-        ]
-    ).lower()
-    assert "execution-governance" not in visible_contract_text
+        atlas = page.frame_locator("#frame-atlas")
+        atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
+        atlas.locator("#diagramId", has_text="D-030").wait_for(timeout=15000)
+        atlas.locator("#diagramTitle", has_text="Execution Engine Stack").wait_for(timeout=15000)
+        atlas.locator("#diagramFreshness", has_text="Fresh").wait_for(timeout=15000)
+        _assert_atlas_viewer_image_loaded(page)
+        registry_links_text = atlas.locator("#registryLinks").inner_text().lower()
+        assert "execution-engine" in registry_links_text
+        visible_contract_text = "\n".join(
+            [
+                atlas.locator("#diagramTitle").inner_text(),
+                atlas.locator("#diagramSummary").inner_text(),
+                atlas.locator("#componentList").inner_text(),
+                atlas.locator("#registryLinks").inner_text(),
+            ]
+        ).lower()
+        assert "execution-governance" not in visible_contract_text
 
-    response = page.goto(
-        base_url + "/odylith/index.html?tab=atlas&diagram=D-002",
-        wait_until="domcontentloaded",
-    )
-    assert response is not None and response.ok
-    atlas.locator("#diagramId", has_text="D-002").wait_for(timeout=15000)
-    atlas.locator("#diagramTitle", has_text=re.compile(r"Context And Agent Execution Stack", re.I)).wait_for(
-        timeout=15000
-    )
-    _assert_atlas_viewer_image_loaded(page)
-    d002_registry_text = atlas.locator("#registryLinks").inner_text().lower()
-    assert "execution-engine" in d002_registry_text
-    assert "odylith-context-engine" in d002_registry_text
+        response = page.goto(
+            base_url + "/odylith/index.html?tab=atlas&diagram=D-002",
+            wait_until="domcontentloaded",
+        )
+        assert response is not None and response.ok
+        atlas.locator("#diagramId", has_text="D-002").wait_for(timeout=15000)
+        atlas.locator("#diagramTitle", has_text=re.compile(r"Context And Agent Execution Stack", re.I)).wait_for(
+            timeout=15000
+        )
+        _assert_atlas_viewer_image_loaded(page)
+        d002_registry_text = atlas.locator("#registryLinks").inner_text().lower()
+        assert "execution-engine" in d002_registry_text
+        assert "odylith-context-engine" in d002_registry_text
 
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        _assert_clean_page(page, observation)
 
 
 @pytest.mark.parametrize(
@@ -232,124 +232,124 @@ def test_atlas_cross_stack_topology_diagrams_render_and_expose_alignment_languag
     required_phrases: tuple[str, ...],
 ) -> None:  # noqa: ANN001
     base_url, context = browser_context
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(
-        base_url + f"/odylith/index.html?tab=atlas&diagram={diagram_id}",
-        wait_until="domcontentloaded",
-    )
-    assert response is not None and response.ok
+    with _new_page(context) as (page, observation):
+        response = page.goto(
+            base_url + f"/odylith/index.html?tab=atlas&diagram={diagram_id}",
+            wait_until="domcontentloaded",
+        )
+        assert response is not None and response.ok
 
-    atlas = page.frame_locator("#frame-atlas")
-    atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
-    atlas.locator("#diagramId", has_text=diagram_id).wait_for(timeout=15000)
-    atlas.locator("#diagramFreshness", has_text="Fresh").wait_for(timeout=15000)
-    _assert_atlas_viewer_image_loaded(page)
+        atlas = page.frame_locator("#frame-atlas")
+        atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
+        atlas.locator("#diagramId", has_text=diagram_id).wait_for(timeout=15000)
+        atlas.locator("#diagramFreshness", has_text="Fresh").wait_for(timeout=15000)
+        _assert_atlas_viewer_image_loaded(page)
 
-    catalog_path = Path(__file__).resolve().parents[3] / "odylith/atlas/source/catalog/diagrams.v1.json"
-    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
-    source_row = next(row for row in catalog["diagrams"] if row["diagram_id"] == diagram_id)
-    assert atlas.locator("#diagramTitle").inner_text() == source_row["title"]
-    assert atlas.locator("#diagramSummary").inner_text() == source_row["summary"]
-    svg_response = context.request.get(base_url + "/" + source_row["source_svg"])
-    assert svg_response.ok
-    svg_text = " ".join(ElementTree.fromstring(svg_response.text()).itertext())
+        catalog_path = Path(__file__).resolve().parents[3] / "odylith/atlas/source/catalog/diagrams.v1.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        source_row = next(row for row in catalog["diagrams"] if row["diagram_id"] == diagram_id)
+        assert atlas.locator("#diagramTitle").inner_text() == source_row["title"]
+        assert atlas.locator("#diagramSummary").inner_text() == source_row["summary"]
+        svg_response = context.request.get(base_url + "/" + source_row["source_svg"])
+        assert svg_response.ok
+        svg_text = " ".join(ElementTree.fromstring(svg_response.text()).itertext())
 
-    visible_text = "\n".join(
-        [
-            atlas.locator("#diagramTitle").inner_text(),
-            atlas.locator("#diagramSummary").inner_text(),
-            atlas.locator("#componentList").inner_text(),
-            atlas.locator("#registryLinks").inner_text(),
-            svg_text,
-        ]
-    ).lower()
-    for phrase in required_phrases:
-        assert phrase in visible_text
-    assert "execution-governance" not in visible_text
+        visible_text = "\n".join(
+            [
+                atlas.locator("#diagramTitle").inner_text(),
+                atlas.locator("#diagramSummary").inner_text(),
+                atlas.locator("#componentList").inner_text(),
+                atlas.locator("#registryLinks").inner_text(),
+                svg_text,
+            ]
+        ).lower()
+        for phrase in required_phrases:
+            assert phrase in visible_text
+        assert "execution-governance" not in visible_text
 
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        _assert_clean_page(page, observation)
 
 
 def test_compass_and_radar_expose_b099_context_execution_release_truth(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(
-        base_url + "/odylith/index.html?tab=compass&scope=B-099&date=live",
-        wait_until="domcontentloaded",
-    )
-    assert response is not None and response.ok
+    with _new_page(context) as (page, observation):
+        response = page.goto(
+            base_url + "/odylith/index.html?tab=compass&scope=B-099&date=live",
+            wait_until="domcontentloaded",
+        )
+        assert response is not None and response.ok
 
-    compass = page.frame_locator("#frame-compass")
-    _wait_for_compass_ready(compass)
-    compass.locator("#scope-pill", has_text="B-099").wait_for(timeout=15000)
-    compass.locator(
-        "#execution-waves-host",
-        has_text="Context Engine and Execution Engine Seamless Alignment Program",
-    ).wait_for(timeout=15000)
-    compass.locator("#execution-waves-host", has_text="5-wave program").wait_for(timeout=15000)
-    for workstream_id in ("B-100", "B-101", "B-102", "B-103", "B-104"):
-        assert compass.locator(f'#execution-waves-host [data-execution-wave-scope="{workstream_id}"]').count() >= 1
-    compass.locator("#release-groups-host", has_text="0.1.11").wait_for(timeout=15000)
-    compass.locator("#release-groups-host", has_text="B-099").wait_for(timeout=15000)
+        compass = page.frame_locator("#frame-compass")
+        _wait_for_compass_ready(compass)
+        compass.locator("#scope-pill", has_text="B-099").wait_for(timeout=15000)
+        compass.locator(
+            "#execution-waves-host",
+            has_text="Context Engine and Execution Engine Seamless Alignment Program",
+        ).wait_for(timeout=15000)
+        compass.locator("#execution-waves-host", has_text="5-wave program").wait_for(timeout=15000)
+        for workstream_id in ("B-100", "B-101", "B-102", "B-103", "B-104"):
+            assert compass.locator(f'#execution-waves-host [data-execution-wave-scope="{workstream_id}"]').count() >= 1
+        compass.locator("#release-groups-host", has_text="0.1.11").wait_for(timeout=15000)
+        compass.locator("#release-groups-host", has_text="B-099").wait_for(timeout=15000)
 
-    response = page.goto(
-        base_url + "/odylith/index.html?tab=radar&workstream=B-099",
-        wait_until="domcontentloaded",
-    )
-    assert response is not None and response.ok
-    radar = page.frame_locator("#frame-radar")
-    radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
-    radar.locator('#detail [data-kpi="workstream-id"] .v', has_text="B-099").wait_for(timeout=15000)
-    radar_detail_text = radar.locator("#detail").inner_text().lower()
-    assert "context engine" in radar_detail_text
-    assert "execution engine" in radar_detail_text
-    registry_targets = radar.locator("#detail a.chip-registry-component").evaluate_all(
-        """nodes => nodes.map((node) => {
+        response = page.goto(
+            base_url + "/odylith/index.html?tab=radar&workstream=B-099",
+            wait_until="domcontentloaded",
+        )
+        assert response is not None and response.ok
+        radar = page.frame_locator("#frame-radar")
+        radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
+        radar.locator('#detail [data-kpi="workstream-id"] .v', has_text="B-099").wait_for(timeout=15000)
+        radar_detail_text = radar.locator("#detail").inner_text().lower()
+        assert "context engine" in radar_detail_text
+        assert "execution engine" in radar_detail_text
+        registry_targets = radar.locator("#detail a.chip-registry-component").evaluate_all(
+            """nodes => nodes.map((node) => {
           try {
             return new URL(node.href).searchParams.get("component") || "";
           } catch (_error) {
             return "";
           }
         }).map((token) => String(token || "").trim().toLowerCase()).filter(Boolean)"""
-    )
-    assert "execution-engine" in registry_targets
-    assert "odylith-context-engine" in registry_targets
+        )
+        assert "execution-engine" in registry_targets
+        assert "odylith-context-engine" in registry_targets
 
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        _assert_clean_page(page, observation)
 
 
 def test_context_execution_surfaces_hold_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
     base_url, context = compact_browser_context
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    with _new_page(context) as (page, observation):
 
-    response = page.goto(
-        base_url + "/odylith/index.html?tab=registry&component=execution-engine",
-        wait_until="domcontentloaded",
-    )
-    assert response is not None and response.ok
-    registry = page.frame_locator("#frame-registry")
-    registry.locator("#detail .component-name", has_text="Execution Engine").wait_for(timeout=15000)
-    _assert_frame_has_no_horizontal_overflow(registry)
+        response = page.goto(
+            base_url + "/odylith/index.html?tab=registry&component=execution-engine",
+            wait_until="domcontentloaded",
+        )
+        assert response is not None and response.ok
+        registry = page.frame_locator("#frame-registry")
+        registry.locator("#detail .component-name", has_text="Execution Engine").wait_for(timeout=15000)
+        _assert_frame_has_no_horizontal_overflow(registry)
 
-    response = page.goto(
-        base_url + "/odylith/index.html?tab=atlas&diagram=D-030",
-        wait_until="domcontentloaded",
-    )
-    assert response is not None and response.ok
-    atlas = page.frame_locator("#frame-atlas")
-    atlas.locator("#diagramTitle", has_text="Execution Engine Stack").wait_for(timeout=15000)
-    _assert_atlas_viewer_image_loaded(page)
-    _assert_frame_has_no_horizontal_overflow(atlas, max_slack_px=14)
+        response = page.goto(
+            base_url + "/odylith/index.html?tab=atlas&diagram=D-030",
+            wait_until="domcontentloaded",
+        )
+        assert response is not None and response.ok
+        atlas = page.frame_locator("#frame-atlas")
+        atlas.locator("#diagramTitle", has_text="Execution Engine Stack").wait_for(timeout=15000)
+        _assert_atlas_viewer_image_loaded(page)
+        _assert_frame_has_no_horizontal_overflow(atlas, max_slack_px=14)
 
-    response = page.goto(
-        base_url + f"/odylith/index.html?tab=compass&scope={quote('B-099')}&date=live",
-        wait_until="domcontentloaded",
-    )
-    assert response is not None and response.ok
-    compass = page.frame_locator("#frame-compass")
-    _wait_for_compass_ready(compass)
-    compass.locator("#scope-pill", has_text="B-099").wait_for(timeout=15000)
-    compass.locator("#execution-waves-host", has_text="Context Engine and Execution Engine").wait_for(timeout=15000)
-    _assert_frame_has_no_horizontal_overflow(compass, max_slack_px=18)
+        response = page.goto(
+            base_url + f"/odylith/index.html?tab=compass&scope={quote('B-099')}&date=live",
+            wait_until="domcontentloaded",
+        )
+        assert response is not None and response.ok
+        compass = page.frame_locator("#frame-compass")
+        _wait_for_compass_ready(compass)
+        compass.locator("#scope-pill", has_text="B-099").wait_for(timeout=15000)
+        compass.locator("#execution-waves-host", has_text="Context Engine and Execution Engine").wait_for(timeout=15000)
+        _assert_frame_has_no_horizontal_overflow(compass, max_slack_px=18)
 
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        _assert_clean_page(page, observation)

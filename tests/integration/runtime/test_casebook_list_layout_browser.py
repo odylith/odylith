@@ -85,38 +85,38 @@ def _stress_casebook_list_row(casebook) -> dict[str, object]:  # noqa: ANN001
 
 
 def _assert_casebook_list_layout_stress(base_url: str, context) -> None:  # noqa: ANN001
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(base_url + _CASEBOOK_URL, wait_until="domcontentloaded")
-    assert response is not None and response.ok
+    with _new_page(context) as (page, observation):
+        response = page.goto(base_url + _CASEBOOK_URL, wait_until="domcontentloaded")
+        assert response is not None and response.ok
 
-    casebook = page.frame_locator("#frame-casebook")
-    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
-    layout = _stress_casebook_list_row(casebook)
+        casebook = page.frame_locator("#frame-casebook")
+        casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
+        layout = _stress_casebook_list_row(casebook)
 
-    assert layout["row"]["whiteSpace"] == "normal"
-    assert layout["title"]["whiteSpace"] == "normal"
-    assert layout["summary"]["whiteSpace"] == "normal"
-    assert layout["metaFlexWrap"] == "wrap"
-    assert int(layout["titleLines"]) >= 2
-    assert int(layout["summaryLines"]) >= 2
-    assert int(layout["chipRows"]) >= 2
-    assert any(int(line_count) >= 2 for line_count in layout["chipLines"])
-    assert layout["overflowTargets"] == []
-    assert layout["escapingTargets"] == []
+        assert layout["row"]["whiteSpace"] == "normal"
+        assert layout["title"]["whiteSpace"] == "normal"
+        assert layout["summary"]["whiteSpace"] == "normal"
+        assert layout["metaFlexWrap"] == "wrap"
+        assert int(layout["titleLines"]) >= 2
+        assert int(layout["summaryLines"]) >= 2
+        assert int(layout["chipRows"]) >= 2
+        assert any(int(line_count) >= 2 for line_count in layout["chipLines"])
+        assert layout["overflowTargets"] == []
+        assert layout["escapingTargets"] == []
 
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        _assert_clean_page(page, observation)
 
 
 def _assert_casebook_detail_left_gutter(base_url: str, context, *, compact: bool = False) -> None:  # noqa: ANN001
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(base_url + _CASEBOOK_URL, wait_until="domcontentloaded")
-    assert response is not None and response.ok
+    with _new_page(context) as (page, observation):
+        response = page.goto(base_url + _CASEBOOK_URL, wait_until="domcontentloaded")
+        assert response is not None and response.ok
 
-    casebook = page.frame_locator("#frame-casebook")
-    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
-    casebook.locator("#detailPane .detail-summary").wait_for(timeout=15000)
-    layout = casebook.locator("body").evaluate(
-        """() => {
+        casebook = page.frame_locator("#frame-casebook")
+        casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
+        casebook.locator("#detailPane .detail-summary").wait_for(timeout=15000)
+        layout = casebook.locator("body").evaluate(
+            """() => {
           const shell = document.querySelector(".shell");
           const panel = document.querySelector(".detail-panel");
           const detail = document.querySelector("#detailPane");
@@ -155,20 +155,20 @@ def _assert_casebook_detail_left_gutter(base_url: str, context, *, compact: bool
             detailPaddingLeft: Number.parseFloat(window.getComputedStyle(detail).paddingLeft) || 0,
           };
         }"""
-    )
+        )
 
-    expected_padding = 10 if compact else 12
-    assert layout["detailPaddingLeft"] <= expected_padding
-    assert layout["detailLeft"] - layout["panelLeft"] <= expected_padding + 2
-    assert layout["summaryCardLeft"] - layout["panelLeft"] <= expected_padding + 2
-    assert abs(float(layout["summaryCardWidth"]) - float(layout["detailContentWidth"])) <= 4
-    assert layout["summaryCardTitle"] == "Summary"
-    assert 12 <= layout["summaryLeft"] - layout["summaryCardLeft"] <= 24
-    assert layout["summaryMaxWidth"] == "none"
-    assert float(layout["summaryWidth"]) >= float(layout["summaryCardWidth"]) - 48
-    assert int(layout["summaryOverflowX"]) <= 4
+        expected_padding = 10 if compact else 12
+        assert layout["detailPaddingLeft"] <= expected_padding
+        assert layout["detailLeft"] - layout["panelLeft"] <= expected_padding + 2
+        assert layout["summaryCardLeft"] - layout["panelLeft"] <= expected_padding + 2
+        assert abs(float(layout["summaryCardWidth"]) - float(layout["detailContentWidth"])) <= 4
+        assert layout["summaryCardTitle"] == "Summary"
+        assert 12 <= layout["summaryLeft"] - layout["summaryCardLeft"] <= 24
+        assert layout["summaryMaxWidth"] == "none"
+        assert float(layout["summaryWidth"]) >= float(layout["summaryCardWidth"]) - 48
+        assert int(layout["summaryOverflowX"]) <= 4
 
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        _assert_clean_page(page, observation)
 
 
 def test_casebook_list_long_content_wraps_on_desktop(browser_context) -> None:  # noqa: ANN001

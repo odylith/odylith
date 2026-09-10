@@ -6,6 +6,7 @@ import pytest
 
 from odylith.runtime.surfaces import registry_selection_ui
 from tests.integration.runtime import surface_browser_test_support as support
+from tests.unit.runtime.test_surface_browser_request_observer import PublicContext
 
 
 _FORMERLY_EXEMPT_PATHS = (
@@ -32,43 +33,43 @@ def context():
     (("connectionreset", "net::ERR_CONNECTION_RESET"), ("aborted", "net::ERR_ABORTED")),
 )
 def test_real_request_failure_string_is_retained_and_fails(context, error_code, expected):
-    page, console, errors, failed, responses = support._new_page(context)
-    url = "http://127.0.0.1:9876/odylith/registry/registry.html"
-    page.route(url, lambda route: route.abort(error_code))
-    with page.expect_event("requestfailed") as event:
-        with pytest.raises(support.playwright_sync.Error):
-            page.goto(url)
-    assert event.value.failure == expected
-    assert failed == [f"GET {url} {expected}"]
-    with pytest.raises(AssertionError, match="request failures"):
-        support._assert_clean_page(page, [], errors, failed, responses)
+    with support._new_page(context) as (page, observation):
+        url = "http://127.0.0.1:9876/odylith/registry/registry.html"
+        page.route(url, lambda route: route.abort(error_code))
+        with page.expect_event("requestfailed") as event:
+            with pytest.raises(support.playwright_sync.Error):
+                page.goto(url)
+        assert event.value.failure == expected
+        with pytest.raises(AssertionError, match="request failures"):
+            support._assert_clean_page(page, observation)
+        assert [(failure.url, failure.reason) for failure in observation.snapshot.failures] == [(url, expected)]
 
 
 @pytest.mark.parametrize("path", _FORMERLY_EXEMPT_PATHS)
 @pytest.mark.parametrize("failure", (None, "", "net::ERR_FILE_NOT_FOUND", "unrecognized failure"))
 def test_unknown_and_file_errors_are_never_exempted(path, failure):
-    handlers = {}
-    page = SimpleNamespace(on=lambda name, callback: handlers.__setitem__(name, callback))
-    _page, console, errors, failed, responses = support._new_page(SimpleNamespace(new_page=lambda: page))
+    context = PublicContext()
     url = "http://127.0.0.1:9876" + path
-    handlers["requestfailed"](SimpleNamespace(url=url, method="GET", resource_type="document", failure=failure))
-    expected = "<unknown failure>" if failure is None else failure
-    assert failed == [f"GET {url} {expected}"]
-    with pytest.raises(AssertionError, match="request failures"):
-        support._assert_clean_page(page, console, errors, failed, responses)
+    with support._new_page(context) as (page, observation):
+        context.native("Network.requestWillBeSent", requestId="request", frameId="main", loaderId="loader",
+                       type="Document", request={"url": url})
+        context.native("Network.loadingFailed", requestId="request", errorText=failure, canceled=True)
+        with pytest.raises(AssertionError, match="request failures"):
+            support._assert_clean_page(page, observation)
+        expected = "<unknown failure>" if failure is None else failure
+        assert [(row.url, row.reason) for row in observation.snapshot.failures] == [(url, expected)]
 
 
 @pytest.mark.parametrize("path", _FORMERLY_EXEMPT_PATHS)
 @pytest.mark.parametrize("status", (404, 503))
 def test_http_errors_on_formerly_exempt_paths_still_fail(path, status):
-    handlers = {}
-    page = SimpleNamespace(on=lambda name, callback: handlers.__setitem__(name, callback))
-    _page, console, errors, failed, responses = support._new_page(SimpleNamespace(new_page=lambda: page))
+    context = PublicContext()
     url = "http://127.0.0.1:9876" + path
-    handlers["response"](SimpleNamespace(url=url, status=status))
-    assert responses == [f"{status} {url}"]
-    with pytest.raises(AssertionError, match="http error responses"):
-        support._assert_clean_page(page, console, errors, failed, responses)
+    with support._new_page(context) as (page, observation):
+        page.emit("response", SimpleNamespace(url=url, status=status))
+        with pytest.raises(AssertionError, match="http error responses"):
+            support._assert_clean_page(page, observation)
+        assert [(row.status, row.url) for row in observation.snapshot.http_errors] == [(status, url)]
 
 
 def _registry_page(context):
@@ -135,11 +136,10 @@ def test_registry_readiness_requires_loaded_detail_owned_by_selection(context, m
 ))
 @pytest.mark.parametrize("status", (404, 503))
 def test_http_errors_are_retained_across_local_origins(origin, status):
-    handlers = {}
-    page = SimpleNamespace(on=lambda name, callback: handlers.__setitem__(name, callback))
-    _page, console, errors, failed, responses = support._new_page(SimpleNamespace(new_page=lambda: page))
+    context = PublicContext()
     url = origin + "/missing.js"
-    handlers["response"](SimpleNamespace(url=url, status=status))
-    assert responses == [f"{status} {url}"]
-    with pytest.raises(AssertionError, match="http error responses"):
-        support._assert_clean_page(page, console, errors, failed, responses)
+    with support._new_page(context) as (page, observation):
+        page.emit("response", SimpleNamespace(url=url, status=status))
+        with pytest.raises(AssertionError, match="http error responses"):
+            support._assert_clean_page(page, observation)
+        assert [(row.status, row.url) for row in observation.snapshot.http_errors] == [(status, url)]

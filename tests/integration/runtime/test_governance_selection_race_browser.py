@@ -42,58 +42,58 @@ def test_late_detail_cannot_replace_filtered_state_or_newer_same_id_selection(
 ) -> None:  # noqa: ANN001
     payload, render_html = _payload(tmp_path, tab)
     base_url, context = browser_context
-    page, *errors = _new_page(context)
-    page.set_viewport_size({"width": width, "height": 1100 if width == 1440 else 932})
-    payload["data_source"] = {"preferred_backend": "runtime", "runtime_base_url": base_url + "/selection-race/"}
-    pending = []
+    with _new_page(context) as (page, observation):
+        page.set_viewport_size({"width": width, "height": 1100 if width == 1440 else 932})
+        payload["data_source"] = {"preferred_backend": "runtime", "runtime_base_url": base_url + "/selection-race/"}
+        pending = []
 
-    def runtime_response(route):  # noqa: ANN001
-        if "/detail?" in route.request.url:
-            pending.append(route)
-        else:
-            route.fulfill(status=200, content_type="application/json", json={"entries": payload.get("entries", [])})
+        def runtime_response(route):  # noqa: ANN001
+            if "/detail?" in route.request.url:
+                pending.append(route)
+            else:
+                route.fulfill(status=200, content_type="application/json", json={"entries": payload.get("entries", [])})
 
-    page.route("**/selection-race/surfaces/**", runtime_response)
-    html_name = "radar.html" if tab == "radar" else "registry.html"
-    page.route(f"**/odylith/{tab}/{html_name}*", lambda route: route.fulfill(
-        status=200, content_type="text/html", body=render_html(payload=payload),
-    ))
-    detail_request = lambda request: "/selection-race/surfaces/" in request.url and "/detail?" in request.url
-    with page.expect_request(detail_request):
-        page.goto(base_url + f"/odylith/index.html?tab={tab}", wait_until="domcontentloaded")
-    frame = page.frame_locator(f"#frame-{tab}")
-    frame.locator(row).first.wait_for()
-    assert len(pending) == 1
-    selected_url = pending[0].request.url
-    frame.locator(query).fill("zz-no-record-matches-zz")
-    assert frame.locator(row).count() == 0
-    filtered_detail = frame.locator("#detail").inner_html()
-    filtered_timeline = frame.locator("#timeline").inner_html() if tab == "registry" else ""
-    _release_detail(page, frame, pending[0], "Stale filtered detail")
-    assert frame.locator("#detail").inner_html() == filtered_detail
-    assert "Stale filtered detail" not in frame.locator("#detail").inner_text()
-    empty = frame.locator("#detail-empty" if tab == "radar" else "#detail [role=status]")
-    if tab == "registry":
-        assert frame.locator("#timeline").inner_html() == filtered_timeline
+        page.route("**/selection-race/surfaces/**", runtime_response)
+        html_name = "radar.html" if tab == "radar" else "registry.html"
+        page.route(f"**/odylith/{tab}/{html_name}*", lambda route: route.fulfill(
+            status=200, content_type="text/html", body=render_html(payload=payload),
+        ))
+        detail_request = lambda request: "/selection-race/surfaces/" in request.url and "/detail?" in request.url
+        with page.expect_request(detail_request):
+            page.goto(base_url + f"/odylith/index.html?tab={tab}", wait_until="domcontentloaded")
+        frame = page.frame_locator(f"#frame-{tab}")
+        frame.locator(row).first.wait_for()
+        assert len(pending) == 1
+        selected_url = pending[0].request.url
+        frame.locator(query).fill("zz-no-record-matches-zz")
+        assert frame.locator(row).count() == 0
+        filtered_detail = frame.locator("#detail").inner_html()
+        filtered_timeline = frame.locator("#timeline").inner_html() if tab == "registry" else ""
+        _release_detail(page, frame, pending[0], "Stale filtered detail")
+        assert frame.locator("#detail").inner_html() == filtered_detail
+        assert "Stale filtered detail" not in frame.locator("#detail").inner_text()
+        empty = frame.locator("#detail-empty" if tab == "radar" else "#detail [role=status]")
+        if tab == "registry":
+            assert frame.locator("#timeline").inner_html() == filtered_timeline
 
-    # Re-enter the same selection twice while both actual detail requests remain pending.
-    with page.expect_request(detail_request):
-        frame.locator(query).fill("")
-    assert len(pending) == 2
-    frame.locator(query).fill("zz-no-record-matches-zz")
-    with page.expect_request(detail_request):
-        frame.locator(query).fill("")
-    assert len(pending) == 3
-    assert all(route.request.url == selected_url for route in pending)
-    _release_detail(page, frame, pending[2], "Newest selected detail")
-    assert "Newest selected detail" in frame.locator("#detail").inner_text()
-    if tab == "registry":
-        assert "Newest selected detail event" in frame.locator("#timeline").inner_text()
-    _release_detail(page, frame, pending[1], "Older same-id detail")
-    assert "Newest selected detail" in frame.locator("#detail").inner_text()
-    assert "Older same-id detail" not in frame.locator("#detail").inner_text()
-    if tab == "registry":
-        assert "Newest selected detail event" in frame.locator("#timeline").inner_text()
-        assert "Older same-id detail" not in frame.locator("#timeline").inner_text()
-    assert not empty.is_visible()
-    _assert_clean_page(page, *errors)
+        # Re-enter the same selection twice while both actual detail requests remain pending.
+        with page.expect_request(detail_request):
+            frame.locator(query).fill("")
+        assert len(pending) == 2
+        frame.locator(query).fill("zz-no-record-matches-zz")
+        with page.expect_request(detail_request):
+            frame.locator(query).fill("")
+        assert len(pending) == 3
+        assert all(route.request.url == selected_url for route in pending)
+        _release_detail(page, frame, pending[2], "Newest selected detail")
+        assert "Newest selected detail" in frame.locator("#detail").inner_text()
+        if tab == "registry":
+            assert "Newest selected detail event" in frame.locator("#timeline").inner_text()
+        _release_detail(page, frame, pending[1], "Older same-id detail")
+        assert "Newest selected detail" in frame.locator("#detail").inner_text()
+        assert "Older same-id detail" not in frame.locator("#detail").inner_text()
+        if tab == "registry":
+            assert "Newest selected detail event" in frame.locator("#timeline").inner_text()
+            assert "Older same-id detail" not in frame.locator("#timeline").inner_text()
+        assert not empty.is_visible()
+        _assert_clean_page(page, observation)

@@ -141,68 +141,73 @@ def test_registry_category_labels_survive_filter_empty_and_runtime_fallback(
         for _playwright, browser in _browser():
             context = browser.new_context(viewport=viewport)
             try:
-                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-                unavailable_requests = []
-                if runtime_unavailable:
-                    payload = json.loads(payload_script.split(" = ", 1)[1].rsplit(";", 1)[0])
-                    # Inject only backend availability; keep the production category payload unchanged.
-                    payload["data_source"] = {
-                        **payload["data_source"], "preferred_backend": "runtime",
-                        "runtime_base_url": base_url + "/unavailable-runtime/",
-                    }
-                    page.route("**/registry-payload.v1.js*", lambda route: route.fulfill(
-                        status=200, content_type="application/javascript",
-                        body='window["__ODYLITH_REGISTRY_DATA__"] = ' + json.dumps(payload) + ";",
-                    ))
+                with _new_page(context) as (page, observation):
+                    unavailable_requests = []
+                    if runtime_unavailable:
+                        payload = json.loads(payload_script.split(" = ", 1)[1].rsplit(";", 1)[0])
+                        # Inject only backend availability; keep the production category payload unchanged.
+                        payload["data_source"] = {
+                            **payload["data_source"], "preferred_backend": "runtime",
+                            "runtime_base_url": base_url + "/unavailable-runtime/",
+                        }
+                        page.route("**/registry-payload.v1.js*", lambda route: route.fulfill(
+                            status=200, content_type="application/javascript",
+                            body='window["__ODYLITH_REGISTRY_DATA__"] = ' + json.dumps(payload) + ";",
+                        ))
 
-                    def unavailable(route):  # noqa: ANN001
-                        unavailable_requests.append(route.request.url)
-                        route.fulfill(status=503, content_type="application/json", body='{"error":"unavailable"}')
+                        def unavailable(route):  # noqa: ANN001
+                            unavailable_requests.append(route.request.url)
+                            route.fulfill(status=503, content_type="application/json", body='{"error":"unavailable"}')
 
-                    page.route("**/unavailable-runtime/**", unavailable)
-                response = page.goto(base_url + "/odylith/index.html?tab=registry", wait_until="domcontentloaded")
-                assert response is not None and response.ok
-                page.get_by_role("button", name="Close starter guide").click()
-                registry = page.frame_locator("#frame-registry")
-                registry.locator('button[data-component="radar"]').wait_for(timeout=15000)
-                assert registry.locator('#categoryFilter option[value="application"]').inner_text() == "Application (1)"
-                assert registry.locator('#categoryFilter option[value="governance_engine"]').inner_text() == "Governance Engine (1)"
-                assert registry.locator('button[data-component="radar"] .label').first.inner_text() == "Application"
-                assert registry.locator('button[data-component="odylith"] .label').first.inner_text() == "Governance Engine"
+                        page.route("**/unavailable-runtime/**", unavailable)
+                    response = page.goto(base_url + "/odylith/index.html?tab=registry", wait_until="domcontentloaded")
+                    assert response is not None and response.ok
+                    page.get_by_role("button", name="Close starter guide").click()
+                    registry = page.frame_locator("#frame-registry")
+                    registry.locator('button[data-component="radar"]').wait_for(timeout=15000)
+                    assert registry.locator('#categoryFilter option[value="application"]').inner_text() == "Application (1)"
+                    assert registry.locator('#categoryFilter option[value="governance_engine"]').inner_text() == "Governance Engine (1)"
+                    assert registry.locator('button[data-component="radar"] .label').first.inner_text() == "Application"
+                    assert registry.locator('button[data-component="odylith"] .label').first.inner_text() == "Governance Engine"
 
-                registry.locator("#categoryFilter").select_option("application")
-                assert registry.locator("button[data-component]").count() == 1
-                assert registry.locator(".group-head").inner_text() == "APPLICATION · 1"
-                registry.locator("details.context-section summary").wait_for(timeout=15000)
-                registry.locator("details.context-section summary").click()
-                registry.get_by_text("Category: Application", exact=True).wait_for(timeout=15000)
-                _assert_topology_paragraph_accessible(
-                    page, registry,
-                    screenshot_name=f"registry-topology-{viewport['width']}-{'fallback' if runtime_unavailable else 'normal'}",
-                )
-                _assert_spec_reading_accessible(
-                    page, registry, width=viewport["width"], with_table=with_table,
-                    screenshot_name=f"registry-spec-{viewport['width']}-{'fallback' if runtime_unavailable else 'normal'}-{'table' if with_table else 'prose'}",
-                )
+                    registry.locator("#categoryFilter").select_option("application")
+                    assert registry.locator("button[data-component]").count() == 1
+                    assert registry.locator(".group-head").inner_text() == "APPLICATION · 1"
+                    registry.locator("details.context-section summary").wait_for(timeout=15000)
+                    registry.locator("details.context-section summary").click()
+                    registry.get_by_text("Category: Application", exact=True).wait_for(timeout=15000)
+                    _assert_topology_paragraph_accessible(
+                        page, registry,
+                        screenshot_name=f"registry-topology-{viewport['width']}-{'fallback' if runtime_unavailable else 'normal'}",
+                    )
+                    _assert_spec_reading_accessible(
+                        page, registry, width=viewport["width"], with_table=with_table,
+                        screenshot_name=f"registry-spec-{viewport['width']}-{'fallback' if runtime_unavailable else 'normal'}-{'table' if with_table else 'prose'}",
+                    )
 
-                registry.locator("#search").fill("no-match-category-proof")
-                assert registry.locator("button[data-component]").count() == 0
-                assert registry.locator(".group-head").count() == 0
-                empty = registry.locator("#detail [role=status]")
-                assert "No matching components" in empty.inner_text()
-                assert "reset the filters" in empty.inner_text()
-                registry.locator("#resetFilters").click()
-                assert registry.locator("button[data-component]").count() == 2
-                assert registry.locator('button[data-component="radar"] .label').first.inner_text() == "Application"
-                if runtime_unavailable:
-                    assert any("/surfaces/registry/detail?component=radar" in url for url in unavailable_requests)
-                    assert all("/unavailable-runtime/" in row and row.startswith("503 ") for row in bad_responses)
-                    bad_responses.clear()
-                    console_errors[:] = [
-                        row for row in console_errors
-                        if not row.startswith("Failed to load resource: the server responded with a status of 503")
-                    ]
-                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+                    registry.locator("#search").fill("no-match-category-proof")
+                    assert registry.locator("button[data-component]").count() == 0
+                    assert registry.locator(".group-head").count() == 0
+                    empty = registry.locator("#detail [role=status]")
+                    assert "No matching components" in empty.inner_text()
+                    assert "reset the filters" in empty.inner_text()
+                    registry.locator("#resetFilters").click()
+                    assert registry.locator("button[data-component]").count() == 2
+                    assert registry.locator('button[data-component="radar"] .label').first.inner_text() == "Application"
+                    if runtime_unavailable:
+                        assert any("/surfaces/registry/detail?component=radar" in url for url in unavailable_requests)
+                        snapshot = observation.finish()
+                        assert snapshot.complete and not snapshot.lifecycle_errors, snapshot
+                        assert snapshot.native_result is not None and not snapshot.native_result.coverage_errors, snapshot
+                        assert not snapshot.page_errors, snapshot.page_errors
+                        expected_prefix = base_url + "/unavailable-runtime/"
+                        assert snapshot.http_errors and all(error.status == 503 and error.url.startswith(expected_prefix)
+                                                            for error in snapshot.http_errors), snapshot.http_errors
+                        assert snapshot.native_failures and all(failure.http_status == 503 and failure.url.startswith(expected_prefix)
+                                                                for failure in snapshot.native_failures), snapshot.native_failures
+                        assert snapshot.console_errors and set(snapshot.console_errors) == {"Failed to load resource: the server responded with a status of 503 (Service Unavailable)"}, snapshot.console_errors
+                    else:
+                        _assert_clean_page(page, observation)
             finally:
                 context.close()
     assert manifest.read_bytes() == source_bytes

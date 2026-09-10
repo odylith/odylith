@@ -16,14 +16,15 @@ from urllib.parse import parse_qs, urlparse
 import pytest
 
 from odylith.runtime.domain_intelligence.greenfield_repository_write_set import greenfield_repository_layout
+from tests.integration.runtime.surface_browser_request_observer import (
+    PageObservation as _new_page,
+    assert_clean_page as _assert_clean_page,
+)
 
 playwright_sync = pytest.importorskip("playwright.sync_api")
 
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
-_EXTERNAL_MERMAID_CDN_REQUEST_RE = re.compile(
-    r"^GET https://cdn\.jsdelivr\.net/npm/mermaid@11/dist/mermaid\.min\.js(?:\s+.*)?$"
-)
 _SHELL_QUERY_PARAM_TIMEOUT_MS = 60000
 
 
@@ -128,78 +129,12 @@ def compact_browser_context() -> Iterator[tuple[str, object]]:
                 context.close()
 
 
-def _new_page(context) -> tuple[object, list[str], list[str], list[str], list[str]]:  # noqa: ANN001
-    page = context.new_page()
-    console_errors: list[str] = []
-    page_errors: list[str] = []
-    failed_requests: list[str] = []
-    bad_responses: list[str] = []
-
-    def _on_console(message) -> None:  # noqa: ANN001
-        if message.type == "error":
-            console_errors.append(message.text)
-
-    def _on_page_error(error) -> None:  # noqa: ANN001
-        page_errors.append(str(error))
-
-    def _on_request_failed(request) -> None:  # noqa: ANN001
-        failure = request.failure
-        error_text = failure if failure is not None else "<unknown failure>"
-        failed_requests.append(f"{request.method} {request.url} {error_text}")
-
-    def _on_response(response) -> None:  # noqa: ANN001
-        url = str(getattr(response, "url", "") or "")
-        try:
-            parsed = urlparse(url)
-            local = parsed.scheme in {"http", "https"} and parsed.hostname in {"127.0.0.1", "localhost", "::1"}
-        except ValueError:
-            local = False
-        if not local:
-            return
-        status = int(getattr(response, "status", 0) or 0)
-        if status >= 400:
-            bad_responses.append(f"{status} {url}")
-
-    page.on("console", _on_console)
-    page.on("pageerror", _on_page_error)
-    page.on("requestfailed", _on_request_failed)
-    page.on("response", _on_response)
-    return page, console_errors, page_errors, failed_requests, bad_responses
-
-
 def _failure_screenshot_path(name: str) -> Path | None:
     root = str(os.environ.get("ODYLITH_BROWSER_FAILURE_SCREENSHOTS") or "").strip()
     if not root:
         return None
     slug = re.sub(r"[^a-z0-9._-]+", "-", str(name).strip().lower()).strip("-") or "browser-failure"
     return Path(root).expanduser().resolve() / f"{slug}.png"
-
-
-def _assert_clean_page(
-    page,
-    console_errors: list[str],
-    page_errors: list[str],
-    failed_requests: list[str],
-    bad_responses: list[str],
-    *,
-    screenshot_path: Path | None = None,
-) -> None:  # noqa: ANN001
-    if any((console_errors, page_errors, failed_requests, bad_responses)) and screenshot_path is not None:
-        screenshot_path.parent.mkdir(parents=True, exist_ok=True)
-        with contextlib.suppress(Exception):
-            page.screenshot(path=str(screenshot_path), full_page=True)
-    assert console_errors == [], f"console errors: {console_errors}"
-    assert page_errors == [], f"page errors: {page_errors}"
-    assert failed_requests == [], f"request failures: {failed_requests}"
-    assert bad_responses == [], f"http error responses: {bad_responses}"
-    page.close()
-
-
-def _discard_external_mermaid_cdn_failures(failed_requests: list[str]) -> None:
-    """Drop known standalone-doc Mermaid CDN misses from route-integrity assertions."""
-    failed_requests[:] = [
-        entry for entry in failed_requests if not _EXTERNAL_MERMAID_CDN_REQUEST_RE.match(entry)
-    ]
 
 
 def _extract_query_param(href: str, key: str) -> str:

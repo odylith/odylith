@@ -422,17 +422,17 @@ def _run_greenfield_project_tab_browser_check(tmp_path: Path, monkeypatch, *, co
     with _static_server(root=tmp_path) as base_url:
         for _pw, browser in _browser():
             context = browser.new_context(viewport=viewport)
-            page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
             try:
-                response = page.goto(base_url + "/index.html", wait_until="domcontentloaded")
-                assert response is not None and response.ok
-                _assert_greenfield_project_tab_layout(page, compact=compact)
-                screenshot = _failure_screenshot_path(f"project-{viewport['width']}")
-                if screenshot is None:
-                    screenshot = tmp_path / f"project-{viewport['width']}.png"
-                screenshot.parent.mkdir(parents=True, exist_ok=True)
-                page.screenshot(path=str(screenshot), full_page=True)
-                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+                with _new_page(context) as (page, observation):
+                    response = page.goto(base_url + "/index.html", wait_until="domcontentloaded")
+                    assert response is not None and response.ok
+                    _assert_greenfield_project_tab_layout(page, compact=compact)
+                    screenshot = _failure_screenshot_path(f"project-{viewport['width']}")
+                    if screenshot is None:
+                        screenshot = tmp_path / f"project-{viewport['width']}.png"
+                    screenshot.parent.mkdir(parents=True, exist_ok=True)
+                    page.screenshot(path=str(screenshot), full_page=True)
+                    _assert_clean_page(page, observation)
             finally:
                 context.close()
 
@@ -468,23 +468,23 @@ def test_project_handoff_scope_is_visible_and_copyable_at_both_widths(tmp_path: 
             for viewport in ({"width": 1440, "height": 1100}, {"width": 430, "height": 932}):
                 for name, constraints, non_goals in cases:
                     context = browser.new_context(viewport=viewport)
-                    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
                     try:
-                        response = page.goto(base_url + f"/{name}.html", wait_until="domcontentloaded")
-                        assert response is not None and response.ok
-                        prompts = page.locator(".project-host-prompt code")
-                        assert prompts.count() == 5
-                        expected_block = (
-                            "Operational constraints — preserve these requirements:\n"
-                            + ("\n".join(constraints) if constraints else "None stated.")
-                            + "\n\nExcluded scope — preserve these exclusions:\n"
-                            + ("\n".join(non_goals) if non_goals else "None stated.")
-                        )
-                        for index, handoff in enumerate(payloads[name]["host_handoff_prompts"]):
-                            prompt = prompts.nth(index)
-                            assert prompt.is_visible()
-                            assert prompt.text_content() == handoff["prompt"]
-                            copied_text = prompt.evaluate("""node => {
+                        with _new_page(context) as (page, observation):
+                            response = page.goto(base_url + f"/{name}.html", wait_until="domcontentloaded")
+                            assert response is not None and response.ok
+                            prompts = page.locator(".project-host-prompt code")
+                            assert prompts.count() == 5
+                            expected_block = (
+                                "Operational constraints — preserve these requirements:\n"
+                                + ("\n".join(constraints) if constraints else "None stated.")
+                                + "\n\nExcluded scope — preserve these exclusions:\n"
+                                + ("\n".join(non_goals) if non_goals else "None stated.")
+                            )
+                            for index, handoff in enumerate(payloads[name]["host_handoff_prompts"]):
+                                prompt = prompts.nth(index)
+                                assert prompt.is_visible()
+                                assert prompt.text_content() == handoff["prompt"]
+                                copied_text = prompt.evaluate("""node => {
                               const range = document.createRange();
                               range.selectNodeContents(node);
                               const selection = window.getSelection();
@@ -492,15 +492,15 @@ def test_project_handoff_scope_is_visible_and_copyable_at_both_widths(tmp_path: 
                               selection.addRange(range);
                               return selection.toString();
                             }""")
-                            assert copied_text == handoff["prompt"]
-                            assert copied_text.startswith("Selected workstream: B-701")
-                            assert copied_text.endswith(expected_block)
-                        _assert_project_sections_do_not_overflow(page, [".project-host-handoff"])
-                        page.evaluate("window.getSelection().removeAllRanges()")
-                        page.locator(".project-host-prompt").first.screenshot(
-                            path=str(tmp_path / f"handoff-{name}-{viewport['width']}.png"),
-                        )
-                        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+                                assert copied_text == handoff["prompt"]
+                                assert copied_text.startswith("Selected workstream: B-701")
+                                assert copied_text.endswith(expected_block)
+                            _assert_project_sections_do_not_overflow(page, [".project-host-handoff"])
+                            page.evaluate("window.getSelection().removeAllRanges()")
+                            page.locator(".project-host-prompt").first.screenshot(
+                                path=str(tmp_path / f"handoff-{name}-{viewport['width']}.png"),
+                            )
+                            _assert_clean_page(page, observation)
                     finally:
                         context.close()
 
@@ -517,26 +517,26 @@ def test_project_tab_result_first_source_renders_labeled_proposed_order_at_both_
         for _pw, browser in _browser():
             for viewport in ({"width": 1440, "height": 1100}, {"width": 430, "height": 932}):
                 context = browser.new_context(viewport=viewport)
-                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
                 try:
-                    response = page.goto(base_url + "/index.html", wait_until="domcontentloaded")
-                    assert response is not None and response.ok
-                    for key in ("focus", "first_path"):
-                        sequence = page.locator(f'[data-authored-fact-list="{key}"]')
-                        assert sequence.get_attribute("data-authority-kind") == "provisional_design"
-                        items = sequence.locator("[data-authored-fact-item]")
-                        assert items.all_text_contents() == expected_events
-                        assert items.evaluate_all("nodes => nodes.map(node => node.dataset.eventOrder)") == ["2", "1"]
-                    assert page.locator("[data-proposed-first-run-label]").all_text_contents() == [
-                        "Proposed first run:", "Proposed first run:",
-                    ]
-                    card = page.locator('[data-semantic-slot="first_path"]')
-                    assert card.locator(":scope > *").count() == 2
-                    assert card.locator(":scope > .project-story-contract-body").count() == 1
-                    _assert_project_sections_do_not_overflow(page, [".project-product-story", ".project-host-handoff"])
-                    card.screenshot(path=str(tmp_path / f"proposed-first-run-{viewport['width']}.png"))
-                    page.screenshot(path=str(tmp_path / f"project-{viewport['width']}.png"), full_page=True)
-                    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+                    with _new_page(context) as (page, observation):
+                        response = page.goto(base_url + "/index.html", wait_until="domcontentloaded")
+                        assert response is not None and response.ok
+                        for key in ("focus", "first_path"):
+                            sequence = page.locator(f'[data-authored-fact-list="{key}"]')
+                            assert sequence.get_attribute("data-authority-kind") == "provisional_design"
+                            items = sequence.locator("[data-authored-fact-item]")
+                            assert items.all_text_contents() == expected_events
+                            assert items.evaluate_all("nodes => nodes.map(node => node.dataset.eventOrder)") == ["2", "1"]
+                        assert page.locator("[data-proposed-first-run-label]").all_text_contents() == [
+                            "Proposed first run:", "Proposed first run:",
+                        ]
+                        card = page.locator('[data-semantic-slot="first_path"]')
+                        assert card.locator(":scope > *").count() == 2
+                        assert card.locator(":scope > .project-story-contract-body").count() == 1
+                        _assert_project_sections_do_not_overflow(page, [".project-product-story", ".project-host-handoff"])
+                        card.screenshot(path=str(tmp_path / f"proposed-first-run-{viewport['width']}.png"))
+                        page.screenshot(path=str(tmp_path / f"project-{viewport['width']}.png"), full_page=True)
+                        _assert_clean_page(page, observation)
                 finally:
                     context.close()
 
@@ -546,14 +546,15 @@ def test_project_tab_clipping_probe_detects_a_clipping_parent(tmp_path: Path, mo
     with _static_server(root=tmp_path) as base_url:
         for _pw, browser in _browser():
             context = browser.new_context(viewport={"width": 430, "height": 932})
-            page, _console_errors, _page_errors, _failed_requests, _bad_responses = _new_page(context)
             try:
-                response = page.goto(base_url + "/index.html", wait_until="domcontentloaded")
-                assert response is not None and response.ok
-                card = page.locator(".project-story-contract-card").first
-                card.evaluate("(node) => { node.style.maxHeight = '24px'; node.style.overflow = 'hidden'; }")
+                with _new_page(context) as (page, observation):
+                    response = page.goto(base_url + "/index.html", wait_until="domcontentloaded")
+                    assert response is not None and response.ok
+                    card = page.locator(".project-story-contract-card").first
+                    card.evaluate("(node) => { node.style.maxHeight = '24px'; node.style.overflow = 'hidden'; }")
 
-                assert _clipped_project_text(page)
+                    assert _clipped_project_text(page)
+                    _assert_clean_page(page, observation)
             finally:
                 context.close()
 
@@ -586,14 +587,14 @@ def test_project_tab_blank_and_degraded_states_wrap_at_desktop_and_mobile_widths
             for filename, selectors, terminal_text in cases:
                 for viewport in viewports:
                     context = browser.new_context(viewport=viewport)
-                    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
                     try:
-                        response = page.goto(f"{base_url}/{filename}", wait_until="domcontentloaded")
-                        assert response is not None and response.ok
-                        assert terminal_text in page.locator(".project-surface").inner_text()
-                        assert "['The" not in page.locator(".project-surface").inner_text()
-                        _assert_project_sections_do_not_overflow(page, selectors)
-                        page.screenshot(path=str(tmp_path / f"{Path(filename).stem}-{viewport['width']}.png"), full_page=True)
-                        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+                        with _new_page(context) as (page, observation):
+                            response = page.goto(f"{base_url}/{filename}", wait_until="domcontentloaded")
+                            assert response is not None and response.ok
+                            assert terminal_text in page.locator(".project-surface").inner_text()
+                            assert "['The" not in page.locator(".project-surface").inner_text()
+                            _assert_project_sections_do_not_overflow(page, selectors)
+                            page.screenshot(path=str(tmp_path / f"{Path(filename).stem}-{viewport['width']}.png"), full_page=True)
+                            _assert_clean_page(page, observation)
                     finally:
                         context.close()

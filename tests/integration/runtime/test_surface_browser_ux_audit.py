@@ -203,65 +203,65 @@ def _collect_compass_component_actions(compass, *, limit: int = 3) -> list[dict[
 
 def test_radar_b048_brutal_topology_and_surface_link_audit(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    source_id = "B-048"
-    source_url = base_url + f"/odylith/index.html?tab=radar&workstream={quote(source_id, safe='')}"
-    response = page.goto(source_url, wait_until="domcontentloaded")
-    assert response is not None and response.ok
+    with _new_page(context) as (page, observation):
+        source_id = "B-048"
+        source_url = base_url + f"/odylith/index.html?tab=radar&workstream={quote(source_id, safe='')}"
+        response = page.goto(source_url, wait_until="domcontentloaded")
+        assert response is not None and response.ok
 
-    radar = page.frame_locator("#frame-radar")
-    radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
-    radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=source_id).wait_for(timeout=15000)
-    _open_radar_topology_relations(radar)
+        radar = page.frame_locator("#frame-radar")
+        radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
+        radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=source_id).wait_for(timeout=15000)
+        _open_radar_topology_relations(radar)
 
-    relation_ids = radar.locator("#detail").evaluate(
-        """(node) => Array.from(
+        relation_ids = radar.locator("#detail").evaluate(
+            """(node) => Array.from(
             new Set(
               Array.from(node.querySelectorAll('details.topology-relations-panel .topology-relations [data-link-idea]'))
                 .map((chip) => String(chip.getAttribute('data-link-idea') || '').trim())
                 .filter(Boolean)
             )
         )"""
-    )
-    assert relation_ids, "expected B-048 topology relations"
+        )
+        assert relation_ids, "expected B-048 topology relations"
 
-    for target_id in relation_ids:
+        for target_id in relation_ids:
+            response = page.goto(source_url, wait_until="domcontentloaded")
+            assert response is not None and response.ok
+            radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=source_id).wait_for(timeout=15000)
+            _open_radar_topology_relations(radar)
+            radar.locator(f'#detail [data-link-idea="{target_id}"]').first.evaluate("node => node.click()")
+            _assert_radar_selection(page, str(target_id))
+            _wait_for_shell_query_param(page, tab="radar", key="workstream", value=str(target_id))
+
         response = page.goto(source_url, wait_until="domcontentloaded")
         assert response is not None and response.ok
         radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=source_id).wait_for(timeout=15000)
         _open_radar_topology_relations(radar)
-        radar.locator(f'#detail [data-link-idea="{target_id}"]').first.evaluate("node => node.click()")
-        _assert_radar_selection(page, str(target_id))
-        _wait_for_shell_query_param(page, tab="radar", key="workstream", value=str(target_id))
+        surface_actions = _frame_anchor_actions(radar, "#detail a.chip-topology-diagram, #detail a.chip-registry-component")
+        assert surface_actions, "expected B-048 cross-surface shell links"
+        for href in dict.fromkeys(str(action["href"]) for action in surface_actions):
+            response = page.goto(source_url, wait_until="domcontentloaded")
+            assert response is not None and response.ok
+            radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=source_id).wait_for(timeout=15000)
+            _open_radar_topology_relations(radar)
+            selector = "a.chip-topology-diagram" if "tab=atlas" in href else "a.chip-registry-component"
+            _click_frame_anchor_by_href(radar, "#detail", selector, href)
+            _assert_shell_target_from_href(page, href)
 
-    response = page.goto(source_url, wait_until="domcontentloaded")
-    assert response is not None and response.ok
-    radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=source_id).wait_for(timeout=15000)
-    _open_radar_topology_relations(radar)
-    surface_actions = _frame_anchor_actions(radar, "#detail a.chip-topology-diagram, #detail a.chip-registry-component")
-    assert surface_actions, "expected B-048 cross-surface shell links"
-    for href in dict.fromkeys(str(action["href"]) for action in surface_actions):
-        response = page.goto(source_url, wait_until="domcontentloaded")
-        assert response is not None and response.ok
-        radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=source_id).wait_for(timeout=15000)
-        _open_radar_topology_relations(radar)
-        selector = "a.chip-topology-diagram" if "tab=atlas" in href else "a.chip-registry-component"
-        _click_frame_anchor_by_href(radar, "#detail", selector, href)
-        _assert_shell_target_from_href(page, href)
-
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        _assert_clean_page(page, observation)
 
 
 def test_radar_default_warning_cards_hide_maintainer_traceability_diagnostics(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(base_url + "/odylith/index.html?tab=radar", wait_until="domcontentloaded")
-    assert response is not None and response.ok
+    with _new_page(context) as (page, observation):
+        response = page.goto(base_url + "/odylith/index.html?tab=radar", wait_until="domcontentloaded")
+        assert response is not None and response.ok
 
-    radar = page.frame_locator("#frame-radar")
-    radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
-    diagnostic = radar.locator("body").evaluate(
-        """() => {
+        radar = page.frame_locator("#frame-radar")
+        radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
+        diagnostic = radar.locator("body").evaluate(
+            """() => {
             const data = window.__ODYLITH_BACKLOG_DATA__ || {};
             const rows = Array.isArray(data.warning_items) ? data.warning_items : [];
             const match = rows.find((entry) => {
@@ -277,258 +277,258 @@ def test_radar_default_warning_cards_hide_maintainer_traceability_diagnostics(br
               source: String(match.source || '').trim(),
             };
         }"""
-    )
-    if not diagnostic:
-        pytest.skip("Radar fixture does not currently expose maintainer-only traceability diagnostics.")
+        )
+        if not diagnostic:
+            pytest.skip("Radar fixture does not currently expose maintainer-only traceability diagnostics.")
 
-    source_id = str(diagnostic["idea_id"])
-    response = page.goto(
-        base_url + f"/odylith/index.html?tab=radar&workstream={quote(source_id, safe='')}",
-        wait_until="domcontentloaded",
-    )
-    assert response is not None and response.ok
-    radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=source_id).wait_for(timeout=15000)
+        source_id = str(diagnostic["idea_id"])
+        response = page.goto(
+            base_url + f"/odylith/index.html?tab=radar&workstream={quote(source_id, safe='')}",
+            wait_until="domcontentloaded",
+        )
+        assert response is not None and response.ok
+        radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=source_id).wait_for(timeout=15000)
 
-    warning_text = " ".join(radar.locator("#detail .warning-item").all_inner_texts())
-    assert str(diagnostic["message"]) not in warning_text
-    if diagnostic.get("source"):
-        assert str(diagnostic["source"]) not in warning_text
-    assert "severity: info" not in warning_text
-    assert "autofix skipped" not in warning_text.lower()
+        warning_text = " ".join(radar.locator("#detail .warning-item").all_inner_texts())
+        assert str(diagnostic["message"]) not in warning_text
+        if diagnostic.get("source"):
+            assert str(diagnostic["source"]) not in warning_text
+        assert "severity: info" not in warning_text
+        assert "autofix skipped" not in warning_text.lower()
 
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        _assert_clean_page(page, observation)
 
 
 def test_registry_detail_action_chip_audit_round_trips_cleanly(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(base_url + "/odylith/index.html?tab=registry", wait_until="domcontentloaded")
-    assert response is not None and response.ok
-
-    registry = page.frame_locator("#frame-registry")
-    registry.locator("h1", has_text="Component Registry").wait_for(timeout=15000)
-    component_id = _select_registry_component_with_actions(registry)
-    source_url = base_url + f"/odylith/index.html?tab=registry&component={quote(component_id, safe='')}"
-    actions = _frame_anchor_actions(registry, "#detail a.detail-action-chip")
-    assert actions, "expected Registry detail action chips"
-    workstream_actions = [
-        action
-        for action in actions
-        if _WORKSTREAM_ID_RE.fullmatch(str(action["label"]).strip())
-    ]
-    assert workstream_actions, "expected Registry detail workstream chips"
-    for action in workstream_actions:
-        assert _extract_query_param(str(action["href"]), "tab") == "radar"
-
-    for href in dict.fromkeys(str(action["href"]) for action in actions):
-        response = page.goto(source_url, wait_until="domcontentloaded")
+    with _new_page(context) as (page, observation):
+        response = page.goto(base_url + "/odylith/index.html?tab=registry", wait_until="domcontentloaded")
         assert response is not None and response.ok
-        registry.locator(f'button[data-component="{component_id}"].active').wait_for(timeout=15000)
-        _click_frame_anchor_by_href(registry, "#detail", "a.detail-action-chip", href)
-        _assert_shell_target_from_href(page, href)
 
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        registry = page.frame_locator("#frame-registry")
+        registry.locator("h1", has_text="Component Registry").wait_for(timeout=15000)
+        component_id = _select_registry_component_with_actions(registry)
+        source_url = base_url + f"/odylith/index.html?tab=registry&component={quote(component_id, safe='')}"
+        actions = _frame_anchor_actions(registry, "#detail a.detail-action-chip")
+        assert actions, "expected Registry detail action chips"
+        workstream_actions = [
+            action
+            for action in actions
+            if _WORKSTREAM_ID_RE.fullmatch(str(action["label"]).strip())
+        ]
+        assert workstream_actions, "expected Registry detail workstream chips"
+        for action in workstream_actions:
+            assert _extract_query_param(str(action["href"]), "tab") == "radar"
+
+        for href in dict.fromkeys(str(action["href"]) for action in actions):
+            response = page.goto(source_url, wait_until="domcontentloaded")
+            assert response is not None and response.ok
+            registry.locator(f'button[data-component="{component_id}"].active').wait_for(timeout=15000)
+            _click_frame_anchor_by_href(registry, "#detail", "a.detail-action-chip", href)
+            _assert_shell_target_from_href(page, href)
+
+        _assert_clean_page(page, observation)
 
 
 @pytest.mark.parametrize("source_diagram_id", ["D-018", "D-025"])
 def test_atlas_surface_links_and_context_pills_round_trip_cleanly(browser_context, source_diagram_id: str) -> None:  # noqa: ANN001
     base_url, context = browser_context
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    source_url = base_url + f"/odylith/index.html?tab=atlas&diagram={quote(source_diagram_id, safe='')}"
-    response = page.goto(source_url, wait_until="domcontentloaded")
-    assert response is not None and response.ok
-
-    atlas = page.frame_locator("#frame-atlas")
-    atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
-    _open_atlas_diagram(atlas, source_diagram_id)
-
-    actions = []
-    actions.extend(_frame_anchor_actions(atlas, "#surfaceLinks a"))
-    actions.extend(_frame_anchor_actions(atlas, "#registryLinks a"))
-    workstream_actions = []
-    workstream_actions.extend(_frame_anchor_actions(atlas, "#activeWorkstreamLinks a.workstream-pill-link"))
-    workstream_actions.extend(_frame_anchor_actions(atlas, "#ownerWorkstreamLinks a.workstream-pill-link"))
-    workstream_actions.extend(_frame_anchor_actions(atlas, "#historicalWorkstreamLinks a.workstream-pill-link"))
-    actions.extend(workstream_actions)
-    unique_hrefs = list(dict.fromkeys(str(action["href"]) for action in actions))
-    assert unique_hrefs, "expected Atlas shell/context links"
-    assert workstream_actions, "expected Atlas workstream pills"
-    for action in workstream_actions:
-        assert _extract_query_param(str(action["href"]), "tab") == "radar"
-
-    for href in unique_hrefs:
+    with _new_page(context) as (page, observation):
+        source_url = base_url + f"/odylith/index.html?tab=atlas&diagram={quote(source_diagram_id, safe='')}"
         response = page.goto(source_url, wait_until="domcontentloaded")
         assert response is not None and response.ok
-        atlas.locator("#diagramId", has_text=source_diagram_id).wait_for(timeout=15000)
-        selector = (
-            "#surfaceLinks a, #registryLinks a, #activeWorkstreamLinks a.workstream-pill-link, "
-            "#ownerWorkstreamLinks a.workstream-pill-link, #historicalWorkstreamLinks a.workstream-pill-link"
-        )
-        _click_frame_anchor_by_href(atlas, "body", selector, href)
-        _assert_shell_target_from_href(page, href)
 
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        atlas = page.frame_locator("#frame-atlas")
+        atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
+        _open_atlas_diagram(atlas, source_diagram_id)
+
+        actions = []
+        actions.extend(_frame_anchor_actions(atlas, "#surfaceLinks a"))
+        actions.extend(_frame_anchor_actions(atlas, "#registryLinks a"))
+        workstream_actions = []
+        workstream_actions.extend(_frame_anchor_actions(atlas, "#activeWorkstreamLinks a.workstream-pill-link"))
+        workstream_actions.extend(_frame_anchor_actions(atlas, "#ownerWorkstreamLinks a.workstream-pill-link"))
+        workstream_actions.extend(_frame_anchor_actions(atlas, "#historicalWorkstreamLinks a.workstream-pill-link"))
+        actions.extend(workstream_actions)
+        unique_hrefs = list(dict.fromkeys(str(action["href"]) for action in actions))
+        assert unique_hrefs, "expected Atlas shell/context links"
+        assert workstream_actions, "expected Atlas workstream pills"
+        for action in workstream_actions:
+            assert _extract_query_param(str(action["href"]), "tab") == "radar"
+
+        for href in unique_hrefs:
+            response = page.goto(source_url, wait_until="domcontentloaded")
+            assert response is not None and response.ok
+            atlas.locator("#diagramId", has_text=source_diagram_id).wait_for(timeout=15000)
+            selector = (
+                "#surfaceLinks a, #registryLinks a, #activeWorkstreamLinks a.workstream-pill-link, "
+                "#ownerWorkstreamLinks a.workstream-pill-link, #historicalWorkstreamLinks a.workstream-pill-link"
+            )
+            _click_frame_anchor_by_href(atlas, "body", selector, href)
+            _assert_shell_target_from_href(page, href)
+
+        _assert_clean_page(page, observation)
 
 
 def test_compass_cross_surface_links_round_trip_cleanly(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    source_url = base_url + "/odylith/index.html?tab=compass"
-    response = page.goto(source_url, wait_until="domcontentloaded")
-    assert response is not None and response.ok
-
-    compass = page.frame_locator("#frame-compass")
-    _wait_for_compass_ready(compass)
-    workstream_link_specs = [
-        ("a.ws-id-btn, a.ws-covered-id-btn", "expected Compass workstream deeplinks"),
-    ]
-    optional_workstream_link_specs = [
-        ("#execution-waves-host a.execution-wave-chip-link", "expected Compass execution-wave workstream deeplinks"),
-        ("#release-groups-host a.execution-wave-chip-link", "expected Compass release workstream deeplinks"),
-        ("a.workstream-id-chip", "expected Compass timeline workstream deeplinks"),
-    ]
-
-    for selector, failure_message in workstream_link_specs + optional_workstream_link_specs:
-        if selector.startswith("#release-groups-host"):
-            release_summary = compass.locator("#release-groups-host summary").first
-            if release_summary.count():
-                release_summary.evaluate(
-                    """(node) => {
-                        const details = node.closest("details");
-                        if (details && !details.open) node.click();
-                    }"""
-                )
-        if selector.startswith("#execution-waves-host"):
-            wave_summary = compass.locator("#execution-waves-host summary").first
-            if wave_summary.count():
-                wave_summary.evaluate(
-                    """(node) => {
-                        const details = node.closest("details");
-                        if (details && !details.open) node.click();
-                    }"""
-                )
-        hrefs = list(
-            dict.fromkeys(
-                str(action["href"])
-                for action in _frame_anchor_actions(compass, selector)[:5]
-            )
-        )
-        if selector in {spec[0] for spec in optional_workstream_link_specs} and not hrefs:
-            continue
-        assert hrefs, failure_message
-        for href in hrefs:
-            assert _extract_query_param(href, "tab") == "radar"
-            response = page.goto(source_url, wait_until="domcontentloaded")
-            assert response is not None and response.ok
-            _wait_for_compass_ready(compass)
-            compass.locator(f'{selector}[href="{href}"]').first.wait_for(timeout=15000)
-            _click_frame_anchor_by_href(compass, "body", selector, href)
-            _assert_shell_target_from_href(page, href)
-
-    response = page.goto(source_url, wait_until="domcontentloaded")
-    assert response is not None and response.ok
-    _wait_for_compass_ready(compass)
-    component_actions = _collect_compass_component_actions(compass)
-    if not component_actions:
-        pytest.skip("Compass fixture does not currently expose row detail component links.")
-
-    for action in component_actions:
+    with _new_page(context) as (page, observation):
+        source_url = base_url + "/odylith/index.html?tab=compass"
         response = page.goto(source_url, wait_until="domcontentloaded")
         assert response is not None and response.ok
-        compass.locator(f'tr.ws-summary-row[data-ws-id="{action["workstream"]}"]').first.evaluate("node => node.click()")
-        compass.locator(f'tr.ws-detail-row.is-open[data-ws-detail="{action["workstream"]}"]').wait_for(timeout=15000)
-        _click_frame_anchor_by_href(
-            compass,
-            f'tr.ws-detail-row.is-open[data-ws-detail="{action["workstream"]}"]',
-            "a.chip-link",
-            str(action["href"]),
-        )
-        _assert_shell_target_from_href(page, str(action["href"]))
 
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        compass = page.frame_locator("#frame-compass")
+        _wait_for_compass_ready(compass)
+        workstream_link_specs = [
+            ("a.ws-id-btn, a.ws-covered-id-btn", "expected Compass workstream deeplinks"),
+        ]
+        optional_workstream_link_specs = [
+            ("#execution-waves-host a.execution-wave-chip-link", "expected Compass execution-wave workstream deeplinks"),
+            ("#release-groups-host a.execution-wave-chip-link", "expected Compass release workstream deeplinks"),
+            ("a.workstream-id-chip", "expected Compass timeline workstream deeplinks"),
+        ]
+
+        for selector, failure_message in workstream_link_specs + optional_workstream_link_specs:
+            if selector.startswith("#release-groups-host"):
+                release_summary = compass.locator("#release-groups-host summary").first
+                if release_summary.count():
+                    release_summary.evaluate(
+                        """(node) => {
+                        const details = node.closest("details");
+                        if (details && !details.open) node.click();
+                    }"""
+                    )
+            if selector.startswith("#execution-waves-host"):
+                wave_summary = compass.locator("#execution-waves-host summary").first
+                if wave_summary.count():
+                    wave_summary.evaluate(
+                        """(node) => {
+                        const details = node.closest("details");
+                        if (details && !details.open) node.click();
+                    }"""
+                    )
+            hrefs = list(
+                dict.fromkeys(
+                    str(action["href"])
+                    for action in _frame_anchor_actions(compass, selector)[:5]
+                )
+            )
+            if selector in {spec[0] for spec in optional_workstream_link_specs} and not hrefs:
+                continue
+            assert hrefs, failure_message
+            for href in hrefs:
+                assert _extract_query_param(href, "tab") == "radar"
+                response = page.goto(source_url, wait_until="domcontentloaded")
+                assert response is not None and response.ok
+                _wait_for_compass_ready(compass)
+                compass.locator(f'{selector}[href="{href}"]').first.wait_for(timeout=15000)
+                _click_frame_anchor_by_href(compass, "body", selector, href)
+                _assert_shell_target_from_href(page, href)
+
+        response = page.goto(source_url, wait_until="domcontentloaded")
+        assert response is not None and response.ok
+        _wait_for_compass_ready(compass)
+        component_actions = _collect_compass_component_actions(compass)
+        if not component_actions:
+            pytest.skip("Compass fixture does not currently expose row detail component links.")
+
+        for action in component_actions:
+            response = page.goto(source_url, wait_until="domcontentloaded")
+            assert response is not None and response.ok
+            compass.locator(f'tr.ws-summary-row[data-ws-id="{action["workstream"]}"]').first.evaluate("node => node.click()")
+            compass.locator(f'tr.ws-detail-row.is-open[data-ws-detail="{action["workstream"]}"]').wait_for(timeout=15000)
+            _click_frame_anchor_by_href(
+                compass,
+                f'tr.ws-detail-row.is-open[data-ws-detail="{action["workstream"]}"]',
+                "a.chip-link",
+                str(action["href"]),
+            )
+            _assert_shell_target_from_href(page, str(action["href"]))
+
+        _assert_clean_page(page, observation)
 
 
 def test_casebook_direct_bug_routes_and_reload_keep_selection_truthful(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(base_url + "/odylith/index.html?tab=casebook", wait_until="domcontentloaded")
-    assert response is not None and response.ok
+    with _new_page(context) as (page, observation):
+        response = page.goto(base_url + "/odylith/index.html?tab=casebook", wait_until="domcontentloaded")
+        assert response is not None and response.ok
 
-    casebook = page.frame_locator("#frame-casebook")
-    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
-    sample_rows = casebook.locator("button.bug-row").evaluate_all(
-        """nodes => nodes.slice(0, 4).map((node) => ({
+        casebook = page.frame_locator("#frame-casebook")
+        casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
+        sample_rows = casebook.locator("button.bug-row").evaluate_all(
+            """nodes => nodes.slice(0, 4).map((node) => ({
           bug: String(node.getAttribute("data-bug") || "").trim(),
           title: String((node.querySelector(".bug-row-title") || {}).textContent || "").trim(),
         }))"""
-    )
-    bug_routes = [row for row in sample_rows if row["bug"] and row["title"]]
-    assert len(bug_routes) >= 3, "expected several Casebook rows for history audit"
+        )
+        bug_routes = [row for row in sample_rows if row["bug"] and row["title"]]
+        assert len(bug_routes) >= 3, "expected several Casebook rows for history audit"
 
-    for row in bug_routes[:3]:
-        casebook.locator(f'button.bug-row[data-bug="{row["bug"]}"]').click()
-        _assert_casebook_selection(page, str(row["bug"]))
-        _wait_for_shell_query_param(page, tab="casebook", key="bug", value=str(row["bug"]))
-        casebook.locator("#detailPane .detail-title", has_text=str(row["title"])).wait_for(timeout=15000)
+        for row in bug_routes[:3]:
+            casebook.locator(f'button.bug-row[data-bug="{row["bug"]}"]').click()
+            _assert_casebook_selection(page, str(row["bug"]))
+            _wait_for_shell_query_param(page, tab="casebook", key="bug", value=str(row["bug"]))
+            casebook.locator("#detailPane .detail-title", has_text=str(row["title"])).wait_for(timeout=15000)
 
-    for row in bug_routes[:3]:
-        direct_url = base_url + f"/odylith/index.html?tab=casebook&bug={quote(str(row['bug']), safe='')}"
-        response = page.goto(direct_url, wait_until="domcontentloaded")
-        assert response is not None and response.ok
-        _assert_casebook_selection(page, str(row["bug"]))
-        _wait_for_shell_query_param(page, tab="casebook", key="bug", value=str(row["bug"]))
-        casebook.locator("#detailPane .detail-title", has_text=str(row["title"])).wait_for(timeout=15000)
-        response = page.reload(wait_until="domcontentloaded")
-        assert response is not None and response.ok
-        _assert_casebook_selection(page, str(row["bug"]))
-        _wait_for_shell_query_param(page, tab="casebook", key="bug", value=str(row["bug"]))
-        casebook.locator("#detailPane .detail-title", has_text=str(row["title"])).wait_for(timeout=15000)
+        for row in bug_routes[:3]:
+            direct_url = base_url + f"/odylith/index.html?tab=casebook&bug={quote(str(row['bug']), safe='')}"
+            response = page.goto(direct_url, wait_until="domcontentloaded")
+            assert response is not None and response.ok
+            _assert_casebook_selection(page, str(row["bug"]))
+            _wait_for_shell_query_param(page, tab="casebook", key="bug", value=str(row["bug"]))
+            casebook.locator("#detailPane .detail-title", has_text=str(row["title"])).wait_for(timeout=15000)
+            response = page.reload(wait_until="domcontentloaded")
+            assert response is not None and response.ok
+            _assert_casebook_selection(page, str(row["bug"]))
+            _wait_for_shell_query_param(page, tab="casebook", key="bug", value=str(row["bug"]))
+            casebook.locator("#detailPane .detail-title", has_text=str(row["title"])).wait_for(timeout=15000)
 
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        _assert_clean_page(page, observation)
 
 
 def test_casebook_agent_band_links_stay_distinct_and_non_repetitive(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(base_url + "/odylith/index.html?tab=casebook", wait_until="domcontentloaded")
-    assert response is not None and response.ok
+    with _new_page(context) as (page, observation):
+        response = page.goto(base_url + "/odylith/index.html?tab=casebook", wait_until="domcontentloaded")
+        assert response is not None and response.ok
 
-    casebook = page.frame_locator("#frame-casebook")
-    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
-    sample_routes = casebook.locator("button.bug-row").evaluate_all(
-        """nodes => nodes.slice(0, 10).map((node) => ({
+        casebook = page.frame_locator("#frame-casebook")
+        casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
+        sample_routes = casebook.locator("button.bug-row").evaluate_all(
+            """nodes => nodes.slice(0, 10).map((node) => ({
           bug: String(node.getAttribute("data-bug") || "").trim(),
           title: String((node.querySelector(".bug-row-title") || {}).textContent || "").trim(),
         })).filter((row) => row.bug && row.title)"""
-    )
-    assert sample_routes, "expected Casebook rows for agent-band audit"
+        )
+        assert sample_routes, "expected Casebook rows for agent-band audit"
 
-    inspected_blocks = 0
-    for row in sample_routes:
-        casebook.locator(f'button.bug-row[data-bug="{row["bug"]}"]').click()
-        _assert_casebook_selection(page, str(row["bug"]))
-        _wait_for_shell_query_param(page, tab="casebook", key="bug", value=str(row["bug"]))
-        casebook.locator("#detailPane .detail-title", has_text=str(row["title"])).wait_for(timeout=15000)
-        casebook.locator("#detailPane .section-heading", has_text="Odylith Agent Learnings").wait_for(timeout=15000)
+        inspected_blocks = 0
+        for row in sample_routes:
+            casebook.locator(f'button.bug-row[data-bug="{row["bug"]}"]').click()
+            _assert_casebook_selection(page, str(row["bug"]))
+            _wait_for_shell_query_param(page, tab="casebook", key="bug", value=str(row["bug"]))
+            casebook.locator("#detailPane .detail-title", has_text=str(row["title"])).wait_for(timeout=15000)
+            casebook.locator("#detailPane .section-heading", has_text="Odylith Agent Learnings").wait_for(timeout=15000)
 
-        blocks = [block for block in _casebook_agent_link_blocks(casebook) if block.get("title")]
-        if not blocks:
-            continue
-        inspected_blocks += 1
+            blocks = [block for block in _casebook_agent_link_blocks(casebook) if block.get("title")]
+            if not blocks:
+                continue
+            inspected_blocks += 1
 
-        seen_hrefs: dict[str, str] = {}
-        duplicates: list[tuple[str, str, str]] = []
-        for block in blocks:
-            title = str(block.get("title") or "").strip()
-            hrefs = [str(token).strip() for token in block.get("hrefs", []) if str(token).strip()]
-            assert len(hrefs) == len(set(hrefs)), f"duplicate hrefs inside Casebook block {title}: {hrefs}"
-            for href in hrefs:
-                if href in seen_hrefs:
-                    duplicates.append((href, seen_hrefs[href], title))
-                else:
-                    seen_hrefs[href] = title
-        assert duplicates == [], f"duplicate agent-band links across Casebook blocks: {duplicates}"
+            seen_hrefs: dict[str, str] = {}
+            duplicates: list[tuple[str, str, str]] = []
+            for block in blocks:
+                title = str(block.get("title") or "").strip()
+                hrefs = [str(token).strip() for token in block.get("hrefs", []) if str(token).strip()]
+                assert len(hrefs) == len(set(hrefs)), f"duplicate hrefs inside Casebook block {title}: {hrefs}"
+                for href in hrefs:
+                    if href in seen_hrefs:
+                        duplicates.append((href, seen_hrefs[href], title))
+                    else:
+                        seen_hrefs[href] = title
+            assert duplicates == [], f"duplicate agent-band links across Casebook blocks: {duplicates}"
 
-    assert inspected_blocks >= 1, "expected at least one Casebook detail with agent-band blocks"
+        assert inspected_blocks >= 1, "expected at least one Casebook detail with agent-band blocks"
 
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        _assert_clean_page(page, observation)

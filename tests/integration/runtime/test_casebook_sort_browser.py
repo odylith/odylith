@@ -100,130 +100,130 @@ def _assert_sorted(rows: list[dict[str, str]], sort_token: str) -> None:
 
 def test_casebook_sort_control_orders_rows_and_round_trips_url_state(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(base_url + "/odylith/index.html?tab=casebook", wait_until="domcontentloaded")
-    assert response is not None and response.ok
+    with _new_page(context) as (page, observation):
+        response = page.goto(base_url + "/odylith/index.html?tab=casebook", wait_until="domcontentloaded")
+        assert response is not None and response.ok
 
-    casebook = page.frame_locator("#frame-casebook")
-    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
-    casebook.locator("#sortFilter").wait_for(timeout=15000)
+        casebook = page.frame_locator("#frame-casebook")
+        casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
+        casebook.locator("#sortFilter").wait_for(timeout=15000)
 
-    assert casebook.locator("#sortFilter").input_value() == "newest"
-    newest_rows = _visible_casebook_rows(casebook)
-    assert len(newest_rows) > 1
-    _assert_sorted(newest_rows, "newest")
+        assert casebook.locator("#sortFilter").input_value() == "newest"
+        newest_rows = _visible_casebook_rows(casebook)
+        assert len(newest_rows) > 1
+        _assert_sorted(newest_rows, "newest")
 
-    for sort_token in ("oldest", "bug-id", "priority", "status"):
-        casebook.locator("#sortFilter").select_option(sort_token)
-        _wait_for_shell_query_param(page, tab="casebook", key="sort", value=sort_token)
-        assert casebook.locator("#sortFilter").input_value() == sort_token
-        _assert_sorted(_visible_casebook_rows(casebook), sort_token)
+        for sort_token in ("oldest", "bug-id", "priority", "status"):
+            casebook.locator("#sortFilter").select_option(sort_token)
+            _wait_for_shell_query_param(page, tab="casebook", key="sort", value=sort_token)
+            assert casebook.locator("#sortFilter").input_value() == sort_token
+            _assert_sorted(_visible_casebook_rows(casebook), sort_token)
 
-    casebook.locator("#sortFilter").select_option("newest")
-    page.wait_for_function(
-        """() => {
+        casebook.locator("#sortFilter").select_option("newest")
+        page.wait_for_function(
+            """() => {
           const url = new URL(window.location.href);
           return url.searchParams.get("tab") === "casebook" && !url.searchParams.has("sort");
         }""",
-        timeout=15000,
-    )
-    assert casebook.locator("#sortFilter").input_value() == "newest"
-    _assert_sorted(_visible_casebook_rows(casebook), "newest")
+            timeout=15000,
+        )
+        assert casebook.locator("#sortFilter").input_value() == "newest"
+        _assert_sorted(_visible_casebook_rows(casebook), "newest")
 
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        _assert_clean_page(page, observation)
 
 
 def test_casebook_discards_unknown_status_filter_and_humanizes_compact_status(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(
-        base_url
-        + "/odylith/index.html?tab=casebook&bug=CB-150&status=ForwardFixUpdatedLocallyPendingPlatformReleaseDeploy",
-        wait_until="domcontentloaded",
-    )
-    assert response is not None and response.ok
+    with _new_page(context) as (page, observation):
+        response = page.goto(
+            base_url
+            + "/odylith/index.html?tab=casebook&bug=CB-150&status=ForwardFixUpdatedLocallyPendingPlatformReleaseDeploy",
+            wait_until="domcontentloaded",
+        )
+        assert response is not None and response.ok
 
-    casebook = page.frame_locator("#frame-casebook")
-    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
-    casebook.locator('button.bug-row.active[data-bug="CB-150"]').wait_for(timeout=15000)
-    page.wait_for_function(
-        """() => {
+        casebook = page.frame_locator("#frame-casebook")
+        casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
+        casebook.locator('button.bug-row.active[data-bug="CB-150"]').wait_for(timeout=15000)
+        page.wait_for_function(
+            """() => {
           const url = new URL(window.location.href);
           return url.searchParams.get("tab") === "casebook"
             && url.searchParams.get("bug") === "CB-150"
             && !url.searchParams.has("status");
         }""",
-        timeout=15000,
-    )
+            timeout=15000,
+        )
 
-    assert casebook.locator("#statusFilter").input_value() == ""
-    status_options = casebook.locator("#statusFilter option").evaluate_all(
-        """nodes => nodes.map((node) => (node.textContent || "").trim())"""
-    )
-    assert status_options == ["All statuses", "Open", "In progress", "Fixed pending release", "Closed"]
-    assert casebook.locator("#listMeta").inner_text().strip() != "0 visible"
-    facts = casebook.locator("#detailPane .summary-fact").evaluate_all(
-        """nodes => Object.fromEntries(nodes.map((node) => [
+        assert casebook.locator("#statusFilter").input_value() == ""
+        status_options = casebook.locator("#statusFilter option").evaluate_all(
+            """nodes => nodes.map((node) => (node.textContent || "").trim())"""
+        )
+        assert status_options == ["All statuses", "Open", "In progress", "Fixed pending release", "Closed"]
+        assert casebook.locator("#listMeta").inner_text().strip() != "0 visible"
+        facts = casebook.locator("#detailPane .summary-fact").evaluate_all(
+            """nodes => Object.fromEntries(nodes.map((node) => [
           (node.querySelector(".summary-fact-label")?.textContent || "").trim(),
           (node.querySelector(".summary-fact-value")?.textContent || "").trim(),
         ]))"""
-    )
-    assert facts["Status"] == "Fixed pending release"
-    assert facts["Type"] == "Product"
-    detail_chips = casebook.locator("#detailPane .detail-meta .meta-chip").evaluate_all(
-        """nodes => nodes.map((node) => (node.textContent || "").trim())"""
-    )
-    assert "Fixed pending release" in detail_chips
-    active_status = casebook.locator('button.bug-row.active[data-bug="CB-150"] .list-chip').nth(1).inner_text().strip()
-    assert active_status == "Fixed pending release"
+        )
+        assert facts["Status"] == "Fixed pending release"
+        assert facts["Type"] == "Product"
+        detail_chips = casebook.locator("#detailPane .detail-meta .meta-chip").evaluate_all(
+            """nodes => nodes.map((node) => (node.textContent || "").trim())"""
+        )
+        assert "Fixed pending release" in detail_chips
+        active_status = casebook.locator('button.bug-row.active[data-bug="CB-150"] .list-chip').nth(1).inner_text().strip()
+        assert active_status == "Fixed pending release"
 
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        _assert_clean_page(page, observation)
 
 
 def test_casebook_empty_search_state_is_visible_and_honest(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(base_url + "/odylith/index.html?tab=casebook", wait_until="domcontentloaded")
-    assert response is not None and response.ok
+    with _new_page(context) as (page, observation):
+        response = page.goto(base_url + "/odylith/index.html?tab=casebook", wait_until="domcontentloaded")
+        assert response is not None and response.ok
 
-    casebook = page.frame_locator("#frame-casebook")
-    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
-    casebook.locator("button.bug-row").first.wait_for(timeout=15000)
-    casebook.locator("#searchInput").fill("no-such-casebook-record-for-empty-state-proof")
-    casebook.locator("#listMeta", has_text="0 visible").wait_for(timeout=15000)
+        casebook = page.frame_locator("#frame-casebook")
+        casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
+        casebook.locator("button.bug-row").first.wait_for(timeout=15000)
+        casebook.locator("#searchInput").fill("no-such-casebook-record-for-empty-state-proof")
+        casebook.locator("#listMeta", has_text="0 visible").wait_for(timeout=15000)
 
-    assert casebook.locator("#bugList .empty-state").inner_text().strip() == (
-        "No Casebook entries match the current filters."
-    )
-    assert casebook.locator("#detailPane .empty-state").inner_text().strip() == (
-        "Select a different filter or search term to inspect Casebook detail."
-    )
-    assert casebook.locator("button.bug-row").count() == 0
+        assert casebook.locator("#bugList .empty-state").inner_text().strip() == (
+            "No Casebook entries match the current filters."
+        )
+        assert casebook.locator("#detailPane .empty-state").inner_text().strip() == (
+            "Select a different filter or search term to inspect Casebook detail."
+        )
+        assert casebook.locator("button.bug-row").count() == 0
 
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        _assert_clean_page(page, observation)
 
 
 def test_casebook_workstream_action_chips_omit_radar_prefix(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    bug_route = "CB-230"
-    response = page.goto(
-        base_url + f"/odylith/index.html?tab=casebook&bug={bug_route}",
-        wait_until="domcontentloaded",
-    )
-    assert response is not None and response.ok
+    with _new_page(context) as (page, observation):
+        bug_route = "CB-230"
+        response = page.goto(
+            base_url + f"/odylith/index.html?tab=casebook&bug={bug_route}",
+            wait_until="domcontentloaded",
+        )
+        assert response is not None and response.ok
 
-    casebook = page.frame_locator("#frame-casebook")
-    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
-    casebook.locator(f'button.bug-row.active[data-bug="{bug_route}"]').wait_for(timeout=15000)
-    chip = casebook.locator('#detailPane a.action-chip[href*="workstream=B-142"]')
-    chip.wait_for(timeout=15000)
-    assert chip.inner_text().strip() == "B-142"
-    labels = casebook.locator("#detailPane a.action-chip").evaluate_all(
-        """nodes => nodes.map((node) => (node.textContent || "").trim()).filter(Boolean)"""
-    )
-    assert not any(re.fullmatch(r"Radar B-\d+", label) for label in labels)
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        casebook = page.frame_locator("#frame-casebook")
+        casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
+        casebook.locator(f'button.bug-row.active[data-bug="{bug_route}"]').wait_for(timeout=15000)
+        chip = casebook.locator('#detailPane a.action-chip[href*="workstream=B-142"]')
+        chip.wait_for(timeout=15000)
+        assert chip.inner_text().strip() == "B-142"
+        labels = casebook.locator("#detailPane a.action-chip").evaluate_all(
+            """nodes => nodes.map((node) => (node.textContent || "").trim()).filter(Boolean)"""
+        )
+        assert not any(re.fullmatch(r"Radar B-\d+", label) for label in labels)
+        _assert_clean_page(page, observation)
 
 
 def test_casebook_github_issue_signal_opens_in_new_browser_tab(browser_context) -> None:  # noqa: ANN001
@@ -236,42 +236,42 @@ def test_casebook_github_issue_signal_opens_in_new_browser_tab(browser_context) 
             body="<!doctype html><html><body><h1>Mock GitHub issue</h1></body></html>",
         ),
     )
-    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(base_url + "/odylith/index.html?tab=casebook&bug=CB-136", wait_until="domcontentloaded")
-    assert response is not None and response.ok
+    with _new_page(context) as (page, observation):
+        response = page.goto(base_url + "/odylith/index.html?tab=casebook&bug=CB-136", wait_until="domcontentloaded")
+        assert response is not None and response.ok
 
-    casebook = page.frame_locator("#frame-casebook")
-    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
-    casebook.locator('button.bug-row.active[data-bug="CB-136"]').wait_for(timeout=15000)
-    head_actions = casebook.locator("#detailPane .detail-head .detail-links a.action-chip").evaluate_all(
-        """nodes => nodes.map((node) => node.getAttribute("href") || "")"""
-    )
-    assert "https://github.com/odylith/odylith/issues/21" not in head_actions
+        casebook = page.frame_locator("#frame-casebook")
+        casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
+        casebook.locator('button.bug-row.active[data-bug="CB-136"]').wait_for(timeout=15000)
+        head_actions = casebook.locator("#detailPane .detail-head .detail-links a.action-chip").evaluate_all(
+            """nodes => nodes.map((node) => node.getAttribute("href") || "")"""
+        )
+        assert "https://github.com/odylith/odylith/issues/21" not in head_actions
 
-    signal = casebook.locator(".brief-card", has_text="Signal")
-    issue = signal.locator('a.action-chip[href="https://github.com/odylith/odylith/issues/21"]')
-    issue.wait_for(timeout=15000)
-    issue_attrs = issue.evaluate(
-        """node => ({
+        signal = casebook.locator(".brief-card", has_text="Signal")
+        issue = signal.locator('a.action-chip[href="https://github.com/odylith/odylith/issues/21"]')
+        issue.wait_for(timeout=15000)
+        issue_attrs = issue.evaluate(
+            """node => ({
           label: (node.textContent || "").trim(),
           href: node.getAttribute("href") || "",
           target: node.getAttribute("target") || "",
           rel: node.getAttribute("rel") || "",
         })"""
-    )
+        )
 
-    assert issue_attrs == {
-        "label": "GitHub issue: odylith/odylith#21",
-        "href": "https://github.com/odylith/odylith/issues/21",
-        "target": "_blank",
-        "rel": "noopener noreferrer",
-    }
-    with page.expect_popup() as popup_info:
-        issue.click()
-    popup = popup_info.value
-    popup.wait_for_load_state("domcontentloaded")
-    assert popup.locator("h1").inner_text().strip() == "Mock GitHub issue"
-    assert popup.url == "https://github.com/odylith/odylith/issues/21"
-    popup.close()
+        assert issue_attrs == {
+            "label": "GitHub issue: odylith/odylith#21",
+            "href": "https://github.com/odylith/odylith/issues/21",
+            "target": "_blank",
+            "rel": "noopener noreferrer",
+        }
+        with page.expect_popup() as popup_info:
+            issue.click()
+        popup = popup_info.value
+        popup.wait_for_load_state("domcontentloaded")
+        assert popup.locator("h1").inner_text().strip() == "Mock GitHub issue"
+        assert popup.url == "https://github.com/odylith/odylith/issues/21"
+        popup.close()
 
-    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+        _assert_clean_page(page, observation)

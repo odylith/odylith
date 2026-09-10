@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 from pathlib import Path
+from urllib.parse import urljoin, urlsplit
 
 from odylith.runtime.surfaces import compass_dashboard_runtime as compass_runtime
 from tests.integration.runtime.compass_browser_regression_support import (
@@ -205,11 +206,10 @@ def test_compass_browser_source_truth_snapshot_restores_active_release_and_wave_
     write_runtime_payload(fixture_root, payload)
 
     for _pw, browser in _browser():
-        context, page, compass, console_errors, page_errors, failed_requests, bad_responses = open_compass_page(
+        with open_compass_page(
             fixture_root,
             browser,
-        )
-        try:
+        ) as (page, compass, observation):
             compass.locator("#status-banner").wait_for(timeout=15000)
             banner_text = compass.locator("#status-banner").inner_text().strip()
             assert "governed source-truth snapshot" in banner_text
@@ -228,11 +228,7 @@ def test_compass_browser_source_truth_snapshot_restores_active_release_and_wave_
                 has_text="Program and release lanes already organize these active workstreams",
             ).wait_for(timeout=15000)
 
-            console_errors[:] = [row for row in console_errors if "compass-source-truth.v1.json" not in row]
-            bad_responses[:] = [row for row in bad_responses if "compass-source-truth.v1.json" not in row]
-            _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
-        finally:
-            context.close()
+            _assert_clean_page(page, observation)
 
 
 def test_compass_browser_older_source_truth_snapshot_never_overrides_fresher_runtime(tmp_path: Path) -> None:
@@ -267,11 +263,10 @@ def test_compass_browser_older_source_truth_snapshot_never_overrides_fresher_run
     write_runtime_payload(fixture_root, payload)
 
     for _pw, browser in _browser():
-        context, page, compass, console_errors, page_errors, failed_requests, bad_responses = open_compass_page(
+        with open_compass_page(
             fixture_root,
             browser,
-        )
-        try:
+        ) as (page, compass, observation):
             wait_for_current_workstreams_or_empty(compass)
             current_ids = current_workstream_ids(compass)
             covered_ids = covered_workstream_ids(compass)
@@ -290,17 +285,7 @@ def test_compass_browser_older_source_truth_snapshot_never_overrides_fresher_run
 
             assert "governed source-truth snapshot" not in compass.locator("#status-banner").inner_text().strip()
 
-            console_errors[:] = [row for row in console_errors if "ERR_CONNECTION_" not in row]
-            failed_requests[:] = [
-                row
-                for row in failed_requests
-                if "/runtime/current.v1.json" not in row
-                and "runtime/history/" not in row.lower()
-                and "/radar/traceability-graph.v1.json" not in row
-            ]
-            _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
-        finally:
-            context.close()
+            _assert_clean_page(page, observation)
 
 
 def test_compass_browser_traceability_fallback_prioritizes_active_release_truth_when_source_snapshot_is_missing(
@@ -330,11 +315,10 @@ def test_compass_browser_traceability_fallback_prioritizes_active_release_truth_
     source_truth_path.unlink()
 
     for _pw, browser in _browser():
-        context, page, compass, console_errors, page_errors, failed_requests, bad_responses = open_compass_page(
+        with open_compass_page(
             fixture_root,
             browser,
-        )
-        try:
+        ) as (page, compass, observation):
             compass.locator("#status-banner").wait_for(timeout=15000)
             banner_text = compass.locator("#status-banner").inner_text().strip()
             assert "traceability-graph fallback" in banner_text
@@ -353,12 +337,16 @@ def test_compass_browser_traceability_fallback_prioritizes_active_release_truth_
                 has_text="Program and release lanes already organize these active workstreams",
             ).wait_for(timeout=15000)
 
-            console_errors[:] = []
-            bad_responses[:] = []
-            failed_requests[:] = [row for row in failed_requests if "runtime/history/" not in row.lower()]
-            _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
-        finally:
-            context.close()
+            expected_resource = urlsplit(urljoin(page.url, "/odylith/compass/compass-source-truth.v1.json"))
+            snapshot = observation.finish()
+            assert snapshot.complete and not snapshot.lifecycle_errors, snapshot
+            assert snapshot.native_result is not None and not snapshot.native_result.coverage_errors, snapshot
+            assert not snapshot.page_errors, snapshot.page_errors
+            assert snapshot.http_errors and all(error.status == 404 and urlsplit(error.url)._replace(query="") == expected_resource
+                                                for error in snapshot.http_errors), snapshot.http_errors
+            assert snapshot.native_failures and all(failure.http_status == 404 and urlsplit(failure.url)._replace(query="") == expected_resource
+                                                    for failure in snapshot.native_failures), snapshot.native_failures
+            assert snapshot.console_errors and set(snapshot.console_errors) == {"Failed to load resource: the server responded with a status of 404 (File not found)"}, snapshot.console_errors
 
 
 def test_compass_browser_source_truth_snapshot_keeps_release_and_current_workstream_sections_aligned(
@@ -392,11 +380,10 @@ def test_compass_browser_source_truth_snapshot_keeps_release_and_current_workstr
     write_runtime_payload(fixture_root, payload)
 
     for _pw, browser in _browser():
-        context, page, compass, console_errors, page_errors, failed_requests, bad_responses = open_compass_page(
+        with open_compass_page(
             fixture_root,
             browser,
-        )
-        try:
+        ) as (page, compass, observation):
             compass.locator("#status-banner").wait_for(timeout=15000)
             assert "governed source-truth snapshot" in compass.locator("#status-banner").inner_text().strip()
 
@@ -421,11 +408,7 @@ def test_compass_browser_source_truth_snapshot_keeps_release_and_current_workstr
                 has_text="Program and release lanes already organize these active workstreams",
             ).wait_for(timeout=15000)
 
-            console_errors[:] = [row for row in console_errors if "compass-source-truth.v1.json" not in row]
-            bad_responses[:] = [row for row in bad_responses if "compass-source-truth.v1.json" not in row]
-            _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
-        finally:
-            context.close()
+            _assert_clean_page(page, observation)
 
 
 def test_compass_browser_traceability_fallback_clears_stale_scoped_metadata_before_current_workstreams_render(
@@ -461,11 +444,10 @@ def test_compass_browser_traceability_fallback_clears_stale_scoped_metadata_befo
     source_truth_path.unlink()
 
     for _pw, browser in _browser():
-        context, page, compass, console_errors, page_errors, failed_requests, bad_responses = open_compass_page(
+        with open_compass_page(
             fixture_root,
             browser,
-        )
-        try:
+        ) as (page, compass, observation):
             compass.locator("#status-banner").wait_for(timeout=15000)
             assert "traceability-graph fallback" in compass.locator("#status-banner").inner_text().strip()
 
@@ -485,12 +467,16 @@ def test_compass_browser_traceability_fallback_clears_stale_scoped_metadata_befo
                 has_text="Program and release lanes already organize these active workstreams",
             ).wait_for(timeout=15000)
 
-            console_errors[:] = []
-            bad_responses[:] = []
-            failed_requests[:] = [row for row in failed_requests if "runtime/history/" not in row.lower()]
-            _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
-        finally:
-            context.close()
+            expected_resource = urlsplit(urljoin(page.url, "/odylith/compass/compass-source-truth.v1.json"))
+            snapshot = observation.finish()
+            assert snapshot.complete and not snapshot.lifecycle_errors, snapshot
+            assert snapshot.native_result is not None and not snapshot.native_result.coverage_errors, snapshot
+            assert not snapshot.page_errors, snapshot.page_errors
+            assert snapshot.http_errors and all(error.status == 404 and urlsplit(error.url)._replace(query="") == expected_resource
+                                                for error in snapshot.http_errors), snapshot.http_errors
+            assert snapshot.native_failures and all(failure.http_status == 404 and urlsplit(failure.url)._replace(query="") == expected_resource
+                                                    for failure in snapshot.native_failures), snapshot.native_failures
+            assert snapshot.console_errors and set(snapshot.console_errors) == {"Failed to load resource: the server responded with a status of 404 (File not found)"}, snapshot.console_errors
 
 
 def test_compass_browser_ignores_unusable_source_truth_snapshot_and_continues_to_traceability_fallback(
@@ -522,11 +508,10 @@ def test_compass_browser_ignores_unusable_source_truth_snapshot_and_continues_to
     write_runtime_payload(fixture_root, payload)
 
     for _pw, browser in _browser():
-        context, page, compass, console_errors, page_errors, failed_requests, bad_responses = open_compass_page(
+        with open_compass_page(
             fixture_root,
             browser,
-        )
-        try:
+        ) as (page, compass, observation):
             compass.locator("#status-banner").wait_for(timeout=15000)
             banner_text = compass.locator("#status-banner").inner_text().strip()
             assert "traceability-graph fallback" in banner_text
@@ -547,12 +532,7 @@ def test_compass_browser_ignores_unusable_source_truth_snapshot_and_continues_to
                 has_text="Program and release lanes already organize these active workstreams",
             ).wait_for(timeout=15000)
 
-            console_errors[:] = []
-            bad_responses[:] = []
-            failed_requests[:] = [row for row in failed_requests if "runtime/history/" not in row.lower()]
-            _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
-        finally:
-            context.close()
+            _assert_clean_page(page, observation)
 
 
 def test_compass_browser_distinguishes_governance_acceptance_from_implementation(tmp_path: Path) -> None:
@@ -683,11 +663,10 @@ def test_compass_browser_distinguishes_governance_acceptance_from_implementation
     )
 
     for _pw, browser in _browser():
-        context, page, compass, console_errors, page_errors, failed_requests, bad_responses = open_compass_page(
+        with open_compass_page(
             fixture_root,
             browser,
-        )
-        try:
+        ) as (page, compass, observation):
             wait_for_current_workstreams_or_empty(compass)
 
             governance_row = compass.locator(
@@ -718,6 +697,4 @@ def test_compass_browser_distinguishes_governance_acceptance_from_implementation
             mixed_card.locator("summary").click()
             assert "IMPLEMENTED" in mixed_card.locator(".tx-narrative-section-title").all_inner_texts()
 
-            _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
-        finally:
-            context.close()
+            _assert_clean_page(page, observation)
