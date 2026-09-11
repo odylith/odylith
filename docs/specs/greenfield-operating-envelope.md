@@ -47,12 +47,20 @@ callback and visibility contract.
 Release evaluation covers three pinned candidate success profiles; their identity
 does not itself establish qualification:
 
-- `greenfield-standard-terra-low-complete-author-review-v12`: the default and `auto`
-  path, with a 60-second consumer budget and a 55-second model window.
-- `greenfield-rescue-terra-medium-complete-author-review-v12`: the explicit rescue
-  path, with a 90-second consumer budget and an 80-second model window.
-- `greenfield-deep-sol-high-complete-author-review-v12`: the explicit deep path,
-  with a 120-second consumer budget and a 105-second model window.
+- `greenfield-standard-terra-low-complete-author-review-v13`: the default and `auto`
+  path, with a 90-second consumer ceiling and a 55-second model window.
+- `greenfield-rescue-terra-medium-complete-author-review-v13`: the explicit rescue
+  path, with a 120-second consumer ceiling and an 80-second model window.
+- `greenfield-deep-sol-high-complete-author-review-v13`: the explicit deep path,
+  with a 150-second consumer ceiling and a 105-second model window.
+
+Proposal elapsed time must be strictly below the selected ceiling. Sixty seconds
+is an advisory normal-case target, not a second acceptance gate. The separate
+commit-only step must still finish strictly below 60 seconds. These approved
+v13 limits do not change model windows, models, reasoning effort, call count,
+semantic requirements or transaction laws. Historical v12 observations keep
+their original limits and verdicts; old sealed v12 transactions are not relabeled
+or accepted as v13. Fresh per-profile evidence is required for qualification.
 
 The selected profile is fixed before the model request. Elapsed time or a failed
 attempt never relabels or extends a standard request into rescue or deep.

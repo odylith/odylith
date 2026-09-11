@@ -53,7 +53,6 @@ def _authored_structural_manifest() -> dict[str, object]:
             "status": "passed",
             "validation_status": "passed",
             "issue_count": 0,
-            "budget_seconds": 60.0,
             "requested_repair_tier": "standard",
             "repair_tier": "standard",
             "quality_lenses": {

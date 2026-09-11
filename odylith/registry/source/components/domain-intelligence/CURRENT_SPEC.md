@@ -4,6 +4,17 @@ Last updated: 2026-09-10
 
 ## Overview
 
+The current v13 Greenfield proposal ceilings are strictly below 90 seconds for
+standard/auto, 120 for explicitly selected rescue, and 150 for explicitly
+selected deep. Sixty seconds is an advisory normal-case target. The author and
+reviewer still share 55/80/105-second model windows, with review capped at 20
+seconds and the actual remaining window. Commit-only publication remains below
+60 seconds. Profiles are selected before execution, never extended after an
+overrun. This operator-approved timing change does not change semantic quality,
+models, efforts, prompts, call count or transaction guarantees. Historical
+60/90/120 observations below retain their original verdicts and do not qualify
+v13; old sealed v12 transactions must fail current-profile validation.
+
 The shared Greenfield host decision transport must consume CONFIRM, REJECT and
 incomplete decisions before native model dispatch. Supplying developer context
 alone is not a stop mechanism. Only EDIT with supplied new evidence may continue
@@ -203,7 +214,7 @@ Domain Intelligence owns the Greenfield evidence-to-transaction boundary. One
 pinned model authors source-cited facts and typed relations alongside a required,
 separately labeled provisional design. Source-local v53 uses one author and one
 read-only full-candidate reviewer inside the same 55/80/105 model windows and
-fixed 60/90/120 consumer limits. Review receives at most 20 seconds and only
+fixed v13 90/120/150 consumer limits. Review receives at most 20 seconds and only
 remaining time, including setup and validation; no repair call or retry follows.
 Invalid authoring and material clarification do not invoke review. Deterministic code verifies
 exact custody, binds design in the existing relation hash, projects the complete governed package,
@@ -3237,10 +3248,11 @@ This section captures synchronized requirement and contract signals derived from
   according to that contract. Unknown future lens checks must fail closed as
   unrepairable until their owner, target layer, and repairability are added to
   the contract. `proposal_repair` is not a valid greenfield repairability.
-- Auto-tier pre-confirm repair must start on the standard 60-second budget.
-  The engine may extend to the 90-second rescue budget only after a repairable
-  final semantic or quality gate failure activates rescue. Deep 120-second
-  repair remains explicit premium/CI mode, not the normal operator path.
+- Auto selects the standard v13 proposal ceiling below 90 seconds before the
+  request. Rescue below 120 seconds and deep below 150 seconds require explicit
+  pre-call selection. No semantic failure, review result or elapsed-time overrun
+  may extend the chosen budget or trigger another call. The former automatic
+  rescue extension is not part of the current author/reviewer contract.
 - Rescue-tier repair must treat Tribunal as the typed adjudication and patch
   planning boundary. Greenfield may adapt its `ReviewReport` and `PatchSet`
   request into a Tribunal structured-reasoning dossier, but it must accept only

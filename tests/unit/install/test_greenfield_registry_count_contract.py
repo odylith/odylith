@@ -18,7 +18,7 @@ from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import Rende
 def test_completion_has_no_arbitrary_artifact_count_floor() -> None:
     assert not completion_issues(
         counts=GreenfieldArtifactCounts(),
-        manifest={"requested_repair_tier": "auto", "repair_tier": "standard", "budget_seconds": 60.0},
+        manifest={"requested_repair_tier": "auto", "repair_tier": "standard", "budget_seconds": 90.0},
         create_returncode=0,
         proposal_seconds=20.0,
         create_seconds=20.0,
@@ -28,7 +28,7 @@ def test_completion_has_no_arbitrary_artifact_count_floor() -> None:
 def test_completion_still_enforces_transaction_result_and_time() -> None:
     counts = GreenfieldArtifactCounts()
 
-    manifest = {"requested_repair_tier": "auto", "repair_tier": "standard", "budget_seconds": 60.0}
+    manifest = {"requested_repair_tier": "auto", "repair_tier": "standard", "budget_seconds": 90.0}
     assert completion_issues(
         counts=counts,
         manifest=manifest,

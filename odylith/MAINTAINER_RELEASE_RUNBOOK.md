@@ -273,9 +273,13 @@ Run the targets in this order.
 - `make release-preflight` must also fail closed unless the built local dist
   passes the installed Greenfield pre-confirm compilation and commit-only
   release matrix. The matrix is part of shared release proof and must cover at
-  least ten high-variance standard cases within the pinned 60-second consumer
-  budget. Its model-profile proof must separately bind standard, rescue, and
-  deep to their exact provider requests and 60-, 90-, and 120-second budgets.
+  least ten high-variance standard cases strictly below the pinned v13 90-second
+  proposal ceiling. Its model-profile proof must separately bind standard, rescue,
+  and deep to their exact provider requests and 90-, 120-, and 150-second ceilings.
+  The 60-second normal-case proposal target is advisory; commit-only publication
+  retains its separate strict limit below 60 seconds. Keep model windows at
+  55/80/105 seconds and review at most 20 within remaining time. Do not relabel
+  old-profile receipts or historical failures as new-profile proof.
   Default or `auto` is standard; elapsed time and failure may not relabel or
   extend it into rescue or deep. Rescue and deep are explicit pre-call choices.
   The lower-capability profile must either meet the same semantic floor, ask the

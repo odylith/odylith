@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_create_manifest import (
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     DEEP_PROFILE_ID,
+    GREENFIELD_NORMAL_CASE_TARGET_SECONDS,
     RESCUE_PROFILE_ID,
     STANDARD_PROFILE_ID,
     get_greenfield_model_profile,
@@ -116,7 +117,7 @@ def run_greenfield_preconfirm_engine(
     """Validate one exact authored package without reparsing, repair, or rerender.
 
     The bounded model-authoring calls, custody staging, package compilation, and
-    this gate share the selected 60/90/120-second consumer budget.
+    this gate share the selected profile's consumer budget.
     """
 
     if not sealed_authored_projection(proposal):
@@ -258,9 +259,12 @@ def build_greenfield_preconfirm_manifest(
         ).repair_tier,
         "rescue_activated": active_repair_tier in {"rescue", "deep"},
         "repair_tier_policy": {
-            "standard": "pinned pre-call profile; the complete proposal must remain under 60s",
-            "rescue": "pinned pre-call profile; the complete proposal must remain under 90s",
-            "deep": "pinned pre-call profile; the complete proposal must remain under 120s",
+            "standard": (
+                f"pinned pre-call profile; the complete proposal must remain under {PRECONFIRM_STANDARD_BUDGET_SECONDS:g}s; "
+                f"normal-case target {GREENFIELD_NORMAL_CASE_TARGET_SECONDS:g}s is advisory"
+            ),
+            "rescue": f"pinned pre-call profile; the complete proposal must remain under {PRECONFIRM_RESCUE_BUDGET_SECONDS:g}s",
+            "deep": f"pinned pre-call profile; the complete proposal must remain under {PRECONFIRM_DEEP_BUDGET_SECONDS:g}s",
         },
         "elapsed_seconds": round(float(elapsed_seconds), 3),
         "passes": len(pass_records),

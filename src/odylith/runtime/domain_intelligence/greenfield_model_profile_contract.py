@@ -12,11 +12,12 @@ from dataclasses import dataclass
 from types import MappingProxyType
 
 
-GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v12"
+GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v13"
+GREENFIELD_NORMAL_CASE_TARGET_SECONDS = 60.0
 
-STANDARD_PROFILE_ID = "greenfield-standard-terra-low-complete-author-review-v12"
-RESCUE_PROFILE_ID = "greenfield-rescue-terra-medium-complete-author-review-v12"
-DEEP_PROFILE_ID = "greenfield-deep-sol-high-complete-author-review-v12"
+STANDARD_PROFILE_ID = "greenfield-standard-terra-low-complete-author-review-v13"
+RESCUE_PROFILE_ID = "greenfield-rescue-terra-medium-complete-author-review-v13"
+DEEP_PROFILE_ID = "greenfield-deep-sol-high-complete-author-review-v13"
 UNAVAILABLE_PROVIDER_PROFILE_ID = "greenfield-unavailable-provider-no-write-v1"
 
 
@@ -46,7 +47,7 @@ _PROFILES = MappingProxyType(
             provider="codex-cli",
             model="gpt-5.6-terra",
             reasoning_effort="low",
-            consumer_budget_seconds=60.0,
+            consumer_budget_seconds=90.0,
             model_timeout_seconds=55.0,
             lower_capability=True,
         ),
@@ -56,7 +57,7 @@ _PROFILES = MappingProxyType(
             provider="codex-cli",
             model="gpt-5.6-terra",
             reasoning_effort="medium",
-            consumer_budget_seconds=90.0,
+            consumer_budget_seconds=120.0,
             model_timeout_seconds=80.0,
             lower_capability=True,
         ),
@@ -66,7 +67,7 @@ _PROFILES = MappingProxyType(
             provider="codex-cli",
             model="gpt-5.6-sol",
             reasoning_effort="high",
-            consumer_budget_seconds=120.0,
+            consumer_budget_seconds=150.0,
             model_timeout_seconds=105.0,
         ),
         UNAVAILABLE_PROVIDER_PROFILE_ID: GreenfieldModelProfile(
@@ -75,7 +76,7 @@ _PROFILES = MappingProxyType(
             provider="codex-cli",
             model="gpt-5.4-mini",
             reasoning_effort="high",
-            consumer_budget_seconds=90.0,
+            consumer_budget_seconds=120.0,
             model_timeout_seconds=1.0,
             supported_success=False,
         ),
@@ -230,6 +231,7 @@ def require_greenfield_model_profile_observation(
 __all__ = [
     "DEEP_PROFILE_ID",
     "GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION",
+    "GREENFIELD_NORMAL_CASE_TARGET_SECONDS",
     "GreenfieldModelProfile",
     "RESCUE_PROFILE_ID",
     "STANDARD_PROFILE_ID",

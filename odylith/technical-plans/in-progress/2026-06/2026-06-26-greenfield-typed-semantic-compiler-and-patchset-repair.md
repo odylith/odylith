@@ -1,5 +1,49 @@
 Status: In progress
 
+## Adopt approved timing limits and unblock governance settlement (2026-09-10)
+
+The retained source repository is `/Volumes/FREEDOM_RESEARCH/research-code/odylith`.
+Merge checkpoint `bd27347e3` preserves both original and latest Greenfield histories
+and is pushed. Five duplicate working checkouts are retired recoverably; their
+archives, historical branch refs and nonterminal evidence remain intact.
+
+Implement only the approved profile v13 timing change: strict proposal ceilings
+below 90/120/150 seconds, 60 seconds advisory for normal cases, model windows
+55/80/105 unchanged, reviewer at most 20 within remaining time, and commit-only
+publication below 60 seconds. Keep models, efforts, prompts, call count, semantic
+floors and sealed-byte laws fixed. Never relabel the historical 63.56-second
+FAIL60 result or accept old sealed v12 transactions as v13. CB-306 records the
+baseline numeric-observation failures; prove exact boundaries, expired admission,
+old-profile rejection and separate commit timing before independent review.
+
+The bounded timing correction is now independently accepted: 91 maintained
+timing controls, 700 explicit adjacent tests in 30.50 seconds and 29 fresh
+independent controls in 0.13 seconds pass. The first review exposed commit
+duration coercion and malformed-input exceptions; one shared measurement owner
+now rejects those observations through both completion and scoring. Preserve
+the rejected candidate's evidence. This accepts only the v13 source/evaluator
+change, not live per-profile timing, package quality or release readiness.
+
+CB-305 still blocks ordinary governance settlement after selective sync changed
+two generated Radar files and then failed Atlas catalog validation. The current
+published view remains intact. Compare a bounded, newly reviewed working-only
+compensation with the existing write-set and lock owners: selected generated
+bytes may return to their exact published values, but all authored/current
+non-target bytes and the active publication must stay fixed. No fabricated old
+receipt, arbitrary drift adoption, publication reset, broad root restore or new
+semantic parser is permitted. Require explicit before/after custody, retained
+failed bytes, stale-state and unsafe-path rejection, partial-apply retry and
+process-death proof before touching the real failed state. Preventing future
+failed-writer stranding must have a separately bounded proof; a post-failure
+receipt cannot claim coverage of an earlier unrecorded crash.
+
+After recovery, settle current Atlas metadata and release spec/forensics through
+their canonical owners. The integrated runtime baseline has 5,781 passes and two
+failures in exactly those governance contracts. Do not waive either assertion.
+Full distribution, actual model/profile quality and timing, host delivery,
+populated migration, comprehensive browser acceptance and untouched final-holdout
+adjudication remain release requirements, not source-checkpoint claims.
+
 ## Keep Atlas node identity separate from display copy (2026-09-10)
 
 CB-338 captures a screenshot-discovered defect after the frozen browser suite

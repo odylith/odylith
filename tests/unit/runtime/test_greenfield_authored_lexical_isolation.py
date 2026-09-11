@@ -155,11 +155,11 @@ def test_public_authored_propose_seals_exact_non_latin_customer(
     manifest = transaction["quality_manifest"]
     assert manifest["requested_repair_tier"] == "auto"
     assert manifest["repair_tier"] == "standard"
-    assert manifest["budget_seconds"] == 60.0
+    assert manifest["budget_seconds"] == 90.0
     assert manifest["rescue_activated"] is False
 
 
-def test_public_authored_rescue_tier_seals_the_90_second_budget(
+def test_public_authored_rescue_tier_seals_the_120_second_budget(
     tmp_path: Path,
     monkeypatch: Any,
     capsys: Any,
@@ -186,7 +186,7 @@ def test_public_authored_rescue_tier_seals_the_90_second_budget(
     manifest = transaction["quality_manifest"]
     assert manifest["requested_repair_tier"] == "rescue"
     assert manifest["repair_tier"] == "rescue"
-    assert manifest["budget_seconds"] == 90.0
+    assert manifest["budget_seconds"] == 120.0
     assert manifest["rescue_activated"] is True
     assert manifest["model_authoring"]["tier"] == "rescue"
     assert manifest["model_authoring"]["semantic_model_call_count"] == 2
@@ -279,7 +279,7 @@ def test_public_authored_deep_tier_stays_structural_and_seals_exact_unicode_cust
     manifest = transaction["quality_manifest"]
     assert manifest["requested_repair_tier"] == "deep"
     assert manifest["repair_tier"] == "deep"
-    assert manifest["budget_seconds"] == 120.0
+    assert manifest["budget_seconds"] == 150.0
     assert provider.requests[0].timeout_seconds == 105.0
     assert manifest["rescue_activated"] is True
     assert manifest["semantic_compiler"] == {

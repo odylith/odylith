@@ -104,7 +104,7 @@ def test_manifest_preserves_review_without_aliasing_mutable_input() -> None:
             artifact_counts={}, tribunal_status="passed", issues=(),
         ),
         status="passed", stop_reason="passed", elapsed_seconds=1.0,
-        pass_records=(), budget_seconds=60.0, model_authoring_receipt=receipt,
+        pass_records=(), budget_seconds=90.0, model_authoring_receipt=receipt,
     )
     assert result["model_authoring"] == receipt
     receipt["candidate_review"]["model_profile"]["model"] = "changed"

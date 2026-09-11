@@ -33,7 +33,8 @@ within each bounded observation interval; it does not impose an unconditional
 half-second delay on finished work. Heartbeat checks, exit-code forwarding,
 timeout termination/escalation and inherited hook-group ownership remain intact.
 This local latency contract does not certify a complete Greenfield request's
-60/90/120-second budget.
+v13 90/120/150-second proposal ceilings, advisory 60-second normal-case target,
+or separate commit-only limit below 60 seconds.
 
 Host alignment reads the existing Compass runtime posture; it does not run
 architecture evaluation or rebuild projections while preparing chat context.

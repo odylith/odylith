@@ -295,10 +295,10 @@ def test_authored_quality_failure_is_immediate_and_unrepaired(
 @pytest.mark.parametrize(
     ("requested", "authored", "budget", "rescue"),
     (
-        ("auto", "standard", 60.0, False),
-        ("standard", "standard", 60.0, False),
-        ("rescue", "rescue", 90.0, True),
-        ("deep", "deep", 120.0, True),
+        ("auto", "standard", 90.0, False),
+        ("standard", "standard", 90.0, False),
+        ("rescue", "rescue", 120.0, True),
+        ("deep", "deep", 150.0, True),
     ),
 )
 def test_profiles_keep_exact_consumer_budgets(
@@ -323,6 +323,7 @@ def test_profiles_keep_exact_consumer_budgets(
     assert result.manifest["budget_seconds"] == budget
     assert result.manifest["repair_tier"] == authored
     assert result.manifest["rescue_activated"] is rescue
+    assert f"under {budget:g}s" in result.manifest["repair_tier_policy"][authored]
 
 
 def test_profile_mismatch_is_rejected_before_prewrite(
@@ -356,13 +357,13 @@ def test_budget_exhaustion_before_prewrite_fails_closed(
             release_selector="0.0.1",
             build_prewrite=lambda *_args: calls.append(object()),
             proposal_ready=True,
-            elapsed_before_start_seconds=60.0,
+            elapsed_before_start_seconds=90.0,
             clock=lambda: 0.0,
         )
 
     assert calls == []
     assert exc.value.manifest["stop_reason"] == "time_budget_exhausted"
-    assert exc.value.manifest["budget_seconds"] == 60.0
+    assert exc.value.manifest["budget_seconds"] == 90.0
     assert exc.value.manifest["pass_records"] == []
 
 
@@ -373,7 +374,7 @@ def test_budget_crossed_during_package_build_rejects_success(
     now = {"seconds": 0.0}
 
     def build(current: object, tribunal: object) -> SimpleNamespace:
-        now["seconds"] = 60.0
+        now["seconds"] = 90.0
         return _prewrite(current, tribunal)
 
     with pytest.raises(engine.GreenfieldPreconfirmEngineError) as exc:
@@ -386,7 +387,7 @@ def test_budget_crossed_during_package_build_rejects_success(
         )
 
     assert exc.value.manifest["stop_reason"] == "time_budget_exhausted"
-    assert exc.value.manifest["elapsed_seconds"] == 60.0
+    assert exc.value.manifest["elapsed_seconds"] == 90.0
 
 
 def test_engine_surface_has_no_repair_or_rerender_callback() -> None:

@@ -40,7 +40,7 @@ class Provider:
 
 @pytest.mark.parametrize(
     ("profile_id", "model_budget", "consumer_budget"),
-    [(STANDARD_PROFILE_ID, 55.0, 60.0), (RESCUE_PROFILE_ID, 80.0, 90.0), (DEEP_PROFILE_ID, 105.0, 120.0)],
+    [(STANDARD_PROFILE_ID, 55.0, 90.0), (RESCUE_PROFILE_ID, 80.0, 120.0), (DEEP_PROFILE_ID, 105.0, 150.0)],
 )
 def test_one_author_and_review_share_the_full_pinned_window(profile_id, model_budget, consumer_budget):
     response = _response(_source())

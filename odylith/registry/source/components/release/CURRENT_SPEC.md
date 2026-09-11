@@ -474,8 +474,13 @@ governed subsystem.
 - The shared Greenfield release proof lane must run an installed, immutable
   candidate after local release smoke and retain its matrix payload outside any
   disposable generated repository. Every commit-capable request inside the
-  declared operating envelope must pass exact proposal budgets: standard within
-  `60s`, rescue within `90s`, and explicit deep/premium work within `120s`.
+  declared operating envelope must pass exact v13 proposal ceilings: standard
+  strictly below `90s`, rescue below `120s`, and explicit deep/premium below `150s`.
+  `60s` is the advisory normal-case proposal target; commit-only publication
+  retains its separate strict `<60s` gate. Historical v12 observations retain
+  their original ceilings and verdicts, and old sealed approvals are not relabeled
+  or admitted under v13. Fresh profile-specific observations must qualify the new
+  contract; changing ceilings alone establishes no quality or reliability gain.
   These are separately selected profiles, never sequential budget extensions.
   The current authored path has initial authoring and full-candidate review;
   source-bound material clarification has one author call and no review. Both

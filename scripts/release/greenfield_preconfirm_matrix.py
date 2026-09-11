@@ -121,7 +121,6 @@ from greenfield_matrix_governed_readback import collect_governed_readback  # noq
 from greenfield_matrix_governed_readback import compass_record_count  # noqa: E402
 from greenfield_matrix_governed_readback import program_record_count  # noqa: E402
 from greenfield_matrix_governed_readback import release_record_count  # noqa: E402
-from greenfield_matrix_quality_scoring import PRECONFIRM_BUDGET_SECONDS  # noqa: E402
 from greenfield_matrix_quality_scoring import QUALITY_SCORE_DIMENSIONS  # noqa: E402
 from greenfield_matrix_quality_scoring import build_quality_verdict  # noqa: E402
 from greenfield_matrix_quality_scoring import command_excerpt  # noqa: E402
@@ -2756,7 +2755,7 @@ def _execute_matrix_campaign(
         ),
         "proof_scope": {
             "model_profiles": "real_installed_source_cited_authored_preconfirm_cases",
-            "timing_tiers": "strict_standard_under_60_rescue_under_90_deep_under_120",
+            "timing_tiers": "strict_standard_under_90_rescue_under_120_deep_under_150",
             "lower_capability_model": profile_proof.get("lower_capability_scope", {}),
             "unavailable_provider": (
                 "real_installed_fail_closed_no_write"

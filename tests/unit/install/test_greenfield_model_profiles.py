@@ -134,7 +134,7 @@ def test_profile_registry_pins_preselected_standard_rescue_and_deep_requests() -
     assert deep.model == "gpt-5.6-sol"
     assert deep.reasoning_effort == "high"
     assert [(profile.model_timeout_seconds, profile.consumer_budget_seconds) for profile in (standard, rescue, deep)] == [
-        (55.0, 60.0), (80.0, 90.0), (105.0, 120.0),
+        (55.0, 90.0), (80.0, 120.0), (105.0, 150.0),
     ]
     assert all(not hasattr(profile, "source_review_model") for profile in (standard, rescue, deep))
     assert get_greenfield_model_profile(UNAVAILABLE_PROVIDER_PROFILE).lower_capability is False

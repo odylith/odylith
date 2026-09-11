@@ -26,10 +26,15 @@ from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     get_greenfield_model_profile,
     model_profile_id_for_repair_tier,
+    supported_greenfield_model_profile_ids,
 )
 
 
-PRECONFIRM_BUDGET_SECONDS = 60.0
+COMMIT_ONLY_BUDGET_SECONDS = 60.0
+_APPROVED_PROPOSAL_BUDGETS = "/".join(
+    f"{get_greenfield_model_profile(profile_id).consumer_budget_seconds:g}"
+    for profile_id in supported_greenfield_model_profile_ids()
+)
 UNSCORED_QUALITY_SCORE = -1
 QUALITY_SCORE_DIMENSIONS = (
     "completion",
@@ -175,8 +180,7 @@ def completion_issues(
     issues: list[str] = []
     if create_returncode != 0:
         issues.append(f"commit-only create exited with code {create_returncode}")
-    if create_seconds >= PRECONFIRM_BUDGET_SECONDS:
-        issues.append(f"commit-only create exceeded {PRECONFIRM_BUDGET_SECONDS:.0f}s: {create_seconds:.3f}s")
+    issues.extend(_commit_time_issues(create_seconds))
     issues.extend(proposal_time_issues(manifest, proposal_seconds=proposal_seconds))
     return tuple(issues)
 
@@ -267,16 +271,32 @@ def _transaction_hash_match_issues(
 def proposal_time_issues(manifest: Mapping[str, Any], *, proposal_seconds: float) -> tuple[str, ...]:
     budget_seconds = _sealed_tier_budget_seconds(manifest)
     if budget_seconds is None:
-        return ("proposal manifest does not declare an approved 60/90/120 repair-tier budget",)
-    try:
-        elapsed = float(proposal_seconds)
-    except (TypeError, ValueError):
-        return ("proposal proof is missing a positive measured elapsed time",)
-    if not math.isfinite(elapsed) or elapsed <= 0.0:
+        return (f"proposal manifest does not declare an approved {_APPROVED_PROPOSAL_BUDGETS} repair-tier budget",)
+    elapsed = _measured_elapsed_seconds(proposal_seconds)
+    if elapsed is None:
         return ("proposal proof is missing a positive measured elapsed time",)
     if elapsed >= budget_seconds:
         return (f"proposal exceeded its sealed {budget_seconds:g}-second tier budget: {elapsed:.3f}s",)
     return ()
+
+
+def _commit_time_issues(create_seconds: float) -> tuple[str, ...]:
+    elapsed = _measured_elapsed_seconds(create_seconds)
+    if elapsed is None:
+        return ("commit-only create proof is missing a positive measured elapsed time",)
+    if elapsed >= COMMIT_ONLY_BUDGET_SECONDS:
+        return (f"commit-only create exceeded {COMMIT_ONLY_BUDGET_SECONDS:.0f}s: {elapsed:.3f}s",)
+    return ()
+
+
+def _measured_elapsed_seconds(value: Any) -> float | None:
+    if type(value) not in (int, float):
+        return None
+    try:
+        elapsed = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    return elapsed if math.isfinite(elapsed) and elapsed > 0.0 else None
 
 
 def _rendered_issues(
@@ -436,7 +456,7 @@ def _latency_score(
 ) -> int:
     if create_returncode != 0:
         return 0
-    if create_seconds < PRECONFIRM_BUDGET_SECONDS and not proposal_time_issues(
+    if not _commit_time_issues(create_seconds) and not proposal_time_issues(
         manifest,
         proposal_seconds=proposal_seconds,
     ):
@@ -694,7 +714,7 @@ def _manifest_issues(
     )
     tier_budget_seconds = _sealed_tier_budget_seconds(manifest)
     if tier_budget_seconds is None:
-        issues.append("pre-confirm manifest does not declare an approved 60/90/120 repair-tier budget")
+        issues.append(f"pre-confirm manifest does not declare an approved {_APPROVED_PROPOSAL_BUDGETS} repair-tier budget")
     model_authoring = mapping_copy(manifest.get("model_authoring"))
     if not greenfield_model_authoring_receipt_approved(
         model_authoring=model_authoring,
@@ -719,11 +739,13 @@ def _sealed_tier_budget_seconds(manifest: Mapping[str, Any]) -> float | None:
     requested_tier = str(manifest.get("requested_repair_tier", "")).strip()
     active_tier = str(manifest.get("repair_tier", "")).strip()
     try:
+        if type(manifest.get("budget_seconds")) not in (int, float):
+            return None
         selected_profile = get_greenfield_model_profile(
             model_profile_id_for_repair_tier(requested_tier)
         )
         declared = float(manifest.get("budget_seconds"))
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         return None
     if active_tier != selected_profile.repair_tier:
         return None
@@ -868,7 +890,7 @@ def _create_failure_detail_issues(*, create_returncode: int, create_detail: str)
 
 
 __all__ = [
-    "PRECONFIRM_BUDGET_SECONDS",
+    "COMMIT_ONLY_BUDGET_SECONDS",
     "QUALITY_SCORE_DIMENSIONS",
     "build_quality_verdict",
     "command_excerpt",

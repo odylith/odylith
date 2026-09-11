@@ -25,6 +25,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import render_product_intent_preview
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    GREENFIELD_NORMAL_CASE_TARGET_SECONDS,
     get_greenfield_model_profile,
     model_profile_id_for_repair_tier,
 )
@@ -40,6 +41,15 @@ _PUBLIC_INTENT_AUTHORITY_SUMMARY_KEYS = (
     "product_facts_sha256",
     "source_format",
     "materiality_status",
+)
+_REPAIR_TIER_BUDGET_HELP = (
+    "Proposal ceilings: "
+    + "; ".join(
+        f"{'auto/standard' if tier == 'standard' else tier}: pinned under-"
+        f"{get_greenfield_model_profile(model_profile_id_for_repair_tier(tier)).consumer_budget_seconds:g}s profile"
+        for tier in ("standard", "rescue", "deep")
+    )
+    + f". Normal-case target: {GREENFIELD_NORMAL_CASE_TARGET_SECONDS:g}s (advisory)."
 )
 
 
@@ -73,10 +83,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         "--repair-tier",
         choices=PRECONFIRM_REPAIR_TIERS,
         default=greenfield_proposals.DEFAULT_PRECONFIRM_REPAIR_TIER,
-        help=(
-            "Proposal budget: auto/standard use the pinned under-60s profile; rescue and deep are explicit "
-            "pinned under-90s and under-120s profiles."
-        ),
+        help=_REPAIR_TIER_BUDGET_HELP,
     )
     propose.add_argument(
         "--evidence-language",
@@ -110,10 +117,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         "--repair-tier",
         choices=PRECONFIRM_REPAIR_TIERS,
         default=greenfield_proposals.DEFAULT_PRECONFIRM_REPAIR_TIER,
-        help=(
-            "Create-transaction compiler budget: auto/standard use the pinned under-60s profile; rescue and "
-            "deep are explicit pinned under-90s and under-120s profiles."
-        ),
+        help=_REPAIR_TIER_BUDGET_HELP,
     )
     apply.add_argument("--json", action="store_true", dest="as_json")
     compile_transaction = subparsers.add_parser(
@@ -142,10 +146,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         "--repair-tier",
         choices=PRECONFIRM_REPAIR_TIERS,
         default=greenfield_proposals.DEFAULT_PRECONFIRM_REPAIR_TIER,
-        help=(
-            "Create-transaction compiler budget: auto/standard use the pinned under-60s profile; rescue and "
-            "deep are explicit pinned under-90s and under-120s profiles."
-        ),
+        help=_REPAIR_TIER_BUDGET_HELP,
     )
     compile_transaction.add_argument(
         "--output",
