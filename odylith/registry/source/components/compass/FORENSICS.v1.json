@@ -42,12 +42,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 649,
-    "mapped_workstream_evidence_count": 565,
+    "explicit_event_count": 650,
+    "mapped_workstream_evidence_count": 566,
     "recent_path_match_count": 0,
     "spec_history_event_count": 36,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 649
+    "timeline_event_count": 650
   },
   "name": "Compass",
   "path_prefixes": [
@@ -57,6 +57,41 @@
   ],
   "spec_ref": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1205,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-09-14T21:59:20-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 1,
       "artifacts": [

@@ -1,5 +1,22 @@
 Status: In progress
 
+## Reject the hidden-page candidate and preserve the qualified checkpoint (2026-09-14)
+
+Checkpoint 7b87dacdb is pushed. The corrected crash fixture, ordered governance
+refresh, 222 restoration checks, 19 Atlas/Registry checks and independent portable
+shell/dossier review are qualified within their stated scope.
+
+The bounded browser comparison reproduces the original three history aborts on
+baseline (one failed, three passed). Its candidate fails all four cases because
+loaded pages remain hidden; the deliberate faults are never reached. A child
+legitimately normalizes its URL and selects default state, so full query-string
+equality is not a valid readiness contract. Reject the compound candidate without
+landing it. This does not isolate or disprove the load-order hypothesis. Use the
+retained native chronology and existing route/message owners to compare a bounded
+readiness/ownership alternative, including explicit selections, default selection,
+late old-document messages and genuine errors. Do not accumulate URL exemptions,
+observer exceptions or longer timeouts. The full release gates remain unchanged.
+
 ## Apply confirmed proof corrections and test browser ownership (2026-09-14)
 
 The restoration fixture now uses canonical root identity and retains all real
