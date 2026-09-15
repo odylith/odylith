@@ -6,7 +6,6 @@
     "D-005",
     "D-006",
     "D-036",
-    "D-043",
     "D-044",
     "D-002",
     "D-003",
@@ -34,7 +33,8 @@
     "D-038",
     "D-037",
     "D-041",
-    "D-042"
+    "D-042",
+    "D-043"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
@@ -23547,9 +23547,36 @@
     }
   ],
   "traceability": {
-    "code_references": [],
-    "developer_docs": [],
-    "runbooks": []
+    "code_references": [
+      "src/odylith/install/runtime_integrity.py",
+      "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+      "src/odylith/runtime/governance/backlog_authoring.py",
+      "src/odylith/runtime/governance/backlog_title_contract.py",
+      "src/odylith/runtime/governance/delivery/scope_signal_ladder.py",
+      "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+      "src/odylith/runtime/context_engine/runtime_read_session.py",
+      "src/odylith/runtime/governance/sync_session.py",
+      "src/odylith/runtime/surfaces/claude_host_prompt_bundle.py",
+      "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
+      "src/odylith/runtime/surfaces/codex_host_stop_summary.py",
+      "src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py",
+      "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
+      "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
+    ],
+    "developer_docs": [
+      "docs/specs/odylith-repo-integration-contract.md",
+      "odylith/registry/source/components/radar/CURRENT_SPEC.md",
+      "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+      "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md",
+      "docs/specs/greenfield-operating-envelope.md"
+    ],
+    "runbooks": [
+      "docs/runbooks/odylith-migration.md",
+      "docs/runbooks/odylith-governance.md",
+      "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md",
+      "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+      "docs/runbooks/odylith-greenfield.md"
+    ]
   },
   "version": "v1",
   "what_it_is": "Workstream backlog and queue-governance surface.",

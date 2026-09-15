@@ -98,3 +98,34 @@ a changed compensating package needs its own review. Clean temporary assets only
 after authoritative state proves them terminal and no recovery depends on them.
 The current envelope's journaled-recovery limitation must not be described as
 universal all-old/all-new visibility for every repository reader.
+
+## Explicit working-file restoration
+
+An ordinary governance command can fail after changing working projections while
+the published generation remains intact. When no transaction journal owns that
+failure, do not fabricate one or reset the published generation. The source
+command `odylith governance restore-published-files` offers a separately reviewed,
+working-only restoration from the current publication; it is not a Greenfield
+CONFIRM or a retry of the failed renderer.
+
+Use `--preview --path <repository-relative-file>` with one repeated `--path` for
+each intended file. Review the exact targets, current and published hashes,
+modes, repository identity, and publication identity in the resulting receipt.
+Preview preserves current bytes and creates no publication. Apply only the
+printed `--apply <review-hash>` command after review; changing targets or intent
+requires a new preview. Prefer generated failure residue over authored records;
+never select a directory or discard unrelated work to make admission pass.
+
+Apply preserves the failed bytes in its receipt, uses the shared repository lock,
+and restores only the selected sealed bytes and modes. All other managed files
+and the active publication must remain unchanged. Missing or unsafe paths,
+unselected drift, changed publication, and third-state target bytes cause refusal.
+If apply is interrupted, retain its receipt and resume the same hash. Canonical
+governed writes, Greenfield commit, and baseline activation refuse while an
+admitted restoration is unclosed. Do not delete the receipt to clear that refusal.
+
+After verified closure, explicitly sync the intended authored source paths through
+their normal owner. Restoration itself does not render, publish, repair semantic
+content, or prove that a previously failed command will now succeed. This is a
+current-source contract; installed availability and release qualification require
+their own proof.

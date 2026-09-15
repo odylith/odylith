@@ -6,7 +6,7 @@
   and release-proof claims before allowing stronger completion language.
 - False proof clearance, false visible-UX claims, and public product claims
   without benchmark proof are release-blocking failures for v0.1.11.
-Last updated: 2026-09-08
+Last updated: 2026-09-14
 
 
 ## Purpose
@@ -169,9 +169,7 @@ When one lane resolves cleanly, `proof_state` is additive and must include:
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-09-08 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `src/odylith/runtime/governance/delivery_intelligence_refresh.py`, `src/odylith/runtime/governance/proof_state/resolver.py`
+- No synchronized requirement or contract signals yet.
 <!-- registry-requirements:end -->
 
 ## Feature History

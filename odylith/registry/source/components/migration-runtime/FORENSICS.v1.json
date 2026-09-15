@@ -14,7 +14,7 @@
     "explicit_event_count": 35,
     "mapped_workstream_evidence_count": 34,
     "recent_path_match_count": 0,
-    "spec_history_event_count": 11,
+    "spec_history_event_count": 12,
     "status": "forensic_coverage_present",
     "timeline_event_count": 35
   },
@@ -1620,9 +1620,17 @@
     }
   ],
   "traceability": {
-    "code_references": [],
-    "developer_docs": [],
-    "runbooks": []
+    "code_references": [
+      "src/odylith/runtime/surfaces/claude_host_prompt_bundle.py",
+      "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
+      "src/odylith/runtime/surfaces/codex_host_stop_summary.py"
+    ],
+    "developer_docs": [
+      "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md"
+    ],
+    "runbooks": [
+      "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md"
+    ]
   },
   "version": "v1",
   "what_it_is": "Install-owned migration planning, ledger, doctor-observability, and release-gate runtime for Odylith install and upgrade paths.",

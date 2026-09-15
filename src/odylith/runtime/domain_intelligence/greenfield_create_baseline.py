@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_lock
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
+from odylith.runtime.governance import restore_published_files
 
 
 _BASELINE_DIRS = (
@@ -46,6 +47,7 @@ def activate_completed_greenfield_baseline(
 
     root = Path(repo_root).expanduser().resolve()
     with greenfield_repository_lock.greenfield_repository_lock(root):
+        restore_published_files.require_restoration_writer_admission(repo_root=root)
         GreenfieldCommitJournal.recover_pending_journals(repo_root=root)
         return activate_completed_greenfield_baseline_locked(
             repo_root=root, required_surface_outputs=required_surface_outputs,
@@ -59,6 +61,7 @@ def recover_published_greenfield_baseline(
 
     root = Path(repo_root).expanduser().resolve()
     with greenfield_repository_lock.greenfield_repository_lock(root):
+        restore_published_files.require_restoration_writer_admission(repo_root=root)
         GreenfieldCommitJournal.recover_pending_journals(repo_root=root)
         if greenfield_generation_state.read_active_publication(root) is None:
             return None
@@ -73,6 +76,7 @@ def activate_completed_greenfield_baseline_locked(
     """Activate within a writer-owned lock, after its pending journals are settled."""
 
     root = Path(repo_root).expanduser().resolve()
+    restore_published_files.require_restoration_writer_admission(repo_root=root)
     publication = greenfield_generation_state.read_active_publication(root)
     if publication is None:
         _require_completed_baseline_surfaces(root, required_surface_outputs)

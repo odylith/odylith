@@ -21,6 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_commit_journal import Greenf
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldCommitInterrupted
 from odylith.runtime.surfaces.host_hook_execution import HookBudgetExpired
+from odylith.runtime.governance import restore_published_files
 
 
 class GreenfieldCreateCommitError(RuntimeError):
@@ -85,6 +86,7 @@ def commit_greenfield_create_transaction(
     result: dict[str, Any] | None = None
     try:
         with greenfield_repository_lock.greenfield_repository_lock(root):
+            restore_published_files.require_restoration_writer_admission(repo_root=root)
             transaction = load_sealed_product_create_commit(path, repo_root=root)
             if transaction.transaction_hash != expected_hash:
                 raise ValueError("ProductCreateTransaction hash does not match the confirmed transaction hash")

@@ -6,7 +6,7 @@
   and release-gate posture, but should suppress weak Odylith Discipline noise.
 - Compass entries should preserve workstream ids B-110 through B-117 and the
   benchmark gates that feed future session priors.
-Last updated: 2026-09-10
+Last updated: 2026-09-14
 
 
 ## Purpose
@@ -775,12 +775,6 @@ or component definitions.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-09-08 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/registry/source/components/compass/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-workstreams.v1.js`, plus 1 more
-- **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/compass/CURRENT_SPEC.md`, `tests/unit/runtime/test_greenfield_prewrite_job_lifetime.py`
 - **2026-03-20 · Decision:** Decision evidence linked this component to governed work with 3 verifiable artifact references.
   - Evidence: `odylith/radar/source/INDEX.md`, `odylith/registry/source/components/compass/CURRENT_SPEC.md`, `odylith/technical-plans/INDEX.md`
 - **2026-03-04 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
@@ -789,6 +783,10 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: `src/odylith/runtime/governance/sync_workstream_artifacts.py`, `src/odylith/runtime/surfaces/render_backlog_ui.py`, `src/odylith/runtime/surfaces/render_compass_dashboard.py`, `src/odylith/runtime/surfaces/render_registry_dashboard.py`
 - **2026-03-03 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
   - Evidence: `odylith/radar/source/INDEX.md`, `odylith/technical-plans/INDEX.md`, `src/odylith/runtime/surfaces/render_backlog_ui.py`, `src/odylith/runtime/surfaces/render_compass_dashboard.py`
+- **2026-03-03 · Decision:** Decision evidence linked this component to governed work with 4 verifiable artifact references.
+  - Evidence: `odylith/radar/source/INDEX.md`, `odylith/technical-plans/INDEX.md`, `src/odylith/runtime/surfaces/render_backlog_ui.py`, `src/odylith/runtime/surfaces/render_compass_dashboard.py`
+- **2026-03-01 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
+  - Evidence: `odylith/skills/compass-timeline-stream/SKILL.md`, `src/odylith/runtime/common/log_compass_timeline_event.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

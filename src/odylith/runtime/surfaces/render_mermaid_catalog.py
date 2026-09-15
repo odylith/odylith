@@ -376,6 +376,19 @@ def _normalize_diagram_id(value: str) -> str:
     return component_registry.normalize_diagram_id(token)
 
 
+def validate_catalog_metadata(
+    *, repo_root: Path, catalog_path: Path, payload: Mapping[str, Any],
+) -> list[str]:
+    """Validate proposed catalog truth without requiring its not-yet-rendered assets."""
+    _rows, errors, _stats = _load_catalog(
+        repo_root=repo_root, catalog_path=catalog_path,
+        output_path=repo_root / "odylith/atlas/atlas.html",
+        max_review_age_days=21, component_index={},
+        catalog_payload=payload, metadata_only=True,
+    )
+    return errors
+
+
 def _load_catalog(
     *,
     repo_root: Path,
@@ -383,16 +396,20 @@ def _load_catalog(
     output_path: Path,
     max_review_age_days: int,
     component_index: Mapping[str, component_registry.ComponentEntry],
+    catalog_payload: Mapping[str, Any] | None = None,
+    metadata_only: bool = False,
 ) -> tuple[list[dict[str, Any]], list[str], dict[str, int]]:
     errors: list[str] = []
     stats = {"total": 0, "fresh": 0, "stale": 0}
-    if not catalog_path.is_file():
-        return [], [f"catalog missing: {catalog_path}"], stats
-
-    try:
-        payload = json.loads(catalog_path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
-        return [], [f"invalid json: {catalog_path}: {exc}"], stats
+    if catalog_payload is None:
+        if not catalog_path.is_file():
+            return [], [f"catalog missing: {catalog_path}"], stats
+        try:
+            payload = json.loads(catalog_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            return [], [f"invalid json: {catalog_path}: {exc}"], stats
+    else:
+        payload = catalog_payload
 
     diagrams = payload.get("diagrams", [])
     if not isinstance(diagrams, list):
@@ -498,9 +515,9 @@ def _load_catalog(
 
         if mmd_path is not None and not mmd_path.is_file():
             errors.append(f"{context}: source_mmd does not exist: {source_mmd}")
-        if svg_path is not None and not svg_path.is_file():
+        if not metadata_only and svg_path is not None and not svg_path.is_file():
             errors.append(f"{context}: source_svg does not exist: {source_svg}")
-        if source_png and png_path is not None and not png_path.is_file():
+        if not metadata_only and source_png and png_path is not None and not png_path.is_file():
             errors.append(f"{context}: source_png does not exist: {source_png}")
 
         for watch in watch_paths:
@@ -509,7 +526,7 @@ def _load_catalog(
                 errors.append(f"{context}: change_watch_paths entry does not exist: {watch}")
 
         source_text = ""
-        if authored_view_claimed and mmd_path is not None:
+        if (authored_view_claimed or metadata_only) and mmd_path is not None:
             try:
                 source_text = mmd_path.read_text(encoding="utf-8")
             except (OSError, UnicodeDecodeError) as exc:
@@ -604,6 +621,10 @@ def _load_catalog(
                         errors.append(f"{context}: invalid related_workstreams entry `{raw_value}`")
                     continue
                 related_workstreams.append(value)
+        if metadata_only:
+            # Prewrite callers validate the complete candidate before generating assets.
+            # Presentation, rendered-asset inspection and freshness remain render work.
+            continue
         backlog_workstreams: list[str] = []
         related_backlog_entries: list[dict[str, str]] = []
         for backlog_rel in related_backlog:

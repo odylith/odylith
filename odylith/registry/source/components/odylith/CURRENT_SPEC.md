@@ -1,5 +1,23 @@
 # Odylith
 
+## Reviewed working-file restoration
+
+`odylith governance restore-published-files` owns explicit restoration of selected
+managed working files from a pinned active publication. Preview seals repository
+identity, publication, selected preimages/replacements, modes and the complete
+managed fingerprint boundary. Apply restores only the reviewed hash under the
+existing repository lock; it neither publishes nor creates provenance for an
+earlier failed command. Unselected state remains fixed, and interrupted apply
+accepts only its sealed pre/post states before verified closure.
+
+The shared governed-mutation boundary, direct Greenfield commit and baseline
+activation consult the same pending-restoration owner before recovery or writes.
+Routine admission checks small status markers, not archived preimage payloads.
+Unclosed or corrupt admission refuses competing writes; harmless previews and
+closed receipts do not. File modes and managed directory inventory are covered;
+ACLs, ownership, hostile same-user mutation and universal power-loss durability
+are not implied. Broader runtime, installation and release proof remain required.
+
 ## Product-repo host-settings repair
 
 Product-repo install and repair preserve authored guidance while refreshing

@@ -3252,6 +3252,7 @@ def build_parser() -> argparse.ArgumentParser:
         ("normalize-plan-risk-mitigation", "Normalize technical-plan risk/mitigation sections."),
         ("backfill-workstream-traceability", "Backfill Radar idea traceability metadata."),
         ("reconcile-plan-workstream-binding", "Reconcile active plan to Radar workstream bindings."),
+        ("restore-published-files", "Preview or explicitly restore selected working files without changing publication."),
         ("auto-promote-workstream-phase", "Promote planning workstreams to implementation from live evidence."),
         ("sync-component-spec-requirements", "Sync mapped Compass requirement evidence into component living specs."),
         ("version-truth", "Validate that generated Odylith version files match pyproject."),
@@ -3577,7 +3578,7 @@ def build_parser() -> argparse.ArgumentParser:
     atlas_scaffold.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
     atlas_update = atlas_subparsers.add_parser(
         "update",
-        help="Update one existing Atlas diagram catalog entry.",
+        help="Update explicitly selected Atlas diagram catalog entries.",
     )
     atlas_update.add_argument("--repo-root", default=".", help="Consumer repository root.")
     atlas_update.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
@@ -4123,6 +4124,12 @@ def _dispatch_main(argv: list[str] | None = None, *, repository_lock_fd: int | N
 
 def main(argv: list[str] | None = None) -> int:
     tokens = [str(token) for token in (argv or sys.argv[1:])]
+    if tokens[:2] == ["governance", "restore-published-files"]:
+        from odylith.runtime.governance import restore_published_files
+
+        args = restore_published_files.parse_args(tokens[2:])
+        blocked = _guard_product_repo_main_branch(repo_root=args.repo_root)
+        return blocked or restore_published_files.run(args)
     if tokens[:1] == [upgrade_dashboard.RENDER_WORKER_COMMAND]:
         return upgrade_dashboard.worker_main(tokens[1:])
     repo_root, _forwarded = _extract_repo_root(tokens[1:] if tokens else ())

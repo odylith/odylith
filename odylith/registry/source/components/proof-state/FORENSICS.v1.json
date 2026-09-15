@@ -16,7 +16,7 @@
     "explicit_event_count": 109,
     "mapped_workstream_evidence_count": 109,
     "recent_path_match_count": 0,
-    "spec_history_event_count": 3,
+    "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
     "timeline_event_count": 109
   },
@@ -6798,9 +6798,16 @@
     }
   ],
   "traceability": {
-    "code_references": [],
-    "developer_docs": [],
-    "runbooks": []
+    "code_references": [
+      "src/odylith/runtime/governance/delivery/scope_signal_ladder.py",
+      "src/odylith/runtime/governance/delivery_intelligence_engine.py"
+    ],
+    "developer_docs": [
+      "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md"
+    ],
+    "runbooks": [
+      "docs/runbooks/odylith-governance.md"
+    ]
   },
   "version": "v1",
   "what_it_is": "Split-authority live-proof control plane that keeps blocker identity, frontier movement, falsification memory, and claim tier coherent across governed truth and runtime surfaces.",

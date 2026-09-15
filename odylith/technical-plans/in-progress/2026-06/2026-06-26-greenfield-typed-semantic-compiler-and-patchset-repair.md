@@ -1,5 +1,49 @@
 Status: In progress
 
+## Finish recovery admission and Atlas settlement (2026-09-14)
+
+Outcome: independently accepted restoration has completed on the retained repo,
+preserving all 1,099 non-target file states and the published generation. The
+authored sync now passes; the corrected five-row Atlas batch and three source
+updates render all 47 diagrams fresh. Canonical spec/forensics synchronization
+and Registry refresh also pass. The two formerly failing runtime contracts pass
+in their 19-test module pack. Keep these bounded results separate from the full
+runtime/install/browser and semantic/profile gates. Independent checkpoint review
+finds stale parent-shell child-page cache tokens after the child refreshes. Finish
+the canonical shell refresh, verify the portable shell/payload pair, and commit
+the focused accepted checkpoint. Then freeze inputs for broad regression. The
+history/bootstrap comparison must preserve shell route authority even when old
+child messages arrive; a load-only flag is not yet accepted. Compare that ownership
+boundary before another browser run. Keep strict browser controls and deadlines
+unchanged, and do not reopen URL-observer exceptions or touch the final holdout.
+
+The following recovery steps record the completed execution sequence and its
+original admission limits; they are not instructions to repeat the restoration.
+
+The external volume is available again; the four uncommitted restoration files
+match their September 10 frozen hashes. Timing checkpoint `b90cb9f13` is pushed.
+CB-305 records the independent recovery rejection: canonical writers must not
+advance publication while a restoration admission is unclosed, and a restoration
+plan must carry a valid active-publication identity. Correct those existing
+admission and validation owners, retaining the real SIGKILL and malformed-plan
+counterexamples. Do not apply the candidate before independent acceptance.
+
+After restoring only the two explicitly reviewed failed-sync Radar outputs,
+select every changed authored source for the existing truth-only selective sync.
+Its owned-surface plan can settle Casebook, Radar and Registry without Atlas,
+Compass or shell expansion. Prove that path against an invalid Atlas catalog and
+prove refusal of any extra unselected/generated drift. This is not a permissive
+admission change or permission to omit a required surface.
+
+Atlas then needs one bounded updater correction: accept explicit multi-entry
+updates and full authored box metadata through the existing CLI, validate the
+entire candidate before a single atomic catalog write, and refresh once. Preserve
+unrelated rows and immutable identities/source paths. Use existing builders,
+Tribunal, path validation and box inventory, not a second schema/parser. Prove
+bad-final-row zero-write behavior, one refresh, and explicit failure without a
+publication claim. This enables D-032/042/043/045/046 source reconciliation; it
+does not solve general failed-render recovery or qualify the full release.
+
 ## Adopt approved timing limits and unblock governance settlement (2026-09-10)
 
 The retained source repository is `/Volumes/FREEDOM_RESEARCH/research-code/odylith`.

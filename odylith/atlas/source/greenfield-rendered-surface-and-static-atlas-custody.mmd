@@ -21,12 +21,13 @@ flowchart LR
       direction TB
       product_parser["Product semantic owners<br/>Typed graph validator and<br/>Mermaid graph parser"]
       evaluator["Evaluator adapters<br/>Reuse product owners instead of<br/>duplicating phrase or arrow rules"]
-      strict_gate["Strict product gates<br/>Perfect laws and 60, 90, 120<br/>second proposal ceilings"]
+      strict_gate["Strict product gates<br/>Proposal under 90 / 120 / 150 seconds<br/>Commit under 60 seconds<br/>Normal proposal target 60 is advisory"]
       confidence["Separate confidence report<br/>Intervals explain evidence strength<br/>without weakening hard gates"]
       retain["Retained case package<br/>Raw generated files, logs,<br/>screenshots, DOM, and manifests"]
       cleanup["Temporary project cleanup<br/>Only after retained evidence is sealed"]
       release{"All quality, safety,<br/>latency, and evidence gates pass?"}
       blocker["No release claim<br/>Failure stays attributable"]
+      qualified["Qualification evidence complete<br/>Independent of transaction admission"]
     end
 
     reviewed --> preconditions --> write --> readback
@@ -38,7 +39,7 @@ flowchart LR
     projections --> evaluator
     browser --> evaluator --> strict_gate --> confidence --> retain --> cleanup --> release
     release -- "no" --> blocker
-    release -- "yes" --> reviewed
+    release -- "yes" --> qualified
 
     classDef primary fill:#EFF6FF,stroke:#BFD7FE,color:#132033,stroke-width:1px;
     classDef execution fill:#ECFDFB,stroke:#A7E9E3,color:#132033,stroke-width:1px;
@@ -47,7 +48,7 @@ flowchart LR
     classDef invalid fill:#FFF1F0,stroke:#F7B4AE,color:#132033,stroke-width:1px;
     class reviewed,preconditions,write,recovery,readback primary;
     class projections,atlas_source,atlas_render,surfaces,browser execution;
-    class product_parser,evaluator,strict_gate,confidence,retain,cleanup governance;
+    class product_parser,evaluator,strict_gate,confidence,retain,cleanup,qualified governance;
     class release constraint;
     class blocker invalid;
 

@@ -6,7 +6,7 @@
   affordances, admissible action, proof, compact learning, benchmark evidence,
   updated priors, and the cross-system loop through Context, Execution,
   Memory, Intervention, Tribunal, Surfaces, and Benchmarks.
-Last updated: 2026-09-10
+Last updated: 2026-09-14
 
 
 ## Purpose
@@ -57,6 +57,20 @@ checks, including hidden action styling, rather than hidden-attribute assertions
   text also matches the query.
 
 ## Runtime Contract
+
+`odylith atlas update --updates-file <file>` accepts a versioned list of explicit
+patches for existing diagrams. It preserves omitted metadata and immutable diagram
+identity/source paths. The existing catalog builder, artifact Tribunal, path
+validation and box inventory validate the entire merged catalog before one atomic
+catalog write and one refresh. A bad final row must leave every row unchanged.
+Full `diagram_boxes` replacements must explain exactly the visible source labels.
+
+Prewrite metadata validation skips only generated-asset existence and rendered
+presentation/freshness work; ordinary rendering retains those checks. A refresh
+failure after the catalog write reports failure without claiming publication or
+recovery success. This command does not bypass managed mutation admission or
+repair failed-writer residue. Successful source validation alone is not browser
+or release qualification.
 
 Box metadata is literal presentation data. The detail-layout owner renders label,
 role and description through textContent with their supplied line breaks and
@@ -395,15 +409,6 @@ too low-signal for default promotion.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/registry/source/components/atlas/CURRENT_SPEC.md`
-- **2026-09-07 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/surfaces/render_mermaid_catalog.py`
-- **2026-09-07 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `sha256:54a42d7ec1a2fb0bbfacf5bd84e0a653a1c55c219136385a6b85a20277d60060`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_design_views.py`, `src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py`
 - **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
   - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `src/odylith/runtime/surfaces/assets/mermaid_cli_worker.mjs`, `src/odylith/runtime/surfaces/assets/mermaid_render_config.json`
 - **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
@@ -411,6 +416,14 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-30 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `odylith/registry/source/components/atlas/CURRENT_SPEC.md`, `src/odylith/runtime/surfaces/atlas_box_explanations.py`, `src/odylith/runtime/surfaces/atlas_box_terms.py`, plus 1 more
+- **2026-06-30 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/atlas/CURRENT_SPEC.md`, `odylith/registry/source/components/dashboard/CURRENT_SPEC.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, plus 1 more
+- **2026-06-28 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md`, `odylith/registry/source/components/atlas/CURRENT_SPEC.md`, `src/odylith/runtime/surfaces/render_mermaid_catalog.py`, plus 1 more
+- **2026-03-16 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `odylith/registry/source/components/subagent-router/CURRENT_SPEC.md`, `src/odylith/runtime/orchestration/subagent_router.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

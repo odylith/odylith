@@ -54,6 +54,7 @@ _POSTCONFIRM_RUNTIME_SOURCE_FILES = (
     "runtime/domain_intelligence/greenfield_repository_lock.py",
     "runtime/domain_intelligence/greenfield_repository_write_set.py",
     "runtime/domain_intelligence/greenfield_transaction.py",
+    "runtime/governance/restore_published_files.py",
     "runtime/surfaces/greenfield_host_confirmation.py",
     "runtime/surfaces/host_hook_execution.py",
 )

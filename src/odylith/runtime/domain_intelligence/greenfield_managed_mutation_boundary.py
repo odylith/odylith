@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_lock
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.governance import restore_published_files
 
 
 _READ_ONLY_COMMANDS = frozenset(
@@ -90,6 +91,7 @@ def run_with_greenfield_managed_mutation_boundary(
             raise compass_log_continuation.CompassLogContinuationError("RECOVERY_REQUIRED: completion repository differs from its lease")
     try:
         with greenfield_repository_lock.greenfield_repository_lock(root) as descriptor:
+            restore_published_files.require_restoration_writer_admission(repo_root=root)
             admitted_upgrade = None
             admitted_authored = None
             admitted_log = None

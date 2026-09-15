@@ -7,7 +7,6 @@
     "D-013",
     "D-018",
     "D-036",
-    "D-043",
     "D-002",
     "D-003",
     "D-006",
@@ -31,14 +30,15 @@
     "D-028",
     "D-029",
     "D-039",
-    "D-038"
+    "D-038",
+    "D-043"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
     "explicit_event_count": 550,
     "mapped_workstream_evidence_count": 503,
     "recent_path_match_count": 0,
-    "spec_history_event_count": 5,
+    "spec_history_event_count": 6,
     "status": "forensic_coverage_present",
     "timeline_event_count": 550
   },
@@ -21937,9 +21937,28 @@
     }
   ],
   "traceability": {
-    "code_references": [],
-    "developer_docs": [],
-    "runbooks": []
+    "code_references": [
+      "src/odylith/runtime/governance/component_registry_intelligence.py",
+      "src/odylith/runtime/surfaces/render_registry_dashboard.py",
+      "src/odylith/runtime/governance/delivery/scope_signal_ladder.py",
+      "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+      "src/odylith/runtime/context_engine/runtime_read_session.py",
+      "src/odylith/runtime/governance/sync_session.py",
+      "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+      "src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py",
+      "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
+      "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
+    ],
+    "developer_docs": [
+      "odylith/registry/source/components/registry/CURRENT_SPEC.md",
+      "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+      "docs/specs/greenfield-operating-envelope.md"
+    ],
+    "runbooks": [
+      "docs/runbooks/odylith-governance.md",
+      "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md",
+      "docs/runbooks/odylith-greenfield.md"
+    ]
   },
   "version": "v1",
   "what_it_is": "Component inventory, spec snapshot, and evidence-correlation surface.",

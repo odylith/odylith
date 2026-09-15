@@ -8,7 +8,6 @@
     "D-009",
     "D-038",
     "D-040",
-    "D-043",
     "D-002",
     "D-003",
     "D-007",
@@ -38,14 +37,15 @@
     "D-039",
     "D-037",
     "D-041",
-    "D-042"
+    "D-042",
+    "D-043"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
     "explicit_event_count": 646,
     "mapped_workstream_evidence_count": 562,
     "recent_path_match_count": 0,
-    "spec_history_event_count": 34,
+    "spec_history_event_count": 36,
     "status": "forensic_coverage_present",
     "timeline_event_count": 646
   },
@@ -25187,9 +25187,46 @@
     }
   ],
   "traceability": {
-    "code_references": [],
-    "developer_docs": [],
-    "runbooks": []
+    "code_references": [
+      "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py",
+      "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py",
+      "src/odylith/runtime/governance/delivery/scope_signal_ladder.py",
+      "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+      "src/odylith/runtime/context_engine/tooling_guidance_catalog.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_taxonomy.py",
+      "bin/dogfood-activate",
+      "bin/ga-gate",
+      "src/odylith/install/runtime.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_isolation.py",
+      "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py",
+      "github/workflows/release.yml",
+      "src/odylith/install/release_assets.py",
+      "src/odylith/runtime/governance/backlog_authoring.py",
+      "src/odylith/runtime/governance/backlog_title_contract.py",
+      "src/odylith/runtime/surfaces/claude_host_prompt_bundle.py",
+      "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
+      "src/odylith/runtime/surfaces/codex_host_stop_summary.py",
+      "src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py",
+      "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
+      "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
+    ],
+    "developer_docs": [
+      "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+      "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+      "docs/benchmarks/FAMILIES_AND_EVALS.md",
+      "odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md",
+      "docs/benchmarks/REVIEWER_GUIDE.md",
+      "odylith/registry/source/components/radar/CURRENT_SPEC.md",
+      "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md",
+      "docs/specs/greenfield-operating-envelope.md"
+    ],
+    "runbooks": [
+      "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md",
+      "docs/runbooks/odylith-governance.md",
+      "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+      "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+      "docs/runbooks/odylith-greenfield.md"
+    ]
   },
   "version": "v1",
   "what_it_is": "Execution and decision timeline surface for Odylith runtime activity.",

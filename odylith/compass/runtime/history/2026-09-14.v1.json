@@ -42,10 +42,10 @@
   },
   "digest": {
     "24h": [
-      "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
+      "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
     ],
     "48h": [
-      "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
+      "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
     ]
   },
   "digest_scoped": {
@@ -57,7 +57,7 @@
         "Nothing moved in this window: B-022 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-025": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
       ],
       "B-033": [
         "Nothing moved in this window: B-033 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -147,7 +147,7 @@
         "Nothing moved in this window: B-004 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-005": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
       ],
       "B-006": [
         "Nothing moved in this window: B-006 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -497,7 +497,7 @@
         "Nothing moved in this window: B-022 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-025": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
       ],
       "B-033": [
         "Nothing moved in this window: B-033 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -587,7 +587,7 @@
         "Nothing moved in this window: B-004 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-005": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
       ],
       "B-006": [
         "Nothing moved in this window: B-006 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -938,20 +938,20 @@
       "fingerprint": "214bc40be8cd52fbf1c2ed956bfa74bbab6a9da370f44a6103255af71d67f8de",
       "substrate_fingerprint": "214bc40be8cd52fbf1c2ed956bfa74bbab6a9da370f44a6103255af71d67f8de",
       "bundle_fingerprint": "",
-      "provider_decision": "provider_error",
+      "provider_decision": "provider_deferred",
       "last_successful_narration_fingerprint": "",
       "generated_utc": "2026-09-15T04:29:30Z",
       "sections": [],
       "diagnostics": {
-        "reason": "provider_error",
-        "title": "Brief unavailable right now",
-        "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
-        "provider": "codex-cli",
-        "provider_failure_code": "provider_error",
-        "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-15T04:29:50.829707Z WARN codex_models_manager::model_info: Unknown model gpt-5.4 is used. This will use fallback model metadata. 202 ... 400,\"error\":{\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.4' model is not supported when using Codex with a ChatGPT account.\"}}",
-        "provider_model": "gpt-5.4",
-        "provider_reasoning_effort": "medium",
-        "next_retry_utc": "2026-09-15T06:29:55Z"
+        "reason": "provider_deferred",
+        "title": "Local runtime facts",
+        "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+        "fallback_title": "Local runtime facts",
+        "fallback_digest": [
+          "Current: Universal greenfield domain intelligence (B-142) is in active implementation.",
+          "Next: Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
+          "Watch: Candidate release notes advertise the disabled greenfield apply flow. It is still open at P1."
+        ]
       },
       "evidence_lookup": {}
     },
@@ -962,20 +962,20 @@
       "fingerprint": "796943a87eb85600c5ea95af33eff05c70ab18abf0bc2180dde370858355342e",
       "substrate_fingerprint": "796943a87eb85600c5ea95af33eff05c70ab18abf0bc2180dde370858355342e",
       "bundle_fingerprint": "",
-      "provider_decision": "provider_error",
+      "provider_decision": "provider_deferred",
       "last_successful_narration_fingerprint": "",
       "generated_utc": "2026-09-15T04:29:30Z",
       "sections": [],
       "diagnostics": {
-        "reason": "provider_error",
-        "title": "Brief unavailable right now",
-        "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
-        "provider": "codex-cli",
-        "provider_failure_code": "provider_error",
-        "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-15T04:29:50.829707Z WARN codex_models_manager::model_info: Unknown model gpt-5.4 is used. This will use fallback model metadata. 202 ... 400,\"error\":{\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.4' model is not supported when using Codex with a ChatGPT account.\"}}",
-        "provider_model": "gpt-5.4",
-        "provider_reasoning_effort": "medium",
-        "next_retry_utc": "2026-09-15T06:29:55Z"
+        "reason": "provider_deferred",
+        "title": "Local runtime facts",
+        "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+        "fallback_title": "Local runtime facts",
+        "fallback_digest": [
+          "Current: Universal greenfield domain intelligence (B-142) is in active implementation.",
+          "Next: Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
+          "Watch: Candidate release notes advertise the disabled greenfield apply flow. It is still open at P1."
+        ]
       },
       "evidence_lookup": {}
     }
@@ -1015,21 +1015,20 @@
         "fingerprint": "c27addeb9f34908fa5117c88f43ed1efbccf3861b059085d569e003962f1fc1f",
         "substrate_fingerprint": "c27addeb9f34908fa5117c88f43ed1efbccf3861b059085d569e003962f1fc1f",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-15T04:29:30Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background",
-          "provider": "codex-cli",
-          "provider_failure_code": "provider_error",
-          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-15T04:29:34.938892Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+          "reason": "provider_deferred",
+          "title": "Local runtime facts",
+          "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Land Odylith cannot claim a live operating layer if Compass can go stale or if the browser suite misses that regression; Cross-Surface Runtime Freshness and UX Browser Hardening (B-025) is.",
+            "Next: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Cross-Surface Runtime Freshness and UX Browser Hardening (B-025) so odylith cannot claim.",
+            "Watch: Primary watch item is closure discipline: 25 plan items remain open for Cross-Surface Runtime Freshness and UX Browser Hardening (B-025)."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -1515,21 +1514,20 @@
         "fingerprint": "cdfbec72764a2b738ad7614fac30c599b83f39dba355d250991d612ab060896b",
         "substrate_fingerprint": "cdfbec72764a2b738ad7614fac30c599b83f39dba355d250991d612ab060896b",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-15T04:29:30Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background",
-          "provider": "codex-cli",
-          "provider_failure_code": "provider_error",
-          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-15T04:29:34.938892Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+          "reason": "provider_deferred",
+          "title": "Local runtime facts",
+          "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005) is completed.",
+            "Next: Immediate forcing function is to capture the next verified checkpoint for Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005).",
+            "Watch: No critical blockers are currently surfaced."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -3037,21 +3035,20 @@
         "fingerprint": "7a37ecd5759e42e832c905732d0c95e93771c102e9cfd0ee72c8d12b69481219",
         "substrate_fingerprint": "7a37ecd5759e42e832c905732d0c95e93771c102e9cfd0ee72c8d12b69481219",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-15T04:29:30Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background",
-          "provider": "codex-cli",
-          "provider_failure_code": "provider_error",
-          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-15T04:29:34.938892Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+          "reason": "provider_deferred",
+          "title": "Local runtime facts",
+          "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Land Odylith cannot claim a live operating layer if Compass can go stale or if the browser suite misses that regression; Cross-Surface Runtime Freshness and UX Browser Hardening (B-025) is.",
+            "Next: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Cross-Surface Runtime Freshness and UX Browser Hardening (B-025) so odylith cannot claim.",
+            "Watch: Primary watch item is closure discipline: 25 plan items remain open for Cross-Surface Runtime Freshness and UX Browser Hardening (B-025)."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -3537,21 +3534,20 @@
         "fingerprint": "04a3138d84f229eada55d74c28fd73122d1bf7f9f9748db26c01c5760893cd54",
         "substrate_fingerprint": "04a3138d84f229eada55d74c28fd73122d1bf7f9f9748db26c01c5760893cd54",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-15T04:29:30Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background",
-          "provider": "codex-cli",
-          "provider_failure_code": "provider_error",
-          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-15T04:29:34.938892Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+          "reason": "provider_deferred",
+          "title": "Local runtime facts",
+          "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005) is completed.",
+            "Next: Immediate forcing function is to capture the next verified checkpoint for Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005).",
+            "Watch: No critical blockers are currently surfaced."
+          ]
         },
         "evidence_lookup": {}
       },

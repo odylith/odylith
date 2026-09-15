@@ -18,6 +18,7 @@ def test_atlas_update_help_forwards_backend_flags(capsys) -> None:
     assert excinfo.value.code == 0
     assert "usage: odylith atlas update" in output
     assert "--diagram-id" in output
+    assert "--updates-file" in output
     assert "--summary" in output
     assert "--watch" in output
 
@@ -29,7 +30,7 @@ def test_atlas_parent_help_lists_update(capsys) -> None:
     output = capsys.readouterr().out
     assert excinfo.value.code == 0
     assert "update" in output
-    assert "Update one existing Atlas diagram catalog entry." in output
+    assert "Update explicitly selected Atlas diagram catalog entries." in " ".join(output.split())
 
 
 def test_atlas_update_help_is_documented_in_public_and_bundle_assets() -> None:

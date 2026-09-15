@@ -20,7 +20,7 @@ flowchart TB
       projections["Deterministic source and design projections<br/>4–5 Radar, 4–5 Registry, five Atlas views<br/>Exact release membership and dependency-ready task"]
       staged_surfaces["Temporary-root surface rendering<br/>Shared read lock holds the validated baseline<br/>No detached narration queue or worker"]
       quality["Pre-confirm complete-package gates<br/>Two-role receipt bound to source and intent<br/>Independent release qualification remains open"]
-      timing["Proposal timing gate<br/>Standard at 60 seconds<br/>Rescue at 90; deep at 120"]
+      timing["Proposal timing gate<br/>Strictly below 90 / 120 / 150 seconds<br/>Normal 60-second target is advisory"]
       custody --> review
       review -- "admitted unchanged" --> projections --> staged_surfaces --> quality --> timing
       review -- "denied, unavailable or late" --> denied
@@ -49,7 +49,7 @@ flowchart TB
       publish["Publish exact sealed HTML entry<br/>Journal retains admitted transaction evidence<br/>Readers pin immutable shell and child resources"]
       observed["Opened or historical snapshot<br/>Pinned package and captured status<br/>No automatic successor discovery"]
       navigate["Navigate the canonical entry<br/>Resolve the current published package"]
-      later["Successful later update<br/>Recover creates and verify working bytes first<br/>Publish a complete immutable successor"]
+      later["Successful later update<br/>Require no pending working-file restoration<br/>Recover creates and verify working bytes<br/>Publish a complete immutable successor"]
       recovery["Recovery boundary<br/>Rollback snapshot, journal,<br/>interrupt cleanup, and safe retry"]
       write_set --> generation_manifest --> entry --> sealed --> decision --> confirm --> publish
       publish --> later
@@ -64,7 +64,7 @@ flowchart TB
       direction LR
       owners["Product semantic owners<br/>Canonical graph and Mermaid parser"]
       evaluator["Evaluator adapters<br/>Optional source capabilities may be absent<br/>No invented samples or parallel rules"]
-      acceptance["Independent semantic, transaction and UX gates<br/>Source-local candidate is unqualified<br/>60, 90, 120 second ceilings"]
+      acceptance["Independent semantic, transaction and UX gates<br/>Source-local candidate is unqualified<br/>Proposal under 90 / 120 / 150 seconds<br/>Separate commit gate under 60 seconds"]
       confidence["Confidence report<br/>Intervals stay separate<br/>from hard acceptance"]
       retained["Retained raw and browser proof<br/>Captured before temporary cleanup"]
       drift{"Utility improved without<br/>new failure, latency, or complexity?"}

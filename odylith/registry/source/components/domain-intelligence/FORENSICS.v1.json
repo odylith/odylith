@@ -2,18 +2,16 @@
   "component_id": "domain-intelligence",
   "diagrams": [
     "D-043",
-    "D-045",
-    "D-046",
     "D-047"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 553,
-    "mapped_workstream_evidence_count": 461,
+    "explicit_event_count": 554,
+    "mapped_workstream_evidence_count": 462,
     "recent_path_match_count": 0,
-    "spec_history_event_count": 294,
+    "spec_history_event_count": 307,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 553
+    "timeline_event_count": 554
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,6 +19,31 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1201,
+      "explicit_components": [
+        "dashboard",
+        "domain-intelligence",
+        "odylith",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "dashboard",
+        "domain-intelligence",
+        "odylith",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-09-10T15:50:52-07:00",
+      "workstreams": [
+        "B-145"
+      ]
+    },
     {
       "artifact_count": 2,
       "artifacts": [
@@ -18925,12 +18948,25 @@
     }
   ],
   "traceability": {
-    "code_references": [],
-    "developer_docs": [],
-    "runbooks": []
+    "code_references": [
+      "src/odylith/runtime/surfaces/claude_host_prompt_bundle.py",
+      "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
+      "src/odylith/runtime/surfaces/codex_host_stop_summary.py",
+      "src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py",
+      "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
+      "src/odylith/runtime/domain_intelligence/greenfield_proposals.py"
+    ],
+    "developer_docs": [
+      "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md",
+      "docs/specs/greenfield-operating-envelope.md"
+    ],
+    "runbooks": [
+      "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+      "docs/runbooks/odylith-greenfield.md"
+    ]
   },
   "version": "v1",
-  "what_it_is": "Provider-free runtime that turns untrusted Greenfield evidence into typed product facts and a confirmation-gated project package with Radar workstreams, Registry components, Atlas topology, assumptions, risks, validation obligations, deterministic Tribunal gating, parseable JSON output, and final surface refresh.",
+  "what_it_is": "Model-assisted Greenfield runtime that turns untrusted project evidence into source-cited intent, stages Radar, Registry and Atlas proposals, and publishes only the exact package reviewed before confirmation.",
   "why_tracked": "Owns the consumer-lane boundary between missing source evidence and useful greenfield guidance, so every supported host routes broad project intents through one low-latency Odylith runtime path instead of refusing or inventing source-backed truth.",
   "workstreams": [
     "B-141",

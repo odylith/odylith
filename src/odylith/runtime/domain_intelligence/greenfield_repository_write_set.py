@@ -396,6 +396,25 @@ def greenfield_managed_fingerprints(repo_root: Path) -> dict[str, str]:
     return _managed_fingerprints(greenfield_repository_layout(repo_root))
 
 
+def greenfield_managed_fingerprints_with_file_states(
+    repo_root: Path, *, file_states: Mapping[str, Mapping[str, Any]],
+) -> dict[str, str]:
+    """Normalize selected existing files for an independently admitted partial retry.
+
+    The caller must first prove each override is an exact allowed pre/post state.
+    Directory inventory and every other file still come from the live boundary.
+    """
+    layout = greenfield_repository_layout(repo_root)
+    files = {
+        path: {"sha256": _sha256(data), "mode": mode}
+        for path, (data, mode) in _managed_file_states(layout).items()
+    }
+    if not set(file_states).issubset(files):
+        raise ValueError("Fingerprint normalization requires existing managed files")
+    files.update(file_states)
+    return _after_image_fingerprints(directories=_managed_directories(layout), files=files)
+
+
 def greenfield_repository_recovery_paths(write_set: object) -> tuple[str, ...]:
     """Return affected governed roots whose complete prestate protects rollback."""
 
