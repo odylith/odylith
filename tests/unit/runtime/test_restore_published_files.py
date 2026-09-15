@@ -409,10 +409,20 @@ def test_receipt_and_generation_hardlinks_refuse(repo, restore, tmp_path, locati
 
 
 @pytest.mark.parametrize("kill_after", [0, 1, 2])
-def test_sigkill_resume_uses_durable_admission_and_exact_pre_post_states(restore, monkeypatch, kill_after):
+@pytest.mark.parametrize("aliased_parent", [False, True], ids=["direct-parent", "symlink-parent"])
+def test_sigkill_resume_uses_durable_admission_and_exact_pre_post_states(restore, monkeypatch, kill_after, aliased_parent):
     # Deliberately outside pytest's tmp_path lifecycle, retaining even failed/nonterminal proof roots.
     parent = os.environ.get("ODYLITH_RESTORE_PROOF_ROOT")
     base = Path(tempfile.mkdtemp(prefix=f"restore-sigkill-{kill_after}-", dir=parent))
+    if aliased_parent:
+        physical = base / "physical"
+        physical.mkdir()
+        alias = base / "alias"
+        alias.symlink_to(physical.resolve(), target_is_directory=True)
+        base = Path(tempfile.mkdtemp(prefix="fixture-", dir=alias))
+        assert base != base.resolve()
+    # Match the writer's canonical root before comparing paths in either process.
+    base = base.resolve()
     repo = _published_repo(base)
     preview = restore.preview_restore(repo_root=repo, paths=TARGETS)
     receipt = Path(preview["receipt_path"])

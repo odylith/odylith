@@ -1,5 +1,38 @@
 Status: In progress
 
+## Apply confirmed proof corrections and test browser ownership (2026-09-14)
+
+The restoration fixture now uses canonical root identity and retains all real
+SIGKILL and preservation assertions. Its complete six-module pack passes 222
+tests, with six additional uninstrumented direct/symlink crash controls passing.
+The remaining release-forensics failure is caused exactly by two later Compass
+events, not Git activity. Record final learning first, synchronize specs through
+the canonical owner, refresh Registry, then refresh the shell last and verify
+current dossier convergence. Preserve the original broad red result separately.
+
+The browser candidate remains an external experiment, not a shipping fix. Rebind
+its server-only app overlay to the settled publication, independently review
+admission, then run the unchanged history/reload and genuine-failure controls on
+the baseline. Only a reproduced relevant baseline failure supports comparison.
+Test whether real top-level load ordering removes the restored-document aborts;
+keep the late-child-message counterexample unresolved even if this narrow test
+passes. No error exemption, longer deadline, new semantic parser or broad protocol
+redesign is authorized by this experiment. Full runtime/browser, model quality,
+90/120/150 timing, install/migration, host delivery and final holdout remain open.
+
+## Preserve the checkpoint and resolve broad-proof failures (2026-09-14)
+
+Checkpoint `f54de8099` is pushed, with the accepted working restoration, Atlas
+batch update, current rendered diagrams, and verified portable shell dependencies.
+Broad runtime proof is still red: 5,947 passed, four failed, one explicitly
+deselected; its physical-input freeze is unchanged. Diagnose the three SIGKILL
+observer-path failures at the test fixture's allocation boundary, keeping every
+kill point and exact remaining-write assertion. Independently compare the release
+forensic sidecar with its current expected events to fix refresh ordering rather
+than repeat a stale-after-log cycle. Record the unresolved protected-discovery
+coverage gap. Browser work remains an external, bounded startup-order experiment,
+not an adopted fix or a reason to waive the original cancellation gate.
+
 ## Finish recovery admission and Atlas settlement (2026-09-14)
 
 Outcome: independently accepted restoration has completed on the retained repo,
