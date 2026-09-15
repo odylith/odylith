@@ -386,8 +386,9 @@ const payload = window["__ODYLITH_MERMAID_DATA__"] || {};
         reset: document.getElementById("reset"),
       },
     });
-    function createAtlasViewer({ mainEl, stageEl, imageEl, listEl, viewport, catalogCount, projectHref }) {
+    function createAtlasViewer({ mainEl, stageEl, imageEl, listEl, viewport, catalogCount, projectHref, onOutcome }) {
       let loadedDiagram = null;
+      let outcome = "empty";
       const emptyEl = mainEl.querySelector("#atlasEmptyState");
       const emptyTitleEl = emptyEl.querySelector("#atlasEmptyTitle");
       const emptyMessageEl = emptyEl.querySelector("#atlasEmptyMessage");
@@ -405,6 +406,12 @@ const payload = window["__ODYLITH_MERMAID_DATA__"] || {};
       stageEl.appendChild(imageErrorEl);
 
       const viewerShellEl = stageEl.closest(".viewer-shell");
+      const selectionWarningEl = document.createElement("div");
+      selectionWarningEl.id = "viewerSelectionWarning";
+      selectionWarningEl.className = "alert";
+      selectionWarningEl.setAttribute("role", "status");
+      selectionWarningEl.hidden = true;
+      viewerShellEl.before(selectionWarningEl);
       viewerShellEl.tabIndex = -1;
       viewerShellEl.setAttribute("aria-labelledby", "diagramTitle");
       // Explicit compact-layout catalog activation hands focus to the viewer controls.
@@ -428,7 +435,19 @@ const payload = window["__ODYLITH_MERMAID_DATA__"] || {};
         imageErrorEl.textContent = "";
       }
 
+      function publishOutcome(next) {
+        outcome = next;
+        onOutcome(outcome === "ready" && !selectionWarningEl.hidden ? "degraded" : outcome);
+      }
+
+      function setSelectionWarning(message) {
+        selectionWarningEl.textContent = message;
+        selectionWarningEl.hidden = !message;
+        selectionWarningEl.classList.toggle("visible", Boolean(message));
+      }
+
       return {
+        setSelectionWarning,
         clear() {
           loadedDiagram = null;
           setSelectionAvailable(false);
@@ -443,18 +462,26 @@ const payload = window["__ODYLITH_MERMAID_DATA__"] || {};
           imageEl.removeAttribute("src");
           imageEl.dataset.fallbackApplied = "";
           clearError();
+          setSelectionWarning("");
           viewport.clear();
+          publishOutcome("empty");
         },
         show(diagram) {
           setSelectionAvailable(true);
-          if (diagram === loadedDiagram && !imageEl.hidden) return;
+          if (diagram === loadedDiagram && outcome !== "degraded") {
+            publishOutcome(outcome);
+            return;
+          }
           loadedDiagram = diagram;
-          imageEl.onload = () => {
+          const onLoad = () => {
+            if (loadedDiagram !== diagram || imageEl.onload !== onLoad) return;
             imageEl.hidden = false;
             clearError();
             viewport.imageLoaded();
+            publishOutcome("ready");
           };
-          imageEl.onerror = () => {
+          const onError = () => {
+            if (loadedDiagram !== diagram || imageEl.onerror !== onError) return;
             const fallback = String(diagram.source_png_href || "").trim();
             if (!fallback || imageEl.dataset.fallbackApplied === "1") {
               imageEl.hidden = true;
@@ -462,15 +489,19 @@ const payload = window["__ODYLITH_MERMAID_DATA__"] || {};
               imageErrorEl.textContent = "Diagram preview unavailable. Use Prev or Next to open another diagram, or review the diagram summary and source links on this page.";
               imageErrorEl.hidden = false;
               imageErrorEl.classList.add("visible");
+              publishOutcome("degraded");
               return;
             }
             imageEl.dataset.fallbackApplied = "1";
             imageEl.src = fallback;
           };
+          imageEl.onload = onLoad;
+          imageEl.onerror = onError;
           imageEl.hidden = true;
           clearError();
           imageEl.dataset.fallbackApplied = "";
           viewport.setDiagram(diagram);
+          publishOutcome("loading");
           imageEl.src = diagram.source_svg_href;
         },
         setResults({ matches, hasSelection }) {
@@ -496,9 +527,22 @@ const payload = window["__ODYLITH_MERMAID_DATA__"] || {};
     const DIAGRAM_COMPACT_RE = /^D(\d{3,})$/;
     const SIDEBAR_PREF_KEY = "mermaid.sidebar.collapsed";
     const TOOLING_BASE_HREF = "../index.html";
+    const params = new URLSearchParams(window.location.search);
+    const paramWorkstream = (params.get("workstream") || "").trim();
+    const paramDiagram = (params.get("diagram") || "").trim();
+    const requestedAtlasRoute = Object.freeze({
+      tab: "atlas",
+      workstream: WORKSTREAM_ID_RE.test(paramWorkstream) ? paramWorkstream : "",
+      diagram: canonicalizeDiagramId(paramDiagram),
+    });
+    let atlasOutcome = "loading";
+    const atlasBridge = window.OdylithFrameBridge.surface({
+      readSnapshot: () => ({ requested: requestedAtlasRoute, rendered: currentAtlasNavigationState(), outcome: atlasOutcome }),
+    });
     const viewer = createAtlasViewer({
       mainEl: document.querySelector(".main"), stageEl, imageEl, listEl, viewport,
       catalogCount: allDiagrams.length, projectHref: `${TOOLING_BASE_HREF}?tab=project`,
+      onOutcome(outcome) { atlasOutcome = outcome; atlasBridge.publish(); },
     });
     const SORT_DEFAULT = "newest";
     const SORT_TOKENS = new Set(["newest", "oldest", "reviewed", "title", "freshness"]);
@@ -755,6 +799,7 @@ initSharedQuickTooltips();
       if (diagramMatchesWorkstream(selectedDiagram, workstreamFilter)) {
         return;
       }
+      viewer.setSelectionWarning(`Diagram ${selectedDiagram.diagram_id} is not linked to workstream ${workstreamFilter}. Showing the diagram with All Workstreams.`);
       workstreamFilter = "all";
       workstreamFilterEl.value = "all";
     }
@@ -765,14 +810,14 @@ initSharedQuickTooltips();
       sidebarToggleEl.setAttribute("aria-expanded", String(!collapsed));
     }
 
-    function currentAtlasNavigationState() {
+    function currentAtlasNavigationState(diagramRow = activeDiagram) {
       const rawWorkstream = workstreamFilter === "all" ? "" : String(workstreamFilter || "").trim();
       const workstream = WORKSTREAM_ID_RE.test(rawWorkstream) ? rawWorkstream : "";
-      const diagram = canonicalizeDiagramId(activeDiagram && activeDiagram.diagram_id);
-      return { workstream, diagram };
+      const diagram = canonicalizeDiagramId(diagramRow && diagramRow.diagram_id);
+      return { tab: "atlas", workstream, diagram };
     }
 
-    function syncAtlasNavigation(options = {}) {
+    function syncAtlasNavigation() {
       const state = currentAtlasNavigationState();
       const query = new URLSearchParams(window.location.search);
       query.delete("workstream");
@@ -787,24 +832,6 @@ initSharedQuickTooltips();
         window.history.replaceState(null, "", `${window.location.pathname}${suffix}`);
       }
 
-      if (options.notifyParent === false) return;
-      try {
-        if (window.parent && window.parent !== window) {
-          window.parent.postMessage(
-            {
-              type: "odylith-atlas-navigate",
-              state: {
-                tab: "atlas",
-                workstream: state.workstream,
-                diagram: state.diagram,
-              },
-            },
-            "*",
-          );
-        }
-      } catch (_error) {
-        // Fall open: local URL remains canonical for direct Atlas browsing.
-      }
     }
 
     function clamp(value, low, high) {
@@ -1085,15 +1112,20 @@ initSharedQuickTooltips();
       renderWorkstreamContext(diagram);
     }
 
-    function setActive(index) {
+    function setActive(index, userIntent = false) {
+      const nextIndex = clamp(index, 0, activeList.length - 1);
+      const diagram = activeList[nextIndex] || null;
+      if (userIntent) {
+        atlasBridge.navigate({ route: currentAtlasNavigationState(diagram), replaceDocument: false });
+        viewer.setSelectionWarning("");
+      }
       if (!activeList.length) {
         selectedDiagramId = "";
         clearActiveDiagram();
         syncAtlasNavigation();
         return;
       }
-      activeIndex = clamp(index, 0, activeList.length - 1);
-      const diagram = activeList[activeIndex];
+      activeIndex = nextIndex;
       selectedDiagramId = canonicalizeDiagramId(diagram.diagram_id) || String(diagram.diagram_id || "").trim();
       applyMeta(diagram);
 
@@ -1120,12 +1152,10 @@ initSharedQuickTooltips();
       statStaleEl.textContent = String(stale);
     }
 
-    function renderList() {
+    function renderList(userIntent = false) {
       clearNode(listEl);
       if (!activeList.length) {
-        selectedDiagramId = "";
-        clearActiveDiagram();
-        syncAtlasNavigation();
+        setActive(0);
         return;
       }
 
@@ -1154,11 +1184,18 @@ initSharedQuickTooltips();
           <div class="diagram-owner">${diagram.owner}</div>
         `;
 
-        button.addEventListener("click", () => setActive(idx));
+        button.addEventListener("click", () => setActive(idx, true));
         li.appendChild(button);
         listEl.appendChild(li);
       });
 
+      if (!userIntent && selectedDiagramId && !allDiagrams.some(
+        (diagram) => canonicalizeDiagramId(diagram.diagram_id) === canonicalizeDiagramId(selectedDiagramId)
+      )) {
+        clearActiveDiagram();
+        syncAtlasNavigation();
+        return;
+      }
       setActive(Math.min(activeIndex, activeList.length - 1));
     }
 
@@ -1172,9 +1209,10 @@ initSharedQuickTooltips();
         chip.className = "chip" + (kindToken === kindFilter ? " active" : "");
         chip.textContent = kindToken;
         chip.addEventListener("click", () => {
+          viewer.setSelectionWarning("");
           kindFilter = kindToken;
           buildKindFilters();
-          applyFilters();
+          applyFilters({ userIntent: true });
         });
         kindFiltersEl.appendChild(chip);
       });
@@ -1255,9 +1293,8 @@ initSharedQuickTooltips();
         );
         if (fallback) {
           if (workstreamFilter !== "all" && !diagramMatchesWorkstream(fallback, workstreamFilter)) {
-            workstreamFilter = "all";
-            workstreamFilterEl.value = "all";
-            applyFilters();
+            normalizeSelectedDiagramWorkstreamFilter();
+            applyFilters(options);
             return;
           }
           activeList = [fallback];
@@ -1271,24 +1308,26 @@ initSharedQuickTooltips();
         ? activeList.findIndex((diagram) => canonicalizeDiagramId(diagram.diagram_id) === selectedToken)
         : -1;
       activeIndex = selectedIndex >= 0 ? selectedIndex : (exactSearchIndex >= 0 ? exactSearchIndex : 0);
+      if (options.userIntent === true) atlasBridge.navigate({ route: currentAtlasNavigationState(activeList[activeIndex] || null), replaceDocument: false });
       viewer.setResults({ matches: matchingCount, hasSelection: activeList.length > 0 });
       updateStats(activeList);
-      renderList();
+      renderList(options.userIntent === true);
     }
 
     function moveSelection(delta) {
       if (!activeList.length) {
         return;
       }
-      setActive(clamp(activeIndex + delta, 0, activeList.length - 1));
+      setActive(clamp(activeIndex + delta, 0, activeList.length - 1), true);
     }
 
     document.querySelectorAll("[data-freshness]").forEach((chip) => {
       chip.addEventListener("click", () => {
+        viewer.setSelectionWarning("");
         freshnessFilter = chip.getAttribute("data-freshness") || "all";
         document.querySelectorAll("[data-freshness]").forEach((node) => node.classList.remove("active"));
         chip.classList.add("active");
-        applyFilters();
+        applyFilters({ userIntent: true });
       });
     });
 
@@ -1311,16 +1350,20 @@ initSharedQuickTooltips();
       }
     });
 
-    searchEl.addEventListener("input", applyFilters);
+    searchEl.addEventListener("input", () => {
+      viewer.setSelectionWarning("");
+      applyFilters({ userIntent: true });
+    });
     sortFilterEl.addEventListener("change", () => {
+      viewer.setSelectionWarning("");
       sortFilter = canonicalizeSortToken(sortFilterEl.value || SORT_DEFAULT);
       sortFilterEl.value = sortFilter;
-      applyFilters();
+      applyFilters({ userIntent: true });
     });
     workstreamFilterEl.addEventListener("change", () => {
+      viewer.setSelectionWarning("");
       workstreamFilter = workstreamFilterEl.value || "all";
-      applyFilters({ normalizeWorkstreamFilter: false });
-      syncAtlasNavigation();
+      applyFilters({ normalizeWorkstreamFilter: false, userIntent: true });
     });
 
     document.getElementById("prevDiagram").addEventListener("click", () => moveSelection(-1));
@@ -1346,9 +1389,6 @@ initSharedQuickTooltips();
     }
     setSidebarCollapsed(sidebarCollapsed);
 
-    const params = new URLSearchParams(window.location.search);
-    const paramWorkstream = (params.get("workstream") || "").trim();
-    const paramDiagram = (params.get("diagram") || "").trim();
     sortFilter = canonicalizeSortToken(params.get("sort") || SORT_DEFAULT);
     sortFilterEl.value = sortFilter;
     if (WORKSTREAM_ID_RE.test(paramWorkstream)) {

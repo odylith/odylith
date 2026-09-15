@@ -59,7 +59,6 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
     const kpiOpenTotal = document.getElementById("kpiOpenTotal");
     const kpiTotalCases = document.getElementById("kpiTotalCases");
     const kpiLatestCase = document.getElementById("kpiLatestCase");
-    let detailRenderToken = 0;
     const BUG_ID_COMPACT_RE = /^(?:CB)?-?(\d{1,})$/i;
     const SORT_DEFAULT = "newest";
     const SORT_OPTIONS = [
@@ -286,7 +285,13 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
       };
     }
 
-    function writeState(state) {
+    const requestedRoute = { tab: "casebook", ...readState() };
+    if (!new URLSearchParams(window.location.search).has("sort")) requestedRoute.sort = "";
+    let frameSnapshot = { requested: requestedRoute, rendered: null, outcome: "loading" };
+    const frameBridge = window.OdylithFrameBridge.surface({ readSnapshot: () => frameSnapshot });
+
+    function writeState(state, userIntent = false) {
+      if (userIntent) frameBridge.navigate({ route: { tab: "casebook", ...state }, replaceDocument: false });
       const query = new URLSearchParams();
       if (state.bug) query.set("bug", state.bug);
       if (state.severity) query.set("severity", state.severity);
@@ -296,17 +301,6 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
       const next = `${window.location.pathname}${suffix}`;
       if (next !== `${window.location.pathname}${window.location.search}`) {
         window.history.replaceState(null, "", next);
-      }
-      if (window.parent && window.parent !== window) {
-        window.parent.postMessage({
-          type: "odylith-casebook-navigate",
-          state: {
-            bug: state.bug || "",
-            severity: state.severity || "",
-            status: state.status || "",
-            sort: canonicalizeSortToken(state.sort),
-          },
-        }, "*");
       }
     }
 
@@ -752,22 +746,7 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
       return "";
     }
 
-    async function renderDetail(row) {
-      if (!row) {
-        detailRenderToken += 1;
-        detailPane.innerHTML = ``;
-        return;
-      }
-      const renderToken = ++detailRenderToken;
-      detailPane.innerHTML = ``;
-      const detailKey = String(row.bug_route || row.bug_key || "").trim();
-      const loadedDetail = detailKey ? await casebookDataSource.loadDetail(detailKey) : null;
-      if (renderToken !== detailRenderToken) {
-        return;
-      }
-      const detail = loadedDetail && typeof loadedDetail === "object"
-        ? { ...row, ...loadedDetail }
-        : row;
+    function renderDetail(detail) {
       const fields = detail.fields && typeof detail.fields === "object" ? detail.fields : {};
       const proofState = detail.proof_state && typeof detail.proof_state === "object" ? detail.proof_state : {};
       const proofResolution = detail.proof_state_resolution && typeof detail.proof_state_resolution === "object"
@@ -1200,25 +1179,52 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
       return { listHtml, detailHtml: null, meta: `${rows.length} visible` };
     }
 
+    function createCasebookSelection({ detail, loadDetail, renderDetail, onOutcome }) {
+      let detailRenderToken = 0;
+      return async function selectBug(row, emptyHtml = "") {
+        const renderToken = ++detailRenderToken;
+        detail.innerHTML = "";
+        if (!row) {
+          detail.innerHTML = emptyHtml;
+          onOutcome({ id: "", outcome: "empty" });
+          return;
+        }
+        onOutcome({ id: "", outcome: "loading" });
+        const id = String(row.bug_route || row.bug_key || "").trim();
+        let loaded;
+        try { loaded = id ? await loadDetail(id) : null; } catch (_error) { loaded = null; }
+        if (renderToken !== detailRenderToken) return;
+        const complete = loaded && typeof loaded === "object";
+        renderDetail(complete ? { ...row, ...loaded } : row);
+        if (!complete) detail.innerHTML += '<p role="status">Bug detail unavailable. The available summary is shown.</p>';
+        onOutcome({ id, outcome: complete ? "ready" : "degraded" });
+      };
+    }
+    const renderSelectedBug = createCasebookSelection({
+      detail: detailPane, loadDetail: id => casebookDataSource.loadDetail(id), renderDetail,
+      onOutcome: ({ id, outcome }) => {
+        frameSnapshot = { requested: requestedRoute, rendered: { tab: "casebook", ...readState(), bug: id }, outcome };
+        frameBridge.publish();
+      },
+    });
 
     function renderList(state, rows) {
-      const selectedRoute = resolveBugRoute(rows, state.bug) || String(rows[0]?.bug_route || "");
+      const selectedRoute = state.bug ? resolveBugRoute(rows, state.bug) : String(rows[0]?.bug_route || "");
       const presentation = casebookListPresentation({
         rows, totalCount: bugSummaries.length, selectedRoute, escapeHtml, displayTokenLabel,
       });
       bugList.innerHTML = presentation.listHtml;
       listMeta.textContent = presentation.meta;
       if (presentation.detailHtml !== null) {
-        detailRenderToken += 1;
-        detailPane.innerHTML = presentation.detailHtml;
+        void renderSelectedBug(null, presentation.detailHtml);
         return;
       }
-      const selected = rows.find((row) => row.bug_route === selectedRoute) || rows[0];
+      const selected = rows.find((row) => row.bug_route === selectedRoute);
       for (const button of bugList.querySelectorAll(".bug-row")) {
         button.addEventListener("click", () => {
           const bug = canonicalizeBugToken(button.getAttribute("data-bug") || "");
           const next = { ...readState(), bug };
-          writeState(next);
+          writeState(next, true);
           render();
         });
         const bug = canonicalizeBugToken(button.getAttribute("data-bug") || "");
@@ -1231,7 +1237,7 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
           });
         }
       }
-      if (selectedRoute !== state.bug) {
+      if (selectedRoute && selectedRoute !== state.bug) {
         writeState({ ...state, bug: selectedRoute });
       }
       rows.slice(0, Math.min(6, rows.length)).forEach((row) => {
@@ -1240,7 +1246,7 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
           casebookDataSource.prefetch(bug);
         }
       });
-      void renderDetail(selected);
+      void renderSelectedBug(selected, '<div class="empty-state" role="status">The requested bug is unavailable in the current selection. Choose a bug or change the filters.</div>');
     }
 
     function render() {
@@ -1268,17 +1274,17 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
     searchInput.addEventListener("input", () => render());
     severityFilter.addEventListener("change", () => {
       const state = readState();
-      writeState({ ...state, severity: canonicalizeFilterToken(severityFilter.value || ""), bug: state.bug });
+      writeState({ ...state, severity: canonicalizeFilterToken(severityFilter.value || ""), bug: state.bug }, true);
       render();
     });
     statusFilter.addEventListener("change", () => {
       const state = readState();
-      writeState({ ...state, status: canonicalizeFilterToken(statusFilter.value || ""), bug: state.bug });
+      writeState({ ...state, status: canonicalizeFilterToken(statusFilter.value || ""), bug: state.bug }, true);
       render();
     });
     sortFilter.addEventListener("change", () => {
       const state = readState();
-      writeState({ ...state, sort: canonicalizeSortToken(sortFilter.value || SORT_DEFAULT), bug: state.bug });
+      writeState({ ...state, sort: canonicalizeSortToken(sortFilter.value || SORT_DEFAULT), bug: state.bug }, true);
       render();
     });
     window.addEventListener("popstate", () => {

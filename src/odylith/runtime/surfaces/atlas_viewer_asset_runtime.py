@@ -17,8 +17,9 @@ EMPTY_VIEW_HTML = r"""
       </section>
 """
 
-VIEWER_RUNTIME_JS = r"""    function createAtlasViewer({ mainEl, stageEl, imageEl, listEl, viewport, catalogCount, projectHref }) {
+VIEWER_RUNTIME_JS = r"""    function createAtlasViewer({ mainEl, stageEl, imageEl, listEl, viewport, catalogCount, projectHref, onOutcome }) {
       let loadedDiagram = null;
+      let outcome = "empty";
       const emptyEl = mainEl.querySelector("#atlasEmptyState");
       const emptyTitleEl = emptyEl.querySelector("#atlasEmptyTitle");
       const emptyMessageEl = emptyEl.querySelector("#atlasEmptyMessage");
@@ -36,6 +37,12 @@ VIEWER_RUNTIME_JS = r"""    function createAtlasViewer({ mainEl, stageEl, imageE
       stageEl.appendChild(imageErrorEl);
 
       const viewerShellEl = stageEl.closest(".viewer-shell");
+      const selectionWarningEl = document.createElement("div");
+      selectionWarningEl.id = "viewerSelectionWarning";
+      selectionWarningEl.className = "alert";
+      selectionWarningEl.setAttribute("role", "status");
+      selectionWarningEl.hidden = true;
+      viewerShellEl.before(selectionWarningEl);
       viewerShellEl.tabIndex = -1;
       viewerShellEl.setAttribute("aria-labelledby", "diagramTitle");
       // Explicit compact-layout catalog activation hands focus to the viewer controls.
@@ -59,7 +66,19 @@ VIEWER_RUNTIME_JS = r"""    function createAtlasViewer({ mainEl, stageEl, imageE
         imageErrorEl.textContent = "";
       }
 
+      function publishOutcome(next) {
+        outcome = next;
+        onOutcome(outcome === "ready" && !selectionWarningEl.hidden ? "degraded" : outcome);
+      }
+
+      function setSelectionWarning(message) {
+        selectionWarningEl.textContent = message;
+        selectionWarningEl.hidden = !message;
+        selectionWarningEl.classList.toggle("visible", Boolean(message));
+      }
+
       return {
+        setSelectionWarning,
         clear() {
           loadedDiagram = null;
           setSelectionAvailable(false);
@@ -74,18 +93,26 @@ VIEWER_RUNTIME_JS = r"""    function createAtlasViewer({ mainEl, stageEl, imageE
           imageEl.removeAttribute("src");
           imageEl.dataset.fallbackApplied = "";
           clearError();
+          setSelectionWarning("");
           viewport.clear();
+          publishOutcome("empty");
         },
         show(diagram) {
           setSelectionAvailable(true);
-          if (diagram === loadedDiagram && !imageEl.hidden) return;
+          if (diagram === loadedDiagram && outcome !== "degraded") {
+            publishOutcome(outcome);
+            return;
+          }
           loadedDiagram = diagram;
-          imageEl.onload = () => {
+          const onLoad = () => {
+            if (loadedDiagram !== diagram || imageEl.onload !== onLoad) return;
             imageEl.hidden = false;
             clearError();
             viewport.imageLoaded();
+            publishOutcome("ready");
           };
-          imageEl.onerror = () => {
+          const onError = () => {
+            if (loadedDiagram !== diagram || imageEl.onerror !== onError) return;
             const fallback = String(diagram.source_png_href || "").trim();
             if (!fallback || imageEl.dataset.fallbackApplied === "1") {
               imageEl.hidden = true;
@@ -93,15 +120,19 @@ VIEWER_RUNTIME_JS = r"""    function createAtlasViewer({ mainEl, stageEl, imageE
               imageErrorEl.textContent = "Diagram preview unavailable. Use Prev or Next to open another diagram, or review the diagram summary and source links on this page.";
               imageErrorEl.hidden = false;
               imageErrorEl.classList.add("visible");
+              publishOutcome("degraded");
               return;
             }
             imageEl.dataset.fallbackApplied = "1";
             imageEl.src = fallback;
           };
+          imageEl.onload = onLoad;
+          imageEl.onerror = onError;
           imageEl.hidden = true;
           clearError();
           imageEl.dataset.fallbackApplied = "";
           viewport.setDiagram(diagram);
+          publishOutcome("loading");
           imageEl.src = diagram.source_svg_href;
         },
         setResults({ matches, hasSelection }) {

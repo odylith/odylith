@@ -786,7 +786,7 @@ def test_render_tooling_dashboard_uses_tab_local_state_for_shell_surface_switche
     assert 'project: "Project",' in control_js
     assert 'project: document.getElementById("tab-project")' in control_js
     assert 'project: document.getElementById("pane-project")' in control_js
-    assert 'applyTab(buildTabActivationState("project"), { pushHistory: true });' in control_js
+    assert 'navigation.selectTab("project");' in control_js
     assert "function sanitizeShellState(rawState)" in control_js
     assert "function buildTabActivationState(tab)" in control_js
     assert "const hasOdylithDrawer = Boolean(" in control_js
@@ -846,8 +846,11 @@ def test_render_tooling_dashboard_uses_tab_local_state_for_shell_surface_switche
     assert "visible: false," in control_js
     assert "applyRuntimeStatus(latestRuntimeStatusState || {});" in control_js
     assert "applyRuntimeStatus(mergeRuntimeStatusState(payload));" in control_js
-    assert 'applyTab(buildTabActivationState("atlas"), { pushHistory: true });' in control_js
-    assert 'applyTab(buildTabActivationState("radar"), { pushHistory: true });' in control_js
+    assert 'navigation.selectTab("atlas");' in control_js
+    assert 'navigation.selectTab("radar");' in control_js
+    assert 'activate(buildTabActivationState(tab), { historyMode: "push" });' in control_js
+    assert 'function readRadarStateFromFrame' not in control_js
+    assert 'function frameAlreadyAtHref' not in control_js
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
     assert 'id="tab-project"' in html
     assert 'id="pane-project"' in html

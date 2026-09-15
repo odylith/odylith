@@ -8,6 +8,7 @@ from pathlib import Path
 
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import execution_wave_ui_runtime_primitives
+from odylith.runtime.surfaces import governance_frame_bridge
 
 
 @dataclass(frozen=True)
@@ -148,6 +149,8 @@ def load_compass_shell_asset_text(filename: str) -> str:
         return _load_compass_shell_base_css()
     if filename == "compass-style-execution-waves.v1.css":
         return _load_compass_execution_wave_css()
+    if filename == "compass-state.v1.js":
+        return f"{governance_frame_bridge.runtime_js()}\n{_resolved_template_text(filename)}"
     return _resolved_template_text(filename)
 
 

@@ -1,5 +1,81 @@
 Status: In progress
 
+## Complete navigation ownership and qualify the real journey (2026-09-15)
+
+The actual generated four-case gate now passes: unchanged history/cross-surface
+and direct-reload journeys plus both genuine-cancellation negatives, four passed
+and zero skipped in 7.16 seconds. Publication 4b9d31e3d307 and scoped inputs remain
+unchanged under the read lease; no overlay, observer waiver or timeout change is
+used. Review the retained raw/native classification before accepting this bounded
+gate. Then take a portable stable checkpoint and run the full desktop/mobile
+normal, empty/fallback and degraded/error matrix plus fresh broad runtime proof.
+The larger quality, 90/120/150 timing, install/upgrade, native-host automatic
+intervention and final untouched holdout gates remain open. D-046 now records the
+shared navigation seam; its artifact is rendered and all 47 diagrams were fresh
+before this proof. Evidence: /Users/freedom/.codex/odylith-real-navigation.dgINjm/.
+
+The actor-bound correction and both child adjudications now pass the integrated
+263-control source pack in 32.50 seconds, including the five native controller
+lifetime cases. Six checked production hashes are unchanged across the run.
+The source is frozen for independent native rereview. After acceptance, settle
+authored learning and generated dependencies, then run the unchanged real history
+and direct-reload journeys with genuine cancellation negatives. Do not substitute
+this focused result for generated UX, full-suite or release acceptance.
+
+Native review falsifies the retained-admission lifetime assumption: a new
+same-URL Document can commit before iframe load and inherit old admission during
+rebinding. Preserve the passing same-Document behavior, but bind admission to one
+stable surface actor through the shared transport. A changed actor invalidates
+admission before any opaque payload callback; each port remains bound to its
+first actor. This is lifetime metadata, not a canonical route field or selection
+revision. Require the five maintained native controls, prior old-port negatives
+and independent rereview before rendering the new candidate.
+
+The canonical external repository is available again; the checked integration
+sources match their pre-disconnect hashes. The shared bridge and all five child
+adoptions are present, not yet browser-qualified. Four new maintained controls
+reproduce the independent review's inactive-load and same-Document rebind defects.
+The bounded correction passes the 54-test shell pack. Keep the new controller
+frozen while independent review checks native Document lifetime, including the
+commit-before-load interval; do not infer continuity from a fresh port alone.
+
+Finish two child boundaries before rendering: remove Compass's unintended
+arbitrary-query persistence extension, and report Atlas's useful but conflicting
+explicit-workstream fallback as degraded with a visible explanation. Then freeze
+source, regenerate through canonical owners, and run the unchanged history,
+direct-reload and genuine-cancellation controls. Only that evidence permits the
+full desktop/mobile normal, empty and degraded matrix. Preserve the broader
+semantic, 90/120/150 timing, install/upgrade, host/intervention and final untouched
+holdout gates; neither unit counts nor transport proof close those requirements.
+
+## Preserve local-file navigation while replacing stale state ownership (2026-09-14)
+
+The real current dashboard passes four bounded Casebook observations across
+HTTP/local-file and default/explicit selection. Normal browser security permits
+direct cross-frame Document reads only on HTTP. Local-file support is working
+and must not be removed to simplify the fix.
+
+The bounded native channel comparison completes ten positive controls and four
+expected counterexamples. Proceed with one parent-offered MessageChannel for both
+transports, revoking before navigation and rotating on child load. Admit only
+active-port messages; keep late async-result checks at the existing child selection
+owner. The shell remains the proposed sole owner of embedded navigation and
+history; child owners report their original semantic route separately from the
+committed rendered outcome. This is transport evidence, not dashboard acceptance.
+
+Move route/frame/adoption ownership out of the oversized tooling controller.
+Adopt the shared boundary across Radar, Registry, Casebook, Atlas and Compass,
+removing their old load-URL adoption, unversioned notifications and direct
+parent-history bypass in the same implementation. Keep standalone behavior and
+actual error/fallback outcomes. Do not retain two interpretations, add a second
+selection counter, or introduce URL exceptions. Use native replacement navigation
+as the bounded first history hypothesis; do not assume its correctness from the
+successful transport controls or hide panes behind URL equality.
+The next decisive controls are same-URL replacement with queued old-document
+messages, current selection completion, and the unchanged real history journey
+with genuine cancellation negatives. Transport proof alone does not qualify the
+mechanism or the release.
+
 ## Reject the hidden-page candidate and preserve the qualified checkpoint (2026-09-14)
 
 Checkpoint 7b87dacdb is pushed. The corrected crash fixture, ordered governance

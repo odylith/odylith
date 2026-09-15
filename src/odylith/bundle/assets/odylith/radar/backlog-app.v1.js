@@ -47,6 +47,18 @@ const __ODYLITH_SHELL_REDIRECT_IN_PROGRESS__ = (function enforceShellOwnedSurfac
 
 (async () => {
     const DATA = window["__ODYLITH_BACKLOG_DATA__"] || {};
+    const urlParams = new URLSearchParams(window.location.search);
+    const workstreamParam = (urlParams.get("workstream") || "").trim().toUpperCase();
+    const viewParam = (urlParams.get("view") || "").trim().toLowerCase();
+    const requestedRoute = { tab: "radar", workstream: workstreamParam, view: ["spec", "plan"].includes(viewParam) ? viewParam : "" };
+    let frameSnapshot = { requested: requestedRoute, rendered: null, outcome: "loading" };
+    const frameBridge = window.OdylithFrameBridge.surface({ readSnapshot: () => frameSnapshot });
+    document.addEventListener("click", (event) => {
+      const link = event.target.closest("a[data-radar-view]");
+      if (!link || event.button || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      const route = { tab: "radar", workstream: link.dataset.radarWorkstream || "", view: link.dataset.radarView || "" };
+      if (frameBridge.navigate({ route, replaceDocument: true })) event.preventDefault();
+    });
     const assetLoadCache = new Map();
     function loadScriptAsset(href) {
       const token = String(href || "").trim();
@@ -236,25 +248,21 @@ const __ODYLITH_SHELL_REDIRECT_IN_PROGRESS__ = (function enforceShellOwnedSurfac
       appendStandaloneNodes(document.body, nextBodyNodes);
       return true;
     }
-    const urlParams = new URLSearchParams(window.location.search);
-    const workstreamParam = (urlParams.get("workstream") || "").trim().toUpperCase();
-    const viewParam = (urlParams.get("view") || "").trim().toLowerCase();
     if ((viewParam === "spec" || viewParam === "plan") && workstreamParam) {
-      const standaloneHtml = await backlogDataSource.loadDocument({ id: workstreamParam, view: viewParam });
+      let standaloneHtml;
+      try { standaloneHtml = await backlogDataSource.loadDocument({ id: workstreamParam, view: viewParam }); } catch (_error) { standaloneHtml = ""; }
       if (typeof standaloneHtml === "string" && standaloneHtml.trim()) {
-        try {
-          if (window.parent && window.parent !== window) {
-            window.parent.postMessage({
-              type: "odylith-radar-navigate",
-              state: { workstream: workstreamParam, view: viewParam },
-            }, "*");
-          }
-        } catch (_error) {
-          // Ignore parent-shell sync failures; standalone rendering must still work.
+        if (replaceStandaloneDocument(standaloneHtml)) {
+          const outcome = await window.OdylithRadarDocumentCompletion;
+          frameSnapshot = { requested: requestedRoute, rendered: requestedRoute, outcome: outcome === "ready" ? "ready" : "degraded" };
+          frameBridge.publish();
+          return;
         }
-        replaceStandaloneDocument(standaloneHtml);
-        return;
       }
+      document.querySelector("main").innerHTML = '<section role="status"><h1>Requested document unavailable</h1><p>The requested workstream document could not be loaded. Return to Radar to choose an available workstream.</p><a href="?" data-radar-view="" data-radar-workstream="">Open Radar</a></section>';
+      frameSnapshot = { requested: requestedRoute, rendered: null, outcome: "degraded" };
+      frameBridge.publish();
+      return;
     }
 
     const state = {
@@ -267,7 +275,7 @@ const __ODYLITH_SHELL_REDIRECT_IN_PROGRESS__ = (function enforceShellOwnedSurfac
       release: "all",
       sort: "date",
       mixBy: "complexity",
-      selectedIdeaId: ""
+      selectedIdeaId: workstreamParam
     };
 
     const el = {
@@ -429,7 +437,7 @@ initSharedQuickTooltips();
       if (!trigger) return;
       event.preventDefault();
       const ideaId = String(trigger.getAttribute("data-link-idea") || "").trim();
-      if (!selectIdea(ideaId, { reveal: true })) return;
+      if (!selectIdea(ideaId, { reveal: true, userIntent: true })) return;
       render();
       el.detail?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -549,21 +557,6 @@ initSharedQuickTooltips();
         .replace(/\b\w/g, (m) => m.toUpperCase()) || "Unknown";
     }
 
-    function syncParentShellSelection() {
-      try {
-        if (!window.parent || window.parent === window) return;
-        window.parent.postMessage({
-          type: "odylith-radar-navigate",
-          state: {
-            workstream: String(state.selectedIdeaId || "").trim(),
-            view: "",
-          },
-        }, "*");
-      } catch (_error) {
-        // Ignore parent-shell sync failures; local radar interactions must still work.
-      }
-    }
-
     function formatCompactTimestamp(value) {
       const token = String(value || "").trim();
       if (!token) return "-";
@@ -641,6 +634,7 @@ initSharedQuickTooltips();
     function selectIdea(ideaId, options = {}) {
       const token = canonicalizeIdeaId(ideaId);
       if (!token || !allIdeaIds.has(token)) return false;
+      if (options.userIntent) frameBridge.navigate({ route: { tab: "radar", workstream: token, view: "" }, replaceDocument: false });
       if (options.reveal) {
         revealIdeaSelection(token);
       }
@@ -1624,12 +1618,8 @@ initSharedQuickTooltips();
       latestRenderedRows = Array.isArray(rows) ? rows.slice() : [];
       if (!rows.length) {
         el.list.innerHTML = "";
-        state.selectedIdeaId = "";
         latestListWindowKey = "empty";
         return;
-      }
-      if (!rows.some((row) => row.idea_id === state.selectedIdeaId)) {
-        state.selectedIdeaId = rows[0].idea_id;
       }
       const resizeAnchor = backlogListAnchor && el.list.clientWidth !== backlogListMeasuredWidth
         ? { ...backlogListAnchor } : null;
@@ -1673,7 +1663,7 @@ initSharedQuickTooltips();
       el.list.querySelectorAll(".row").forEach((button) => {
         button.addEventListener("click", () => {
           const preserveListScroll = elementFullyVisibleWithinContainer(el.list, button);
-          selectIdea(button.dataset.ideaId || "");
+          selectIdea(button.dataset.ideaId || "", { userIntent: true });
           render({ preserveListScroll });
         });
         const ideaId = String(button.dataset.ideaId || "").trim();
@@ -3017,7 +3007,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
             <a href="${escapeHtml(selected.idea_ui_href || selected.idea_href)}">Workstream Spec</a>
             ${
               selected.promoted_to_plan_ui_href
-                ? `<a href="${escapeHtml(selected.promoted_to_plan_ui_href)}">Technical Implementation Plan</a>`
+                ? `<a href="${escapeHtml(selected.promoted_to_plan_ui_href)}" data-radar-view="plan" data-radar-workstream="${escapeHtml(selected.idea_id)}">Technical Implementation Plan</a>`
                 : ""
             }
             <a href="${escapeHtml(compassScopeHref(selected.idea_id))}" target="_top">Compass Scope</a>
@@ -3079,7 +3069,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
       `;
     }
 
-    function createBacklogSelection({ detail, empty, sourceCount, loadDetail, renderDetail }) {
+    function createBacklogSelection({ detail, empty, sourceCount, loadDetail, renderDetail, onOutcome }) {
       let revision = 0;
       empty.setAttribute("role", "status");
       return async function selectWorkstream(selectedId, filtered) {
@@ -3092,21 +3082,31 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
           empty.innerHTML = sourceCount === 0
             ? `<h2>No workstreams yet</h2><p>Radar will show the work planned for this project.</p><p><a href="../index.html?tab=project" target="_top">Open Project</a> to start from your project intent.</p>`
             : `<h2>No matching workstreams</h2><p>Change your search or filters to see workstreams already in Radar.</p>`;
+          onOutcome({ id: "", outcome: "empty" });
           return;
         }
-        const loaded = await loadDetail(summary.idea_id);
+        onOutcome({ id: "", outcome: "loading" });
+        let loaded;
+        try { loaded = await loadDetail(summary.idea_id); } catch (_error) { loaded = null; }
         if (currentRevision !== revision) return;
-        renderDetail(loaded && typeof loaded === "object" ? { ...summary, ...loaded } : summary);
+        const complete = loaded && typeof loaded === "object";
+        renderDetail(complete ? { ...summary, ...loaded } : summary);
+        if (!complete) detail.innerHTML += '<p role="status">Workstream detail unavailable. The available summary is shown.</p>';
+        onOutcome({ id: summary.idea_id, outcome: complete ? "ready" : "degraded" });
       };
     }
     const renderSelectedWorkstream = createBacklogSelection({
       detail: el.detail, empty: el.detailEmpty, sourceCount: all.length,
       loadDetail: id => backlogDataSource.loadDetail(id), renderDetail,
+      onOutcome: ({ id, outcome }) => {
+        frameSnapshot = { requested: requestedRoute, rendered: { tab: "radar", workstream: id, view: "" }, outcome };
+        frameBridge.publish();
+      },
     });
 
     function render(options = {}) {
       const filtered = sortRows(applyFilters());
-      if (filtered.length && !filtered.some((item) => item.idea_id === state.selectedIdeaId)) {
+      if (filtered.length && !state.selectedIdeaId) {
         state.selectedIdeaId = String(filtered[0].idea_id || "");
       }
       const executionWaveSummary = executionWavePayload().summary || {};
@@ -3117,8 +3117,6 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
       renderList(filtered, { preserveListScroll: Boolean(options.preserveListScroll) });
       void renderSelectedWorkstream(state.selectedIdeaId, filtered);
       el.empty.hidden = true;
-
-      syncParentShellSelection();
     }
 
     function bind(element, key) {

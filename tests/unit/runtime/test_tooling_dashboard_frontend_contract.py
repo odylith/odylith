@@ -128,4 +128,31 @@ def test_tooling_shell_frontend_contract_loads_cheatsheet_modules() -> None:
     assert 'const CASEBOOK_SORT_DEFAULT = "newest";' in control_js
     assert 'casebook: { bug: "", severity: "", status: "", sort: CASEBOOK_SORT_DEFAULT }' in control_js
     assert 'if (sort !== CASEBOOK_SORT_DEFAULT) query.set("sort", sort);' in control_js
-    assert 'const sortToken = canonicalizeCasebookSortToken(raw.sort || "");' in control_js
+    assert 'state.sort = canonicalizeCasebookSortToken(rawState && rawState.sort ? rawState.sort : "");' in control_js
+    assert control_js.count("function createToolingShellNavigation(") == 1
+    assert control_js.count("window.OdylithFrameBridge = {surface, frame};") == 1
+    assert 'odylith-casebook-navigate' not in control_js
+
+
+@pytest.mark.parametrize("relative", [
+    "templates/tooling_dashboard/control.js",
+    "templates/tooling_dashboard/navigation.js",
+    "governance_frame_bridge.py",
+    "tooling_dashboard_frontend_contract.py",
+])
+def test_navigation_owner_changes_invalidate_shell_fingerprint(relative, monkeypatch):
+    path = Path(render_tooling_dashboard.__file__).parent / relative
+    before = render_tooling_dashboard._refresh_guard_code_fingerprint()
+    read_bytes = Path.read_bytes
+    observed = []
+
+    def changed(candidate):
+        content = read_bytes(candidate)
+        if candidate == path:
+            observed.append(candidate)
+            return content + b"\nchanged navigation dependency\n"
+        return content
+
+    monkeypatch.setattr(Path, "read_bytes", changed)
+    assert render_tooling_dashboard._refresh_guard_code_fingerprint() != before
+    assert observed == [path]

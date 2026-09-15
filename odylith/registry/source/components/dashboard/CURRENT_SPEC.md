@@ -5,7 +5,7 @@
   benchmark proof, and release-gate indicators may surface when useful, but
   passing checks should stay quiet and no dashboard claim should imply shipped
   behavior before pinned dogfood and benchmark proof exist.
-Last updated: 2026-09-14
+Last updated: 2026-09-15
 
 
 ## Purpose
@@ -143,6 +143,12 @@ layout; the dashboard header and shared sticky primitive remain unchanged.
   Shared template rendering helpers.
 - `src/odylith/runtime/surfaces/tooling_dashboard_frontend_contract.py`
   Source-owned tooling-shell frontend loader plus frozen header contract guard.
+- `src/odylith/runtime/surfaces/templates/tooling_dashboard/navigation.js`
+  Embedded route, history, frame activation and child-admission owner. The UI
+  controller delegates navigation here rather than adopting child URLs.
+- `src/odylith/runtime/surfaces/governance_frame_bridge.py`
+  Shared opaque MessageChannel transport and surface-actor lifetime. It does not
+  interpret routes, decide readiness or render child content.
 - `src/odylith/runtime/surfaces/dashboard_ui_primitives.py`
   Shared layout, typography, chip, panel, and dashboard UI CSS primitives.
 - `src/odylith/runtime/surfaces/brand_assets.py`
@@ -339,7 +345,7 @@ the derived self-host posture without recomputing it independently of the
 install/runtime layer.
 
 ### Deep-link model
-`dashboard_shell_links.py` owns the URL contract for:
+`dashboard_shell_links.py` owns generated links and the URL contract for:
 - `tab`
 - `workstream`
 - `component`
@@ -350,8 +356,38 @@ install/runtime layer.
 - `view` for Radar-only workstream projections such as plan routes
 
 It also normalizes scope-level routes from delivery-intelligence scopes and
-renders proof-reference links consistently. This module is the single place to
-change shell link semantics.
+renders proof-reference links consistently. Change generated link semantics here
+and the corresponding runtime route contract in `navigation.js` together.
+
+### Embedded navigation and completion
+The parent navigation owner alone updates embedded history and chooses the
+active frame. Each child reports its original requested route, actual rendered
+selection and loading/ready/empty/degraded outcome through the shared bridge.
+The original request is captured before default selection or cache-query cleanup;
+neither a load event nor a matching URL proves that requested content rendered.
+Missing route fields may accept child defaults. Explicit unknown selections must
+retain truthful empty/degraded behavior, not be silently replaced by defaults.
+
+Child actions send explicit navigation intent before local selection changes.
+Same-Document actions retain their actor and existing selection-revision guards;
+Document replacement revokes the old port before navigation. A new actor clears
+parent admission before any snapshot or action callback, including when its
+Document commits before iframe load. Rebinding the same actor preserves accepted
+in-place selections while loading or degraded. Inactive panes cannot revive
+authority through a late load. Each port is pinned to its first actor; revoked
+ports and superseded async completions cannot advance parent state.
+
+Actor identity is opaque lifecycle metadata, not a route field, readiness signal
+or authentication of arbitrary child code. Local-file and HTTP operation remain
+supported without browser security overrides. Standalone child behavior remains
+local; Radar's same-Document replacement retains one bridge actor. Atlas keeps a
+useful conflicting-workstream preview but visibly explains its degraded fallback;
+Compass emits only its supported normalized query fields.
+
+The September 15 source integration passes 263 focused controls, including native
+HTTP/file transport and real-controller Document-lifetime tests. This does not
+qualify generated dashboard history, the desktop/mobile state matrix, installed
+distribution behavior or the complete Greenfield release. Those gates remain open.
 
 ## Intent And UX Contract
 The shell is meant to answer:
@@ -442,7 +478,7 @@ artifacts to that header.
 ## Validation Playbook
 ### Shell
 - `odylith sync --repo-root . --check-only`
-- `PYTHONPATH=src python -m odylith.runtime.surfaces.render_tooling_dashboard --repo-root . --output odylith/index.html`
+- `odylith dashboard refresh --repo-root . --surfaces tooling_shell`
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_brand_assets.py tests/unit/runtime/test_tooling_dashboard_frontend_contract.py`
 - `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_shell_never_renders_internal_status_across_tabs`
 
@@ -474,6 +510,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-09-15: Moved embedded route/history/admission ownership out of the UI controller and adopted one actor-bound transport across all five child surfaces. Preserved original requests, actual completion outcomes and standalone behavior; removed old unversioned notifications and direct parent-history bypasses. Native review caught and corrected admission inheritance before iframe load. The 263-control source integration is bounded proof; generated browser and release acceptance remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-305`)
 - 2026-09-09: Moved published-shell status acquisition into the sealed tooling payload while retaining independently mutable telemetry and direct-live exports. Whole-bundle ownership includes custom HTML sharing canonical assets. Captured status is labelled, canonical reopening advances coherently, and warning layers no longer block starter-guide dismissal. Source-local browser and admission controls qualify this bounded correction; new-distribution installed recovery and complete Greenfield release proof remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-305`)
 - 2026-08-04: Bound Product Boundary to the typed Greenfield visible result instead of a path-shaped project-brief outcome, and kept terminal deferred scope in Product Boundary rather than repeating it in First Path. The exact installed-matrix failure now yields five complete, semantically distinct cards in source-local proof; clean installed proof remains pending. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
 - 2026-08-04: Corrected installed Project browser proof so intentional CSS uppercase labels retain their canonical five-card identity while unknown, missing, mismatched, and reused semantic slots still fail. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)

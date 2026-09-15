@@ -15,6 +15,7 @@ from typing import Literal
 from odylith.runtime.project_intelligence import assets as project_intelligence_assets
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
+from odylith.runtime.surfaces import governance_frame_bridge
 
 _PAYLOAD_GLOBAL_BOOTSTRAP = 'const payload = window["__ODYLITH_TOOLING_DATA__"] || {};'
 _INLINE_JSON_BOOTSTRAP = 'const payload = JSON.parse(document.getElementById("toolingDashboardData").textContent);'
@@ -126,8 +127,10 @@ def load_tooling_shell_control_js(
     else:
         raise ValueError(f"unsupported tooling shell payload mode `{payload_mode}`")
     cheatsheet_js = _template_asset_path("cheatsheet_drawer.js").read_text(encoding="utf-8").rstrip()
+    navigation_js = _template_asset_path("navigation.js").read_text(encoding="utf-8").rstrip()
     _tooltip_surface_css, tooltip_runtime_js = _tooling_shell_quick_tooltip_bundle()
-    return "\n\n".join((resolved_js, tooltip_runtime_js, cheatsheet_js)).rstrip()
+    return "\n\n".join((governance_frame_bridge.runtime_js(), navigation_js, resolved_js,
+                         tooltip_runtime_js, cheatsheet_js)).rstrip()
 
 
 @lru_cache(maxsize=1)

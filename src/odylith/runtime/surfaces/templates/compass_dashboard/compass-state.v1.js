@@ -1,5 +1,5 @@
-    function params() {
-      const qs = new URLSearchParams(window.location.search);
+    function params(search = window.location.search) {
+      const qs = new URLSearchParams(search);
       const windowToken = (qs.get("window") || "").trim().toLowerCase();
       const dateToken = (qs.get("date") || "live").trim();
       const scopeToken = (qs.get("scope") || "").trim();
@@ -17,6 +17,32 @@
         audit_day_pinned: DATE_RE.test(auditDayToken) || ((dateToken || "live") !== "live" && DATE_RE.test(dateToken)),
       };
     }
+
+    function compassRoute(state) {
+      return {
+        tab: "compass",
+        workstream: state.workstream,
+        window: state.window,
+        date: state.date,
+        audit_day: state.audit_day,
+      };
+    }
+
+    const compassRequestedRoute = compassRoute(params());
+    const compassInitialQuery = new URLSearchParams(window.location.search);
+    ["window", "date", "audit_day"].forEach((key) => {
+      if (!compassInitialQuery.has(key)) compassRequestedRoute[key] = "";
+    });
+    Object.freeze(compassRequestedRoute);
+    let compassRenderedRoute = null;
+    let compassRenderOutcome = "loading";
+    const compassFrameBridge = window.OdylithFrameBridge.surface({
+      readSnapshot: () => ({
+        requested: compassRequestedRoute,
+        rendered: compassRenderedRoute,
+        outcome: compassRenderOutcome,
+      }),
+    });
 
     const compassDisclosureStateMemory = Object.create(null);
 
@@ -493,76 +519,15 @@
       banner.title = text;
     }
 
-    function syncParentShellCompassUrl(query) {
-      try {
-        if (!window.parent || window.parent === window) return;
-        const parentLocation = window.parent.location;
-        if (!parentLocation || String(parentLocation.origin || "") !== String(window.location.origin || "")) return;
-        const parentUrl = new URL(String(parentLocation.href || ""));
-        const parentQuery = new URLSearchParams();
-        const scopeToken = String(query.get("scope") || "").trim();
-        const windowToken = String(query.get("window") || "").trim().toLowerCase();
-        const dateToken = String(query.get("date") || "").trim();
-        const auditDayToken = String(query.get("audit_day") || "").trim();
-
-        parentQuery.set("tab", "compass");
-        if (WORKSTREAM_RE.test(scopeToken)) {
-          parentQuery.set("scope", scopeToken);
-        }
-        if (windowToken === "24h" || windowToken === "48h") {
-          parentQuery.set("window", windowToken);
-        }
-        if (dateToken === "live" || DATE_RE.test(dateToken)) {
-          parentQuery.set("date", dateToken);
-        }
-        if (DATE_RE.test(auditDayToken)) {
-          parentQuery.set("audit_day", auditDayToken);
-        }
-
-        const nextSearch = parentQuery.toString();
-        const nextUrl = `${parentUrl.pathname}${nextSearch ? `?${nextSearch}` : ""}${parentUrl.hash || ""}`;
-        const currentUrl = `${parentLocation.pathname}${parentLocation.search}${parentLocation.hash}`;
-        if (nextUrl !== currentUrl) {
-          window.parent.history.replaceState(null, "", nextUrl);
-        }
-      } catch (_error) {
-        // Fall back to parent postMessage sync when direct same-origin history access is unavailable.
-      }
-    }
-
     function navigateCompass(nextQuery) {
       const query = nextQuery instanceof URLSearchParams
         ? nextQuery
         : new URLSearchParams(String(nextQuery || ""));
       query.delete("workstream");
       const localSearch = query.toString();
-
-      syncParentShellCompassUrl(query);
-
-      try {
-        if (window.parent && window.parent !== window) {
-          const scope = String(query.get("scope") || "").trim();
-          const windowToken = String(query.get("window") || "").trim().toLowerCase();
-          const dateToken = String(query.get("date") || "").trim();
-          const auditDayToken = String(query.get("audit_day") || "").trim();
-          window.parent.postMessage(
-            {
-              type: "odylith-compass-navigate",
-              state: {
-                tab: "compass",
-                scope: WORKSTREAM_RE.test(scope) ? scope : "",
-                window: (windowToken === "24h" || windowToken === "48h") ? windowToken : "48h",
-                date: (dateToken === "live" || DATE_RE.test(dateToken)) ? dateToken : "live",
-                audit_day: DATE_RE.test(auditDayToken) ? auditDayToken : "",
-              },
-            },
-            "*",
-          );
-        }
-      } catch (_error) {
-        // Fall through to local navigation when parent sync is unavailable.
-      }
-
+      const state = params(query);
+      if (state.date !== "live" && !DATE_RE.test(state.date)) state.date = "live";
+      if (compassFrameBridge.navigate({ route: compassRoute(state), replaceDocument: true })) return;
       window.location.search = localSearch;
     }
 

@@ -12,6 +12,37 @@ from odylith.runtime.surfaces import backlog_traceability_paths
 from odylith.runtime.surfaces import dashboard_ui_primitives
 
 
+def _document_completion_js() -> str:
+    """Complete the document's Mermaid enhancement or retain visible source."""
+    return """
+    window.OdylithRadarDocumentCompletion = (async () => {
+      const diagrams = Array.from(document.querySelectorAll(".mermaid"));
+      if (!diagrams.length) return "ready";
+      const sources = diagrams.map(node => node.textContent);
+      try {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js";
+          script.onload = resolve;
+          script.onerror = () => reject(new Error("Mermaid runtime unavailable"));
+          document.head.appendChild(script);
+        });
+        if (!window.mermaid) throw new Error("Mermaid runtime unavailable");
+        window.mermaid.initialize({ startOnLoad: false, securityLevel: "strict", theme: "neutral" });
+        await window.mermaid.run({ querySelector: ".mermaid" });
+        return "ready";
+      } catch (_error) {
+        diagrams.forEach((node, index) => { node.textContent = sources[index]; });
+        const notice = document.createElement("p");
+        notice.setAttribute("role", "status");
+        notice.textContent = "Diagram preview unavailable. Mermaid source is shown below.";
+        diagrams[0].before(notice);
+        return "degraded";
+      }
+    })();
+    """.strip()
+
+
 def _render_idea_spec_html(
     *,
     repo_root: Path,
@@ -139,7 +170,7 @@ def _render_idea_spec_html(
     plan_links: list[str] = []
     if promoted_to_plan_ui_href:
         plan_links.append(
-            f"<a href=\"{html.escape(promoted_to_plan_ui_href)}\">Technical Implementation Plan</a>"
+            f"<a href=\"{html.escape(promoted_to_plan_ui_href)}\" data-radar-view=\"plan\" data-radar-workstream=\"{html.escape(str(entry.get('idea_id', '')).strip())}\">Technical Implementation Plan</a>"
         )
     plan_link_html = (
         "".join(plan_links)
@@ -430,7 +461,7 @@ def _render_idea_spec_html(
 </head>
 <body>
   <main class="shell">
-    <a class="back" href="{html.escape(index_href)}">Back to Backlog Radar</a>
+    <a class="back" href="{html.escape(index_href)}" data-radar-view="" data-radar-workstream="">Back to Backlog Radar</a>
     <header class="hero">
       <h1>{title}</h1>
       <p class="id">{idea_id}</p>
@@ -470,21 +501,7 @@ def _render_idea_spec_html(
     {section_html}
   </main>
   <script>
-    (function() {{
-      if (!document.querySelector(".mermaid")) return;
-      var script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js";
-      script.onload = function() {{
-        if (!window.mermaid) return;
-        window.mermaid.initialize({{
-          startOnLoad: false,
-          securityLevel: "strict",
-          theme: "neutral"
-        }});
-        window.mermaid.run({{ querySelector: ".mermaid" }});
-      }};
-      document.head.appendChild(script);
-    }})();
+    {_document_completion_js()}
   </script>
 </body>
 </html>
@@ -599,7 +616,7 @@ def _render_plan_html(
     plan_status = str(plan_meta.get("Status", "")).strip() or "Unknown"
 
     workstream_traceability_html = (
-        f"<a class=\"trace-workstream-link\" href=\"{html.escape(idea_ui_href)}\">Workstream Spec</a>"
+        f"<a class=\"trace-workstream-link\" href=\"{html.escape(idea_ui_href)}\" data-radar-view=\"spec\" data-radar-workstream=\"{html.escape(plan_id)}\">Workstream Spec</a>"
         if idea_ui_href
         else "<span>No linked workstream page</span>"
     )
@@ -1094,7 +1111,7 @@ def _render_plan_html(
 </head>
 <body>
   <main class="shell">
-    <a class="back" href="{html.escape(index_href)}">Back to Backlog Workstream Radar</a>
+    <a class="back" href="{html.escape(index_href)}" data-radar-view="" data-radar-workstream="">Back to Backlog Workstream Radar</a>
     <header class="hero">
       <h1>{html.escape(plan_title)}</h1>
       <p class="id">{html.escape(plan_id)}</p>
@@ -1121,21 +1138,7 @@ def _render_plan_html(
     {section_html}
   </main>
   <script>
-    (function() {{
-      if (!document.querySelector(".mermaid")) return;
-      var script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js";
-      script.onload = function() {{
-        if (!window.mermaid) return;
-        window.mermaid.initialize({{
-          startOnLoad: false,
-          securityLevel: "strict",
-          theme: "neutral"
-        }});
-        window.mermaid.run({{ querySelector: ".mermaid" }});
-      }};
-      document.head.appendChild(script);
-    }})();
+    {_document_completion_js()}
   </script>
 </body>
 </html>

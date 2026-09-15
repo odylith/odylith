@@ -3,7 +3,7 @@
 
 def runtime_js() -> str:
     return """
-    function createBacklogSelection({ detail, empty, sourceCount, loadDetail, renderDetail }) {
+    function createBacklogSelection({ detail, empty, sourceCount, loadDetail, renderDetail, onOutcome }) {
       let revision = 0;
       empty.setAttribute("role", "status");
       return async function selectWorkstream(selectedId, filtered) {
@@ -16,11 +16,17 @@ def runtime_js() -> str:
           empty.innerHTML = sourceCount === 0
             ? `<h2>No workstreams yet</h2><p>Radar will show the work planned for this project.</p><p><a href="../index.html?tab=project" target="_top">Open Project</a> to start from your project intent.</p>`
             : `<h2>No matching workstreams</h2><p>Change your search or filters to see workstreams already in Radar.</p>`;
+          onOutcome({ id: "", outcome: "empty" });
           return;
         }
-        const loaded = await loadDetail(summary.idea_id);
+        onOutcome({ id: "", outcome: "loading" });
+        let loaded;
+        try { loaded = await loadDetail(summary.idea_id); } catch (_error) { loaded = null; }
         if (currentRevision !== revision) return;
-        renderDetail(loaded && typeof loaded === "object" ? { ...summary, ...loaded } : summary);
+        const complete = loaded && typeof loaded === "object";
+        renderDetail(complete ? { ...summary, ...loaded } : summary);
+        if (!complete) detail.innerHTML += '<p role="status">Workstream detail unavailable. The available summary is shown.</p>';
+        onOutcome({ id: summary.idea_id, outcome: complete ? "ready" : "degraded" });
       };
     }
     """.strip()

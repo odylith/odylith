@@ -18,10 +18,12 @@ from odylith.runtime.governance import casebook_source_validation
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import casebook_dashboard_style_runtime
 from odylith.runtime.surfaces import casebook_list_presentation_runtime
+from odylith.runtime.surfaces import casebook_selection_ui
 from odylith.runtime.surfaces import dashboard_shell_links
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import dashboard_time
 from odylith.runtime.surfaces import generated_surface_refresh_guards
+from odylith.runtime.surfaces import governance_frame_bridge
 from odylith.runtime.surfaces import render_casebook_dashboard_cli
 from odylith.runtime.surfaces import surface_path_helpers
 from odylith.runtime.surfaces import source_bundle_mirror
@@ -49,6 +51,8 @@ def _refresh_guard_code_fingerprint() -> str:
     module_paths = (
         Path(__file__),
         Path(str(casebook_list_presentation_runtime.__file__ or "")),
+        Path(str(casebook_selection_ui.__file__ or "")),
+        Path(str(governance_frame_bridge.__file__ or "")),
         Path(str(casebook_metadata.__file__ or "")),
         Path(str(casebook_source_validation.__file__ or "")),
     )
@@ -1025,6 +1029,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
   </main>
 
   <script id="casebookData" type="application/json">{data_json}</script>
+  <script>__GOVERNANCE_FRAME_BRIDGE__</script>
   <script>
     const DATA = JSON.parse(document.getElementById("casebookData").textContent || "{{}}");
     const bugSummaries = Array.isArray(DATA.bugs) ? DATA.bugs : [];
@@ -1040,7 +1045,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     const kpiOpenTotal = document.getElementById("kpiOpenTotal");
     const kpiTotalCases = document.getElementById("kpiTotalCases");
     const kpiLatestCase = document.getElementById("kpiLatestCase");
-    let detailRenderToken = 0;
     const BUG_ID_COMPACT_RE = /^(?:CB)?-?(\\d{{1,}})$/i;
     const SORT_DEFAULT = "newest";
     const SORT_OPTIONS = [
@@ -1267,7 +1271,13 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       }};
     }}
 
-    function writeState(state) {{
+    const requestedRoute = {{ tab: "casebook", ...readState() }};
+    if (!new URLSearchParams(window.location.search).has("sort")) requestedRoute.sort = "";
+    let frameSnapshot = {{ requested: requestedRoute, rendered: null, outcome: "loading" }};
+    const frameBridge = window.OdylithFrameBridge.surface({{ readSnapshot: () => frameSnapshot }});
+
+    function writeState(state, userIntent = false) {{
+      if (userIntent) frameBridge.navigate({{ route: {{ tab: "casebook", ...state }}, replaceDocument: false }});
       const query = new URLSearchParams();
       if (state.bug) query.set("bug", state.bug);
       if (state.severity) query.set("severity", state.severity);
@@ -1277,17 +1287,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       const next = `${{window.location.pathname}}${{suffix}}`;
       if (next !== `${{window.location.pathname}}${{window.location.search}}`) {{
         window.history.replaceState(null, "", next);
-      }}
-      if (window.parent && window.parent !== window) {{
-        window.parent.postMessage({{
-          type: "odylith-casebook-navigate",
-          state: {{
-            bug: state.bug || "",
-            severity: state.severity || "",
-            status: state.status || "",
-            sort: canonicalizeSortToken(state.sort),
-          }},
-        }}, "*");
       }}
     }}
 
@@ -1733,22 +1732,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       return "";
     }}
 
-    async function renderDetail(row) {{
-      if (!row) {{
-        detailRenderToken += 1;
-        detailPane.innerHTML = ``;
-        return;
-      }}
-      const renderToken = ++detailRenderToken;
-      detailPane.innerHTML = ``;
-      const detailKey = String(row.bug_route || row.bug_key || "").trim();
-      const loadedDetail = detailKey ? await casebookDataSource.loadDetail(detailKey) : null;
-      if (renderToken !== detailRenderToken) {{
-        return;
-      }}
-      const detail = loadedDetail && typeof loadedDetail === "object"
-        ? {{ ...row, ...loadedDetail }}
-        : row;
+    function renderDetail(detail) {{
       const fields = detail.fields && typeof detail.fields === "object" ? detail.fields : {{}};
       const proofState = detail.proof_state && typeof detail.proof_state === "object" ? detail.proof_state : {{}};
       const proofResolution = detail.proof_state_resolution && typeof detail.proof_state_resolution === "object"
@@ -2136,25 +2120,32 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     }}
 
     __CASEBOOK_LIST_PRESENTATION__
+    __CASEBOOK_SELECTION_RUNTIME__
+    const renderSelectedBug = createCasebookSelection({{
+      detail: detailPane, loadDetail: id => casebookDataSource.loadDetail(id), renderDetail,
+      onOutcome: ({{ id, outcome }}) => {{
+        frameSnapshot = {{ requested: requestedRoute, rendered: {{ tab: "casebook", ...readState(), bug: id }}, outcome }};
+        frameBridge.publish();
+      }},
+    }});
 
     function renderList(state, rows) {{
-      const selectedRoute = resolveBugRoute(rows, state.bug) || String(rows[0]?.bug_route || "");
+      const selectedRoute = state.bug ? resolveBugRoute(rows, state.bug) : String(rows[0]?.bug_route || "");
       const presentation = casebookListPresentation({{
         rows, totalCount: bugSummaries.length, selectedRoute, escapeHtml, displayTokenLabel,
       }});
       bugList.innerHTML = presentation.listHtml;
       listMeta.textContent = presentation.meta;
       if (presentation.detailHtml !== null) {{
-        detailRenderToken += 1;
-        detailPane.innerHTML = presentation.detailHtml;
+        void renderSelectedBug(null, presentation.detailHtml);
         return;
       }}
-      const selected = rows.find((row) => row.bug_route === selectedRoute) || rows[0];
+      const selected = rows.find((row) => row.bug_route === selectedRoute);
       for (const button of bugList.querySelectorAll(".bug-row")) {{
         button.addEventListener("click", () => {{
           const bug = canonicalizeBugToken(button.getAttribute("data-bug") || "");
           const next = {{ ...readState(), bug }};
-          writeState(next);
+          writeState(next, true);
           render();
         }});
         const bug = canonicalizeBugToken(button.getAttribute("data-bug") || "");
@@ -2167,7 +2158,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           }});
         }}
       }}
-      if (selectedRoute !== state.bug) {{
+      if (selectedRoute && selectedRoute !== state.bug) {{
         writeState({{ ...state, bug: selectedRoute }});
       }}
       rows.slice(0, Math.min(6, rows.length)).forEach((row) => {{
@@ -2176,7 +2167,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           casebookDataSource.prefetch(bug);
         }}
       }});
-      void renderDetail(selected);
+      void renderSelectedBug(selected, '<div class="empty-state" role="status">The requested bug is unavailable in the current selection. Choose a bug or change the filters.</div>');
     }}
 
     function render() {{
@@ -2204,17 +2195,17 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     searchInput.addEventListener("input", () => render());
     severityFilter.addEventListener("change", () => {{
       const state = readState();
-      writeState({{ ...state, severity: canonicalizeFilterToken(severityFilter.value || ""), bug: state.bug }});
+      writeState({{ ...state, severity: canonicalizeFilterToken(severityFilter.value || ""), bug: state.bug }}, true);
       render();
     }});
     statusFilter.addEventListener("change", () => {{
       const state = readState();
-      writeState({{ ...state, status: canonicalizeFilterToken(statusFilter.value || ""), bug: state.bug }});
+      writeState({{ ...state, status: canonicalizeFilterToken(statusFilter.value || ""), bug: state.bug }}, true);
       render();
     }});
     sortFilter.addEventListener("change", () => {{
       const state = readState();
-      writeState({{ ...state, sort: canonicalizeSortToken(sortFilter.value || SORT_DEFAULT), bug: state.bug }});
+      writeState({{ ...state, sort: canonicalizeSortToken(sortFilter.value || SORT_DEFAULT), bug: state.bug }}, true);
       render();
     }});
     window.addEventListener("popstate", () => {{
@@ -2241,6 +2232,8 @@ def _render_html(*, payload: dict[str, Any]) -> str:
 """
     html = html.replace("__ODYLITH_BRAND_HEAD__", str(payload.get("brand_head_html", "")).strip())
     html = html.replace("__CASEBOOK_LIST_PRESENTATION__", casebook_list_presentation_runtime.LIST_PRESENTATION_JS)
+    html = html.replace("__CASEBOOK_SELECTION_RUNTIME__", casebook_selection_ui.runtime_js())
+    html = html.replace("__GOVERNANCE_FRAME_BRIDGE__", governance_frame_bridge.runtime_js())
     html = casebook_dashboard_style_runtime.apply_casebook_dashboard_style_placeholders(html, styles)
     return html
 

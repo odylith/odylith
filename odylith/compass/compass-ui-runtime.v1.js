@@ -1,6 +1,13 @@
     function markCompassSurfaceReady(isReady) {
+      if (!isReady) compassRenderOutcome = "loading";
       if (!document.body || !document.body.dataset) return;
       document.body.dataset.surfaceReady = isReady ? "ready" : "loading";
+    }
+
+    function publishCompassRender(state, outcome) {
+      compassRenderedRoute = state ? compassRoute(state) : null;
+      compassRenderOutcome = outcome;
+      compassFrameBridge.publish();
     }
 
     function syncControls(state, events, payload) {
@@ -193,6 +200,7 @@
       document.getElementById("timeline").innerHTML = '<div class="empty">No timeline data available.</div>';
       document.getElementById("risk-list").innerHTML = '<p class="empty">No risk payload available.</p>';
       markCompassSurfaceReady(true);
+      publishCompassRender(null, "degraded");
     }
 
     let briefCopyStatusTimer = null;
@@ -278,6 +286,7 @@
     }
 
     async function renderCompassRuntime(rawState, runtime) {
+      markCompassSurfaceReady(false);
       if (!runtime.payload) {
         showFallback("Compass runtime files were not found. Run `odylith sync --repo-root . --force`.");
         return { brief: null, state: rawState };
@@ -317,6 +326,7 @@
       renderTimeline(payload, state, timelineEvents, timelineTransactions);
       renderRisks(payload, summaryState);
       markCompassSurfaceReady(true);
+      publishCompassRender(state, uniqueNotices.some((line) => isWarningNotice(line)) ? "degraded" : "ready");
       return { brief: CURRENT_STANDUP_BRIEF, state };
     }
 

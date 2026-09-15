@@ -14,6 +14,9 @@ flowchart LR
       atlas_source["Atlas Mermaid source<br/>Topology truth"]
       atlas_render["Atlas render owners<br/>Browser renderer or supported<br/>static flowchart renderer"]
       surfaces["Readable HTML, payloads,<br/>SVG, and PNG artifacts"]
+      shell_navigation["Shell navigation<br/>Route, history and admission<br/>UI controller delegates"]
+      child_selection["Five child selection owners<br/>Original request, rendered selection,<br/>and actual completion outcome"]
+      frame_bridge["Shared frame bridge<br/>Opaque snapshot and intent delivery<br/>Active port and surface actor only"]
       browser["Browser proof<br/>Normal, empty or fallback,<br/>and degraded or error states"]
     end
 
@@ -34,7 +37,12 @@ flowchart LR
     write -. "failure or interruption" .-> recovery
     recovery -. "restore or safe retry" .-> write
     projections --> atlas_source --> atlas_render --> surfaces --> reviewed
-    readback --> browser
+    readback --> shell_navigation
+    shell_navigation -- "activate or replace" --> child_selection
+    shell_navigation -. "revoke before replacement" .-> frame_bridge
+    child_selection -- "snapshot or explicit intent" --> frame_bridge
+    frame_bridge -- "new actor clears admission" --> shell_navigation
+    shell_navigation --> browser
     product_parser --> evaluator
     projections --> evaluator
     browser --> evaluator --> strict_gate --> confidence --> retain --> cleanup --> release
@@ -47,7 +55,7 @@ flowchart LR
     classDef constraint fill:#FFF8E6,stroke:#F6D98B,color:#132033,stroke-width:1px;
     classDef invalid fill:#FFF1F0,stroke:#F7B4AE,color:#132033,stroke-width:1px;
     class reviewed,preconditions,write,recovery,readback primary;
-    class projections,atlas_source,atlas_render,surfaces,browser execution;
+    class projections,atlas_source,atlas_render,surfaces,shell_navigation,child_selection,frame_bridge,browser execution;
     class product_parser,evaluator,strict_gate,confidence,retain,cleanup,qualified governance;
     class release constraint;
     class blocker invalid;

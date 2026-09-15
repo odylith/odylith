@@ -18,6 +18,7 @@ from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import generated_surface_refresh_guards
 from odylith.runtime.surfaces import governance_surface_theme
+from odylith.runtime.surfaces import governance_frame_bridge
 from odylith.runtime.surfaces import registry_component_identity_ui
 from odylith.runtime.surfaces import registry_forensic_evidence_ui
 from odylith.runtime.surfaces import registry_selection_ui
@@ -915,6 +916,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
   </main>
 
   <script id="registryData" type="application/json">__DATA__</script>
+  <script>__GOVERNANCE_FRAME_BRIDGE__</script>
   <script>
     const DATA = JSON.parse(document.getElementById("registryData").textContent || "{}");
     const payload = DATA;
@@ -1530,11 +1532,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       if (next !== `${window.location.pathname}${window.location.search}`) {
         window.history.replaceState(null, "", next);
       }
-      if (window.parent && window.parent !== window) {
-        const state = { component };
-        window.parent.postMessage({ type: "odylith-registry-navigate", state }, "*");
-        window.parent.postMessage({ type: "odylith-registry-navigate", state }, "*");
-      }
     }
 
     function countMapFromPayload(key) {
@@ -1707,9 +1704,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     function selectDefault(items, requested) {
       if (!items.length) return "";
       const token = String(requested || "").trim().toLowerCase();
-      if (token && items.some((row) => String(row.component_id || "").toLowerCase() === token)) {
-        return token;
-      }
+      if (token) return items.some((row) => String(row.component_id || "").toLowerCase() === token) ? token : "";
       return String(items[0].component_id || "").trim().toLowerCase();
     }
 
@@ -2530,20 +2525,30 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     __ODYLITH_REGISTRY_FORENSIC_EVIDENCE_RUNTIME__
 
     __ODYLITH_REGISTRY_SELECTION_RUNTIME__
+    const requestedRoute = { tab: "registry", ...readState() };
+    let frameSnapshot = { requested: requestedRoute, rendered: null, outcome: "loading" };
+    const frameBridge = window.OdylithFrameBridge.surface({ readSnapshot: () => frameSnapshot });
     const renderSelectedComponent = createRegistrySelection({
       detail: detailEl, timeline: timelineEl, timelineCount: timelineCountEl,
       sourceCount: allComponents.length,
       loadDetail: id => registryDataSource.loadDetail(id), renderDetail, renderTimeline,
+      onOutcome: ({ id, outcome }) => {
+        frameSnapshot = { requested: requestedRoute, rendered: { tab: "registry", component: id }, outcome };
+        frameBridge.publish();
+      },
     });
 
     function applyState(requestedId, options = {}) {
+      if (options.push) {
+        frameBridge.navigate({ route: { tab: "registry", component: requestedId }, replaceDocument: false });
+        writeState(requestedId);
+      }
       renderFilterControls();
       const filtered = filteredComponents();
       renderKpis(filtered.length);
       const selectedId = selectDefault(filtered, requestedId);
       renderList(filtered, selectedId, { preserveListScroll: Boolean(options.preserveListScroll) });
       void renderSelectedComponent(selectedId, filtered);
-      if (options.push) writeState(selectedId);
     }
 
     searchEl.addEventListener("input", () => {
@@ -2766,6 +2771,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         .replace("__ODYLITH_REGISTRY_FORENSIC_EVIDENCE_MARKUP__", registry_forensic_evidence_ui.markup())
         .replace("__ODYLITH_REGISTRY_FORENSIC_EVIDENCE_RUNTIME__", registry_forensic_evidence_ui.runtime_js())
         .replace("__ODYLITH_REGISTRY_SELECTION_RUNTIME__", registry_selection_ui.runtime_js())
+        .replace("__GOVERNANCE_FRAME_BRIDGE__", governance_frame_bridge.runtime_js())
         .replace("__ODYLITH_REGISTRY_COMPONENT_IDENTITY_RUNTIME__", registry_component_identity_ui.runtime_js())
         .replace("__ODYLITH_BRAND_HEAD__", str(payload.get("brand_head_html", "")).strip())
         .replace("__DATA__", data_json)

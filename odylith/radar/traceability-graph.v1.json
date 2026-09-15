@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "ff0254d38ba28d98151e974d3fd226948e373afdd7769bd75c0b5ab506c98c4d",
+    "digest": "71b52dcd81fd1e3f67c262adc47c9e6425ea253801e2251a58b967faa5ebe610",
     "file_count": 317,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -14528,7 +14528,10 @@
         "Pre-confirm surface construction",
         "Commit and publication custody",
         "Atlas render owners",
-        "Independent release evaluation"
+        "Independent release evaluation",
+        "Shell navigation",
+        "Shared frame bridge",
+        "Child selection owners"
       ],
       "related_component_ids": []
     },
@@ -26291,5 +26294,5 @@
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-09-15 04:58:32Z"
+  "generated_utc": "2026-09-15 17:19:08Z"
 }

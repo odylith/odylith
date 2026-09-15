@@ -115,7 +115,7 @@ def test_render_mermaid_catalog_defaults_to_newest_diagram_sort_filter() -> None
     assert 'let sortFilter = "newest";' in html
     assert 'const SORT_TOKENS = new Set(["newest", "oldest", "reviewed", "title", "freshness"]);' in html
     assert "function sortDiagrams(rows)" in html
-    assert "applyFilters({ normalizeWorkstreamFilter: false });" in html
+    assert "applyFilters({ normalizeWorkstreamFilter: false, userIntent: true });" in html
     assert "activeList = sortDiagrams(allDiagrams.filter((diagram) => {" in html
     assert 'button.setAttribute("data-diagram-reviewed", diagram.last_reviewed_utc || "");' in html
 
