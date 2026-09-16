@@ -1,5 +1,43 @@
 Status: In progress
 
+## Standard native feasibility and independent quality findings (2026-09-15)
+
+Checker checkpoint ff381d579 is committed and independently verified on the
+remote. One instrumented native replay of the original apprenticeship request
+passes full clean installation, proposal in 59.412s, commit in 2.577s and all 32
+browser states. Five workstreams, five component specs and five rendered diagrams
+are complete before confirmation. Source/checker custody is unchanged across
+1,053 files. The original development distribution is retained with its truthful
+37637e632 provenance; this does not claim a rebuilt ff381d579 release.
+
+The author consumes 41.491s and full-candidate reviewer 9.791s of the shared 55s
+model window. The earlier timeout remains in the evidence: one failure followed
+by one success is variable feasibility, not a repaired or qualified mechanism.
+No extra native replay is earned merely by a green result. The currently approved
+public proposal ceilings remain strictly below 90/120/150 seconds; all internal
+profile caps and the two-call contract are unchanged in this diagnostic.
+
+Independent artifact review blocks a highest-quality claim on P1 verification
+incompleteness: three component specs prove viewing data without proving their
+source-backed mapping, recording and exception-management operations. Radar
+already requires those operations. Preserve this actual-package counterexample
+at the existing proposed-verification owner. The former v54 prompt-only candidate
+already supplied more useful checks but failed its complete-review timing gate;
+do not repeat that unchanged experiment, add keyword rules, bypass review or
+launch another profile sweep. The next bounded decision must address complete
+author/review deadline feasibility and useful operation-level verification within
+the fixed consumer limits, with falsifiable source/quality/timing controls before
+adoption. No new architecture or deadline change is adopted by this note.
+
+Retain three P2 findings: an unlabeled employer-requirements coding gate, missing
+workforce-board recipient topology, and duplicated Radar prose. Root screenshot
+inspection confirms legible mobile content but a prose-heavy system-context
+diagram. Keep these in the existing projection/UX ownership, without reparsing
+source or manufacturing actor actions. Native recovery, profile/corpus breadth,
+populated predecessor upgrade, all-engine integration, automatic chat and final
+holdout remain open. Raw model stages, exact artifacts and screenshots:
+/Users/freedom/.codex/odylith-standard-diagnostic.MLO87l/.
+
 ## Fresh installed discovery and decisive next corrections (2026-09-15)
 
 Checkpoint 37637e632 has a complete locally installable distribution with unchanged
