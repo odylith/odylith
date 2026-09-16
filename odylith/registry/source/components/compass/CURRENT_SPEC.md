@@ -25,7 +25,10 @@ Current-runtime recognition also accepts the independently captured native
 executable of the observing process, covering framework launcher transitions
 without path patterns or candidate-derived trust. It does not infer executable
 aliases for a different previous runtime or authenticate a virtual environment.
-The process epoch describes loaded code, not a later disk edit.
+The process epoch describes loaded code, not a later disk edit. Its dependency
+set includes the shared structured-reasoning policy so a default-model change
+cannot silently leave an old policy loaded. Replacement preserves request and
+entry history; a same-fingerprint future retry remains on its existing backoff.
 
 Exact cached results are reusable before provider availability is checked. Busy
 or failed application retains the request, computed cache and recorded diagnostics;
@@ -642,7 +645,7 @@ empty/single-change states. This does not establish native chat delivery.
 - When live provider narration is needed for Compass briefs or similar
   refresh-time brief enrichment, detect the active local host and stay on the
   bounded structured local ladder with `medium` reasoning only. On Codex that means
-  `gpt-5.3-codex-spark` first, then `gpt-5.3-codex`, then `gpt-5.4-mini` only
+  `gpt-5.3-codex-spark` first, then `gpt-5.6-luna`, then `gpt-5.6-terra` only
   if the cheaper rung is exhausted or unavailable. On Claude that means
   `haiku` first, then `sonnet` only if the cheaper rung is exhausted or
   unavailable. Do not keep retrying the same failed cheap rung indefinitely,

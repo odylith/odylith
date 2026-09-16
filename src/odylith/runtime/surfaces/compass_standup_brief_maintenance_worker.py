@@ -27,6 +27,7 @@ _BACKGROUND_TEST_ALLOW_ENV = "ODYLITH_COMPASS_STANDUP_BACKGROUND_ALLOW_IN_TESTS"
 _WORKER_MODULE = "odylith.runtime.surfaces.compass_standup_brief_maintenance"
 _MAX_PROCESS_ARGS_BYTES = 1024 * 1024
 _WORKER_EPOCH_RELATIVE_PATHS = (
+    "reasoning/odylith_reasoning.py",
     "surfaces/compass_standup_brief_maintenance.py",
     "surfaces/compass_standup_brief_maintenance_worker.py",
     "surfaces/compass_standup_brief_runtime_patch.py",

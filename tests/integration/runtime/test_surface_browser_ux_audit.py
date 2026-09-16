@@ -263,7 +263,8 @@ def test_radar_default_warning_cards_hide_maintainer_traceability_diagnostics(br
         diagnostic = radar.locator("body").evaluate(
             """() => {
             const data = window.__ODYLITH_BACKLOG_DATA__ || {};
-            const rows = Array.isArray(data.warning_items) ? data.warning_items : [];
+            const traceability = data.traceability_index || data.traceability_graph || {};
+            const rows = Array.isArray(traceability.warning_items) ? traceability.warning_items : [];
             const match = rows.find((entry) => {
               const ideaId = String(entry.idea_id || '').trim();
               const audience = String(entry.audience || '').trim().toLowerCase();
@@ -278,9 +279,7 @@ def test_radar_default_warning_cards_hide_maintainer_traceability_diagnostics(br
             };
         }"""
         )
-        if not diagnostic:
-            _assert_clean_page(page, observation)
-            pytest.skip("Radar fixture does not currently expose maintainer-only traceability diagnostics.")
+        assert diagnostic, "Populated Radar audit requires a workstream-scoped maintainer-only traceability diagnostic."
 
         source_id = str(diagnostic["idea_id"])
         response = page.goto(

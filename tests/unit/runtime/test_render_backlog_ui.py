@@ -614,16 +614,18 @@ def test_render_backlog_ui_curates_warning_cards_from_shared_traceability_policy
     html = render_backlog_ui._render_html(
         payload={
             "entries": [],
-            "warning_items": [
-                {
-                    "idea_id": "B-022",
-                    "severity": "info",
-                    "audience": "maintainer",
-                    "surface_visibility": "diagnostics",
-                    "category": "topology_conflict",
-                    "message": "B-022: autofix skipped `workstream_split_into` due to metadata conflict",
-                }
-            ],
+            "traceability_index": {
+                "warning_items": [
+                    {
+                        "idea_id": "B-022",
+                        "severity": "info",
+                        "audience": "maintainer",
+                        "surface_visibility": "diagnostics",
+                        "category": "topology_conflict",
+                        "message": "B-022: autofix skipped `workstream_split_into` due to metadata conflict",
+                    }
+                ],
+            },
         }
     )
 

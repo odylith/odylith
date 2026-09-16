@@ -696,7 +696,7 @@ def test_cheap_structured_reasoning_profile_advances_codex_ladder_after_budget_f
     )
 
     assert profile.provider == "codex-cli"
-    assert profile.model == "gpt-5.4-mini"
+    assert profile.model == "gpt-5.6-luna"
     assert profile.reasoning_effort == "medium"
 
 
@@ -709,7 +709,7 @@ def test_cheap_structured_reasoning_failure_can_advance_until_last_rung() -> Non
     )
     assert not odylith_reasoning.cheap_structured_reasoning_failure_can_advance(
         provider="codex-cli",
-        previous_model="gpt-5.4",
+        previous_model="gpt-5.6-terra",
         failure_code="credits_exhausted",
         failure_detail="Switch to another model now.",
     )
@@ -733,7 +733,7 @@ def test_cheap_structured_reasoning_profile_respects_advanced_codex_model(
         odylith_reasoning.ReasoningConfig(
             mode="auto",
             provider="codex-cli",
-            model="gpt-5.4",
+            model="gpt-5.6-terra",
             base_url="",
             api_key="",
             scope_cap=5,
@@ -745,7 +745,7 @@ def test_cheap_structured_reasoning_profile_respects_advanced_codex_model(
     )
 
     assert profile.provider == "codex-cli"
-    assert profile.model == "gpt-5.4"
+    assert profile.model == "gpt-5.6-terra"
     assert profile.reasoning_effort == "medium"
 
 
@@ -1601,7 +1601,7 @@ def test_codex_cli_provider_empty_model_uses_portable_default(
     def _fake_run(command, **kwargs):  # noqa: ANN001
         output_path = Path(command[command.index("--output-last-message") + 1])
         assert "--ignore-user-config" in command
-        assert command[command.index("--model") + 1] == "gpt-5.4"
+        assert command[command.index("--model") + 1] == "gpt-5.6-terra"
         assert kwargs["input"]
         output_path.write_text(json.dumps({"ok": True}), encoding="utf-8")
         return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
@@ -1623,7 +1623,7 @@ def test_codex_cli_provider_empty_model_uses_portable_default(
     )
 
     assert result == {"ok": True}
-    assert provider.last_request_model == "gpt-5.4"
+    assert provider.last_request_model == "gpt-5.6-terra"
 
 
 def test_codex_cli_provider_generate_structured_falls_back_to_stdout_when_output_file_is_missing(

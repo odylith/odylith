@@ -81,12 +81,12 @@ _LEGACY_CODEX_MODEL_ALIASES: frozenset[str] = frozenset(
         "codex spark 5.3",
     }
 )
-_CODEX_CLI_STRUCTURED_DEFAULT_MODEL = "gpt-5.4"
+_CODEX_CLI_STRUCTURED_DEFAULT_MODEL = "gpt-5.6-terra"
 _CHEAP_STRUCTURED_CODEX_MODEL = "gpt-5.3-codex-spark"
 _CHEAP_STRUCTURED_CODEX_MODEL_LADDER: tuple[str, ...] = (
     "gpt-5.3-codex-spark",
-    "gpt-5.4-mini",
-    "gpt-5.4",
+    "gpt-5.6-luna",
+    "gpt-5.6-terra",
 )
 _CHEAP_STRUCTURED_CLAUDE_MODEL_LADDER: tuple[str, ...] = (
     "haiku",

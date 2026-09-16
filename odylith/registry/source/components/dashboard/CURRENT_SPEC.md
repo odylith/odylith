@@ -395,8 +395,11 @@ The September 15 source integration passes 263 focused controls, including nativ
 HTTP/file transport and real-controller Document-lifetime tests. Subsequent
 filter/history and click-loss corrections pass 176 focused source/native controls,
 the 20-case published regression replay, and four unchanged real history/reload
-and cancellation controls. The full desktop/mobile matrix, installed distribution
-and complete Greenfield release remain separate open gates.
+and cancellation controls. The frozen 452-case desktop/mobile matrix at a2245e80b
+then reports 451 passes, no failures and one warning-audit skip, with unchanged
+source/publication custody and clean terminal resources. The skip is an incorrect
+test payload path despite six real scoped diagnostics; it needs a separate replay,
+not a waiver. Installed distribution and complete Greenfield release remain open.
 
 ## Intent And UX Contract
 The shell is meant to answer:

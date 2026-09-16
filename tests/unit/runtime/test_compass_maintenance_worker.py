@@ -44,6 +44,7 @@ def test_running_worker_records_loaded_epoch_not_later_source_epoch(tmp_path, mo
 
 
 @pytest.mark.parametrize("dependency", [
+    "odylith_reasoning.py",
     "compass_standup_brief_runtime_patch.py",
     "greenfield_managed_mutation_boundary.py",
     "greenfield_generation_store.py",

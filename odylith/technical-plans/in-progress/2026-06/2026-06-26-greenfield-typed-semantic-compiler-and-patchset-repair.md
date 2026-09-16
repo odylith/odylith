@@ -1,5 +1,38 @@
 Status: In progress
 
+## Frozen dashboard qualification and bounded follow-up (2026-09-15)
+
+Checkpoint a2245e80b is committed and pushed from the canonical repository. Its
+452-node, 35-module browser matrix finishes with 451 passed, zero failures and
+one diagnostic-audit skip in 1180.62 seconds. Every setup and teardown passes;
+source, publication and harness custody remain unchanged, with no leaked workers,
+descendants or extra threads. Publication is f116b48cccba. Compass resumes through
+its exact process owner with pending input and entry history preserved.
+
+The skip was a test-reader defect: the audit now reads the nested traceability
+warnings and requires its populated-data precondition. Its separate corrected
+browser replay passes once with zero skips in 1.68 seconds on publication
+f910c2d4b3dd, with unchanged custody and clean teardown. The initial replay used
+the wrong Python environment and skipped for absent Chromium; retain that receipt
+as unqualified. Retired Codex narration defaults now use the documented Luna/Terra
+successors in the existing Spark-first policy, with the policy included in the
+worker epoch. All 169 adjacent unit checks and 35 bundle/guidance/renderer checks
+pass; independent review finds no P1/P2 regression. Medium effort, explicit
+adapter pins, backoff, request history and Greenfield profiles are unchanged.
+No retry exception, semantic rule or new architecture was added. Evidence:
+/Users/freedom/.codex/odylith-radar-audit-browser.rYKXOs/ and
+/Users/freedom/.codex/odylith-cheap-policy.LVjaO9/root-unforced.xml.
+
+The native intervention status remains Activation: unverified; historical visible
+chat counts are not fresh automatic delivery. Other active execution-role model
+defaults still require a separate compatibility correction, not a blanket claim
+that this narration-policy migration updates every engine.
+
+Full current runtime/distribution, populated-predecessor upgrade, native automatic
+chat delivery, semantic quality/profile/SLA evidence and final independent holdout
+remain open. The approved 90/120/150-second proposal limits and transaction laws
+are unchanged. Evidence: /Users/freedom/.codex/odylith-full-browser-qualified.vIE5rF/.
+
 ## Close the full-matrix failure classes (2026-09-15)
 
 The bounded correction now passes 176 integrated source/native checks in 27.07s.

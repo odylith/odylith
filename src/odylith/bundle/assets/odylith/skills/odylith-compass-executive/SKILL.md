@@ -41,7 +41,7 @@ odylith sync --repo-root . --force
 - If a Compass summary sounds templated, rhythmic, or dashboard-polished, treat that as a product regression in governed truth or narrator policy, not as a copy-polish pass.
 - Keep the normal refresh path cheap. Timeline material should be reused from deterministic Compass state, and the blocking path must stay exact-cache or truthful explicit state only.
 - Cheap also means selective. Reuse the last validated live brief only when the exact narration-substrate fingerprint is unchanged, rebuild local runtime only when repo truth actually moved, and leave fresh narration to the background warmer.
-- Background brief warming must detect the active local host, stay on `medium` reasoning, and use the governed ladder: Codex = `gpt-5.3-codex-spark` -> `gpt-5.3-codex` -> `gpt-5.4-mini`; Claude = `haiku` -> `sonnet`.
+- Background brief warming must detect the active local host, stay on `medium` reasoning, and use the governed ladder: Codex = `gpt-5.3-codex-spark` -> `gpt-5.6-luna` -> `gpt-5.6-terra`; Claude = `haiku` -> `sonnet`.
 - Advance one rung only after a provider budget, rate-limit, or model-availability failure. Do not keep retrying the same exhausted cheap rung indefinitely.
 - Provider payloads should be compact delta substrates:
   - top winner facts

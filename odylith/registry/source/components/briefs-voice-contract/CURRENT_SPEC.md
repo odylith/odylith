@@ -1,5 +1,5 @@
 # Briefs Voice Contract
-Last updated: 2026-07-20
+Last updated: 2026-09-15
 
 
 ## Purpose
@@ -56,7 +56,7 @@ maintainer-friendly narration.
 - Background brief warming must detect the active local host and stay on the
   bounded local ladder with `medium` reasoning only.
 - Codex ladder for standup briefs:
-  `gpt-5.3-codex-spark` -> `gpt-5.3-codex` -> `gpt-5.4-mini`.
+  `gpt-5.3-codex-spark` -> `gpt-5.6-luna` -> `gpt-5.6-terra`.
 - Claude ladder for standup briefs:
   `haiku` -> `sonnet`.
 - Advance one rung only after a provider budget, rate-limit, or model-availability
