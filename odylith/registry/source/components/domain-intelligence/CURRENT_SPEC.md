@@ -1,8 +1,19 @@
 # Domain Intelligence
-Last updated: 2026-09-14
+Last updated: 2026-09-16
 
 
 ## Overview
+
+Registry verification and the capability-support Atlas view now retain each
+component's proposed boundary check alongside exact linked-workstream acceptance.
+The existing `component_keys` relationship selects all and only participating
+deliveries. Shared acceptance has one workstream identity, not an inferred
+per-component guarantee; neither layer asserts passed or exhaustive proof.
+The model-owned design remains unchanged. This is a deterministic projection,
+not a new semantic author, model call, schema migration or deadline allocation.
+Projection parity rejects omitted, rewritten or unrelated acceptance before
+Registry input issuance. Native quality generalization and deadline qualification
+remain separate release obligations.
 
 The current v13 Greenfield proposal ceilings are strictly below 90 seconds for
 standard/auto, 120 for explicitly selected rescue, and 150 for explicitly

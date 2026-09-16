@@ -329,7 +329,10 @@ def test_model_authored_multi_component_events_bind_to_exact_source_owned_system
     for component, proposed in zip(proposal["components"], design["components"], strict=True):
         assert component["authority_kind"] == "provisional_design"
         assert component["responsibility"] == proposed["responsibility"]
-        assert component["validation"] == [proposed["verification"]]
+        assert component["validation"] == [proposed["verification"], *[
+            f"Proposed delivery acceptance — {workstream['title']}: {workstream['verification']}"
+            for workstream in design["workstreams"] if proposed["key"] in workstream["component_keys"]
+        ]]
         contract = component["component_contract"]
         assert contract["authority_kind"] == "provisional_design"
         assert contract["provisional_component"] == proposed

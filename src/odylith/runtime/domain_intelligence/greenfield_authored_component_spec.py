@@ -19,7 +19,9 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.greenfield_authored_proposal import authored_projection_parity_issues
 from odylith.runtime.domain_intelligence.greenfield_apply_diagrams import allocated_diagram_ids
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
-from odylith.runtime.domain_intelligence.greenfield_provisional_package import provisional_exchange_text
+from odylith.runtime.domain_intelligence.greenfield_provisional_package import (
+    PROVISIONAL_DESIGN_ROOT, provisional_delivery_acceptance_text, provisional_exchange_text,
+)
 from odylith.runtime.governance import artifact_tribunal
 
 
@@ -47,7 +49,7 @@ def build_authored_component_authoring_inputs(
     if not isinstance(intent, Mapping) or not isinstance(authority, Mapping):
         raise ValueError("model-authored component projection is missing sealed Product Intent authority")
     source_custody = authored_source_custody(intent=intent, authority=authority)
-    workstreams_by_component, workstream_titles = _component_workstream_links(
+    workstreams_by_component, workstream_titles, delivery_links = _component_workstream_links(
         proposal=proposal, backlog_result=backlog_result,
     )
     diagrams_by_component = _component_diagram_links(root=root, proposal=proposal)
@@ -64,6 +66,10 @@ def build_authored_component_authoring_inputs(
             "category": "application", "owner": "repo", "product_layer": "application",
             "sources": (AUTHORED_SEMANTIC_ROOT,),
             "workstreams": workstreams, "diagrams": diagrams, "risks": (),
+            "delivery_workstream_links": {
+                delivery["design_ref"]: dict(delivery_links[delivery["design_ref"]])
+                for delivery in component["component_contract"]["delivery_workstreams"]
+            },
             "implementation_handoff": {
                 "workstream_id": workstreams[0],
                 "workstream_title": workstream_titles[workstreams[0]],
@@ -118,10 +124,26 @@ def build_authored_component_spec(row: Mapping[str, Any]) -> str:
         "## Proposed inputs and outputs", "",
         *([_evidence_block(provisional_exchange_text(exchange)) for exchange in contract["exchanges"]]
           or ["No component exchanges are proposed for this capability."]), "",
-        "## Proposed verification", "", _evidence_block(component["verification"]), "",
+        "## Proposed verification", "",
+        "### Boundary check", "", _evidence_block(component["verification"]), "",
+        "### Linked delivery acceptance", "",
+        "Proposed workstream checks; not passed checks or exhaustive component tests.", "",
+    ]
+    for delivery in contract["delivery_workstreams"]:
+        workstream = delivery["provisional_workstream"]
+        workstream_id = row["delivery_workstream_links"][delivery["design_ref"]]["workstream_id"]
+        lines.extend([
+            f"- Workstream: `{workstream_id}` — {workstream['title']}", "",
+            _evidence_block(workstream["verification"]), "",
+        ])
+        if len(workstream["component_keys"]) > 1:
+            lines.extend([
+                "Shared acceptance across " + ", ".join(f"`{key}`" for key in workstream["component_keys"]) + ".", "",
+            ])
+    lines.extend([
         "## Source-event support", "",
         "These exact source events support the design; their actors retain ownership of their actions.", "",
-    ]
+    ])
     for reference, event in zip(contract["support_event_refs"], contract["supporting_events"], strict=True):
         lines.extend([
             f"### Event {event['order']} — {event['actor_fact_quote']}", "",
@@ -130,6 +152,8 @@ def build_authored_component_spec(row: Mapping[str, Any]) -> str:
         ])
     lines.extend([
         "## Trace links", "", f"- Canonical design row: `{contract['design_ref']}`",
+        *[f"- Acceptance authority: `{delivery['design_ref']}/verification`"
+          for delivery in contract["delivery_workstreams"]],
         *[f"- Workstream: `{value}`" for value in workstreams],
         *[f"- Diagram: `{value}`" for value in diagrams], "",
         "## Feature History", "", _feature_history_line(workstreams[0]), "",
@@ -139,7 +163,10 @@ def build_authored_component_spec(row: Mapping[str, Any]) -> str:
 
 def _provisional_component_contract(row: Mapping[str, Any]) -> Mapping[str, Any]:
     contract = row.get("component_contract")
-    fields = {"authority_kind", "design_ref", "provisional_component", "support_event_refs", "supporting_events", "exchanges"}
+    fields = {
+        "authority_kind", "design_ref", "provisional_component", "support_event_refs",
+        "supporting_events", "exchanges", "delivery_workstreams",
+    }
     if (
         row.get("projection_origin") != AUTHORED_PROJECTION_ORIGIN
         or row.get("authority_kind") != "provisional_design"
@@ -150,10 +177,40 @@ def _provisional_component_contract(row: Mapping[str, Any]) -> Mapping[str, Any]
     component = contract.get("provisional_component")
     if not isinstance(component, Mapping):
         raise ValueError("Registry component is missing its canonical provisional row")
+    deliveries = contract.get("delivery_workstreams")
+    if not isinstance(deliveries, list) or not deliveries:
+        raise ValueError("Registry component requires linked delivery acceptance")
+    for delivery in deliveries:
+        if (
+            not isinstance(delivery, Mapping)
+            or set(delivery) != {"design_ref", "provisional_workstream"}
+            or not isinstance(delivery.get("design_ref"), str)
+            or not isinstance(delivery.get("provisional_workstream"), Mapping)
+        ):
+            raise ValueError("Registry component has malformed delivery acceptance")
+        workstream = delivery["provisional_workstream"]
+        reference = delivery["design_ref"]
+        index = reference.removeprefix(f"{PROVISIONAL_DESIGN_ROOT}/workstreams/")
+        if not index.isascii() or not index.isdecimal() or reference != f"{PROVISIONAL_DESIGN_ROOT}/workstreams/{int(index)}":
+            raise ValueError("Registry component has invalid delivery authority reference")
+        component_keys = workstream.get("component_keys")
+        if not isinstance(component_keys, list) or component.get("key") not in component_keys:
+            raise ValueError("Registry component cannot inherit unrelated delivery acceptance")
+        for field in ("key", "title", "verification"):
+            _required_scalar(workstream, field)
+    if len({delivery["provisional_workstream"]["key"] for delivery in deliveries}) != len(deliveries):
+        raise ValueError("Registry component has duplicate delivery acceptance")
+    if len({delivery["design_ref"] for delivery in deliveries}) != len(deliveries):
+        raise ValueError("Registry component has duplicate delivery authority reference")
+    if "workstreams" in row:
+        _require_delivery_allocation(row, deliveries)
     checks = {
         "component_id": component.get("key"), "label": component.get("name"),
         "responsibility": component.get("responsibility"),
-        "validation": [component.get("verification")], "kind": "component",
+        "validation": [component.get("verification"), *[
+            provisional_delivery_acceptance_text(delivery["provisional_workstream"])
+            for delivery in deliveries
+        ]], "kind": "component",
     }
     if any(row.get(key) != value for key, value in checks.items()):
         raise ValueError("Registry component drifted from its canonical proposed fields")
@@ -174,6 +231,26 @@ def _provisional_component_contract(row: Mapping[str, Any]) -> Mapping[str, Any]
     ]:
         raise ValueError("Registry component drifted from exact source-event references")
     return contract
+
+
+def _require_delivery_allocation(row: Mapping[str, Any], deliveries: list[Mapping[str, Any]]) -> None:
+    """Bind proposed delivery identity to issued Radar IDs, independent of order."""
+
+    links = row.get("delivery_workstream_links")
+    if not isinstance(links, Mapping) or set(links) != {delivery["design_ref"] for delivery in deliveries}:
+        raise ValueError("Registry component delivery allocation is incomplete")
+    identifiers: list[str] = []
+    for delivery in deliveries:
+        link = links[delivery["design_ref"]]
+        if (
+            not isinstance(link, Mapping) or set(link) != {"workstream_id", "workstream_key"}
+            or link["workstream_key"] != delivery["provisional_workstream"]["key"]
+        ):
+            raise ValueError("Registry component delivery allocation has mismatched identity")
+        identifiers.append(_required_scalar(link, "workstream_id"))
+    workstreams = _required_sequence(row, "workstreams")
+    if len(set(identifiers)) != len(identifiers) or len(workstreams) != len(identifiers) or set(workstreams) != set(identifiers):
+        raise ValueError("Registry component delivery allocation differs from its workstream links")
 
 
 def _feature_history_line(workstream_id: str) -> str:
@@ -218,18 +295,28 @@ def _sequence(value: Any) -> tuple[str, ...]:
 
 def _component_workstream_links(
     *, proposal: Mapping[str, Any], backlog_result: Mapping[str, Any],
-) -> tuple[dict[str, tuple[str, ...]], dict[str, str]]:
+) -> tuple[dict[str, tuple[str, ...]], dict[str, str], dict[str, dict[str, str]]]:
     proposal_rows, created_rows = _mapping_sequence(proposal.get("backlog")), _mapping_sequence(backlog_result.get("created"))
     if len(created_rows) != len(proposal_rows):
         raise ValueError("authored component projection is missing allocated workstream links")
     links: dict[str, list[str]] = {}
     titles: dict[str, str] = {}
+    delivery_links: dict[str, dict[str, str]] = {}
     for proposed, created in zip(proposal_rows, created_rows, strict=True):
         workstream_id = _required_scalar(created, "idea_id")
+        if workstream_id in titles:
+            raise ValueError("Registry component has duplicate allocated workstream ID")
         titles[workstream_id] = _required_scalar(proposed, "title")
+        contract = proposed["provisional_workstream_contract"]
+        if contract["design_ref"] in delivery_links:
+            raise ValueError("Registry component has duplicate canonical delivery reference")
+        delivery_links[contract["design_ref"]] = {
+            "workstream_id": workstream_id,
+            "workstream_key": contract["provisional_workstream"]["key"],
+        }
         for component_id in _sequence(proposed.get("component_focus")):
             links.setdefault(component_id, []).append(workstream_id)
-    return ({key: tuple(dict.fromkeys(values)) for key, values in links.items()}, titles)
+    return ({key: tuple(dict.fromkeys(values)) for key, values in links.items()}, titles, delivery_links)
 
 
 def _component_diagram_links(*, root: Path, proposal: Mapping[str, Any]) -> dict[str, tuple[str, ...]]:

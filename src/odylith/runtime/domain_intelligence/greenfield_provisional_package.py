@@ -47,6 +47,14 @@ def build_provisional_components(
             deepcopy(row) for row in design["exchanges"]
             if key in (row["from_component"], row["to_component"])
         ]
+        deliveries = [
+            {
+                "design_ref": f"{PROVISIONAL_DESIGN_ROOT}/workstreams/{workstream_index}",
+                "provisional_workstream": deepcopy(workstream),
+            }
+            for workstream_index, workstream in enumerate(design["workstreams"])
+            if key in workstream["component_keys"]
+        ]
         contract = {
             "authority_kind": "provisional_design",
             "design_ref": f"{PROVISIONAL_DESIGN_ROOT}/components/{index}",
@@ -59,6 +67,7 @@ def build_provisional_components(
                 deepcopy(events[order]) for order in component["supported_event_orders"]
             ],
             "exchanges": exchanges,
+            "delivery_workstreams": deliveries,
         }
         rows.append({
             "component_id": key,
@@ -70,7 +79,10 @@ def build_provisional_components(
             # Exchange direction does not establish an implementation dependency.
             "dependencies": [],
             "interfaces": [provisional_exchange_text(row) for row in exchanges],
-            "validation": [component["verification"]],
+            "validation": [component["verification"], *[
+                provisional_delivery_acceptance_text(delivery["provisional_workstream"])
+                for delivery in deliveries
+            ]],
             "status": "planned",
             "qualification": "candidate",
             "evidence_tier": "user_intent",
@@ -188,6 +200,12 @@ def build_provisional_backlog(
             "radar_sections": sections,
         })
     return rows
+
+
+def provisional_delivery_acceptance_text(workstream: Mapping[str, Any]) -> str:
+    """Keep delivery acceptance owned by its workstream, including shared work."""
+
+    return f"Proposed delivery acceptance — {workstream['title']}: {workstream['verification']}"
 
 
 def provisional_exchange_text(exchange: Mapping[str, Any]) -> str:

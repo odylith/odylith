@@ -797,11 +797,13 @@ def test_capability_support_local_groups_preserve_exact_many_to_many_references(
         assert mermaid_label(component["verification"], width=44) in source
         group = source.split(f"  subgraph component{index}_support[", 1)[1].split("  end", 1)[0]
         assert f'component{index} -->|"proposed support"| component{index}_actions' in group
-        assert f'component{index} -. "proposed verification" .-> component{index}_verification' in group
+        assert f'component{index} -. "proposed boundary check" .-> component{index}_verification' in group
         assert group.count("-->") == 1
         assert group.count(".->") == 1
     assert source.count("-->") == len(design["components"])
-    assert source.count(".->") == len(design["components"])
+    assert source.count(".->") == len(design["components"]) + sum(
+        len(workstream["component_keys"]) for workstream in design["workstreams"]
+    )
     assert "source_path" not in source
     assert "Repeated action IDs refer to the same source action" in support["read_guide"]
     assert (relations, design) == before

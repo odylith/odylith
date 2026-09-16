@@ -167,14 +167,18 @@ def test_authored_component_spec_is_structural_and_bypasses_legacy_owners(
     assert "- Diagram: `D-001`" in spec
     assert set(authoring_input["component_contract"]) == {
         "authority_kind", "design_ref", "provisional_component",
-        "support_event_refs", "supporting_events", "exchanges",
+        "support_event_refs", "supporting_events", "exchanges", "delivery_workstreams",
     }
     assert authoring_input["authority_kind"] == "provisional_design"
     assert authoring_input["boundary"]
     assert authoring_input["interfaces"][0].startswith("Proposed exchange —")
     assert not authoring_input["risks"]
     assert authoring_input["dependencies"] == []
-    assert authoring_input["validation"] == ["Read back the exact test value assigned to boundary 1."]
+    assert authoring_input["validation"] == [
+        "Read back the exact test value assigned to boundary 1.",
+        "Proposed delivery acceptance — Implement structural test boundary 1: "
+        "An independent read returns the test value from boundary 1.",
+    ]
     for forbidden in (
         "Owned state",
         "Accepted inputs",

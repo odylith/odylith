@@ -1,5 +1,48 @@
 Status: In progress
 
+## Bound verification to its existing delivery owner (2026-09-16)
+
+The bounded projection is implemented in three existing owners. The 88-module
+Greenfield selection passes 1,659 tests with 1,083 unchanged inputs; the protected
+test is excluded before discovery. The subsequent global allocation-ID guard and
+shorter Registry copy pass 47 focused checks. Independent review closes omitted,
+reordered, invalid-reference and duplicate-ID findings. These are deterministic
+allocation checks, not semantic rules or a new authoring layer. The prior broad
+run's 1,650 passes/one obsolete validation-list assertion remains retained.
+
+Final disclosed-semantics recompilation preserves exact intent and uses zero
+model calls. Complete package checks and all 32 desktop/mobile surface states pass
+in 21.413s, with unchanged compiler/checker inputs. Four additional actual Registry
+reading journeys pass over HTTP and file URLs on desktop/mobile. Citation
+metadata moved into Trace links after visual inspection; shared deliveries keep
+one identity and explicit shared responsibility. This is source-local replay,
+not fresh native generation, clean-install, recovery or SLA evidence. The first
+replay omitted the standard binding step and failed admission; the first reading
+check omitted opening Current Spec. Both harness mistakes are retained, without
+production workarounds. Evidence:
+/Users/freedom/.codex/odylith-verification-owner.jKEEoZ/.
+
+The retained standard package supports a narrower diagnosis than contradictory
+source meaning: its component checks cover readback while the linked workstream
+acceptance already covers the requested operations. Nonexhaustive boundary checks
+are not conflicting requirements. Retain those useful checks, but expose the
+existing canonical delivery acceptance alongside them in Registry and Atlas.
+Use only validated `component_keys` relationships; shared-workstream acceptance
+must remain visibly shared, not become a claim of exhaustive component proof.
+No model schema, prompt, profile, call count or deadline changes are planned.
+
+This bounded projection candidate must preserve exact acceptance text, include
+every linked workstream and exclude unrelated ones, retain many-to-many identity,
+and reject projected drift. Compare the disclosed package before/after with no
+model regeneration, then validate the affected package and browser contracts.
+The falsifiable prediction is that operation acceptance becomes accessible from
+every affected component view without duplicate semantic authoring. This does
+not prove that all future authored acceptance is complete or repair standard
+deadline variance. Reject deleting component checks: integration acceptance and
+boundary checks can serve different purposes. The previous prompt-only v54
+candidate remains rejected. The other recorded quality and release gates stay
+open; no completion claim is authorized by this projection change.
+
 ## Standard native feasibility and independent quality findings (2026-09-15)
 
 Checker checkpoint ff381d579 is committed and independently verified on the

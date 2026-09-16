@@ -100,7 +100,8 @@ def build_provisional_design_atlas_specs(
             ),
             "read_guide": (
                 "Each group pairs a proposed responsibility with its supported source actions "
-                "and proposed verification, not a passed check. Repeated action IDs refer to the "
+                "and a proposed boundary check. Linked workstream acceptance stays shared across "
+                "its participating components; neither check is passed or exhaustive proof. Repeated action IDs refer to the "
                 "same source action, not additional events or execution order. Support does not "
                 "transfer the stated actor's action to a component. Source-stated facts are "
                 "an edge-free context inventory; no transition or causal topology is inferred."
@@ -250,9 +251,9 @@ def _capability_support_view(
             '    direction LR',
             f'    {component_id}["Responsibility<br/>{mermaid_label(component["responsibility"], width=44)}"]',
             f'    {actions_id}["{actions_label}"]',
-            f'    {verification_id}["Verification<br/>{mermaid_label(component["verification"], width=44)}"]',
+            f'    {verification_id}["Boundary check<br/>{mermaid_label(component["verification"], width=44)}"]',
             f'    {component_id} -->|"proposed support"| {actions_id}',
-            f'    {component_id} -. "proposed verification" .-> {verification_id}',
+            f'    {component_id} -. "proposed boundary check" .-> {verification_id}',
             "  end",
         ])
         boxes.extend([
@@ -274,6 +275,22 @@ def _capability_support_view(
                 f"Proposed verification for {component['name']}: {component['verification']}",
             ),
         ])
+    component_ids = {
+        component["key"]: f"component{index}"
+        for index, component in enumerate(design["components"], 1)
+    }
+    for index, workstream in enumerate(design["workstreams"], 1):
+        acceptance_id = f"workstream{index}_acceptance"
+        label = f"{workstream['title']}\n{workstream['verification']}"
+        acceptance_label = mermaid_label(workstream["title"], width=44) + "<br/><br/>" + mermaid_label(workstream["verification"], width=44)
+        lines.append(f'  {acceptance_id}["Delivery acceptance<br/>{acceptance_label}"]')
+        boxes.append(atlas_box(
+            acceptance_id, label, "Proposed delivery acceptance",
+            f"Shared workstream acceptance for {', '.join(workstream['component_keys'])}: "
+            f"{workstream['verification']}",
+        ))
+        for key in workstream["component_keys"]:
+            lines.append(f'  {component_ids[key]} -. "participates in delivery" .-> {acceptance_id}')
     lines.extend([
         '  subgraph source_facts["Source-stated facts"]',
         f'    state["State object<br/>{mermaid_label(state_object)}"]',
