@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import sys
+from types import SimpleNamespace
+
+import pytest
 
 from tests.greenfield_matrix_campaign_test_support import SCRIPTS_ROOT
 
@@ -9,7 +12,64 @@ if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
 from greenfield_matrix_package_evidence import _atlas_findings
+from greenfield_matrix_package_evidence import _registry_findings
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import RenderedArtifact
+
+
+_PROPOSED_SPEC = """# Request Intake
+
+## Component Snapshot
+Proposed logical component; no implementation or deployment is asserted.
+
+## Proposed responsibility
+Retain requests for review.
+
+## Proposed inputs and outputs
+No component exchanges are proposed for this capability.
+
+## Proposed verification
+The submitted request can be retrieved.
+
+## Source-event support
+The coordinator submits a request; the actor retains ownership.
+
+## Trace links
+Canonical design row: /authored_semantics/provisional_design/components/0
+
+## Feature History
+Initial provisional design.
+"""
+
+
+def _registry_messages(text: str) -> list[str]:
+    return [finding.message for finding in _registry_findings(
+        package=SimpleNamespace(),
+        artifacts=(RenderedArtifact("Registry component spec", "request-intake/CURRENT_SPEC.md", text),),
+        proposal={"components": [{"component_id": "request-intake"}]},
+    )]
+
+
+def test_registry_evidence_accepts_explicitly_proposed_design_without_source_ownership() -> None:
+    assert _registry_messages(_PROPOSED_SPEC) == []
+
+
+@pytest.mark.parametrize("section", (
+    "Component Snapshot", "Proposed responsibility", "Proposed inputs and outputs",
+    "Proposed verification", "Source-event support", "Trace links", "Feature History",
+))
+@pytest.mark.parametrize("change", ("missing", "empty", "body_only"))
+def test_registry_evidence_requires_real_nonempty_proposed_sections(section: str, change: str) -> None:
+    heading = f"## {section}\n"
+    before, tail = _PROPOSED_SPEC.split(heading, 1)
+    body, separator, remainder = tail.partition("\n## ")
+    suffix = separator + remainder
+    replacement = {"missing": "", "empty": heading, "body_only": section + "\n" + body}[change]
+    assert any(section in message for message in _registry_messages(before + replacement + suffix))
+
+
+def test_registry_evidence_does_not_accept_superseded_source_owned_sections() -> None:
+    obsolete = _PROPOSED_SPEC.replace("Proposed responsibility", "Source-custodied responsibility")
+    assert any("Proposed responsibility" in message for message in _registry_messages(obsolete))
 
 
 def test_atlas_edge_evidence_uses_the_canonical_mermaid_graph_parser() -> None:

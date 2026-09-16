@@ -44,9 +44,11 @@ _RADAR_REQUIRED_SECTIONS = (
     "## Validation",
 )
 _REGISTRY_REQUIRED_SECTIONS = (
-    "Source boundary",
-    "Source-custodied responsibility",
-    "Source-custodied owner relations",
+    "Component Snapshot",
+    "Proposed responsibility",
+    "Proposed inputs and outputs",
+    "Proposed verification",
+    "Source-event support",
     "Trace links",
     "Feature History",
 )
@@ -218,12 +220,13 @@ def _registry_findings(
             )
         )
     for artifact in specs:
-        missing = [phrase for phrase in _REGISTRY_REQUIRED_SECTIONS if phrase not in artifact.text]
+        sections = _markdown_sections(artifact.text)
+        missing = [heading for heading in _REGISTRY_REQUIRED_SECTIONS if not sections.get(heading.casefold())]
         if missing:
             findings.append(
                 _finding(
                     "engineer",
-                    f"{artifact.identity} is missing authored component sections: {', '.join(missing)}",
+                    f"{artifact.identity} is missing or empty proposed component sections: {', '.join(missing)}",
                 )
             )
     return findings

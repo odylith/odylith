@@ -1,5 +1,38 @@
 Status: In progress
 
+## Fresh installed discovery and decisive next corrections (2026-09-15)
+
+Checkpoint 37637e632 has a complete locally installable distribution with unchanged
+build inputs. The first maintained case installs cleanly, proposes in 104.817s
+under its 150s profile and commits in 2.548s; its package has five workstreams,
+five component specs and five diagrams. The discovery run is nevertheless red:
+Registry section checks retain a superseded ownership contract, static shell
+checks read the physical carrier, and invalid-selection browser checks expect
+automatic fallback. Correct only demonstrated checker drift, retaining missing,
+empty, unrelated-target and broken-publication negative controls. Do not change
+the generated package to satisfy obsolete expectations.
+
+The independent standard-profile recovery case exhausts its 55s authoring window
+before any recovery phase; retain this genuine failure and diagnose its existing
+authoring owner next. No deadline increase or retry cascade is authorized. The
+other 13 maintained cases remain unexecuted. The frozen run has unchanged inputs
+and clean simulation teardown. Normal pages render, but the system-context view
+is still text-heavy; five diagrams is not itself a quality verdict. The existing
+runner suppresses background Compass, leaving all-engine integration unproved.
+Evidence: /Users/freedom/.codex/odylith-installed-discovery.LstInf/.
+
+The bounded checker correction is complete: 113 focused checks and all 1,464
+install-unit tests pass. Independent browser review is clean after tightening
+Registry detail readiness and missing-state/route assertions. The exact sealed
+installed package passes Registry, shell and all 32 browser states in a 15.802s
+replay with zero model calls, unchanged checker hashes and unchanged artifacts.
+This is snapshot replay, not commit recovery or a new native generation. The
+original failed matrix remains red. No product code, semantic rule, model or
+deadline changed. Next diagnose the recorded standard authoring time-window
+failure, then rerun native profile breadth. Recovery, populated predecessor
+upgrade, all-engine integration, automatic chat delivery, human quality and the
+protected final holdout remain open.
+
 ## Preserve execution roles on current native models (2026-09-15)
 
 Checkpoint 16806eb47 is committed and pushed. The separate execution-role wave

@@ -19,6 +19,7 @@ from greenfield_browser_authored_contract import (
 )
 from greenfield_browser_authored_contract import authored_structure_issues, story_rows_match_payload
 from greenfield_browser_capture import capture_state_screenshot as _capture_state_screenshot
+from greenfield_browser_selection_proof import prove_clicked_selection, prove_missing_selection, wait_for_selection_route
 from local_release_smoke import _serve_directory
 
 BROWSER_SURFACE_PROOF_SCOPE = "per_case_headless_generated_surface_state_matrix"
@@ -593,6 +594,8 @@ def _invalid_route_recovery_issues(
             active_attribute="data-idea-id",
             invalid_value="B-999999",
             detail_selector='#detail [data-kpi="workstream-id"] .v',
+            detail_attribute="", query_key="workstream", empty_selector='#detail-empty[role="status"]',
+            empty_heading="No matching workstreams",
             timeout_ms=timeout_ms,
             screenshot_output_dir=screenshot_output_dir,
             coverage_cell=(viewport, "radar", "invalid-recovery"),
@@ -608,7 +611,9 @@ def _invalid_route_recovery_issues(
             active_selector="button[data-component].active",
             active_attribute="data-component",
             invalid_value="does-not-exist",
-            detail_selector="#detail .component-name",
+            detail_selector="#detail:has(.component-name)", detail_attribute="data-selected-component",
+            query_key="component", empty_selector='#detail .empty[role="status"]',
+            empty_heading="No matching components",
             timeout_ms=timeout_ms,
             screenshot_output_dir=screenshot_output_dir,
             coverage_cell=(viewport, "registry", "invalid-recovery"),
@@ -668,6 +673,10 @@ def _active_selection_recovery_issues(
     active_attribute: str,
     invalid_value: str,
     detail_selector: str,
+    detail_attribute: str,
+    query_key: str,
+    empty_selector: str,
+    empty_heading: str,
     timeout_ms: int,
     screenshot_output_dir: Path | None = None,
     coverage_cell: tuple[str, str, str] = ("desktop", "radar", "invalid-recovery"),
@@ -688,11 +697,16 @@ def _active_selection_recovery_issues(
             return tuple(issues)
         _dismiss_shell_obstructions(page)
         frame = page.frame_locator(frame_selector)
-        frame.locator(active_selector).wait_for(timeout=timeout_ms)
-        active = str(frame.locator(active_selector).first.get_attribute(active_attribute) or "").strip()
-        if not active or active.lower() == invalid_value.lower():
-            issues.append(f"browser surface {surface} did not recover to a valid selection")
-        frame.locator(detail_selector).wait_for(timeout=timeout_ms)
+        issues.extend(prove_missing_selection(
+            page=page, frame=frame, query_key=query_key, invalid=invalid_value,
+            active_selector=active_selector, empty_selector=empty_selector,
+            empty_heading=empty_heading, timeout_ms=timeout_ms,
+        ))
+        issues.extend(prove_clicked_selection(
+            page=page, frame=frame, query_key=query_key, active_selector=active_selector,
+            active_attribute=active_attribute, detail_selector=detail_selector,
+            detail_attribute=detail_attribute, timeout_ms=timeout_ms,
+        ))
         issues.extend(_layout_issues(page.locator("body"), label="tooling shell"))
         issues.extend(_layout_issues(frame.locator("body"), label=coverage_cell[1]))
     except Exception as exc:
@@ -804,9 +818,12 @@ def _atlas_generated_state_issues(
         buttons = frame.locator("button[data-diagram]")
         buttons.first.wait_for(timeout=timeout_ms)
         if initial_diagram:
-            recovered = str(frame.locator("#diagramId").inner_text(timeout=timeout_ms)).strip()
-            if not recovered or recovered.upper() == initial_diagram.upper():
-                issues.append("browser surface atlas invalid diagram did not recover to a valid diagram")
+            issues.extend(prove_missing_selection(
+                page=page, frame=frame, query_key="diagram", invalid=initial_diagram,
+                active_selector=".diagram-item.active button[data-diagram]",
+                empty_selector="#atlasEmptyState", timeout_ms=timeout_ms,
+                empty_heading="No matching diagrams",
+            ))
         diagram_count = buttons.count()
         expected_diagrams: list[str] = []
         visited_diagrams: list[str] = []
@@ -821,6 +838,7 @@ def _atlas_generated_state_issues(
                 timeout=timeout_ms,
             )
             active_button = frame.locator(".diagram-item.active button[data-diagram]").first
+            wait_for_selection_route(page, "diagram", expected, timeout_ms)
             displayed = str(frame.locator("#diagramId").inner_text(timeout=timeout_ms)).strip()
             visited_diagrams.append(displayed)
             if fail_png:

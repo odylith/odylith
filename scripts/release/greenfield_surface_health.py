@@ -10,6 +10,8 @@ from typing import Any
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
 )
+from odylith.runtime.domain_intelligence.greenfield_generation_state import read_active_publication
+from odylith.runtime.domain_intelligence.greenfield_generation_store import require_greenfield_working_generation
 
 
 REQUIRED_RENDERED_SURFACES = (
@@ -57,10 +59,20 @@ SHELL_PAYLOAD_SCRIPT_ID = "toolingDashboardData"
 SHELL_PAYLOAD_GLOBAL = "__ODYLITH_TOOLING_DATA__"
 
 
+def _published_surface_root(repo_root: Path) -> Path:
+    root = Path(repo_root)
+    if read_active_publication(root) is not None:
+        return require_greenfield_working_generation(root).repository_root
+    return root
+
+
 def rendered_surface_health_issues(*, repo_root: Path) -> tuple[str, ...]:
     """Return rendered-surface health issues that a nonempty file check misses."""
 
-    root = Path(repo_root)
+    try:
+        root = _published_surface_root(repo_root)
+    except (OSError, ValueError, RuntimeError) as exc:
+        return (f"rendered publication is invalid: {exc}",)
     issues: list[str] = []
     for relative in REQUIRED_RENDERED_SURFACES:
         path = root / relative
@@ -111,7 +123,7 @@ def rendered_surface_health_issues(*, repo_root: Path) -> tuple[str, ...]:
 
 
 def rendered_surface_payload_count(repo_root: Path) -> int:
-    root = Path(repo_root)
+    root = _published_surface_root(repo_root)
     count = 0
     for relative, assets in SURFACE_PAYLOAD_CONTRACTS.items():
         html_path = root / relative
@@ -125,7 +137,7 @@ def rendered_surface_payload_count(repo_root: Path) -> int:
 
 
 def atlas_rendered_asset_count(repo_root: Path) -> int:
-    source_root = Path(repo_root) / "odylith/atlas/source"
+    source_root = _published_surface_root(repo_root) / "odylith/atlas/source"
     if not source_root.is_dir():
         return 0
     return sum(
