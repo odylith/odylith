@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 import re
 import time
-from urllib.parse import quote
+from urllib.parse import parse_qs, quote, urlparse
 
 from odylith.runtime.surfaces import render_backlog_ui
 
@@ -1168,7 +1168,9 @@ def test_compass_deeplinks_into_radar_and_registry_contexts(browser_context) -> 
         )
         assert page.locator("#tab-radar").get_attribute("aria-selected") == "true"
         page.frame_locator("#frame-radar").locator("h1").first.wait_for(timeout=15000)
-        assert first_workstream_id in str(page.locator("#frame-radar").get_attribute("src") or "")
+        radar_frame = page.locator("#frame-radar").element_handle().content_frame()
+        assert radar_frame is not None
+        assert parse_qs(urlparse(radar_frame.url).query).get("workstream") == [first_workstream_id]
 
         response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
         assert response is not None and response.ok
@@ -1696,7 +1698,7 @@ def test_standalone_surface_entrypoints_restore_query_state_after_shell_reload(b
         _assert_clean_page(page, observation)
 
 
-def test_invalid_surface_routes_fall_back_to_valid_detail_selection(browser_context) -> None:  # noqa: ANN001
+def test_invalid_surface_routes_preserve_request_until_explicit_selection(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
     with _new_page(context) as (page, observation):
 
@@ -1705,34 +1707,42 @@ def test_invalid_surface_routes_fall_back_to_valid_detail_selection(browser_cont
         assert response is not None and response.ok
         radar = page.frame_locator("#frame-radar")
         radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
-        radar_active = radar.locator("button[data-idea-id].active")
-        radar_active.wait_for(timeout=15000)
-        radar_active_id = str(radar_active.first.get_attribute("data-idea-id") or "").strip()
-        assert radar_active_id and radar_active_id != invalid_radar
-        radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=radar_active_id).wait_for(timeout=15000)
+        radar.locator("#detail-empty", has_text="No matching workstreams").wait_for(timeout=15000)
+        assert radar.locator("button[data-idea-id].active").count() == 0
+        _wait_for_shell_query_param(page, tab="radar", key="workstream", value=invalid_radar)
+        radar_choice = radar.locator("button[data-idea-id]").first
+        radar_id = radar_choice.get_attribute("data-idea-id")
+        assert radar_id and radar_id != invalid_radar
+        radar_choice.click()
+        _assert_radar_selection(page, radar_id)
 
         invalid_component = "does-not-exist"
         response = page.goto(base_url + f"/odylith/index.html?tab=registry&component={invalid_component}", wait_until="domcontentloaded")
         assert response is not None and response.ok
         registry = page.frame_locator("#frame-registry")
         registry.locator("h1", has_text="Component Registry").wait_for(timeout=15000)
-        registry_active = registry.locator("button[data-component].active")
-        registry_active.wait_for(timeout=15000)
-        registry_active_id = str(registry_active.first.get_attribute("data-component") or "").strip()
-        assert registry_active_id and registry_active_id != invalid_component
-        registry.locator("#detail .component-name").wait_for(timeout=15000)
+        registry.locator("#detail [role=status]", has_text="No matching components").wait_for(timeout=15000)
+        assert registry.locator("button[data-component].active").count() == 0
+        _wait_for_shell_query_param(page, tab="registry", key="component", value=invalid_component)
+        registry_choice = registry.locator("button[data-component]").first
+        component_id = registry_choice.get_attribute("data-component")
+        assert component_id and component_id != invalid_component
+        registry_choice.click()
+        _assert_registry_selection(page, component_id)
 
         invalid_bug = "missing-bug-route"
         response = page.goto(base_url + f"/odylith/index.html?tab=casebook&bug={invalid_bug}", wait_until="domcontentloaded")
         assert response is not None and response.ok
         casebook = page.frame_locator("#frame-casebook")
         casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
-        casebook_active = casebook.locator("button.bug-row.active")
-        casebook_active.wait_for(timeout=15000)
-        casebook_active_bug = str(casebook_active.first.get_attribute("data-bug") or "").strip()
-        assert casebook_active_bug and casebook_active_bug != invalid_bug
-        casebook.locator("#detailPane .detail-title").wait_for(timeout=15000)
-        _wait_for_shell_query_param(page, tab="casebook", key="bug", value=casebook_active_bug)
+        casebook.locator("#detailPane [role=status]", has_text="requested bug is unavailable").wait_for(timeout=15000)
+        assert casebook.locator("button.bug-row.active").count() == 0
+        _wait_for_shell_query_param(page, tab="casebook", key="bug", value=invalid_bug)
+        casebook_choice = casebook.locator("button.bug-row").first
+        bug_id = casebook_choice.get_attribute("data-bug")
+        assert bug_id and bug_id != invalid_bug
+        casebook_choice.click()
+        _assert_casebook_selection(page, bug_id)
 
         response = page.goto(
             base_url + "/odylith/index.html?tab=compass&scope=B-999999&window=48h&date=live",

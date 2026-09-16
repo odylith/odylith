@@ -78,6 +78,86 @@ navigation.start();
 
 
 CASES = {
+    "history_filter_change_before_top_load_remains_pending": ("?tab=casebook&bug=CB-305&sort=oldest", r"""
+      loaded('casebook');
+      href='file:///project/odylith/index.html?tab=casebook&bug=CB-305&sort=priority'; event('popstate');
+      complete('casebook',{bug:'CB-305',sort:'priority'},{bug:'CB-305',sort:'oldest'});
+      assert.equal(replacements().length,0); assert.equal(last().sort,'priority');
+      topLoaded();
+      complete('casebook',{bug:'CB-305',sort:'priority'},{bug:'CB-305',sort:'oldest'});
+      assert.equal(last().sort,'priority'); assert.equal(replacements().length,1);
+      loaded('casebook'); complete('casebook',{bug:'CB-305',sort:'priority'},{bug:'CB-305',sort:'priority'});
+      assert.equal(last().sort,'priority');
+    """),
+    "history_target_waits_for_in_flight_document_before_replacing": ("?tab=casebook&bug=CB-305&sort=oldest", r"""
+      topLoaded(); assert.equal(replacements().length,1);
+      href='file:///project/odylith/index.html?tab=casebook&bug=CB-305&sort=priority'; event('popstate');
+      assert.equal(replacements().length,1);
+      loaded('casebook');
+      complete('casebook',{bug:'CB-305',sort:'oldest'},{bug:'CB-305',sort:'oldest'});
+      assert.equal(last().sort,'priority'); assert.equal(replacements().length,2);
+      loaded('casebook'); complete('casebook',{bug:'CB-305',sort:'priority'},{bug:'CB-305',sort:'priority'});
+      assert.equal(last().sort,'priority'); assert.equal(replacements().length,2);
+    """),
+    "history_filter_change_does_not_readmit_original_request_echo": ("?tab=casebook&bug=CB-305&sort=oldest", r"""
+      const original={bug:'CB-305',sort:'oldest'};
+      topLoaded(); loaded('casebook'); complete('casebook',original,original);
+      navigation.selectTab('project'); navigation.selectTab('casebook');
+      complete('casebook',original,original);
+      bridges.casebook.navigate({route:{bug:'CB-305',sort:'priority'},replaceDocument:false});
+      complete('casebook',original,{bug:'CB-305',sort:'priority'});
+      href='file:///project/odylith/index.html?tab=project'; event('popstate');
+      const before = replacements().length;
+      href='file:///project/odylith/index.html?tab=casebook&bug=CB-305&sort=oldest'; event('popstate');
+      complete('casebook',original,{bug:'CB-305',sort:'priority'});
+      assert.equal(last().sort,'oldest');
+      assert.equal(replacements().length,before+1);
+      loaded('casebook'); complete('casebook',original,original);
+      assert.equal(last().sort,'oldest'); assert.equal(last().bug,'CB-305');
+    """),
+    "child_canonical_filters_do_not_reload_or_rename_selection": ("?tab=casebook&bug=CB-150&status=obsolete&severity=unknown", r"""
+      const requested={bug:'CB-150',status:'obsolete',severity:'unknown'};
+      topLoaded(); loaded('casebook'); complete('casebook',requested,null,'loading');
+      complete('casebook',requested,{bug:'CB-150'});
+      assert.equal(replacements().length,1);
+      assert.equal(last().bug,'CB-150');
+      assert.equal(new URL(href).searchParams.has('status'),false);
+      assert.equal(new URL(href).searchParams.has('severity'),false);
+    """),
+    "unknown_record_survives_canonical_filter_removal": ("?tab=casebook&bug=missing&status=obsolete", r"""
+      const requested={bug:'missing',status:'obsolete'};
+      topLoaded(); loaded('casebook'); complete('casebook',requested,{bug:''},'empty');
+      assert.equal(last().bug,'missing'); assert.equal(last().status,'');
+      assert.equal(replacements().length,1);
+      complete('casebook',requested,{bug:'CB-150'});
+      assert.equal(last().bug,'missing');
+    """),
+    "atlas_keeps_diagram_while_child_clears_conflicting_filter": ("?tab=atlas&diagram=D-047&workstream=B-001", r"""
+      const requested={diagram:'D-047',workstream:'B-001'};
+      topLoaded(); loaded('atlas'); complete('atlas',requested,{diagram:'D-047'},'degraded');
+      assert.equal(last().diagram,'D-047'); assert.equal(last().workstream,'');
+      assert.equal(replacements().length,1);
+      assert.equal(panes.atlas.dataset.navigationOutcome,'degraded');
+      complete('atlas',requested,{diagram:'D-001'});
+      assert.equal(last().diagram,'D-047');
+    """),
+    "radar_child_resolves_view_without_changing_workstream": ("?tab=radar&workstream=B-048&view=plan", r"""
+      const requested={workstream:'B-048',view:'plan'};
+      topLoaded(); loaded('radar'); complete('radar',requested,{workstream:'B-048',view:'spec'});
+      assert.equal(last().workstream,'B-048'); assert.equal(last().view,'spec');
+      assert.equal(replacements().length,1);
+      bridges.radar.navigate({route:{workstream:'B-049'},replaceDocument:false});
+      complete('radar',requested,{workstream:'B-048'});
+      assert.equal(last().workstream,'B-049');
+    """),
+    "compass_child_canonicalizes_dates_without_changing_scope": ("?tab=compass&scope=B-142&window=24h&date=2020-01-01", r"""
+      const requested={workstream:'B-142',window:'24h',date:'2020-01-01'};
+      topLoaded(); loaded('compass'); complete('compass',requested,{workstream:'B-142',window:'48h',date:'live'});
+      assert.equal(last().workstream,'B-142'); assert.equal(last().date,'live');
+      assert.equal(last().window,'48h'); assert.equal(replacements().length,1);
+      complete('compass',requested,{workstream:'B-001',window:'24h',date:'live'});
+      assert.equal(last().workstream,'B-142'); assert.equal(last().window,'48h');
+    """),
     "casebook_sort_remains_canonical_and_tab_local": ("?tab=casebook&sort=priority", r"""
       assert.equal(navigation.readState().sort,'priority');
       topLoaded(); loaded('casebook'); complete('casebook',{sort:'priority'},{bug:'CB-305',sort:'priority'});

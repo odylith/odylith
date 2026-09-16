@@ -23,7 +23,7 @@ def test_fresh_atlas_render_contains_accessible_asset_failure_and_reset() -> Non
     assert 'imageEl.hidden = true;' in html
     assert 'Diagram preview unavailable.' in html
     assert 'imageEl.src = fallback;' in html
-    assert 'imageEl.onload = () => {' in html
+    assert html.count(atlas_viewer_asset_runtime.VIEWER_RUNTIME_JS.strip("\n")) == 1
     assert 'imageErrorEl.classList.remove("visible")' in html
     assert 'imageEl.hidden = false;' in html
 

@@ -5,7 +5,7 @@
   Recurring false allows, false blocks, proofless claims, visible-UX misses,
   or governance-bypass patterns should become Casebook bugs only when evidence
   is concrete enough to prevent rediscovery.
-Last updated: 2026-09-07
+Last updated: 2026-09-15
 
 
 ## Purpose
@@ -232,6 +232,9 @@ It is the product learning archive, not just a list of open bugs.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-15 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-current-view-readers-could-remain-pinned-to-stale-onboarding-state.md`, `src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py`, `src/odylith/runtime/surfaces/render_casebook_dashboard.py`, `src/odylith/runtime/surfaces/templates/tooling_dashboard/navigation.js`
 - **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-140
   - Evidence: `odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md`, `src/odylith/runtime/surfaces/render_casebook_dashboard.py`, `tests/integration/runtime/test_casebook_list_layout_browser.py`

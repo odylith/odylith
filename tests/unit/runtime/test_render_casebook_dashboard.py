@@ -195,8 +195,8 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     assert "Fixed pending release" in app_js
     assert "Operator UX" in app_js
     assert "function displayFactValue(label, value)" in app_js
-    assert 'severity: canonicalizeKnownFilterToken(params.get("severity") || "", "severity_tokens"),' in app_js
-    assert 'status: canonicalizeKnownFilterToken(params.get("status") || "", "status_tokens"),' in app_js
+    assert 'state.severity = canonicalizeKnownFilterToken(state.severity, "severity_tokens");' in app_js
+    assert 'state.status = canonicalizeKnownFilterToken(state.status, "status_tokens");' in app_js
     assert '${escapeHtml(displayTokenLabel(token))}</option>' in app_js
     assert "${escapeHtml(displayTokenLabel(detail.status))}</span>" in app_js
     assert '<p class="summary-fact-value">${escapeHtml(displayFactValue(label, value))}</p>' in app_js

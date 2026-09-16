@@ -14,7 +14,7 @@ from tests.integration.runtime.surface_browser_test_support import (
 
 
 @contextmanager
-def _open_casebook(browser_context, *, width: int, populated: bool, invalid: bool = False):  # noqa: ANN001
+def _open_casebook(browser_context, *, width: int, populated: bool, bug: str = ""):  # noqa: ANN001
     base_url, context = browser_context
     with _new_page(context) as (page, observation):
         page.set_viewport_size({"width": width, "height": 1100 if width == 1440 else 932})
@@ -34,7 +34,7 @@ def _open_casebook(browser_context, *, width: int, populated: bool, invalid: boo
         page.route("**/odylith/casebook/casebook.html*", lambda route: route.fulfill(
             status=200, content_type="text/html", body=renderer._render_html(payload=payload),
         ))
-        page.goto(base_url + "/odylith/index.html?tab=casebook" + ("&bug=CB-999999" if invalid else ""),
+        page.goto(base_url + "/odylith/index.html?tab=casebook" + ("&bug=" + bug if bug else ""),
                   wait_until="domcontentloaded")
         casebook = page.frame_locator("#frame-casebook")
         casebook.locator("#listMeta").wait_for()
@@ -56,7 +56,7 @@ def _assert_readable(node):  # noqa: ANN001
 @pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
 @pytest.mark.parametrize("invalid", [False, True], ids=["unselected", "invalid-route"])
 def test_empty_repository_explains_absent_cases_without_filter_advice(browser_context, width: int, invalid: bool) -> None:  # noqa: ANN001
-    with _open_casebook(browser_context, width=width, populated=False, invalid=invalid) as (page, casebook, observation, pending):
+    with _open_casebook(browser_context, width=width, populated=False, bug="CB-999999" if invalid else "") as (page, casebook, observation, pending):
         casebook.locator("#bugList .empty-state").wait_for()
         assert casebook.locator("#bugList .empty-state").inner_text().strip() == "No Casebook cases have been recorded yet."
         detail = casebook.locator("#detailPane .empty-state")
@@ -78,7 +78,7 @@ def test_empty_repository_explains_absent_cases_without_filter_advice(browser_co
 
 @pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
 def test_filtered_cases_keep_recovery_and_ignore_late_detail(browser_context, width: int) -> None:  # noqa: ANN001
-    with _open_casebook(browser_context, width=width, populated=True, invalid=True) as (page, casebook, observation, pending):
+    with _open_casebook(browser_context, width=width, populated=True, bug="CB-901") as (page, casebook, observation, pending):
         casebook.locator('button.bug-row.active[data-bug="CB-901"]').wait_for()
         assert casebook.locator(".bug-row-title").inner_text() == "Preserve <record> evidence"
         assert casebook.locator(".bug-row-title record").count() == 0
@@ -98,4 +98,29 @@ def test_filtered_cases_keep_recovery_and_ignore_late_detail(browser_context, wi
         casebook.locator("#detailPane .detail-title", has_text="Loaded evidence detail").wait_for()
         assert casebook.locator('button.bug-row.active[data-bug="CB-901"]').count() == 1
         assert casebook.locator("#detailPane .empty-state").count() == 0
+        _assert_clean_page(page, observation)
+
+
+@pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
+def test_populated_repository_preserves_explicit_unknown_record(browser_context, width: int) -> None:  # noqa: ANN001
+    with _open_casebook(browser_context, width=width, populated=True, bug="CB-999999") as (page, casebook, observation, pending):
+        casebook.locator('button.bug-row[data-bug="CB-901"]').wait_for()
+        message = "The requested bug is unavailable in the current selection. Choose a bug or change the filters."
+        detail = casebook.locator("#detailPane .empty-state")
+        detail.wait_for()
+        assert detail.inner_text().strip() == message
+        assert casebook.locator("button.bug-row.active").count() == 0
+        assert casebook.locator("#listMeta").inner_text().strip() == "1 visible"
+        page.wait_for_function("() => new URL(location.href).searchParams.get('bug') === 'CB-999999'")
+        assert len(pending) == 1
+        pending[0].fulfill(status=200, content_type="application/javascript", body=(
+            "window.__ODYLITH_CASEBOOK_DETAIL_SHARDS__ = "
+            + json.dumps({"CB-901": {"title": "Unrelated record detail"}}) + ";"
+        ))
+        page.wait_for_function("() => !!document.querySelector('#frame-casebook').contentWindow.__ODYLITH_CASEBOOK_DETAIL_SHARDS__")
+        assert detail.inner_text().strip() == message
+        assert casebook.locator("button.bug-row.active").count() == 0
+        assert casebook.locator("#detailPane .detail-title").count() == 0
+        assert page.evaluate("() => new URL(location.href).searchParams.get('bug')") == "CB-999999"
+        _assert_readable(detail)
         _assert_clean_page(page, observation)

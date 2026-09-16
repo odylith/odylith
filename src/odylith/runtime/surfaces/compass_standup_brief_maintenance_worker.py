@@ -204,10 +204,17 @@ def _native_process_argv(pid: int) -> tuple[str, ...] | None:
     return None
 
 
+# Capture our own runtime independently, before inspecting any candidate actor.
+# Framework launchers can execute a different native binary than sys.executable.
+_CURRENT_PROCESS_ARGV = _native_process_argv(os.getpid())
+
+
 def _matches_worker_argv(argv: tuple[str, ...] | None, *, repo_root: Path, previous_python_bin: str = "") -> bool:
     if not isinstance(argv, tuple) or len(argv) not in {5, 6}:
         return False
     interpreters = {worker_python_bin(), str(sys.executable), str(previous_python_bin)}
+    if _CURRENT_PROCESS_ARGV and Path(_CURRENT_PROCESS_ARGV[0]).is_absolute():
+        interpreters.add(_CURRENT_PROCESS_ARGV[0])
     return (
         bool(argv[0]) and Path(argv[0]).is_absolute() and argv[0] in interpreters
         and argv[1:5] == ("-m", _WORKER_MODULE, "--repo-root", str(Path(repo_root).resolve()))

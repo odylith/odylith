@@ -176,6 +176,28 @@ def test_casebook_explicit_unknown_reaches_empty_owner_without_defaulting() -> N
     """)
 
 
+def test_casebook_request_echo_precedes_data_backed_filter_resolution() -> None:
+    html = render_casebook_dashboard._render_html(payload={})
+    spans = (
+        ("    function canonicalizeBugToken(", "    function displayTokenLabel("),
+        ("    function canonicalizeSortToken(", "    function normalizeSearchToken("),
+        ("    function readRequestedState(", "    let frameSnapshot ="),
+    )
+    source = "\n".join(start + html.split(start, 1)[1].split(end, 1)[0] for start, end in spans)
+    _run_js("", f"""
+      const assert = require('node:assert/strict');
+      const DATA = {{filters:{{severity_tokens:['p2'],status_tokens:['open']}}}};
+      const SORT_DEFAULT='newest', SORT_TOKENS=new Set(['newest','priority']);
+      const window={{location:{{search:'?bug=CB-150&severity=unknown&status=obsolete'}}}};
+      {source}
+      assert.deepEqual(requestedRoute, {{tab:'casebook',bug:'CB-150',severity:'unknown',status:'obsolete',sort:''}});
+      assert.deepEqual(readState(), {{bug:'CB-150',severity:'',status:'',sort:'newest'}});
+      window.location.search='?bug=CB-150&severity=P2&status=OPEN&sort=priority';
+      assert.deepEqual(readState(), {{bug:'CB-150',severity:'p2',status:'open',sort:'priority'}});
+      assert.equal(requestedRoute.status,'obsolete');
+    """)
+
+
 def test_casebook_user_intent_precedes_local_url_write_but_default_is_not_intent() -> None:
     html = render_casebook_dashboard._render_html(payload={})
     source = html.split("    function writeState(", 1)[1].split("    function fillSelect(", 1)[0]

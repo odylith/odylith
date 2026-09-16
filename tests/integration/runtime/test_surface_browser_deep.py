@@ -589,8 +589,11 @@ def test_shell_tab_matrix_keeps_single_visible_pane_in_compact_viewport(compact_
             _assert_single_visible_pane(page, frame_selector)
             heading_selector = ".hero-title" if tab == "casebook" else "h1"
             page.frame_locator(frame_selector).locator(heading_selector, has_text=heading_text).wait_for(timeout=15000)
-            src = str(page.locator(frame_selector).get_attribute("src") or "")
-            assert route_fragment in src
+            frame_element = page.locator(frame_selector).element_handle()
+            assert frame_element is not None
+            native_frame = frame_element.content_frame()
+            assert native_frame is not None
+            assert route_fragment in native_frame.url
 
         _assert_clean_page(page, observation)
 

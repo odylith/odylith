@@ -275,17 +275,24 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
       return match ? String(match.bug_route || "").trim() : "";
     }
 
-    function readState() {
+    function readRequestedState() {
       const params = new URLSearchParams(window.location.search || "");
       return {
         bug: canonicalizeBugToken(params.get("bug") || ""),
-        severity: canonicalizeKnownFilterToken(params.get("severity") || "", "severity_tokens"),
-        status: canonicalizeKnownFilterToken(params.get("status") || "", "status_tokens"),
+        severity: canonicalizeFilterToken(params.get("severity") || ""),
+        status: canonicalizeFilterToken(params.get("status") || ""),
         sort: canonicalizeSortToken(params.get("sort") || SORT_DEFAULT),
       };
     }
 
-    const requestedRoute = { tab: "casebook", ...readState() };
+    function readState() {
+      const state = readRequestedState();
+      state.severity = canonicalizeKnownFilterToken(state.severity, "severity_tokens");
+      state.status = canonicalizeKnownFilterToken(state.status, "status_tokens");
+      return state;
+    }
+
+    const requestedRoute = { tab: "casebook", ...readRequestedState() };
     if (!new URLSearchParams(window.location.search).has("sort")) requestedRoute.sort = "";
     let frameSnapshot = { requested: requestedRoute, rendered: null, outcome: "loading" };
     const frameBridge = window.OdylithFrameBridge.surface({ readSnapshot: () => frameSnapshot });

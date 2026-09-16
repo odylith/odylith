@@ -170,6 +170,108 @@ def test_unknown_executable_cannot_impersonate_worker_module(tmp_path):
     argv = ("/usr/bin/unrelated-program", "-m", worker._WORKER_MODULE, "--repo-root", str(tmp_path))
     assert not worker._matches_worker_argv(argv, repo_root=tmp_path)
 
+
+def test_current_process_native_identity_is_captured_at_import():
+    assert worker._CURRENT_PROCESS_ARGV == worker._native_process_argv(worker.os.getpid())
+
+
+@pytest.mark.parametrize("emit_output", [False, True])
+def test_captured_current_native_identity_requires_no_new_process_query(tmp_path, monkeypatch, emit_output):
+    native = str(tmp_path / "current runtime" / "Python")
+    monkeypatch.setattr(worker, "_CURRENT_PROCESS_ARGV", (native, "observer.py"), raising=False)
+    monkeypatch.setattr(worker, "_native_process_argv", lambda _pid: pytest.fail("self identity queried again"))
+    argv = (native, "-m", worker._WORKER_MODULE, "--repo-root", str(tmp_path))
+    if emit_output:
+        argv += ("--emit-output",)
+
+    assert worker._matches_worker_argv(argv, repo_root=tmp_path)
+    assert worker._matches_worker_argv(argv, repo_root=tmp_path)
+
+
+def test_captured_current_native_identity_does_not_infer_other_runtime_aliases(tmp_path, monkeypatch):
+    native = str(tmp_path / "current runtime" / "Python")
+    previous = str(tmp_path / "previous runtime" / "bin" / "python")
+    previous_native = str(tmp_path / "previous runtime" / "Python")
+    monkeypatch.setattr(worker, "_CURRENT_PROCESS_ARGV", (native,), raising=False)
+    monkeypatch.setattr(worker.subprocess, "Popen", lambda *_args, **_kwargs: pytest.fail("interpreter probe"))
+    arguments = ("-m", worker._WORKER_MODULE, "--repo-root", str(tmp_path))
+
+    assert worker._matches_worker_argv((native, *arguments), repo_root=tmp_path)
+    assert not worker._matches_worker_argv((previous, *arguments), repo_root=tmp_path)
+    assert worker._matches_worker_argv((previous, *arguments), repo_root=tmp_path, previous_python_bin=previous)
+    for unknown in (previous_native, str(tmp_path / "unknown" / "python")):
+        assert not worker._matches_worker_argv((unknown, *arguments), repo_root=tmp_path, previous_python_bin=previous)
+
+
+@pytest.mark.parametrize("captured", [None, (), ("",), ("relative/python",)])
+def test_unavailable_or_nonabsolute_self_identity_adds_no_authority(tmp_path, monkeypatch, captured):
+    monkeypatch.setattr(worker, "_CURRENT_PROCESS_ARGV", captured, raising=False)
+    arguments = ("-m", worker._WORKER_MODULE, "--repo-root", str(tmp_path))
+
+    assert worker._matches_worker_argv((worker.worker_python_bin(), *arguments), repo_root=tmp_path)
+    assert not worker._matches_worker_argv((str(tmp_path / "unknown" / "python"), *arguments), repo_root=tmp_path)
+
+
+@pytest.mark.parametrize("difference", ["module", "root", "option", "prefix", "extra"])
+def test_captured_native_executable_preserves_exact_worker_arguments(tmp_path, monkeypatch, difference):
+    native = str(tmp_path / "current runtime" / "Python")
+    monkeypatch.setattr(worker, "_CURRENT_PROCESS_ARGV", (native,), raising=False)
+    argv = [native, "-m", worker._WORKER_MODULE, "--repo-root", str(tmp_path)]
+    if difference == "module":
+        argv[2] += "_extra"
+    elif difference == "root":
+        argv[4] += " --emit-output"
+    elif difference == "option":
+        argv.append("--unrelated-option")
+    elif difference == "prefix":
+        argv.insert(1, "-I")
+    else:
+        argv.extend(["--emit-output", "extra"])
+
+    assert not worker._matches_worker_argv(tuple(argv), repo_root=tmp_path)
+
+
+def test_candidate_reader_cannot_replace_captured_identity_even_for_self_pid(tmp_path, monkeypatch):
+    native = str(tmp_path / "current runtime" / "Python")
+    unknown = str(tmp_path / "untrusted runtime" / "Python")
+    monkeypatch.setattr(worker, "_CURRENT_PROCESS_ARGV", (native,), raising=False)
+    argv = (unknown, "-m", worker._WORKER_MODULE, "--repo-root", str(tmp_path))
+    queried = []
+
+    def candidate_reader(pid):
+        queried.append(pid)
+        return argv
+
+    monkeypatch.setattr(worker, "_native_process_argv", candidate_reader)
+    monkeypatch.setattr(worker, "pid_alive", lambda _pid: True)
+    monkeypatch.setattr(worker.os, "kill", lambda *_args: pytest.fail("untrusted process signaled"))
+    assert not worker.terminate_worker(worker.os.getpid(), repo_root=tmp_path)
+    assert queried == [worker.os.getpid()]
+    assert worker._CURRENT_PROCESS_ARGV == (native,)
+
+
+def test_captured_native_worker_identity_is_rechecked_before_signal(tmp_path, monkeypatch):
+    native = str(tmp_path / "current runtime" / "Python")
+    monkeypatch.setattr(worker, "_CURRENT_PROCESS_ARGV", (native,), raising=False)
+    argv = (native, "-m", worker._WORKER_MODULE, "--repo-root", str(tmp_path))
+    observations = iter([argv, (str(tmp_path / "untrusted" / "Python"), *argv[1:])])
+    queried = []
+
+    def candidate_reader(pid):
+        queried.append(pid)
+        return next(observations)
+
+    monkeypatch.setattr(worker, "_native_process_argv", candidate_reader)
+    monkeypatch.setattr(worker.subprocess, "run", lambda *_args, **_kwargs: SimpleNamespace(
+        returncode=0, stdout=f"201 {' '.join(argv)}"))
+    monkeypatch.setattr(worker, "pid_alive", lambda _pid: True)
+    monkeypatch.setattr(worker.os, "kill", lambda *_args: pytest.fail("changed process signaled"))
+
+    assert worker.maintenance_worker_pids(repo_root=tmp_path) == [201]
+    assert not worker.terminate_worker(201, repo_root=tmp_path)
+    assert queried == [201, 201]
+
+
 def test_previous_interpreter_identity_reaches_inventory_and_stop_revalidation(tmp_path, monkeypatch):
     previous = str(tmp_path / "previous runtime" / "bin" / "python")
     argv = (previous, "-m", worker._WORKER_MODULE, "--repo-root", str(tmp_path))

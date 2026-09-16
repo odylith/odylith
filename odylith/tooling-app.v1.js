@@ -423,6 +423,9 @@ function createToolingShellNavigation({ panes, payload, onState, localStorageRea
 
 
     const entries = {};
+    // Children own canonical filters; only record identity constrains selection.
+    const selectionField = { radar: "workstream", atlas: "diagram", compass: "workstream",
+      registry: "component", casebook: "bug" };
     let activeEntry = null;
     let settled = document.readyState === "complete";
     let started = false;
@@ -458,6 +461,7 @@ function createToolingShellNavigation({ panes, payload, onState, localStorageRea
       entry.bridge.revoke();
       entry.admitted = false;
       entry.awaitingLoad = true;
+      entry.needsReplacement = false;
       entry.frame.dataset.navigationOutcome = "loading";
       const href = frameHrefsForState(entry.target)[entry.tab];
       entry.frame.contentWindow.location.replace(new URL(href, window.location.href).href);
@@ -484,9 +488,13 @@ function createToolingShellNavigation({ panes, payload, onState, localStorageRea
       }
       entry.frame.dataset.navigationOutcome = snapshot.outcome;
       if (snapshot.outcome === "loading" || !rendered) return;
-      // A missing explicit record stays explicit in the shell; an empty or
-      // degraded child must not silently rename it to a different record.
-      if (!permitsDefaults(entry.target, rendered, entry.allowDefaults)) return;
+      const key = selectionField[entry.tab];
+      if (entry.target[key] !== rendered[key] && !(entry.allowDefaults && entry.target[key] === "")) {
+        // An unavailable selection may normalize its filters, but cannot invent
+        // another record or erase the explicit request. Late old records fail.
+        if (rendered[key] !== "" || !["empty", "degraded"].includes(snapshot.outcome)) return;
+        rendered[key] = entry.target[key];
+      }
       entry.target = showState(rendered);
       entry.allowDefaults = false;
     }
@@ -504,7 +512,7 @@ function createToolingShellNavigation({ panes, payload, onState, localStorageRea
     for (const [tab, frame] of Object.entries(panes)) {
       if (tab === "project" || !frame) continue;
       const entry = { tab, frame, target: null, admitted: false,
-        awaitingLoad: false, allowDefaults: true };
+        awaitingLoad: false, needsReplacement: false, allowDefaults: true };
       entry.bridge = window.OdylithFrameBridge.frame({
         frame,
         onActor: () => { entry.admitted = false; },
@@ -518,8 +526,8 @@ function createToolingShellNavigation({ panes, payload, onState, localStorageRea
           entry.bridge.revoke();
           return;
         }
-        if (!isInitialBlank(frame)) entry.bridge.bind();
-        else if (settled && entry.target) replaceDocument(entry);
+        if (settled) reconcile(entry);
+        else if (!isInitialBlank(frame)) entry.bridge.bind();
       };
       frame.addEventListener("load", entry.onLoad);
       entries[tab] = entry;
@@ -527,7 +535,7 @@ function createToolingShellNavigation({ panes, payload, onState, localStorageRea
 
     function reconcile(entry) {
       if (!settled || !entry || entry.awaitingLoad) return;
-      if (isInitialBlank(entry.frame)) {
+      if (entry.needsReplacement || isInitialBlank(entry.frame)) {
         replaceDocument(entry);
       } else {
         // Rebinding a channel is not a Document load or a new route request.
@@ -541,6 +549,8 @@ function createToolingShellNavigation({ panes, payload, onState, localStorageRea
       if (activeEntry && activeEntry !== nextEntry) activeEntry.bridge.revoke();
       activeEntry = nextEntry;
       if (nextEntry) {
+        // Keep changed history intent across bootstrap and in-flight loads.
+        if (nextEntry.target && !routeEquals(nextEntry.target, state)) nextEntry.needsReplacement = true;
         if (!nextEntry.target || !routeEquals(nextEntry.target, state)) nextEntry.admitted = false;
         nextEntry.target = state;
         nextEntry.allowDefaults = options.allowDefaults !== false;

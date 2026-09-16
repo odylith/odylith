@@ -363,10 +363,15 @@ and the corresponding runtime route contract in `navigation.js` together.
 The parent navigation owner alone updates embedded history and chooses the
 active frame. Each child reports its original requested route, actual rendered
 selection and loading/ready/empty/degraded outcome through the shared bridge.
-The original request is captured before default selection or cache-query cleanup;
+The original request is captured before DATA-backed filter resolution, default selection or cache-query cleanup;
 neither a load event nor a matching URL proves that requested content rendered.
 Missing route fields may accept child defaults. Explicit unknown selections must
 retain truthful empty/degraded behavior, not be silently replaced by defaults.
+Children own canonical ancillary filters; the parent retains explicit primary
+record identity even when an empty/degraded result normalizes those filters.
+Changed history targets require replacement instead of reusing an old actor's
+original request echo. Pending replacement survives bootstrap and in-flight loads
+until reconciliation can navigate safely; ordinary same-target returns stay local.
 
 Child actions send explicit navigation intent before local selection changes.
 Same-Document actions retain their actor and existing selection-revision guards;
@@ -383,11 +388,15 @@ supported without browser security overrides. Standalone child behavior remains
 local; Radar's same-Document replacement retains one bridge actor. Atlas keeps a
 useful conflicting-workstream preview but visibly explains its degraded fallback;
 Compass emits only its supported normalized query fields.
+Radar's input/change binding renders only actual value changes: a duplicate blur
+event must not retire a row between pointer-down and its native click.
 
 The September 15 source integration passes 263 focused controls, including native
-HTTP/file transport and real-controller Document-lifetime tests. This does not
-qualify generated dashboard history, the desktop/mobile state matrix, installed
-distribution behavior or the complete Greenfield release. Those gates remain open.
+HTTP/file transport and real-controller Document-lifetime tests. Subsequent
+filter/history and click-loss corrections pass 176 focused source/native controls,
+the 20-case published regression replay, and four unchanged real history/reload
+and cancellation controls. The full desktop/mobile matrix, installed distribution
+and complete Greenfield release remain separate open gates.
 
 ## Intent And UX Contract
 The shell is meant to answer:

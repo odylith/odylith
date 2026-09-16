@@ -168,11 +168,14 @@ def _casebook_index_counts() -> tuple[int, int]:
 
 
 def _assert_casebook_counts(casebook, *, expected_open_total: int, expected_total_cases: int) -> None:  # noqa: ANN001
-    """Assert the visible Casebook counters and row count stay aligned."""
-    assert casebook.locator("#kpiOpenTotal").inner_text().strip() == str(expected_open_total)
-    assert casebook.locator("#kpiTotalCases").inner_text().strip() == str(expected_total_cases)
-    assert casebook.locator("button.bug-row").count() == expected_total_cases
-    assert casebook.locator("#listMeta").inner_text().strip() == f"{expected_total_cases} visible"
+    """Wait for rendered counts, including an actual empty result for zero cases."""
+    playwright_sync.expect(casebook.locator("#kpiOpenTotal")).to_have_text(str(expected_open_total), timeout=15000)
+    playwright_sync.expect(casebook.locator("#kpiTotalCases")).to_have_text(str(expected_total_cases), timeout=15000)
+    playwright_sync.expect(casebook.locator("button.bug-row")).to_have_count(expected_total_cases, timeout=15000)
+    playwright_sync.expect(casebook.locator("#listMeta")).to_have_text(f"{expected_total_cases} visible", timeout=15000)
+    if expected_total_cases == 0:
+        for pane in ("#bugList", "#detailPane"):
+            playwright_sync.expect(casebook.locator(f'{pane} .empty-state[role="status"]')).to_be_visible(timeout=15000)
 
 
 def _pane_hidden(page, frame_selector: str) -> bool:  # noqa: ANN001

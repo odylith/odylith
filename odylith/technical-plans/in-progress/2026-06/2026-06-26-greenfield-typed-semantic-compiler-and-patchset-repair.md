@@ -1,5 +1,62 @@
 Status: In progress
 
+## Close the full-matrix failure classes (2026-09-15)
+
+The bounded correction now passes 176 integrated source/native checks in 27.07s.
+Independent review's same-actor and pre-load history counterexamples are retained
+as regressions; pending replacement intent now survives until safe reconciliation.
+No source-review finding remains. The settled publication now passes the exact
+20-case original-failure and negative-control replay in 23.43s and the unchanged
+four-case history/reload/cancellation gate in 7.98s. Inputs and publication remain
+unchanged throughout both runs. Native faults remain strict failures; no observer
+or deadline was relaxed. Take the stable portable checkpoint, then qualify the
+full tree; the earlier full matrix remains red until that fresh gate passes.
+
+The unchanged 439-node UX matrix finishes 422 passed, 16 failed and one known
+diagnostic skip; all setup/teardown phases and frozen custody pass. Keep that red
+result. In one bounded wave, preserve raw requested route correlation while
+allowing child-canonical ancillary filters without renaming explicit selections;
+prove both Casebook's reload loop and Atlas's inconsistent shell filter fixed.
+Reproduce Radar's search-blur click loss before applying a no-op control-change
+guard in its existing binding owner. Correct obsolete fixture contracts and
+readiness assertions without weakening native observation or deadlines. Retain
+unknown-selection, stale completion, document lifetime and real-click negatives.
+Then settle governed sources, render owned surfaces, replay the original failed
+journeys and take a stable checkpoint. Model-policy migration remains bounded to
+existing defaults and worker epoch; preserve backoff and Greenfield profiles.
+Full UX/runtime, installed upgrade, automatic interventions, semantic quality,
+90/120/150 timing and untouched final holdout remain independent open gates.
+
+## Unblock frozen UX without weakening worker custody (2026-09-15)
+
+The corrected broad runtime run passes 6,053 tests with one explicit deselection
+in 431.02 seconds; all 2,963 inventoried inputs remain unchanged. Exact browser
+collection passes 439 nodes, but no browser starts: its admission inventory finds
+a live Compass worker missed by the narrower production matcher. A benign child
+confirms that this macOS framework launcher uses a distinct native executable.
+Compare the current process's independently captured native executable identity
+inside the existing matcher; keep exact module/root/options, revalidation and
+observed exit requirements. Do not add framework path exceptions, probe persisted
+executables, disable engines or alter pending requests. Require focused red/green
+and actual private-child proof before any live lifecycle operation. Then re-admit
+the full frozen UX run in a fresh receipt directory, retaining its refused attempt.
+Current-account narration model migration remains a separate diagnosed follow-up;
+no successful narration, model latency or automatic host visibility is claimed.
+
+## Qualify the pushed navigation checkpoint (2026-09-15)
+
+Checkpoint f05a0d0e4 is committed and pushed. The fresh 368-file runtime run
+reports 6,052 passed, one failed and one explicit protected-discovery deselection,
+with all 2,963 inputs unchanged. Its sole failure freezes the former anonymous
+Atlas load-callback spelling. Keep the guarded callback and existing executable
+recovery/stale-completion controls. The corrected exact embedding assertion and
+both affected modules pass twelve tests in 0.45 seconds; production is unchanged.
+Another frozen broad run is still required. The full
+35-module/439-node UX selection is prepared against the canonical repo without
+the historical duplicate-checkout routing. It is not yet launched or accepted.
+All semantic quality, timing, distribution/upgrade and final holdout gates remain
+open. Evidence: /Users/freedom/.codex/odylith-runtime-qualified.qlD0wu/.
+
 ## Complete navigation ownership and qualify the real journey (2026-09-15)
 
 The actual generated four-case gate now passes: unchanged history/cross-surface

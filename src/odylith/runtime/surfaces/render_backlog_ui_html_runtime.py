@@ -3255,14 +3255,14 @@ def _render_html(*, payload: dict[str, object]) -> str:
     }
 
     function bind(element, key) {
-      element.addEventListener("input", () => {
+      const update = () => {
+        // Blur can repeat an input value while a row click is in progress.
+        if (state[key] === element.value) return;
         state[key] = element.value;
         render();
-      });
-      element.addEventListener("change", () => {
-        state[key] = element.value;
-        render();
-      });
+      };
+      element.addEventListener("input", update);
+      element.addEventListener("change", update);
     }
 
     bind(el.query, "query");

@@ -4,6 +4,7 @@ The ordinal-prepend fixture is a reflow/clipping negative. These controls do
 not establish a successful click after a visible, layout-preserving ordinal change.
 """
 
+from contextlib import contextmanager
 import json
 
 import pytest
@@ -178,3 +179,122 @@ def test_pointer_refuses_invalid_final_sample(browser_context, record_property, 
     assert evidence["final_sample"]["reachable"] is False
     assert frame.locator('#detail [data-kpi="workstream-id"] .v').inner_text() == "B-001"
     page.close()
+
+
+def _search_detail_body(idea_id):
+    return 'Object.assign(window.__ODYLITH_BACKLOG_DETAIL_SHARDS__ ||= {}, ' + json.dumps({
+        idea_id: {"title": f"Loaded {idea_id}"},
+    }) + ');'
+
+
+@contextmanager
+def _search_fixture(browser_context, *, hold_detail=False):
+    base_url, context = browser_context
+    entries = [{
+        "idea_id": f"B-{index:03}", "title": f"Workstream {index}",
+        "section": "active", "status": "queued", "rank": str(index),
+        "priority": "P1" if index == 2 else "P2", "story_text": f"Preserve record {index}",
+    } for index in range(1, 4)]
+    pending = []
+    with support._new_page(context) as (page, observation):
+        def detail(route):
+            idea_id = route.request.url.rsplit('/', 1)[-1].removesuffix('.js')
+            if hold_detail and idea_id == "B-002":
+                pending.append(route)
+            else:
+                route.fulfill(status=200, content_type="application/javascript", body=_search_detail_body(idea_id))
+
+        page.route("**/search-detail/*.js", detail)
+        page.route("**/radar-search.html", lambda route: route.fulfill(
+            status=200, content_type="text/html", body=html_runtime._render_html(payload={
+                "entries": entries, "detail_manifest": {
+                    idea_id: f"/search-detail/{idea_id}.js" for idea_id in ("B-001", "B-002")
+                },
+            }),
+        ))
+        page.goto(base_url + "/radar-search.html", wait_until="load")
+        support._wait_for_radar_detail_id(page, "B-001")
+        try:
+            yield page, pending
+        finally:
+            if pending:
+                for route in pending:
+                    route.fulfill(status=200, content_type="application/javascript", body=_search_detail_body("B-002"))
+                page.wait_for_function("() => !!window.__ODYLITH_BACKLOG_DETAIL_SHARDS__?.['B-002']")
+            support._assert_clean_page(page, observation)
+
+
+def test_search_blur_preserves_native_row_click(browser_context, record_property):
+    with _search_fixture(browser_context) as (page, _pending):
+        page.evaluate("""() => {
+            const proof = window.__searchClick = {events: [], down: null};
+            for (const type of ['pointerdown', 'change', 'pointerup', 'click']) {
+                document.addEventListener(type, event => {
+                    const row = event.target.closest('[data-idea-id]');
+                    if (type === 'pointerdown') proof.down = row;
+                    proof.events.push({type, trusted: event.isTrusted, row: row?.dataset.ideaId || '',
+                        downConnected: proof.down?.isConnected ?? null});
+                }, true);
+            }
+        }""")
+        page.locator("#query").fill("B-002")
+        page.locator('button[data-idea-id="B-002"]').click()
+        events = page.evaluate("() => window.__searchClick.events")
+        record_property("search_click_events", json.dumps(events))
+        assert [event["row"] for event in events if event["type"] == "click"] == ["B-002"]
+        assert all(event["trusted"] and event["downConnected"] for event in events if event["type"] in {"pointerup", "click"})
+        support._wait_for_radar_detail_id(page, "B-002")
+
+
+def test_unchanged_filter_events_preserve_rendered_row(browser_context):
+    with _search_fixture(browser_context) as (page, _pending):
+        query = page.locator("#query")
+        query.fill("B-002")
+        row = page.locator('button[data-idea-id="B-002"]').element_handle()
+        try:
+            query.press("Tab")
+            assert row.evaluate("node => node.isConnected")
+            query.dispatch_event("input")
+            query.dispatch_event("change")
+            assert row.evaluate("node => node.isConnected")
+        finally:
+            row.dispose()
+
+
+def test_changed_filters_keep_empty_and_degraded_recovery(browser_context):
+    with _search_fixture(browser_context) as (page, _pending):
+        query = page.locator("#query")
+        query.fill("B-002")
+        assert page.locator("#list .row").count() == 1
+        page.locator("#priority").select_option("P2")
+        assert page.locator("#list .row").count() == 0
+        assert page.locator("#detail-empty").is_visible()
+        query.fill("")
+        assert page.locator("#list .row").count() == 2
+        page.locator("#priority").select_option("all")
+        assert page.locator("#list .row").count() == 3
+        query.evaluate("node => { node.value = 'B-003'; node.dispatchEvent(new Event('change', {bubbles: true})); }")
+        assert page.locator("#list .row").count() == 1
+        page.locator('button[data-idea-id="B-003"]').click()
+        support._wait_for_radar_detail_id(page, "B-003")
+        assert page.locator("#detail [role=status]").inner_text() == "Workstream detail unavailable. The available summary is shown."
+        query.fill("no matching workstream")
+        assert page.locator("#detail-empty").is_visible()
+        query.fill("")
+        support._wait_for_radar_detail_id(page, "B-003")
+
+
+def test_search_selection_rejects_late_previous_detail(browser_context):
+    with _search_fixture(browser_context, hold_detail=True) as (page, pending):
+        page.locator("#query").fill("B-002")
+        with page.expect_request("**/search-detail/B-002.js"):
+            page.locator('button[data-idea-id="B-002"]').click()
+        assert page.locator('button[data-idea-id="B-002"].active').count() == 1
+        page.locator("#query").fill("B-001")
+        page.locator('button[data-idea-id="B-001"]').click()
+        support._wait_for_radar_detail_id(page, "B-001")
+        assert len(pending) == 1
+        pending.pop().fulfill(status=200, content_type="application/javascript", body=_search_detail_body("B-002"))
+        page.wait_for_function("() => !!window.__ODYLITH_BACKLOG_DETAIL_SHARDS__?.['B-002']")
+        support._wait_for_radar_detail_id(page, "B-001")
+        assert page.locator("#detail .detail-title").inner_text() == "Loaded B-001"

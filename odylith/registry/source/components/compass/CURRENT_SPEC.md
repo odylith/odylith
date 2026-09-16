@@ -6,7 +6,7 @@
   and release-gate posture, but should suppress weak Odylith Discipline noise.
 - Compass entries should preserve workstream ids B-110 through B-117 and the
   benchmark gates that feed future session priors.
-Last updated: 2026-09-14
+Last updated: 2026-09-15
 
 
 ## Purpose
@@ -21,6 +21,10 @@ The maintenance worker owns detached process identity, request replacement and
 cleanup. It verifies native argument boundaries for the interpreter, module and
 repository before replacing a worker, and observes exit before launching another.
 Unknown process inventory or identity cannot authorize a signal or replacement.
+Current-runtime recognition also accepts the independently captured native
+executable of the observing process, covering framework launcher transitions
+without path patterns or candidate-derived trust. It does not infer executable
+aliases for a different previous runtime or authenticate a virtual environment.
 The process epoch describes loaded code, not a later disk edit.
 
 Exact cached results are reusable before provider availability is checked. Busy
