@@ -78,19 +78,19 @@ def router_profile_from_runtime(model: Any, reasoning_effort: Any) -> RouterProf
     """Infer the closest router profile from raw model/runtime fields."""
     runtime_model = _normalize_string(model)
     runtime_reasoning = _normalize_token(reasoning_effort)
-    if runtime_model == "gpt-5.4-mini":
+    if runtime_model in {"gpt-5.6-luna", "gpt-5.4-mini"}:
         if runtime_reasoning == "high":
             return RouterProfile.ANALYSIS_HIGH
         if runtime_reasoning == "medium":
             return RouterProfile.ANALYSIS_MEDIUM
     if runtime_model == "gpt-5.3-codex-spark" and runtime_reasoning == "medium":
         return RouterProfile.FAST_WORKER
-    if runtime_model == "gpt-5.3-codex":
+    if runtime_model in {"gpt-5.6-terra", "gpt-5.3-codex"}:
         if runtime_reasoning == "high":
             return RouterProfile.WRITE_HIGH
         if runtime_reasoning == "medium":
             return RouterProfile.WRITE_MEDIUM
-    if runtime_model == "gpt-5.4":
+    if runtime_model in {"gpt-5.6-sol", "gpt-5.4"}:
         if runtime_reasoning == "xhigh":
             return RouterProfile.FRONTIER_XHIGH
         if runtime_reasoning == "high":

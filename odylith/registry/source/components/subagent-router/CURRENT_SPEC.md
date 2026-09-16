@@ -6,7 +6,7 @@
   route-ready contract exists.
 - Discipline checks may recommend routing affordances but must not spawn
   subagents or call host models to classify pressure.
-Last updated: 2026-07-20
+Last updated: 2026-09-15
 
 
 ## Purpose
@@ -44,7 +44,7 @@ native-spawn host.
 - The router is the leaf authority. If a task has already been decomposed, the
   router is the component that decides whether that leaf is worth delegating.
 - Hard gates beat soft scoring.
-- `gpt-5.4` `xhigh` is a gated tier, not a default outcome.
+- `frontier_xhigh` is a gated tier, not a default outcome.
 - Tuning stored under `.odylith/` may bias future soft choices, but it cannot
   rewrite safety policy.
 - Consumer-facing `why`, `explanation_lines`, and related human-readable route
@@ -148,23 +148,31 @@ Recorded execution result used for escalation or tuning:
 - notes and outcome id
 
 ## Profile Ladder
-The supported ordered profile ladder across native-spawn-capable hosts is:
+The supported ordered profile ladder is host-portable. Current Codex defaults are:
 - `main_thread`
   No delegation.
 - `analysis_medium`
-  `gpt-5.4-mini`, `medium`.
+  `gpt-5.6-luna`, `medium`.
 - `analysis_high`
-  `gpt-5.4-mini`, `high`.
+  `gpt-5.6-luna`, `high`.
 - `fast_worker`
   `gpt-5.3-codex-spark`, `medium`.
 - `write_medium`
-  `gpt-5.3-codex`, `medium`.
+  `gpt-5.6-terra`, `medium`.
 - `write_high`
-  `gpt-5.3-codex`, `high`.
+  `gpt-5.6-terra`, `high`.
 - `frontier_high`
-  `gpt-5.4`, `high`.
+  `gpt-5.6-sol`, `high`.
 - `frontier_xhigh`
-  `gpt-5.4`, `xhigh`, gated.
+  `gpt-5.6-sol`, `xhigh`, gated.
+
+The shared resolver retains Claude's existing Haiku/Sonnet/Opus mapping. Codex
+tuples remain distinct so context packets cannot confuse write and frontier
+roles. Historical model tuples still infer their original semantic role, then
+resolve to its current host default; an explicit semantic profile takes
+precedence. This changes availability defaults, not routing scores, effort,
+escalation, explicit provider pins or Greenfield generation profiles. Mapping
+and asset tests do not establish live generation quality or latency.
 
 Legacy ids `mini_*`, `spark_medium`, `codex_*`, and `gpt54_*` remain accepted
 as read-compatibility aliases for one migration window, but new decisions and

@@ -482,21 +482,24 @@ def test_codex_project_config_uses_verified_contract_keys() -> None:
 
 def test_codex_project_agents_have_expected_schema_and_runtime_fields() -> None:
     expected = {
-        "odylith-atlas-diagrammer.toml": ("gpt-5.3-codex", "medium", "workspace-write"),
-        "odylith-compass-briefer.toml": ("gpt-5.4-mini", "high", "read-only"),
+        "odylith-atlas-diagrammer.toml": ("gpt-5.6-terra", "medium", "workspace-write"),
+        "odylith-compass-briefer.toml": ("gpt-5.6-luna", "high", "read-only"),
         "odylith-compass-narrator.toml": ("gpt-5.3-codex-spark", "medium", "read-only"),
-        "odylith-context-engine.toml": ("gpt-5.4-mini", "medium", "read-only"),
-        "odylith-governance-scribe.toml": ("gpt-5.3-codex", "medium", "workspace-write"),
-        "odylith-registry-scribe.toml": ("gpt-5.3-codex", "medium", "workspace-write"),
-        "odylith-reviewer.toml": ("gpt-5.4", "high", "read-only"),
-        "odylith-validator.toml": ("gpt-5.4-mini", "high", "read-only"),
-        "odylith-workstream.toml": ("gpt-5.3-codex", "medium", "workspace-write"),
+        "odylith-context-engine.toml": ("gpt-5.6-luna", "medium", "read-only"),
+        "odylith-governance-scribe.toml": ("gpt-5.6-terra", "medium", "workspace-write"),
+        "odylith-registry-scribe.toml": ("gpt-5.6-terra", "medium", "workspace-write"),
+        "odylith-reviewer.toml": ("gpt-5.6-sol", "high", "read-only"),
+        "odylith-validator.toml": ("gpt-5.6-luna", "high", "read-only"),
+        "odylith-workstream.toml": ("gpt-5.6-terra", "medium", "workspace-write"),
     }
 
     agent_dir = LIVE_CODEX_ROOT / "agents"
+    bundled_dir = PROJECT_ROOT_BUNDLE / ".codex" / "agents"
     assert {path.name for path in agent_dir.glob("*.toml")} == set(expected)
+    assert {path.name for path in bundled_dir.glob("*.toml")} == set(expected)
 
     for filename, (model, reasoning, sandbox_mode) in expected.items():
+        assert (agent_dir / filename).read_bytes() == (bundled_dir / filename).read_bytes()
         payload = tomllib.loads((agent_dir / filename).read_text(encoding="utf-8"))
         assert payload["name"]
         assert payload["description"]

@@ -1,5 +1,32 @@
 Status: In progress
 
+## Preserve execution roles on current native models (2026-09-15)
+
+Checkpoint 16806eb47 is committed and pushed. The separate execution-role wave
+now replaces retired Codex analysis/write/frontier defaults with Luna/Terra/Sol,
+leaving Spark, Claude, efforts, routing policy, explicit pins and Greenfield
+profiles unchanged. Current and historical tuples retain their semantic roles;
+explicit profiles win. The focused red/green is 21 failures to 58 passes, followed
+by 186 passing adjacent controls and an independent review with no correctness
+finding. The review's live/bundled parity assertion is included; both component
+specs, the routing guide and its mirror, and two existing rendered Atlas diagrams
+are synchronized. The frozen 370-file runtime gate passes 6,138 tests in 442.48s
+with all 2,965 inputs unchanged and one explicit protected-discovery deselection.
+The full install-unit suite passes 1,418 tests in 109.41s, zero failures/skips,
+after moving its temporary root outside a real ancestor AGENTS.md. Preserve the
+first 1,417-pass/one-failure receipt as misconfigured proof, not a product fix.
+This is source-local compatibility, not native quality or latency qualification.
+CB-209 retains the failure and mechanism learning.
+Evidence: /Users/freedom/.codex/odylith-execution-models.o4NF5q/.
+
+No new architecture, semantic rule or expanded release scope is introduced.
+Current installed distribution, populated-predecessor upgrade, automatic chat
+delivery, source-grounded package quality and 90/120/150-second proposal evidence
+remain open; the protected final holdout stays untouched until eligible. Do not
+conflate these unit gates with the earlier complete browser matrix or current
+installed end-to-end qualification. Broad runtime evidence:
+/Users/freedom/.codex/odylith-runtime-qualified.muJ3Rs/.
+
 ## Frozen dashboard qualification and bounded follow-up (2026-09-15)
 
 Checkpoint a2245e80b is committed and pushed from the canonical repository. Its

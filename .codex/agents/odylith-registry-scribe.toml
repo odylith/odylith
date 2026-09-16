@@ -1,6 +1,6 @@
 name = "odylith-registry-scribe"
 description = "Update component specs and registry-owned dossiers for the active Odylith component slice. Use PROACTIVELY when a component boundary, runtime contract, or proof obligation shifts and `components/*/CURRENT_SPEC.md` or registry source manifests need a bounded, traceable update."
-model = "gpt-5.3-codex"
+model = "gpt-5.6-terra"
 model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
 developer_instructions = '''

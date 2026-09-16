@@ -975,7 +975,7 @@ def _top_score_lines(
     lines.append(f"routing_confidence={routing_confidence}/4")
     top_drivers: list[str] = []
     if assessment.feature_implementation:
-        top_drivers.append("feature implementation biases toward stronger coding-optimized or GPT-5.4 profiles")
+        top_drivers.append("feature implementation biases toward stronger writing or frontier profiles")
     if not assessment.needs_write and assessment.task_family == "analysis_review":
         top_drivers.append("read-only analysis keeps the winner set on explorer and deep-read tiers, not write-oriented code tiers")
     if assessment.feature_reasons.get("grounding"):

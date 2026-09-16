@@ -79,13 +79,13 @@ _CLAUDE_HOST_FAMILY = "claude"
 # hosts fall through to an empty model via `execution_profile_runtime_fields`.
 _EXECUTION_PROFILE_RUNTIME_FIELDS_BY_HOST: dict[str, dict[str, tuple[str, str]]] = {
     _CODEX_HOST_FAMILY: {
-        ANALYSIS_MEDIUM_PROFILE: ("gpt-5.4-mini", "medium"),
-        ANALYSIS_HIGH_PROFILE: ("gpt-5.4-mini", "high"),
+        ANALYSIS_MEDIUM_PROFILE: ("gpt-5.6-luna", "medium"),
+        ANALYSIS_HIGH_PROFILE: ("gpt-5.6-luna", "high"),
         FAST_WORKER_PROFILE: ("gpt-5.3-codex-spark", "medium"),
-        WRITE_MEDIUM_PROFILE: ("gpt-5.3-codex", "medium"),
-        WRITE_HIGH_PROFILE: ("gpt-5.3-codex", "high"),
-        FRONTIER_HIGH_PROFILE: ("gpt-5.4", "high"),
-        FRONTIER_XHIGH_PROFILE: ("gpt-5.4", "xhigh"),
+        WRITE_MEDIUM_PROFILE: ("gpt-5.6-terra", "medium"),
+        WRITE_HIGH_PROFILE: ("gpt-5.6-terra", "high"),
+        FRONTIER_HIGH_PROFILE: ("gpt-5.6-sol", "high"),
+        FRONTIER_XHIGH_PROFILE: ("gpt-5.6-sol", "xhigh"),
     },
     _CLAUDE_HOST_FAMILY: {
         ANALYSIS_MEDIUM_PROFILE: ("claude-haiku-4-5", "medium"),

@@ -26,7 +26,7 @@
   host model calls", must admit allowed authored governance work without
   CLI-writer evidence, and must still defer/block the corresponding unsafe
   moves when they are actually requested.
-Last updated: 2026-07-20
+Last updated: 2026-09-15
 
 ## Registry Identity
 
@@ -541,6 +541,15 @@ The profile-to-model table carries a host-family axis. Codex and Claude can
 resolve the same semantic profile to different concrete model and reasoning
 tuples without redefining the execution contract. A validated host must never
 return an empty model for a supported profile.
+
+As of 2026-09-15, Codex analysis profiles resolve to Luna, the fast worker to
+Spark, write profiles to Terra, and frontier profiles to Sol, retaining each
+role's existing effort. The distinct model/effort tuples preserve role inference
+for context packets; historical tuples remain readable, with explicit semantic
+profiles taking precedence. Claude mappings and execution admissibility are
+unchanged. Live and bundled Codex project-agent assets must match the resolver's
+roles. Compatibility proof does not replace fresh native quality, latency or
+automatic chat-delivery evidence.
 
 ## Consumer And Maintainer Lane Fencing
 

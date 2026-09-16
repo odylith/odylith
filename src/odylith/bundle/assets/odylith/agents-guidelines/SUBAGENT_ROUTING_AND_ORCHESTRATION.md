@@ -66,14 +66,14 @@
 - The semantic profile ladder is host-portable. Odylith's execution-governance resolver returns `(model, reasoning_effort)` per `(host_family, profile)` through `execution_profile_runtime_fields`, so the same ladder position resolves to a real Codex tuple on Codex and a real Claude tuple on Claude Code.
 - If no routed leaf exists and you still need direct delegation on a native-spawn-capable host, pick the semantic profile first and let the resolver pick the model:
   - bounded read-only exploration or evidence gathering: `analysis_medium`
-    (Codex: `gpt-5.4-mini` / `medium`; Claude: `claude-haiku-4-5` / `medium`)
+    (Codex: `gpt-5.6-luna` / `medium`; Claude: `claude-haiku-4-5` / `medium`)
   - mechanical bounded transforms or fast triage: `fast_worker`
     (Codex: `gpt-5.3-codex-spark` / `medium`; Claude: `claude-haiku-4-5` / `medium`)
   - bounded code-write or test repair: `write_medium`
-    (Codex: `gpt-5.3-codex` / `medium`; Claude: `claude-sonnet-4-6` / `medium`)
+    (Codex: `gpt-5.6-terra` / `medium`; Claude: `claude-sonnet-4-6` / `medium`)
   - correctness-critical, ambiguous, or adjudication-heavy implementation: `frontier_high`
-    (Codex: `gpt-5.4` / `high`; Claude: `claude-opus-4-6` / `high`)
+    (Codex: `gpt-5.6-sol` / `high`; Claude: `claude-opus-4-6` / `high`)
   - reserve `frontier_xhigh` for maximum-accuracy or failure-driven cases after the narrower tiers look unsafe
-    (Codex: `gpt-5.4` / `xhigh`; Claude: `claude-opus-4-6` / `xhigh`)
+    (Codex: `gpt-5.6-sol` / `xhigh`; Claude: `claude-opus-4-6` / `xhigh`)
 - When router/orchestrator already emitted a delegated leaf, prefer the routed native-spawn payload directly and pass `spawn_task_message` verbatim as the spawned message. On Claude Code, use the emitted profile together with the matching project subagent under `.claude/agents/` (for example `odylith-reviewer` for frontier-tier review, `odylith-context-engine` for haiku-tier retrieval) instead of improvising a local model override.
 - For the Codex project-asset surface itself, see `CODEX_HOST_CONTRACT.md`; that document is the source of truth for trusted-project gating, supported hooks, skill shims, and the native-blocked gaps that remain outside the routed `spawn_agent` contract.
