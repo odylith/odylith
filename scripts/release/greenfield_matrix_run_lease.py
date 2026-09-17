@@ -31,13 +31,15 @@ class MatrixRunLease:
         }
 
     def release(self) -> None:
-        """Remove only this run's temporary data and its exclusive output lock."""
+        """Release an empty namespace; phase owners alone may remove their fixtures."""
 
         if self.released:
             return
         cleanup_error: OSError | None = None
         try:
-            _cleanup_smoke_temp_root(self.temp_namespace)
+            self.temp_namespace.rmdir()
+        except FileNotFoundError:
+            pass
         except OSError as exc:
             cleanup_error = exc
         if self.temp_namespace.exists() or self.temp_namespace.is_symlink():

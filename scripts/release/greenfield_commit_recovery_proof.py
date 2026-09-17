@@ -15,6 +15,8 @@ import uuid
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
     combined_prompt_evidence_source,
 )
+from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
+from odylith.runtime.surfaces.compass_standup_brief_maintenance_worker import maintenance_worker_pids
 
 from greenfield_process import run_command_with_group_timeout as _run
 from greenfield_commit_recovery_cases import RECOVERY_CASE_SCOPE
@@ -80,6 +82,7 @@ class GreenfieldInstalledCommitRecoveryProof:
     operator_conflict_generation_observations: Mapping[str, Any] = field(default_factory=dict)
     fsync_generation_observations: Mapping[str, Any] = field(default_factory=dict)
     recovery_case: Mapping[str, Any] = field(default_factory=dict)
+    retained_recovery_roots: Mapping[str, str] = field(default_factory=dict)
 
     @property
     def passed(self) -> bool:
@@ -119,6 +122,7 @@ class GreenfieldInstalledCommitRecoveryProof:
             "operator_conflict_generation_observations": dict(self.operator_conflict_generation_observations),
             "fsync_generation_observations": dict(self.fsync_generation_observations),
             "recovery_case": dict(self.recovery_case),
+            "retained_recovery_roots": dict(self.retained_recovery_roots),
         }
 
 
@@ -226,12 +230,12 @@ def run_installed_commit_recovery_proof(
             server.shutdown()
             server.server_close()
         try:
-            _cleanup_smoke_temp_root(run_root)
+            facts["retained_recovery_roots"] = _cleanup_recovery_run_root(run_root)
         except OSError as exc:
             issues.append(f"installed commit recovery proof cleanup failed: {exc}")
-        if run_root.exists() or run_root.is_symlink():
-            issues.append(f"installed commit recovery proof left a temporary root: {run_root}")
     if not issues:
+        if str(run_root / "operator-conflict") not in _mapping(facts.get("retained_recovery_roots")):
+            issues.append("installed recovery cleanup did not retain the operator-conflict fixture")
         issues.extend(_missing_required_evidence(facts))
     return GreenfieldInstalledCommitRecoveryProof(
         status="passed" if not issues else "failed",
@@ -266,7 +270,35 @@ def run_installed_commit_recovery_proof(
         ),
         fsync_generation_observations=_mapping(facts.get("fsync_generation_observations")),
         recovery_case=_mapping(facts.get("recovery_case")),
+        retained_recovery_roots=_mapping(facts.get("retained_recovery_roots")),
     )
+
+
+def _cleanup_recovery_run_root(run_root: Path) -> dict[str, str]:
+    """Remove settled fixtures, retaining conflict journals and unverifiable workers."""
+    if run_root.is_symlink():
+        raise OSError(f"unsafe recovery run root: {run_root}")
+    if not run_root.exists():
+        return {}
+    retained: dict[str, str] = {}
+    for repo in run_root.iterdir():
+        try:
+            if repo.is_symlink() or not repo.is_dir():
+                raise RuntimeError("unsafe recovery fixture path")
+            GreenfieldCommitJournal.require_settled_journals(repo_root=repo)
+            if maintenance_worker_pids(repo_root=repo) != []:
+                raise RuntimeError("recovery fixture has active or unverified workers")
+        except (OSError, RuntimeError) as exc:
+            retained[str(repo)] = str(exc)
+            continue
+        _cleanup_smoke_temp_root(repo)
+        if repo.exists() or repo.is_symlink():
+            raise OSError(f"terminal recovery fixture survived cleanup: {repo}")
+    if not retained:
+        _cleanup_smoke_temp_root(run_root)
+        if run_root.exists() or run_root.is_symlink():
+            raise OSError(f"terminal recovery root survived cleanup: {run_root}")
+    return retained
 
 
 def _missing_required_evidence(facts: Mapping[str, Any]) -> list[str]:
@@ -437,7 +469,7 @@ def _run_sigkill_recovery_phase(
         label="SIGKILL recovery",
     )
     journal_root = _journal_root(repo_root, compiled.transaction_hash)
-    if (journal_root / "snapshot").exists() or (journal_root / "staging").exists():
+    if any(path.exists() or path.is_symlink() for path in (journal_root / "snapshot", journal_root / "staging")):
         raise RuntimeError("installed SIGKILL recovery retained rollback artifacts after durable commit")
     retried = _run(cwd=repo_root, env=dict(env), command=command, timeout=COMMAND_TIMEOUT_SECONDS)
     retry_payload = _require_success_payload(retried, label="installed same-hash retry")
@@ -525,7 +557,10 @@ def _run_operator_conflict_recovery_phase(
     )
     operator_bytes = b"operator mutation retained by installed recovery proof\n"
     partial_write.write_bytes(operator_bytes)
+    operator_fingerprint = _governed_fingerprint(repo_root, include_directories=True)
     conflicted = _run(cwd=repo_root, env=dict(env), command=command, timeout=COMMAND_TIMEOUT_SECONDS)
+    if _governed_fingerprint(repo_root, include_directories=True) != operator_fingerprint:
+        raise RuntimeError("installed conflict recovery changed the governed tree")
     conflict_payload = _require_error_payload(conflicted, label="installed operator-conflict recovery create")
     commit_failure = _mapping(conflict_payload.get("commit_failure"))
     failure_kind = str(commit_failure.get("failure_kind") or "")
@@ -638,7 +673,7 @@ def _run_fsync_rollback_phase(
         label="fsync rollback",
     )
     journal_root = _journal_root(repo_root, compiled.transaction_hash)
-    if (journal_root / "snapshot").exists() or (journal_root / "staging").exists():
+    if any(path.exists() or path.is_symlink() for path in (journal_root / "snapshot", journal_root / "staging")):
         raise RuntimeError("installed fsync failure retained rollback artifacts after cleanup")
     retried = _run(cwd=repo_root, env=dict(env), command=command, timeout=COMMAND_TIMEOUT_SECONDS)
     retry_payload = _require_success_payload(retried, label="installed fsync rollback retry")
@@ -666,7 +701,7 @@ def _run_fsync_rollback_phase(
         write_set_hash=compiled.write_set_hash,
         label="fsync retry",
     )
-    if (journal_root / "snapshot").exists() or (journal_root / "staging").exists():
+    if any(path.exists() or path.is_symlink() for path in (journal_root / "snapshot", journal_root / "staging")):
         raise RuntimeError("installed fsync rollback retry retained rollback artifacts after durable commit")
     same_hash_retry = _run(cwd=repo_root, env=dict(env), command=command, timeout=COMMAND_TIMEOUT_SECONDS)
     same_hash_payload = _require_success_payload(same_hash_retry, label="installed fsync same-hash retry")
@@ -975,7 +1010,7 @@ def _journal_state(*, repo_root: Path, transaction_hash: str) -> Mapping[str, An
     return _json_mapping(state_path.read_text(encoding="utf-8"), label="installed create journal state")
 
 
-def _governed_fingerprint(repo_root: Path) -> dict[str, str]:
+def _governed_fingerprint(repo_root: Path, *, include_directories: bool = False) -> dict[str, str]:
     root = Path(repo_root).expanduser().resolve()
     result: dict[str, str] = {}
     for relative_root in _GOVERNED_ROOTS:
@@ -987,11 +1022,19 @@ def _governed_fingerprint(repo_root: Path) -> dict[str, str]:
             continue
         if not candidate.is_dir():
             continue
-        for file_path in sorted(path for path in candidate.rglob("*") if path.is_file()):
+        if include_directories:
+            result[relative_root + "/"] = "directory"
+        for file_path in sorted(candidate.rglob("*")):
             if file_path.is_symlink():
                 raise RuntimeError(f"installed recovery proof found a governed symlink: {file_path}")
             relative_path = file_path.relative_to(root).as_posix()
-            result[relative_path] = _file_fingerprint(file_path)
+            if file_path.is_dir():
+                if include_directories:
+                    result[relative_path + "/"] = "directory"
+            elif file_path.is_file():
+                result[relative_path] = _file_fingerprint(file_path)
+            else:
+                raise RuntimeError(f"installed recovery proof found an unsafe governed entry: {file_path}")
     return result
 
 

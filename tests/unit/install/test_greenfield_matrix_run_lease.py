@@ -66,6 +66,30 @@ def test_lease_rejects_concurrent_output_ownership_and_cleans_the_loser_namespac
     first.release()
 
 
+@pytest.mark.parametrize("entry_kind", ("file", "directory", "dangling_link"))
+def test_release_preserves_unsettled_children_and_closes_the_failed_lease(tmp_path: Path, entry_kind: str) -> None:
+    module = _module()
+    lease = module.acquire_matrix_run_lease(temp_parent=tmp_path, output_path=tmp_path / "proof.json")
+    retained = lease.temp_namespace / "recovery-evidence"
+    if entry_kind == "file":
+        retained.write_text("required evidence", encoding="utf-8")
+    elif entry_kind == "directory":
+        retained.mkdir()
+    else:
+        retained.symlink_to(tmp_path / "missing")
+
+    with pytest.raises(RuntimeError, match="was not removed"):
+        lease.release()
+
+    assert lease.released and (retained.exists() or retained.is_symlink())
+    assert lease.lock_descriptor is not None
+    with pytest.raises(OSError):
+        os.fstat(lease.lock_descriptor)
+    assert json.loads(lease.lock_path.read_text(encoding="utf-8"))["state"] == "cleanup_failed"
+    lease.release()
+    assert retained.exists() or retained.is_symlink()
+
+
 def test_lease_blocks_a_dead_pid_bound_output_lock_until_explicit_recovery(tmp_path: Path) -> None:
     module = _module()
     output_path = tmp_path / "proof.json"
@@ -152,7 +176,7 @@ def test_cleanup_failure_keeps_the_output_lease_fail_closed(
     lease = module.acquire_matrix_run_lease(temp_parent=tmp_path, output_path=output_path)
     assert lease.lock_path is not None
 
-    monkeypatch.setattr(module, "_cleanup_smoke_temp_root", lambda _: None)
+    monkeypatch.setattr(Path, "rmdir", lambda _: None)
     with pytest.raises(RuntimeError, match="was not removed"):
         lease.release()
     monkeypatch.undo()
@@ -172,7 +196,7 @@ def test_cleanup_failure_blocks_a_new_process_from_reclaiming_the_output_lease(t
     child_program = f"""
 from pathlib import Path
 import greenfield_matrix_run_lease as lease_module
-lease_module._cleanup_smoke_temp_root = lambda _: None
+Path.rmdir = lambda _: None
 lease = lease_module.acquire_matrix_run_lease(
     temp_parent=Path({str(tmp_path)!r}),
     output_path=Path({str(output_path)!r}),

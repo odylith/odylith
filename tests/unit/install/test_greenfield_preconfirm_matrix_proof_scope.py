@@ -626,7 +626,9 @@ def test_main_fails_when_owned_temp_cleanup_finds_a_leftover_repo(monkeypatch, t
     _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
 
     def fake_run_matrix(**kwargs):  # noqa: ANN001
-        (kwargs["temp_parent"] / "odylith-greenfield-matrix-leftover").mkdir()
+        snapshot = kwargs["temp_parent"] / "odylith-greenfield-matrix-leftover" / "snapshot"
+        snapshot.parent.mkdir()
+        snapshot.write_text("required recovery evidence", encoding="utf-8")
         return (_passing_matrix_result(module),)
 
     monkeypatch.setattr(module, "run_matrix", fake_run_matrix)
@@ -651,7 +653,11 @@ def test_main_fails_when_owned_temp_cleanup_finds_a_leftover_repo(monkeypatch, t
     assert payload["status"] == "failed"
     assert payload["temp_cleanup_proof"]["status"] == "failed"
     assert payload["temp_cleanup_proof"]["remaining_paths"]
-    assert not Path(payload["proof_run"]["temporary_namespace"]).exists()
+    namespace = Path(payload["proof_run"]["temporary_namespace"])
+    assert (namespace / "odylith-greenfield-matrix-leftover" / "snapshot").read_text(
+        encoding="utf-8"
+    ) == "required recovery evidence"
+    assert payload["temp_cleanup_proof"]["run_namespace_cleanup"] == "failed"
 
 
 def test_main_fails_when_installed_commit_recovery_proof_fails(monkeypatch, tmp_path: Path, capsys) -> None:

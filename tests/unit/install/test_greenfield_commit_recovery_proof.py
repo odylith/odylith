@@ -13,6 +13,7 @@ from types import SimpleNamespace
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_generation_state
+from odylith.runtime.domain_intelligence import greenfield_commit_journal
 from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
@@ -714,6 +715,7 @@ def test_recovery_proof_payload_is_a_falsifiable_release_record() -> None:
             "after_retry": _generation_observation(active=True, generation_present=True),
         },
         "recovery_case": recovery_case,
+        "retained_recovery_roots": {},
     }
 
 
@@ -812,6 +814,12 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
 
     def conflict_phase(**kwargs):  # noqa: ANN001
         captured_cases.append(kwargs["case"])
+        journal = module._journal_root(kwargs["run_root"] / "operator-conflict", "a" * 64)
+        journal.mkdir(parents=True)
+        record = {"version": greenfield_commit_journal.JOURNAL_VERSION, "state": "projecting"}
+        record["record_hash"] = greenfield_commit_journal._record_hash(record)
+        (journal / "state.v1.json").write_text(json.dumps(record), encoding="utf-8")
+        (journal / "snapshot").mkdir()
         return {
             "operator_conflict_returncode": 2,
             "operator_conflict_failure_kind": "post_confirm_commit_recovery_conflict",
@@ -859,6 +867,9 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
     )
 
     assert proof.passed
+    assert len(proof.retained_recovery_roots) == 1
+    retained_repo = Path(next(iter(proof.retained_recovery_roots)))
+    assert (module._journal_root(retained_repo, "a" * 64) / "snapshot").is_dir()
     assert proof.product_facts_sha256 == "c" * 64
     assert proof.product_facts_hashes_by_phase == {
         "sigkill": "c" * 64,
@@ -910,11 +921,23 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
     assert proof.recovery_case["id"] == case.case_id
     assert proof.recovery_case["binding_scope"] == "campaign-case-v1"
 
+    monkeypatch.setattr(module, "_run_operator_conflict_recovery_phase", conflict_phase)
+    monkeypatch.setattr(module, "_cleanup_recovery_run_root", lambda _root: {})
+    missing_retention = module.run_installed_commit_recovery_proof(
+        dist_dir=dist_dir, version="0.1.15", temp_parent=tmp_path, recovery_case=case,
+    )
+    assert not missing_retention.passed
+    assert "installed recovery cleanup did not retain the operator-conflict fixture" in missing_retention.issues
 
-def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(tmp_path: Path, monkeypatch) -> None:
+
+@pytest.mark.parametrize("mutation", ("", "file", "directory", "dangling_link", "directory_link"))
+def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(
+    tmp_path: Path, monkeypatch, mutation: str,
+) -> None:
     module = _module()
     repo_root = tmp_path / "operator-conflict"
     partial_write = repo_root / "odylith/radar/source/partial.md"
+    other_file = repo_root / "odylith/radar/source/unrelated.md"
     transaction_hash = "a" * 64
     journal_root = module._journal_root(repo_root, transaction_hash)  # noqa: SLF001
     (journal_root / "snapshot").mkdir(parents=True)
@@ -935,13 +958,19 @@ def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(tmp_p
     def fake_faulted_create(**_kwargs):  # noqa: ANN001
         partial_write.parent.mkdir(parents=True, exist_ok=True)
         partial_write.write_text("sealed write before interruption\\n", encoding="utf-8")
+        other_file.write_text("unrelated operator truth\n", encoding="utf-8")
         return SimpleNamespace(returncode=-9, stdout="", stderr="")
 
     monkeypatch.setattr(module, "_run_faulted_create", fake_faulted_create)
-    monkeypatch.setattr(
-        module,
-        "_run",
-        lambda **_kwargs: SimpleNamespace(
+    def conflicted_run(**_kwargs):  # noqa: ANN001
+        if mutation == "file":
+            other_file.write_text("unexpected mutation\n", encoding="utf-8")
+        elif mutation == "directory":
+            (other_file.parent / "unexpected").mkdir()
+        elif mutation in {"dangling_link", "directory_link"}:
+            target = tmp_path / "missing" if mutation == "dangling_link" else tmp_path
+            (other_file.parent / "unexpected").symlink_to(target)
+        return SimpleNamespace(
             returncode=2,
             stdout=(
                 '{"mode":"error","commit_failure":{"failure_kind":"post_confirm_commit_recovery_conflict",'
@@ -950,8 +979,9 @@ def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(tmp_p
                 + '"}}'
             ),
             stderr="",
-        ),
-    )
+        )
+
+    monkeypatch.setattr(module, "_run", conflicted_run)
     monkeypatch.setattr(
         module,
         "_journal_state",
@@ -980,7 +1010,7 @@ def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(tmp_p
 
     monkeypatch.setattr(module, "_require_journal_receipt_identity", observed_journal_receipt)
 
-    facts = module._run_operator_conflict_recovery_phase(  # noqa: SLF001
+    arguments = dict(
         run_root=tmp_path,
         install_script=tmp_path / "install.sh",
         env={"PATH": "/usr/bin"},
@@ -990,6 +1020,11 @@ def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(tmp_p
             required_terms=("recovery",),
         ),
     )
+    if mutation:
+        with pytest.raises(RuntimeError, match="changed the governed tree|governed symlink"):
+            module._run_operator_conflict_recovery_phase(**arguments)  # noqa: SLF001
+        return
+    facts = module._run_operator_conflict_recovery_phase(**arguments)  # noqa: SLF001
 
     assert facts == {
         "operator_conflict_returncode": 2,
@@ -1011,9 +1046,12 @@ def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(tmp_p
     assert partial_write.read_bytes() == b"operator mutation retained by installed recovery proof\n"
 
 
-def test_sigkill_phase_reports_the_observed_success_receipt_hash(tmp_path: Path, monkeypatch) -> None:
+@pytest.mark.parametrize("dangling_artifact", ("", "snapshot", "staging"))
+def test_sigkill_phase_reports_the_observed_success_receipt_hash(
+    tmp_path: Path, monkeypatch, dangling_artifact: str,
+) -> None:
     module = _module()
-    repo_root = tmp_path / "sigkill"
+    repo_root = tmp_path / "sigkill-same-hash"
     compiled = module._CompiledRecoveryTransaction(  # noqa: SLF001
         transaction_file=".odylith/runtime/greenfield/product-create-transaction.v1.json",
         transaction_hash="a" * 64,
@@ -1063,7 +1101,11 @@ def test_sigkill_phase_reports_the_observed_success_receipt_hash(tmp_path: Path,
 
     monkeypatch.setattr(module, "_require_receipt_identity", observed_receipt)
 
-    facts = module._run_sigkill_recovery_phase(  # noqa: SLF001
+    if dangling_artifact:
+        artifact = module._journal_root(repo_root, compiled.transaction_hash) / dangling_artifact  # noqa: SLF001
+        artifact.parent.mkdir(parents=True)
+        artifact.symlink_to(tmp_path / "missing-target")
+    arguments = dict(
         run_root=tmp_path,
         install_script=tmp_path / "install.sh",
         env={"PATH": "/usr/bin"},
@@ -1074,6 +1116,11 @@ def test_sigkill_phase_reports_the_observed_success_receipt_hash(tmp_path: Path,
             required_terms=("recovery",),
         ),
     )
+    if dangling_artifact:
+        with pytest.raises(RuntimeError, match="retained rollback artifacts"):
+            module._run_sigkill_recovery_phase(**arguments)  # noqa: SLF001
+        return
+    facts = module._run_sigkill_recovery_phase(**arguments)  # noqa: SLF001
 
     assert facts["product_facts_sha256"] == "d" * 64
     assert facts["product_facts_hash_source"] == "success_receipt"
@@ -1170,3 +1217,50 @@ def test_interrupted_write_selector_ignores_unchanged_governed_files(tmp_path: P
     )
 
     assert selected == changed
+
+
+@pytest.mark.parametrize("worker_pids", ([], [12345], None))
+def test_recovery_cleanup_requires_settled_journals_and_known_absent_workers(
+    tmp_path: Path, monkeypatch, worker_pids,
+) -> None:
+    module = _module()
+    run_root = tmp_path / "owned-run"
+    terminal = run_root / "terminal"
+    interrupted = run_root / "interrupted"
+    terminal.mkdir(parents=True)
+    interrupted.mkdir()
+    artifact = interrupted / "snapshot"
+    artifact.write_text("required recovery evidence", encoding="utf-8")
+
+    def require_settled(*, repo_root):  # noqa: ANN001
+        if repo_root == interrupted:
+            raise RuntimeError("RECOVERY_REQUIRED: another transaction needs recovery")
+
+    monkeypatch.setattr(module.GreenfieldCommitJournal, "require_settled_journals", require_settled)
+    monkeypatch.setattr(module, "maintenance_worker_pids", lambda **_kwargs: worker_pids)
+    monkeypatch.setattr(module, "_cleanup_smoke_temp_root", shutil.rmtree)
+
+    retained = module._cleanup_recovery_run_root(run_root)  # noqa: SLF001
+
+    assert str(interrupted) in retained
+    assert artifact.read_text(encoding="utf-8") == "required recovery evidence"
+    assert terminal.exists() is (worker_pids != [])
+    assert (str(terminal) in retained) is (worker_pids != [])
+
+
+def test_recovery_cleanup_does_not_follow_symlinked_fixture(tmp_path: Path, monkeypatch) -> None:
+    module = _module()
+    target = tmp_path / "not-owned"
+    target.mkdir()
+    artifact = target / "preserve.txt"
+    artifact.write_text("untouched", encoding="utf-8")
+    run_root = tmp_path / "owned-run"
+    run_root.mkdir()
+    link = run_root / "unsafe"
+    link.symlink_to(target, target_is_directory=True)
+    monkeypatch.setattr(module, "_cleanup_smoke_temp_root", lambda _path: pytest.fail("unsafe cleanup"))
+
+    retained = module._cleanup_recovery_run_root(run_root)  # noqa: SLF001
+
+    assert str(link) in retained
+    assert link.is_symlink() and artifact.read_text(encoding="utf-8") == "untouched"

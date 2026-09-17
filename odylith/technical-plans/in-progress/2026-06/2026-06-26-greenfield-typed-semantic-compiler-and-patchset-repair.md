@@ -1,5 +1,41 @@
 Status: In progress
 
+## Installed recovery proof (2026-09-16)
+
+Build the pushed b8ca83e40 candidate, then exercise the maintained native recovery
+phases against a fresh installed runtime with ordinary engines available. The
+build passes in 231.143 seconds with 1,418 unchanged inputs. Independent review
+finds unsafe unconditional harness cleanup of the required operator-conflict
+journal, a one-file-only conflict check, and exists-only rollback-artifact checks.
+Preserve nonterminal journals; compare the whole governed fingerprint before and
+after failed conflict recovery. Reuse the existing fault injections, receipt and
+generation assertions without weakening them. Keep native-runtime binding and
+full harness repair distinct from this phase-level comparison. No semantic
+mechanism, model profile, consumer deadline or final-holdout change is authorized.
+Evidence: /Users/freedom/.codex/odylith-installed-recovery.hZqqqc/.
+
+Result: the first proposal fails during candidate review after 44.125 seconds;
+the underlying cause was not captured. The one separately disclosed diagnostic
+rerun uses the existing model-proof descriptor without changing prompt, profile,
+deadlines or retries. Proposal completes in 62.506970 seconds, all three real
+installed fault phases pass, and the recovered package passes all 32 browser
+states with unchanged sealed bytes and source/checker inputs. The native conflict
+check proves 136 regular files unchanged, not directory topology. Author and
+review total 53.785643 seconds, so this does not isolate an allocation benefit.
+
+The bounded harness repair now retains nonterminal or worker-unverifiable phase
+repos, requires the expected conflict fixture to survive, and checks directory
+presence and symlinks as well as regular files around conflict refusal. The
+outer lease may remove only an empty namespace; it cannot override a phase's
+retention decision. All 126 focused recovery, process, matrix and lease checks
+pass. Keep the overall cleanup gate failed while conflict recovery remains
+unresolved. Next use existing evidence-custody ownership to capture native
+candidate-review failures in the maintained harness before any new campaign.
+Do not add a telemetry framework, another semantic pass, a retry tower or
+deadline changes. Source-heavy Atlas layout, recipient topology, repeated Radar
+copy, independent semantic reliability, host delivery, upgrade and final-holdout
+qualification remain separate open gates. This checkpoint is not goal closure.
+
 ## Preserve recorded Radar decisions (2026-09-16)
 
 Remove the demonstrated P1 semantic-default class from the two existing shared
