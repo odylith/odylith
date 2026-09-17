@@ -1,5 +1,34 @@
 Status: In progress
 
+## Close the recovery fixture lifecycle (2026-09-16)
+
+Retain immutable conflict evidence before retracting the test's own mutation,
+then exercise the ordinary recovery path through closed-state readback and exact
+same-hash retry. This supersedes leaving every successful conflict simulation
+permanently projecting inside the matrix namespace. It does not authorize
+deleting unresolved or failed simulations. A failed seal, state drift, unknown
+worker, wrong receipt or incomplete restoration preserves the live fixture.
+Use the existing retained-evidence owner in a sibling output root, bound to the
+transaction, case and frozen run; keep the outer lease empty-directory-only.
+No semantic mechanism, model, prompt, consumer timing or final-holdout change.
+Require focused negative controls and independent review before one fresh native
+installed comparison. Retain both success and failure evidence without retries.
+
+Result: independent review accepts this owner boundary; 156 focused and 1,498
+final install-unit checks pass. The first full suite's two missing-evidence
+fixture callers were corrected without product changes. One fresh installation
+succeeds in 27.976 seconds, but proposal fails at 69.466 seconds before recovery.
+Retained observation identifies the exact bottleneck: authoring takes 48.042
+seconds; the Sol-medium reviewer uses its full 20-second cap and times out
+without a verdict. Neither the public 90-second nor shared 75-second ceiling
+is exhausted. The raw failed evidence and live fixture are preserved, and all
+1,427 source/checker inputs remain unchanged. This closes the evidence-blindness
+gap and proves failure preservation, not installed successful settlement.
+Evidence: /Users/freedom/.codex/odylith-recovery-settlement.IWaWFv/.
+Next use one bounded review-role comparison with full source/candidate custody,
+two-call maximum and unchanged public deadlines; no prompt-schema expansion,
+regex workaround, silent bypass or repeated native attempts until one passes.
+
 ## Installed recovery proof (2026-09-16)
 
 Build the pushed b8ca83e40 candidate, then exercise the maintained native recovery

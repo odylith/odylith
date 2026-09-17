@@ -716,13 +716,14 @@ def test_recovery_proof_payload_is_a_falsifiable_release_record() -> None:
         },
         "recovery_case": recovery_case,
         "retained_recovery_roots": {},
+        "operator_conflict_resolution": {},
     }
 
 
 def test_recovery_proof_requires_a_persisted_product_intent_facts_hash() -> None:
     module = _module()
 
-    issues = module._missing_required_evidence({})  # noqa: SLF001
+    issues = module.recovery_evidence.missing_required_evidence({})
 
     assert "installed recovery proof did not record a valid Product Intent facts hash" in issues
 
@@ -730,7 +731,7 @@ def test_recovery_proof_requires_a_persisted_product_intent_facts_hash() -> None
 def test_recovery_proof_rejects_a_success_record_missing_required_observations() -> None:
     module = _module()
 
-    issues = module._missing_required_evidence(  # noqa: SLF001
+    issues = module.recovery_evidence.missing_required_evidence(
         {
             "sigkill_returncode": -9,
             "recovery_returncode": 0,
@@ -777,10 +778,11 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
 
     monkeypatch.setattr(module, "_serve_directory", lambda _path: (_Server(), "http://127.0.0.1:8123"))
     monkeypatch.setattr(module, "_installed_release_env", lambda **_kwargs: {"PATH": "/usr/bin"})
-    monkeypatch.setattr(
-        module,
-        "_prepare_recovery_seed",
-        lambda **_kwargs: module._RecoverySeed(  # noqa: SLF001
+    def prepare_seed(**kwargs):
+        evidence = kwargs["evidence"]
+        module.recovery_evidence.record_retained_case_text(evidence, "commands/propose.stdout", "{}")
+        module.recovery_evidence.record_retained_case_json(evidence, "semantic/transaction.json", {})
+        return module._RecoverySeed(  # noqa: SLF001
             repo_root=tmp_path / "seed",
             transaction=module._CompiledRecoveryTransaction(  # noqa: SLF001
                 transaction_file=".odylith/runtime/greenfield/product-create-transaction.v1.json",
@@ -789,8 +791,9 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
                 write_set_hash="b" * 64,
                 intent_authority={},
             ),
-        ),
-    )
+        )
+
+    monkeypatch.setattr(module, "_prepare_recovery_seed", prepare_seed)
 
     def sigkill_phase(**kwargs):  # noqa: ANN001
         captured_cases.append(kwargs["case"])
@@ -816,10 +819,26 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
         captured_cases.append(kwargs["case"])
         journal = module._journal_root(kwargs["run_root"] / "operator-conflict", "a" * 64)
         journal.mkdir(parents=True)
-        record = {"version": greenfield_commit_journal.JOURNAL_VERSION, "state": "projecting"}
+        record = {"version": greenfield_commit_journal.JOURNAL_VERSION, "state": "closed"}
         record["record_hash"] = greenfield_commit_journal._record_hash(record)
         (journal / "state.v1.json").write_text(json.dumps(record), encoding="utf-8")
-        (journal / "snapshot").mkdir()
+        evidence = kwargs["evidence"]
+        case_evidence = module.recovery_evidence.begin_retained_case_evidence(
+            evidence_root=evidence.final_root.parent, case_id="operator-conflict",
+        )
+        module.recovery_evidence.record_retained_case_text(case_evidence, "commands/conflict.stdout", "{}")
+        binding = {
+            "transaction_hash": "a" * 64, "repository_write_set_hash": "b" * 64,
+            "product_facts_sha256": "c" * 64, "case_id": case.case_id,
+            "prompt_sha256": hashlib.sha256(case.prompt.encode()).hexdigest(),
+        }
+        module.recovery_evidence.record_retained_case_json(case_evidence, "semantic/conflict-binding.json", binding)
+        module.recovery_evidence.finalize_retained_case_evidence(
+            case=case_evidence, repo_root=kwargs["run_root"], result_payload={"status": "passed"},
+        )
+        manifest = module.recovery_evidence.write_retained_evidence_manifest(
+            root=evidence.final_root.parent, expected_case_ids=("proposal", "operator-conflict"),
+        )
         return {
             "operator_conflict_returncode": 2,
             "operator_conflict_failure_kind": "post_confirm_commit_recovery_conflict",
@@ -830,6 +849,14 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
             "operator_conflict_recovery_path_bound": True,
             "product_facts_sha256": "c" * 64,
             "product_facts_hash_source": "projecting_journal_commit_receipt",
+            "transaction_hash": "a" * 64,
+            "repository_write_set_hash": "b" * 64,
+            "operator_conflict_resolution": {
+                "evidence": {"manifest": str(manifest), "sha256": module.recovery_evidence.sha256_file(manifest)},
+                "recovery_returncode": 0, "retry_returncode": 0,
+                "journal_state": "closed", "same_hash_retry_unchanged": True,
+                "binding": binding,
+            },
             "operator_conflict_generation_observations": {
                 "before": _generation_observation(),
                 "after_crash": _generation_observation(generation_present=True),
@@ -858,18 +885,19 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
     monkeypatch.setattr(module, "_run_sigkill_recovery_phase", sigkill_phase)
     monkeypatch.setattr(module, "_run_operator_conflict_recovery_phase", conflict_phase)
     monkeypatch.setattr(module, "_run_fsync_rollback_phase", fsync_phase)
+    monkeypatch.setattr(module, "maintenance_worker_pids", lambda **_kwargs: [])
 
     proof = module.run_installed_commit_recovery_proof(
         dist_dir=dist_dir,
         version="0.1.15",
-        temp_parent=tmp_path,
+        temp_parent=tmp_path / "fixtures",
+        evidence_output_dir=tmp_path / "evidence-1",
         recovery_case=case,
     )
 
     assert proof.passed
-    assert len(proof.retained_recovery_roots) == 1
-    retained_repo = Path(next(iter(proof.retained_recovery_roots)))
-    assert (module._journal_root(retained_repo, "a" * 64) / "snapshot").is_dir()
+    assert not proof.retained_recovery_roots
+    assert not tuple((tmp_path / "fixtures").iterdir())
     assert proof.product_facts_sha256 == "c" * 64
     assert proof.product_facts_hashes_by_phase == {
         "sigkill": "c" * 64,
@@ -893,12 +921,14 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
     mismatch = module.run_installed_commit_recovery_proof(
         dist_dir=dist_dir,
         version="0.1.15",
-        temp_parent=tmp_path,
+        temp_parent=tmp_path / "fixtures",
+        evidence_output_dir=tmp_path / "evidence-2",
         recovery_case=case,
     )
 
     assert not mismatch.passed
     assert "installed recovery phases did not retain the same sealed Product Intent facts hash" in mismatch.issues
+    assert all(Path(path).is_dir() for path in mismatch.retained_recovery_roots)
 
     def mismatched_conflict_phase(**kwargs):  # noqa: ANN001
         facts = conflict_phase(**kwargs)
@@ -911,7 +941,8 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
     mismatch = module.run_installed_commit_recovery_proof(
         dist_dir=dist_dir,
         version="0.1.15",
-        temp_parent=tmp_path,
+        temp_parent=tmp_path / "fixtures",
+        evidence_output_dir=tmp_path / "evidence-3",
         recovery_case=case,
     )
 
@@ -922,20 +953,24 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
     assert proof.recovery_case["binding_scope"] == "campaign-case-v1"
 
     monkeypatch.setattr(module, "_run_operator_conflict_recovery_phase", conflict_phase)
-    monkeypatch.setattr(module, "_cleanup_recovery_run_root", lambda _root: {})
+    monkeypatch.setattr(module, "_cleanup_recovery_run_root", lambda root: {str(root): "active worker"})
     missing_retention = module.run_installed_commit_recovery_proof(
-        dist_dir=dist_dir, version="0.1.15", temp_parent=tmp_path, recovery_case=case,
+        dist_dir=dist_dir, version="0.1.15", temp_parent=tmp_path / "fixtures", recovery_case=case,
+        evidence_output_dir=tmp_path / "evidence-4",
     )
     assert not missing_retention.passed
-    assert "installed recovery cleanup did not retain the operator-conflict fixture" in missing_retention.issues
+    assert "installed recovery fixtures are not eligible for cleanup" in missing_retention.issues
 
 
-@pytest.mark.parametrize("mutation", ("", "file", "directory", "dangling_link", "directory_link"))
+@pytest.mark.parametrize("mutation", (
+    "", "file", "directory", "dangling_link", "directory_link",
+    "seal_failure", "sealed_drift", "active_worker", "generation_drift", "retry_journal",
+))
 def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(
     tmp_path: Path, monkeypatch, mutation: str,
 ) -> None:
     module = _module()
-    repo_root = tmp_path / "operator-conflict"
+    repo_root = tmp_path / "fixtures/operator-conflict"
     partial_write = repo_root / "odylith/radar/source/partial.md"
     other_file = repo_root / "odylith/radar/source/unrelated.md"
     transaction_hash = "a" * 64
@@ -962,7 +997,17 @@ def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(
         return SimpleNamespace(returncode=-9, stdout="", stderr="")
 
     monkeypatch.setattr(module, "_run_faulted_create", fake_faulted_create)
-    def conflicted_run(**_kwargs):  # noqa: ANN001
+    commands = []
+    def conflicted_run(**kwargs):  # noqa: ANN001
+        commands.append(kwargs["command"])
+        if len(commands) > 1:
+            if (journal_root / "snapshot").exists():
+                (journal_root / "snapshot").rmdir()
+            if mutation == "retry_journal" and len(commands) == 3:
+                (journal_root / "unexpected").write_text("drift")
+            return SimpleNamespace(returncode=0, stderr="", stdout=json.dumps(_receipt_payload(
+                transaction_hash="a" * 64, product_facts_hash="c" * 64, write_set_hash="b" * 64,
+            )))
         if mutation == "file":
             other_file.write_text("unexpected mutation\n", encoding="utf-8")
         elif mutation == "directory":
@@ -986,7 +1031,7 @@ def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(
         module,
         "_journal_state",
         lambda **_kwargs: {
-            "state": "projecting",
+            "state": "closed" if len(commands) > 1 else "projecting",
             "generation_manifest_sha256": "e" * 64,
         },
     )
@@ -995,6 +1040,9 @@ def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(
             _generation_observation(),
             _generation_observation(generation_present=True),
             _generation_observation(generation_present=True),
+            _generation_observation(generation_present=mutation != "generation_drift"),
+            _generation_observation(active=True, generation_present=True),
+            _generation_observation(active=True, generation_present=True),
         )
     )
     monkeypatch.setattr(
@@ -1009,9 +1057,28 @@ def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(
         return "d" * 64
 
     monkeypatch.setattr(module, "_require_journal_receipt_identity", observed_journal_receipt)
+    monkeypatch.setattr(module, "maintenance_worker_pids", lambda **_kwargs: [])
+    evidence = module.recovery_evidence.begin_proposal(output_dir=tmp_path / "evidence", temp_parent=tmp_path / "fixtures")
+    module.recovery_evidence.record_retained_case_text(evidence, "commands/propose.stdout", "{}")
+    module.recovery_evidence.record_retained_case_json(evidence, "semantic/transaction.json", {})
+    module.recovery_evidence.finish_proposal(evidence=evidence, repo_root=repo_root, status="passed", issues=[])
+    original_seal = module.recovery_evidence.seal_conflict
+
+    def seal(**kwargs):
+        if mutation == "seal_failure":
+            raise RuntimeError("injected evidence seal failure")
+        result = original_seal(**kwargs)
+        if mutation == "sealed_drift":
+            other_file.write_text("later operator edit")
+        if mutation == "active_worker":
+            monkeypatch.setattr(module, "maintenance_worker_pids", lambda **_kwargs: [123])
+        return result
+
+    monkeypatch.setattr(module.recovery_evidence, "seal_conflict", seal)
 
     arguments = dict(
-        run_root=tmp_path,
+        run_root=tmp_path / "fixtures",
+        evidence=evidence,
         install_script=tmp_path / "install.sh",
         env={"PATH": "/usr/bin"},
         case=module.GreenfieldMatrixCase(
@@ -1021,11 +1088,19 @@ def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(
         ),
     )
     if mutation:
-        with pytest.raises(RuntimeError, match="changed the governed tree|governed symlink"):
+        expected = {
+            "seal_failure": "injected evidence seal failure", "sealed_drift": "evidence drifted",
+            "active_worker": "workers are active", "generation_drift": "generation drifted",
+            "retry_journal": "retry changed journal",
+        }.get(mutation, "changed the governed tree|governed symlink")
+        with pytest.raises(RuntimeError, match=expected):
             module._run_operator_conflict_recovery_phase(**arguments)  # noqa: SLF001
+        if mutation != "retry_journal":
+            assert (journal_root / "snapshot").is_dir()
+            assert partial_write.read_bytes().startswith(b"operator mutation ")
         return
     facts = module._run_operator_conflict_recovery_phase(**arguments)  # noqa: SLF001
-
+    resolution = facts.pop("operator_conflict_resolution")
     assert facts == {
         "operator_conflict_returncode": 2,
         "operator_conflict_failure_kind": "post_confirm_commit_recovery_conflict",
@@ -1041,9 +1116,15 @@ def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(
         },
         "product_facts_sha256": "d" * 64,
         "product_facts_hash_source": "projecting_journal_commit_receipt",
+        "transaction_hash": "a" * 64,
+        "repository_write_set_hash": "b" * 64,
     }
     assert captured_receipt["product_facts_hash"] == "c" * 64
-    assert partial_write.read_bytes() == b"operator mutation retained by installed recovery proof\n"
+    assert partial_write.read_bytes() == b"sealed write before interruption\\n"
+    assert resolution["journal_state"] == "closed"
+    assert resolution["same_hash_retry_unchanged"] is True
+    assert not module.recovery_evidence.retained_conflict_issues(resolution["evidence"])
+    assert len(commands) == 3 and commands[0] == commands[1] == commands[2]
 
 
 @pytest.mark.parametrize("dangling_artifact", ("", "snapshot", "staging"))

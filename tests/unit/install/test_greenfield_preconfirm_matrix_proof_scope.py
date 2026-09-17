@@ -681,7 +681,9 @@ def test_main_fails_when_installed_commit_recovery_proof_fails(monkeypatch, tmp_
             "--version",
             "0.1.15",
             "--temp-parent",
-            str(tmp_path),
+            str(tmp_path / "fixtures"),
+            "--evidence-output-dir",
+            str(tmp_path / "evidence"),
             "--include-commit-recovery-proof",
             "--json",
         ]
@@ -728,7 +730,9 @@ def test_main_binds_commit_recovery_to_the_selected_external_case(monkeypatch, t
             "--version",
             "0.1.15",
             "--temp-parent",
-            str(tmp_path),
+            str(tmp_path / "fixtures"),
+            "--evidence-output-dir",
+            str(tmp_path / "evidence"),
             "--proof-tier",
             "discovery",
             "--include-commit-recovery-proof",
@@ -738,6 +742,8 @@ def test_main_binds_commit_recovery_to_the_selected_external_case(monkeypatch, t
     payload = json.loads(capsys.readouterr().out)
 
     assert exit_code == 0
+    assert captured["evidence_output_dir"] == tmp_path / "evidence-commit-recovery"
+    assert captured["retained_evidence_run_id"] == ""
     assert captured["recovery_case"] is external_case
     assert payload["commit_recovery_proof"]["recovery_case"]["id"] == external_case.case_id
     assert payload["commit_recovery_proof"]["recovery_case"]["confirmed_intent_sha256"]

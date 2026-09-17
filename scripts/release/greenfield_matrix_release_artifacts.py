@@ -258,38 +258,35 @@ def finalize_retained_case_evidence(
     """Retain the case result and exact Greenfield after-image before temp cleanup."""
 
     root = _safe_directory(case.staging_root, label="retained case staging root")
-    try:
-        record_retained_case_json(case, "case-result.v1.json", dict(result_payload))
-        _retain_greenfield_repository_evidence(
-            case=case,
-            repo_root=repo_root,
-            result_payload=result_payload,
-        )
-        entries = _retained_case_entries(root)
-        required_kinds = _required_case_evidence_kinds(result_payload)
-        present_kinds = {str(entry["kind"]) for entry in entries}
-        missing = sorted(required_kinds - present_kinds)
-        if missing:
-            raise RuntimeError("retained case evidence is incomplete: " + ", ".join(missing))
-        manifest = {
-            "version": RETAINED_CASE_EVIDENCE_VERSION,
-            "case_id": case.case_id,
-            "case_status": str(result_payload.get("status") or ""),
-            "required_kinds": sorted(required_kinds),
-            "artifacts": entries,
-        }
-        _write_case_bytes(
-            case,
-            RETAINED_CASE_EVIDENCE_FILENAME,
-            (json.dumps(manifest, indent=2, sort_keys=True) + "\n").encode("utf-8"),
-        )
-        _fsync_tree(root)
-        root.replace(case.final_root)
-        _fsync_directory(case.final_root.parent)
-        return case.final_root / RETAINED_CASE_EVIDENCE_FILENAME
-    except BaseException:
-        shutil.rmtree(root, ignore_errors=True)
-        raise
+    # Failed sealing preserves raw staging evidence for diagnosis.
+    record_retained_case_json(case, "case-result.v1.json", dict(result_payload))
+    _retain_greenfield_repository_evidence(
+        case=case,
+        repo_root=repo_root,
+        result_payload=result_payload,
+    )
+    entries = _retained_case_entries(root)
+    required_kinds = _required_case_evidence_kinds(result_payload)
+    present_kinds = {str(entry["kind"]) for entry in entries}
+    missing = sorted(required_kinds - present_kinds)
+    if missing:
+        raise RuntimeError("retained case evidence is incomplete: " + ", ".join(missing))
+    manifest = {
+        "version": RETAINED_CASE_EVIDENCE_VERSION,
+        "case_id": case.case_id,
+        "case_status": str(result_payload.get("status") or ""),
+        "required_kinds": sorted(required_kinds),
+        "artifacts": entries,
+    }
+    _write_case_bytes(
+        case,
+        RETAINED_CASE_EVIDENCE_FILENAME,
+        (json.dumps(manifest, indent=2, sort_keys=True) + "\n").encode("utf-8"),
+    )
+    _fsync_tree(root)
+    root.replace(case.final_root)
+    _fsync_directory(case.final_root.parent)
+    return case.final_root / RETAINED_CASE_EVIDENCE_FILENAME
 
 
 def write_retained_evidence_manifest(

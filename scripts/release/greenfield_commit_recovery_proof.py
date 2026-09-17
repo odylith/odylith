@@ -18,6 +18,9 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization
 from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
 from odylith.runtime.surfaces.compass_standup_brief_maintenance_worker import maintenance_worker_pids
 
+import greenfield_commit_recovery_evidence as recovery_evidence
+from greenfield_commit_recovery_evidence import as_mapping
+
 from greenfield_process import run_command_with_group_timeout as _run
 from greenfield_commit_recovery_cases import RECOVERY_CASE_SCOPE
 from greenfield_commit_recovery_cases import recovery_case_evidence
@@ -83,6 +86,7 @@ class GreenfieldInstalledCommitRecoveryProof:
     fsync_generation_observations: Mapping[str, Any] = field(default_factory=dict)
     recovery_case: Mapping[str, Any] = field(default_factory=dict)
     retained_recovery_roots: Mapping[str, str] = field(default_factory=dict)
+    operator_conflict_resolution: Mapping[str, Any] = field(default_factory=dict)
 
     @property
     def passed(self) -> bool:
@@ -123,6 +127,7 @@ class GreenfieldInstalledCommitRecoveryProof:
             "fsync_generation_observations": dict(self.fsync_generation_observations),
             "recovery_case": dict(self.recovery_case),
             "retained_recovery_roots": dict(self.retained_recovery_roots),
+            "operator_conflict_resolution": dict(self.operator_conflict_resolution),
         }
 
 
@@ -151,6 +156,8 @@ def run_installed_commit_recovery_proof(
     version: str,
     temp_parent: Path,
     recovery_case: GreenfieldMatrixCase,
+    evidence_output_dir: Path | None = None,
+    retained_evidence_run_id: str = "",
     require_release_binding: bool = False,
     release_audit_binding: Mapping[str, Any] | None = None,
 ) -> GreenfieldInstalledCommitRecoveryProof:
@@ -160,6 +167,8 @@ def run_installed_commit_recovery_proof(
     server = None
     issues: list[str] = []
     facts: dict[str, Any] = {}
+    proposal_evidence = None
+    proposal_sealed = False
     try:
         case_binding = recovery_case_evidence(
             recovery_case,
@@ -167,6 +176,11 @@ def run_installed_commit_recovery_proof(
             release_audit_binding=release_audit_binding,
         )
         facts["recovery_case"] = case_binding
+        if evidence_output_dir is None:
+            raise RuntimeError("installed recovery proof requires an external evidence output directory")
+        if retained_evidence_run_id and not is_sha256(retained_evidence_run_id):
+            raise RuntimeError("installed recovery proof run identity is invalid")
+        proposal_evidence = recovery_evidence.begin_proposal(output_dir=evidence_output_dir, temp_parent=temp_parent)
         release_dir = Path(dist_dir).expanduser().resolve()
         install_script = release_dir / "install.sh"
         if not install_script.is_file():
@@ -179,7 +193,10 @@ def run_installed_commit_recovery_proof(
             install_script=install_script,
             env=env,
             case=recovery_case,
+            evidence=proposal_evidence,
         )
+        recovery_evidence.finish_proposal(evidence=proposal_evidence, repo_root=seed.repo_root, status="passed", issues=[], run_id=retained_evidence_run_id)
+        proposal_sealed = True
         sigkill_facts = _run_sigkill_recovery_phase(
             run_root=run_root,
             install_script=install_script,
@@ -195,6 +212,8 @@ def run_installed_commit_recovery_proof(
             env=env,
             case=recovery_case,
             seed=seed,
+            evidence=proposal_evidence,
+            run_id=retained_evidence_run_id,
         )
         facts.update(operator_conflict_facts)
         fsync_facts = _run_fsync_rollback_phase(
@@ -223,20 +242,30 @@ def run_installed_commit_recovery_proof(
         facts["product_facts_sha256"] = product_facts_sha256
         facts["product_facts_hashes_by_phase"] = product_facts_hashes_by_phase
         facts["product_facts_hash_sources_by_phase"] = product_facts_hash_sources_by_phase
+        issues.extend(recovery_evidence.missing_required_evidence(facts, run_id=retained_evidence_run_id))
     except (OSError, RuntimeError, ValueError, json.JSONDecodeError) as exc:
         issues.append(str(exc))
+    except BaseException as exc:
+        issues.append(f"installed recovery proof interrupted: {type(exc).__name__}")
+        raise
     finally:
         if server is not None:
             server.shutdown()
             server.server_close()
+        if proposal_evidence is not None and not proposal_sealed:
+            try:
+                recovery_evidence.finish_proposal(evidence=proposal_evidence, repo_root=run_root, status="failed", issues=issues, run_id=retained_evidence_run_id)
+            except (OSError, RuntimeError) as exc:
+                issues.append(f"recovery proposal evidence retention failed: {exc}")
         try:
-            facts["retained_recovery_roots"] = _cleanup_recovery_run_root(run_root)
+            facts["retained_recovery_roots"] = (
+                {str(run_root): "failed proof; preserve fixtures for diagnosis"} if issues and run_root.exists()
+                else _cleanup_recovery_run_root(run_root)
+            )
+            if facts["retained_recovery_roots"] and not issues:
+                issues.append("installed recovery fixtures are not eligible for cleanup")
         except OSError as exc:
             issues.append(f"installed commit recovery proof cleanup failed: {exc}")
-    if not issues:
-        if str(run_root / "operator-conflict") not in _mapping(facts.get("retained_recovery_roots")):
-            issues.append("installed recovery cleanup did not retain the operator-conflict fixture")
-        issues.extend(_missing_required_evidence(facts))
     return GreenfieldInstalledCommitRecoveryProof(
         status="passed" if not issues else "failed",
         issues=tuple(issues),
@@ -262,15 +291,16 @@ def run_installed_commit_recovery_proof(
         installed_runtime_module_path=str(facts.get("installed_runtime_module_path") or ""),
         installed_runtime_version=str(facts.get("installed_runtime_version") or ""),
         product_facts_sha256=str(facts.get("product_facts_sha256") or ""),
-        product_facts_hashes_by_phase=_mapping(facts.get("product_facts_hashes_by_phase")),
-        product_facts_hash_sources_by_phase=_mapping(facts.get("product_facts_hash_sources_by_phase")),
-        sigkill_generation_observations=_mapping(facts.get("sigkill_generation_observations")),
-        operator_conflict_generation_observations=_mapping(
+        product_facts_hashes_by_phase=as_mapping(facts.get("product_facts_hashes_by_phase")),
+        product_facts_hash_sources_by_phase=as_mapping(facts.get("product_facts_hash_sources_by_phase")),
+        sigkill_generation_observations=as_mapping(facts.get("sigkill_generation_observations")),
+        operator_conflict_generation_observations=as_mapping(
             facts.get("operator_conflict_generation_observations")
         ),
-        fsync_generation_observations=_mapping(facts.get("fsync_generation_observations")),
-        recovery_case=_mapping(facts.get("recovery_case")),
-        retained_recovery_roots=_mapping(facts.get("retained_recovery_roots")),
+        fsync_generation_observations=as_mapping(facts.get("fsync_generation_observations")),
+        recovery_case=as_mapping(facts.get("recovery_case")),
+        retained_recovery_roots=as_mapping(facts.get("retained_recovery_roots")),
+        operator_conflict_resolution=as_mapping(facts.get("operator_conflict_resolution")),
     )
 
 
@@ -300,92 +330,6 @@ def _cleanup_recovery_run_root(run_root: Path) -> dict[str, str]:
             raise OSError(f"terminal recovery root survived cleanup: {run_root}")
     return retained
 
-
-def _missing_required_evidence(facts: Mapping[str, Any]) -> list[str]:
-    """Keep a partial proof record from being published as a successful proof."""
-
-    missing: list[str] = []
-    required_values = {
-        "journal_state_after_crash": "projecting",
-        "journal_state_after_recovery": "closed",
-        "fsync_journal_state_after_failure": "aborted",
-        "fsync_journal_state_after_retry": "closed",
-        "fsync_failure_kind": "post_confirm_commit_environment_or_io_failure",
-        "operator_conflict_failure_kind": "post_confirm_commit_recovery_conflict",
-        "operator_conflict_rollback_status": "not_started",
-        "operator_conflict_journal_state": "projecting",
-    }
-    for key, expected in required_values.items():
-        if str(facts.get(key) or "") != expected:
-            missing.append(f"installed recovery proof did not record required {key}={expected}")
-    for key in (
-        "sigkill_returncode",
-        "recovery_returncode",
-        "same_hash_retry_returncode",
-        "fsync_failure_returncode",
-        "fsync_retry_returncode",
-        "fsync_same_hash_retry_returncode",
-        "operator_conflict_returncode",
-    ):
-        if not isinstance(facts.get(key), int):
-            missing.append(f"installed recovery proof did not record required {key}")
-    if facts.get("governed_write_observed_after_crash") is not True:
-        missing.append("installed recovery proof did not observe a partial governed write before recovery")
-    if facts.get("operator_mutation_preserved") is not True:
-        missing.append("installed recovery proof did not preserve the concurrent operator mutation")
-    if facts.get("operator_conflict_snapshot_retained") is not True:
-        missing.append("installed recovery proof did not retain the conflict recovery snapshot")
-    if facts.get("operator_conflict_recovery_path_bound") is not True:
-        missing.append("installed recovery proof did not report the retained conflict recovery path")
-    for key in ("installed_runtime_module_path", "installed_runtime_version"):
-        if not str(facts.get(key) or "").strip():
-            missing.append(f"installed recovery proof did not record required {key}")
-    if not is_sha256(facts.get("product_facts_sha256")):
-        missing.append("installed recovery proof did not record a valid Product Intent facts hash")
-    phase_hashes = _mapping(facts.get("product_facts_hashes_by_phase"))
-    phase_sources = _mapping(facts.get("product_facts_hash_sources_by_phase"))
-    required_phase_sources = {
-        "sigkill": "success_receipt",
-        "operator_conflict": "projecting_journal_commit_receipt",
-        "fsync": "retry_success_receipt",
-    }
-    for phase, required_source in required_phase_sources.items():
-        if phase_hashes.get(phase) != facts.get("product_facts_sha256"):
-            missing.append(f"installed recovery proof did not retain the sealed Product Intent facts hash for {phase}")
-        if phase_sources.get(phase) != required_source:
-            missing.append(f"installed recovery proof did not record the observed Product Intent facts source for {phase}")
-    missing.extend(_generation_observation_issues(facts))
-    recovery_case = _mapping(facts.get("recovery_case"))
-    for key in ("id", "prompt_sha256"):
-        if not str(recovery_case.get(key) or "").strip():
-            missing.append(f"installed recovery proof did not record required recovery_case.{key}")
-    binding_scope = str(recovery_case.get("binding_scope") or "")
-    if binding_scope not in {"campaign-case-v1", "release-confirmed-intent-v1"}:
-        missing.append("installed recovery proof did not record a recognized recovery_case.binding_scope")
-    if binding_scope == "release-confirmed-intent-v1":
-        for key in ("confirmed_intent_sha256",):
-            if not str(recovery_case.get(key) or "").strip():
-                missing.append(f"installed recovery proof did not record required recovery_case.{key}")
-        provenance = _mapping(recovery_case.get("provenance"))
-        for key in (
-            "corpus_tier",
-            "source_id",
-            "source_family",
-            "source_artifact_sha256",
-            "source_excerpt_sha256",
-            "derived_prompt_sha256",
-        ):
-            if not str(provenance.get(key) or "").strip():
-                missing.append(f"installed recovery proof did not record required recovery_case.provenance.{key}")
-        if provenance.get("derived_prompt_sha256") != recovery_case.get("prompt_sha256"):
-            missing.append("installed recovery proof did not retain a recovery_case prompt hash bound to provenance")
-        audit_binding = _mapping(recovery_case.get("release_audit_binding"))
-        audit_request_sha256 = str(audit_binding.get("audit_request_sha256") or "")
-        if not is_sha256(audit_request_sha256):
-            missing.append("installed recovery proof did not retain a valid release audit request hash")
-        if audit_binding.get("confirmed_intent_sha256") != recovery_case.get("confirmed_intent_sha256"):
-            missing.append("installed recovery proof did not retain a release audit binding for the confirmed intent")
-    return missing
 
 
 def _run_sigkill_recovery_phase(
@@ -509,6 +453,8 @@ def _run_operator_conflict_recovery_phase(
     install_script: Path,
     env: Mapping[str, str],
     case: GreenfieldMatrixCase,
+    evidence: recovery_evidence.RetainedEvidenceCase,
+    run_id: str = "",
     seed: _RecoverySeed | None = None,
 ) -> dict[str, Any]:
     """Prove recovery preserves a later operator mutation instead of restoring over it."""
@@ -555,14 +501,17 @@ def _run_operator_conflict_recovery_phase(
         before=before,
         after=_governed_fingerprint(repo_root),
     )
-    operator_bytes = b"operator mutation retained by installed recovery proof\n"
-    partial_write.write_bytes(operator_bytes)
+    post_crash_fingerprint = _governed_fingerprint(repo_root, include_directories=True)
+    if maintenance_worker_pids(repo_root=repo_root) != []:
+        raise RuntimeError("conflict injection has active or unverified workers")
+    operator_bytes = f"operator mutation {uuid.uuid4().hex} retained by installed recovery proof\n".encode()
+    original_bytes, original_stat = recovery_evidence.inject_operator_mutation(path=partial_write, operator_bytes=operator_bytes)
     operator_fingerprint = _governed_fingerprint(repo_root, include_directories=True)
     conflicted = _run(cwd=repo_root, env=dict(env), command=command, timeout=COMMAND_TIMEOUT_SECONDS)
     if _governed_fingerprint(repo_root, include_directories=True) != operator_fingerprint:
         raise RuntimeError("installed conflict recovery changed the governed tree")
     conflict_payload = _require_error_payload(conflicted, label="installed operator-conflict recovery create")
-    commit_failure = _mapping(conflict_payload.get("commit_failure"))
+    commit_failure = as_mapping(conflict_payload.get("commit_failure"))
     failure_kind = str(commit_failure.get("failure_kind") or "")
     if failure_kind != "post_confirm_commit_recovery_conflict":
         raise RuntimeError(
@@ -603,7 +552,7 @@ def _run_operator_conflict_recovery_phase(
     )
     if generation_after_conflict != generation_after_crash:
         raise RuntimeError("installed conflict recovery changed generation or pointer state")
-    return {
+    facts = {
         "operator_conflict_returncode": conflicted.returncode,
         "operator_conflict_failure_kind": failure_kind,
         "operator_conflict_rollback_status": rollback_status,
@@ -618,7 +567,62 @@ def _run_operator_conflict_recovery_phase(
         },
         "product_facts_sha256": conflict_product_facts_hash,
         "product_facts_hash_source": "projecting_journal_commit_receipt",
+        "transaction_hash": compiled.transaction_hash,
+        "repository_write_set_hash": compiled.write_set_hash,
     }
+    binding = {
+        "transaction_hash": compiled.transaction_hash, "repository_write_set_hash": compiled.write_set_hash,
+        "product_facts_sha256": compiled.product_facts_hash, "case_id": recovery_case_evidence(case)["id"],
+        "prompt_sha256": hashlib.sha256(case.prompt.encode("utf-8")).hexdigest(),
+        "command": command, "returncode": conflicted.returncode,
+    }
+    retained, inventory = recovery_evidence.seal_conflict(
+        proposal=evidence, repo_root=repo_root, journal_root=journal_root,
+        selected_path=partial_write, original_bytes=original_bytes, original_stat=original_stat,
+        operator_bytes=operator_bytes, result=conflicted, facts=facts, binding=binding, run_id=run_id,
+    )
+    if (maintenance_worker_pids(repo_root=repo_root) != []
+        or _governed_fingerprint(repo_root, include_directories=True) != operator_fingerprint
+        or recovery_evidence.journal_inventory(journal_root) != inventory):
+        raise RuntimeError("conflict evidence drifted or workers are active; fixture preserved")
+    if _installed_generation_observation(repo_root=repo_root, env=env,
+        transaction_hash=compiled.transaction_hash, transaction_file=compiled.transaction_file) != generation_after_conflict:
+        raise RuntimeError("conflict generation drifted after evidence sealing; fixture preserved")
+    recovery_evidence.retract_injected_mutation(
+        path=partial_write, original_bytes=original_bytes, original_stat=original_stat, operator_bytes=operator_bytes,
+    )
+    if (_governed_fingerprint(repo_root, include_directories=True) != post_crash_fingerprint
+        or recovery_evidence.journal_inventory(journal_root) != inventory):
+        raise RuntimeError("conflict retraction did not restore only the injected mutation")
+    recovered = _run(cwd=repo_root, env=dict(env), command=command, timeout=COMMAND_TIMEOUT_SECONDS)
+    receipt = _require_success_payload(recovered, label="installed conflict settlement")
+    _require_receipt_identity(receipt, transaction_hash=compiled.transaction_hash,
+        product_facts_hash=compiled.product_facts_hash, write_set_hash=compiled.write_set_hash)
+    completed = _journal_state(repo_root=repo_root, transaction_hash=compiled.transaction_hash)
+    if completed.get("state") != "closed" or any(
+        path.exists() or path.is_symlink() for path in (journal_root / "snapshot", journal_root / "staging")
+    ):
+        raise RuntimeError("installed conflict settlement did not close and retire rollback artifacts")
+    published = _installed_generation_observation(repo_root=repo_root, env=env,
+        transaction_hash=compiled.transaction_hash, transaction_file=compiled.transaction_file)
+    _require_published_generation_boundary(observation=published, transaction_hash=compiled.transaction_hash,
+        write_set_hash=compiled.write_set_hash, label="operator-conflict settlement")
+    settled_fingerprint = _governed_fingerprint(repo_root, include_directories=True)
+    settled_journal_inventory = recovery_evidence.journal_inventory(journal_root)
+    retry = _run(cwd=repo_root, env=dict(env), command=command, timeout=COMMAND_TIMEOUT_SECONDS)
+    if (_require_success_payload(retry, label="installed conflict same-hash retry") != receipt
+        or _governed_fingerprint(repo_root, include_directories=True) != settled_fingerprint):
+        raise RuntimeError("installed conflict same-hash retry changed the receipt or governed tree")
+    if (recovery_evidence.journal_inventory(journal_root) != settled_journal_inventory
+        or _installed_generation_observation(repo_root=repo_root, env=env,
+            transaction_hash=compiled.transaction_hash, transaction_file=compiled.transaction_file) != published):
+        raise RuntimeError("installed conflict same-hash retry changed journal or generation state")
+    facts["operator_conflict_resolution"] = {
+        "evidence": retained, "recovery_returncode": recovered.returncode, "retry_returncode": retry.returncode,
+        "journal_state": completed["state"], "same_hash_retry_unchanged": True,
+        "generation": published, "receipt": receipt, "binding": binding,
+    }
+    return facts
 
 
 def _run_fsync_rollback_phase(
@@ -650,7 +654,7 @@ def _run_fsync_rollback_phase(
     )
     failed = _run_faulted_create(repo_root=repo_root, env=env, command=command, fault_script=_FSYNC_FAILURE_FAULT)
     failure_payload = _require_error_payload(failed, label="installed fsync rollback create")
-    commit_failure = _mapping(failure_payload.get("commit_failure"))
+    commit_failure = as_mapping(failure_payload.get("commit_failure"))
     failure_kind = str(commit_failure.get("failure_kind") or "")
     if failure_kind != "post_confirm_commit_environment_or_io_failure":
         raise RuntimeError(f"installed fsync failure reported unexpected failure kind: {failure_kind or 'missing'}")
@@ -753,12 +757,13 @@ def _prepare_recovery_seed(
     install_script: Path,
     env: Mapping[str, str],
     case: GreenfieldMatrixCase,
+    evidence: recovery_evidence.RetainedEvidenceCase | None = None,
 ) -> _RecoverySeed:
     """Compile once so recovery phases exercise identical sealed bytes."""
 
     repo_root = run_root / "sealed-transaction-seed"
     _install_repo(repo_root=repo_root, install_script=install_script, env=env)
-    transaction = _compile_transaction(repo_root=repo_root, env=env, case=case)
+    transaction = _compile_transaction(repo_root=repo_root, env=env, case=case, evidence=evidence)
     return _RecoverySeed(repo_root=repo_root, transaction=transaction)
 
 
@@ -825,6 +830,7 @@ def _compile_transaction(
     repo_root: Path,
     env: Mapping[str, str],
     case: GreenfieldMatrixCase,
+    evidence: recovery_evidence.RetainedEvidenceCase | None = None,
 ) -> _CompiledRecoveryTransaction:
     command = [
         "./.odylith/bin/odylith",
@@ -840,14 +846,15 @@ def _compile_transaction(
     confirmed_intent = str(case.confirmed_intent_markdown or "").strip()
     if confirmed_intent:
         command.extend(["--edit", confirmed_intent])
-    proposed = _run(
+    proposed = recovery_evidence.run_proposal(
+        evidence=evidence, runner=_run,
         cwd=repo_root,
         env=dict(env),
         command=command,
         timeout=COMMAND_TIMEOUT_SECONDS,
     )
     payload = _require_success_payload(proposed, label="installed commit recovery propose")
-    transaction = _mapping(payload.get("product_create_transaction"))
+    transaction = as_mapping(payload.get("product_create_transaction"))
     transaction_hash = str(transaction.get("transaction_hash") or "").strip()
     transaction_file = str(payload.get("transaction_file") or "").strip()
     if not transaction_hash or not transaction_file:
@@ -860,16 +867,18 @@ def _compile_transaction(
         label="installed compiled Greenfield transaction",
     )
     sealed_hash = str(sealed_transaction.get("transaction_hash") or "").strip()
-    sealed_package = _mapping(sealed_transaction.get("prewrite_package"))
-    sealed_write_set = _mapping(sealed_package.get("repository_write_set"))
+    sealed_package = as_mapping(sealed_transaction.get("prewrite_package"))
+    sealed_write_set = as_mapping(sealed_package.get("repository_write_set"))
     write_set_hash = str(sealed_write_set.get("write_set_hash") or "").strip()
-    intent_authority = _mapping(sealed_transaction.get("intent_authority"))
+    intent_authority = as_mapping(sealed_transaction.get("intent_authority"))
     product_facts_hash = str(intent_authority.get("product_facts_sha256") or "").strip()
     if sealed_hash != transaction_hash or not write_set_hash or not is_sha256(product_facts_hash):
         raise RuntimeError("installed greenfield propose returned an inconsistent sealed transaction identity")
     if str(transaction.get("product_facts_sha256") or "").strip() != product_facts_hash:
         raise RuntimeError("installed greenfield propose did not return the sealed Product Intent facts hash")
     _require_case_evidence_bound_to_transaction(case=case, intent_authority=intent_authority)
+    if evidence is not None:
+        recovery_evidence.record_retained_case_bytes(evidence, "semantic/product-create-transaction.v1.json", transaction_path.read_bytes())
     return _CompiledRecoveryTransaction(
         transaction_file=transaction_file,
         transaction_hash=transaction_hash,
@@ -1109,7 +1118,7 @@ def _require_journal_receipt_identity(
         raise RuntimeError("installed conflict recovery journal does not identify the requested transaction hash")
     if str(journal.get("repository_write_set_hash") or "") != write_set_hash:
         raise RuntimeError("installed conflict recovery journal does not identify the sealed repository write set")
-    commit_result = _mapping(journal.get("commit_result"))
+    commit_result = as_mapping(journal.get("commit_result"))
     if not commit_result:
         raise RuntimeError("installed conflict recovery journal did not retain its sealed commit receipt")
     return _require_receipt_identity(
@@ -1126,10 +1135,10 @@ def _receipt_product_facts_hash(
     transaction_hash: str,
     write_set_hash: str,
 ) -> str:
-    transaction = _mapping(payload.get("product_create_transaction"))
-    manifest = _mapping(payload.get("commit_manifest"))
-    manifest_transaction = _mapping(manifest.get("product_create_transaction"))
-    write_transaction = _mapping(manifest.get("write_transaction"))
+    transaction = as_mapping(payload.get("product_create_transaction"))
+    manifest = as_mapping(payload.get("commit_manifest"))
+    manifest_transaction = as_mapping(manifest.get("product_create_transaction"))
+    write_transaction = as_mapping(manifest.get("write_transaction"))
     observed_product_facts_hash = str(transaction.get("product_facts_sha256") or "")
     if str(transaction.get("transaction_hash") or "") != transaction_hash:
         raise RuntimeError("installed create receipt does not identify the requested transaction hash")
@@ -1154,10 +1163,6 @@ def _json_mapping(value: str, *, label: str) -> Mapping[str, Any]:
     if not isinstance(parsed, Mapping):
         raise RuntimeError(f"{label} did not return a JSON object")
     return parsed
-
-
-def _mapping(value: object) -> Mapping[str, Any]:
-    return value if isinstance(value, Mapping) else {}
 
 
 def _command_detail(result: Any) -> str:

@@ -2409,11 +2409,19 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     if campaign_config.proof_tier == "release" and not evidence_output_token:
         raise RuntimeError("release proof requires --evidence-output-dir")
+    if bool(args.include_commit_recovery_proof) and not evidence_output_token:
+        raise RuntimeError("commit recovery proof requires --evidence-output-dir")
     if evidence_output_token:
         validate_retained_evidence_output_dir(
             output_dir=Path(evidence_output_token),
             temp_parent=Path(args.temp_parent),
         )
+        if bool(args.include_commit_recovery_proof):
+            evidence_path = Path(evidence_output_token)
+            validate_retained_evidence_output_dir(
+                output_dir=evidence_path.with_name(evidence_path.name + "-commit-recovery"),
+                temp_parent=Path(args.temp_parent),
+            )
     final_holdout_run = _final_holdout_run_from_args(args, sealed_input_root=sealed_input_root)
     if final_holdout_run is not None:
         install_script = Path(args.dist_dir).expanduser().resolve() / "install.sh"
@@ -2621,6 +2629,11 @@ def _execute_matrix_campaign(
                 version=str(args.version),
                 temp_parent=temp_parent,
                 recovery_case=recovery_case,
+                retained_evidence_run_id=retained_evidence_run_id,
+                evidence_output_dir=(
+                    Path(str(args.evidence_output_dir)).with_name(Path(str(args.evidence_output_dir)).name + "-commit-recovery")
+                    if str(getattr(args, "evidence_output_dir", "") or "").strip() else None
+                ),
                 require_release_binding=require_recovery_release_binding,
                 release_audit_binding=(
                     approved_audit_bindings.get(recovery_case.case_id)

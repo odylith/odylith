@@ -1,5 +1,5 @@
 # Release
-Last updated: 2026-09-15
+Last updated: 2026-09-16
 
 
 ## Purpose
@@ -474,17 +474,17 @@ governed subsystem.
 - The shared Greenfield release proof lane must run an installed, immutable
   candidate after local release smoke and retain its matrix payload outside any
   disposable generated repository. Every commit-capable request inside the
-  declared operating envelope must pass exact v13 proposal ceilings: standard
+  declared operating envelope must pass exact v14 proposal ceilings: standard
   strictly below `90s`, rescue below `120s`, and explicit deep/premium below `150s`.
   `60s` is the advisory normal-case proposal target; commit-only publication
-  retains its separate strict `<60s` gate. Historical v12 observations retain
+  retains its separate strict `<60s` gate. Historical v12/v13 observations retain
   their original ceilings and verdicts, and old sealed approvals are not relabeled
-  or admitted under v13. Fresh profile-specific observations must qualify the new
+  or admitted under v14. Fresh profile-specific observations must qualify the new
   contract; changing ceilings alone establishes no quality or reliability gain.
   These are separately selected profiles, never sequential budget extensions.
   The current authored path has initial authoring and full-candidate review;
   source-bound material clarification has one author call and no review. Both
-  authored roles share the sealed `55/80/105s` model window. Review, including
+  authored roles share the sealed `75/105/135s` model window. Review, including
   setup and validation, receives at most `20s` and only the remaining window.
   Release observation must validate both actual roles, their provider/model/
   effort identity, full source/candidate binding and available timing evidence;
@@ -509,6 +509,14 @@ governed subsystem.
   Each claim receives a unique run id; stale or mismatched evidence cannot
   terminalize a newer claim. Release-scope execution requires an explicit
   external evidence directory before it can mutate output or telemetry.
+  Installed commit-recovery proof also requires that authority in discovery
+  runs. Conflict evidence is sealed in a sibling output root, bound to the exact
+  transaction, Product Facts, write set, case, command and frozen run before
+  retracting the harness's own mutation. Only verified closed recovery and an
+  unchanged same-hash retry permit cleanup. Failed or interrupted fixtures,
+  unresolved journals and unverified workers remain preserved; the outer lease
+  removes only an empty namespace. Raw proposal/model observation and conflict
+  journal/snapshot bytes survive outside disposable fixtures.
   Campaign interruption must stop the process group and seal truthful
   interruption evidence; if that evidence cannot be sealed, the ledger stays
   claimed and the run fails closed.
@@ -613,6 +621,12 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
+- **2026-09-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 1 verifiable artifact reference.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`
 - **2026-09-15 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 1 verifiable artifact reference.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`
@@ -625,11 +639,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-08-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-04-semantic-holdout-release-preflight-requires-unrelated-source-audit.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_greenfield_matrix_campaign_release_scope.py`
-- **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_canonical_meaning.py`, `src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py`, `src/odylith/runtime/domain_intelligence/greenfield_confirmed_title_completion.py`
-- **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-model-profile-claimed-unobserved-provider-failure.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
 <!-- registry-requirements:end -->
 
 ## Feature History
