@@ -1,5 +1,37 @@
 Status: In progress
 
+## Scoped native comparison rejected (2026-09-17)
+
+Checkpoint a0ccad3bd is pushed: the corrected frozen run passes 2,046 selected
+unit/install and all 460 browser checks with unchanged inputs/publication. This
+establishes scoped carrier/projection behavior, not native generation quality.
+The single admitted v56 deep comparison returns MODEL_TIMEOUT_NO_WRITE after
+135.318 seconds. Sol-high authoring returns in 133.877 seconds, leaving only
+1.106 seconds for Astra-medium review, which times out without a verdict. Exactly
+two model calls occur; no admitted intent, sealed package or publication exists.
+All frozen source, executable, baseline/distribution bytes and fixture paths stay
+unchanged. The initial retired-test inventory error occurred before any model
+dispatch and remains separately preserved; it was not a second native trial.
+
+Independent review rejects native adoption and retains the safety-readiness P1:
+the only unresolved decision concerns report classification, not access, minimum
+data, disposition or consent-integrity boundaries. Additional alleged P1s for the
+daily report span and proposed consent-status exchange are withdrawn after
+source/authority adjudication; they are advisory precision/provenance concerns,
+not invented source facts or demonstrated contradictory policy. Do not enlarge
+the quality gate to penalize every reasonable provisional design choice.
+
+Keep the bounded structural carrier unqualified; do not call v56 a winning native
+mechanism. No retry, resumed reviewer, prompt tuning, extra call, time extension
+or partial-candidate publication is admitted. Prior author-profile and explicit
+review-reservation trials already exist; a reservation alone would only move
+this timeout earlier. A successor needs a justified ownership/work reduction and
+joint quality/timing predictions before another model call. No new experiment is
+admitted here. Public 90/120/150 and model 75/105/135 limits, native confirmation/
+chat, generalization, recovery, installed release and protected holdout gates stay
+fixed and open. Evidence: /Users/freedom/.codex/odylith-scoped-readiness.wfD6SX/NATIVE-RESULT.md
+and native-v56-dispatch/attempt-terminal.json in that evidence directory.
+
 ## Scoped unresolved readiness candidate (2026-09-17)
 
 Bounded review identifies a representation gap independent of failed native
