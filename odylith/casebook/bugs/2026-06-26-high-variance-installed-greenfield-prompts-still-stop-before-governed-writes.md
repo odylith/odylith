@@ -1,8 +1,40 @@
 - Bug ID: CB-209
 
-- Baseline Adjudication (2026-09-17): The earlier fully generated 95.661-second package also lacks any concrete unsafe or falsely production-ready assertion. Registry entries are planned candidates, Radar work is queued, and assumptions and risk posture remain explicitly unverified. Its missing-policy P1 is likewise downgraded to advisory. Remove only the scoped-readiness expansion introduced at a0ccad3bd and restore the earlier v53 mechanism; retain genuine no-clipping, browser-observation and runtime-outcome fixes. This corrects an overblocking evaluation premise, not a passing generalization or native-confirmation claim.
+- Shipping Scope Correction (2026-09-17): The earlier complete v16 package and
+  rejected v56 candidate have no demonstrated unsafe or production-ready claim.
+  Their four-policy readiness P1 is retracted as optional implementation detail;
+  historical contrary claims below are superseded. The scoped-readiness expansion
+  was removed at 6e8cb1903 and the unrun three-role experiment remains paused.
+  Preserve source fidelity, safety, transaction laws and 90/120/150; finish the
+  existing release obligations without adding features.
 
-- Overblocking Correction (2026-09-17): Independent re-adjudication retracts the v56 record-handling readiness P1. Proposed persistence/retrieval does not assert unrestricted access, valid consent, compliance, deployment or production readiness. Requiring four specific operating-policy decisions before admitting this governance proposal was self-imposed implementation detail, not the user Tribunal contract. Keep the concern advisory; no remedy is required for admission on that issue. Prior v56 P1 statements below are superseded, but its reviewer timeout still rejects the attempt. Freeze feature expansion and pause the unrun external three-role experiment; first adjudicate the earlier complete package under the same corrected bar before changing mechanisms. Preserve source custody, unsafe-claim denial, transaction laws and 90/120/150 limits.
+- Current Correction (2026-09-17): The original deep-150 v53 attempt remains
+  failed after 103.829 seconds (94.316 author, 8.192 review; two calls): its sole
+  denial classified `displaced residents` as an invalid human state object despite
+  the cited action that city staff register those residents. Independent
+  adjudication identifies a false negative, consistent with CB-209's
+  wrong-occurrence learning: source-supported state change/review is distinct
+  from merely performing an action. The bounded correction changes one existing
+  shared role description consumed by author schema and reviewer. A person may be
+  a state object when the exact source changes or reviews that person's state;
+  a performer-only citation remains invalid. Author prompt v57 names the
+  correction; v54--v56 remain rejected. Reviewer receipt v2, schema, calls,
+  budgets and all other mechanisms remain unchanged.
+
+  Three frozen, read-only Astra-medium reviewer controls passed: exact candidate
+  (6.188 seconds), heading-equivalent source (7.248 seconds), and the
+  performer-as-state negative (6.015 seconds). This is unsealed reviewer-only
+  evidence, not fresh authoring, package, production, native-confirmation,
+  generalization, or release proof; it does not revive the failed attempt. The
+  clean local candidate build/install, 100 focused passing tests and the full
+  1,757-test Greenfield pass (one indirect Makefile-node deselection) are likewise
+  bounded checks. Fresh installed-package,
+  native-host, profile, recovery, generalization and release proof remain pending;
+  no feature or architecture expansion is warranted. A prior unresolved
+  `context CB-209` fallback raw-scanned
+  documentation/scripts/tests without an explicit protected-test exclusion; no
+  protected result was observed, but exclusion cannot be claimed. Use this exact
+  record for subsequent retrieval.
 
 - Scoped Native Comparison Rejected (2026-09-17): Pushed checkpoint a0ccad3bd passes 2,046 selected unit/install and all 460 browser checks with frozen inputs unchanged, but the one v56 deep trial returns MODEL_TIMEOUT_NO_WRITE after 135.318 seconds. The author returns in 133.877 seconds; immutable review receives only 1.106 seconds and times out. Two calls, no admitted intent, sealed package, publication or fixture changes. Static independent review retains the known safety-readiness P1: report-classification uncertainty does not address access, minimum-data, disposition and consent-integrity decisions. Additional daily-cadence/proposed-exchange P1 allegations were independently reconsidered and withdrawn as advisory concerns; do not inflate provisional design preferences into blockers. Preserve the partial candidate only as failed evidence and retain structural carrier proof without native adoption. No retry, resumed review, prompt tuning, profile sweep or deadline/call-count extension. Prior reservation/profile experiments already exist; a next comparison needs an actual owning-obligation/work-reduction argument and joint quality/timing proof. Evidence: /Users/freedom/.codex/odylith-scoped-readiness.wfD6SX/NATIVE-RESULT.md and native-v56-dispatch/attempt-terminal.json.
 

@@ -20,6 +20,12 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 from odylith.runtime.reasoning import odylith_reasoning
 
 CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v2"
+STATE_OBJECT_ROLE_DEFINITION = (
+    "One source-cited subject, entity, record, work item, case, artifact, or status "
+    "whose state the workflow changes or reviews. The subject may be a person; never "
+    "select a performer merely because it performs the action, or select a workflow "
+    "sequence, location, goal, or entire product description."
+)
 _SOURCE_FIELDS = frozenset((
     "status", "facts", "events", "components", "terminal", "source_precedence",
     "consistency", "ambiguities",
@@ -58,7 +64,7 @@ REVIEW_SCHEMA = {
 }
 
 _ROLE_DEFINITIONS = {
-    "state_object": "One source-cited record, entity, work item, case, artifact, or status whose state the workflow changes or reviews; never a workflow sequence, actor, location, goal, or entire product description.",
+    "state_object": STATE_OBJECT_ROLE_DEFINITION,
     "proof_boundary": "The smallest exact source phrase naming observable evidence, an output, or a reviewable state that can prove the first path worked; never an activity, workflow stage, goal, or product label.",
     "problem": "A complete source statement of the user's unmet need or current difficulty, not the product name or a proposed capability.",
     "customer": "The source-stated direct user or primary beneficiary. Do not turn an activity or output purpose into a person.",

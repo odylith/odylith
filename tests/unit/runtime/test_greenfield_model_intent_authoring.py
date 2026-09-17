@@ -83,7 +83,7 @@ def test_model_authored_intent_reaches_staged_product_intent_without_parser_reco
     assert candidate["human_actors"] == ["Dock attendant Ivo"]
     assert candidate["internal_systems"] == ["Berth map"]
     assert receipt["tier"] == "rescue"
-    assert receipt["authoring_version"] == GREENFIELD_INTENT_AUTHORING_VERSION
+    assert receipt["authoring_version"] == "odylith.greenfield.intent-authoring.v57"
     assert receipt["semantic_model_call_count"] == 2
     assert candidate["authored_semantics"]["first_path_relations"][0]["action_verb_quote"] == "enters"
     assert "model_authoring" not in candidate
@@ -720,7 +720,7 @@ def test_authoring_schema_structurally_separates_complete_authored_and_clarifica
     typed_facts = authored_branch["properties"]["facts"]
     assert typed_facts["additionalProperties"] is False
     assert typed_facts["properties"]["state_object"]["type"] == "object"
-    assert "never a workflow sequence" in typed_facts["properties"]["state_object"][
+    assert "subject may be a person" in typed_facts["properties"]["state_object"][
         "description"
     ]
     assert "never an activity, workflow stage" in typed_facts["properties"][

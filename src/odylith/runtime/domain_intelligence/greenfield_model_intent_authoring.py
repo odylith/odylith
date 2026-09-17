@@ -23,7 +23,10 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     GreenfieldAuthoredSemanticsError,
     authored_component_relation_facts,
 )
-from odylith.runtime.domain_intelligence.greenfield_candidate_review import review_greenfield_candidate
+from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
+    STATE_OBJECT_ROLE_DEFINITION,
+    review_greenfield_candidate,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
     GreenfieldModelAuthoringError,
     GreenfieldModelRuntimeError,
@@ -64,7 +67,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v53"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v57"
 GREENFIELD_MODEL_PROOF_FD_ENV = "ODYLITH_GREENFIELD_MODEL_PROOF_FD"
 MAX_GREENFIELD_SEMANTIC_CALLS = 2
 
@@ -1011,11 +1014,7 @@ _AUTHORED_FACTS_SCHEMA: dict[str, Any] = {
         },
         "state_object": {
             **_CITATION_SCHEMA,
-            "description": (
-                "One source-cited record, entity, work item, case, artifact, or status "
-                "whose state the workflow changes or reviews; never a workflow sequence, "
-                "actor, location, goal, or entire product description."
-            ),
+            "description": STATE_OBJECT_ROLE_DEFINITION,
         },
         "proof_boundary": {
             **_CITATION_SCHEMA,

@@ -4,57 +4,35 @@ Last updated: 2026-09-17
 
 ## Overview
 
-The shipping-first candidate restores the earlier v53 author and provisional
-design v2, removing the unearned scoped-readiness expansion. Independent review
-reclassified the proposed record-handling policy omissions as advisory: a planned
-governance package does not assert deployed or production-ready software. Source
-custody, materially unsafe-claim denial and complete independent candidate review
-remain mandatory; optional implementation detail is not an admission checklist.
+Feature scope is frozen to demonstrated blockers and required release proof. The current
+bounded correction is one existing shared state-object role description, consumed
+by author schema and reviewer: a person qualifies when the cited source changes
+or reviews that person's state; a performer-only citation does not. It does not
+change schema shape, topology, model stages, safety checklist, repair/retry path,
+or time budgets. Author prompt v57 identifies this correction; reviewer receipt
+remains v2, and v54--v56 remain rejected.
 
-Known model timeouts and unavailable-provider failures now retain a typed
-environment outcome through authoring, review and public CLI output. Consumer
-copy states that no records were created and gives a next action, without raw
-provider diagnostics. Semantic rejection remains distinct. Prompt/schema/profile
-versions, custody, immutable review and the 90/120/150 public windows are unchanged.
-Initial proof passes 294 focused controls; final review and frozen evidence live
-under /Users/freedom/.codex/odylith-model-outcomes.tSsbT1/. This does not qualify
-native host confirmation or improve the measured proposal-success rate.
+The original deep-150 v53 proposal remains failed after 103.829 seconds (94.316
+author, 8.192 review; two calls): it falsely denied `displaced residents` as a
+human state object despite the exact source action that city staff register those
+residents. Three frozen read-only Astra-medium reviewer controls now pass for the
+exact candidate (6.188 seconds), a heading-equivalent source (7.248 seconds), and
+the performer-as-state negative (6.015 seconds). These are unsealed reviewer-only
+controls; they do not revive the failed attempt or qualify fresh authoring,
+package completion, production, native confirmation, generalization, or release.
 
-Safety P1 remains open. A truthful package may leave access, minimum-data,
-disposition and consent-integrity policies unresolved, but must make those
-decisions visible, actionable and gating, with affected workstreams and
-conditional negative checks. A generic disclaimer cannot establish readiness;
-source-absent policies and authority must not become accepted facts.
+The former safety P1 and its four-policy admission requirement are retracted for
+v56 and the earlier complete v16 governance package: optional implementation detail is not an
+admission checklist. Historical v55/v56 timeouts and reviewer failures remain
+failed evidence, but do not prescribe a new readiness mechanism. Source custody,
+materially unsafe-claim denial, independent review, and the public 90/120/150
+windows remain binding. Native automatic confirmation, interventions, all-profile
+and recovery proof, complete package/release proof, and the untouched external
+holdout remain open.
 
-The admitted one-shot v55 operating-limits candidate is rejected. Its initial
-Sol-high author times out after 135.001618 seconds without a response; the command
-returns an error after 135.373823 seconds, makes one call and changes no fixture
-paths. No reviewer, staged package or browser proof exists for this candidate.
-The product prompt is restored exactly to v53; no schema, profile, projection,
-reviewer, extra call or deadline change is adopted. This does not resolve the
-safety-readiness P1 or show that existing fields lack capacity. Preserve the
-failed comparison and adjudicate complete-author feasibility before another
-experiment; do not repeat prompt tuning or claim causation from one observation.
-Evidence: /Users/freedom/.codex/odylith-safety-authoring.Y7bgzO/.
-
-The first current v16 installed deep comparison completes proposal/publication in
-95.661/2.592 seconds with exactly two model calls and all 32 browser states passing.
-It is not a qualified profile or implementation-ready package: the maintained gate
-stops on stale conditional-brief expectations and the real native-confirmation
-boundary, while independent review additionally raises P1 for missing testable
-provisional privacy/security posture in a design handling personal and sensitive
-records. Source fidelity and explicitly proposed architecture do not prove safety
-readiness. Independent adjudication places the gap with authored provisional
-verification and assumptions, not custody or downstream projection. The bounded
-author-guidance comparison at that existing seam is now rejected as recorded
-above; no regulatory facts, domain rules or invented guarantees are authorized.
-The shared brief checker separately passes 112 focused controls and read-only
-replay of the retained package, preserving all 181 evidence files and the native
-blocker. It requires canonical proof/evidence custody, exact cardinality and
-lossless section readback; it does not infer meaning from rendered prose. Final
-review and frozen checkpoint receipts own the subsequent validation result.
-The remaining profiles, recovery, all-engine/native-chat and semantic release gates
-remain open. Evidence is retained under /Users/freedom/.codex/odylith-v16-installed.qOtqb5/.
+Known model timeouts and unavailable-provider failures retain typed environment
+outcomes in the public CLI, with no records created. Semantic denial remains a
+distinct failure; neither outcome is successful package delivery.
 
 The public Greenfield preview must be review-only when its caller supplies no
 qualified deterministic confirmation interface. A registered host name is not

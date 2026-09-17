@@ -9,7 +9,10 @@ import pytest
 from odylith.runtime.domain_intelligence import greenfield_candidate_review as review
 from odylith.runtime.domain_intelligence import greenfield_model_intent_authoring as author
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import STANDARD_PROFILE_ID
-from tests.unit.runtime.greenfield_model_authoring_fixtures import StructuredAuthoringProvider
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    StructuredAuthoringProvider,
+    authored_response,
+)
 from tests.unit.runtime.test_greenfield_model_path_custody import _source, _response
 
 
@@ -59,6 +62,12 @@ def test_partition_preserves_every_value_and_binds_complete_candidate():
     assert {**payload["candidate"]["accepted_source"], **payload["candidate"]["proposed_decisions"]} == original
     assert payload["source"] == source
     assert payload["resolved_source_custody"]
+    state_object_role = payload["role_definitions"]["state_object"]
+    assert state_object_role == review.STATE_OBJECT_ROLE_DEFINITION
+    assert state_object_role == author._AUTHORED_FACTS_SCHEMA["properties"][
+        "state_object"
+    ]["description"]
+    assert "performer merely because it performs" in state_object_role
     assert "Do not turn an activity or output purpose into a person." in payload["role_definitions"]["customer"]
     clock = Clock()
     provider = Reviewer({"admissible": True, "issues": []}, clock, 7.0)
@@ -70,6 +79,66 @@ def test_partition_preserves_every_value_and_binds_complete_candidate():
     assert receipt["elapsed_seconds"] == 7.0
     assert provider.calls == 1
     assert provider.requests[0].schema_name == "greenfield_candidate_review"
+
+
+def test_human_subject_state_object_keeps_source_and_performer_custody_separate():
+    source = "Harbor intake helps city staff register displaced residents."
+    event = "city staff register displaced residents"
+    intent = {
+        "title": "Harbor intake",
+        "product_story": source[:-1],
+        "state_object": "displaced residents",
+        "first_path": event,
+        "proof_boundary": "displaced residents",
+        "customer": "city staff",
+        "human_actors": ["city staff", "displaced residents"],
+        "assumptions": [
+            {"applies_to": "problem", "statement": "Registration needs one intake path."},
+            {"applies_to": "opportunity", "statement": "One intake path can reduce handoffs."},
+            {"applies_to": "product_view", "statement": "Staff use one intake view."},
+        ],
+    }
+    response = authored_response(
+        intent,
+        evidence_text=source,
+        first_path_relations=[{
+            "actor_kind": "human",
+            "actor_fact_quote": "city staff",
+            "event_quote": event,
+            "action_verb_quote": "register",
+            "target_quote": "displaced residents",
+            "visible_result_quote": "displaced residents",
+        }],
+    )
+    authored = author._validated_authoring_response(
+        response,
+        evidence_text=source,
+        elapsed_seconds=0.0,
+        provider={},
+        profile_id=STANDARD_PROFILE_ID,
+        effective_timeout_seconds=55.0,
+    )
+    payload = review.candidate_review_payload(
+        source,
+        response["result"],
+        source_spans=authored.source_spans,
+    )
+
+    accepted = payload["candidate"]["accepted_source"]
+    assert accepted["facts"]["state_object"] == {
+        "quote": "displaced residents",
+        "occurrence": 1,
+    }
+    assert accepted["events"][0] == {
+        "actor_fact_quote": "city staff",
+        "action_quote": "register",
+        "target_quote": "displaced residents",
+    }
+    assert accepted["events"][0]["actor_fact_quote"] != accepted["facts"]["state_object"]["quote"]
+    assert any(
+        row["field"] == "state_object" and row["quote"] == "displaced residents"
+        for row in payload["resolved_source_custody"]
+    )
 
 
 def test_unknown_authority_is_not_silently_dropped():

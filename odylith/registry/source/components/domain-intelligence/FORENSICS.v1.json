@@ -6,12 +6,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 599,
-    "mapped_workstream_evidence_count": 507,
+    "explicit_event_count": 600,
+    "mapped_workstream_evidence_count": 508,
     "recent_path_match_count": 0,
     "spec_history_event_count": 307,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 599
+    "timeline_event_count": 600
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -19,6 +19,41 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "sha256:e7da07b40338723a3c9ebddd00343bffd3589e4a62602c6c8a6eb00e5913fe1a"
+      ],
+      "confidence": "high",
+      "event_index": 1247,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-09-17T13:36:21-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 0,
       "artifacts": [],
