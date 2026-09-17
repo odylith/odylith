@@ -3,6 +3,9 @@ Status: In progress
 ## Current bounded correction (2026-09-17)
 
 Feature scope remains frozen to demonstrated blockers and required release proof.
+The operator explicitly prioritizes shipping quality projects over further feature
+expansion. Optional polish is not a release blocker; do not add another mechanism
+or proof framework when the existing owners can discharge an existing obligation.
 The earlier complete v16 package and rejected v56 candidate do not assert unsafe
 or production-ready behavior; their four-policy readiness P1 is retracted as
 self-imposed implementation detail. Historical contrary claims below are
@@ -39,9 +42,25 @@ They are unsealed reviewer evidence only, not fresh authoring, package,
 generalization, native-confirmation, release, or production proof. The focused
 suite passed 100 tests with one Makefile-node deselection; the full 90-module
 Greenfield suite passes 1,757 tests with the same single deselection in 156.35 seconds.
-Required fresh installed-package, native-host,
-recovery, profile, generalization and release checks remain pending. Do not add
-features or architecture to discharge those checks; the external holdout stays closed.
+Fresh v57 evidence at 88810fab7 advances beyond that false-denial phase: the
+unchanged guard passes in a 266.681-second full local build; clean installation
+takes 31.173 seconds with memory installed and all 670 Python runtime files
+matching source. One predeclared deep-150 proposal completes in 106.737 seconds
+(92.606 author, 6.079 review; two calls), sealing five workstreams, five components,
+five diagrams and 56 writes. Independent semantic review finds no P0/P1 issue.
+Explicit installed publication takes 2.525 seconds with exact readback; all 32
+desktop/mobile browser cells pass, with independent visual review finding no
+P0/P1 issue. Optional overview density is P2, not new feature work.
+
+Actual Codex and Claude explicit-shell callbacks each publish the same sealed
+transaction and return the completion receipt on retry. These are explicit
+operator-path observations, not automatic-hook qualification or polished chat
+delivery proof. Evidence: /Users/freedom/.codex/odylith-v57-clean.z71JGu/.
+The earlier failed attempt remains failed; this one disclosed deep-profile sample
+does not establish standard/rescue reliability or unseen-input generalization.
+Automatic native delivery, intervention visibility, existing recovery/profile/
+generalization and release obligations remain open. Do not add features or
+architecture to discharge them; the external holdout stays closed.
 
 Retrieval caveat: a prior unresolved `context CB-209` lookup fell back to a raw
 documentation/scripts/tests scan without an explicit protected-test exclusion.

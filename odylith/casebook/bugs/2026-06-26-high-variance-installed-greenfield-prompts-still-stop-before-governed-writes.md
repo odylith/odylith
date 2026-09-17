@@ -1,5 +1,19 @@
 - Bug ID: CB-209
 
+- Fresh Installed Progress (2026-09-17): At 88810fab7, the corrected v57 full
+  local build passes in 266.681 seconds and clean installation in 31.173 seconds;
+  all 670 Python runtime files match source. One predeclared deep-150 proposal
+  succeeds in 106.737 seconds with two calls, five workstreams, five components,
+  five diagrams and 56 sealed writes. Independent semantic review finds no P0/P1
+  issue. Explicit publication passes exact readback in 2.525 seconds; all 32
+  desktop/mobile browser cells and independent visual review pass. Both native
+  clients visibly execute explicit-shell publication and same-hash retry; this
+  does not qualify automatic hooks or chat delivery. The original false-denial
+  run remains failed, and broader profile/generalization/recovery/release proof
+  remains open. Keep the operator's shipping-first scope freeze; optional P2
+  polish is not another release gate. Evidence:
+  /Users/freedom/.codex/odylith-v57-clean.z71JGu/.
+
 - Shipping Scope Correction (2026-09-17): The earlier complete v16 package and
   rejected v56 candidate have no demonstrated unsafe or production-ready claim.
   Their four-policy readiness P1 is retracted as optional implementation detail;
