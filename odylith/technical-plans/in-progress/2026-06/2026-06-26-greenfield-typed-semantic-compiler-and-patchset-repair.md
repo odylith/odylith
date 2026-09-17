@@ -1,5 +1,31 @@
 Status: In progress
 
+## Stop the citation-window alternative at its first semantic failure (2026-09-17)
+
+An external, unsealed replacement for global citation ordinals passes nine
+offline address checks, but its first actual author/reviewer control fails:
+the canonical participant list omits the explicit workforce-board recipient.
+All five coordinator actions survive and no mentor role is invented. The
+independent source-first reviewer agrees with the correct product veto. Authoring
+takes 56.319 seconds, review 7.768, total 64.151 within the shared 75 seconds;
+two calls run with all frozen inputs and publication unchanged. Stop without
+retry or the two remaining controls. No production mechanism is adopted.
+
+All 12 global fact quotes are unique, yet each copies the full 320-byte source
+window: 3,205 locator characters and a 9,909-byte compact response. The selected
+state is certification readiness; the correctly grounded apprentice event target
+uses the unchanged local owner. Retract the initial claim that this live run
+fixed repeated-global-occurrence selection: that capability remains offline-only.
+The live result proves compatibility for unique quotes, not improved custody,
+semantic reliability, complete-package quality or causal latency improvement.
+
+The next bounded comparison must target canonical semantic coverage with less
+authoring burden, not additional citation payload. Read the rejected source-frame,
+performer-only, shared-context and mutable-repair comparisons before choosing it.
+Do not patch this example or promote a model/profile from a safer refusal.
+Keep 90/120/150 and sealed publication fixed. Runtime, Registry and Atlas contracts
+are unchanged. Evidence: /Users/freedom/.codex/odylith-citation-window.GZAKTi/RESULT.md.
+
 ## Fresh v15 package fails semantic qualification (2026-09-17)
 
 The source-local standard proposal completes in 55.650 seconds with one brief,
