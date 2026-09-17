@@ -142,7 +142,7 @@ def test_larger_outer_budget_does_not_relax_role_binding_or_model_caps(mutation)
     elif mutation == "profile":
         receipt["model_profile"]["profile_id"] = profiles.RESCUE_PROFILE_ID
     elif mutation == "model_budget":
-        receipt["elapsed_seconds"] = 55.001
+        receipt["elapsed_seconds"] = 75.001
     else:
         receipt["candidate_review"]["model_profile"]["effective_timeout_seconds"] = 20.001
     with pytest.raises(ValueError, match="quality manifest is not approved"):

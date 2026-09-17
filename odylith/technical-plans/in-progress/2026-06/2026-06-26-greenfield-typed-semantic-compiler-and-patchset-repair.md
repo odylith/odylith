@@ -1,5 +1,62 @@
 Status: In progress
 
+## Model-window allocation comparison (2026-09-16)
+
+The v14 allocation is retained as a development candidate, not a qualified
+release profile. Final frozen Greenfield proof passes all 1,673 checks in
+151.72 seconds with 1,506 inputs unchanged. The first run's 1,672 passes and one
+obsolete capped-timeout expectation remain retained; the explicit 84-second
+request now correctly expects 84 rather than the old rescue cap. The final
+339-check delta also proves the release-side profile/timing/custody evaluators.
+The full development distribution builds in 224.61 seconds with 1,418 unchanged
+inputs. Fresh install takes 29.438 seconds; the one native standard proposal
+takes 63.226 seconds and exact publication 2.613 seconds. Five workstreams, five
+components, five diagrams/ten renders and all 32 browser states pass. Simulation
+cleanup verifies settled journals and absent workers before removal.
+
+Authoring takes 42.734259 seconds and review 11.989293, with a nearly 20-second
+review allowance and about 20 seconds of pooled model headroom. Their 54.723552
+sum still fits the former 55-second window: this is feasibility, not causal
+reliability improvement or faster generation. The comparison removes smoke-only
+reasoning/Compass disable overrides; availability does not prove every engine or
+automatic chat delivery. One case cannot qualify the envelope (descriptive 95%
+Wilson interval 0.206549–1.0). Evidence and raw package:
+/Users/freedom/.codex/odylith-model-budget.VdRbXC/.
+
+Independent content review finds no P0 and one retained P1: the shared Radar
+authoring fallback emits tradeoff/deferred-scope decisions absent from canonical
+intent. The exact owner is `backlog_authoring.py:_build_rationale_lines`. Next
+remove invented decision content through the existing rationale contract, retain
+explicit authored decisions and honest ordering metadata, and prove source,
+payload and browser parity. Do not add vocabulary rules or another model call.
+Equal scores versus visible rank need truthful presentation, not inferred
+priority. The initially raised board-path P1 is adjudicated to P2: publication
+for review does not require in-product board review. Preserve a typed intended-
+recipient relationship in Atlas without manufacturing an actor action, access
+channel or material question. Date presentation, repeated Radar prose and the
+short coding-readiness list remain bounded P2s. Highest quality, profile breadth,
+recovery, populated upgrade, native chat and final untouched holdout remain open.
+
+The public 90/120/150-second ceilings leave the v13 author/review windows at
+55/80/105 seconds. Repeated native failures exhaust that inner window before
+review completes; the disclosed standard success leaves only about 3.7 seconds
+of model headroom. Observed standard/deep non-model overhead is about 8 seconds,
+not a proven tail bound. Compare one v14 allocation in the existing profile
+owner: reserve 15 seconds for deterministic completion and use 75/105/135 for
+the same two calls. Preserve models, efforts, prompts, full candidate review
+(at most 20 seconds), absolute deadline accounting and strict public ceilings.
+This replaces budget values, not semantic ownership or the retry mechanism.
+
+Prediction: the recorded 50.5-second standard author duration can leave a full
+20-second review window, while the complete proposal still fits under 90 seconds.
+Falsify with exact-boundary, residual-clock, stale-profile and no-write controls,
+then one frozen native development comparison with complete sealed-package and
+browser checks. Preserve every failure; stop on the first failed native case.
+Do not call a single success reliability or release qualification, and do not
+retry, weaken quality, change prompts or extend the public ceiling to save it.
+The 15-second reserve is provisional: an overrun rejects the comparison rather
+than earning another allocation sweep. Final holdout remains untouched.
+
 ## Bound verification to its existing delivery owner (2026-09-16)
 
 The bounded projection is implemented in three existing owners. The 88-module

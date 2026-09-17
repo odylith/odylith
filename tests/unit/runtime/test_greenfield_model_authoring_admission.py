@@ -320,15 +320,15 @@ def test_late_packet_cannot_skip_review_after_spending_the_shared_rescue_window(
     reviewer = AdmittingReviewProvider()
     with pytest.raises(GreenfieldModelAuthoringError, match="could not be verified") as exc_info:
         author_greenfield_intent(
-            evidence_text=source, provider=provider, timeout_seconds=84,
+            evidence_text=source, provider=provider, timeout_seconds=109,
             model_profile_id=RESCUE_PROFILE_ID,
-            clock=lambda: 80.0 if provider.calls else 0.0,
+            clock=lambda: 105.0 if provider.calls else 0.0,
             review_provider_factory=lambda: reviewer,
         )
     assert provider.calls == 1
     assert reviewer.calls == 0
     assert str(exc_info.value.__cause__) == "Greenfield review has no remaining model time"
-    assert provider.requests[0].timeout_seconds == 80.0
+    assert provider.requests[0].timeout_seconds == 105.0
 
 
 @pytest.mark.parametrize(

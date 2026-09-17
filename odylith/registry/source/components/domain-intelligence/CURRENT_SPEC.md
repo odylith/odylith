@@ -15,16 +15,24 @@ Projection parity rejects omitted, rewritten or unrelated acceptance before
 Registry input issuance. Native quality generalization and deadline qualification
 remain separate release obligations.
 
-The current v13 Greenfield proposal ceilings are strictly below 90 seconds for
+The candidate v14 Greenfield proposal ceilings are strictly below 90 seconds for
 standard/auto, 120 for explicitly selected rescue, and 150 for explicitly
 selected deep. Sixty seconds is an advisory normal-case target. The author and
-reviewer still share 55/80/105-second model windows, with review capped at 20
+reviewer share 75/105/135-second model windows, with review capped at 20
 seconds and the actual remaining window. Commit-only publication remains below
 60 seconds. Profiles are selected before execution, never extended after an
-overrun. This operator-approved timing change does not change semantic quality,
-models, efforts, prompts, call count or transaction guarantees. Historical
-60/90/120 observations below retain their original verdicts and do not qualify
-v13; old sealed v12 transactions must fail current-profile validation.
+overrun. A fixed 15-second allocation remains outside the model window for
+deterministic completion, whose actual duration still faces the public deadline.
+This allocation comparison does not establish tail reliability or change models,
+efforts, prompts, call count, semantic quality or transaction guarantees.
+Historical observations below retain their original verdicts; old sealed v12/v13
+transactions fail current-profile validation. One fresh installed standard
+comparison completes proposal/publication in 63.226/2.613 seconds and passes all
+32 browser states. Retain v14 for further development proof, not release
+qualification: raw author/review duration still fits the old model window, so
+causal reliability improvement is unproved. Independent review retains a P1 in
+Radar's invented decision-basis fallback. Source-faithful recipient topology,
+broader semantic quality and all-engine/native-chat evidence remain open.
 
 The shared Greenfield host decision transport must consume CONFIRM, REJECT and
 incomplete decisions before native model dispatch. Supplying developer context

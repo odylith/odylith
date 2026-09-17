@@ -40,7 +40,7 @@ class Provider:
 
 @pytest.mark.parametrize(
     ("profile_id", "model_budget", "consumer_budget"),
-    [(STANDARD_PROFILE_ID, 55.0, 90.0), (RESCUE_PROFILE_ID, 80.0, 120.0), (DEEP_PROFILE_ID, 105.0, 150.0)],
+    [(STANDARD_PROFILE_ID, 75.0, 90.0), (RESCUE_PROFILE_ID, 105.0, 120.0), (DEEP_PROFILE_ID, 135.0, 150.0)],
 )
 def test_one_author_and_review_share_the_full_pinned_window(profile_id, model_budget, consumer_budget):
     response = _response(_source())
@@ -97,6 +97,26 @@ def test_shorter_remaining_window_is_not_reduced_by_a_review_reserve():
     assert result.semantic_model_call_count == 2
     assert len(provider.requests) == reviewer.calls == 1
     assert reviewer.requests[0].timeout_seconds == 1.0
+
+
+@pytest.mark.parametrize("setup_seconds,review_window", [(0.0, 20.0), (10.0, 14.5)])
+def test_allocation_leaves_review_headroom_without_resetting_the_absolute_deadline(
+    setup_seconds, review_window,
+):
+    clock = Clock()
+    clock.value = setup_seconds
+    provider = Provider([_response(_source())], [50.5], clock)
+    reviewer = Provider([{"admissible": True, "issues": []}], [review_window], clock)
+    result = author.author_greenfield_intent(
+        evidence_text=_source(), provider=provider, clock=clock,
+        model_profile_id=STANDARD_PROFILE_ID, deadline=75.0,
+        review_provider_factory=lambda: reviewer,
+    )
+    assert provider.requests[0].timeout_seconds == 75.0 - setup_seconds
+    assert reviewer.requests[0].timeout_seconds == review_window
+    assert clock.value <= 75.0
+    assert result.semantic_model_call_count == 2
+    assert len(provider.requests) == len(reviewer.requests) == 1
 
 
 @pytest.mark.parametrize("call_count", [True, False, 0, 2])
@@ -197,7 +217,7 @@ def test_model_observation_is_checked_before_and_after_the_only_call(monkeypatch
     assert len(observed) == 2
     assert all(row["model"] == "gpt-5.6-terra" for row in observed)
     assert all(row["reasoning_effort"] == "low" for row in observed)
-    assert all(row["effective_timeout_seconds"] == 55.0 for row in observed)
+    assert all(row["effective_timeout_seconds"] == 75.0 for row in observed)
 
 
 def test_false_post_call_model_identity_fails_without_retry():
@@ -238,7 +258,7 @@ def test_proof_preserves_the_exact_candidate_and_dispatched_review_metadata(tmp_
     assert retained["response"] == response
     assert retained["semantic_model_call_count"] == (1 if failed else 2)
     assert retained["authoring_version"] == author.GREENFIELD_INTENT_AUTHORING_VERSION
-    assert retained["initial_authoring"]["timeout_seconds"] == 80.0
+    assert retained["initial_authoring"]["timeout_seconds"] == 105.0
     assert retained["initial_authoring"]["elapsed_seconds"] == 36.0
     assert "source_review" not in retained
     if failed:

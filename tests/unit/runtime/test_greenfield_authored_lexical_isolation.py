@@ -190,8 +190,8 @@ def test_public_authored_rescue_tier_seals_the_120_second_budget(
     assert manifest["rescue_activated"] is True
     assert manifest["model_authoring"]["tier"] == "rescue"
     assert manifest["model_authoring"]["semantic_model_call_count"] == 2
-    assert provider.requests[0].timeout_seconds == 80.0
-    assert manifest["model_authoring"]["model_profile"]["effective_timeout_seconds"] == 80.0
+    assert provider.requests[0].timeout_seconds == 105.0
+    assert manifest["model_authoring"]["model_profile"]["effective_timeout_seconds"] == 105.0
 
 
 def test_public_authored_propose_seals_exact_non_latin_product_title(
@@ -280,7 +280,7 @@ def test_public_authored_deep_tier_stays_structural_and_seals_exact_unicode_cust
     assert manifest["requested_repair_tier"] == "deep"
     assert manifest["repair_tier"] == "deep"
     assert manifest["budget_seconds"] == 150.0
-    assert provider.requests[0].timeout_seconds == 105.0
+    assert provider.requests[0].timeout_seconds == 135.0
     assert manifest["rescue_activated"] is True
     assert manifest["semantic_compiler"] == {
         "version": "odylith.greenfield.authored-semantic-validation.v4",

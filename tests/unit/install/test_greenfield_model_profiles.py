@@ -134,7 +134,7 @@ def test_profile_registry_pins_preselected_standard_rescue_and_deep_requests() -
     assert deep.model == "gpt-5.6-sol"
     assert deep.reasoning_effort == "high"
     assert [(profile.model_timeout_seconds, profile.consumer_budget_seconds) for profile in (standard, rescue, deep)] == [
-        (55.0, 90.0), (80.0, 120.0), (105.0, 150.0),
+        (75.0, 90.0), (105.0, 120.0), (135.0, 150.0),
     ]
     assert all(not hasattr(profile, "source_review_model") for profile in (standard, rescue, deep))
     assert get_greenfield_model_profile(UNAVAILABLE_PROVIDER_PROFILE).lower_capability is False
@@ -162,13 +162,13 @@ def test_profile_environments_pin_provider_model_effort_and_shared_tier_windows(
     assert standard["ODYLITH_REASONING_PROVIDER"] == "codex-cli"
     assert standard["ODYLITH_REASONING_MODEL"] == "gpt-5.6-terra"
     assert standard["ODYLITH_REASONING_CODEX_REASONING_EFFORT"] == "low"
-    assert standard["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "55"
+    assert standard["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "75"
     assert rescue["ODYLITH_REASONING_MODEL"] == "gpt-5.6-terra"
     assert rescue["ODYLITH_REASONING_CODEX_REASONING_EFFORT"] == "medium"
-    assert rescue["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "80"
+    assert rescue["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "105"
     assert deep["ODYLITH_REASONING_MODEL"] == "gpt-5.6-sol"
     assert deep["ODYLITH_REASONING_CODEX_REASONING_EFFORT"] == "high"
-    assert deep["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "105"
+    assert deep["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "135"
     assert unavailable["ODYLITH_REASONING_CODEX_BIN"] == "/nonexistent/greenfield-provider-test"
     assert unavailable["ODYLITH_REASONING_CODEX_BIN"] != "/usr/bin/false"
     assert unavailable["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "1"
@@ -432,7 +432,7 @@ def test_review_elapsed_includes_setup_so_it_may_exceed_request_timeout():
 @pytest.mark.parametrize(("field", "value"), [
     ("profile_id", STANDARD_PROFILE_ID), ("provider", "claude-cli"),
     ("model", "gpt-5.6-sol"), ("reasoning_effort", "low"),
-    ("authoring_tier", "standard"), ("effective_timeout_seconds", 80.001),
+    ("authoring_tier", "standard"), ("effective_timeout_seconds", 105.001),
     ("effective_timeout_seconds", None), ("effective_timeout_seconds", True),
 ])
 def test_stage_checker_independently_rejects_false_sealed_profile(field, value):
@@ -517,7 +517,7 @@ def _mutated_stage_observation(mutation: str) -> dict[str, object]:
     elif mutation == "initial_cap":
         initial["timeout_seconds"] = 60.0
     elif mutation == "initial_elapsed":
-        initial["elapsed_seconds"] = 80.001
+        initial["elapsed_seconds"] = 105.001
     elif mutation == "missing_initial":
         stage.pop("initial_authoring")
     else:

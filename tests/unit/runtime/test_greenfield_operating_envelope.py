@@ -276,7 +276,7 @@ def test_edit_read_time_reduces_the_provider_window_before_discovery(monkeypatch
         "_greenfield_authoring_provider",
         forbidden_provider_discovery,
     )
-    monkeypatch.setattr(greenfield_proposals_cli.time, "perf_counter", lambda: 84.0)
+    monkeypatch.setattr(greenfield_proposals_cli.time, "perf_counter", lambda: 105.0)
 
     with pytest.raises(RuntimeError, match="while reading evidence"):
         greenfield_proposals_cli._compile_prompt_evidence_transaction(
@@ -291,22 +291,24 @@ def test_edit_read_time_reduces_the_provider_window_before_discovery(monkeypatch
     assert provider_discovery_calls == 0
 
 
+@pytest.mark.parametrize("budget", [90.0, 120.0, 150.0])
 def test_late_pending_stage_is_retired_before_the_deadline_error_returns(
     monkeypatch,
     tmp_path,
+    budget,
 ) -> None:  # type: ignore[no-untyped-def]
-    now = [59.0]
+    now = [budget - 1.0]
     confirmable = False
     transaction_hash = "a" * 64
     transaction = argparse.Namespace(
         transaction_hash=transaction_hash,
-        quality_manifest={"budget_seconds": 60.0},
+        quality_manifest={"budget_seconds": budget},
     )
 
     def stage_pending_transaction(**_kwargs: object) -> Path:
         nonlocal confirmable
         confirmable = True
-        now[0] = 60.0
+        now[0] = budget
         return tmp_path / "pending.json"
 
     def discard_pending_transaction(**_kwargs: object) -> None:
@@ -326,6 +328,27 @@ def test_late_pending_stage_is_retired_before_the_deadline_error_returns(
         )
 
     assert confirmable is False
+
+
+@pytest.mark.parametrize("budget", [90.0, 120.0, 150.0])
+def test_expired_public_budget_cannot_begin_staging(monkeypatch, tmp_path, budget):
+    transaction = argparse.Namespace(
+        transaction_hash="a" * 64, quality_manifest={"budget_seconds": budget},
+    )
+
+    def forbidden(**_kwargs):
+        pytest.fail("expired proposal reached pending staging")
+
+    monkeypatch.setattr(
+        greenfield_proposals_cli.greenfield_pending_transaction_store,
+        "stage_pending_transaction", forbidden,
+    )
+    with pytest.raises(RuntimeError, match="no records were created"):
+        greenfield_proposals_cli._stage_pending_transaction_with_deadline(
+            repo_root=tmp_path, transaction=transaction, started_at=0.0,
+            clock=lambda: budget,
+        )
+    assert list(tmp_path.iterdir()) == []
 
 
 def test_non_english_contract_is_rejected_without_lexical_detection_or_provider_call() -> None:

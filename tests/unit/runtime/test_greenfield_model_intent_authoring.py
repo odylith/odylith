@@ -110,7 +110,7 @@ def test_model_authored_intent_reaches_staged_product_intent_without_parser_reco
         "provider": profile.provider,
         "model": profile.model,
         "reasoning_effort": profile.reasoning_effort,
-        "effective_timeout_seconds": profile.model_timeout_seconds,
+        "effective_timeout_seconds": 84.0,
         "authoring_tier": "rescue",
     }
 

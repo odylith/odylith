@@ -25,6 +25,19 @@ def test_two_call_receipt_passes_quality_only_gate() -> None:
     )
 
 
+@pytest.mark.parametrize("role", ["author", "review", "both"])
+def test_v13_receipt_is_not_reinterpreted_under_the_larger_model_allocation(role) -> None:
+    manifest = approved_authored_quality_manifest_fixture()
+    receipt = manifest["model_authoring"]
+    old_profile = "greenfield-standard-terra-low-complete-author-review-v13"
+    if role in {"author", "both"}:
+        receipt["model_profile"]["profile_id"] = old_profile
+    if role in {"review", "both"}:
+        receipt["candidate_review"]["model_profile"]["profile_id"] = old_profile
+    with pytest.raises(ValueError, match="quality manifest is not approved"):
+        transactions.require_product_create_transaction_quality_approved(manifest)
+
+
 def test_author_elapsed_cannot_exceed_its_own_recorded_dispatch_cap() -> None:
     manifest = approved_authored_quality_manifest_fixture(elapsed_seconds=4.0)
     receipt = manifest["model_authoring"]
@@ -56,7 +69,7 @@ def test_author_elapsed_cannot_exceed_its_own_recorded_dispatch_cap() -> None:
         (("model_authoring", "candidate_review", "model_profile", "request_role"), "initial_authoring"),
         (("model_authoring", "candidate_review", "model_profile", "effective_timeout_seconds"), 20.001),
         (("model_authoring", "initial_authoring_elapsed_seconds"), 55.0),
-        (("model_authoring", "elapsed_seconds"), 55.001),
+        (("model_authoring", "elapsed_seconds"), 75.001),
         (("model_authoring", "candidate_review", "elapsed_seconds"), 20.001),
         (("model_authoring", "candidate_review", "elapsed_seconds"), -0.001),
     ] + [
