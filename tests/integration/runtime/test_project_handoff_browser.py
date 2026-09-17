@@ -13,12 +13,14 @@ from tests.integration.runtime.surface_browser_test_support import (
 from tests.unit.runtime.test_greenfield_authored_project_dashboard import (
     _accepted_preview, _proposal, _source_launch_context,
 )
+from tests.unit.runtime.test_greenfield_scoped_readiness import DECISION, _package
 
 
 @pytest.mark.parametrize("width", [1440, 430])
 @pytest.mark.parametrize("javascript_enabled", [True, False])
+@pytest.mark.parametrize("unresolved", [False, True])
 def test_project_handoff_disclosure_preserves_complete_selectable_prompts(
-    tmp_path: Path, width: int, javascript_enabled: bool,
+    tmp_path: Path, width: int, javascript_enabled: bool, unresolved: bool,
 ) -> None:
     proposal = _proposal()
     payload = preview_project_dashboard_payload(
@@ -26,6 +28,9 @@ def test_project_handoff_disclosure_preserves_complete_selectable_prompts(
         accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
         source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
     )
+    if unresolved:
+        payload = _package(tmp_path, decisions=[DECISION]).project_dashboard_preview
+        assert all(DECISION["decision"] in row["prompt"] for row in payload["host_handoff_prompts"])
     html = render_project_html({"project_intelligence": payload})
     (tmp_path / "index.html").write_text(
         '<!doctype html><html lang="en"><head><meta charset="utf-8">'
@@ -41,8 +46,17 @@ def test_project_handoff_disclosure_preserves_complete_selectable_prompts(
             ) as context:
                 with _new_page(context) as (page, observation):
                     page.goto(base_url + "/index.html", wait_until="domcontentloaded")
+                    open_items = page.locator(".project-open-card li")
+                    assert open_items.all_text_contents() == [
+                        " ".join(item.split()) for item in payload["open"]
+                    ]
+                    assert all(item.is_visible() for item in open_items.all())
                     cards = page.locator(".project-host-prompt")
                     assert cards.count() == len(payload["host_handoff_prompts"]) == 5
+                    capture = _failure_screenshot_path(f"project-handoff-{width}-js-{javascript_enabled}-unresolved-{unresolved}-closed")
+                    if capture is not None:
+                        capture.parent.mkdir(parents=True, exist_ok=True)
+                        page.screenshot(path=str(capture), full_page=True)
                     closed_height = page.locator(".project-host-handoff").bounding_box()["height"]
                     for index, row in enumerate(payload["host_handoff_prompts"]):
                         card = cards.nth(index)
@@ -75,7 +89,7 @@ def test_project_handoff_disclosure_preserves_complete_selectable_prompts(
                     open_height = page.locator(".project-host-handoff").bounding_box()["height"]
                     assert closed_height < open_height * 0.6
                     assert cards.locator("details[open]").count() == 5
-                    capture = _failure_screenshot_path(f"project-handoff-{width}-js-{javascript_enabled}")
+                    capture = _failure_screenshot_path(f"project-handoff-{width}-js-{javascript_enabled}-unresolved-{unresolved}")
                     if capture is not None:
                         capture.parent.mkdir(parents=True, exist_ok=True)
                         page.screenshot(path=str(capture), full_page=True)

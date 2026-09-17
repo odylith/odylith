@@ -8,8 +8,8 @@ from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import (
     preview_accepted_project_memory,
     preview_project_dashboard_payload,
 )
-from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
-    build_authored_greenfield_proposal,
+from odylith.runtime.domain_intelligence.greenfield_proposals import (
+    build_greenfield_proposal,
 )
 from odylith.runtime.domain_intelligence.greenfield_experience import build_next_steps
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
@@ -138,9 +138,15 @@ def test_empty_assumptions_keep_project_carriers_empty(tmp_path: Path) -> None:
     )
 
 
-def _proposal(tmp_path: Path, *, include_assumption: bool = True) -> dict[str, object]:
+def _proposal(
+    tmp_path: Path, *, include_assumption: bool = True,
+    readiness_decisions: list[dict[str, object]] | None = None,
+    authoring_receipt: dict[str, object] | None = None,
+) -> dict[str, object]:
     source = _source()
     response = _response(source)
+    if readiness_decisions is not None:
+        response["result"]["provisional_design"]["readiness_decisions"] = readiness_decisions
     response["result"]["assumptions"] = (
         [{"applies_to": "general", "statement": SAFEGUARD_ASSUMPTION}]
         if include_assumption
@@ -153,9 +159,10 @@ def _proposal(tmp_path: Path, *, include_assumption: bool = True) -> dict[str, o
         authoring_timeout_seconds=60,
         authoring_profile_id=STANDARD_PROFILE_ID,
         review_provider_factory=AdmittingReviewProvider,
+        authoring_receipt=authoring_receipt,
     )
-    proposal = build_authored_greenfield_proposal(
-        observed_source={"source_posture": "operator prompt evidence"},
+    proposal = build_greenfield_proposal(
+        repo_root=tmp_path, prompt=source, require_completion_ready=False,
         release_selector="0.0.1",
         confirmed_intent=candidate,
     )

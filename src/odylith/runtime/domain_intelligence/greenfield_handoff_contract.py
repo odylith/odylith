@@ -8,13 +8,17 @@ explicit fields; validators never recover those obligations from prompt words.
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from copy import deepcopy
 from typing import Any
 
 from odylith.runtime.common.value_coercion import normalize_string
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
+    render_readiness_decision, validate_readiness_decisions,
+)
 
 
-PROJECT_HANDOFF_STEP_SCHEMA_VERSION = "odylith.greenfield.project-handoff-step.v3"
-CODING_READINESS_SCHEMA_VERSION = "odylith.greenfield.coding-readiness.v1"
+PROJECT_HANDOFF_STEP_SCHEMA_VERSION = "odylith.greenfield.project-handoff-step.v4"
+CODING_READINESS_SCHEMA_VERSION = "odylith.greenfield.coding-readiness.v2"
 
 PROJECT_HANDOFF_STEP_SEQUENCE = (
     "choose_language",
@@ -105,6 +109,7 @@ def build_project_handoff_step_contract(
     excluded_scope: Sequence[str] = (),
     component_refs: Sequence[str] = (),
     verification_commands: Sequence[str] = (),
+    provisional_readiness_decisions: Sequence[Mapping[str, Any]] = (),
 ) -> dict[str, Any]:
     """Bind one visible handoff step to explicit canonical facts and actions."""
 
@@ -118,6 +123,7 @@ def build_project_handoff_step_contract(
         "step_id": normalized_step,
         "semantic_authority": "typed_canonical_intent",
         "projection_policy": "structural_copy_only",
+        "provisional_readiness_decisions": deepcopy(list(provisional_readiness_decisions)),
         "fact_bindings": {
             "project_title": title,
             "accepted_first_path": first_path,
@@ -142,6 +148,7 @@ def project_handoff_step_contract_issues(
     value: Any,
     *,
     expected_step_id: str,
+    expected_readiness_decisions: Sequence[Mapping[str, Any]] | None = None,
 ) -> tuple[str, ...]:
     """Validate a handoff structurally without interpreting its visible prose."""
 
@@ -151,6 +158,13 @@ def project_handoff_step_contract_issues(
     if expected not in PROJECT_HANDOFF_STEP_SEQUENCE:
         return ("has an invalid expected handoff step",)
     issues: list[str] = []
+    readiness = value.get("provisional_readiness_decisions")
+    try:
+        validate_readiness_decisions(readiness)
+    except ValueError:
+        issues.append("has invalid provisional readiness decisions")
+    if expected_readiness_decisions is not None and readiness != list(expected_readiness_decisions):
+        issues.append("drifted from scoped canonical readiness decisions")
     if normalize_string(value.get("schema_version")) != PROJECT_HANDOFF_STEP_SCHEMA_VERSION:
         issues.append("has an unsupported typed handoff contract version")
     if normalize_string(value.get("step_id")) != expected:
@@ -243,6 +257,7 @@ def build_coding_readiness_contract(
     evidence_requirements: Sequence[str] = (),
     operational_constraints: Sequence[str] = (),
     non_goals: Sequence[str] = (),
+    provisional_readiness_decisions: Sequence[Mapping[str, Any]] = (),
 ) -> dict[str, Any]:
     """Build the exact readiness decisions required before source work begins."""
 
@@ -252,6 +267,7 @@ def build_coding_readiness_contract(
         "schema_version": CODING_READINESS_SCHEMA_VERSION,
         "semantic_authority": "typed_canonical_intent",
         "projection_policy": "structural_copy_only",
+        "provisional_readiness_decisions": deepcopy(list(provisional_readiness_decisions)),
         "implementation_target": {
             "workstream_id": normalize_string(workstream_id).upper(),
             "workstream_title": normalize_string(workstream_title),
@@ -275,12 +291,20 @@ def coding_readiness_contract_issues(
     value: Any,
     *,
     expected_workstream_id: str,
+    expected_readiness_decisions: Sequence[Mapping[str, Any]] | None = None,
 ) -> tuple[str, ...]:
     """Validate readiness by field identity rather than prose or item count."""
 
     if not isinstance(value, Mapping):
         return ("operator next-steps preview is missing its typed coding-readiness contract",)
     issues: list[str] = []
+    readiness = value.get("provisional_readiness_decisions")
+    try:
+        validate_readiness_decisions(readiness)
+    except ValueError:
+        issues.append("operator next-steps readiness has invalid proposed decisions")
+    if expected_readiness_decisions is not None and readiness != list(expected_readiness_decisions):
+        issues.append("operator next-steps readiness drifted from scoped canonical decisions")
     if normalize_string(value.get("schema_version")) != CODING_READINESS_SCHEMA_VERSION:
         issues.append("operator next-steps preview has an unsupported coding-readiness contract")
     if normalize_string(value.get("semantic_authority")) != "typed_canonical_intent":
@@ -351,6 +375,7 @@ def render_coding_readiness_gates(value: Mapping[str, Any]) -> list[str]:
             f"Release-wide proof boundary:\n{proof}\n"
             f"Evidence requirements:\n{evidence_clause}"
         ),
+        *[render_readiness_decision(row) for row in value["provisional_readiness_decisions"]],
     ]
 
 

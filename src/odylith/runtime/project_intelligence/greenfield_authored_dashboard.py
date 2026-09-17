@@ -29,6 +29,8 @@ from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import 
 )
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
     provisional_design_from_intent,
+    render_readiness_decision,
+    validate_readiness_decisions,
 )
 from odylith.runtime.project_intelligence.product_story_contract import (
     PRODUCT_STORY_CARD_SLOTS,
@@ -105,8 +107,12 @@ def build_authored_greenfield_payload(
         excluded_scope=non_goals,
         context=_mapping(proposal.get("_source_launch") or proposal.get("source_launch")),
     )
-    open_items = _unique([*questions, *assumptions])
-    if questions and assumptions:
+    readiness = provisional_design_from_intent(intent)["readiness_decisions"]
+    readiness_items = [render_readiness_decision(row) for row in readiness]
+    open_items = _unique([*readiness_items, *questions, *assumptions])
+    if readiness:
+        open_label = "Unresolved implementation decisions" + (" and assumptions" if assumptions else "")
+    elif questions and assumptions:
         open_label = "Open questions and assumptions"
     elif assumptions:
         open_label = "Assumptions"
@@ -518,6 +524,9 @@ def _source_launch(
     target = _mapping(context.get("implementation_target"))
     workstream_refs = _text_values(context.get("first_release_workstream_ids"))
     verification_commands = _text_values(context.get("verification_commands"))
+    readiness = _mapping(context.get("coding_readiness_contract")).get("provisional_readiness_decisions", [])
+    validate_readiness_decisions(readiness)
+    readiness_copy = "\n\n".join(render_readiness_decision(row) for row in readiness)
     release_context = (
         f"Release context — not the scope of this one workstream:\n{first_path}\n\n"
         f"Release proof boundary:\n{proof_boundary}\n\nRelease visible result:\n{visible_result}"
@@ -587,7 +596,7 @@ def _source_launch(
     )
     for row in prompts:
         selected_copy = render_selected_workstream_scope(target) if target else ""
-        row["prompt"] = f"{selected_copy}\n\n{row['prompt']}\n\n{scope_copy}"
+        row["prompt"] = "\n\n".join(part for part in (selected_copy, row["prompt"], readiness_copy, scope_copy) if part)
         row["contract"] = build_project_handoff_step_contract(
             step_id=str(row["step_id"]),
             project_title=title,
@@ -600,6 +609,7 @@ def _source_launch(
             excluded_scope=excluded_scope,
             component_refs=component_ids,
             verification_commands=verification_commands,
+            provisional_readiness_decisions=readiness,
         )
     return {
         "title": "First source creation sequence",

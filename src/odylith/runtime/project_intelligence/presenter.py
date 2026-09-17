@@ -850,7 +850,7 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
       </div>
       <aside class="project-hero-rail">
         <section class="project-focus-card"><p>{_d(_hero_rail_label(project.get("focus_label"), title=project.get("title"), fallback="Current focus"))}</p>{render_authored_focus(project, render_text=_d)}</section>
-        <section class="project-open-card"><p>{_d(_hero_rail_label(project.get("open_label"), title=project.get("title"), fallback="Open questions"))}</p>{_compact_bullets(project.get("open"))}</section>
+        <section class="project-open-card"><p>{_d(_hero_rail_label(project.get("open_label"), title=project.get("title"), fallback="Open questions"))}</p>{_bullets(project.get("open"))}</section>
       </aside>
     </div>
   </header>

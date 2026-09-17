@@ -36,7 +36,7 @@ def test_handoff_keeps_required_operations_separate_from_excluded_scope(
             "component_refs": ("receipt",),
         },
     )
-    assert contract["schema_version"] == "odylith.greenfield.project-handoff-step.v3"
+    assert contract["schema_version"] == "odylith.greenfield.project-handoff-step.v4"
     assert contract["fact_bindings"]["operational_constraints"] == constraints
     assert contract["fact_bindings"]["excluded_scope"] == non_goals
     assert "preserve_operational_constraints" in contract["required_actions"]

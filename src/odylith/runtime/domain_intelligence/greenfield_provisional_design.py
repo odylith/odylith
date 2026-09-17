@@ -16,7 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
     validate_first_run,
 )
 
-PROVISIONAL_DESIGN_VERSION = "odylith.greenfield.provisional-design.v2"
+PROVISIONAL_DESIGN_VERSION = "odylith.greenfield.provisional-design.v3"
 PROVISIONAL_DESIGN_AUTHORITY_KIND = "provisional_design"
 _TEXT = {"type": "string", "minLength": 1, "maxLength": 4000}
 _KEY = {"type": "string", "minLength": 1, "maxLength": 80, "pattern": "^[a-z][a-z0-9-]*$"}
@@ -39,6 +39,13 @@ _WORKSTREAM_FIELDS = {
     "verification": _TEXT,
 }
 _EXCHANGE_FIELDS = {"from_component": _KEY, "to_component": _KEY, "contract": _TEXT}
+_READINESS_FIELDS = {
+    "key": _KEY,
+    "status": {**_TEXT, "const": "unresolved"},
+    "decision": _TEXT,
+    "affected_workstream_keys": {"type": "array", "minItems": 1, "maxItems": 5, "items": _KEY},
+    "conditional_verification": _TEXT,
+}
 
 
 def _row_schema(fields: Mapping[str, Any], *, minimum: int, maximum: int) -> dict[str, Any]:
@@ -54,7 +61,7 @@ def _row_schema(fields: Mapping[str, Any], *, minimum: int, maximum: int) -> dic
 PROVISIONAL_DESIGN_SCHEMA = {
     "type": "object",
     "additionalProperties": False,
-    "required": ["version", "authority_kind", "components", "workstreams", "exchanges", "first_run"],
+    "required": ["version", "authority_kind", "components", "workstreams", "exchanges", "first_run", "readiness_decisions"],
     "properties": {
         "version": {"type": "string", "const": PROVISIONAL_DESIGN_VERSION},
         "authority_kind": {"type": "string", "const": PROVISIONAL_DESIGN_AUTHORITY_KIND},
@@ -62,6 +69,7 @@ PROVISIONAL_DESIGN_SCHEMA = {
         "workstreams": _row_schema(_WORKSTREAM_FIELDS, minimum=4, maximum=5),
         "exchanges": _row_schema(_EXCHANGE_FIELDS, minimum=0, maximum=32),
         "first_run": FIRST_RUN_SCHEMA,
+        "readiness_decisions": _row_schema(_READINESS_FIELDS, minimum=0, maximum=8),
     },
 }
 
@@ -98,6 +106,7 @@ def validate_provisional_design(
     _require_unique_identities(workstreams, display_field="title", label="workstream")
     component_keys = {row["key"] for row in components}
     workstream_keys = {row["key"] for row in workstreams}
+    validate_readiness_decisions(value["readiness_decisions"], workstream_keys=workstream_keys)
     accepted_orders = set(event_orders)
     supported_orders: set[int] = set()
     for row in components:
@@ -138,6 +147,39 @@ def validate_provisional_design(
     return deepcopy(dict(value))
 
 
+def validate_readiness_decisions(
+    value: Any, *, workstream_keys: Sequence[str] | set[str] | None = None,
+) -> None:
+    """Validate proposed unresolved scope; never infer decisions from vocabulary."""
+
+    rows = _design_rows({"readiness_decisions": value}, "readiness_decisions", _READINESS_FIELDS, minimum=0, maximum=8)
+    _require_unique_identities(rows, display_field="decision", label="readiness decision")
+    for row in rows:
+        keys = row["affected_workstream_keys"]
+        if len(set(keys)) != len(keys) or (workstream_keys is not None and not set(keys) <= set(workstream_keys)):
+            raise ValueError("Greenfield readiness decision has invalid workstream references")
+
+
+def readiness_decisions_for_workstreams(
+    design: Mapping[str, Any], workstream_keys: Sequence[str],
+) -> list[dict[str, Any]]:
+    """Project exact decisions using existing workstream identities, once per row."""
+
+    keys = set(workstream_keys)
+    return [deepcopy(row) for row in design["readiness_decisions"] if keys.intersection(row["affected_workstream_keys"])]
+
+
+def render_readiness_decision(row: Mapping[str, Any]) -> str:
+    """Keep the unresolved decision and its conditional proof visibly proposed."""
+
+    return (
+        f"Unresolved implementation decision — {row['decision']}\n"
+        f"Affected workstreams: {', '.join(row['affected_workstream_keys'])}.\n"
+        "Record the decision before affected source work; this is not accepted policy or proof of readiness.\n"
+        f"Conditional verification: {row['conditional_verification']}"
+    )
+
+
 def provisional_design_from_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
     """Read design only from the complete validated authored-semantic carrier."""
 
@@ -167,6 +209,8 @@ def _design_rows(
             raise ValueError(f"Greenfield provisional {name} has invalid row fields")
         for field, schema in fields.items():
             raw = row[field]
+            if "const" in schema and raw != schema["const"]:
+                raise ValueError(f"Greenfield provisional {name}.{field} has an unsupported value")
             if schema["type"] == "string":
                 if schema["maxLength"] == 80:
                     _require_key(raw)
@@ -212,5 +256,8 @@ __all__ = [
     "PROVISIONAL_DESIGN_SCHEMA",
     "PROVISIONAL_DESIGN_VERSION",
     "provisional_design_from_intent",
+    "readiness_decisions_for_workstreams",
+    "render_readiness_decision",
+    "validate_readiness_decisions",
     "validate_provisional_design",
 ]

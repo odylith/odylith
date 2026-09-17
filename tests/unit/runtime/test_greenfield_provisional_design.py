@@ -36,6 +36,7 @@ def _design(*, event_orders: tuple[int, ...] = (1, 2), count: int = 4) -> dict[s
     return {
         "version": PROVISIONAL_DESIGN_VERSION,
         "authority_kind": PROVISIONAL_DESIGN_AUTHORITY_KIND,
+        "readiness_decisions": [],
         "first_run": {
             "event_orders": list(event_orders),
             "rationale": "Propose the fixture execution order without asserting source chronology.",

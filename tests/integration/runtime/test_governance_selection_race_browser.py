@@ -47,9 +47,17 @@ def test_late_detail_cannot_replace_filtered_state_or_newer_same_id_selection(
         payload["data_source"] = {"preferred_backend": "runtime", "runtime_base_url": base_url + "/selection-race/"}
         pending = []
 
+        def wait_for_pending(count: int) -> None:
+            page.wait_for_function(
+                "count => window.__testPendingDetailCount >= count", arg=count, timeout=15000,
+            )
+            assert len(pending) == count
+
         def runtime_response(route):  # noqa: ANN001
             if "/detail?" in route.request.url:
                 pending.append(route)
+                # A request event is not an interception-callback barrier.
+                page.evaluate("count => { window.__testPendingDetailCount = count; }", len(pending))
             else:
                 route.fulfill(status=200, content_type="application/json", json={"entries": payload.get("entries", [])})
 
@@ -63,7 +71,7 @@ def test_late_detail_cannot_replace_filtered_state_or_newer_same_id_selection(
             page.goto(base_url + f"/odylith/index.html?tab={tab}", wait_until="domcontentloaded")
         frame = page.frame_locator(f"#frame-{tab}")
         frame.locator(row).first.wait_for()
-        assert len(pending) == 1
+        wait_for_pending(1)
         selected_url = pending[0].request.url
         frame.locator(query).fill("zz-no-record-matches-zz")
         assert frame.locator(row).count() == 0
@@ -79,11 +87,11 @@ def test_late_detail_cannot_replace_filtered_state_or_newer_same_id_selection(
         # Re-enter the same selection twice while both actual detail requests remain pending.
         with page.expect_request(detail_request):
             frame.locator(query).fill("")
-        assert len(pending) == 2
+        wait_for_pending(2)
         frame.locator(query).fill("zz-no-record-matches-zz")
         with page.expect_request(detail_request):
             frame.locator(query).fill("")
-        assert len(pending) == 3
+        wait_for_pending(3)
         assert all(route.request.url == selected_url for route in pending)
         _release_detail(page, frame, pending[2], "Newest selected detail")
         assert "Newest selected detail" in frame.locator("#detail").inner_text()

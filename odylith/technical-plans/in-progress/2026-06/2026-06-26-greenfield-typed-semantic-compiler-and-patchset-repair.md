@@ -1,5 +1,42 @@
 Status: In progress
 
+## Scoped unresolved readiness candidate (2026-09-17)
+
+Bounded review identifies a representation gap independent of failed native
+v54/v55 trials: advisory assumptions cannot own unresolved status, affected work
+and conditional verification. Reject a project-wide readiness assumption, which
+would gate unrelated work or require prose parsing. Test one explicit collection
+under provisional design, scoped by existing workstream keys; derive component
+relevance through those workstreams. Preserve advisory assumptions and source
+custody. Withhold affected coding-ready claims, not truthful governance publication.
+Require exact Brief, Radar, Registry and handoff projection, empty/advisory controls
+and tamper negatives before any native comparison. No native run is admitted yet;
+safety P1 and release gates remain open. Evidence and predeclared controls:
+/Users/freedom/.codex/odylith-scoped-readiness.wfD6SX/PLAN.md.
+
+The structural candidate now preserves scoped decisions through provisional
+design v3, semantics v17, coding-readiness v2 and handoff v4. Author v56 requests
+the collection; v54/v55 remain rejected. Empty/advisory controls, many-to-many
+component scope, projection tamper negatives and real sealed compile/commit pass.
+The commit kernel is unchanged and remains independent of newer pre-confirm
+schema versions. Focused combined proof passes 103 controls before final freeze.
+Visual inspection then finds the Project open-items sentence budget drops the
+conditional check despite correct handoff prompts. Remove that shortening at
+the presenter owner; 43 focused controls now verify complete visible card text
+and selectable prompts. Final frozen Greenfield/install/browser proof belongs
+under the same evidence directory's checkpoint receipts. No native quality or
+latency improvement is established; safety P1 and host qualification stay open.
+
+The first frozen run preserves all bound inputs and publication: 2,046 selected
+unit/install checks and 458 browser checks pass, with two browser observation
+races retained as failures. CB-330 records the request-before-route-callback and
+redirect-before-tab-activation gaps. Correct those test observation boundaries
+without changing product semantics or weakening consumer invariants, then freeze
+again. The first checkpoint is not accepted. Final corrected proof is assigned
+to /Users/freedom/.codex/odylith-scoped-readiness.wfD6SX/checkpoint-2/.
+The callback receipt and selected-tab waits pass all five focused browser
+controls without sleeps, production edits or changed invariant assertions.
+
 ## Explicit model runtime outcomes (2026-09-17)
 
 The rejected v55 run exposed a separate consumer defect: structured provider

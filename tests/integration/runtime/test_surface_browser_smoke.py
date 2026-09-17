@@ -278,7 +278,7 @@ def test_surface_entrypoints_redirect_into_shell_and_load_requested_surface(brow
             response = page.goto(base_url + route, wait_until="domcontentloaded")
             assert response is not None and response.ok, route
             page.wait_for_url(re.compile(rf".*/odylith/index\.html\?tab={tab}([&#].*|$)"), timeout=15000)
-            assert page.locator(f"#tab-{tab}").get_attribute("aria-selected") == "true"
+            page.locator(f"#tab-{tab}[aria-selected='true']").wait_for(timeout=15000)
             page.frame_locator(frame_selector).locator(heading_selector, has_text=heading_text).wait_for(timeout=15000)
             _assert_clean_page(page, observation)
 

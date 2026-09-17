@@ -122,7 +122,8 @@ def _provisional_design(*, event_orders: tuple[int, ...] = (1, 2, 3)) -> dict[st
     ]
     assigned_orders.append(list(event_orders))
     return {
-        "version": "odylith.greenfield.provisional-design.v2",
+        "version": "odylith.greenfield.provisional-design.v3",
+        "readiness_decisions": [],
         "authority_kind": "provisional_design",
         "first_run": {
             "event_orders": list(event_orders),

@@ -43,6 +43,7 @@ def test_implementation_handoff_preserves_exact_authored_release_requirements(
 def test_implementation_handoff_preserves_proof_under_separate_scope_labels(proof: str) -> None:
     first_path = "The operator records Ω-Receipt"
     prompt = _implementation_prompt(
+        readiness_decisions=[],
         target={"workstream_id": "B-701", "workstream_title": "Receipt capture",
                 "deliverable": "Record Ω-Receipt", "verification": "Read Ω-Receipt"},
         first_path=first_path, release_requirements=proof,

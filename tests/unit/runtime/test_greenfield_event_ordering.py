@@ -181,6 +181,7 @@ def _authored_input():
     })
     design = {
         "version": PROVISIONAL_DESIGN_VERSION, "authority_kind": "provisional_design",
+        "readiness_decisions": [],
         "components": [
             {"key": f"boundary-{index}", "name": f"Boundary {index}", "responsibility": "Review requests.",
              "supported_event_orders": [min(index, 3)], "verification": "Inspect reviewed requests."}

@@ -26,6 +26,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.greenfield_completion_types import (
     GreenfieldCompletionPackage,
 )
+from odylith.runtime.domain_intelligence.greenfield_experience import build_next_steps
 from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
     PROJECT_HANDOFF_STEP_SEQUENCE,
     coding_readiness_contract_issues,
@@ -34,6 +35,9 @@ from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
     render_selected_workstream_scope,
 )
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
+    provisional_design_from_intent, render_readiness_decision,
+)
 from odylith.runtime.domain_intelligence.greenfield_traceability import first_executable_workstream
 from odylith.runtime.domain_intelligence.greenfield_scalar_values import (
     nested_text_values as text_values,
@@ -129,6 +133,13 @@ def _authored_project_dashboard_contract_issues(
     ]:
         issues.append("model-authored Project dashboard drifted from typed component relations")
     components = mapping_rows(proposal.get("components"))
+    readiness_copy = [render_readiness_decision(row) for row in provisional_design_from_intent(intent)["readiness_decisions"]]
+    open_items = project_dashboard_preview.get("open")
+    if (
+        not isinstance(open_items, list) or open_items[:len(readiness_copy)] != readiness_copy
+        or any(open_items.count(row) != 1 for row in readiness_copy)
+    ):
+        issues.append("model-authored Project dashboard lost its unresolved implementation decisions")
     story = (
         project_dashboard_preview.get("product_story")
         if isinstance(project_dashboard_preview.get("product_story"), Mapping)
@@ -184,6 +195,10 @@ def _authored_project_dashboard_contract_issues(
     )
     try:
         expected_target = _canonical_implementation_target(package)
+        expected_readiness = build_next_steps(
+            proposal=package.proposal, backlog_result=package.backlog_result or {},
+            first_release_workstreams=package.release_workstream_ids, release_selector=package.release_selector,
+        )["coding_readiness_contract"]["provisional_readiness_decisions"]
     except ValueError as exc:
         return [*issues, f"model-authored Project handoff has invalid canonical implementation target: {exc}"]
     for index, (prompt, expected_step_id) in enumerate(
@@ -194,10 +209,14 @@ def _authored_project_dashboard_contract_issues(
         for issue in project_handoff_step_contract_issues(
             contract,
             expected_step_id=expected_step_id,
+            expected_readiness_decisions=expected_readiness,
         ):
             issues.append(f"model-authored Project handoff step {index} {issue}")
         if not isinstance(contract, Mapping):
             continue
+        for decision in expected_readiness:
+            if not isinstance(prompt.get("prompt"), str) or prompt["prompt"].count(render_readiness_decision(decision)) != 1:
+                issues.append(f"model-authored Project handoff step {index} lost its exact unresolved decision copy")
         bindings = contract.get("fact_bindings")
         if not isinstance(bindings, Mapping):
             continue
@@ -290,12 +309,21 @@ def next_steps_preview_issues(
     if semantic_checks and len(gates) < 4:
         issues.append("operator next-steps preview must carry coding-readiness gates")
     if not semantic_checks:
-        issues.extend(
-            coding_readiness_contract_issues(
-                next_steps_preview.get("coding_readiness_contract"),
-                expected_workstream_id=start_id,
+        try:
+            expected_next_steps = build_next_steps(
+                proposal=package.proposal, backlog_result=package.backlog_result or {},
+                first_release_workstreams=package.release_workstream_ids, release_selector=package.release_selector,
             )
-        )
+        except ValueError as exc:
+            issues.append(f"operator next-steps preview has invalid canonical readiness: {exc}")
+        else:
+            issues.extend(coding_readiness_contract_issues(
+                next_steps_preview.get("coding_readiness_contract"), expected_workstream_id=start_id,
+                expected_readiness_decisions=expected_next_steps["coding_readiness_contract"]["provisional_readiness_decisions"],
+            ))
+            for field in ("implementation_prompt", "coding_readiness_gates"):
+                if next_steps_preview.get(field) != expected_next_steps[field]:
+                    issues.append(f"operator next-steps preview drifted from exact canonical {field}")
     commands = text_values(next_steps_preview.get("verification_commands"))
     if len(commands) < 2:
         issues.append("operator next-steps preview must include multiple verification commands")

@@ -32,6 +32,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 )
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
     provisional_design_from_intent,
+    render_readiness_decision,
 )
 from odylith.runtime.domain_intelligence.greenfield_provisional_package import (
     build_provisional_backlog,
@@ -208,6 +209,7 @@ def build_authored_greenfield_proposal(
             operational_constraints=operational_constraints,
             evidence_requirements=evidence_requirements,
             assumptions=assumptions,
+            readiness_decisions=provisional_design["readiness_decisions"],
         ),
         "project_intelligence": _project_intelligence(
             title=title,
@@ -528,6 +530,7 @@ def _project_brief(
     operational_constraints: Sequence[str],
     evidence_requirements: Sequence[str],
     assumptions: Sequence[Mapping[str, str]],
+    readiness_decisions: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
     problem_statement = problem
     assumption_values = assumption_preview_values(assumptions)
@@ -572,7 +575,7 @@ def _project_brief(
         "customization_options": [],
         "customization_prompts": [],
         "pre_coding_checkpoints": [],
-        "coding_readiness_gates": [],
+        "coding_readiness_gates": [render_readiness_decision(row) for row in readiness_decisions],
         "host_independent_paths": [],
         "actors": list(human_actors),
         "internal_systems": list(internal_systems),

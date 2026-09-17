@@ -22,6 +22,9 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 from odylith.runtime.domain_intelligence.greenfield_provisional_package import (
     PROVISIONAL_DESIGN_ROOT, provisional_delivery_acceptance_text, provisional_exchange_text,
 )
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
+    render_readiness_decision, validate_readiness_decisions,
+)
 from odylith.runtime.governance import artifact_tribunal
 
 
@@ -140,6 +143,10 @@ def build_authored_component_spec(row: Mapping[str, Any]) -> str:
             lines.extend([
                 "Shared acceptance across " + ", ".join(f"`{key}`" for key in workstream["component_keys"]) + ".", "",
             ])
+    if contract["readiness_decisions"]:
+        lines.extend(["## Unresolved implementation decisions", ""])
+        for decision in contract["readiness_decisions"]:
+            lines.extend([_evidence_block(render_readiness_decision(decision)), ""])
     lines.extend([
         "## Source-event support", "",
         "These exact source events support the design; their actors retain ownership of their actions.", "",
@@ -165,7 +172,7 @@ def _provisional_component_contract(row: Mapping[str, Any]) -> Mapping[str, Any]
     contract = row.get("component_contract")
     fields = {
         "authority_kind", "design_ref", "provisional_component", "support_event_refs",
-        "supporting_events", "exchanges", "delivery_workstreams",
+        "supporting_events", "exchanges", "delivery_workstreams", "readiness_decisions",
     }
     if (
         row.get("projection_origin") != AUTHORED_PROJECTION_ORIGIN
@@ -204,13 +211,19 @@ def _provisional_component_contract(row: Mapping[str, Any]) -> Mapping[str, Any]
         raise ValueError("Registry component has duplicate delivery authority reference")
     if "workstreams" in row:
         _require_delivery_allocation(row, deliveries)
+    readiness = contract["readiness_decisions"]
+    # A shared decision retains its full scope even in a component-specific view.
+    validate_readiness_decisions(readiness)
+    delivery_keys = {delivery["provisional_workstream"]["key"] for delivery in deliveries}
+    if any(not delivery_keys.intersection(decision["affected_workstream_keys"]) for decision in readiness):
+        raise ValueError("Registry component cannot inherit unrelated readiness decisions")
     checks = {
         "component_id": component.get("key"), "label": component.get("name"),
         "responsibility": component.get("responsibility"),
         "validation": [component.get("verification"), *[
             provisional_delivery_acceptance_text(delivery["provisional_workstream"])
             for delivery in deliveries
-        ]], "kind": "component",
+        ], *[render_readiness_decision(decision) for decision in readiness]], "kind": "component",
     }
     if any(row.get(key) != value for key, value in checks.items()):
         raise ValueError("Registry component drifted from its canonical proposed fields")
