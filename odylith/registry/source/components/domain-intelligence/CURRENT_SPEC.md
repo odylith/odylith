@@ -4,6 +4,21 @@ Last updated: 2026-09-17
 
 ## Overview
 
+Known model timeouts and unavailable-provider failures now retain a typed
+environment outcome through authoring, review and public CLI output. Consumer
+copy states that no records were created and gives a next action, without raw
+provider diagnostics. Semantic rejection remains distinct. Prompt/schema/profile
+versions, custody, immutable review and the 90/120/150 public windows are unchanged.
+Initial proof passes 294 focused controls; final review and frozen evidence live
+under /Users/freedom/.codex/odylith-model-outcomes.tSsbT1/. This does not qualify
+native host confirmation or improve the measured proposal-success rate.
+
+Safety P1 remains open. A truthful package may leave access, minimum-data,
+disposition and consent-integrity policies unresolved, but must make those
+decisions visible, actionable and gating, with affected workstreams and
+conditional negative checks. A generic disclaimer cannot establish readiness;
+source-absent policies and authority must not become accepted facts.
+
 The admitted one-shot v55 operating-limits candidate is rejected. Its initial
 Sol-high author times out after 135.001618 seconds without a response; the command
 returns an error after 135.373823 seconds, makes one call and changes no fixture

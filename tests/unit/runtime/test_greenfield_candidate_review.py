@@ -215,7 +215,7 @@ def test_late_review_retains_provider_evidence_without_admitting_or_retrying(sta
     provider.last_failure_code = "timeout" if response is None else ""
     provider.last_failure_detail = "Codex CLI exceeded its request budget." if response is None else ""
     observation = {}
-    with pytest.raises(RuntimeError, match="exceeded its time window"):
+    with pytest.raises(RuntimeError, match="exceeded its model time window"):
         run_review(provider, clock, observation=observation)
     assert provider.calls == 1
     assert observation["response"] == response
@@ -243,7 +243,7 @@ def test_native_author_requires_admission_and_preserves_source_and_design():
 
 
 def test_no_review_provider_cannot_return_authored_success():
-    with pytest.raises(author.GreenfieldModelAuthoringError, match="could not be verified"):
+    with pytest.raises(author.GreenfieldModelAuthoringError, match="unavailable"):
         author.author_greenfield_intent(evidence_text=_source(), provider=StructuredAuthoringProvider(_response(_source())))
 
 
@@ -278,7 +278,7 @@ def test_review_finalization_cannot_admit_a_late_role():
     clock = lambda: next(ticks, 55.1)
     provider = StructuredAuthoringProvider({"admissible": True, "issues": []})
     observation = {}
-    with pytest.raises(RuntimeError, match="exceeded its time window"):
+    with pytest.raises(RuntimeError, match="exceeded its model time window"):
         run_review(provider, clock, observation=observation)
     assert provider.calls == 1
     assert observation["elapsed_seconds"] == 55.1

@@ -1,5 +1,28 @@
 Status: In progress
 
+## Explicit model runtime outcomes (2026-09-17)
+
+The rejected v55 run exposed a separate consumer defect: structured provider
+timeout evidence became a generic package failure. Preserve the existing model
+status in one shared typed error owner across authoring, review and the public
+CLI. Text explains timeout or unavailability and a next action; JSON additionally
+identifies an environment outcome. Keep semantic denial distinct, diagnostics
+private, zero writes on these failures, and the existing call/deadline limits.
+No prompt, schema, profile, projection or repair mechanism changes are admitted.
+The first focused suite passes 294 controls; final independent review and frozen
+proof belong to /Users/freedom/.codex/odylith-model-outcomes.tSsbT1/ receipts.
+This improves failure UX, not proposal completion reliability or release status.
+
+Independent safety re-adjudication retains P1 but clarifies the smallest valid
+outcome: visible, explicitly unresolved record-handling readiness decisions can
+be useful governance without inventing policy. Access authority, minimum data,
+disposition and consent-integrity decisions must identify affected workstreams,
+carry observable conditional checks and prevent false coding-ready claims.
+Generic disclaimers or advisory-only assumptions do not suffice. Trace existing
+readiness/proof ownership before admitting any further mechanism comparison;
+do not repeat v54/v55 wording-only trials or impose comprehensive design readiness.
+Native confirmation/chat visibility and all other release gates remain open.
+
 ## Provisional safety candidate rejected (2026-09-17)
 
 The one admitted v55 comparison fails before producing any authored response.

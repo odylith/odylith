@@ -278,7 +278,7 @@ def test_edit_read_time_reduces_the_provider_window_before_discovery(monkeypatch
     )
     monkeypatch.setattr(greenfield_proposals_cli.time, "perf_counter", lambda: 105.0)
 
-    with pytest.raises(RuntimeError, match="while reading evidence"):
+    with pytest.raises(RuntimeError, match="model time window") as exc_info:
         greenfield_proposals_cli._compile_prompt_evidence_transaction(
             repo_root=tmp_path,
             prompt="Create one bounded product.",
@@ -289,6 +289,7 @@ def test_edit_read_time_reduces_the_provider_window_before_discovery(monkeypatch
         )
 
     assert provider_discovery_calls == 0
+    assert exc_info.value.outcome == {"kind": "environment", "code": "MODEL_TIMEOUT_NO_WRITE"}
 
 
 @pytest.mark.parametrize("budget", [90.0, 120.0, 150.0])

@@ -12,6 +12,7 @@ import hashlib
 import json
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_model_outcomes import GreenfieldModelRuntimeError
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     get_greenfield_model_profile,
     require_greenfield_model_profile_observation,
@@ -132,14 +133,14 @@ def review_greenfield_candidate(
     started = clock()
     review_deadline = deadline
     if review_deadline - started < 1.0:
-        raise RuntimeError("Greenfield review has no remaining model time")
+        raise GreenfieldModelRuntimeError("timeout")
     payload = candidate_review_payload(evidence_text, candidate, source_spans=source_spans)
     frozen_payload = _encoded(payload)
     if provider_factory is None or (provider := provider_factory()) is None:
-        raise RuntimeError("Greenfield candidate review is unavailable")
+        raise GreenfieldModelRuntimeError("unavailable")
     timeout = review_deadline - clock()
     if timeout < 1.0:
-        raise RuntimeError("Greenfield review setup exhausted the remaining model time")
+        raise GreenfieldModelRuntimeError("timeout")
     before = odylith_reasoning.provider_failure_metadata(provider)
     require_greenfield_model_profile_observation(
         profile_id=profile_id, provider=before.get("provider", ""),
@@ -162,7 +163,7 @@ def review_greenfield_candidate(
         metadata = odylith_reasoning.provider_failure_metadata(provider)
         observation["provider"] = metadata
         if clock() > review_deadline:
-            raise RuntimeError("Greenfield candidate review exceeded its time window")
+            raise GreenfieldModelRuntimeError("timeout")
         model_profile = {
             "profile_id": profile_id, "provider": metadata.get("provider", ""),
             "model": metadata.get("model") or request.model,
@@ -172,6 +173,8 @@ def review_greenfield_candidate(
         require_greenfield_model_profile_observation(**model_profile, request_role="candidate_review")
         if _encoded(payload) != frozen_payload:
             raise RuntimeError("Greenfield review changed its candidate or evidence")
+        if response is None and metadata.get("code") in {"timeout", "unavailable"}:
+            raise GreenfieldModelRuntimeError(metadata["code"])
         if (not isinstance(response, Mapping) or set(response) != {"admissible", "issues"}
                 or type(response["admissible"]) is not bool or not isinstance(response["issues"], list)
                 or len(response["issues"]) != (0 if response["admissible"] else 1)):
@@ -189,12 +192,14 @@ def review_greenfield_candidate(
             "model_profile": model_profile, "elapsed_seconds": max(0.0, clock() - started),
         }
         if clock() > review_deadline:
-            raise RuntimeError("Greenfield review validation exceeded its time window")
+            raise GreenfieldModelRuntimeError("timeout")
         return receipt
+    except TimeoutError as exc:
+        raise GreenfieldModelRuntimeError("timeout") from exc
     finally:
         finished = clock()
         observation["elapsed_seconds"] = max(0.0, finished - started)
         if finished > review_deadline:
-            raise RuntimeError("Greenfield candidate review exceeded its time window")
+            raise GreenfieldModelRuntimeError("timeout")
         if receipt is not None:
             receipt["elapsed_seconds"] = observation["elapsed_seconds"]

@@ -24,6 +24,10 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     authored_component_relation_facts,
 )
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import review_greenfield_candidate
+from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
+    GreenfieldModelAuthoringError,
+    GreenfieldModelRuntimeError,
+)
 from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
     ASSUMPTION_SCHEMA,
     assumption_rows,
@@ -128,10 +132,6 @@ _CONSISTENCY_STATUSES = (
 )
 
 
-class GreenfieldModelAuthoringError(RuntimeError):
-    """A model-produced Product Intent could not be safely accepted."""
-
-
 @dataclass(frozen=True)
 class GreenfieldAuthoringClarification:
     """One model-identified material dimension rendered by caller policy."""
@@ -201,9 +201,7 @@ def author_greenfield_intent(
         source_language=source_language,
     )
     if provider is None:
-        raise GreenfieldModelAuthoringError(
-            "A verified source-cited Greenfield package could not be produced because model authoring is unavailable; no records were created."
-        )
+        raise GreenfieldModelRuntimeError("unavailable")
     profile = get_greenfield_model_profile(model_profile_id)
     request_model = str(model or profile.model).strip()
     request_effort = str(reasoning_effort or profile.reasoning_effort).strip().casefold()
@@ -219,7 +217,7 @@ def author_greenfield_intent(
         model_deadline = min(model_deadline, deadline)
     initial_budget_seconds = model_deadline - started
     if initial_budget_seconds < 1.0:
-        raise GreenfieldModelAuthoringError("Greenfield exhausted its model time window; no records were created.")
+        raise GreenfieldModelRuntimeError("timeout")
     provider_before_call = odylith_reasoning.provider_failure_metadata(provider)
     require_greenfield_model_profile_observation(
         profile_id=profile.profile_id,
@@ -245,6 +243,8 @@ def author_greenfield_intent(
             failure={"stage": "initial_authoring", "profile_id": profile.profile_id,
                 "effective_timeout_seconds": initial_budget_seconds,
                 "elapsed_seconds": max(0.0, clock() - started), "code": type(exc).__name__})
+        if isinstance(exc, TimeoutError):
+            raise GreenfieldModelRuntimeError("timeout") from exc
         raise GreenfieldModelAuthoringError(
             "Greenfield model authoring is unavailable; no records were created."
         ) from exc
@@ -281,6 +281,10 @@ def author_greenfield_intent(
                 },
             },
         )
+        if elapsed_seconds > initial_budget_seconds or failure_code == "timeout":
+            raise GreenfieldModelRuntimeError("timeout")
+        if failure_code == "unavailable":
+            raise GreenfieldModelRuntimeError("unavailable")
         raise GreenfieldModelAuthoringError(
             "A verified source-cited Greenfield package could not be produced; no records were created."
         )
@@ -294,9 +298,7 @@ def author_greenfield_intent(
     }
     try:
         if elapsed_seconds > initial_budget_seconds:
-            raise GreenfieldModelAuthoringError(
-                "Greenfield authoring exceeded its declared time window; no records were created."
-            )
+            raise GreenfieldModelRuntimeError("timeout")
         frozen_response = deepcopy(response)
         authored = _validated_authoring_response(
             response, elapsed_seconds=elapsed_seconds,
@@ -305,7 +307,7 @@ def author_greenfield_intent(
         if response != frozen_response:
             raise GreenfieldModelAuthoringError("Greenfield author validation changed its candidate; no records were created.")
         if clock() > model_deadline:
-            raise GreenfieldModelAuthoringError("Greenfield validation exceeded its model time window; no records were created.")
+            raise GreenfieldModelRuntimeError("timeout")
         if isinstance(authored, GreenfieldAuthoringClarification):
             return replace(authored, elapsed_seconds=max(0.0, clock() - started))
         try:
@@ -315,6 +317,10 @@ def author_greenfield_intent(
                 provider_factory=review_provider_factory, deadline=model_deadline,
                 clock=clock, observation=review_observation,
             )
+        except GreenfieldModelRuntimeError:
+            raise
+        except TimeoutError as exc:
+            raise GreenfieldModelRuntimeError("timeout") from exc
         except Exception as exc:
             raise GreenfieldModelAuthoringError(
                 "A source-faithful Greenfield package could not be verified; no records were created."
@@ -340,7 +346,7 @@ def author_greenfield_intent(
             },
         )
         if clock() > model_deadline:
-            raise GreenfieldModelAuthoringError("Greenfield exceeded its model time window; no records were created.")
+            raise GreenfieldModelRuntimeError("timeout")
 
 
 def authoring_tier(profile_id: str) -> str:

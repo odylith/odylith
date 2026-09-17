@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import GreenfieldClarificationRequired
+from odylith.runtime.domain_intelligence.greenfield_model_outcomes import GreenfieldModelRuntimeError
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
     require_product_create_transaction_quality_approved,
 )
@@ -215,6 +216,8 @@ def _transaction_review_text(
 def _print_greenfield_error(exc: Exception, *, as_json: bool) -> None:
     if as_json:
         payload: dict[str, Any] = {"mode": "error", "error": str(exc)}
+        if isinstance(exc, GreenfieldModelRuntimeError):
+            payload["outcome"] = exc.outcome
         if isinstance(exc, GreenfieldPreconfirmEngineError):
             payload["commit_manifest"] = exc.manifest
         print(json.dumps(payload, indent=2, sort_keys=True))
@@ -307,9 +310,7 @@ def _compile_prompt_evidence_transaction(
     profile_id = model_profile_id_for_repair_tier(requested_tier)
     profile = get_greenfield_model_profile(profile_id)
     if profile.model_timeout_seconds - max(0.0, now() - started) < 1.0:
-        raise RuntimeError(
-            "Greenfield proposal exhausted its shared time budget while reading evidence; no records were created."
-        )
+        raise GreenfieldModelRuntimeError("timeout")
     greenfield_generation_store.require_greenfield_working_generation(repo_root)
     provider_result = _greenfield_authoring_provider(
         repo_root=repo_root,
@@ -320,9 +321,7 @@ def _compile_prompt_evidence_transaction(
     reasoning_effort = profile.reasoning_effort
     authoring_timeout_seconds = profile.model_timeout_seconds - max(0.0, now() - started)
     if authoring_timeout_seconds < 1.0:
-        raise RuntimeError(
-            "Greenfield proposal exhausted its shared time budget during provider setup; no records were created."
-        )
+        raise GreenfieldModelRuntimeError("timeout")
     authoring_receipt: dict[str, Any] = {}
     candidate_intent = materialize_model_authored_intent(
         prompt=prompt,
@@ -448,17 +447,17 @@ def _greenfield_authoring_provider(
         model=model,
         codex_reasoning_effort=effort,
     )
-    provider = odylith_reasoning.provider_from_config(
-        config,
-        repo_root=repo_root,
-        require_auto_mode=True,
-        allow_implicit_local_provider=True,
-    )
-    if provider is None:
-        raise RuntimeError(
-            "A verified source-cited Greenfield package could not be produced because model authoring is unavailable; "
-            "no records were created."
+    try:
+        provider = odylith_reasoning.provider_from_config(
+            config,
+            repo_root=repo_root,
+            require_auto_mode=True,
+            allow_implicit_local_provider=True,
         )
+    except TimeoutError as exc:
+        raise GreenfieldModelRuntimeError("timeout") from exc
+    if provider is None:
+        raise GreenfieldModelRuntimeError("unavailable")
     return provider, model, effort
 
 

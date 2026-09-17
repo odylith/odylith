@@ -318,7 +318,7 @@ def test_late_packet_cannot_skip_review_after_spending_the_shared_rescue_window(
     source = _source()
     provider = StructuredAuthoringProvider(_response(source))
     reviewer = AdmittingReviewProvider()
-    with pytest.raises(GreenfieldModelAuthoringError, match="could not be verified") as exc_info:
+    with pytest.raises(GreenfieldModelAuthoringError, match="model time window") as exc_info:
         author_greenfield_intent(
             evidence_text=source, provider=provider, timeout_seconds=109,
             model_profile_id=RESCUE_PROFILE_ID,
@@ -327,7 +327,7 @@ def test_late_packet_cannot_skip_review_after_spending_the_shared_rescue_window(
         )
     assert provider.calls == 1
     assert reviewer.calls == 0
-    assert str(exc_info.value.__cause__) == "Greenfield review has no remaining model time"
+    assert exc_info.value.outcome == {"kind": "environment", "code": "MODEL_TIMEOUT_NO_WRITE"}
     assert provider.requests[0].timeout_seconds == 105.0
 
 
@@ -511,10 +511,8 @@ def test_initial_non_mapping_response_retains_bounded_failure_observation(
     finally:
         os.close(descriptor)
 
-    assert str(exc_info.value) == (
-        "A verified source-cited Greenfield package could not be produced; "
-        "no records were created."
-    )
+    assert str(exc_info.value) == "Greenfield exceeded its model time window; no records were created. Try again."
+    assert exc_info.value.outcome == {"kind": "environment", "code": "MODEL_TIMEOUT_NO_WRITE"}
     retained = json.loads(observation.read_text(encoding="utf-8"))
     assert retained["authoring_version"] == GREENFIELD_INTENT_AUTHORING_VERSION
     assert retained["semantic_model_call_count"] == 1
@@ -536,7 +534,7 @@ def test_initial_non_mapping_response_retains_bounded_failure_observation(
     assert provider.calls == 1
 
 
-def test_initial_non_mapping_response_without_proof_fd_keeps_public_error_exact(
+def test_initial_non_mapping_response_without_proof_fd_reports_unavailability(
     monkeypatch,
 ) -> None:
     monkeypatch.delenv(GREENFIELD_MODEL_PROOF_FD_ENV, raising=False)
@@ -553,7 +551,8 @@ def test_initial_non_mapping_response_without_proof_fd_keeps_public_error_exact(
         )
 
     assert str(exc_info.value) == (
-        "A verified source-cited Greenfield package could not be produced; "
-        "no records were created."
+        "Greenfield model authoring is unavailable; no records were created. "
+        "Check the configured provider and try again."
     )
+    assert exc_info.value.outcome == {"kind": "environment", "code": "MODEL_UNAVAILABLE_NO_WRITE"}
     assert provider.calls == 1
