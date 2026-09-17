@@ -446,7 +446,9 @@ def _context_view(
         if owner_id is None:
             raise ValueError("authored Atlas performer is missing its typed context owner")
         action_id = f"{owner_id}_actions"
-        event_label = "<br/>".join(_mermaid_label(event) for event in events)
+        event_label = "<br/><br/>".join(
+            "• " + _mermaid_label(event, width=42) for event in events
+        )
         lines.append(f'  {action_id}["{event_label}"]')
         lines.append(f'  {owner_id} -->|"performs"| {action_id}')
         boxes.append(
@@ -520,7 +522,7 @@ def _product_boundary_projection(
 ) -> tuple[list[str], list[dict[str, str]], tuple[str, ...]]:
     if not components:
         return (
-            [f'  product["{_mermaid_label(title)}<br/>{_mermaid_label(product_story)}"]'],
+            [f'  product["{_mermaid_label(title)}"]'],
             [_box("product", title, "Product description", product_story)],
             (),
         )

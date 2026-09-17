@@ -1,5 +1,37 @@
 Status: In progress
 
+## Make context ownership readable (2026-09-17)
+
+The fresh retained-native screenshot repeats the complete product story inside
+the graph and presents several exact events as one undifferentiated text block.
+Compare a context-only projection: title-only product node with the full story
+retained in its sealed explanation, plus visually separated exact event entries
+inside the existing performer group. Keep all typed ownership, source words,
+participants, external boundaries and grouped ownership distinct from sequence.
+Use the existing lossless word wrapper; do not infer recipient edges, add
+semantics, change schemas/models/prompts/deadlines or clip text. Characterize the
+old duplicate first, then require exact custody and owner-kind controls, a
+disclosed-intent complete-package comparison and the 32-state browser matrix.
+Adopt only if rendered readability improves without semantic or surface drift.
+
+Result: adopt the two-expression presentation change. The two new controls fail
+on the old renderer; all 51 focused controls pass afterward. A disclosed-intent
+prewrite recompilation passes the complete 5/5/5 package and all 32 browser
+states in 21.566 seconds with 1,425 declared inputs unchanged and no model calls.
+Four HTTP/file desktop/mobile readings retain exact story and event-box text;
+native SVG geometry finds five bullets, four separations and zero clipped
+characters. Independent visual review accepts the clearer ownership view.
+Exact context boxes/narrative and the other four diagrams are unchanged.
+The story-description guarantee targets the no-source-components branch;
+componentful boundaries are unchanged. Mobile Fit is an overview; full-size
+reading uses the existing zoom/pan controls. The first external evidence export
+failed on a PosixPath after package validation; preserve its failure and the
+separate corrected comparison, without changing production to accommodate it.
+Evidence: /Users/freedom/.codex/odylith-context-readability.ma4Wpj/.
+This is source-local projection proof, not fresh semantic, installed-release,
+latency-reliability or all-engine/native-chat qualification. Public 90/120/150,
+shared 75/105/135, review 20 and commit below 60 seconds remain unchanged.
+
 ## Prove settlement without reauthoring (2026-09-17)
 
 Independently reviewed scope: clone the retained, previously sealed native

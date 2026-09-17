@@ -163,7 +163,8 @@ def test_human_path_retains_source_story_and_complete_proposed_package(tmp_path)
     context = proposal["diagrams"][0]
     assert 'subgraph product[' not in context["mermaid_source"]
     context_labels = context["mermaid_source"].replace("<br/>", " ")
-    assert candidate["product_story"] in context_labels
+    assert candidate["product_story"] not in context_labels
+    assert f'product["{candidate["title"]}"]' in context_labels
     product_box = next(box for box in context["diagram_boxes"] if box["node_id"] == "product")
     assert product_box["role"] == "Product description"
     assert product_box["description"] == candidate["product_story"]

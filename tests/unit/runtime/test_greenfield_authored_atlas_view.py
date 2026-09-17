@@ -274,6 +274,11 @@ def test_context_groups_five_exact_events_under_one_human_performer() -> None:
     assert context["mermaid_source"].count('actor1_actions["') == 1
     assert boxes["actor1_actions"]["label"] == "\n".join(events)
     assert [line for line in boxes["actor1_actions"]["label"].splitlines()] == list(events)
+    assert (
+        'actor1_actions["'
+        + "<br/><br/>".join("• " + mermaid_label(event, width=42) for event in events)
+        + '"]'
+    ) in context["mermaid_source"]
 
 
 def test_context_groups_each_human_performers_events_without_cross_assignment() -> None:

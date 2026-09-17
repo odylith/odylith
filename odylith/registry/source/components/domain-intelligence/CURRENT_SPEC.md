@@ -1,8 +1,17 @@
 # Domain Intelligence
-Last updated: 2026-09-16
+Last updated: 2026-09-17
 
 
 ## Overview
+
+The source-context view groups exact events by their typed performer and makes
+each event visually distinct with lossless wrapping and spacing. In the
+no-source-components branch, the product node shows only its title; its sealed
+box description retains the complete product story. Source-owned component
+boundaries and proposed-design views are unchanged. This presentation must not
+infer chronology, recipient edges or new ownership from prose. Focused custody,
+native rendering and complete-package browser proof support this bounded change,
+not unseen-input semantic or release qualification.
 
 Registry verification and the capability-support Atlas view now retain each
 component's proposed boundary check alongside exact linked-workstream acceptance.
@@ -397,6 +406,9 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_view.py`
 - **2026-08-10 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_component_owned_state.py`, `tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py`
@@ -412,9 +424,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-08-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-06-greenfield-sealed-intent-cannot-prove-atomic-accepted-fact-custody.md`, `src/odylith/runtime/domain_intelligence/greenfield_atomic_fact_ledger.py`, `tests/unit/runtime/test_greenfield_prompt_workflow_custody.py`
-- **2026-08-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_prompt_evidence_interpretation.py`, `tests/fixtures/greenfield-release-corpus/retired-ba25-final-holdout-regressions.v1.json`
 <!-- registry-requirements:end -->
 
 ## Feature History
