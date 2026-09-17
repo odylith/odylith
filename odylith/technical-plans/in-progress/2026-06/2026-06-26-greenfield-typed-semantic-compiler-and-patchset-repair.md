@@ -1,5 +1,84 @@
 Status: In progress
 
+## Resolve a semantic denial, not a timing failure (2026-09-17)
+
+The one fresh current-runtime proposal stops before sealing in 51.995 seconds:
+author 38.036, reviewer 12.571, two semantic calls. Independent blind-input
+adjudication agrees that the accepted participant `mentor` is unsupported under
+the current human-role contract: the source only supplies the artifact phrase
+`mentor signoff evidence`. All five coordinator-owned actions, the apprentice
+target, and the board's recipient-only role remain intact. A second proposed
+topology criticism is retracted as material because neither exclusive component
+ownership nor exhaustive dataflow is a supplied law. Do not turn that advisory
+design question into extra schema or a release gate.
+
+The veto prevents unsupported source authority, but the first-time user still
+gets no package from usable evidence. Diagnose this author/reviewer ownership
+failure against the recorded sparse-correction, draft/correct, source-frame and
+immutable-review comparisons before selecting the next bounded alternative.
+No production change, fixture-specific rule, model/profile change, cap growth
+or retry is justified by one denial. Preserve semantic safety and compare full
+consumer success on positive, negative and equivalent-source controls.
+
+Build: 218.017 seconds, 1,419 tracked inputs unchanged. Clean install: 27.464
+seconds; all 611 tracked runtime Python files match source. External helper
+hashes and the current 25-file distribution snapshot are verified before
+execution and remain fixed afterward. Build-completion artifact hashes were not
+captured, so this is a trusted-maintainer diagnostic, not cryptographic
+build-to-dist provenance, full-package parity or release qualification. All
+workers are absent. Failed evidence and fixture remain retained; native package
+publication/retry and its browser checks did not run. Public 90/120/150, shared
+75/105/135, review 20 and commit below 60 seconds remain unchanged. Evidence:
+/Users/freedom/.codex/odylith-native-package.hhmR0j/.
+
+## Test the deterministic native command boundary (2026-09-17)
+
+Both native CLIs now visibly return the complete unavailable-hash callback
+receipt through an explicit operator-entered shell command. Fresh positive
+controls reach the configured model endpoint twice per host; callback phases
+reach it zero times and return code zero. Codex also renders self-induced
+pre-import SIGKILL/SIGALRM failures without a completion receipt or model
+fallback. Independent review accepts only this bounded transport result.
+Codex's 321 declared inputs and global configuration are unchanged. Claude's
+272 declared sources and relevant trust/settings/MCP state are unchanged;
+onboarding, marketplace, history and runtime metrics are not a hermetic freeze.
+An offline Codex verifier checks six retained cases and rejects ten corrupted
+controls. Raw JSON visibility is not polished completion UX or automatic hook
+activation. Evidence: /Users/freedom/.codex/odylith-native-shell-paired.xhLgKP/,
+/Users/freedom/.codex/odylith-native-shell-fault.pyS6hO/ and
+/Users/freedom/.codex/odylith-claude-direct.PFyreA/.
+
+Keep the prior failed setup/configuration receipts. The September 8 dotted-key
+trust override learning was repeated instead of applied; recover that history
+before the next native setup. An exact-one-POST expectation incorrectly rejected
+a valid detector control. A separate uncaptured global-config change prevents
+custody or causal claims for that old run. Fresh paired snapshots and direct
+inspection of native setup menus replace those fragile harness assumptions.
+
+Next compare real nonempty sealed-package publication and same-hash retry,
+using the existing installed launcher, callback and commit kernel. Preserve the
+retained seed and transaction; one fresh clone per host is needed to prove each
+first-publication path. Admission currently stops at full runtime parity: three
+of 611 installed runtime files lag source. Rebuild/install through existing
+supported owners before dispatch, then verify parity and unchanged seal and
+prewrite conditions. Require CLOSED, exact sealed-byte readback, stable retry,
+visible complete handoff, absent workers and no callback inference. Measure the
+existing 10-second callback budget separately from the below-60-second commit
+ceiling. Do not reauthor, repair the seal, widen deadlines, add eligibility flags
+or count retained reuse as fresh semantics/SLA/release proof. Public previews
+remain read-only. The full 90/120/150 goal and final holdout boundary are unchanged.
+
+Preflight finding: the old receipt binds a 23-file runtime identity including
+the changed proposal CLI. Current runtime plus an unchanged old seal cannot
+legitimately succeed; same-version install also refreshes sealed precondition
+paths. Do not attempt that incompatible combination. Keep the old seed intact
+and prepare one fresh current-distribution installation, then one ordinary
+proposal for the already disclosed recovery case under the unchanged standard
+profile. Retain any failure without retry. Only a newly admitted seal proceeds
+to native publication/retry. Keep reasoning and background engines active;
+disable only ephemeral browser auto-opening. This fresh proposal is one case,
+not a semantic-reliability or public-SLA acceptance campaign.
+
 ## Remove unqualified proposal write offers (2026-09-17)
 
 Checkpoint result: 1,501 install, 292 focused runtime and 55 desktop/mobile
