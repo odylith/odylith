@@ -5,7 +5,7 @@
   benchmark proof, and release-gate indicators may surface when useful, but
   passing checks should stay quiet and no dashboard claim should imply shipped
   behavior before pinned dogfood and benchmark proof exist.
-Last updated: 2026-09-16
+Last updated: 2026-09-17
 
 
 ## Purpose
@@ -24,6 +24,17 @@ Browser proof checks these visible values and source actors on desktop/mobile;
 unit or DOM-count success does not establish complete-package human quality.
 
 ## Scope And Non-Goals
+### Complete prompts, concise handoff
+Project keeps each standalone host prompt byte-for-byte complete behind a native
+details disclosure. Stage title, purpose, output and stop condition stay visible;
+the full prompt remains keyboard-accessible and selectable without JavaScript.
+The presenter escapes untrusted text and does not shorten or reinterpret source
+constraints, alter handoff contracts, or invent a second prompt-generation owner.
+Empty or unusable prompts produce no empty control. The shared responsive layout
+wraps expanded content without horizontal overflow. Model-free full-package
+replay and desktop/mobile browser checks prove this presentation boundary, not
+native confirmation, fresh semantic reliability or deadline qualification.
+
 ### Complete release copy
 The upgrade spotlight must preserve complete authored titles, summaries and
 selected highlights through note loading, installer fallback and presentation.

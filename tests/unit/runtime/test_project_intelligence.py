@@ -730,7 +730,7 @@ def test_project_intelligence_css_uses_shared_surface_typography() -> None:
     assert ".project-empty-preview-grid" in css
     assert ".project-prose-lines" in css
     assert ".project-host-prompt-grid {\n  display: grid;\n  grid-template-columns: minmax(0, 1fr);" in css
-    assert ".project-host-prompt {\n  display: grid;\n  grid-template-columns: minmax(180px, 0.28fr) minmax(0, 1fr);" in css
+    assert ".project-host-prompt {\n  display: grid;\n  grid-template-columns: minmax(0, 1fr);" in css
     assert "font-size: 22px;" in css
     assert "font-size: 18px;" in css
     assert ".project-actor-grid" in css

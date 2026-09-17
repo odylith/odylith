@@ -3610,9 +3610,9 @@
 
 .project-host-prompt {
   display: grid;
-  grid-template-columns: minmax(180px, 0.28fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
-  gap: 8px 14px;
+  gap: 8px;
   min-width: 0;
   border: 1px solid var(--line);
   border-radius: 9px;
@@ -3628,11 +3628,6 @@
   line-height: 1.2;
 }
 
-.project-host-prompt h4,
-.project-host-prompt p {
-  grid-column: 1;
-}
-
 .project-host-prompt p,
 .project-host-prompt span {
   margin: 0;
@@ -3642,10 +3637,16 @@
   line-height: 1.35;
 }
 
+.project-host-prompt summary {
+  cursor: pointer;
+  color: #1d4ed8;
+  font-size: var(--project-type-content-size);
+  font-weight: 600;
+}
+
 .project-host-prompt code {
   display: block;
-  grid-column: 2;
-  grid-row: 1 / span 2;
+  margin-top: 8px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   border: 1px solid #dbeafe;
@@ -3657,10 +3658,6 @@
   font-size: var(--project-type-content-size);
   font-weight: 600;
   line-height: 1.35;
-}
-
-.project-host-prompt span {
-  grid-column: 2;
 }
 
 .project-proof-grid {
@@ -3762,15 +3759,6 @@
     grid-template-columns: 1fr;
     gap: 6px;
     padding: 13px 14px;
-  }
-  .project-host-prompt,
-  .project-host-prompt h4,
-  .project-host-prompt p,
-  .project-host-prompt code,
-  .project-host-prompt span {
-    grid-template-columns: 1fr;
-    grid-column: auto;
-    grid-row: auto;
   }
   .project-scenario-cover {
     grid-template-columns: 1fr;
@@ -4395,7 +4383,7 @@ html, body {
         </nav>
       </div>
     </header>
-    <p class="shell-snapshot-note">Dashboard snapshot · Status captured 2026-09-17T13:04:12Z. Reopen the published dashboard after a refresh to see newer status.</p>
+    <p class="shell-snapshot-note">Dashboard snapshot · Status captured 2026-09-17T13:56:52Z. Reopen the published dashboard after a refresh to see newer status.</p>
 
 
     <section class="viewport" aria-live="polite">
@@ -4497,7 +4485,7 @@ html, body {
     </section>
   </main>
 
-  <script id="toolingDashboardData" src="tooling-payload.v1.js?v=78997468e08a"></script>
-  <script src="tooling-app.v1.js?v=78997468e08a"></script>
+  <script id="toolingDashboardData" src="tooling-payload.v1.js?v=f49fde8cc1a7"></script>
+  <script src="tooling-app.v1.js?v=f49fde8cc1a7"></script>
 </body>
 </html>

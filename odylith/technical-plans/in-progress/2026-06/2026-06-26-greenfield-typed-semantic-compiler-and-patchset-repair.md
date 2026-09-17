@@ -1,5 +1,62 @@
 Status: In progress
 
+## Bound the presentation follow-through (2026-09-17)
+
+The next frozen full gate retains 1,698 passing adjacent/install checks and
+426 browser passes with two failures, zero skips and unchanged input/publication
+identities. Both remaining failures are proof-boundary defects, independently
+reviewed against existing ownership: Compass must assert the ready child's
+canonical filters rather than their transient absence; Casebook must wait for
+real rows rather than its static heading. The corrected tests preserve strict
+observation, deadlines, scope, selection and reload assertions; the Compass test
+additionally validates audit-day bounds and exact rendered-control/URL agreement.
+No product logic changes. The complete 37-case focused navigation/browser pack
+passes in 4.84s. Retain the failed checkpoint-2 receipt and run a fresh frozen gate
+before committing. Complete mobile expanded capture and independent review now
+also close the earlier auxiliary-image limitation; the other advisories and full
+release obligations are unchanged.
+
+The frozen adjacent/install selection passes 1,698 tests with no skips. The wider
+browser matrix is stopped at one reproduced D-036 catalog-language regression
+after 105 passes; it is not a passing full-matrix receipt. Independent source/HEAD
+history review places the defect in the earlier Atlas mirror-summary edit, not
+the Project change. Keep the test and topology unchanged; restore the existing
+cross-stack relationships in the catalog description under CB-305, then freeze
+again for the broader browser gate. Ten focused Project browser cases pass.
+
+The native disclosure passes 54 focused checks, including keyboard selection and
+exact prompt readback at desktop/mobile widths with JavaScript enabled/disabled.
+Model-free replay of the retained accepted intent passes the package report and
+all 32 maintained browser states. Handoff height falls from 3,364 to 992 pixels
+on desktop and 6,490 to 1,497 on mobile; every prompt object/contract remains
+identical. Source, original transaction, complete seed and main publication stay
+unchanged. The first external report writer failed on a pathlib value after the
+package passed; fixing report serialization, not product behavior, permits the
+second inspection. Evidence: /Users/freedom/.codex/odylith-handoff-disclosure.0Uez4V/comparison-2/.
+Independent source/screenshot review accepts the scoped change with zero P0/P1/P2
+and closes the scroll-heavy prompt finding. Mobile expanded auxiliary capture is
+only partial visual evidence; exact expanded readback/selection and keyboard
+behavior at 430px, including JavaScript disabled, provide the complementary proof.
+This does not close the other three advisories or qualify the overall release.
+
+The three other advisories remain separate: append an explicitly proposed local
+deliverable beside Radar's canonical package decision using existing authority
+refs; preserve the complete Customer statement because no typed recipient edge
+exists; remove noun-only readiness gates from the brief and keep actionable gates
+with the existing workstream-bound handoff owner. These are bounded next changes,
+not permission to introduce a schema or another source interpreter.
+
+Close the accepted v16 package's scroll-heavy Project handoff through the existing
+presenter: keep stage purpose, output and stop condition visible, with each exact
+standalone prompt behind a native keyboard-accessible disclosure. No prompt,
+model, schema, canonical meaning, transaction or latency-policy changes. Remove
+the obsolete two-column prompt layout instead of growing the already oversized
+stylesheet. Test exact prompt preservation, escaping, keyboard access, mobile
+width and JavaScript-independent behavior, then replay the retained accepted
+intent and run the full maintained browser matrix. Keep the original sealed
+transaction untouched. Separately inspect existing owners for the three other
+advisories; do not expand this UI change into a semantic redesign.
+
 ## v16 first fresh package passes independent review (2026-09-17)
 
 The single frozen standard request completes in 59.563 seconds: Terra-low author

@@ -457,6 +457,7 @@ def test_casebook_direct_bug_routes_and_reload_keep_selection_truthful(browser_c
 
         casebook = page.frame_locator("#frame-casebook")
         casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
+        casebook.locator("button.bug-row").first.wait_for(timeout=15000)
         sample_rows = casebook.locator("button.bug-row").evaluate_all(
             """nodes => nodes.slice(0, 4).map((node) => ({
           bug: String(node.getAttribute("data-bug") || "").trim(),

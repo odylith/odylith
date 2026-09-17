@@ -255,9 +255,12 @@ def _host_handoff(project: Mapping[str, Any]) -> str:
             '<article class="project-host-prompt">'
             f"<h4>{_d(label)}</h4>"
             f"<p>{_d(when)}</p>"
-            f"<code>{_e(prompt)}</code>"
             f"{result_html}"
             f"{stop_html}"
+            '<details>'
+            f'<summary aria-label="Read full prompt: {_e(label)}">Read full prompt</summary>'
+            f"<code>{_e(prompt)}</code>"
+            '</details>'
             "</article>"
         )
     if not cards:

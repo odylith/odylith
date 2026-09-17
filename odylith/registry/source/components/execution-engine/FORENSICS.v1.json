@@ -15,12 +15,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 143,
-    "mapped_workstream_evidence_count": 131,
+    "explicit_event_count": 144,
+    "mapped_workstream_evidence_count": 132,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 143
+    "timeline_event_count": 144
   },
   "name": "Execution Engine",
   "path_prefixes": [
@@ -28,6 +28,50 @@
   ],
   "spec_ref": "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-02-greenfield-current-view-readers-could-remain-pinned-to-stale-onboarding-state.md"
+      ],
+      "confidence": "high",
+      "event_index": 1234,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-09-17T06:39:19-07:00",
+      "workstreams": [
+        "B-091",
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 1,
       "artifacts": [

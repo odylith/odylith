@@ -1776,7 +1776,7 @@ def test_shell_unknown_tab_self_heals_to_radar_selection(browser_context) -> Non
         _assert_clean_page(page, observation)
 
 
-def test_compass_invalid_window_and_date_queries_are_dropped_on_load(browser_context) -> None:  # noqa: ANN001
+def test_compass_invalid_queries_match_ready_child_canonical_state(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
     with _new_page(context) as (page, observation):
         tokens = _collect_sample_tokens(page, base_url)
@@ -1788,27 +1788,26 @@ def test_compass_invalid_window_and_date_queries_are_dropped_on_load(browser_con
             wait_until="domcontentloaded",
         )
         assert response is not None and response.ok
-        page.wait_for_function(
-            """({ scope }) => {
-            try {
-              const url = new URL(window.location.href);
-              return url.pathname.endsWith("/odylith/index.html")
-                && url.searchParams.get("tab") === "compass"
-                && url.searchParams.get("scope") === scope
-                && !url.searchParams.has("window")
-                && !url.searchParams.has("date")
-                && !url.searchParams.has("audit_day");
-            } catch (_error) {
-              return false;
-            }
-        }""",
-            arg={"scope": tokens["compass_workstream"]},
-            timeout=15000,
-        )
         compass = page.frame_locator("#frame-compass")
+        compass.locator('body[data-surface-ready="ready"]').wait_for(timeout=15000)
         compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
         compass.locator("#scope-pill", has_text=tokens["compass_workstream"]).wait_for(timeout=15000)
-        compass.locator('button[data-window].active').first.wait_for(timeout=15000)
+        compass.locator('button[data-window="48h"].active').wait_for(timeout=15000)
+        audit_input = compass.locator("#audit-day-input")
+        audit_day = audit_input.input_value()
+        assert datetime.strptime(audit_day, "%Y-%m-%d").date().isoformat() == audit_day
+        assert audit_input.get_attribute("min") <= audit_day <= audit_input.get_attribute("max")
+        compass.locator("#audit-day-pill", has_text=audit_day).wait_for(timeout=15000)
+        page.wait_for_function(
+            """expected => {
+              const url = new URL(location.href);
+              return url.pathname.endsWith("/odylith/index.html")
+                && Object.entries(expected).every(([key, value]) => url.searchParams.get(key) === value);
+            }""",
+            arg={"tab": "compass", "scope": tokens["compass_workstream"],
+                 "window": "48h", "date": "live", "audit_day": audit_day},
+            timeout=15000,
+        )
 
         _assert_clean_page(page, observation)
 

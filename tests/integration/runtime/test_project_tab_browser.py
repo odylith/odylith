@@ -482,6 +482,10 @@ def test_project_handoff_scope_is_visible_and_copyable_at_both_widths(tmp_path: 
                             )
                             for index, handoff in enumerate(payloads[name]["host_handoff_prompts"]):
                                 prompt = prompts.nth(index)
+                                assert not prompt.is_visible()
+                                summary = page.locator(".project-host-prompt summary").nth(index)
+                                summary.focus()
+                                page.keyboard.press("Enter")
                                 assert prompt.is_visible()
                                 assert prompt.text_content() == handoff["prompt"]
                                 copied_text = prompt.evaluate("""node => {
