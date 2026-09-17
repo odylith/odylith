@@ -27,8 +27,6 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 )
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
     provisional_design_from_intent,
-    readiness_decisions_for_workstreams,
-    render_readiness_decision,
 )
 
 
@@ -57,9 +55,6 @@ def build_provisional_components(
             for workstream_index, workstream in enumerate(design["workstreams"])
             if key in workstream["component_keys"]
         ]
-        readiness = readiness_decisions_for_workstreams(
-            design, [row["provisional_workstream"]["key"] for row in deliveries],
-        )
         contract = {
             "authority_kind": "provisional_design",
             "design_ref": f"{PROVISIONAL_DESIGN_ROOT}/components/{index}",
@@ -73,7 +68,6 @@ def build_provisional_components(
             ],
             "exchanges": exchanges,
             "delivery_workstreams": deliveries,
-            "readiness_decisions": readiness,
         }
         rows.append({
             "component_id": key,
@@ -88,7 +82,7 @@ def build_provisional_components(
             "validation": [component["verification"], *[
                 provisional_delivery_acceptance_text(delivery["provisional_workstream"])
                 for delivery in deliveries
-            ], *[render_readiness_decision(row) for row in readiness]],
+            ]],
             "status": "planned",
             "qualification": "candidate",
             "evidence_tier": "user_intent",
@@ -136,12 +130,6 @@ def build_provisional_backlog(
         deliverable = f"Proposed deliverable — {workstream['deliverable']}"
         product_view = f"{decisions['product_view']}\n\nProposed workstream view — {workstream['deliverable']}"
         verification = [f"Proposed acceptance — {workstream['verification']}"]
-        readiness = readiness_decisions_for_workstreams(design, [workstream["key"]])
-        readiness_text = [render_readiness_decision(row) for row in readiness]
-        verification.extend(
-            f"Conditional verification ({row['key']}; unresolved) — {row['conditional_verification']}"
-            for row in readiness
-        )
         dependencies = [workstreams[key]["title"] for key in workstream["depends_on"]]
         interfaces = [provisional_exchange_text(row) for row in exchanges]
         design_ref = f"{PROVISIONAL_DESIGN_ROOT}/workstreams/{index}"
@@ -160,10 +148,7 @@ def build_provisional_backlog(
             "Interface Changes": _bullets(interfaces, empty="No proposed component exchanges."),
             "Migration/Compatibility": "Provisional greenfield design; no existing implementation or migration is asserted.",
             "Test Strategy": _bullets(verification),
-            "Open Questions": _bullets(
-                [*intent.get("ambiguities", []), *readiness_text],
-                empty="No unresolved source question or proposed implementation decision is recorded.",
-            ),
+            "Open Questions": _bullets(intent.get("ambiguities", []), empty="No unresolved material question."),
             "Assumptions": _bullets(assumption_preview_values(assumptions), empty="No decision assumptions."),
             "Operational Constraints": _bullets(intent.get("operational_constraints", []), empty="No source-stated operating constraints."),
             "Source Success Metrics": _bullets(intent.get("success_metrics", [])),
@@ -213,7 +198,6 @@ def build_provisional_backlog(
                 ],
                 "supporting_events": supporting_events,
                 "exchanges": exchanges,
-                "readiness_decisions": readiness,
             },
             "radar_sections": sections,
         })

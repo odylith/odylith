@@ -12,7 +12,6 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
     PROVISIONAL_DESIGN_AUTHORITY_KIND,
-    render_readiness_decision,
     validate_provisional_design,
 )
 
@@ -87,8 +86,7 @@ def build_provisional_design_atlas_specs(
             "read_guide": (
                 "Solid arrows are proposed delivery prerequisites. Dotted arrows connect each "
                 "workstream to its proposed deliverable and verification; no check is claimed "
-                "to have passed. Unresolved decisions connect only to affected workstreams and "
-                "must be recorded before their source work."
+                "to have passed."
             ),
             "source": delivery_source,
             "boxes": delivery_boxes,
@@ -218,13 +216,6 @@ def _delivery_view(
                 f'  {workstream_ids[dependency]} -->|"proposed prerequisite"| '
                 f'{workstream_ids[workstream["key"]]}'
             )
-    for index, decision in enumerate(design["readiness_decisions"], 1):
-        node_id = f"readiness{index}"
-        label = f"Unresolved decision: {decision['decision']}"
-        lines.append(f'  {node_id}["{mermaid_label(label)}"]:::external')
-        boxes.append(atlas_box(node_id, label, "Unresolved proposed decision", render_readiness_decision(decision)))
-        for key in decision["affected_workstream_keys"]:
-            lines.append(f'  {node_id} -. "resolve before source work" .-> {workstream_ids[key]}')
     return styled_mermaid(lines), boxes
 
 

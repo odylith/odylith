@@ -4,12 +4,12 @@ Last updated: 2026-09-17
 
 ## Overview
 
-The scoped-readiness candidate gives provisional design explicit unresolved
-decisions with workstream references and conditional verification. Components
-inherit relevance only through those workstreams. General assumptions remain
-advisory; proposed decisions never become source facts or accepted policy.
-Deterministic projection proof must precede native adoption; the safety P1 stays
-open. Candidate controls: /Users/freedom/.codex/odylith-scoped-readiness.wfD6SX/PLAN.md.
+The shipping-first candidate restores the earlier v53 author and provisional
+design v2, removing the unearned scoped-readiness expansion. Independent review
+reclassified the proposed record-handling policy omissions as advisory: a planned
+governance package does not assert deployed or production-ready software. Source
+custody, materially unsafe-claim denial and complete independent candidate review
+remain mandatory; optional implementation detail is not an admission checklist.
 
 Known model timeouts and unavailable-provider failures now retain a typed
 environment outcome through authoring, review and public CLI output. Consumer

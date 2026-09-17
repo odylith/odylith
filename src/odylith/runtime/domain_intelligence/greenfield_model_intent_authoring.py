@@ -64,7 +64,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v56"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v53"
 GREENFIELD_MODEL_PROOF_FD_ENV = "ODYLITH_GREENFIELD_MODEL_PROOF_FD"
 MAX_GREENFIELD_SEMANTIC_CALLS = 2
 
@@ -888,7 +888,7 @@ work and result. They are design proposals, not claims about existing failures o
 proven benefits. The Assumption label is added by the renderer. Give the decision
 itself, not commentary about what the source omitted or how you extracted it.
 General assumptions disclose only additional consequential product choices. Preserve
-uncertain facts as uncertain; invent no dependencies, metrics, safety guarantees or authority.
+uncertain facts as uncertain; invent no dependencies, metrics, safety or authority.
 
 PROVISIONAL DESIGN
 In provisional_design, propose 4–5 distinct logical components, 4–5 actionable
@@ -902,9 +902,6 @@ actions the capability supports; they never transfer the original actor's work t
 the component. Support every source event and assign every component to work.
 Give each workstream a concrete deliverable, useful acceptance, component references
 and only necessary prerequisite workstream keys. Prerequisites must be acyclic.
-readiness_decisions records consequential unresolved implementation decisions only:
-scope each to affected workstream keys and give an observable conditional check.
-Leave it empty when unnecessary; advisory choices must not become coding gates.
 first_run proposes one complete walkthrough: include each source event identity once
 and respect every cited source_precedence edge, including required actions after the
 observable result. terminal.event_order identifies the correct result producer,

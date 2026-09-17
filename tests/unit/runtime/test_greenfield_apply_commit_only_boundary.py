@@ -49,12 +49,10 @@ def test_apply_confirm_is_disabled_before_compile_commit_boundary(
     assert compile_calls == []
 
 
-@pytest.mark.parametrize("unresolved", [False, True])
 def test_create_confirm_cli_commits_transaction_without_post_confirm_generation(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
-    unresolved: bool,
 ) -> None:
     _seed_empty_governance_repo(tmp_path)
     from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
@@ -81,11 +79,6 @@ def test_create_confirm_cli_commits_transaction_without_post_confirm_generation(
     )
     proposal = _canonical_model_authored_greenfield_fixture(tmp_path)
     authoring_receipt = proposal.pop("_test_model_authoring_receipt")
-    if unresolved:
-        from tests.unit.runtime.test_greenfield_scoped_readiness import DECISION
-        from tests.unit.runtime.test_greenfield_project_safeguard_carriers import _proposal
-
-        proposal = _proposal(tmp_path, readiness_decisions=[DECISION], authoring_receipt=authoring_receipt)
     assert isinstance(authoring_receipt, dict)
     transaction = greenfield_proposals.compile_greenfield_create_transaction(
         repo_root=tmp_path,

@@ -24,15 +24,13 @@ Browser proof checks these visible values and source actors on desktop/mobile;
 unit or DOM-count success does not establish complete-package human quality.
 
 ## Scope And Non-Goals
-### Complete unresolved decisions
+### Complete open-item text
 The Project open-items card preserves every supplied item and its complete text.
-Sentence budgeting must not drop unresolved status, affected workstreams or a
-conditional verification check. The source-local scoped-readiness candidate
-retains these decisions separately from accepted policy and source facts; its
-five selected-workstream prompts carry the same typed decision rows. Browser
-proof checks visible card text as well as complete selectable prompt text on
-desktop/mobile with and without JavaScript. This is projection proof, not proof
-that a fresh model identifies every warranted decision.
+Sentence budgeting must not drop questions or shorten their meaning. Browser
+proof checks five visible advisory questions, including a complete long question,
+as well as complete selectable prompts on desktop/mobile with and without
+JavaScript. This presentation guarantee does not require an expanded readiness
+schema or make optional design questions admission blockers.
 
 ### Complete prompts, concise handoff
 Project keeps each standalone host prompt byte-for-byte complete behind a native

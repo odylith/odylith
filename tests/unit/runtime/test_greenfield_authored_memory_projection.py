@@ -158,8 +158,7 @@ def test_authored_memory_preserves_exact_contract_without_legacy_reconstruction(
         "implementation_prompt": "  Preserve **APIv7** and Ω exactly.  ",
         "coding_readiness_gates": ["  Keep **APIv7** evidence byte-exact.  "],
         "coding_readiness_contract": {
-            "schema_version": "odylith.greenfield.coding-readiness.v2",
-            "provisional_readiness_decisions": [],
+            "schema_version": "odylith.greenfield.coding-readiness.v1",
             "source_facts": {"accepted_first_path": FIRST_PATH},
         },
         "verification_commands": ["verify-Ω --APIv7"],

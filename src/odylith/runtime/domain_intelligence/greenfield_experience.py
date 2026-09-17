@@ -19,9 +19,6 @@ from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
     render_selected_workstream_scope,
 )
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
-from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
-    provisional_design_from_intent, readiness_decisions_for_workstreams, render_readiness_decision,
-)
 from odylith.runtime.domain_intelligence.greenfield_traceability import first_executable_workstream
 
 
@@ -57,9 +54,6 @@ def build_next_steps(
     )
     design = selected.row["provisional_workstream_contract"]["provisional_workstream"]
     intent = proposal["intent"]
-    readiness = readiness_decisions_for_workstreams(provisional_design_from_intent(intent), [design["key"]])
-    if selected.row["provisional_workstream_contract"].get("readiness_decisions") != readiness:
-        raise ValueError("Greenfield selected workstream drifted from canonical readiness decisions")
     brief = proposal.get("project_brief")
     project_brief = brief if isinstance(brief, Mapping) else {}
     first_path = authored_first_run_text(intent)
@@ -78,7 +72,6 @@ def build_next_steps(
         evidence_requirements=row_text_tuple(intent, "evidence_requirements"),
         operational_constraints=row_text_tuple(intent, "operational_constraints"),
         non_goals=row_text_tuple(intent, "non_goals"),
-        provisional_readiness_decisions=readiness,
     )
     return {
         "project_title": intent["title"],
@@ -95,7 +88,6 @@ def build_next_steps(
         "implementation_prompt": _implementation_prompt(
             target=target,
             first_path=first_path, release_requirements=proof_boundary,
-            readiness_decisions=readiness,
         ),
         "customization_options": list(row_text_tuple(project_brief, "customization_options")),
         "coding_readiness_gates": render_coding_readiness_gates(readiness_contract),
@@ -131,13 +123,10 @@ def verification_commands(start_workstream_id: str) -> list[str]:
 def _implementation_prompt(
     *, target: Mapping[str, Any],
     first_path: str, release_requirements: str,
-    readiness_decisions: Sequence[Mapping[str, Any]],
 ) -> str:
-    readiness = "\n\n".join(render_readiness_decision(row) for row in readiness_decisions)
     return (
         "After project readiness decisions are recorded, plan and implement only the selected workstream.\n"
         f"{render_selected_workstream_scope(target)}\n\n"
-        + (f"{readiness}\n\n" if readiness else "") +
         "Release context — preserve this direction without treating the whole release as this slice:\n"
         f"{first_path}\n\nRelease proof boundary:\n{release_requirements}\n\n"
         "Stop after the selected deliverable is proved. Record remaining release work explicitly; "

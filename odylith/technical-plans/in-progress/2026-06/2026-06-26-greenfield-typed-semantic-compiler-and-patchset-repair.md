@@ -1,5 +1,40 @@
 Status: In progress
 
+## Shipping-first scope freeze and severity correction (2026-09-17)
+
+The operator explicitly prioritizes shipping high-quality projects over expanding
+features. Freeze feature scope: admit only demonstrated release-blocker fixes and
+required release checks. Optional design depth stays advisory; do not turn a
+governance proposal into a demand for a deployment-ready application. Preserve
+source fidelity, transaction safety and public 90/120/150 timing requirements.
+
+Independent re-adjudication retracts the v56 record-handling readiness P1. Its
+provisional persistence/retrieval design makes no unsafe access, compliance,
+consent-validity, deployment or production-readiness claim. The four-policy
+checklist was a self-imposed admission requirement; keep it advisory, with no
+required remedy for this candidate. V56 still fails on review timeout and must
+not be retried or retrospectively admitted. Prior P1 statements below are
+historical and superseded for v56 by this correction.
+
+Pause the external three-role experiment before any model dispatch. The next
+bounded action is to adjudicate the earlier complete 95.661-second package under
+the same corrected policy and retain the simpler mechanism if the evidence
+supports it. Do not add calls, schemas, frameworks or readiness features without
+a demonstrated remaining blocker. Exactly two calls is an implementation choice,
+not a user invariant; production remains unchanged while alternatives are paused.
+Native confirmation, intervention visibility, generalization, clean-install,
+recovery, independent evaluation and untouched holdout requirements remain open.
+
+The earlier complete package also passes this narrow severity correction: its
+Registry entries are planned candidates, Radar work is queued, assumptions are
+unverified, and risks explicitly disclaim risk-free implementation. No concrete
+unsafe or falsely production-ready claim was found. Restore the pre-a0ccad3bd v53
+author/design mechanism by removing only the unearned scoped-readiness feature.
+Retain the independently useful lossless Project text fix, browser observation
+fixes and explicit model-outcome UX. Prove exact restored source ownership and
+focused behavior before broader qualification; historical 95.661-second package
+evidence is not a fresh envelope or release pass.
+
 ## Scoped native comparison rejected (2026-09-17)
 
 Checkpoint a0ccad3bd is pushed: the corrected frozen run passes 2,046 selected

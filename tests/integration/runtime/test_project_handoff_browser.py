@@ -13,14 +13,13 @@ from tests.integration.runtime.surface_browser_test_support import (
 from tests.unit.runtime.test_greenfield_authored_project_dashboard import (
     _accepted_preview, _proposal, _source_launch_context,
 )
-from tests.unit.runtime.test_greenfield_scoped_readiness import DECISION, _package
 
 
 @pytest.mark.parametrize("width", [1440, 430])
 @pytest.mark.parametrize("javascript_enabled", [True, False])
-@pytest.mark.parametrize("unresolved", [False, True])
+@pytest.mark.parametrize("expanded_questions", [False, True])
 def test_project_handoff_disclosure_preserves_complete_selectable_prompts(
-    tmp_path: Path, width: int, javascript_enabled: bool, unresolved: bool,
+    tmp_path: Path, width: int, javascript_enabled: bool, expanded_questions: bool,
 ) -> None:
     proposal = _proposal()
     payload = preview_project_dashboard_payload(
@@ -28,9 +27,16 @@ def test_project_handoff_disclosure_preserves_complete_selectable_prompts(
         accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
         source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
     )
-    if unresolved:
-        payload = _package(tmp_path, decisions=[DECISION]).project_dashboard_preview
-        assert all(DECISION["decision"] in row["prompt"] for row in payload["host_handoff_prompts"])
+    if expanded_questions:
+        payload["open"] = [
+            "Which representative first-run examples should the team review together "
+            "before choosing the implementation details, and which observable result "
+            "would make each example useful to the intended user?",
+            "Who should review the proposed component responsibilities?",
+            "Which optional implementation choices should remain open?",
+            "Where should the team record feedback from the first walkthrough?",
+            "When should the proposed delivery order be reconsidered?",
+        ]
     html = render_project_html({"project_intelligence": payload})
     (tmp_path / "index.html").write_text(
         '<!doctype html><html lang="en"><head><meta charset="utf-8">'
@@ -53,7 +59,7 @@ def test_project_handoff_disclosure_preserves_complete_selectable_prompts(
                     assert all(item.is_visible() for item in open_items.all())
                     cards = page.locator(".project-host-prompt")
                     assert cards.count() == len(payload["host_handoff_prompts"]) == 5
-                    capture = _failure_screenshot_path(f"project-handoff-{width}-js-{javascript_enabled}-unresolved-{unresolved}-closed")
+                    capture = _failure_screenshot_path(f"project-handoff-{width}-js-{javascript_enabled}-expanded-{expanded_questions}-closed")
                     if capture is not None:
                         capture.parent.mkdir(parents=True, exist_ok=True)
                         page.screenshot(path=str(capture), full_page=True)
@@ -89,7 +95,7 @@ def test_project_handoff_disclosure_preserves_complete_selectable_prompts(
                     open_height = page.locator(".project-host-handoff").bounding_box()["height"]
                     assert closed_height < open_height * 0.6
                     assert cards.locator("details[open]").count() == 5
-                    capture = _failure_screenshot_path(f"project-handoff-{width}-js-{javascript_enabled}-unresolved-{unresolved}")
+                    capture = _failure_screenshot_path(f"project-handoff-{width}-js-{javascript_enabled}-expanded-{expanded_questions}")
                     if capture is not None:
                         capture.parent.mkdir(parents=True, exist_ok=True)
                         page.screenshot(path=str(capture), full_page=True)
