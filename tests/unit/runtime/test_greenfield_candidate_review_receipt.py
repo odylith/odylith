@@ -132,7 +132,7 @@ def test_manifest_preserves_review_without_aliasing_mutable_input() -> None:
     )
     assert result["model_authoring"] == receipt
     receipt["candidate_review"]["model_profile"]["model"] = "changed"
-    assert result["model_authoring"]["candidate_review"]["model_profile"]["model"] == "gpt-5.6-sol"
+    assert result["model_authoring"]["candidate_review"]["model_profile"]["model"] == "gpt-6-astra"
 
 
 @pytest.fixture

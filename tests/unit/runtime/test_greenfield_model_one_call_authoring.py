@@ -99,7 +99,7 @@ def test_shorter_remaining_window_is_not_reduced_by_a_review_reserve():
     assert reviewer.requests[0].timeout_seconds == 1.0
 
 
-@pytest.mark.parametrize("setup_seconds,review_window", [(0.0, 20.0), (10.0, 14.5)])
+@pytest.mark.parametrize("setup_seconds,review_window", [(0.0, 24.5), (10.0, 14.5)])
 def test_allocation_leaves_review_headroom_without_resetting_the_absolute_deadline(
     setup_seconds, review_window,
 ):

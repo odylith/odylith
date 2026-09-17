@@ -220,7 +220,7 @@ def test_late_review_retains_provider_evidence_without_admitting_or_retrying(sta
     assert provider.calls == 1
     assert observation["response"] == response
     assert observation["provider"] == review.odylith_reasoning.provider_failure_metadata(provider)
-    assert observation["provider"]["model"] == "gpt-5.6-sol"
+    assert observation["provider"]["model"] == "gpt-6-astra"
     assert observation["provider"]["reasoning_effort"] == "medium"
     assert observation["provider"]["code"] == ("timeout" if response is None else "")
     assert observation["elapsed_seconds"] == pytest.approx(duration)

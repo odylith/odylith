@@ -1,5 +1,107 @@
 Status: In progress
 
+## v16 first fresh package passes independent review (2026-09-17)
+
+The single frozen standard request completes in 59.563 seconds: Terra-low author
+44.667 seconds, Astra-medium review 9.537 seconds, exactly two calls and no retry.
+Five workstreams, five components and five distinct diagrams are sealed before
+preview. Profile/receipt checks pass; source inputs, the complete seed manifest
+and repository/fixture publication identities remain unchanged. Independent
+source-first review accepts the actual package with zero P0/P1: five actions,
+technician alias, product-owned digest, contextual council, artifact-only vendor
+evidence and both source restrictions survive with valid entailed citations.
+The byte-exact after-image passes all 32 desktop/mobile normal, empty, missing,
+degraded and error states in 17.239 seconds with zero model calls or publication.
+
+Keep v16 as the sole unreleased development candidate. This meets the bounded
+comparison's prediction without parser, schema or prompt changes; it does not
+prove reviewer causality, tail reliability, rescue/deep, clean installation,
+automatic host delivery, unseen generalization or release readiness. Do not
+restart architecture exploration or expand synthetic reviewer calibration.
+Next close the bounded presentation findings through their existing owners,
+then proceed to the declared broader profile/semantic and installation gates.
+
+Four P2 findings remain: a source-true but globally repeated narrow Radar Product
+View; full-sentence Customer presentation; long repeated standalone coding
+prompts; and evidence nouns labeled coding-readiness gates. Preserve copied
+prompt completeness and accepted/proposed authority while improving presentation.
+Do not introduce recipient schema growth merely to decorate Atlas. The protected
+holdout remains untouched. Full 90/120/150 limits and the original release goal
+remain fixed. Evidence: /Users/freedom/.codex/odylith-review-v16.EDCETV/INDEPENDENT-REVIEW.md.
+
+## Frozen reviewer repeat earns one complete-package candidate (2026-09-17)
+
+Independent supervision repeats the exact four controls successfully on first
+attempts in 5.202/9.240/5.127/5.914 seconds. All 669 source files, payloads and
+publication identity remain unchanged; both negative witnesses match the actual
+source defects. Evidence: /Users/freedom/.codex/odylith-review-capability-repeat.9oMawG/RESULT.md.
+
+The next bounded candidate changes only the pinned reviewer to Astra-medium,
+with new v16 profile identities so old receipts cannot acquire new credentials.
+Author models, prompts, schemas, two-call bound, shared model windows and public
+90/120/150 ceilings stay fixed. This is unreleased candidate integration to test
+one fresh full package, not qualification or production promotion. Freeze the
+source and independent expectations before dispatch; preserve the first outcome
+without retries. Source fidelity, proposed decisions, full package usefulness,
+rendered quality and timing all require separate inspection. Do not expand the
+synthetic calibration corpus or infer reliability from eight retained verdicts.
+
+The profile contract test first fails seven new pin/retired-identity assertions
+with 174 passes, then the updated integration pack reaches 348 passes. Its first
+expanded run retained 347 passes and one stale 20-second review-cap expectation:
+committed v15 already allocates the full 24.5-second residual in that control.
+Correct only that assertion; do not alter production deadline behavior. This is
+mechanical compatibility evidence, not fresh semantic or consumer proof.
+Adjacent profile/transaction/process checks pass 244 controls. The first selective
+refresh incorrectly included product source outside the authored governance
+generation and refused before publication. Refresh only the three authored
+governance records; retain full source-impact checks for the full sync lane.
+
+Independent pre-dispatch review catches an absolute runtime-current symlink in
+the retained seed: copying links verbatim would leave the fixture pointing back
+to seed bytes, and publication-only snapshots would miss other seed mutations.
+No provider call ran. Rebase only copied links within the new fixture, reject
+escaping targets, and freeze the full seed file/link/mode manifest. This is an
+external harness repair, not a product mechanism or semantic change.
+
+## Frontier reviewer passes the bounded calibration comparison (2026-09-17)
+
+One external model-only change from Sol-medium to Astra-medium, using the original
+production prompt and unchanged complete payload/schema, passes four retained
+controls in 8.967/9.911/5.881/6.940 seconds. It admits the valid contextual-recipient
+candidate, rejects the wrong selected occurrence for its exact source-span defect,
+admits the matched corrected occurrence, and rejects a proposed permission that
+reverses the explicit publication restriction. All are first attempts within
+their original residuals, with frozen inputs/publication and independent agreement
+on every verdict/witness. No production profile changes or relabeling occur.
+
+This earns one independently supervised frozen repeat of the same four controls,
+then one fresh full-package comparison if that repeat also passes. Do not expand
+the synthetic evaluator. Author quality, other semantic failure classes, general
+reliability, causal/cost advantage and consumer completion remain unproved; keep
+the full release goal and 90/120/150 unchanged. Evidence:
+/Users/freedom/.codex/odylith-review-capability.QFKyrL/RESULT.md.
+
+## Reject prompt-only reviewer simplification (2026-09-17)
+
+The compact ordered authority-check prompt fails its first retained positive in
+11.822 seconds. Full candidate/custody, Sol-medium, binary schema and the original
+23.087-second residual remain fixed; frozen inputs and publication are unchanged.
+The reviewer now claims the publishing component specifies only coordinator
+review, although its exact nonexclusive verification says a coordinator can
+review the sheet. Independent adjudication rejects this as a hard incompatibility:
+the candidate restricts publishing, not review, and a component verification is
+not an exhaustive access specification. The separate canonical recipient-edge
+limitation does not substantiate this new component-level allegation.
+
+Stop after one call; do not run the three remaining controls, retry, retune the
+prompt or adopt it. Ten offline response-shape checks and unchanged payloads do
+not prove reviewer accuracy. Wrong-occurrence, artifact-modifier and proposed
+constraint behavior remain untested by this comparison. A shorter prompt or more
+witness fields cannot be credited with semantic truth; the next alternative must
+change a different mechanism without adding domain rules or weakening materiality.
+Evidence: /Users/freedom/.codex/odylith-review-decision.f1MJVu/RESULT.md.
+
 ## Stop participation-owned binding comparison on false review denial (2026-09-17)
 
 The external pilot assigns each human citation its event orders, including empty

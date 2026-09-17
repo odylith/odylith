@@ -378,7 +378,7 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
         greenfield_proposals_cli,
         "_greenfield_authoring_provider",
         lambda **kwargs: (
-            (reviewer, "gpt-5.6-sol", "medium")
+            (reviewer, "gpt-6-astra", "medium")
             if kwargs.get("request_role") == "candidate_review"
             else (provider, "test-model", "low")
         ),

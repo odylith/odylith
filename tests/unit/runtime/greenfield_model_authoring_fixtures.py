@@ -46,7 +46,7 @@ class AdmittingReviewProvider(StructuredAuthoringProvider):
 
     def generate_structured(self, *, request: object) -> Mapping[str, Any] | None:
         assert getattr(request, "schema_name", "") == "greenfield_candidate_review"
-        assert getattr(request, "model", "") == "gpt-5.6-sol"
+        assert getattr(request, "model", "") == "gpt-6-astra"
         assert getattr(request, "reasoning_effort", "") == "medium"
         return super().generate_structured(request=request)
 

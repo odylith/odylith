@@ -38,7 +38,7 @@ Projection parity rejects omitted, rewritten or unrelated acceptance before
 Registry input issuance. Native quality generalization and deadline qualification
 remain separate release obligations.
 
-The candidate v15 Greenfield proposal ceilings are strictly below 90 seconds for
+The candidate v16 Greenfield proposal ceilings are strictly below 90 seconds for
 standard/auto, 120 for explicitly selected rescue, and 150 for explicitly
 selected deep. Sixty seconds is an advisory normal-case target. The author and
 reviewer share 75/105/135-second model windows. Review consumes only the actual
@@ -46,20 +46,34 @@ remaining window, including setup and validation, without a separate stage cap.
 It receives a read-only view of already-validated source spans, exact byte
 locations and bounded surrounding text; the canonical resolver remains the sole
 citation owner. No occurrence repair or semantic parser is added. Review v2 and
-profile v15 make the changed contract explicit. Commit-only publication remains below
+profile v16 make the changed contract explicit. Commit-only publication remains below
 60 seconds. Profiles are selected before execution, never extended after an
 overrun. A fixed 15-second allocation remains outside the model window for
 deterministic completion, whose actual duration still faces the public deadline.
-This allocation comparison does not establish tail reliability or change models,
-efforts, prompts, call count, semantic quality or transaction guarantees.
+The v16 candidate changes only the reviewer from Sol-medium to Astra-medium;
+authors, efforts, prompts, call count, semantic requirements and transaction
+guarantees remain unchanged. The model allocation does not establish tail reliability.
 Historical observations below retain their original verdicts; old sealed
-v12/v13/v14 transactions fail current-profile validation. One historical v14 installed standard
+v12/v13/v14/v15 transactions fail current-profile validation. One historical v14 installed standard
 comparison completes proposal/publication in 63.226/2.613 seconds and passes all
-32 browser states. That does not qualify v15. The new bounded reviewer-only
+32 browser states. That does not qualify v16. The historical bounded reviewer-only
 comparison correctly denies a wrong selected occurrence in 10.978 seconds and
 admits its synthetic correct-occurrence control in 23.307 seconds. It supports
 integration, not fresh authoring, package quality, generalization or release
 qualification. Causal reliability improvement is unproved.
+
+The Astra-medium reviewer passes four retained controls plus one independently
+executed identical repeat under unchanged production prompts and residual caps.
+Both runs correctly admit valid contextual participation and corrected custody,
+and reject wrong selected-span custody and a source-constraint reversal. This
+earns one fresh whole-package comparison, not production promotion or general
+reliability. That first source-local standard package completes in 59.563 seconds
+with two calls, five workstreams/components/diagrams, zero independently observed
+P0/P1 and all 32 sealed-after-image browser states passing. It preserves actor
+aliases, product-owned publication, contextual recipients and source restrictions.
+Four advisory presentation issues remain; broader semantic, installed, host,
+per-profile and release qualification remain open. No confirmation or publication
+was part of this comparison.
 
 The fresh v15 source-local package completes in 55.650 seconds with five
 workstreams, five components and five diagrams, but independent review rejects
@@ -3823,7 +3837,7 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Research Basis
 
-### Current bounded correction after V31 independent rejection
+### Historical bounded correction after V31 independent rejection
 
 - Intent-authoring v37 owns typed assumptions (`applies_to`, `statement`).
   `greenfield_authored_assumptions.py` validates their target and preserves their

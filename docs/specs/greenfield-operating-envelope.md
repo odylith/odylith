@@ -49,29 +49,30 @@ faults, and visible completion before its preview may offer governed writes.
 Release evaluation covers three pinned candidate success profiles; their identity
 does not itself establish qualification:
 
-- `greenfield-standard-terra-low-complete-author-review-v15`: the default and `auto`
+- `greenfield-standard-terra-low-complete-author-review-v16`: the default and `auto`
   path, with a 90-second consumer ceiling and a 75-second model window.
-- `greenfield-rescue-terra-medium-complete-author-review-v15`: the explicit rescue
+- `greenfield-rescue-terra-medium-complete-author-review-v16`: the explicit rescue
   path, with a 120-second consumer ceiling and a 105-second model window.
-- `greenfield-deep-sol-high-complete-author-review-v15`: the explicit deep path,
+- `greenfield-deep-sol-high-complete-author-review-v16`: the explicit deep path,
   with a 150-second consumer ceiling and a 135-second model window.
 
 Proposal elapsed time must be strictly below the selected ceiling. Sixty seconds
 is an advisory normal-case target, not a second acceptance gate. The separate
-commit-only step must still finish strictly below 60 seconds. Candidate v15
+commit-only step must still finish strictly below 60 seconds. Candidate v16
 retains these approved public limits while allocating 15 seconds outside the
 shared model window for deterministic completion. This is not a guaranteed tail
-bound: the public deadline still rejects late compilation or staging. Models,
-efforts, call count, semantic requirements and transaction laws are unchanged.
+bound: the public deadline still rejects late compilation or staging. Relative
+to v15, only the reviewer model changes; authors, efforts, call count, prompts,
+semantic requirements and transaction laws are unchanged.
 Historical observations keep their original limits and verdicts; old sealed
-v12/v13/v14 transactions are not relabeled or accepted as v15. Fresh per-profile
+v12/v13/v14/v15 transactions are not relabeled or accepted as v16. Fresh per-profile
 evidence is required for qualification.
 
 The selected profile is fixed before the model request. Elapsed time or a failed
 attempt never relabels or extends a standard request into rescue or deep.
 Standard uses Terra low, rescue uses Terra medium, and deep uses Sol high for
 one complete authoring call. An authored result then requires one read-only
-Sol/medium review of the complete candidate using only
+Astra/medium review of the complete candidate using only
 the shared model window's remaining time. There is no separate review-stage cap.
 Reviewer setup, validation and finalization
 are inside that deadline. No fixed author reserve, retry, repair call or tier
@@ -81,6 +82,14 @@ Host-model output is candidate evidence only. Every profile must clarify or fail
 safely instead of inventing product truth. Provider unavailability is separately
 proven as a fast, no-write environment outcome and is not a supported-success
 profile.
+
+The reviewer change is an unreleased candidate, not production qualification.
+It passed four retained positive/negative controls and one exact independent
+repeat under unchanged prompts and residual caps. Its first fresh standard package
+then completed in 59.563 seconds with two calls, no independently observed P0/P1
+and 32 passing desktop/mobile browser states. Four advisory presentation issues
+remain. This is one development sample, not a reliability estimate, installed
+proof, qualification of rescue/deep, or broader release readiness.
 
 Standard and rescue use lower-capability authors relative to Sol deep. Release
 proof requires each profile's observed committed positive case and a source-bound material

@@ -12,15 +12,15 @@ from dataclasses import dataclass
 from types import MappingProxyType
 
 
-GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v15"
+GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v16"
 GREENFIELD_NORMAL_CASE_TARGET_SECONDS = 60.0
 # The existing outer deadline still checks compilation, sealing and staging.
 # This allocation is headroom for those phases, not an extension on expiry.
 _COMPLETION_RESERVE_SECONDS = 15.0
 
-STANDARD_PROFILE_ID = "greenfield-standard-terra-low-complete-author-review-v15"
-RESCUE_PROFILE_ID = "greenfield-rescue-terra-medium-complete-author-review-v15"
-DEEP_PROFILE_ID = "greenfield-deep-sol-high-complete-author-review-v15"
+STANDARD_PROFILE_ID = "greenfield-standard-terra-low-complete-author-review-v16"
+RESCUE_PROFILE_ID = "greenfield-rescue-terra-medium-complete-author-review-v16"
+DEEP_PROFILE_ID = "greenfield-deep-sol-high-complete-author-review-v16"
 UNAVAILABLE_PROVIDER_PROFILE_ID = "greenfield-unavailable-provider-no-write-v1"
 
 
@@ -37,7 +37,7 @@ class GreenfieldModelProfile:
     model_timeout_seconds: float
     lower_capability: bool = False
     supported_success: bool = True
-    review_model: str = "gpt-5.6-sol"
+    review_model: str = "gpt-6-astra"
     review_reasoning_effort: str = "medium"
 
 

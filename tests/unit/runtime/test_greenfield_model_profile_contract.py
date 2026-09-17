@@ -25,13 +25,13 @@ def _observation(profile_id, role):
     }
 
 
-def test_v15_profiles_allocate_shared_model_windows_inside_unchanged_consumer_ceilings():
-    assert profiles.GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION == "odylith.greenfield.model-profile-contract.v15"
+def test_v16_profiles_pin_frontier_review_inside_unchanged_consumer_ceilings():
+    assert profiles.GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION == "odylith.greenfield.model-profile-contract.v16"
     assert profiles.GREENFIELD_NORMAL_CASE_TARGET_SECONDS == 60.0
     assert PROFILE_IDS == (
-        "greenfield-standard-terra-low-complete-author-review-v15",
-        "greenfield-rescue-terra-medium-complete-author-review-v15",
-        "greenfield-deep-sol-high-complete-author-review-v15",
+        "greenfield-standard-terra-low-complete-author-review-v16",
+        "greenfield-rescue-terra-medium-complete-author-review-v16",
+        "greenfield-deep-sol-high-complete-author-review-v16",
     )
     assert profiles.supported_greenfield_model_repair_tiers() == ("standard", "rescue", "deep")
     assert [
@@ -44,7 +44,7 @@ def test_v15_profiles_allocate_shared_model_windows_inside_unchanged_consumer_ce
     ]
     for profile_id in PROFILE_IDS:
         profile = profiles.get_greenfield_model_profile(profile_id)
-        assert (profile.review_model, profile.review_reasoning_effort) == ("gpt-5.6-sol", "medium")
+        assert (profile.review_model, profile.review_reasoning_effort) == ("gpt-6-astra", "medium")
         assert profile.supported_success
         assert profile.consumer_budget_seconds - profile.model_timeout_seconds == 15.0
 
@@ -126,6 +126,14 @@ def test_review_uses_the_shared_window_but_never_the_author_identity(profile_id)
         profiles.require_greenfield_model_profile_observation(**observation)
 
 
+@pytest.mark.parametrize("profile_id", PROFILE_IDS)
+def test_review_rejects_previous_reviewer_identity_even_with_matching_effort(profile_id):
+    observation = _observation(profile_id, "candidate_review")
+    observation["model"] = "gpt-5.6-sol"
+    with pytest.raises(ValueError, match="observed model does not match"):
+        profiles.require_greenfield_model_profile_observation(**observation)
+
+
 @pytest.mark.parametrize("role", ["", "source_review", "design", "repair", "Candidate_Review", None])
 def test_unknown_roles_are_rejected(role):
     observation = _observation(profiles.STANDARD_PROFILE_ID, "initial_authoring")
@@ -168,6 +176,9 @@ def test_retired_one_call_profiles_are_not_silently_upgraded(profile_id):
     "greenfield-standard-terra-low-complete-author-review-v14",
     "greenfield-rescue-terra-medium-complete-author-review-v14",
     "greenfield-deep-sol-high-complete-author-review-v14",
+    "greenfield-standard-terra-low-complete-author-review-v15",
+    "greenfield-rescue-terra-medium-complete-author-review-v15",
+    "greenfield-deep-sol-high-complete-author-review-v15",
 ])
 def test_retired_consumer_budget_profiles_have_no_aliases(profile_id):
     with pytest.raises(ValueError, match="unsupported Greenfield model profile"):
