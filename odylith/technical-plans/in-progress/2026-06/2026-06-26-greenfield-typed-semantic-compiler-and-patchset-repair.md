@@ -14,6 +14,14 @@ unchanged; clean installation completed in 30.883 seconds with memory installed,
 no product engine disabled, and all 670 installed Python runtime files matching
 source. These are local candidate checks, not release qualification.
 
+The subsequent full local v57 build at 66ca66e9 failed only the platform-domain-
+leakage guard because this Registry spec repeated a fixture-specific human subject
+from the prior checkpoint. The build ran 253.885 seconds with all 1,447 inputs
+unchanged; no install or proposal dispatched. Replace that prose with the generic
+source-cited-subject versus performer distinction, without changing runtime,
+tests, or the gate. The unchanged leakage gate must be rerun before sync and the
+next checkpoint/build.
+
 The original deep-150 v53 proposal remains failed: after 103.829 seconds
 (94.316 author, 8.192 review; two calls), it denied only the human state object
 `displaced residents` despite the source action that city staff register those

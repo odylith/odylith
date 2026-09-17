@@ -13,13 +13,13 @@ or time budgets. Author prompt v57 identifies this correction; reviewer receipt
 remains v2, and v54--v56 remain rejected.
 
 The original deep-150 v53 proposal remains failed after 103.829 seconds (94.316
-author, 8.192 review; two calls): it falsely denied `displaced residents` as a
-human state object despite the exact source action that city staff register those
-residents. Three frozen read-only Astra-medium reviewer controls now pass for the
-exact candidate (6.188 seconds), a heading-equivalent source (7.248 seconds), and
-the performer-as-state negative (6.015 seconds). These are unsealed reviewer-only
-controls; they do not revive the failed attempt or qualify fresh authoring,
-package completion, production, native confirmation, generalization, or release.
+author, 8.192 review; two calls): it falsely denied a source-cited human subject
+as a state object despite the cited staff registration action. Three frozen
+read-only Astra-medium reviewer controls now pass for the exact candidate (6.188
+seconds), a heading-equivalent source (7.248 seconds), and the performer-as-state
+negative (6.015 seconds). These are unsealed reviewer-only controls; they do not
+revive the failed attempt or qualify fresh authoring, package completion,
+production, native confirmation, generalization, or release.
 
 The former safety P1 and its four-policy admission requirement are retracted for
 v56 and the earlier complete v16 governance package: optional implementation detail is not an

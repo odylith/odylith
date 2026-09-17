@@ -8,6 +8,15 @@
   Preserve source fidelity, safety, transaction laws and 90/120/150; finish the
   existing release obligations without adding features.
 
+- Governance Source Leakage Repair (2026-09-17): The full local v57 build at
+  66ca66e9 failed only the platform-domain-leakage guard after 253.885 seconds;
+  all 1,447 declared inputs were unchanged and no install or proposal dispatched.
+  The cause was fixture-specific human-subject prose in this component's current
+  spec, carried forward from the bounded reviewer evidence. Replace it with the
+  generic source-cited-subject versus performer distinction. This changes neither
+  product runtime, tests, nor the gate; rerun the unchanged guard before sync and
+  the next checkpoint/build.
+
 - Current Correction (2026-09-17): The original deep-150 v53 attempt remains
   failed after 103.829 seconds (94.316 author, 8.192 review; two calls): its sole
   denial classified `displaced residents` as an invalid human state object despite
