@@ -2,6 +2,7 @@ flowchart LR
     subgraph transaction_lane["Commit-only creation"]
       direction TB
       reviewed["Reviewed ProductCreateTransaction<br/>Hash-bound exact after-image"]
+      preview["Read-only public preview<br/>No qualified native confirmation<br/>No publication offer"]
       preconditions["Receipt and precondition check<br/>Repository state must still match"]
       write["Journaled sealed-byte publication<br/>No model, parser, generation,<br/>or prose repair after CONFIRM"]
       recovery["Rollback and recovery custody<br/>Snapshot, journal, interrupt cleanup,<br/>and same-hash retry"]
@@ -33,7 +34,8 @@ flowchart LR
       qualified["Qualification evidence complete<br/>Independent of transaction admission"]
     end
 
-    reviewed --> preconditions --> write --> readback
+    reviewed --> preview
+    reviewed -- "separate explicit operator create" --> preconditions --> write --> readback
     write -. "failure or interruption" .-> recovery
     recovery -. "restore or safe retry" .-> write
     projections --> atlas_source --> atlas_render --> surfaces --> reviewed
@@ -54,7 +56,7 @@ flowchart LR
     classDef governance fill:#F5F3FF,stroke:#DDD6FE,color:#132033,stroke-width:1px;
     classDef constraint fill:#FFF8E6,stroke:#F6D98B,color:#132033,stroke-width:1px;
     classDef invalid fill:#FFF1F0,stroke:#F7B4AE,color:#132033,stroke-width:1px;
-    class reviewed,preconditions,write,recovery,readback primary;
+    class reviewed,preview,preconditions,write,recovery,readback primary;
     class projections,atlas_source,atlas_render,surfaces,shell_navigation,child_selection,frame_bridge,browser execution;
     class product_parser,evaluator,strict_gate,confidence,retain,cleanup,qualified governance;
     class release constraint;

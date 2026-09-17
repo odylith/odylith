@@ -1,5 +1,67 @@
 Status: In progress
 
+## Remove unqualified proposal write offers (2026-09-17)
+
+Checkpoint result: 1,501 install, 292 focused runtime and 55 desktop/mobile
+browser tests pass with zero failures/errors/skips. The 1,198 declared inputs
+and published generation remain unchanged. Independent review also closes the
+retired apply command's executable remediation offer. Root-document mirroring
+now belongs to normal sync, with exact-path exclusions and consumer-safe shared
+README parity. No semantic mechanism or model profile changed; the proposal CLI
+shrinks by 51 lines. Native outer-timeout safety and complete visible receipts
+remain the next mechanism comparison, not a completed goal. Preserve 90/120/150,
+separate semantic/generalization confidence and the closed final holdout.
+
+CB-305 records a bounded prerequisite for shipping aligned guidance: normal
+sync omits three root-document mirrors. Give those exact documents to the
+existing mirror owner and make the shared README consumer-safe at source.
+Keep maintainer policy in its existing scope; no prose-transform mechanism,
+publication bypass or new confirmation interface is introduced.
+
+Independent boundary review confirms there is no attested caller/interface
+seam in public proposal rendering. Make both `propose` and controlled
+`compile-transaction` previews review-only, in text and JSON. Remove chat
+CONFIRM/EDIT/REJECT and executable create offers rather than add a forgeable
+host flag or hide the defect behind model continuation. Keep the exact staged
+package, hash, quality view, explicit direct create CLI and existing callback
+kernel intact. Pending staging is not governed publication; no rejection action
+is offered from the read-only preview. This is a safety correction, not native
+confirmation completion. A future qualified interface must prove activation,
+zero post-confirm model dispatch under faults, and a full visible outcome before
+it can offer writes. Require failing-before/passing-after view controls for both
+commands/formats, one-author/one-review staging with unchanged governed truth,
+direct CLI and both callback regression proof, and aligned shipped guidance.
+No semantic schema, author/reviewer, receipt, model profile or deadline changes.
+
+## Revalidate the native decision boundary (2026-09-17)
+
+Codex is now 0.153.4; current intervention activation is unverified. Compare
+context-only continuation, the unchanged real unavailable-hash callback, and an
+explicitly shorter outer hook timeout against a loopback-only inference detector.
+No real model, pending transaction, publication, profile or global trust edit is
+part of this test. Require actual hook invocation before interpreting dispatch
+or receipt visibility. The first untrusted control makes one detector request
+without invoking its hook; it is a negative activation control, not a failed
+blocking callback. Preserve it. After reviewing the exact diagnostic wrapper,
+use invocation-local hook trust only in the empty disposable test roots; do not
+infer installed or desktop activation from that automation permission. Freeze
+the native binary, runtime and checker inputs, then retain all outcomes. The
+known public preview offer-boundary omission remains open; callback registration
+alone must never establish eligible native confirmation.
+
+Result: the reviewed invocation-local-trust comparison witnesses all three
+hooks on Codex 0.153.4. Context-only continuation reaches one loopback POST;
+the unchanged production callback blocks with zero POSTs but the native text
+surface displays only `UserPromptSubmit Blocked`, not the full outcome. A
+one-second outer timeout around a three-second delayed callback reaches one
+POST after the host reports hook failure. All children and the loopback
+detector are terminal; declared input hashes are unchanged. No real provider
+or package was available. This corroborates the existing transport defect on
+the current binary, not installed/desktop activation. Do not add more callback
+parsers, retries or flags claiming eligibility. Determine the existing
+deterministic interface and preview ownership boundary before implementation.
+Evidence: /Users/freedom/.codex/odylith-native-decision.itPVJL/trusted/.
+
 ## Make context ownership readable (2026-09-17)
 
 The fresh retained-native screenshot repeats the complete product story inside

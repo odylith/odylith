@@ -299,13 +299,13 @@ def _write_greenfield_guidance(repo_root: Path, text: str) -> None:
         path.write_text(text, encoding="utf-8")
 
 
-def test_release_smoke_requires_installed_greenfield_guidance_uses_proposal_first_confirm(tmp_path: Path) -> None:
+def test_release_smoke_requires_read_only_proposal_and_separate_direct_create(tmp_path: Path) -> None:
     module = _module()
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
     _write_greenfield_guidance(
         repo_root,
-        "Use a project-first greenfield proposal. Include a sectioned Product story, State object, First complete path, and Proof boundary; never collapse the proposal into a wall of prose. Run odylith greenfield propose --repo-root . --prompt '<request>'. Odylith compiles and validates typed prompt evidence and the full ProductCreateTransaction before showing the only hash-bound CONFIRM rail. EDIT supplies new evidence and rebuilds the proposal; REJECT writes nothing. Run odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/pending/<hash>/product-create-transaction.v1.json --transaction-hash <hash> --confirm to commit. Create verifies the compiler receipt, hash, and repo preconditions, writes only sealed bytes under a rollback guard, validates readback, and performs no product reinterpretation, repair, or generation after CONFIRM. Do not inspect Odylith source after confirmation. Do not narrate parser/schema retries. Do not ask the operator to inspect proposal JSON.\n",
+        "Use a project-first greenfield proposal. Include a sectioned Product story, State object, First complete path, and Proof boundary; never collapse the proposal into a wall of prose. Run odylith greenfield propose --repo-root . --prompt '<request>'. Odylith compiles and validates typed prompt evidence and the full ProductCreateTransaction as a read-only public proposal. No qualified confirmation interface is attached to the preview. Do not append chat decision commands, offer publication, or run create from a chat approval. Explicit operator invocation of odylith greenfield create remains separate and uses --repo-root . --transaction-file .odylith/runtime/greenfield/pending/<hash>/product-create-transaction.v1.json --transaction-hash <hash> --confirm. Create verifies the compiler receipt, hash, and repo preconditions, writes only sealed bytes under a rollback guard, validates readback, and performs no product reinterpretation, repair, or generation after confirmation. Do not inspect Odylith source after confirmation. Do not narrate parser/schema retries. Do not ask the operator to inspect proposal JSON.\n",
     )
 
     module._require_greenfield_guidance_uses_confirmed_create(repo_root=repo_root, label="unit")
@@ -320,6 +320,19 @@ def test_release_smoke_requires_installed_greenfield_guidance_uses_proposal_firs
         assert "stale greenfield schema-repair flow" in str(exc)
     else:  # pragma: no cover - assertion branch
         raise AssertionError("stale installed guidance should fail release smoke")
+
+
+def test_release_smoke_rejects_old_unqualified_public_decision_offer(tmp_path: Path) -> None:
+    module = _module()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_greenfield_guidance(
+        repo_root,
+        "Run odylith greenfield propose to compile a ProductCreateTransaction as a read-only preview with no qualified confirmation interface. Do not append chat decisions or offer publication, and do not run odylith greenfield create from a chat approval. After showing the only hash-bound CONFIRM rail, use exactly one hash-bound command: CONFIRM, EDIT, or REJECT. A direct operator can separately run odylith greenfield create --transaction-file <file> --transaction-hash <hash> --confirm. Create verifies receipt under a rollback guard and readback with no product reinterpretation. Do not inspect proposal JSON or narrate parser/schema retries.\n",
+    )
+
+    with pytest.raises(RuntimeError, match="obsolete public greenfield command rail"):
+        module._require_greenfield_guidance_uses_confirmed_create(repo_root=repo_root, label="unit")
 
 
 def test_release_smoke_rejects_maintainer_restrictions_in_consumer_guidance(tmp_path: Path) -> None:

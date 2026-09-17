@@ -28,7 +28,7 @@ Odylith reasons about your repo through delivery intelligence, grounds every
 turn through local-first retrieval, governs every action through execution
 admissibility, adjudicates ambiguous postures through its Tribunal, and keeps
 its own durable memory across sessions. In empty or thin repos, it can also
-turn broad greenfield intent into a confirmation-gated governance proposal
+turn broad greenfield intent into a staged, read-only governance proposal
 before source exists. It runs through both Codex and Claude Code as first-class
 hosts.
 
@@ -64,7 +64,8 @@ issues it can create. Each suggestion comes with the command to run it.
 If the repo is still empty or too thin for source-backed boundaries, Odylith
 switches to greenfield mode instead of dead-ending. Odylith compiles untrusted
 evidence into typed product facts, the complete governed package, and a clear
-sectioned preview before it offers a decision.
+sectioned, read-only preview. Native chat confirmation remains unqualified;
+the preview does not offer publication.
 
 For example:
 
@@ -76,10 +77,10 @@ Before confirmation, Odylith stores each compiled package at an immutable,
 transaction-addressed pending path under `.odylith/runtime/greenfield/`. That package already
 contains the quality-gated backlog, first-release plan, Registry components,
 Atlas topology, assumptions, risks, open questions, validation obligations, and
-post-commit handoff. `CONFIRM <hash>` resolves only that reviewed package, verifies its hash,
-and publishes those sealed bytes;
-it does not ask a model to interpret intent or generate artifacts after the
-decision. The commit-only path materializes an immutable generation, switches one
+post-commit handoff. The separate, explicit operator `greenfield create` command
+requires the reviewed transaction file, hash and confirmation. It publishes only
+sealed bytes, without model interpretation or generation. A chat approval must
+not be converted into that command by a model. The commit-only path materializes an immutable generation, switches one
 active pointer, validates readback, and directs the operator to that exact project view.
 
 Then open `odylith/index.html` in a browser and follow the Cheatsheet in the

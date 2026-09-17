@@ -176,7 +176,7 @@ def _positive_journey_output_issues(result: Any, *, stage: str, repo_root: Path)
 
 
 def confirmation_preview_issues(*, proposal_payload: Mapping[str, Any]) -> tuple[str, ...]:
-    """Require a readable, hash-bound decision rail before the matrix commits it."""
+    """Validate the read-only preview while keeping native confirmation unqualified."""
 
     transaction = _mapping(proposal_payload.get("product_create_transaction"))
     transaction_hash = str(transaction.get("transaction_hash") or "").strip()
@@ -189,40 +189,32 @@ def confirmation_preview_issues(*, proposal_payload: Mapping[str, Any]) -> tuple
         issues.append("pre-confirm payload is missing a valid transaction hash")
     if not str(proposal_payload.get("transaction_file") or "").strip():
         issues.append("pre-confirm payload is missing its transaction file")
-    if str(confirmation.get("command_rule") or "").strip() != (
-        "Use exactly one hash-bound command: CONFIRM, EDIT, or REJECT."
-    ):
-        issues.append("pre-confirm payload does not state the one-command decision rule")
+    if str(confirmation.get("status") or "").strip() != "read_only":
+        issues.append("pre-confirm payload does not mark the public proposal read-only")
+    if not str(confirmation.get("reason") or "").strip():
+        issues.append("pre-confirm read-only payload is missing its reason")
     if not isinstance(choices, list):
-        issues.append("pre-confirm payload is missing the CONFIRM, EDIT, and REJECT choices")
-        return tuple(issues)
-    expected_commands = [
-        f"CONFIRM {transaction_hash}",
-        f"EDIT {transaction_hash} <corrections>",
-        f"REJECT {transaction_hash}",
-    ]
-    commands = [str(_mapping(choice).get("command") or "").strip() for choice in choices]
-    if commands != expected_commands:
-        issues.append("pre-confirm payload does not present CONFIRM, EDIT, and REJECT as distinct ordered choices")
-        return tuple(issues)
-    choice_by_command = {str(_mapping(choice).get("command") or "").strip(): _mapping(choice) for choice in choices}
-    confirm = choice_by_command[expected_commands[0]]
-    edit = choice_by_command[expected_commands[1]]
-    reject = choice_by_command[expected_commands[2]]
-    commit_command = str(confirm.get("commit_command") or "").strip()
-    if transaction_hash not in commit_command or "--confirm" not in commit_command:
-        issues.append("CONFIRM does not name the exact hash-bound commit command")
-    if "exact validated package" not in str(confirm.get("description") or "").casefold():
-        issues.append("CONFIRM does not explain that it commits the validated package")
-    edit_text = " ".join(str(edit.get(key) or "") for key in ("description",))
-    if "new evidence" not in edit_text.casefold() or "rebuild" not in edit_text.casefold():
-        issues.append("EDIT does not explain that corrections are rebuilt as new evidence")
-    if "no governed records" not in str(reject.get("description") or "").casefold():
-        issues.append("REJECT does not clearly promise no governed writes")
-    contract = str(confirmation.get("post_confirm_contract") or "").casefold()
-    for required_phrase in ("hash", "compiler receipt", "repo preconditions", "sealed bytes", "rollback", "readback"):
-        if required_phrase not in contract:
-            issues.append(f"pre-confirm post-confirm contract omits `{required_phrase}`")
+        issues.append("pre-confirm read-only payload is missing its empty choices list")
+    elif choices:
+        issues.append("pre-confirm read-only payload exposes actionable choices")
+    if any(
+        field in confirmation
+        for field in ("command_rule", "command", "commit_command", "create_command", "post_confirm_contract")
+    ):
+        issues.append("pre-confirm read-only payload exposes explicit action fields")
+    encoded_confirmation = json.dumps(confirmation, sort_keys=True).casefold()
+    executable_tokens = (
+        "odylith greenfield create",
+        "--confirm",
+        f"confirm {transaction_hash}".casefold(),
+        f"edit {transaction_hash}".casefold(),
+        f"reject {transaction_hash}".casefold(),
+        "choose one command",
+        "use exactly one hash-bound command",
+    )
+    if any(token in encoded_confirmation for token in executable_tokens):
+        issues.append("pre-confirm read-only payload exposes an executable decision or commit offer")
+    issues.append("read-only public proposal remains unqualified for native end-to-end confirmation")
     return tuple(issues)
 
 

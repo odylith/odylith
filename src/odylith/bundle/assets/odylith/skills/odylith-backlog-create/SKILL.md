@@ -16,9 +16,9 @@ or asks to create one or more Radar backlog workstreams.
    who benefits, what changes, and what evidence would prove success.
    Exception: when the user asks for a new greenfield project from intent
    only, use `odylith greenfield propose` to compile the typed evidence and
-   staged ProductCreateTransaction before it shows the sole final command rail.
-   `CONFIRM` then commits that validated package; `EDIT` rebuilds it from new
-   evidence; `REJECT` writes nothing.
+   staged ProductCreateTransaction for read-only review. No qualified confirmation
+   interface is attached to that preview. Do not append chat decision commands,
+   offer publication, or run create from a chat approval.
 3. Run `./.odylith/bin/odylith backlog create --repo-root .` with `--title`,
    `--problem`, `--customer`, `--opportunity`, `--product-view`, and
    `--success-metrics`.

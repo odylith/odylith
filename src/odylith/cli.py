@@ -169,7 +169,7 @@ _GREENFIELD_PROPOSALS_MODULE = "odylith.runtime.domain_intelligence.greenfield_p
 _GREENFIELD_CREATE_MODULE = "odylith.runtime.domain_intelligence.greenfield_create_cli"
 _GREENFIELD_COMMANDS = (
     ("propose", "Compile and review a complete Greenfield package before confirmation."),
-    ("apply", "Disabled legacy command; confirmed writes use create."),
+    ("apply", "Disabled legacy command; propose provides read-only review."),
     ("create", "Commit a compiled ProductCreateTransaction."),
     ("compile-transaction", "Compile and quality-gate a ProductCreateTransaction without governed writes."),
 )

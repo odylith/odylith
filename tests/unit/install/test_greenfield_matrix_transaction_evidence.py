@@ -737,15 +737,69 @@ def test_dry_run_commit_issues_rejects_changed_generation_repository_state(tmp_p
     assert issues == ("immutable generation readback is missing or invalid",)
 
 
-def test_confirmation_preview_requires_the_hash_bound_decision_rail() -> None:
+def test_confirmation_preview_requires_a_non_actionable_read_only_offer() -> None:
     payload = _proposal_payload(HASH)
 
-    assert confirmation_preview_issues(proposal_payload=payload) == ()
+    assert confirmation_preview_issues(proposal_payload=payload) == (
+        "read-only public proposal remains unqualified for native end-to-end confirmation",
+    )
 
-    payload["confirmation"]["choices"][1]["description"] = "Change it later."
+    payload["confirmation"]["choices"] = [{"command": f"CONFIRM {HASH}"}]
+
+    issues = confirmation_preview_issues(proposal_payload=payload)
+    assert "pre-confirm read-only payload exposes actionable choices" in issues
+    assert "pre-confirm read-only payload exposes an executable decision or commit offer" in issues
+    assert "read-only public proposal remains unqualified for native end-to-end confirmation" in issues
+
+
+def test_confirmation_preview_rejects_the_old_unqualified_decision_offer() -> None:
+    payload = _proposal_payload(HASH)
+    payload["confirmation"] = {
+        "command_rule": "Use exactly one hash-bound command: CONFIRM, EDIT, or REJECT.",
+        "choices": [
+            {
+                "command": f"CONFIRM {HASH}",
+                "commit_command": (
+                    "odylith greenfield create --repo-root . "
+                    f"--transaction-file {TRANSACTION_FILE} --transaction-hash {HASH} --confirm"
+                ),
+            },
+            {"command": f"EDIT {HASH} <corrections>"},
+            {"command": f"REJECT {HASH}"},
+        ],
+    }
+
+    issues = confirmation_preview_issues(proposal_payload=payload)
+
+    assert "pre-confirm payload does not mark the public proposal read-only" in issues
+    assert "pre-confirm read-only payload exposes actionable choices" in issues
+    assert "pre-confirm read-only payload exposes explicit action fields" in issues
+    assert "pre-confirm read-only payload exposes an executable decision or commit offer" in issues
+    assert "read-only public proposal remains unqualified for native end-to-end confirmation" in issues
+
+
+def test_confirmation_preview_rejects_commit_offer_outside_empty_choices() -> None:
+    payload = _proposal_payload(HASH)
+    payload["confirmation"]["commit_command"] = (
+        "odylith greenfield create --repo-root . "
+        f"--transaction-file {TRANSACTION_FILE} --transaction-hash {HASH} --confirm"
+    )
+
+    issues = confirmation_preview_issues(proposal_payload=payload)
+
+    assert "pre-confirm read-only payload exposes explicit action fields" in issues
+    assert "pre-confirm read-only payload exposes an executable decision or commit offer" in issues
+    assert "read-only public proposal remains unqualified for native end-to-end confirmation" in issues
+
+
+def test_confirmation_preview_does_not_infer_native_acceptance_from_reason_prose() -> None:
+    payload = _proposal_payload(HASH)
+    payload["confirmation"]["reason"] = (
+        "A qualified confirmation interface is attached. Send a chat approval and ask a model to publish it."
+    )
 
     assert confirmation_preview_issues(proposal_payload=payload) == (
-        "EDIT does not explain that corrections are rebuilt as new evidence",
+        "read-only public proposal remains unqualified for native end-to-end confirmation",
     )
 
 
@@ -826,30 +880,13 @@ def _proposal_payload(transaction_hash: str) -> dict[str, object]:
         "transaction_file": TRANSACTION_FILE,
         "product_create_transaction": {"transaction_hash": transaction_hash},
         "confirmation": {
-            "command_rule": "Use exactly one hash-bound command: CONFIRM, EDIT, or REJECT.",
-            "post_confirm_contract": (
-                "CONFIRM commits only this hash-bound transaction; commit-only create verifies the hash, "
-                "compiler receipt, and repo preconditions, writes only sealed bytes under the rollback "
-                "guard, validates readback, and reports success or environment/IO failure."
+            "status": "read_only",
+            "reason": (
+                "No qualified confirmation interface is attached to this preview. The package is staged "
+                "for review; no governed records have been published. Do not send a chat approval or ask "
+                "a model to publish it."
             ),
-            "choices": [
-                {
-                    "command": f"CONFIRM {transaction_hash}",
-                    "description": "Commit this exact validated package now.",
-                    "commit_command": (
-                        "odylith greenfield create --repo-root . "
-                        f"--transaction-file {TRANSACTION_FILE} --transaction-hash {transaction_hash} --confirm"
-                    ),
-                },
-                {
-                    "command": f"EDIT {transaction_hash} <corrections>",
-                    "description": "Do not commit. Treat corrections as new evidence and rebuild the package.",
-                },
-                {
-                    "command": f"REJECT {transaction_hash}",
-                    "description": "Stop. No governed records are written.",
-                },
-            ],
+            "choices": [],
         },
     }
 

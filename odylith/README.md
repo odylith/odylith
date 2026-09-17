@@ -5,8 +5,6 @@ product repo it also carries source governance; installed repos receive the
 consumer-owned subset, while the managed runtime itself lives under
 `.odylith/`.
 
-In the product repo, maintainer-only release guidance and skills live under
-`odylith/maintainer/`. That subtree is excluded from consumer bundle assets.
 Shared consumer-safe guidance lives under `odylith/agents-guidelines/` and
 `odylith/skills/`.
 
@@ -19,9 +17,8 @@ three boundaries separate:
 
 `./.odylith/bin/odylith` uses the Odylith runtime. Repo code still validates on
 the repo's own `python`, `uv`, Poetry, Conda, or equivalent toolchain.
-Consumer repos stay on pinned runtime only; detached `source-local` is
-maintainer-only. Hosted install currently supports macOS (Apple Silicon) and
-Linux (`x86_64`, `ARM64`). For trust and release details, see
+Consumer repos stay on pinned runtime only. Hosted install currently supports
+macOS (Apple Silicon) and Linux (`x86_64`, `ARM64`). For trust and release details, see
 `SECURITY_POSTURE.md`.
 
 ## First Run
@@ -107,35 +104,32 @@ greenfield proposal lane before source-backed governance exists:
 ./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<project intent>"
 ```
 
-`propose` compiles a typed ProductCreateTransaction before it shows the final command rail.
-The visible preview is a sectioned view of the transaction-bound facts: Product story,
-State object, First complete path, Human actors, systems, assumptions, ambiguities, and
-proof boundary. It ends with one clear `## Choose one command` block:
+`propose` compiles a typed ProductCreateTransaction for read-only review.
+The sectioned preview preserves Product story, State object, First complete path,
+Human actors, systems, assumptions, ambiguities, and proof boundary. No qualified
+confirmation interface is attached to this preview. Do not append chat decision
+commands, offer publication, or run create from a chat approval. Host names and
+registered hooks do not prove fault-safe confirmation or visible completion.
 
-- **CONFIRM** commits the shown validated transaction hash.
-- **EDIT** adds corrections as new untrusted evidence and rebuilds a replacement transaction.
-- **REJECT** stops with no governed records written.
+Odylith asks one focused question only when an ambiguity materially changes the
+first release; other gaps become visible assumptions. Markdown is evidence and a
+human view, not product truth. Staging retains the compiled package and hash under
+`.odylith/runtime/greenfield/pending/` without changing governed product records.
+Corrections supplied through `propose --edit` are new evidence and rebuild the
+package; they do not authorize publication.
 
-Odylith asks one focused question only when an ambiguity materially changes the first
-release. Other gaps become visible assumptions. Markdown is evidence and a human view,
-not product truth. Before **CONFIRM**, `propose` may store replaceable evidence and the
-compiled transaction under `.odylith/runtime/greenfield/`; it does not change governed
-product records. After **CONFIRM**, create only verifies the receipt, transaction hash,
-compiler identity, and unchanged repo preconditions; applies the sealed write set under a
-rollback guard; validates exact readback; and reports success or an environment/IO failure.
-It does not parse product Markdown, call a host model, generate artifacts, or repair prose
-after confirmation. Do not inspect Odylith source files, `.odylith`, bundle files, Python
-modules, or local examples to discover schema fields. Do not hand-author or repair proposal
-JSON, narrate parser/schema retries, or request a second confirmation.
+Explicit operator invocation of `odylith greenfield create` with
+`--transaction-file`, `--transaction-hash`, and `--confirm` remains a separate
+supported interface. It verifies the compiler receipt, hash and repo preconditions,
+applies only sealed bytes under rollback guard, validates readback and reports
+success or a transaction/environment failure. It must not parse evidence, call a
+model, generate artifacts or rebuild persistent projections after confirmation.
+This command is not permission for a host to reinterpret a chat approval.
 
-```bash
-./.odylith/bin/odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm
-```
-
-If a reviewer explicitly asks for JSON, use `greenfield propose --format json` as an audit
-view of the staged transaction. The normal write path stays confirmed create from the
-verified transaction hash. Do not use canned domain families or scaffolds as product truth.
-Do not start coding until the product gates are accepted.
+Use `greenfield propose --format json` for an explicitly requested audit view.
+Do not inspect source to discover schema, hand-author proposal JSON, narrate
+parser/schema retries or invent a confirmation path. Do not start coding until
+the product gates are accepted.
 
 For the common governance authoring fast paths, use:
 
@@ -202,7 +196,7 @@ Starter prompt for your agent when source-backed paths already exist:
 
 Starter prompt for a greenfield project:
 
-**Odylith, propose the first governed shape for this project. Give me a backlog tree, program waves, release plan, planned components, Atlas diagrams, assumptions, risks, validation obligations, and open questions. Do not claim source evidence. Ask for confirmation before writing anything.**
+**Odylith, propose the first governed shape for this project. Show the product story, first complete path, state object, backlog, planned components, Atlas diagrams, assumptions and proof boundary. Preserve the read-only preview and explain any confirmation blocker. Do not offer publication or invent source evidence.**
 
 Here are some starter prompt inspirations:
 
@@ -276,9 +270,6 @@ Silence is better than filler.
   Shared Odylith operating guidance.
 - `skills/`
   Shared Odylith specialist skills intended to stay consumer-safe.
-- product-repo-only `maintainer/` subtree
-  Maintainer-only release guidance and skills for Odylith release work. This
-  subtree is excluded from consumer bundles.
 - `FAQ.md`, `INSTALL.md`, `OPERATING_MODEL.md`, `PRODUCT_COMPONENTS.md`
   Product-level reference docs for this tree.
 - `SECURITY_POSTURE.md`

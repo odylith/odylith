@@ -44,23 +44,19 @@ placeholder products in response to a show-me request.
    feature after an empty/thin show result, do not refuse because source is
    absent. Run the project-first proposal path instead:
    `./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<their request>"`.
-   `propose` compiles typed evidence, repairs and quality-gates the full staged
-   ProductCreateTransaction, then renders the single visible confirmation view.
-   Show the preview directly in chat, including Product story, State object, First
-   complete path, actors, systems, assumptions, ambiguities, proof boundary, and one
-   clear `## Choose one command` block. **`CONFIRM <hash>`** commits the shown hash-bound
-   package; **`EDIT <hash> <corrections>`** accepts corrections as new evidence and rebuilds a new package;
-   **`REJECT <hash>`** stops with no writes. Ask one focused question only for material
-   uncertainty; otherwise make assumptions visible. Markdown is evidence and a view,
-   never product truth. After **`CONFIRM <hash>`**, run
-   `greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/pending/<hash>/product-create-transaction.v1.json --transaction-hash <hash> --confirm`.
-   Confirmed create only verifies receipt, hash, compiler identity, and repo
-   preconditions; applies sealed bytes under rollback guard; validates readback; and
-   reports success or environment/IO failure. It does not generate, repair, or parse
-   product material after confirmation. Do not ask for a second confirmation, expose
-   proposal JSON, search Odylith source for schema, use canned domain scaffolds, dump
-   tool internals, or narrate parser/schema retries. Surface only the final transaction,
-   created records, or a material blocker.
+   `propose` compiles typed evidence and quality-gates a staged ProductCreateTransaction
+   for read-only review. Show Product story, State object, First complete path,
+   actors, systems, assumptions, ambiguities and Proof boundary directly in chat.
+   No qualified confirmation interface is attached. Do not append chat decision
+   commands, offer publication, or run create from a chat approval. Ask one focused
+   question only for material uncertainty; otherwise show assumptions.
+   Explicit operator `greenfield create` with `--transaction-file`,
+   `--transaction-hash`, and `--confirm` remains a separate deterministic interface:
+   receipt/hash/precondition verification, sealed bytes under rollback guard and
+   exact readback, with no model, generation or repair after confirmation.
+   Do not invent a host confirmation path, expose proposal JSON, inspect source
+   for schema or narrate parser/schema retries. Surface the preview and material
+   blocker plainly.
 6. Do not create governance records unless the operator explicitly asks.
    The default posture is advisory — show what's possible and let the operator
    choose.

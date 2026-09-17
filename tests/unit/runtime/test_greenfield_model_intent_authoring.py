@@ -459,7 +459,7 @@ def test_model_authored_project_seals_one_source_and_design_package(tmp_path, mo
     assert "Review the creation-ready transaction" not in json.dumps(sealed, ensure_ascii=False)
 
 
-def test_public_propose_cli_uses_one_author_and_review_and_returns_hash_bound_choices(
+def test_public_propose_cli_uses_one_author_and_review_without_unqualified_write_offers(
     tmp_path,
     monkeypatch,
     capsys,
@@ -486,12 +486,8 @@ def test_public_propose_cli_uses_one_author_and_review_and_returns_hash_bound_ch
     assert provider.calls == 1
     assert reviewer.calls == 1
     assert payload["transaction_file"].endswith("product-create-transaction.v1.json")
-    choices = payload["confirmation"]["choices"]
-    assert [choice["command"].split(maxsplit=1)[0] for choice in choices] == [
-        "CONFIRM",
-        "EDIT",
-        "REJECT",
-    ]
+    assert payload["confirmation"]["status"] == "read_only"
+    assert payload["confirmation"]["choices"] == []
     assert greenfield_repository_write_set.greenfield_managed_fingerprints(tmp_path) == baseline
 
 

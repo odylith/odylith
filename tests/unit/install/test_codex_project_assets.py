@@ -4,7 +4,7 @@ import json
 import tomllib
 from pathlib import Path
 
-from odylith.install import bootstrap_assets
+from odylith.install import agents, bootstrap_assets
 from odylith.runtime.common import codex_cli_capabilities
 
 
@@ -221,7 +221,7 @@ def test_claude_backlog_skill_shim_carries_exact_cli_enum_guard() -> None:
         assert "moderate" in text
 
 
-def test_greenfield_guidance_uses_precompiled_transaction_create_path() -> None:
+def test_greenfield_guidance_keeps_public_review_separate_from_operator_create() -> None:
     guidance_paths = (
         REPO_ROOT / "AGENTS.md",
         REPO_ROOT / "odylith" / "AGENTS.md",
@@ -249,10 +249,6 @@ def test_greenfield_guidance_uses_precompiled_transaction_create_path() -> None:
         / "odylith-show-me"
         / "SKILL.md",
     )
-    source_paths = (
-        REPO_ROOT / "src" / "odylith" / "install" / "agents.py",
-        REPO_ROOT / "src" / "odylith" / "install" / "bootstrap_assets.py",
-    )
     forbidden = (
         "host drafts backlog",
         "host model drafts",
@@ -262,8 +258,13 @@ def test_greenfield_guidance_uses_precompiled_transaction_create_path() -> None:
         "active-proposal.v1.json",
     )
 
-    for path in (*guidance_paths, *source_paths):
-        text = path.read_text(encoding="utf-8")
+    rendered = [(path, path.read_text(encoding="utf-8")) for path in guidance_paths]
+    rendered.extend([
+        ("product root template", agents.managed_block(repo_role="product_repo")),
+        ("consumer root template", agents.managed_block(repo_role="consumer_repo")),
+        ("consumer scoped template", bootstrap_assets.customer_bootstrap_guidance()),
+    ])
+    for path, text in rendered:
         compact_text = " ".join(text.split())
         assert "ProductCreateTransaction" in compact_text, path
         assert "greenfield create" in text, path
@@ -272,54 +273,17 @@ def test_greenfield_guidance_uses_precompiled_transaction_create_path() -> None:
         assert "--confirm" in text, path
         assert "--intent-file" not in text, path
         assert "--confirm-intent" not in text, path
-        assert all(command in text for command in ("CONFIRM", "EDIT", "REJECT")), path
+        assert "read-only" in text, path
+        assert "qualified confirmation interface" in compact_text, path
+        assert "create from a chat approval" in compact_text, path
+        assert "## Choose one command" not in text, path
+        assert "CONFIRM <hash>" not in text, path
         assert "rollback guard" in compact_text, path
+        assert ".odylith/runtime/greenfield/confirmed-intent.md" not in compact_text, path
+        assert ".odylith/runtime/greenfield/confirmed-intent.json" not in compact_text, path
+        assert "greenfield compile-transaction" not in compact_text, path
         for token in forbidden:
             assert token not in text, f"{path} still carries stale greenfield guidance: {token}"
-
-
-def test_greenfield_guidance_keeps_internal_intent_flags_off_user_path() -> None:
-    guidance_paths = (
-        REPO_ROOT / "AGENTS.md",
-        REPO_ROOT / "odylith" / "AGENTS.md",
-        REPO_ROOT / "odylith" / "skills" / "odylith-greenfield-governance" / "SKILL.md",
-        REPO_ROOT / "odylith" / "skills" / "odylith-show-me" / "SKILL.md",
-        REPO_ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md",
-        REPO_ROOT
-        / "src"
-        / "odylith"
-        / "bundle"
-        / "assets"
-        / "odylith"
-        / "skills"
-        / "odylith-greenfield-governance"
-        / "SKILL.md",
-        REPO_ROOT
-        / "src"
-        / "odylith"
-        / "bundle"
-        / "assets"
-        / "odylith"
-        / "skills"
-        / "odylith-show-me"
-        / "SKILL.md",
-        REPO_ROOT / "src" / "odylith" / "install" / "agents.py",
-        REPO_ROOT / "src" / "odylith" / "install" / "bootstrap_assets.py",
-    )
-
-    for path in guidance_paths:
-        text = path.read_text(encoding="utf-8")
-        normalized = " ".join(text.split())
-        assert "ProductCreateTransaction" in normalized, path
-        assert "greenfield create" in normalized, path
-        assert "--transaction-file" in normalized, path
-        assert "--transaction-hash" in normalized, path
-        assert "--confirm" in normalized, path
-        assert "--intent-file" not in normalized, path
-        assert "--confirm-intent" not in normalized, path
-        assert ".odylith/runtime/greenfield/confirmed-intent.md" not in normalized, path
-        assert ".odylith/runtime/greenfield/confirmed-intent.json" not in normalized, path
-        assert "greenfield compile-transaction" not in normalized, path
 
 
 def test_claude_output_style_keeps_observation_rare_and_assist_concrete() -> None:

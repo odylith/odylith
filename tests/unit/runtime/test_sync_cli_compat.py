@@ -1423,6 +1423,7 @@ def test_build_sync_execution_plan_appends_source_bundle_mirror_step(tmp_path: P
     ]
     assert len(mirror_steps) == 1
     assert mirror_steps[0].action is not None
+    assert {"odylith/AGENTS.md", "odylith/README.md", "odylith/SECURITY_POSTURE.md"} <= set(mirror_steps[0].paths)
 
 
 def test_build_sync_execution_plan_runs_final_registry_reconcile_after_bundle_mirror(tmp_path: Path) -> None:

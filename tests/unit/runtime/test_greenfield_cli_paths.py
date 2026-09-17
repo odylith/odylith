@@ -260,10 +260,10 @@ def test_greenfield_apply_cli_rejects_legacy_confirm_path_before_compile(tmp_pat
 
     out = capsys.readouterr().out
     assert rc == 2
-    assert "greenfield apply is disabled for confirmed writes" in out
-    assert "Confirm now commits only an already compiled ProductCreateTransaction" in out
+    assert "greenfield apply is disabled" in out
+    assert "read-only preview" in out
     assert "greenfield propose" in out
-    assert "greenfield create" in out
+    assert "greenfield create" not in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
     assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
     assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))
@@ -275,7 +275,7 @@ def test_greenfield_help_marks_apply_as_disabled_and_create_as_confirmed_write_p
 
     output = capsys.readouterr().out
     assert exit_error.value.code == 0
-    assert "Disabled legacy command; confirmed writes use create." in output
+    assert "Disabled legacy command; propose provides read-only review." in " ".join(output.split())
     assert "create" in output
     assert "Commit a compiled ProductCreateTransaction." in output
 
@@ -740,8 +740,9 @@ def test_greenfield_apply_json_output_is_machine_clean(tmp_path, monkeypatch, ca
 
     assert rc == 2
     assert payload["mode"] == "error"
-    assert "greenfield apply is disabled for confirmed writes" in payload["error"]
-    assert "ProductCreateTransaction" in payload["error"]
+    assert "greenfield apply is disabled" in payload["error"]
+    assert "read-only preview" in payload["error"]
+    assert "--confirm" not in payload["error"]
     assert "operator_output" not in payload
 
 
@@ -763,5 +764,5 @@ def test_greenfield_apply_json_error_is_machine_clean(tmp_path, capsys) -> None:
 
     assert rc == 2
     assert payload["mode"] == "error"
-    assert "greenfield apply is disabled for confirmed writes" in payload["error"]
+    assert "greenfield apply is disabled" in payload["error"]
     assert "greenfield propose" in payload["error"]

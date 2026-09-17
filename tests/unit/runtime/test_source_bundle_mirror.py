@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
+from odylith.runtime.governance import sync_workstream_artifacts
 from odylith.runtime.surfaces import source_bundle_mirror
 
 
@@ -9,6 +12,33 @@ def _product_repo_root(tmp_path: Path) -> Path:
     (tmp_path / "odylith").mkdir(parents=True, exist_ok=True)
     (tmp_path / "src" / "odylith" / "bundle" / "assets" / "odylith").mkdir(parents=True, exist_ok=True)
     return tmp_path
+
+
+@pytest.mark.parametrize("name", ("AGENTS.md", "README.md", "SECURITY_POSTURE.md"))
+def test_sync_mirrors_exact_shared_root_document(tmp_path: Path, monkeypatch, name: str) -> None:
+    repo_root = _product_repo_root(tmp_path)
+    live_path = repo_root / "odylith" / name
+    mirror_path = repo_root / "src/odylith/bundle/assets/odylith" / name
+    live_path.write_text("Consumer-safe shared guidance.\n", encoding="utf-8")
+    mirror_path.write_text("Previous guidance.\n", encoding="utf-8")
+    monkeypatch.setattr(
+        sync_workstream_artifacts.governance,
+        "collect_git_changed_paths",
+        lambda **_: pytest.fail("explicit selection must not scan Git"),
+    )
+
+    assert sync_workstream_artifacts._sync_changed_source_truth_bundle_mirrors(
+        repo_root=repo_root, changed_paths=(f"odylith/{name}",)
+    ) == 0
+    assert mirror_path.read_bytes() == live_path.read_bytes()
+
+
+@pytest.mark.parametrize(
+    "path",
+    ("odylith/README.md.bak", "odylith/README.md/child", "odylith/INSTALL.md", "odylith/maintainer/AGENTS.md"),
+)
+def test_root_document_mirror_admission_does_not_expand_to_adjacent_paths(path: str) -> None:
+    assert not sync_workstream_artifacts._should_bundle_mirror_source_truth_path(path)
 
 
 def test_sync_live_paths_copies_live_surface_file_into_bundle_mirror(tmp_path: Path) -> None:
@@ -528,14 +558,10 @@ def test_github_issue_pipeline_guidance_stays_maintainer_only() -> None:
         assert not path.exists(), path
 
     source_readme = (repo_root / "odylith" / "README.md").read_text(encoding="utf-8")
-    assert "product-repo-only `maintainer/` subtree" in source_readme
-    assert "That subtree is excluded from consumer bundle assets." in source_readme
-    assert "Those live under `odylith/maintainer/`" not in source_readme
-    assert "- `maintainer/`" not in source_readme
-
     bundle_readme = (
         repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "README.md"
     ).read_text(encoding="utf-8")
+    assert source_readme == bundle_readme
     assert "maintainer/" not in bundle_readme
     assert "maintainer-only" not in bundle_readme
     assert "product-repo-only" not in bundle_readme

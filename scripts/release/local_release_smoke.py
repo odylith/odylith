@@ -254,9 +254,16 @@ _STALE_GREENFIELD_GUIDANCE_TOKENS = (
     "the host authors the proposal",
     ".odylith/runtime/greenfield/active-proposal.v1.json",
 )
+_OBSOLETE_GREENFIELD_COMMAND_RAIL_TOKENS = (
+    "showing the only hash-bound confirm rail",
+    "use exactly one hash-bound command: confirm, edit, or reject",
+    "## choose one command",
+)
 _GREENFIELD_PROPOSAL_FIRST_GUIDANCE_CONCEPTS = (
     ("proposal command", ("greenfield propose",)),
     ("sealed transaction", ("ProductCreateTransaction",)),
+    ("read-only public proposal", ("read-only", "read only")),
+    ("unavailable public confirmation interface", ("no qualified confirmation interface",)),
     ("commit command", ("greenfield create",)),
     ("transaction file", ("--transaction-file",)),
     ("confirmation hash", ("--transaction-hash", "transaction-hash", "hash-bound")),
@@ -264,10 +271,20 @@ _GREENFIELD_PROPOSAL_FIRST_GUIDANCE_CONCEPTS = (
     ("atomic readback", ("rollback guard", "readback")),
     (
         "commit-only no-work boundary",
-        ("no product reinterpretation", "does not parse", "does not generate", "commit-only", "only verifies", "verifies receipt"),
+        (
+            "no product reinterpretation",
+            "does not parse",
+            "does not generate",
+            "commit-only",
+            "only verifies",
+            "verifies receipt",
+            "without model reasoning",
+            "never interprets evidence",
+            "no model, generation or repair",
+        ),
     ),
     ("proposal JSON boundary", ("proposal JSON",)),
-    ("schema-loop silence", ("parser/schema retries", "parser retries", "schema retries")),
+    ("schema-loop silence", ("parser/schema retries", "parser retries", "schema retries", "narrate retries")),
 )
 _FORBIDDEN_CONSUMER_MAINTAINER_RESTRICTION_TOKENS = (
     "freedom-research",
@@ -343,8 +360,14 @@ def _require_greenfield_guidance_uses_confirmed_create(*, repo_root: Path, label
         for token in _STALE_GREENFIELD_GUIDANCE_TOKENS:
             if token in text:
                 raise RuntimeError(f"{label} guidance still teaches stale greenfield schema-repair flow: {relative_path}: {token}")
+        for token in _OBSOLETE_GREENFIELD_COMMAND_RAIL_TOKENS:
+            if token in compact_text.casefold():
+                raise RuntimeError(
+                    f"{label} guidance exposes an obsolete public greenfield command rail: "
+                    f"{relative_path}: {token}"
+                )
         for concept, alternatives in _GREENFIELD_PROPOSAL_FIRST_GUIDANCE_CONCEPTS:
-            if not any(token in compact_text for token in alternatives):
+            if not any(token.casefold() in compact_text.casefold() for token in alternatives):
                 expected = " or ".join(alternatives)
                 raise RuntimeError(
                     f"{label} guidance omits proposal-first create {concept}: {relative_path}: {expected}"

@@ -7,7 +7,6 @@ from collections.abc import Callable, Sequence
 from dataclasses import replace
 import json
 from pathlib import Path
-import shlex
 import time
 from typing import Any, Mapping
 
@@ -32,7 +31,6 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import MAX_EVIDENCE_BYTES
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import GreenfieldPreconfirmEngineError
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import PRECONFIRM_REPAIR_TIERS
-from odylith.runtime.project_intelligence.intent_confirmation import format_confirmation_choice_lines
 from odylith.runtime.reasoning import odylith_reasoning
 
 
@@ -56,10 +54,10 @@ _REPAIR_TIER_BUDGET_HELP = (
 def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="odylith greenfield",
-        description="Preview and commit confirmation-gated greenfield product records.",
+        description="Review staged Greenfield packages; publication requires a separate qualified interface.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
-    propose = subparsers.add_parser("propose", help="Preview a confirmation-gated greenfield product proposal.")
+    propose = subparsers.add_parser("propose", help="Stage a complete Greenfield package and show a read-only proposal.")
     propose.add_argument("--repo-root", default=".")
     propose.add_argument("--prompt", required=True)
     propose.add_argument("--format", choices=("text", "json"), default="text", dest="output_format")
@@ -77,7 +75,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         "--detail",
         choices=("brief", "full"),
         default="brief",
-        help="Reserved preview depth selector. `propose` always compiles the full staged transaction before the final rail.",
+        help="Reserved preview depth selector. `propose` always compiles the full staged transaction before review.",
     )
     propose.add_argument(
         "--repair-tier",
@@ -105,8 +103,8 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     )
     apply = subparsers.add_parser(
         "apply",
-        help="Legacy proposal apply is disabled; use propose, then hash-bound create.",
-        description="Legacy proposal apply is disabled; use propose, then hash-bound create.",
+        help="Legacy proposal apply is disabled; use propose for read-only review.",
+        description="Legacy proposal apply is disabled; use propose for read-only review.",
     )
     apply.add_argument("--repo-root", default=".")
     apply.add_argument("--proposal-file", default="")
@@ -151,7 +149,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     compile_transaction.add_argument(
         "--output",
         default="",
-        help="Optional path for the compiled transaction JSON. Omit to print only the confirmation view.",
+        help="Optional path for the compiled transaction JSON. The proposal view remains read-only.",
     )
     compile_transaction.add_argument("--format", choices=("text", "json"), default="text", dest="output_format")
     return parser.parse_args(argv)
@@ -159,60 +157,31 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
 
 def _legacy_apply_disabled_error() -> str:
     return (
-        "greenfield apply is disabled for confirmed writes. Confirm now commits only an already compiled "
-        "ProductCreateTransaction. Run `odylith greenfield propose --repo-root . --prompt <request>`, then run `odylith greenfield create "
-        "--repo-root . --transaction-file .odylith/runtime/greenfield/pending/<hash>/product-create-transaction.v1.json "
-        "--transaction-hash <hash> --confirm`. No governed records were written."
+        "greenfield apply is disabled. Use `odylith greenfield propose --repo-root . --prompt <request>` "
+        "for a read-only preview. No qualified confirmation interface is attached to that preview. "
+        "No governed records were written."
     )
 
 
-def _transaction_confirmation_payload(
-    *,
-    transaction: Any,
-    output_path: str = "",
-) -> dict[str, Any]:
-    summary = transaction.summary()
-    transaction_hash = str(summary["transaction_hash"])
-    transaction_ref = shlex.quote(output_path or "<compiled-transaction.json>")
-    commit_command = (
-        "odylith greenfield create --repo-root . "
-        f"--transaction-file {transaction_ref} "
-        f"--transaction-hash {summary['transaction_hash']} --confirm"
-    )
+def _transaction_confirmation_payload() -> dict[str, Any]:
+    """A portable preview has no attested channel for a subsequent decision.
+
+    Callback registration and environment host names cannot establish native
+    interception, fault-safe termination or visible completion. Keep this view
+    read-only; explicit operator create dispatch has its own deterministic owner.
+    """
     return {
-        "command_rule": "Use exactly one hash-bound command: CONFIRM, EDIT, or REJECT.",
-        "first_word_rule": "The transaction hash is part of the command and binds the decision to these reviewed bytes.",
-        "edit_rule": "For EDIT, put corrections after the hash so Odylith can rebuild from the new evidence.",
-        "post_confirm_contract": (
-            "CONFIRM commits only this hash-bound transaction; commit-only create verifies the hash, "
-            "compiler receipt, and repo preconditions, writes only sealed bytes under the rollback "
-            "guard, validates readback, and reports success or environment/IO failure."
+        "status": "read_only",
+        "reason": (
+            "No qualified confirmation interface is attached to this preview. "
+            "The package is staged for review; no governed records have been published. "
+            "Do not send a chat approval or ask a model to publish it."
         ),
-        "choices": [
-            {
-                "command": f"CONFIRM {transaction_hash}",
-                "description": "Commit this exact validated package now. Odylith verifies the hash and repo "
-                "preconditions, writes the sealed bytes, and validates readback. No product reinterpretation, "
-                "repair, or generation runs after CONFIRM.",
-                "commit_command": commit_command,
-            },
-            {
-                "command": f"EDIT {transaction_hash} <corrections>",
-                "description": "Do not commit. Replace <corrections> with your changes; Odylith treats them as new "
-                "evidence, rebuilds the package, and uses the new hash.",
-            },
-            {
-                "command": f"REJECT {transaction_hash}",
-                "description": "Stop this exact pending package. No governed records are written.",
-            },
-        ],
-        "confirm": f"CONFIRM {transaction_hash}",
-        "edit": f"EDIT {transaction_hash} <corrections>",
-        "reject": f"REJECT {transaction_hash}",
+        "choices": [],
     }
 
 
-def _transaction_confirmation_text(
+def _transaction_review_text(
     *,
     transaction: Any,
     output_path: str = "",
@@ -225,9 +194,9 @@ def _transaction_confirmation_text(
     created = backlog_result.get("created") if isinstance(backlog_result.get("created"), list) else []
     components = package.component_registry_preview if isinstance(package.component_registry_preview, tuple) else ()
     diagrams = package.rendered_atlas_sources if isinstance(package.rendered_atlas_sources, Mapping) else {}
-    confirmation = _transaction_confirmation_payload(transaction=transaction, output_path=output_path)
+    confirmation = _transaction_confirmation_payload()
     lines = [
-        "ProductCreateTransaction ready for final command",
+        "## Review only",
         f"- transaction hash: {summary['transaction_hash']}",
         f"- product facts hash: {intent_authority.get('product_facts_sha256', '')}",
         f"- quality gate: {summary.get('quality_status') or manifest.get('status', 'unknown')}",
@@ -235,22 +204,8 @@ def _transaction_confirmation_text(
         f"- governed package: {len(created)} workstreams, {len(components)} component previews, {len(diagrams)} Atlas previews",
         f"- sealed commit: {summary.get('repository_write_count', 0)} exact file writes, "
         f"{summary.get('repository_delete_count', 0)} deletions, and hashed repo preconditions",
-        "- commands below include this exact transaction hash; copy CONFIRM or REJECT unchanged, or replace the "
-        "EDIT corrections placeholder",
         "",
-        *format_confirmation_choice_lines(
-            tuple(
-                (
-                    str(choice["command"]),
-                    (
-                        f"{choice['description']} Run `{choice['commit_command']}`"
-                        if str(choice["command"]).startswith("CONFIRM ")
-                        else str(choice["description"])
-                    ),
-                )
-                for choice in confirmation["choices"]
-            )
-        ),
+        str(confirmation["reason"]),
     ]
     if output_path:
         lines.insert(1, f"- transaction file: {output_path}")
@@ -528,7 +483,7 @@ def _public_intent_hypothesis(candidate_intent: Mapping[str, Any]) -> dict[str, 
 def _retired_intent_file_message() -> str:
     return (
         "The separate Product Intent confirmation flow is retired. `propose` now compiles the typed evidence and "
-        "full ProductCreateTransaction before it shows the only CONFIRM rail. Use `--edit` or `--edit-evidence` "
+        "full ProductCreateTransaction before its read-only review. Use `--edit` or `--edit-evidence` "
         "to rebuild from corrections; edited Markdown is evidence, never a confirmed product source."
     )
 
@@ -568,15 +523,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "intent_hypothesis": _public_intent_hypothesis(candidate_intent),
                 "product_create_transaction": transaction.summary(),
                 "transaction_file": str(transaction_path.relative_to(repo_root)),
-                "confirmation": _transaction_confirmation_payload(
-                    transaction=transaction,
-                    output_path=str(transaction_path.relative_to(repo_root)),
-                ),
+                "confirmation": _transaction_confirmation_payload(),
             }, indent=2, sort_keys=True))
         else:
             preview = render_product_intent_preview(candidate_intent).rstrip()
             print(
-                f"{preview}\n\n{_transaction_confirmation_text(transaction=transaction, output_path=str(transaction_path.relative_to(repo_root)))}",
+                f"{preview}\n\n{_transaction_review_text(transaction=transaction, output_path=str(transaction_path.relative_to(repo_root)))}",
                 end="",
             )
         return 0
@@ -618,17 +570,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "intent_hypothesis": _public_intent_hypothesis(candidate_intent),
                     "product_create_transaction": summary,
                     "transaction": greenfield_proposals.product_create_transaction_to_dict(transaction),
-                    "confirmation": _transaction_confirmation_payload(
-                        transaction=transaction,
-                        output_path=output_path,
-                    ),
+                    "confirmation": _transaction_confirmation_payload(),
                 }
                 if output_path:
                     payload["transaction_file"] = output_path
                 print(json.dumps(payload, indent=2, sort_keys=True))
             else:
                 preview = render_product_intent_preview(candidate_intent).rstrip()
-                print(f"{preview}\n\n{_transaction_confirmation_text(transaction=transaction, output_path=output_path)}", end="")
+                print(f"{preview}\n\n{_transaction_review_text(transaction=transaction, output_path=output_path)}", end="")
         except GreenfieldClarificationRequired as exc:
             return _finish_clarification(
                 exc=exc,

@@ -125,8 +125,10 @@ Odylith does not claim full protection against:
   intent, and Odylith assumptions; missing source cannot become a source-backed
   governance claim.
 - `odylith greenfield propose` builds and quality-gates the full
-  ProductCreateTransaction before it renders the sole confirmation rail.
-- `odylith greenfield create` only verifies the compiler receipt, transaction
+  ProductCreateTransaction for read-only review. No qualified confirmation
+  interface is attached. Hosts must not append chat decisions, offer publication
+  or run create from chat approval; callback registration is not qualification.
+- Explicit operator `odylith greenfield create` only verifies the compiler receipt, transaction
   hash, compiler identity, and unchanged repo preconditions; applies the sealed
   write set under rollback guard; validates exact readback; and reports success.
 - Legacy proposal `apply` is not a confirmed write path; edited intent must be

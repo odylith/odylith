@@ -147,6 +147,9 @@ _SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES: tuple[str, ...] = (
     "odylith/skills/",
     "odylith/runtime/source/",
 )
+_SOURCE_TRUTH_BUNDLE_MIRROR_EXACT_PATHS = frozenset(
+    {"odylith/AGENTS.md", "odylith/README.md", "odylith/SECURITY_POSTURE.md"}
+)
 _PROJECTION_INVALIDATION_PREFIXES: tuple[str, ...] = (
     "odylith/radar/source/",
     "odylith/technical-plans/",
@@ -284,7 +287,9 @@ def _should_bundle_mirror_source_truth_path(path_token: str) -> bool:
         return False
     if any(token.startswith(prefix) for prefix in _SOURCE_TRUTH_BUNDLE_MIRROR_EXCLUDE_PREFIXES):
         return False
-    return any(token.startswith(prefix) for prefix in _SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES)
+    return token in _SOURCE_TRUTH_BUNDLE_MIRROR_EXACT_PATHS or any(
+        token.startswith(prefix) for prefix in _SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES
+    )
 
 def _sync_changed_source_truth_bundle_mirrors(
     *,
@@ -509,7 +514,7 @@ def _build_truth_only_selective_sync_plan(
                     changed_paths=normalized,
                 ),
                 mutation_classes=("generated_surfaces",),
-                paths=_SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES,
+                paths=(*_SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES, *sorted(_SOURCE_TRUTH_BUNDLE_MIRROR_EXACT_PATHS)),
                 next_command_on_failure=sync_failure_command,
             )
         )
@@ -2494,7 +2499,7 @@ def build_sync_execution_plan(
                 changed_paths=changed_paths,
             ),
             mutation_classes=("generated_surfaces",),
-            paths=_SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES,
+            paths=(*_SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES, *sorted(_SOURCE_TRUTH_BUNDLE_MIRROR_EXACT_PATHS)),
             next_command_on_failure=sync_failure_command,
         )
     )

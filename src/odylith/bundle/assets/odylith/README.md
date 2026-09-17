@@ -104,35 +104,32 @@ greenfield proposal lane before source-backed governance exists:
 ./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<project intent>"
 ```
 
-`propose` compiles a typed ProductCreateTransaction before it shows the final command rail.
-The visible preview is a sectioned view of the transaction-bound facts: Product story,
-State object, First complete path, Human actors, systems, assumptions, ambiguities, and
-proof boundary. It ends with one clear `## Choose one command` block:
+`propose` compiles a typed ProductCreateTransaction for read-only review.
+The sectioned preview preserves Product story, State object, First complete path,
+Human actors, systems, assumptions, ambiguities, and proof boundary. No qualified
+confirmation interface is attached to this preview. Do not append chat decision
+commands, offer publication, or run create from a chat approval. Host names and
+registered hooks do not prove fault-safe confirmation or visible completion.
 
-- **`CONFIRM <hash>`** commits the shown validated transaction hash.
-- **`EDIT <hash> <corrections>`** adds corrections as new untrusted evidence and rebuilds a replacement transaction.
-- **`REJECT <hash>`** stops with no governed records written.
+Odylith asks one focused question only when an ambiguity materially changes the
+first release; other gaps become visible assumptions. Markdown is evidence and a
+human view, not product truth. Staging retains the compiled package and hash under
+`.odylith/runtime/greenfield/pending/` without changing governed product records.
+Corrections supplied through `propose --edit` are new evidence and rebuild the
+package; they do not authorize publication.
 
-Odylith asks one focused question only when an ambiguity materially changes the first
-release. Other gaps become visible assumptions. Markdown is evidence and a human view,
-not product truth. Before **`CONFIRM <hash>`**, `propose` stores each compiled package at an
-immutable transaction-addressed pending path under `.odylith/runtime/greenfield/`; it does
-not change governed product records. After **`CONFIRM <hash>`**, create only verifies the receipt, transaction hash,
-compiler identity, and unchanged repo preconditions; applies the sealed write set under a
-rollback guard; validates exact readback; and reports success or an environment/IO failure.
-It does not parse product Markdown, call a host model, generate artifacts, or repair prose
-after confirmation. Do not inspect Odylith source files, `.odylith`, bundle files, Python
-modules, or local examples to discover schema fields. Do not hand-author or repair proposal
-JSON, narrate parser/schema retries, or request a second confirmation.
+Explicit operator invocation of `odylith greenfield create` with
+`--transaction-file`, `--transaction-hash`, and `--confirm` remains a separate
+supported interface. It verifies the compiler receipt, hash and repo preconditions,
+applies only sealed bytes under rollback guard, validates readback and reports
+success or a transaction/environment failure. It must not parse evidence, call a
+model, generate artifacts or rebuild persistent projections after confirmation.
+This command is not permission for a host to reinterpret a chat approval.
 
-```bash
-./.odylith/bin/odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/pending/<hash>/product-create-transaction.v1.json --transaction-hash <hash> --confirm
-```
-
-If a reviewer explicitly asks for JSON, use `greenfield propose --format json` as an audit
-view of the staged transaction. The normal write path stays confirmed create from the
-verified transaction hash. Do not use canned domain families or scaffolds as product truth.
-Do not start coding until the product gates are accepted.
+Use `greenfield propose --format json` for an explicitly requested audit view.
+Do not inspect source to discover schema, hand-author proposal JSON, narrate
+parser/schema retries or invent a confirmation path. Do not start coding until
+the product gates are accepted.
 
 For the common governance authoring fast paths, use:
 
@@ -199,7 +196,7 @@ Starter prompt for your agent when source-backed paths already exist:
 
 Starter prompt for a greenfield project:
 
-**Odylith, build this project from my request. Compile the complete first-release governance package before asking me to confirm. Show the product story, first complete path, state object, assumptions, proof boundary, and one clear hash-bound CONFIRM / EDIT / REJECT command block. After CONFIRM, publish only the reviewed transaction and take me to the exact finished project view.**
+**Odylith, propose the first governed shape for this project. Show the product story, first complete path, state object, backlog, planned components, Atlas diagrams, assumptions and proof boundary. Preserve the read-only preview and explain any confirmation blocker. Do not offer publication or invent source evidence.**
 
 Here are some starter prompt inspirations:
 

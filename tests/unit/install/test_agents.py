@@ -76,12 +76,14 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
         "odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md",
         "odylith/skills/odylith-code-hygiene-guard/SKILL.md",
         "Discipline hot paths must not call host models",
-            "Odylith treats input as evidence",
-            "builds typed facts",
-            "one hash-bound rail",
-            "Material uncertainty gets one focused question",
-            "Markdown is a view, never product truth",
-            "ProductCreateTransaction",
+        "Input and corrections are untrusted evidence",
+        "builds typed custody facts",
+        "read-only preview",
+        "No qualified confirmation interface",
+        "Do not append chat decision commands, offer publication, or run create from a chat approval",
+        "Ask one focused question only for material uncertainty",
+        "Markdown is a view, never product truth",
+        "ProductCreateTransaction",
         "--transaction-file",
         "--transaction-hash",
         "rollback guard",
@@ -137,11 +139,11 @@ def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
     assert "rerender only the owned surface" in block
     assert "Claude direct-edit and Bash PostToolUse hooks stay silent on success" in block
     assert "Claude Stop is memory/logging only" in block
-    assert "Do not inspect source" in block
-    assert "hand-author/repair proposal JSON" in block
+    assert "Do not hand-author proposal JSON, inspect source for schema" in block
     assert "parser/schema retries" in block
-    assert "narrate parser/schema retries, or request a second confirmation" in block
-    assert "Surface only the final transaction, created-record summary, or a material blocker" in block
+    assert "Show the preview and its material confirmation blocker plainly" in block
+    assert "No qualified confirmation interface" in block
+    assert "without model reasoning, generation or repair" in block
     assert "Confirm/Edit/Reject" not in block
     assert "confirm to expand" not in block
     assert len(block.encode("utf-8")) < 11600

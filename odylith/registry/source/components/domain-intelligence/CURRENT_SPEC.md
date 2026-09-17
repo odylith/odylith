@@ -4,6 +4,20 @@ Last updated: 2026-09-17
 
 ## Overview
 
+The public Greenfield preview must be review-only when its caller supplies no
+qualified deterministic confirmation interface. A registered host name is not
+qualification. Such a preview retains the staged package and its identity, but
+offers no chat decision or executable publication command. Explicit operator
+`greenfield create` remains the separate deterministic sealed-byte interface;
+this guard does not change its kernel or claim native confirmation is complete.
+Current Codex 0.153.4 diagnostics retain blocking on a successful callback but
+hide the full outcome in text and structured exec output; outer hook timeout
+permits model dispatch. CB-304 remains open for native eligibility and delivery.
+The retired apply route also withholds executable remediation offers. The bounded
+source checkpoint passes 1,501 install, 292 runtime and 55 browser tests without
+failures or skips; this supports the offer boundary, not native qualification or
+unseen semantic/SLA acceptance.
+
 The source-context view groups exact events by their typed performer and makes
 each event visually distinct with lossless wrapping and spacing. In the
 no-source-components branch, the product node shows only its title; its sealed
@@ -408,6 +422,9 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:start -->
 - **2026-09-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`, `src/odylith/runtime/governance/sync_workstream_artifacts.py`
+- **2026-09-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
   - Evidence: `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_view.py`
 - **2026-08-10 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
@@ -421,9 +438,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-08-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py`, `tests/unit/runtime/test_greenfield_transaction_intent_authority.py`
-- **2026-08-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-06-greenfield-sealed-intent-cannot-prove-atomic-accepted-fact-custody.md`, `src/odylith/runtime/domain_intelligence/greenfield_atomic_fact_ledger.py`, `tests/unit/runtime/test_greenfield_prompt_workflow_custody.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
