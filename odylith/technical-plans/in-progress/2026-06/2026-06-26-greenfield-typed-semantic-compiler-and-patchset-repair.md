@@ -1,5 +1,58 @@
 Status: In progress
 
+## Current installed shipping gate (2026-09-17)
+
+The fresh source-local standard-90 attempt fails safely in 45.212 seconds:
+authoring again selects the wrong occurrence, and the corrected reviewer now
+rejects that exact location. Two calls take 37.668 and 7.234 seconds; source,
+governed state, publication and the original seed remain unchanged, with no
+active target workers. No new package is staged or published. This proves the
+review correction on a fresh candidate, not usable project delivery. Keep the
+failed attempt at /Users/freedom/.codex/odylith-authority-project.wWcJMf/.
+Inspect only the authoring citation contract against prior failed mechanisms;
+do not start another distribution, feature, schema, retry or deadline expansion.
+Independent review confirms the resolver follows the requested ordinal correctly.
+The next bounded candidate clarifies that a selected occurrence's own location
+must support its semantic role; identical text elsewhere cannot supply that meaning.
+Use the existing complete proposal path for the collision, a clean unique-location
+control and a heading-equivalent control, one attempt each, stopping at the first
+failure. Do not add author-only probes followed by a redundant fourth proposal.
+The author instruction is not changed or validated by this reviewer checkpoint.
+
+The missing selected-location authority instruction is now restored after three
+independently accepted one-shot review controls (6.281/6.399/5.705 seconds under
+the retained 25.080-second allowance). The regression fails before correction;
+92 focused controls pass afterwards. Only the review instruction and its request
+test change. No source-address heuristic, schema, model role, profile, timeout or
+repair path is added. A useful source-local standard-90 complete project remains
+required before another distribution build. These diagnostics prove neither authoring
+reliability nor completion, and do not qualify the rejected installed package.
+
+Pushed candidate bec6ad2a3 passes a full fresh distribution build with 1,448
+inputs unchanged and a 30.349-second clean install with exactly 671 matching
+Python files. A single standard-90 proposal completes in 67.460 seconds with
+two model calls and 56 sealed writes. The runner's absent-baseline assertion is
+incorrect; independent transaction adjudication confirms the untouched installer
+baseline, matching proposal precondition and no project journal or generation.
+Keep that failed runner receipt distinct from the successful proposal command.
+
+Semantic admission remains blocked by one recurring exact-citation defect:
+the selected state-object occurrence is embedded in a longer word, not the
+standalone registration target. The complete reviewer had the resolved context
+but admitted it. Do not confirm this package or treat timing and artifact counts
+as qualified quality. Inspect the existing location-authority instruction and
+prior failed comparisons; no new schema, parser heuristic, model stage, profile
+sweep, silent repair or deadline expansion. Preserve all source and transaction
+invariants. Existing terminal/recovery/browser proof resumes on an admissible
+package, not a manually corrected seal.
+
+Independent UX review retracts the repeated four-policy readiness expansion.
+The proposed package makes no unsafe or production-ready assertion. One redundant
+diagram label is partially occluded but its dependency remains unambiguous: P2
+only, not new release work. Human default text remains unproved by the JSON-only
+capture. Source meaning, generation quality, transaction custody and missing UX
+evidence remain separate. Evidence: /Users/freedom/.codex/odylith-shipping-seed.BpCa6g/.
+
 ## Current bounded correction (2026-09-17)
 
 Feature scope remains frozen to demonstrated blockers and required release proof.

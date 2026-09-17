@@ -81,6 +81,17 @@ def test_partition_preserves_every_value_and_binds_complete_candidate():
     assert provider.requests[0].schema_name == "greenfield_candidate_review"
 
 
+def test_review_request_makes_selected_source_location_authoritative():
+    clock = Clock()
+    provider = Reviewer({"admissible": True, "issues": []}, clock)
+    run_review(provider, clock)
+
+    prompt = provider.requests[0].system_prompt
+    assert "resolved_source_custody is the authoritative resolution" in prompt
+    assert "Judge its semantic role at those exact byte offsets and surrounding context" in prompt
+    assert "support from another occurrence of the same quote does not cure" in prompt
+
+
 def test_human_subject_state_object_keeps_source_and_performer_custody_separate():
     source = "Harbor intake helps city staff register displaced residents."
     event = "city staff register displaced residents"
