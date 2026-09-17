@@ -1,5 +1,46 @@
 Status: In progress
 
+## Preserve recorded Radar decisions (2026-09-16)
+
+Remove the demonstrated P1 semantic-default class from the two existing shared
+owners. Backlog authoring no longer manufactures why-now, outcome, tradeoff or
+deferred-scope decisions. Empty legacy rewrites state that ordering rationale
+was not supplied; they do not guess manual-priority posture. Normalization
+preserves partial supplied rationale and only maintains known ordering metadata
+for empty records or existing manual-override maintenance. No model, prompt,
+schema, semantic regex or deadline changes; production shrinks by 21 lines.
+
+Four new controls fail before the correction. Independent source review finds
+the second rewrite fallback and partial-rationale insertion; both are resolved,
+with no remaining narrow review finding. Final focused proof passes 77 checks.
+Disclosed native intent recompilation preserves all five exact canonical
+rationale blocks, passes complete-package checks and all 32 browser states in
+20.331 seconds with unchanged source/checker inputs and zero model calls. This
+is projection evidence, not another native semantic or timing sample. The first
+replay omitted the installed Casebook page; retain that harness failure and
+restore the retained installed snapshot rather than weakening production.
+
+The frozen 371-module runtime selection passes 6,175 checks and fails one stale
+closed-field assertion from the earlier linked-delivery change. The test now
+requires exact delivery_workstreams and both boundary and delivery acceptance;
+all 85 final-delta checks pass, with production unchanged. This is composite
+proof, not a fresh all-green broad rerun. Earlier interrupted runs retain the
+Stop-budget timing failure and the deliberate interruptions. Evidence:
+/Users/freedom/.codex/odylith-radar-rationale.Hsqbib/.
+
+Validation-scope correction: the previous 1,673-pass timing run inadvertently
+executed the Makefile-discovery control, which enumerates and stats the protected
+regression-test path. It did not execute that test or read the final holdout
+dataset, but violated the stricter protected-scope boundary. The final broad run
+excludes the protected module before discovery and explicitly deselects
+test_greenfield_make_targets_reference_only_live_test_files. Keep this explicit
+proof gap; do not inspect protected material for reassurance or repeat the old
+selection. No broad Make command is permitted before final-holdout eligibility.
+
+The narrow invented-decision P1 is repaired; CB-209 remains open for the broader
+semantic, profile, native recovery, upgrade, host-delivery and final-holdout gates.
+Source-faithful recipient topology, repeated prose and presentation P2s remain.
+
 ## Model-window allocation comparison (2026-09-16)
 
 The v14 allocation is retained as a development candidate, not a qualified

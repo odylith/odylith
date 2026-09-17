@@ -30,9 +30,12 @@ transactions fail current-profile validation. One fresh installed standard
 comparison completes proposal/publication in 63.226/2.613 seconds and passes all
 32 browser states. Retain v14 for further development proof, not release
 qualification: raw author/review duration still fits the old model window, so
-causal reliability improvement is unproved. Independent review retains a P1 in
-Radar's invented decision-basis fallback. Source-faithful recipient topology,
-broader semantic quality and all-engine/native-chat evidence remain open.
+causal reliability improvement is unproved. The demonstrated Radar decision-basis
+P1 is corrected in shared backlog authoring/normalization: absent decisions stay
+absent and supplied rationale is preserved. Exact five-workstream custody and
+32 browser states pass on a disclosed-intent recompilation, not a new native
+semantic sample. Source-faithful recipient topology, broader semantic quality
+and all-engine/native-chat evidence remain open.
 
 The shared Greenfield host decision transport must consume CONFIRM, REJECT and
 incomplete decisions before native model dispatch. Supplying developer context

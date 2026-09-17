@@ -1,11 +1,29 @@
 from __future__ import annotations
 
+import datetime as dt
 import json
 from pathlib import Path
+
+import pytest
 
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import release_planning_authoring
 from odylith.runtime.governance import release_planning_contract
+
+
+@pytest.mark.parametrize("override", [False, True])
+def test_missing_rationale_adds_only_known_ordering_metadata(tmp_path: Path, override: bool) -> None:
+    item = backlog_authoring.CreatedBacklogItem(
+        idea_id="B-001", title="A grounded workstream", idea_path=tmp_path / "idea.md",
+        ordering_score=80, founder_override=override,
+    )
+    lines = backlog_authoring._build_rationale_lines(
+        item=item, override_note="Explicit operator ordering.", override_review_date="2026-09-16",
+    )
+    assert lines == [
+        "- ranking basis: Explicit operator ordering. Review checkpoint: 2026-09-16."
+        if override else "- ranking basis: score-based rank; no manual priority override."
+    ]
 
 
 _SECTIONS = (
@@ -161,6 +179,17 @@ def _seed_backlog_repo(root: Path) -> Path:
         encoding="utf-8",
     )
     return backlog_index
+
+
+def test_rewrite_empty_existing_rationale_reports_absence_without_product_defaults(tmp_path: Path) -> None:
+    index = _seed_backlog_repo(tmp_path)
+    text = backlog_authoring._rewrite_active_backlog_section(
+        backlog_index_path=index, active_rows=(),
+        reorder_sections=(("B-101", "B-101 (rank 1)", []),), today=dt.date(2026, 9, 16),
+    )
+    assert text.split("### B-101 (rank 1)\n", maxsplit=1)[1].strip() == (
+        "- ranking basis: Ordering rationale was not supplied."
+    )
 
 
 def _seed_release_registry(root: Path, *, terminal_next: bool = False) -> Path:

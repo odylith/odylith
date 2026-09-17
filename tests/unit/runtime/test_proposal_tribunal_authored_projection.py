@@ -156,6 +156,7 @@ def test_authored_typed_projection_passes_structural_tribunal() -> None:
         "support_event_refs",
         "supporting_events",
         "exchanges",
+        "delivery_workstreams",
     }
     semantics = proposal["intent"][AUTHORED_SEMANTICS_KEY]
     assert component["component_id"] == "test-boundary-1"
@@ -169,6 +170,12 @@ def test_authored_typed_projection_passes_structural_tribunal() -> None:
     assert component["component_contract"]["supporting_events"] == semantics[
         "first_path_relations"
     ]
+    assert component["component_contract"]["delivery_workstreams"] == [
+        {
+            "design_ref": "/authored_semantics/provisional_design/workstreams/0",
+            "provisional_workstream": semantics["provisional_design"]["workstreams"][0],
+        }
+    ]
     assert component["boundary"] == (
         "Proposed logical ownership; no implementation or deployment is asserted."
     )
@@ -178,7 +185,9 @@ def test_authored_typed_projection_passes_structural_tribunal() -> None:
         "The exact test value from boundary 1."
     ]
     assert component["validation"] == [
-        "Read back the exact test value assigned to boundary 1."
+        "Read back the exact test value assigned to boundary 1.",
+        "Proposed delivery acceptance — Implement structural test boundary 1: "
+        "An independent read returns the test value from boundary 1.",
     ]
 
 

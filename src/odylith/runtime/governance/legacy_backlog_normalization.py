@@ -14,13 +14,7 @@ from odylith.runtime.governance import execution_wave_contract
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.governance.backlog_topology_contract import validate_topology_contract
 
-_REQUIRED_BULLETS = (
-    "- why now:",
-    "- expected outcome:",
-    "- tradeoff:",
-    "- deferred for now:",
-    "- ranking basis:",
-)
+_ORDERING_BULLETS = ("- ranking basis:",)
 _LEGACY_INDEX_COLS_WITH_LANES: tuple[str, ...] = (
     "rank",
     "idea_id",
@@ -104,7 +98,7 @@ def normalize_legacy_backlog_index(*, repo_root: str | Path, today: dt.date | No
             existing_lines=list(existing.get("lines", [])),
             founder_override=bool(spec.founder_override) if spec is not None else False,
             today=current_day,
-            require_all_bullets=True,
+            require_ordering=True,
         )
         heading = f"{idea_id} (rank {rank})"
         ordered_sections.append((idea_id, heading, normalized_lines))
@@ -125,7 +119,7 @@ def normalize_legacy_backlog_index(*, repo_root: str | Path, today: dt.date | No
             existing_lines=list(existing.get("lines", [])),
             founder_override=bool(spec.founder_override) if spec is not None else False,
             today=current_day,
-            require_all_bullets=bool(spec.founder_override) if spec is not None else False,
+            require_ordering=bool(spec.founder_override) if spec is not None else False,
         )
         if not normalized_lines and not existing.get("lines"):
             continue
@@ -373,7 +367,7 @@ def _normalized_rationale_lines(
     existing_lines: list[str],
     founder_override: bool,
     today: dt.date,
-    require_all_bullets: bool,
+    require_ordering: bool,
 ) -> list[str]:
     defaults = _default_rationale_lines(
         idea_id=idea_id,
@@ -385,10 +379,10 @@ def _normalized_rationale_lines(
     bullet_indexes = {
         bullet: index
         for index, line in enumerate(lines)
-        for bullet in _REQUIRED_BULLETS
+        for bullet in _ORDERING_BULLETS
         if str(line).strip().lower().startswith(bullet)
     }
-    required = _REQUIRED_BULLETS if require_all_bullets else ("- ranking basis:",) if founder_override else ()
+    required = _ORDERING_BULLETS if founder_override or (require_ordering and not lines) else ()
     for bullet in required:
         default_line = defaults[bullet]
         if bullet not in bullet_indexes:
@@ -399,8 +393,6 @@ def _normalized_rationale_lines(
         if bullet == "- ranking basis:" and founder_override:
             if "no manual priority override" in lowered or backlog_contract._REVIEW_DATE_RE.search(current) is None:  # noqa: SLF001
                 lines[bullet_indexes[bullet]] = default_line
-    if not lines and require_all_bullets:
-        return list(defaults.values())
     return lines
 
 
@@ -436,7 +428,7 @@ def _default_rationale_lines(
     return {
         next(
             bullet
-            for bullet in _REQUIRED_BULLETS
+            for bullet in _ORDERING_BULLETS
             if line.lower().startswith(bullet)
         ): line
         for line in lines

@@ -34,6 +34,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     PRODUCT_INTENT_AUTHORITY_KEY,
 )
 from odylith.runtime.governance import backlog_authoring
+from odylith.runtime.governance import legacy_backlog_normalization
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
     StructuredAuthoringProvider,
@@ -292,3 +293,15 @@ def test_authored_backlog_rationale_omits_absent_optional_lines(tmp_path: Path) 
     assert len(rendered) == 3
     assert all("tradeoff:" not in line for line in rendered)
     assert all("deferred for now:" not in line for line in rendered)
+
+
+@pytest.mark.parametrize("non_goals", [[], ["Do not automate harbor billing in the first release."]])
+def test_authored_rationale_survives_prewrite_normalization_exactly(tmp_path: Path, non_goals) -> None:
+    proposal = _authored_proposal(tmp_path, non_goals=non_goals)
+    for index, row in enumerate(proposal["backlog"], start=1):
+        rendered = render_authored_ordering_rationale(row["ordering_decision"])
+        normalized = legacy_backlog_normalization._normalized_rationale_lines(
+            idea_id=f"B-{index:03}", title=row["title"], existing_lines=rendered,
+            founder_override=False, today=dt.date(2026, 9, 16), require_ordering=True,
+        )
+        assert normalized == rendered

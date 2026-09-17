@@ -662,21 +662,12 @@ def _build_rationale_lines(
 ) -> list[str]:
     if item.rationale_lines:
         return [str(line).strip() for line in item.rationale_lines if str(line).strip()]
-    cost_line = "- tradeoff: keep the first pass narrow until owner, evidence, and validation are explicit."
     if item.founder_override:
         note = override_note or "Manual priority override applied to keep this workstream in a deliberate queue position."
         return [
-            f"- why now: {item.title} is the next bounded project move from the current backlog posture.",
-            "- expected outcome: a reviewer can see the user path, owner, risk, and proof before implementation widens.",
-            cost_line,
-            "- deferred for now: later automation, integrations, and release expansion wait until the first proof path is accepted.",
             f"- ranking basis: {note} Review checkpoint: {override_review_date}.",
         ]
     return [
-        f"- why now: {item.title} is the next bounded project move from the current backlog posture.",
-        "- expected outcome: a reviewer can see the user path, owner, risk, and proof before implementation widens.",
-        cost_line,
-        "- deferred for now: later automation, integrations, and release expansion wait until the first proof path is accepted.",
         "- ranking basis: score-based rank; no manual priority override.",
     ]
 
@@ -756,11 +747,7 @@ def _rewrite_active_backlog_section(
         replacement.extend(
             rationale_lines
             or [
-                "- why now: rationale missing.",
-                "- expected outcome: TBD.",
-                "- tradeoff: TBD.",
-                "- deferred for now: TBD.",
-                "- ranking basis: score-based rank; no manual priority override.",
+                "- ranking basis: Ordering rationale was not supplied.",
             ]
         )
         replacement.append("")

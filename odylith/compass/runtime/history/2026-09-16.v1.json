@@ -42,16 +42,10 @@
   },
   "digest": {
     "24h": [
-      "Completed in this window: Odylith artifacts landed across three workstreams, and B-142 removed invented Radar decisions from shared authoring and normalization. That closes a real source of drift.",
-      "Current execution: Universal greenfield domain intelligence is in active implementation, with roughly 13 days projected at high confidence. | Implementation is moving in several lanes, but some active work still lacks captured progress evidence. The clearest movement is in greenfield intelligence, Release Reset, runtime packaging, and hosted-asset proof.",
-      "Next planned: Benchmark corpus expansion will bring Registry, Radar, Atlas, Compass, and benchmark docs back into alignment, then add more real maintainer coding work through the CLI contract.",
-      "Risks to watch: Candidate release notes still advertise the disabled greenfield apply flow. The P1 remains open and could mislead maintainers about supported release behavior."
+      "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
     ],
     "48h": [
-      "Completed in this window: Governance navigation now uses actor-bound frames, and component views are tied to canonical delivery acceptance. That gives the shared path firmer footing.",
-      "Current execution: Universal greenfield domain intelligence is in active implementation, with roughly 13 days projected at high confidence. | Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof are moving too, but progress evidence remains uneven across active lanes.",
-      "Next planned: Complex-Repo Benchmark Corpus Expansion and Frontier Improvement will reconnect Registry, Radar, Atlas, Compass, and the benchmark docs. | It will also add more real maintainer coding work through the CLI contract.",
-      "Risks to watch: Candidate release notes still advertise the disabled greenfield apply flow. The P1 remains open."
+      "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
     ]
   },
   "digest_scoped": {
@@ -84,7 +78,7 @@
         "Nothing moved in this window: B-060 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-064": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
       ],
       "B-071": [
         "Nothing moved in this window: B-071 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -126,16 +120,16 @@
         "Nothing moved in this window: B-097 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-126": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
       ],
       "B-141": [
         "Nothing moved in this window: B-141 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-142": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
       ],
       "B-145": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
       ],
       "B-001": [
         "Nothing moved in this window: B-001 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -521,7 +515,7 @@
         "Nothing moved in this window: B-060 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-064": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
       ],
       "B-071": [
         "Nothing moved in this window: B-071 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -563,7 +557,7 @@
         "Nothing moved in this window: B-097 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-126": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
       ],
       "B-141": [
         "Nothing moved in this window: B-141 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -572,7 +566,7 @@
         "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-145": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
       ],
       "B-001": [
         "Nothing moved in this window: B-001 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -936,274 +930,51 @@
   "standup_brief": {
     "24h": {
       "schema_version": "v25",
-      "status": "ready",
-      "source": "cache",
+      "status": "unavailable",
+      "source": "unavailable",
       "fingerprint": "dfa8bcf5b448ab6793e77f957a73bb552e03573634d94e5f1f08f0d75637dfde",
-      "generated_utc": "2026-09-17T05:55:08Z",
-      "sections": [
-        {
-          "key": "completed",
-          "label": "Completed in this window",
-          "bullets": [
-            {
-              "text": "Odylith artifacts landed across three workstreams, and B-142 removed invented Radar decisions from shared authoring and normalization. That closes a real source of drift.",
-              "fact_ids": [
-                "F-001",
-                "F-002"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "current_execution",
-          "label": "Current execution",
-          "bullets": [
-            {
-              "text": "Universal greenfield domain intelligence is in active implementation, with roughly 13 days projected at high confidence.",
-              "fact_ids": [
-                "F-004",
-                "F-005"
-              ]
-            },
-            {
-              "text": "Implementation is moving in several lanes, but some active work still lacks captured progress evidence. The clearest movement is in greenfield intelligence, Release Reset, runtime packaging, and hosted-asset proof.",
-              "fact_ids": [
-                "F-006"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "next_planned",
-          "label": "Next planned",
-          "bullets": [
-            {
-              "text": "Benchmark corpus expansion will bring Registry, Radar, Atlas, Compass, and benchmark docs back into alignment, then add more real maintainer coding work through the CLI contract.",
-              "fact_ids": [
-                "F-008",
-                "F-009"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "risks_to_watch",
-          "label": "Risks to watch",
-          "bullets": [
-            {
-              "text": "Candidate release notes still advertise the disabled greenfield apply flow. The P1 remains open and could mislead maintainers about supported release behavior.",
-              "fact_ids": [
-                "F-010"
-              ]
-            }
-          ]
-        }
-      ],
-      "evidence_lookup": {
-        "F-001": {
-          "text": "Added odylith artifacts across 3 workstreams.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-002": {
-          "text": "B-142 removes invented Radar product decisions from shared authoring and normalization, including the legacy rewrite fallback; partial supplied rationale remains intact.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-003": {
-          "text": "Nothing fully closed across the portfolio in the last 24 hours.",
-          "section_key": "completed",
-          "kind": "window_summary"
-        },
-        "F-004": {
-          "text": "Universal greenfield domain intelligence (B-142) is in active implementation.",
-          "section_key": "current_execution",
-          "kind": "direction",
-          "workstreams": [
-            "B-142"
-          ]
-        },
-        "F-005": {
-          "text": "ETA is projected at roughly 13 days (high confidence).",
-          "section_key": "current_execution",
-          "kind": "timeline"
-        },
-        "F-006": {
-          "text": "Implementation is moving, but some active lanes still do not have progress evidence captured. Heaviest movement is in Universal greenfield domain intelligence (B-142), Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005).",
-          "section_key": "current_execution",
-          "kind": "portfolio_posture"
-        },
-        "F-007": {
-          "text": "Work moved across 5 workstreams: B-142, B-005, B-064, B-126, and B-145.",
-          "section_key": "current_execution",
-          "kind": "window_coverage",
-          "workstreams": [
-            "B-142",
-            "B-005",
-            "B-064",
-            "B-126",
-            "B-145"
-          ]
-        },
-        "F-008": {
-          "text": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
-          "section_key": "next_planned",
-          "kind": "forcing_function"
-        },
-        "F-009": {
-          "text": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Add more real maintainer coding work through CLI contract.",
-          "section_key": "next_planned",
-          "kind": "follow_on"
-        },
-        "F-010": {
-          "text": "Candidate release notes advertise the disabled greenfield apply flow. It is still open at P1.",
-          "section_key": "risks_to_watch",
-          "kind": "bug"
-        }
-      },
       "substrate_fingerprint": "dfa8bcf5b448ab6793e77f957a73bb552e03573634d94e5f1f08f0d75637dfde",
-      "bundle_fingerprint": "270fd5f746b0c66ebf90befcb16a9a2737603e8569ee9bb3448fdbb4f4facffe",
-      "provider_decision": "cache_reuse",
-      "last_successful_narration_fingerprint": "dfa8bcf5b448ab6793e77f957a73bb552e03573634d94e5f1f08f0d75637dfde",
-      "cache_mode": "exact"
+      "bundle_fingerprint": "",
+      "provider_decision": "provider_deferred",
+      "last_successful_narration_fingerprint": "",
+      "generated_utc": "2026-09-17T05:55:08Z",
+      "sections": [],
+      "diagnostics": {
+        "reason": "provider_deferred",
+        "title": "Local runtime facts",
+        "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+        "fallback_title": "Local runtime facts",
+        "fallback_digest": [
+          "Current: Universal greenfield domain intelligence (B-142) is in active implementation.",
+          "Next: Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
+          "Watch: Candidate release notes advertise the disabled greenfield apply flow. It is still open at P1."
+        ]
+      },
+      "evidence_lookup": {}
     },
     "48h": {
       "schema_version": "v25",
-      "status": "ready",
-      "source": "cache",
+      "status": "unavailable",
+      "source": "unavailable",
       "fingerprint": "8b59abb8011227d2619935037ceed62f64f0c234a93469052b381080978ca7c4",
-      "generated_utc": "2026-09-17T05:55:08Z",
-      "sections": [
-        {
-          "key": "completed",
-          "label": "Completed in this window",
-          "bullets": [
-            {
-              "text": "Governance navigation now uses actor-bound frames, and component views are tied to canonical delivery acceptance. That gives the shared path firmer footing.",
-              "fact_ids": [
-                "F-001",
-                "F-002"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "current_execution",
-          "label": "Current execution",
-          "bullets": [
-            {
-              "text": "Universal greenfield domain intelligence is in active implementation, with roughly 13 days projected at high confidence.",
-              "fact_ids": [
-                "F-004",
-                "F-005"
-              ]
-            },
-            {
-              "text": "Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof are moving too, but progress evidence remains uneven across active lanes.",
-              "fact_ids": [
-                "F-006"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "next_planned",
-          "label": "Next planned",
-          "bullets": [
-            {
-              "text": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement will reconnect Registry, Radar, Atlas, Compass, and the benchmark docs.",
-              "fact_ids": [
-                "F-008"
-              ]
-            },
-            {
-              "text": "It will also add more real maintainer coding work through the CLI contract.",
-              "fact_ids": [
-                "F-009"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "risks_to_watch",
-          "label": "Risks to watch",
-          "bullets": [
-            {
-              "text": "Candidate release notes still advertise the disabled greenfield apply flow. The P1 remains open.",
-              "fact_ids": [
-                "F-010"
-              ]
-            }
-          ]
-        }
-      ],
-      "evidence_lookup": {
-        "F-001": {
-          "text": "Unify governance navigation with actor-bound frames.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-002": {
-          "text": "Bind component views to canonical delivery acceptance.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-003": {
-          "text": "Nothing fully closed across the portfolio in the last 48 hours.",
-          "section_key": "completed",
-          "kind": "window_summary"
-        },
-        "F-004": {
-          "text": "Universal greenfield domain intelligence (B-142) is in active implementation.",
-          "section_key": "current_execution",
-          "kind": "direction",
-          "workstreams": [
-            "B-142"
-          ]
-        },
-        "F-005": {
-          "text": "ETA is projected at roughly 13 days (high confidence).",
-          "section_key": "current_execution",
-          "kind": "timeline"
-        },
-        "F-006": {
-          "text": "Implementation is moving, but some active lanes still do not have progress evidence captured. Heaviest movement is in Universal greenfield domain intelligence (B-142), Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005).",
-          "section_key": "current_execution",
-          "kind": "portfolio_posture"
-        },
-        "F-007": {
-          "text": "Work moved across 5 workstreams: B-142, B-005, B-064, B-126, and B-145.",
-          "section_key": "current_execution",
-          "kind": "window_coverage",
-          "workstreams": [
-            "B-142",
-            "B-005",
-            "B-064",
-            "B-126",
-            "B-145"
-          ]
-        },
-        "F-008": {
-          "text": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
-          "section_key": "next_planned",
-          "kind": "forcing_function"
-        },
-        "F-009": {
-          "text": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Add more real maintainer coding work through CLI contract.",
-          "section_key": "next_planned",
-          "kind": "follow_on"
-        },
-        "F-010": {
-          "text": "Candidate release notes advertise the disabled greenfield apply flow. It is still open at P1.",
-          "section_key": "risks_to_watch",
-          "kind": "bug"
-        }
-      },
       "substrate_fingerprint": "8b59abb8011227d2619935037ceed62f64f0c234a93469052b381080978ca7c4",
-      "bundle_fingerprint": "8a50569f7e875692fb1408162a367e6585d1055d65e94addfd03fd479fcba1d9",
-      "provider_decision": "cache_reuse",
-      "last_successful_narration_fingerprint": "8b59abb8011227d2619935037ceed62f64f0c234a93469052b381080978ca7c4",
-      "cache_mode": "exact"
+      "bundle_fingerprint": "",
+      "provider_decision": "provider_deferred",
+      "last_successful_narration_fingerprint": "",
+      "generated_utc": "2026-09-17T05:55:08Z",
+      "sections": [],
+      "diagnostics": {
+        "reason": "provider_deferred",
+        "title": "Local runtime facts",
+        "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+        "fallback_title": "Local runtime facts",
+        "fallback_digest": [
+          "Current: Universal greenfield domain intelligence (B-142) is in active implementation.",
+          "Next: Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
+          "Watch: Candidate release notes advertise the disabled greenfield apply flow. It is still open at P1."
+        ]
+      },
+      "evidence_lookup": {}
     }
   },
   "standup_brief_scoped": {
@@ -1332,21 +1103,20 @@
         "fingerprint": "634bdb736dd2ab7b258c567aca05d652478b7517ffeec42f286655b447b82e1e",
         "substrate_fingerprint": "634bdb736dd2ab7b258c567aca05d652478b7517ffeec42f286655b447b82e1e",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-17T05:55:08Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background",
-          "provider": "codex-cli",
-          "provider_failure_code": "provider_error",
-          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-17T05:55:11.084552Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+          "reason": "provider_deferred",
+          "title": "Local runtime facts",
+          "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Land normalize existing workstream titles in Radar source, enforce the shorter title contract in the Odylith product repo validator and authoring path; Radar Workstream Title Prefix.",
+            "Next: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Radar Workstream Title Prefix Normalization (B-064) so this is currently surfacing directly.",
+            "Watch: Primary watch item is closure discipline: 13 plan items remain open for Radar Workstream Title Prefix Normalization (B-064)."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -1526,21 +1296,20 @@
         "fingerprint": "1d285dec844844ee7ece8439108e382607cca92cbd7fe2e44afb1a88ca50fb3b",
         "substrate_fingerprint": "1d285dec844844ee7ece8439108e382607cca92cbd7fe2e44afb1a88ca50fb3b",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-17T05:55:08Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background",
-          "provider": "codex-cli",
-          "provider_failure_code": "provider_error",
-          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-17T05:55:11.084552Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+          "reason": "provider_deferred",
+          "title": "Local runtime facts",
+          "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Conditional Release-Targeted Backlog Authoring (B-126) is in active implementation.",
+            "Next: Immediate forcing function is to capture the next verified checkpoint for Conditional Release-Targeted Backlog Authoring (B-126).",
+            "Watch: No critical blockers are currently surfaced."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -1564,21 +1333,20 @@
         "fingerprint": "ddab7e1bafe9e4c6c70c63e67d696b3c22a480b6c90203e0dafb4e70971ba362",
         "substrate_fingerprint": "ddab7e1bafe9e4c6c70c63e67d696b3c22a480b6c90203e0dafb4e70971ba362",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-17T05:55:08Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background",
-          "provider": "codex-cli",
-          "provider_failure_code": "provider_error",
-          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-17T05:55:11.084552Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+          "reason": "provider_deferred",
+          "title": "Local runtime facts",
+          "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Universal greenfield domain intelligence (B-142) is in active implementation.",
+            "Next: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Universal greenfield domain intelligence (B-142) so the greenfield failure was reported during.",
+            "Watch: Primary watch item is closure discipline: 21 plan items remain open for Universal greenfield domain intelligence (B-142)."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -1589,21 +1357,20 @@
         "fingerprint": "d2958eb6d30054e145ffff0a3e55b4104ab2286264f1675c7fd05ae29051697e",
         "substrate_fingerprint": "d2958eb6d30054e145ffff0a3e55b4104ab2286264f1675c7fd05ae29051697e",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-17T05:55:08Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background",
-          "provider": "codex-cli",
-          "provider_failure_code": "provider_error",
-          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-17T05:55:11.084552Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+          "reason": "provider_deferred",
+          "title": "Local runtime facts",
+          "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Make upgrade impact explicit, reversible, and traceable rather than relying on implicit regenerated assets; Assess v0.1.15 guidance and browser surface migration (B-145) is in active.",
+            "Next: Immediate forcing function is to capture the next verified checkpoint for Assess v0.1.15 guidance and browser surface migration (B-145).",
+            "Watch: Primary watch item is timeline confidence: Assess v0.1.15 guidance and browser surface migration (B-145) is still projected heuristically at roughly 4 days."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -3278,21 +3045,20 @@
         "fingerprint": "e75f511c7c84bf245c7ff54ce256821b1069d031981c3eb9724bb5cabfe5cdd8",
         "substrate_fingerprint": "e75f511c7c84bf245c7ff54ce256821b1069d031981c3eb9724bb5cabfe5cdd8",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-17T05:55:08Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background",
-          "provider": "codex-cli",
-          "provider_failure_code": "provider_error",
-          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-17T05:55:11.084552Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+          "reason": "provider_deferred",
+          "title": "Local runtime facts",
+          "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Land normalize existing workstream titles in Radar source, enforce the shorter title contract in the Odylith product repo validator and authoring path; Radar Workstream Title Prefix.",
+            "Next: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Radar Workstream Title Prefix Normalization (B-064) so this is currently surfacing directly.",
+            "Watch: Primary watch item is closure discipline: 13 plan items remain open for Radar Workstream Title Prefix Normalization (B-064)."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -3472,21 +3238,20 @@
         "fingerprint": "2a13b4b0277b5382d51e45780e80afb49081bc34730c8825a3ddb6515433afeb",
         "substrate_fingerprint": "2a13b4b0277b5382d51e45780e80afb49081bc34730c8825a3ddb6515433afeb",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-17T05:55:08Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background",
-          "provider": "codex-cli",
-          "provider_failure_code": "provider_error",
-          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-17T05:55:11.084552Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+          "reason": "provider_deferred",
+          "title": "Local runtime facts",
+          "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Conditional Release-Targeted Backlog Authoring (B-126) is in active implementation.",
+            "Next: Immediate forcing function is to capture the next verified checkpoint for Conditional Release-Targeted Backlog Authoring (B-126).",
+            "Watch: No critical blockers are currently surfaced."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -3535,21 +3300,20 @@
         "fingerprint": "112d8e551d9a6db3910b55f432cb650d72c01b0ff2970bca03422eb21d14757d",
         "substrate_fingerprint": "112d8e551d9a6db3910b55f432cb650d72c01b0ff2970bca03422eb21d14757d",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-17T05:55:08Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background",
-          "provider": "codex-cli",
-          "provider_failure_code": "provider_error",
-          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-17T05:55:11.084552Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+          "reason": "provider_deferred",
+          "title": "Local runtime facts",
+          "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Make upgrade impact explicit, reversible, and traceable rather than relying on implicit regenerated assets; Assess v0.1.15 guidance and browser surface migration (B-145) is in active.",
+            "Next: Immediate forcing function is to capture the next verified checkpoint for Assess v0.1.15 guidance and browser surface migration (B-145).",
+            "Watch: Primary watch item is timeline confidence: Assess v0.1.15 guidance and browser surface migration (B-145) is still projected heuristically at roughly 4 days."
+          ]
         },
         "evidence_lookup": {}
       },

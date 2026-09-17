@@ -5,7 +5,7 @@
   B-111 through B-117. The surface should show the umbrella, execution waves,
   release target `release-0-1-11`, and proof gates without turning Odylith Discipline
   into noisy task theater.
-Last updated: 2026-09-14
+Last updated: 2026-09-16
 
 
 ## Purpose
@@ -15,6 +15,18 @@ execution evidence into the ranked workstream view used by operators and other
 Odylith surfaces.
 
 ## Scope And Non-Goals
+### Decision-rationale custody
+Shared backlog authoring and legacy normalization preserve supplied product
+decisions. Missing why-now, outcome, tradeoff and deferred-scope fields are not
+permission to synthesize them. Empty new records receive only known ordering
+metadata; empty legacy rewrites report that ordering rationale was not supplied
+without guessing priority. Nonempty partial rationale remains unchanged except
+the existing explicit manual-override maintenance contract. Renderers project
+these recorded decisions without completing them. This applies to ordinary
+Radar creation and Greenfield prewrite; no model or semantic parser owns a
+second interpretation. CB-209 records the two removed fallback paths, exact
+canonical-rationale controls, independent review and rendered-package proof.
+
 ### Active plan registration
 The existing plan/workstream reconciler owns missing Active Plans rows, not a
 second authoring command. Registration requires a real in-progress plan with
