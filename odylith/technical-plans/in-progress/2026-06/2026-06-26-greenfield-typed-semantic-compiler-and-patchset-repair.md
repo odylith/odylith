@@ -1,5 +1,50 @@
 Status: In progress
 
+## Reject effort-only promotion; inspect exact custody (2026-09-17)
+
+The bounded existing-rescue-profile comparison stops after four attempts and
+seven calls with all 669 tracked source-Python inputs and external runner/design
+unchanged. Within the narrowed 75-second shared window, three candidates receive
+API admission in 61.631/64.215/68.618 seconds. The independent tool-lending control
+fails in 35.918 seconds before review: its sixth event uses target `loan-readiness`
+outside the selected `review by a library board` span. The baseline arm does not
+run. This does not establish comparative improvement or justify changing a
+production model, prompt, profile, cap, schema or admission law.
+
+The first admission also fails deeper provenance review: `apprentices`, occurrence
+1, selects offsets 44–55 inside `apprenticeship`, rather than the standalone
+registration target at 128 (occurrence 2). The source supports the entity elsewhere
+but not at the selected span. Both model admission and the initial independent
+reading miss this; neither is sufficient quality proof. Keep fact meaning,
+selected source custody, generated-package quality and evaluator validity separate.
+
+Preserve the original failed installed proposal and this entire comparison.
+Do not revive v23's co-contained/shared-context target lookup, removed in v29 for
+adjacent meaning acceptance. Before any next implementation, retrieve prior
+wrong-occurrence and resolved-custody review evidence. A bounded alternative must
+improve actual source fidelity without semantic regex, domain rules, mutable
+repair, extra calls or looser deadlines. No holdout or package publication ran.
+Evidence: /Users/freedom/.codex/odylith-author-comparison.eST1q9/RESULT.md.
+
+Historical retrieval finds this exact wrong-occurrence defect and the v45
+resolved-citation comparison below. A read-only view of actual offsets and
+surrounding source helped the old mutable reviewer; Sol-high timed out, whereas
+Sol-medium passed its two controls. That is not proof for today's binary reviewer.
+The untested bounded question is whether exposing the existing resolver's exact
+custody to immutable admission prevents false acceptance within 20 seconds while
+preserving clean candidates. Do not restore mutable correction, silently repair
+occurrence selectors, duplicate source-resolution ownership, or infer completion
+reliability from a safer denial. The author-side useful-completion gap remains.
+
+Diagnostic result: exposing all already-validated source locations and bounded
+64-character surroundings times out on the retained wrong-occurrence negative
+after 20.0186 seconds. The unchanged Sol-medium reviewer returns no verdict; the
+synthetic occurrence-2 positive is not called. All 669 tracked source-Python files,
+runner and retained raw candidate remain unchanged. Stop without retry, cap growth
+or production adoption. This does not prove that token volume caused the timeout,
+nor that the proposed view protects either admission or useful completion.
+Evidence: /Users/freedom/.codex/odylith-custody-review.gPtsIa/terminal.json.
+
 ## Resolve a semantic denial, not a timing failure (2026-09-17)
 
 The one fresh current-runtime proposal stops before sealing in 51.995 seconds:
