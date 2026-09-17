@@ -1,5 +1,81 @@
 Status: In progress
 
+## Installed v16 discovery reaches the real package (2026-09-17)
+
+The corrected shared brief checker passes 112 focused controls. Read-only replay
+of the original installed artifacts now reports no package-checker findings and
+one valid Project Brief, while preserving the native-confirmation blocker. All
+181 retained evidence files, source inputs and replay runner remain unchanged.
+The first 109-pass patch and failed multiline replay remain recorded: typed text
+must retain embedded newlines, section boundaries, order, proof and conditional
+Required evidence. Neither a fresh model call nor a regenerated package is
+needed to repair this evaluator defect. Independent review then identified absent
+canonical intent/duplicate proof and nonexact populated-governance gaps. The final
+delta requires canonical custody and cardinality, and lossless exact governance
+section content; targeted missing-authority, duplicate, multiline and mutation
+controls pass. Final review and frozen adjacent/install/browser checkpoint
+results belong to the retained REVIEW.md and checkpoint/verification-result.json
+receipts; both must be accepted before commit. This
+does not erase the independent safety-readiness P1 below or turn the stopped
+public14 campaign into a pass.
+
+Independent source/screenshot review finds no P0 or custody/actor-action blocker,
+but raises a P1 implementation-readiness gap: the proposed resident, medical/
+accessibility and consent records have no testable provisional privacy/security
+posture. Empty risk/compliance fields and the no-accepted-risk disclaimer do not
+establish safe implementation boundaries. Adjudicate this against the current
+contract and existing authored-design owner before another model run; do not add
+domain keywords, invent regulatory claims or expand schemas by default. P2s remain
+for Required-evidence visibility in the planning/proof handoff, mobile Atlas
+orientation and the proposed verification observer's ambiguous reviewer label.
+The package is not implementation-ready merely because its source custody,
+artifact counts, timing and browser checks pass.
+
+Independent safety adjudication confirms P1 at the authoring completeness
+boundary, not source custody. After the bounded checker checkpoint, compare one
+author-guidance candidate using existing provisional verification and general
+assumption fields to express materially warranted operating-envelope decisions.
+Keep schema, profile, reviewer, source, projection and timing fixed; use manual
+source/package criteria and stop on failure without prompt-tuning retries. Do not
+invent law, authority, retention periods or guarantees. The September 8 v54
+comparison already demonstrated useful negative checks and a proposed staff-access
+obligation in these existing fields; field capacity is not an open justification
+for a new schema. Its integrated result failed the then-shared 55-second model
+window, and the September 9 review recorded this same safety omission. Preserve
+that history: require an explicit feasibility decision against the now-current
+75/105/135-second model windows and Astra reviewer before another comparison.
+Do not restore or repeat the rejected v54 experiment unchanged. The reviewer is
+an admissibility check, not the missing-authoring owner.
+
+Pushed checkpoint 6528a8ecf passes the final frozen selection: 3,323 unit/install
+and all 456 maintained browser checks, with unchanged inputs and publication.
+The complete local distribution then builds in 217.855 seconds with all 1,445
+bound inputs unchanged. Canonical checkpoint logging first staled eight Registry
+sidecars; preserve that failed packaging preflight and settle full governance
+before rebuilding. The candidate includes five explicitly recorded generated
+HTML deltas, with truthful dirty-source provenance; no product mechanism changed.
+
+The maintained public14 discovery stops after its first case. Full installation
+takes 29.092 seconds, deep proposal 95.661 seconds, and explicit operator
+publication 2.592 seconds. Sol-high authoring takes 80.702 seconds and Astra-medium
+review 6.555 seconds, exactly two calls. Five workstreams/components/diagrams and
+all 32 maintained browser states are present; source, executable and distribution
+custody remain unchanged. The gate fails on the obsolete unconditional Governance
+Package brief heading and the real unqualified native-confirmation boundary.
+Thirteen cases, recovery and lower-capability coverage remain unexecuted. No
+passing profile or semantic-release result is claimed. All owned simulation
+roots are cleaned; retained bytes and screenshots remain outside temporary space.
+
+Before another simulation, independently adjudicate the actual package and both
+brief-checker owners against the conditional renderer contract. Preserve proof,
+Required evidence and populated-governance checks; do not add an empty heading or
+remove native qualification to force a pass. Bind discovery to checkout profile
+imports and actual child-PATH executables. The case-loop stop flag does not stop
+a separately enabled recovery leg, so recovery is a later stage, not requested in
+this stopped run. Ambient narration suppression makes this bounded installed
+Greenfield evidence, not all-engine or automatic-chat proof. Final holdout remains
+untouched. Evidence: /Users/freedom/.codex/odylith-v16-installed.qOtqb5/.
+
 ## Settle the remaining projection advisories (2026-09-17)
 
 The first expanded frozen gate retains all 456 passing browser checks and

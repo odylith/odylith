@@ -4,6 +4,25 @@ Last updated: 2026-09-17
 
 ## Overview
 
+The first current v16 installed deep comparison completes proposal/publication in
+95.661/2.592 seconds with exactly two model calls and all 32 browser states passing.
+It is not a qualified profile or implementation-ready package: the maintained gate
+stops on stale conditional-brief expectations and the real native-confirmation
+boundary, while independent review additionally raises P1 for missing testable
+provisional privacy/security posture in a design handling personal and sensitive
+records. Source fidelity and explicitly proposed architecture do not prove safety
+readiness. Independent adjudication places the gap with authored provisional
+verification and assumptions, not custody or downstream projection. Compare one
+bounded author-guidance candidate at that existing seam before considering a new
+schema; no regulatory facts, domain rules or invented guarantees are authorized.
+The shared brief checker separately passes 112 focused controls and read-only
+replay of the retained package, preserving all 181 evidence files and the native
+blocker. It requires canonical proof/evidence custody, exact cardinality and
+lossless section readback; it does not infer meaning from rendered prose. Final
+review and frozen checkpoint receipts own the subsequent validation result.
+The remaining profiles, recovery, all-engine/native-chat and semantic release gates
+remain open. Evidence is retained under /Users/freedom/.codex/odylith-v16-installed.qOtqb5/.
+
 The public Greenfield preview must be review-only when its caller supplies no
 qualified deterministic confirmation interface. A registered host name is not
 qualification. Such a preview retains the staged package and its identity, but

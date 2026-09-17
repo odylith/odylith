@@ -77,7 +77,7 @@ from greenfield_model_profile_proof import sealed_model_profile_observation  # n
 from greenfield_model_profile_proof import unavailable_provider_proof_issues  # noqa: E402
 from greenfield_onboarding_quality_scorecard import build_onboarding_quality_scorecard  # noqa: E402
 from greenfield_matrix_preflight import matrix_preflight_failures  # noqa: E402
-from greenfield_matrix_package_evidence import package_evidence_findings  # noqa: E402
+from greenfield_matrix_package_evidence import package_evidence_findings, project_brief_readback_findings  # noqa: E402
 from greenfield_matrix_proof_scope import commit_manifest_summary  # noqa: E402
 from greenfield_matrix_proof_scope import temp_cleanup_proof  # noqa: E402
 from greenfield_matrix_release_artifacts import RetainedEvidenceCase  # noqa: E402
@@ -1796,7 +1796,14 @@ def collect_artifact_counts(
         compass_records=compass_record_count(package.governed_readback),
         release_records=release_record_count(package.governed_readback),
         program_records=program_record_count(package.governed_readback),
-        project_brief_records=_project_brief_record_count(repo_root=repo_root, package=package),
+        project_brief_records=int(not project_brief_readback_findings(
+            record_text=(
+                _read_text(repo_root / "odylith/runtime/source/project-brief.v1.md")
+                or str(getattr(package, "project_brief_record_text", "") or "")
+            ),
+            project_brief=_as_mapping(_as_mapping(getattr(package, "proposal", None)).get("project_brief")),
+            intent=_as_mapping(_as_mapping(getattr(package, "proposal", None)).get("intent")),
+        )),
         trace_nodes=len(trace.get("nodes") or []) if isinstance(trace.get("nodes"), list) else 0,
         trace_workstreams=len(trace.get("workstreams") or []) if isinstance(trace.get("workstreams"), list) else 0,
         rendered_surfaces=sum(1 for path in REQUIRED_RENDERED_SURFACES if _nonempty(repo_root / path)),
@@ -1885,14 +1892,6 @@ def _read_atlas_sources(repo_root: Path) -> dict[str, str]:
         str(path.relative_to(repo_root)): _read_text(path)
         for path in sorted(source.glob("*.mmd"))
     }
-
-
-def _project_brief_record_count(*, repo_root: Path, package: Any) -> int:
-    text = _read_text(repo_root / "odylith/runtime/source/project-brief.v1.md")
-    if not text:
-        text = str(getattr(package, "project_brief_record_text", "") or "")
-    required_markers = ("## Brief", "## Project Design Board", "## Governance Package")
-    return 1 if text and all(marker in text for marker in required_markers) else 0
 
 
 def _generated_text(*, repo_root: Path, package: Any) -> str:

@@ -78,26 +78,41 @@ def evidence_blocks_dimension(findings: Sequence[PackageEvidenceFinding], dimens
 
 
 def _project_brief_findings(*, package: Any, proposal: Mapping[str, Any]) -> list[PackageEvidenceFinding]:
-    raw_record_text = str(getattr(package, "project_brief_record_text", "") or "").strip()
-    record_text = normalize_string(raw_record_text)
-    if not raw_record_text:
-        return [_finding("product_manager", "independent package evidence missing persisted project brief readback")]
-    required_markers = ("# ", "## Brief", "## Project Design Board", "## Governance Package")
-    missing_markers = [marker for marker in required_markers if marker not in record_text]
-    if missing_markers:
-        return [
-            _finding(
-                "product_manager",
-                f"persisted project brief readback is missing required section marker(s): {', '.join(missing_markers)}",
-            )
-        ]
-    findings = _persisted_project_brief_structure_findings(raw_record_text)
     brief = package_mapping(proposal.get("project_brief"))
-    if not brief:
-        findings.append(_finding("product_manager", "independent package evidence missing project brief readback"))
-        return findings
-    findings.extend(_authored_project_brief_findings(brief))
-    return findings
+    return list(project_brief_readback_findings(
+        record_text=str(getattr(package, "project_brief_record_text", "") or ""),
+        project_brief=brief,
+        intent=package_mapping(proposal.get("intent")),
+    ))
+
+
+def project_brief_readback_findings(
+    *,
+    record_text: str,
+    project_brief: Mapping[str, Any],
+    intent: Mapping[str, Any] | None = None,
+) -> tuple[PackageEvidenceFinding, ...]:
+    """Validate persisted brief text against its sealed typed brief without rendering it."""
+
+    text = str(record_text or "").strip()
+    brief = package_mapping(project_brief)
+    if not text or not brief:
+        return (_finding("product_manager", "independent package evidence missing persisted project brief readback"),)
+
+    findings = _authored_project_brief_findings(brief)
+    expected_title = f"# {_brief_text(brief.get('project_name'))} Project Brief"
+    if not _brief_text(brief.get("project_name")) or text.splitlines()[0:1] != [expected_title]:
+        findings.append(_finding("product_manager", "persisted project brief readback is missing its typed title"))
+    for marker in (
+        "## Brief",
+        "## Project Design Board",
+        "- schema: odylith.greenfield.project_brief.v1",
+        "- origin: greenfield",
+    ):
+        if marker not in text:
+            findings.append(_finding("product_manager", f"persisted project brief readback is missing `{marker}`"))
+    findings.extend(_persisted_project_brief_structure_findings(text, brief, package_mapping(intent)))
+    return _unique_findings(findings)
 
 
 def _authored_project_brief_findings(
@@ -142,15 +157,137 @@ def _authored_project_brief_findings(
     return findings
 
 
-def _persisted_project_brief_structure_findings(record_text: str) -> list[PackageEvidenceFinding]:
+def _persisted_project_brief_structure_findings(
+    record_text: str,
+    brief: Mapping[str, Any],
+    intent: Mapping[str, Any],
+) -> list[PackageEvidenceFinding]:
     sections = _markdown_sections(record_text)
-    brief_body = sections.get("brief", "")
     findings: list[PackageEvidenceFinding] = []
-    if "- outcome:" not in brief_body.casefold() or "- principle:" not in brief_body.casefold():
+    expected_brief = "\n".join((
+        f"- outcome: {_brief_text(brief.get('project_outcome'))}",
+        f"- principle: {_brief_text(brief.get('operating_principle'))}",
+    ))
+    if sections.get("brief", "") != expected_brief:
         findings.append(
-            _finding("product_manager", "persisted project brief readback is missing outcome or principle lines")
+            _finding("product_manager", "persisted project brief readback does not exactly match its typed brief")
+        )
+    for label, value in (("outcome", "project_outcome"), ("principle", "operating_principle")):
+        expected = f"- {label}: {_brief_text(brief.get(value))}"
+        if not _brief_text(brief.get(value)) or expected not in sections.get("brief", ""):
+            findings.append(_finding("product_manager", f"persisted project brief readback lost typed {label}"))
+    expected_board = _typed_design_board(brief)
+    if sections.get("project design board", "") != expected_board:
+        findings.append(
+            _finding(
+                "product_manager",
+                "persisted project brief readback does not exactly match its typed design board",
+            )
+        )
+    for row in mapping_rows(brief.get("blueprint_sections")):
+        label = _brief_text(row.get("section"))
+        value = _brief_text(row.get("must_capture"))
+        expected = f"- {label}: {value}"
+        if not label or not value or expected not in sections.get("project design board", ""):
+            findings.append(
+                _finding(
+                    "product_manager",
+                    f"persisted project brief readback lost typed `{label or 'section'}`",
+                )
+            )
+    findings.extend(_intent_brief_custody_findings(brief, intent))
+    findings.extend(_governance_package_findings(record_text, brief))
+    return findings
+
+
+def _typed_design_board(brief: Mapping[str, Any]) -> str:
+    lines: list[str] = []
+    for row in mapping_rows(brief.get("blueprint_sections")):
+        label = _brief_text(row.get("section"))
+        value = _brief_text(row.get("must_capture"))
+        if not label or not value:
+            continue
+        lines.append(f"- {label}: {value}")
+        why = _brief_text(row.get("why_it_matters"))
+        if why:
+            lines.append(f"  - Why: {why}")
+    return "\n".join(lines)
+
+
+def _intent_brief_custody_findings(
+    brief: Mapping[str, Any],
+    intent: Mapping[str, Any],
+) -> list[PackageEvidenceFinding]:
+    findings: list[PackageEvidenceFinding] = []
+    if not intent:
+        return [_finding("product_manager", "independent package evidence missing canonical intent custody")]
+    proof = _brief_text(intent.get("proof_boundary"))
+    if "proof_boundary" not in intent or not proof:
+        findings.append(_finding("product_manager", "canonical intent is missing nonempty `proof_boundary`"))
+    evidence_source = intent.get("evidence_requirements")
+    if (
+        "evidence_requirements" not in intent
+        or not isinstance(evidence_source, Sequence)
+        or isinstance(evidence_source, (str, bytes, bytearray))
+    ):
+        findings.append(_finding("product_manager", "canonical intent is missing `evidence_requirements` sequence"))
+        evidence = ""
+    else:
+        evidence = "\n".join(_brief_text(value) for value in evidence_source if _brief_text(value))
+    rows = tuple(mapping_rows(brief.get("blueprint_sections")))
+    for label, value, count in (
+        ("Proof", proof, 1),
+        ("Required evidence", evidence, 1 if evidence else 0),
+    ):
+        matches = tuple(row for row in rows if _brief_text(row.get("section")) == label)
+        if len(matches) != count or (count and _brief_text(matches[0].get("must_capture")) != value):
+            findings.append(_finding("product_manager", f"typed project brief lost canonical `{label}`"))
+    return findings
+
+
+def _brief_text(value: Any) -> str:
+    return str(value or "").strip()
+
+
+def _governance_package_findings(record_text: str, brief: Mapping[str, Any]) -> list[PackageEvidenceFinding]:
+    sections = _markdown_sections(record_text)
+    expected = _typed_governance_package(brief)
+    findings: list[PackageEvidenceFinding] = []
+    if not expected:
+        if any(key.startswith("governance package") for key in sections):
+            findings.append(
+                _finding("product_manager", "persisted project brief readback has stray governance package content")
+            )
+        return findings
+    if sections.get("governance package", "") != expected:
+        findings.append(
+            _finding(
+                "product_manager",
+                "persisted project brief readback does not exactly match its typed governance package",
+            )
         )
     return findings
+
+
+def _typed_governance_package(brief: Mapping[str, Any]) -> str:
+    gate_rows = brief.get("coding_readiness_gates", ())
+    gates = (
+        tuple(_brief_text(value) for value in gate_rows if _brief_text(value))
+        if isinstance(gate_rows, Sequence) and not isinstance(gate_rows, (str, bytes, bytearray))
+        else ()
+    )
+    paths = tuple(mapping_rows(brief.get("host_independent_paths")))
+    lines: list[str] = []
+    if gates:
+        lines.append("- coding readiness gates:")
+        lines.extend(f"  - {gate}" for gate in gates)
+    if paths:
+        lines.append("- host-independent customization paths:")
+        for row in paths:
+            values = tuple(_brief_text(row.get(key)) for key in ("path", "command", "works_in", "use_when"))
+            if rendered := " | ".join(value for value in values if value):
+                lines.append(f"  - {rendered}")
+    return "\n".join(lines)
 
 
 def _markdown_sections(record_text: str) -> dict[str, str]:
@@ -420,4 +557,5 @@ __all__ = [
     "evidence_blocks_dimension",
     "evidence_finding_messages",
     "package_evidence_findings",
+    "project_brief_readback_findings",
 ]
