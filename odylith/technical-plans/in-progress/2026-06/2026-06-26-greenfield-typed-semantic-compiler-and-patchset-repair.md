@@ -1,5 +1,38 @@
 Status: In progress
 
+## Stop participation-owned binding comparison on false review denial (2026-09-17)
+
+The external pilot assigns each human citation its event orders, including empty
+orders for contextual participants; it does not change citation resolution or
+production source. Thirteen offline controls pass. The first actual case passes
+product and independent review in 62.738 seconds. Moving only the recipient
+sentence to a separate paragraph preserves all five actions, performer ownership,
+the council participant, result and publication/integration restrictions, but the
+product reviewer demands an unsupported council-owned action and denies it at
+72.545 seconds. Both cases use exactly two calls with frozen inputs unchanged.
+Independent source-first adjudication rejects the witness: output-review purpose
+does not require another first-path action. Stop before case three, with no retry,
+review override or production adoption. The actor-address saving is only 14
+bytes; no paired baseline or full-package improvement has been demonstrated.
+
+Correct the initial independent claim of full recipient relationship retention:
+the council and sheet are separate canonical facts; their recipient relationship
+exists only in original source context. Current Project/Atlas projections cannot
+reconstruct that relationship without prose reinterpretation. V48 correctly
+preserves a contextual participant without inventing an action or interaction.
+The absent edge is optional under the current contract, not grounds for another
+schema expansion or a hard failure. A future recipient relation, if justified by
+consumer need, belongs with the existing result owner and requires its own proof.
+
+The next investigation is reviewer decision reliability and materiality across
+both true defects and valid candidates, not another authoring prompt rule. Keep
+the prior false-admission and current false-rejection evidence distinct from
+author quality, full-package utility and timing proof. Original wrong-occurrence
+and artifact-modifier risks, native completion, all-engine integration, unseen
+evaluation and release gates remain open. No next mechanism is selected. Preserve
+90/120/150, bounded cost and sealed publication. Evidence:
+/Users/freedom/.codex/odylith-participation-owner.epLrnb/RESULT.md.
+
 ## Stop the citation-window alternative at its first semantic failure (2026-09-17)
 
 An external, unsealed replacement for global citation ordinals passes nine
