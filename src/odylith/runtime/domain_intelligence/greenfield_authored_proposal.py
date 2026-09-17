@@ -542,6 +542,11 @@ def _project_brief(
         _brief_section("Visible result", visible_result, "The source result bound to its producing action."),
         _brief_section("Proof", proof_boundary, "The accepted release proof boundary."),
     ]
+    if evidence_requirements:
+        sections.append(_brief_section(
+            "Required evidence", "\n".join(evidence_requirements),
+            "Source-stated evidence required to establish release proof.",
+        ))
     if operational_constraints:
         sections.append(
             _brief_section("Operational constraints", "; ".join(operational_constraints), "Source-stated operating limits.")
@@ -567,7 +572,7 @@ def _project_brief(
         "customization_options": [],
         "customization_prompts": [],
         "pre_coding_checkpoints": [],
-        "coding_readiness_gates": _unique([proof_boundary, *evidence_requirements]),
+        "coding_readiness_gates": [],
         "host_independent_paths": [],
         "actors": list(human_actors),
         "internal_systems": list(internal_systems),

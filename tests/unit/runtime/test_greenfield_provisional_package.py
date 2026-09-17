@@ -92,19 +92,29 @@ def test_fresh_proposal_uses_one_design_without_promoting_support_to_ownership(t
 
 def test_every_delivery_keeps_canonical_decisions_and_distinct_proposed_acceptance(tmp_path: Path) -> None:
     proposal = _authored_proposal(tmp_path)
-    intent = proposal["intent"]
+    intent = deepcopy(proposal["intent"])
+    original_intent = deepcopy(intent)
+    rows = build_provisional_backlog(intent=intent, diagram_slugs={"context": "context"})
+    assert intent == original_intent
     design = intent[AUTHORED_SEMANTICS_KEY]["provisional_design"]
-    for row, authored in zip(proposal["backlog"], design["workstreams"], strict=True):
-        for field in ("problem", "customer", "opportunity", "product_view"):
+    for row, authored in zip(rows, design["workstreams"], strict=True):
+        for field in ("problem", "customer", "opportunity"):
             assert row[field] == f"Source fact — {intent[field]}"
             assert row["provisional_workstream_contract"]["decision_refs"][field] == f"/{field}"
+        assert row["product_view"] == (
+            f"Source fact — {intent['product_view']}\n\n"
+            f"Proposed workstream view — {authored['deliverable']}"
+        )
+        assert row["provisional_workstream_contract"]["decision_refs"]["product_view"] == "/product_view"
         assert row["deliverable"] == authored["deliverable"]
         assert row["recommended_first_slice"] == f"Proposed deliverable — {authored['deliverable']}"
         assert row["validation"] == [f"Proposed acceptance — {authored['verification']}"]
         assert row["success_metrics"] == row["validation"]
         assert row["provisional_workstream_contract"]["provisional_workstream"] == authored
-        assert "actor's ownership" in row["radar_sections"]["Design Authority"]
-    assert len({row["deliverable"] for row in proposal["backlog"]}) == 4
+        assert row["radar_sections"]["Design Authority"].endswith(
+            "does not transfer the original actor's ownership."
+        )
+    assert len({row["deliverable"] for row in rows}) == 4
 
 
 def test_exchange_direction_does_not_invent_component_dependencies(tmp_path: Path) -> None:
@@ -132,8 +142,11 @@ def test_decision_assumptions_remain_visible_on_every_radar_row(tmp_path: Path, 
     statement = f"The {field} remains a provisional decision, not source truth."
     intent["assumptions"] = [{"applies_to": field, "statement": statement}]
     rows = build_provisional_backlog(intent=intent, diagram_slugs={"context": "context"})
-    for row in rows:
-        assert row[field] == f"Assumption — {statement}"
+    for row, authored in zip(rows, intent[AUTHORED_SEMANTICS_KEY]["provisional_design"]["workstreams"], strict=True):
+        expected = f"Assumption — {statement}"
+        if field == "product_view":
+            expected += f"\n\nProposed workstream view — {authored['deliverable']}"
+        assert row[field] == expected
         assert statement in row["radar_sections"]["Assumptions"]
         assert row["provisional_workstream_contract"]["decision_refs"][field] == "/assumptions/0"
     intent["assumptions"] = []

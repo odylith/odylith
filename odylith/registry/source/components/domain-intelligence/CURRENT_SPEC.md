@@ -71,9 +71,20 @@ reliability. That first source-local standard package completes in 59.563 second
 with two calls, five workstreams/components/diagrams, zero independently observed
 P0/P1 and all 32 sealed-after-image browser states passing. It preserves actor
 aliases, product-owned publication, contextual recipients and source restrictions.
-Four advisory presentation issues remain; broader semantic, installed, host,
-per-profile and release qualification remain open. No confirmation or publication
-was part of this comparison.
+The prompt-disclosure advisory is closed by the independently reviewed, pushed
+checkpoint 671973b79. Radar now preserves its canonical Product View and appends
+the exact typed proposed workstream deliverable with an explicit proposed label.
+Customer keeps its complete accepted sentence: no inferred recipient relation or
+actor action is introduced. Briefs retain Proof and exact Required evidence as
+separate sections; only the allocated-workstream handoff owns actionable coding
+readiness gates. The two-file projection correction passes 162 focused checks
+and a model-free complete-package replay with 32 browser states, unchanged intent
+and handoff contracts, and scoped semantic/transaction acceptance. That replay is
+diagnostic, not self-custodied release proof. Independent desktop/mobile visual
+and leakage review accepts the correction with zero P0/P1/P2 in scope; a fresh
+frozen checkpoint remains pending. Broader semantic, installed, host, per-profile and release
+qualification remain open. No confirmation or publication was part of either
+comparison, and the original sealed transaction remains unchanged.
 
 The fresh v15 source-local package completes in 55.650 seconds with five
 workstreams, five components and five diagrams, but independent review rejects

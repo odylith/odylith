@@ -97,12 +97,16 @@ def test_radar_required_decisions_point_to_assumptions_not_missing_facts() -> No
         observed_source={}, release_selector="0.0.1", confirmed_intent=intent,
     )
     assert len(proposal["backlog"]) == 4
-    for row in proposal["backlog"]:
+    workstreams = intent["authored_semantics"]["provisional_design"]["workstreams"]
+    for row, workstream in zip(proposal["backlog"], workstreams, strict=True):
         refs = row["provisional_workstream_contract"]["decision_refs"]
         for index, decision in enumerate(_DECISIONS):
             field = decision["applies_to"]
             assert refs[field] == f"/assumptions/{index}"
-            assert row[field] == f"Assumption — {decision['statement']}"
+            expected = f"Assumption — {decision['statement']}"
+            if field == "product_view":
+                expected += f"\n\nProposed workstream view — {workstream['deliverable']}"
+            assert row[field] == expected
             assert decision["statement"] in row["radar_sections"]["Assumptions"]
     assert "Validate this gap" not in str(proposal)
     assert proposal["project_brief"]["purpose"] == decision_copy(intent, "problem")

@@ -1108,7 +1108,13 @@ def test_greenfield_apply_publishes_project_over_prepared_baseline_after_package
     assert "outcome:" in project_brief_text
     assert "\n## Brief\n" in project_brief_text
     assert "\n## Project Design Board\n" in project_brief_text
-    assert "\n## Governance Package\n" in project_brief_text
+    assert "\n## Governance Package\n" not in project_brief_text
+    assert "coding readiness gates:" not in project_brief_text
+    assert "host-independent customization paths:" not in project_brief_text
+    assert f"- Proof: {proposal['intent']['proof_boundary']}" in project_brief_text
+    assert (
+        "- Required evidence: " + "\n".join(proposal["intent"]["evidence_requirements"])
+    ) in project_brief_text
     assert len(project_brief_text.splitlines()) >= 20
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
     assert list((tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md"))

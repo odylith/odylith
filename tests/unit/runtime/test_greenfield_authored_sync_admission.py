@@ -11,6 +11,7 @@ import stat
 import pytest
 
 from odylith import cli
+from odylith.runtime.common.compass_log_continuation import CompassLogContinuationError
 from odylith.runtime.domain_intelligence import greenfield_generation_state as publication
 from odylith.runtime.domain_intelligence import greenfield_generation_store as generations
 from odylith.runtime.domain_intelligence import greenfield_managed_mutation_boundary as boundary
@@ -396,8 +397,29 @@ def test_clean_writers_do_not_enter_authored_admission(active_repo, monkeypatch,
     from odylith.runtime.domain_intelligence import greenfield_authored_sync_admission as admission
 
     monkeypatch.setattr(admission, "require_authored_sync_admission", lambda **_: pytest.fail("clean slow path"))
-    tokens = _tokens(AUTHORED) if writer == "sync" else ("compass", "log")
+    tokens = _tokens(AUTHORED) if writer == "sync" else (
+        "compass", "log", "--repo-root", str(active_repo),
+        "--kind", "statement", "--summary", "Synthetic clean writer",
+    )
     assert _run(active_repo, tokens, lambda _fd: 0) == 0
+
+
+@pytest.mark.parametrize("options", (("--kind", "statement"), ("--summary", "Synthetic clean writer")))
+def test_incomplete_compass_log_is_inert_before_writer_admission(active_repo, monkeypatch, options):
+    from odylith.runtime.domain_intelligence import greenfield_authored_sync_admission as admission
+
+    before = _working_image(active_repo)
+    published = publication.read_active_publication(active_repo)
+
+    def unexpected(*_args, **_kwargs):
+        pytest.fail("invalid syntax entered a lock, admission, or writer")
+
+    monkeypatch.setattr(locks, "greenfield_repository_lock", unexpected)
+    monkeypatch.setattr(admission, "require_authored_sync_admission", unexpected)
+    with pytest.raises(CompassLogContinuationError, match="invalid Compass log syntax"):
+        _run(active_repo, ("compass", "log", "--repo-root", str(active_repo), *options), unexpected)
+    assert _working_image(active_repo) == before
+    assert publication.read_active_publication(active_repo) == published
 
 
 @pytest.mark.parametrize("moment", ("before-admission-capture", "after-admission-capture", "successor-capture"))

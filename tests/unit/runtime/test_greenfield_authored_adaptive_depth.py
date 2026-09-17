@@ -419,11 +419,14 @@ def test_structured_source_projects_distinct_canonical_design_with_source_custod
         "Harbor reviewer approves the cargo request",
         "Receipt Ledger publishes a signed cargo receipt",
     ]
-    for row in backlog:
+    for row, workstream in zip(backlog, design["workstreams"], strict=True):
         assert row["problem"] == f"Source fact — {intent['problem']}"
         assert row["customer"] == f"Source fact — {intent['customer']}"
         assert row["opportunity"] == f"Source fact — {intent['opportunity']}"
-        assert row["product_view"] == f"Source fact — {intent['product_view']}"
+        assert row["product_view"] == (
+            f"Source fact — {intent['product_view']}\n\n"
+            f"Proposed workstream view — {workstream['deliverable']}"
+        )
         assert all(value in row["radar_sections"]["Non-Goals"] for value in intent["non_goals"])
         assert all(
             value in row["radar_sections"]["Operational Constraints"]
@@ -539,9 +542,13 @@ def test_direct_evidence_graph_material_facts_survive_structural_design_projecti
 
     backlog = proposal["backlog"]
     assert [row["workstream_role"] for row in backlog] == ["provisional_design"] * 4
-    for row in backlog:
+    workstreams = proposal["intent"]["authored_semantics"]["provisional_design"]["workstreams"]
+    for row, workstream in zip(backlog, workstreams, strict=True):
         for index, (field, statement) in enumerate(decisions.items()):
-            assert row[field] == f"Assumption — {statement}"
+            expected = f"Assumption — {statement}"
+            if field == "product_view":
+                expected += f"\n\nProposed workstream view — {workstream['deliverable']}"
+            assert row[field] == expected
             assert row["provisional_workstream_contract"]["decision_refs"][field] == (
                 f"/assumptions/{index}"
             )
@@ -819,7 +826,11 @@ def test_authored_ocean_reproducibility_stays_proof_not_component_identity(
     _assert_structural_design_projection_preserves_source(proposal)
     assert all(proof_boundary not in str(row) for row in proposal["components"])
     assert proposal["release_plan"]["strategy"] == proof_boundary
-    assert proof_boundary in proposal["project_brief"]["coding_readiness_gates"]
+    assert proposal["project_brief"]["coding_readiness_gates"] == []
+    assert next(
+        row["must_capture"] for row in proposal["project_brief"]["blueprint_sections"]
+        if row["section"] == "Proof"
+    ) == proof_boundary
 
 
 def test_authored_health_tracking_retains_safety_and_first_path_outcome(
@@ -1164,6 +1175,12 @@ def test_sparse_source_facts_remain_visible_with_structural_design_projection(
         case_root = tmp_path / name
         case_root.mkdir()
         proposal = _sparse_proposal(case_root, **arguments)
+        brief = proposal["project_brief"]
+        assert brief["coding_readiness_gates"] == []
+        assert next(
+            section["must_capture"] for section in brief["blueprint_sections"]
+            if section["section"] == "Required evidence"
+        ) == "\n".join(arguments["evidence_requirements"])
         assert [row["workstream_role"] for row in proposal["backlog"]] == [
             "provisional_design"
         ] * 4

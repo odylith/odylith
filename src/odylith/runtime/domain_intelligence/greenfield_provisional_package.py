@@ -128,6 +128,7 @@ def build_provisional_backlog(
             if row["from_component"] in component_keys or row["to_component"] in component_keys
         ]
         deliverable = f"Proposed deliverable — {workstream['deliverable']}"
+        product_view = f"{decisions['product_view']}\n\nProposed workstream view — {workstream['deliverable']}"
         verification = [f"Proposed acceptance — {workstream['verification']}"]
         dependencies = [workstreams[key]["title"] for key in workstream["depends_on"]]
         interfaces = [provisional_exchange_text(row) for row in exchanges]
@@ -166,6 +167,7 @@ def build_provisional_backlog(
             "workstream_type": "standalone",
             "workstream_role": "provisional_design",
             **decisions,
+            "product_view": product_view,
             "success_metrics": verification,
             "priority": "P1",
             "sizing": "M",

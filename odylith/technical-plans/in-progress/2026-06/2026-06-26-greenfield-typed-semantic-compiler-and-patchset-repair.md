@@ -1,5 +1,51 @@
 Status: In progress
 
+## Settle the remaining projection advisories (2026-09-17)
+
+The first expanded frozen gate retains all 456 passing browser checks and
+unchanged inputs/publication, but stops its unit/install group at an old Radar
+assumption-copy expectation after 1,629 passes. Completing the maintained
+Greenfield selection yields 1,696 passes and three stale controls: global-only
+Product View, incomplete Compass log arguments, and an empty brief-section
+heading. Independent source-owner review accepts narrowly corrected assertions;
+the complete three-module pack passes 93 checks, including two new controls
+proving invalid log syntax cannot enter lock/admission/writer or change bytes.
+No further runtime change is needed. Preserve both failed receipts and rerun the
+expanded frozen checkpoint after governance settlement. The protected holdout
+test and indirect Makefile-discovery node remain explicit coverage exclusions.
+
+Checkpoint 671973b79 is pushed with 1,733 adjacent/install and all 456 maintained
+browser checks passing, zero failures or skips, and unchanged frozen inputs and
+publication. It closes the prior disclosure/browser follow-through below.
+
+The next two-file projection change preserves canonical meaning and proposed
+authority. Each Radar Product View keeps its exact canonical decision and adds
+the matching typed proposed deliverable. Briefs retain proof separately from
+verbatim Required evidence; actionable readiness remains with the allocated
+workstream handoff. Independent source-first review retracts Customer shortening:
+the complete accepted sentence is faithful, and extracting its participant would
+invent an absent recipient relationship. No Customer change is justified.
+
+The corrected focused pack passes 162 controls. A model-free complete-package
+replay passes its package report and all 32 maintained desktop/mobile states;
+intent, customer, all five prompts, components, diagrams and readiness contract
+are unchanged. Source, complete seed, original unconfirmed transaction and active
+publication remain unchanged. Semantic and transaction reviewers accept the
+bounded source changes. Independent desktop/mobile visual and leakage review
+accepts all three remaining advisories with zero P0/P1/P2 findings in scope. A
+fresh frozen checkpoint remains required. The replay receipt does not bind its runner or imported browser helper,
+so retain it as diagnostic evidence, not self-custodied release qualification.
+
+Preserve both initial failures: removing mislabeled gates without a replacement
+carrier lost evidence from the brief; comparing in-memory tuples directly to
+serialized lists falsely rejected an unchanged readiness contract. Retain exact
+brief-section regression assertions and serialized comparison, not product
+workarounds. Evidence: /Users/freedom/.codex/odylith-projection-quality.SyikBR/.
+No parser, schema, profile, model call, confirmation or deadline change is needed.
+After this bounded checkpoint, move to broader profile/semantic and clean-install
+qualification; native deterministic confirmation, automatic chat delivery,
+unseen generalization, final holdout and release obligations remain open.
+
 ## Bound the presentation follow-through (2026-09-17)
 
 The next frozen full gate retains 1,698 passing adjacent/install checks and

@@ -8,6 +8,7 @@ import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence.greenfield_authored_first_run import authored_first_run_text
+from odylith.runtime.domain_intelligence.greenfield_authored_memory import render_authored_project_brief_lines
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import GreenfieldAuthoredSemanticsError
 from odylith.runtime.domain_intelligence.greenfield_handoff_contract import render_coding_readiness_gates
 from tests.unit.runtime.greenfield_authored_proposal_fixtures import _canonical_model_authored_greenfield_fixture
@@ -26,6 +27,10 @@ def test_authored_handoff_preserves_verified_fields_without_legacy_reconstructio
         release_selector="0.0.1",
     )
     intent = proposal["intent"]
+    assert proposal["project_brief"]["coding_readiness_gates"] == []
+    brief_text = "\n".join(render_authored_project_brief_lines(proposal["project_brief"]))
+    assert intent["proof_boundary"] in brief_text
+    assert "coding readiness gates:" not in brief_text
     selected = intent["authored_semantics"]["provisional_design"]["workstreams"][0]
     proposed_run = authored_first_run_text(intent)
     assert proposed_run in handoff["implementation_prompt"]
@@ -37,6 +42,11 @@ def test_authored_handoff_preserves_verified_fields_without_legacy_reconstructio
     assert readiness["source_facts"]["proof_boundary"] == intent["proof_boundary"]
     assert readiness["source_facts"]["evidence_requirements"] == tuple(intent["evidence_requirements"])
     assert handoff["coding_readiness_gates"] == render_coding_readiness_gates(readiness)
+    assert handoff["coding_readiness_gates"]
+    for evidence in intent["evidence_requirements"]:
+        assert evidence in brief_text
+        assert evidence in proposal["project_intelligence"]["evidence"]
+        assert evidence in handoff["coding_readiness_gates"][-1]
     assert selected["verification"] in handoff["validation_gates"]
     assert intent["proof_boundary"] in handoff["release_validation_gates"]
     assert handoff["project_title"] == intent["title"]
