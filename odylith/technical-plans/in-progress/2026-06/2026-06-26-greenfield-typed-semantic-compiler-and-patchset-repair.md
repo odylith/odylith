@@ -1,5 +1,56 @@
 Status: In progress
 
+## Prove settlement without reauthoring (2026-09-17)
+
+Independently reviewed scope: clone the retained, previously sealed native
+transaction ecb37f1ee09bb54d673c0fe3f078ab1a5456e3ef24233c825563b68011d0b8f2
+into one fresh recovery fixture and run the existing operator-conflict phase
+once. Require exact case, transaction, write-set, facts and installed-runtime
+custody; absent workers; a frozen seed and declared checker/runtime inputs.
+Prove SIGKILL, no-write conflict refusal, external raw evidence retention,
+harness-only retraction, ordinary closed recovery and unchanged same-hash retry.
+No author/reviewer calls or production changes. Every create command must finish
+within 60 seconds. Run the 32-state browser matrix on the recovered package;
+retain failed fixtures and the historical projecting conflict untouched.
+This proves recovery only, not fresh authoring, timing reliability or release
+qualification. Evidence: /Users/freedom/.codex/odylith-retained-settlement.aiPjIt/.
+
+Result: passed in 35.081 seconds. The four create outcomes are -9/2/0/0;
+ordinary settlement takes 2.803 seconds, and retry takes 1.712 seconds with
+unchanged receipt, tree, journal and generation. Run-bound raw conflict evidence
+is retained before harness-only retraction. All 32 browser states pass in 16.222
+seconds. The retained seed, sealed package, 1,427 tracked inputs and eight
+external proof files are unchanged; target workers are absent. Independent
+review caught and corrected provenance-freeze and retained-reuse labeling gaps
+before dispatch. Keep fresh-authoring/SLA/release qualification separate. Visual
+review still finds the known verbose Atlas context and disconnected recipient;
+browser success does not close those human-quality findings. No production
+code, model, prompt, schema, receipt contract or deadline changed.
+
+## Isolate the reviewer cap (2026-09-17)
+
+Run one external, unsealed reviewer-only diagnostic on the retained recovery
+candidate, changing only its request cap from 20 to 25 seconds. Preserve the
+source, full candidate, prompt/schema, provider, Sol-medium and admission law.
+Independent review expects admission; its initial optional-null denial was
+retracted against the existing contract, not fixed by changing the candidate.
+A correct verdict after 20 and by 25 seconds supports the cap hypothesis;
+within 20 is inconclusive variance; timeout, invalid or incorrect output rejects
+it. Do not retry or salvage the failed transaction. Production review cap,
+profile, public 90/120/150 and shared 75/105/135 are unchanged. This comparison
+cannot establish reliability or release readiness. Retain request, output,
+timing and input custody at /Users/freedom/.codex/odylith-review-cap.lJ6IUZ/.
+
+Result: the expected admission returns in 19.390 seconds, so cap growth is not
+supported. The declared freeze also fails: root launched before selective sync
+terminated, and the generated Radar bundle HTML changed during the call. Exact
+request, retained control and all other 1,426 inputs remain unchanged, including
+runtime code. Preserve the rejected diagnostic; do not narrow its freeze after
+the fact or retry until passing. Wait for prior writers before any future freeze.
+Keep production unchanged. Separately assess whether an already sealed native
+transaction can prove the current recovery lifecycle without stochastic
+reauthoring; any such replay must not count as fresh native semantic/SLA proof.
+
 ## Close the recovery fixture lifecycle (2026-09-16)
 
 Retain immutable conflict evidence before retracting the test's own mutation,
