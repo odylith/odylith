@@ -43,18 +43,26 @@ external systems, proposed ownership boundaries, assumptions, and proof. Check
 that Radar, Registry, and Atlas explain different responsibilities instead of
 repeating one paragraph. Counts alone do not prove useful governance depth.
 
-Current public previews are read-only and offer no chat decision commands or
-executable publication action. A registered callback does not establish an
-eligible native interface: fault-safe termination and visible delivery must also
-be proved. Do not turn chat approval into a create call or infer confirmation
-from an unrelated “yes.” An explicitly operator-invoked create command remains
-a separate interface for publishing an exact reviewed transaction.
+Propose and compile previews publish nothing. Each preview prints the three full
+shell-quoted terminal decisions for its repository path and transaction hash:
+`odylith greenfield decide --repo-root '<path>' CONFIRM '<hash>'`, `odylith
+greenfield decide --repo-root '<path>' EDIT '<hash>' --edit '<corrections>'`,
+and `odylith greenfield decide --repo-root '<path>' REJECT '<hash>'`. `EDIT` may
+instead use `--edit-evidence '<file>'`. These explicit terminal invocations are
+the only preview-attached decisions; ordinary chat approval, host names, and hook
+registration do not establish eligibility.
+
+`CONFIRM` and `REJECT` use the shared bounded deterministic owner and never run a
+compiler or model. `EDIT` verifies the retained hash, compiles only from the
+sealed original source plus the new untrusted correction, preserves the original
+tier and release ceilings, retains the old seal, and returns a new hash and
+preview. It adds no schema, stage, retry, or repair path.
 
 The commit CLI is `odylith greenfield create`; inspect its `--help` for the
 transaction-file, transaction-hash, and confirmation arguments. It is not a
-replacement authoring path. Only invoke it with the exact previously reviewed
-transaction and the user's applicable confirmation. Do not regenerate artifacts,
-change preconditions, or repair copy after that authorization.
+replacement for `decide` or an authoring path. Only invoke it with the exact
+previously reviewed transaction and the user's applicable confirmation. Do not
+regenerate artifacts, change preconditions, or repair copy after that authorization.
 
 ## Completion checks
 

@@ -44,15 +44,20 @@ flowchart TB
       generation_manifest["Pre-confirm generation manifest<br/>Exact bytes bound to the write set<br/>No enclosing transaction hash"]
       entry["Sole sealed HTML publication entry<br/>Write-set and manifest identity<br/>No second JSON selector"]
       sealed["Sealed ProductCreateTransaction<br/>Write set, manifest and entry bytes<br/>Verify distinct confirmation hash, then release read lock"]
-      decision["Read-only public preview<br/>No qualified confirmation interface<br/>No chat decision or publication offer"]
-      confirm["Separate explicit operator create<br/>Verify hash and write sealed bytes;<br/>no model, parser, generation, or repair"]
+      decision["Reviewed preview with three terminal commands<br/>Hash-bound CONFIRM, EDIT and REJECT<br/>Ordinary chat approval is not qualified"]
+      edit["EDIT from retained untrusted source and correction<br/>Existing compiler; original tier and new reviewed hash<br/>Preserve the old immutable package"]
+      reject["REJECT exact pending hash under lock<br/>No governed writes; preserve recovery evidence"]
+      confirm["Explicit terminal CONFIRM or create API<br/>Verify hash and write sealed bytes;<br/>no model, parser, generation, or repair"]
       publish["Publish exact sealed HTML entry<br/>Journal retains admitted transaction evidence<br/>Readers pin immutable shell and child resources"]
       observed["Opened or historical snapshot<br/>Pinned package and captured status<br/>No automatic successor discovery"]
       navigate["Navigate the canonical entry<br/>Resolve the current published package"]
       later["Successful later update<br/>Require no pending working-file restoration<br/>Recover creates and verify working bytes<br/>Publish a complete immutable successor"]
       recovery["Recovery boundary<br/>Rollback snapshot, journal,<br/>interrupt cleanup, and safe retry"]
       write_set --> generation_manifest --> entry --> sealed --> decision
-      sealed -- "explicit operator CLI; not chat approval" --> confirm --> publish
+      decision -- "explicit terminal CONFIRM" --> confirm --> publish
+      decision -- "explicit terminal EDIT" --> edit
+      edit --> request
+      decision -- "explicit terminal REJECT" --> reject
       publish --> later
       later -. "fresh predecessor-bound transition" .-> publish
       publish --> observed
@@ -88,7 +93,7 @@ flowchart TB
     classDef invalid fill:#FFF1F0,stroke:#F7B4AE,color:#132033,stroke-width:1px;
     class request,baseline,model_pass,typed_graph primary;
     class custody,review,projections,staged_surfaces,quality,timing,bundle_scope,live_telemetry,direct_live execution;
-    class write_set,generation_manifest,entry,sealed,decision,confirm,publish,observed,navigate,captured_status,later,recovery,owners,evaluator,acceptance,confidence,retained governance;
+    class write_set,generation_manifest,entry,sealed,decision,edit,reject,confirm,publish,observed,navigate,captured_status,later,recovery,owners,evaluator,acceptance,confidence,retained governance;
     class ambiguity,drift constraint;
     class clarify,denied,replace invalid;
 

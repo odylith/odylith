@@ -78,6 +78,21 @@ def maybe_handle_greenfield_decision(
             )
         return None
     command, transaction_hash, edit_evidence = parsed
+    return handle_greenfield_decision(
+        repo_root=repo_root, command=command, transaction_hash=transaction_hash,
+        edit_evidence=edit_evidence,
+    )
+
+
+def handle_greenfield_decision(
+    *, repo_root: Path | str, command: str, transaction_hash: str,
+    edit_evidence: str | None = None,
+) -> dict[str, Any]:
+    """Execute an explicit decision without inferring host or chat eligibility."""
+    if _parse_decision(f"{command} {transaction_hash}") is None:
+        raise ValueError("A Greenfield decision requires an exact command and transaction hash")
+    if command != "EDIT" and edit_evidence is not None:
+        raise ValueError("Only EDIT accepts correction evidence")
     decision = None
     try:
         # Leave headroom beneath the managed 20s/30s native hook timeouts.

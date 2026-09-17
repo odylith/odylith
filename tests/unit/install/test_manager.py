@@ -69,8 +69,11 @@ def test_customer_bootstrap_guidance_carries_live_proof_claim_gate() -> None:
     assert "Treat recorded-only and waiting-for-chat states as partial proof" in guidance
     assert "quality-gates the full staged ProductCreateTransaction" in guidance
     assert "read-only preview" in guidance
-    assert "No qualified confirmation interface" in guidance
+    assert "No qualified confirmation interface comes from ordinary chat, hosts, or hooks" in guidance
     assert "Do not append chat decision commands, offer publication, or run create from a chat approval" in guidance
+    assert "odylith greenfield decide --repo-root PATH CONFIRM|EDIT|REJECT HASH" in guidance
+    assert "CONFIRM and REJECT share one bounded owner; neither calls compiler or model" in guidance
+    assert "EDIT verifies the retained hash" in guidance
     assert "verifies receipt, hash and preconditions" in guidance
     assert "without model reasoning, generation or repair" in guidance
     assert "Markdown is a view, never product truth" in guidance

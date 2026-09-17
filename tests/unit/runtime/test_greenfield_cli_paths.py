@@ -275,7 +275,8 @@ def test_greenfield_help_marks_apply_as_disabled_and_create_as_confirmed_write_p
 
     output = capsys.readouterr().out
     assert exit_error.value.code == 0
-    assert "Disabled legacy command; propose provides read-only review." in " ".join(output.split())
+    assert "Disabled legacy command; use propose to review a package." in " ".join(output.split())
+    assert "Confirm, edit or reject one reviewed package in the terminal." in " ".join(output.split())
     assert "create" in output
     assert "Commit a compiled ProductCreateTransaction." in output
 

@@ -320,6 +320,7 @@ def test_compiler_identity_fingerprints_only_postconfirm_runtime() -> None:
     assert "runtime/common/environment.py" in paths
     assert "runtime/common/derivation_provenance.py" not in paths
     assert "cli.py" in paths
+    assert "runtime/domain_intelligence/greenfield_cli.py" in paths
     assert "runtime/domain_intelligence/greenfield_proposals_cli.py" in paths
     assert "runtime/domain_intelligence/greenfield_transaction.py" in paths
     assert "runtime/domain_intelligence/greenfield_create_transaction.py" not in paths
@@ -371,6 +372,7 @@ def test_postconfirm_receipt_covers_executed_runtime(tmp_path: Path) -> None:
     expected_untraced = {
         source_root / "__init__.py",
         source_root / "cli.py",
+        source_root / "runtime/domain_intelligence/greenfield_cli.py",
         source_root / "runtime/domain_intelligence/greenfield_create_cli.py",
         source_root / "runtime/domain_intelligence/greenfield_create_contract.py",
         source_root / "runtime/domain_intelligence/greenfield_post_confirm_handoff.py",
@@ -411,6 +413,7 @@ def test_postconfirm_receipt_covers_canonical_create_adapter(tmp_path: Path, cap
     expected_untraced = {
         source_root / "__init__.py",
         source_root / "cli.py",
+        source_root / "runtime/domain_intelligence/greenfield_cli.py",
         source_root / "runtime/domain_intelligence/greenfield_create_contract.py",
         source_root / "runtime/domain_intelligence/greenfield_pending_transaction_store.py",
         source_root / "runtime/domain_intelligence/greenfield_proposals_cli.py",

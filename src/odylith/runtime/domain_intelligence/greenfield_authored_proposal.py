@@ -158,7 +158,8 @@ def build_authored_greenfield_proposal(
     intent = _intent_copy(confirmed_intent)
     intent.update(
         {
-            "prompt": "",
+            # Retained untrusted evidence for EDIT, never projection authority.
+            "prompt": str(confirmed_intent.get("prompt") or ""),
             "project_slug": product_slug,
             "reasoning_mode": "model_authored_typed_intent",
             "evidence_tier": "user_intent",

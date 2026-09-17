@@ -386,7 +386,7 @@ def test_greenfield_apply_help_forwards_backend_flags(capsys) -> None:
     assert excinfo.value.code == 0
     assert "usage: odylith greenfield apply" in output
     assert "Legacy proposal apply is disabled" in output
-    assert "use propose, then hash-bound create" in output
+    assert "use propose, then choose a terminal decision" in " ".join(output.split())
     assert "--proposal-file" in output
     assert "--confirm" in output
     assert "--release" in output

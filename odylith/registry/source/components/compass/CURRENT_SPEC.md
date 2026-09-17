@@ -6,7 +6,7 @@
   and release-gate posture, but should suppress weak Odylith Discipline noise.
 - Compass entries should preserve workstream ids B-110 through B-117 and the
   benchmark gates that feed future session priors.
-Last updated: 2026-09-15
+Last updated: 2026-09-17
 
 
 ## Purpose
@@ -67,17 +67,22 @@ bytes. Only a complete prepared append or an exact recorded terminal phase can
 continue; unknown interruptions, foreign requests and changed inputs refuse.
 Completion never appends again or rolls back an observed successor.
 
-An exact prepared, unpublished append may instead be retired with
+An exact unpublished append in the `prepared` or `appended` phase, with no
+successor, may instead be retired with
 `compass log --abandon-restored <review hash> --receipt-hash <original SHA-256>`
 after the existing reviewed restoration restores only the canonical stream.
 This is abandonment, not cross-runtime completion. Under the repository writer
 lease, require unchanged publication, exact event/preimage custody, unchanged
-authored inventory, complete working equality and settled journals. Archive the
+authored inventory, complete working equality and settled journals. A prepared
+receipt binds the restored working state; an appended receipt must instead bind
+the CLOSED restoration plan's exact pre-restoration fingerprint map. Both require
+the restored live tree to equal the unchanged publication. Archive the
 original receipt and abandonment witness durably before retiring the active
 receipt. No append, refresh, journal recovery or publication runs on this branch;
 the original event remains recoverable. Changed or newer custody refuses, and
 the same archived receipt identity cannot be prepared again. Independent review,
-309 adjacent checks and the exact live recovery support this bounded contract.
+309 earlier adjacent checks, 132 phase-aware module controls and both exact live
+recoveries support this bounded contract.
 
 Refresh custody uses the actual originating request ID, terminal state, status,
 integer return code and non-coalesced provenance. Terminal `pid=0` is not foreign

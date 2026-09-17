@@ -104,21 +104,27 @@ greenfield proposal lane before source-backed governance exists:
 ./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<project intent>"
 ```
 
-`propose` compiles a typed ProductCreateTransaction for read-only review.
-The sectioned preview preserves Product story, State object, First complete path,
-Human actors, systems, assumptions, ambiguities, and proof boundary. No qualified
-confirmation interface is attached to this preview. Do not append chat decision
-commands, offer publication, or run create from a chat approval. Host names and
-registered hooks do not prove fault-safe confirmation or visible completion.
+`propose` compiles typed custody facts and quality-gates the full staged
+ProductCreateTransaction for read-only review. The sectioned preview preserves
+Product story, State object, First complete path, Human actors, systems,
+assumptions, ambiguities, and proof boundary. It publishes nothing, but prints
+three full shell-quoted terminal commands: `odylith greenfield decide --repo-root
+'<path>' CONFIRM '<hash>'`, `odylith greenfield decide --repo-root '<path>' EDIT
+'<hash>' --edit '<corrections>'` (or `--edit-evidence '<file>'`), and `odylith
+greenfield decide --repo-root '<path>' REJECT '<hash>'`. No qualified confirmation
+interface comes from ordinary chat approval, host names, or registered hooks. Do not append chat decision
+commands, offer publication, or run create from a chat approval.
 
 Odylith asks one focused question only when an ambiguity materially changes the
 first release; other gaps become visible assumptions. Markdown is evidence and a
 human view, not product truth. Staging retains the compiled package and hash under
 `.odylith/runtime/greenfield/pending/` without changing governed product records.
-Corrections supplied through `propose --edit` are new evidence and rebuild the
-package; they do not authorize publication.
+EDIT verifies the retained hash and uses sealed original source plus the new
+untrusted correction. It preserves the original tier and 90/120/150 limits,
+retains the immutable old seal, and returns a new hash and preview. CONFIRM and
+REJECT use the shared bounded owner without compiler or model work.
 
-Explicit operator invocation of `odylith greenfield create` with
+Explicit terminal operator invocation of `odylith greenfield create` with
 `--transaction-file`, `--transaction-hash`, and `--confirm` remains a separate
 supported interface. It verifies the compiler receipt, hash and repo preconditions,
 applies only sealed bytes under rollback guard, validates readback and reports

@@ -39,12 +39,19 @@ legal, or production claims.
 
 ## Host and model profiles
 
-Codex and Claude share a deterministic confirmation callback, but registration
-alone does not qualify the native interface. Current public previews are
-read-only: neither host has complete fault-safe activation and visible-delivery
-proof. Explicit operator invocation of the sealed-byte create CLI remains
-separate. A host must prove the hash callback, no post-confirm inference under
-faults, and visible completion before its preview may offer governed writes.
+Codex and Claude host names, callbacks, and registration do not qualify a native
+decision interface. Propose and compile previews publish nothing; they print only
+three full shell-quoted terminal commands for their repository path and retained
+transaction hash: `decide ... CONFIRM <hash>`, `decide ... EDIT <hash> --edit
+<corrections>` (or `--edit-evidence <file>`), and `decide ... REJECT <hash>`.
+Ordinary chat approval is not a terminal decision. Explicit terminal `CONFIRM`
+and `REJECT` share a bounded deterministic owner and invoke neither compiler nor
+model. `EDIT` verifies the retained hash, lazily uses the existing compiler with
+the sealed original source and new untrusted correction, preserves tier and the
+90/120/150 release limits, retains the old seal, and returns a new hash and
+preview. It adds no schema, stage, retry, or repair mechanism. The sealed-byte
+`create` CLI remains a separate commit-only interface. Native automatic delivery
+and visible completion require their own proof.
 
 Release evaluation covers three pinned candidate success profiles; their identity
 does not itself establish qualification:
@@ -230,3 +237,9 @@ recovery classification is not part of the authored event contract.
 artifact generation, host-model work, and projection rebuilding are forbidden
 inside the commit path. Lock, disk, permission, or filesystem failures are
 environment or recovery outcomes, never Product Intent rejection.
+
+`REJECT` is terminal for the retained hash and has the same no-compiler,
+no-model boundary. `EDIT` is pre-confirm evidence handling, not a post-confirm
+repair: it may compile the sealed original source with one new untrusted
+correction and return a new preview/hash while preserving the original tier,
+release limits, and old seal.

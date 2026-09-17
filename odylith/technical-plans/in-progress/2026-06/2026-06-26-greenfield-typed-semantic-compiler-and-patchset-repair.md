@@ -62,6 +62,46 @@ Automatic native delivery, intervention visibility, existing recovery/profile/
 generalization and release obligations remain open. Do not add features or
 architecture to discharge them; the external holdout stays closed.
 
+Independent UX review identifies one consumer-flow P1: read-only output has no
+three-choice decision rail, diagnostic JSON is not polished completion, and EDIT
+acknowledgement does not rebuild. Fix only that gap with a thin explicit terminal
+adapter over existing compiler and transaction owners. Extract Greenfield command
+metadata and dispatch from the 4,171-line root CLI into that bounded family owner;
+do not grow the red-zone dispatcher or introduce a transaction framework.
+CONFIRM/REJECT stay commit-only; EDIT lazily rebuilds sealed source plus correction
+under the original tier and returns a new reviewed hash. The old hash remains
+immutable and is not silently revoked. Add focused parsing, import-isolation,
+publication/retry/rejection, edit-success and edit-failure controls.
+
+Source implementation is now independently accepted with no P0/P1 finding.
+The frozen broad selection records 1,779 passes and two obsolete help/offer
+assertions, not a green run. After correcting those assertions, all 99 affected
+controls pass (171 unrelated CLI controls deselected). Retaining the original
+untrusted prompt in the existing sealed intent field fixes the demonstrated EDIT
+source-loss defect without changing the product-fact schema or adding a store.
+The exact new runtime still requires fresh full validation, installation and
+visible consumer-flow proof; the earlier v57 package does not establish these.
+Shipping takes precedence over expansion: preserve the agreed output, timing and
+safety gates, fix demonstrated release blockers only, and defer optional features.
+The broader frozen install/CLI gate then passes 3,600 controls and fails two
+guidance assertions: one obsolete decision-offer expectation and one genuine
+loss of safety-contract wording. Source/publication stay unchanged; no browser
+cases run after that red gate. Finish only the associated guidance consistency
+correction and canonical mirrors, then rerun the same gate. Failed evidence stays
+at /Users/freedom/.codex/odylith-terminal-checkpoint.vYtSx0/.
+
+The prepared standard-90/model-75 recovery attempt is paused and unexecuted until
+the adapter passes focused proof and a fresh distribution is available.
+Retain the complete prepublication seed before any callback; the previous three
+copies are already CLOSED and cannot prove first-publication faults. On success,
+use existing clone/phase owners for crash, conflict and fsync recovery and native
+EDIT/REJECT controls. Do not reset a published fixture, add a decision framework,
+or equate EDIT acknowledgement with regeneration. Automatic hooks are one possible
+transport, not a required implementation strategy; exact native configuration,
+fault safety, complete visible outcomes and the original consumer flow still
+require evidence. This is bounded qualification, not an architecture expansion.
+Preparation evidence: /Users/freedom/.codex/odylith-v57-recovery.4D4O17/.
+
 Retrieval caveat: a prior unresolved `context CB-209` lookup fell back to a raw
 documentation/scripts/tests scan without an explicit protected-test exclusion.
 No protected result was observed, but that run cannot prove the reserved

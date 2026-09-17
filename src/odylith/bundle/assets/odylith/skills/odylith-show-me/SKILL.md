@@ -44,13 +44,18 @@ placeholder products in response to a show-me request.
    feature after an empty/thin show result, do not refuse because source is
    absent. Run the project-first proposal path instead:
    `./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<their request>"`.
-   `propose` compiles typed evidence and quality-gates a staged ProductCreateTransaction
-   for read-only review. Show Product story, State object, First complete path,
-   actors, systems, assumptions, ambiguities and Proof boundary directly in chat.
-   No qualified confirmation interface is attached. Do not append chat decision
-   commands, offer publication, or run create from a chat approval. Ask one focused
-   question only for material uncertainty; otherwise show assumptions.
-   Explicit operator `greenfield create` with `--transaction-file`,
+   `propose` compiles typed evidence and quality-gates the full staged ProductCreateTransaction
+   for read-only review. It publishes nothing, but prints `odylith greenfield decide
+   --repo-root '<path>' CONFIRM '<hash>'`, `odylith greenfield decide --repo-root
+   '<path>' EDIT '<hash>' --edit '<corrections>'` (or `--edit-evidence '<file>'`),
+   and `odylith greenfield decide --repo-root '<path>' REJECT '<hash>'`. No qualified
+   confirmation interface comes from ordinary chat approval, host names, or hooks. Do not append chat
+   decision commands, offer publication, or run create from a chat approval. Ask one
+   focused question only for material uncertainty; otherwise show assumptions.
+   CONFIRM and REJECT share one bounded owner without compiler or model work. EDIT
+   verifies the retained hash, uses sealed original source plus new untrusted correction,
+   preserves original tier and 90/120/150 limits, retains the immutable old seal, and
+   returns a new hash and preview. Explicit terminal operator `greenfield create` with `--transaction-file`,
    `--transaction-hash`, and `--confirm` remains a separate deterministic interface:
    receipt/hash/precondition verification, sealed bytes under rollback guard and
    exact readback, with no model, generation or repair after confirmation.

@@ -38,6 +38,7 @@ _POSTCONFIRM_RUNTIME_SOURCE_FILES = (
     "cli.py",
     "install/fs.py",
     "runtime/common/environment.py",
+    "runtime/domain_intelligence/greenfield_cli.py",
     "runtime/domain_intelligence/greenfield_commit_journal.py",
     "runtime/domain_intelligence/greenfield_commit_transaction.py",
     "runtime/domain_intelligence/greenfield_create_cli.py",

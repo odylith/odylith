@@ -20,29 +20,29 @@ mechanism-level learning.
 2. Run `./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<operator request>"`.
    It treats the prompt and corrections as untrusted evidence, compiles typed
    custody facts, and quality-gates the complete staged ProductCreateTransaction.
-3. Show the transaction-bound, read-only preview directly in chat. Keep Product
-   story, State object, First complete path, actors, systems, assumptions,
-   ambiguities and Proof boundary clear. No qualified confirmation interface is
-   attached. Do not append chat decision commands, offer publication, or run
-   create from a chat approval. Host names and registered hooks are not proof of
-   fault-safe interception or visible completion.
-4. Ask one focused question only when uncertainty materially changes the first
-   release; otherwise state the assumption. Markdown is evidence and a human
-   view, never product truth. Corrections through `propose --edit` rebuild the
-   staged package with a new hash. Keep internal repair chatter and proposal JSON
-   out of the normal view; do not inspect source for schema or narrate retries.
-5. Explicit operator invocation of `odylith greenfield create` with
-   `--transaction-file`, `--transaction-hash`, and `--confirm` is a separate
-   deterministic interface, not a fallback for chat approval. It verifies the
-   compiler receipt, hash and preconditions, publishes sealed bytes under rollback
-   guard, validates readback and returns its outcome. It never interprets evidence,
-   calls a model, generates artifacts or rebuilds persistent projections after
-   confirmation. Native host eligibility remains open; report that blocker
-   plainly rather than inventing a write offer. If JSON is explicitly requested,
-   use `greenfield propose --format json`; never rebuild transaction data by hand.
-   For that explicit operator invocation, relay its outcome without reinterpretation.
-   Relay the returned post-confirm navigation block exactly once; do not regenerate
-   artifacts, rebuild projections or substitute a model-authored success message.
+3. Show the read-only, transaction-bound preview directly. It publishes nothing, but prints
+   three full shell-quoted terminal commands: `odylith greenfield decide --repo-root
+   '<path>' CONFIRM '<hash>'`, `odylith greenfield decide --repo-root '<path>' EDIT
+   '<hash>' --edit '<corrections>'` (or `--edit-evidence '<file>'`), and `odylith
+   greenfield decide --repo-root '<path>' REJECT '<hash>'`. No qualified confirmation
+   interface comes from ordinary chat approval, host names, or hooks.
+4. `CONFIRM` and `REJECT` use the shared bounded deterministic owner without
+   compiler or model work. `EDIT` verifies its retained hash, lazily compiles the
+   sealed original source plus new untrusted correction with the existing compiler,
+   preserves original tier and 90/120/150 limits, retains the old seal, and
+   returns a new preview/hash. It adds no schema, stage, retry, or repair path.
+5. `odylith greenfield create` with `--transaction-file`, `--transaction-hash`,
+   and `--confirm` remains a separate commit-only interface, not a fallback for
+   chat approval or `decide`. Do not create from a chat approval. It verifies the compiler receipt, hash and
+   preconditions, publishes sealed bytes under rollback guard, validates readback,
+   and returns its outcome. It never interprets evidence, calls a model, generates
+   artifacts, or rebuilds persistent projections after confirmation. Native host
+   eligibility remains open. If JSON is explicitly requested, use `greenfield
+   propose --format json`; never rebuild transaction data by hand.
+   After an explicit terminal decision or create invocation, relay its returned
+   outcome without reinterpretation. Relay the returned post-confirm navigation
+   block exactly once; do not regenerate artifacts, rebuild projections, or
+   substitute a model-authored success message.
 6. Preserve the evidence boundary: observed source, user intent, and Odylith
    assumptions must stay distinct. For consumer apps, include proportional
    security, privacy, abuse, accessibility, data-retention, compliance, and

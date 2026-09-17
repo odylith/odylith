@@ -1,16 +1,35 @@
-"""Public review output cannot imply an unproved native confirmation channel."""
+"""Public review output offers only the qualified terminal decision channel."""
 
 from types import SimpleNamespace
 import json
 
 import pytest
 
-from odylith.runtime.domain_intelligence import greenfield_create_cli, greenfield_proposals_cli
+from odylith.runtime.domain_intelligence import greenfield_create_cli, greenfield_proposals
+from odylith.runtime.domain_intelligence import greenfield_proposals_cli
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import (
+    canonical_model_authored_intent_fixture,
+)
+
+
+def test_authored_proposal_retains_original_untrusted_source_for_edit(tmp_path) -> None:
+    confirmed_intent = canonical_model_authored_intent_fixture(tmp_path)
+    source = confirmed_intent["prompt"]
+
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=source,
+        release_selector="0.0.1",
+        confirmed_intent=confirmed_intent,
+        require_completion_ready=False,
+    )
+
+    assert proposal["intent"]["prompt"] == source
 
 
 @pytest.mark.parametrize("command", ["propose", "compile-transaction"])
 @pytest.mark.parametrize("output_format", ["text", "json"])
-def test_public_preview_is_read_only_without_interface_qualification(
+def test_public_preview_offers_three_hash_bound_terminal_decisions(
     tmp_path, monkeypatch, capsys, command, output_format,
 ) -> None:
     """Exercise public rendering; semantic compilation is a separate proof lane."""
@@ -24,6 +43,7 @@ def test_public_preview_is_read_only_without_interface_qualification(
         "repository_delete_count": 0,
     }
     transaction = SimpleNamespace(
+        transaction_hash=transaction_hash,
         summary=lambda: dict(summary),
         quality_manifest={},
         intent_authority={"product_facts_sha256": "b" * 64},
@@ -51,23 +71,30 @@ def test_public_preview_is_read_only_without_interface_qualification(
     output = capsys.readouterr().out
 
     assert transaction_hash in output
-    assert "CONFIRM " not in output
-    assert "EDIT " not in output
-    assert "REJECT " not in output
+    assert "ordinary chat approval" in output.lower()
     assert "odylith greenfield create" not in output
     assert "--confirm" not in output
-    assert "Choose one command" not in output
     if output_format == "json":
         payload = json.loads(output)
         assert payload["product_create_transaction"] == summary
-        assert payload["confirmation"]["status"] == "read_only"
-        assert payload["confirmation"]["choices"] == []
-        assert "qualified" in payload["confirmation"]["reason"]
+        confirmation = payload["confirmation"]
+        assert confirmation["status"] == "terminal_only"
+        assert confirmation["interface"] == "terminal"
+        assert len(confirmation["choices"]) == 3
+        for decision, choice in zip(("CONFIRM", "EDIT", "REJECT"), confirmation["choices"], strict=True):
+            assert set(choice) == {"command", "label"}
+            assert choice["label"].strip()
+            assert choice["command"].startswith("odylith greenfield decide ")
+            assert decision in choice["command"]
+            assert transaction_hash in choice["command"]
     else:
-        assert "Review only" in output
+        assert "Choose one command" in output
+        assert output.count("odylith greenfield decide ") == 3
+        for decision in ("CONFIRM", "EDIT", "REJECT"):
+            assert decision in output
+        assert output.count(transaction_hash) >= 3
         assert "1 workstreams, 1 component previews, 1 Atlas previews" in output
         assert "quality gate: passed" in output
-        assert "qualified" in output
     assert not list(tmp_path.iterdir())
 
 

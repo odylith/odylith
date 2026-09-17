@@ -86,7 +86,7 @@ def _run(repo, *, complete=False):
     )
 
 
-def _prepare_unpublished_append(repo, *, current_stream=None):
+def _publish_prefix(repo):
     def publish_prefix(descriptor):
         _write(repo / continuation.STREAM_PATH, PREFIX)
         (repo / continuation.STREAM_PATH).chmod(0o640)
@@ -95,10 +95,24 @@ def _prepare_unpublished_append(repo, *, current_stream=None):
     assert boundary.run_with_greenfield_managed_mutation_boundary(
         repo_root=repo, command_tokens=["synthetic-published-prefix"], operation=publish_prefix,
     ) == 0
+
+
+def _prepare_unpublished_append(repo, *, current_stream=None):
+    _publish_prefix(repo)
     with leases.greenfield_repository_lock(repo) as descriptor:
         continuation.prepare_append(repo_root=repo, event=EVENT, repository_lock_fd=descriptor)
         _write(repo / continuation.STREAM_PATH, PREFIX + EVENT if current_stream is None else current_stream)
         (repo / continuation.STREAM_PATH).chmod(0o640)
+    raw = (repo / continuation.RECEIPT_PATH).read_bytes()
+    return raw, hashlib.sha256(raw).hexdigest()
+
+
+def _prepare_appended_unpublished_append(repo):
+    _publish_prefix(repo)
+    with leases.greenfield_repository_lock(repo) as descriptor:
+        admitted = continuation.prepare_append(repo_root=repo, event=EVENT, repository_lock_fd=descriptor)
+        continuation.append_prepared(admitted)
+    assert _receipt(repo)["phase"] == "appended"
     raw = (repo / continuation.RECEIPT_PATH).read_bytes()
     return raw, hashlib.sha256(raw).hexdigest()
 
@@ -970,6 +984,60 @@ def test_exact_closed_restoration_abandons_only_unpublished_prepared_append(acti
     assert witness == continuation._abandonment_witness(
         receipt=receipt, receipt_hash=receipt_hash, restoration_review_hash=review_hash,
     )
+
+
+@pytest.mark.parametrize("runtime_drift", [False, True])
+def test_exact_closed_restoration_abandons_unpublished_appended_state(active, monkeypatch, runtime_drift):
+    repo, _ = active
+    raw_receipt, receipt_hash = _prepare_appended_unpublished_append(repo)
+    receipt = json.loads(raw_receipt)
+    if runtime_drift:
+        monkeypatch.setattr(continuation, "_runtime_identity", lambda root: {"code": "changed-after-admission"})
+        with pytest.raises(continuation.CompassLogContinuationError, match="runtime identity changed"):
+            _run(repo, complete=True)
+    review_hash = _restore(repo)
+    assert _abandon(repo, review_hash=review_hash, receipt_hash=receipt_hash) == 0
+    assert _abandon(repo, review_hash=review_hash, receipt_hash=receipt_hash) == 0
+    assert (repo / continuation.STREAM_PATH).read_bytes() == PREFIX
+    assert publication.active_generation_identity(repo) == receipt["publication"]
+    assert not (repo / continuation.RECEIPT_PATH).exists()
+    archive = repo / continuation._ABANDONMENTS / receipt_hash
+    assert (archive / "original-receipt.json").read_bytes() == raw_receipt
+    witness = json.loads((archive / "abandonment.json").read_bytes())
+    assert witness == continuation._abandonment_witness(
+        receipt=receipt, receipt_hash=receipt_hash, restoration_review_hash=review_hash,
+    )
+
+
+def test_appended_abandonment_requires_exact_pre_restoration_working_state(active):
+    repo, _ = active
+    _prepare_appended_unpublished_append(repo)
+    review_hash = _restore(repo)
+    receipt = _receipt(repo)
+    receipt["working"]["odylith/compass"] = "0" * 64
+    raw = (json.dumps(receipt, sort_keys=True) + "\n").encode()
+    _write(repo / continuation.RECEIPT_PATH, raw)
+    receipt_hash = hashlib.sha256(raw).hexdigest()
+    assert _abandon(repo, review_hash=review_hash, receipt_hash=receipt_hash, bounded=False) == 1
+    assert (repo / continuation.RECEIPT_PATH).read_bytes() == raw
+    assert (repo / continuation.STREAM_PATH).read_bytes() == PREFIX
+
+
+@pytest.mark.parametrize("phase", ["rendered", "sealed"])
+def test_appended_abandonment_rejects_later_phase_or_successor(active, phase):
+    repo, _ = active
+    _prepare_appended_unpublished_append(repo)
+    review_hash = _restore(repo)
+    receipt = _receipt(repo)
+    receipt["phase"] = phase
+    if phase == "sealed":
+        receipt["successor"] = receipt["publication"]
+    raw = (json.dumps(receipt, sort_keys=True) + "\n").encode()
+    _write(repo / continuation.RECEIPT_PATH, raw)
+    receipt_hash = hashlib.sha256(raw).hexdigest()
+    assert _abandon(repo, review_hash=review_hash, receipt_hash=receipt_hash, bounded=False) == 1
+    assert (repo / continuation.RECEIPT_PATH).read_bytes() == raw
+    assert (repo / continuation.STREAM_PATH).read_bytes() == PREFIX
 
 
 @pytest.mark.parametrize("append", [

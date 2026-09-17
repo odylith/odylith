@@ -276,14 +276,28 @@ def test_greenfield_guidance_keeps_public_review_separate_from_operator_create()
         assert "read-only" in text, path
         assert "qualified confirmation interface" in compact_text, path
         assert "create from a chat approval" in compact_text, path
+        assert "odylith greenfield decide" in compact_text, path
+        assert "CONFIRM" in compact_text, path
+        assert "EDIT" in compact_text, path
+        assert "REJECT" in compact_text, path
+        assert "ordinary chat" in compact_text, path
         assert "## Choose one command" not in text, path
-        assert "CONFIRM <hash>" not in text, path
         assert "rollback guard" in compact_text, path
         assert ".odylith/runtime/greenfield/confirmed-intent.md" not in compact_text, path
         assert ".odylith/runtime/greenfield/confirmed-intent.json" not in compact_text, path
         assert "greenfield compile-transaction" not in compact_text, path
         for token in forbidden:
             assert token not in text, f"{path} still carries stale greenfield guidance: {token}"
+
+
+def test_greenfield_skill_preserves_deterministic_completion_relay() -> None:
+    for root in (REPO_ROOT, REPO_ROOT / "src" / "odylith" / "bundle" / "assets"):
+        path = root / "odylith" / "skills" / "odylith-greenfield-governance" / "SKILL.md"
+        text = " ".join(path.read_text(encoding="utf-8").split())
+        assert "outcome without reinterpretation" in text, path
+        assert "post-confirm navigation block exactly once" in text, path
+        assert "do not regenerate artifacts, rebuild projections" in text, path
+        assert "or substitute a model-authored success message" in text, path
 
 
 def test_claude_output_style_keeps_observation_rare_and_assist_concrete() -> None:

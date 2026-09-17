@@ -320,7 +320,7 @@ def _abandonment_witness(
 
 def _require_closed_stream_restoration(
     *, root: Path, receipt: Mapping[str, Any], restoration_review_hash: str,
-) -> None:
+) -> dict[str, str]:
     try:
         restorations._digest(restoration_review_hash)
         plan = restorations._read_plan(root, restoration_review_hash)
@@ -362,6 +362,7 @@ def _require_closed_stream_restoration(
     )
     if plan["before_fingerprints"] != expected_before_restore:
         raise _refuse("the restoration admission included unrelated managed changes")
+    return dict(plan["before_fingerprints"])
 
 
 def _require_abandonment_state(
@@ -370,8 +371,9 @@ def _require_abandonment_state(
     _require_lease(root, repository_lock_fd)
     GreenfieldCommitJournal.require_settled_journals(repo_root=root)
     _quiescent_request(root)
-    if receipt["phase"] != "prepared" or receipt["successor"] is not None:
-        raise _refuse("only an unpublished prepared Compass append can be abandoned")
+    phase = receipt["phase"]
+    if phase not in {"prepared", "appended"} or receipt["successor"] is not None:
+        raise _refuse("only an unpublished prepared or appended Compass append can be abandoned")
     if receipt["anchors"]["repository"] != _repository_anchor(root):
         raise _refuse("the original repository identity changed")
     if publication.active_generation_identity(root) != receipt["publication"]:
@@ -384,20 +386,24 @@ def _require_abandonment_state(
     if (_file_state(pinned.repository_root / STREAM_PATH) != receipt["before_stream"]
             or _working_state(pinned.repository_root, pinned.repository_root)["authored"] != receipt["authored"]):
         raise _refuse("the original immutable generation differs from log admission")
-    _require_closed_stream_restoration(
+    restoration_before = _require_closed_stream_restoration(
         root=root, receipt=receipt, restoration_review_hash=restoration_review_hash,
     )
     fingerprints = write_sets.greenfield_managed_fingerprints(root)
-    if (fingerprints != pinned.manifest["after_fingerprints"] or fingerprints != receipt["working"]
+    if (fingerprints != pinned.manifest["after_fingerprints"]
             or _working_state(root, pinned.repository_root)["authored"] != receipt["authored"]):
         raise _refuse("the restored live managed tree differs from the unchanged published generation")
+    if phase == "prepared" and fingerprints != receipt["working"]:
+        raise _refuse("the prepared receipt differs from the unchanged published generation")
+    if phase == "appended" and receipt["working"] != restoration_before:
+        raise _refuse("the appended receipt differs from the exact pre-restoration working state")
 
 
 def abandon_restored(
     *, repo_root: Path, restoration_review_hash: str, receipt_hash: str,
     repository_lock_fd: int | None,
 ) -> dict[str, str]:
-    """Retire one prepared receipt after exact rollback of its unpublished append."""
+    """Retire one prepared or appended receipt after exact rollback of its unpublished append."""
     root = Path(repo_root).resolve()
     archive = _abandonment_archive(root, receipt_hash)
     try:

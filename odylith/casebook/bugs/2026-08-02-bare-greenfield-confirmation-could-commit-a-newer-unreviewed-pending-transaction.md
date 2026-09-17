@@ -1,5 +1,54 @@
 - Bug ID: CB-304
 
+- Preserve Existing Proof Limits (2026-09-17): Final inventory catches an unreported ninth-file edit raising both managed-guidance byte ceilings from 11,600 to 11,800 to accommodate longer prose. Reject that acceptance change before commit. Restore both original assertions and remove 195 redundant characters from the guidance while retaining every safety and terminal-decision clause; generated consumer/product blocks are 11,591/11,549 bytes. The preceding 3,603-unit/81-browser passing run remains an accurate historical result, but does not qualify this corrected candidate. Independent review also restores the host-side rule to relay completion/navigation exactly once without reinterpretation, regeneration, projection rebuilding or model-authored success substitution, now pinned for live and bundled skills. Never widen a proof limit or omit a changed file from handoff to make a candidate pass. The next frozen gate must use the original budget. An initial shortening dropped two required phrases and failed two of ten focused controls; corrected wording passes all ten with the original assertions.
+
+- Terminal Guidance Gate (2026-09-17): The frozen combined Greenfield/install/CLI gate records 3,600 passes, two failures, one deliberate Makefile-node deselection and zero skips in 274.80 seconds; source and publication remain unchanged. The browser phase was not run. One test still demands the retired no-decision offer. The other catches safety prose omitted from the rewritten install guidance: complete-package quality gating and receipt/hash/precondition verification. README and the show-me handoff also retain the old no-interface description. Correct only these existing guidance paths and their contract assertions, preserving no-chat authorization, three explicit terminal choices, original-source EDIT and deterministic CONFIRM/REJECT. Regenerate copies through the existing mirror owner, never hand-edit them. Preserve the failed receipt at /Users/freedom/.codex/odylith-terminal-checkpoint.vYtSx0/verification-result.json and require a fresh frozen gate; this is not a runtime mechanism failure or permission to expand scope.
+
+- Consumer Decision Flow Blocker (2026-09-17): Independent UX review identifies
+  a P1: the portable preview offers no decisions, diagnostic shell JSON is not
+  polished completion, and EDIT acknowledges evidence without rebuilding.
+  Close this existing consumer requirement with one thin terminal adapter over
+  the shared decision owner and proposal compiler. Display complete hash-bound
+  terminal commands, never ordinary-chat approval; retain zero-semantic CONFIRM
+  and REJECT. EDIT alone recompiles sealed source plus untrusted corrections
+  under the original tier, preserves the old package, and displays a newly
+  reviewed hash. No new schema, lifecycle, model stage, eligibility flag, retry
+  loop or deadline is admitted. The prior v57 recovery preparation is frozen
+  unexecuted until this bounded correction has fresh distribution proof.
+  The first EDIT test exposes a real retention defect: the existing authored
+  projection hardcodes its prompt field empty, including the retained installed
+  v57 seal. Preserve original untrusted source in that already-existing sealed
+  field; do not reconstruct it from generated prose or reread mutable evidence.
+  Old empty-source packages must fail EDIT safely and require a fresh proposal.
+  Guidance settlement repeated CB-305's generated-mirror ownership mistake.
+  Reviewed restoration d48d9d813a9d230891af509506fbc38ba27e164b2b2a480d38c37fccee529881
+  restores only three generated copies, preserving preimages and authored text;
+  authored-record sync must precede canonical guidance-mirror regeneration.
+
+- Installed Explicit-Command Checkpoint (2026-09-17): The fresh v57 package at
+  88810fab7 now passes real nonempty publication and same-hash retry through
+  explicit native shell invocations in Codex 0.153.4 and Claude 2.1.202. Each
+  returns the full visible receipt, publishes 56 sealed writes, passes independent
+  readback, and preserves the first-publication journal hash on retry. Only the
+  detector's positive-control requests occur; neither callback adds inference.
+  All 670 installed Python files, launchers and user configuration hashes remain
+  unchanged; both sessions terminate normally with no remaining workers.
+  Claude uses the explicitly selected `respondToBashCommands:false` setting;
+  this does not qualify default shell behavior, automatic hooks, or a portable
+  chat offer. Public previews stay read-only. EDIT currently acknowledges new
+  evidence; that acknowledgement is not a rebuilt proposal. Do not add an
+  interface framework merely to repackage the existing deterministic owners.
+  Evidence: /Users/freedom/.codex/odylith-v57-clean.z71JGu/RESULT.md.
+
+- Prepublication Seed Retention (2026-09-17): All three current v57 test copies
+  are CLOSED after publication. They can prove idempotency but cannot reach
+  first-publication fault sites. Preserve their journals and seals; do not delete
+  published state or transplant a seal to fabricate a fresh baseline. The next
+  existing recovery campaign must retain its whole pristine installed seed and
+  use separate clones for fault phases and native decisions. One predeclared
+  standard-profile attempt on the maintained disclosed recovery case is admitted;
+  preserve any failure without retry, relabeling, or a deadline increase.
+
 - Current Native Package Frontier (2026-09-17): The fresh installed runtime passes all 611 tracked Python-file parity checks, but its single ordinary proposal returns a substantive semantic denial in 51.995 seconds and never seals. CB-209 records the unsupported participant and independent adjudication. No native package callback, confirmation, publication or retry is attempted; direct-shell unavailable-hash evidence remains the only new native transport qualification. Keep public previews read-only and all timing limits unchanged. Evidence: /Users/freedom/.codex/odylith-native-package.hhmR0j/.
 
 - Retained Seal Admission Boundary (2026-09-17): Read-only review disproves upgrading the old seed while retaining an executable old seal. The receipt binds a 23-file post-confirm runtime identity that includes the changed proposal CLI; current runtime must reject that old identity before writes. A same-version installer can also refresh sealed precondition paths. This is the intended stale-transaction safeguard, not permission to rebind the receipt. Keep the old seed immutable. Prepare one fresh current-distribution installation and use one ordinary proposal under the unchanged standard profile; retain failure without retries. Only a newly admitted seal may proceed to the native publication comparison. No reasoning engine or background engine is disabled for this test.

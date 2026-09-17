@@ -486,8 +486,12 @@ def test_public_propose_cli_uses_one_author_and_review_without_unqualified_write
     assert provider.calls == 1
     assert reviewer.calls == 1
     assert payload["transaction_file"].endswith("product-create-transaction.v1.json")
-    assert payload["confirmation"]["status"] == "read_only"
-    assert payload["confirmation"]["choices"] == []
+    assert payload["confirmation"]["status"] == "terminal_only"
+    assert payload["confirmation"]["interface"] == "terminal"
+    assert [choice["label"] for choice in payload["confirmation"]["choices"]] == ["CONFIRM", "EDIT", "REJECT"]
+    assert all("odylith greenfield decide" in choice["command"] for choice in payload["confirmation"]["choices"])
+    assert "ordinary chat approval" in payload["confirmation"]["reason"]
+    assert payload["intent_hypothesis"]["prompt"] == staged_evidence
     assert greenfield_repository_write_set.greenfield_managed_fingerprints(tmp_path) == baseline
 
 

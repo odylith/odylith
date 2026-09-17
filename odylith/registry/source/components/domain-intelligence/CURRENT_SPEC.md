@@ -5,6 +5,15 @@ Last updated: 2026-09-17
 ## Overview
 
 Feature scope is frozen to demonstrated blockers and required release proof. The current
+consumer-flow blocker is the absent three-choice terminal rail and EDIT's
+acknowledgement-only behavior. The bounded correction reuses the existing decision
+owner and compiler: explicit terminal CONFIRM/REJECT perform no semantic work;
+EDIT reuses sealed source, original tier and release selector with new untrusted
+correction evidence, then renders a new reviewed package. No lifecycle, schema,
+model stage, eligibility flag or time budget is added. Ordinary chat remains
+unqualified; terminal commands do not attest automatic hooks. Proof is pending.
+
+The prior
 bounded correction is one existing shared state-object role description, consumed
 by author schema and reviewer: a person qualifies when the cited source changes
 or reviews that person's state; a performer-only citation does not. It does not
@@ -34,12 +43,11 @@ Known model timeouts and unavailable-provider failures retain typed environment
 outcomes in the public CLI, with no records created. Semantic denial remains a
 distinct failure; neither outcome is successful package delivery.
 
-The public Greenfield preview must be review-only when its caller supplies no
-qualified deterministic confirmation interface. A registered host name is not
-qualification. Such a preview retains the staged package and its identity, but
-offers no chat decision or executable publication command. Explicit operator
-`greenfield create` remains the separate deterministic sealed-byte interface;
-this guard does not change its kernel or claim native confirmation is complete.
+The public Greenfield preview publishes nothing. It may offer complete commands
+for the explicit terminal `greenfield decide` interface, but never ordinary chat
+approval. A registered host name is not qualification. Explicit operator
+`greenfield create` remains the separate deterministic sealed-byte API;
+neither terminal route claims native automatic confirmation is complete.
 Current Codex 0.153.4 diagnostics retain blocking on a successful callback but
 hide the full outcome in text and structured exec output; outer hook timeout
 permits model dispatch. CB-304 remains open for native eligibility and delivery.

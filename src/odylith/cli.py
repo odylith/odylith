@@ -27,6 +27,10 @@ from odylith.runtime.common.command_surface import (
 from odylith.runtime.common.environment import env_flag_enabled
 from odylith.runtime.common.repo_shape import PRODUCT_REPO_ROLE, repo_role_from_local_shape
 from odylith.runtime.domain_intelligence import greenfield_generation_store, greenfield_managed_mutation_boundary
+from odylith.runtime.domain_intelligence.greenfield_cli import (
+    COMMANDS as _GREENFIELD_COMMANDS,
+    COMMAND_NAMES as _GREENFIELD_COMMAND_NAMES,
+)
 from odylith.runtime.governance import dashboard_refresh_contract
 from odylith.runtime.surfaces import tooling_dashboard_version_state
 
@@ -165,15 +169,6 @@ _CODEX_HOST_COMMAND_MODULES = {
     "intervention-status": "odylith.runtime.surfaces.codex_host_intervention_status",
 }
 _SHOW_CAPABILITIES_MODULE = "odylith.runtime.analysis_engine.show_capabilities"
-_GREENFIELD_PROPOSALS_MODULE = "odylith.runtime.domain_intelligence.greenfield_proposals_cli"
-_GREENFIELD_CREATE_MODULE = "odylith.runtime.domain_intelligence.greenfield_create_cli"
-_GREENFIELD_COMMANDS = (
-    ("propose", "Compile and review a complete Greenfield package before confirmation."),
-    ("apply", "Disabled legacy command; propose provides read-only review."),
-    ("create", "Commit a compiled ProductCreateTransaction."),
-    ("compile-transaction", "Compile and quality-gate a ProductCreateTransaction without governed writes."),
-)
-_GREENFIELD_COMMAND_NAMES = frozenset(command for command, _help_text in _GREENFIELD_COMMANDS)
 _CAPABILITY_INVENTORY_MODULE = "odylith.runtime.analysis_engine.capability_inventory"
 _COMPONENT_CLI_MODULE = "odylith.runtime.governance.component_cli"
 _BUG_AUTHORING_MODULE = "odylith.runtime.governance.bug_authoring"
@@ -2401,13 +2396,8 @@ def _cmd_show(args: argparse.Namespace) -> int:
 
 
 def _cmd_greenfield(args: argparse.Namespace) -> int:
-    if args.greenfield_command == "create":
-        return _run_module_main(
-            _GREENFIELD_CREATE_MODULE,
-            ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded),
-        )
     return _run_module_main(
-        _GREENFIELD_PROPOSALS_MODULE,
+        "odylith.runtime.domain_intelligence.greenfield_cli",
         ensure_nested_subcommand_repo_root_args(repo_root=args.repo_root, argv=[args.greenfield_command, *args.forwarded]),
     )
 

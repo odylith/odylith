@@ -13,6 +13,7 @@ from typing import Any, Mapping
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store
+from odylith.runtime.domain_intelligence.greenfield_cli import terminal_decision_offer
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import GreenfieldClarificationRequired
 from odylith.runtime.domain_intelligence.greenfield_model_outcomes import GreenfieldModelRuntimeError
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
@@ -55,7 +56,7 @@ _REPAIR_TIER_BUDGET_HELP = (
 def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="odylith greenfield",
-        description="Review staged Greenfield packages; publication requires a separate qualified interface.",
+        description="Review staged Greenfield packages and choose an explicit terminal decision.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
     propose = subparsers.add_parser("propose", help="Stage a complete Greenfield package and show a read-only proposal.")
@@ -104,8 +105,8 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     )
     apply = subparsers.add_parser(
         "apply",
-        help="Legacy proposal apply is disabled; use propose for read-only review.",
-        description="Legacy proposal apply is disabled; use propose for read-only review.",
+        help="Legacy proposal apply is disabled; use propose, then choose a terminal decision.",
+        description="Legacy proposal apply is disabled; use propose, then choose a terminal decision.",
     )
     apply.add_argument("--repo-root", default=".")
     apply.add_argument("--proposal-file", default="")
@@ -159,31 +160,14 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
 def _legacy_apply_disabled_error() -> str:
     return (
         "greenfield apply is disabled. Use `odylith greenfield propose --repo-root . --prompt <request>` "
-        "for a read-only preview. No qualified confirmation interface is attached to that preview. "
+        "for a read-only preview with explicit terminal decision commands. "
         "No governed records were written."
     )
 
 
-def _transaction_confirmation_payload() -> dict[str, Any]:
-    """A portable preview has no attested channel for a subsequent decision.
-
-    Callback registration and environment host names cannot establish native
-    interception, fault-safe termination or visible completion. Keep this view
-    read-only; explicit operator create dispatch has its own deterministic owner.
-    """
-    return {
-        "status": "read_only",
-        "reason": (
-            "No qualified confirmation interface is attached to this preview. "
-            "The package is staged for review; no governed records have been published. "
-            "Do not send a chat approval or ask a model to publish it."
-        ),
-        "choices": [],
-    }
-
-
 def _transaction_review_text(
     *,
+    repo_root: Path,
     transaction: Any,
     output_path: str = "",
 ) -> str:
@@ -195,7 +179,7 @@ def _transaction_review_text(
     created = backlog_result.get("created") if isinstance(backlog_result.get("created"), list) else []
     components = package.component_registry_preview if isinstance(package.component_registry_preview, tuple) else ()
     diagrams = package.rendered_atlas_sources if isinstance(package.rendered_atlas_sources, Mapping) else {}
-    confirmation = _transaction_confirmation_payload()
+    confirmation = terminal_decision_offer(repo_root=repo_root, transaction_hash=summary["transaction_hash"])
     lines = [
         "## Review only",
         f"- transaction hash: {summary['transaction_hash']}",
@@ -207,10 +191,78 @@ def _transaction_review_text(
         f"{summary.get('repository_delete_count', 0)} deletions, and hashed repo preconditions",
         "",
         str(confirmation["reason"]),
+        "",
+        "## Choose one command",
+        "",
+        *[f"**{choice['label']}**\n\n```sh\n{choice['command']}\n```\n" for choice in confirmation["choices"]],
     ]
     if output_path:
         lines.insert(1, f"- transaction file: {output_path}")
     return "\n".join(lines).rstrip() + "\n"
+
+
+def _print_transaction_review(
+    *, repo_root: Path, candidate_intent: Mapping[str, Any], transaction: Any,
+    transaction_path: Path, as_json: bool,
+) -> None:
+    if as_json:
+        print(json.dumps({
+            "mode": "product_create_transaction",
+            "intent_hypothesis": _public_intent_hypothesis(candidate_intent),
+            "product_create_transaction": transaction.summary(),
+            "transaction_file": str(transaction_path.relative_to(repo_root)),
+            "confirmation": terminal_decision_offer(
+                repo_root=repo_root, transaction_hash=transaction.transaction_hash,
+            ),
+        }, indent=2, sort_keys=True))
+    else:
+        preview = render_product_intent_preview(candidate_intent).rstrip()
+        review = _transaction_review_text(
+            repo_root=repo_root, transaction=transaction,
+            output_path=str(transaction_path.relative_to(repo_root)),
+        )
+        print(f"{preview}\n\n{review}", end="")
+
+
+def rebuild_pending_transaction(
+    *, repo_root: Path, transaction_hash: str, edit_evidence: str,
+    edit_evidence_file: str, as_json: bool, started_at: float | None = None,
+) -> int:
+    """Re-author from verified retained evidence; never alter the reviewed package."""
+    from odylith.runtime.domain_intelligence.greenfield_create_transaction import load_compiled_product_create_transaction_file
+
+    started = time.perf_counter() if started_at is None else started_at
+    try:
+        path = greenfield_pending_transaction_store.resolve_pending_transaction(
+            repo_root=repo_root, transaction_hash=transaction_hash,
+        )
+        previous = load_compiled_product_create_transaction_file(path)
+        correction = _edit_evidence_from_args(
+            argparse.Namespace(edit=edit_evidence, edit_evidence=edit_evidence_file), repo_root=repo_root,
+        )
+        if not correction.strip():
+            raise ValueError("Add your correction with --edit or --edit-evidence. No governed records were written.")
+        prompt = previous.proposal.get("intent", {}).get("prompt")
+        if not isinstance(prompt, str) or not prompt.strip():
+            raise ValueError("The reviewed package has no retained source evidence; start a new proposal.")
+        candidate, transaction, staged_path = _compile_prompt_evidence_transaction(
+            repo_root=repo_root, prompt=prompt, edit_evidence=correction,
+            release_selector=previous.release_selector,
+            repair_tier=previous.quality_manifest["requested_repair_tier"],
+            source_language="en", started_at=started,
+        )
+        if transaction.transaction_hash == transaction_hash:
+            raise RuntimeError("The correction did not produce a new reviewed package. The old package is unchanged.")
+    except GreenfieldClarificationRequired as exc:
+        return _finish_clarification(exc=exc, as_json=as_json)
+    except (OSError, ValueError, RuntimeError) as exc:
+        _print_greenfield_error(exc, as_json=as_json)
+        return 2
+    _print_transaction_review(
+        repo_root=repo_root, candidate_intent=candidate, transaction=transaction,
+        transaction_path=staged_path, as_json=as_json,
+    )
+    return 0
 
 
 def _print_greenfield_error(exc: Exception, *, as_json: bool) -> None:
@@ -516,20 +568,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         except (OSError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
             _print_greenfield_error(exc, as_json=args.output_format == "json")
             return 2
-        if args.output_format == "json":
-            print(json.dumps({
-                "mode": "product_create_transaction",
-                "intent_hypothesis": _public_intent_hypothesis(candidate_intent),
-                "product_create_transaction": transaction.summary(),
-                "transaction_file": str(transaction_path.relative_to(repo_root)),
-                "confirmation": _transaction_confirmation_payload(),
-            }, indent=2, sort_keys=True))
-        else:
-            preview = render_product_intent_preview(candidate_intent).rstrip()
-            print(
-                f"{preview}\n\n{_transaction_review_text(transaction=transaction, output_path=str(transaction_path.relative_to(repo_root)))}",
-                end="",
-            )
+        _print_transaction_review(
+            repo_root=repo_root, candidate_intent=candidate_intent, transaction=transaction,
+            transaction_path=transaction_path, as_json=args.output_format == "json",
+        )
         return 0
     if args.command == "apply":
         message = _legacy_apply_disabled_error()
@@ -569,14 +611,16 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "intent_hypothesis": _public_intent_hypothesis(candidate_intent),
                     "product_create_transaction": summary,
                     "transaction": greenfield_proposals.product_create_transaction_to_dict(transaction),
-                    "confirmation": _transaction_confirmation_payload(),
+                    "confirmation": terminal_decision_offer(
+                        repo_root=repo_root, transaction_hash=summary["transaction_hash"],
+                    ),
                 }
                 if output_path:
                     payload["transaction_file"] = output_path
                 print(json.dumps(payload, indent=2, sort_keys=True))
             else:
                 preview = render_product_intent_preview(candidate_intent).rstrip()
-                print(f"{preview}\n\n{_transaction_review_text(transaction=transaction, output_path=output_path)}", end="")
+                print(f"{preview}\n\n{_transaction_review_text(repo_root=repo_root, transaction=transaction, output_path=output_path)}", end="")
         except GreenfieldClarificationRequired as exc:
             return _finish_clarification(
                 exc=exc,

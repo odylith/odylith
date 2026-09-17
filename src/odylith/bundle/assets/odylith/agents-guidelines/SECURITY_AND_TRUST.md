@@ -58,14 +58,19 @@
 ## Consumer Greenfield Rules
 - Greenfield Domain Intelligence may reason from user intent, but it must keep
   observed source, user intent, and Odylith assumptions separate.
-- `odylith greenfield propose` builds and quality-gates the full
-  ProductCreateTransaction for read-only review. No qualified confirmation
-  interface is attached; hosts must not append decisions, offer publication or
-  run create from chat approval. Registration is not fault-safe qualification.
+- `odylith greenfield propose` and compile previews publish nothing, but print
+  three full shell-quoted terminal `decide` commands for the retained repository
+  path and hash: `CONFIRM`, `EDIT` with `--edit` or `--edit-evidence`, and
+  `REJECT`. Chat approval, host names, and hooks are not eligibility.
+- `CONFIRM` and `REJECT` use the shared bounded deterministic owner with no
+  compiler or model work. `EDIT` verifies the retained hash, compiles only sealed
+  original source plus new untrusted correction through the existing compiler,
+  preserves tier and 90/120/150 limits, keeps the old seal, and returns a new
+  preview/hash. It adds no schema, stage, retry, or repair path.
 - Explicit operator `odylith greenfield create` verifies the sealed receipt,
   hash and preconditions, publishes sealed bytes under rollback guard, validates
-  readback and returns its outcome. No model calls, artifact generation or
-  rebuilding persistent projections may follow confirmation.
+  readback and returns its outcome. It remains separate and commit-only; no model
+  calls, artifact generation or rebuilding persistent projections may follow it.
 - Legacy proposal `apply` must not become a confirmed write path; edited
   confirmation text is new evidence and requires a rebuilt transaction.
 - The deterministic greenfield proposal Tribunal must reject disconnected child
