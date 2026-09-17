@@ -4,6 +4,17 @@ Last updated: 2026-09-17
 
 ## Overview
 
+The admitted one-shot v55 operating-limits candidate is rejected. Its initial
+Sol-high author times out after 135.001618 seconds without a response; the command
+returns an error after 135.373823 seconds, makes one call and changes no fixture
+paths. No reviewer, staged package or browser proof exists for this candidate.
+The product prompt is restored exactly to v53; no schema, profile, projection,
+reviewer, extra call or deadline change is adopted. This does not resolve the
+safety-readiness P1 or show that existing fields lack capacity. Preserve the
+failed comparison and adjudicate complete-author feasibility before another
+experiment; do not repeat prompt tuning or claim causation from one observation.
+Evidence: /Users/freedom/.codex/odylith-safety-authoring.Y7bgzO/.
+
 The first current v16 installed deep comparison completes proposal/publication in
 95.661/2.592 seconds with exactly two model calls and all 32 browser states passing.
 It is not a qualified profile or implementation-ready package: the maintained gate
@@ -12,9 +23,9 @@ boundary, while independent review additionally raises P1 for missing testable
 provisional privacy/security posture in a design handling personal and sensitive
 records. Source fidelity and explicitly proposed architecture do not prove safety
 readiness. Independent adjudication places the gap with authored provisional
-verification and assumptions, not custody or downstream projection. Compare one
-bounded author-guidance candidate at that existing seam before considering a new
-schema; no regulatory facts, domain rules or invented guarantees are authorized.
+verification and assumptions, not custody or downstream projection. The bounded
+author-guidance comparison at that existing seam is now rejected as recorded
+above; no regulatory facts, domain rules or invented guarantees are authorized.
 The shared brief checker separately passes 112 focused controls and read-only
 replay of the retained package, preserving all 181 evidence files and the native
 blocker. It requires canonical proof/evidence custody, exact cardinality and

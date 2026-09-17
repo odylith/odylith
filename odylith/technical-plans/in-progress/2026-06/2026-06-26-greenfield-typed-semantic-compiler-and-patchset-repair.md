@@ -1,5 +1,53 @@
 Status: In progress
 
+## Provisional safety candidate rejected (2026-09-17)
+
+The one admitted v55 comparison fails before producing any authored response.
+Sol-high initial authoring times out after 135.001618 seconds against the
+134.987416-second remaining allowance; the public command returns code 2 after
+135.373823 seconds. Exactly one semantic call occurs. No reviewer, staged
+transaction, generated package, browser proof or publication follows. All frozen
+source/runner/executable inputs, the retained baseline and distribution remain
+unchanged; the complete fixture inventory has zero changed or added paths.
+
+Reject v55 and remove its prompt and candidate-only test from product scope;
+restore the exact v53 source bytes. Preserve the candidate diff, 308 passing
+structural controls, raw timeout observation, manifest and unchanged failed
+fixture under /Users/freedom/.codex/odylith-safety-authoring.Y7bgzO/. This is a
+failed completion attempt inside the outer deadline, not successful SLA delivery.
+One stochastic sample does not prove the extra wording caused the timeout, nor
+that existing fields cannot carry safeguards. The safety-readiness P1 stays open.
+Do not retry this candidate, extend deadlines, restore v54, infer a need for a
+new schema or add a repair call. The next decision must address complete-author
+feasibility using retained evidence before admitting another mechanism experiment.
+Native confirmation/chat delivery and the remaining release gates stay open.
+
+## Bounded provisional safety comparison (2026-09-17)
+
+Checkpoint 40c702c6c is pushed with 1,549 install/adjacent and all 456 browser
+checks passing, unchanged frozen inputs/publication and scoped independent
+checker acceptance. The installed package's safety-readiness P1 remains open.
+
+Independent feasibility review permits one deep-only v55 author-guidance
+comparison after that checkpoint. Current deep author/review/total observations
+are 80.702/6.555/95.661 seconds against fixed 135/150-second model/public ceilings;
+this is changed feasibility from rejected v54's 55-second model window, not proof
+of standard reliability. Narrow the ambiguous ban on invented safety to a ban on
+unsupported facts and guarantees. Ask for proportionate, explicitly provisional
+operating limits and observable failure checks using existing general assumptions
+and component/workstream verification; do not force a generic checklist or one
+control per field. No source-domain keywords, schema, model, reviewer, projection,
+call-count or deadline change is authorized.
+
+Compare the exact disclosed source once. Require valid source custody, all actor/
+participant/action/result/evidence relationships, useful distinct governance and
+material safety decisions in the complete package. Reject fabricated authorities,
+laws, external dependencies, retention periods, metrics or guarantees. Stop on
+quality, provider, review or timing failure; preserve evidence and do not tune or
+retry. One deep result cannot qualify other profiles, generalization, native
+confirmation, interventions or release. Evidence and the exact candidate will be
+retained under /Users/freedom/.codex/odylith-safety-authoring.Y7bgzO/.
+
 ## Installed v16 discovery reaches the real package (2026-09-17)
 
 The corrected shared brief checker passes 112 focused controls. Read-only replay
