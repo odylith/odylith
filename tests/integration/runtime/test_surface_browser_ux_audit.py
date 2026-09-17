@@ -496,6 +496,7 @@ def test_casebook_agent_band_links_stay_distinct_and_non_repetitive(browser_cont
 
         casebook = page.frame_locator("#frame-casebook")
         casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
+        casebook.locator("button.bug-row").first.wait_for(timeout=15000)
         sample_routes = casebook.locator("button.bug-row").evaluate_all(
             """nodes => nodes.slice(0, 10).map((node) => ({
           bug: String(node.getAttribute("data-bug") || "").trim(),

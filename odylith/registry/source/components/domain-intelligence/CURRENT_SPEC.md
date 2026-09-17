@@ -38,22 +38,37 @@ Projection parity rejects omitted, rewritten or unrelated acceptance before
 Registry input issuance. Native quality generalization and deadline qualification
 remain separate release obligations.
 
-The candidate v14 Greenfield proposal ceilings are strictly below 90 seconds for
+The candidate v15 Greenfield proposal ceilings are strictly below 90 seconds for
 standard/auto, 120 for explicitly selected rescue, and 150 for explicitly
 selected deep. Sixty seconds is an advisory normal-case target. The author and
-reviewer share 75/105/135-second model windows, with review capped at 20
-seconds and the actual remaining window. Commit-only publication remains below
+reviewer share 75/105/135-second model windows. Review consumes only the actual
+remaining window, including setup and validation, without a separate stage cap.
+It receives a read-only view of already-validated source spans, exact byte
+locations and bounded surrounding text; the canonical resolver remains the sole
+citation owner. No occurrence repair or semantic parser is added. Review v2 and
+profile v15 make the changed contract explicit. Commit-only publication remains below
 60 seconds. Profiles are selected before execution, never extended after an
 overrun. A fixed 15-second allocation remains outside the model window for
 deterministic completion, whose actual duration still faces the public deadline.
 This allocation comparison does not establish tail reliability or change models,
 efforts, prompts, call count, semantic quality or transaction guarantees.
-Historical observations below retain their original verdicts; old sealed v12/v13
-transactions fail current-profile validation. One fresh installed standard
+Historical observations below retain their original verdicts; old sealed
+v12/v13/v14 transactions fail current-profile validation. One historical v14 installed standard
 comparison completes proposal/publication in 63.226/2.613 seconds and passes all
-32 browser states. Retain v14 for further development proof, not release
-qualification: raw author/review duration still fits the old model window, so
-causal reliability improvement is unproved. The demonstrated Radar decision-basis
+32 browser states. That does not qualify v15. The new bounded reviewer-only
+comparison correctly denies a wrong selected occurrence in 10.978 seconds and
+admits its synthetic correct-occurrence control in 23.307 seconds. It supports
+integration, not fresh authoring, package quality, generalization or release
+qualification. Causal reliability improvement is unproved.
+
+The fresh v15 source-local package completes in 55.650 seconds with five
+workstreams, five components and five diagrams, but independent review rejects
+two accepted facts: a selected substring occurrence and an artifact modifier
+promoted to a participant. Review finished in 13.279 seconds with exact citation
+context available. The unconfirmed package must not publish; broader semantic
+qualification remains red despite 2,043 passing install/focused checks.
+
+The demonstrated Radar decision-basis
 P1 is corrected in shared backlog authoring/normalization: absent decisions stay
 absent and supplied rationale is preserved. Exact five-workstream custody and
 32 browser states pass on a disclosed-intent recompilation, not a new native

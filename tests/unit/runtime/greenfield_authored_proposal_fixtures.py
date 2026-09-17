@@ -64,7 +64,7 @@ def approved_authored_quality_manifest_fixture(
             "elapsed_seconds": 0.5,
             "initial_authoring_elapsed_seconds": 0.25,
             "candidate_review": {
-                "version": "odylith.greenfield.candidate-review.v1",
+                "version": "odylith.greenfield.candidate-review.v2",
                 "status": "admitted",
                 "source_sha256": authority.get("markdown_source_sha256", "0" * 64),
                 "candidate_sha256": "1" * 64,
@@ -75,7 +75,7 @@ def approved_authored_quality_manifest_fixture(
                     "provider": profile.provider,
                     "model": profile.review_model,
                     "reasoning_effort": profile.review_reasoning_effort,
-                    "effective_timeout_seconds": profile.review_timeout_seconds,
+                    "effective_timeout_seconds": profile.model_timeout_seconds - 0.25,
                     "authoring_tier": profile.repair_tier,
                 },
             },

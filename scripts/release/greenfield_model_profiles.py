@@ -25,6 +25,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
+    GreenfieldModelAuthoredIntent,
     GreenfieldModelAuthoringError,
     _validated_authoring_response,
 )
@@ -353,6 +354,24 @@ def _model_stage_observation_evidence(
     ):
         issues.append("retained initial authoring elapsed time exceeds its timeout")
 
+    request = _mapping(retained.get("request"))
+    source = request.get("evidence")
+    authored = None
+    if (set(request) != {"version", "evidence"}
+            or request.get("version") != GREENFIELD_INTENT_AUTHORING_VERSION
+            or not isinstance(source, str) or not source.strip()):
+        issues.append("retained author request lacks current source evidence")
+    elif initial_elapsed is not None and sealed_timeout is not None:
+        # The canonical validator owns source resolution in runtime and proof.
+        try:
+            authored = _validated_authoring_response(
+                response, evidence_text=source, elapsed_seconds=initial_elapsed,
+                provider=_mapping(initial.get("provider")), profile_id=profile,
+                effective_timeout_seconds=sealed_timeout,
+            )
+        except (GreenfieldModelAuthoringError, ValueError, TypeError, KeyError):
+            issues.append("retained response fails canonical source-bound author validation")
+
     request_roles: dict[str, Any] = {"initial_authoring": initial_summary}
     if response_kind == "authored":
         if normalized_call_count != 2:
@@ -362,29 +381,12 @@ def _model_stage_observation_evidence(
         issues.extend(_candidate_review_observation_issues(
             profile, review=review, request=_mapping(retained.get("request")),
             candidate=result, shared_timeout=sealed_timeout, initial_elapsed=initial_elapsed,
+            source_spans=authored.source_spans if isinstance(authored, GreenfieldModelAuthoredIntent) else (),
         ))
     elif normalized_call_count != 1:
         issues.append("clarification response must record exactly one semantic call")
     if "source_review" in retained or "initial_response" in retained:
         issues.append("complete-author response must not record an intermediate review path")
-
-    request = _mapping(retained.get("request"))
-    source = request.get("evidence")
-    if (set(request) != {"version", "evidence"}
-            or request.get("version") != GREENFIELD_INTENT_AUTHORING_VERSION
-            or not isinstance(source, str) or not source.strip()):
-        issues.append("retained author request lacks current source evidence")
-    elif initial_elapsed is not None and sealed_timeout is not None:
-        # Reuse source-citation, clarification and complete-design validation;
-        # do not create a second semantic interpreter in release tooling.
-        try:
-            _validated_authoring_response(
-                response, evidence_text=source, elapsed_seconds=initial_elapsed,
-                provider=_mapping(initial.get("provider")), profile_id=profile,
-                effective_timeout_seconds=sealed_timeout,
-            )
-        except (GreenfieldModelAuthoringError, ValueError, TypeError, KeyError):
-            issues.append("retained response fails canonical source-bound author validation")
 
     return {
         "observation_version": str(retained.get("version") or ""),
@@ -400,7 +402,7 @@ def _model_stage_observation_evidence(
 def _candidate_review_observation_issues(
     profile: str, *, review: Mapping[str, Any], request: Mapping[str, Any],
     candidate: Mapping[str, Any], shared_timeout: float | None,
-    initial_elapsed: float | None,
+    initial_elapsed: float | None, source_spans: Sequence[Mapping[str, Any]],
 ) -> tuple[str, ...]:
     """Check the current binary observation, not a historical repair protocol.
 
@@ -428,7 +430,7 @@ def _candidate_review_observation_issues(
     try:
         if not isinstance(source, str) or not source.strip():
             raise ValueError("missing source")
-        expected_payload = candidate_review_payload(source, candidate)
+        expected_payload = candidate_review_payload(source, candidate, source_spans=source_spans)
         actual = json.dumps(review.get("request"), sort_keys=True, ensure_ascii=False, allow_nan=False)
         expected = json.dumps(expected_payload, sort_keys=True, ensure_ascii=False, allow_nan=False)
         if actual != expected:
@@ -442,7 +444,7 @@ def _candidate_review_observation_issues(
         seconds = _positive_float(review.get(field))
         if seconds is None:
             issues.append(f"retained candidate review {field} is invalid")
-        elif (seconds > contract.review_timeout_seconds
+        elif (seconds > contract.model_timeout_seconds
               or remaining is None or seconds > remaining):
             issues.append(f"retained candidate review {field} exceeds the remaining model window")
     return tuple(issues)

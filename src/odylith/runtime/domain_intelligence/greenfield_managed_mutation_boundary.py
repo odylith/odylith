@@ -81,17 +81,45 @@ def run_with_greenfield_managed_mutation_boundary(
     root = Path(repo_root).expanduser().resolve()
     if not command_may_mutate_greenfield_managed_paths(command_tokens):
         return operation(None)
-    complete_log = compass_log_continuation.completion_requested(command_tokens)
-    if complete_log:
+    complete_log = False
+    abandon_log = False
+    requested_root = ""
+    if tuple(command_tokens[:2]) == ("compass", "log"):
+        # Parse the full public grammar before entering any recovery or writer
+        # path. Invalid recovery-looking syntax must remain completely inert.
+        from odylith.runtime.common import log_compass_timeline_event
+
         try:
-            requested_root = compass_log_continuation.completion_repo_argument(command_tokens[2:])
-        except ValueError as exc:
-            raise compass_log_continuation.CompassLogContinuationError(str(exc)) from exc
+            log_args = log_compass_timeline_event._parse_args(command_tokens[2:])
+        except SystemExit as exc:
+            raise compass_log_continuation.CompassLogContinuationError(
+                "RECOVERY_REQUIRED: invalid Compass log syntax; no writer ran"
+            ) from exc
+        complete_log = bool(log_args.complete)
+        abandon_log = bool(log_args.abandon_restored)
+        requested_root = str(log_args.repo_root)
+    if complete_log or abandon_log:
         if Path(requested_root).expanduser().resolve() != root:
-            raise compass_log_continuation.CompassLogContinuationError("RECOVERY_REQUIRED: completion repository differs from its lease")
+            raise compass_log_continuation.CompassLogContinuationError(
+                "RECOVERY_REQUIRED: Compass recovery repository differs from its lease"
+            )
     try:
         with greenfield_repository_lock.greenfield_repository_lock(root) as descriptor:
             restore_published_files.require_restoration_writer_admission(repo_root=root)
+            if abandon_log:
+                GreenfieldCommitJournal.require_settled_journals(repo_root=root)
+                pinned = greenfield_generation_store.require_greenfield_working_generation(root)
+                active = greenfield_generation_state.active_generation_identity(root)
+                before = greenfield_repository_write_set.greenfield_managed_fingerprints(root)
+                result = operation(descriptor)
+                if (greenfield_generation_state.active_generation_identity(root) != active
+                        or greenfield_repository_write_set.greenfield_managed_fingerprints(root) != before
+                        or pinned.manifest["after_fingerprints"] != before):
+                    raise compass_log_continuation.CompassLogContinuationError(
+                        "RECOVERY_REQUIRED: Compass abandonment changed publication or managed bytes; "
+                        "no successor was published"
+                    )
+                return result
             admitted_upgrade = None
             admitted_authored = None
             admitted_log = None

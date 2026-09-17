@@ -49,6 +49,7 @@ _SOFT_REGISTRY_DIAGNOSTIC_PREFIXES: tuple[str, ...] = (
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     tokens = list(sys.argv[1:] if argv is None else argv)
+    recovery_requested = "--complete" in tokens or "--abandon-restored" in tokens
     parser = argparse.ArgumentParser(
         prog="odylith compass log",
         description="Append a Compass timeline stream event for host-aware audit visibility.",
@@ -57,12 +58,20 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--repo-root", default=".", help="Repository root.")
     parser.add_argument("--complete", action="store_true", help="Complete an admitted canonical log's failed refresh without appending again; only --repo-root may accompany this option.")
     parser.add_argument(
+        "--abandon-restored", metavar="RESTORATION_REVIEW_HASH",
+        help="Retire one prepared, unpublished append after its exact reviewed stream restoration.",
+    )
+    parser.add_argument(
+        "--receipt-hash", default="", metavar="SHA256",
+        help="Exact SHA-256 of the original prepared Compass continuation receipt.",
+    )
+    parser.add_argument(
         "--stream",
         default=agent_runtime_contract.AGENT_STREAM_PATH,
         help="Output JSONL stream path (local runtime artifact).",
     )
-    parser.add_argument("--kind", required="--complete" not in tokens, choices=_KIND_CHOICES, help="Event kind.")
-    parser.add_argument("--summary", required="--complete" not in tokens, help="Crisp event summary sentence.")
+    parser.add_argument("--kind", required=not recovery_requested, choices=_KIND_CHOICES, help="Event kind.")
+    parser.add_argument("--summary", required=not recovery_requested, help="Crisp event summary sentence.")
     parser.add_argument(
         "--workstream",
         action="append",
@@ -153,6 +162,13 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
             compass_log_continuation.completion_repo_argument(tokens)
         except ValueError as exc:
             parser.error(str(exc))
+    elif args.abandon_restored:
+        try:
+            compass_log_continuation.abandonment_arguments(tokens)
+        except ValueError as exc:
+            parser.error(str(exc))
+    elif args.receipt_hash:
+        parser.error("--receipt-hash requires --abandon-restored")
     return args
 
 
@@ -452,6 +468,20 @@ def main(argv: Sequence[str] | None = None, *, repository_lock_fd: int | None = 
         except RuntimeError as exc:
             print(str(exc))
             return 1
+    if args.abandon_restored:
+        try:
+            result = compass_log_continuation.abandon_restored(
+                repo_root=repo_root,
+                restoration_review_hash=str(args.abandon_restored),
+                receipt_hash=str(args.receipt_hash),
+                repository_lock_fd=repository_lock_fd,
+            )
+        except RuntimeError as exc:
+            print(str(exc))
+            return 1
+        print(f"Compass unpublished append: {result['status']}")
+        print(f"- archive: {result['archive']}")
+        return 0
     stream_path = _resolve(repo_root, str(args.stream))
     manifest_token = str(args.manifest).strip()
     manifest_path = (

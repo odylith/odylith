@@ -12,15 +12,15 @@ from dataclasses import dataclass
 from types import MappingProxyType
 
 
-GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v14"
+GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v15"
 GREENFIELD_NORMAL_CASE_TARGET_SECONDS = 60.0
 # The existing outer deadline still checks compilation, sealing and staging.
 # This allocation is headroom for those phases, not an extension on expiry.
 _COMPLETION_RESERVE_SECONDS = 15.0
 
-STANDARD_PROFILE_ID = "greenfield-standard-terra-low-complete-author-review-v14"
-RESCUE_PROFILE_ID = "greenfield-rescue-terra-medium-complete-author-review-v14"
-DEEP_PROFILE_ID = "greenfield-deep-sol-high-complete-author-review-v14"
+STANDARD_PROFILE_ID = "greenfield-standard-terra-low-complete-author-review-v15"
+RESCUE_PROFILE_ID = "greenfield-rescue-terra-medium-complete-author-review-v15"
+DEEP_PROFILE_ID = "greenfield-deep-sol-high-complete-author-review-v15"
 UNAVAILABLE_PROVIDER_PROFILE_ID = "greenfield-unavailable-provider-no-write-v1"
 
 
@@ -39,7 +39,6 @@ class GreenfieldModelProfile:
     supported_success: bool = True
     review_model: str = "gpt-5.6-sol"
     review_reasoning_effort: str = "medium"
-    review_timeout_seconds: float = 20.0
 
 
 _PROFILES = MappingProxyType(
@@ -171,7 +170,7 @@ def greenfield_model_profile_observation_issues(
     elif request_role == "candidate_review":
         expected_model = profile.review_model
         expected_effort = profile.review_reasoning_effort
-        role_cap = min(profile.review_timeout_seconds, profile.model_timeout_seconds)
+        role_cap = profile.model_timeout_seconds
     else:
         raise ValueError(f"unsupported Greenfield model request role: {request_role}")
     observations = {

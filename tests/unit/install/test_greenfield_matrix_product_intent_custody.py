@@ -203,7 +203,7 @@ def test_v4_missing_or_unadmitted_review_cannot_hide_behind_lenses(receipt_state
         (("elapsed_seconds",), float("nan")),
         (("candidate_review", "model_profile", "model"), "gpt-5.6-terra"),
         (("candidate_review", "model_profile", "reasoning_effort"), "low"),
-        (("candidate_review", "model_profile", "effective_timeout_seconds"), 20.001),
+        (("candidate_review", "model_profile", "effective_timeout_seconds"), 75.001),
         (("candidate_review", "model_profile", "effective_timeout_seconds"), True),
         (("candidate_review", "elapsed_seconds"), 20.001),
         (("candidate_review", "elapsed_seconds"), float("inf")),

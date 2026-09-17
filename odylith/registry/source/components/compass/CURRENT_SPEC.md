@@ -67,6 +67,18 @@ bytes. Only a complete prepared append or an exact recorded terminal phase can
 continue; unknown interruptions, foreign requests and changed inputs refuse.
 Completion never appends again or rolls back an observed successor.
 
+An exact prepared, unpublished append may instead be retired with
+`compass log --abandon-restored <review hash> --receipt-hash <original SHA-256>`
+after the existing reviewed restoration restores only the canonical stream.
+This is abandonment, not cross-runtime completion. Under the repository writer
+lease, require unchanged publication, exact event/preimage custody, unchanged
+authored inventory, complete working equality and settled journals. Archive the
+original receipt and abandonment witness durably before retiring the active
+receipt. No append, refresh, journal recovery or publication runs on this branch;
+the original event remains recoverable. Changed or newer custody refuses, and
+the same archived receipt identity cannot be prepared again. Independent review,
+309 adjacent checks and the exact live recovery support this bounded contract.
+
 Refresh custody uses the actual originating request ID, terminal state, status,
 integer return code and non-coalesced provenance. Terminal `pid=0` is not foreign
 ownership. Result transport is opt-in; ordinary refresh callers retain their

@@ -48,7 +48,10 @@ def _manifest(tier: str, elapsed: object = 1.0) -> dict:
             profile_id=profile.profile_id, authoring_tier=tier,
             model=profile.review_model if review else profile.model,
             reasoning_effort=profile.review_reasoning_effort if review else profile.reasoning_effort,
-            effective_timeout_seconds=profile.review_timeout_seconds if review else profile.model_timeout_seconds,
+            effective_timeout_seconds=(
+                profile.model_timeout_seconds - receipt["initial_authoring_elapsed_seconds"]
+                if review else profile.model_timeout_seconds
+            ),
         )
     return manifest
 
@@ -144,7 +147,7 @@ def test_larger_outer_budget_does_not_relax_role_binding_or_model_caps(mutation)
     elif mutation == "model_budget":
         receipt["elapsed_seconds"] = 75.001
     else:
-        receipt["candidate_review"]["model_profile"]["effective_timeout_seconds"] = 20.001
+        receipt["candidate_review"]["model_profile"]["effective_timeout_seconds"] = 75.001
     with pytest.raises(ValueError, match="quality manifest is not approved"):
         transactions.require_product_create_transaction_quality_approved(manifest)
 

@@ -1,5 +1,67 @@
 Status: In progress
 
+## Fresh v15 package fails semantic qualification (2026-09-17)
+
+The source-local standard proposal completes in 55.650 seconds with one brief,
+five Radar workstreams, five components, five diagrams and 56 sealed writes.
+Authoring takes 37.365 seconds and review 13.279 seconds, within the original
+20-second review cap as well as the new residual allowance. Two calls run, with
+no retry. All declared inputs and the untouched publication remain unchanged.
+
+Independent adjudication rejects two accepted facts despite model admission:
+`apprentices`, occurrence 1, binds inside `apprenticeship`; `mentor` in
+`mentor signoff evidence` is promoted from an artifact modifier to a participant.
+Exact resolved citations were present in the reviewer input. Timing and artifact
+counts therefore do not establish faithful consumer completion. Do not confirm,
+publish, repair or retry this candidate. The proposed product self-reference and
+apprentice display wording were retracted as hard findings: the existing contract
+does not make those interpretations unambiguously forbidden.
+
+All 2,043 install and focused Greenfield checks pass. These are structural and
+contract controls, not evidence that the semantic mechanism is reliable. The
+next comparison must address this recurring source-authority failure, with
+positive, negative and equivalent-source controls and independent adjudication.
+Do not repeat effort/cap sweeps, global performer-only participant derivation,
+shared-context target acceptance or mutable repair mechanisms already rejected
+below. No new schema or mechanism is selected yet; keep 90/120/150 and sealed
+publication fixed. Evidence: /Users/freedom/.codex/odylith-custody-v15.rdTDzm/.
+
+## Re-anchor stage budgets to the consumer deadline (2026-09-17)
+
+The user's fixed consumer ceilings are 90/120/150 seconds. The current
+20-second review cap, two-call design, immutable pre-confirm review and
+75/105/135 shared allocations are implementation choices, not additional user
+laws. Production was unchanged at comparison entry. Preserve exact source entailment, bounded
+cost, useful completion and deterministic sealed publication after confirmation;
+compare internal mechanisms against those outcomes without reviving known failed
+correction paths or treating safer refusal alone as completion.
+
+One unsealed diagnostic will replay the previous resolved-custody requests with
+only their timeout changed: 75 seconds minus the retained author's measured
+43.880169292 seconds. This is a diagnostic allowance, not a fresh end-to-end
+measurement; setup and publication still need proof. Keep source, complete
+candidate, custody view, prompt, schema, Sol-medium and effort fixed. Require a
+grounded denial of the wrong-occurrence negative and admission of the separately
+labeled synthetic occurrence-2 positive. Stop on the first invalid, incorrect or
+late result, with at most two calls and no retry. A correct result within 20
+seconds is inconclusive about cap growth; a correct later result supports only
+the allocation hypothesis. Neither qualifies production or useful authoring.
+Evidence directory: /Users/freedom/.codex/odylith-custody-residual.eIVZuK/.
+
+Result: the wrong-occurrence control receives the correct path-specific denial
+in 10.978 seconds; the synthetic correct-occurrence control is admitted in
+23.307 seconds. Both request pairs differ from the prior treatment only in
+timeout, and all declared inputs, publication identity and absent workers remain
+fixed. Independent adjudication confirms the witness and positive meaning. This
+supports a minimal integration, not a causal or reliability claim: forward the
+existing validated spans to the read-only reviewer and replace the standalone
+20-second cap with the live shared deadline, accounting for setup and validation.
+Keep models, authoring schema, prompt, two calls, 15-second completion reserve and
+public ceilings unchanged. Version the changed review/profile contract; align its
+runtime receipt and release checker. Require focused failure/positive controls,
+then a fresh ordinary complete package before wider proof. The author-side useful
+completion gap remains open; no synthetic control may become a package.
+
 ## Reject effort-only promotion; inspect exact custody (2026-09-17)
 
 The bounded existing-rescue-profile comparison stops after four attempts and

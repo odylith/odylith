@@ -403,7 +403,7 @@ def _candidate_review_approved(
         "elapsed_seconds", "model_profile",
     }:
         return False
-    if review.get("version") != "odylith.greenfield.candidate-review.v1" or review.get("status") != "admitted":
+    if review.get("version") != "odylith.greenfield.candidate-review.v2" or review.get("status") != "admitted":
         return False
     for key in ("source_sha256", "candidate_sha256", "product_facts_sha256"):
         digest = review.get(key)
@@ -423,11 +423,14 @@ def _candidate_review_approved(
     ):
         return False
     profile = get_greenfield_model_profile(model_authoring["model_profile"]["profile_id"])
+    shared_effective = model_authoring["model_profile"]["effective_timeout_seconds"]
+    review_effective = review["model_profile"]["effective_timeout_seconds"]
     return (
-        total <= profile.model_timeout_seconds
+        total <= shared_effective <= profile.model_timeout_seconds
         and initial <= total
-        and initial <= model_authoring["model_profile"]["effective_timeout_seconds"]
-        and reviewed <= profile.review_timeout_seconds <= 20.0
+        and initial <= shared_effective
+        and review_effective <= shared_effective - initial
+        and reviewed <= shared_effective
         and initial + reviewed <= total
     )
 

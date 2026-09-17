@@ -15,7 +15,7 @@ flowchart TB
     subgraph projection_lane["Deterministic package construction"]
       direction LR
       custody["Custody and invariant validation<br/>Stable source IDs and explicit result producer<br/>No chronology from source-list position"]
-      review["Read-only complete-candidate admission<br/>Source meaning and proposed choices remain distinct<br/>One review; at most 20 seconds and remaining time"]
+      review["Read-only complete-candidate admission<br/>Exact resolved citations; distinct source and design<br/>One review inside the remaining shared deadline"]
       denied["No admitted package<br/>No retry, repair cascade or governed write"]
       projections["Deterministic source and design projections<br/>4–5 Radar, 4–5 Registry, five Atlas views<br/>Exact release membership and dependency-ready task"]
       staged_surfaces["Temporary-root surface rendering<br/>Shared read lock holds the validated baseline<br/>No detached narration queue or worker"]

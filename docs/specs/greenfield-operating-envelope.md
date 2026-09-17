@@ -39,38 +39,41 @@ legal, or production claims.
 
 ## Host and model profiles
 
-Codex and Claude are the deterministic confirmation hosts. Both pass the sealed
-transaction hash to the same commit-only confirmation callback. Other hosts may
-render proposals but cannot offer governed writes until they prove the same hash
-callback and visibility contract.
+Codex and Claude share a deterministic confirmation callback, but registration
+alone does not qualify the native interface. Current public previews are
+read-only: neither host has complete fault-safe activation and visible-delivery
+proof. Explicit operator invocation of the sealed-byte create CLI remains
+separate. A host must prove the hash callback, no post-confirm inference under
+faults, and visible completion before its preview may offer governed writes.
 
 Release evaluation covers three pinned candidate success profiles; their identity
 does not itself establish qualification:
 
-- `greenfield-standard-terra-low-complete-author-review-v14`: the default and `auto`
+- `greenfield-standard-terra-low-complete-author-review-v15`: the default and `auto`
   path, with a 90-second consumer ceiling and a 75-second model window.
-- `greenfield-rescue-terra-medium-complete-author-review-v14`: the explicit rescue
+- `greenfield-rescue-terra-medium-complete-author-review-v15`: the explicit rescue
   path, with a 120-second consumer ceiling and a 105-second model window.
-- `greenfield-deep-sol-high-complete-author-review-v14`: the explicit deep path,
+- `greenfield-deep-sol-high-complete-author-review-v15`: the explicit deep path,
   with a 150-second consumer ceiling and a 135-second model window.
 
 Proposal elapsed time must be strictly below the selected ceiling. Sixty seconds
 is an advisory normal-case target, not a second acceptance gate. The separate
-commit-only step must still finish strictly below 60 seconds. Candidate v14
+commit-only step must still finish strictly below 60 seconds. Candidate v15
 retains these approved public limits while allocating 15 seconds outside the
 shared model window for deterministic completion. This is not a guaranteed tail
 bound: the public deadline still rejects late compilation or staging. Models,
 efforts, call count, semantic requirements and transaction laws are unchanged.
 Historical observations keep their original limits and verdicts; old sealed
-v12/v13 transactions are not relabeled or accepted as v14. Fresh per-profile
+v12/v13/v14 transactions are not relabeled or accepted as v15. Fresh per-profile
 evidence is required for qualification.
 
 The selected profile is fixed before the model request. Elapsed time or a failed
 attempt never relabels or extends a standard request into rescue or deep.
 Standard uses Terra low, rescue uses Terra medium, and deep uses Sol high for
 one complete authoring call. An authored result then requires one read-only
-Sol/medium review of the complete candidate, with at most 20 seconds and only
-the shared model window's remaining time. Reviewer setup, validation and finalization
+Sol/medium review of the complete candidate using only
+the shared model window's remaining time. There is no separate review-stage cap.
+Reviewer setup, validation and finalization
 are inside that deadline. No fixed author reserve, retry, repair call or tier
 promotion follows. Invalid authoring and material clarification do not invoke review.
 These are bounded candidate profiles, not claims about every provider model.
@@ -98,6 +101,10 @@ The existing authored relation hash binds this design with source semantics;
 no second candidate store, source ledger or post-confirm interpretation is added.
 The old source-review/correction path remains removed. The new reviewer receives
 accepted-source and proposed-decision namespaces without changing any value.
+It also receives the canonical resolver's selected byte locations and bounded
+surrounding text. This is a read-only view, not a second citation resolver or an
+automatic occurrence repair. Review v2 binds the unchanged source and candidate;
+the release checker reconstructs the same view through canonical validation.
 It may admit or deny with one substantiated witness, never rewrite the candidate.
 Practical proposed choices remain advisory unless materially incompatible or unsafe.
 Private proof retains both actual requests, responses, profiles, caps and elapsed

@@ -372,6 +372,9 @@ def test_current_production_observations_qualify_without_mutation(profile_id, re
     (("candidate_review", "request", "candidate", "accepted_source", "events"), []),
     (("candidate_review", "request", "candidate", "proposed_decisions", "provisional_design"), {}),
     (("candidate_review", "request", "role_definitions"), {}),
+    (("candidate_review", "request", "resolved_source_custody"), []),
+    (("candidate_review", "request", "resolved_source_custody", 0, "source_start_byte"), 999),
+    (("candidate_review", "request", "resolved_source_custody", 0, "context_after"), "Forged context"),
     (("candidate_review", "protocol"), "odylith.greenfield.exact-row-review.experimental.v1"),
     (("candidate_review", "final_candidate"), {}),
     (("initial_authoring", "unexpected_role"), {}),
@@ -409,13 +412,13 @@ def test_every_role_requires_positive_finite_numeric_timing(role, field, value):
 
 @pytest.mark.parametrize("profile_id", MODEL_PROFILES)
 @pytest.mark.parametrize("field", ["elapsed_seconds", "timeout_seconds"])
-def test_review_cannot_exceed_its_cap_or_the_remaining_sealed_window(profile_id, field):
+def test_review_cannot_exceed_the_remaining_sealed_window(profile_id, field):
     profile = get_greenfield_model_profile(profile_id)
     for remaining in (2.0, 30.0):
         stage = _stage_observation(profile_id)
         stage["initial_authoring"]["elapsed_seconds"] = profile.model_timeout_seconds - remaining
-        stage["candidate_review"]["timeout_seconds"] = min(remaining, profile.review_timeout_seconds)
-        stage["candidate_review"][field] = min(remaining, profile.review_timeout_seconds) + 0.001
+        stage["candidate_review"]["timeout_seconds"] = remaining
+        stage["candidate_review"][field] = remaining + 0.001
         assert model_stage_observation_issues(
             profile_id, observed=_sealed_observation(profile_id), stage_observation=stage,
         )
@@ -446,10 +449,21 @@ def test_stage_checker_independently_rejects_false_sealed_profile(field, value):
 @pytest.mark.parametrize("field", ["timeout_seconds", "elapsed_seconds"])
 def test_review_budget_does_not_tolerate_sub_microsecond_overrun(field):
     stage = _stage_observation(STANDARD_PROFILE_ID)
-    stage["candidate_review"][field] = 20.0000001
+    stage["candidate_review"][field] = (
+        get_greenfield_model_profile(STANDARD_PROFILE_ID).model_timeout_seconds
+        - stage["initial_authoring"]["elapsed_seconds"] + 0.0000001
+    )
     assert model_stage_observation_issues(
         STANDARD_PROFILE_ID, observed=_sealed_observation(STANDARD_PROFILE_ID), stage_observation=stage,
     )
+
+
+def test_review_above_old_stage_cap_is_valid_inside_remaining_shared_budget():
+    stage = _stage_observation(STANDARD_PROFILE_ID)
+    stage["candidate_review"].update(timeout_seconds=30.0, elapsed_seconds=23.0)
+    assert model_stage_observation_issues(
+        STANDARD_PROFILE_ID, observed=_sealed_observation(STANDARD_PROFILE_ID), stage_observation=stage,
+    ) == ()
 
 
 @pytest.mark.parametrize("profile_id", MODEL_PROFILES)

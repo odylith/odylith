@@ -26,10 +26,10 @@ def test_two_call_receipt_passes_quality_only_gate() -> None:
 
 
 @pytest.mark.parametrize("role", ["author", "review", "both"])
-def test_v13_receipt_is_not_reinterpreted_under_the_larger_model_allocation(role) -> None:
+def test_v14_receipt_is_not_reinterpreted_under_the_shared_model_window(role) -> None:
     manifest = approved_authored_quality_manifest_fixture()
     receipt = manifest["model_authoring"]
-    old_profile = "greenfield-standard-terra-low-complete-author-review-v13"
+    old_profile = "greenfield-standard-terra-low-complete-author-review-v14"
     if role in {"author", "both"}:
         receipt["model_profile"]["profile_id"] = old_profile
     if role in {"review", "both"}:
@@ -45,6 +45,17 @@ def test_author_elapsed_cannot_exceed_its_own_recorded_dispatch_cap() -> None:
     receipt["initial_authoring_elapsed_seconds"] = 2.0
     receipt["candidate_review"]["elapsed_seconds"] = 0.25
     receipt["elapsed_seconds"] = 3.0
+    with pytest.raises(ValueError, match="quality manifest is not approved"):
+        transactions.require_product_create_transaction_quality_approved(manifest)
+
+
+def test_review_dispatch_window_cannot_exceed_remaining_shared_window() -> None:
+    manifest = approved_authored_quality_manifest_fixture()
+    receipt = manifest["model_authoring"]
+    receipt["initial_authoring_elapsed_seconds"] = 30.0
+    receipt["candidate_review"]["model_profile"]["effective_timeout_seconds"] = 45.001
+    receipt["candidate_review"]["elapsed_seconds"] = 1.0
+    receipt["elapsed_seconds"] = 31.0
     with pytest.raises(ValueError, match="quality manifest is not approved"):
         transactions.require_product_create_transaction_quality_approved(manifest)
 
@@ -67,10 +78,10 @@ def test_author_elapsed_cannot_exceed_its_own_recorded_dispatch_cap() -> None:
         (("model_authoring", "candidate_review", "model_profile", "authoring_tier"), "deep"),
         (("model_authoring", "candidate_review", "model_profile", "provider"), "unobserved"),
         (("model_authoring", "candidate_review", "model_profile", "request_role"), "initial_authoring"),
-        (("model_authoring", "candidate_review", "model_profile", "effective_timeout_seconds"), 20.001),
+        (("model_authoring", "candidate_review", "model_profile", "effective_timeout_seconds"), 75.001),
         (("model_authoring", "initial_authoring_elapsed_seconds"), 55.0),
         (("model_authoring", "elapsed_seconds"), 75.001),
-        (("model_authoring", "candidate_review", "elapsed_seconds"), 20.001),
+        (("model_authoring", "candidate_review", "elapsed_seconds"), 75.001),
         (("model_authoring", "candidate_review", "elapsed_seconds"), -0.001),
     ] + [
         (("model_authoring", "candidate_review", field), value)
@@ -220,7 +231,7 @@ def test_role_elapsed_includes_setup_outside_provider_dispatch_timeout() -> None
     manifest = approved_authored_quality_manifest_fixture()
     receipt = manifest["model_authoring"]
     receipt["initial_authoring_elapsed_seconds"] = 30.0
-    receipt["elapsed_seconds"] = 50.0
-    receipt["candidate_review"]["elapsed_seconds"] = 20.0
-    receipt["candidate_review"]["model_profile"]["effective_timeout_seconds"] = 19.5
+    receipt["elapsed_seconds"] = 55.0
+    receipt["candidate_review"]["elapsed_seconds"] = 25.0
+    receipt["candidate_review"]["model_profile"]["effective_timeout_seconds"] = 24.5
     transactions.require_product_create_transaction_quality_approved(manifest)

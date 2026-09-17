@@ -311,6 +311,7 @@ def author_greenfield_intent(
         try:
             review = review_greenfield_candidate(
                 evidence_text=text, candidate=response["result"], profile_id=profile.profile_id,
+                source_spans=authored.source_spans,
                 provider_factory=review_provider_factory, deadline=model_deadline,
                 clock=clock, observation=review_observation,
             )

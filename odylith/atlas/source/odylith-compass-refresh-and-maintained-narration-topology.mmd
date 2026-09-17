@@ -65,6 +65,8 @@ flowchart TB
     Complete["odylith compass log --complete<br/>verify receipt, inputs and exact working bytes"]
     LogPublish["Existing generation owner seals and publishes<br/>retire the exact completion receipt"]
     Refuse["Refuse unknown interruption or changed custody<br/>never replay the append or adopt historical drift"]
+    Restore["Prepared and never published only<br/>review exact canonical-stream restoration"]
+    Abandon["Verify original receipt and restored working state<br/>durably archive event custody and receipt<br/>retire without append, refresh or publication"]
   end
 
   subgraph Guardrails["8. Product Guardrails"]
@@ -106,6 +108,7 @@ flowchart TB
   Complete -->|Handled failure, unchanged anchors| LogRefresh
   Complete -->|Already rendered or sealed| LogPublish
   Complete -->|Absent receipt or changed inputs| Refuse
+  Refuse -. "separate explicit recovery; exact prepared custody" .-> Restore --> Abandon
   LogPublish -->|Failure| Failure
 
   OneLane --> Truth

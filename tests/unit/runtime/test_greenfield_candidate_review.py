@@ -33,8 +33,14 @@ class Reviewer(StructuredAuthoringProvider):
 
 
 def run_review(provider, clock, *, deadline=55.0, observation=None, factory=None):
+    source = _source()
+    authored = author._validated_authoring_response(
+        _response(source), evidence_text=source, elapsed_seconds=0.0,
+        provider={"provider": "codex-cli", "model": "gpt-5.6-terra", "reasoning_effort": "low"},
+        profile_id=STANDARD_PROFILE_ID, effective_timeout_seconds=55.0,
+    )
     return review.review_greenfield_candidate(
-        evidence_text=_source(), candidate=_response(_source())["result"],
+        evidence_text=source, candidate=_response(source)["result"], source_spans=authored.source_spans,
         profile_id=STANDARD_PROFILE_ID, provider_factory=factory or (lambda: provider),
         deadline=deadline, clock=clock,
         observation=observation if observation is not None else {},
@@ -45,9 +51,14 @@ def test_partition_preserves_every_value_and_binds_complete_candidate():
     source = _source()
     candidate = _response(source)["result"]
     original = deepcopy(candidate)
-    payload = review.candidate_review_payload(source, candidate)
+    spans = author._validated_authoring_response(
+        _response(source), evidence_text=source, elapsed_seconds=0.0,
+        provider={}, profile_id=STANDARD_PROFILE_ID, effective_timeout_seconds=55.0,
+    ).source_spans
+    payload = review.candidate_review_payload(source, candidate, source_spans=spans)
     assert {**payload["candidate"]["accepted_source"], **payload["candidate"]["proposed_decisions"]} == original
     assert payload["source"] == source
+    assert payload["resolved_source_custody"]
     assert "Do not turn an activity or output purpose into a person." in payload["role_definitions"]["customer"]
     clock = Clock()
     provider = Reviewer({"admissible": True, "issues": []}, clock, 7.0)
@@ -65,7 +76,56 @@ def test_unknown_authority_is_not_silently_dropped():
     candidate = _response(_source())["result"]
     candidate["unclassified_authority"] = {}
     with pytest.raises(ValueError, match="authority"):
-        review.candidate_review_payload(_source(), candidate)
+        review.candidate_review_payload(_source(), candidate, source_spans=())
+
+
+def _span(source, quote, *, field="first_path", row=1, start=None):
+    encoded, quoted = source.encode(), quote.encode()
+    start = encoded.find(quoted) if start is None else start
+    return {
+        "section_key": field, "row_index": row, "text": quote,
+        "source_start_byte": start, "source_end_byte": start + len(quoted),
+    }
+
+
+def test_utf8_context_is_bounded_by_characters_while_coordinates_remain_bytes():
+    source = "é" * 70 + " target " + "文" * 70
+    payload = review.candidate_review_payload(
+        source, _response(_source())["result"], source_spans=(_span(source, "target"),),
+    )
+    custody = payload["resolved_source_custody"][0]
+    assert custody["source_start_byte"] == len(("é" * 70 + " ").encode())
+    assert custody["context_before"] == "é" * 63 + " "
+    assert custody["context_after"] == " " + "文" * 63
+
+
+def test_overlapping_source_spans_remain_distinct_context_rows():
+    source = "prefix abcde suffix"
+    first = _span(source, "abcd", row=1)
+    second = _span(source, "cde", row=2, start=first["source_start_byte"] + 2)
+    payload = review.candidate_review_payload(
+        source, _response(_source())["result"], source_spans=(first, second),
+    )
+    assert [(row["row"], row["quote"]) for row in payload["resolved_source_custody"]] == [
+        (1, "abcd"), (2, "cde"),
+    ]
+
+
+@pytest.mark.parametrize("mutation", [
+    {"source_start_byte": -1}, {"source_end_byte": 10_000}, {"text": "other"},
+    {"row_index": True}, {"section_key": ""},
+])
+def test_malformed_or_mutated_source_spans_fail_before_provider_dispatch(mutation):
+    source = _source()
+    span = _span(source, "training coordinators") | mutation
+    provider = Reviewer({"admissible": True, "issues": []}, Clock())
+    with pytest.raises(ValueError, match="source span"):
+        review.review_greenfield_candidate(
+            evidence_text=source, candidate=_response(source)["result"], source_spans=(span,),
+            profile_id=STANDARD_PROFILE_ID, provider_factory=lambda: provider,
+            deadline=55.0, clock=Clock(), observation={},
+        )
+    assert provider.calls == 0
 
 
 @pytest.mark.parametrize("verdict", [
@@ -86,11 +146,13 @@ def test_denial_or_malformed_verdict_never_repairs_or_retries(verdict):
     assert observation["dispatched"] is True
 
 
-@pytest.mark.parametrize("scope", ["source", "accepted_source", "proposed_decisions"])
+@pytest.mark.parametrize("scope", ["source", "resolved_source_custody", "accepted_source", "proposed_decisions"])
 def test_review_cannot_mutate_evidence_or_either_authority(scope):
     def mutate(payload):
         if scope == "source":
             payload["source"] += "New authority"
+        elif scope == "resolved_source_custody":
+            payload[scope][0]["quote"] += "New authority"
         else:
             payload["candidate"][scope]["extra"] = "New authority"
     clock = Clock()
@@ -127,7 +189,15 @@ def test_no_budget_means_no_review_dispatch(setup):
     assert "dispatched" not in observation
 
 
-@pytest.mark.parametrize("duration", [20.001, 55.0])
+def test_review_can_use_more_than_twenty_seconds_inside_the_shared_deadline():
+    clock = Clock()
+    provider = Reviewer({"admissible": True, "issues": []}, clock, 23.0)
+    receipt = run_review(provider, clock)
+    assert receipt["elapsed_seconds"] == 23.0
+    assert provider.requests[0].timeout_seconds == 55.0
+
+
+@pytest.mark.parametrize("duration", [55.001, 60.0])
 def test_late_response_fails_after_one_actual_call(duration):
     clock = Clock()
     provider = Reviewer({"admissible": True, "issues": []}, clock, duration)
@@ -136,7 +206,7 @@ def test_late_response_fails_after_one_actual_call(duration):
     assert provider.calls == 1
 
 
-@pytest.mark.parametrize("started,duration", [(0.0, 20.001), (45.0, 10.001)])
+@pytest.mark.parametrize("started,duration", [(0.0, 55.001), (45.0, 10.001)])
 @pytest.mark.parametrize("response", [None, {"admissible": True, "issues": []}])
 def test_late_review_retains_provider_evidence_without_admitting_or_retrying(started, duration, response):
     clock = Clock()
@@ -199,19 +269,19 @@ def test_review_postvalidation_deadline_is_enforced(monkeypatch):
         return result
     monkeypatch.setattr(review, "require_greenfield_model_profile_observation", slow_validation)
     with pytest.raises(RuntimeError, match="exceeded.*time window"):
-        run_review(provider, clock)
+        run_review(provider, clock, deadline=20.0)
     assert provider.calls == 1
 
 
 def test_review_finalization_cannot_admit_a_late_role():
-    ticks = iter((0.0, 0.0, 19.9, 19.9, 19.9, 20.1))
-    clock = lambda: next(ticks, 20.1)
+    ticks = iter((0.0, 0.0, 54.9, 54.9, 54.9, 55.1))
+    clock = lambda: next(ticks, 55.1)
     provider = StructuredAuthoringProvider({"admissible": True, "issues": []})
     observation = {}
     with pytest.raises(RuntimeError, match="exceeded its time window"):
         run_review(provider, clock, observation=observation)
     assert provider.calls == 1
-    assert observation["elapsed_seconds"] == 20.1
+    assert observation["elapsed_seconds"] == 55.1
 
 
 @pytest.mark.parametrize("role", ["author", "reviewer"])

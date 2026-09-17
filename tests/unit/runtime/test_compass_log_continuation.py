@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -15,12 +16,14 @@ from odylith.runtime.domain_intelligence import greenfield_managed_mutation_boun
 from odylith.runtime.domain_intelligence import greenfield_repository_lock as leases
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set as write_sets
 from odylith.runtime.governance import compass_dashboard_refresh_inputs as inputs
+from odylith.runtime.governance import restore_published_files as restorations
 from odylith.runtime.governance import sync_workstream_artifacts as sync
 from odylith.runtime.surfaces import compass_refresh_runtime as refresh
 from tests.unit.runtime.test_greenfield_managed_mutation_boundary import _active_repository
 
 
 EVENT = b'{"kind": "statement", "summary": "One durable event", "ts_iso": "2026-09-10T12:00:00+00:00"}\n'
+PREFIX = b'{"kind":"statement","summary":"Earlier published event"}\n'
 
 
 @pytest.fixture
@@ -65,6 +68,8 @@ def _run(repo, *, complete=False):
     tokens = ["compass", "log", "--repo-root", str(repo)]
     if complete:
         tokens.append("--complete")
+    else:
+        tokens.extend(["--kind", "statement", "--summary", "One durable event"])
 
     def operation(descriptor):
         if complete:
@@ -79,6 +84,43 @@ def _run(repo, *, complete=False):
     return boundary.run_with_greenfield_managed_mutation_boundary(
         repo_root=repo, command_tokens=tokens, operation=operation,
     )
+
+
+def _prepare_unpublished_append(repo, *, current_stream=None):
+    def publish_prefix(descriptor):
+        _write(repo / continuation.STREAM_PATH, PREFIX)
+        (repo / continuation.STREAM_PATH).chmod(0o640)
+        return 0
+
+    assert boundary.run_with_greenfield_managed_mutation_boundary(
+        repo_root=repo, command_tokens=["synthetic-published-prefix"], operation=publish_prefix,
+    ) == 0
+    with leases.greenfield_repository_lock(repo) as descriptor:
+        continuation.prepare_append(repo_root=repo, event=EVENT, repository_lock_fd=descriptor)
+        _write(repo / continuation.STREAM_PATH, PREFIX + EVENT if current_stream is None else current_stream)
+        (repo / continuation.STREAM_PATH).chmod(0o640)
+    raw = (repo / continuation.RECEIPT_PATH).read_bytes()
+    return raw, hashlib.sha256(raw).hexdigest()
+
+
+def _restore(repo, *, paths=(continuation.STREAM_PATH,), apply=True):
+    preview = restorations.preview_restore(repo_root=repo, paths=paths)
+    if apply:
+        restored = restorations.apply_restore(repo_root=repo, review_hash=preview["review_hash"])
+        assert restored["status"] == "restored"
+    return preview["review_hash"]
+
+
+def _abandon(repo, *, review_hash, receipt_hash, bounded=True):
+    tokens = ["compass", "log", "--repo-root", str(repo), "--abandon-restored", review_hash,
+              "--receipt-hash", receipt_hash]
+    operation = lambda descriptor: log.main(tokens[2:], repository_lock_fd=descriptor)
+    if bounded:
+        return boundary.run_with_greenfield_managed_mutation_boundary(
+            repo_root=repo, command_tokens=tokens, operation=operation,
+        )
+    with leases.greenfield_repository_lock(repo) as descriptor:
+        return operation(descriptor)
 
 
 def _failed(repo, monkeypatch):
@@ -100,6 +142,14 @@ def test_completion_is_a_payload_free_public_invocation():
     assert args.complete is True
 
 
+def test_abandonment_is_a_two_hash_payload_free_public_invocation():
+    args = log._parse_args([
+        "--repo-root", ".", "--abandon-restored", "1" * 64, "--receipt-hash", "2" * 64,
+    ])
+    assert args.abandon_restored == "1" * 64
+    assert args.receipt_hash == "2" * 64
+
+
 @pytest.mark.parametrize("extra", [
     ["--summary", "must not append"], ["--kind", "decision"],
     ["--stream", "odylith/compass/runtime/agent-stream.v1.jsonl"],
@@ -108,6 +158,18 @@ def test_completion_is_a_payload_free_public_invocation():
 def test_completion_rejects_every_append_or_receipt_override(extra):
     with pytest.raises(SystemExit):
         log._parse_args(["--complete", *extra])
+
+
+@pytest.mark.parametrize("extra", [
+    ["--kind", "statement"], ["--summary", "must not append"], ["--complete"],
+    ["--stream", continuation.STREAM_PATH], ["--abandon-restored", "3" * 64],
+    ["--receipt-hash", "4" * 64], ["--repo-root", "."],
+])
+def test_abandonment_rejects_append_options_or_duplicate_authority(extra):
+    with pytest.raises(SystemExit):
+        log._parse_args([
+            "--repo-root", ".", "--abandon-restored", "1" * 64, "--receipt-hash", "2" * 64, *extra,
+        ])
 
 
 @pytest.mark.parametrize("failure", ["nonzero", "exception"])
@@ -881,3 +943,240 @@ def test_cached_surface_without_executed_request_cannot_claim_completion(active,
     assert _receipt(repo)["phase"] == "rendering"
     assert attempts == []
     assert (repo / continuation.STREAM_PATH).read_bytes() == EVENT
+
+
+def test_exact_closed_restoration_abandons_only_unpublished_prepared_append(active, monkeypatch):
+    from odylith import cli
+
+    repo, _ = active
+    raw_receipt, receipt_hash = _prepare_unpublished_append(repo)
+    receipt = json.loads(raw_receipt)
+    monkeypatch.setattr(continuation, "_runtime_identity", lambda root: {"code": "changed-after-admission"})
+    with pytest.raises(continuation.CompassLogContinuationError, match="runtime identity changed"):
+        _run(repo, complete=True)
+    review_hash = _restore(repo)
+    assert cli.main([
+        "compass", "log", "--repo-root", str(repo), "--abandon-restored", review_hash,
+        "--receipt-hash", receipt_hash,
+    ]) == 0
+    assert (repo / continuation.STREAM_PATH).read_bytes() == PREFIX
+    assert publication.active_generation_identity(repo) == receipt["publication"]
+    assert not (repo / continuation.RECEIPT_PATH).exists()
+    archive = repo / continuation._ABANDONMENTS / receipt_hash
+    assert (archive / "original-receipt.json").read_bytes() == raw_receipt
+    witness_raw = (archive / "abandonment.json").read_bytes()
+    witness = json.loads(witness_raw)
+    assert witness_raw == restorations._canonical(witness)
+    assert witness == continuation._abandonment_witness(
+        receipt=receipt, receipt_hash=receipt_hash, restoration_review_hash=review_hash,
+    )
+
+
+@pytest.mark.parametrize("append", [
+    PREFIX + EVENT[:-1],
+    PREFIX + EVENT + b'{}\n',
+    PREFIX + EVENT.replace(b"One durable event", b"Wrong durable event"),
+])
+def test_abandonment_rejects_partial_extra_or_wrong_preserved_event(active, append):
+    repo, _ = active
+    _, receipt_hash = _prepare_unpublished_append(repo, current_stream=append)
+    review_hash = _restore(repo)
+    receipt_before = (repo / continuation.RECEIPT_PATH).read_bytes()
+    assert _abandon(repo, review_hash=review_hash, receipt_hash=receipt_hash) == 1
+    assert (repo / continuation.RECEIPT_PATH).read_bytes() == receipt_before
+    assert (repo / continuation.STREAM_PATH).read_bytes() == PREFIX
+
+
+@pytest.mark.parametrize("invalid", ["wrong_hash", "wrong_target", "missing_closed", "wrong_state"])
+def test_abandonment_requires_exact_restoration_authority_and_prepared_state(active, invalid):
+    repo, _ = active
+    _, receipt_hash = _prepare_unpublished_append(repo)
+    if invalid == "wrong_target":
+        review_hash = _restore(repo, paths=("odylith/radar/source/keep.md",))
+    elif invalid == "missing_closed":
+        review_hash = _restore(repo, apply=False)
+    else:
+        review_hash = _restore(repo)
+    if invalid == "wrong_hash":
+        review_hash = "0" * 64
+    elif invalid == "wrong_state":
+        receipt = _receipt(repo)
+        receipt["phase"] = "appended"
+        raw = (json.dumps(receipt, sort_keys=True) + "\n").encode()
+        _write(repo / continuation.RECEIPT_PATH, raw)
+        receipt_hash = hashlib.sha256(raw).hexdigest()
+    receipt_before = (repo / continuation.RECEIPT_PATH).read_bytes()
+    assert _abandon(repo, review_hash=review_hash, receipt_hash=receipt_hash, bounded=False) == 1
+    assert (repo / continuation.RECEIPT_PATH).read_bytes() == receipt_before
+
+
+@pytest.mark.parametrize("drift", ["publication", "foreign_source", "active_refresh"])
+def test_abandonment_refuses_changed_publication_data_or_active_refresh(active, monkeypatch, drift):
+    repo, _ = active
+    _, receipt_hash = _prepare_unpublished_append(repo)
+    review_hash = _restore(repo)
+    if drift == "publication":
+        original = publication.active_generation_identity(repo)
+        monkeypatch.setattr(publication, "active_generation_identity",
+                            lambda root: {**original, "publication_sha256": "0" * 64})
+    elif drift == "foreign_source":
+        _write(repo / "odylith/radar/source/keep.md", b"foreign post-restoration change\n")
+    else:
+        _write(repo / continuation._REQUEST_PATH, b'{"status":"running","pid":123}\n')
+    receipt_before = (repo / continuation.RECEIPT_PATH).read_bytes()
+    assert _abandon(repo, review_hash=review_hash, receipt_hash=receipt_hash, bounded=False) == 1
+    assert (repo / continuation.RECEIPT_PATH).read_bytes() == receipt_before
+
+
+@pytest.mark.parametrize("unsafe", ["symlink", "hardlink", "different"])
+def test_abandonment_refuses_unsafe_or_differing_archive(active, tmp_path, unsafe):
+    repo, _ = active
+    _, receipt_hash = _prepare_unpublished_append(repo)
+    review_hash = _restore(repo)
+    archive = repo / continuation._ABANDONMENTS / receipt_hash
+    archive.parent.mkdir(parents=True, exist_ok=True)
+    if unsafe == "symlink":
+        archive.symlink_to(tmp_path / "foreign-archive", target_is_directory=True)
+    else:
+        archive.mkdir()
+        archived_receipt = archive / "original-receipt.json"
+        if unsafe == "hardlink":
+            os.link(repo / continuation.RECEIPT_PATH, archived_receipt)
+        else:
+            _write(archived_receipt, b"different evidence\n")
+    receipt_before = (repo / continuation.RECEIPT_PATH).read_bytes()
+    assert _abandon(repo, review_hash=review_hash, receipt_hash=receipt_hash) == 1
+    assert (repo / continuation.RECEIPT_PATH).read_bytes() == receipt_before
+
+
+def test_fully_archived_before_unlink_failure_retries_without_evidence_rewrite(active, monkeypatch):
+    repo, _ = active
+    raw_receipt, receipt_hash = _prepare_unpublished_append(repo)
+    review_hash = _restore(repo)
+    receipt_path = repo / continuation.RECEIPT_PATH
+    real_unlink = Path.unlink
+
+    def fail_receipt_unlink(path, *args, **kwargs):
+        if path == receipt_path:
+            raise OSError("synthetic before-unlink failure")
+        return real_unlink(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "unlink", fail_receipt_unlink)
+    with pytest.raises(OSError, match="before-unlink"):
+        _abandon(repo, review_hash=review_hash, receipt_hash=receipt_hash)
+    archive = repo / continuation._ABANDONMENTS / receipt_hash
+    archived_before = {path.name: path.read_bytes() for path in archive.iterdir()}
+    assert archived_before["original-receipt.json"] == raw_receipt
+    assert receipt_path.exists()
+    monkeypatch.setattr(Path, "unlink", real_unlink)
+    assert _abandon(repo, review_hash=review_hash, receipt_hash=receipt_hash) == 0
+    assert {path.name: path.read_bytes() for path in archive.iterdir()} == archived_before
+    assert not receipt_path.exists()
+
+
+def test_after_unlink_repeat_is_idempotent_but_never_touches_newer_receipt(active):
+    repo, _ = active
+    _, receipt_hash = _prepare_unpublished_append(repo)
+    review_hash = _restore(repo)
+    assert _abandon(repo, review_hash=review_hash, receipt_hash=receipt_hash) == 0
+    assert _abandon(repo, review_hash=review_hash, receipt_hash=receipt_hash) == 0
+    with leases.greenfield_repository_lock(repo) as descriptor:
+        newer_event = EVENT.replace(b"One durable event", b"Newer durable event")
+        continuation.prepare_append(repo_root=repo, event=newer_event, repository_lock_fd=descriptor)
+    newer_receipt = (repo / continuation.RECEIPT_PATH).read_bytes()
+    assert hashlib.sha256(newer_receipt).hexdigest() != receipt_hash
+    assert _abandon(repo, review_hash=review_hash, receipt_hash=receipt_hash, bounded=False) == 1
+    assert (repo / continuation.RECEIPT_PATH).read_bytes() == newer_receipt
+
+
+def test_abandoned_receipt_identity_cannot_be_recreated_by_same_event(active):
+    repo, _ = active
+    _, receipt_hash = _prepare_unpublished_append(repo)
+    review_hash = _restore(repo)
+    assert _abandon(repo, review_hash=review_hash, receipt_hash=receipt_hash) == 0
+    with leases.greenfield_repository_lock(repo) as descriptor:
+        with pytest.raises(continuation.CompassLogContinuationError, match="already abandoned"):
+            continuation.prepare_append(repo_root=repo, event=EVENT, repository_lock_fd=descriptor)
+    assert not (repo / continuation.RECEIPT_PATH).exists()
+
+
+def test_abandonment_boundary_refuses_unsettled_journal_without_recovery(active, monkeypatch):
+    repo, _ = active
+    recovered = []
+    operated = []
+
+    def unsettled(**kwargs):
+        raise RuntimeError("synthetic unsettled journal")
+
+    monkeypatch.setattr(boundary.GreenfieldCommitJournal, "require_settled_journals", staticmethod(unsettled))
+    monkeypatch.setattr(boundary.GreenfieldCommitJournal, "recover_pending_journals",
+                        staticmethod(lambda **kwargs: recovered.append(True)))
+    tokens = ["compass", "log", "--repo-root", str(repo), "--abandon-restored", "1" * 64,
+              "--receipt-hash", "2" * 64]
+    with pytest.raises(RuntimeError, match="unsettled journal"):
+        boundary.run_with_greenfield_managed_mutation_boundary(
+            repo_root=repo, command_tokens=tokens,
+            operation=lambda descriptor: operated.append(True) or 0,
+        )
+    assert recovered == []
+    assert operated == []
+
+
+@pytest.mark.parametrize("recovery_tokens", [
+    ["--abandon-restored=hash", "--receipt-hash", "2" * 64],
+    ["--abandon-restored", "1" * 64],
+    ["--receipt-hash", "2" * 64],
+    ["--abandon-restored", "1" * 64, "--abandon-restored", "3" * 64, "--receipt-hash", "2" * 64],
+    ["--abandon-restor", "1" * 64, "--receipt-hash", "2" * 64],
+    ["--abandon-restored", "1" * 64, "--receipt-ha", "2" * 64],
+])
+def test_invalid_abandonment_syntax_is_inert_before_lock_or_recovery(active, monkeypatch, recovery_tokens):
+    repo, _ = active
+    recovered = []
+    operated = []
+    monkeypatch.setattr(boundary.GreenfieldCommitJournal, "recover_pending_journals",
+                        staticmethod(lambda **kwargs: recovered.append(True)))
+    monkeypatch.setattr(boundary.greenfield_repository_lock, "greenfield_repository_lock",
+                        lambda *args, **kwargs: pytest.fail("invalid abandonment cannot acquire the lock"))
+    with pytest.raises(continuation.CompassLogContinuationError):
+        boundary.run_with_greenfield_managed_mutation_boundary(
+            repo_root=repo,
+            command_tokens=["compass", "log", "--repo-root", str(repo), *recovery_tokens],
+            operation=lambda descriptor: operated.append(True) or 0,
+        )
+    assert recovered == []
+    assert operated == []
+
+
+def test_abandonment_boundary_rejects_wrong_repo_before_operation(active):
+    repo, _ = active
+    operated = []
+    with pytest.raises(continuation.CompassLogContinuationError, match="differs from its lease"):
+        boundary.run_with_greenfield_managed_mutation_boundary(
+            repo_root=repo,
+            command_tokens=["compass", "log", "--repo-root", str(repo.parent),
+                            "--abandon-restored", "1" * 64, "--receipt-hash", "2" * 64],
+            operation=lambda descriptor: operated.append(True) or 0,
+        )
+    assert operated == []
+
+
+def test_abandonment_boundary_never_publishes_an_induced_managed_delta(active, monkeypatch):
+    repo, _ = active
+    active_before = publication.active_generation_identity(repo)
+    published = []
+    monkeypatch.setattr(boundary.greenfield_generation_store, "materialize_immutable_greenfield_generation",
+                        lambda **kwargs: published.append(True) or pytest.fail("abandonment cannot materialize"))
+    tokens = ["compass", "log", "--repo-root", str(repo), "--abandon-restored", "1" * 64,
+              "--receipt-hash", "2" * 64]
+
+    def mutate(descriptor):
+        _write(repo / "odylith/radar/source/keep.md", b"synthetic forbidden delta\n")
+        return 0
+
+    with pytest.raises(continuation.CompassLogContinuationError, match="no successor was published"):
+        boundary.run_with_greenfield_managed_mutation_boundary(
+            repo_root=repo, command_tokens=tokens, operation=mutate,
+        )
+    assert publication.active_generation_identity(repo) == active_before
+    assert published == []

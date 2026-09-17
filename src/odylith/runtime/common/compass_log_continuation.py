@@ -18,14 +18,16 @@ import sys
 from typing import Any
 
 import odylith
-from odylith.install.fs import atomic_write_text, fsync_directory, fsync_file
+from odylith.install.fs import atomic_write_bytes, atomic_write_text, fsync_directory, fsync_file
 from odylith.install.runtime import runtime_verification_path
 from odylith.runtime.common import agent_runtime_contract, generated_refresh_guard
 from odylith.runtime.domain_intelligence import greenfield_generation_state as publication
 from odylith.runtime.domain_intelligence import greenfield_generation_store as generations
 from odylith.runtime.domain_intelligence import greenfield_repository_lock as leases
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set as write_sets
+from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
 from odylith.runtime.governance import owned_surface_refresh, sync_generated_outputs
+from odylith.runtime.governance import restore_published_files as restorations
 from odylith.runtime.surfaces import compass_dashboard_frontend_contract, source_bundle_mirror
 from odylith.runtime.surfaces.compass_refresh_runtime import REFRESH_STATE_SCHEMA_VERSION
 
@@ -35,6 +37,9 @@ STREAM_PATH = agent_runtime_contract.AGENT_STREAM_PATH
 _REQUEST_PATH = "odylith/compass/runtime/refresh-state.v1.json"
 _VERSION = "odylith.compass-log-continuation.v1"
 _PHASES = {"prepared", "appended", "rendering", "failed", "rendered", "sealed"}
+_ABANDONMENT_VERSION = "odylith.compass-log-abandonment.v1"
+_ABANDONMENTS = ".odylith/runtime/greenfield/compass-log-abandonments"
+_ABANDONMENT_FILES = {"original-receipt.json", "abandonment.json"}
 
 
 class CompassLogContinuationError(generations.GreenfieldWorkingGenerationDriftError):
@@ -46,10 +51,6 @@ def _refuse(reason: str) -> CompassLogContinuationError:
         "RECOVERY_REQUIRED: Compass log completion refused: " + reason
         + "; no append was replayed. Preserve the existing event and recovery evidence."
     )
-
-
-def completion_requested(tokens: Sequence[str]) -> bool:
-    return tuple(tokens[:2]) == ("compass", "log") and "--complete" in tokens[2:]
 
 
 def completion_repo_argument(argv: Sequence[str]) -> str:
@@ -69,6 +70,25 @@ def completion_repo_argument(argv: Sequence[str]) -> str:
     if "--complete" not in seen:
         raise ValueError("--complete is required")
     return root
+
+
+def abandonment_arguments(argv: Sequence[str]) -> tuple[str, str, str]:
+    """Accept only the two reviewed hashes and repository for abandonment."""
+    remaining = list(argv)
+    seen: dict[str, str] = {}
+    while remaining:
+        option = remaining.pop(0)
+        if option not in {"--repo-root", "--abandon-restored", "--receipt-hash"} or option in seen:
+            raise ValueError(
+                "--abandon-restored permits one --repo-root, one restoration review hash, "
+                "and one original receipt hash"
+            )
+        if not remaining or remaining[0].startswith("--"):
+            raise ValueError(f"{option} requires a value")
+        seen[option] = remaining.pop(0)
+    if set(seen) != {"--repo-root", "--abandon-restored", "--receipt-hash"}:
+        raise ValueError("--abandon-restored requires --repo-root and --receipt-hash")
+    return seen["--repo-root"], seen["--abandon-restored"], seen["--receipt-hash"]
 
 
 def _safe_path(root: Path, token: str) -> Path:
@@ -117,9 +137,13 @@ def _runtime_identity(root: Path) -> dict[str, Any]:
     }
 
 
-def _anchors(root: Path) -> dict[str, Any]:
+def _repository_anchor(root: Path) -> list[Any]:
     identity = root.stat()
-    return {"repository": [str(root), identity.st_dev, identity.st_ino], "runtime": _runtime_identity(root)}
+    return [str(root), identity.st_dev, identity.st_ino]
+
+
+def _anchors(root: Path) -> dict[str, Any]:
+    return {"repository": _repository_anchor(root), "runtime": _runtime_identity(root)}
 
 
 def _quiescent_request(root: Path) -> dict[str, Any] | None:
@@ -191,12 +215,12 @@ def _save(root: Path, receipt: Mapping[str, Any]) -> None:
     atomic_write_text(_safe_path(root, RECEIPT_PATH), json.dumps(receipt, sort_keys=True) + "\n")
 
 
-def _load(root: Path) -> dict[str, Any]:
+def _decode_receipt(raw: bytes) -> dict[str, Any]:
     try:
-        raw = _safe_path(root, RECEIPT_PATH).read_text()
-        value = json.loads(raw)
+        text = raw.decode("utf-8")
+        value = json.loads(text)
         if (not isinstance(value, dict) or value.get("version") != _VERSION
-                or value.get("phase") not in _PHASES or raw != json.dumps(value, sort_keys=True) + "\n"
+                or value.get("phase") not in _PHASES or text != json.dumps(value, sort_keys=True) + "\n"
                 or set(value) != {"version", "phase", "anchors", "publication", "event", "before_stream",
                                  "after_stream", "authored", "working", "successor"}):
             raise ValueError("invalid receipt")
@@ -226,8 +250,16 @@ def _load(root: Path) -> dict[str, Any]:
         elif value["successor"] is not None:
             raise ValueError("premature successor")
         return value
-    except (OSError, ValueError, TypeError, KeyError) as exc:
+    except (UnicodeDecodeError, ValueError, TypeError, KeyError) as exc:
         raise _refuse("the original admitted log receipt is unavailable or invalid") from exc
+
+
+def _load(root: Path) -> dict[str, Any]:
+    try:
+        raw = _safe_path(root, RECEIPT_PATH).read_bytes()
+    except OSError as exc:
+        raise _refuse("the original admitted log receipt is unavailable or invalid") from exc
+    return _decode_receipt(raw)
 
 
 def _require_lease(root: Path, descriptor: int | None) -> None:
@@ -238,6 +270,194 @@ def _require_lease(root: Path, descriptor: int | None) -> None:
             pass
     except (OSError, leases.GreenfieldRepositoryLockError) as exc:
         raise _refuse("the admitted repository lease is unavailable") from exc
+
+
+def _abandonment_archive(root: Path, receipt_hash: str) -> Path:
+    try:
+        restorations._digest(receipt_hash)
+        path = restorations._safe_path(root, root / _ABANDONMENTS / receipt_hash)
+    except (OSError, ValueError) as exc:
+        raise _refuse("the requested original receipt hash or archive path is unsafe") from exc
+    if path.exists() and not path.is_dir():
+        raise _refuse("the abandonment archive is not a directory")
+    return path
+
+
+def _archived_file(root: Path, path: Path, expected: bytes, *, create: bool) -> None:
+    try:
+        safe = restorations._safe_path(root, path, regular=path.exists())
+        if safe.exists():
+            if safe.read_bytes() != expected:
+                raise ValueError("archive bytes differ")
+            return
+        if not create:
+            raise ValueError("archive file is missing")
+        atomic_write_bytes(safe, expected, mode=0o600)
+        if restorations._safe_path(root, safe, regular=True).read_bytes() != expected:
+            raise ValueError("archive readback differs")
+    except (OSError, ValueError) as exc:
+        raise _refuse("the content-addressed abandonment archive is unsafe or differs") from exc
+
+
+def _abandonment_witness(
+    *, receipt: Mapping[str, Any], receipt_hash: str, restoration_review_hash: str,
+) -> dict[str, Any]:
+    return {
+        "version": _ABANDONMENT_VERSION,
+        "state": "abandoned",
+        "receipt_sha256": receipt_hash,
+        "restoration_review_hash": restoration_review_hash,
+        "repository": receipt["anchors"]["repository"],
+        "publication": receipt["publication"],
+        "stream": {
+            "path": STREAM_PATH,
+            "before": receipt["before_stream"],
+            "unpublished_append": receipt["after_stream"],
+            "event_sha256": hashlib.sha256(receipt["event"].encode("utf-8")).hexdigest(),
+        },
+    }
+
+
+def _require_closed_stream_restoration(
+    *, root: Path, receipt: Mapping[str, Any], restoration_review_hash: str,
+) -> None:
+    try:
+        restorations._digest(restoration_review_hash)
+        plan = restorations._read_plan(root, restoration_review_hash)
+        restoration_receipt = restorations._receipt(root, restoration_review_hash)
+        if not restorations._has_marker(root, restoration_receipt, restoration_review_hash, "admitted"):
+            raise ValueError("restoration was never admitted")
+        if not restorations._has_marker(root, restoration_receipt, restoration_review_hash, "closed"):
+            raise ValueError("restoration is not CLOSED")
+        if restorations._check_working(root, plan, allow_post=True):
+            raise ValueError("restoration target is not at its sealed published state")
+    except (OSError, RuntimeError, ValueError, KeyError, TypeError) as exc:
+        raise _refuse("the reviewed stream restoration is unavailable, unsafe, or not CLOSED") from exc
+
+    if plan["publication"] != receipt["publication"]:
+        raise _refuse("the restoration and original log admission use different publications")
+    rows = plan["targets"]
+    if len(rows) != 1 or rows[0]["path"] != STREAM_PATH:
+        raise _refuse("the restoration did not target only the canonical Compass stream")
+    row = rows[0]
+    before = receipt["before_stream"]
+    if before is None:
+        raise _refuse("the existing restoration owner cannot restore an absent published stream")
+    try:
+        current_data = restorations._decode_state(row["current"])
+        published_data = restorations._decode_state(row["published"])
+    except (ValueError, TypeError, KeyError) as exc:
+        raise _refuse("the restoration stream preimages are invalid") from exc
+    event = receipt["event"].encode("utf-8")
+    if ({"sha256": row["current"]["sha256"], "size": len(current_data), "mode": row["current"]["mode"]}
+            != receipt["after_stream"] or current_data != published_data + event):
+        raise _refuse("the preserved restoration preimage is not the exact unpublished append")
+    if ({"sha256": row["published"]["sha256"], "size": len(published_data),
+         "mode": row["published"]["mode"]} != before):
+        raise _refuse("the restoration replacement is not the original immutable stream")
+    expected_before_restore = write_sets.greenfield_managed_fingerprints_with_file_states(
+        root, file_states={STREAM_PATH: {
+            "sha256": receipt["after_stream"]["sha256"], "mode": receipt["after_stream"]["mode"],
+        }},
+    )
+    if plan["before_fingerprints"] != expected_before_restore:
+        raise _refuse("the restoration admission included unrelated managed changes")
+
+
+def _require_abandonment_state(
+    *, root: Path, receipt: Mapping[str, Any], restoration_review_hash: str, repository_lock_fd: int | None,
+) -> None:
+    _require_lease(root, repository_lock_fd)
+    GreenfieldCommitJournal.require_settled_journals(repo_root=root)
+    _quiescent_request(root)
+    if receipt["phase"] != "prepared" or receipt["successor"] is not None:
+        raise _refuse("only an unpublished prepared Compass append can be abandoned")
+    if receipt["anchors"]["repository"] != _repository_anchor(root):
+        raise _refuse("the original repository identity changed")
+    if publication.active_generation_identity(root) != receipt["publication"]:
+        raise _refuse("the original published generation changed")
+    pinned = generations.pin_greenfield_generation(
+        repo_root=root, write_set_hash=receipt["publication"]["write_set_hash"],
+    )
+    if pinned.manifest_sha256 != receipt["publication"]["generation_manifest_sha256"]:
+        raise _refuse("the original immutable generation binding changed")
+    if (_file_state(pinned.repository_root / STREAM_PATH) != receipt["before_stream"]
+            or _working_state(pinned.repository_root, pinned.repository_root)["authored"] != receipt["authored"]):
+        raise _refuse("the original immutable generation differs from log admission")
+    _require_closed_stream_restoration(
+        root=root, receipt=receipt, restoration_review_hash=restoration_review_hash,
+    )
+    fingerprints = write_sets.greenfield_managed_fingerprints(root)
+    if (fingerprints != pinned.manifest["after_fingerprints"] or fingerprints != receipt["working"]
+            or _working_state(root, pinned.repository_root)["authored"] != receipt["authored"]):
+        raise _refuse("the restored live managed tree differs from the unchanged published generation")
+
+
+def abandon_restored(
+    *, repo_root: Path, restoration_review_hash: str, receipt_hash: str,
+    repository_lock_fd: int | None,
+) -> dict[str, str]:
+    """Retire one prepared receipt after exact rollback of its unpublished append."""
+    root = Path(repo_root).resolve()
+    archive = _abandonment_archive(root, receipt_hash)
+    try:
+        receipt_path = restorations._safe_path(
+            root, root / RECEIPT_PATH, regular=(root / RECEIPT_PATH).exists(),
+        )
+    except (OSError, ValueError) as exc:
+        raise _refuse("the original Compass continuation receipt path is unsafe") from exc
+    archived_receipt = archive / "original-receipt.json"
+    if receipt_path.exists():
+        raw_receipt = receipt_path.read_bytes()
+        if hashlib.sha256(raw_receipt).hexdigest() != receipt_hash:
+            raise _refuse("a newer or different Compass continuation receipt is present")
+        receipt = _decode_receipt(raw_receipt)
+        create_archive = True
+    else:
+        try:
+            raw_receipt = restorations._safe_path(root, archived_receipt, regular=True).read_bytes()
+        except (OSError, ValueError) as exc:
+            raise _refuse("the archived original receipt is unavailable or unsafe") from exc
+        if hashlib.sha256(raw_receipt).hexdigest() != receipt_hash:
+            raise _refuse("the archived original receipt differs from the requested hash")
+        receipt = _decode_receipt(raw_receipt)
+        create_archive = False
+    _require_abandonment_state(
+        root=root, receipt=receipt, restoration_review_hash=restoration_review_hash,
+        repository_lock_fd=repository_lock_fd,
+    )
+    witness = restorations._canonical(_abandonment_witness(
+        receipt=receipt, receipt_hash=receipt_hash, restoration_review_hash=restoration_review_hash,
+    ))
+    if create_archive:
+        try:
+            restorations._mkdir_durable(root, archive)
+        except (OSError, ValueError) as exc:
+            raise _refuse("the abandonment archive cannot be created safely") from exc
+    if not archive.exists():
+        raise _refuse("the content-addressed abandonment archive is missing")
+    try:
+        entries = {entry.name for entry in archive.iterdir()}
+    except OSError as exc:
+        raise _refuse("the abandonment archive cannot be inspected") from exc
+    if entries - _ABANDONMENT_FILES:
+        raise _refuse("the abandonment archive contains unrecognized evidence")
+    _archived_file(root, archived_receipt, raw_receipt, create=create_archive)
+    witness_path = archive / "abandonment.json"
+    _archived_file(root, witness_path, witness, create=create_archive)
+    fsync_file(archived_receipt)
+    fsync_file(witness_path)
+    fsync_directory(archive)
+    fsync_directory(archive.parent)
+    if not receipt_path.exists():
+        return {"status": "already_abandoned", "receipt_sha256": receipt_hash,
+                "restoration_review_hash": restoration_review_hash, "archive": str(archive)}
+    if receipt_path.read_bytes() != raw_receipt:
+        raise _refuse("the original receipt changed before retirement")
+    receipt_path.unlink()
+    fsync_directory(receipt_path.parent)
+    return {"status": "abandoned", "receipt_sha256": receipt_hash,
+            "restoration_review_hash": restoration_review_hash, "archive": str(archive)}
 
 
 @dataclass
@@ -392,6 +612,9 @@ def prepare_append(*, repo_root: Path, event: bytes, repository_lock_fd: int) ->
                "after_stream": {"sha256": hashlib.sha256(before + event).hexdigest(), "size": len(before + event),
                                 "mode": before_state["mode"] if before_state else 0o600},
                "authored": working["authored"], "working": working["fingerprints"], "successor": None}
+    receipt_hash = hashlib.sha256((json.dumps(receipt, sort_keys=True) + "\n").encode("utf-8")).hexdigest()
+    if _abandonment_archive(root, receipt_hash).exists():
+        raise _refuse("this exact prepared receipt identity was already abandoned")
     _save(root, receipt)
     return CompassLogContinuation(root, receipt, pinned, repository_lock_fd)
 

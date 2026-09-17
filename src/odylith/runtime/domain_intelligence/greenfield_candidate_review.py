@@ -6,7 +6,7 @@ authorities. It may admit or deny, never repair or replace the candidate.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
 import hashlib
 import json
@@ -18,7 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v1"
+CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v2"
 _SOURCE_FIELDS = frozenset((
     "status", "facts", "events", "components", "terminal", "source_precedence",
     "consistency", "ambiguities",
@@ -69,12 +69,46 @@ _ROLE_DEFINITIONS = {
 }
 
 
-def candidate_review_payload(evidence_text: str, candidate: Mapping[str, Any]) -> dict[str, Any]:
+def candidate_review_payload(
+    evidence_text: str,
+    candidate: Mapping[str, Any],
+    *,
+    source_spans: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
     """Partition authority without dropping or reinterpreting a candidate value."""
     if set(candidate) != _SOURCE_FIELDS | _PROPOSED_FIELDS:
         raise ValueError("Greenfield candidate has unclassified or missing authority fields")
+    if not isinstance(source_spans, Sequence) or isinstance(source_spans, (str, bytes, bytearray)) or not source_spans:
+        raise ValueError("Greenfield candidate review requires validated source spans")
+    evidence_bytes = evidence_text.encode("utf-8")
+    resolved_source_custody: list[dict[str, Any]] = []
+    for span in source_spans:
+        if not isinstance(span, Mapping):
+            raise ValueError("Greenfield candidate review received an invalid source span")
+        field, row, quote = span.get("section_key"), span.get("row_index"), span.get("text")
+        start, end = span.get("source_start_byte"), span.get("source_end_byte")
+        if (
+            not isinstance(field, str) or not field.strip()
+            or type(row) is not int or row < 1
+            or not isinstance(quote, str) or not quote
+            or type(start) is not int or type(end) is not int
+            or not 0 <= start < end <= len(evidence_bytes)
+            or evidence_bytes[start:end] != quote.encode("utf-8")
+        ):
+            raise ValueError("Greenfield candidate review source span does not match exact source bytes")
+        try:
+            context_before = evidence_bytes[:start].decode("utf-8")[-64:]
+            context_after = evidence_bytes[end:].decode("utf-8")[:64]
+        except UnicodeDecodeError as exc:
+            raise ValueError("Greenfield candidate review source span splits UTF-8 source bytes") from exc
+        resolved_source_custody.append({
+            "field": field, "row": row, "quote": quote,
+            "source_start_byte": start, "source_end_byte": end,
+            "context_before": context_before, "context_after": context_after,
+        })
     return {
         "source": evidence_text,
+        "resolved_source_custody": resolved_source_custody,
         "role_definitions": deepcopy(_ROLE_DEFINITIONS),
         "candidate": {
             "accepted_source": {key: deepcopy(candidate[key]) for key in sorted(_SOURCE_FIELDS)},
@@ -89,16 +123,17 @@ def _encoded(value: Any) -> bytes:
 
 def review_greenfield_candidate(
     *, evidence_text: str, candidate: Mapping[str, Any], profile_id: str,
+    source_spans: Sequence[Mapping[str, Any]],
     provider_factory: Callable[[], odylith_reasoning.ReasoningProvider | None] | None,
     deadline: float, clock: Callable[[], float], observation: dict[str, Any],
 ) -> dict[str, Any]:
     """Use at most one review call and only the shared deadline's remaining time."""
     profile = get_greenfield_model_profile(profile_id)
     started = clock()
-    review_deadline = min(deadline, started + profile.review_timeout_seconds)
+    review_deadline = deadline
     if review_deadline - started < 1.0:
         raise RuntimeError("Greenfield review has no remaining model time")
-    payload = candidate_review_payload(evidence_text, candidate)
+    payload = candidate_review_payload(evidence_text, candidate, source_spans=source_spans)
     frozen_payload = _encoded(payload)
     if provider_factory is None or (provider := provider_factory()) is None:
         raise RuntimeError("Greenfield candidate review is unavailable")

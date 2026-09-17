@@ -132,7 +132,7 @@ def _approved_model_authoring(
         model_profile={
             **receipt["model_profile"], "model": profile.review_model,
             "reasoning_effort": profile.review_reasoning_effort,
-            "effective_timeout_seconds": profile.review_timeout_seconds,
+            "effective_timeout_seconds": profile.model_timeout_seconds - (elapsed_seconds - 1.0),
         },
     )
     return receipt
