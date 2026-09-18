@@ -2,6 +2,19 @@ Status: In progress
 
 ## Current installed shipping gate (2026-09-18)
 
+The bounded sequential source/design/full-review allocation is also rejected as
+configured. Its Astra-medium source call returns null at the fixed 30-second
+stage deadline (30.014 seconds total, one call), before any designer or reviewer.
+Ten structural controls and independent preflight pass; frozen inputs/publication
+remain unchanged. No semantic result, source-quality improvement, full package or
+general impossibility is established. Stop without the second control, retry,
+cap growth or profile sweep. Production code, schemas, two-call roles and public
+90/120/150 stay unchanged. Source completeness and false admission remain the
+actual product blockers. The checkpoint is pushed through 898cd7ef3, including
+correction of accidental helper tracking without deleting the local helper or
+changing publication bytes. Evidence:
+/Users/freedom/.codex/odylith-source-design-split.MglxOF/RESULT.md.
+
 Reject the human-only participation-witness experiment. With coherent instructions,
 the separate-recipient source fails in 49.292 seconds with two calls: the author
 omits the explicit workforce board, and independent source-first review confirms
