@@ -1,6 +1,29 @@
 Status: In progress
 
-## Current installed shipping gate (2026-09-17)
+## Current installed shipping gate (2026-09-18)
+
+Reject the human-only participation-witness experiment. With coherent instructions,
+the separate-recipient source fails in 49.292 seconds with two calls: the author
+omits the explicit workforce board, and independent source-first review confirms
+the product reviewer's rejection. Five actions, original performers and mentor
+exclusion survive, but support for selected roles does not prove complete discovery.
+The off-path-role control remains unrun; production source, schemas, model roles
+and deadlines are unchanged. Before another comparison, inspect source-coverage
+ownership and prior failed repair/reviewer decisions rather than adding citation
+fields, role enums or lexical exceptions. The repository is available again after
+external-volume interruption; all 1,633 frozen runtime/test/release inputs match.
+Evidence: /Users/freedom/.codex/odylith-participation-coherent.V3mlq9/RESULT.md.
+
+The first human-only participation-witness diagnostic passes independent semantic
+review in 51.814 seconds with two calls, preserving five actions and the board
+recipient without inventing mentor participation. Fifteen structural controls
+pass. This is not a package or an adopted production mechanism. Stop the remaining
+two controls because the experimental schema conflicts with the unchanged general
+citation-format instruction. Preserve that request/result; correct the instruction
+in a new frozen comparison and run the still-unrun separate-recipient and off-path
+role controls without repeating the first source. Production profiles, two-call
+limit and public90/120/150 remain fixed. Evidence:
+/Users/freedom/.codex/odylith-participation-witness.yPuZSG/RESULT.md.
 
 Frozen regression for the two-owner split-anchor replacement passes all 1,823
 maintained Greenfield tests with no failures/errors/skips. This is an unreleased
