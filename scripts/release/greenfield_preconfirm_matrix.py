@@ -43,6 +43,7 @@ from greenfield_matrix_leakage import with_platform_leakage_issues as _with_plat
 from greenfield_matrix_case_file import load_case_file  # noqa: E402
 from greenfield_matrix_case_file import ungrounded_required_terms  # noqa: E402
 from greenfield_matrix_clarification import clarification_contract_issues, clarification_quality_verdict, run_expected_clarification  # noqa: E402
+from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
 from greenfield_matrix_write_audit import begin_installed_write_audit  # noqa: E402
 from greenfield_matrix_corpus_provenance import GreenfieldReleaseAudit  # noqa: E402
 from greenfield_matrix_corpus_provenance import discovery_corpus_summary  # noqa: E402
@@ -73,6 +74,7 @@ from greenfield_model_profiles import model_profile_evidence  # noqa: E402
 from greenfield_model_profiles import profile_counts  # noqa: E402
 from greenfield_model_profiles import UNAVAILABLE_PROVIDER_PROFILE  # noqa: E402
 from greenfield_model_profile_proof import model_profile_release_proof  # noqa: E402
+from greenfield_model_profile_proof import authored_model_result_binding_issues  # noqa: E402
 from greenfield_model_profile_proof import sealed_model_profile_observation  # noqa: E402
 from greenfield_model_profile_proof import unavailable_provider_proof_issues  # noqa: E402
 from greenfield_onboarding_quality_scorecard import build_onboarding_quality_scorecard  # noqa: E402
@@ -1098,6 +1100,7 @@ def _run_case(
     payload = _parse_json_object(create.stdout)
     manifest = _as_mapping(payload.get("commit_manifest"))
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
+    stage_observation = _retained_model_stage_observation(retained_case)
     profile_evidence = model_profile_evidence(
         profile,
         env,
@@ -1105,7 +1108,13 @@ def _run_case(
             proposal=_as_mapping(getattr(package, "proposal", None)),
             create_payload=payload,
         ),
-        stage_observation=_retained_model_stage_observation(retained_case),
+        stage_observation=stage_observation,
+    )
+    model_result_issues = authored_model_result_binding_issues(
+        stage_observation=stage_observation, create_payload=payload,
+        expected_source=prepare_model_authoring_evidence(
+            prompt=case.prompt, edit_evidence=str(case.confirmed_intent_markdown or ""),
+        ).evidence_source,
     )
     counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
     surface_issues = rendered_surface_health_issues(repo_root=repo_root)
@@ -1166,6 +1175,7 @@ def _run_case(
             *decision_rail_issues,
             *navigation_issues,
             *source_custody_issues,
+            *model_result_issues,
             *(str(issue) for issue in profile_evidence.get("issues", ())),
         ),
     )
@@ -1288,6 +1298,7 @@ def _run_expected_clarification_case(
         write_audit_error=audit_evidence.error,
     )
     payload = execution.payload
+    stage_observation = _retained_model_stage_observation(retained_case)
     issues = list(clarification_contract_issues(
         execution,
         expected_fields=(
@@ -1299,6 +1310,10 @@ def _run_expected_clarification_case(
             getattr(case, "expected_clarification_question", "") or ""
         ).strip(),
         expected_model_profile_id=model_profile_id_for_repair_tier(repair_tier),
+        stage_observation=stage_observation,
+        expected_source=prepare_model_authoring_evidence(
+            prompt=case.prompt, edit_evidence=str(case.confirmed_intent_markdown or ""),
+        ).evidence_source,
     ))
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
     counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
@@ -1307,7 +1322,7 @@ def _run_expected_clarification_case(
         profile_id,
         env,
         observed=sealed_model_profile_observation(create_payload=payload),
-        stage_observation=_retained_model_stage_observation(retained_case),
+        stage_observation=stage_observation,
     )
     issues.extend(str(issue) for issue in profile_evidence.get("issues", ()))
     quality = clarification_quality_verdict(issues)

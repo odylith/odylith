@@ -284,9 +284,14 @@ def _print_greenfield_clarification(exc: GreenfieldClarificationRequired, *, as_
         "question": exc.question,
         "required_fields": list(exc.required_fields),
     }
-    model_profile = exc.authoring_receipt.get("model_profile")
-    if isinstance(model_profile, Mapping):
-        clarification["model_profile"] = dict(model_profile)
+    model_profiles = {}
+    for role in ("participant_selection", "remaining_candidate_authoring"):
+        stage = exc.authoring_receipt.get(role)
+        observation = stage.get("model_profile") if isinstance(stage, Mapping) else None
+        if isinstance(observation, Mapping):
+            model_profiles[role] = dict(observation)
+    if len(model_profiles) == 2:
+        clarification["model_profile"] = model_profiles
     consistency = exc.authoring_receipt.get("consistency_assessment")
     if isinstance(consistency, Mapping):
         clarification["consistency_assessment"] = dict(consistency)
@@ -391,6 +396,9 @@ def _compile_prompt_evidence_transaction(
         authoring_receipt=authoring_receipt,
         authoring_deadline=started + profile.model_timeout_seconds,
         clock=now,
+        participant_provider_factory=lambda: _greenfield_authoring_provider(
+            repo_root=repo_root, profile_id=profile_id, request_role="participant_selection",
+        )[0],
         review_provider_factory=lambda: _greenfield_authoring_provider(
             repo_root=repo_root, profile_id=profile_id, request_role="candidate_review",
         )[0],
@@ -487,15 +495,19 @@ def _stage_pending_transaction_with_deadline(
 
 
 def _greenfield_authoring_provider(
-    *, repo_root: Path, profile_id: str, request_role: str = "initial_authoring",
+    *, repo_root: Path, profile_id: str, request_role: str = "remaining_candidate_authoring",
 ) -> tuple[Any, str, str]:
-    """Resolve one pinned author or reviewer without a lexical fallback."""
+    """Resolve one pinned role without a lexical fallback or alternate pipeline."""
 
     profile = get_greenfield_model_profile(profile_id)
-    if request_role not in {"initial_authoring", "candidate_review"}:
+    if request_role == "participant_selection":
+        model, effort = profile.participant_model, profile.participant_reasoning_effort
+    elif request_role == "remaining_candidate_authoring":
+        model, effort = profile.model, profile.reasoning_effort
+    elif request_role == "candidate_review":
+        model, effort = profile.review_model, profile.review_reasoning_effort
+    else:
         raise ValueError("Unsupported Greenfield model request role")
-    model = profile.model if request_role == "initial_authoring" else profile.review_model
-    effort = profile.reasoning_effort if request_role == "initial_authoring" else profile.review_reasoning_effort
     configured = odylith_reasoning.reasoning_config_from_env(repo_root=repo_root)
     config = replace(
         configured,

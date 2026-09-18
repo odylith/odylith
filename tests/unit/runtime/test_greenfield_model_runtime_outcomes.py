@@ -1,5 +1,6 @@
 """Public runtime failures remain distinct from rejected product meaning."""
 
+from copy import deepcopy
 import json
 from types import SimpleNamespace
 
@@ -7,7 +8,10 @@ import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_proposals_cli as cli
 from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
-from tests.unit.runtime.greenfield_model_authoring_fixtures import StructuredAuthoringProvider
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    ParticipantSelectionProvider,
+    StructuredAuthoringProvider,
+)
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
 
@@ -44,28 +48,50 @@ def _snapshot(root):
     }
 
 
+def _remaining_candidate_response(response):
+    remaining = deepcopy(response)
+    remaining["result"]["facts"].pop("human_actors")
+    return remaining
+
+
 def _run(tmp_path, monkeypatch, capsys, *, role, failure, command, output_format):
     activate_greenfield_baseline_fixture(tmp_path)
     before = _snapshot(tmp_path)
     clock = SimpleNamespace(value=0.0)
     monkeypatch.setattr(cli, "time", SimpleNamespace(perf_counter=lambda: clock.value))
-    author = FailureProvider(_response(_source()), failure if role == "author" else "", clock)
+    complete = _response(_source())
+    participant = FailureProvider(
+        ParticipantSelectionProvider(complete).response,
+        failure if role == "participant" else "",
+        clock,
+    )
+    author = FailureProvider(
+        _remaining_candidate_response(complete),
+        failure if role == "author" else "",
+        clock,
+    )
     reviewer = FailureProvider({"admissible": True, "issues": []}, failure if role == "reviewer" else "", clock)
     if failure == "malformed":
-        (author if role == "author" else reviewer).response = None
+        {"participant": participant, "author": author, "reviewer": reviewer}[role].response = None
     if failure == "denied":
         reviewer.response = {"admissible": False, "issues": [{"path": "facts", "reason": "Unsupported meaning"}]}
-    providers = [author, reviewer]
+    providers = {
+        "author": author,
+        "participant": participant,
+        "reviewer": reviewer,
+    }
+    setup_order = ("author", "participant", "reviewer")
     setup_roles = []
 
     def resolve(*_args, **_kwargs):
-        setup_roles.append(len(setup_roles))
-        if len(setup_roles) == (1 if role == "author" else 2):
+        setup_role = setup_order[len(setup_roles)]
+        setup_roles.append(setup_role)
+        if setup_role == role:
             if failure == "absent":
                 return None
             if failure == "setup_timeout":
                 raise TimeoutError("PRIVATE_DIAGNOSTIC /private/provider-key")
-        return providers[len(setup_roles) - 1]
+        return providers[setup_role]
 
     monkeypatch.setattr(cli.odylith_reasoning, "provider_from_config", resolve)
     code = cli.main([command, "--repo-root", str(tmp_path), "--prompt", _source(), "--format", output_format])
@@ -77,14 +103,22 @@ def _run(tmp_path, monkeypatch, capsys, *, role, failure, command, output_format
     assert "CONFIRM" not in output.out
     assert _snapshot(tmp_path) == before
     no_dispatch = failure in {"absent", "setup_timeout"}
-    assert author.calls == (0 if no_dispatch and role == "author" else 1)
-    assert reviewer.calls == (0 if role == "author" or no_dispatch else 1)
+    expected_calls = {
+        "participant": 0 if no_dispatch else 1,
+        "author": 0 if no_dispatch or role == "participant" else 1,
+        "reviewer": 0 if no_dispatch or role != "reviewer" else 1,
+    }
+    if no_dispatch and role == "reviewer":
+        expected_calls.update(participant=1, author=1)
+    assert participant.calls == expected_calls["participant"]
+    assert author.calls == expected_calls["author"]
+    assert reviewer.calls == expected_calls["reviewer"]
     return output.out
 
 
 @pytest.mark.parametrize("command", ["propose", "compile-transaction"])
 @pytest.mark.parametrize("output_format", ["text", "json"])
-@pytest.mark.parametrize("role", ["author", "reviewer"])
+@pytest.mark.parametrize("role", ["participant", "author", "reviewer"])
 @pytest.mark.parametrize("failure", ["timeout", "exception_timeout", "late", "unavailable", "absent", "setup_timeout"])
 def test_public_model_runtime_outcome(tmp_path, monkeypatch, capsys, command, output_format, role, failure):
     output = _run(tmp_path, monkeypatch, capsys, role=role, failure=failure, command=command, output_format=output_format)
@@ -99,7 +133,12 @@ def test_public_model_runtime_outcome(tmp_path, monkeypatch, capsys, command, ou
     assert ("unavailable" if failure in {"unavailable", "absent"} else "time window") in output
 
 
-@pytest.mark.parametrize("role,failure", [("author", "malformed"), ("reviewer", "malformed"), ("reviewer", "denied")])
+@pytest.mark.parametrize("role,failure", [
+    ("participant", "malformed"),
+    ("author", "malformed"),
+    ("reviewer", "malformed"),
+    ("reviewer", "denied"),
+])
 def test_semantic_failure_is_not_reported_as_environment(tmp_path, monkeypatch, capsys, role, failure):
     output = _run(tmp_path, monkeypatch, capsys, role=role, failure=failure, command="propose", output_format="json")
     payload = json.loads(output)
@@ -107,7 +146,7 @@ def test_semantic_failure_is_not_reported_as_environment(tmp_path, monkeypatch, 
     assert "outcome" not in payload
 
 
-@pytest.mark.parametrize("role", ["author", "reviewer"])
+@pytest.mark.parametrize("role", ["participant", "author", "reviewer"])
 @pytest.mark.parametrize("failure", ["misleading_timeout", "stale_timeout"])
 def test_diagnostics_and_stale_codes_do_not_classify_candidate_meaning(tmp_path, monkeypatch, capsys, role, failure):
     output = _run(tmp_path, monkeypatch, capsys, role=role, failure=failure, command="propose", output_format="json")

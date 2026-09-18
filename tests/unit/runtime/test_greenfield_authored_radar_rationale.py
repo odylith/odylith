@@ -37,7 +37,7 @@ from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import legacy_backlog_normalization
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
-    StructuredAuthoringProvider,
+    RemainingCandidateProvider,
     authored_response,
 )
 
@@ -95,18 +95,20 @@ def _authored_proposal(
             *non_goals,
         )
     )
+    provider = RemainingCandidateProvider(
+        authored_response(
+            intent,
+            first_path_relations=relations,
+            component_responsibility_owners=["Harbor Desk"],
+        )
+    )
     candidate = materialize_model_authored_intent(
         prompt=prompt,
         repo_root=tmp_path,
-        authoring_provider=StructuredAuthoringProvider(
-            authored_response(
-                intent,
-                first_path_relations=relations,
-                component_responsibility_owners=["Harbor Desk"],
-            )
-        ),
+        authoring_provider=provider,
         authoring_timeout_seconds=84.0,
         authoring_profile_id=RESCUE_PROFILE_ID,
+        participant_provider_factory=provider.participant_provider,
         review_provider_factory=AdmittingReviewProvider,
     )
     proposal = build_authored_greenfield_proposal(

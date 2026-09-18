@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence import (
     greenfield_authored_semantics,
     greenfield_model_direct_evidence_graph,
     greenfield_model_intent_authoring,
+    greenfield_participant_first_authoring,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
     build_authored_greenfield_proposal,
@@ -23,6 +24,8 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GreenfieldModelAuthoringError,
+)
+from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
     author_greenfield_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
@@ -30,10 +33,19 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
+    RemainingCandidateProvider,
     StructuredAuthoringProvider,
     authored_response,
     model_event_rows,
 )
+
+
+def _participant_first_kwargs(response: dict[str, object]) -> dict[str, object]:
+    provider = RemainingCandidateProvider(response)
+    return {
+        "provider": provider,
+        "participant_provider_factory": provider.participant_provider,
+    }
 
 
 def test_model_relation_ownership_is_real_and_regex_free() -> None:
@@ -41,6 +53,7 @@ def test_model_relation_ownership_is_real_and_regex_free() -> None:
         greenfield_authored_semantics,
         greenfield_model_direct_evidence_graph,
         greenfield_model_intent_authoring,
+        greenfield_participant_first_authoring,
     )
     package = "odylith.runtime.domain_intelligence"
     source_root = Path(inspect.getsourcefile(greenfield_authored_semantics) or "").parent
@@ -105,7 +118,7 @@ def test_model_event_contract_rejects_restatement_of_derived_custody() -> None:
                 prompt=prompt,
                 edit_evidence=edit_evidence,
             ),
-            provider=StructuredAuthoringProvider(response),
+            **_participant_first_kwargs(response),
             clock=lambda: 0.0,
             review_provider_factory=AdmittingReviewProvider,
         )
@@ -207,7 +220,7 @@ def test_two_document_path_materializes_exact_source_and_structural_design_custo
         edit_evidence=edit_evidence,
     )
     assert len(evidence.encode("utf-8")) == 4_205
-    provider = StructuredAuthoringProvider(
+    provider = RemainingCandidateProvider(
         _response(intent=intent, segments=segments, relations=relations)
     )
 
@@ -216,6 +229,7 @@ def test_two_document_path_materializes_exact_source_and_structural_design_custo
         edit_evidence=edit_evidence,
         repo_root=tmp_path,
         authoring_provider=provider,
+        participant_provider_factory=provider.participant_provider,
         review_provider_factory=AdmittingReviewProvider,
     )
 
@@ -316,7 +330,7 @@ def test_authoring_rejects_unreferenced_first_path_segment() -> None:
                 prompt=prompt,
                 edit_evidence=edit_evidence,
             ),
-            provider=StructuredAuthoringProvider(response),
+            **_participant_first_kwargs(response),
             clock=lambda: 0.0,
             review_provider_factory=AdmittingReviewProvider,
         )
@@ -330,7 +344,7 @@ def test_authoring_derives_context_custody_without_model_restatement() -> None:
             prompt=prompt,
             edit_evidence=edit_evidence,
         ),
-        provider=StructuredAuthoringProvider(response),
+        **_participant_first_kwargs(response),
         clock=lambda: 0.0,
         review_provider_factory=AdmittingReviewProvider,
     )
@@ -355,7 +369,7 @@ def test_authoring_canonicalizes_a_unique_segment_occurrence() -> None:
             prompt=prompt,
             edit_evidence=edit_evidence,
         ),
-        provider=StructuredAuthoringProvider(response),
+        **_participant_first_kwargs(response),
         clock=lambda: 0.0,
         review_provider_factory=AdmittingReviewProvider,
     )
@@ -380,7 +394,7 @@ def test_authoring_rejects_events_reordered_against_composite_path() -> None:
                 prompt=prompt,
                 edit_evidence=edit_evidence,
             ),
-            provider=StructuredAuthoringProvider(response),
+            **_participant_first_kwargs(response),
             clock=lambda: 0.0,
             review_provider_factory=AdmittingReviewProvider,
         )
@@ -407,7 +421,7 @@ def test_reordered_evidence_preserves_typed_meaning_but_changes_source_coordinat
             prompt=prompt,
             edit_evidence=edit_evidence,
         ),
-        provider=StructuredAuthoringProvider(response),
+        **_participant_first_kwargs(response),
         clock=lambda: 0.0,
         review_provider_factory=AdmittingReviewProvider,
     )
@@ -416,7 +430,7 @@ def test_reordered_evidence_preserves_typed_meaning_but_changes_source_coordinat
             prompt=reordered_prompt,
             edit_evidence=reordered_edit,
         ),
-        provider=StructuredAuthoringProvider(copy.deepcopy(response)),
+        **_participant_first_kwargs(copy.deepcopy(response)),
         clock=lambda: 0.0,
         review_provider_factory=AdmittingReviewProvider,
     )

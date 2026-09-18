@@ -14,7 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
-    StructuredAuthoringProvider,
+    RemainingCandidateProvider,
     authored_response,
 )
 
@@ -36,19 +36,21 @@ def _proposal(
     responsibility_owners: list[str],
 ) -> dict[str, Any]:
     source = _source(intent)
+    provider = RemainingCandidateProvider(
+        authored_response(
+            intent,
+            evidence_text=source,
+            first_path_relations=relations,
+            component_responsibility_owners=responsibility_owners,
+        )
+    )
     candidate = materialize_model_authored_intent(
         prompt=source,
         repo_root=tmp_path,
-        authoring_provider=StructuredAuthoringProvider(
-            authored_response(
-                intent,
-                evidence_text=source,
-                first_path_relations=relations,
-                component_responsibility_owners=responsibility_owners,
-            )
-        ),
+        authoring_provider=provider,
         authoring_timeout_seconds=54,
         authoring_profile_id=STANDARD_PROFILE_ID,
+        participant_provider_factory=provider.participant_provider,
         review_provider_factory=AdmittingReviewProvider,
     )
     return greenfield_proposals.build_greenfield_proposal(

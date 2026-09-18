@@ -38,10 +38,11 @@ from tests.unit.runtime.greenfield_proposal_fixtures import (
 )
 
 
-@pytest.mark.parametrize("call_count", [1, 2])
+@pytest.mark.parametrize("call_count", [2, 3])
 def test_authoring_receipt_preserves_observed_count_without_authenticating_it(call_count) -> None:
     profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
-    review = _approved_model_authoring(STANDARD_PROFILE_ID, elapsed_seconds=42.0)["candidate_review"]
+    approved = _approved_model_authoring(STANDARD_PROFILE_ID, elapsed_seconds=42.0)
+    review = approved["candidate_review"]
     authored = GreenfieldModelAuthoredIntent(
         intent={}, first_path_relations=(), first_path_context_relations=(),
         component_responsibility_relations=(), atomic_claims=(),
@@ -57,8 +58,10 @@ def test_authoring_receipt_preserves_observed_count_without_authenticating_it(ca
         elapsed_seconds=42.0,
         consistency_status="consistent",
         source_spans=(),
+        effective_model_window_seconds=profile.model_timeout_seconds,
+        participant_selection=approved["participant_selection"],
+        remaining_candidate_authoring=approved["remaining_candidate_authoring"],
         semantic_model_call_count=call_count,
-        initial_authoring_elapsed_seconds=41.0,
         candidate_review=review,
     )
 
@@ -67,9 +70,13 @@ def test_authoring_receipt_preserves_observed_count_without_authenticating_it(ca
     assert receipt["candidate_review"] == review
     assert receipt["candidate_review"] is not review
     assert receipt["candidate_review"]["model_profile"] is not review["model_profile"]
-    assert receipt["initial_authoring_elapsed_seconds"] == 41.0
-    manifest = approved_authored_quality_manifest_fixture(model_authoring=receipt)
-    if call_count != 2:
+    assert receipt["participant_selection"] == approved["participant_selection"]
+    assert receipt["remaining_candidate_authoring"] == approved["remaining_candidate_authoring"]
+    transaction_receipt = {
+        key: value for key, value in receipt.items() if key != "consistency_assessment"
+    }
+    manifest = approved_authored_quality_manifest_fixture(model_authoring=transaction_receipt)
+    if call_count != 3:
         with pytest.raises(ValueError, match="quality manifest is not approved"):
             greenfield_create_transaction.require_product_create_transaction_quality_approved(manifest)
     else:
@@ -79,6 +86,7 @@ def test_authoring_receipt_preserves_observed_count_without_authenticating_it(ca
 @pytest.mark.parametrize("call_count", [1, 2])
 def test_clarification_receipt_preserves_the_observed_call_count(call_count) -> None:
     profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
+    approved = _approved_model_authoring(STANDARD_PROFILE_ID, elapsed_seconds=12.0)
     clarification = GreenfieldAuthoringClarification(
         required_fields=("first_path",),
         elapsed_seconds=12.0,
@@ -92,6 +100,11 @@ def test_clarification_receipt_preserves_the_observed_call_count(call_count) -> 
         effective_timeout_seconds=profile.model_timeout_seconds,
         consistency_status="material_ambiguity",
         consistency_source_spans=(),
+        effective_model_window_seconds=profile.model_timeout_seconds,
+        participant_selection=approved["participant_selection"],
+        remaining_candidate_authoring=(
+            approved["remaining_candidate_authoring"] if call_count == 2 else {}
+        ),
         semantic_model_call_count=call_count,
     )
 
@@ -109,7 +122,7 @@ def _approved_model_authoring(
     profile_id: str,
     *,
     elapsed_seconds: float,
-    semantic_model_call_count: int = 2,
+    semantic_model_call_count: int = 3,
     intent_authority: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     profile = get_greenfield_model_profile(profile_id)
@@ -117,20 +130,35 @@ def _approved_model_authoring(
     receipt.update(
         semantic_model_call_count=semantic_model_call_count,
         tier=profile.repair_tier, elapsed_seconds=elapsed_seconds,
-        initial_authoring_elapsed_seconds=elapsed_seconds - 1.0,
-        model_profile={
+        effective_model_window_seconds=profile.model_timeout_seconds,
+    )
+    receipt["participant_selection"] = {
+        "elapsed_seconds": 1.0,
+        "model_profile": {
+            "profile_id": profile.profile_id,
+            "provider": profile.provider,
+            "model": profile.participant_model,
+            "reasoning_effort": profile.participant_reasoning_effort,
+            "effective_timeout_seconds": profile.model_timeout_seconds,
+            "authoring_tier": profile.repair_tier,
+        },
+    }
+    receipt["remaining_candidate_authoring"] = {
+        "elapsed_seconds": elapsed_seconds - 2.0,
+        "model_profile": {
             "profile_id": profile.profile_id,
             "provider": profile.provider,
             "model": profile.model,
             "reasoning_effort": profile.reasoning_effort,
-            "effective_timeout_seconds": profile.model_timeout_seconds,
+            "effective_timeout_seconds": profile.model_timeout_seconds - 1.0,
             "authoring_tier": profile.repair_tier,
         },
-    )
+    }
     receipt["candidate_review"].update(
         elapsed_seconds=1.0,
         model_profile={
-            **receipt["model_profile"], "model": profile.review_model,
+            **receipt["remaining_candidate_authoring"]["model_profile"],
+            "model": profile.review_model,
             "reasoning_effort": profile.review_reasoning_effort,
             "effective_timeout_seconds": profile.model_timeout_seconds - (elapsed_seconds - 1.0),
         },
@@ -138,19 +166,19 @@ def _approved_model_authoring(
     return receipt
 
 
-def test_quality_approval_accepts_two_model_calls_and_one_candidate_review() -> None:
+def test_quality_approval_accepts_two_author_calls_and_one_candidate_review() -> None:
     greenfield_create_transaction.require_product_create_transaction_quality_approved(
         approved_authored_quality_manifest_fixture(
             model_authoring=_approved_model_authoring(
                 STANDARD_PROFILE_ID,
                 elapsed_seconds=12.0,
-                semantic_model_call_count=2,
+                semantic_model_call_count=3,
             )
         )
     )
 
 
-@pytest.mark.parametrize("call_count", [1, 2])
+@pytest.mark.parametrize("call_count", [1, 2, 3])
 def test_call_count_claim_without_review_never_approves_a_transaction(call_count: int) -> None:
     receipt = _approved_model_authoring(
         STANDARD_PROFILE_ID, elapsed_seconds=12.0, semantic_model_call_count=call_count,
@@ -194,10 +222,10 @@ def test_native_receipt_must_bind_both_source_and_product_facts(
         reviewed = persisted["quality_manifest"]["model_authoring"]["candidate_review"]
         assert reviewed["source_sha256"] == authority["markdown_source_sha256"]
         assert reviewed["product_facts_sha256"] == authority["product_facts_sha256"]
-        assert persisted["quality_manifest"]["model_authoring"]["semantic_model_call_count"] == 2
+        assert persisted["quality_manifest"]["model_authoring"]["semantic_model_call_count"] == 3
 
 
-@pytest.mark.parametrize("invalid_count", (True, False, 0, 1, 3, 2.0, "2"))
+@pytest.mark.parametrize("invalid_count", (True, False, 0, 1, 2, 4, 3.0, "3"))
 def test_quality_approval_rejects_invalid_semantic_model_call_counts(
     invalid_count: object,
 ) -> None:

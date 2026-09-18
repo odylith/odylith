@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import replace
+import hashlib
+import json
 import sys
 from types import SimpleNamespace
 
@@ -26,7 +28,9 @@ from greenfield_model_profiles import model_stage_observation_issues
 from greenfield_model_profiles import profile_coverage
 from greenfield_model_profiles import profile_counts
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
+from greenfield_model_profile_proof import authored_model_result_binding_issues
 from greenfield_model_profile_proof import model_profile_release_proof
+from greenfield_model_profile_proof import sealed_model_profile_observation
 from tests.greenfield_model_profile_test_support import (
     production_stage_observation as _stage_observation,
     sealed_profile_observation as _sealed_observation,
@@ -125,6 +129,8 @@ def test_profile_registry_pins_preselected_standard_rescue_and_deep_requests() -
     standard = get_greenfield_model_profile(STANDARD_PROFILE_ID)
     assert standard.model == "gpt-5.6-terra"
     assert standard.reasoning_effort == "low"
+    assert standard.participant_model == "gpt-6-astra"
+    assert standard.participant_reasoning_effort == "medium"
     assert standard.lower_capability is True
     rescue = get_greenfield_model_profile(RESCUE_PROFILE_ID)
     assert rescue.model == "gpt-5.6-terra"
@@ -198,22 +204,32 @@ def test_profile_evidence_requires_sealed_observation_parity() -> None:
     assert evidence["status"] == "passed"
     assert evidence["profile_id"] == STANDARD_PROFILE_ID
     assert evidence["observed"] == observed
-    assert evidence["sealed_request_role"] == "initial_authoring"
-    assert evidence["lower_capability_scope"] == "initial_authoring"
+    assert evidence["sealed_request_roles"] == [
+        "participant_selection", "remaining_candidate_authoring",
+    ]
+    assert evidence["lower_capability_scope"] == "remaining_candidate_authoring"
     assert "expected_source_review" not in evidence
     assert evidence["stage_observation"] == stage_observation
     assert evidence["stage_observation_summary"]["response_kind"] == "authored"
-    assert evidence["maximum_semantic_model_calls"] == 2
-    assert evidence["stage_observation_summary"]["semantic_model_call_count"] == 2
+    assert evidence["maximum_semantic_model_calls"] == 3
+    assert evidence["stage_observation_summary"]["semantic_model_call_count"] == 3
     assert set(evidence["stage_observation_summary"]["request_roles"]) == {
-        "initial_authoring", "candidate_review",
+        "participant_selection", "remaining_candidate_authoring", "candidate_review",
     }
-    require_greenfield_model_profile_observation(**observed)
+    for role, role_observation in observed.items():
+        require_greenfield_model_profile_observation(
+            **role_observation, request_role=role,
+        )
 
     mismatched = model_profile_evidence(
         STANDARD_PROFILE_ID,
         env,
-        observed={**observed, "model": "gpt-5.4"},
+        observed={
+            **observed,
+            "remaining_candidate_authoring": {
+                **observed["remaining_candidate_authoring"], "model": "gpt-5.4",
+            },
+        },
         stage_observation=stage_observation,
     )
     assert mismatched["status"] == "failed"
@@ -231,7 +247,118 @@ def test_profile_evidence_requires_sealed_observation_parity() -> None:
     ]
 
 
-def test_profile_evidence_accepts_one_call_clarification_without_review() -> None:
+def test_sealed_observation_reads_both_exact_envelope_roles_without_flat_migration() -> None:
+    observed = _sealed_observation(STANDARD_PROFILE_ID)
+    proposal = {
+        "product_intent_authority": {
+            "operating_envelope": {"model_contract": {"observed": observed}}
+        }
+    }
+
+    assert sealed_model_profile_observation(proposal=proposal) == observed
+
+    flat = observed["remaining_candidate_authoring"]
+    extracted = sealed_model_profile_observation(
+        proposal={
+            "product_intent_authority": {
+                "operating_envelope": {"model_contract": {"observed": flat}}
+            }
+        }
+    )
+    assert extracted != observed
+    assert model_profile_evidence(
+        STANDARD_PROFILE_ID,
+        model_profile_environment(STANDARD_PROFILE_ID, {}),
+        observed=extracted,
+        stage_observation=_stage_observation(STANDARD_PROFILE_ID),
+    )["status"] == "failed"
+
+
+def test_sealed_observation_preserves_unsupported_fields_for_closed_evidence_check() -> None:
+    observed = _sealed_observation(STANDARD_PROFILE_ID)
+    forged = deepcopy(observed)
+    forged["participant_selection"]["extra"] = "must not be normalized away"
+    forged["legacy_role"] = deepcopy(forged["remaining_candidate_authoring"])
+    proposal = {
+        "product_intent_authority": {
+            "operating_envelope": {"model_contract": {"observed": forged}}
+        }
+    }
+
+    extracted = sealed_model_profile_observation(proposal=proposal)
+    evidence = model_profile_evidence(
+        STANDARD_PROFILE_ID,
+        model_profile_environment(STANDARD_PROFILE_ID, {}),
+        observed=extracted,
+        stage_observation=_stage_observation(STANDARD_PROFILE_ID),
+    )
+
+    assert extracted == forged
+    assert evidence["status"] == "failed"
+    assert "sealed model observations have missing or unsupported roles" in evidence["issues"]
+    assert (
+        "sealed participant_selection observation has missing or unsupported fields"
+        in evidence["issues"]
+    )
+
+
+def test_authored_private_result_binds_to_actual_admitted_consumer_receipt() -> None:
+    stage = _stage_observation(STANDARD_PROFILE_ID)
+    source = stage["request"]["evidence"]
+    create_payload = _create_payload_for_stage(stage, source=source)
+
+    assert authored_model_result_binding_issues(
+        stage_observation=stage,
+        create_payload=create_payload,
+        expected_source=source,
+    ) == ()
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected_issue"),
+    (
+        ("expected_source", "retained private author request does not match the expected source"),
+        ("private_candidate", "retained private reviewed candidate does not match the sealed receipt"),
+        ("missing_private_review", "retained private candidate review is missing"),
+        ("missing_receipt", "sealed candidate-review receipt is missing"),
+        ("denied_receipt", "sealed candidate-review receipt is not admitted"),
+        ("source_hash", "sealed candidate-review source hash does not match the expected source"),
+        ("candidate_hash", "sealed candidate-review candidate hash is invalid"),
+    ),
+)
+def test_authored_private_result_binding_fails_closed(mutation, expected_issue) -> None:
+    stage = _stage_observation(STANDARD_PROFILE_ID)
+    source = stage["request"]["evidence"]
+    create_payload = _create_payload_for_stage(stage, source=source)
+    expected_source = source
+    receipt = create_payload["commit_manifest"]["model_authoring"]["candidate_review"]
+    if mutation == "expected_source":
+        expected_source = source + " changed"
+    elif mutation == "private_candidate":
+        stage["candidate_review"]["request"]["candidate"]["extra"] = "split proof"
+    elif mutation == "missing_private_review":
+        stage.pop("candidate_review")
+    elif mutation == "missing_receipt":
+        create_payload["commit_manifest"]["model_authoring"].pop("candidate_review")
+    elif mutation == "denied_receipt":
+        receipt["status"] = "denied"
+    elif mutation == "source_hash":
+        receipt["source_sha256"] = "0" * 64
+    elif mutation == "candidate_hash":
+        receipt["candidate_sha256"] = "missing"
+    else:
+        raise AssertionError(f"unknown mutation: {mutation}")
+
+    issues = authored_model_result_binding_issues(
+        stage_observation=stage,
+        create_payload=create_payload,
+        expected_source=expected_source,
+    )
+
+    assert expected_issue in issues
+
+
+def test_profile_evidence_accepts_two_call_clarification_without_review() -> None:
     env = model_profile_environment(RESCUE_PROFILE_ID, {})
     observed = _sealed_observation(RESCUE_PROFILE_ID)
     stage = _stage_observation(RESCUE_PROFILE_ID, response_kind="clarification_required")
@@ -244,9 +371,9 @@ def test_profile_evidence_accepts_one_call_clarification_without_review() -> Non
     )
 
     assert evidence["status"] == "passed"
-    assert evidence["stage_observation_summary"]["semantic_model_call_count"] == 1
+    assert evidence["stage_observation_summary"]["semantic_model_call_count"] == 2
     assert set(evidence["stage_observation_summary"]["request_roles"]) == {
-        "initial_authoring"
+        "participant_selection", "remaining_candidate_authoring",
     }
 
 
@@ -267,8 +394,8 @@ def test_profile_evidence_rejects_obsolete_two_call_review_demoted_clarification
     )
 
     assert evidence["status"] == "failed"
-    assert "clarification response must record exactly one semantic call" in evidence["issues"]
-    assert "complete-author response must not record an intermediate review path" in evidence["issues"]
+    assert "retained model authoring observation version is invalid" in evidence["issues"]
+    assert "participant-first response must not record a legacy author path" in evidence["issues"]
 
 
 def test_profile_evidence_fails_closed_without_retained_stage_observation() -> None:
@@ -292,13 +419,13 @@ def test_profile_evidence_fails_closed_without_retained_stage_observation() -> N
         ("response_version", "retained model response version is invalid"),
         ("response_kind", "retained model response kind is invalid"),
         ("bool_count", "retained semantic model call count is invalid"),
-        ("one_call", "authored response must record exactly two semantic calls"),
-        ("forged_initial_role", "retained initial_authoring request role is invalid"),
-        ("forged_initial_model", "observed model does not match pinned Greenfield model profile"),
-        ("initial_failure", "retained initial_authoring provider metadata records a failure"),
-        ("initial_cap", "retained authoring timeout does not match the sealed model window"),
-        ("initial_elapsed", "retained initial authoring elapsed time exceeds its timeout"),
-        ("missing_initial", "retained initial authoring observation is missing"),
+        ("two_calls", "authored response must record exactly three semantic calls"),
+        ("forged_participant_role", "retained participant_selection request role is invalid"),
+        ("forged_participant_model", "observed model does not match pinned Greenfield model profile"),
+        ("participant_failure", "retained participant_selection provider metadata records a failure"),
+        ("participant_cap", "retained participant_selection timeout does not match its sealed observation"),
+        ("participant_elapsed", "retained remaining_candidate_authoring timeout exceeds the remaining model window"),
+        ("missing_participant", "retained participant_selection observation has missing or unsupported fields"),
     ),
 )
 def test_stage_observation_rejects_malformed_forged_roles_and_timing(
@@ -319,12 +446,15 @@ def test_obsolete_review_metadata_is_rejected_even_with_a_one_call_claim(respons
     issues = model_stage_observation_issues(
         RESCUE_PROFILE_ID, observed=_sealed_observation(RESCUE_PROFILE_ID), stage_observation=stage,
     )
-    assert "complete-author response must not record an intermediate review path" in issues
+    assert "participant-first response must not record a legacy author path" in issues
 
 
 @pytest.mark.parametrize(("response_kind", "count"), [
-    ("authored", 0), ("authored", 1), ("authored", 3),
-    ("clarification_required", 0), ("clarification_required", 2), ("clarification_required", 3),
+    ("authored", 0), ("authored", 1), ("authored", 2), ("authored", 4),
+    ("authored", True), ("authored", 3.0),
+    ("clarification_required", 0), ("clarification_required", 1),
+    ("clarification_required", 3), ("clarification_required", True),
+    ("clarification_required", 2.0),
 ])
 def test_outcomes_require_their_exact_role_count(response_kind, count):
     stage = _stage_observation(RESCUE_PROFILE_ID, response_kind=response_kind)
@@ -332,9 +462,9 @@ def test_outcomes_require_their_exact_role_count(response_kind, count):
     issues = model_stage_observation_issues(
         RESCUE_PROFILE_ID, observed=_sealed_observation(RESCUE_PROFILE_ID), stage_observation=stage,
     )
-    expected = ("authored response must record exactly two semantic calls"
+    expected = ("authored response must record exactly three semantic calls"
                 if response_kind == "authored"
-                else "clarification response must record exactly one semantic call")
+                else "clarification response must record exactly two semantic calls")
     assert expected in issues
 
 
@@ -353,7 +483,7 @@ def test_current_production_observations_qualify_without_mutation(profile_id, re
     (("candidate_review",), None),
     (("candidate_review", "dispatched"), False),
     (("candidate_review", "dispatched"), 1),
-    (("candidate_review", "request_role"), "initial_authoring"),
+    (("candidate_review", "request_role"), "remaining_candidate_authoring"),
     (("candidate_review", "profile_id"), STANDARD_PROFILE_ID),
     (("candidate_review", "model"), "gpt-5.6-terra"),
     (("candidate_review", "reasoning_effort"), "low"),
@@ -364,8 +494,13 @@ def test_current_production_observations_qualify_without_mutation(profile_id, re
     (("candidate_review", "provider", "code"), "timeout"),
     (("candidate_review", "provider", "detail"), "unreported failure"),
     (("candidate_review", "provider", "code"), None),
-    (("initial_authoring", "provider", "detail"), "unreported failure"),
-    (("initial_authoring", "provider", "model"), "gpt-5.6-sol"),
+    (("participant_selection", "provider", "detail"), "unreported failure"),
+    (("participant_selection", "provider", "model"), "gpt-5.6-sol"),
+    (("participant_selection", "request", "source"), "Different source"),
+    (("participant_selection", "response", "human_actors", 0, "quote"), "Invented actor"),
+    (("participant_selection", "resolved", 0, "source_start_byte"), 999),
+    (("remaining_candidate_authoring", "request", "frozen_human_actors"), []),
+    (("remaining_candidate_authoring", "response", "result", "facts", "human_actors"), []),
     (("candidate_review", "response"), None),
     (("candidate_review", "response"), {"admissible": 1, "issues": []}),
     (("candidate_review", "response"), {"admissible": False, "issues": [{"path": "facts", "reason": "unsupported"}]}),
@@ -380,14 +515,14 @@ def test_current_production_observations_qualify_without_mutation(profile_id, re
     (("candidate_review", "request", "resolved_source_custody", 0, "context_after"), "Forged context"),
     (("candidate_review", "protocol"), "odylith.greenfield.exact-row-review.experimental.v1"),
     (("candidate_review", "final_candidate"), {}),
-    (("initial_authoring", "unexpected_role"), {}),
+    (("participant_selection", "unexpected_role"), {}),
     (("third_role",), {}),
     (("failure",), {}),
     (("request", "version"), "old"),
     (("request", "evidence"), "Different source"),
     (("request", "evidence"), None),
-    (("response", "result", "facts", "title", "quote"), "Unsupported title"),
-    (("response", "result", "provisional_design"), {}),
+    (("joined_candidate", "result", "facts", "title", "quote"), "Unsupported title"),
+    (("joined_candidate", "result", "provisional_design"), {}),
 ])
 def test_current_review_rejects_missing_failed_stale_or_unbound_observations(path, value):
     stage = _stage_observation(RESCUE_PROFILE_ID)
@@ -402,7 +537,9 @@ def test_current_review_rejects_missing_failed_stale_or_unbound_observations(pat
     assert stage == original
 
 
-@pytest.mark.parametrize("role", ["initial_authoring", "candidate_review"])
+@pytest.mark.parametrize(
+    "role", ["participant_selection", "remaining_candidate_authoring", "candidate_review"]
+)
 @pytest.mark.parametrize("field", ["elapsed_seconds", "timeout_seconds"])
 @pytest.mark.parametrize("value", [None, True, "1.0", 0.0, -1.0, float("nan"), float("inf")])
 def test_every_role_requires_positive_finite_numeric_timing(role, field, value):
@@ -419,7 +556,10 @@ def test_review_cannot_exceed_the_remaining_sealed_window(profile_id, field):
     profile = get_greenfield_model_profile(profile_id)
     for remaining in (2.0, 30.0):
         stage = _stage_observation(profile_id)
-        stage["initial_authoring"]["elapsed_seconds"] = profile.model_timeout_seconds - remaining
+        stage["participant_selection"]["elapsed_seconds"] = (
+            profile.model_timeout_seconds - remaining - 10.0
+        )
+        stage["remaining_candidate_authoring"]["elapsed_seconds"] = 10.0
         stage["candidate_review"]["timeout_seconds"] = remaining
         stage["candidate_review"][field] = remaining + 0.001
         assert model_stage_observation_issues(
@@ -427,23 +567,27 @@ def test_review_cannot_exceed_the_remaining_sealed_window(profile_id, field):
         )
 
 
-def test_review_elapsed_includes_setup_so_it_may_exceed_request_timeout():
+def test_review_elapsed_includes_setup_and_must_fit_request_timeout():
     stage = _stage_observation(STANDARD_PROFILE_ID)
     stage["candidate_review"].update(timeout_seconds=18.0, elapsed_seconds=19.0)
-    assert model_stage_observation_issues(
+    assert "retained candidate review elapsed time exceeds its timeout" in model_stage_observation_issues(
         STANDARD_PROFILE_ID, observed=_sealed_observation(STANDARD_PROFILE_ID), stage_observation=stage,
-    ) == ()
+    )
 
 
-@pytest.mark.parametrize(("field", "value"), [
-    ("profile_id", STANDARD_PROFILE_ID), ("provider", "claude-cli"),
-    ("model", "gpt-5.6-sol"), ("reasoning_effort", "low"),
-    ("authoring_tier", "standard"), ("effective_timeout_seconds", 105.001),
-    ("effective_timeout_seconds", None), ("effective_timeout_seconds", True),
+@pytest.mark.parametrize(("role", "field", "value"), [
+    ("participant_selection", "profile_id", STANDARD_PROFILE_ID),
+    ("participant_selection", "provider", "claude-cli"),
+    ("participant_selection", "model", "gpt-5.6-sol"),
+    ("participant_selection", "reasoning_effort", "low"),
+    ("remaining_candidate_authoring", "authoring_tier", "standard"),
+    ("remaining_candidate_authoring", "effective_timeout_seconds", 165.001),
+    ("remaining_candidate_authoring", "effective_timeout_seconds", None),
+    ("remaining_candidate_authoring", "effective_timeout_seconds", True),
 ])
-def test_stage_checker_independently_rejects_false_sealed_profile(field, value):
+def test_stage_checker_independently_rejects_false_sealed_profile(role, field, value):
     observed = _sealed_observation(RESCUE_PROFILE_ID)
-    observed[field] = value
+    observed[role][field] = value
     assert model_stage_observation_issues(
         RESCUE_PROFILE_ID, observed=observed, stage_observation=_stage_observation(RESCUE_PROFILE_ID),
     )
@@ -454,7 +598,9 @@ def test_review_budget_does_not_tolerate_sub_microsecond_overrun(field):
     stage = _stage_observation(STANDARD_PROFILE_ID)
     stage["candidate_review"][field] = (
         get_greenfield_model_profile(STANDARD_PROFILE_ID).model_timeout_seconds
-        - stage["initial_authoring"]["elapsed_seconds"] + 0.0000001
+        - stage["participant_selection"]["elapsed_seconds"]
+        - stage["remaining_candidate_authoring"]["elapsed_seconds"]
+        + 0.0000001
     )
     assert model_stage_observation_issues(
         STANDARD_PROFILE_ID, observed=_sealed_observation(STANDARD_PROFILE_ID), stage_observation=stage,
@@ -489,7 +635,29 @@ def test_profile_aggregate_rejects_non_numeric_missing_or_expired_consumer_time(
     assert proof["status"] == "failed"
     assert any("operational-timeout proof" in issue for issue in proof["issues"])
     assert proof["profiles"][profile_id]["committed_positive_case_count"] == 0
-    assert proof["profiles"][profile_id]["maximum_semantic_model_calls"] == 2
+    assert proof["profiles"][profile_id]["maximum_semantic_model_calls"] == 3
+
+
+@pytest.mark.parametrize("profile_id", MODEL_PROFILES)
+def test_profile_aggregate_accepts_exact_participant_first_observations(profile_id):
+    stage = _stage_observation(profile_id)
+    result = SimpleNamespace(
+        name="participant-first control", status="passed",
+        quality=SimpleNamespace(passed=True), proposal_seconds=80.0,
+        evidence={
+            "case": {"expectation": "transaction_committed"},
+            "model_profile": model_profile_evidence(
+                profile_id, model_profile_environment(profile_id, {}),
+                observed=_sealed_observation(profile_id), stage_observation=stage,
+            ),
+        },
+    )
+
+    proof = model_profile_release_proof((result,), require_complete=False)
+
+    assert proof["status"] == "passed", proof["issues"]
+    assert proof["profiles"][profile_id]["status"] == "passed"
+    assert proof["profiles"][profile_id]["committed_positive_case_count"] == 1
 
 
 @pytest.mark.parametrize("mutation", ["review", "unsupported_dimension", "unsupported_quote", "empty_source"])
@@ -498,9 +666,11 @@ def test_clarification_remains_source_bound_and_has_no_review(mutation):
     if mutation == "review":
         stage["candidate_review"] = _stage_observation(RESCUE_PROFILE_ID)["candidate_review"]
     elif mutation == "unsupported_dimension":
-        stage["response"]["result"]["clarification"]["material_dimension"] = "writing_style"
+        stage["remaining_candidate_authoring"]["response"]["result"]["clarification"][
+            "material_dimension"
+        ] = "writing_style"
     elif mutation == "unsupported_quote":
-        stage["response"]["result"]["consistency"] = {
+        stage["remaining_candidate_authoring"]["response"]["result"]["consistency"] = {
             "status": "material_contradiction", "evidence_quotes": ["Invented one", "Invented two"],
         }
     else:
@@ -512,34 +682,64 @@ def test_clarification_remains_source_bound_and_has_no_review(mutation):
 
 def _mutated_stage_observation(mutation: str) -> dict[str, object]:
     stage = deepcopy(_stage_observation(RESCUE_PROFILE_ID))
-    initial = stage["initial_authoring"]
-    assert isinstance(initial, dict)
+    participant = stage["participant_selection"]
+    assert isinstance(participant, dict)
     if mutation in {"version", "authoring_version"}:
         stage[mutation] = "old"
     elif mutation == "response_version":
-        stage["response"]["version"] = "old"
+        stage["remaining_candidate_authoring"]["response"]["version"] = "old"
     elif mutation == "response_kind":
-        stage["response"]["result"]["status"] = "invented"
+        stage["remaining_candidate_authoring"]["response"]["result"]["status"] = "invented"
     elif mutation == "bool_count":
         stage["semantic_model_call_count"] = True
-    elif mutation == "one_call":
-        stage["semantic_model_call_count"] = 1
-    elif mutation == "forged_initial_role":
-        initial["request_role"] = "source_review"
-    elif mutation == "forged_initial_model":
-        initial["model"] = "gpt-5.6-sol"
-        initial["provider"]["model"] = "gpt-5.6-sol"
-    elif mutation == "initial_failure":
-        initial["provider"]["code"] = "provider_timeout"
-    elif mutation == "initial_cap":
-        initial["timeout_seconds"] = 60.0
-    elif mutation == "initial_elapsed":
-        initial["elapsed_seconds"] = 165.001
-    elif mutation == "missing_initial":
-        stage.pop("initial_authoring")
+    elif mutation == "two_calls":
+        stage["semantic_model_call_count"] = 2
+    elif mutation == "forged_participant_role":
+        participant["request_role"] = "source_review"
+    elif mutation == "forged_participant_model":
+        participant["model"] = "gpt-5.6-sol"
+        participant["provider"]["model"] = "gpt-5.6-sol"
+    elif mutation == "participant_failure":
+        participant["provider"]["code"] = "provider_timeout"
+    elif mutation == "participant_cap":
+        participant["timeout_seconds"] = 60.0
+    elif mutation == "participant_elapsed":
+        participant["elapsed_seconds"] = 165.001
+    elif mutation == "missing_participant":
+        stage.pop("participant_selection")
     else:
         raise AssertionError(f"unknown mutation: {mutation}")
     return stage
+
+
+def _create_payload_for_stage(stage: dict[str, object], *, source: str) -> dict[str, object]:
+    review = stage["candidate_review"]
+    assert isinstance(review, dict)
+    request = review["request"]
+    assert isinstance(request, dict)
+    candidate = request["candidate"]
+    encoded = json.dumps(
+        candidate,
+        sort_keys=True,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        allow_nan=False,
+    ).encode("utf-8")
+    return {
+        "commit_manifest": {
+            "model_authoring": {
+                "candidate_review": {
+                    "version": "odylith.greenfield.candidate-review.v2",
+                    "status": "admitted",
+                    "source_sha256": hashlib.sha256(source.encode("utf-8")).hexdigest(),
+                    "candidate_sha256": hashlib.sha256(encoded).hexdigest(),
+                    "product_facts_sha256": "2" * 64,
+                    "elapsed_seconds": 1.0,
+                    "model_profile": {},
+                }
+            }
+        }
+    }
 
 
 def _case(

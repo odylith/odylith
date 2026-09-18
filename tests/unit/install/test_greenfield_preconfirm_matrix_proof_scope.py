@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 
+from tests.greenfield_model_profile_test_support import sealed_profile_observation
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS_ROOT = REPO_ROOT / "scripts" / "release"
@@ -117,7 +118,6 @@ def _stage_observation(
 
 def _passing_matrix_result(module, *, manifest_summary: dict[str, object] | None = None) -> object:
     profile_id = module.model_profile_id_for_repair_tier("standard")
-    profile = module.get_greenfield_model_profile(profile_id)
     return module.GreenfieldMatrixResult(
         name="matrix case",
         status="passed",
@@ -138,21 +138,13 @@ def _passing_matrix_result(module, *, manifest_summary: dict[str, object] | None
                 "stage_observation": _stage_observation(profile_id),
                 "status": "passed",
                 "issues": [],
-                "observed": {
-                    "profile_id": profile_id,
-                    "provider": profile.provider,
-                    "model": profile.model,
-                    "reasoning_effort": profile.reasoning_effort,
-                    "effective_timeout_seconds": profile.model_timeout_seconds,
-                    "authoring_tier": profile.repair_tier,
-                },
+                "observed": sealed_profile_observation(profile_id),
             },
         },
     )
 
 
 def _passing_profile_result(module, profile_id: str, proposal_seconds: float) -> object:
-    profile = module.get_greenfield_model_profile(profile_id)
     return replace(
         _passing_matrix_result(module),
         name=profile_id,
@@ -168,14 +160,7 @@ def _passing_profile_result(module, profile_id: str, proposal_seconds: float) ->
                 "stage_observation": _stage_observation(profile_id),
                 "status": "passed",
                 "issues": [],
-                "observed": {
-                    "profile_id": profile_id,
-                    "provider": profile.provider,
-                    "model": profile.model,
-                    "reasoning_effort": profile.reasoning_effort,
-                    "effective_timeout_seconds": profile.model_timeout_seconds,
-                    "authoring_tier": profile.repair_tier,
-                },
+                "observed": sealed_profile_observation(profile_id),
             },
         },
     )
@@ -1219,7 +1204,7 @@ def test_model_profile_release_proof_reports_missing_lower_profile_as_unproven()
     assert proof["lower_capability_scope"] == {
         "status": "unproven",
         "observed_profiles": [],
-        "role": "initial_authoring",
+        "role": "remaining_candidate_authoring",
         "requirement": "installed_committed_positive_and_source_bound_clarification_no_write",
     }
     assert module.model_profile_release_proof(results, require_complete=True)["status"] == "failed"
@@ -1236,9 +1221,9 @@ def test_model_profile_aggregate_rechecks_private_roles_despite_passed_label(mut
     if mutation == "missing":
         stages = {}
     elif mutation == "author_model":
-        stages["initial_authoring"]["provider"]["model"] = "gpt-5.6-sol"
+        stages["remaining_candidate_authoring"]["provider"]["model"] = "gpt-5.6-sol"
     elif mutation == "author_timeout":
-        stages["initial_authoring"]["timeout_seconds"] = 54.0
+        stages["remaining_candidate_authoring"]["timeout_seconds"] = 54.0
     elif mutation == "review_path":
         stages["source_review"] = {}
     else:
@@ -1317,7 +1302,7 @@ def test_model_profile_release_proof_rejects_elapsed_tier_relabeling() -> None:
     result = _passing_profile_result(module, rescue_id, 30.0)
     evidence = dict(result.evidence or {})
     profile_evidence = dict(evidence["model_profile"])
-    profile_evidence["observed"] = {**profile_evidence["observed"], "authoring_tier": "standard"}
+    profile_evidence["observed"]["remaining_candidate_authoring"]["authoring_tier"] = "standard"
     evidence["model_profile"] = profile_evidence
 
     proof = module.model_profile_release_proof(

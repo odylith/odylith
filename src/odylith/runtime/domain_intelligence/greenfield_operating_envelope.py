@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+import math
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
@@ -12,7 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 
-GREENFIELD_OPERATING_ENVELOPE_VERSION = "odylith.greenfield-operating-envelope.v3"
+GREENFIELD_OPERATING_ENVELOPE_VERSION = "odylith.greenfield-operating-envelope.v4"
 GREENFIELD_OPERATING_PROFILE = "single-product-governance-onboarding"
 
 # These are the only source formats accepted by the public authored path. The
@@ -101,6 +102,10 @@ _HOST_CONTRACT = {
 }
 _MODEL_AUTHORITY = "candidate_hypothesis_only"
 _LOWER_CAPABILITY_BEHAVIOR = "clarify_or_fail_safe_without_invention"
+_AUTHORING_OBSERVATION_ROLES = (
+    "participant_selection",
+    "remaining_candidate_authoring",
+)
 
 
 class GreenfieldOperatingEnvelopeError(ValueError):
@@ -160,20 +165,14 @@ def greenfield_operating_envelope_receipt(
     )
     issues.extend(_dimension_issues(dimensions))
 
-    observed_model = _model_authoring_observation(model_authoring)
+    observed_model = _model_authoring_observations(model_authoring)
     if observed_evidence["source_kind"] == "public_evidence":
         if observed_model is None:
             issues.append("missing_model_authoring_observation")
-        elif greenfield_model_profile_observation_issues(
-            profile_id=observed_model["profile_id"],
-            provider=observed_model["provider"],
-            model=observed_model["model"],
-            reasoning_effort=observed_model["reasoning_effort"],
-            effective_timeout_seconds=observed_model["effective_timeout_seconds"],
-        ):
+        elif _model_authoring_observation_issues(observed_model):
             issues.append("model_authoring_observation_mismatch")
-        elif get_greenfield_model_profile(observed_model["profile_id"]).repair_tier != observed_model["authoring_tier"]:
-            issues.append("model_authoring_tier_mismatch")
+    elif model_authoring is not None:
+        issues.append("internal_custody_model_authoring_observation")
 
     supported_profiles = supported_greenfield_model_profile_ids()
     return {
@@ -321,22 +320,13 @@ def require_supported_greenfield_operating_envelope(value: Mapping[str, Any]) ->
         raise ValueError("Greenfield operating envelope model contract is unsupported")
     observed_model = model.get("observed")
     if observed_evidence.get("source_kind") == "public_evidence":
-        normalized_model = _model_authoring_observation(observed_model if isinstance(observed_model, Mapping) else None)
+        normalized_model = _model_authoring_observations(
+            observed_model if isinstance(observed_model, Mapping) else None
+        )
         if normalized_model is None or normalized_model != observed_model:
             raise ValueError("Greenfield operating envelope model observation is malformed")
-        if greenfield_model_profile_observation_issues(
-            profile_id=normalized_model["profile_id"],
-            provider=normalized_model["provider"],
-            model=normalized_model["model"],
-            reasoning_effort=normalized_model["reasoning_effort"],
-            effective_timeout_seconds=normalized_model["effective_timeout_seconds"],
-        ):
+        if _model_authoring_observation_issues(normalized_model):
             raise ValueError("Greenfield operating envelope model observation is unsupported")
-        if (
-            get_greenfield_model_profile(normalized_model["profile_id"]).repair_tier
-            != normalized_model["authoring_tier"]
-        ):
-            raise ValueError("Greenfield operating envelope model tier is unsupported")
     elif observed_model is not None:
         raise ValueError("Greenfield internal custody envelope cannot claim a model observation")
 
@@ -450,7 +440,19 @@ def _evidence_issues(observed: Mapping[str, Any], *, public_only: bool) -> list[
     return issues
 
 
-def _model_authoring_observation(value: Mapping[str, Any] | None) -> dict[str, Any] | None:
+def _model_authoring_observations(value: Mapping[str, Any] | None) -> dict[str, Any] | None:
+    if not isinstance(value, Mapping) or set(value) != set(_AUTHORING_OBSERVATION_ROLES):
+        return None
+    observations = {
+        role: _model_authoring_observation(value.get(role))
+        for role in _AUTHORING_OBSERVATION_ROLES
+    }
+    if any(observation is None for observation in observations.values()):
+        return None
+    return observations
+
+
+def _model_authoring_observation(value: Any) -> dict[str, Any] | None:
     if not isinstance(value, Mapping) or set(value) != {
         "profile_id",
         "provider",
@@ -460,12 +462,16 @@ def _model_authoring_observation(value: Mapping[str, Any] | None) -> dict[str, A
         "authoring_tier",
     }:
         return None
-    try:
-        timeout_seconds = float(value.get("effective_timeout_seconds"))
-    except (TypeError, ValueError):
+    raw_timeout = value.get("effective_timeout_seconds")
+    if type(raw_timeout) not in (int, float):
         return None
+    timeout_seconds = float(raw_timeout)
     tier = str(value.get("authoring_tier") or "").strip()
-    if tier not in {"standard", "rescue", "deep"} or timeout_seconds <= 0.0:
+    if (
+        tier not in {"standard", "rescue", "deep"}
+        or not math.isfinite(timeout_seconds)
+        or timeout_seconds <= 0.0
+    ):
         return None
     return {
         "profile_id": str(value.get("profile_id") or "").strip(),
@@ -475,6 +481,33 @@ def _model_authoring_observation(value: Mapping[str, Any] | None) -> dict[str, A
         "effective_timeout_seconds": timeout_seconds,
         "authoring_tier": tier,
     }
+
+
+def _model_authoring_observation_issues(
+    observations: Mapping[str, Mapping[str, Any]],
+) -> tuple[str, ...]:
+    issues: list[str] = []
+    profile_ids: set[str] = set()
+    tiers: set[str] = set()
+    for role in _AUTHORING_OBSERVATION_ROLES:
+        observation = observations[role]
+        profile_id = observation["profile_id"]
+        profile_ids.add(profile_id)
+        tiers.add(observation["authoring_tier"])
+        issues.extend(greenfield_model_profile_observation_issues(
+            profile_id=profile_id,
+            provider=observation["provider"],
+            model=observation["model"],
+            reasoning_effort=observation["reasoning_effort"],
+            effective_timeout_seconds=observation["effective_timeout_seconds"],
+            authoring_tier=observation["authoring_tier"],
+            request_role=role,
+        ))
+    if len(profile_ids) != 1 or len(tiers) != 1:
+        issues.append("authoring roles do not share one pinned Greenfield model profile")
+    elif get_greenfield_model_profile(next(iter(profile_ids))).repair_tier != next(iter(tiers)):
+        issues.append("authoring tier does not match the pinned Greenfield model profile")
+    return tuple(issues)
 
 
 def _host_contract_receipt() -> dict[str, Any]:

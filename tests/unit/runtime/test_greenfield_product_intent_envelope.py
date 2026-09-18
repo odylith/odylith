@@ -18,6 +18,8 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GreenfieldModelAuthoredIntent,
+)
+from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
     author_greenfield_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
@@ -38,7 +40,8 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
-    StructuredAuthoringProvider,
+    ParticipantSelectionProvider,
+    RemainingCandidateProvider,
     authored_response,
 )
 
@@ -108,16 +111,16 @@ def _source() -> str:
 
 
 def _authored_result(source: str) -> GreenfieldModelAuthoredIntent:
+    response = authored_response(
+        _INTENT,
+        evidence_text=source,
+        first_path_relations=_RELATIONS,
+        component_responsibility_owners=["Berth map"],
+    )
     result = author_greenfield_intent(
         evidence_text=source,
-        provider=StructuredAuthoringProvider(
-            authored_response(
-                _INTENT,
-                evidence_text=source,
-                first_path_relations=_RELATIONS,
-                component_responsibility_owners=["Berth map"],
-            )
-        ),
+        provider=RemainingCandidateProvider(response),
+        participant_provider_factory=lambda: ParticipantSelectionProvider(response),
         model_profile_id=STANDARD_PROFILE_ID,
         clock=lambda: 0.0,
         review_provider_factory=AdmittingReviewProvider,
@@ -156,12 +159,22 @@ def _build_envelope(
         source_path=".odylith/runtime/greenfield/candidate-evidence.md",
         source_format="operator_prompt",
         model_authoring={
-            "profile_id": profile.profile_id,
-            "provider": profile.provider,
-            "model": profile.model,
-            "reasoning_effort": profile.reasoning_effort,
-            "effective_timeout_seconds": profile.model_timeout_seconds,
-            "authoring_tier": profile.repair_tier,
+            "participant_selection": {
+                "profile_id": profile.profile_id,
+                "provider": profile.provider,
+                "model": profile.participant_model,
+                "reasoning_effort": profile.participant_reasoning_effort,
+                "effective_timeout_seconds": profile.model_timeout_seconds,
+                "authoring_tier": profile.repair_tier,
+            },
+            "remaining_candidate_authoring": {
+                "profile_id": profile.profile_id,
+                "provider": profile.provider,
+                "model": profile.model,
+                "reasoning_effort": profile.reasoning_effort,
+                "effective_timeout_seconds": profile.model_timeout_seconds,
+                "authoring_tier": profile.repair_tier,
+            },
         },
         authored_source_spans=result.source_spans,
         authored_atomic_claims=result.atomic_claims,

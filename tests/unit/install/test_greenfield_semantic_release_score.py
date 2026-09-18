@@ -33,6 +33,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     authored_relation_set_sha256,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    RESCUE_PROFILE_ID,
     STANDARD_PROFILE_ID,
     get_greenfield_model_profile,
 )
@@ -400,6 +401,37 @@ def test_release_evidence_fails_closed_on_missing_unknown_or_mismatched_slices(
 
     assert report["passed"] is False
     assert any(expected_issue in issue for issue in report["release_evidence_issues"])
+
+
+@pytest.mark.parametrize("damage", ("missing_role", "extra_role", "discordant_roles"))
+def test_unsealed_clarification_rejects_inexact_authoring_observations(
+    damage: str,
+) -> None:
+    case = _case(f"clarification-{damage}", expectation="clarification_required")
+    result = _clarification_result(case)
+    observed = result.evidence["model_profile"]["observed"]
+    if damage == "missing_role":
+        observed.pop("participant_selection")
+    elif damage == "extra_role":
+        observed["legacy_authoring"] = deepcopy(observed["remaining_candidate_authoring"])
+    else:
+        observed["remaining_candidate_authoring"] = _model_authoring_observations(
+            RESCUE_PROFILE_ID
+        )["remaining_candidate_authoring"]
+
+    report = score_module.evaluate_semantic_release(
+        cases=(case,),
+        annotations={case.case_id: _clarification_annotation()},
+        results=(result,),
+        floors=FLOORS,
+        _allow_not_applicable_metrics=True,
+    )
+
+    assert report["passed"] is False
+    assert any(
+        "has invalid unsealed model-profile observation evidence" in issue
+        for issue in report["release_evidence_issues"]
+    )
 
 
 def test_release_required_slices_fail_closed_on_missing_coverage() -> None:
@@ -1031,30 +1063,37 @@ def _operating_envelope(
         ),
         source_size_bytes=len(evidence.encode("utf-8")),
         source_document_count=2 if edit_evidence else 1,
-        model_authoring={
-            "profile_id": profile.profile_id,
-            "provider": profile.provider,
-            "model": profile.model,
-            "reasoning_effort": profile.reasoning_effort,
-            "effective_timeout_seconds": profile.model_timeout_seconds,
-            "authoring_tier": profile.repair_tier,
-        },
+        model_authoring=_model_authoring_observations(profile.profile_id),
     )
 
 
 def _model_result_evidence(profile_id: str) -> dict[str, object]:
-    profile = get_greenfield_model_profile(profile_id)
     return {
         "profile_id": profile_id,
         "status": "passed",
         "issues": [],
-        "observed": {
-            "profile_id": profile_id,
-            "provider": profile.provider,
+        "observed": _model_authoring_observations(profile_id),
+    }
+
+
+def _model_authoring_observations(profile_id: str) -> dict[str, dict[str, object]]:
+    profile = get_greenfield_model_profile(profile_id)
+    common = {
+        "profile_id": profile.profile_id,
+        "provider": profile.provider,
+        "effective_timeout_seconds": profile.model_timeout_seconds,
+        "authoring_tier": profile.repair_tier,
+    }
+    return {
+        "participant_selection": {
+            **common,
+            "model": profile.participant_model,
+            "reasoning_effort": profile.participant_reasoning_effort,
+        },
+        "remaining_candidate_authoring": {
+            **common,
             "model": profile.model,
             "reasoning_effort": profile.reasoning_effort,
-            "effective_timeout_seconds": profile.model_timeout_seconds,
-            "authoring_tier": profile.repair_tier,
         },
     }
 

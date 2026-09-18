@@ -14,13 +14,18 @@ from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import 
 from odylith.runtime.domain_intelligence.greenfield_authored_proposal import build_authored_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import authored_semantics_mapping
 from odylith.runtime.domain_intelligence.greenfield_candidate_intent_stage import render_candidate_intent_markdown
-from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import author_greenfield_intent
+from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
+    author_greenfield_intent,
+)
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     build_product_intent_envelope,
     product_facts_hash,
     product_facts_payload,
 )
-from tests.unit.runtime.greenfield_model_authoring_fixtures import StructuredAuthoringProvider, AdmittingReviewProvider
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
+    RemainingCandidateProvider,
+)
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
 
@@ -38,9 +43,11 @@ def _authored():
     for row in _DECISIONS:
         response["result"]["facts"][row["applies_to"]] = None
     response["result"]["assumptions"] = copy.deepcopy(_DECISIONS)
+    provider = RemainingCandidateProvider(response)
     authored = author_greenfield_intent(
         evidence_text=source,
-        provider=StructuredAuthoringProvider(response),
+        provider=provider,
+        participant_provider_factory=provider.participant_provider,
         review_provider_factory=AdmittingReviewProvider,
     )
     return source, authored

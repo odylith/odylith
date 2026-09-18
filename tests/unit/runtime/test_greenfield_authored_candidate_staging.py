@@ -17,12 +17,11 @@ from odylith.runtime.domain_intelligence.greenfield_candidate_intent_stage impor
     candidate_intent_stage_paths,
     stage_candidate_intent,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
     author_greenfield_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     RESCUE_PROFILE_ID,
-    get_greenfield_model_profile,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     PRODUCT_FACTS_HASH_KEY,
@@ -31,7 +30,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
-    StructuredAuthoringProvider,
+    RemainingCandidateProvider,
     authored_response,
 )
 
@@ -67,35 +66,37 @@ def _authored_stage_inputs(repo_root: Path) -> tuple[dict[str, object], dict[str
         for row in (value if isinstance(value, list) else [value])
         if str(row)
     ) + "."
+    provider = RemainingCandidateProvider(
+        authored_response(
+            intent,
+            evidence_text=evidence,
+            component_responsibility_owners=["Evidence Ledger"],
+            first_path_relations=[
+                {
+                    "actor_kind": "human",
+                    "actor_fact_quote": actor,
+                    "event_quote": first_event,
+                    "action_verb_quote": "records",
+                    "target_quote": "café evidence AND OR provenance",
+                    "visible_result_quote": "",
+                },
+                {
+                    "actor_kind": "product",
+                    "actor_fact_quote": "Evidence Ledger",
+                    "owner_system_quote": "Evidence Ledger",
+                    "event_quote": visible_event,
+                    "action_verb_quote": "shows",
+                    "target_quote": "the receipt",
+                    "visible_result_quote": visible_event,
+                },
+            ],
+        )
+    )
     result = author_greenfield_intent(
         review_provider_factory=AdmittingReviewProvider,
         evidence_text=evidence,
-        provider=StructuredAuthoringProvider(
-            authored_response(
-                intent,
-                evidence_text=evidence,
-                component_responsibility_owners=["Evidence Ledger"],
-                first_path_relations=[
-                    {
-                        "actor_kind": "human",
-                        "actor_fact_quote": actor,
-                        "event_quote": first_event,
-                        "action_verb_quote": "records",
-                        "target_quote": "café evidence AND OR provenance",
-                        "visible_result_quote": "",
-                    },
-                    {
-                        "actor_kind": "product",
-                        "actor_fact_quote": "Evidence Ledger",
-                        "owner_system_quote": "Evidence Ledger",
-                        "event_quote": visible_event,
-                        "action_verb_quote": "shows",
-                        "target_quote": "the receipt",
-                        "visible_result_quote": visible_event,
-                    },
-                ],
-            )
-        ),
+        provider=provider,
+        participant_provider_factory=provider.participant_provider,
         model_profile_id=RESCUE_PROFILE_ID,
         clock=lambda: 0.0,
     )
@@ -108,7 +109,6 @@ def _authored_stage_inputs(repo_root: Path) -> tuple[dict[str, object], dict[str
             provisional_design=result.provisional_design,
         ),
     }
-    profile = get_greenfield_model_profile(RESCUE_PROFILE_ID)
     paths = candidate_intent_stage_paths(repo_root)
     envelope = build_product_intent_envelope(
         authored_intent,
@@ -116,12 +116,8 @@ def _authored_stage_inputs(repo_root: Path) -> tuple[dict[str, object], dict[str
         source_path=paths.evidence_markdown.relative_to(repo_root),
         source_format="operator_prompt",
         model_authoring={
-            "profile_id": profile.profile_id,
-            "provider": profile.provider,
-            "model": profile.model,
-            "reasoning_effort": profile.reasoning_effort,
-            "effective_timeout_seconds": profile.model_timeout_seconds,
-            "authoring_tier": profile.repair_tier,
+            role: getattr(result, role)["model_profile"]
+            for role in ("participant_selection", "remaining_candidate_authoring")
         },
         authored_source_spans=result.source_spans,
         authored_atomic_claims=result.atomic_claims,

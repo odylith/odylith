@@ -8,7 +8,7 @@ import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_model_intent_authoring
 from odylith.runtime.domain_intelligence import greenfield_proposals_cli
-from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
     author_greenfield_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
@@ -41,12 +41,22 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 def _model_observation(profile_id: str = STANDARD_PROFILE_ID) -> dict[str, object]:
     profile = get_greenfield_model_profile(profile_id)
     return {
-        "profile_id": profile.profile_id,
-        "provider": profile.provider,
-        "model": profile.model,
-        "reasoning_effort": profile.reasoning_effort,
-        "effective_timeout_seconds": profile.model_timeout_seconds,
-        "authoring_tier": "standard",
+        "participant_selection": {
+            "profile_id": profile.profile_id,
+            "provider": profile.provider,
+            "model": profile.participant_model,
+            "reasoning_effort": profile.participant_reasoning_effort,
+            "effective_timeout_seconds": profile.model_timeout_seconds,
+            "authoring_tier": profile.repair_tier,
+        },
+        "remaining_candidate_authoring": {
+            "profile_id": profile.profile_id,
+            "provider": profile.provider,
+            "model": profile.model,
+            "reasoning_effort": profile.reasoning_effort,
+            "effective_timeout_seconds": profile.model_timeout_seconds,
+            "authoring_tier": profile.repair_tier,
+        },
     }
 
 
@@ -217,6 +227,7 @@ def test_max_plus_one_model_input_is_rejected_before_provider_call() -> None:
         author_greenfield_intent(
             evidence_text="x" * (MAX_EVIDENCE_BYTES + 1),
             provider=provider,
+            participant_provider_factory=lambda: provider,
             source_format="operator_prompt",
             source_document_count=1,
             source_language="en",
@@ -232,6 +243,7 @@ def test_timeout_never_invents_a_missing_model_profile_before_the_call() -> None
         author_greenfield_intent(
             evidence_text="Create one bounded product.",
             provider=provider,
+            participant_provider_factory=lambda: provider,
             model_profile_id="",
             timeout_seconds=84.0,
         )
@@ -361,6 +373,7 @@ def test_non_english_contract_is_rejected_without_lexical_detection_or_provider_
         author_greenfield_intent(
             evidence_text="A structurally valid project description.",
             provider=provider,
+            participant_provider_factory=lambda: provider,
             source_format="operator_prompt",
             source_document_count=1,
             source_language="fr",
@@ -455,7 +468,7 @@ def test_authoring_schema_and_operating_receipt_use_the_same_caps() -> None:
         (("filesystem_contract", "locking"), "best_effort"),
         (("host_contract", "other_hosts"), "unrestricted"),
         (("model_contract", "lower_capability_behavior"), "invent_and_continue"),
-        (("model_contract", "observed", "authoring_tier"), "deep"),
+        (("model_contract", "observed", "participant_selection", "authoring_tier"), "deep"),
     ),
 )
 def test_validator_rejects_mutated_supported_contract_sections(
@@ -478,3 +491,34 @@ def test_validator_rejects_mutated_supported_contract_sections(
 
     with pytest.raises(ValueError):
         require_supported_greenfield_operating_envelope(mutated)
+
+
+def test_public_envelope_rejects_partial_or_cross_profile_role_observations() -> None:
+    partial = _model_observation()
+    partial.pop("participant_selection")
+    partial_receipt = greenfield_operating_envelope_receipt(
+        facts={}, source_format="operator_prompt", source_size_bytes=120,
+        model_authoring=partial,
+    )
+    assert partial_receipt["status"] == "unsupported"
+    assert partial_receipt["issues"] == ["missing_model_authoring_observation"]
+
+    crossed = _model_observation()
+    crossed["remaining_candidate_authoring"] = _model_observation(
+        RESCUE_PROFILE_ID
+    )["remaining_candidate_authoring"]
+    crossed_receipt = greenfield_operating_envelope_receipt(
+        facts={}, source_format="operator_prompt", source_size_bytes=120,
+        model_authoring=crossed,
+    )
+    assert crossed_receipt["status"] == "unsupported"
+    assert crossed_receipt["issues"] == ["model_authoring_observation_mismatch"]
+
+
+def test_internal_custody_cannot_claim_model_observations() -> None:
+    receipt = greenfield_operating_envelope_receipt(
+        facts={}, source_format="compiled_proposal_intent", source_size_bytes=120,
+        model_authoring=_model_observation(),
+    )
+    assert receipt["status"] == "unsupported"
+    assert receipt["issues"] == ["internal_custody_model_authoring_observation"]

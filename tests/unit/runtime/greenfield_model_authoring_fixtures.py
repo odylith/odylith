@@ -37,6 +37,51 @@ class StructuredAuthoringProvider:
         self.calls += 1
         return copy.deepcopy(dict(self.response)) if self.response is not None else None
 
+    def participant_provider(self) -> ParticipantSelectionProvider:
+        """Return a separate selector for participants explicitly declared by this fixture."""
+
+        return ParticipantSelectionProvider(self.response)
+
+
+class RemainingCandidateProvider(StructuredAuthoringProvider):
+    """Project a complete canonical fixture onto the remaining-author response schema."""
+
+    def generate_structured(self, *, request: object) -> Mapping[str, Any] | None:
+        assert getattr(request, "schema_name", "") == "greenfield_remaining_candidate_authoring"
+        response = super().generate_structured(request=request)
+        if isinstance(response, dict):
+            result = response.get("result")
+            if isinstance(result, dict) and isinstance(result.get("facts"), dict):
+                result["facts"].pop("human_actors", None)
+        return response
+
+
+class ParticipantSelectionProvider(StructuredAuthoringProvider):
+    """Convert declared fixture citations, never discover roles from the source prose."""
+
+    def __init__(self, candidate: Mapping[str, Any] | None = None) -> None:
+        result = candidate.get("result") if isinstance(candidate, Mapping) else None
+        facts = result.get("facts") if isinstance(result, Mapping) else None
+        citations = facts.get("human_actors", []) if isinstance(facts, Mapping) else []
+        if isinstance(citations, list):
+            selectors = [
+                {
+                    "quote": citation["quote"],
+                    "prefix": "",
+                    "anchor_occurrence": citation["occurrence"],
+                }
+                if isinstance(citation, Mapping) and set(citation) == {"quote", "occurrence"}
+                else copy.deepcopy(citation)
+                for citation in citations
+            ]
+        else:
+            selectors = copy.deepcopy(citations)
+        super().__init__({"human_actors": selectors})
+
+    def generate_structured(self, *, request: object) -> Mapping[str, Any] | None:
+        assert getattr(request, "schema_name", "") == "greenfield_participant_selection"
+        return super().generate_structured(request=request)
+
 
 class AdmittingReviewProvider(StructuredAuthoringProvider):
     """Independent transport double for structurally valid positive wiring cases."""

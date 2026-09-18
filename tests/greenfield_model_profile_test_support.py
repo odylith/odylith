@@ -5,24 +5,43 @@ import tempfile
 
 import pytest
 
-from odylith.runtime.domain_intelligence import greenfield_model_intent_authoring as author
+from odylith.runtime.domain_intelligence import greenfield_participant_first_authoring as author
+from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+    GREENFIELD_INTENT_AUTHORING_VERSION,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import get_greenfield_model_profile
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    StructuredAuthoringProvider, authored_response, clarification_response,
+    AdmittingReviewProvider,
+    ParticipantSelectionProvider,
+    RemainingCandidateProvider,
+    authored_response,
+    clarification_response,
 )
 
 
 def sealed_profile_observation(profile_id, *, shared_timeout=None):
     profile = get_greenfield_model_profile(profile_id)
+    timeout = profile.model_timeout_seconds if shared_timeout is None else shared_timeout
     return {
-        "profile_id": profile_id, "provider": profile.provider, "model": profile.model,
-        "reasoning_effort": profile.reasoning_effort, "authoring_tier": profile.repair_tier,
-        "effective_timeout_seconds": profile.model_timeout_seconds if shared_timeout is None else shared_timeout,
+        "participant_selection": {
+            "profile_id": profile_id, "provider": profile.provider,
+            "model": profile.participant_model,
+            "reasoning_effort": profile.participant_reasoning_effort,
+            "authoring_tier": profile.repair_tier,
+            "effective_timeout_seconds": timeout,
+        },
+        "remaining_candidate_authoring": {
+            "profile_id": profile_id, "provider": profile.provider, "model": profile.model,
+            "reasoning_effort": profile.reasoning_effort,
+            "authoring_tier": profile.repair_tier,
+            "effective_timeout_seconds": timeout - 5.0,
+        },
     }
 
 
 def production_stage_observation(
     profile_id, *, response_kind="authored", shared_timeout=None, reviewed=False,
+    evidence_text=None,
 ):
     """Capture the real author/review proof FD; historical negatives stay explicit."""
     if reviewed:
@@ -37,11 +56,14 @@ def production_stage_observation(
         "customer": "Operators",
         "opportunity": "A receipt is available for review",
         "product_view": "Operators can see their receipt",
+        "human_actors": ["Operators"],
         "internal_systems": ["Receipt view"],
         "component_responsibilities": ["Display the receipt"],
     }
     source = ". ".join(row for value in intent.values()
                        for row in (value if isinstance(value, list) else [value])) + "."
+    if evidence_text is not None:
+        source = evidence_text
     response = (authored_response(intent, evidence_text=source,
                                   component_responsibility_owners=["Receipt view"], first_path_relations=[{
         "order": 1, "actor_kind": "product",
@@ -53,23 +75,36 @@ def production_stage_observation(
     ))
     now = [0.0]
 
-    class TimedProvider(StructuredAuthoringProvider):
+    class TimedRemainingProvider(RemainingCandidateProvider):
         def generate_structured(self, *, request):
-            now[0] += 10.0 if request.schema_name == "greenfield_intent_authoring" else 1.0
+            now[0] += 10.0
             return super().generate_structured(request=request)
 
-    provider = TimedProvider(response)
-    reviewer = TimedProvider({"admissible": True, "issues": []})
+    class TimedParticipantProvider(ParticipantSelectionProvider):
+        def generate_structured(self, *, request):
+            now[0] += 5.0
+            return super().generate_structured(request=request)
+
+    class TimedReviewProvider(AdmittingReviewProvider):
+        def generate_structured(self, *, request):
+            now[0] += 1.0
+            return super().generate_structured(request=request)
+
+    provider = TimedRemainingProvider(response)
+    participant = TimedParticipantProvider(response)
+    reviewer = TimedReviewProvider()
     with tempfile.TemporaryFile() as output, pytest.MonkeyPatch.context() as patch:
         patch.setenv(author.GREENFIELD_MODEL_PROOF_FD_ENV, str(output.fileno()))
         result = author.author_greenfield_intent(
             evidence_text=source, provider=provider, model_profile_id=profile_id,
             timeout_seconds=shared_timeout, clock=lambda: now[0],
+            participant_provider_factory=lambda: participant,
             review_provider_factory=lambda: reviewer,
         )
         output.seek(0)
         stage = json.load(output)
     assert provider.calls == 1
+    assert participant.calls == 1
     assert reviewer.calls == (1 if response_kind == "authored" else 0)
     assert stage["semantic_model_call_count"] == result.semantic_model_call_count
     return stage
@@ -78,7 +113,7 @@ def production_stage_observation(
 def _historical_review_observation(profile_id, response_kind):
     """Retain the old matrix's demoted-clarification fixture solely for refusal."""
     profile = get_greenfield_model_profile(profile_id)
-    version = author.GREENFIELD_INTENT_AUTHORING_VERSION
+    version = GREENFIELD_INTENT_AUTHORING_VERSION
     result = (clarification_response(
         question="", material_dimension="first_path", evidence_quotes=[],
     )["result"] if response_kind == "clarification_required" else {"status": "authored"})

@@ -13,6 +13,8 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GreenfieldModelAuthoredIntent,
     GreenfieldModelAuthoringError,
+)
+from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
     author_greenfield_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
@@ -20,7 +22,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
-    StructuredAuthoringProvider,
+    RemainingCandidateProvider,
     authored_response,
     model_event_rows,
 )
@@ -130,10 +132,12 @@ def _author(
     evidence: str,
     response: dict[str, object],
 ) -> GreenfieldModelAuthoredIntent:
+    provider = RemainingCandidateProvider(response)
     result = author_greenfield_intent(
         evidence_text=evidence,
-        provider=StructuredAuthoringProvider(response),
+        provider=provider,
         clock=lambda: 0.0,
+        participant_provider_factory=provider.participant_provider,
         review_provider_factory=AdmittingReviewProvider,
     )
     assert isinstance(result, GreenfieldModelAuthoredIntent)

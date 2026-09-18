@@ -278,13 +278,16 @@ def test_terminal_reference_cannot_default_to_last_event(event_order):
 
 
 def test_authoring_boundary_retains_precedence_and_proposed_first_run():
-    from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import _validated_authoring_response
+    from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+        validate_greenfield_authoring_response,
+    )
     from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import STANDARD_PROFILE_ID
 
     source, response = _authored_input()
-    authored = _validated_authoring_response(
+    authored = validate_greenfield_authoring_response(
         response, evidence_text=source, elapsed_seconds=1, provider={},
         profile_id=STANDARD_PROFILE_ID, effective_timeout_seconds=55,
+        semantic_model_call_count=2,
     )
     assert authored.source_precedence == tuple(response["result"]["source_precedence"])
     assert authored.provisional_design["first_run"] == _walk()
@@ -294,7 +297,8 @@ def test_authoring_boundary_retains_precedence_and_proposed_first_run():
 @pytest.mark.parametrize("missing", ["source_precedence", "terminal_event", "first_run"])
 def test_authoring_requires_order_authority_instead_of_migrating_old_response(missing):
     from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
-        GreenfieldModelAuthoringError, _validated_authoring_response,
+        GreenfieldModelAuthoringError,
+        validate_greenfield_authoring_response,
     )
     from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import STANDARD_PROFILE_ID
 
@@ -306,9 +310,10 @@ def test_authoring_requires_order_authority_instead_of_migrating_old_response(mi
     else:
         response["result"].pop(missing)
     with pytest.raises(GreenfieldModelAuthoringError):
-        _validated_authoring_response(
+        validate_greenfield_authoring_response(
             response, evidence_text=source, elapsed_seconds=1, provider={},
             profile_id=STANDARD_PROFILE_ID, effective_timeout_seconds=55,
+            semantic_model_call_count=2,
         )
 
 

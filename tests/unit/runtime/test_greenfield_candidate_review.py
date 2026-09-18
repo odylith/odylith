@@ -8,8 +8,11 @@ import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_candidate_review as review
 from odylith.runtime.domain_intelligence import greenfield_model_intent_authoring as author
+from odylith.runtime.domain_intelligence import greenfield_participant_first_authoring as participant_authoring
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import STANDARD_PROFILE_ID
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    AdmittingReviewProvider,
+    RemainingCandidateProvider,
     StructuredAuthoringProvider,
     authored_response,
 )
@@ -37,10 +40,11 @@ class Reviewer(StructuredAuthoringProvider):
 
 def run_review(provider, clock, *, deadline=55.0, observation=None, factory=None):
     source = _source()
-    authored = author._validated_authoring_response(
+    authored = author.validate_greenfield_authoring_response(
         _response(source), evidence_text=source, elapsed_seconds=0.0,
         provider={"provider": "codex-cli", "model": "gpt-5.6-terra", "reasoning_effort": "low"},
         profile_id=STANDARD_PROFILE_ID, effective_timeout_seconds=55.0,
+        semantic_model_call_count=2,
     )
     return review.review_greenfield_candidate(
         evidence_text=source, candidate=_response(source)["result"], source_spans=authored.source_spans,
@@ -54,9 +58,10 @@ def test_partition_preserves_every_value_and_binds_complete_candidate():
     source = _source()
     candidate = _response(source)["result"]
     original = deepcopy(candidate)
-    spans = author._validated_authoring_response(
+    spans = author.validate_greenfield_authoring_response(
         _response(source), evidence_text=source, elapsed_seconds=0.0,
         provider={}, profile_id=STANDARD_PROFILE_ID, effective_timeout_seconds=55.0,
+        semantic_model_call_count=2,
     ).source_spans
     payload = review.candidate_review_payload(source, candidate, source_spans=spans)
     assert {**payload["candidate"]["accepted_source"], **payload["candidate"]["proposed_decisions"]} == original
@@ -143,13 +148,14 @@ def test_human_subject_state_object_keeps_source_and_performer_custody_separate(
             "visible_result_quote": "displaced residents",
         }],
     )
-    authored = author._validated_authoring_response(
+    authored = author.validate_greenfield_authoring_response(
         response,
         evidence_text=source,
         elapsed_seconds=0.0,
         provider={},
         profile_id=STANDARD_PROFILE_ID,
         effective_timeout_seconds=55.0,
+        semantic_model_call_count=2,
     )
     payload = review.candidate_review_payload(
         source,
@@ -188,9 +194,10 @@ def test_self_contained_constraints_keep_exact_custody_without_a_new_shape(const
         {"quote": constraint, "occurrence": 1}
     )
     original = deepcopy(response)
-    authored = author._validated_authoring_response(
+    authored = author.validate_greenfield_authoring_response(
         response, evidence_text=source, elapsed_seconds=0.0,
         provider={}, profile_id=STANDARD_PROFILE_ID, effective_timeout_seconds=165.0,
+        semantic_model_call_count=2,
     )
     assert authored.intent["operational_constraints"][-1] == constraint
     payload = review.candidate_review_payload(
@@ -305,8 +312,26 @@ def test_reviewer_setup_and_dispatch_use_remaining_absolute_deadline():
         return provider
     receipt = run_review(provider, clock, factory=factory)
     assert provider.requests[0].timeout_seconds == 8.0
-    assert receipt["elapsed_seconds"] == 7.0
+    assert receipt["elapsed_seconds"] == 5.0
     assert clock.value == 52.0
+
+
+def test_reviewer_dispatch_elapsed_excludes_setup_but_keeps_shared_deadline():
+    clock = Clock()
+    provider = Reviewer({"admissible": True, "issues": []}, clock, 3.0)
+    observation = {}
+
+    def factory():
+        clock.value += 6.0
+        return provider
+
+    receipt = run_review(
+        provider, clock, factory=factory, deadline=10.0, observation=observation,
+    )
+    assert provider.requests[0].timeout_seconds == 4.0
+    assert receipt["elapsed_seconds"] == 3.0
+    assert observation["elapsed_seconds"] == 3.0
+    assert clock.value == 9.0
 
 
 @pytest.mark.parametrize("setup", [False, True])
@@ -365,13 +390,16 @@ def test_native_author_requires_admission_and_preserves_source_and_design():
     source = _source()
     response = _response(source)
     clock = Clock()
-    provider = StructuredAuthoringProvider(response)
+    provider = RemainingCandidateProvider(response)
+    participant = provider.participant_provider()
     reviewer = Reviewer({"admissible": True, "issues": []}, clock, 4.0)
-    result = author.author_greenfield_intent(
-        evidence_text=source, provider=provider, clock=clock, review_provider_factory=lambda: reviewer,
+    result = participant_authoring.author_greenfield_intent(
+        evidence_text=source, provider=provider,
+        participant_provider_factory=lambda: participant,
+        clock=clock, review_provider_factory=lambda: reviewer,
     )
-    assert provider.calls == reviewer.calls == 1
-    assert result.semantic_model_call_count == 2
+    assert participant.calls == provider.calls == reviewer.calls == 1
+    assert result.semantic_model_call_count == 3
     assert result.provisional_design == response["result"]["provisional_design"]
     assert result.source_sha256 == result.candidate_review["source_sha256"]
     assert result.elapsed_seconds == 4.0
@@ -379,18 +407,27 @@ def test_native_author_requires_admission_and_preserves_source_and_design():
 
 def test_no_review_provider_cannot_return_authored_success():
     with pytest.raises(author.GreenfieldModelAuthoringError, match="unavailable"):
-        author.author_greenfield_intent(evidence_text=_source(), provider=StructuredAuthoringProvider(_response(_source())))
+        provider = RemainingCandidateProvider(_response(_source()))
+        participant_authoring.author_greenfield_intent(
+            evidence_text=_source(), provider=provider,
+            participant_provider_factory=provider.participant_provider,
+        )
 
 
 def test_structural_validation_cannot_change_the_reviewed_candidate(monkeypatch):
-    validate = author._validated_authoring_response
+    validate = author.validate_greenfield_authoring_response
     def mutate(response, **kwargs):
         authored = validate(response, **kwargs)
         response["result"]["assumptions"].append({"applies_to": "general", "statement": "Altered"})
         return authored
-    monkeypatch.setattr(author, "_validated_authoring_response", mutate)
+    monkeypatch.setattr(participant_authoring, "validate_greenfield_authoring_response", mutate)
     with pytest.raises(author.GreenfieldModelAuthoringError, match="validation changed"):
-        author.author_greenfield_intent(evidence_text=_source(), provider=StructuredAuthoringProvider(_response(_source())))
+        provider = RemainingCandidateProvider(_response(_source()))
+        participant_authoring.author_greenfield_intent(
+            evidence_text=_source(), provider=provider,
+            participant_provider_factory=provider.participant_provider,
+            review_provider_factory=AdmittingReviewProvider,
+        )
 
 
 def test_review_postvalidation_deadline_is_enforced(monkeypatch):
@@ -416,19 +453,41 @@ def test_review_finalization_cannot_admit_a_late_role():
     with pytest.raises(RuntimeError, match="exceeded its model time window"):
         run_review(provider, clock, observation=observation)
     assert provider.calls == 1
-    assert observation["elapsed_seconds"] == 55.1
+    assert observation["elapsed_seconds"] == pytest.approx(0.2)
 
 
-@pytest.mark.parametrize("role", ["author", "reviewer"])
+@pytest.mark.parametrize("role", ["participant", "author", "reviewer"])
 def test_actual_dispatch_count_survives_provider_exception(monkeypatch, role):
     class Unavailable(StructuredAuthoringProvider):
         def generate_structured(self, *, request):
             self.calls += 1
             raise TimeoutError("Provider did not return")
     observations = []
-    monkeypatch.setattr(author, "_emit_release_proof_observation", lambda **kwargs: observations.append(kwargs))
-    provider = Unavailable(None) if role == "author" else StructuredAuthoringProvider(_response(_source()))
+    monkeypatch.setattr(
+        participant_authoring,
+        "_emit_release_proof_observation",
+        lambda **kwargs: observations.append(kwargs),
+    )
+    provider = (
+        Unavailable(_response(_source()))
+        if role == "author"
+        else RemainingCandidateProvider(_response(_source()))
+    )
+    participant_factory = (
+        (lambda: Unavailable(None))
+        if role == "participant"
+        else provider.participant_provider
+    )
     with pytest.raises(author.GreenfieldModelAuthoringError):
-        author.author_greenfield_intent(evidence_text=_source(), provider=provider,
-            review_provider_factory=lambda: Unavailable(None))
-    assert observations[-1]["call_count"] == (1 if role == "author" else 2)
+        participant_authoring.author_greenfield_intent(
+            evidence_text=_source(), provider=provider,
+            participant_provider_factory=participant_factory,
+            review_provider_factory=(
+                (lambda: Unavailable(None)) if role == "reviewer" else AdmittingReviewProvider
+            ),
+        )
+    assert observations[-1]["semantic_model_call_count"] == {
+        "participant": 1,
+        "author": 2,
+        "reviewer": 3,
+    }[role]

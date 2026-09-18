@@ -27,7 +27,12 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring impor
     GREENFIELD_INTENT_AUTHORING_VERSION,
     GreenfieldModelAuthoredIntent,
     GreenfieldModelAuthoringError,
-    _validated_authoring_response,
+    validate_greenfield_authoring_response,
+)
+from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
+    GREENFIELD_MODEL_PROOF_OBSERVATION_VERSION,
+    join_frozen_greenfield_participants,
+    resolve_greenfield_participant_selection,
 )
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     candidate_review_payload,
@@ -180,18 +185,26 @@ def model_profile_evidence(
     if configured["maximum_model_timeout_seconds"] != contract.model_timeout_seconds:
         issues.append("configured timeout does not match the assigned release profile")
     if observation:
-        if str(observation.get("profile_id") or "") != profile:
-            issues.append("sealed profile identity does not match the assigned release profile")
-        issues.extend(
-            greenfield_model_profile_observation_issues(
-                profile_id=profile,
-                provider=str(observation.get("provider") or ""),
-                model=str(observation.get("model") or ""),
-                reasoning_effort=str(observation.get("reasoning_effort") or ""),
-                effective_timeout_seconds=observation.get("effective_timeout_seconds"),
-                authoring_tier=str(observation.get("authoring_tier") or ""),
+        if set(observation) != {"participant_selection", "remaining_candidate_authoring"}:
+            issues.append("sealed model observations have missing or unsupported roles")
+        for request_role in ("participant_selection", "remaining_candidate_authoring"):
+            role_observation = _mapping(observation.get(request_role))
+            if str(role_observation.get("profile_id") or "") != profile:
+                issues.append(
+                    f"sealed {request_role} profile identity does not match the assigned release profile"
+                )
+                continue
+            issues.extend(
+                greenfield_model_profile_observation_issues(
+                    profile_id=profile,
+                    provider=str(role_observation.get("provider") or ""),
+                    model=str(role_observation.get("model") or ""),
+                    reasoning_effort=str(role_observation.get("reasoning_effort") or ""),
+                    effective_timeout_seconds=role_observation.get("effective_timeout_seconds"),
+                    authoring_tier=str(role_observation.get("authoring_tier") or ""),
+                    request_role=request_role,
+                )
             )
-        )
     elif profile != UNAVAILABLE_PROVIDER_PROFILE:
         issues.append("sealed model profile observation is missing")
     stage_summary = (
@@ -215,11 +228,11 @@ def model_profile_evidence(
         "operational_timeout_seconds": contract.operational_timeout_seconds,
         "lower_capability": contract.lower_capability,
         "semantic_authority": "typed_evidence_and_preconfirm_tribunal",
-        "sealed_request_role": "initial_authoring",
+        "sealed_request_roles": ["participant_selection", "remaining_candidate_authoring"],
         "lower_capability_scope": (
-            "initial_authoring" if contract.lower_capability else "not_applicable"
+            "remaining_candidate_authoring" if contract.lower_capability else "not_applicable"
         ),
-        "maximum_semantic_model_calls": 2,
+        "maximum_semantic_model_calls": 3,
         "configured": configured,
         "observed": observation,
         "stage_observation": (
@@ -269,125 +282,189 @@ def _model_stage_observation_evidence(
     sealed_observation: Mapping[str, Any],
     stage_observation: Mapping[str, Any],
 ) -> dict[str, Any]:
-    """Validate sanitized per-call proof against one sealed shared model window."""
+    """Validate the exact participant-first proof against one shared model window."""
 
     contract = get_greenfield_model_profile(profile)
     retained = _mapping(stage_observation)
     issues: list[str] = []
     if not retained:
         issues.append("retained model authoring observation is missing")
-    if str(retained.get("version") or "") != "odylith.greenfield.model-proof-observation.v2":
+    if str(retained.get("version") or "") != GREENFIELD_MODEL_PROOF_OBSERVATION_VERSION:
         issues.append("retained model authoring observation version is invalid")
     if str(retained.get("authoring_version") or "") != GREENFIELD_INTENT_AUTHORING_VERSION:
         issues.append("retained model authoring version is invalid")
 
-    response = _mapping(retained.get("response"))
-    result = _mapping(response.get("result"))
-    response_kind = str(result.get("status") or "")
-    if str(response.get("version") or "") != GREENFIELD_INTENT_AUTHORING_VERSION:
+    request = _mapping(retained.get("request"))
+    source = request.get("evidence")
+    if (
+        set(request) != {"version", "evidence"}
+        or request.get("version") != GREENFIELD_INTENT_AUTHORING_VERSION
+        or not isinstance(source, str)
+        or not source.strip()
+    ):
+        issues.append("retained author request lacks current source evidence")
+        source = ""
+
+    participant = _mapping(retained.get("participant_selection"))
+    remainder = _mapping(retained.get("remaining_candidate_authoring"))
+    remainder_response = _mapping(remainder.get("response"))
+    response_kind = str(_mapping(remainder_response.get("result")).get("status") or "")
+    if str(remainder_response.get("version") or "") != GREENFIELD_INTENT_AUTHORING_VERSION:
         issues.append("retained model response version is invalid")
     if response_kind not in {"authored", "clarification_required"}:
         issues.append("retained model response kind is invalid")
+
     expected_fields = {
-        "version", "authoring_version", "request", "response",
-        "semantic_model_call_count", "initial_authoring",
+        "version", "authoring_version", "request", "semantic_model_call_count",
+        "participant_selection", "remaining_candidate_authoring",
     }
     if response_kind == "authored":
-        expected_fields.add("candidate_review")
+        expected_fields.update({"joined_candidate", "candidate_review"})
     if set(retained) != expected_fields:
         issues.append("retained model observation has missing or unsupported fields")
 
     call_count = retained.get("semantic_model_call_count")
-    if type(call_count) is not int:  # bool is not an admissible call count.
+    if type(call_count) is not int:
         issues.append("retained semantic model call count is invalid")
         normalized_call_count = 0
     else:
         normalized_call_count = call_count
 
-    sealed_timeout = _positive_float(sealed_observation.get("effective_timeout_seconds"))
-    if sealed_timeout is None:
-        issues.append("sealed shared model window is invalid")
-    elif sealed_timeout > contract.model_timeout_seconds:
-        issues.append("sealed shared model window exceeds its pinned profile")
-    if set(sealed_observation) != {
+    sealed_roles = {
+        role: _mapping(sealed_observation.get(role))
+        for role in ("participant_selection", "remaining_candidate_authoring")
+    }
+    if set(sealed_observation) != set(sealed_roles):
+        issues.append("sealed model observations have missing or unsupported roles")
+    sealed_fields = {
         "profile_id", "provider", "model", "reasoning_effort",
         "effective_timeout_seconds", "authoring_tier",
-    }:
-        issues.append("sealed profile observation has missing or unsupported fields")
-    if sealed_observation.get("profile_id") != profile:
-        issues.append("sealed profile identity does not match the assigned release profile")
-    issues.extend(greenfield_model_profile_observation_issues(
-        profile_id=profile, provider=sealed_observation.get("provider"),
-        model=sealed_observation.get("model"), reasoning_effort=sealed_observation.get("reasoning_effort"),
-        effective_timeout_seconds=sealed_observation.get("effective_timeout_seconds"),
-        authoring_tier=sealed_observation.get("authoring_tier"),
-    ))
-
-    initial = _mapping(retained.get("initial_authoring"))
-    if not initial:
-        issues.append("retained initial authoring observation is missing")
-    initial_summary = _request_role_summary(initial)
-    if set(initial) != {
-        "profile_id", "request_role", "timeout_seconds", "elapsed_seconds",
-        "model", "reasoning_effort", "provider",
-    }:
-        issues.append("retained initial authoring observation has missing or unsupported fields")
-    issues.extend(
-        _request_role_issues(
-            profile,
-            request_role="initial_authoring",
-            observation=initial,
-        )
-    )
-    initial_timeout = _positive_float(initial.get("timeout_seconds"))
-    initial_elapsed = _positive_float(initial.get("elapsed_seconds"))
-    if initial_timeout is None:
-        issues.append("retained initial authoring timeout is invalid")
-    if initial_elapsed is None:
-        issues.append("retained initial authoring elapsed time is invalid")
-    if sealed_timeout is not None and initial_timeout is not None:
-        if not _same_seconds(initial_timeout, sealed_timeout):
-            issues.append("retained authoring timeout does not match the sealed model window")
-    if (
-        initial_timeout is not None
-        and initial_elapsed is not None
-        and initial_elapsed > initial_timeout
-    ):
-        issues.append("retained initial authoring elapsed time exceeds its timeout")
-
-    request = _mapping(retained.get("request"))
-    source = request.get("evidence")
-    authored = None
-    if (set(request) != {"version", "evidence"}
-            or request.get("version") != GREENFIELD_INTENT_AUTHORING_VERSION
-            or not isinstance(source, str) or not source.strip()):
-        issues.append("retained author request lacks current source evidence")
-    elif initial_elapsed is not None and sealed_timeout is not None:
-        # The canonical validator owns source resolution in runtime and proof.
+    }
+    for role, sealed in sealed_roles.items():
+        if set(sealed) != sealed_fields:
+            issues.append(f"sealed {role} observation has missing or unsupported fields")
+        if sealed.get("profile_id") != profile:
+            issues.append(f"sealed {role} profile identity does not match the assigned release profile")
         try:
-            authored = _validated_authoring_response(
-                response, evidence_text=source, elapsed_seconds=initial_elapsed,
-                provider=_mapping(initial.get("provider")), profile_id=profile,
-                effective_timeout_seconds=sealed_timeout,
-            )
-        except (GreenfieldModelAuthoringError, ValueError, TypeError, KeyError):
-            issues.append("retained response fails canonical source-bound author validation")
+            issues.extend(greenfield_model_profile_observation_issues(
+                profile_id=profile, provider=sealed.get("provider"), model=sealed.get("model"),
+                reasoning_effort=sealed.get("reasoning_effort"),
+                effective_timeout_seconds=sealed.get("effective_timeout_seconds"),
+                authoring_tier=sealed.get("authoring_tier"), request_role=role,
+            ))
+        except (TypeError, ValueError, OverflowError):
+            issues.append(f"sealed {role} observation is invalid")
 
-    request_roles: dict[str, Any] = {"initial_authoring": initial_summary}
+    shared_timeout = _positive_float(
+        sealed_roles["participant_selection"].get("effective_timeout_seconds")
+    )
+    if shared_timeout is None:
+        issues.append("sealed shared model window is invalid")
+    elif shared_timeout > contract.model_timeout_seconds:
+        issues.append("sealed shared model window exceeds its pinned profile")
+
+    request_roles: dict[str, Any] = {}
+    prior_elapsed = 0.0
+    participant_citations: list[dict[str, Any]] = []
+    resolved: list[dict[str, Any]] = []
+    for role, observation in (
+        ("participant_selection", participant),
+        ("remaining_candidate_authoring", remainder),
+    ):
+        request_roles[role] = _request_role_summary(observation)
+        expected_stage_fields = {
+            "dispatched", "request_role", "profile_id", "timeout_seconds",
+            "elapsed_seconds", "model", "reasoning_effort", "request", "response", "provider",
+        }
+        if role == "participant_selection":
+            expected_stage_fields.add("resolved")
+        if set(observation) != expected_stage_fields:
+            issues.append(f"retained {role} observation has missing or unsupported fields")
+        if observation.get("dispatched") is not True:
+            issues.append(f"retained {role} was not dispatched")
+        try:
+            issues.extend(_request_role_issues(
+                profile, request_role=role, observation=observation,
+            ))
+        except (TypeError, ValueError, OverflowError):
+            issues.append(f"retained {role} request metadata is invalid")
+        timeout = _positive_float(observation.get("timeout_seconds"))
+        elapsed = _positive_float(observation.get("elapsed_seconds"))
+        sealed_timeout = _positive_float(
+            sealed_roles[role].get("effective_timeout_seconds")
+        )
+        if timeout is None:
+            issues.append(f"retained {role} timeout is invalid")
+        elif sealed_timeout is None or not _same_seconds(timeout, sealed_timeout):
+            issues.append(f"retained {role} timeout does not match its sealed observation")
+        if elapsed is None:
+            issues.append(f"retained {role} elapsed time is invalid")
+        elif timeout is not None and elapsed > timeout:
+            issues.append(f"retained {role} elapsed time exceeds its timeout")
+        if shared_timeout is not None and timeout is not None:
+            if timeout > shared_timeout - prior_elapsed:
+                issues.append(f"retained {role} timeout exceeds the remaining model window")
+        if elapsed is not None:
+            prior_elapsed += elapsed
+    if shared_timeout is not None and prior_elapsed > shared_timeout:
+        issues.append("retained authoring stages exceed the shared model window")
+
+    authored = None
+    if source:
+        try:
+            if _mapping(participant.get("request")) != {"source": source}:
+                raise ValueError("participant request mismatch")
+            participant_citations, resolved = resolve_greenfield_participant_selection(
+                source, _mapping(participant.get("response")),
+            )
+            if participant.get("resolved") != resolved:
+                raise ValueError("resolved participant mismatch")
+            expected_remainder_request = dict(request)
+            expected_remainder_request["frozen_human_actors"] = participant_citations
+            if remainder.get("request") != expected_remainder_request:
+                raise ValueError("remaining request mismatch")
+            if response_kind == "authored":
+                joined = join_frozen_greenfield_participants(
+                    remainder_response, participant_citations,
+                )
+                if retained.get("joined_candidate") != joined:
+                    raise ValueError("joined candidate mismatch")
+                authored = validate_greenfield_authoring_response(
+                    joined, evidence_text=source,
+                    elapsed_seconds=_float_value(remainder.get("elapsed_seconds")),
+                    provider=_mapping(remainder.get("provider")), profile_id=profile,
+                    effective_timeout_seconds=_float_value(remainder.get("timeout_seconds")),
+                    semantic_model_call_count=2,
+                )
+            elif response_kind == "clarification_required":
+                validate_greenfield_authoring_response(
+                    remainder_response, evidence_text=source,
+                    elapsed_seconds=_float_value(remainder.get("elapsed_seconds")),
+                    provider=_mapping(remainder.get("provider")), profile_id=profile,
+                    effective_timeout_seconds=_float_value(remainder.get("timeout_seconds")),
+                    semantic_model_call_count=2,
+                )
+        except (GreenfieldModelAuthoringError, ValueError, TypeError, KeyError):
+            issues.append("retained participant-first response fails canonical source-bound validation")
+
     if response_kind == "authored":
-        if normalized_call_count != 2:
-            issues.append("authored response must record exactly two semantic calls")
+        if normalized_call_count != 3:
+            issues.append("authored response must record exactly three semantic calls")
         review = _mapping(retained.get("candidate_review"))
         request_roles["candidate_review"] = _request_role_summary(review)
         issues.extend(_candidate_review_observation_issues(
-            profile, review=review, request=_mapping(retained.get("request")),
-            candidate=result, shared_timeout=sealed_timeout, initial_elapsed=initial_elapsed,
+            profile, review=review, request=request,
+            candidate=_mapping(_mapping(retained.get("joined_candidate")).get("result")),
+            shared_timeout=shared_timeout, prior_elapsed=prior_elapsed,
             source_spans=authored.source_spans if isinstance(authored, GreenfieldModelAuthoredIntent) else (),
         ))
-    elif normalized_call_count != 1:
-        issues.append("clarification response must record exactly one semantic call")
-    if "source_review" in retained or "initial_response" in retained:
-        issues.append("complete-author response must not record an intermediate review path")
+    elif normalized_call_count != 2:
+        issues.append("clarification response must record exactly two semantic calls")
+    if any(
+        field in retained
+        for field in ("initial_authoring", "initial_response", "source_review", "response")
+    ):
+        issues.append("participant-first response must not record a legacy author path")
 
     return {
         "observation_version": str(retained.get("version") or ""),
@@ -403,14 +480,14 @@ def _model_stage_observation_evidence(
 def _candidate_review_observation_issues(
     profile: str, *, review: Mapping[str, Any], request: Mapping[str, Any],
     candidate: Mapping[str, Any], shared_timeout: float | None,
-    initial_elapsed: float | None, source_spans: Sequence[Mapping[str, Any]],
+    prior_elapsed: float, source_spans: Sequence[Mapping[str, Any]],
 ) -> tuple[str, ...]:
     """Check the current binary observation, not a historical repair protocol.
 
     Native observations carry no protocol ID or sealed review receipt. Exact
     current payload equality binds both authorities without inventing either.
-    Elapsed review time includes setup; its request timeout starts after setup.
-    Absolute inter-stage timing remains unavailable in this evidence format.
+    Elapsed review time includes setup and must fit the actual retained request
+    timeout as well as the shared window's remaining time.
     """
     issues = list(_request_role_issues(
         profile, request_role="candidate_review", observation=review,
@@ -439,8 +516,7 @@ def _candidate_review_observation_issues(
     except (ValueError, TypeError):
         issues.append("retained candidate review source/candidate payload is invalid")
     contract = get_greenfield_model_profile(profile)
-    remaining = (shared_timeout - initial_elapsed
-                 if shared_timeout is not None and initial_elapsed is not None else None)
+    remaining = shared_timeout - prior_elapsed if shared_timeout is not None else None
     for field in ("timeout_seconds", "elapsed_seconds"):
         seconds = _positive_float(review.get(field))
         if seconds is None:
@@ -448,6 +524,14 @@ def _candidate_review_observation_issues(
         elif (seconds > contract.model_timeout_seconds
               or remaining is None or seconds > remaining):
             issues.append(f"retained candidate review {field} exceeds the remaining model window")
+    review_timeout = _positive_float(review.get("timeout_seconds"))
+    review_elapsed = _positive_float(review.get("elapsed_seconds"))
+    if (
+        review_timeout is not None
+        and review_elapsed is not None
+        and review_elapsed > review_timeout
+    ):
+        issues.append("retained candidate review elapsed time exceeds its timeout")
     return tuple(issues)
 
 

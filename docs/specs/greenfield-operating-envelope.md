@@ -1,6 +1,6 @@
 # Greenfield Operating Envelope
 
-Version: `odylith.greenfield-operating-envelope.v3`
+Version: `odylith.greenfield-operating-envelope.v4`
 
 Profile: `single-product-governance-onboarding`
 
@@ -42,7 +42,7 @@ legal, or production claims.
 Codex and Claude host names, callbacks, and registration do not qualify a native
 decision interface. Propose and compile previews publish nothing; they print only
 three full shell-quoted terminal commands for their repository path and retained
-transaction hash: `decide ... CONFIRM <hash>`, `decide ... EDIT <hash> --edit
+transaction hash. In shorthand: `decide ... CONFIRM <hash>`, `decide ... EDIT <hash> --edit
 <corrections>` (or `--edit-evidence <file>`), and `decide ... REJECT <hash>`.
 Ordinary chat approval is not a terminal decision. Explicit terminal `CONFIRM`
 and `REJECT` share a bounded deterministic owner and invoke neither compiler nor
@@ -56,11 +56,11 @@ and visible completion require their own proof.
 Release evaluation covers three pinned candidate success profiles; their identity
 does not itself establish qualification:
 
-- `greenfield-standard-terra-low-complete-author-review-v17`: the default and
+- `greenfield-standard-participant-first-terra-low-v18`: the default and
   `auto` path, with a 90-second advisory performance target.
-- `greenfield-rescue-terra-medium-complete-author-review-v17`: the explicit rescue
+- `greenfield-rescue-participant-first-terra-medium-v18`: the explicit rescue
   path, with a 120-second advisory performance target.
-- `greenfield-deep-sol-high-complete-author-review-v17`: the explicit deep path,
+- `greenfield-deep-participant-first-sol-high-v18`: the explicit deep path,
   with a 150-second advisory performance target.
 
 All three profiles use one 180-second operational timeout and one 165-second
@@ -69,43 +69,47 @@ missing the selected 90/120/150-second target is recorded as performance evidenc
 not used as an admission gate. Proposal elapsed time must remain strictly below
 the operational timeout. Sixty seconds remains an advisory normal-case target.
 The separate commit-only step must still finish strictly below 60 seconds.
-Candidate v17 separates performance targets from the finite operational timeout
-while retaining the standard Terra-low author posture. This timing change does
-not qualify any author candidate; call count, prompts, semantic requirements,
-reviewer identity, and transaction laws are unchanged.
+Profile v18 retains the advisory targets and finite operational timeout while
+versioning the participant-first author boundary. This role change does not by
+itself qualify a model profile; semantic requirements, the final reviewer, and
+transaction laws are unchanged.
 Historical observations keep their original limits and verdicts; old sealed
-v12/v13/v14/v15/v16 transactions are not relabeled or accepted as v17. Fresh
+v12/v13/v14/v15/v16/v17 transactions are not relabeled or accepted as v18. Fresh
 per-profile evidence is required for qualification.
 
 The selected profile is fixed before the model request. Elapsed time or a failed
 attempt never relabels or extends a standard request into rescue or deep.
-Standard uses Terra low, rescue uses Terra medium, and deep uses Sol high for
-one complete authoring call. An authored result then requires one read-only
-Astra/medium review of the complete candidate using only
-the shared model window's remaining time. There is no separate review-stage cap.
-Reviewer setup, validation and finalization
-are inside that deadline. No fixed author reserve, retry, repair call or tier
-promotion follows. Invalid authoring and material clarification do not invoke review.
+Every profile first uses Astra/medium to select source-grounded participants and
+their exact source locations. Standard then uses Terra low, rescue uses Terra
+medium, and deep uses Sol high to author the remaining candidate around that
+immutable participant set. An authored result requires one final read-only
+Astra/medium review of the complete joined candidate using only the shared model
+window's remaining time. The deterministic join is not a model call, and neither
+rewrites source evidence nor repairs either model response. There is no separate
+stage cap. Setup, validation and finalization remain inside the shared deadline.
+No fixed stage reserve, retry, repair call or tier promotion follows. Selector
+failure stops after one call; material clarification after remaining-candidate
+authoring stops after two calls and does not invoke final review.
 These are bounded candidate profiles, not claims about every provider model.
 Host-model output is candidate evidence only. Every profile must clarify or fail
 safely instead of inventing product truth. Provider unavailability is separately
 proven as a fast, no-write environment outcome and is not a supported-success
 profile.
 
-The reviewer change is an unreleased candidate, not production qualification.
-It passed four retained positive/negative controls and one exact independent
-repeat under unchanged prompts and residual caps. Its first fresh standard package
-then completed in 59.563 seconds with two calls, no independently observed P0/P1
-and 32 passing desktop/mobile browser states. Four advisory presentation issues
-remain. This is one development sample, not a reliability estimate, installed
-proof, qualification of rescue/deep, or broader release readiness.
+This mechanism is an unreleased integration candidate, not production
+qualification. Two fresh external comparisons produced complete governance
+packages in 76.165 and 77.288 seconds, each with three calls, independent
+acceptance without P0/P1 findings, and 32 passing desktop/mobile browser states.
+These disclosed development cases select the mechanism for integration; they do
+not estimate reliability or qualify installed behavior, rescue/deep, unseen
+inputs, or release readiness. Earlier failed attempts retain their own verdicts.
 
-Standard and rescue use lower-capability authors relative to Sol deep. Release
+Standard and rescue use lower-capability remaining-candidate authors relative to Sol deep. Release
 proof requires each profile's observed committed positive case and a source-bound material
 clarification with no writes, separately from unavailable-provider behavior.
 No other model earns a proof claim without its own observed request evidence.
 
-Authoring v53 returns either a reviewed source-and-design candidate or the
+Authoring v64 returns either a reviewed source-and-design candidate or the
 existing material clarification result. Source facts, actions and relationships
 remain citation-bound. A required, separately labeled `provisional_design`
 proposes 4–5 logical components, 4–5 workstreams, internal exchanges and
@@ -125,31 +129,26 @@ automatic occurrence repair. Review v2 binds the unchanged source and candidate;
 the release checker reconstructs the same view through canonical validation.
 It may admit or deny with one substantiated witness, never rewrite the candidate.
 Practical proposed choices remain advisory unless materially incompatible or unsafe.
-Private proof retains both actual requests, responses, profiles, caps and elapsed
-times. Successful native receipts require exactly two calls and bind admission to
-the complete candidate and the sealed source/intent hashes. Single-call observations
-cannot qualify these profiles. Admission is not proof of universal entailment.
+Private proof retains all three actual requests, responses, profiles, caps and
+elapsed times. It also retains the selector's ordered, source-resolved participant
+list and the full deterministic joined candidate. Successful native receipts
+require exactly three calls and bind final admission to that complete candidate
+and the sealed source/intent hashes. One- or two-call success observations cannot
+qualify these profiles. Admission is not proof of universal entailment.
 Independent semantic, transaction and UX adjudication remains a release gate,
 including regression examples previously caught by the retired source reviewer.
-This candidate has not earned a release or universal-success claim.
-The previous one-call path admitted a source-exact operator invocation under the
-wrong product-story role and lost an explicit source prerequisite in another
-actual package. Those failures motivate this boundary. The complete reviewer passed
-five frozen discrimination controls, and one actual author/reviewer candidate
-passed independent semantic review in 54.975 seconds before full-package work.
-That is component and model-window feasibility evidence, not complete consumer
-timing, robustness or release qualification. Exact citations and a passed
-structural quality manifest must not be reported as an entailment guarantee.
-
-The subsequent native standard-tier gate failed: authoring took 50.496 seconds,
-leaving 4.499 seconds for review, which returned no verdict. The command stopped
-at 55.441 seconds without a complete package. This is a failed qualification,
-not a sub-60-second success. The sequential candidate has not demonstrated
-sufficient timing headroom; the consumer limits and semantic floor stay fixed.
+This candidate has not earned a release or universal-success claim. Exact
+citations and a passed structural quality manifest are not an entailment
+guarantee. The operating receipt records both participant selection and
+remaining-candidate authoring observations under the same selected profile;
+neither role alone represents all accepted source facts. Final review remains
+separately bound to the complete candidate and sealed Product Intent authority.
 
 Identical quote bytes at a different location do not prove the selected role.
-An impossible ordinal can normalize only when the quote has one exact location;
-ambiguous repeated matches fail closed without word-boundary repair.
+Participant and state-object selectors use exact prefix/quote anchors and strict
+anchor occurrences, without ordinal normalization or word-boundary repair.
+The other existing quote/occurrence citations normalize an impossible ordinal
+only when the quote has one exact location; ambiguous repeated matches fail closed.
 Missing-information clarification uses empty model `evidence_quotes`; the compiler
 binds the exact complete admitted input, including its byte range and hash. This
 records examined-source custody, not proof that information is absent. Contradictions
@@ -164,7 +163,8 @@ before it. JSON retains those same spans beside the question. Neither view infer
 truncates, or recomposes the conflicting claims. Full-source
 clarification JSON can repeat the bounded input; no lossy excerpt or whitespace
 matching mechanism is introduced.
-Clarification receipts retain the actual single-call authoring observation.
+Clarification receipts retain both actual pre-review role observations and the
+shared model window; they record two calls and no final-review observation.
 Participant inventory does not assign human actions or product access. Project
 labels people without a typed first-path action as participants, and its operator
 projection includes only typed human performers. Atlas retains all contextual

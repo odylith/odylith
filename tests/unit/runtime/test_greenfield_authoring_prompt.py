@@ -1,25 +1,28 @@
 """Outgoing author instructions and the state-only source address contract."""
 
-from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
     author_greenfield_intent,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
-    StructuredAuthoringProvider,
+    RemainingCandidateProvider,
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
 
 def test_authoring_prompt_requires_every_transaction_material_fact() -> None:
     source = _source()
-    provider = StructuredAuthoringProvider(_response(source))
+    provider = RemainingCandidateProvider(_response(source))
+    participant_provider = provider.participant_provider()
 
     author_greenfield_intent(
         review_provider_factory=AdmittingReviewProvider,
         evidence_text=source,
         provider=provider,
+        participant_provider_factory=lambda: participant_provider,
         clock=lambda: 0.0,
     )
+    assert participant_provider.requests[0].schema_name == "greenfield_participant_selection"
     prompt = " ".join(str(getattr(provider.requests[0], "system_prompt", "")).split())
 
     for field in (

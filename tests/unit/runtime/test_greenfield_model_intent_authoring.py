@@ -31,9 +31,11 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
-    GREENFIELD_MODEL_PROOF_FD_ENV,
     GreenfieldModelAuthoringError,
-    _validated_authoring_response,
+    validate_greenfield_authoring_response,
+)
+from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
+    GREENFIELD_MODEL_PROOF_FD_ENV,
     author_greenfield_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
@@ -50,7 +52,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
-    StructuredAuthoringProvider,
+    RemainingCandidateProvider,
     authored_response,
     clarification_response,
     model_event_rows,
@@ -65,15 +67,42 @@ from tests.unit.runtime.test_greenfield_model_path_custody import (
 )
 
 
+def _participant_first_kwargs(response: dict[str, object]) -> dict[str, object]:
+    provider = RemainingCandidateProvider(response)
+    return {
+        "provider": provider,
+        "participant_provider_factory": provider.participant_provider,
+    }
+
+
+def _materialization_providers(response: dict[str, object]) -> tuple[RemainingCandidateProvider, object]:
+    provider = RemainingCandidateProvider(response)
+    return provider, provider.participant_provider
+
+
+def _cli_providers(response: dict[str, object], reviewer: object) -> tuple[RemainingCandidateProvider, object]:
+    provider = RemainingCandidateProvider(response)
+    participant = provider.participant_provider()
+
+    def factory(**kwargs: object) -> tuple[object, str, str]:
+        role = kwargs.get("request_role")
+        selected = reviewer if role == "candidate_review" else participant if role == "participant_selection" else provider
+        return selected, "test-model", "low"
+
+    return provider, factory
+
+
 def test_model_authored_intent_reaches_staged_product_intent_without_parser_recovery(tmp_path) -> None:  # type: ignore[no-untyped-def]
     source = _source()
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
     receipt: dict[str, object] = {}
+    provider, participant_factory = _materialization_providers(_response(staged_evidence))
     candidate = materialize_model_authored_intent(
         review_provider_factory=AdmittingReviewProvider,
         prompt=source,
         repo_root=tmp_path,
-        authoring_provider=StructuredAuthoringProvider(_response(staged_evidence)),
+        authoring_provider=provider,
+        participant_provider_factory=participant_factory,
         authoring_timeout_seconds=84,
         authoring_profile_id=RESCUE_PROFILE_ID,
         authoring_receipt=receipt,
@@ -83,8 +112,8 @@ def test_model_authored_intent_reaches_staged_product_intent_without_parser_reco
     assert candidate["human_actors"] == ["Dock attendant Ivo"]
     assert candidate["internal_systems"] == ["Berth map"]
     assert receipt["tier"] == "rescue"
-    assert receipt["authoring_version"] == "odylith.greenfield.intent-authoring.v63"
-    assert receipt["semantic_model_call_count"] == 2
+    assert receipt["authoring_version"] == GREENFIELD_INTENT_AUTHORING_VERSION
+    assert receipt["semantic_model_call_count"] == 3
     assert candidate["authored_semantics"]["first_path_relations"][0]["action_verb_quote"] == "enters"
     assert "model_authoring" not in candidate
     assert candidate["product_intent_authority"]["material_fields"]["first_path"]["source_span_ids"] == [
@@ -104,13 +133,24 @@ def test_model_authored_intent_reaches_staged_product_intent_without_parser_reco
         "language": "en",
         "language_assurance": "explicit_operator_contract_not_content_detection",
     }
-    assert observed_model == receipt["model_profile"]
     assert observed_model == {
+        "participant_selection": receipt["participant_selection"]["model_profile"],
+        "remaining_candidate_authoring": receipt["remaining_candidate_authoring"]["model_profile"],
+    }
+    assert observed_model["participant_selection"] == {
+        "profile_id": RESCUE_PROFILE_ID,
+        "provider": profile.provider,
+        "model": profile.participant_model,
+        "reasoning_effort": profile.participant_reasoning_effort,
+        "effective_timeout_seconds": pytest.approx(84.0, abs=0.01),
+        "authoring_tier": "rescue",
+    }
+    assert observed_model["remaining_candidate_authoring"] == {
         "profile_id": RESCUE_PROFILE_ID,
         "provider": profile.provider,
         "model": profile.model,
         "reasoning_effort": profile.reasoning_effort,
-        "effective_timeout_seconds": 84.0,
+        "effective_timeout_seconds": pytest.approx(84.0, abs=0.01),
         "authoring_tier": "rescue",
     }
 
@@ -129,7 +169,7 @@ def test_edit_evidence_reauthors_one_new_complete_candidate(tmp_path) -> None:  
         "first_path": edited_path,
         "success_metrics": ["The berth map shows the reviewed placement"],
     }
-    provider = StructuredAuthoringProvider(
+    provider = RemainingCandidateProvider(
         authored_response(
             edited_intent,
             evidence_text=combined_prompt_evidence_source(
@@ -174,6 +214,7 @@ def test_edit_evidence_reauthors_one_new_complete_candidate(tmp_path) -> None:  
         edit_evidence=edit_evidence,
         repo_root=tmp_path,
         authoring_provider=provider,
+        participant_provider_factory=provider.participant_provider,
         authoring_timeout_seconds=84,
         authoring_profile_id=RESCUE_PROFILE_ID,
     )
@@ -291,12 +332,14 @@ def test_model_authored_multi_component_events_bind_to_exact_source_owned_system
             ],
         },
     ]
+    provider, participant_factory = _materialization_providers(response)
     candidate = materialize_model_authored_intent(
         review_provider_factory=AdmittingReviewProvider,
         prompt=source,
         edit_evidence="",
         repo_root=tmp_path,
-        authoring_provider=StructuredAuthoringProvider(response),
+        authoring_provider=provider,
+        participant_provider_factory=participant_factory,
         authoring_timeout_seconds=84,
         authoring_profile_id=RESCUE_PROFILE_ID,
     )
@@ -382,12 +425,12 @@ def test_model_authored_project_seals_one_source_and_design_package(tmp_path, mo
     _activate(tmp_path)
     source = _source()
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
-    provider = StructuredAuthoringProvider(_response(staged_evidence))
     reviewer = AdmittingReviewProvider()
+    provider, provider_factory = _cli_providers(_response(staged_evidence), reviewer)
     monkeypatch.setattr(
         greenfield_proposals_cli,
         "_greenfield_authoring_provider",
-        lambda **kw: (reviewer if kw.get("request_role") == "candidate_review" else provider, "test-model", "low"),
+        provider_factory,
     )
 
     candidate, transaction, transaction_path = greenfield_proposals_cli._compile_prompt_evidence_transaction(
@@ -468,12 +511,12 @@ def test_public_propose_cli_uses_one_author_and_review_without_unqualified_write
     baseline = greenfield_repository_write_set.greenfield_managed_fingerprints(tmp_path)
     source = _source()
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
-    provider = StructuredAuthoringProvider(_response(staged_evidence))
     reviewer = AdmittingReviewProvider()
+    provider, provider_factory = _cli_providers(_response(staged_evidence), reviewer)
     monkeypatch.setattr(
         greenfield_proposals_cli,
         "_greenfield_authoring_provider",
-        lambda **kw: (reviewer if kw.get("request_role") == "candidate_review" else provider, "test-model", "low"),
+        provider_factory,
     )
 
     rc = greenfield_proposals_cli.main(
@@ -503,12 +546,12 @@ def test_public_authored_propose_bypasses_the_legacy_completion_cascade(
     activate_greenfield_baseline_fixture(tmp_path)
     source = _source()
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
-    provider = StructuredAuthoringProvider(_response(staged_evidence))
     reviewer = AdmittingReviewProvider()
+    provider, provider_factory = _cli_providers(_response(staged_evidence), reviewer)
     monkeypatch.setattr(
         greenfield_proposals_cli,
         "_greenfield_authoring_provider",
-        lambda **kw: (reviewer if kw.get("request_role") == "candidate_review" else provider, "test-model", "low"),
+        provider_factory,
     )
 
     def forbidden(*_args: object, **_kwargs: object) -> object:
@@ -566,18 +609,26 @@ def test_public_propose_cli_returns_one_model_question_without_a_transaction(
     capsys,
 ) -> None:  # type: ignore[no-untyped-def]
     activate_greenfield_baseline_fixture(tmp_path)
-    provider = StructuredAuthoringProvider(
-        clarification_response(
-            question="What result should the dock attendant see after the first task?",
-            material_dimension="visible_result",
-            evidence_quotes=(),
-        )
+    response = clarification_response(
+        question="What result should the dock attendant see after the first task?",
+        material_dimension="visible_result",
+        evidence_quotes=(),
+    )
+    provider = RemainingCandidateProvider(
+        response
     )
     reviewer = AdmittingReviewProvider()
+    participant = provider.participant_provider()
     monkeypatch.setattr(
         greenfield_proposals_cli,
         "_greenfield_authoring_provider",
-        lambda **kw: (reviewer if kw.get("request_role") == "candidate_review" else provider, "test-model", "low"),
+        lambda **kw: (
+            reviewer if kw.get("request_role") == "candidate_review"
+            else participant if kw.get("request_role") == "participant_selection"
+            else provider,
+            "test-model",
+            "low",
+        ),
     )
 
     rc = greenfield_proposals_cli.main(
@@ -588,11 +639,13 @@ def test_public_propose_cli_returns_one_model_question_without_a_transaction(
     assert rc == 0
     assert payload["mode"] == "clarification_required"
     assert payload["clarification"]["required_fields"] == ["visible_result"]
-    assert payload["clarification"]["model_profile"]["profile_id"] == STANDARD_PROFILE_ID
-    assert payload["clarification"]["model_profile"]["provider"] == "codex-cli"
-    assert payload["clarification"]["model_profile"]["model"] == get_greenfield_model_profile(
-        STANDARD_PROFILE_ID
-    ).model
+    observed = payload["clarification"]["model_profile"]
+    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
+    assert set(observed) == {"participant_selection", "remaining_candidate_authoring"}
+    assert observed["participant_selection"]["profile_id"] == STANDARD_PROFILE_ID
+    assert observed["participant_selection"]["model"] == profile.participant_model
+    assert observed["remaining_candidate_authoring"]["provider"] == "codex-cli"
+    assert observed["remaining_candidate_authoring"]["model"] == profile.model
     assert provider.calls == 1
     assert reviewer.calls == 0
     assert not (tmp_path / ".odylith/runtime/greenfield/pending").exists()
@@ -614,7 +667,7 @@ def test_authoring_calculates_citation_hashes_from_the_exact_source_bytes() -> N
     result = author_greenfield_intent(
         review_provider_factory=AdmittingReviewProvider,
         evidence_text=source,
-        provider=StructuredAuthoringProvider(response),
+        **_participant_first_kwargs(response),
         clock=lambda: 0.0,
     )
 
@@ -634,7 +687,7 @@ def test_authoring_collapses_exact_duplicate_typed_fact_rows() -> None:
     result = author_greenfield_intent(
         review_provider_factory=AdmittingReviewProvider,
         evidence_text=source,
-        provider=StructuredAuthoringProvider(response),
+        **_participant_first_kwargs(response),
         clock=lambda: 0.0,
     )
 
@@ -653,7 +706,7 @@ def test_authoring_accepts_an_explicit_repeated_quote_occurrence_without_first_m
     result = author_greenfield_intent(
         review_provider_factory=AdmittingReviewProvider,
         evidence_text=source,
-        provider=StructuredAuthoringProvider(response),
+        **_participant_first_kwargs(response),
         clock=lambda: 0.0,
     )
 
@@ -665,81 +718,17 @@ def test_authoring_rejects_impossible_repeated_occurrence_without_first_match_re
     source = f"Harbor Desk. {_source()}"
     response = _response(source)
     response["result"]["facts"]["title"]["occurrence"] = source.count("Harbor Desk") + 1  # type: ignore[index]
-    provider = StructuredAuthoringProvider(response)
+    provider = RemainingCandidateProvider(response)
 
     with pytest.raises(GreenfieldModelAuthoringError, match="quote occurrence that is not present"):
-        author_greenfield_intent(review_provider_factory=AdmittingReviewProvider, evidence_text=source, provider=provider, clock=lambda: 0.0)
+        author_greenfield_intent(
+            review_provider_factory=AdmittingReviewProvider,
+            evidence_text=source,
+            provider=provider,
+            participant_provider_factory=provider.participant_provider,
+            clock=lambda: 0.0,
+        )
     assert provider.calls == 1
-
-
-def test_authoring_schema_structurally_separates_complete_authored_and_clarification_results() -> None:
-    source = _source()
-    provider = StructuredAuthoringProvider(_response(source))
-
-    author_greenfield_intent(
-        review_provider_factory=AdmittingReviewProvider,
-        evidence_text=source,
-        provider=provider,
-        clock=lambda: 0.0,
-    )
-
-    authoring_schema = getattr(provider.requests[0], "output_schema", {})
-    result_branches = authoring_schema["properties"]["result"]["anyOf"]
-    authored_branch, clarification_branch = result_branches
-    typed_facts = authored_branch["properties"]["facts"]
-    assert typed_facts["additionalProperties"] is False
-    assert typed_facts["properties"]["state_object"]["type"] == "object"
-    assert "subject may be a person" in typed_facts["properties"]["state_object"][
-        "description"
-    ]
-    assert "An activity, workflow stage, goal, product label" in typed_facts["properties"][
-        "proof_boundary"
-    ]["description"]
-    assert "user's unmet need" in typed_facts["properties"]["problem"]["description"]
-    assert "improvement or benefit" in typed_facts["properties"]["opportunity"]["description"]
-    assert "title or product-category label is not an experience" in typed_facts["properties"]["product_view"]["description"]
-    assert typed_facts["properties"]["first_path"]["type"] == "array"
-    assert typed_facts["properties"]["first_path"]["minItems"] == 1
-    assert typed_facts["properties"]["human_actors"]["type"] == "array"
-    assert "minItems" not in typed_facts["properties"]["human_actors"]
-    authored_properties = authored_branch["properties"]
-    terminal = authored_properties["terminal"]
-    assert set(terminal["properties"]) == {"event_order", "result_fact", "result_quote", "result_occurrence"}
-    assert set(terminal["required"]) == set(terminal["properties"])
-    result_fact = terminal["properties"]["result_fact"]
-    assert result_fact["additionalProperties"] is False
-    assert set(result_fact["required"]) == set(result_fact["properties"]) == {"field", "row"}
-    assert result_fact["properties"]["row"]["minimum"] == 1
-    assert set(result_fact["properties"]["field"]["enum"]) == {
-        "first_path", "product_story", "opportunity", "product_view", "success_metrics", "proof_boundary",
-    }
-    assert terminal["properties"]["event_order"]["type"] == "integer"
-    assert "workflow stage" in terminal["properties"]["result_quote"]["description"]
-    assert "inside the selected fact quote, not the source document" in terminal["properties"]["result_occurrence"]["description"]
-    assert authored_properties["events"]["type"] == "array"
-    assert authored_properties["events"]["minItems"] == 1
-    assert set(authored_properties["events"]["items"]["properties"]) == {
-        "actor_fact_quote",
-        "action_quote",
-        "target_quote",
-    }
-    assert authored_properties["components"]["minItems"] == 0
-    assert authored_properties["components"]["items"]["properties"]["responsibilities"]["minItems"] == 1
-    component = authored_properties["components"]["items"]
-    assert set(component["properties"]) == {
-        "owner_fact_quote",
-        "responsibilities",
-    }
-    responsibility = component["properties"]["responsibilities"]
-    assert set(responsibility["items"]["properties"]) == {"quote", "occurrence"}
-    assert "component_responsibilities" not in typed_facts["properties"]
-    assert "clarification" not in authored_properties
-    assert set(clarification_branch["properties"]) == {
-        "status",
-        "consistency",
-        "clarification",
-    }
-    assert "facts" not in clarification_branch["properties"]
 
 
 def test_authoring_rejects_unknown_terminal_and_superseded_component_link_fields() -> None:
@@ -751,7 +740,7 @@ def test_authoring_rejects_unknown_terminal_and_superseded_component_link_fields
         author_greenfield_intent(
             review_provider_factory=AdmittingReviewProvider,
             evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
+            **_participant_first_kwargs(response),
             clock=lambda: 0.0,
         )
 
@@ -763,7 +752,7 @@ def test_authoring_rejects_unknown_terminal_and_superseded_component_link_fields
         author_greenfield_intent(
             review_provider_factory=AdmittingReviewProvider,
             evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
+            **_participant_first_kwargs(response),
             clock=lambda: 0.0,
         )
 
@@ -773,7 +762,7 @@ def test_authoring_rejects_unknown_terminal_and_superseded_component_link_fields
         author_greenfield_intent(
             review_provider_factory=AdmittingReviewProvider,
             evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
+            **_participant_first_kwargs(response),
             clock=lambda: 0.0,
         )
 
@@ -786,7 +775,7 @@ def test_authoring_derives_atomic_custody_without_a_second_model_semantic_payloa
     result = author_greenfield_intent(
         review_provider_factory=AdmittingReviewProvider,
         evidence_text=source,
-        provider=StructuredAuthoringProvider(response),
+        **_participant_first_kwargs(response),
         clock=lambda: 0.0,
     )
 
@@ -813,11 +802,11 @@ def test_authoring_rejects_the_retired_model_atomic_payload() -> None:
     response = _response(source)
     response["atomic_claims"] = []
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="unsupported response contract"):
+    with pytest.raises(GreenfieldModelAuthoringError, match="unsupported response"):
         author_greenfield_intent(
             review_provider_factory=AdmittingReviewProvider,
             evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
+            **_participant_first_kwargs(response),
             clock=lambda: 0.0,
         )
 
@@ -838,7 +827,7 @@ def test_release_proof_descriptor_retains_raw_response_before_rejection(
             author_greenfield_intent(
                 review_provider_factory=AdmittingReviewProvider,
                 evidence_text=source,
-                provider=StructuredAuthoringProvider(response),
+                **_participant_first_kwargs(response),
                 clock=lambda: 0.0,
             )
     finally:
@@ -850,7 +839,9 @@ def test_release_proof_descriptor_retains_raw_response_before_rejection(
         "version": GREENFIELD_INTENT_AUTHORING_VERSION,
         "evidence": source,
     }
-    assert retained["response"] == response
+    remaining_response = deepcopy(response)
+    remaining_response["result"]["facts"].pop("human_actors")
+    assert retained["remaining_candidate_authoring"]["response"] == remaining_response
 
 
 def test_authoring_rejects_a_source_quote_that_is_not_present() -> None:
@@ -865,7 +856,7 @@ def test_authoring_rejects_a_source_quote_that_is_not_present() -> None:
         author_greenfield_intent(
             review_provider_factory=AdmittingReviewProvider,
             evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
+            **_participant_first_kwargs(response),
             clock=lambda: 0.0,
         )
 
@@ -878,11 +869,11 @@ def test_authoring_rejects_the_retired_flat_fact_array() -> None:
         {"field": "state_object", "quote": "occupancy", "occurrence": 1},
     ]
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="invalid source citations"):
+    with pytest.raises(GreenfieldModelAuthoringError, match="cannot be joined"):
         author_greenfield_intent(
             review_provider_factory=AdmittingReviewProvider,
             evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
+            **_participant_first_kwargs(response),
             clock=lambda: 0.0,
         )
 
@@ -898,7 +889,7 @@ def test_authoring_rejects_responsibilities_in_the_retired_facts_namespace() -> 
         author_greenfield_intent(
             review_provider_factory=AdmittingReviewProvider,
             evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
+            **_participant_first_kwargs(response),
             clock=lambda: 0.0,
         )
 
@@ -914,7 +905,6 @@ def test_authoring_rejects_typed_facts_over_the_total_citation_cap() -> None:
         "success_metrics",
         "evidence_requirements",
         "operational_constraints",
-        "human_actors",
         "external_systems",
         "internal_systems",
         "non_goals",
@@ -928,7 +918,7 @@ def test_authoring_rejects_typed_facts_over_the_total_citation_cap() -> None:
         author_greenfield_intent(
             review_provider_factory=AdmittingReviewProvider,
             evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
+            **_participant_first_kwargs(response),
             clock=lambda: 0.0,
         )
 
@@ -942,7 +932,7 @@ def test_authoring_rejects_an_action_quote_outside_its_event() -> None:
         author_greenfield_intent(
             review_provider_factory=AdmittingReviewProvider,
             evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
+            **_participant_first_kwargs(response),
             clock=lambda: 0.0,
         )
 
@@ -956,7 +946,7 @@ def test_authoring_rejects_a_missing_component_responsibility_owner() -> None:
         author_greenfield_intent(
             review_provider_factory=AdmittingReviewProvider,
             evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
+            **_participant_first_kwargs(response),
             clock=lambda: 0.0,
         )
 
@@ -977,7 +967,7 @@ def test_authoring_rejects_an_empty_owner_group_beside_grouped_responsibilities(
         author_greenfield_intent(
             review_provider_factory=AdmittingReviewProvider,
             evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
+            **_participant_first_kwargs(response),
             clock=lambda: 0.0,
         )
 
@@ -998,7 +988,7 @@ def test_authoring_rejects_one_owner_split_across_component_groups() -> None:
         author_greenfield_intent(
             review_provider_factory=AdmittingReviewProvider,
             evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
+            **_participant_first_kwargs(response),
             clock=lambda: 0.0,
         )
 
@@ -1015,7 +1005,7 @@ def test_authoring_rejects_a_component_owner_that_is_not_a_product_system_fact()
         author_greenfield_intent(
             review_provider_factory=AdmittingReviewProvider,
             evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
+            **_participant_first_kwargs(response),
             clock=lambda: 0.0,
         )
 
@@ -1050,7 +1040,7 @@ def test_authoring_aligns_component_owner_rows_to_responsibility_order() -> None
     result = author_greenfield_intent(
         review_provider_factory=AdmittingReviewProvider,
         evidence_text=source,
-        provider=StructuredAuthoringProvider(response),
+        **_participant_first_kwargs(response),
         clock=lambda: 0.0,
     )
 
@@ -1082,7 +1072,7 @@ def test_authoring_rejects_one_responsibility_assigned_to_two_owner_groups() -> 
         author_greenfield_intent(
             review_provider_factory=AdmittingReviewProvider,
             evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
+            **_participant_first_kwargs(response),
             clock=lambda: 0.0,
         )
 
@@ -1100,16 +1090,15 @@ def test_authoring_uses_the_selected_title_fact_as_an_explicit_owner_fallback() 
         ]
     ) + "."
 
+    response = authored_response(
+        intent,
+        evidence_text=source,
+        component_responsibility_owners=["Harbor Desk"],
+    )
     result = author_greenfield_intent(
         review_provider_factory=AdmittingReviewProvider,
         evidence_text=source,
-        provider=StructuredAuthoringProvider(
-            authored_response(
-                intent,
-                evidence_text=source,
-                component_responsibility_owners=["Harbor Desk"],
-            )
-        ),
+        **_participant_first_kwargs(response),
         clock=lambda: 0.0,
     )
 
@@ -1122,7 +1111,7 @@ def test_envelope_rejects_authored_spans_rebound_to_different_source_bytes() -> 
     result = author_greenfield_intent(
         review_provider_factory=AdmittingReviewProvider,
         evidence_text=source,
-        provider=StructuredAuthoringProvider(_response(source)),
+        **_participant_first_kwargs(_response(source)),
         clock=lambda: 0.0,
     )
     sealed_intent = {
@@ -1151,7 +1140,7 @@ def test_envelope_reverifies_atomic_claim_bytes_against_the_exact_source() -> No
     result = author_greenfield_intent(
         review_provider_factory=AdmittingReviewProvider,
         evidence_text=source,
-        provider=StructuredAuthoringProvider(_response(source)),
+        **_participant_first_kwargs(_response(source)),
         clock=lambda: 0.0,
     )
     sealed_intent = {
@@ -1225,7 +1214,7 @@ def test_authoring_derives_the_exact_event_link_for_an_overlapping_responsibilit
     result = author_greenfield_intent(
         review_provider_factory=AdmittingReviewProvider,
         evidence_text=source,
-        provider=StructuredAuthoringProvider(response),
+        **_participant_first_kwargs(response),
         clock=lambda: 0.0,
     )
 
@@ -1283,13 +1272,14 @@ def test_authoring_rejects_a_repeated_owner_on_one_typed_product_event() -> None
     component_relations[0]["owner_fact_quote"] = "Review Board"
 
     with pytest.raises(GreenfieldModelAuthoringError, match="contradictory component owners"):
-        _validated_authoring_response(
+        validate_greenfield_authoring_response(
             response,
             evidence_text=source,
             elapsed_seconds=0.0,
             provider={"provider": "codex-cli"},
             profile_id=STANDARD_PROFILE_ID,
             effective_timeout_seconds=55.0,
+            semantic_model_call_count=3,
         )
 
 
@@ -1311,34 +1301,33 @@ def test_product_owned_terminal_result_uses_the_typed_event_owner() -> None:
         for row in (value if isinstance(value, list) else [value])
         if str(row)
     )
+    response = authored_response(
+        intent,
+        evidence_text=source,
+        first_path_relations=[
+            {
+                "actor_kind": "human",
+                "actor_fact_quote": "Applicant Nia",
+                "event_quote": "Applicant Nia enters one item",
+                "action_verb_quote": "enters",
+                "target_quote": "one item",
+                "visible_result_quote": "",
+            },
+            {
+                "actor_kind": "product",
+                "actor_fact_quote": "Permit Relay",
+                "owner_system_quote": "Permit Relay",
+                "event_quote": "Permit Relay shows it listed",
+                "action_verb_quote": "shows",
+                "target_quote": "it",
+                "visible_result_quote": "it listed",
+            },
+        ],
+    )
     result = author_greenfield_intent(
         review_provider_factory=AdmittingReviewProvider,
         evidence_text=source,
-        provider=StructuredAuthoringProvider(
-            authored_response(
-                intent,
-                evidence_text=source,
-                first_path_relations=[
-                    {
-                        "actor_kind": "human",
-                        "actor_fact_quote": "Applicant Nia",
-                        "event_quote": "Applicant Nia enters one item",
-                        "action_verb_quote": "enters",
-                        "target_quote": "one item",
-                        "visible_result_quote": "",
-                    },
-                    {
-                        "actor_kind": "product",
-                        "actor_fact_quote": "Permit Relay",
-                        "owner_system_quote": "Permit Relay",
-                        "event_quote": "Permit Relay shows it listed",
-                        "action_verb_quote": "shows",
-                        "target_quote": "it",
-                        "visible_result_quote": "it listed",
-                    },
-                ],
-            )
-        ),
+        **_participant_first_kwargs(response),
         clock=lambda: 0.0,
     )
 
@@ -1371,15 +1360,11 @@ def test_human_terminal_result_does_not_create_a_product_responsibility() -> Non
         if str(row)
     )
 
+    response = authored_response(intent, evidence_text=source)
     result = author_greenfield_intent(
         review_provider_factory=AdmittingReviewProvider,
         evidence_text=source,
-        provider=StructuredAuthoringProvider(
-            authored_response(
-                intent,
-                evidence_text=source,
-            )
-        ),
+        **_participant_first_kwargs(response),
         clock=lambda: 0.0,
     )
 
@@ -1413,7 +1398,7 @@ def test_human_only_path_is_admitted_without_inventing_a_source_component() -> N
     result = author_greenfield_intent(
         review_provider_factory=AdmittingReviewProvider,
         evidence_text=source,
-        provider=StructuredAuthoringProvider(response),
+        **_participant_first_kwargs(response),
         clock=lambda: 0.0,
     )
     assert result.component_responsibility_relations == ()
@@ -1422,11 +1407,13 @@ def test_human_only_path_is_admitted_without_inventing_a_source_component() -> N
 
 def test_sealed_semantics_drop_all_provider_fact_indices(tmp_path) -> None:  # type: ignore[no-untyped-def]
     source = _source()
+    provider, participant_factory = _materialization_providers(_response(source))
     candidate = materialize_model_authored_intent(
         review_provider_factory=AdmittingReviewProvider,
         prompt=source,
         repo_root=tmp_path,
-        authoring_provider=StructuredAuthoringProvider(_response(source)),
+        authoring_provider=provider,
+        participant_provider_factory=participant_factory,
         authoring_timeout_seconds=84,
         authoring_profile_id=RESCUE_PROFILE_ID,
     )
@@ -1455,7 +1442,7 @@ def test_authoring_preserves_model_owned_roles_without_a_lexical_post_filter() -
     result = author_greenfield_intent(
         review_provider_factory=AdmittingReviewProvider,
         evidence_text=source,
-        provider=StructuredAuthoringProvider(response),
+        **_participant_first_kwargs(response),
         clock=lambda: 0.0,
     )
 

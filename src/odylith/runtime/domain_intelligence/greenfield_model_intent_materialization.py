@@ -32,6 +32,8 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring impor
     GREENFIELD_INTENT_AUTHORING_VERSION,
     GreenfieldAuthoringClarification,
     GreenfieldModelAuthoredIntent,
+)
+from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
     author_greenfield_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
@@ -121,6 +123,7 @@ def materialize_model_authored_intent(
     source_language: str = "en",
     prepared_evidence: GreenfieldPreparedAuthoringEvidence | None = None,
     authoring_receipt: dict[str, Any] | None = None,
+    participant_provider_factory: Callable[[], Any] | None = None,
     review_provider_factory: Callable[[], Any] | None = None,
     authoring_deadline: float | None = None,
     clock: Callable[[], float] = monotonic,
@@ -144,6 +147,7 @@ def materialize_model_authored_intent(
         source_format=prepared.source_format,
         source_document_count=prepared.source_document_count,
         source_language=prepared.source_language,
+        participant_provider_factory=participant_provider_factory,
         review_provider_factory=review_provider_factory,
         deadline=authoring_deadline,
         clock=clock,
@@ -181,7 +185,10 @@ def materialize_model_authored_intent(
         source_format=prepared.source_format,
         source_document_count=prepared.source_document_count,
         source_language=prepared.source_language,
-        model_authoring=receipt["model_profile"],
+        model_authoring={
+            role: receipt[role]["model_profile"]
+            for role in ("participant_selection", "remaining_candidate_authoring")
+        },
         authored_source_spans=authored.source_spans,
         authored_atomic_claims=authored.atomic_claims,
         authored_source_sha256=authored.source_sha256,
@@ -221,15 +228,6 @@ def materialize_model_authored_intent(
 def _authoring_receipt(
     authored: GreenfieldModelAuthoredIntent | GreenfieldAuthoringClarification,
 ) -> dict[str, Any]:
-    provider = authored.provider or {}
-    model_profile = {
-        "profile_id": authored.profile_id,
-        "provider": str(provider.get("provider") or "").strip().casefold(),
-        "model": str(provider.get("model") or "").strip(),
-        "reasoning_effort": str(provider.get("reasoning_effort") or "").strip().casefold(),
-        "effective_timeout_seconds": float(authored.effective_timeout_seconds),
-        "authoring_tier": authored.tier,
-    }
     consistency_spans = (
         authored.consistency_source_spans
         if isinstance(authored, GreenfieldAuthoringClarification)
@@ -244,11 +242,12 @@ def _authoring_receipt(
         "semantic_model_call_count": authored.semantic_model_call_count,
         "tier": authored.tier,
         "elapsed_seconds": authored.elapsed_seconds,
+        "effective_model_window_seconds": authored.effective_model_window_seconds,
+        "participant_selection": deepcopy(authored.participant_selection),
+        "remaining_candidate_authoring": deepcopy(authored.remaining_candidate_authoring),
         **({
-            "initial_authoring_elapsed_seconds": authored.initial_authoring_elapsed_seconds,
             "candidate_review": deepcopy(authored.candidate_review),
         } if isinstance(authored, GreenfieldModelAuthoredIntent) else {}),
-        "model_profile": model_profile,
         "consistency_assessment": {
             "status": authored.consistency_status,
             "source_spans": [dict(span) for span in consistency_spans],

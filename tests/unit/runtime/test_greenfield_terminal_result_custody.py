@@ -10,11 +10,13 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GreenfieldModelAuthoringError,
+)
+from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
     author_greenfield_intent,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
-    StructuredAuthoringProvider,
+    RemainingCandidateProvider,
     authored_response,
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import (
@@ -78,10 +80,12 @@ def _author_terminal_intent(
     )
     if terminal_override is not None:
         response["result"]["terminal"].update(terminal_override)
+    provider = RemainingCandidateProvider(response)
     result = author_greenfield_intent(
         evidence_text=source,
-        provider=StructuredAuthoringProvider(response),
+        provider=provider,
         clock=lambda: 0.0,
+        participant_provider_factory=provider.participant_provider,
         review_provider_factory=AdmittingReviewProvider,
     )
     return result, source

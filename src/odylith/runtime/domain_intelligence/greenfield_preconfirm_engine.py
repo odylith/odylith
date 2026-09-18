@@ -314,16 +314,26 @@ def build_greenfield_preconfirm_manifest(
 
 
 def _model_authoring_manifest(receipt: Mapping[str, Any]) -> dict[str, Any]:
-    model_profile = receipt.get("model_profile")
-    model_profile = model_profile if isinstance(model_profile, Mapping) else {}
     return {
         key: receipt.get(key)
         for key in (
             "authoring_version", "semantic_model_call_count", "tier", "elapsed_seconds",
-            "initial_authoring_elapsed_seconds",
+            "effective_model_window_seconds",
         )
     } | {
+        role: _model_authoring_role_manifest(receipt.get(role))
+        for role in ("participant_selection", "remaining_candidate_authoring")
+    } | {
         "candidate_review": deepcopy(receipt.get("candidate_review")),
+    }
+
+
+def _model_authoring_role_manifest(value: Any) -> dict[str, Any]:
+    role = value if isinstance(value, Mapping) else {}
+    model_profile = role.get("model_profile")
+    model_profile = model_profile if isinstance(model_profile, Mapping) else {}
+    return {
+        "elapsed_seconds": role.get("elapsed_seconds"),
         "model_profile": {
             key: model_profile.get(key)
             for key in (
@@ -334,7 +344,7 @@ def _model_authoring_manifest(receipt: Mapping[str, Any]) -> dict[str, Any]:
                 "effective_timeout_seconds",
                 "authoring_tier",
             )
-        }
+        },
     }
 
 

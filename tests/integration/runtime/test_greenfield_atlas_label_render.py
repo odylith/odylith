@@ -83,11 +83,16 @@ def test_capability_support_groups_render_complete_local_relationships(tmp_path:
             responsibility = box["description"].removeprefix("Proposed responsibility: ")
             assert f"Responsibility {responsibility}" in labels
         elif box["role"] == "Proposed boundary verification":
-            assert f"Verification {box['label']}" in labels
+            assert f"Boundary check {box['label']}" in labels
+        elif box["role"] == "Proposed delivery acceptance":
+            assert f"Delivery acceptance {' '.join(box['label'].split())}" in labels
     edges = [element for element in root.iter() if "flowchart-link" in element.attrib.get("class", "").split()]
-    assert len(edges) == 8
+    assert len(edges) == 12
     assert {element.attrib["data-id"].rsplit("_", 1)[0] for element in edges} == {
         f"L_component{index}_component{index}_{target}"
         for index in range(1, 5) for target in ("actions", "verification")
+    } | {
+        f"L_component{index}_workstream{index}_acceptance"
+        for index in range(1, 5)
     }
     assert png.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")

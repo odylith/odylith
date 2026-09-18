@@ -9,6 +9,8 @@ from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GreenfieldModelAuthoringError,
+)
+from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
     author_greenfield_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
@@ -16,7 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
-    StructuredAuthoringProvider,
+    RemainingCandidateProvider,
     authored_response,
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import (
@@ -73,10 +75,12 @@ def test_title_alias_keeps_source_owner_through_structural_design_support(tmp_pa
         ],
     )
 
+    provider = RemainingCandidateProvider(response)
     candidate = materialize_model_authored_intent(
         prompt=source,
         repo_root=tmp_path,
-        authoring_provider=StructuredAuthoringProvider(response),
+        authoring_provider=provider,
+        participant_provider_factory=provider.participant_provider,
         review_provider_factory=AdmittingReviewProvider,
     )
 
@@ -131,10 +135,12 @@ def test_two_indistinguishable_internal_system_paths_fail_closed() -> None:
         GreenfieldModelAuthoringError,
         match="duplicate labels for distinct product owners",
     ):
+        provider = RemainingCandidateProvider(response)
         author_greenfield_intent(
             evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
+            provider=provider,
             clock=lambda: 0.0,
+            participant_provider_factory=provider.participant_provider,
             review_provider_factory=AdmittingReviewProvider,
         )
 
@@ -153,9 +159,11 @@ def test_product_and_human_label_collision_fails_closed() -> None:
     )
 
     with pytest.raises(GreenfieldModelAuthoringError, match="unbound first-path actor fact"):
+        provider = RemainingCandidateProvider(response)
         author_greenfield_intent(
             evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
+            provider=provider,
             clock=lambda: 0.0,
+            participant_provider_factory=provider.participant_provider,
             review_provider_factory=AdmittingReviewProvider,
         )

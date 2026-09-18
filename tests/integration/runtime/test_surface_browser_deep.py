@@ -1107,6 +1107,7 @@ def test_casebook_first_bug_rows_load_details_without_dead_shards(browser_contex
 
         casebook = page.frame_locator("#frame-casebook")
         casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
+        casebook.locator("button.bug-row").first.wait_for(state="visible", timeout=15000)
 
         sample_rows = casebook.locator("button.bug-row").evaluate_all(
             """nodes => nodes.slice(0, 6).map((node) => ({

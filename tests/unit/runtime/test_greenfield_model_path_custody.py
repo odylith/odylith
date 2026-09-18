@@ -14,6 +14,8 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GreenfieldModelAuthoringError,
+)
+from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
     author_greenfield_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
@@ -28,6 +30,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
+    RemainingCandidateProvider,
     StructuredAuthoringProvider,
     authored_response,
     model_event_rows,
@@ -110,6 +113,14 @@ def _response(source: str) -> dict[str, object]:
     return response
 
 
+def _participant_first_kwargs(response: dict[str, object]) -> dict[str, object]:
+    provider = RemainingCandidateProvider(response)
+    return {
+        "provider": provider,
+        "participant_provider_factory": provider.participant_provider,
+    }
+
+
 def _carried_human_actor_response() -> tuple[str, dict[str, Any], dict[str, Any]]:
     first_path = (
         "A dock attendant Ivo enters a vessel tag; the attendant checks its status "
@@ -163,12 +174,13 @@ def _carried_human_actor_response() -> tuple[str, dict[str, Any], dict[str, Any]
 
 def test_authoring_accepts_only_byte_verified_source_citations() -> None:
     source = _source()
-    provider = StructuredAuthoringProvider(_response(source))
+    provider = RemainingCandidateProvider(_response(source))
     ticks = iter((0.0, 4.0, 4.0, 4.0))
 
     result = author_greenfield_intent(
         evidence_text=source,
         provider=provider,
+        participant_provider_factory=provider.participant_provider,
         timeout_seconds=84,
         model_profile_id=RESCUE_PROFILE_ID,
         clock=lambda: next(ticks, 4.0),
@@ -230,7 +242,7 @@ def test_product_led_path_keeps_review_recipient_without_inventing_human_event()
 
     result = author_greenfield_intent(
         evidence_text=source,
-        provider=StructuredAuthoringProvider(response),
+        **_participant_first_kwargs(response),
         clock=lambda: 0.0,
         review_provider_factory=AdmittingReviewProvider,
     )
@@ -250,10 +262,11 @@ def test_state_anchor_changes_only_selected_custody_not_canonical_meaning() -> N
         "prefix": "the product records ",
         "anchor_occurrence": 1,
     }
-    provider = StructuredAuthoringProvider(response)
+    provider = RemainingCandidateProvider(response)
     reviewer = AdmittingReviewProvider()
     result = author_greenfield_intent(
         evidence_text=source, provider=provider, clock=lambda: 0.0,
+        participant_provider_factory=provider.participant_provider,
         review_provider_factory=lambda: reviewer,
     )
     span = next(row for row in result.source_spans if row["section_key"] == "state_object")
@@ -280,7 +293,7 @@ def test_wrong_state_anchor_is_reviewed_at_its_selected_location_not_rebound() -
         "prefix": "",
         "anchor_occurrence": 1,
     }
-    provider = StructuredAuthoringProvider(response)
+    provider = RemainingCandidateProvider(response)
     reviewer = StructuredAuthoringProvider({
         "admissible": False,
         "issues": ["facts.state_object: selected text is a training subject, not managed state."],
@@ -289,6 +302,7 @@ def test_wrong_state_anchor_is_reviewed_at_its_selected_location_not_rebound() -
     with pytest.raises(GreenfieldModelAuthoringError):
         author_greenfield_intent(
             evidence_text=source, provider=provider, clock=lambda: 0.0,
+            participant_provider_factory=provider.participant_provider,
             review_provider_factory=lambda: reviewer,
         )
     selected = next(
@@ -342,7 +356,7 @@ def test_event_rejects_target_that_is_only_adjacent_in_a_selected_fact() -> None
     with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path event"):
         author_greenfield_intent(
             evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
+            **_participant_first_kwargs(response),
             clock=lambda: 0.0,
             review_provider_factory=AdmittingReviewProvider,
         )
@@ -356,7 +370,7 @@ def test_event_target_stays_fail_closed_after_ordered_event_simplification() -> 
     with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path event"):
         author_greenfield_intent(
             evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
+            **_participant_first_kwargs(response),
             clock=lambda: 0.0,
             review_provider_factory=AdmittingReviewProvider,
         )
@@ -372,7 +386,7 @@ def test_selected_target_without_event_co_containment_stays_fail_closed() -> Non
     with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path event"):
         author_greenfield_intent(
             evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
+            **_participant_first_kwargs(response),
             clock=lambda: 0.0,
             review_provider_factory=AdmittingReviewProvider,
         )
@@ -383,7 +397,7 @@ def test_coordinated_events_derive_actor_presence_from_one_typed_fact_edge() -> 
 
     result = author_greenfield_intent(
         evidence_text=source,
-        provider=StructuredAuthoringProvider(response),
+        **_participant_first_kwargs(response),
         clock=lambda: 0.0,
         review_provider_factory=AdmittingReviewProvider,
     )
@@ -459,7 +473,7 @@ def test_two_human_actor_changes_use_selected_facts_across_sentences() -> None:
 
     result = author_greenfield_intent(
         evidence_text=source,
-        provider=StructuredAuthoringProvider(response),
+        **_participant_first_kwargs(response),
         clock=lambda: 0.0,
         review_provider_factory=AdmittingReviewProvider,
     )
@@ -486,7 +500,7 @@ def test_unselected_actor_fact_cannot_start_or_switch_an_actor_chain(
     with pytest.raises(GreenfieldModelAuthoringError, match="unbound first-path actor fact"):
         author_greenfield_intent(
             evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
+            **_participant_first_kwargs(response),
             clock=lambda: 0.0,
             review_provider_factory=AdmittingReviewProvider,
         )
@@ -499,7 +513,7 @@ def test_canonical_relation_rejects_retired_surface_actor_fields(
     source, response, intent = _carried_human_actor_response()
     result = author_greenfield_intent(
         evidence_text=source,
-        provider=StructuredAuthoringProvider(response),
+        **_participant_first_kwargs(response),
         clock=lambda: 0.0,
         review_provider_factory=AdmittingReviewProvider,
     )
@@ -522,10 +536,12 @@ def test_canonical_relation_rejects_retired_surface_actor_fields(
 def test_materialization_preserves_exact_event_fact_bytes(tmp_path) -> None:  # type: ignore[no-untyped-def]
     source = _source()
     response = _response(source)
+    provider = RemainingCandidateProvider(response)
     candidate = materialize_model_authored_intent(
         prompt=source,
         repo_root=tmp_path,
-        authoring_provider=StructuredAuthoringProvider(response),
+        authoring_provider=provider,
+        participant_provider_factory=provider.participant_provider,
         authoring_timeout_seconds=84,
         authoring_profile_id=RESCUE_PROFILE_ID,
         review_provider_factory=AdmittingReviewProvider,
@@ -540,9 +556,10 @@ def test_materialization_preserves_exact_event_fact_bytes(tmp_path) -> None:  # 
 
 def test_verified_authoring_spans_become_the_product_intent_custody_source() -> None:
     source = _source()
+    response = _response(source)
     result = author_greenfield_intent(
         evidence_text=source,
-        provider=StructuredAuthoringProvider(_response(source)),
+        **_participant_first_kwargs(response),
         clock=lambda: 0.0,
         review_provider_factory=AdmittingReviewProvider,
     )
@@ -609,9 +626,10 @@ def test_verified_authoring_spans_become_the_product_intent_custody_source() -> 
 def test_envelope_rejects_relation_rebound_to_a_duplicate_source_occurrence() -> None:
     event = "Dock attendant Ivo enters a vessel tag"
     source = f"{_source()} {event}."
+    response = _response(source)
     result = author_greenfield_intent(
         evidence_text=source,
-        provider=StructuredAuthoringProvider(_response(source)),
+        **_participant_first_kwargs(response),
         clock=lambda: 0.0,
         review_provider_factory=AdmittingReviewProvider,
     )
@@ -659,15 +677,14 @@ def test_authored_custody_preserves_exact_unicode_markdown_and_deferred_actor_by
             *(str(row) for key, rows in intent.items() if key in _LIST_FIELDS for row in rows),
         ]
     ) + "."
+    response = authored_response(
+        intent,
+        evidence_text=source,
+        component_responsibility_owners=["`berth-map`"],
+    )
     result = author_greenfield_intent(
         evidence_text=source,
-        provider=StructuredAuthoringProvider(
-            authored_response(
-                intent,
-                evidence_text=source,
-                component_responsibility_owners=["`berth-map`"],
-            )
-        ),
+        **_participant_first_kwargs(response),
         clock=lambda: 0.0,
         review_provider_factory=AdmittingReviewProvider,
     )

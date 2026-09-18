@@ -352,7 +352,6 @@ def _release_result(
     profile_id: str,
 ) -> GreenfieldMatrixResult:
     facts = _facts_for_band(case, band=band)
-    profile = get_greenfield_model_profile(profile_id)
     evidence_source = combined_prompt_evidence_source(
         prompt=case.prompt,
         edit_evidence=case.confirmed_intent_markdown,
@@ -366,14 +365,7 @@ def _release_result(
         ),
         source_size_bytes=len(evidence_source.encode("utf-8")),
         source_document_count=2 if case.confirmed_intent_markdown else 1,
-        model_authoring={
-            "profile_id": profile.profile_id,
-            "provider": profile.provider,
-            "model": profile.model,
-            "reasoning_effort": profile.reasoning_effort,
-            "effective_timeout_seconds": profile.model_timeout_seconds,
-            "authoring_tier": profile.repair_tier,
-        },
+        model_authoring=_model_authoring_observations(profile_id),
     )
     assert envelope["status"] == "supported"
     assert envelope["complexity"]["band"] == band
@@ -391,6 +383,28 @@ def _release_result(
             "model_profile": {"profile_id": profile_id},
         },
     )
+
+
+def _model_authoring_observations(profile_id: str) -> dict[str, dict[str, object]]:
+    profile = get_greenfield_model_profile(profile_id)
+    common = {
+        "profile_id": profile.profile_id,
+        "provider": profile.provider,
+        "effective_timeout_seconds": profile.model_timeout_seconds,
+        "authoring_tier": profile.repair_tier,
+    }
+    return {
+        "participant_selection": {
+            **common,
+            "model": profile.participant_model,
+            "reasoning_effort": profile.participant_reasoning_effort,
+        },
+        "remaining_candidate_authoring": {
+            **common,
+            "model": profile.model,
+            "reasoning_effort": profile.reasoning_effort,
+        },
+    }
 
 
 def _facts_for_band(case: GreenfieldMatrixCase, *, band: str) -> dict[str, object]:

@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from copy import deepcopy
+import hashlib
+import json
 from typing import Any
 
 from greenfield_model_profiles import MODEL_PROFILES
@@ -14,11 +17,83 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 
-MODEL_PROFILE_PROOF_VERSION = "odylith.greenfield.installed-model-profile-proof.v2"
+MODEL_PROFILE_PROOF_VERSION = "odylith.greenfield.installed-model-profile-proof.v3"
 UNAVAILABLE_PROVIDER_FAILURE_TEXT = "model authoring is unavailable"
 TRANSACTION_COMMITTED_EXPECTATION = "transaction_committed"
 CLARIFICATION_REQUIRED_EXPECTATION = "clarification_required"
 CLARIFICATION_NO_WRITE_SCORE_BASIS = "clarification_required_no_write_contract"
+
+
+def authored_model_result_binding_issues(
+    *,
+    stage_observation: Mapping[str, Any],
+    create_payload: Mapping[str, Any],
+    expected_source: str,
+) -> tuple[str, ...]:
+    """Bind retained private author/review evidence to the committed receipt."""
+
+    retained = _mapping(stage_observation)
+    private_request = _mapping(retained.get("request"))
+    private_review = _mapping(retained.get("candidate_review"))
+    private_review_request = _mapping(private_review.get("request"))
+    private_candidate = private_review_request.get("candidate")
+    receipt = _nested_mapping(
+        _mapping(create_payload),
+        "commit_manifest",
+        "model_authoring",
+        "candidate_review",
+    )
+    issues: list[str] = []
+    source = str(expected_source or "")
+    if not source:
+        issues.append("expected authored source is missing")
+    if set(private_request) != {"version", "evidence"}:
+        issues.append("retained private author request is missing or malformed")
+    elif private_request.get("evidence") != source:
+        issues.append("retained private author request does not match the expected source")
+    if not private_review or private_review.get("dispatched") is not True:
+        issues.append("retained private candidate review is missing")
+    if not isinstance(private_candidate, Mapping):
+        issues.append("retained private reviewed candidate is missing")
+
+    if not receipt:
+        issues.append("sealed candidate-review receipt is missing")
+        return tuple(issues)
+    if (
+        receipt.get("version") != "odylith.greenfield.candidate-review.v2"
+        or receipt.get("status") != "admitted"
+    ):
+        issues.append("sealed candidate-review receipt is not admitted")
+
+    expected_source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
+    sealed_source_sha256 = receipt.get("source_sha256")
+    if not _is_sha256(sealed_source_sha256):
+        issues.append("sealed candidate-review source hash is invalid")
+    elif sealed_source_sha256 != expected_source_sha256:
+        issues.append("sealed candidate-review source hash does not match the expected source")
+
+    sealed_candidate_sha256 = receipt.get("candidate_sha256")
+    if not _is_sha256(sealed_candidate_sha256):
+        issues.append("sealed candidate-review candidate hash is invalid")
+    elif isinstance(private_candidate, Mapping):
+        try:
+            private_candidate_sha256 = hashlib.sha256(
+                json.dumps(
+                    private_candidate,
+                    sort_keys=True,
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                    allow_nan=False,
+                ).encode("utf-8")
+            ).hexdigest()
+        except (TypeError, ValueError, OverflowError):
+            issues.append("retained private reviewed candidate is not canonical JSON")
+        else:
+            if private_candidate_sha256 != sealed_candidate_sha256:
+                issues.append(
+                    "retained private reviewed candidate does not match the sealed receipt"
+                )
+    return tuple(dict.fromkeys(issues))
 
 
 def sealed_model_profile_observation(
@@ -58,17 +133,7 @@ def sealed_model_profile_observation(
     )
     for candidate in candidates:
         if candidate:
-            return {
-                key: candidate.get(key)
-                for key in (
-                    "profile_id",
-                    "provider",
-                    "model",
-                    "reasoning_effort",
-                    "effective_timeout_seconds",
-                    "authoring_tier",
-                )
-            }
+            return deepcopy(dict(candidate))
     return {}
 
 
@@ -163,7 +228,13 @@ def model_profile_release_proof(
             "provider": contract.provider,
             "model": contract.model,
             "reasoning_effort": contract.reasoning_effort,
-            "maximum_semantic_model_calls": 2,
+            "participant_selection_model": contract.participant_model,
+            "participant_selection_reasoning_effort": contract.participant_reasoning_effort,
+            "remaining_candidate_authoring_model": contract.model,
+            "remaining_candidate_authoring_reasoning_effort": contract.reasoning_effort,
+            "candidate_review_model": contract.review_model,
+            "candidate_review_reasoning_effort": contract.review_reasoning_effort,
+            "maximum_semantic_model_calls": 3,
             "performance_target_seconds": contract.performance_target_seconds,
             "operational_timeout_seconds": contract.operational_timeout_seconds,
             "performance_target_met": (
@@ -171,7 +242,9 @@ def model_profile_release_proof(
                 and max(elapsed_values) <= contract.performance_target_seconds
             ),
             "lower_capability": contract.lower_capability,
-            "lower_capability_role": "initial_authoring" if contract.lower_capability else "not_applicable",
+            "lower_capability_role": (
+                "remaining_candidate_authoring" if contract.lower_capability else "not_applicable"
+            ),
             "case_count": len(profile_results),
             "committed_positive_case_count": sum(
                 _result_proves_committed_case(result, profile_id)
@@ -351,9 +424,10 @@ def _lower_capability_scope(
             continue
         evidence = _mapping(getattr(valid_results[0], "evidence", None))
         observed = _mapping(_mapping(evidence.get("model_profile")).get("observed"))
+        remaining_observation = _mapping(observed.get("remaining_candidate_authoring"))
         observed_profiles.append(
             {
-                key: observed.get(key)
+                key: remaining_observation.get(key)
                 for key in (
                     "profile_id",
                     "provider",
@@ -372,7 +446,7 @@ def _lower_capability_scope(
     return {
         "status": "passed" if complete else "unproven",
         "observed_profiles": observed_profiles,
-        "role": "initial_authoring",
+        "role": "remaining_candidate_authoring",
         "requirement": "installed_committed_positive_and_source_bound_clarification_no_write",
     }
 
@@ -384,27 +458,32 @@ def _profile_observation_issues(
     expectation: str,
 ) -> tuple[str, ...]:
     observed = _mapping(profile_evidence.get("observed"))
-    if set(observed) != {
-        "profile_id",
-        "provider",
-        "model",
-        "reasoning_effort",
-        "effective_timeout_seconds",
-        "authoring_tier",
-    }:
-        return ("lacks the stable six-field request observation",)
-    if str(observed.get("profile_id") or "").strip() != profile_id:
-        return ("observation identifies a different profile",)
-    issues = list(
-        greenfield_model_profile_observation_issues(
-            profile_id=profile_id,
-            provider=str(observed.get("provider") or ""),
-            model=str(observed.get("model") or ""),
-            reasoning_effort=str(observed.get("reasoning_effort") or ""),
-            effective_timeout_seconds=observed.get("effective_timeout_seconds"),
-            authoring_tier=str(observed.get("authoring_tier") or ""),
+    if set(observed) != {"participant_selection", "remaining_candidate_authoring"}:
+        return ("lacks the two stable six-field request observations",)
+    issues: list[str] = []
+    expected_fields = {
+        "profile_id", "provider", "model", "reasoning_effort",
+        "effective_timeout_seconds", "authoring_tier",
+    }
+    for role in ("participant_selection", "remaining_candidate_authoring"):
+        role_observation = _mapping(observed.get(role))
+        if set(role_observation) != expected_fields:
+            issues.append(f"{role} lacks the stable six-field request observation")
+            continue
+        if str(role_observation.get("profile_id") or "").strip() != profile_id:
+            issues.append(f"{role} observation identifies a different profile")
+            continue
+        issues.extend(
+            greenfield_model_profile_observation_issues(
+                profile_id=profile_id,
+                provider=str(role_observation.get("provider") or ""),
+                model=str(role_observation.get("model") or ""),
+                reasoning_effort=str(role_observation.get("reasoning_effort") or ""),
+                effective_timeout_seconds=role_observation.get("effective_timeout_seconds"),
+                authoring_tier=str(role_observation.get("authoring_tier") or ""),
+                request_role=role,
+            )
         )
-    )
     stages = _mapping(profile_evidence.get("stage_observation"))
     issues.extend(model_stage_observation_issues(
         profile_id, observed=observed, stage_observation=stages,
@@ -413,7 +492,9 @@ def _profile_observation_issues(
         "authored" if expectation == TRANSACTION_COMMITTED_EXPECTATION
         else "clarification_required"
     )
-    if _nested_mapping(stages, "response", "result").get("status") != expected_status:
+    if _nested_mapping(
+        stages, "remaining_candidate_authoring", "response", "result"
+    ).get("status") != expected_status:
         issues.append("retained model response does not match the declared case outcome")
     return tuple(issues)
 
@@ -451,6 +532,7 @@ def _empty_sequence(value: Any) -> bool:
 
 __all__ = [
     "MODEL_PROFILE_PROOF_VERSION",
+    "authored_model_result_binding_issues",
     "model_profile_release_proof",
     "sealed_model_profile_observation",
     "unavailable_provider_proof_issues",

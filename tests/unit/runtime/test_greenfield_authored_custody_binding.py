@@ -28,7 +28,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 from odylith.runtime.governance import artifact_tribunal
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
-    StructuredAuthoringProvider,
+    RemainingCandidateProvider,
     authored_response,
 )
 
@@ -92,19 +92,21 @@ def _materialized_authored_intent(tmp_path: Path) -> dict[str, Any]:
         for row in (value if isinstance(value, list) else [value])
         if str(row)
     ) + "."
+    provider = RemainingCandidateProvider(
+        authored_response(
+            intent,
+            evidence_text=source,
+            first_path_relations=relations,
+            component_responsibility_owners=["Berth recorder", "Berth map"],
+        )
+    )
     return materialize_model_authored_intent(
         prompt=source,
         repo_root=tmp_path,
-        authoring_provider=StructuredAuthoringProvider(
-            authored_response(
-                intent,
-                evidence_text=source,
-                first_path_relations=relations,
-                component_responsibility_owners=["Berth recorder", "Berth map"],
-            )
-        ),
+        authoring_provider=provider,
         authoring_timeout_seconds=84,
         authoring_profile_id=RESCUE_PROFILE_ID,
+        participant_provider_factory=provider.participant_provider,
         review_provider_factory=AdmittingReviewProvider,
     )
 

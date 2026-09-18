@@ -26,7 +26,7 @@ from odylith.runtime.domain_intelligence.proposal_memory import (
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
-    StructuredAuthoringProvider,
+    RemainingCandidateProvider,
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
@@ -146,12 +146,14 @@ def _proposal(tmp_path: Path, *, include_assumption: bool = True) -> dict[str, o
         if include_assumption
         else []
     )
+    provider = RemainingCandidateProvider(response)
     candidate = materialize_model_authored_intent(
         prompt=source,
         repo_root=tmp_path,
-        authoring_provider=StructuredAuthoringProvider(response),
+        authoring_provider=provider,
         authoring_timeout_seconds=60,
         authoring_profile_id=STANDARD_PROFILE_ID,
+        participant_provider_factory=provider.participant_provider,
         review_provider_factory=AdmittingReviewProvider,
     )
     proposal = build_authored_greenfield_proposal(

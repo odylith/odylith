@@ -34,7 +34,7 @@ from odylith.runtime.domain_intelligence.greenfield_preconfirm_semantic_alignmen
 from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
-    StructuredAuthoringProvider,
+    RemainingCandidateProvider,
     authored_response,
     structural_design_fixture,
 )
@@ -96,9 +96,10 @@ def _result_first_response(*, include_precedence=True, archive_after_result=Fals
 
 def test_post_result_action_survives_authoring_custody_and_all_projections(tmp_path):
     source, response, events = _result_first_response(archive_after_result=True)
-    provider = StructuredAuthoringProvider(response)
+    provider = RemainingCandidateProvider(response)
     candidate = materialize_model_authored_intent(
         prompt=source, repo_root=tmp_path, authoring_provider=provider,
+        participant_provider_factory=provider.participant_provider,
         review_provider_factory=AdmittingReviewProvider,
     )
     assert provider.calls == 1
@@ -131,9 +132,10 @@ def test_post_result_action_survives_authoring_custody_and_all_projections(tmp_p
 @pytest.fixture
 def ordered_package(tmp_path):
     source, response, events = _result_first_response()
-    provider = StructuredAuthoringProvider(response)
+    provider = RemainingCandidateProvider(response)
     candidate = materialize_model_authored_intent(
         prompt=source, repo_root=tmp_path, authoring_provider=provider,
+        participant_provider_factory=provider.participant_provider,
         review_provider_factory=AdmittingReviewProvider,
     )
     assert provider.calls == 1

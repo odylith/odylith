@@ -21,6 +21,15 @@ from odylith.runtime.domain_intelligence.greenfield_pending_transaction_store im
 from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
     consistency_source_span_receipts_valid,
 )
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    get_greenfield_model_profile,
+    greenfield_model_profile_observation_issues,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+    GreenfieldAuthoringClarification,
+    validate_greenfield_authoring_response,
+)
+from odylith.runtime.domain_intelligence.greenfield_material_clarification import material_clarification_for_fields
 from odylith.runtime.domain_intelligence.greenfield_repository_write_set import (
     GREENFIELD_REPOSITORY_WRITE_PATHS,
 )
@@ -104,6 +113,8 @@ def clarification_contract_issues(
     expected_fields: Sequence[str] = (),
     expected_question: str = "",
     expected_model_profile_id: str = "",
+    stage_observation: Mapping[str, Any] | None = None,
+    expected_source: str = "",
 ) -> tuple[str, ...]:
     """Require exactly the small, host-neutral clarification payload and no writes."""
 
@@ -126,6 +137,10 @@ def clarification_contract_issues(
     if "product_create_transaction" in payload:
         issues.append("clarification proposal must not include ProductCreateTransaction")
     clarification = payload.get("clarification") if isinstance(payload.get("clarification"), Mapping) else {}
+    if stage_observation is not None:
+        issues.extend(_clarification_identity_issues(
+            clarification, stage_observation, expected_source=expected_source,
+        ))
     if set(clarification) != {
         "question",
         "required_fields",
@@ -138,16 +153,33 @@ def clarification_contract_issues(
         )
     model_profile = clarification.get("model_profile")
     model_profile = model_profile if isinstance(model_profile, Mapping) else {}
-    if set(model_profile) != {
-        "profile_id",
-        "provider",
-        "model",
-        "reasoning_effort",
-        "effective_timeout_seconds",
-        "authoring_tier",
-    }:
-        issues.append("clarification model_profile must contain the stable six-field request observation")
-    if expected_model_profile_id and str(model_profile.get("profile_id") or "").strip() != expected_model_profile_id:
+    roles = ("participant_selection", "remaining_candidate_authoring")
+    if set(model_profile) != set(roles):
+        issues.append("clarification model_profile must contain exactly both pre-review role observations")
+    observed_profile_ids = set()
+    for role in roles:
+        observation = model_profile.get(role)
+        if not isinstance(observation, Mapping) or set(observation) != {
+            "profile_id", "provider", "model", "reasoning_effort",
+            "effective_timeout_seconds", "authoring_tier",
+        }:
+            issues.append(f"clarification {role} must contain the stable six-field request observation")
+            continue
+        profile_id = str(observation["profile_id"] or "").strip()
+        observed_profile_ids.add(profile_id)
+        try:
+            profile = get_greenfield_model_profile(profile_id)
+            role_issues = greenfield_model_profile_observation_issues(
+                **observation, request_role=role,
+            )
+            if not profile.supported_success or observation["authoring_tier"] != profile.repair_tier:
+                role_issues += ("unsupported authoring tier or profile",)
+        except ValueError:
+            role_issues = ("unsupported profile",)
+        issues.extend(f"clarification {role}: {issue}" for issue in role_issues)
+    if len(observed_profile_ids) != 1 or (
+        expected_model_profile_id and observed_profile_ids != {expected_model_profile_id}
+    ):
         issues.append("clarification model_profile must match the selected pre-call profile")
     consistency = clarification.get("consistency_assessment")
     consistency = consistency if isinstance(consistency, Mapping) else {}
@@ -207,6 +239,40 @@ def clarification_contract_issues(
             + ", ".join(execution.changed_records)
         )
     return tuple(issues)
+
+
+def _clarification_identity_issues(
+    clarification: Mapping[str, Any], stage: Mapping[str, Any], *, expected_source: str,
+) -> tuple[str, ...]:
+    """Bind the public decision to the actual source-bound private model result."""
+
+    try:
+        source = stage["request"]["evidence"]
+        remainder = stage["remaining_candidate_authoring"]
+        if not expected_source or source != expected_source:
+            raise ValueError("source identity mismatch")
+        authored = validate_greenfield_authoring_response(
+            remainder["response"], evidence_text=source,
+            elapsed_seconds=remainder["elapsed_seconds"], provider=remainder["provider"],
+            profile_id=remainder["profile_id"], effective_timeout_seconds=remainder["timeout_seconds"],
+            semantic_model_call_count=2,
+        )
+        if not isinstance(authored, GreenfieldAuthoringClarification):
+            raise ValueError("not a clarification")
+        decision = material_clarification_for_fields(
+            authored.required_fields, consistency_status=authored.consistency_status,
+        )
+        expected_consistency = {
+            "status": authored.consistency_status,
+            "source_spans": list(authored.consistency_source_spans),
+        }
+        if (clarification.get("required_fields") != list(decision.required_fields)
+                or clarification.get("question") != decision.question
+                or clarification.get("consistency_assessment") != expected_consistency):
+            raise ValueError("public decision identity mismatch")
+    except (KeyError, TypeError, ValueError):
+        return ("public clarification does not match its retained source-bound model result",)
+    return ()
 
 
 def clarification_quality_verdict(issues: Sequence[str]) -> GreenfieldQualityVerdict:

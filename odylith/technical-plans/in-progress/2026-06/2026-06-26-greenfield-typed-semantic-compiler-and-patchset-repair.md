@@ -2,6 +2,37 @@ Status: In progress
 
 ## Current installed shipping gate (2026-09-18)
 
+Participant-first production integration is implemented as authoring v64, profile
+contract v18, operating envelope v4 and private proof v3. One selector owns human
+participants; the remaining author cannot replace them, and the unchanged final
+review judges the deterministically joined complete candidate. The old complete
+author orchestration and aliases are removed. Successful proposals require three
+actual calls; material clarification requires two and writes nothing. All roles
+consume one shared 165-second model window inside the existing 180-second safety
+timeout; 90/120/150 remain advisory. Existing compiler, projections and commit-only
+publication remain owners, with no semantic repair or extra retry stage.
+
+Independent integration review found and resolved three concrete proof classes:
+review setup must consume the shared deadline without being counted against the
+later request timeout; failed nonstructured output must not retain provider
+diagnostic text; and release evidence must bind private source/candidate/decision
+identity to public clarification or sealed review receipts without dropping unknown
+receipt fields. Original repros now fail safely, and independent bounded rechecks
+confirm closure. Current root integration checks pass 267 tests. Combined frozen
+regression subsequently found 74 unit failures and two browser failures, with
+2,935 unit and 213 browser passes on an unchanged snapshot. Missed three-role
+fixtures and release-axis extraction are corrected; extended failure tests also
+caught and corrected participant setup errors losing their typed environment
+outcome. Focused correction evidence passes 110 runtime, 71 release-evaluation
+and three browser checks. Casebook row readiness and Atlas label/relationship
+assertions retain the existing product contracts. The corrected frozen run now
+passes 3,043 selected runtime/install checks and all 215 selected browser checks,
+with unchanged source, logical shell, publication and Compass fingerprints. One
+indirect Makefile-discovery check remains deliberately excluded to protect the
+final evaluation. Clean-installed model quality, per-profile/native-host
+qualification and final untouched evaluation remain pending. Do not treat prior experimental
+package acceptance or focused test counts as those missing release gates.
+
 Authoring v63 and immutable review now share a portable operational-constraint
 definition: preserve any source-stated subject, required/prohibited/permitted
 behavior and material condition or scope in each independently projected quote.

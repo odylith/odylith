@@ -51,6 +51,12 @@ OPERATIONAL_CONSTRAINT_ROLE_DEFINITION = (
     "source constraint. Prefer a concise self-contained span, without inventing actors, relations "
     "or restrictions absent from the source."
 )
+HUMAN_ACTOR_ROLE_DEFINITION = (
+    "Source-stated people or human roles participating in the product, including "
+    "explicit output recipients outside the first path. Use an empty list when no "
+    "human participant is stated. An activity, artifact, or output-purpose modifier "
+    "is not a human participant."
+)
 _SOURCE_FIELDS = frozenset((
     "status", "facts", "events", "components", "terminal", "source_precedence",
     "consistency", "ambiguities",
@@ -96,7 +102,7 @@ _ROLE_DEFINITIONS = {
     "customer": "The source-stated direct user or primary beneficiary. Do not turn an activity or output purpose into a person.",
     "opportunity": "A complete source statement of the improvement or benefit worth pursuing, not an isolated workflow action.",
     "product_view": "A distinct complete source statement of the envisioned user experience: what a user can do or understand through the product. A title or product-category label is not an experience.",
-    "human_actors": "Source-stated people or human roles participating in the product, including explicit output recipients outside the first path. Use an empty list when no human participant is stated. An activity, artifact, or output-purpose modifier is not a human participant.",
+    "human_actors": HUMAN_ACTOR_ROLE_DEFINITION,
     "internal_systems": INTERNAL_SYSTEM_ROLE_DEFINITION,
     "operational_constraints": OPERATIONAL_CONSTRAINT_ROLE_DEFINITION,
     "external_systems": "Only an explicitly source-stated operational exchange or dependency between this product and a named external system, service, authority, organization, or data source. Merely naming task data, an output recipient, or a reviewer does not establish that connection.",
@@ -191,6 +197,9 @@ def review_greenfield_candidate(
         timeout_seconds=timeout, model=request.model, reasoning_effort=request.reasoning_effort,
         request=deepcopy(payload))
     receipt: dict[str, Any] | None = None
+    # Request elapsed and its timeout have the same origin; setup still consumes
+    # the absolute shared deadline and total pipeline elapsed time.
+    dispatched_at = clock()
     try:
         response = provider.generate_structured(request=request)
         observation["response"] = deepcopy(response)
@@ -223,7 +232,7 @@ def review_greenfield_candidate(
             "version": CANDIDATE_REVIEW_VERSION, "status": "admitted",
             "source_sha256": hashlib.sha256(evidence_text.encode("utf-8")).hexdigest(),
             "candidate_sha256": hashlib.sha256(_encoded(payload["candidate"])).hexdigest(),
-            "model_profile": model_profile, "elapsed_seconds": max(0.0, clock() - started),
+            "model_profile": model_profile, "elapsed_seconds": max(0.0, clock() - dispatched_at),
         }
         if clock() > review_deadline:
             raise GreenfieldModelRuntimeError("timeout")
@@ -232,7 +241,7 @@ def review_greenfield_candidate(
         raise GreenfieldModelRuntimeError("timeout") from exc
     finally:
         finished = clock()
-        observation["elapsed_seconds"] = max(0.0, finished - started)
+        observation["elapsed_seconds"] = max(0.0, finished - dispatched_at)
         if finished > review_deadline:
             raise GreenfieldModelRuntimeError("timeout")
         if receipt is not None:

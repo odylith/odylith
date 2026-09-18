@@ -12,7 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization
 from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
-    StructuredAuthoringProvider,
+    RemainingCandidateProvider,
     authored_response,
 )
 from tests.unit.runtime.greenfield_proposal_fixtures import HIIT_CONFIRMED_INTENT_TEXT
@@ -36,13 +36,16 @@ def test_hiit_structured_fixture_preserves_path_and_sealed_package_under_sixty_s
 
     prompt = "Draft a greenfield proposal for a guided HIIT interval training app"
     provider = _hiit_authoring_provider(prompt)
+    participant = provider.participant_provider()
     reviewer = AdmittingReviewProvider()
 
-    def authoring_provider(*, request_role="initial_authoring", **_kwargs):
-        if request_role == "initial_authoring":
+    def authoring_provider(*, request_role="remaining_candidate_authoring", **_kwargs):
+        if request_role == "participant_selection":
+            return participant, "gpt-6-astra", "medium"
+        if request_role == "remaining_candidate_authoring":
             return provider, "test-model", "low"
         if request_role == "candidate_review":
-            return reviewer, "gpt-5.6-sol", "medium"
+            return reviewer, "gpt-6-astra", "medium"
         raise AssertionError(f"Unexpected Greenfield request role: {request_role}")
 
     monkeypatch.setattr(
@@ -60,6 +63,7 @@ def test_hiit_structured_fixture_preserves_path_and_sealed_package_under_sixty_s
 
     assert rc == 0
     assert provider.calls == 1
+    assert participant.calls == 1
     assert reviewer.calls == 1
     accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
     proposal = accepted["proposal"]
@@ -130,7 +134,7 @@ def test_hiit_structured_fixture_preserves_path_and_sealed_package_under_sixty_s
         assert banned not in generated_source
 
 
-def _hiit_authoring_provider(prompt: str) -> StructuredAuthoringProvider:
+def _hiit_authoring_provider(prompt: str) -> RemainingCandidateProvider:
     first_path = (
         "A trainee chooses a workout, starts it, the timer drives each work and rest interval "
         "with audio and on-screen cues, keeps the screen awake, marks the session complete, "
@@ -246,7 +250,7 @@ def _hiit_authoring_provider(prompt: str) -> StructuredAuthoringProvider:
         prompt=prompt,
         edit_evidence=HIIT_CONFIRMED_INTENT_TEXT,
     )
-    return StructuredAuthoringProvider(
+    return RemainingCandidateProvider(
         authored_response(
             intent,
             evidence_text=evidence,

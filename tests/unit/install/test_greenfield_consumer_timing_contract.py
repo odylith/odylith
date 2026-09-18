@@ -43,17 +43,21 @@ def _manifest(tier: str, elapsed: object = 1.0) -> dict:
     )
     receipt = manifest["model_authoring"]
     receipt["tier"] = tier
-    for key, review in (("model_profile", False), ("candidate_review", True)):
-        observed = receipt[key]["model_profile"] if review else receipt[key]
+    elapsed_before = 0.0
+    for key, model, effort in (
+        ("participant_selection", profile.participant_model, profile.participant_reasoning_effort),
+        ("remaining_candidate_authoring", profile.model, profile.reasoning_effort),
+        ("candidate_review", profile.review_model, profile.review_reasoning_effort),
+    ):
+        role = receipt[key]
+        observed = role["model_profile"]
         observed.update(
             profile_id=profile.profile_id, authoring_tier=tier,
-            model=profile.review_model if review else profile.model,
-            reasoning_effort=profile.review_reasoning_effort if review else profile.reasoning_effort,
-            effective_timeout_seconds=(
-                profile.model_timeout_seconds - receipt["initial_authoring_elapsed_seconds"]
-                if review else profile.model_timeout_seconds
-            ),
+            model=model, reasoning_effort=effort,
+            effective_timeout_seconds=profile.model_timeout_seconds - elapsed_before,
         )
+        elapsed_before += role["elapsed_seconds"]
+    receipt["effective_model_window_seconds"] = profile.model_timeout_seconds
     return manifest
 
 
@@ -132,8 +136,8 @@ def test_old_v12_receipts_are_not_upgraded_or_mutated(tier, budget, profile_id):
     manifest = _manifest(tier)
     manifest["target_seconds"] = budget
     receipt = manifest["model_authoring"]
-    for observed in (receipt["model_profile"], receipt["candidate_review"]["model_profile"]):
-        observed["profile_id"] = profile_id
+    for role in ("participant_selection", "remaining_candidate_authoring", "candidate_review"):
+        receipt[role]["model_profile"]["profile_id"] = profile_id
     original = deepcopy(manifest)
     with pytest.raises(ValueError, match="quality manifest is not approved"):
         transactions.require_product_create_transaction_quality_approved(manifest)
@@ -141,16 +145,18 @@ def test_old_v12_receipts_are_not_upgraded_or_mutated(tier, budget, profile_id):
     assert manifest == original
 
 
-@pytest.mark.parametrize("mutation", ["tier", "profile", "model_budget", "review_budget"])
+@pytest.mark.parametrize(
+    "mutation", ["tier", "participant_profile", "remainder_budget", "review_budget"]
+)
 def test_operational_timeout_does_not_relax_role_binding_or_model_caps(mutation):
     manifest = _manifest("standard", 80.0)
     receipt = manifest["model_authoring"]
     if mutation == "tier":
         manifest["repair_tier"] = "rescue"
-    elif mutation == "profile":
-        receipt["model_profile"]["profile_id"] = profiles.RESCUE_PROFILE_ID
-    elif mutation == "model_budget":
-        receipt["elapsed_seconds"] = 165.001
+    elif mutation == "participant_profile":
+        receipt["participant_selection"]["model_profile"]["profile_id"] = profiles.RESCUE_PROFILE_ID
+    elif mutation == "remainder_budget":
+        receipt["remaining_candidate_authoring"]["model_profile"]["effective_timeout_seconds"] = 165.001
     else:
         receipt["candidate_review"]["model_profile"]["effective_timeout_seconds"] = 165.001
     with pytest.raises(ValueError, match="quality manifest is not approved"):

@@ -21,7 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
-    StructuredAuthoringProvider,
+    RemainingCandidateProvider,
     authored_response,
 )
 
@@ -81,19 +81,21 @@ def _authored_proposal(tmp_path: Path) -> dict[str, object]:
         for item in (value if isinstance(value, list) else [value])
         if str(item)
     )
+    provider = RemainingCandidateProvider(
+        authored_response(
+            intent,
+            evidence_text=source,
+            first_path_relations=relations,
+            component_responsibility_owners=["Berth map"],
+        )
+    )
     candidate = materialize_model_authored_intent(
         prompt=source,
         repo_root=tmp_path,
-        authoring_provider=StructuredAuthoringProvider(
-            authored_response(
-                intent,
-                evidence_text=source,
-                first_path_relations=relations,
-                component_responsibility_owners=["Berth map"],
-            )
-        ),
+        authoring_provider=provider,
         authoring_timeout_seconds=60,
         authoring_profile_id=STANDARD_PROFILE_ID,
+        participant_provider_factory=provider.participant_provider,
         review_provider_factory=AdmittingReviewProvider,
     )
     proposal = build_authored_greenfield_proposal(

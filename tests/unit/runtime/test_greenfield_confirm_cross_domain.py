@@ -15,7 +15,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
-    StructuredAuthoringProvider,
+    RemainingCandidateProvider,
     authored_response,
 )
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
@@ -356,23 +356,23 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
     activate_greenfield_baseline_fixture(tmp_path)
     source = _source(intent)
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
-    provider = StructuredAuthoringProvider(
-        authored_response(
-            intent,
-            evidence_text=staged_evidence,
-            first_path_relations=[
-                {
-                    "actor_kind": "human",
-                    "actor_fact_quote": actor,
-                    "event_quote": intent["first_path"],
-                    "action_verb_quote": action,
-                    "target_quote": target,
-                    "visible_result_quote": visible_result,
-                }
-            ],
-            component_responsibility_owners=intent["internal_systems"],
-        )
+    response = authored_response(
+        intent,
+        evidence_text=staged_evidence,
+        first_path_relations=[
+            {
+                "actor_kind": "human",
+                "actor_fact_quote": actor,
+                "event_quote": intent["first_path"],
+                "action_verb_quote": action,
+                "target_quote": target,
+                "visible_result_quote": visible_result,
+            }
+        ],
+        component_responsibility_owners=intent["internal_systems"],
     )
+    provider = RemainingCandidateProvider(response)
+    participant = provider.participant_provider()
     reviewer = AdmittingReviewProvider()
     monkeypatch.setattr(
         greenfield_proposals_cli,
@@ -380,6 +380,8 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
         lambda **kwargs: (
             (reviewer, "gpt-6-astra", "medium")
             if kwargs.get("request_role") == "candidate_review"
+            else (participant, "gpt-6-astra", "medium")
+            if kwargs.get("request_role") == "participant_selection"
             else (provider, "test-model", "low")
         ),
     )
@@ -419,6 +421,7 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
     )
 
     assert rc == 0, output
+    assert participant.calls == 1
     assert provider.calls == 1
     assert reviewer.calls == 1
     assert "- validation gate: passed" in output

@@ -4,6 +4,19 @@ Last updated: 2026-09-18
 
 ## Overview
 
+The current unreleased participant-first owner selects exact source-grounded human
+participants once, freezes their citations, and permits remaining-candidate
+authoring only for the other facts, relations and proposed design. Deterministic
+join and canonical validation precede unchanged full-candidate review. Authoring
+v64/profile v18/envelope v4/private proof v3 replace the old complete-author path;
+success requires three actual calls and clarification two, under one shared model
+deadline. Sealed observations identify both author roles separately. Review timing
+uses the actual request origin while total elapsed includes setup. Release checks
+bind retained source and candidate/clarification identity to public outputs without
+normalizing unsupported receipt fields away. Independent integration findings are
+resolved; focused checks are green, but frozen regression and installed/profile,
+host/recovery/browser and unseen-input qualification remain required.
+
 Authoring v63 shares a portable operational-constraint definition with immutable
 review. Each independently projected citation retains any source-stated governed
 subject, required/prohibited/permitted behavior and material condition/scope.

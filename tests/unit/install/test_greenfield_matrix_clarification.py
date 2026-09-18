@@ -19,13 +19,18 @@ from greenfield_matrix_clarification import ClarificationExecution
 from greenfield_matrix_clarification import clarification_contract_issues
 from greenfield_matrix_clarification import clarification_quality_verdict
 from greenfield_model_profiles import model_profile_environment
-from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
-    GREENFIELD_INTENT_AUTHORING_VERSION,
-)
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     RESCUE_PROFILE_ID,
     STANDARD_PROFILE_ID,
-    get_greenfield_model_profile,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import validate_greenfield_authoring_response
+from odylith.runtime.domain_intelligence.greenfield_material_clarification import material_clarification_for_fields
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import combined_prompt_evidence_source
+from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
+from odylith.runtime.domain_intelligence.greenfield_candidate_review import CANDIDATE_REVIEW_VERSION
+from tests.greenfield_model_profile_test_support import (
+    production_stage_observation,
+    sealed_profile_observation,
 )
 
 
@@ -80,21 +85,13 @@ def _clarification_execution(
     required_fields: tuple[str, ...],
     profile_id: str = STANDARD_PROFILE_ID,
 ) -> ClarificationExecution:
-    profile = get_greenfield_model_profile(profile_id)
     return ClarificationExecution(
         payload={
             "mode": "clarification_required",
             "clarification": {
                 "question": question,
                 "required_fields": list(required_fields),
-                "model_profile": {
-                    "profile_id": profile_id,
-                    "provider": "codex-cli",
-                    "model": profile.model,
-                    "reasoning_effort": profile.reasoning_effort,
-                    "effective_timeout_seconds": profile.model_timeout_seconds,
-                    "authoring_tier": profile.repair_tier,
-                },
+                "model_profile": sealed_profile_observation(profile_id),
                 "consistency_assessment": {
                     "status": "consistent",
                     "source_spans": [],
@@ -166,6 +163,33 @@ def test_typed_clarification_rejects_a_different_selected_profile() -> None:
     )
 
     assert "clarification model_profile must match the selected pre-call profile" in issues
+
+
+@pytest.mark.parametrize("mutation", ["flat", "missing_role", "extra_role", "wrong_model", "wrong_tier", "extra_field"])
+def test_typed_clarification_rejects_incomplete_or_misattributed_roles(mutation: str) -> None:
+    execution = _clarification_execution(
+        question="What result should the operator see?",
+        required_fields=("visible_result",),
+    )
+    observations = execution.payload["clarification"]["model_profile"]
+    if mutation == "flat":
+        execution.payload["clarification"]["model_profile"] = observations["remaining_candidate_authoring"]
+    elif mutation == "missing_role":
+        observations.pop("participant_selection")
+    elif mutation == "extra_role":
+        observations["candidate_review"] = observations["participant_selection"]
+    elif mutation == "wrong_model":
+        observations["participant_selection"]["model"] = "gpt-5.6-terra"
+    elif mutation == "wrong_tier":
+        observations["participant_selection"]["authoring_tier"] = ""
+    else:
+        observations["remaining_candidate_authoring"]["extra"] = True
+
+    assert clarification_contract_issues(
+        execution,
+        expected_fields=("visible_result",),
+        expected_model_profile_id=STANDARD_PROFILE_ID,
+    )
 
 
 def test_typed_clarification_rejects_unbound_material_contradiction() -> None:
@@ -296,10 +320,12 @@ def test_typed_clarification_rejects_a_missing_frozen_field_oracle() -> None:
 
 
 @pytest.mark.parametrize("output_issues", [(), ("successful output exposed a host-side repair contract",)])
+@pytest.mark.parametrize("edit", ["", "EDIT: Preserve the stated source boundary."])
 def test_success_case_passes_closed_retained_stage_observation_to_profile_evidence(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001
     output_issues: tuple[str, ...],
+    edit: str,
 ) -> None:
     module = _matrix_module()
     repo_root = tmp_path / "repo"
@@ -307,10 +333,20 @@ def test_success_case_passes_closed_retained_stage_observation_to_profile_eviden
     launcher.parent.mkdir(parents=True)
     launcher.write_text("", encoding="utf-8")
     retained = _retained_case(module, tmp_path, "success")
-    stage = _retained_stage(STANDARD_PROFILE_ID, response_kind="authored")
+    prompt = _retained_stage(STANDARD_PROFILE_ID, response_kind="authored")["request"]["evidence"]
+    source = prepare_model_authoring_evidence(prompt=prompt, edit_evidence=edit).evidence_source
+    stage = production_stage_observation(STANDARD_PROFILE_ID, evidence_text=source)
     _write_stage_observation(retained, stage)
+    candidate = stage["candidate_review"]["request"]["candidate"]
+    receipt = {
+        "version": CANDIDATE_REVIEW_VERSION, "status": "admitted",
+        "source_sha256": hashlib.sha256(source.encode("utf-8")).hexdigest(),
+        "candidate_sha256": hashlib.sha256(json.dumps(
+            candidate, sort_keys=True, ensure_ascii=False, separators=(",", ":"), allow_nan=False,
+        ).encode("utf-8")).hexdigest(),
+    }
     create = SimpleNamespace(
-        stdout=json.dumps({"commit_manifest": {}}),
+        stdout=json.dumps({"commit_manifest": {"model_authoring": {"candidate_review": receipt}}}),
         stderr="",
         returncode=0,
     )
@@ -358,7 +394,8 @@ def test_success_case_passes_closed_retained_stage_observation_to_profile_eviden
         case=module.GreenfieldMatrixCase(
             case_id="success",
             name="success",
-            prompt="Mara completes one source-grounded task.",
+            prompt=prompt,
+            confirmed_intent_markdown=edit,
             required_terms=(),
         ),
         repo_root=repo_root,
@@ -373,24 +410,30 @@ def test_success_case_passes_closed_retained_stage_observation_to_profile_eviden
     assert result.status == "passed"
     assert captured["profile"] == STANDARD_PROFILE_ID
     assert captured["stage_observation"] == stage
-    assert set(output_issues) <= set(captured["quality_external_issues"])
+    assert tuple(captured["quality_external_issues"]) == output_issues
 
 
-def test_clarification_case_passes_one_call_stage_observation_to_profile_evidence(
+@pytest.mark.parametrize("mismatch", [False, True])
+@pytest.mark.parametrize("edit", ["", "EDIT: Preserve the stated source boundary."])
+def test_clarification_case_binds_two_call_stage_to_public_decision(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001
+    mismatch: bool,
+    edit: str,
 ) -> None:
     module = _matrix_module()
     repo_root = tmp_path / "repo"
     retained = _retained_case(module, tmp_path, "clarification")
-    stage = _retained_stage(RESCUE_PROFILE_ID, response_kind="clarification_required")
-    _write_stage_observation(retained, stage)
-    question = "Which visible result should Mara verify?"
-    execution = _clarification_execution(
-        question=question,
-        required_fields=("visible_result",),
-        profile_id=RESCUE_PROFILE_ID,
+    prompt = "Mara needs a first workflow clarified."
+    stage = production_stage_observation(
+        RESCUE_PROFILE_ID, response_kind="clarification_required",
+        evidence_text=prepare_model_authoring_evidence(prompt=prompt, edit_evidence=edit).evidence_source,
     )
+    _write_stage_observation(retained, stage)
+    execution = _source_bound_clarification_execution(stage)
+    question = execution.payload["clarification"]["question"]
+    if mismatch:
+        execution.payload["clarification"]["required_fields"] = ["visible_result"]
     captured: dict[str, object] = {}
 
     class Audit:
@@ -436,10 +479,11 @@ def test_clarification_case_passes_one_call_stage_observation_to_profile_evidenc
         case=module.GreenfieldMatrixCase(
             case_id="clarification",
             name="clarification",
-            prompt="Mara needs a material result clarified.",
+            prompt=prompt,
+            confirmed_intent_markdown=edit,
             required_terms=(),
             expectation="clarification_required",
-            expected_clarification_field="visible_result",
+            expected_clarification_field="visible_result" if mismatch else "first_path",
             expected_clarification_question=question,
         ),
         repo_root=repo_root,
@@ -452,9 +496,55 @@ def test_clarification_case_passes_one_call_stage_observation_to_profile_evidenc
         retained_case=retained,
     )
 
-    assert result.status == "passed"
+    assert result.status == ("failed" if mismatch else "passed")
     assert captured["profile"] == RESCUE_PROFILE_ID
     assert captured["stage_observation"] == stage
+
+
+def _source_bound_clarification_execution(stage):
+    remainder = stage["remaining_candidate_authoring"]
+    authored = validate_greenfield_authoring_response(
+        remainder["response"], evidence_text=stage["request"]["evidence"],
+        elapsed_seconds=remainder["elapsed_seconds"], provider=remainder["provider"],
+        profile_id=remainder["profile_id"], effective_timeout_seconds=remainder["timeout_seconds"],
+        semantic_model_call_count=2,
+    )
+    decision = material_clarification_for_fields(
+        authored.required_fields, consistency_status=authored.consistency_status,
+    )
+    execution = _clarification_execution(
+        question=decision.question, required_fields=decision.required_fields,
+        profile_id=remainder["profile_id"],
+    )
+    execution.payload["clarification"]["consistency_assessment"] = {
+        "status": authored.consistency_status,
+        "source_spans": list(authored.consistency_source_spans),
+    }
+    return execution
+
+
+@pytest.mark.parametrize("mutation", ["none", "field", "question", "consistency", "source", "missing_stage"])
+def test_clarification_proof_binds_exact_source_and_public_decision(mutation):
+    stage = production_stage_observation(STANDARD_PROFILE_ID, response_kind="clarification_required")
+    execution = _source_bound_clarification_execution(stage)
+    source = stage["request"]["evidence"]
+    public = execution.payload["clarification"]
+    if mutation == "field":
+        public["required_fields"] = ["visible_result"]
+    elif mutation == "question":
+        public["question"] = "Could you specify the visible result?"
+    elif mutation == "consistency":
+        public["consistency_assessment"] = {"status": "consistent", "source_spans": []}
+    elif mutation == "source":
+        source += " Different source."
+    elif mutation == "missing_stage":
+        stage = {}
+    issues = clarification_contract_issues(
+        execution, expected_fields=tuple(public["required_fields"]),
+        expected_question=public["question"], expected_model_profile_id=STANDARD_PROFILE_ID,
+        stage_observation=stage, expected_source=source,
+    )
+    assert bool(issues) is (mutation != "none")
 
 
 def _retained_case(module, tmp_path: Path, case_id: str):  # noqa: ANN001, ANN202
@@ -474,30 +564,7 @@ def _write_stage_observation(retained, stage: dict[str, object]) -> None:  # noq
 
 
 def _retained_stage(profile_id: str, *, response_kind: str) -> dict[str, object]:
-    profile = get_greenfield_model_profile(profile_id)
-    initial = {
-        "profile_id": profile_id,
-        "request_role": "initial_authoring",
-        "timeout_seconds": profile.model_timeout_seconds,
-        "elapsed_seconds": 5.0,
-        "model": profile.model,
-        "reasoning_effort": profile.reasoning_effort,
-        "provider": {
-            "provider": profile.provider,
-            "model": profile.model,
-            "reasoning_effort": profile.reasoning_effort,
-        },
-    }
-    return {
-        "version": "odylith.greenfield.model-proof-observation.v2",
-        "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
-        "semantic_model_call_count": 1,
-        "response": {
-            "version": GREENFIELD_INTENT_AUTHORING_VERSION,
-            "result": {"status": response_kind},
-        },
-        "initial_authoring": initial,
-    }
+    return production_stage_observation(profile_id, response_kind=response_kind)
 
 
 def _passing_quality(module):  # noqa: ANN001, ANN202

@@ -11,6 +11,8 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GreenfieldModelAuthoringError,
+)
+from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
     author_greenfield_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_proposals import (
@@ -24,7 +26,7 @@ from odylith.runtime.domain_intelligence.proposal_validation import (
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
-    StructuredAuthoringProvider,
+    RemainingCandidateProvider,
     authored_response,
 )
 
@@ -73,8 +75,14 @@ def _scenario(kind: str, *, explicit_owner: str = ""):
 
 
 def _author(source, response):
-    provider = StructuredAuthoringProvider(response)
-    result = author_greenfield_intent(evidence_text=source, provider=provider, clock=lambda: 0, review_provider_factory=AdmittingReviewProvider)
+    provider = RemainingCandidateProvider(response)
+    result = author_greenfield_intent(
+        evidence_text=source,
+        provider=provider,
+        participant_provider_factory=provider.participant_provider,
+        clock=lambda: 0,
+        review_provider_factory=AdmittingReviewProvider,
+    )
     assert provider.calls == 1
     return result
 
@@ -148,8 +156,14 @@ def test_optional_inventory_does_not_waive_explicit_citation_bindings():
 
 def test_human_path_retains_source_story_and_complete_proposed_package(tmp_path):
     source, response, events = _scenario("human")
-    candidate = materialize_model_authored_intent(prompt=source, repo_root=tmp_path,
-        authoring_provider=StructuredAuthoringProvider(response), review_provider_factory=AdmittingReviewProvider)
+    provider = RemainingCandidateProvider(response)
+    candidate = materialize_model_authored_intent(
+        prompt=source,
+        repo_root=tmp_path,
+        authoring_provider=provider,
+        participant_provider_factory=provider.participant_provider,
+        review_provider_factory=AdmittingReviewProvider,
+    )
     proposal = build_greenfield_proposal(repo_root=tmp_path, prompt=source,
         release_selector="0.0.1", confirmed_intent=candidate, require_completion_ready=False)
     validate_host_reasoned_proposal(proposal)

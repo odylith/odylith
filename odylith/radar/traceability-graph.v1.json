@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "11ab380a394e622c4ab431d0653e42c2cd2a439bd5bf7aa54b966e2c691e5ed4",
+    "digest": "d8cf2c97dfbdff6005c293d41d29ac0aebf09710ac2ff2916472383258aa1114",
     "file_count": 317,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -14452,7 +14452,8 @@
         "B-142"
       ],
       "component_names": [
-        "Complete source and design author",
+        "Source-grounded participant selection",
+        "Remaining source and design author",
         "Deterministic custody and ordering",
         "Binary candidate admission",
         "Deterministic governed projections",
@@ -14504,7 +14505,7 @@
         "B-142"
       ],
       "component_names": [
-        "Source-cited evidence graph",
+        "Joined source-cited evidence graph",
         "Source precedence and proposed first run",
         "Provisional delivery design",
         "Read-only candidate admission",
@@ -26294,5 +26295,5 @@
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-09-18 21:35:23Z"
+  "generated_utc": "2026-09-18 22:42:14Z"
 }

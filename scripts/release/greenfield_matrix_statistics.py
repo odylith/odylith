@@ -46,6 +46,18 @@ RELEASE_SLICE_DIMENSIONS = (
 _DISCOVERY_TAG_SLICE_DIMENSIONS = frozenset(
     {"complexity", "model_profile", "host_profile"}
 )
+_AUTHORING_OBSERVATION_ROLES = (
+    "participant_selection",
+    "remaining_candidate_authoring",
+)
+_MODEL_OBSERVATION_FIELDS = {
+    "profile_id",
+    "provider",
+    "model",
+    "reasoning_effort",
+    "effective_timeout_seconds",
+    "authoring_tier",
+}
 
 
 def outcome_statistics(
@@ -467,7 +479,9 @@ def release_slice_evidence(
         complexity_band = str(complexity.get("band") or "").strip()
         evidence_format = str(envelope.get("evidence_format") or "").strip()
         observed_model = _mapping(_mapping(envelope.get("model_contract")).get("observed"))
-        sealed_profile = str(observed_model.get("profile_id") or "").strip()
+        sealed_profile, _sealed_observation_issues = _model_profile_from_observations(
+            observed_model
+        )
     elif allow_unsealed_clarification and annotated:
         complexity_band = greenfield_complexity_band(annotated)
         evidence_format = expected_format
@@ -488,15 +502,10 @@ def release_slice_evidence(
         issues.append("observed model profile does not match the sealed operating envelope")
     if not sealed_profile and observed_profile:
         observed = _mapping(model_evidence.get("observed"))
-        try:
-            require_greenfield_model_profile_observation(
-                profile_id=observed_profile,
-                provider=str(observed.get("provider") or ""),
-                model=str(observed.get("model") or ""),
-                reasoning_effort=str(observed.get("reasoning_effort") or ""),
-                effective_timeout_seconds=observed.get("effective_timeout_seconds"),
-            )
-        except ValueError:
+        observed_request_profile, observation_issues = _model_profile_from_observations(
+            observed
+        )
+        if observation_issues or observed_request_profile != observed_profile:
             issues.append("has invalid unsealed model-profile observation evidence")
         if model_evidence.get("status") != "passed" or model_evidence.get("issues") != []:
             issues.append("has unproven model-profile result evidence")
@@ -672,6 +681,38 @@ def _result_case_id(result: GreenfieldMatrixResult) -> str:
 
 def _mapping(value: Any) -> dict[str, Any]:
     return dict(value) if isinstance(value, Mapping) else {}
+
+
+def _model_profile_from_observations(
+    observed: Mapping[str, Any],
+) -> tuple[str, tuple[str, ...]]:
+    issues: list[str] = []
+    if set(observed) != set(_AUTHORING_OBSERVATION_ROLES):
+        return "", ("model observations have missing or unsupported request roles",)
+    profile_ids: set[str] = set()
+    for request_role in _AUTHORING_OBSERVATION_ROLES:
+        observation = _mapping(observed.get(request_role))
+        if set(observation) != _MODEL_OBSERVATION_FIELDS:
+            issues.append(f"{request_role} lacks the exact request observation")
+            continue
+        profile_id = str(observation.get("profile_id") or "").strip()
+        profile_ids.add(profile_id)
+        try:
+            require_greenfield_model_profile_observation(
+                profile_id=profile_id,
+                provider=str(observation.get("provider") or ""),
+                model=str(observation.get("model") or ""),
+                reasoning_effort=str(observation.get("reasoning_effort") or ""),
+                effective_timeout_seconds=observation.get("effective_timeout_seconds"),
+                authoring_tier=str(observation.get("authoring_tier") or ""),
+                request_role=request_role,
+            )
+        except (KeyError, ValueError):
+            issues.append(f"{request_role} does not match a supported model profile")
+    if len(profile_ids) != 1 or "" in profile_ids:
+        issues.append("model observations do not share one profile")
+    profile_id = next(iter(profile_ids)) if len(profile_ids) == 1 else ""
+    return (profile_id if not issues else ""), tuple(dict.fromkeys(issues))
 
 
 def _case_id(case: Any) -> str:

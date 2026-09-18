@@ -1,7 +1,7 @@
 """Pinned model profiles for the supported Greenfield operating envelope.
 
-Profiles bind a complete author and read-only candidate review to one shared
-model window inside the consumer deadline. The unavailable-provider profile is
+Profiles bind participant selection, remaining authoring and read-only review
+to one shared model window inside the consumer deadline. The unavailable-provider profile is
 outside the supported-success set and proves fail-closed, no-write behavior.
 """
 
@@ -12,21 +12,21 @@ from dataclasses import dataclass
 from types import MappingProxyType
 
 
-GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v17"
+GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v18"
 GREENFIELD_NORMAL_CASE_TARGET_SECONDS = 60.0
 GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS = 180.0
 # The shared model window leaves finite headroom for compilation, sealing and staging.
 _COMPLETION_RESERVE_SECONDS = 15.0
 
-STANDARD_PROFILE_ID = "greenfield-standard-terra-low-complete-author-review-v17"
-RESCUE_PROFILE_ID = "greenfield-rescue-terra-medium-complete-author-review-v17"
-DEEP_PROFILE_ID = "greenfield-deep-sol-high-complete-author-review-v17"
+STANDARD_PROFILE_ID = "greenfield-standard-participant-first-terra-low-v18"
+RESCUE_PROFILE_ID = "greenfield-rescue-participant-first-terra-medium-v18"
+DEEP_PROFILE_ID = "greenfield-deep-participant-first-sol-high-v18"
 UNAVAILABLE_PROVIDER_PROFILE_ID = "greenfield-unavailable-provider-no-write-v1"
 
 
 @dataclass(frozen=True, slots=True)
 class GreenfieldModelProfile:
-    """Pinned author and review roles inside one preselected time budget."""
+    """Pinned participant, remaining-author and review roles in one shared budget."""
 
     profile_id: str
     repair_tier: str
@@ -38,6 +38,8 @@ class GreenfieldModelProfile:
     model_timeout_seconds: float
     lower_capability: bool = False
     supported_success: bool = True
+    participant_model: str = "gpt-6-astra"
+    participant_reasoning_effort: str = "medium"
     review_model: str = "gpt-6-astra"
     review_reasoning_effort: str = "medium"
 
@@ -86,6 +88,8 @@ _PROFILES = MappingProxyType(
             operational_timeout_seconds=GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS,
             model_timeout_seconds=1.0,
             supported_success=False,
+            participant_model="gpt-5.4-mini",
+            participant_reasoning_effort="high",
         ),
     }
 )
@@ -163,12 +167,16 @@ def greenfield_model_profile_observation_issues(
     reasoning_effort: str,
     effective_timeout_seconds: float,
     authoring_tier: str = "",
-    request_role: str = "initial_authoring",
+    request_role: str = "remaining_candidate_authoring",
 ) -> tuple[str, ...]:
     """Compare observed request metadata with the pinned pre-call profile."""
 
     profile = get_greenfield_model_profile(profile_id)
-    if request_role == "initial_authoring":
+    if request_role == "participant_selection":
+        expected_model = profile.participant_model
+        expected_effort = profile.participant_reasoning_effort
+        role_cap = profile.model_timeout_seconds
+    elif request_role == "remaining_candidate_authoring":
         expected_model = profile.model
         expected_effort = profile.reasoning_effort
         role_cap = profile.model_timeout_seconds
@@ -217,7 +225,7 @@ def require_greenfield_model_profile_observation(
     reasoning_effort: str,
     effective_timeout_seconds: float,
     authoring_tier: str = "",
-    request_role: str = "initial_authoring",
+    request_role: str = "remaining_candidate_authoring",
 ) -> GreenfieldModelProfile:
     """Fail closed unless observed request metadata matches its profile."""
 

@@ -1,5 +1,19 @@
 # Odylith
 
+## Participant-first Greenfield integration (2026-09-18)
+
+The unreleased production path now selects participants before remaining source
+and design authoring, then reviews the complete deterministically joined candidate.
+One owner replaces competing participant authorship; no regex inference, semantic
+repair, retry or new projection mechanism is added. Successful proposals have three
+truthful model-role observations under the existing shared window. Clarification
+has two calls and no governed writes. The release checker cross-binds retained
+model evidence to the public decision or sealed candidate-review hashes. Timing,
+diagnostic-redaction and split-proof defects found during integration are resolved
+with negative controls and independent rechecks. Installed lifecycle, supported
+profiles, native-host behavior, recovery, browser and final evaluation still require
+fresh qualification before a release claim.
+
 ## Portable Greenfield constraints (2026-09-18)
 
 The unreleased author/reviewer contract requires each independently projected

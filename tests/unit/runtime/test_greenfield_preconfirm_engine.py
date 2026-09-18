@@ -247,7 +247,7 @@ def test_authored_package_passes_in_one_validation_pass(
         proposal_ready=True,
         model_authoring_receipt={
             "authoring_version": "odylith.greenfield.model-intent-authoring.v1",
-            "semantic_model_call_count": 2,
+            "semantic_model_call_count": 3,
             "tier": "standard",
             "elapsed_seconds": 12.0,
         },
@@ -268,7 +268,7 @@ def test_authored_package_passes_in_one_validation_pass(
         "semantic_owner": "validated_model_authored_intent",
         "post_authoring_interpretation_calls": 1,
     }
-    assert result.manifest["model_authoring"]["semantic_model_call_count"] == 2
+    assert result.manifest["model_authoring"]["semantic_model_call_count"] == 3
 
 
 def test_authored_quality_failure_is_immediate_and_unrepaired(

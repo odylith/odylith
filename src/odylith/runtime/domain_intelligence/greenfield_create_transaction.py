@@ -326,7 +326,17 @@ def greenfield_model_authoring_receipt_approved(
     """Validate observed author/reviewer metadata, not source authority or product quality."""
 
     return (
-        str(semantic_compiler.get("version", "")).strip()
+        set(model_authoring) == {
+            "authoring_version",
+            "semantic_model_call_count",
+            "tier",
+            "elapsed_seconds",
+            "effective_model_window_seconds",
+            "participant_selection",
+            "remaining_candidate_authoring",
+            "candidate_review",
+        }
+        and str(semantic_compiler.get("version", "")).strip()
         == "odylith.greenfield.authored-semantic-validation.v4"
         and str(semantic_compiler.get("status", "")).strip() == "passed"
         and str(semantic_compiler.get("semantic_owner", "")).strip() == "validated_model_authored_intent"
@@ -335,8 +345,12 @@ def greenfield_model_authoring_receipt_approved(
         and _semantic_model_call_count_approved(
             model_authoring.get("semantic_model_call_count")
         )
-        and _model_authoring_profile_approved(
-            model_authoring,
+        and _authoring_role_approved(
+            model_authoring, request_role="participant_selection",
+            requested_repair_tier=requested_repair_tier,
+        )
+        and _authoring_role_approved(
+            model_authoring, request_role="remaining_candidate_authoring",
             requested_repair_tier=requested_repair_tier,
         )
         and _candidate_review_approved(
@@ -349,16 +363,21 @@ def greenfield_model_authoring_receipt_approved(
 
 
 def _semantic_model_call_count_approved(value: Any) -> bool:
-    return type(value) is int and value == 2
+    return type(value) is int and value == 3
 
 
-def _model_authoring_profile_approved(
+def _authoring_role_approved(
     model_authoring: Mapping[str, Any],
     *,
     requested_repair_tier: str,
-    request_role: str = "initial_authoring",
+    request_role: str,
 ) -> bool:
-    receipt = model_authoring if request_role == "initial_authoring" else model_authoring.get("candidate_review")
+    receipt = model_authoring.get(request_role)
+    if request_role != "candidate_review" and (
+        not isinstance(receipt, Mapping)
+        or set(receipt) != {"elapsed_seconds", "model_profile"}
+    ):
+        return False
     if not isinstance(receipt, Mapping):
         return False
     raw_observation = receipt.get("model_profile")
@@ -415,29 +434,43 @@ def _candidate_review_approved(
         digest = review.get(key)
         if not isinstance(digest, str) or len(digest) != 64 or set(digest) - set("0123456789abcdef"):
             return False
-    if not _model_authoring_profile_approved(
+    if not _authoring_role_approved(
         model_authoring, requested_repair_tier=requested_repair_tier, request_role="candidate_review",
     ):
         return False
-    initial = model_authoring.get("initial_authoring_elapsed_seconds")
+    participant = model_authoring.get("participant_selection")
+    remainder = model_authoring.get("remaining_candidate_authoring")
+    if not isinstance(participant, Mapping) or not isinstance(remainder, Mapping):
+        return False
+    participant_elapsed = participant.get("elapsed_seconds")
+    remainder_elapsed = remainder.get("elapsed_seconds")
     reviewed = review.get("elapsed_seconds")
     total = model_authoring.get("elapsed_seconds")
+    shared_effective = model_authoring.get("effective_model_window_seconds")
     if any(
         type(value) not in (int, float)
         or (isinstance(value, float) and not math.isfinite(value)) or value < 0
-        for value in (initial, reviewed, total)
+        for value in (
+            participant_elapsed,
+            remainder_elapsed,
+            reviewed,
+            total,
+            shared_effective,
+        )
     ):
         return False
-    profile = get_greenfield_model_profile(model_authoring["model_profile"]["profile_id"])
-    shared_effective = model_authoring["model_profile"]["effective_timeout_seconds"]
+    participant_timeout = participant["model_profile"]["effective_timeout_seconds"]
+    remainder_timeout = remainder["model_profile"]["effective_timeout_seconds"]
     review_effective = review["model_profile"]["effective_timeout_seconds"]
+    profile = get_greenfield_model_profile(participant["model_profile"]["profile_id"])
     return (
         total <= shared_effective <= profile.model_timeout_seconds
-        and initial <= total
-        and initial <= shared_effective
-        and review_effective <= shared_effective - initial
-        and reviewed <= shared_effective
-        and initial + reviewed <= total
+        and participant_elapsed <= participant_timeout <= shared_effective
+        and remainder_elapsed <= remainder_timeout <= shared_effective - participant_elapsed
+        and reviewed <= review_effective <= (
+            shared_effective - participant_elapsed - remainder_elapsed
+        )
+        and participant_elapsed + remainder_elapsed + reviewed <= total
     )
 
 

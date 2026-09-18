@@ -1,4 +1,4 @@
-"""Authored Greenfield fixture ownership: source custody, A/R receipts, and proposals."""
+"""Authored Greenfield fixture ownership: custody, three-role receipts, and proposals."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import (
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
-    StructuredAuthoringProvider,
+    RemainingCandidateProvider,
     authored_response,
 )
 
@@ -60,10 +60,32 @@ def approved_authored_quality_manifest_fixture(
         },
         "model_authoring": {
             "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
-            "semantic_model_call_count": 2,
+            "semantic_model_call_count": 3,
             "tier": profile.repair_tier,
-            "elapsed_seconds": 0.5,
-            "initial_authoring_elapsed_seconds": 0.25,
+            "elapsed_seconds": 0.75,
+            "effective_model_window_seconds": profile.model_timeout_seconds,
+            "participant_selection": {
+                "elapsed_seconds": 0.25,
+                "model_profile": {
+                    "profile_id": profile.profile_id,
+                    "provider": profile.provider,
+                    "model": profile.participant_model,
+                    "reasoning_effort": profile.participant_reasoning_effort,
+                    "effective_timeout_seconds": profile.model_timeout_seconds,
+                    "authoring_tier": profile.repair_tier,
+                },
+            },
+            "remaining_candidate_authoring": {
+                "elapsed_seconds": 0.25,
+                "model_profile": {
+                    "profile_id": profile.profile_id,
+                    "provider": profile.provider,
+                    "model": profile.model,
+                    "reasoning_effort": profile.reasoning_effort,
+                    "effective_timeout_seconds": profile.model_timeout_seconds - 0.25,
+                    "authoring_tier": profile.repair_tier,
+                },
+            },
             "candidate_review": {
                 "version": "odylith.greenfield.candidate-review.v2",
                 "status": "admitted",
@@ -76,17 +98,9 @@ def approved_authored_quality_manifest_fixture(
                     "provider": profile.provider,
                     "model": profile.review_model,
                     "reasoning_effort": profile.review_reasoning_effort,
-                    "effective_timeout_seconds": profile.model_timeout_seconds - 0.25,
+                    "effective_timeout_seconds": profile.model_timeout_seconds - 0.5,
                     "authoring_tier": profile.repair_tier,
                 },
-            },
-            "model_profile": {
-                "profile_id": profile.profile_id,
-                "provider": profile.provider,
-                "model": profile.model,
-                "reasoning_effort": profile.reasoning_effort,
-                "effective_timeout_seconds": profile.model_timeout_seconds,
-                "authoring_tier": profile.repair_tier,
             },
         },
     }
@@ -111,18 +125,20 @@ def materialize_typed_intent_fixture(
         if str(row)
     )
     receipt = authoring_receipt if authoring_receipt is not None else {}
+    provider = RemainingCandidateProvider(
+        authored_response(
+            intent,
+            evidence_text=source,
+            first_path_relations=first_path_relations,
+            component_responsibility_owners=component_responsibility_owners,
+        )
+    )
     return materialize_model_authored_intent(
         prompt=source,
         repo_root=repo_root,
+        participant_provider_factory=provider.participant_provider,
         review_provider_factory=AdmittingReviewProvider,
-        authoring_provider=StructuredAuthoringProvider(
-            authored_response(
-                intent,
-                evidence_text=source,
-                first_path_relations=first_path_relations,
-                component_responsibility_owners=component_responsibility_owners,
-            )
-        ),
+        authoring_provider=provider,
         authoring_timeout_seconds=54,
         authoring_profile_id=STANDARD_PROFILE_ID,
         authoring_receipt=receipt,

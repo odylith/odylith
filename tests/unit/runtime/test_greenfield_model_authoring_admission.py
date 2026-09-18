@@ -13,9 +13,11 @@ from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
-    GREENFIELD_MODEL_PROOF_FD_ENV,
     GreenfieldAuthoringClarification,
     GreenfieldModelAuthoringError,
+)
+from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
+    GREENFIELD_MODEL_PROOF_FD_ENV,
     author_greenfield_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
@@ -31,6 +33,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
+    RemainingCandidateProvider,
     StructuredAuthoringProvider,
     authored_response,
     clarification_response,
@@ -140,13 +143,21 @@ def _machine_response(
     )
 
 
+def _participant_first_kwargs(response: dict[str, Any]) -> dict[str, Any]:
+    provider = RemainingCandidateProvider(response)
+    return {
+        "provider": provider,
+        "participant_provider_factory": provider.participant_provider,
+    }
+
+
 def test_product_only_path_builds_complete_source_bound_proposal_without_a_fake_human(
     tmp_path,
 ) -> None:  # type: ignore[no-untyped-def]
     intent = _product_only_intent()
     prompt = _fact_source(intent)
     evidence = combined_prompt_evidence_source(prompt=prompt, edit_evidence="")
-    provider = StructuredAuthoringProvider(
+    provider = RemainingCandidateProvider(
         _machine_response(
             intent,
             evidence_text=evidence,
@@ -161,6 +172,7 @@ def test_product_only_path_builds_complete_source_bound_proposal_without_a_fake_
         prompt=prompt,
         repo_root=tmp_path,
         authoring_provider=provider,
+        participant_provider_factory=provider.participant_provider,
     )
     proposal = build_authored_greenfield_proposal(
         observed_source={},
@@ -214,19 +226,20 @@ def test_product_only_proposal_accepts_omission_but_rejects_malformed_present_hu
     intent = _product_only_intent()
     prompt = _fact_source(intent)
     evidence = combined_prompt_evidence_source(prompt=prompt, edit_evidence="")
+    response = _machine_response(
+        intent,
+        evidence_text=evidence,
+        actor_kind="product",
+        actor_fact_quote="Receipt Engine",
+        owners=["Receipt Engine", "Health Archive"],
+    )
+    provider = RemainingCandidateProvider(response)
     candidate = materialize_model_authored_intent(
         review_provider_factory=AdmittingReviewProvider,
         prompt=prompt,
         repo_root=tmp_path,
-        authoring_provider=StructuredAuthoringProvider(
-            _machine_response(
-                intent,
-                evidence_text=evidence,
-                actor_kind="product",
-                actor_fact_quote="Receipt Engine",
-                owners=["Receipt Engine", "Health Archive"],
-            )
-        ),
+        authoring_provider=provider,
+        participant_provider_factory=provider.participant_provider,
     )
     candidate["human_actors"] = malformed_humans
 
@@ -241,7 +254,7 @@ def test_product_only_proposal_accepts_omission_but_rejects_malformed_present_hu
 def test_external_only_path_retains_exact_external_actor_custody() -> None:
     intent = _external_only_intent()
     source = _fact_source(intent)
-    provider = StructuredAuthoringProvider(
+    provider = RemainingCandidateProvider(
         _machine_response(
             intent,
             evidence_text=source,
@@ -255,6 +268,7 @@ def test_external_only_path_retains_exact_external_actor_custody() -> None:
         review_provider_factory=AdmittingReviewProvider,
         evidence_text=source,
         provider=provider,
+        participant_provider_factory=provider.participant_provider,
         clock=lambda: 0.0,
     )
 
@@ -309,7 +323,7 @@ def test_each_event_actor_kind_requires_one_selected_typed_actor_fact(
         author_greenfield_intent(
             review_provider_factory=AdmittingReviewProvider,
             evidence_text=source,
-            provider=StructuredAuthoringProvider(response),
+            **_participant_first_kwargs(response),
             clock=lambda: 0.0,
         )
 
@@ -317,11 +331,12 @@ def test_each_event_actor_kind_requires_one_selected_typed_actor_fact(
 def test_late_packet_cannot_skip_review_after_spending_the_shared_rescue_window() -> None:
     source = _source()
     model_window = get_greenfield_model_profile(RESCUE_PROFILE_ID).model_timeout_seconds
-    provider = StructuredAuthoringProvider(_response(source))
+    provider = RemainingCandidateProvider(_response(source))
     reviewer = AdmittingReviewProvider()
     with pytest.raises(GreenfieldModelAuthoringError, match="model time window") as exc_info:
         author_greenfield_intent(
             evidence_text=source, provider=provider, timeout_seconds=model_window + 4,
+            participant_provider_factory=provider.participant_provider,
             model_profile_id=RESCUE_PROFILE_ID,
             clock=lambda: model_window if provider.calls else 0.0,
             review_provider_factory=lambda: reviewer,
@@ -342,12 +357,13 @@ def test_pinned_nonstandard_profile_does_not_relabel_a_fast_response_as_standard
 ) -> None:
     source = _source()
     profile = get_greenfield_model_profile(profile_id)
-    provider = StructuredAuthoringProvider(_response(source))
+    provider = RemainingCandidateProvider(_response(source))
 
     result = author_greenfield_intent(
         review_provider_factory=AdmittingReviewProvider,
         evidence_text=source,
         provider=provider,
+        participant_provider_factory=provider.participant_provider,
         timeout_seconds=profile.model_timeout_seconds,
         model_profile_id=profile_id,
         clock=lambda: 1.0 if provider.calls else 0.0,
@@ -355,7 +371,7 @@ def test_pinned_nonstandard_profile_does_not_relabel_a_fast_response_as_standard
 
     assert result.tier == expected_tier
     assert result.profile_id == profile_id
-    assert result.semantic_model_call_count == 2
+    assert result.semantic_model_call_count == 3
 
 
 def test_authoring_keeps_one_material_question_separate_from_any_package() -> None:
@@ -368,7 +384,7 @@ def test_authoring_keeps_one_material_question_separate_from_any_package() -> No
     result = author_greenfield_intent(
         review_provider_factory=AdmittingReviewProvider,
         evidence_text="A project needs a clear outcome.",
-        provider=StructuredAuthoringProvider(response),
+        **_participant_first_kwargs(response),
         clock=lambda: 0.0,
     )
 
@@ -387,11 +403,13 @@ def test_component_ownership_clarification_is_one_plain_question_without_staging
     )
 
     with pytest.raises(GreenfieldClarificationRequired) as exc_info:
+        provider = RemainingCandidateProvider(response)
         materialize_model_authored_intent(
             review_provider_factory=AdmittingReviewProvider,
             prompt=prompt,
             repo_root=tmp_path,
-            authoring_provider=StructuredAuthoringProvider(response),
+            authoring_provider=provider,
+            participant_provider_factory=provider.participant_provider,
             authoring_timeout_seconds=84,
             authoring_profile_id=RESCUE_PROFILE_ID,
         )
@@ -422,11 +440,13 @@ def test_source_bound_material_contradiction_returns_one_no_write_clarification(
     )
 
     with pytest.raises(GreenfieldClarificationRequired) as exc_info:
+        provider = RemainingCandidateProvider(response)
         materialize_model_authored_intent(
             review_provider_factory=AdmittingReviewProvider,
             prompt=prompt,
             repo_root=tmp_path,
-            authoring_provider=StructuredAuthoringProvider(response),
+            authoring_provider=provider,
+            participant_provider_factory=provider.participant_provider,
             authoring_timeout_seconds=84,
             authoring_profile_id=RESCUE_PROFILE_ID,
         )
@@ -452,11 +472,13 @@ def test_source_bound_nonmaterial_conflict_increases_sealed_ambiguity(
         "evidence_quotes": [first_claim, second_claim],
     }
 
+    provider = RemainingCandidateProvider(response)
     candidate = materialize_model_authored_intent(
         review_provider_factory=AdmittingReviewProvider,
         prompt=source,
         repo_root=tmp_path,
-        authoring_provider=StructuredAuthoringProvider(response),
+        authoring_provider=provider,
+        participant_provider_factory=provider.participant_provider,
         authoring_timeout_seconds=84,
         authoring_profile_id=RESCUE_PROFILE_ID,
     )
@@ -492,22 +514,22 @@ def test_initial_non_mapping_response_retains_bounded_failure_observation(
     failure_code: str,
     diagnostic_detail: str,
 ) -> None:  # type: ignore[no-untyped-def]
-    provider = StructuredAuthoringProvider(None)
+    provider = RemainingCandidateProvider(None)
     provider.last_failure_code = failure_code
     provider.last_failure_detail = diagnostic_detail
     observation = tmp_path / "model-failure-observation.json"
     descriptor = os.open(observation, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     monkeypatch.setenv(GREENFIELD_MODEL_PROOF_FD_ENV, str(descriptor))
-    ticks = iter((0.0, 81.805))
     try:
         with pytest.raises(GreenfieldModelAuthoringError) as exc_info:
             author_greenfield_intent(
                 review_provider_factory=AdmittingReviewProvider,
                 evidence_text="Create a source-cited project.",
                 provider=provider,
+                participant_provider_factory=provider.participant_provider,
                 model_profile_id=RESCUE_PROFILE_ID,
                 timeout_seconds=80.0,
-                clock=lambda: next(ticks),
+                clock=lambda: 81.805 if provider.calls else 0.0,
             )
     finally:
         os.close(descriptor)
@@ -516,20 +538,11 @@ def test_initial_non_mapping_response_retains_bounded_failure_observation(
     assert exc_info.value.outcome == {"kind": "environment", "code": "MODEL_TIMEOUT_NO_WRITE"}
     retained = json.loads(observation.read_text(encoding="utf-8"))
     assert retained["authoring_version"] == GREENFIELD_INTENT_AUTHORING_VERSION
-    assert retained["semantic_model_call_count"] == 1
+    assert retained["semantic_model_call_count"] == 2
     assert "response" not in retained
     assert retained["failure"] == {
-        "stage": "initial_authoring",
-        "profile_id": RESCUE_PROFILE_ID,
-        "effective_timeout_seconds": 80.0,
-        "elapsed_seconds": pytest.approx(81.805),
-        "response_shape": "NoneType",
-        "provider": {
-            "provider": "codex-cli",
-            "code": failure_code,
-            "model": "gpt-5.6-terra",
-            "reasoning_effort": "medium",
-        },
+        "stage": "remaining_candidate_authoring",
+        "code": "GreenfieldModelRuntimeError",
     }
     assert diagnostic_detail not in observation.read_text(encoding="utf-8")
     assert provider.calls == 1
@@ -539,7 +552,7 @@ def test_initial_non_mapping_response_without_proof_fd_reports_unavailability(
     monkeypatch,
 ) -> None:
     monkeypatch.delenv(GREENFIELD_MODEL_PROOF_FD_ENV, raising=False)
-    provider = StructuredAuthoringProvider(None)
+    provider = RemainingCandidateProvider(None)
     provider.last_failure_code = "unavailable"
     provider.last_failure_detail = "Codex CLI is unavailable."
 
@@ -548,6 +561,7 @@ def test_initial_non_mapping_response_without_proof_fd_reports_unavailability(
             review_provider_factory=AdmittingReviewProvider,
             evidence_text="Create a source-cited project.",
             provider=provider,
+            participant_provider_factory=provider.participant_provider,
             clock=lambda: 0.0,
         )
 

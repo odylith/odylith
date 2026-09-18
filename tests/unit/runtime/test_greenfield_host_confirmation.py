@@ -15,7 +15,7 @@ from odylith.runtime.domain_intelligence import greenfield_commit_transaction
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_create_transaction
 from odylith.runtime.domain_intelligence import greenfield_managed_mutation_boundary
-from odylith.runtime.domain_intelligence import greenfield_model_intent_authoring
+from odylith.runtime.domain_intelligence import greenfield_participant_first_authoring
 from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store
 from odylith.runtime.domain_intelligence import greenfield_product_intent_envelope
 from odylith.runtime.domain_intelligence import greenfield_repository_lock
@@ -106,7 +106,7 @@ def test_supported_hosts_commit_the_pending_hash_without_semantic_work(
         (greenfield_authored_semantics, "require_authored_relation_authority"),
         (greenfield_authored_semantics, "require_relation_authority_parity"),
         (greenfield_atomic_fact_ledger, "require_atomic_fact_ledger"),
-        (greenfield_model_intent_authoring, "author_greenfield_intent"),
+        (greenfield_participant_first_authoring, "author_greenfield_intent"),
         (odylith_reasoning.OpenAICompatibleReasoningProvider, "generate_structured"),
         (odylith_reasoning.CodexCliReasoningProvider, "generate_structured"),
         (odylith_reasoning.AnthropicDirectReasoningProvider, "generate_structured"),
@@ -182,6 +182,7 @@ forbidden = (
     "odylith.runtime.domain_intelligence.greenfield_operating_envelope",
     "odylith.runtime.domain_intelligence.greenfield_model_profile_contract",
     "odylith.runtime.domain_intelligence.greenfield_model_intent_authoring",
+    "odylith.runtime.domain_intelligence.greenfield_participant_first_authoring",
     "odylith.runtime.domain_intelligence.greenfield_model_intent_materialization",
     "odylith.runtime.reasoning.odylith_reasoning",
 )

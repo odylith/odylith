@@ -10,8 +10,6 @@ from types import SimpleNamespace
 from typing import Any
 
 from odylith.runtime.domain_intelligence import (
-    greenfield_model_intent_authoring,
-    greenfield_model_intent_materialization,
     greenfield_proposals_cli,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
@@ -19,7 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
-    StructuredAuthoringProvider,
+    RemainingCandidateProvider,
     authored_response,
 )
 from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
@@ -102,11 +100,11 @@ def _public_propose(
     capsys: Any,
     intent: Mapping[str, Any],
     repair_tier: str = "",
-) -> tuple[int, dict[str, Any], StructuredAuthoringProvider]:
+) -> tuple[int, dict[str, Any], RemainingCandidateProvider]:
     activate_greenfield_baseline_fixture(tmp_path)
     source = _evidence_source(intent)
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
-    provider = StructuredAuthoringProvider(
+    provider = RemainingCandidateProvider(
         authored_response(
             intent,
             evidence_text=staged_evidence,
@@ -114,14 +112,23 @@ def _public_propose(
             component_responsibility_owners=["Berth map"],
         )
     )
+    participant_provider = provider.participant_provider()
     assert staged_evidence
+
+    def provider_for_role(**kwargs: object) -> tuple[object, str, str]:
+        role = kwargs.get("request_role") or "remaining_candidate_authoring"
+        providers = {
+            "participant_selection": participant_provider,
+            "remaining_candidate_authoring": provider,
+            "candidate_review": AdmittingReviewProvider(),
+        }
+        assert role in providers
+        return providers[str(role)], "test-model", "low"
+
     monkeypatch.setattr(
         greenfield_proposals_cli,
         "_greenfield_authoring_provider",
-        lambda **kwargs: (
-            AdmittingReviewProvider() if kwargs.get("request_role") == "candidate_review" else provider,
-            "test-model", "low",
-        ),
+        provider_for_role,
     )
 
     arguments = ["propose", "--repo-root", str(tmp_path), "--prompt", source, "--format", "json"]
@@ -166,13 +173,22 @@ def test_public_authored_rescue_tier_seals_the_120_second_target(
     capsys: Any,
 ) -> None:
     now = {"time": 0.0}
-    generate = StructuredAuthoringProvider.generate_structured
+    generate = RemainingCandidateProvider.generate_structured
+
     def author_after_standard_window(self, *, request):
-        if request.schema_name == "greenfield_intent_authoring":
+        if request.schema_name == "greenfield_remaining_candidate_authoring":
             now["time"] = 70.0
         return generate(self, request=request)
-    monkeypatch.setattr(StructuredAuthoringProvider, "generate_structured", author_after_standard_window)
-    monkeypatch.setattr(greenfield_proposals_cli, "time", SimpleNamespace(perf_counter=lambda: now["time"]))
+    monkeypatch.setattr(
+        RemainingCandidateProvider,
+        "generate_structured",
+        author_after_standard_window,
+    )
+    monkeypatch.setattr(
+        greenfield_proposals_cli,
+        "time",
+        SimpleNamespace(perf_counter=lambda: now["time"]),
+    )
     rc, payload, provider = _public_propose(
         tmp_path=tmp_path,
         monkeypatch=monkeypatch,
@@ -191,9 +207,15 @@ def test_public_authored_rescue_tier_seals_the_120_second_target(
     assert manifest["operational_timeout_seconds"] == 180.0
     assert manifest["rescue_activated"] is True
     assert manifest["model_authoring"]["tier"] == "rescue"
-    assert manifest["model_authoring"]["semantic_model_call_count"] == 2
+    assert manifest["model_authoring"]["semantic_model_call_count"] == 3
     assert provider.requests[0].timeout_seconds == 165.0
-    assert manifest["model_authoring"]["model_profile"]["effective_timeout_seconds"] == 165.0
+    assert manifest["model_authoring"]["effective_model_window_seconds"] == 165.0
+    assert (
+        manifest["model_authoring"]["remaining_candidate_authoring"]["model_profile"][
+            "effective_timeout_seconds"
+        ]
+        == 165.0
+    )
 
 
 def test_public_authored_propose_seals_exact_non_latin_product_title(
