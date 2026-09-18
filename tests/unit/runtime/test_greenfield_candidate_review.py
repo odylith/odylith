@@ -79,6 +79,17 @@ def test_partition_preserves_every_value_and_binds_complete_candidate():
     assert internal_role == author._AUTHORED_FACTS_SCHEMA["properties"]["internal_systems"]["description"]
     assert "same owner, not a new component" in internal_role
     assert "Do not infer product ownership from a mere mention" in internal_role
+    constraint_role = payload["role_definitions"]["operational_constraints"]
+    assert constraint_role == review.OPERATIONAL_CONSTRAINT_ROLE_DEFINITION
+    assert constraint_role == author._AUTHORED_FACTS_SCHEMA["properties"][
+        "operational_constraints"
+    ]["description"]
+    assert "Each quote is projected independently" in constraint_role
+    assert "governed subject" in constraint_role
+    assert "required, prohibited or permitted behavior" in constraint_role
+    assert "condition or scope" in constraint_role
+    assert "contiguous source context before or after" in constraint_role
+    assert "Do not require an explicit subject" in constraint_role
     assert "Do not turn an activity or output purpose into a person." in payload["role_definitions"]["customer"]
     clock = Clock()
     provider = Reviewer({"admissible": True, "issues": []}, clock, 7.0)
@@ -162,6 +173,38 @@ def test_human_subject_state_object_keeps_source_and_performer_custody_separate(
         row["field"] == "state_object" and row["quote"] == "displaced residents"
         for row in payload["resolved_source_custody"]
     )
+
+
+@pytest.mark.parametrize("constraint", [
+    "The oversight team consists of auditors. They have read-only access.",
+    "Auditors must never alter requests.",
+    "The oversight team has read-only access only during intake.",
+    "Never delete published notices.",
+])
+def test_self_contained_constraints_keep_exact_custody_without_a_new_shape(constraint):
+    source = _source() + " " + constraint
+    response = _response(_source())
+    response["result"]["facts"]["operational_constraints"].append(
+        {"quote": constraint, "occurrence": 1}
+    )
+    original = deepcopy(response)
+    authored = author._validated_authoring_response(
+        response, evidence_text=source, elapsed_seconds=0.0,
+        provider={}, profile_id=STANDARD_PROFILE_ID, effective_timeout_seconds=165.0,
+    )
+    assert authored.intent["operational_constraints"][-1] == constraint
+    payload = review.candidate_review_payload(
+        source, response["result"], source_spans=authored.source_spans,
+    )
+    constraint_spans = [row for row in payload["resolved_source_custody"]
+                        if row["field"] == "operational_constraints"]
+    span = constraint_spans[-1]
+    assert span["quote"] == constraint
+    assert source.encode()[span["source_start_byte"]:span["source_end_byte"]] == constraint.encode()
+    schema = deepcopy(author._AUTHORED_FACTS_SCHEMA["properties"]["operational_constraints"])
+    schema.pop("description")
+    assert schema == author._TYPED_FACTS_SCHEMA["properties"]["operational_constraints"]
+    assert response == original
 
 
 def test_unknown_authority_is_not_silently_dropped():

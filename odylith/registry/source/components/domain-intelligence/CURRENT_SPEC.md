@@ -4,6 +4,25 @@ Last updated: 2026-09-18
 
 ## Overview
 
+Authoring v63 shares a portable operational-constraint definition with immutable
+review. Each independently projected citation retains any source-stated governed
+subject, required/prohibited/permitted behavior and material condition/scope.
+Exact source context before or after may be included; complete impersonal and
+imperative constraints remain valid without an explicit actor. Seven live
+positive/negative controls pass with independent agreement, alongside 100 focused
+and 1,843 frozen runtime tests. This changes no field shape, model stage, profile,
+custody or transaction boundary. Two subsequently generated participant-first
+packages pass independent semantic and human-quality review with no P0/P1, each
+producing five workstreams, five components and five diagrams in 76.165/77.288
+seconds. All 32 browser cells pass per case; frozen inputs remain unchanged.
+Fresh complete source constraints retain their governed subjects in standalone
+handoffs, closing that P1. This qualifies the bounded integration candidate, not
+production or release. Replace competing participant authorship and migrate the
+three truthful role observations, operating envelope, receipts and admission gates
+together; keep the existing compiler and transaction kernel. Installed/profile,
+host/recovery and unseen-input proof remain pending. Synthetic corrected controls
+and earlier failed drafts are not fresh package evidence.
+
 Authoring v62 and immutable candidate review share one proof-boundary definition:
 the exact source span must identify observable evidence, an output, or a reviewable
 state. A faithful complete statement is valid; shortest-phrase selection is a

@@ -40,6 +40,17 @@ INTERNAL_SYSTEM_ROLE_DEFINITION = (
     "Do not infer product ownership from a mere mention of an external "
     "organization, human role, or arbitrary label."
 )
+OPERATIONAL_CONSTRAINT_ROLE_DEFINITION = (
+    "A complete source-stated requirement, prohibition, permission or ordering constraint. "
+    "Each quote is projected independently: retain any source-stated governed subject, "
+    "required, prohibited or permitted behavior and any condition or scope that changes "
+    "its meaning. Include exact "
+    "contiguous source context before or after when needed; a fragment whose subject or "
+    "applicability can only be recovered from surrounding source is insufficient. "
+    "Do not require an explicit subject for a complete impersonal or imperative "
+    "source constraint. Prefer a concise self-contained span, without inventing actors, relations "
+    "or restrictions absent from the source."
+)
 _SOURCE_FIELDS = frozenset((
     "status", "facts", "events", "components", "terminal", "source_precedence",
     "consistency", "ambiguities",
@@ -87,6 +98,7 @@ _ROLE_DEFINITIONS = {
     "product_view": "A distinct complete source statement of the envisioned user experience: what a user can do or understand through the product. A title or product-category label is not an experience.",
     "human_actors": "Source-stated people or human roles participating in the product, including explicit output recipients outside the first path. Use an empty list when no human participant is stated. An activity, artifact, or output-purpose modifier is not a human participant.",
     "internal_systems": INTERNAL_SYSTEM_ROLE_DEFINITION,
+    "operational_constraints": OPERATIONAL_CONSTRAINT_ROLE_DEFINITION,
     "external_systems": "Only an explicitly source-stated operational exchange or dependency between this product and a named external system, service, authority, organization, or data source. Merely naming task data, an output recipient, or a reviewer does not establish that connection.",
     "product_story": "A complete source span about product behavior or outcome, excluding the operator request to create a proposal.",
 }

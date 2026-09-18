@@ -1,5 +1,20 @@
 # Odylith
 
+## Portable Greenfield constraints (2026-09-18)
+
+The unreleased author/reviewer contract requires each independently projected
+constraint quote to preserve its source-stated subject, behavior and material
+condition or scope. Exact surrounding context is allowed; complete subjectless
+constraints remain valid. Seven live positive/negative controls and 1,843 runtime
+tests pass. No new schema or parsing path is introduced. Two fresh experimental
+participant-first packages now pass independent review with no P0/P1, each
+containing five workstreams, five components and five diagrams in 76.165/77.288
+seconds, plus all 32 browser cells per case. This closes the demonstrated
+standalone constraint-subject defect and selects the mechanism for bounded
+production integration. It does not qualify the experimental three-call profile,
+publication, installed/native-host behavior or release. Preserve existing safety
+and final holdout obligations without adding optional presentation work.
+
 ## Greenfield proof meaning (2026-09-18)
 
 The unreleased author/reviewer contract treats a faithful complete source statement

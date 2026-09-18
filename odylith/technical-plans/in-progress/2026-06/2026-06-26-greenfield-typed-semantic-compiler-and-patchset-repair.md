@@ -2,6 +2,31 @@ Status: In progress
 
 ## Current installed shipping gate (2026-09-18)
 
+Authoring v63 and immutable review now share a portable operational-constraint
+definition: preserve any source-stated subject, required/prohibited/permitted
+behavior and material condition or scope in each independently projected quote.
+Exact surrounding source context may be included; complete impersonal/imperative
+constraints need no invented actor. No new fields, parser, model stage or deadline.
+All seven fixed live reviewer controls pass in 60.287 seconds with independent
+agreement; 100 focused and 1,843 frozen runtime tests pass. Original failed drafts
+remain unchanged, and synthetic positive controls are not package inputs. This
+qualifies the bounded role contract only. Subsequent fresh participant-first
+generation, complete package and browser review pass both predeclared cases, with
+the second dispatched only after hash-bound independent acceptance of the first.
+Each fresh result contains five workstreams, five components and five diagrams;
+package construction takes 76.165 and 77.288 seconds, with three model calls and
+unchanged frozen inputs. All 32 browser cells pass per case. Independent review
+finds no P0/P1; one optional context-diagram connection advisory is not a new gate.
+The standalone constraint-subject P1 is closed on fresh complete-package evidence.
+Proceed with the same participant-first mechanism: replace competing participant
+authorship and atomically migrate production routing, profile observations,
+operating-envelope custody, receipts and exact-three-call admission. Keep the
+existing compiler, projections, immutable review and transaction kernel. Production
+integration, installed/profile/host/recovery proof and final untouched holdout
+remain pending; neither experimental result is publishable or release-qualified.
+Earlier failed attempts below retain their historical verdicts. Evidence:
+/Users/freedom/.codex/odylith-constraint-context.NR2b7z/.
+
 The shared-role and scope-label checkpoint passes 1,839 runtime tests, 56
 browser-oracle tests, 81 maintained browser tests and all 32 corrected-package
 browser cells. Exact custody envelopes and compiled readback match; all bound

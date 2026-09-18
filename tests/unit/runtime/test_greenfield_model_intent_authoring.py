@@ -83,7 +83,7 @@ def test_model_authored_intent_reaches_staged_product_intent_without_parser_reco
     assert candidate["human_actors"] == ["Dock attendant Ivo"]
     assert candidate["internal_systems"] == ["Berth map"]
     assert receipt["tier"] == "rescue"
-    assert receipt["authoring_version"] == "odylith.greenfield.intent-authoring.v62"
+    assert receipt["authoring_version"] == "odylith.greenfield.intent-authoring.v63"
     assert receipt["semantic_model_call_count"] == 2
     assert candidate["authored_semantics"]["first_path_relations"][0]["action_verb_quote"] == "enters"
     assert "model_authoring" not in candidate
