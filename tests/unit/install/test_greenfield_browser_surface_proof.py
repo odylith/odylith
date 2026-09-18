@@ -561,7 +561,7 @@ def _source_design_structure() -> tuple[dict, dict]:
              "items": [row["name"] for row in design["components"]]},
             {"key": "source_product_systems", "label": "Source-stated systems:", "items": ["Relay", "Audit Console"]},
             {"key": "external_systems", "label": "External systems:", "items": ["North Archive"]},
-            {"key": "non_goals", "label": "Excluded from the first release:", "items": ["Do not claim live settlement."]},
+            {"key": "non_goals", "label": "Source-stated scope limits:", "items": ["Do not claim live settlement."]},
         ],
         "deliveries": [{"title": row["title"], "deliverable": row["deliverable"]} for row in design["workstreams"]],
     }
@@ -580,6 +580,20 @@ def test_authored_structure_requires_direct_typed_node_parity() -> None:
     ]
     assert module.authored_structure_issues(collapsed, facts) == (
         "browser surface project first path does not preserve typed event nodes",
+    )
+
+
+def test_authored_browser_oracle_rejects_release_scope_not_stated_by_source() -> None:
+    module = _authored_contract_module()
+    rendered, facts = _source_design_structure()
+    scope = "Outside the first path, observers may inspect receipts."
+    facts["non_goals"] = [scope]
+    boundary = next(row for row in rendered["boundary_groups"] if row["key"] == "non_goals")
+    boundary["items"] = [scope]
+    assert module.authored_structure_issues(rendered, facts) == ()
+    boundary["label"] = "Excluded from the first release:"
+    assert module.authored_structure_issues(rendered, facts) == (
+        "browser surface project boundary groups conflate or alter proposed design and source context",
     )
 
 

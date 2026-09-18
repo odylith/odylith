@@ -26,6 +26,20 @@ STATE_OBJECT_ROLE_DEFINITION = (
     "select a performer merely because it performs the action, or select a workflow "
     "sequence, location, goal, or entire product description."
 )
+PROOF_BOUNDARY_ROLE_DEFINITION = (
+    "A source span identifying observable evidence, an output, or a reviewable "
+    "state that can prove the first path worked. It may be a phrase or complete "
+    "statement; prefer concise wording but do not reject a longer faithful span. "
+    "An activity, workflow stage, goal, product label, or purpose without an "
+    "identified result is not proof."
+)
+INTERNAL_SYSTEM_ROLE_DEFINITION = (
+    "A source-named product-owned system or component. The whole named product "
+    "may be both the title and an internal-system alias when source context "
+    "establishes that product owner; this is the same owner, not a new component. "
+    "Do not infer product ownership from a mere mention of an external "
+    "organization, human role, or arbitrary label."
+)
 _SOURCE_FIELDS = frozenset((
     "status", "facts", "events", "components", "terminal", "source_precedence",
     "consistency", "ambiguities",
@@ -66,12 +80,13 @@ REVIEW_SCHEMA = {
 
 _ROLE_DEFINITIONS = {
     "state_object": STATE_OBJECT_ROLE_DEFINITION,
-    "proof_boundary": "The smallest exact source phrase naming observable evidence, an output, or a reviewable state that can prove the first path worked; never an activity, workflow stage, goal, or product label.",
+    "proof_boundary": PROOF_BOUNDARY_ROLE_DEFINITION,
     "problem": "A complete source statement of the user's unmet need or current difficulty, not the product name or a proposed capability.",
     "customer": "The source-stated direct user or primary beneficiary. Do not turn an activity or output purpose into a person.",
     "opportunity": "A complete source statement of the improvement or benefit worth pursuing, not an isolated workflow action.",
     "product_view": "A distinct complete source statement of the envisioned user experience: what a user can do or understand through the product. A title or product-category label is not an experience.",
     "human_actors": "Source-stated people or human roles participating in the product, including explicit output recipients outside the first path. Use an empty list when no human participant is stated. An activity, artifact, or output-purpose modifier is not a human participant.",
+    "internal_systems": INTERNAL_SYSTEM_ROLE_DEFINITION,
     "external_systems": "Only an explicitly source-stated operational exchange or dependency between this product and a named external system, service, authority, organization, or data source. Merely naming task data, an output recipient, or a reviewer does not establish that connection.",
     "product_story": "A complete source span about product behavior or outcome, excluding the operator request to create a proposal.",
 }

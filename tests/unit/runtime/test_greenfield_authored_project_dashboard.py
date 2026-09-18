@@ -426,7 +426,7 @@ def test_authored_dashboard_bypasses_legacy_projection_and_preserves_exact_facts
         "Proposed logical components (not deployment commitments):\n"
         + "\n".join(row["name"] for row in design["components"]) + "\n"
         "Source-stated systems:\nMeridian Engine\nExternal systems:\nAPIv7 Archive\n"
-        "Excluded from the first release:\nBatch Æther migration"
+        "Source-stated scope limits:\nBatch Æther migration"
     )
     assert payload["risk_items"] == []
     assert payload["risk_classes"] == []

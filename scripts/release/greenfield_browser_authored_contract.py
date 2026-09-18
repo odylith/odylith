@@ -184,7 +184,7 @@ def authored_structure_issues(rendered: Any, authored_facts: Any) -> tuple[str, 
     for key, label, values in (
         ("source_product_systems", "Source-stated systems:", authored_facts.get("internal_systems", ())),
         ("external_systems", "External systems:", authored_facts.get("external_systems", ())),
-        ("non_goals", "Excluded from the first release:", authored_facts.get("non_goals", ())),
+        ("non_goals", "Source-stated scope limits:", authored_facts.get("non_goals", ())),
     ):
         items = (
             [

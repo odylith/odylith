@@ -119,7 +119,7 @@ def authored_fact_view(project: Mapping[str, Any]) -> AuthoredFactView | None:
                 _authored_text_items(raw_facts.get("internal_systems")),
             ),
             AuthoredBoundaryGroup("external_systems", "External systems", external_systems),
-            AuthoredBoundaryGroup("non_goals", "Excluded from the first release", non_goals),
+            AuthoredBoundaryGroup("non_goals", "Source-stated scope limits", non_goals),
         )
         if row.items
     )

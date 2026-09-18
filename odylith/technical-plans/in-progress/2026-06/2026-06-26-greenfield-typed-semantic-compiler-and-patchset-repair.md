@@ -2,6 +2,74 @@ Status: In progress
 
 ## Current installed shipping gate (2026-09-18)
 
+The shared-role and scope-label checkpoint passes 1,839 runtime tests, 56
+browser-oracle tests, 81 maintained browser tests and all 32 corrected-package
+browser cells. Exact custody envelopes and compiled readback match; all bound
+source, publication, worker, helper and retained-view inventories remain unchanged.
+This closes the false role denials and display-scope overclaim only. The independent
+constraint-subject P1 below remains open; package and release acceptance are false.
+Frozen evidence: /Users/freedom/.codex/odylith-participant-package.Qp2jGZ/checkpoint/verification-result.json.
+
+The v62 shared-role comparison passes all four live positive/negative controls
+with independent agreement, 100 focused tests and 1,836 frozen runtime tests.
+The participant-first off-path draft now compiles model-free into four workstreams,
+four components and five diagrams; all 32 browser-state checks pass with exact
+readback and unchanged source, seed and publication. Root visual review still
+finds a presentation contradiction: a first-path exclusion is labeled as excluded
+from the first release. The two-label correction passes 122 focused tests and
+independent review. Its first replay fails only stale browser-oracle wording;
+the exact oracle update and old-label rejection pass all 56 oracle tests.
+Independent package review leaves one real P1: a context-dependent constraint
+loses its subject in standalone handoffs. The existing exact-source quote schema
+can include the antecedent. Compare that author/reviewer ownership contract before
+adopting participant-first; do not add relation fields, downstream pronoun parsing,
+or optional participant-presentation work. Then require fresh complete-package
+qualification and truthful three-role profile/receipt integration. The two-call
+production contract remains unchanged; neither browser counts nor retained-draft
+acceptance qualifies a replacement mechanism or release.
+Evidence: /Users/freedom/.codex/odylith-participant-package.Qp2jGZ/.
+
+The v61 proof-role replay stops after 8.158 seconds and one call on a different
+false denial: the reviewer invents a rule excluding the named product from internal
+owners even though the canonical graph explicitly permits a title/internal alias.
+Independent adjudication confirms the unchanged candidate remains source-faithful.
+Preserve that failed run and its exact diff. Frozen v61 regression passes 1,836
+runtime and 81 browser controls, but cannot qualify semantic admission. Before any
+stronger-model experiment, v62 supplies that missing existing internal-owner
+definition to both author schema and reviewer. Keep source shapes, profiles,
+calls, custody and transaction laws unchanged. Require original/heading admission,
+purpose-only proof rejection and human-role-as-internal-owner rejection in one
+bounded comparison; stop on first failure without another contract patch or retry.
+Evidence: /Users/freedom/.codex/odylith-proof-role.J0fymX/RESULT.md.
+
+The participant-first comparison now has two independently accepted semantic
+candidates: 67.148 seconds for the separate recipient and 60.924 seconds for the
+off-path roles, three calls each with frozen inputs unchanged. The second actual
+run remains failed because the unchanged reviewer rejects a faithful complete
+result-and-review statement for not being the shortest proof phrase. Independent
+adjudication finds no P0/P1 in that candidate; citation brevity is advisory, while
+identified observable result and exact custody remain mandatory. Correct only the
+shared author/reviewer proof-role definition and require unchanged-candidate,
+equivalent-source and purpose-only negative review controls. Preserve the original
+denial; do not bypass review, rerun authoring, adopt three-call production roles,
+or claim package qualification. No new schema or broad citation migration.
+
+The next external comparison isolates participant interpretation before complete
+authoring: Astra-medium selects only source-supported humans with the existing
+split-prefix locator; Terra-low authors the remaining response against that frozen
+list; unchanged Astra-medium review checks the joined complete candidate. This
+removes competing participant authorship rather than moving design to another
+call. Prior witness trials left discovery inside the complete author. Targeted
+history review found no prior test of this exact ordering, not proof of universal
+novelty. Reject a longer-cap source/design retry and defer all-field citation
+migration because neither changes participant entailment ownership. Use one
+165-second shared model window, three diagnostic calls at most, no retries,
+production receipts, staging or publication. Stop after the first material failure;
+run the off-path-role control only after independent acceptance of the complete
+separate-recipient result. No production contract changes or release claim follow
+from an isolated pass. Evidence and predeclared controls:
+/Users/freedom/.codex/odylith-participant-owner.1vWJhB/DESIGN.md.
+
 Operator update: **90/120/150 seconds are performance guidelines, not hard
 acceptance limits.** This supersedes earlier hard-deadline wording in this plan.
 Report actual elapsed time and target overruns honestly. Source fidelity, useful

@@ -4,6 +4,36 @@ Last updated: 2026-09-18
 
 ## Overview
 
+Authoring v62 and immutable candidate review share one proof-boundary definition:
+the exact source span must identify observable evidence, an output, or a reviewable
+state. A faithful complete statement is valid; shortest-phrase selection is a
+writing preference, not a semantic rejection rule. A purpose without an identified
+result remains inadmissible. This changes no schema shape, production profile,
+model-call count, custody or publication boundary. They also share the existing
+internal-owner rule: the whole named product may be a title/internal-system alias;
+mere mention does not establish product ownership. The earlier v61 candidate
+passes 100 focused, 1,836 runtime and 81 browser checks, but its live replay remains
+failed on a false internal-owner denial. Its failed proof and exact diff survive;
+v62 passes all four live positive/negative reviewer controls, 100 focused tests
+and 1,836 frozen runtime tests with independent approval of the narrow correction.
+
+An external participant-first comparison preserves participant meaning on two
+independently adjudicated cases in 67.148/60.924 seconds. The second runtime result
+remains failed on the false shortest-phrase denial above. Neither candidate is a
+qualified package or an adopted three-call production mechanism. Model-free
+projection of the off-path draft yields four workstreams, four components and five
+diagrams with all 32 browser states passing. Project scope labels now preserve the
+source's own scope instead of imposing first-release exclusions. Independent review
+accepts that correction; a pronoun-only constraint still loses its governed subject
+when projected alone. The existing source-span shape can carry the complete source
+statement including its antecedent. Qualify that ownership without adding relation
+fields or downstream semantic repair. Keep the original two-call author/reviewer
+profile until full replacement proof earns adoption.
+The combined checkpoint passes 1,839 runtime, 56 browser-oracle and 81 maintained
+browser tests plus all 32 retained-package browser cells, with exact custody and
+write-set preservation. This qualifies the display correction, not the unresolved
+constraint-subject fidelity or complete release.
+
 The operator now treats 90/120/150 seconds as performance targets, not hard
 acceptance ceilings. The unreleased timing contract separates these targets from a
 finite 180-second operational timeout and a 165-second shared model window.

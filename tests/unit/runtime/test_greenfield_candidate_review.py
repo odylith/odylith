@@ -68,6 +68,17 @@ def test_partition_preserves_every_value_and_binds_complete_candidate():
         "state_object"
     ]["description"]
     assert "performer merely because it performs" in state_object_role
+    proof_role = payload["role_definitions"]["proof_boundary"]
+    assert proof_role == review.PROOF_BOUNDARY_ROLE_DEFINITION
+    assert proof_role == author._AUTHORED_FACTS_SCHEMA["properties"]["proof_boundary"]["description"]
+    assert "phrase or complete statement" in proof_role
+    assert "do not reject a longer faithful span" in proof_role
+    assert "purpose without an identified result is not proof" in proof_role
+    internal_role = payload["role_definitions"]["internal_systems"]
+    assert internal_role == review.INTERNAL_SYSTEM_ROLE_DEFINITION
+    assert internal_role == author._AUTHORED_FACTS_SCHEMA["properties"]["internal_systems"]["description"]
+    assert "same owner, not a new component" in internal_role
+    assert "Do not infer product ownership from a mere mention" in internal_role
     assert "Do not turn an activity or output purpose into a person." in payload["role_definitions"]["customer"]
     clock = Clock()
     provider = Reviewer({"admissible": True, "issues": []}, clock, 7.0)

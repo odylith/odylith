@@ -403,7 +403,7 @@ def authored_product_boundary(
     if external_systems:
         rows.extend(("External systems:", *external_systems))
     if non_goals:
-        rows.extend(("Excluded from the first release:", *non_goals))
+        rows.extend(("Source-stated scope limits:", *non_goals))
     return "\n".join(rows)
 
 

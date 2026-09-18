@@ -82,6 +82,28 @@ def _render_text(value: object) -> str:
     return html.escape(str(value or ""))
 
 
+@pytest.mark.parametrize("scope_limit", (
+    "Outside this first path, observers may inspect receipts.",
+    "Batch imports are excluded from the first release.",
+    "Do not automate reviewer judgment.",
+))
+def test_boundary_labels_preserve_source_scope_without_imposing_release_scope(scope_limit: str) -> None:
+    project = _project()
+    project["authored_facts"]["non_goals"] = [scope_limit]
+    frozen = deepcopy(project)
+    view = authored_fact_presenter.authored_fact_view(project)
+    group = next(row for row in view.boundary_groups if row.key == "non_goals")
+
+    assert group.label == "Source-stated scope limits"
+    assert group.items == (scope_limit,)
+    scalar = greenfield_authored_dashboard.authored_product_boundary(
+        components=({"label": "Receipt review"},), internal_systems=(),
+        external_systems=(), non_goals=(scope_limit,),
+    )
+    assert scalar.endswith("Source-stated scope limits:\n" + scope_limit)
+    assert project == frozen
+
+
 def test_authored_fact_view_preserves_unseen_typed_facts_without_prose_parsing() -> None:
     view = authored_fact_presenter.authored_fact_view(_project())
 
@@ -192,7 +214,7 @@ def test_greenfield_story_fallback_bodies_preserve_structured_boundaries() -> No
         "External systems:\n"
         "Delta Relay\n"
         "North Archive\n"
-        "Excluded from the first release:\n"
+        "Source-stated scope limits:\n"
         "Do not claim live settlement.\n"
         "Do not automate reviewer judgment."
     )

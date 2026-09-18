@@ -1,5 +1,19 @@
 # Odylith
 
+## Greenfield proof meaning (2026-09-18)
+
+The unreleased author/reviewer contract treats a faithful complete source statement
+identifying an observable result as valid proof. Citation brevity is advisory;
+unsupported facts and a purpose without an identified result still fail. The narrow
+shared-definition correction follows an independently diagnosed false denial and
+does not adopt the external participant-first model stage or qualify release.
+The same author/reviewer contract now explicitly permits the existing whole-product
+title/internal-owner alias, without treating a human role or external organization
+as product-owned merely because the source mentions it.
+Project boundary labels preserve source-stated scope limits rather than imposing
+a first-release exclusion. This does not reinterpret canonical non-goals or qualify
+the experimental profile; standalone constraint-subject fidelity remains open.
+
 ## Greenfield performance contract update (2026-09-18)
 
 Greenfield's 90/120/150-second tier timings are now operator-approved performance

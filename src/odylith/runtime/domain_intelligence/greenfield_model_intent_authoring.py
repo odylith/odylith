@@ -24,6 +24,8 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     authored_component_relation_facts,
 )
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
+    INTERNAL_SYSTEM_ROLE_DEFINITION,
+    PROOF_BOUNDARY_ROLE_DEFINITION,
     STATE_OBJECT_ROLE_DEFINITION,
     review_greenfield_candidate,
 )
@@ -72,7 +74,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v60"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v62"
 GREENFIELD_MODEL_PROOF_FD_ENV = "ODYLITH_GREENFIELD_MODEL_PROOF_FD"
 MAX_GREENFIELD_SEMANTIC_CALLS = 2
 
@@ -996,11 +998,7 @@ _AUTHORED_FACTS_SCHEMA: dict[str, Any] = {
         },
         "proof_boundary": {
             **_CITATION_SCHEMA,
-            "description": (
-                "The smallest exact source phrase naming observable evidence, an output, "
-                "or a reviewable state that can prove the first path worked; never an "
-                "activity, workflow stage, goal, or product label."
-            ),
+            "description": PROOF_BOUNDARY_ROLE_DEFINITION,
         },
         "problem": {
             **_TYPED_FACTS_SCHEMA["properties"]["problem"],
@@ -1039,6 +1037,10 @@ _AUTHORED_FACTS_SCHEMA: dict[str, Any] = {
                 "an empty list when no human participant is stated. An activity, "
                 "artifact, or output-purpose modifier is not a human participant."
             ),
+        },
+        "internal_systems": {
+            **_TYPED_FACTS_SCHEMA["properties"]["internal_systems"],
+            "description": INTERNAL_SYSTEM_ROLE_DEFINITION,
         },
         "external_systems": {
             **_TYPED_FACTS_SCHEMA["properties"]["external_systems"],
