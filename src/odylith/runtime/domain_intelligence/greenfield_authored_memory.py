@@ -15,7 +15,7 @@ def render_authored_project_brief_lines(project_brief: Mapping[str, Any]) -> lis
     if outcome:
         lines.append(f"- outcome: {outcome}")
     if principle:
-        lines.append(f"- principle: {principle}")
+        lines.append(f"- Source excerpt: “{principle}”")
     sections = _mapping_rows(project_brief.get("blueprint_sections"))
     if sections:
         _append_section(lines, "## Project Design Board")
@@ -25,7 +25,7 @@ def render_authored_project_brief_lines(project_brief: Mapping[str, Any]) -> lis
             why = _text(row.get("why_it_matters"))
             if not section or not fact:
                 continue
-            lines.append(f"- {section}: {fact}")
+            lines.append(f"- {section}: “{fact}”" if section == "Source excerpt" else f"- {section}: {fact}")
             if why:
                 lines.append(f"  - Why: {why}")
     gates = _strings(project_brief.get("coding_readiness_gates"))

@@ -2,6 +2,40 @@ Status: In progress
 
 ## Current installed shipping gate (2026-09-17)
 
+The excerpt correction changes only display labels/quoting in five existing
+projection owners. Canonical source text, spans, semantic roles, schemas, model
+calls and deadlines remain unchanged. Three predicate/Unicode/multiline controls
+fail before the fix; all 79 focused controls pass afterwards. Independent code
+review finds no P0/P1. A model-free replay of the retained heading intent compiles
+the complete package and passes all 32 maintained desktop/mobile browser states
+in 23.553 seconds. Intent, authority, backlog, components, handoff, original seal,
+seed, source inputs and publication remain unchanged. Independent visual review
+accepts the exact correction with no P0/P1. Broad proof passes 3,409 runtime/install
+and 458 browser checks, with four stale label expectations in three test files.
+Only those expectations change; all 51 affected-module and excerpt checks then
+pass, including every failed node, against identical product bytes. Preserve both
+the original failed report and the corrective proof under checkpoint-final/.
+The combined source checkpoint is ready for commit and exact build/install;
+this replay does not repair or
+replace the failed native attempt. No new feature, grammar parser, helper layer,
+model stage or provider attempt was added. Evidence:
+/Users/freedom/.codex/odylith-source-excerpt.0YzkgX/.
+
+Pushed checkpoint 8d34a31b2 passes 1,813 Greenfield tests and 81 browser
+regressions with frozen inputs. Only the two previously unrun controls execute:
+unique-location completes in 57.818 seconds and receives independent semantic
+and native-UX acceptance; heading-equivalent completes in 57.070 seconds with
+correct state custody and all source relationships but fails final prose review.
+Each uses two calls inside the unchanged standard 90/75-second contract. The
+heading result renders a predicate-only source excerpt as an unquoted standalone
+product story, brief principle and Product outcome. This is a presentation P1,
+not a semantic failure. Stop before the distribution build; preserve both seals,
+original verdicts and the original collision failure. Do not claim three passes.
+Inspect only the existing excerpt-to-prose ownership boundary; no grammar rules,
+model stage, schema growth or repeated prompt tuning. Generic diagram-label
+overlap remains P2 where unique content and essential relationships are readable.
+Evidence: /Users/freedom/.codex/odylith-v59-qualification.AzNuR5/.
+
 The first v59 complete standard proposal finishes in 47.937 seconds with correct
 state-location custody, all five source actions and the terminal review recipient.
 It seals five useful workstreams, components and diagrams with 56 writes; two

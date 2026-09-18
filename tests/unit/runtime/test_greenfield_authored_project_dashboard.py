@@ -393,7 +393,7 @@ def test_authored_dashboard_bypasses_legacy_projection_and_preserves_exact_facts
     )
 
     assert payload["title"] == "eXact Ω Forge"
-    assert payload["intro"] == PRODUCT_STORY
+    assert payload["intro"] == f"Source excerpt: “{PRODUCT_STORY}”"
     assert payload["focus"] == PROPOSED_FIRST_RUN
     assert payload["desired"] == "Ω-Receipt"
     assert payload["actors"] == [

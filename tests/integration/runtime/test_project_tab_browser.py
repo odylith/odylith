@@ -221,7 +221,8 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
     page.locator(".project-product-story").wait_for(timeout=15000)
     page.locator(".project-host-handoff").wait_for(timeout=15000)
     surface_text = page.locator(".project-surface").inner_text()
-    assert "Product Story" in surface_text
+    assert "Project overview" in surface_text
+    assert "Source excerpt:" in surface_text
     assert "Risks" not in surface_text
     assert "Project not defined yet" not in surface_text
     assert "Current orienting work" not in surface_text

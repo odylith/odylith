@@ -5,6 +5,21 @@ Last updated: 2026-09-17
 ## Overview
 
 Feature scope is frozen to demonstrated blockers and required release proof.
+The cited product description is source evidence, not independently authored
+prose. Preview, Brief, Atlas detail, project-intelligence display and dashboard
+views label and quote it as a source excerpt. Canonical text, spans and roles stay
+exact, and authored assumptions keep their separate authority. No grammar repair,
+semantic recomposition, schema or model stage is introduced. The five-owner display
+correction passes 79 focused controls and a model-free complete-package replay
+with all 32 desktop/mobile browser states; input/publication identity and canonical
+intent, source authority, workstreams, components and handoff remain unchanged.
+Independent visual review accepts the correction. Broad proof has 3,409 runtime/install
+and 458 browser passes; four stale presentation assertions are corrected without
+product changes, and all 51 affected-module/excerpt checks pass with exact coverage
+of those failures. The original failed report remains distinct. Clean installed
+qualification is next, not established by these source checks. Failed native
+attempts are not retroactively admitted by a corrected presentation replay.
+
 The state-only v59 source-address candidate uses an exact enclosing anchor and
 strict anchor occurrence to locate one semantic quote. Only the quote and its
 resolved bytes enter canonical facts; anchor context cannot supply meaning.

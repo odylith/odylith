@@ -58,6 +58,7 @@ def build_authored_greenfield_payload(
 
     title = _required_text(intent, "title")
     product_story = _required_text(intent, "product_story")
+    source_excerpt = f"Source excerpt: “{product_story}”"
     first_path = authored_first_run_text(intent)
     proof_boundary = _required_text(intent, "proof_boundary")
     human_actors = _text_values(intent.get("human_actors"))
@@ -112,7 +113,7 @@ def build_authored_greenfield_payload(
         open_label = "Assumptions"
     else:
         open_label = "Open questions"
-    known = _unique([product_story, first_path, visible_result, proof_boundary])
+    known = _unique([source_excerpt, first_path, visible_result, proof_boundary])
     unknown = questions
     sections = ["product_story"]
     if actors:
@@ -126,7 +127,7 @@ def build_authored_greenfield_payload(
     return {
         "eyebrow": "Project type: greenfield",
         "title": title,
-        "intro": product_story,
+        "intro": source_excerpt,
         "chips": [
             "greenfield",
             "accepted greenfield project" if accepted_project else "greenfield proposal",
@@ -136,7 +137,7 @@ def build_authored_greenfield_payload(
         "focus": first_path,
         "open_label": open_label,
         "open": open_items or ["No authored open question."],
-        "product_story_title": "Product Story",
+        "product_story_title": "Project overview",
         "product_story_note": "",
         "product_story": _product_story(
             title=title,
@@ -319,7 +320,7 @@ def _product_story(
     return {
         "headline": title,
         "standfirst": "",
-        "paragraphs": [product_story, *event_quotes],
+        "paragraphs": [f"Source excerpt: “{product_story}”", *event_quotes],
         "supporting_records": [],
         "release_contract": [
             {
@@ -481,7 +482,7 @@ def _claim_evidence(
 ) -> list[dict[str, str]]:
     values = (
         ("Project identity", title),
-        ("Product story", product_story),
+        ("Source excerpt", product_story),
         ("Proposed first run", first_path),
         ("Visible result", visible_result),
         ("Proof boundary", proof_boundary),

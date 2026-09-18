@@ -156,7 +156,9 @@ def test_human_path_retains_source_story_and_complete_proposed_package(tmp_path)
 
     assert candidate.get("component_responsibilities", []) == []
     assert candidate["authored_semantics"]["component_responsibility_relations"] == []
-    assert proposal["project_intelligence"]["purpose"] == candidate["product_story"]
+    source_excerpt = f'Source excerpt: “{candidate["product_story"]}”'
+    assert proposal["project_intelligence"]["purpose"] == source_excerpt
+    assert proposal["intent"]["product_story"] == candidate["product_story"]
     assert 4 <= len(proposal["components"]) <= 5
     assert 4 <= len(proposal["backlog"]) <= 5
     assert len(proposal["diagrams"]) == 5
@@ -166,8 +168,8 @@ def test_human_path_retains_source_story_and_complete_proposed_package(tmp_path)
     assert candidate["product_story"] not in context_labels
     assert f'product["{candidate["title"]}"]' in context_labels
     product_box = next(box for box in context["diagram_boxes"] if box["node_id"] == "product")
-    assert product_box["role"] == "Product description"
-    assert product_box["description"] == candidate["product_story"]
+    assert product_box["role"] == "Source excerpt"
+    assert product_box["description"] == source_excerpt
     for event in events:
         assert event["event_quote"] in context_labels
     assert not any(box["role"] == "Product-owned component" for box in context["diagram_boxes"])

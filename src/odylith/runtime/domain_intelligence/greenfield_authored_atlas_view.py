@@ -523,7 +523,7 @@ def _product_boundary_projection(
     if not components:
         return (
             [f'  product["{_mermaid_label(title)}"]'],
-            [_box("product", title, "Product description", product_story)],
+            [_box("product", title, "Source excerpt", f"Source excerpt: “{product_story}”")],
             (),
         )
     rows = tuple(
