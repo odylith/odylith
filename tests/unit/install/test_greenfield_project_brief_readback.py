@@ -22,7 +22,7 @@ def _brief(*, governance: bool = False) -> dict[str, object]:
         "operating_principle": "Keep review evidence visible.",
         "project_outcome": "Reviewers can verify queue decisions.",
         "blueprint_sections": [
-            {"section": "Product outcome", "must_capture": "Keep review evidence visible."},
+            {"section": "Source excerpt", "must_capture": "Keep review evidence visible."},
             {"section": "User problem", "must_capture": "Queue review is hard to audit."},
             {
                 "section": "First path",
@@ -69,12 +69,14 @@ def _record(brief: dict[str, object]) -> str:
         "",
         "## Brief",
         "- outcome: Reviewers can verify queue decisions.",
-        "- principle: Keep review evidence visible.",
+        "- Source excerpt: “Keep review evidence visible.”",
         "",
         "## Project Design Board",
     ]
     for row in brief["blueprint_sections"]:
-        lines.append(f"- {row['section']}: {row['must_capture']}")
+        label = row["section"]
+        value = row["must_capture"]
+        lines.append(f"- {label}: “{value}”" if label == "Source excerpt" else f"- {label}: {value}")
     gates = brief["coding_readiness_gates"]
     paths = brief["host_independent_paths"]
     if gates or paths:
@@ -114,6 +116,32 @@ def test_empty_governance_brief_is_exact_and_shared_with_count(tmp_path) -> None
 
     assert project_brief_readback_findings(record_text=text, project_brief=brief, intent=intent) == ()
     assert _count(tmp_path, brief, text, intent) == 1
+
+
+def test_source_excerpt_contract_rejects_retired_unquoted_or_mutated_copy(tmp_path) -> None:  # noqa: ANN001
+    brief = _brief()
+    intent = _intent()
+    text = _record(brief)
+    changed_rows = (
+        text.replace("- Source excerpt: “", "- principle: ", 1),
+        text.replace("Source excerpt", "Product outcome"),
+        text.replace("“Keep review evidence visible.”", "Keep review evidence visible."),
+        text.replace("Keep review evidence visible.", "Mutated review evidence."),
+    )
+    for changed in changed_rows:
+        assert project_brief_readback_findings(
+            record_text=changed, project_brief=brief, intent=intent
+        )
+        assert _count(tmp_path, brief, changed, intent) == 0
+
+    retired = _brief()
+    retired["blueprint_sections"][0]["section"] = "Product outcome"
+    retired_text = _record(retired)
+    findings = project_brief_readback_findings(
+        record_text=retired_text, project_brief=retired, intent=intent
+    )
+    assert any("missing `Source excerpt`" in finding.message for finding in findings)
+    assert _count(tmp_path, retired, retired_text, intent) == 0
 
 
 def test_typed_proof_and_required_evidence_mutations_fail_readback(tmp_path) -> None:  # noqa: ANN001

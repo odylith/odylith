@@ -4,6 +4,7 @@ import hashlib
 import json
 from dataclasses import replace
 from pathlib import Path
+import shlex
 from types import SimpleNamespace
 import sys
 
@@ -38,6 +39,7 @@ HASH = "a" * 64
 PRODUCT_FACTS_SHA256 = "c" * 64
 ATOMIC_CUSTODY_SHA256 = "d" * 64
 TRANSACTION_FILE = f".odylith/runtime/greenfield/pending/{HASH}/product-create-transaction.v1.json"
+OFFER_ROOT = Path("/matrix/repo")
 
 
 @pytest.mark.parametrize("tamper", [None, "product", "model", "reviewer"])
@@ -737,70 +739,64 @@ def test_dry_run_commit_issues_rejects_changed_generation_repository_state(tmp_p
     assert issues == ("immutable generation readback is missing or invalid",)
 
 
-def test_confirmation_preview_requires_a_non_actionable_read_only_offer() -> None:
-    payload = _proposal_payload(HASH)
+def test_confirmation_preview_accepts_the_exact_terminal_offer_but_preserves_the_gap() -> None:
+    payload = _proposal_payload(HASH, repo_root=OFFER_ROOT)
 
-    assert confirmation_preview_issues(proposal_payload=payload) == (
-        "read-only public proposal remains unqualified for native end-to-end confirmation",
+    assert confirmation_preview_issues(proposal_payload=payload, repo_root=OFFER_ROOT) == (
+        "terminal decision offer remains unqualified: this matrix invokes create, not decide or native chat",
     )
 
-    payload["confirmation"]["choices"] = [{"command": f"CONFIRM {HASH}"}]
+    payload["confirmation"]["choices"] = [{"label": "CONFIRM", "command": "unterminated '"}]
 
-    issues = confirmation_preview_issues(proposal_payload=payload)
-    assert "pre-confirm read-only payload exposes actionable choices" in issues
-    assert "pre-confirm read-only payload exposes an executable decision or commit offer" in issues
-    assert "read-only public proposal remains unqualified for native end-to-end confirmation" in issues
+    issues = confirmation_preview_issues(proposal_payload=payload, repo_root=OFFER_ROOT)
+    assert "pre-confirm terminal decision offer must contain exactly three choices" in issues
 
 
-def test_confirmation_preview_rejects_the_old_unqualified_decision_offer() -> None:
-    payload = _proposal_payload(HASH)
-    payload["confirmation"] = {
-        "command_rule": "Use exactly one hash-bound command: CONFIRM, EDIT, or REJECT.",
-        "choices": [
-            {
-                "command": f"CONFIRM {HASH}",
-                "commit_command": (
-                    "odylith greenfield create --repo-root . "
-                    f"--transaction-file {TRANSACTION_FILE} --transaction-hash {HASH} --confirm"
-                ),
-            },
-            {"command": f"EDIT {HASH} <corrections>"},
-            {"command": f"REJECT {HASH}"},
-        ],
-    }
+@pytest.mark.parametrize(
+    ("mutate", "expected_issue"),
+    (
+        (lambda payload: payload["confirmation"].update(interface="chat"),
+         "pre-confirm terminal decision offer does not declare the terminal interface"),
+        (lambda payload: payload["confirmation"].update(reason="Send ordinary chat approval."),
+         "pre-confirm terminal decision offer has an invalid terminal warning"),
+        (lambda payload: payload["confirmation"].update(
+            reason=(
+                "Nothing has been published. Run one command in a terminal; ordinary chat approval "
+                "does not authorize publication. For EDIT, replace <corrections> with your changes. "
+                "You may also approve in chat."
+            ),
+        ), "pre-confirm terminal decision offer has an invalid terminal warning"),
+        (lambda payload: payload["confirmation"].update(create_command="odylith greenfield create --confirm"),
+         "pre-confirm terminal decision offer exposes unsupported authority fields"),
+        (lambda payload: payload["confirmation"].pop("choices"),
+         "pre-confirm terminal decision offer is missing its choices list"),
+        (lambda payload: payload["confirmation"]["choices"].pop(),
+         "pre-confirm terminal decision offer must contain exactly three choices"),
+        (lambda payload: payload["confirmation"]["choices"].__setitem__(1, {
+            "label": "CONFIRM", "command": payload["confirmation"]["choices"][1]["command"],
+        }), "pre-confirm terminal decision offer must contain CONFIRM, EDIT, and REJECT once each"),
+        (lambda payload: payload["confirmation"]["choices"][0].update(command=shlex.join([
+            "odylith", "greenfield", "decide", "--repo-root", "/wrong/root", "CONFIRM", HASH,
+        ])), "pre-confirm terminal decision choice is not the exact repo/hash-bound command"),
+        (lambda payload: payload["confirmation"]["choices"][2].update(command=shlex.join([
+            "odylith", "greenfield", "create", "--repo-root", str(OFFER_ROOT), "REJECT", HASH,
+        ])), "pre-confirm terminal decision choice is not the exact repo/hash-bound command"),
+        (lambda payload: payload["confirmation"]["choices"][0].update(command=shlex.join([
+            "odylith", "greenfield", "decide", "--repo-root", str(OFFER_ROOT), "CONFIRM", "b" * 64,
+        ])), "pre-confirm terminal decision choice is not the exact repo/hash-bound command"),
+        (lambda payload: payload["confirmation"]["choices"][1].update(command="unterminated '"),
+         "pre-confirm terminal decision choice is not shell-parseable"),
+        (lambda payload: payload["confirmation"]["choices"][1].update(command=shlex.join([
+            "odylith", "greenfield", "decide", "--repo-root", str(OFFER_ROOT), "EDIT", HASH,
+            "--edit", "<corrections>", "--extra",
+        ])), "pre-confirm terminal decision choice is not the exact repo/hash-bound command"),
+    ),
+)
+def test_confirmation_preview_rejects_malformed_or_nonterminal_offers(mutate, expected_issue: str) -> None:
+    payload = _proposal_payload(HASH, repo_root=OFFER_ROOT)
+    mutate(payload)
 
-    issues = confirmation_preview_issues(proposal_payload=payload)
-
-    assert "pre-confirm payload does not mark the public proposal read-only" in issues
-    assert "pre-confirm read-only payload exposes actionable choices" in issues
-    assert "pre-confirm read-only payload exposes explicit action fields" in issues
-    assert "pre-confirm read-only payload exposes an executable decision or commit offer" in issues
-    assert "read-only public proposal remains unqualified for native end-to-end confirmation" in issues
-
-
-def test_confirmation_preview_rejects_commit_offer_outside_empty_choices() -> None:
-    payload = _proposal_payload(HASH)
-    payload["confirmation"]["commit_command"] = (
-        "odylith greenfield create --repo-root . "
-        f"--transaction-file {TRANSACTION_FILE} --transaction-hash {HASH} --confirm"
-    )
-
-    issues = confirmation_preview_issues(proposal_payload=payload)
-
-    assert "pre-confirm read-only payload exposes explicit action fields" in issues
-    assert "pre-confirm read-only payload exposes an executable decision or commit offer" in issues
-    assert "read-only public proposal remains unqualified for native end-to-end confirmation" in issues
-
-
-def test_confirmation_preview_does_not_infer_native_acceptance_from_reason_prose() -> None:
-    payload = _proposal_payload(HASH)
-    payload["confirmation"]["reason"] = (
-        "A qualified confirmation interface is attached. Send a chat approval and ask a model to publish it."
-    )
-
-    assert confirmation_preview_issues(proposal_payload=payload) == (
-        "read-only public proposal remains unqualified for native end-to-end confirmation",
-    )
+    assert expected_issue in confirmation_preview_issues(proposal_payload=payload, repo_root=OFFER_ROOT)
 
 
 def test_post_confirm_navigation_requires_the_reviewed_generation_workspace(tmp_path: Path) -> None:
@@ -874,19 +870,28 @@ def _proposal(transaction_hash: str, *, transaction_file: str = TRANSACTION_FILE
     )
 
 
-def _proposal_payload(transaction_hash: str) -> dict[str, object]:
+def _proposal_payload(transaction_hash: str, *, repo_root: Path) -> dict[str, object]:
     return {
         "mode": "product_create_transaction",
         "transaction_file": TRANSACTION_FILE,
         "product_create_transaction": {"transaction_hash": transaction_hash},
         "confirmation": {
-            "status": "read_only",
+            "status": "terminal_only",
+            "interface": "terminal",
             "reason": (
-                "No qualified confirmation interface is attached to this preview. The package is staged "
-                "for review; no governed records have been published. Do not send a chat approval or ask "
-                "a model to publish it."
+                "Nothing has been published. Run one command in a terminal; ordinary chat approval "
+                "does not authorize publication. For EDIT, replace <corrections> with your changes."
             ),
-            "choices": [],
+            "choices": [
+                {
+                    "label": label,
+                    "command": shlex.join([
+                        "odylith", "greenfield", "decide", "--repo-root", str(repo_root), label,
+                        transaction_hash, *( ["--edit", "<corrections>"] if label == "EDIT" else []),
+                    ]),
+                }
+                for label in ("CONFIRM", "EDIT", "REJECT")
+            ],
         },
     }
 

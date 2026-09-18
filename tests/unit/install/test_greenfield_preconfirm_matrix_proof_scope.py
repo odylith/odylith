@@ -334,6 +334,7 @@ def test_main_uses_external_case_files_instead_of_default_catalog(
 
     assert exit_code == 0
     assert payload["status"] == "discovery-passed"
+    assert payload["proof_scope"]["timing_tiers"] == "advisory_profile_targets_with_separate_operational_timeout"
     assert payload["temp_cleanup_proof"]["status"] == "passed"
     cases = matrix_kwargs["cases"]
     assert len(cases) == 1

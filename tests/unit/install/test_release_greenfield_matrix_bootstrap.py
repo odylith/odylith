@@ -215,7 +215,10 @@ def test_greenfield_preconfirm_matrix_target_runs_installed_release_gate() -> No
     assert "make greenfield-preconfirm-matrix" in help_text
     assert "write greenfield-preconfirm-matrix.v1.json" in help_text
     assert "per-case browser surface state" in help_text
-    assert "one-call model-first authoring" in help_text
+    assert "three-stage participant-first authoring" in help_text
+    assert "one-call model-first authoring" not in help_text
+    assert "does not qualify terminal decisions or native chat confirmation through a create-only run" in help_text
+    assert "Proposal timing targets are advisory; operational timeouts remain separate" in help_text
     assert "GREENFIELD_MATRIX_TELEMETRY_JSONL" in help_text
     assert "GREENFIELD_MATRIX_STOP_AFTER_CLUSTER_FAILURES" in help_text
     assert "SIGKILL/same-hash-retry/fsync-rollback recovery" in help_text

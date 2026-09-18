@@ -1150,7 +1150,9 @@ def _run_case(
         create_payload=payload,
         repo_root=repo_root,
     )
-    decision_rail_issues = confirmation_preview_issues(proposal_payload=execution.proposal_payload)
+    decision_rail_issues = confirmation_preview_issues(
+        proposal_payload=execution.proposal_payload, repo_root=repo_root,
+    )
     navigation_issues = post_confirm_navigation_issues(
         create_payload=payload,
         repo_root=repo_root,
@@ -2782,7 +2784,7 @@ def _execute_matrix_campaign(
         ),
         "proof_scope": {
             "model_profiles": "real_installed_source_cited_authored_preconfirm_cases",
-            "timing_tiers": "strict_standard_under_90_rescue_under_120_deep_under_150",
+            "timing_tiers": "advisory_profile_targets_with_separate_operational_timeout",
             "lower_capability_model": profile_proof.get("lower_capability_scope", {}),
             "unavailable_provider": (
                 "real_installed_fail_closed_no_write"

@@ -280,7 +280,7 @@ def test_greenfield_guidance_keeps_public_review_separate_from_operator_create()
         assert "CONFIRM" in compact_text, path
         assert "EDIT" in compact_text, path
         assert "REJECT" in compact_text, path
-        assert "ordinary chat" in compact_text, path
+        assert "chat approval" in compact_text, path
         assert "## Choose one command" not in text, path
         assert "rollback guard" in compact_text, path
         assert ".odylith/runtime/greenfield/confirmed-intent.md" not in compact_text, path

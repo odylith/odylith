@@ -67,17 +67,17 @@ def test_customer_bootstrap_guidance_carries_live_proof_claim_gate() -> None:
     assert "Hook `systemMessage` or `additionalContext` generation is not proof of chat-visible UX" in guidance
     assert "reports `Activation: ready` and a chat-visibility line is confirmed" in guidance
     assert "Treat recorded-only and waiting-for-chat states as partial proof" in guidance
-    assert "quality-gates the full staged ProductCreateTransaction" in guidance
-    assert "read-only preview" in guidance
-    assert "No qualified confirmation interface comes from ordinary chat, hosts, or hooks" in guidance
+    assert "typed custody facts to gate ProductCreateTransaction" in guidance
+    assert "Read-only preview" in guidance
+    assert "Chat/hooks provide no qualified confirmation interface" in guidance
     assert "Do not append chat decision commands, offer publication, or run create from a chat approval" in guidance
     assert "odylith greenfield decide --repo-root PATH CONFIRM|EDIT|REJECT HASH" in guidance
-    assert "CONFIRM and REJECT share one bounded owner; neither calls compiler or model" in guidance
-    assert "EDIT verifies the retained hash" in guidance
-    assert "verifies receipt, hash and preconditions" in guidance
+    assert "CONFIRM/REJECT: one owner, no compiler/model" in guidance
+    assert "EDIT verifies retained hash and compiles sealed source + correction at original tier" in guidance
+    assert "verifies receipt/hash/preconditions" in guidance
     assert "without model reasoning, generation or repair" in guidance
     assert "Markdown is a view, never product truth" in guidance
-    assert "Explicit operator invocation" in guidance
+    assert "Report target overruns as timing evidence, not failures alone" in guidance
     assert "confirmed-intent.json" not in guidance
     assert "greenfield compile-transaction" not in guidance
     assert "ProductCreateTransaction" in guidance

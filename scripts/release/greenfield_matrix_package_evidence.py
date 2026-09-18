@@ -137,7 +137,7 @@ def _authored_project_brief_findings(
     sections = tuple(mapping_rows(brief.get("blueprint_sections")))
     labels = tuple(normalize_string(row.get("section")) for row in sections)
     required_labels = (
-        "Product outcome",
+        "Source excerpt",
         "User problem",
         "First path",
         "Visible result",
@@ -166,14 +166,19 @@ def _persisted_project_brief_structure_findings(
     findings: list[PackageEvidenceFinding] = []
     expected_brief = "\n".join((
         f"- outcome: {_brief_text(brief.get('project_outcome'))}",
-        f"- principle: {_brief_text(brief.get('operating_principle'))}",
+        _typed_brief_fact_line(
+            "Source excerpt", _brief_text(brief.get("operating_principle"))
+        ),
     ))
     if sections.get("brief", "") != expected_brief:
         findings.append(
             _finding("product_manager", "persisted project brief readback does not exactly match its typed brief")
         )
-    for label, value in (("outcome", "project_outcome"), ("principle", "operating_principle")):
-        expected = f"- {label}: {_brief_text(brief.get(value))}"
+    for label, value in (
+        ("outcome", "project_outcome"),
+        ("Source excerpt", "operating_principle"),
+    ):
+        expected = _typed_brief_fact_line(label, _brief_text(brief.get(value)))
         if not _brief_text(brief.get(value)) or expected not in sections.get("brief", ""):
             findings.append(_finding("product_manager", f"persisted project brief readback lost typed {label}"))
     expected_board = _typed_design_board(brief)
@@ -187,7 +192,7 @@ def _persisted_project_brief_structure_findings(
     for row in mapping_rows(brief.get("blueprint_sections")):
         label = _brief_text(row.get("section"))
         value = _brief_text(row.get("must_capture"))
-        expected = f"- {label}: {value}"
+        expected = _typed_brief_fact_line(label, value)
         if not label or not value or expected not in sections.get("project design board", ""):
             findings.append(
                 _finding(
@@ -207,7 +212,7 @@ def _typed_design_board(brief: Mapping[str, Any]) -> str:
         value = _brief_text(row.get("must_capture"))
         if not label or not value:
             continue
-        lines.append(f"- {label}: {value}")
+        lines.append(_typed_brief_fact_line(label, value))
         why = _brief_text(row.get("why_it_matters"))
         if why:
             lines.append(f"  - Why: {why}")
@@ -247,6 +252,10 @@ def _intent_brief_custody_findings(
 
 def _brief_text(value: Any) -> str:
     return str(value or "").strip()
+
+
+def _typed_brief_fact_line(label: str, value: str) -> str:
+    return f"- {label}: “{value}”" if label == "Source excerpt" else f"- {label}: {value}"
 
 
 def _governance_package_findings(record_text: str, brief: Mapping[str, Any]) -> list[PackageEvidenceFinding]:

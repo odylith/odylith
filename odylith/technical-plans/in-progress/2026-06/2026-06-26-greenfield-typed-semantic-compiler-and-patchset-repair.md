@@ -2,6 +2,38 @@ Status: In progress
 
 ## Current installed shipping gate (2026-09-18)
 
+Independent semantic and UX review accepts the first installed v18 package with
+no P0/P1 findings. Transaction review confirms exact sealed/readback identity.
+The five Brief findings are corrected in the release evaluator to match current
+quoted Source excerpt rendering; the terminal-offer checker now validates exact
+repo/hash-bound commands but still rejects treating create-only execution as
+decide or native-chat proof. A read-only replay preserves all 181 evidence files
+and has zero package findings, one valid Brief and only that explicit decision
+execution gap. No runtime/model/package changes or regeneration. The first full
+install rerun passes 1,589 and fails two stale guidance-copy assertions; exact
+current-contract replacements pass both targeted repros. Final full regression
+passes all 1,591 install tests in 112.48 seconds with unchanged tracked diff,
+logical shell, publication carrier and Compass hashes. Six warnings concern
+JUnit metadata only. Release help and report timing now reflect the actual
+three-stage mechanism and advisory targets; 71 focused controls pass.
+Final governed-surface settlement/browser checks precede checkpoint publication.
+Next exercise the existing terminal decide owner with exact retained identity,
+readback and idempotency evidence; do not invent another decision mechanism or
+call that native chat qualification. All remaining goal gates stay open.
+
+The full local distribution from pushed 28aef05b0 now builds in 244.759 seconds
+with all 1,454 inputs unchanged. Its first clean-installed deep-profile proposal
+takes 80.242 seconds and sealed publication takes 2.660 seconds; three model calls,
+five workstreams/components/diagrams and passing generated browser proof are
+retained. The matrix stops failed after that case, with five Project Brief
+readback/label findings and four confirmation findings. Current terminal-only
+decision commands contradict the checker's retired empty-choice expectation;
+native chat remains separately unqualified. Review the exact retained source,
+candidate, package, screenshots and sealed-byte evidence before correcting an
+owner. No model retry, new mechanism or release claim follows. Recovery, remaining
+profiles/clarification, native delivery and the untouched final evaluation remain
+open. Evidence: /Users/freedom/.codex/odylith-v18-installed.BQStRf/.
+
 Participant-first production integration is implemented as authoring v64, profile
 contract v18, operating envelope v4 and private proof v3. One selector owns human
 participants; the remaining author cannot replace them, and the unchanged final

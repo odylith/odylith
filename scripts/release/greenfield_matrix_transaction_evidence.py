@@ -8,6 +8,7 @@ from dataclasses import dataclass
 import hashlib
 import json
 from pathlib import Path
+import shlex
 import time
 from types import SimpleNamespace
 from typing import Any
@@ -35,6 +36,10 @@ _HOST_REPAIR_OUTPUT_TOKENS = (
     '"reasoning_contract"', '"host_instruction"', "active-proposal.v1.json",
     "must be non-empty", "greenfield proposal validation failed",
     "greenfield proposal Tribunal failed", "host-side schema repair",
+)
+_TERMINAL_DECISION_REASON = (
+    "Nothing has been published. Run one command in a terminal; ordinary chat approval "
+    "does not authorize publication. For EDIT, replace <corrections> with your changes."
 )
 
 
@@ -175,8 +180,10 @@ def _positive_journey_output_issues(result: Any, *, stage: str, repo_root: Path)
     return tuple(issues)
 
 
-def confirmation_preview_issues(*, proposal_payload: Mapping[str, Any]) -> tuple[str, ...]:
-    """Validate the read-only preview while keeping native confirmation unqualified."""
+def confirmation_preview_issues(
+    *, proposal_payload: Mapping[str, Any], repo_root: Path,
+) -> tuple[str, ...]:
+    """Validate the terminal offer without claiming this create-only run executed it."""
 
     transaction = _mapping(proposal_payload.get("product_create_transaction"))
     transaction_hash = str(transaction.get("transaction_hash") or "").strip()
@@ -189,32 +196,50 @@ def confirmation_preview_issues(*, proposal_payload: Mapping[str, Any]) -> tuple
         issues.append("pre-confirm payload is missing a valid transaction hash")
     if not str(proposal_payload.get("transaction_file") or "").strip():
         issues.append("pre-confirm payload is missing its transaction file")
-    if str(confirmation.get("status") or "").strip() != "read_only":
-        issues.append("pre-confirm payload does not mark the public proposal read-only")
+    if str(confirmation.get("status") or "").strip() != "terminal_only":
+        issues.append("pre-confirm payload does not expose the terminal-only decision offer")
+    if str(confirmation.get("interface") or "").strip() != "terminal":
+        issues.append("pre-confirm terminal decision offer does not declare the terminal interface")
     if not str(confirmation.get("reason") or "").strip():
-        issues.append("pre-confirm read-only payload is missing its reason")
+        issues.append("pre-confirm terminal decision offer is missing its reason")
+    elif str(confirmation["reason"]).strip() != _TERMINAL_DECISION_REASON:
+        issues.append("pre-confirm terminal decision offer has an invalid terminal warning")
+    allowed_fields = {"status", "interface", "reason", "choices"}
+    unexpected_fields = sorted(set(confirmation) - allowed_fields)
+    if unexpected_fields:
+        issues.append("pre-confirm terminal decision offer exposes unsupported authority fields")
+    expected_root = str(repo_root.expanduser().resolve())
+    expected_labels = ("CONFIRM", "EDIT", "REJECT")
     if not isinstance(choices, list):
-        issues.append("pre-confirm read-only payload is missing its empty choices list")
-    elif choices:
-        issues.append("pre-confirm read-only payload exposes actionable choices")
-    if any(
-        field in confirmation
-        for field in ("command_rule", "command", "commit_command", "create_command", "post_confirm_contract")
-    ):
-        issues.append("pre-confirm read-only payload exposes explicit action fields")
-    encoded_confirmation = json.dumps(confirmation, sort_keys=True).casefold()
-    executable_tokens = (
-        "odylith greenfield create",
-        "--confirm",
-        f"confirm {transaction_hash}".casefold(),
-        f"edit {transaction_hash}".casefold(),
-        f"reject {transaction_hash}".casefold(),
-        "choose one command",
-        "use exactly one hash-bound command",
+        issues.append("pre-confirm terminal decision offer is missing its choices list")
+    elif len(choices) != len(expected_labels):
+        issues.append("pre-confirm terminal decision offer must contain exactly three choices")
+    else:
+        labels: list[str] = []
+        for choice in choices:
+            if not isinstance(choice, Mapping) or set(choice) != {"label", "command"}:
+                issues.append("pre-confirm terminal decision choice has an invalid shape")
+                continue
+            label = str(choice["label"] or "").strip()
+            labels.append(label)
+            try:
+                command = shlex.split(str(choice["command"] or ""))
+            except ValueError:
+                issues.append("pre-confirm terminal decision choice is not shell-parseable")
+                continue
+            expected_command = [
+                "odylith", "greenfield", "decide", "--repo-root", expected_root,
+                label, transaction_hash,
+            ]
+            if label == "EDIT":
+                expected_command.extend(("--edit", "<corrections>"))
+            if command != expected_command:
+                issues.append("pre-confirm terminal decision choice is not the exact repo/hash-bound command")
+        if tuple(labels) != expected_labels:
+            issues.append("pre-confirm terminal decision offer must contain CONFIRM, EDIT, and REJECT once each")
+    issues.append(
+        "terminal decision offer remains unqualified: this matrix invokes create, not decide or native chat"
     )
-    if any(token in encoded_confirmation for token in executable_tokens):
-        issues.append("pre-confirm read-only payload exposes an executable decision or commit offer")
-    issues.append("read-only public proposal remains unqualified for native end-to-end confirmation")
     return tuple(issues)
 
 
