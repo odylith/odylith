@@ -86,14 +86,20 @@ def test_dry_run_uses_real_compiler_hash_with_sealed_model_timing(tmp_path: Path
 
 @pytest.mark.parametrize("show_result", ["passed", "failed", "missing_marker"])
 def test_installed_matrix_preserves_show_propose_sealed_confirm_journey(
-    tmp_path: Path, monkeypatch, show_result: str,
+    tmp_path: Path, show_result: str,
 ) -> None:
-    module = load_module(SCRIPTS_ROOT / "greenfield_preconfirm_matrix.py", "matrix_installed_journey_test")
+    module = load_module(SCRIPTS_ROOT / "greenfield_matrix_journey.py", "matrix_installed_journey_test")
     _path, transaction_hash = _write_transaction(tmp_path)
-    calls = []
+    receipt, issues = evidence_module._sealed_dry_run_receipt(  # noqa: SLF001
+        repo_root=tmp_path, transaction_file=TRANSACTION_FILE,
+        transaction_hash=transaction_hash, proposal_mode="product_create_transaction",
+    )
+    assert issues == ()
+    runner = _terminal_confirm_runner(tmp_path, transaction_hash, commit_result=_create_payload(receipt))
+    calls: list[tuple[str, ...]] = []
 
-    def invoke(**kwargs):
-        command = kwargs["command"]
+    def invoke_cli(command, _timeout):
+        command = tuple(command)
         calls.append(command)
         if "show" in command:
             return SimpleNamespace(
@@ -101,33 +107,32 @@ def test_installed_matrix_preserves_show_propose_sealed_confirm_journey(
                 stdout="missing" if show_result == "missing_marker" else "Odylith read this repo",
                 stderr="",
             )
-        if "propose" in command:
-            return _proposal(transaction_hash)
-        assert "create" in command and "--confirm" in command
-        return _successful_create_output(tmp_path)
+        return runner(command)
 
-    monkeypatch.setattr(module, "_run", invoke)
     profile = module.get_greenfield_model_profile(module.model_profile_id_for_repair_tier("auto"))
     raw = {}
     if show_result == "passed":
-        execution = module._run_compiled_greenfield_create_with_receipt(
+        execution = module.run_compiled_greenfield_journey(
             repo_root=tmp_path, env={"ODYLITH_GREENFIELD_MODEL_PROFILE": profile.profile_id},
-            prompt="A dispatcher records a dispatch and sees its receipt.", raw_streams=raw,
+            repair_tier="auto", invoke_cli=invoke_cli,
+            invoke_propose=lambda _timeout: _proposal(transaction_hash), raw_streams=raw,
         )
-        assert ["show" if "show" in command else command[2] for command in calls] == ["show", "propose", "create"]
+        assert ["show" if "show" in command else command[2] for command in calls] == ["show", "decide", "decide"]
         assert execution.dry_run_receipt["transaction_hash"] == transaction_hash
+        assert execution.terminal_journal_text
         assert not execution.output_contract_issues
     else:
         with pytest.raises(RuntimeError, match="capability show"):
-            module._run_compiled_greenfield_create_with_receipt(
+            module.run_compiled_greenfield_journey(
                 repo_root=tmp_path, env={"ODYLITH_GREENFIELD_MODEL_PROFILE": profile.profile_id},
-                prompt="A dispatcher records a dispatch and sees its receipt.", raw_streams=raw,
+                repair_tier="auto", invoke_cli=invoke_cli,
+                invoke_propose=lambda _timeout: _proposal(transaction_hash), raw_streams=raw,
             )
         assert len(calls) == 1
     assert "show.stdout" in raw and "show.stderr" in raw
 
 
-@pytest.mark.parametrize("stage", ["propose", "create"])
+@pytest.mark.parametrize("stage", ["propose", "decision"])
 @pytest.mark.parametrize("stream", ["stdout", "stderr"])
 @pytest.mark.parametrize("token", [
     '"reasoning_contract"', '"host_instruction"', "active-proposal.v1.json",
@@ -139,8 +144,12 @@ def test_installed_positive_journey_rejects_successful_host_repair_output(
 ) -> None:
     _path, transaction_hash = _write_transaction(tmp_path)
     proposed = _proposal(transaction_hash)
-    created = SimpleNamespace(returncode=0, stdout="{}", stderr="")
-    target = proposed if stage == "propose" else created
+    decision = SimpleNamespace(
+        returncode=0,
+        stdout=json.dumps({"status": "CLOSED", "command": "CONFIRM", "transaction_hash": transaction_hash}),
+        stderr="",
+    )
+    target = proposed if stage == "propose" else decision
     if stream == "stdout":
         payload = json.loads(target.stdout)
         payload["leaked_contract"] = json.loads(token) if token.startswith('"') else token
@@ -150,63 +159,36 @@ def test_installed_positive_journey_rejects_successful_host_repair_output(
     calls = []
     execution = commit_precompiled_transaction(
         repo_root=tmp_path, proposed=proposed, proposal_seconds=1,
-        invoke_create=lambda command: calls.append(command) or created,
+        invoke_cli=lambda command: calls.append(command) or _terminal_confirm_runner(
+            tmp_path,
+            transaction_hash,
+            commit_result=_create_payload(_compiled_receipt(tmp_path)[0]),
+            result=decision,
+        )(command),
     )
-    assert any(token in issue for issue in execution.output_contract_issues)
-    assert bool(calls) == (stage == "create")
-    if stage == "create":
-        assert execution.create is created, "Retain the actual output instead of replacing failure evidence"
-
-
-@pytest.mark.parametrize("missing", [
-    "", "mode", "validation_gate", "dashboard_refresh",
-    "odylith/runtime/source/accepted-project.v1.json",
-    "odylith/runtime/delivery_intelligence.v4.json",
-    "odylith/radar/traceability-graph.v1.json",
-])
-def test_positive_matrix_keeps_original_confirmed_smoke_artifact_guards(tmp_path: Path, missing: str) -> None:
-    _path, transaction_hash = _write_transaction(tmp_path)
-    created = _successful_create_output(tmp_path)
-    if missing.startswith("odylith/"):
-        (tmp_path / missing).unlink()
-    elif missing:
-        payload = json.loads(created.stdout)
-        payload.pop(missing)
-        created.stdout = json.dumps(payload)
-    execution = commit_precompiled_transaction(
-        repo_root=tmp_path, proposed=_proposal(transaction_hash), proposal_seconds=1,
-        invoke_create=lambda _command: created,
-    )
-    assert bool(execution.output_contract_issues) == bool(missing)
-    if missing:
-        assert any(missing in issue for issue in execution.output_contract_issues)
-
-
-def _successful_create_output(repo_root: Path) -> SimpleNamespace:
-    for relative in (
-        "odylith/runtime/source/accepted-project.v1.json",
-        "odylith/runtime/delivery_intelligence.v4.json",
-        "odylith/radar/traceability-graph.v1.json",
-    ):
-        path = repo_root / relative
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("{}\n", encoding="utf-8")
-    return SimpleNamespace(returncode=0, stderr="", stdout=json.dumps({
-        "mode": "applied", "validation_gate": {"passed": True}, "dashboard_refresh": {"status": "passed"},
-    }))
+    issues = (*execution.output_contract_issues, *execution.terminal_proof_issues)
+    assert any(token in issue for issue in issues)
+    assert bool(calls) == (stage == "decision")
+    if stage == "decision":
+        assert execution.decision is decision, "Retain the actual output instead of replacing failure evidence"
 
 
 def test_commit_precompiled_transaction_validates_receipt_before_invoking_create(tmp_path: Path) -> None:
     _transaction_path, transaction_hash = _write_transaction(tmp_path)
     calls: list[tuple[str, ...]] = []
     proposed = _proposal(transaction_hash)
+    receipt, issues = evidence_module._sealed_dry_run_receipt(  # noqa: SLF001
+        repo_root=tmp_path, transaction_file=TRANSACTION_FILE,
+        transaction_hash=transaction_hash, proposal_mode="product_create_transaction",
+    )
+    assert issues == ()
+    runner = _terminal_confirm_runner(tmp_path, transaction_hash, commit_result=_create_payload(receipt))
 
     execution = commit_precompiled_transaction(
         repo_root=tmp_path,
         proposed=proposed,
         proposal_seconds=12.5,
-        invoke_create=lambda command: calls.append(tuple(command))
-        or SimpleNamespace(returncode=0, stdout="{}", stderr=""),
+        invoke_cli=lambda command: calls.append(tuple(command)) or runner(command),
     )
 
     assert execution.dry_run_receipt["status"] == "compiled"
@@ -233,7 +215,142 @@ def test_commit_precompiled_transaction_validates_receipt_before_invoking_create
         greenfield_repository_write_set.GREENFIELD_REPOSITORY_WRITE_PATHS
     )
     assert len(execution.dry_run_receipt["semantic_snapshot_sha256"]) == 64
-    assert calls and calls[0][1:3] == ("greenfield", "create")
+    assert [command[1:3] for command in calls] == [("greenfield", "decide"), ("greenfield", "decide")]
+    assert not execution.terminal_proof_issues
+    assert not execution.output_contract_issues
+
+
+@pytest.mark.parametrize(
+    "response",
+    (
+        {"status": "STALE_TRANSACTION", "command": "CONFIRM"},
+        {"status": "CLOSED", "command": "REJECT"},
+        {"status": "CLOSED", "command": "CONFIRM", "transaction_hash": "b" * 64},
+    ),
+)
+def test_terminal_confirmation_failure_never_falls_back_to_create(
+    tmp_path: Path, response: dict[str, str],
+) -> None:
+    _path, transaction_hash = _write_transaction(tmp_path)
+    calls: list[tuple[str, ...]] = []
+
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path,
+        proposed=_proposal(transaction_hash),
+        proposal_seconds=1.0,
+        invoke_cli=lambda command: calls.append(tuple(command)) or SimpleNamespace(
+            returncode=0, stdout=json.dumps(response), stderr="",
+        ),
+    )
+
+    assert [command[1:3] for command in calls] == [("greenfield", "decide")]
+    assert execution.retry_decision is None
+    assert execution.commit_payload == {}
+    assert execution.terminal_proof_issues
+
+
+def test_terminal_confirmation_rejects_missing_journal_before_retry(tmp_path: Path) -> None:
+    _path, transaction_hash = _write_transaction(tmp_path)
+    calls: list[tuple[str, ...]] = []
+
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path,
+        proposed=_proposal(transaction_hash),
+        proposal_seconds=1.0,
+        invoke_cli=lambda command: calls.append(tuple(command)) or SimpleNamespace(
+            returncode=0,
+            stdout=json.dumps({"status": "CLOSED", "command": "CONFIRM", "transaction_hash": transaction_hash}),
+            stderr="",
+        ),
+    )
+
+    assert [command[1:3] for command in calls] == [("greenfield", "decide")]
+    assert "terminal CONFIRM journal is missing or invalid" in execution.terminal_proof_issues
+
+
+def test_terminal_confirmation_requires_the_pinned_six_field_response(tmp_path: Path) -> None:
+    _path, transaction_hash = _write_transaction(tmp_path)
+    receipt, issues = evidence_module._sealed_dry_run_receipt(  # noqa: SLF001
+        repo_root=tmp_path, transaction_file=TRANSACTION_FILE,
+        transaction_hash=transaction_hash, proposal_mode="product_create_transaction",
+    )
+    assert issues == ()
+    response = {
+        "version": "odylith.greenfield.host-confirmation-callback.invalid",
+        "status": "CLOSED",
+        "command": "CONFIRM",
+        "transaction_hash": transaction_hash,
+        "visible_markdown": "**Published**\n\nExact readback passed.",
+        "developer_context": "Return the supplied completion handoff.",
+    }
+    runner = _terminal_confirm_runner(
+        tmp_path,
+        transaction_hash,
+        commit_result=_create_payload(receipt),
+        result=SimpleNamespace(returncode=0, stdout=json.dumps(response), stderr=""),
+    )
+
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path, proposed=_proposal(transaction_hash), proposal_seconds=1.0, invoke_cli=runner,
+    )
+
+    assert execution.retry_decision is None
+    assert "terminal CONFIRM did not return the exact CLOSED response" in execution.terminal_proof_issues
+
+
+def test_same_hash_terminal_retry_rechecks_raw_output_contract(tmp_path: Path) -> None:
+    _path, transaction_hash = _write_transaction(tmp_path)
+    receipt, issues = evidence_module._sealed_dry_run_receipt(  # noqa: SLF001
+        repo_root=tmp_path, transaction_file=TRANSACTION_FILE,
+        transaction_hash=transaction_hash, proposal_mode="product_create_transaction",
+    )
+    assert issues == ()
+    runner = _terminal_confirm_runner(tmp_path, transaction_hash, commit_result=_create_payload(receipt))
+    calls = 0
+
+    def invoke(command):
+        nonlocal calls
+        calls += 1
+        result = runner(command)
+        if calls == 2:
+            return SimpleNamespace(returncode=0, stdout=result.stdout, stderr="host-side schema repair")
+        return result
+
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path, proposed=_proposal(transaction_hash), proposal_seconds=1.0, invoke_cli=invoke,
+    )
+
+    assert execution.retry_decision is not None
+    assert "greenfield decide exposed a host-side repair contract: host-side schema repair" in (
+        execution.output_contract_issues
+    )
+
+
+def test_same_hash_terminal_retry_rejects_changed_journal_bytes(tmp_path: Path) -> None:
+    _path, transaction_hash = _write_transaction(tmp_path)
+    receipt, issues = evidence_module._sealed_dry_run_receipt(  # noqa: SLF001
+        repo_root=tmp_path, transaction_file=TRANSACTION_FILE,
+        transaction_hash=transaction_hash, proposal_mode="product_create_transaction",
+    )
+    assert issues == ()
+    runner = _terminal_confirm_runner(tmp_path, transaction_hash, commit_result=_create_payload(receipt))
+    calls = 0
+
+    def invoke(command):
+        nonlocal calls
+        calls += 1
+        result = runner(command)
+        if calls == 2:
+            state = tmp_path / ".odylith/runtime/greenfield/create-journal" / transaction_hash / "state.v1.json"
+            state.write_text(state.read_text(encoding="utf-8") + " ", encoding="utf-8")
+        return result
+
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path, proposed=_proposal(transaction_hash), proposal_seconds=1.0, invoke_cli=invoke,
+    )
+
+    assert execution.retry_decision is not None
+    assert "same-hash terminal retry changed terminal journal bytes" in execution.output_contract_issues
 
 
 def test_commit_precompiled_transaction_carries_the_exact_sealed_operating_envelope(
@@ -254,7 +371,7 @@ def test_commit_precompiled_transaction_carries_the_exact_sealed_operating_envel
         repo_root=tmp_path,
         proposed=_proposal(transaction_hash),
         proposal_seconds=1.0,
-        invoke_create=lambda _command: SimpleNamespace(returncode=0, stdout="{}", stderr=""),
+        invoke_cli=lambda _command: SimpleNamespace(returncode=0, stdout="{}", stderr=""),
     )
 
     assert execution.dry_run_receipt["semantic_snapshot"]["operating_envelope"] == sealed
@@ -290,7 +407,7 @@ def test_preconfirm_snapshot_carries_sealed_authored_semantics_without_reconstru
         repo_root=tmp_path,
         proposed=_proposal(transaction_hash),
         proposal_seconds=1.0,
-        invoke_create=lambda _command: SimpleNamespace(returncode=0, stdout="{}", stderr=""),
+        invoke_cli=lambda _command: SimpleNamespace(returncode=0, stdout="{}", stderr=""),
     )
     receipt_snapshot = execution.dry_run_receipt["semantic_snapshot"]
 
@@ -318,7 +435,7 @@ def test_preconfirm_snapshot_preserves_absent_authored_semantics_as_absent(
         repo_root=tmp_path,
         proposed=_proposal(transaction_hash),
         proposal_seconds=1.0,
-        invoke_create=lambda _command: SimpleNamespace(returncode=0, stdout="{}", stderr=""),
+        invoke_cli=lambda _command: SimpleNamespace(returncode=0, stdout="{}", stderr=""),
     )
 
     assert direct_snapshot["authored_semantics"] is None
@@ -335,11 +452,11 @@ def test_commit_precompiled_transaction_rejects_mismatched_receipt_without_creat
         repo_root=tmp_path,
         proposed=_proposal(transaction_hash),
         proposal_seconds=12.5,
-        invoke_create=lambda command: calls.append(tuple(command)),
+        invoke_cli=lambda command: calls.append(tuple(command)),
     )
 
-    assert execution.create.returncode == 2
-    assert "compiler receipt hash does not match" in execution.create.stdout
+    assert execution.failure.returncode == 2
+    assert "compiler receipt hash does not match" in execution.failure.stdout
     assert not calls
 
 
@@ -354,10 +471,10 @@ def test_commit_precompiled_transaction_does_not_invoke_create_for_material_clar
             stderr="",
         ),
         proposal_seconds=12.5,
-        invoke_create=lambda command: calls.append(tuple(command)),
+        invoke_cli=lambda command: calls.append(tuple(command)),
     )
 
-    assert execution.create.returncode == 2
+    assert execution.failure.returncode == 2
     assert execution.dry_run_receipt["status"] == "clarification_required"
     assert not calls
 
@@ -369,11 +486,11 @@ def test_commit_precompiled_transaction_does_not_invoke_create_for_path_escape(t
         repo_root=tmp_path,
         proposed=_proposal(HASH, transaction_file="../escape.json"),
         proposal_seconds=12.5,
-        invoke_create=lambda command: calls.append(tuple(command)),
+        invoke_cli=lambda command: calls.append(tuple(command)),
     )
 
-    assert execution.create.returncode == 2
-    assert "path escapes" in execution.create.stdout
+    assert execution.failure.returncode == 2
+    assert "path escapes" in execution.failure.stdout
     assert not calls
 
 
@@ -393,11 +510,11 @@ def test_commit_precompiled_transaction_does_not_invoke_create_without_compiled_
         repo_root=tmp_path,
         proposed=_proposal(transaction_hash),
         proposal_seconds=12.5,
-        invoke_create=lambda command: calls.append(tuple(command)),
+        invoke_cli=lambda command: calls.append(tuple(command)),
     )
 
-    assert execution.create.returncode == 2
-    assert "receipt is unavailable" in execution.create.stdout
+    assert execution.failure.returncode == 2
+    assert "receipt is unavailable" in execution.failure.stdout
     assert not calls
 
 
@@ -424,11 +541,11 @@ def test_commit_precompiled_transaction_rejects_tampered_body_with_matching_loca
         repo_root=tmp_path,
         proposed=_proposal(transaction_hash),
         proposal_seconds=12.5,
-        invoke_create=lambda command: calls.append(tuple(command)),
+        invoke_cli=lambda command: calls.append(tuple(command)),
     )
 
-    assert execution.create.returncode == 2
-    assert "transaction body does not match" in execution.create.stdout
+    assert execution.failure.returncode == 2
+    assert "transaction body does not match" in execution.failure.stdout
     assert not calls
 
 
@@ -441,11 +558,11 @@ def test_commit_precompiled_transaction_rejects_changed_transaction_bytes(tmp_pa
         repo_root=tmp_path,
         proposed=_proposal(transaction_hash),
         proposal_seconds=12.5,
-        invoke_create=lambda command: calls.append(tuple(command)),
+        invoke_cli=lambda command: calls.append(tuple(command)),
     )
 
-    assert execution.create.returncode == 2
-    assert "compiler receipt file digest does not match" in execution.create.stdout
+    assert execution.failure.returncode == 2
+    assert "compiler receipt file digest does not match" in execution.failure.stdout
     assert not calls
 
 
@@ -487,11 +604,11 @@ def test_commit_precompiled_transaction_requires_every_sealed_identity(
         repo_root=tmp_path,
         proposed=_proposal(transaction_hash),
         proposal_seconds=12.5,
-        invoke_create=lambda command: calls.append(tuple(command)),
+        invoke_cli=lambda command: calls.append(tuple(command)),
     )
 
-    assert execution.create.returncode == 2
-    assert expected_issue in execution.create.stdout
+    assert execution.failure.returncode == 2
+    assert expected_issue in execution.failure.stdout
     assert not calls
 
 
@@ -739,17 +856,40 @@ def test_dry_run_commit_issues_rejects_changed_generation_repository_state(tmp_p
     assert issues == ("immutable generation readback is missing or invalid",)
 
 
-def test_confirmation_preview_accepts_the_exact_terminal_offer_but_preserves_the_gap() -> None:
+def test_confirmation_preview_accepts_the_exact_terminal_offer_but_requires_execution() -> None:
     payload = _proposal_payload(HASH, repo_root=OFFER_ROOT)
 
     assert confirmation_preview_issues(proposal_payload=payload, repo_root=OFFER_ROOT) == (
-        "terminal decision offer remains unqualified: this matrix invokes create, not decide or native chat",
+        "terminal decision offer remains unqualified: terminal execution proof is absent",
     )
 
     payload["confirmation"]["choices"] = [{"label": "CONFIRM", "command": "unterminated '"}]
 
     issues = confirmation_preview_issues(proposal_payload=payload, repo_root=OFFER_ROOT)
     assert "pre-confirm terminal decision offer must contain exactly three choices" in issues
+
+
+def test_confirmation_preview_accepts_complete_terminal_execution_without_native_claim(tmp_path: Path) -> None:
+    _path, transaction_hash = _write_transaction(tmp_path)
+    receipt, receipt_issues = evidence_module._sealed_dry_run_receipt(  # noqa: SLF001
+        repo_root=tmp_path, transaction_file=TRANSACTION_FILE,
+        transaction_hash=transaction_hash, proposal_mode="product_create_transaction",
+    )
+    assert receipt_issues == ()
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path,
+        proposed=_proposal(transaction_hash),
+        proposal_seconds=1.0,
+        invoke_cli=_terminal_confirm_runner(
+            tmp_path, transaction_hash, commit_result=_create_payload(receipt),
+        ),
+    )
+
+    assert confirmation_preview_issues(
+        proposal_payload=_proposal_payload(transaction_hash, repo_root=tmp_path),
+        repo_root=tmp_path,
+        execution=execution,
+    ) == ()
 
 
 @pytest.mark.parametrize(
@@ -1017,16 +1157,17 @@ def _seal_transaction(
 
 def _compiled_receipt(repo_root: Path) -> tuple[dict[str, object], dict[str, object]]:
     transaction_path, transaction_hash = _write_transaction(repo_root)
-    execution = commit_precompiled_transaction(
+    receipt, issues = evidence_module._sealed_dry_run_receipt(  # noqa: SLF001
         repo_root=repo_root,
-        proposed=_proposal(transaction_hash),
-        proposal_seconds=12.5,
-        invoke_create=lambda _command: SimpleNamespace(returncode=0, stdout="{}", stderr=""),
+        transaction_file=TRANSACTION_FILE,
+        transaction_hash=transaction_hash,
+        proposal_mode="product_create_transaction",
     )
-    assert execution.dry_run_receipt["status"] == "compiled"
+    assert issues == ()
+    assert receipt["status"] == "compiled"
     transaction = json.loads(transaction_path.read_text(encoding="utf-8"))
     return (
-        dict(execution.dry_run_receipt),
+        dict(receipt),
         dict(transaction["prewrite_package"]["repository_write_set"]),
     )
 
@@ -1036,6 +1177,7 @@ def _publish_committed_generation(
     repo_root: Path,
     transaction_hash: str,
     write_set: dict[str, object],
+    commit_result: dict[str, object] | None = None,
 ) -> None:
     transaction = json.loads((repo_root / TRANSACTION_FILE).read_text(encoding="utf-8"))
     package = transaction["prewrite_package"]
@@ -1067,7 +1209,48 @@ def _publish_committed_generation(
         publication_entry_text=package["publication_entry_text"],
     )
     journal.mark_published({}, generation_manifest_sha256=generation.manifest_sha256)
-    journal.mark_closed({}, generation_manifest_sha256=generation.manifest_sha256)
+    journal.mark_closed(commit_result or {}, generation_manifest_sha256=generation.manifest_sha256)
+
+
+def _terminal_confirm_runner(
+    repo_root: Path,
+    transaction_hash: str,
+    *,
+    commit_result: dict[str, object],
+    result: SimpleNamespace | None = None,
+):
+    """Produce raw CLI-shaped terminal output after persisting the actual journal fixture."""
+
+    transaction = json.loads((repo_root / TRANSACTION_FILE).read_text(encoding="utf-8"))
+    write_set = dict(transaction["prewrite_package"]["repository_write_set"])
+    published = False
+
+    def invoke(command):
+        nonlocal published
+        assert command[1:3] == ("greenfield", "decide")
+        assert command[5] == "CONFIRM" and command[6] == transaction_hash
+        if not published:
+            _publish_committed_generation(
+                repo_root=repo_root,
+                transaction_hash=transaction_hash,
+                write_set=write_set,
+                commit_result=commit_result,
+            )
+            published = True
+        return result or SimpleNamespace(
+            returncode=0,
+            stdout=json.dumps({
+                "version": "odylith.greenfield.host-confirmation-callback.v1",
+                "status": "CLOSED",
+                "command": "CONFIRM",
+                "transaction_hash": transaction_hash,
+                "visible_markdown": "**Published**\n\nExact readback passed.",
+                "developer_context": "Return the supplied completion handoff.",
+            }),
+            stderr="",
+        )
+
+    return invoke
 
 
 def _create_payload(receipt: dict[str, object]) -> dict[str, object]:
@@ -1080,6 +1263,12 @@ def _create_payload(receipt: dict[str, object]) -> dict[str, object]:
         "repository_write_set_hash": write_set_hash,
     }
     return {
+        "mode": "applied",
+        "validation_gate": {"status": "passed", "issues": []},
+        "backlog": [],
+        "components": [],
+        "diagrams": [],
+        "dashboard_refresh": {"status": "passed"},
         "product_create_transaction": dict(transaction),
         "repository_write_set": {"write_set_hash": write_set_hash},
         "commit_manifest": {

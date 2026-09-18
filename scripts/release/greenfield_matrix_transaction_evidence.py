@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
 import copy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import hashlib
 import json
 from pathlib import Path
@@ -16,6 +16,7 @@ from typing import Any
 from odylith.runtime.domain_intelligence import greenfield_create_lifecycle
 from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_generation_store
+from odylith.runtime.domain_intelligence import greenfield_prewrite_commit_result
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
 from odylith.runtime.domain_intelligence.greenfield_commit_transaction import _payload_hash
@@ -41,17 +42,26 @@ _TERMINAL_DECISION_REASON = (
     "Nothing has been published. Run one command in a terminal; ordinary chat approval "
     "does not authorize publication. For EDIT, replace <corrections> with your changes."
 )
-
-
+_TERMINAL_CONFIRMATION_VERSION = "odylith.greenfield.host-confirmation-callback.v1"
+_TERMINAL_CONFIRMATION_FIELDS = frozenset(("version", "status", "command", "transaction_hash", "visible_markdown", "developer_context"))
 @dataclass(frozen=True)
 class CompiledCreateExecution:
-    """The commit result and immutable transaction facts captured before that commit."""
+    """Terminal confirmation evidence and its same-hash retry."""
 
-    create: Any
+    decision: Any | None
+    retry_decision: Any | None
+    commit_payload: Mapping[str, Any]
+    failure: Any | None
     proposal_seconds: float
-    create_seconds: float
+    confirmation_seconds: float
+    retry_seconds: float
     dry_run_receipt: Mapping[str, Any]
     proposal_payload: Mapping[str, Any]
+    terminal_journal: Mapping[str, Any] = field(default_factory=dict)
+    terminal_journal_sha256: str = ""
+    terminal_journal_text: str = ""
+    terminal_pre_retry_snapshot: Mapping[str, Any] = field(default_factory=dict)
+    terminal_proof_issues: tuple[str, ...] = ()
     output_contract_issues: tuple[str, ...] = ()
 
 
@@ -60,9 +70,9 @@ def commit_precompiled_transaction(
     repo_root: Path,
     proposed: Any,
     proposal_seconds: float,
-    invoke_create: Callable[[Sequence[str]], Any],
+    invoke_cli: Callable[[Sequence[str]], Any],
 ) -> CompiledCreateExecution:
-    """Validate a proposed transaction receipt before invoking commit-only create."""
+    """Confirm through the terminal path, then prove same-hash terminal retry."""
 
     try:
         proposal_returncode = int(getattr(proposed, "returncode", 1))
@@ -72,31 +82,43 @@ def commit_precompiled_transaction(
     output_issues = _positive_journey_output_issues(proposed, stage="propose", repo_root=repo_root)
     if output_issues:
         return CompiledCreateExecution(
-            create=_error_result("; ".join(output_issues)),
+            decision=None,
+            retry_decision=None,
+            commit_payload={},
+            failure=_error_result("; ".join(output_issues)),
             proposal_seconds=proposal_seconds,
-            create_seconds=0.0,
+            confirmation_seconds=0.0,
+            retry_seconds=0.0,
             dry_run_receipt=_receipt(status="proposal_contract_failed"),
             proposal_payload=proposed_payload,
             output_contract_issues=output_issues,
         )
     if proposal_returncode != 0:
         return CompiledCreateExecution(
-            create=proposed,
+            decision=None,
+            retry_decision=None,
+            commit_payload={},
+            failure=proposed,
             proposal_seconds=proposal_seconds,
-            create_seconds=0.0,
+            confirmation_seconds=0.0,
+            retry_seconds=0.0,
             dry_run_receipt=_receipt(status="proposal_failed"),
             proposal_payload=proposed_payload,
         )
     proposal_mode = str(proposed_payload.get("mode") or "").strip()
     if proposal_mode == "clarification_required":
         return CompiledCreateExecution(
-            create=SimpleNamespace(
+            decision=None,
+            retry_decision=None,
+            commit_payload={},
+            failure=SimpleNamespace(
                 returncode=2,
                 stdout=getattr(proposed, "stdout", ""),
                 stderr="greenfield proposal requires a material clarification before compiling a transaction",
             ),
             proposal_seconds=proposal_seconds,
-            create_seconds=0.0,
+            confirmation_seconds=0.0,
+            retry_seconds=0.0,
             dry_run_receipt=_receipt(status="clarification_required", proposal_mode=proposal_mode),
             proposal_payload=proposed_payload,
         )
@@ -105,11 +127,13 @@ def commit_precompiled_transaction(
     transaction_file = str(proposed_payload.get("transaction_file") or "").strip()
     if proposal_mode != "product_create_transaction" or not transaction_hash or not transaction_file:
         return CompiledCreateExecution(
-            create=_error_result(
-                "greenfield propose did not return a ProductCreateTransaction hash and transaction file"
-            ),
+            decision=None,
+            retry_decision=None,
+            commit_payload={},
+            failure=_error_result("greenfield propose did not return a ProductCreateTransaction hash and transaction file"),
             proposal_seconds=proposal_seconds,
-            create_seconds=0.0,
+            confirmation_seconds=0.0,
+            retry_seconds=0.0,
             dry_run_receipt=_receipt(status="proposal_contract_failed", proposal_mode=proposal_mode),
             proposal_payload=proposed_payload,
         )
@@ -121,38 +145,165 @@ def commit_precompiled_transaction(
     )
     if issues:
         return CompiledCreateExecution(
-            create=_error_result(
-                "greenfield propose returned an invalid pre-confirm transaction: " + "; ".join(issues)
-            ),
+            decision=None,
+            retry_decision=None,
+            commit_payload={},
+            failure=_error_result("greenfield propose returned an invalid pre-confirm transaction: " + "; ".join(issues)),
             proposal_seconds=proposal_seconds,
-            create_seconds=0.0,
+            confirmation_seconds=0.0,
+            retry_seconds=0.0,
             dry_run_receipt=receipt,
             proposal_payload=proposed_payload,
         )
     started = time.perf_counter()
-    create = invoke_create(
+    decision = invoke_cli(
         (
             "./.odylith/bin/odylith",
             "greenfield",
-            "create",
+            "decide",
             "--repo-root",
             ".",
-            "--transaction-file",
-            transaction_file,
-            "--transaction-hash",
+            "CONFIRM",
             transaction_hash,
-            "--confirm",
             "--json",
         )
     )
+    confirmation_seconds = round(time.perf_counter() - started, 3)
+    journal, journal_sha256, journal_text, terminal_issues = _terminal_confirmation_issues(
+        decision=decision, receipt=receipt, repo_root=repo_root,
+    )
+    terminal_issues = tuple(dict.fromkeys(
+        (*_positive_journey_output_issues(decision, stage="decide", repo_root=repo_root), *terminal_issues)
+    ))
+    commit_payload = _mapping(journal.get("commit_result"))
+    if terminal_issues:
+        return CompiledCreateExecution(
+            decision=decision,
+            retry_decision=None,
+            commit_payload=commit_payload,
+            failure=_error_result("; ".join(terminal_issues)),
+            proposal_seconds=proposal_seconds,
+            confirmation_seconds=confirmation_seconds,
+            retry_seconds=0.0,
+            dry_run_receipt=receipt,
+            proposal_payload=proposed_payload,
+            terminal_journal=journal,
+            terminal_journal_sha256=journal_sha256,
+            terminal_journal_text=journal_text,
+            terminal_proof_issues=terminal_issues,
+        )
+    before_retry = _terminal_state_snapshot(repo_root=repo_root, receipt=receipt, journal_sha256=journal_sha256)
+    started = time.perf_counter()
+    retry_decision = invoke_cli(
+        (
+            "./.odylith/bin/odylith", "greenfield", "decide", "--repo-root", ".",
+            "CONFIRM", transaction_hash, "--json",
+        )
+    )
+    retry_seconds = round(time.perf_counter() - started, 3)
+    retry_journal, retry_sha256, _retry_text, retry_issues = _terminal_confirmation_issues(
+        decision=retry_decision, receipt=receipt, repo_root=repo_root,
+    )
+    output_issues = tuple(dict.fromkeys((
+        *_positive_journey_output_issues(retry_decision, stage="decide", repo_root=repo_root),
+        *retry_issues,
+    )))
+    if _mapping(retry_journal.get("commit_result")) != commit_payload:
+        output_issues += ("same-hash terminal retry did not return the terminal confirmation identity",)
+    if before_retry != _terminal_state_snapshot(repo_root=repo_root, receipt=receipt, journal_sha256=journal_sha256):
+        output_issues += ("same-hash terminal retry changed terminal confirmation state",)
+    if retry_sha256 != journal_sha256:
+        output_issues += ("same-hash terminal retry changed terminal journal bytes",)
     return CompiledCreateExecution(
-        create=create,
+        decision=decision,
+        retry_decision=retry_decision,
+        commit_payload=commit_payload,
+        failure=None,
         proposal_seconds=proposal_seconds,
-        create_seconds=round(time.perf_counter() - started, 3),
+        confirmation_seconds=confirmation_seconds,
+        retry_seconds=retry_seconds,
         dry_run_receipt=receipt,
         proposal_payload=proposed_payload,
-        output_contract_issues=_positive_journey_output_issues(create, stage="create", repo_root=repo_root),
+        terminal_journal=journal,
+        terminal_journal_sha256=journal_sha256,
+        terminal_journal_text=journal_text,
+        terminal_pre_retry_snapshot=before_retry,
+        terminal_proof_issues=terminal_issues,
+        output_contract_issues=output_issues,
     )
+
+
+def _terminal_confirmation_issues(
+    *, decision: Any, receipt: Mapping[str, Any], repo_root: Path,
+) -> tuple[dict[str, Any], str, str, tuple[str, ...]]:
+    """Read the durable terminal result; never synthesize a create response."""
+
+    transaction_hash = str(receipt.get("transaction_hash") or "").strip()
+    write_set_hash = str(receipt.get("repository_write_set_hash") or "").strip()
+    issues: list[str] = []
+    if getattr(decision, "returncode", 1) != 0:
+        issues.append("terminal CONFIRM did not succeed")
+    response = _json_mapping(getattr(decision, "stdout", ""))
+    if (
+        set(response) != _TERMINAL_CONFIRMATION_FIELDS
+        or response.get("version") != _TERMINAL_CONFIRMATION_VERSION
+        or response.get("status") != "CLOSED"
+        or response.get("command") != "CONFIRM"
+        or response.get("transaction_hash") != transaction_hash
+        or not str(response.get("visible_markdown") or "").strip()
+        or not str(response.get("developer_context") or "").strip()
+    ):
+        issues.append("terminal CONFIRM did not return the exact CLOSED response")
+    root = Path(repo_root).expanduser().resolve()
+    journal_path = root / ".odylith/runtime/greenfield/create-journal" / transaction_hash / "state.v1.json"
+    try:
+        GreenfieldCommitJournal.pin_reviewed_generation(repo_root=root, transaction_hash=transaction_hash)
+        journal_bytes = journal_path.read_bytes()
+        journal = _json_mapping(journal_bytes)
+    except (OSError, RuntimeError, ValueError):
+        return {}, "", "", tuple(dict.fromkeys([*issues, "terminal CONFIRM journal is missing or invalid"]))
+    journal_sha256 = hashlib.sha256(journal_bytes).hexdigest()
+    try:
+        journal_text = journal_bytes.decode("utf-8")
+    except UnicodeDecodeError:
+        return {}, "", "", tuple(dict.fromkeys([*issues, "terminal CONFIRM journal is missing or invalid"]))
+    if journal.get("state") != "closed" or journal.get("lifecycle_state") != greenfield_create_lifecycle.CLOSED:
+        issues.append("terminal CONFIRM journal is not CLOSED")
+    if (
+        journal.get("transaction_hash") != transaction_hash
+        or journal.get("repository_write_set_hash") != write_set_hash
+    ):
+        issues.append("terminal CONFIRM journal identity does not match the sealed transaction")
+    commit_result = _mapping(journal.get("commit_result"))
+    if not commit_result:
+        issues.append("terminal CONFIRM journal is missing its commit result")
+    else:
+        try:
+            greenfield_prewrite_commit_result.require_greenfield_commit_result_preview(commit_result)
+        except ValueError:
+            issues.append("terminal CONFIRM journal has an invalid sealed commit result")
+        if _mapping(commit_result.get("validation_gate")).get("status") != "passed":
+            issues.append("terminal CONFIRM journal commit result did not pass validation")
+        issues.extend(dry_run_commit_issues(receipt=receipt, create_payload=commit_result, repo_root=root))
+    return journal, journal_sha256, journal_text, tuple(dict.fromkeys(issues))
+
+
+def _terminal_state_snapshot(
+    *, repo_root: Path, receipt: Mapping[str, Any], journal_sha256: str,
+) -> dict[str, Any]:
+    """Capture only sealed state already checked before an optional idempotency retry."""
+
+    root = Path(repo_root).expanduser().resolve()
+    transaction_hash = str(receipt["transaction_hash"])
+    pinned = GreenfieldCommitJournal.pin_reviewed_generation(
+        repo_root=root, transaction_hash=transaction_hash,
+    )
+    return {
+        "journal_sha256": journal_sha256,
+        "active_generation": greenfield_generation_state.active_generation_identity(root),
+        "generation_after": greenfield_repository_write_set.greenfield_managed_fingerprints(pinned.repository_root),
+        "repository_after": greenfield_repository_write_set.greenfield_managed_fingerprints(root),
+    }
 
 
 def _positive_journey_output_issues(result: Any, *, stage: str, repo_root: Path) -> tuple[str, ...]:
@@ -163,27 +314,16 @@ def _positive_journey_output_issues(result: Any, *, stage: str, repo_root: Path)
         f"greenfield {stage} exposed a host-side repair contract: {token}"
         for token in _HOST_REPAIR_OUTPUT_TOKENS if token in output
     ]
-    if stage == "create":
-        payload = _json_mapping(getattr(result, "stdout", ""))
-        if payload.get("mode") != "applied":
-            issues.append("greenfield create did not return applied mode")
-        for field in ("validation_gate", "dashboard_refresh"):
-            if field not in payload:
-                issues.append(f"greenfield create omitted {field}")
-        for relative in (
-            "odylith/runtime/source/accepted-project.v1.json",
-            "odylith/runtime/delivery_intelligence.v4.json",
-            "odylith/radar/traceability-graph.v1.json",
-        ):
-            if not (repo_root / relative).is_file():
-                issues.append(f"greenfield create did not write {relative}")
     return tuple(issues)
 
 
 def confirmation_preview_issues(
-    *, proposal_payload: Mapping[str, Any], repo_root: Path,
+    *,
+    proposal_payload: Mapping[str, Any],
+    repo_root: Path,
+    execution: CompiledCreateExecution | None = None,
 ) -> tuple[str, ...]:
-    """Validate the terminal offer without claiming this create-only run executed it."""
+    """Validate the terminal offer and its optional terminal execution proof."""
 
     transaction = _mapping(proposal_payload.get("product_create_transaction"))
     transaction_hash = str(transaction.get("transaction_hash") or "").strip()
@@ -237,9 +377,19 @@ def confirmation_preview_issues(
                 issues.append("pre-confirm terminal decision choice is not the exact repo/hash-bound command")
         if tuple(labels) != expected_labels:
             issues.append("pre-confirm terminal decision offer must contain CONFIRM, EDIT, and REJECT once each")
-    issues.append(
-        "terminal decision offer remains unqualified: this matrix invokes create, not decide or native chat"
-    )
+    if execution is None:
+        issues.append("terminal decision offer remains unqualified: terminal execution proof is absent")
+    else:
+        if execution.decision is None or execution.retry_decision is None:
+            issues.append("terminal decision execution proof is incomplete")
+        if execution.terminal_proof_issues:
+            issues.append("terminal decision execution proof has sealed-state failures")
+        if execution.output_contract_issues:
+            issues.append("terminal decision retry proof has sealed-state failures")
+        if not _mapping(execution.commit_payload):
+            issues.append("terminal decision execution proof is missing the saved commit payload")
+        if not str(execution.terminal_journal_sha256 or "").strip():
+            issues.append("terminal decision execution proof is missing the journal record hash")
     return tuple(issues)
 
 

@@ -321,11 +321,13 @@ def test_typed_clarification_rejects_a_missing_frozen_field_oracle() -> None:
 
 @pytest.mark.parametrize("output_issues", [(), ("successful output exposed a host-side repair contract",)])
 @pytest.mark.parametrize("edit", ["", "EDIT: Preserve the stated source boundary."])
-def test_success_case_passes_closed_retained_stage_observation_to_profile_evidence(
+@pytest.mark.parametrize("terminal_failure", ["", "confirm", "same_hash_retry"])
+def test_case_preserves_stage_observation_and_actual_terminal_diagnostics(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001
     output_issues: tuple[str, ...],
     edit: str,
+    terminal_failure: str,
 ) -> None:
     module = _matrix_module()
     repo_root = tmp_path / "repo"
@@ -351,13 +353,30 @@ def test_success_case_passes_closed_retained_stage_observation_to_profile_eviden
         returncode=0,
     )
     execution = SimpleNamespace(
-        create=create,
+        decision=create,
+        retry_decision=SimpleNamespace(stdout="actual retry response", stderr="retry diagnostic", returncode=0),
+        failure=None,
+        commit_payload=json.loads(create.stdout),
         proposal_seconds=1.0,
-        create_seconds=0.1,
+        confirmation_seconds=0.1,
+        retry_seconds=0.1,
         dry_run_receipt={},
         proposal_payload={},
         output_contract_issues=output_issues,
+        terminal_journal={},
+        terminal_journal_sha256="",
+        terminal_pre_retry_snapshot={},
+        terminal_proof_issues=(),
     )
+    if terminal_failure:
+        actual = execution.decision if terminal_failure == "confirm" else execution.retry_decision
+        actual.stdout, actual.stderr, actual.returncode = "actual terminal refusal", "actual terminal diagnostic", 2
+        execution.output_contract_issues = (*output_issues, "terminal proof rejected")
+        if terminal_failure == "confirm":
+            execution.failure = SimpleNamespace(stdout="", stderr="evaluator summary", returncode=1)
+            execution.retry_decision = None
+        # Diagnostics must survive even without an external retained-case directory.
+        retained = None
     captured: dict[str, object] = {}
 
     def profile_evidence(profile, environ, *, observed, stage_observation):  # noqa: ANN001
@@ -369,9 +388,11 @@ def test_success_case_passes_closed_retained_stage_observation_to_profile_eviden
         return {"status": "passed", "issues": []}
 
     monkeypatch.setattr(module, "_local_release_env", lambda **_kwargs: {})
+    if terminal_failure:
+        monkeypatch.setattr(module, "_retained_model_stage_observation", lambda _retained: stage)
     monkeypatch.setattr(
         module,
-        "_run_compiled_greenfield_create_with_receipt",
+        "run_compiled_greenfield_journey",
         lambda **_kwargs: execution,
     )
     monkeypatch.setattr(module, "collect_artifact_package", lambda **_kwargs: SimpleNamespace())
@@ -385,7 +406,7 @@ def test_success_case_passes_closed_retained_stage_observation_to_profile_eviden
     monkeypatch.setattr(module, "post_confirm_navigation_issues", lambda **_kwargs: ())
     monkeypatch.setattr(module, "build_quality_verdict", lambda **kwargs: captured.update(
         quality_external_issues=kwargs["external_issues"],
-    ) or _passing_quality(module))
+    ) or replace(_passing_quality(module), passed=not terminal_failure))
     monkeypatch.setattr(module, "_case_evidence_manifest", lambda **_kwargs: {})
     monkeypatch.setattr(module, "_record_retained_execution", lambda **_kwargs: None)
     monkeypatch.setattr(module, "commit_manifest_summary", lambda _manifest: {})
@@ -407,10 +428,23 @@ def test_success_case_passes_closed_retained_stage_observation_to_profile_eviden
         retained_case=retained,
     )
 
-    assert result.status == "passed"
+    assert result.status == ("failed" if terminal_failure else "passed")
     assert captured["profile"] == STANDARD_PROFILE_ID
     assert captured["stage_observation"] == stage
-    assert tuple(captured["quality_external_issues"]) == output_issues
+    assert tuple(captured["quality_external_issues"]) == execution.output_contract_issues
+    confirmation = result.evidence["confirmation_contract"]
+    assert confirmation["scope"] == "explicit_terminal_decision"
+    assert confirmation["native_chat"] == "unqualified"
+    if terminal_failure:
+        command = next(row for row in confirmation["terminal_commands"] if row["attempt"] == terminal_failure)
+        assert command == {
+            "attempt": terminal_failure, "returncode": 2,
+            "stdout_excerpt": "actual terminal refusal", "stderr_excerpt": "actual terminal diagnostic",
+        }
+    if terminal_failure == "confirm":
+        assert result.failure_detail == "evaluator summary"
+        assert result.create_stdout_excerpt == "actual terminal refusal"
+        assert result.create_stderr_excerpt == "actual terminal diagnostic"
 
 
 @pytest.mark.parametrize("mismatch", [False, True])

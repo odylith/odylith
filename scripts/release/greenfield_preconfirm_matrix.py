@@ -114,8 +114,7 @@ from greenfield_process import run_command_with_group_timeout as _run  # noqa: E
 from greenfield_matrix_types import GreenfieldArtifactCounts  # noqa: E402
 from greenfield_matrix_types import GreenfieldMatrixResult  # noqa: E402
 from greenfield_matrix_types import GreenfieldQualityVerdict  # noqa: E402
-from greenfield_matrix_transaction_evidence import CompiledCreateExecution  # noqa: E402
-from greenfield_matrix_transaction_evidence import commit_precompiled_transaction  # noqa: E402
+from greenfield_matrix_journey import run_compiled_greenfield_journey  # noqa: E402
 from greenfield_matrix_transaction_evidence import confirmation_preview_issues  # noqa: E402
 from greenfield_matrix_transaction_evidence import dry_run_commit_issues  # noqa: E402
 from greenfield_matrix_transaction_evidence import post_confirm_navigation_issues  # noqa: E402
@@ -735,8 +734,11 @@ def _record_retained_execution(
         "show.stderr",
         "propose.stdout",
         "propose.stderr",
-        "create.stdout",
-        "create.stderr",
+        "decide.stdout",
+        "decide.stderr",
+        "retry-decide.stdout",
+        "retry-decide.stderr",
+        "terminal-journal.v1.json",
     ):
         record_retained_case_text(
             retained_case,
@@ -1085,19 +1087,25 @@ def _run_case(
     raw_streams: dict[str, str] = {}
     raw_streams["input.prompt"] = case.prompt
     raw_streams["input.edit-evidence"] = str(case.confirmed_intent_markdown or "")
-    execution = _run_compiled_greenfield_create_with_receipt(
+    execution = run_compiled_greenfield_journey(
         repo_root=repo_root,
         env=env,
-        prompt=case.prompt,
-        edit_evidence=str(case.confirmed_intent_markdown or ""),
         repair_tier=profile_contract.repair_tier,
         raw_streams=raw_streams,
-        retained_case=retained_case,
+        invoke_cli=lambda command, timeout: _run(
+            cwd=repo_root, env=env, command=list(command), timeout=timeout,
+        ),
+        invoke_propose=lambda timeout: _run_greenfield_propose(
+            repo_root=repo_root, env=env, prompt=case.prompt,
+            edit_evidence=str(case.confirmed_intent_markdown or ""),
+            repair_tier=profile_contract.repair_tier, timeout=timeout,
+            retained_case=retained_case,
+        ),
     )
-    create = execution.create
+    create = execution.failure or execution.decision
     proposal_seconds = execution.proposal_seconds
-    create_seconds = execution.create_seconds
-    payload = _parse_json_object(create.stdout)
+    create_seconds = execution.confirmation_seconds
+    payload = execution.commit_payload
     manifest = _as_mapping(payload.get("commit_manifest"))
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
     stage_observation = _retained_model_stage_observation(retained_case)
@@ -1151,7 +1159,7 @@ def _run_case(
         repo_root=repo_root,
     )
     decision_rail_issues = confirmation_preview_issues(
-        proposal_payload=execution.proposal_payload, repo_root=repo_root,
+        proposal_payload=execution.proposal_payload, repo_root=repo_root, execution=execution,
     )
     navigation_issues = post_confirm_navigation_issues(
         create_payload=payload,
@@ -1199,8 +1207,23 @@ def _run_case(
     evidence["preconfirm_dry_run"] = dict(execution.dry_run_receipt)
     evidence["confirmation_contract"] = {
         "status": "passed" if not decision_rail_issues and not navigation_issues else "failed",
+        "scope": "explicit_terminal_decision",
         "decision_rail_issues": list(decision_rail_issues),
         "post_confirm_navigation_issues": list(navigation_issues),
+        "native_chat": "unqualified",
+        "commit_payload_source": "closed_journal",
+        "terminal_journal": dict(execution.terminal_journal),
+        "terminal_journal_sha256": execution.terminal_journal_sha256,
+        "terminal_pre_retry_snapshot": dict(execution.terminal_pre_retry_snapshot),
+        "terminal_proof_issues": list(execution.terminal_proof_issues),
+        "terminal_retry_seconds": execution.retry_seconds,
+        "terminal_commands": [
+            {"attempt": label, "returncode": result.returncode,
+             "stdout_excerpt": command_excerpt(result.stdout),
+             "stderr_excerpt": command_excerpt(result.stderr)}
+            for label, result in (("confirm", execution.decision), ("same_hash_retry", execution.retry_decision))
+            if result is not None
+        ],
     }
     evidence["model_profile"] = profile_evidence
     if retained_case is not None:
@@ -1222,8 +1245,8 @@ def _run_case(
         browser_surface_proof_attempted=browser_surface_proof_attempted,
         create_returncode=create.returncode,
         failure_detail=command_excerpt(create.stderr or create.stdout) if create.returncode else "",
-        create_stdout_excerpt=command_excerpt(create.stdout) if create.returncode else "",
-        create_stderr_excerpt=command_excerpt(create.stderr) if create.returncode else "",
+        create_stdout_excerpt=command_excerpt((execution.decision or create).stdout) if create.returncode else "",
+        create_stderr_excerpt=command_excerpt((execution.decision or create).stderr) if create.returncode else "",
         platform_leakage_terms=leakage_terms,
         commit_manifest_summary=commit_manifest_summary(manifest),
         evidence=evidence,
@@ -1383,57 +1406,6 @@ def _run_expected_clarification_case(
         commit_manifest_summary={},
         evidence=evidence,
     )
-
-
-def _run_compiled_greenfield_create_with_receipt(
-    *,
-    repo_root: Path,
-    env: Mapping[str, str],
-    prompt: str,
-    edit_evidence: str = "",
-    repair_tier: str = "auto",
-    raw_streams: dict[str, str] | None = None,
-    retained_case: RetainedEvidenceCase | None = None,
-) -> CompiledCreateExecution:
-    profile_id = model_profile_id_for_repair_tier(repair_tier)
-    configured_profile_id = str(env.get("ODYLITH_GREENFIELD_MODEL_PROFILE") or "").strip()
-    if configured_profile_id != profile_id:
-        raise ValueError("release proof repair tier does not match its configured model profile")
-    shown = _run(cwd=repo_root, env=env, command=["./.odylith/bin/odylith", "show", "--repo-root", "."], timeout=60)
-    if raw_streams is not None:
-        raw_streams.update({"show.stdout": shown.stdout, "show.stderr": shown.stderr})
-    if shown.returncode != 0 or "Odylith read this repo" not in shown.stdout:
-        raise RuntimeError("installed Greenfield journey failed its initial capability show")
-    proposal_timeout = int(get_greenfield_model_profile(profile_id).operational_timeout_seconds)
-    proposal_started = time.perf_counter()
-    proposed = _run_greenfield_propose(
-        repo_root=repo_root,
-        env=env,
-        prompt=prompt,
-        edit_evidence=edit_evidence,
-        timeout=proposal_timeout,
-        repair_tier=repair_tier,
-        retained_case=retained_case,
-    )
-    if raw_streams is not None:
-        raw_streams["propose.stdout"] = str(getattr(proposed, "stdout", "") or "")
-        raw_streams["propose.stderr"] = str(getattr(proposed, "stderr", "") or "")
-    proposal_seconds = round(time.perf_counter() - proposal_started, 3)
-    execution = commit_precompiled_transaction(
-        repo_root=repo_root,
-        proposed=proposed,
-        proposal_seconds=proposal_seconds,
-        invoke_create=lambda command: _run(
-            cwd=repo_root,
-            env=env,
-            command=list(command),
-            timeout=60,
-        ),
-    )
-    if raw_streams is not None:
-        raw_streams["create.stdout"] = str(getattr(execution.create, "stdout", "") or "")
-        raw_streams["create.stderr"] = str(getattr(execution.create, "stderr", "") or "")
-    return execution
 
 
 def _run_greenfield_propose(
@@ -2783,6 +2755,9 @@ def _execute_matrix_campaign(
             else "failed"
         ),
         "proof_scope": {
+            "confirmation": "explicit_terminal_decision_and_same_hash_retry",
+            "native_chat": "unqualified_read_only",
+            "native_hook_visibility": "not_proven_by_this_matrix",
             "model_profiles": "real_installed_source_cited_authored_preconfirm_cases",
             "timing_tiers": "advisory_profile_targets_with_separate_operational_timeout",
             "lower_capability_model": profile_proof.get("lower_capability_scope", {}),

@@ -2,6 +2,43 @@ Status: In progress
 
 ## Current installed shipping gate (2026-09-18)
 
+The existing terminal decision mechanism now passes a fresh clean-installed
+lifecycle. Installation takes 29.141 seconds; the disclosed proposal 95.302,
+its title-only EDIT 90.052, REJECT of the old seal 1.437, CONFIRM of the edited
+seal 3.222 and same-hash CONFIRM retry 2.113. EDIT preserves the old seal;
+REJECT removes only its pending staging; publication matches the reviewed
+generation and retry changes neither journal nor governed bytes. Both packages
+receive independent semantic acceptance, and the edited package receives UX
+acceptance with no P0/P1 after 48 desktop/mobile screenshots. These are two
+related packages from one disclosed source, not unseen-input generalization.
+
+The maintained matrix now uses actual terminal decide plus same-hash retry,
+with the CLOSED journal as commit-result authority and separate raw command
+diagnostics. Its small journey owner replaces the controller's old orchestration;
+there is no create fallback or synthesized success output. Independent review
+accepts the terminal/native scope separation: unsupported native chat remains
+unqualified/read-only, not an unconditional terminal defect. The goal requires
+host safety and parity, not inventing native write support where unavailable;
+intervention visibility remains a separate proof obligation. Focused evaluator
+checks pass 180 and decision/host boundary checks pass 64. Final frozen install
+regression passes all 1,600 tests in 113.82 seconds with no failures or skips
+and six JUnit metadata warnings. Tracked diff, the new journey source, logical
+shell, physical carrier, Compass snapshots and runtime inventory remain identical
+throughout the run. Runtime/models remain unchanged.
+Independent transaction review accepts the exact EDIT/REJECT/publication/retry
+evidence with no P0/P1. Fresh installed Codex and Claude hook entrypoints block
+hashless CONFIRM; an unsupported host blocks all three exact decisions. A fresh
+installed process executes same-hash retry without importing proposal/model
+owners. Governed state, runtime and proof inputs remain unchanged. This proves
+callback boundaries, not automatic native delivery or arbitrary ordinary prose.
+The completed disposable installation is retired after settled-journal/no-worker
+checks; 119 committed/readback/seal/journal files remain in a checksummed external
+archive. The full distribution remains available for subsequent qualification.
+Evidence: /Users/freedom/.codex/odylith-terminal-decisions.IlLL94/.
+Next publish the stable checkpoint, then complete the remaining installed profiles,
+clarification, failure/recovery and host safety/visibility coverage. Final
+untouched evaluation stays protected until all preceding gates are green.
+
 Independent semantic and UX review accepts the first installed v18 package with
 no P0/P1 findings. Transaction review confirms exact sealed/readback identity.
 The five Brief findings are corrected in the release evaluator to match current

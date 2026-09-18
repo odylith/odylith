@@ -335,6 +335,9 @@ def test_main_uses_external_case_files_instead_of_default_catalog(
     assert exit_code == 0
     assert payload["status"] == "discovery-passed"
     assert payload["proof_scope"]["timing_tiers"] == "advisory_profile_targets_with_separate_operational_timeout"
+    assert payload["proof_scope"]["confirmation"] == "explicit_terminal_decision_and_same_hash_retry"
+    assert payload["proof_scope"]["native_chat"] == "unqualified_read_only"
+    assert payload["proof_scope"]["native_hook_visibility"] == "not_proven_by_this_matrix"
     assert payload["temp_cleanup_proof"]["status"] == "passed"
     cases = matrix_kwargs["cases"]
     assert len(cases) == 1
