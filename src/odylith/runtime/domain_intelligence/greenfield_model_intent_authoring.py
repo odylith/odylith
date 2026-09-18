@@ -31,6 +31,11 @@ from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
     GreenfieldModelAuthoringError,
     GreenfieldModelRuntimeError,
 )
+from odylith.runtime.domain_intelligence.greenfield_model_source_citations import (
+    exact_occurrence_start,
+    exact_quote,
+    resolve_source_citation,
+)
 from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
     ASSUMPTION_SCHEMA,
     assumption_rows,
@@ -67,7 +72,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v57"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v59"
 GREENFIELD_MODEL_PROOF_FD_ENV = "ODYLITH_GREENFIELD_MODEL_PROOF_FD"
 MAX_GREENFIELD_SEMANTIC_CALLS = 2
 
@@ -622,9 +627,9 @@ def _validated_consistency_assessment(
             raise GreenfieldModelAuthoringError(
                 "Greenfield authoring returned an invalid evidence consistency citation; no records were created."
             )
-        quote = _exact_quote(raw)
+        quote = exact_quote(raw)
         quote_bytes = quote.encode("utf-8")
-        start = _exact_occurrence_start(evidence_bytes, quote_bytes, 1)
+        start = exact_occurrence_start(evidence_bytes, quote_bytes, 1)
         end = start + len(quote_bytes)
         if not quote or (start, end) in seen:
             raise GreenfieldModelAuthoringError(
@@ -656,9 +661,9 @@ def _intent_from_typed_source_spans(
 ) -> tuple[dict[str, Any], tuple[dict[str, Any], ...], tuple[dict[str, Any], ...]]:
     """Compile canonical facts from exact quotes and their source occurrences.
 
-    The model selects a typed quote and 1-based occurrence. Deterministic code
-    resolves all byte coordinates and hashes, so coordinate arithmetic never
-    becomes part of model-authored meaning.
+    The model selects the source address; deterministic resolution supplies exact
+    coordinates and hashes. State objects use an enclosing anchor without changing
+    the projected semantic quote or borrowing the anchor's meaning.
     """
 
     if not isinstance(value, Mapping) or set(value) != set(_SOURCE_FACT_FIELDS):
@@ -706,19 +711,12 @@ def _intent_from_typed_source_spans(
     intent["ambiguities"] = _advisory_rows(ambiguities)
     selected_facts: list[dict[str, Any]] = []
     for citation_index, (field, source_field_row, raw) in enumerate(typed_citations, start=1):
-        citation = _mapping(raw)
-        if set(citation) != {"quote", "occurrence"}:
+        if field not in _SOURCE_REQUIRED_FIELDS:
             raise GreenfieldModelAuthoringError("Greenfield authoring returned invalid source citations; no records were created.")
-        quote = _exact_quote(citation.get("quote"))
-        occurrence = citation.get("occurrence")
-        if (
-            field not in _SOURCE_REQUIRED_FIELDS
-            or not quote
-            or not _positive_occurrence(occurrence)
-        ):
-            raise GreenfieldModelAuthoringError("Greenfield authoring returned invalid source citations; no records were created.")
+        quote, start = resolve_source_citation(
+            evidence, raw, state_object=field == "state_object"
+        )
         quoted_bytes = quote.encode("utf-8")
-        start = _exact_occurrence_start(evidence, quoted_bytes, occurrence)
         end = start + len(quoted_bytes)
         key = (field, start, end)
         if key in seen and field != "operational_constraints":
@@ -789,45 +787,6 @@ def _intent_from_typed_source_spans(
     except ValueError as exc:
         raise GreenfieldModelAuthoringError(str(exc)) from exc
     return intent, tuple(spans), tuple(selected_facts)
-
-
-def _positive_occurrence(value: Any) -> int:
-    return value if isinstance(value, int) and not isinstance(value, bool) and value >= 1 else 0
-
-
-def _exact_quote(value: Any) -> str:
-    if not isinstance(value, str):
-        return ""
-    if len(value) > MAX_AUTHORED_FIELD_VALUE_CHARS:
-        raise GreenfieldModelAuthoringError("Greenfield authoring exceeded the declared intent size; no records were created.")
-    return value
-
-
-def _exact_occurrence_start(haystack: bytes, needle: bytes, occurrence: Any) -> int:
-    """Resolve an exact byte quote without making model arithmetic semantic.
-
-    A valid occurrence selects among repeated quotes. An impossible ordinal may
-    normalize only when one exact source match leaves no contextual choice.
-    """
-
-    count = _positive_occurrence(occurrence)
-    if count == 0 or not needle:
-        raise GreenfieldModelAuthoringError("Greenfield authoring returned invalid source citations; no records were created.")
-    matches: list[int] = []
-    cursor = 0
-    while True:
-        found = haystack.find(needle, cursor)
-        if found < 0:
-            break
-        matches.append(found)
-        cursor = found + 1
-    if count <= len(matches):
-        return matches[count - 1]
-    if len(matches) == 1:
-        return matches[0]
-    raise GreenfieldModelAuthoringError(
-        "Greenfield authoring cited a quote occurrence that is not present; no records were created."
-    )
 
 
 def _advisory_rows(value: Any) -> list[str]:
@@ -919,7 +878,12 @@ Keep copy concise and complete. Do not emit Markdown or Mermaid. If material sou
 uncertainty requires clarification, return that result without a design.
 
 SOURCE FACTS
-Every citation is an exact contiguous source substring plus its one-based occurrence.
+Source citations use exact contiguous quotes and one-based occurrences.
+For state_object only, supply quote, anchor_quote and anchor_occurrence: choose a
+short enclosing source anchor where quote occurs exactly once. The occurrence
+selects that exact anchor in the source, not the shorter quote. An anchor locates
+the state quote; its other words do not become state meaning or projected text.
+All other fact citations remain quote plus occurrence in the complete source.
 Select title, product_story, state_object, proof_boundary, human_actors and first_path
 according to their schema. product_story is the shortest complete source span about
 product behavior or outcome, excluding the operator's request to create a proposal.
@@ -984,6 +948,17 @@ _CITATION_SCHEMA: dict[str, Any] = {
     },
 }
 
+_STATE_CITATION_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": ["quote", "anchor_quote", "anchor_occurrence"],
+    "properties": {
+        "quote": _CITATION_SCHEMA["properties"]["quote"],
+        "anchor_quote": _CITATION_SCHEMA["properties"]["quote"],
+        "anchor_occurrence": _CITATION_SCHEMA["properties"]["occurrence"],
+    },
+}
+
 _TYPED_FACTS_SCHEMA: dict[str, Any] = {
     "type": "object",
     "additionalProperties": False,
@@ -1013,7 +988,7 @@ _AUTHORED_FACTS_SCHEMA: dict[str, Any] = {
             for field in ("title", "product_story", "state_object", "proof_boundary")
         },
         "state_object": {
-            **_CITATION_SCHEMA,
+            **_STATE_CITATION_SCHEMA,
             "description": STATE_OBJECT_ROLE_DEFINITION,
         },
         "proof_boundary": {

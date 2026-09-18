@@ -172,7 +172,8 @@ def _authored_input():
     }
     facts.update({
         "title": citation("Agora"), "product_story": citation(story),
-        "state_object": citation("demandes"), "proof_boundary": citation("liste prête"),
+        "state_object": {"quote": "demandes", "anchor_quote": "demandes", "anchor_occurrence": 1},
+        "proof_boundary": citation("liste prête"),
         "customer": citation("bénévoles"), "human_actors": [citation("bénévoles")],
         "first_path": [citation(quote) for quote in (
             "Les bénévoles publient la liste prête", "vérifient les demandes", "enregistrent les demandes",

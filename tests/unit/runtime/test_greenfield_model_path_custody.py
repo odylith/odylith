@@ -242,6 +242,64 @@ def test_product_led_path_keeps_review_recipient_without_inventing_human_event()
     assert result.intent["assumptions"] == []
 
 
+def test_state_anchor_changes_only_selected_custody_not_canonical_meaning() -> None:
+    source = "berth occupancy training module. " + _source()
+    response = _response(source)
+    response["result"]["facts"]["state_object"] = {
+        "quote": "berth occupancy",
+        "anchor_quote": "the product records berth occupancy",
+        "anchor_occurrence": 1,
+    }
+    provider = StructuredAuthoringProvider(response)
+    reviewer = AdmittingReviewProvider()
+    result = author_greenfield_intent(
+        evidence_text=source, provider=provider, clock=lambda: 0.0,
+        review_provider_factory=lambda: reviewer,
+    )
+    span = next(row for row in result.source_spans if row["section_key"] == "state_object")
+    expected_start = source.encode().index(b"the product records berth occupancy") + len(b"the product records ")
+
+    assert result.intent["state_object"] == "berth occupancy"
+    assert span["text"] == "berth occupancy"
+    assert span["source_start_byte"] == expected_start
+    assert span["source_end_byte"] == expected_start + len(b"berth occupancy")
+    assert result.first_path_relations[1]["target_quote"] == "berth occupancy"
+    assert result.intent["first_path"] == _AUTHORED_FIRST_PATH
+    custody = reviewer.requests[0].prompt_payload["resolved_source_custody"]
+    selected = next(row for row in custody if row["field"] == "state_object")
+    assert selected["source_start_byte"] == expected_start
+    assert selected["context_before"].endswith("the product records ")
+    assert provider.calls == reviewer.calls == 1
+
+
+def test_wrong_state_anchor_is_reviewed_at_its_selected_location_not_rebound() -> None:
+    source = "berth occupancy training module. " + _source()
+    response = _response(source)
+    response["result"]["facts"]["state_object"] = {
+        "quote": "berth occupancy",
+        "anchor_quote": "berth occupancy training module",
+        "anchor_occurrence": 1,
+    }
+    provider = StructuredAuthoringProvider(response)
+    reviewer = StructuredAuthoringProvider({
+        "admissible": False,
+        "issues": ["facts.state_object: selected text is a training subject, not managed state."],
+    })
+
+    with pytest.raises(GreenfieldModelAuthoringError):
+        author_greenfield_intent(
+            evidence_text=source, provider=provider, clock=lambda: 0.0,
+            review_provider_factory=lambda: reviewer,
+        )
+    selected = next(
+        row for row in reviewer.requests[0].prompt_payload["resolved_source_custody"]
+        if row["field"] == "state_object"
+    )
+    assert selected["source_start_byte"] == 0
+    assert selected["context_after"].startswith(" training module")
+    assert provider.calls == reviewer.calls == 1
+
+
 def test_event_rejects_target_that_is_only_adjacent_in_a_selected_fact() -> None:
     event = (
         "pediatric therapy agency practice workspace coordinates referral intake, "

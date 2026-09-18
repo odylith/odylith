@@ -138,7 +138,8 @@ def test_human_subject_state_object_keeps_source_and_performer_custody_separate(
     accepted = payload["candidate"]["accepted_source"]
     assert accepted["facts"]["state_object"] == {
         "quote": "displaced residents",
-        "occurrence": 1,
+        "anchor_quote": "displaced residents",
+        "anchor_occurrence": 1,
     }
     assert accepted["events"][0] == {
         "actor_fact_quote": "city staff",

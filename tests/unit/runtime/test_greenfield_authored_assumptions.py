@@ -84,6 +84,42 @@ def test_decision_assumptions_keep_their_type_and_custody() -> None:
     assert render_candidate_intent_markdown(changed) != preview
 
 
+@pytest.mark.parametrize("absent", [None, []])
+def test_preview_does_not_invent_facts_or_decisions_for_absent_lists(absent) -> None:
+    intent = {
+        field: absent
+        for field in ("operational_constraints", "external_systems", "internal_systems")
+    }
+    intent["assumptions"] = []
+    before = copy.deepcopy(intent)
+    preview = render_candidate_intent_markdown(intent)
+
+    assert "No operational constraints are stated in the source." in preview
+    assert "No external systems are stated in the source." in preview
+    assert "No internal product systems are stated in the source." in preview
+    assert "No assumptions were proposed." in preview
+    assert "Core workspace" not in preview
+    assert "No external systems are required" not in preview
+    assert "No site or time constraint narrows" not in preview
+    assert "Release 0.0.1" not in preview
+    assert intent == before
+
+
+def test_preview_preserves_explicit_systems_and_constraints_verbatim() -> None:
+    intent = {
+        "operational_constraints": ["Retain receipt evidence for seven years."],
+        "external_systems": ["Harbor Ledger"],
+        "internal_systems": ["Berth map"],
+    }
+    preview = render_candidate_intent_markdown(intent)
+
+    for rows in intent.values():
+        for row in rows:
+            assert f"- {row}" in preview
+    for label in ("operational constraints", "external systems", "internal product systems"):
+        assert f"No {label} are stated in the source." not in preview
+
+
 def test_radar_required_decisions_point_to_assumptions_not_missing_facts() -> None:
     _, authored = _authored()
     intent = dict(authored.intent)

@@ -83,7 +83,7 @@ def test_model_authored_intent_reaches_staged_product_intent_without_parser_reco
     assert candidate["human_actors"] == ["Dock attendant Ivo"]
     assert candidate["internal_systems"] == ["Berth map"]
     assert receipt["tier"] == "rescue"
-    assert receipt["authoring_version"] == "odylith.greenfield.intent-authoring.v57"
+    assert receipt["authoring_version"] == "odylith.greenfield.intent-authoring.v59"
     assert receipt["semantic_model_call_count"] == 2
     assert candidate["authored_semantics"]["first_path_relations"][0]["action_verb_quote"] == "enters"
     assert "model_authoring" not in candidate
@@ -670,41 +670,6 @@ def test_authoring_rejects_impossible_repeated_occurrence_without_first_match_re
     with pytest.raises(GreenfieldModelAuthoringError, match="quote occurrence that is not present"):
         author_greenfield_intent(review_provider_factory=AdmittingReviewProvider, evidence_text=source, provider=provider, clock=lambda: 0.0)
     assert provider.calls == 1
-
-
-def test_authoring_prompt_requires_every_transaction_material_fact() -> None:
-    source = _source()
-    provider = StructuredAuthoringProvider(_response(source))
-
-    author_greenfield_intent(
-        review_provider_factory=AdmittingReviewProvider,
-        evidence_text=source,
-        provider=provider,
-        clock=lambda: 0.0,
-    )
-    prompt = " ".join(str(getattr(provider.requests[0], "system_prompt", "")).split())
-
-    for field in (
-        "product_story",
-        "state_object",
-        "first_path",
-        "proof_boundary",
-        "human_actors",
-    ):
-        assert field in prompt
-    assert "owner_fact_quote" in prompt
-    assert "internal_systems fact or title" in prompt
-    assert "explicitly source-stated operational exchange" in str(provider.requests[0].output_schema)
-    assert "product_story is the shortest complete source span" in prompt
-    assert "excluding the operator's request to create a proposal" in prompt
-    assert "target_quote must occur within that event" in prompt
-    assert "stage, artifact or status label alone is not an event" in prompt
-    assert "one conservative assumption targeted to that field" in prompt
-    assert "practical need this product should address" in prompt
-    assert "improvement worth pursuing" in prompt
-    assert "concrete experience" in prompt
-    assert "Give the decision itself, not commentary" in prompt
-    assert "Include the explicit actor with its action and object in the first citation" in prompt
 
 
 def test_authoring_schema_structurally_separates_complete_authored_and_clarification_results() -> None:

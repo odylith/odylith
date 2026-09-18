@@ -4,14 +4,23 @@ Last updated: 2026-09-17
 
 ## Overview
 
-Feature scope is frozen to demonstrated blockers and required release proof. The current
-consumer-flow blocker is the absent three-choice terminal rail and EDIT's
-acknowledgement-only behavior. The bounded correction reuses the existing decision
-owner and compiler: explicit terminal CONFIRM/REJECT perform no semantic work;
+Feature scope is frozen to demonstrated blockers and required release proof.
+The state-only v59 source-address candidate uses an exact enclosing anchor and
+strict anchor occurrence to locate one semantic quote. Only the quote and its
+resolved bytes enter canonical facts; anchor context cannot supply meaning.
+Other fact selectors, immutable review, two model calls and 90/120/150 stay fixed.
+One complete standard proposal has correct selected-source custody and a useful
+five-part package in 47.937 seconds, but independent review rejects its default
+preview for inventing facts from empty fields. The presenter now states absence
+without invented systems, constraints or release decisions; read-only replay keeps
+the original seal unchanged. The remaining comparison and release proof are open.
+
+The terminal rail correction reuses the existing decision owner and compiler:
+explicit terminal CONFIRM/REJECT perform no semantic work;
 EDIT reuses sealed source, original tier and release selector with new untrusted
 correction evidence, then renders a new reviewed package. No lifecycle, schema,
 model stage, eligibility flag or time budget is added. Ordinary chat remains
-unqualified; terminal commands do not attest automatic hooks. Proof is pending.
+unqualified; terminal commands do not attest automatic hooks. Full release proof is pending.
 
 The prior
 bounded correction is one existing shared state-object role description, consumed
@@ -500,6 +509,9 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:start -->
 - **2026-09-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_candidate_intent_stage.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_source_citations.py`
+- **2026-09-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`, `src/odylith/runtime/governance/sync_workstream_artifacts.py`
 - **2026-09-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
@@ -513,9 +525,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-08-08 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/common/prose_tail.py`, `src/odylith/runtime/domain_intelligence/greenfield_component_outputs.py`, `tests/unit/runtime/test_greenfield_code_hygiene.py`
-- **2026-08-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py`, `tests/unit/runtime/test_greenfield_transaction_intent_authority.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

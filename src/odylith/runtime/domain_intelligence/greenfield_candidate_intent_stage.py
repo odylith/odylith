@@ -147,7 +147,7 @@ def render_candidate_intent_markdown(intent: Mapping[str, Any]) -> str:
         "## Operational constraints",
         *_bullet_lines(
             intent.get("operational_constraints"),
-            empty_text="No site or time constraint narrows the first proof path.",
+            empty_text="No operational constraints are stated in the source.",
         ),
         "",
         "## Human actors",
@@ -156,16 +156,16 @@ def render_candidate_intent_markdown(intent: Mapping[str, Any]) -> str:
         "## External systems",
         *_bullet_lines(
             intent.get("external_systems"),
-            empty_text="No external systems are required for the first proof path.",
+            empty_text="No external systems are stated in the source.",
         ),
         "",
         "## Internal product systems",
-        *_bullet_lines(intent.get("internal_systems"), empty_text="Core workspace: owns the first path state and proof."),
+        *_bullet_lines(intent.get("internal_systems"), empty_text="No internal product systems are stated in the source."),
         "",
         "## Critical assumptions",
         *_bullet_lines(
             assumption_preview_values(intent.get("assumptions", [])),
-            empty_text="Release 0.0.1 proves one complete path before broader automation.",
+            empty_text="No assumptions were proposed.",
         ),
         "",
         "## Ambiguities",

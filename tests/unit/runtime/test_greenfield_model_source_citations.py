@@ -1,0 +1,178 @@
+from __future__ import annotations
+
+import pytest
+
+from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
+    GreenfieldModelAuthoringError,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_source_citations import (
+    exact_occurrence_start,
+    exact_quote,
+    resolve_source_citation,
+)
+from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
+    MAX_AUTHORED_FIELD_VALUE_CHARS,
+)
+
+
+def _state(quote: str, anchor_quote: str, anchor_occurrence: object = 1) -> dict[str, object]:
+    return {
+        "quote": quote,
+        "anchor_quote": anchor_quote,
+        "anchor_occurrence": anchor_occurrence,
+    }
+
+
+def test_legacy_exact_quote_and_occurrence_behavior_is_unchanged() -> None:
+    assert exact_quote(None) == ""
+    assert exact_quote("source") == "source"
+    assert exact_occurrence_start(b"aba aba", b"aba", 2) == 4
+    assert exact_occurrence_start(b"only", b"only", 99) == 0
+    assert exact_occurrence_start(b"aaaa", b"aa", 3) == 2
+
+    with pytest.raises(GreenfieldModelAuthoringError):
+        exact_quote("x" * (MAX_AUTHORED_FIELD_VALUE_CHARS + 1))
+    for occurrence in (0, -1, True, "1"):
+        with pytest.raises(GreenfieldModelAuthoringError):
+            exact_occurrence_start(b"source", b"source", occurrence)
+    with pytest.raises(GreenfieldModelAuthoringError):
+        exact_occurrence_start(b"source", b"", 1)
+    with pytest.raises(GreenfieldModelAuthoringError):
+        exact_occurrence_start(b"repeat repeat", b"repeat", 3)
+
+
+def test_legacy_source_citation_preserves_closed_shape_and_normalization() -> None:
+    evidence = b"first result; second result; unique proof"
+
+    assert resolve_source_citation(
+        evidence,
+        {"quote": "result", "occurrence": 2},
+    ) == ("result", evidence.index(b"result", 10))
+    assert resolve_source_citation(
+        evidence,
+        {"quote": "unique proof", "occurrence": 7},
+    ) == ("unique proof", evidence.index(b"unique proof"))
+
+    for citation in (
+        {"quote": "result", "occurrence": 1, "anchor_quote": "first result"},
+        {"quote": "", "occurrence": 1},
+        {"quote": "result", "occurrence": True},
+    ):
+        with pytest.raises(GreenfieldModelAuthoringError):
+            resolve_source_citation(evidence, citation)
+
+
+@pytest.mark.parametrize(
+    ("evidence_text", "citation"),
+    (
+        (
+            "The apprenticeship credential is issued before registered apprentices begin.",
+            _state("apprentices", "registered apprentices begin"),
+        ),
+        (
+            "The persistent state is a feed health record. A coordinator reviews its receipt.",
+            _state("feed health record", "persistent state is a feed health record"),
+        ),
+        (
+            "The collection is a donation batch. A coordinator reviews each donation and closes each batch.",
+            _state("donation batch", "donation batch"),
+        ),
+        (
+            "Status: ready. Status: ready.",
+            _state("ready", "Status: ready", 2),
+        ),
+        (
+            "# Shifted heading\n\nThe published register is ready for council review.",
+            _state("published register", "The published register is ready"),
+        ),
+        (
+            "Préface 🧭 — the café ledger is ready.",
+            _state("café ledger", "the café ledger is ready"),
+        ),
+        (
+            "ababa",
+            _state("b", "aba", 2),
+        ),
+    ),
+)
+def test_state_citation_selects_exact_anchor_local_byte_span(
+    evidence_text: str,
+    citation: dict[str, object],
+) -> None:
+    evidence = evidence_text.encode("utf-8")
+    quote, start = resolve_source_citation(evidence, citation, state_object=True)
+    quote_bytes = quote.encode("utf-8")
+
+    assert quote == citation["quote"]
+    assert evidence[start : start + len(quote_bytes)] == quote_bytes
+    assert start == evidence.rindex(quote_bytes)
+
+
+@pytest.mark.parametrize(
+    "citation",
+    (
+        {"quote": "state", "occurrence": 1},
+        {"quote": "state", "anchor_quote": "the state", "anchor_occurrence": 1, "extra": "x"},
+        {"quote": "state", "anchor_occurrence": 1},
+        {"quote": "state", "wrong_anchor": "the state", "anchor_occurrence": 1},
+        {"quote": "", "anchor_quote": "the state", "anchor_occurrence": 1},
+        {"quote": "state", "anchor_quote": "", "anchor_occurrence": 1},
+        {"quote": "state", "anchor_quote": "the state", "anchor_occurrence": 0},
+        {"quote": "state", "anchor_quote": "the state", "anchor_occurrence": True},
+        {"quote": "state", "anchor_quote": "the state", "anchor_occurrence": "1"},
+    ),
+)
+def test_state_citation_rejects_old_or_invalid_contract(citation: dict[str, object]) -> None:
+    with pytest.raises(GreenfieldModelAuthoringError):
+        resolve_source_citation(b"the state", citation, state_object=True)
+
+
+def test_state_citation_rejects_missing_or_impossible_anchor() -> None:
+    with pytest.raises(GreenfieldModelAuthoringError):
+        resolve_source_citation(
+            b"the selected state",
+            _state("state", "missing anchor"),
+            state_object=True,
+        )
+    with pytest.raises(GreenfieldModelAuthoringError):
+        resolve_source_citation(
+            b"the selected state",
+            _state("state", "the selected state", 2),
+            state_object=True,
+        )
+
+
+def test_state_address_does_not_rebind_a_semantically_wrong_selection() -> None:
+    evidence = b"apprenticeship credential; coordinators register apprentices"
+    quote, start = resolve_source_citation(
+        evidence, _state("apprentices", "apprenticeship credential"), state_object=True,
+    )
+
+    # Address resolution is structural; the immutable reviewer owns semantic rejection.
+    assert quote == "apprentices"
+    assert start == 0
+    assert start != evidence.rindex(b"apprentices")
+
+
+def test_state_citation_requires_exactly_one_local_quote_match() -> None:
+    with pytest.raises(GreenfieldModelAuthoringError):
+        resolve_source_citation(
+            b"state outside; selected anchor",
+            _state("state", "selected anchor"),
+            state_object=True,
+        )
+    with pytest.raises(GreenfieldModelAuthoringError):
+        resolve_source_citation(
+            b"state and state",
+            _state("state", "state and state"),
+            state_object=True,
+        )
+
+
+@pytest.mark.parametrize("field", ("quote", "anchor_quote"))
+def test_state_citation_rejects_overlong_strings(field: str) -> None:
+    citation = _state("state", "the state")
+    citation[field] = "x" * (MAX_AUTHORED_FIELD_VALUE_CHARS + 1)
+
+    with pytest.raises(GreenfieldModelAuthoringError):
+        resolve_source_citation(b"the state", citation, state_object=True)

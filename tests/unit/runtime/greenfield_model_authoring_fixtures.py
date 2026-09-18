@@ -61,7 +61,7 @@ def authored_response(
     provisional_design: Mapping[str, Any] | None = None,
     source_precedence: Sequence[Mapping[str, Any]] = (),
 ) -> dict[str, Any]:
-    """Build a model-shaped response using quotes and occurrence ordinals only."""
+    """Build model-shaped citations; fixture states retain their declared quote."""
 
     source_relations = tuple(
         first_path_relations or _default_first_path_relations(intent)
@@ -103,6 +103,14 @@ def authored_response(
             fact_indexes[projection_path] = fact_index
             if field == "first_path":
                 first_path_fact_indexes.append(fact_index)
+
+    state_citation = facts["state_object"]
+    if state_citation is not None:
+        facts["state_object"] = {
+            "quote": state_citation["quote"],
+            "anchor_quote": state_citation["quote"],
+            "anchor_occurrence": state_citation["occurrence"],
+        }
 
     relation_rows = _relation_rows(
         source_relations,

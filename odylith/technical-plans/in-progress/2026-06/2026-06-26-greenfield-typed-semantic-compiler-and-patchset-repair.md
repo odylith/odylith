@@ -2,6 +2,54 @@ Status: In progress
 
 ## Current installed shipping gate (2026-09-17)
 
+The first v59 complete standard proposal finishes in 47.937 seconds with correct
+state-location custody, all five source actions and the terminal review recipient.
+It seals five useful workstreams, components and diagrams with 56 writes; two
+calls take 36.584 and 6.174 seconds. Inputs and publication remain unchanged.
+Independent semantic and UX review accepts this address witness and the package
+artifacts but rejects the default preview's invented empty-field claims. Stop the
+three-case comparison here; the remaining two controls are unrun. The original
+stdout and failed reviews remain unchanged, not retroactively accepted.
+
+The existing presenter now uses truthful absence text for missing constraints,
+systems and assumptions instead of invented ownership, negative requirements or
+a hard-coded release decision. This reuses the prior no-boilerplate-facts learning;
+no schema, model, prompt, gate or feature grows. A read-only replay of the same
+sealed intent resolves that defect without model calls, seal mutation or new
+publication. Ninety focused presenter/ordering/decision checks pass. The earlier
+full Greenfield run retains seven stale fixture-shape failures (1803 passed);
+update that one fixture to the replacement address without changing its assertions.
+Fresh regression/checkpoint proof remains required. This is not three-case
+adoption, installed qualification, native delivery or goal completion. Evidence:
+/Users/freedom/.codex/odylith-state-anchor.5eJ0km/.
+
+The next bounded v59 candidate replaces only the author's state-object address
+with `quote`, `anchor_quote` and `anchor_occurrence`. Resolve the selected exact
+anchor strictly, require the semantic quote exactly once inside it, and keep only
+that quote's exact global span as canonical meaning. The anchor is a locator,
+not additional semantic authority. Existing exact-span review, all other fact
+selectors, canonical outputs, two model calls and 90/120/150 remain unchanged.
+Reject event-only custody because existing background-state and alias controls
+cannot use it. Reject unique-anchor-only custody because repeated identical
+clauses remain valid evidence. The explicit anchor ordinal preserves that case
+without normalization or fallback forms. This is not the rejected all-field
+source-window expansion. Require strict structural controls and the same three
+complete-proposal cases before adoption; stop on first failure and retain no
+losing runtime path. The collision address now has one positive native witness;
+the complete consumer result remains rejected for the separate preview defect above.
+
+The one-sentence author candidate v58 is rejected. Its first complete standard
+proposal fails safely in 51.599 seconds with the same wrong selected occurrence;
+authoring takes 43.521 seconds and immutable review 7.760. Exactly two calls run,
+all declared inputs and publication remain unchanged, and no package is staged.
+The clean and heading-equivalent controls are not dispatched. Preserve the tested
+diff and 131 passing focused controls, then restore the exact v57 author and tests;
+the pushed reviewer correction remains. Prompt presence is not product progress.
+Do not repeat this instruction trial, add another prompt sentence, repair an ordinal,
+or introduce keyword/token-boundary rules. Diagnose the citation-address contract
+against prior rejected source-window and mutable-repair mechanisms before another
+bounded alternative. Evidence: /Users/freedom/.codex/odylith-author-selection.nXI2PH/.
+
 The fresh source-local standard-90 attempt fails safely in 45.212 seconds:
 authoring again selects the wrong occurrence, and the corrected reviewer now
 rejects that exact location. Two calls take 37.668 and 7.234 seconds; source,
@@ -12,12 +60,12 @@ failed attempt at /Users/freedom/.codex/odylith-authority-project.wWcJMf/.
 Inspect only the authoring citation contract against prior failed mechanisms;
 do not start another distribution, feature, schema, retry or deadline expansion.
 Independent review confirms the resolver follows the requested ordinal correctly.
-The next bounded candidate clarifies that a selected occurrence's own location
+The rejected v58 candidate clarified that a selected occurrence's own location
 must support its semantic role; identical text elsewhere cannot supply that meaning.
 Use the existing complete proposal path for the collision, a clean unique-location
 control and a heading-equivalent control, one attempt each, stopping at the first
 failure. Do not add author-only probes followed by a redundant fourth proposal.
-The author instruction is not changed or validated by this reviewer checkpoint.
+That author instruction was tested and removed after the first control failed.
 
 The missing selected-location authority instruction is now restored after three
 independently accepted one-shot review controls (6.281/6.399/5.705 seconds under
