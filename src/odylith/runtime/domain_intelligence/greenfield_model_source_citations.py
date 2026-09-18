@@ -63,16 +63,16 @@ def resolve_source_citation(
             raise GreenfieldModelAuthoringError(_INVALID_CITATION)
         return quote, exact_occurrence_start(evidence, quote.encode("utf-8"), occurrence)
 
-    if set(citation) != {"quote", "anchor_quote", "anchor_occurrence"}:
+    if set(citation) != {"quote", "prefix", "anchor_occurrence"}:
         raise GreenfieldModelAuthoringError(_INVALID_CITATION)
     quote = exact_quote(citation.get("quote"))
-    anchor_quote = exact_quote(citation.get("anchor_quote"))
+    prefix = citation.get("prefix")
     anchor_occurrence = citation.get("anchor_occurrence")
-    if not quote or not anchor_quote or not _positive_occurrence(anchor_occurrence):
+    if not quote or not isinstance(prefix, str) or not _positive_occurrence(anchor_occurrence):
         raise GreenfieldModelAuthoringError(_INVALID_CITATION)
 
     quote_bytes = quote.encode("utf-8")
-    anchor_bytes = anchor_quote.encode("utf-8")
+    anchor_bytes = exact_quote(prefix + quote).encode("utf-8")
     anchor_start = _strict_occurrence_start(
         evidence,
         anchor_bytes,
@@ -81,10 +81,9 @@ def resolve_source_citation(
     anchor_end = anchor_start + len(anchor_bytes)
     if evidence[anchor_start:anchor_end] != anchor_bytes:
         raise GreenfieldModelAuthoringError(_INVALID_CITATION)
-    local_matches = _overlapping_match_starts(anchor_bytes, quote_bytes)
-    if len(local_matches) != 1:
-        raise GreenfieldModelAuthoringError(_INVALID_CITATION)
-    start = anchor_start + local_matches[0]
+    # The authored split selects the quote, even when it also occurs in the prefix.
+    # Locator context cannot enlarge its meaning or rebind a wrong selection.
+    start = anchor_start + len(prefix.encode("utf-8"))
     end = start + len(quote_bytes)
     if evidence[start:end] != quote_bytes:
         raise GreenfieldModelAuthoringError(_INVALID_CITATION)

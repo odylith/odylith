@@ -247,7 +247,7 @@ def test_state_anchor_changes_only_selected_custody_not_canonical_meaning() -> N
     response = _response(source)
     response["result"]["facts"]["state_object"] = {
         "quote": "berth occupancy",
-        "anchor_quote": "the product records berth occupancy",
+        "prefix": "the product records ",
         "anchor_occurrence": 1,
     }
     provider = StructuredAuthoringProvider(response)
@@ -277,7 +277,7 @@ def test_wrong_state_anchor_is_reviewed_at_its_selected_location_not_rebound() -
     response = _response(source)
     response["result"]["facts"]["state_object"] = {
         "quote": "berth occupancy",
-        "anchor_quote": "berth occupancy training module",
+        "prefix": "",
         "anchor_occurrence": 1,
     }
     provider = StructuredAuthoringProvider(response)

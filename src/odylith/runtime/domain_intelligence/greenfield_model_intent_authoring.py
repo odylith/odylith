@@ -72,7 +72,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v59"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v60"
 GREENFIELD_MODEL_PROOF_FD_ENV = "ODYLITH_GREENFIELD_MODEL_PROOF_FD"
 MAX_GREENFIELD_SEMANTIC_CALLS = 2
 
@@ -662,8 +662,8 @@ def _intent_from_typed_source_spans(
     """Compile canonical facts from exact quotes and their source occurrences.
 
     The model selects the source address; deterministic resolution supplies exact
-    coordinates and hashes. State objects use an enclosing anchor without changing
-    the projected semantic quote or borrowing the anchor's meaning.
+    coordinates and hashes. State objects use a split anchor without changing
+    the projected semantic quote or borrowing the prefix's meaning.
     """
 
     if not isinstance(value, Mapping) or set(value) != set(_SOURCE_FACT_FIELDS):
@@ -879,10 +879,13 @@ uncertainty requires clarification, return that result without a design.
 
 SOURCE FACTS
 Source citations use exact contiguous quotes and one-based occurrences.
-For state_object only, supply quote, anchor_quote and anchor_occurrence: choose a
-short enclosing source anchor where quote occurs exactly once. The occurrence
-selects that exact anchor in the source, not the shorter quote. An anchor locates
-the state quote; its other words do not become state meaning or projected text.
+For state_object only, supply prefix, quote and anchor_occurrence. Copy exact source
+text immediately before the selected quote into prefix, preserving its trailing
+spaces. prefix + quote is the exact anchor; anchor_occurrence selects that anchor
+in the source. The selected quote is at the end of the anchor, even if its text also
+occurs earlier in prefix. Use a short prefix that identifies the intended location;
+it may be empty at source start. Prefix is only a locator, never state meaning or
+projected text.
 All other fact citations remain quote plus occurrence in the complete source.
 Select title, product_story, state_object, proof_boundary, human_actors and first_path
 according to their schema. product_story is the shortest complete source span about
@@ -951,10 +954,10 @@ _CITATION_SCHEMA: dict[str, Any] = {
 _STATE_CITATION_SCHEMA: dict[str, Any] = {
     "type": "object",
     "additionalProperties": False,
-    "required": ["quote", "anchor_quote", "anchor_occurrence"],
+    "required": ["prefix", "quote", "anchor_occurrence"],
     "properties": {
         "quote": _CITATION_SCHEMA["properties"]["quote"],
-        "anchor_quote": _CITATION_SCHEMA["properties"]["quote"],
+        "prefix": _CITATION_SCHEMA["properties"]["quote"],
         "anchor_occurrence": _CITATION_SCHEMA["properties"]["occurrence"],
     },
 }

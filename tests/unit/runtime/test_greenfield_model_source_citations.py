@@ -15,10 +15,10 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 
 
-def _state(quote: str, anchor_quote: str, anchor_occurrence: object = 1) -> dict[str, object]:
+def _state(quote: str, prefix: str, anchor_occurrence: object = 1) -> dict[str, object]:
     return {
         "quote": quote,
-        "anchor_quote": anchor_quote,
+        "prefix": prefix,
         "anchor_occurrence": anchor_occurrence,
     }
 
@@ -67,31 +67,43 @@ def test_legacy_source_citation_preserves_closed_shape_and_normalization() -> No
     (
         (
             "The apprenticeship credential is issued before registered apprentices begin.",
-            _state("apprentices", "registered apprentices begin"),
+            _state("apprentices", "The apprenticeship credential is issued before registered "),
         ),
         (
             "The persistent state is a feed health record. A coordinator reviews its receipt.",
-            _state("feed health record", "persistent state is a feed health record"),
+            _state("feed health record", "persistent state is a "),
         ),
         (
             "The collection is a donation batch. A coordinator reviews each donation and closes each batch.",
-            _state("donation batch", "donation batch"),
+            _state("donation batch", "The collection is a "),
         ),
         (
             "Status: ready. Status: ready.",
-            _state("ready", "Status: ready", 2),
+            _state("ready", "Status: ", 2),
         ),
         (
             "# Shifted heading\n\nThe published register is ready for council review.",
-            _state("published register", "The published register is ready"),
+            _state("published register", "The "),
         ),
         (
             "Préface 🧭 — the café ledger is ready.",
-            _state("café ledger", "the café ledger is ready"),
+            _state("café ledger", "Préface 🧭 — the "),
         ),
         (
             "ababa",
-            _state("b", "aba", 2),
+            _state("b", "a", 2),
+        ),
+        (
+            "状态：等待。状态：等待。",
+            _state("等待", "状态：", 2),
+        ),
+        (
+            "ready ready",
+            _state("ready", "", 2),
+        ),
+        (
+            "ready",
+            _state("ready", ""),
         ),
     ),
 )
@@ -112,14 +124,16 @@ def test_state_citation_selects_exact_anchor_local_byte_span(
     "citation",
     (
         {"quote": "state", "occurrence": 1},
-        {"quote": "state", "anchor_quote": "the state", "anchor_occurrence": 1, "extra": "x"},
+        {"quote": "state", "anchor_quote": "the state", "anchor_occurrence": 1},
+        {"quote": "state", "prefix": "the ", "anchor_occurrence": 1, "extra": "x"},
         {"quote": "state", "anchor_occurrence": 1},
         {"quote": "state", "wrong_anchor": "the state", "anchor_occurrence": 1},
-        {"quote": "", "anchor_quote": "the state", "anchor_occurrence": 1},
-        {"quote": "state", "anchor_quote": "", "anchor_occurrence": 1},
-        {"quote": "state", "anchor_quote": "the state", "anchor_occurrence": 0},
-        {"quote": "state", "anchor_quote": "the state", "anchor_occurrence": True},
-        {"quote": "state", "anchor_quote": "the state", "anchor_occurrence": "1"},
+        {"quote": "", "prefix": "the ", "anchor_occurrence": 1},
+        {"quote": "state", "prefix": None, "anchor_occurrence": 1},
+        {"quote": "state", "prefix": True, "anchor_occurrence": 1},
+        {"quote": "state", "prefix": "the ", "anchor_occurrence": 0},
+        {"quote": "state", "prefix": "the ", "anchor_occurrence": True},
+        {"quote": "state", "prefix": "the ", "anchor_occurrence": "1"},
     ),
 )
 def test_state_citation_rejects_old_or_invalid_contract(citation: dict[str, object]) -> None:
@@ -137,7 +151,7 @@ def test_state_citation_rejects_missing_or_impossible_anchor() -> None:
     with pytest.raises(GreenfieldModelAuthoringError):
         resolve_source_citation(
             b"the selected state",
-            _state("state", "the selected state", 2),
+            _state("state", "the selected ", 2),
             state_object=True,
         )
 
@@ -145,7 +159,7 @@ def test_state_citation_rejects_missing_or_impossible_anchor() -> None:
 def test_state_address_does_not_rebind_a_semantically_wrong_selection() -> None:
     evidence = b"apprenticeship credential; coordinators register apprentices"
     quote, start = resolve_source_citation(
-        evidence, _state("apprentices", "apprenticeship credential"), state_object=True,
+        evidence, _state("apprentices", ""), state_object=True,
     )
 
     # Address resolution is structural; the immutable reviewer owns semantic rejection.
@@ -154,7 +168,7 @@ def test_state_address_does_not_rebind_a_semantically_wrong_selection() -> None:
     assert start != evidence.rindex(b"apprentices")
 
 
-def test_state_citation_requires_exactly_one_local_quote_match() -> None:
+def test_state_citation_requires_exact_adjacency_without_rebinding() -> None:
     with pytest.raises(GreenfieldModelAuthoringError):
         resolve_source_citation(
             b"state outside; selected anchor",
@@ -163,15 +177,31 @@ def test_state_citation_requires_exactly_one_local_quote_match() -> None:
         )
     with pytest.raises(GreenfieldModelAuthoringError):
         resolve_source_citation(
-            b"state and state",
-            _state("state", "state and state"),
+            b"prefix and state",
+            _state("state", "prefix "),
             state_object=True,
         )
 
 
-@pytest.mark.parametrize("field", ("quote", "anchor_quote"))
+def test_split_anchor_selects_quote_after_prior_literal_matches() -> None:
+    evidence = b"state and state and state"
+    assert resolve_source_citation(
+        evidence, _state("state", "state and state and "), state_object=True,
+    ) == ("state", 20)
+
+
+def test_split_anchor_total_length_keeps_the_existing_anchor_bound() -> None:
+    with pytest.raises(GreenfieldModelAuthoringError):
+        resolve_source_citation(
+            b"x" * (MAX_AUTHORED_FIELD_VALUE_CHARS + 1),
+            _state("x", "x" * MAX_AUTHORED_FIELD_VALUE_CHARS),
+            state_object=True,
+        )
+
+
+@pytest.mark.parametrize("field", ("quote", "prefix"))
 def test_state_citation_rejects_overlong_strings(field: str) -> None:
-    citation = _state("state", "the state")
+    citation = _state("state", "the ")
     citation[field] = "x" * (MAX_AUTHORED_FIELD_VALUE_CHARS + 1)
 
     with pytest.raises(GreenfieldModelAuthoringError):

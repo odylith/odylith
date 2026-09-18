@@ -172,7 +172,7 @@ def _authored_input():
     }
     facts.update({
         "title": citation("Agora"), "product_story": citation(story),
-        "state_object": {"quote": "demandes", "anchor_quote": "demandes", "anchor_occurrence": 1},
+        "state_object": {"quote": "demandes", "prefix": "", "anchor_occurrence": 1},
         "proof_boundary": citation("liste prête"),
         "customer": citation("bénévoles"), "human_actors": [citation("bénévoles")],
         "first_path": [citation(quote) for quote in (

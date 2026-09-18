@@ -2,6 +2,47 @@ Status: In progress
 
 ## Current installed shipping gate (2026-09-17)
 
+Frozen regression for the two-owner split-anchor replacement passes all 1,823
+maintained Greenfield tests with no failures/errors/skips. This is an unreleased
+source-address checkpoint only; the failed complete native package below remains
+unqualified. The next participation comparison must preserve off-path observers,
+reviewers, secondary users and permission/prohibition subjects; a table restricted
+to performers, the primary customer and output recipients would narrow the goal.
+
+The split-anchor candidate passes 181 focused controls and independent code review.
+Its first native standard proposal completes in 52.956 seconds with two calls and
+correct state bytes 193–204. The sealed after-image passes all 32 browser states,
+but independent semantic review rejects unsupported mentor participation from an
+artifact modifier. Visual role labeling is not semantic entailment. Preserve the
+failed complete package and stop the remaining two controls; no retry or build.
+Both author and reviewer already state the participant exclusion. The next action
+is bounded ownership diagnosis against the prior rejected participation-binding
+pilot, not repeated instruction tuning or an expanded feature list. Evidence:
+/Users/freedom/.codex/odylith-split-anchor.ROTjS0/.
+
+The implemented bounded comparison replaces only the state citation selector with an exact
+split anchor: prefix + quote locates one strict anchor occurrence, and the prefix
+byte length selects the trailing quote. One selection authority replaces local
+quote-uniqueness counting; no event fallback, broader evidence normalization,
+source-unit framework or extra model call. Exact canonical spans and immutable
+review remain unchanged. Independent ownership review accepts this candidate for
+testing, not release. Require positive/negative address controls, adjacent custody
+regressions and fresh complete native semantic/UX evidence before rebuilding.
+
+Pushed 5c7478456 builds in 240.780 seconds with 1,449 unchanged inputs and installs
+cleanly in 28.671 seconds with 672 matching Python files. The proof runner first
+stops before dispatch because it asks the raw publication getter for a status
+field; retain that harness failure separately. After validating the same pristine
+install through the active-generation owner, the first native proposal fails in
+41.169 seconds (39.310 author, one call). Its state anchor covers the entire source
+sentence and contains two literal matches for the state quote. The resolver
+correctly refuses ambiguous custody before review or staging; raw action coverage
+does not qualify the package. No source, build, installed baseline, publication or
+runtime changes occur. Stop release qualification and compare only the state
+citation ownership against prior rejected windows, event-only addressing and
+prompt-only trials. No retry, deadline growth, regex repair or new feature.
+Evidence: /Users/freedom/.codex/odylith-source-excerpt.0YzkgX/installed-proposal/.
+
 The excerpt correction changes only display labels/quoting in five existing
 projection owners. Canonical source text, spans, semantic roles, schemas, model
 calls and deadlines remain unchanged. Three predicate/Unicode/multiline controls
@@ -15,7 +56,8 @@ and 458 browser checks, with four stale label expectations in three test files.
 Only those expectations change; all 51 affected-module and excerpt checks then
 pass, including every failed node, against identical product bytes. Preserve both
 the original failed report and the corrective proof under checkpoint-final/.
-The combined source checkpoint is ready for commit and exact build/install;
+The combined source checkpoint was committed and built; the installed semantic
+gate above remains open. This evidence is not a complete successful project;
 this replay does not repair or
 replace the failed native attempt. No new feature, grammar parser, helper layer,
 model stage or provider attempt was added. Evidence:

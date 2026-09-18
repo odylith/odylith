@@ -108,7 +108,7 @@ def authored_response(
     if state_citation is not None:
         facts["state_object"] = {
             "quote": state_citation["quote"],
-            "anchor_quote": state_citation["quote"],
+            "prefix": "",
             "anchor_occurrence": state_citation["occurrence"],
         }
 

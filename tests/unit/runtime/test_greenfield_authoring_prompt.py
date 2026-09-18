@@ -43,8 +43,9 @@ def test_authoring_prompt_requires_every_transaction_material_fact() -> None:
     assert "concrete experience" in prompt
     assert "Give the decision itself, not commentary" in prompt
     assert "Include the explicit actor with its action and object in the first citation" in prompt
-    assert "For state_object only, supply quote, anchor_quote and anchor_occurrence" in prompt
-    assert "its other words do not become state meaning or projected text" in prompt
+    assert "For state_object only, supply prefix, quote and anchor_occurrence" in prompt
+    assert "selected quote is at the end of the anchor" in prompt
+    assert "Prefix is only a locator, never state meaning or projected text" in prompt
 
 
 def test_only_state_object_uses_the_anchored_address_schema() -> None:
@@ -54,7 +55,7 @@ def test_only_state_object_uses_the_anchored_address_schema() -> None:
     )
 
     state = _AUTHORED_FACTS_SCHEMA["properties"]["state_object"]
-    assert set(state["properties"]) == {"quote", "anchor_quote", "anchor_occurrence"}
+    assert set(state["properties"]) == {"quote", "prefix", "anchor_occurrence"}
     assert set(state["required"]) == set(state["properties"])
     assert state["additionalProperties"] is False
     assert _CITATION_SCHEMA["required"] == ["quote", "occurrence"]

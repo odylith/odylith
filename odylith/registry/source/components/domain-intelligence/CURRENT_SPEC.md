@@ -5,6 +5,29 @@ Last updated: 2026-09-17
 ## Overview
 
 Feature scope is frozen to demonstrated blockers and required release proof.
+The split-anchor implementation passes 181 focused controls and independent code
+review. One native standard proposal has correct exact state custody and useful
+5/5/5 artifacts in 52.956 seconds; its sealed bytes pass 32 browser states. It is
+nevertheless rejected because an artifact modifier becomes an unsupported accepted
+participant. Both author and immutable reviewer already receive the exclusion, so
+the source-address witness does not qualify the complete semantic mechanism. The
+remaining controls are unrun; no publication or rebuild follows this failure.
+The current unqualified state-address candidate is a split anchor: the author supplies
+exact prefix, quote and strict anchor occurrence. Only the trailing quote becomes
+canonical meaning; its start is the selected anchor start plus prefix byte length.
+This replaces local substring-uniqueness counting without secondary event lookup,
+normalization or reviewer repair. Exact-span custody, immutable role review and all
+profile/call/deadline contracts remain fixed. Its 1,823-test frozen regression
+passes, but complete native qualification remains failed as described above.
+Participation ownership must retain legitimate off-path and permission-bound roles;
+performer/customer/recipient-only derivation would narrow the supported meaning.
+The current install matches all 672 Python files from its frozen successful build,
+but its first standard proposal fails safely before review: a model-selected state
+anchor contains two literal matches for the semantic quote. Strict refusal
+preserves custody but does not deliver the requested package. The current
+state-address mechanism is therefore not release-qualified. Preserve the failed
+attempt and compare only its address/support ownership; no occurrence guessing,
+domain rules, repeated authoring or deadline expansion.
 The cited product description is source evidence, not independently authored
 prose. Preview, Brief, Atlas detail, project-intelligence display and dashboard
 views label and quote it as a source excerpt. Canonical text, spans and roles stay
@@ -16,8 +39,8 @@ intent, source authority, workstreams, components and handoff remain unchanged.
 Independent visual review accepts the correction. Broad proof has 3,409 runtime/install
 and 458 browser passes; four stale presentation assertions are corrected without
 product changes, and all 51 affected-module/excerpt checks pass with exact coverage
-of those failures. The original failed report remains distinct. Clean installed
-qualification is next, not established by these source checks. Failed native
+of those failures. The original failed report remains distinct. Clean installation
+passes; installed semantic qualification fails as described above. Failed native
 attempts are not retroactively admitted by a corrected presentation replay.
 
 The state-only v59 source-address candidate uses an exact enclosing anchor and
@@ -522,6 +545,9 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 1 verifiable artifact reference.
+  - Scope: B-142
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_model_source_citations.py`
 - **2026-09-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_candidate_intent_stage.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_source_citations.py`
@@ -537,9 +563,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-08-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_canonical_meaning.py`, `tests/integration/runtime/test_greenfield_component_contract_preconfirm.py`
-- **2026-08-08 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `src/odylith/runtime/common/prose_tail.py`, `src/odylith/runtime/domain_intelligence/greenfield_component_outputs.py`, `tests/unit/runtime/test_greenfield_code_hygiene.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
