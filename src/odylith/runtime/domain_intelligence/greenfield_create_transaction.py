@@ -254,16 +254,19 @@ def require_product_create_transaction_quality_approved(
     requested_tier = str(manifest.get("requested_repair_tier", "")).strip()
     active_tier = str(manifest.get("repair_tier", "")).strip()
     try:
-        if any(type(manifest.get(key)) not in (int, float) for key in ("elapsed_seconds", "budget_seconds")):
+        timing_keys = ("elapsed_seconds", "target_seconds", "operational_timeout_seconds")
+        if any(type(manifest.get(key)) not in (int, float) for key in timing_keys):
             raise ValueError("Quality timing must be numeric")
         elapsed_seconds = float(manifest.get("elapsed_seconds"))
-        budget_seconds = float(manifest.get("budget_seconds"))
+        target_seconds = float(manifest.get("target_seconds"))
+        operational_timeout_seconds = float(manifest.get("operational_timeout_seconds"))
         selected_profile = get_greenfield_model_profile(
             model_profile_id_for_repair_tier(requested_tier)
         )
     except (TypeError, ValueError, OverflowError):
         elapsed_seconds = math.inf
-        budget_seconds = -1.0
+        target_seconds = -1.0
+        operational_timeout_seconds = -1.0
         selected_profile = None
     tier_route_approved = bool(
         selected_profile is not None
@@ -272,9 +275,12 @@ def require_product_create_transaction_quality_approved(
     timing_approved = (
         tier_route_approved
         and selected_profile is not None
-        and budget_seconds == selected_profile.consumer_budget_seconds
-        and math.isfinite(elapsed_seconds)
-        and 0.0 <= elapsed_seconds < budget_seconds
+        and target_seconds == selected_profile.performance_target_seconds
+        and operational_timeout_seconds == selected_profile.operational_timeout_seconds
+        and all(math.isfinite(value) for value in (
+            elapsed_seconds, target_seconds, operational_timeout_seconds,
+        ))
+        and 0.0 <= elapsed_seconds < operational_timeout_seconds
     )
     semantic_compiler = manifest.get("semantic_compiler")
     semantic_compiler = semantic_compiler if isinstance(semantic_compiler, Mapping) else {}

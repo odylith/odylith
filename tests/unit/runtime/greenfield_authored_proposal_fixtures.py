@@ -44,7 +44,8 @@ def approved_authored_quality_manifest_fixture(
         "hard_blocker": None,
         "requested_repair_tier": "auto",
         "repair_tier": profile.repair_tier,
-        "budget_seconds": profile.consumer_budget_seconds,
+        "target_seconds": profile.performance_target_seconds,
+        "operational_timeout_seconds": profile.operational_timeout_seconds,
         "elapsed_seconds": 1.0,
         "write_transaction": {
             "status": "not_started",

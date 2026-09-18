@@ -105,10 +105,11 @@ def model_profile_release_proof(
         if not bool(getattr(getattr(result, "quality", None), "passed", False)):
             validation_issues.append(f"model profile `{profile_id}` has a semantic or product-quality failure")
         elapsed = _float_value(getattr(result, "proposal_seconds", 0.0))
-        budget = get_greenfield_model_profile(profile_id).consumer_budget_seconds
-        if not 0.0 < elapsed < budget:
+        contract = get_greenfield_model_profile(profile_id)
+        if not 0.0 < elapsed < contract.operational_timeout_seconds:
             validation_issues.append(
-                f"model profile `{profile_id}` is missing strict under-{budget:g}s installed latency proof"
+                f"model profile `{profile_id}` is missing strict under-"
+                f"{contract.operational_timeout_seconds:g}s installed operational-timeout proof"
             )
         expectation = _result_expectation(result)
         if expectation not in {TRANSACTION_COMMITTED_EXPECTATION, CLARIFICATION_REQUIRED_EXPECTATION}:
@@ -163,7 +164,12 @@ def model_profile_release_proof(
             "model": contract.model,
             "reasoning_effort": contract.reasoning_effort,
             "maximum_semantic_model_calls": 2,
-            "consumer_budget_seconds": contract.consumer_budget_seconds,
+            "performance_target_seconds": contract.performance_target_seconds,
+            "operational_timeout_seconds": contract.operational_timeout_seconds,
+            "performance_target_met": (
+                bool(elapsed_values)
+                and max(elapsed_values) <= contract.performance_target_seconds
+            ),
             "lower_capability": contract.lower_capability,
             "lower_capability_role": "initial_authoring" if contract.lower_capability else "not_applicable",
             "case_count": len(profile_results),
@@ -224,8 +230,8 @@ def unavailable_provider_proof_issues(
     issues: list[str] = []
     if returncode == 0:
         issues.append("unavailable-provider proposal unexpectedly succeeded")
-    if not 0.0 < _float_value(proposal_seconds) < contract.consumer_budget_seconds:
-        issues.append("unavailable-provider failure did not finish inside the rescue budget")
+    if not 0.0 < _float_value(proposal_seconds) < contract.operational_timeout_seconds:
+        issues.append("unavailable-provider failure did not finish inside the operational timeout")
     if UNAVAILABLE_PROVIDER_FAILURE_TEXT not in str(detail or "").casefold():
         issues.append("unavailable-provider proposal did not report model authoring unavailability")
     if not write_audit_active:
@@ -254,7 +260,7 @@ def _result_proves_profile(result: Any, profile_id: str) -> bool:
         )
         and 0.0
         < _float_value(getattr(result, "proposal_seconds", 0.0))
-        < contract.consumer_budget_seconds
+        < contract.operational_timeout_seconds
     )
 
 

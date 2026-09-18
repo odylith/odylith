@@ -227,7 +227,8 @@ def test_quality_approval_accepts_explicit_deep_profile() -> None:
         approved_authored_quality_manifest_fixture(
             requested_repair_tier="deep",
             repair_tier="deep",
-            budget_seconds=150.0,
+            target_seconds=150.0,
+            operational_timeout_seconds=180.0,
             elapsed_seconds=101.0,
             model_authoring=_approved_model_authoring(
                 DEEP_PROFILE_ID,
@@ -242,7 +243,8 @@ def test_quality_approval_accepts_explicit_rescue_profile() -> None:
         approved_authored_quality_manifest_fixture(
             requested_repair_tier="rescue",
             repair_tier="rescue",
-            budget_seconds=120.0,
+            target_seconds=120.0,
+            operational_timeout_seconds=180.0,
             elapsed_seconds=81.0,
             model_authoring=_approved_model_authoring(
                 RESCUE_PROFILE_ID,
@@ -258,7 +260,8 @@ def test_quality_approval_rejects_default_route_relabelled_as_rescue() -> None:
             approved_authored_quality_manifest_fixture(
                 requested_repair_tier="auto",
                 repair_tier="rescue",
-                budget_seconds=120.0,
+                target_seconds=120.0,
+                operational_timeout_seconds=180.0,
                 model_authoring=_approved_model_authoring(
                     RESCUE_PROFILE_ID,
                     elapsed_seconds=50.0,
@@ -276,7 +279,8 @@ def test_quality_approval_rejects_profile_tier_relabeling() -> None:
             approved_authored_quality_manifest_fixture(
                 requested_repair_tier="deep",
                 repair_tier="deep",
-                budget_seconds=150.0,
+                target_seconds=150.0,
+                operational_timeout_seconds=180.0,
                 model_authoring=receipt,
             )
         )
@@ -321,7 +325,13 @@ def test_quality_approval_rejects_retired_model_authoring_versions(
         },
         {"status": "passed", "validation_status": "passed", "issue_count": 1},
         approved_authored_quality_manifest_fixture(version=""),
+        approved_authored_quality_manifest_fixture(
+            version="greenfield-pre-confirm-quality-manifest-v1"
+        ),
         approved_authored_quality_manifest_fixture(engine=""),
+        approved_authored_quality_manifest_fixture(
+            engine="greenfield-pre-confirm-fixpoint-v1"
+        ),
         approved_authored_quality_manifest_fixture(
             write_transaction={"status": "committed", "rollback_guard": "enabled"}
         ),
@@ -347,17 +357,20 @@ def test_quality_approval_rejects_retired_model_authoring_versions(
                 "commit_only": True,
             }
         ),
-        approved_authored_quality_manifest_fixture(elapsed_seconds=90.0),
-        approved_authored_quality_manifest_fixture(budget_seconds=120.0),
+        approved_authored_quality_manifest_fixture(elapsed_seconds=180.0),
+        approved_authored_quality_manifest_fixture(target_seconds=120.0),
+        approved_authored_quality_manifest_fixture(operational_timeout_seconds=179.0),
         approved_authored_quality_manifest_fixture(
             requested_repair_tier="auto",
             repair_tier="rescue",
-            budget_seconds=120.0,
+            target_seconds=120.0,
+            operational_timeout_seconds=180.0,
         ),
         approved_authored_quality_manifest_fixture(
             requested_repair_tier="auto",
             repair_tier="deep",
-            budget_seconds=150.0,
+            target_seconds=150.0,
+            operational_timeout_seconds=180.0,
         ),
         approved_authored_quality_manifest_fixture(
             semantic_compiler={

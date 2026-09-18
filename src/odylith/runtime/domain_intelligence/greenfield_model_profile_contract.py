@@ -12,15 +12,15 @@ from dataclasses import dataclass
 from types import MappingProxyType
 
 
-GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v16"
+GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v17"
 GREENFIELD_NORMAL_CASE_TARGET_SECONDS = 60.0
-# The existing outer deadline still checks compilation, sealing and staging.
-# This allocation is headroom for those phases, not an extension on expiry.
+GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS = 180.0
+# The shared model window leaves finite headroom for compilation, sealing and staging.
 _COMPLETION_RESERVE_SECONDS = 15.0
 
-STANDARD_PROFILE_ID = "greenfield-standard-terra-low-complete-author-review-v16"
-RESCUE_PROFILE_ID = "greenfield-rescue-terra-medium-complete-author-review-v16"
-DEEP_PROFILE_ID = "greenfield-deep-sol-high-complete-author-review-v16"
+STANDARD_PROFILE_ID = "greenfield-standard-terra-low-complete-author-review-v17"
+RESCUE_PROFILE_ID = "greenfield-rescue-terra-medium-complete-author-review-v17"
+DEEP_PROFILE_ID = "greenfield-deep-sol-high-complete-author-review-v17"
 UNAVAILABLE_PROVIDER_PROFILE_ID = "greenfield-unavailable-provider-no-write-v1"
 
 
@@ -33,7 +33,8 @@ class GreenfieldModelProfile:
     provider: str
     model: str
     reasoning_effort: str
-    consumer_budget_seconds: float
+    performance_target_seconds: float
+    operational_timeout_seconds: float
     model_timeout_seconds: float
     lower_capability: bool = False
     supported_success: bool = True
@@ -49,8 +50,9 @@ _PROFILES = MappingProxyType(
             provider="codex-cli",
             model="gpt-5.6-terra",
             reasoning_effort="low",
-            consumer_budget_seconds=90.0,
-            model_timeout_seconds=90.0 - _COMPLETION_RESERVE_SECONDS,
+            performance_target_seconds=90.0,
+            operational_timeout_seconds=GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS,
+            model_timeout_seconds=GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS - _COMPLETION_RESERVE_SECONDS,
             lower_capability=True,
         ),
         RESCUE_PROFILE_ID: GreenfieldModelProfile(
@@ -59,8 +61,9 @@ _PROFILES = MappingProxyType(
             provider="codex-cli",
             model="gpt-5.6-terra",
             reasoning_effort="medium",
-            consumer_budget_seconds=120.0,
-            model_timeout_seconds=120.0 - _COMPLETION_RESERVE_SECONDS,
+            performance_target_seconds=120.0,
+            operational_timeout_seconds=GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS,
+            model_timeout_seconds=GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS - _COMPLETION_RESERVE_SECONDS,
             lower_capability=True,
         ),
         DEEP_PROFILE_ID: GreenfieldModelProfile(
@@ -69,8 +72,9 @@ _PROFILES = MappingProxyType(
             provider="codex-cli",
             model="gpt-5.6-sol",
             reasoning_effort="high",
-            consumer_budget_seconds=150.0,
-            model_timeout_seconds=150.0 - _COMPLETION_RESERVE_SECONDS,
+            performance_target_seconds=150.0,
+            operational_timeout_seconds=GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS,
+            model_timeout_seconds=GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS - _COMPLETION_RESERVE_SECONDS,
         ),
         UNAVAILABLE_PROVIDER_PROFILE_ID: GreenfieldModelProfile(
             profile_id=UNAVAILABLE_PROVIDER_PROFILE_ID,
@@ -78,7 +82,8 @@ _PROFILES = MappingProxyType(
             provider="codex-cli",
             model="gpt-5.4-mini",
             reasoning_effort="high",
-            consumer_budget_seconds=120.0,
+            performance_target_seconds=120.0,
+            operational_timeout_seconds=GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS,
             model_timeout_seconds=1.0,
             supported_success=False,
         ),
@@ -234,6 +239,7 @@ __all__ = [
     "DEEP_PROFILE_ID",
     "GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION",
     "GREENFIELD_NORMAL_CASE_TARGET_SECONDS",
+    "GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS",
     "GreenfieldModelProfile",
     "RESCUE_PROFILE_ID",
     "STANDARD_PROFILE_ID",

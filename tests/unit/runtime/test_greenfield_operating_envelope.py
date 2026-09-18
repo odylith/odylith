@@ -63,7 +63,8 @@ def test_published_operating_envelope_matches_the_runtime_contract() -> None:
     for profile_id in (STANDARD_PROFILE_ID, RESCUE_PROFILE_ID, DEEP_PROFILE_ID):
         profile = get_greenfield_model_profile(profile_id)
         assert profile_id in published
-        assert f"{int(profile.consumer_budget_seconds)}-second" in published
+        assert f"{int(profile.performance_target_seconds)}-second" in published
+        assert "180-second operational timeout" in published
 
 
 def test_greenfield_operating_envelope_accepts_one_bounded_governance_product() -> None:
@@ -276,7 +277,7 @@ def test_edit_read_time_reduces_the_provider_window_before_discovery(monkeypatch
         "_greenfield_authoring_provider",
         forbidden_provider_discovery,
     )
-    monkeypatch.setattr(greenfield_proposals_cli.time, "perf_counter", lambda: 105.0)
+    monkeypatch.setattr(greenfield_proposals_cli.time, "perf_counter", lambda: 165.0)
 
     with pytest.raises(RuntimeError, match="model time window") as exc_info:
         greenfield_proposals_cli._compile_prompt_evidence_transaction(
@@ -292,24 +293,24 @@ def test_edit_read_time_reduces_the_provider_window_before_discovery(monkeypatch
     assert exc_info.value.outcome == {"kind": "environment", "code": "MODEL_TIMEOUT_NO_WRITE"}
 
 
-@pytest.mark.parametrize("budget", [90.0, 120.0, 150.0])
+@pytest.mark.parametrize("target", [90.0, 120.0, 150.0])
 def test_late_pending_stage_is_retired_before_the_deadline_error_returns(
     monkeypatch,
     tmp_path,
-    budget,
+    target,
 ) -> None:  # type: ignore[no-untyped-def]
-    now = [budget - 1.0]
+    now = [179.0]
     confirmable = False
     transaction_hash = "a" * 64
     transaction = argparse.Namespace(
         transaction_hash=transaction_hash,
-        quality_manifest={"budget_seconds": budget},
+        quality_manifest={"target_seconds": target, "operational_timeout_seconds": 180.0},
     )
 
     def stage_pending_transaction(**_kwargs: object) -> Path:
         nonlocal confirmable
         confirmable = True
-        now[0] = budget
+        now[0] = 180.0
         return tmp_path / "pending.json"
 
     def discard_pending_transaction(**_kwargs: object) -> None:
@@ -331,10 +332,11 @@ def test_late_pending_stage_is_retired_before_the_deadline_error_returns(
     assert confirmable is False
 
 
-@pytest.mark.parametrize("budget", [90.0, 120.0, 150.0])
-def test_expired_public_budget_cannot_begin_staging(monkeypatch, tmp_path, budget):
+@pytest.mark.parametrize("target", [90.0, 120.0, 150.0])
+def test_expired_operational_timeout_cannot_begin_staging(monkeypatch, tmp_path, target):
     transaction = argparse.Namespace(
-        transaction_hash="a" * 64, quality_manifest={"budget_seconds": budget},
+        transaction_hash="a" * 64,
+        quality_manifest={"target_seconds": target, "operational_timeout_seconds": 180.0},
     )
 
     def forbidden(**_kwargs):
@@ -347,7 +349,7 @@ def test_expired_public_budget_cannot_begin_staging(monkeypatch, tmp_path, budge
     with pytest.raises(RuntimeError, match="no records were created"):
         greenfield_proposals_cli._stage_pending_transaction_with_deadline(
             repo_root=tmp_path, transaction=transaction, started_at=0.0,
-            clock=lambda: budget,
+            clock=lambda: 180.0,
         )
     assert list(tmp_path.iterdir()) == []
 

@@ -133,8 +133,11 @@ def test_profile_registry_pins_preselected_standard_rescue_and_deep_requests() -
     deep = get_greenfield_model_profile(DEEP_PROFILE_ID)
     assert deep.model == "gpt-5.6-sol"
     assert deep.reasoning_effort == "high"
-    assert [(profile.model_timeout_seconds, profile.consumer_budget_seconds) for profile in (standard, rescue, deep)] == [
-        (75.0, 90.0), (105.0, 120.0), (135.0, 150.0),
+    assert [
+        (profile.model_timeout_seconds, profile.performance_target_seconds, profile.operational_timeout_seconds)
+        for profile in (standard, rescue, deep)
+    ] == [
+        (165.0, 90.0, 180.0), (165.0, 120.0, 180.0), (165.0, 150.0, 180.0),
     ]
     assert all(not hasattr(profile, "source_review_model") for profile in (standard, rescue, deep))
     assert get_greenfield_model_profile(UNAVAILABLE_PROVIDER_PROFILE).lower_capability is False
@@ -162,13 +165,13 @@ def test_profile_environments_pin_provider_model_effort_and_shared_tier_windows(
     assert standard["ODYLITH_REASONING_PROVIDER"] == "codex-cli"
     assert standard["ODYLITH_REASONING_MODEL"] == "gpt-5.6-terra"
     assert standard["ODYLITH_REASONING_CODEX_REASONING_EFFORT"] == "low"
-    assert standard["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "75"
+    assert standard["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "165"
     assert rescue["ODYLITH_REASONING_MODEL"] == "gpt-5.6-terra"
     assert rescue["ODYLITH_REASONING_CODEX_REASONING_EFFORT"] == "medium"
-    assert rescue["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "105"
+    assert rescue["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "165"
     assert deep["ODYLITH_REASONING_MODEL"] == "gpt-5.6-sol"
     assert deep["ODYLITH_REASONING_CODEX_REASONING_EFFORT"] == "high"
-    assert deep["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "135"
+    assert deep["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "165"
     assert unavailable["ODYLITH_REASONING_CODEX_BIN"] == "/nonexistent/greenfield-provider-test"
     assert unavailable["ODYLITH_REASONING_CODEX_BIN"] != "/usr/bin/false"
     assert unavailable["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "1"
@@ -473,7 +476,7 @@ def test_profile_aggregate_rejects_non_numeric_missing_or_expired_consumer_time(
     profile = get_greenfield_model_profile(profile_id)
     result = SimpleNamespace(
         name="timing control", status="passed", quality=SimpleNamespace(passed=True),
-        proposal_seconds=profile.consumer_budget_seconds if elapsed == "at_cap" else elapsed,
+        proposal_seconds=profile.operational_timeout_seconds if elapsed == "at_cap" else elapsed,
         evidence={
             "case": {"expectation": "transaction_committed"},
             "model_profile": model_profile_evidence(
@@ -484,7 +487,7 @@ def test_profile_aggregate_rejects_non_numeric_missing_or_expired_consumer_time(
     )
     proof = model_profile_release_proof((result,), require_complete=False)
     assert proof["status"] == "failed"
-    assert any("installed latency proof" in issue for issue in proof["issues"])
+    assert any("operational-timeout proof" in issue for issue in proof["issues"])
     assert proof["profiles"][profile_id]["committed_positive_case_count"] == 0
     assert proof["profiles"][profile_id]["maximum_semantic_model_calls"] == 2
 
@@ -531,7 +534,7 @@ def _mutated_stage_observation(mutation: str) -> dict[str, object]:
     elif mutation == "initial_cap":
         initial["timeout_seconds"] = 60.0
     elif mutation == "initial_elapsed":
-        initial["elapsed_seconds"] = 105.001
+        initial["elapsed_seconds"] = 165.001
     elif mutation == "missing_initial":
         stage.pop("initial_authoring")
     else:

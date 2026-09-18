@@ -31,8 +31,8 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 
 
 COMMIT_ONLY_BUDGET_SECONDS = 60.0
-_APPROVED_PROPOSAL_BUDGETS = "/".join(
-    f"{get_greenfield_model_profile(profile_id).consumer_budget_seconds:g}"
+_APPROVED_PROPOSAL_TARGETS = "/".join(
+    f"{get_greenfield_model_profile(profile_id).performance_target_seconds:g}"
     for profile_id in supported_greenfield_model_profile_ids()
 )
 UNSCORED_QUALITY_SCORE = -1
@@ -269,14 +269,21 @@ def _transaction_hash_match_issues(
 
 
 def proposal_time_issues(manifest: Mapping[str, Any], *, proposal_seconds: float) -> tuple[str, ...]:
-    budget_seconds = _sealed_tier_budget_seconds(manifest)
-    if budget_seconds is None:
-        return (f"proposal manifest does not declare an approved {_APPROVED_PROPOSAL_BUDGETS} repair-tier budget",)
+    timing = _sealed_tier_timing(manifest)
+    if timing is None:
+        return (
+            f"proposal manifest does not declare approved {_APPROVED_PROPOSAL_TARGETS} "
+            "performance targets and operational timeout",
+        )
     elapsed = _measured_elapsed_seconds(proposal_seconds)
     if elapsed is None:
         return ("proposal proof is missing a positive measured elapsed time",)
-    if elapsed >= budget_seconds:
-        return (f"proposal exceeded its sealed {budget_seconds:g}-second tier budget: {elapsed:.3f}s",)
+    _, operational_timeout_seconds = timing
+    if elapsed >= operational_timeout_seconds:
+        return (
+            f"proposal exceeded its sealed {operational_timeout_seconds:g}-second operational timeout: "
+            f"{elapsed:.3f}s",
+        )
     return ()
 
 
@@ -600,6 +607,13 @@ def _score_explanation(
         for dimension in INDEPENDENT_SEMANTIC_LENS_DIMENSIONS
         if int(scores.get(dimension, UNSCORED_QUALITY_SCORE)) < 0
     )
+    timing = _sealed_tier_timing(manifest)
+    if timing is not None and float(manifest["elapsed_seconds"]) > timing[0]:
+        target_seconds, operational_timeout_seconds = timing
+        explanations.append(
+            f"proposal exceeded the advisory {target_seconds:g}s performance target but remained "
+            f"inside the {operational_timeout_seconds:g}s operational timeout"
+        )
     if independent_unscored_dimensions:
         explanations.append(
             "automated contract passed; independent semantic review remains required for: "
@@ -712,9 +726,11 @@ def _manifest_issues(
             product_create_transaction=product_create_transaction,
         )
     )
-    tier_budget_seconds = _sealed_tier_budget_seconds(manifest)
-    if tier_budget_seconds is None:
-        issues.append(f"pre-confirm manifest does not declare an approved {_APPROVED_PROPOSAL_BUDGETS} repair-tier budget")
+    if _sealed_tier_timing(manifest) is None:
+        issues.append(
+            f"pre-confirm manifest does not declare approved {_APPROVED_PROPOSAL_TARGETS} "
+            "performance targets and operational timeout"
+        )
     model_authoring = mapping_copy(manifest.get("model_authoring"))
     if not greenfield_model_authoring_receipt_approved(
         model_authoring=model_authoring,
@@ -735,22 +751,30 @@ def _manifest_issues(
     return tuple(issues)
 
 
-def _sealed_tier_budget_seconds(manifest: Mapping[str, Any]) -> float | None:
+def _sealed_tier_timing(manifest: Mapping[str, Any]) -> tuple[float, float] | None:
     requested_tier = str(manifest.get("requested_repair_tier", "")).strip()
     active_tier = str(manifest.get("repair_tier", "")).strip()
     try:
-        if type(manifest.get("budget_seconds")) not in (int, float):
+        numeric_fields = ("elapsed_seconds", "target_seconds", "operational_timeout_seconds")
+        if any(type(manifest.get(field)) not in (int, float) for field in numeric_fields):
             return None
         selected_profile = get_greenfield_model_profile(
             model_profile_id_for_repair_tier(requested_tier)
         )
-        declared = float(manifest.get("budget_seconds"))
+        elapsed = float(manifest.get("elapsed_seconds"))
+        target = float(manifest.get("target_seconds"))
+        operational_timeout = float(manifest.get("operational_timeout_seconds"))
     except (TypeError, ValueError, OverflowError):
         return None
-    if active_tier != selected_profile.repair_tier:
+    if (
+        active_tier != selected_profile.repair_tier
+        or not all(math.isfinite(value) for value in (elapsed, target, operational_timeout))
+        or target != selected_profile.performance_target_seconds
+        or operational_timeout != selected_profile.operational_timeout_seconds
+        or not 0.0 <= elapsed < operational_timeout
+    ):
         return None
-    expected = selected_profile.consumer_budget_seconds
-    return expected if declared == expected else None
+    return target, operational_timeout
 
 
 def _validation_gate_actor_issues(*, create_payload: Mapping[str, Any], package: Any) -> tuple[str, ...]:

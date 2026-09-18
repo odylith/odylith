@@ -48,7 +48,7 @@ Ordinary chat approval is not a terminal decision. Explicit terminal `CONFIRM`
 and `REJECT` share a bounded deterministic owner and invoke neither compiler nor
 model. `EDIT` verifies the retained hash, lazily uses the existing compiler with
 the sealed original source and new untrusted correction, preserves tier and the
-90/120/150 release limits, retains the old seal, and returns a new hash and
+timing contract, retains the old seal, and returns a new hash and
 preview. It adds no schema, stage, retry, or repair mechanism. The sealed-byte
 `create` CLI remains a separate commit-only interface. Native automatic delivery
 and visible completion require their own proof.
@@ -56,24 +56,26 @@ and visible completion require their own proof.
 Release evaluation covers three pinned candidate success profiles; their identity
 does not itself establish qualification:
 
-- `greenfield-standard-terra-low-complete-author-review-v16`: the default and `auto`
-  path, with a 90-second consumer ceiling and a 75-second model window.
-- `greenfield-rescue-terra-medium-complete-author-review-v16`: the explicit rescue
-  path, with a 120-second consumer ceiling and a 105-second model window.
-- `greenfield-deep-sol-high-complete-author-review-v16`: the explicit deep path,
-  with a 150-second consumer ceiling and a 135-second model window.
+- `greenfield-standard-terra-low-complete-author-review-v17`: the default and
+  `auto` path, with a 90-second advisory performance target.
+- `greenfield-rescue-terra-medium-complete-author-review-v17`: the explicit rescue
+  path, with a 120-second advisory performance target.
+- `greenfield-deep-sol-high-complete-author-review-v17`: the explicit deep path,
+  with a 150-second advisory performance target.
 
-Proposal elapsed time must be strictly below the selected ceiling. Sixty seconds
-is an advisory normal-case target, not a second acceptance gate. The separate
-commit-only step must still finish strictly below 60 seconds. Candidate v16
-retains these approved public limits while allocating 15 seconds outside the
-shared model window for deterministic completion. This is not a guaranteed tail
-bound: the public deadline still rejects late compilation or staging. Relative
-to v15, only the reviewer model changes; authors, efforts, call count, prompts,
-semantic requirements and transaction laws are unchanged.
+All three profiles use one 180-second operational timeout and one 165-second
+shared model window, leaving 15 seconds for deterministic completion. Meeting or
+missing the selected 90/120/150-second target is recorded as performance evidence,
+not used as an admission gate. Proposal elapsed time must remain strictly below
+the operational timeout. Sixty seconds remains an advisory normal-case target.
+The separate commit-only step must still finish strictly below 60 seconds.
+Candidate v17 separates performance targets from the finite operational timeout
+while retaining the standard Terra-low author posture. This timing change does
+not qualify any author candidate; call count, prompts, semantic requirements,
+reviewer identity, and transaction laws are unchanged.
 Historical observations keep their original limits and verdicts; old sealed
-v12/v13/v14/v15 transactions are not relabeled or accepted as v16. Fresh per-profile
-evidence is required for qualification.
+v12/v13/v14/v15/v16 transactions are not relabeled or accepted as v17. Fresh
+per-profile evidence is required for qualification.
 
 The selected profile is fixed before the model request. Elapsed time or a failed
 attempt never relabels or extends a standard request into rescue or deep.

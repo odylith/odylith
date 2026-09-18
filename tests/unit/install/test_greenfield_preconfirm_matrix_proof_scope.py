@@ -1173,7 +1173,7 @@ def test_model_profile_release_proof_requires_all_tiers_under_strict_budgets() -
         results[0],
         proposal_seconds=module.get_greenfield_model_profile(
             module.model_profile_id_for_repair_tier("standard")
-        ).consumer_budget_seconds,
+        ).operational_timeout_seconds,
     )
     assert module.model_profile_release_proof(
         (breached, *results[1:], *clarifications),

@@ -1,5 +1,16 @@
 # Odylith
 
+## Greenfield performance contract update (2026-09-18)
+
+Greenfield's 90/120/150-second tier timings are now operator-approved performance
+targets. The unreleased implementation reports overruns without rejecting an otherwise
+valid package, while retaining a separate 180-second operational timeout and all
+no-write, exact-confirmation and source-fidelity laws. This does not authorize
+unbounded model calls, retries, feature growth, or a production-ready claim.
+The separate stronger-author comparison fails source fidelity in 80.942 seconds,
+not timing, and is not adopted. Keep the original model roles while qualifying the
+new timing contract; no complete package or release win is claimed.
+
 ## Reviewed working-file restoration
 
 `odylith governance restore-published-files` owns explicit restoration of selected

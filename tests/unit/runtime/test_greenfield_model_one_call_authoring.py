@@ -39,10 +39,10 @@ class Provider:
 
 
 @pytest.mark.parametrize(
-    ("profile_id", "model_budget", "consumer_budget"),
-    [(STANDARD_PROFILE_ID, 75.0, 90.0), (RESCUE_PROFILE_ID, 105.0, 120.0), (DEEP_PROFILE_ID, 135.0, 150.0)],
+    ("profile_id", "model_budget", "performance_target"),
+    [(STANDARD_PROFILE_ID, 165.0, 90.0), (RESCUE_PROFILE_ID, 165.0, 120.0), (DEEP_PROFILE_ID, 165.0, 150.0)],
 )
-def test_one_author_and_review_share_the_full_pinned_window(profile_id, model_budget, consumer_budget):
+def test_one_author_and_review_share_the_full_pinned_window(profile_id, model_budget, performance_target):
     response = _response(_source())
     clock = Clock()
     provider = Provider([response], [model_budget - 1.0], clock)
@@ -59,7 +59,8 @@ def test_one_author_and_review_share_the_full_pinned_window(profile_id, model_bu
     assert result.candidate_review["elapsed_seconds"] == 1.0
     assert reviewer.requests[0].timeout_seconds == 1.0
     assert reviewer.requests[0].schema_name == "greenfield_candidate_review"
-    assert profile.consumer_budget_seconds == consumer_budget
+    assert profile.performance_target_seconds == performance_target
+    assert profile.operational_timeout_seconds == 180.0
     request = provider.requests[0]
     assert request.timeout_seconds == model_budget
     assert (request.model, request.reasoning_effort) == (profile.model, profile.reasoning_effort)
@@ -99,7 +100,7 @@ def test_shorter_remaining_window_is_not_reduced_by_a_review_reserve():
     assert reviewer.requests[0].timeout_seconds == 1.0
 
 
-@pytest.mark.parametrize("setup_seconds,review_window", [(0.0, 24.5), (10.0, 14.5)])
+@pytest.mark.parametrize("setup_seconds,review_window", [(0.0, 114.5), (10.0, 104.5)])
 def test_allocation_leaves_review_headroom_without_resetting_the_absolute_deadline(
     setup_seconds, review_window,
 ):
@@ -109,12 +110,12 @@ def test_allocation_leaves_review_headroom_without_resetting_the_absolute_deadli
     reviewer = Provider([{"admissible": True, "issues": []}], [review_window], clock)
     result = author.author_greenfield_intent(
         evidence_text=_source(), provider=provider, clock=clock,
-        model_profile_id=STANDARD_PROFILE_ID, deadline=75.0,
+        model_profile_id=STANDARD_PROFILE_ID, deadline=165.0,
         review_provider_factory=lambda: reviewer,
     )
-    assert provider.requests[0].timeout_seconds == 75.0 - setup_seconds
+    assert provider.requests[0].timeout_seconds == 165.0 - setup_seconds
     assert reviewer.requests[0].timeout_seconds == review_window
-    assert clock.value <= 75.0
+    assert clock.value <= 165.0
     assert result.semantic_model_call_count == 2
     assert len(provider.requests) == len(reviewer.requests) == 1
 
@@ -217,7 +218,7 @@ def test_model_observation_is_checked_before_and_after_the_only_call(monkeypatch
     assert len(observed) == 2
     assert all(row["model"] == "gpt-5.6-terra" for row in observed)
     assert all(row["reasoning_effort"] == "low" for row in observed)
-    assert all(row["effective_timeout_seconds"] == 75.0 for row in observed)
+    assert all(row["effective_timeout_seconds"] == 165.0 for row in observed)
 
 
 def test_false_post_call_model_identity_fails_without_retry():
@@ -258,7 +259,7 @@ def test_proof_preserves_the_exact_candidate_and_dispatched_review_metadata(tmp_
     assert retained["response"] == response
     assert retained["semantic_model_call_count"] == (1 if failed else 2)
     assert retained["authoring_version"] == author.GREENFIELD_INTENT_AUTHORING_VERSION
-    assert retained["initial_authoring"]["timeout_seconds"] == 105.0
+    assert retained["initial_authoring"]["timeout_seconds"] == 165.0
     assert retained["initial_authoring"]["elapsed_seconds"] == 36.0
     assert "source_review" not in retained
     if failed:

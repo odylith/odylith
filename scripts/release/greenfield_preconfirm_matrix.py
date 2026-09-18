@@ -1069,7 +1069,7 @@ def _run_case(
             case=case,
             repo_root=repo_root,
             env=env,
-            timeout=int(profile_contract.consumer_budget_seconds),
+            timeout=int(profile_contract.operational_timeout_seconds),
             repair_tier=profile_contract.repair_tier,
             install_script=install_script,
             version=version,
@@ -1387,7 +1387,7 @@ def _run_compiled_greenfield_create_with_receipt(
         raw_streams.update({"show.stdout": shown.stdout, "show.stderr": shown.stderr})
     if shown.returncode != 0 or "Odylith read this repo" not in shown.stdout:
         raise RuntimeError("installed Greenfield journey failed its initial capability show")
-    proposal_timeout = int(get_greenfield_model_profile(profile_id).consumer_budget_seconds)
+    proposal_timeout = int(get_greenfield_model_profile(profile_id).operational_timeout_seconds)
     proposal_started = time.perf_counter()
     proposed = _run_greenfield_propose(
         repo_root=repo_root,

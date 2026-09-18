@@ -1,5 +1,18 @@
 # Release
-Last updated: 2026-09-17
+Last updated: 2026-09-18
+
+## Greenfield timing qualification (2026-09-18)
+
+The unreleased profile/manifest revision distinguishes advisory 90/120/150-second
+targets from the explicitly selected 180-second operational safety timeout.
+Release evidence must report target misses honestly and still reject exhausted
+operational time, malformed timing receipts, unsupported facts and unsafe writes.
+Old hard-budget receipts cannot qualify the new contract. The author/reviewer
+topology remains exactly two calls; rejected three-call experiments are never
+relabeled as production proof. Fresh complete-package qualification is pending.
+The stronger-author trial meets the standard target at 80.942 seconds but is
+correctly denied for source-role/citation errors. Retain that failure; do not admit
+its proposed design as a package or retain its unqualified model selection.
 
 
 ## Purpose

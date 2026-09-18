@@ -6,8 +6,8 @@ from collections.abc import Mapping
 from typing import Any
 
 
-PRECONFIRM_ENGINE_VERSION = "greenfield-pre-confirm-fixpoint-v1"
-PRECONFIRM_QUALITY_MANIFEST_VERSION = "greenfield-pre-confirm-quality-manifest-v1"
+PRECONFIRM_ENGINE_VERSION = "greenfield-pre-confirm-fixpoint-v2"
+PRECONFIRM_QUALITY_MANIFEST_VERSION = "greenfield-pre-confirm-quality-manifest-v2"
 
 
 def finalize_greenfield_commit_manifest(

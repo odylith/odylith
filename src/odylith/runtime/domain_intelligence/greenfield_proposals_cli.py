@@ -27,6 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import render_product_intent_preview
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     GREENFIELD_NORMAL_CASE_TARGET_SECONDS,
+    GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS,
     get_greenfield_model_profile,
     model_profile_id_for_repair_tier,
 )
@@ -42,14 +43,15 @@ _PUBLIC_INTENT_AUTHORITY_SUMMARY_KEYS = (
     "source_format",
     "materiality_status",
 )
-_REPAIR_TIER_BUDGET_HELP = (
-    "Proposal ceilings: "
+_REPAIR_TIER_TIMING_HELP = (
+    "Proposal performance targets: "
     + "; ".join(
-        f"{'auto/standard' if tier == 'standard' else tier}: pinned under-"
-        f"{get_greenfield_model_profile(model_profile_id_for_repair_tier(tier)).consumer_budget_seconds:g}s profile"
+        f"{'auto/standard' if tier == 'standard' else tier}: "
+        f"{get_greenfield_model_profile(model_profile_id_for_repair_tier(tier)).performance_target_seconds:g}s advisory"
         for tier in ("standard", "rescue", "deep")
     )
-    + f". Normal-case target: {GREENFIELD_NORMAL_CASE_TARGET_SECONDS:g}s (advisory)."
+    + f". Operational safety timeout: {GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS:g}s for every tier."
+    + f" Normal-case target: {GREENFIELD_NORMAL_CASE_TARGET_SECONDS:g}s (advisory)."
 )
 
 
@@ -83,7 +85,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         "--repair-tier",
         choices=PRECONFIRM_REPAIR_TIERS,
         default=greenfield_proposals.DEFAULT_PRECONFIRM_REPAIR_TIER,
-        help=_REPAIR_TIER_BUDGET_HELP,
+        help=_REPAIR_TIER_TIMING_HELP,
     )
     propose.add_argument(
         "--evidence-language",
@@ -117,7 +119,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         "--repair-tier",
         choices=PRECONFIRM_REPAIR_TIERS,
         default=greenfield_proposals.DEFAULT_PRECONFIRM_REPAIR_TIER,
-        help=_REPAIR_TIER_BUDGET_HELP,
+        help=_REPAIR_TIER_TIMING_HELP,
     )
     apply.add_argument("--json", action="store_true", dest="as_json")
     compile_transaction = subparsers.add_parser(
@@ -146,7 +148,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         "--repair-tier",
         choices=PRECONFIRM_REPAIR_TIERS,
         default=greenfield_proposals.DEFAULT_PRECONFIRM_REPAIR_TIER,
-        help=_REPAIR_TIER_BUDGET_HELP,
+        help=_REPAIR_TIER_TIMING_HELP,
     )
     compile_transaction.add_argument(
         "--output",
@@ -452,11 +454,13 @@ def _stage_pending_transaction_with_deadline(
     started_at: float,
     clock: Callable[[], float],
 ) -> Path:
-    """Publish only while the sealed consumer deadline remains valid."""
+    """Publish only while the sealed operational timeout remains valid."""
 
-    budget_seconds = float(transaction.quality_manifest.get("budget_seconds") or 0.0)
-    if max(0.0, clock() - started_at) >= budget_seconds:
-        raise RuntimeError("Greenfield proposal exceeded its sealed repair-tier time budget; no records were created.")
+    operational_timeout_seconds = float(
+        transaction.quality_manifest.get("operational_timeout_seconds") or 0.0
+    )
+    if max(0.0, clock() - started_at) >= operational_timeout_seconds:
+        raise RuntimeError("Greenfield proposal exceeded its operational timeout; no records were created.")
     pending_directory = greenfield_pending_transaction_store.pending_transaction_directory(
         repo_root,
         transaction.transaction_hash,
@@ -467,7 +471,7 @@ def _stage_pending_transaction_with_deadline(
         transaction=transaction,
     )
     final_elapsed_seconds = max(0.0, clock() - started_at)
-    if final_elapsed_seconds >= budget_seconds:
+    if final_elapsed_seconds >= operational_timeout_seconds:
         if not pending_preexisted:
             try:
                 greenfield_pending_transaction_store.discard_pending_transaction(
@@ -476,9 +480,9 @@ def _stage_pending_transaction_with_deadline(
                 )
             except (OSError, RuntimeError, ValueError) as exc:
                 raise RuntimeError(
-                    "Greenfield proposal exceeded its sealed repair-tier time budget and its pending transaction could not be retired; do not confirm it."
+                    "Greenfield proposal exceeded its operational timeout and its pending transaction could not be retired; do not confirm it."
                 ) from exc
-        raise RuntimeError("Greenfield proposal exceeded its sealed repair-tier time budget; no records were created.")
+        raise RuntimeError("Greenfield proposal exceeded its operational timeout; no records were created.")
     return transaction_path
 
 

@@ -316,19 +316,20 @@ def test_each_event_actor_kind_requires_one_selected_typed_actor_fact(
 
 def test_late_packet_cannot_skip_review_after_spending_the_shared_rescue_window() -> None:
     source = _source()
+    model_window = get_greenfield_model_profile(RESCUE_PROFILE_ID).model_timeout_seconds
     provider = StructuredAuthoringProvider(_response(source))
     reviewer = AdmittingReviewProvider()
     with pytest.raises(GreenfieldModelAuthoringError, match="model time window") as exc_info:
         author_greenfield_intent(
-            evidence_text=source, provider=provider, timeout_seconds=109,
+            evidence_text=source, provider=provider, timeout_seconds=model_window + 4,
             model_profile_id=RESCUE_PROFILE_ID,
-            clock=lambda: 105.0 if provider.calls else 0.0,
+            clock=lambda: model_window if provider.calls else 0.0,
             review_provider_factory=lambda: reviewer,
         )
     assert provider.calls == 1
     assert reviewer.calls == 0
     assert exc_info.value.outcome == {"kind": "environment", "code": "MODEL_TIMEOUT_NO_WRITE"}
-    assert provider.requests[0].timeout_seconds == 105.0
+    assert provider.requests[0].timeout_seconds == model_window
 
 
 @pytest.mark.parametrize(

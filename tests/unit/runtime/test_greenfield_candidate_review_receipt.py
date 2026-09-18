@@ -53,7 +53,7 @@ def test_review_dispatch_window_cannot_exceed_remaining_shared_window() -> None:
     manifest = approved_authored_quality_manifest_fixture()
     receipt = manifest["model_authoring"]
     receipt["initial_authoring_elapsed_seconds"] = 30.0
-    receipt["candidate_review"]["model_profile"]["effective_timeout_seconds"] = 45.001
+    receipt["candidate_review"]["model_profile"]["effective_timeout_seconds"] = 135.001
     receipt["candidate_review"]["elapsed_seconds"] = 1.0
     receipt["elapsed_seconds"] = 31.0
     with pytest.raises(ValueError, match="quality manifest is not approved"):
@@ -78,10 +78,10 @@ def test_review_dispatch_window_cannot_exceed_remaining_shared_window() -> None:
         (("model_authoring", "candidate_review", "model_profile", "authoring_tier"), "deep"),
         (("model_authoring", "candidate_review", "model_profile", "provider"), "unobserved"),
         (("model_authoring", "candidate_review", "model_profile", "request_role"), "initial_authoring"),
-        (("model_authoring", "candidate_review", "model_profile", "effective_timeout_seconds"), 75.001),
+        (("model_authoring", "candidate_review", "model_profile", "effective_timeout_seconds"), 165.001),
         (("model_authoring", "initial_authoring_elapsed_seconds"), 55.0),
-        (("model_authoring", "elapsed_seconds"), 75.001),
-        (("model_authoring", "candidate_review", "elapsed_seconds"), 75.001),
+        (("model_authoring", "elapsed_seconds"), 165.001),
+        (("model_authoring", "candidate_review", "elapsed_seconds"), 165.001),
         (("model_authoring", "candidate_review", "elapsed_seconds"), -0.001),
     ] + [
         (("model_authoring", "candidate_review", field), value)
@@ -90,7 +90,7 @@ def test_review_dispatch_window_cannot_exceed_remaining_shared_window() -> None:
     ] + [
         (path, value)
         for path in (
-            ("elapsed_seconds",), ("budget_seconds",),
+            ("elapsed_seconds",), ("target_seconds",), ("operational_timeout_seconds",),
             ("model_authoring", "elapsed_seconds"),
             ("model_authoring", "initial_authoring_elapsed_seconds"),
             ("model_authoring", "candidate_review", "elapsed_seconds"),
@@ -128,7 +128,8 @@ def test_manifest_preserves_review_without_aliasing_mutable_input() -> None:
             artifact_counts={}, tribunal_status="passed", issues=(),
         ),
         status="passed", stop_reason="passed", elapsed_seconds=1.0,
-        pass_records=(), budget_seconds=90.0, model_authoring_receipt=receipt,
+        pass_records=(), target_seconds=90.0, operational_timeout_seconds=180.0,
+        model_authoring_receipt=receipt,
     )
     assert result["model_authoring"] == receipt
     receipt["candidate_review"]["model_profile"]["model"] = "changed"

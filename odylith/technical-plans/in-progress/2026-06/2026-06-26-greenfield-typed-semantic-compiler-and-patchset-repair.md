@@ -2,6 +2,60 @@ Status: In progress
 
 ## Current installed shipping gate (2026-09-18)
 
+Operator update: **90/120/150 seconds are performance guidelines, not hard
+acceptance limits.** This supersedes earlier hard-deadline wording in this plan.
+Report actual elapsed time and target overruns honestly. Source fidelity, useful
+complete packages, custody, transaction safety and independent quality review
+remain mandatory. Keep model calls and operational execution finitely bounded;
+do not interpret this change as permission for retries or architectural growth.
+The installed runtime still enforces the old timing contract until an explicitly
+validated implementation replaces it; this note does not claim that change shipped.
+
+The fresh correction comparison fails in 62.214 seconds, not on latency. It fixes
+the author's unsupported opportunity field but invents a sixth board-review event
+without its source-path or design bindings. Independent review confirms the
+semantic and structural regression. No final review, fresh package or browser proof
+exists; the second control remains unrun. The offline package compile passes but
+does not qualify the fresh result. Reject the unadopted correction stage. Evidence:
+/Users/freedom/.codex/odylith-shared-clock.BXpckY/RESULT.md.
+
+The stronger complete-author comparison is also rejected for adoption. The ordinary
+source-local proposal returns safely in 80.942 seconds with exactly two calls:
+Astra-medium author 72.665 seconds, unchanged Astra-medium reviewer 7.950 seconds.
+The reviewer correctly rejects an actor citation inside `apprenticeship`; independent
+review also rejects `mentor` promoted from artifact provenance into a participant.
+The five actions, board recipient, state, terminal and useful five-part proposed
+design survive. No package or browser proof exists; the off-path control is unrun.
+This meets the advisory target but fails quality, without proving a causal model
+effect. Preserve the exact candidate diff and failed evidence, and remove the
+unqualified Astra standard-author selection. No retry, effort ladder or schema
+change follows. Evidence: /Users/freedom/.codex/odylith-astra-author.4PaiLY/RESULT.md.
+
+Keep the independently reviewed advisory timing policy, with original author roles
+and a distinct truthful Terra standard profile identity. The finite operational
+guard is 180 seconds, with a 165-second shared model window; this guard is an
+implementation choice, not a new user-mandated target. Exact two-call, source,
+immutable-review and transaction laws stay fixed. Old hard-budget receipts are not
+reinterpreted. Timing/profile controls pass 726 tests and guidance passes nine;
+the final author-selection removal passes 728 focused controls in separate
+`timing-final.xml`, never overwriting the failed candidate's receipts. Source
+quality remains the blocker, not elapsed time.
+No build, publication, protected holdout, feature or architecture expansion is
+authorized by this checkpoint. Before another mechanism comparison, ground the
+recurring participant/citation ownership failure in the retained history.
+
+The reviewed-correction comparison repairs the retained recipient omission in
+19.284 seconds with two calls and independent semantic acceptance. Only the
+missing participant is restored; all other fields remain unchanged. Its next
+valid-draft preservation control times out before returning a correction under
+the roughly20.3-second internal allowance (20.352 seconds total, one call).
+There is no preservation verdict or fresh pipeline run. Stop without the third
+control, retry or cap/profile sweep; production stays unchanged. This is not a
+measured90-second consumer breach or a winning release mechanism. Both controls
+preserve frozen inputs/publication. The operator requested a closeout decision;
+the current candidate is no-go, not permission for automatic architecture churn.
+Evidence: /Users/freedom/.codex/odylith-reviewed-correction.A6WRHf/RESULT.md.
+
 The bounded sequential source/design/full-review allocation is also rejected as
 configured. Its Astra-medium source call returns null at the fixed 30-second
 stage deadline (30.014 seconds total, one call), before any designer or reviewer.

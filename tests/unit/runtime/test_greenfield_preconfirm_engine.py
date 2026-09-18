@@ -293,7 +293,7 @@ def test_authored_quality_failure_is_immediate_and_unrepaired(
 
 
 @pytest.mark.parametrize(
-    ("requested", "authored", "budget", "rescue"),
+    ("requested", "authored", "target", "rescue"),
     (
         ("auto", "standard", 90.0, False),
         ("standard", "standard", 90.0, False),
@@ -301,11 +301,11 @@ def test_authored_quality_failure_is_immediate_and_unrepaired(
         ("deep", "deep", 150.0, True),
     ),
 )
-def test_profiles_keep_exact_consumer_budgets(
+def test_profiles_keep_advisory_targets_and_one_operational_timeout(
     monkeypatch: pytest.MonkeyPatch,
     requested: str,
     authored: str,
-    budget: float,
+    target: float,
     rescue: bool,
 ) -> None:
     _install_authored_gate(monkeypatch, report=_report(passed=True))
@@ -320,10 +320,11 @@ def test_profiles_keep_exact_consumer_budgets(
         clock=lambda: 0.0,
     )
 
-    assert result.manifest["budget_seconds"] == budget
+    assert result.manifest["target_seconds"] == target
+    assert result.manifest["operational_timeout_seconds"] == 180.0
     assert result.manifest["repair_tier"] == authored
     assert result.manifest["rescue_activated"] is rescue
-    assert f"under {budget:g}s" in result.manifest["repair_tier_policy"][authored]
+    assert f"target {target:g}s is advisory" in result.manifest["repair_tier_policy"][authored]
 
 
 def test_profile_mismatch_is_rejected_before_prewrite(
@@ -345,36 +346,53 @@ def test_profile_mismatch_is_rejected_before_prewrite(
     assert calls == []
 
 
-def test_budget_exhaustion_before_prewrite_fails_closed(
+def test_target_overrun_before_prewrite_remains_admissible(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(engine, "sealed_authored_projection", lambda _proposal: True)
+    monkeypatch.setattr(engine, "run_greenfield_tribunal", lambda *_args, **_kwargs: _PassingTribunal())
+    monkeypatch.setattr(engine, "build_greenfield_package_report", lambda *_args, **_kwargs: _report(passed=True))
+    calls: list[object] = []
+    result = engine.run_greenfield_preconfirm_engine(
+        proposal={"projection_origin": "model_authored_typed_intent"},
+        release_selector="0.0.1",
+        build_prewrite=lambda current, tribunal: calls.append(current) or _prewrite(current, tribunal),
+        proposal_ready=True,
+        elapsed_before_start_seconds=90.0,
+        clock=lambda: 0.0,
+    )
+    assert len(calls) == 1
+    assert result.manifest["stop_reason"] == "passed"
+    assert result.manifest["elapsed_seconds"] == 90.0
+
+
+def test_operational_timeout_before_prewrite_fails_closed(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(engine, "sealed_authored_projection", lambda _proposal: True)
     calls: list[object] = []
-
     with pytest.raises(engine.GreenfieldPreconfirmEngineError) as exc:
         engine.run_greenfield_preconfirm_engine(
             proposal={"projection_origin": "model_authored_typed_intent"},
             release_selector="0.0.1",
             build_prewrite=lambda *_args: calls.append(object()),
             proposal_ready=True,
-            elapsed_before_start_seconds=90.0,
+            elapsed_before_start_seconds=180.0,
             clock=lambda: 0.0,
         )
-
     assert calls == []
-    assert exc.value.manifest["stop_reason"] == "time_budget_exhausted"
-    assert exc.value.manifest["budget_seconds"] == 90.0
+    assert exc.value.manifest["stop_reason"] == "operational_timeout_exhausted"
     assert exc.value.manifest["pass_records"] == []
 
 
-def test_budget_crossed_during_package_build_rejects_success(
+def test_operational_timeout_crossed_during_package_build_rejects_success(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _install_authored_gate(monkeypatch, report=_report(passed=True))
     now = {"seconds": 0.0}
 
     def build(current: object, tribunal: object) -> SimpleNamespace:
-        now["seconds"] = 90.0
+        now["seconds"] = 180.0
         return _prewrite(current, tribunal)
 
     with pytest.raises(engine.GreenfieldPreconfirmEngineError) as exc:
@@ -386,8 +404,8 @@ def test_budget_crossed_during_package_build_rejects_success(
             clock=lambda: now["seconds"],
         )
 
-    assert exc.value.manifest["stop_reason"] == "time_budget_exhausted"
-    assert exc.value.manifest["elapsed_seconds"] == 90.0
+    assert exc.value.manifest["stop_reason"] == "operational_timeout_exhausted"
+    assert exc.value.manifest["elapsed_seconds"] == 180.0
 
 
 def test_engine_surface_has_no_repair_or_rerender_callback() -> None:

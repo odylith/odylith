@@ -1,8 +1,21 @@
 # Domain Intelligence
-Last updated: 2026-09-17
+Last updated: 2026-09-18
 
 
 ## Overview
+
+The operator now treats 90/120/150 seconds as performance targets, not hard
+acceptance ceilings. The unreleased timing contract separates these targets from a
+finite 180-second operational timeout and a 165-second shared model window.
+Exact source fidelity and independent complete review remain hard gates. A fresh
+sparse correction trial failed in 62.214 seconds by adding an unsupported review
+event; it is rejected and adds no production stage. The complete Astra-medium
+author comparison also fails quality in 80.942 seconds, within the advisory target:
+wrong actor-source bytes and an artifact modifier promoted into participation.
+Immutable review rejects before package creation; independent adjudication agrees.
+Do not adopt that author change. Keep original author roles, two calls and the
+current schema/compiler with the separately validated advisory timing contract.
+No complete mechanism is yet release-qualified.
 
 Feature scope is frozen to demonstrated blockers and required release proof.
 The split-anchor implementation passes 181 focused controls and independent code

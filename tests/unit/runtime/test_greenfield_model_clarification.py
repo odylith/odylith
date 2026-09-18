@@ -21,6 +21,10 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization
 from odylith.runtime.domain_intelligence.greenfield_proposals_cli import (
     _print_greenfield_clarification,
 )
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    STANDARD_PROFILE_ID,
+    get_greenfield_model_profile,
+)
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
     StructuredAuthoringProvider,
@@ -219,7 +223,9 @@ def test_one_call_clarification_retains_exact_source_and_only_author_role(
     assert result.consistency_source_spans[0]["text"] == source
     assert result.elapsed_seconds == 28.0
     assert result.semantic_model_call_count == provider.calls == 1
-    assert provider.requests[0].timeout_seconds == 75.0
+    assert provider.requests[0].timeout_seconds == get_greenfield_model_profile(
+        STANDARD_PROFILE_ID
+    ).model_timeout_seconds
     retained = json.loads(observation.read_text())
     assert retained["semantic_model_call_count"] == 1
     assert retained["response"] == response
@@ -273,11 +279,12 @@ def test_clarification_rejects_invalid_outcome_without_another_call(mutation):
 
 def test_clarification_cannot_extend_the_shared_deadline():
     provider = StructuredAuthoringProvider(_clarification())
-    ticks = iter((0.0, 75.001))
+    expired = get_greenfield_model_profile(STANDARD_PROFILE_ID).model_timeout_seconds + 0.001
+    ticks = iter((0.0, expired))
     with pytest.raises(GreenfieldModelAuthoringError, match="exceeded"):
         author_greenfield_intent(
             evidence_text="The first task is unspecified.", provider=provider,
-            clock=lambda: next(ticks, 75.001),
+            clock=lambda: next(ticks, expired),
             review_provider_factory=AdmittingReviewProvider,
         )
     assert provider.calls == 1

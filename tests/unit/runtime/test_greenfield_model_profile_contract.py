@@ -25,28 +25,34 @@ def _observation(profile_id, role):
     }
 
 
-def test_v16_profiles_pin_frontier_review_inside_unchanged_consumer_ceilings():
-    assert profiles.GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION == "odylith.greenfield.model-profile-contract.v16"
+def test_v17_profiles_separate_performance_targets_from_operational_timeouts():
+    assert profiles.GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION == "odylith.greenfield.model-profile-contract.v17"
     assert profiles.GREENFIELD_NORMAL_CASE_TARGET_SECONDS == 60.0
+    assert profiles.GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS == 180.0
     assert PROFILE_IDS == (
-        "greenfield-standard-terra-low-complete-author-review-v16",
-        "greenfield-rescue-terra-medium-complete-author-review-v16",
-        "greenfield-deep-sol-high-complete-author-review-v16",
+        "greenfield-standard-terra-low-complete-author-review-v17",
+        "greenfield-rescue-terra-medium-complete-author-review-v17",
+        "greenfield-deep-sol-high-complete-author-review-v17",
     )
     assert profiles.supported_greenfield_model_repair_tiers() == ("standard", "rescue", "deep")
     assert [
-        (p.model, p.reasoning_effort, p.model_timeout_seconds, p.consumer_budget_seconds)
+        (
+            p.model, p.reasoning_effort, p.model_timeout_seconds,
+            p.performance_target_seconds, p.operational_timeout_seconds,
+        )
         for p in map(profiles.get_greenfield_model_profile, PROFILE_IDS)
     ] == [
-        ("gpt-5.6-terra", "low", 75.0, 90.0),
-        ("gpt-5.6-terra", "medium", 105.0, 120.0),
-        ("gpt-5.6-sol", "high", 135.0, 150.0),
+        ("gpt-5.6-terra", "low", 165.0, 90.0, 180.0),
+        ("gpt-5.6-terra", "medium", 165.0, 120.0, 180.0),
+        ("gpt-5.6-sol", "high", 165.0, 150.0, 180.0),
     ]
     for profile_id in PROFILE_IDS:
         profile = profiles.get_greenfield_model_profile(profile_id)
         assert (profile.review_model, profile.review_reasoning_effort) == ("gpt-6-astra", "medium")
         assert profile.supported_success
-        assert profile.consumer_budget_seconds - profile.model_timeout_seconds == 15.0
+        assert profile.operational_timeout_seconds - profile.model_timeout_seconds == 15.0
+    assert profiles.get_greenfield_model_profile(profiles.STANDARD_PROFILE_ID).lower_capability
+    assert profiles.get_greenfield_model_profile(profiles.RESCUE_PROFILE_ID).lower_capability
 
 
 @pytest.mark.parametrize("tier,expected", [
@@ -119,7 +125,7 @@ def test_observed_time_cannot_exceed_the_role_cap(profile_id, role):
 
 
 @pytest.mark.parametrize("profile_id", PROFILE_IDS)
-def test_review_uses_the_shared_window_but_never_the_author_identity(profile_id):
+def test_review_uses_the_shared_window_with_its_pinned_identity(profile_id):
     observation = _observation(profile_id, "initial_authoring")
     observation["request_role"] = "candidate_review"
     with pytest.raises(ValueError):
@@ -148,7 +154,8 @@ def test_unavailable_profile_remains_unsupported_and_review_cannot_extend_its_mo
     assert profile_id not in PROFILE_IDS
     assert not profile.supported_success
     assert profile.model_timeout_seconds == 1.0
-    assert profile.consumer_budget_seconds == 120.0
+    assert profile.performance_target_seconds == 120.0
+    assert profile.operational_timeout_seconds == 180.0
     observation = _observation(profile_id, "candidate_review")
     assert profiles.greenfield_model_profile_observation_issues(**observation) == ()
     observation["effective_timeout_seconds"] = 1.001
@@ -179,6 +186,10 @@ def test_retired_one_call_profiles_are_not_silently_upgraded(profile_id):
     "greenfield-standard-terra-low-complete-author-review-v15",
     "greenfield-rescue-terra-medium-complete-author-review-v15",
     "greenfield-deep-sol-high-complete-author-review-v15",
+    "greenfield-standard-terra-low-complete-author-review-v16",
+    "greenfield-rescue-terra-medium-complete-author-review-v16",
+    "greenfield-deep-sol-high-complete-author-review-v16",
+    "greenfield-standard-astra-medium-complete-author-review-v17",
 ])
 def test_retired_consumer_budget_profiles_have_no_aliases(profile_id):
     with pytest.raises(ValueError, match="unsupported Greenfield model profile"):

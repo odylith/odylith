@@ -1,4 +1,4 @@
-"""Proposal ceilings change independently of model windows and commit-only time."""
+"""Advisory targets remain separate from operational and commit-only timeouts."""
 
 from __future__ import annotations
 
@@ -38,7 +38,8 @@ def _manifest(tier: str, elapsed: object = 1.0) -> dict:
     profile = profiles.get_greenfield_model_profile(profiles.model_profile_id_for_repair_tier(tier))
     manifest = approved_authored_quality_manifest_fixture(
         requested_repair_tier=tier, repair_tier=tier,
-        budget_seconds=dict(TIERS)[tier], elapsed_seconds=elapsed,
+        target_seconds=dict(TIERS)[tier], operational_timeout_seconds=180.0,
+        elapsed_seconds=elapsed,
     )
     receipt = manifest["model_authoring"]
     receipt["tier"] = tier
@@ -56,38 +57,42 @@ def _manifest(tier: str, elapsed: object = 1.0) -> dict:
     return manifest
 
 
-@pytest.mark.parametrize("tier,budget", TIERS)
-def test_proposal_above_normal_target_but_below_ceiling_is_not_rejected(tier, budget):
-    manifest = _manifest(tier, budget - 0.001)
+@pytest.mark.parametrize("tier,target", TIERS)
+@pytest.mark.parametrize("offset", [-0.001, 0.0, 0.001])
+def test_performance_target_boundary_is_advisory(tier, target, offset):
+    elapsed = target + offset
+    manifest = _manifest(tier, elapsed)
     transactions.require_product_create_transaction_quality_approved(manifest)
-    assert proposal_time_issues(manifest, proposal_seconds=budget - 0.001) == ()
+    assert proposal_time_issues(manifest, proposal_seconds=elapsed) == ()
     assert completion_issues(
         counts=GreenfieldArtifactCounts(), manifest=manifest,
-        create_returncode=0, proposal_seconds=budget - 0.001, create_seconds=1.0,
+        create_returncode=0, proposal_seconds=elapsed, create_seconds=1.0,
     ) == ()
 
 
-@pytest.mark.parametrize("tier,budget", TIERS)
+@pytest.mark.parametrize("tier,target", TIERS)
 @pytest.mark.parametrize("overrun", [0.0, 0.001])
-def test_sealed_admission_and_release_scoring_reject_at_or_over_ceiling(tier, budget, overrun):
-    manifest = _manifest(tier, budget + overrun)
+def test_sealed_admission_and_release_scoring_reject_at_operational_timeout(tier, target, overrun):
+    elapsed = 180.0 + overrun
+    manifest = _manifest(tier, elapsed)
     with pytest.raises(ValueError, match="quality manifest is not approved"):
         transactions.require_product_create_transaction_quality_approved(manifest)
-    assert proposal_time_issues(manifest, proposal_seconds=budget + overrun)
+    assert proposal_time_issues(manifest, proposal_seconds=elapsed)
 
 
-@pytest.mark.parametrize("tier,budget", TIERS)
+@pytest.mark.parametrize("tier,target", TIERS)
 @pytest.mark.parametrize("overrun", [0.0, 0.001])
-def test_expired_proposal_budget_stops_before_prewrite(monkeypatch, tier, budget, overrun):
+def test_expired_operational_timeout_stops_before_prewrite(monkeypatch, tier, target, overrun):
     monkeypatch.setattr(engine, "sealed_authored_projection", lambda _: True)
     with pytest.raises(engine.GreenfieldPreconfirmEngineError) as exc:
         engine.run_greenfield_preconfirm_engine(
             proposal={}, release_selector="", repair_tier=tier,
-            elapsed_before_start_seconds=budget + overrun, clock=lambda: 0.0,
+            elapsed_before_start_seconds=180.0 + overrun, clock=lambda: 0.0,
             build_prewrite=lambda *_: pytest.fail("expired ceiling reached prewrite"),
         )
-    assert exc.value.manifest["budget_seconds"] == budget
-    assert exc.value.manifest["stop_reason"] == "time_budget_exhausted"
+    assert exc.value.manifest["target_seconds"] == target
+    assert exc.value.manifest["operational_timeout_seconds"] == 180.0
+    assert exc.value.manifest["stop_reason"] == "operational_timeout_exhausted"
 
 
 @pytest.mark.parametrize("elapsed", INVALID_DURATIONS)
@@ -106,17 +111,17 @@ def test_scoring_rejects_invalid_duration_with_matching_current_budget(elapsed):
     assert proposal_time_issues(manifest, proposal_seconds=elapsed)
 
 
-def test_scoring_does_not_coerce_matching_budget_string():
+def test_scoring_does_not_coerce_matching_target_string():
     manifest = approved_authored_quality_manifest_fixture()
     assert proposal_time_issues(manifest, proposal_seconds=1.0) == ()
-    manifest["budget_seconds"] = str(manifest["budget_seconds"])
+    manifest["target_seconds"] = str(manifest["target_seconds"])
     assert proposal_time_issues(manifest, proposal_seconds=1.0)
 
 
-@pytest.mark.parametrize("budget", [None, True, "90", 60, 120, float("nan"), float("inf"), 10 ** 1000])
-def test_declared_budget_requires_exact_numeric_tier_binding(budget):
+@pytest.mark.parametrize("target", [None, True, "90", 60, 120, float("nan"), float("inf"), 10 ** 1000])
+def test_declared_target_requires_exact_numeric_tier_binding(target):
     manifest = _manifest("standard")
-    manifest["budget_seconds"] = budget
+    manifest["target_seconds"] = target
     with pytest.raises(ValueError, match="quality manifest is not approved"):
         transactions.require_product_create_transaction_quality_approved(manifest)
     assert proposal_time_issues(manifest, proposal_seconds=1.0)
@@ -125,7 +130,7 @@ def test_declared_budget_requires_exact_numeric_tier_binding(budget):
 @pytest.mark.parametrize("tier,budget,profile_id", HISTORICAL_V12_PROFILES)
 def test_old_v12_receipts_are_not_upgraded_or_mutated(tier, budget, profile_id):
     manifest = _manifest(tier)
-    manifest["budget_seconds"] = budget
+    manifest["target_seconds"] = budget
     receipt = manifest["model_authoring"]
     for observed in (receipt["model_profile"], receipt["candidate_review"]["model_profile"]):
         observed["profile_id"] = profile_id
@@ -137,7 +142,7 @@ def test_old_v12_receipts_are_not_upgraded_or_mutated(tier, budget, profile_id):
 
 
 @pytest.mark.parametrize("mutation", ["tier", "profile", "model_budget", "review_budget"])
-def test_larger_outer_budget_does_not_relax_role_binding_or_model_caps(mutation):
+def test_operational_timeout_does_not_relax_role_binding_or_model_caps(mutation):
     manifest = _manifest("standard", 80.0)
     receipt = manifest["model_authoring"]
     if mutation == "tier":
@@ -145,20 +150,21 @@ def test_larger_outer_budget_does_not_relax_role_binding_or_model_caps(mutation)
     elif mutation == "profile":
         receipt["model_profile"]["profile_id"] = profiles.RESCUE_PROFILE_ID
     elif mutation == "model_budget":
-        receipt["elapsed_seconds"] = 75.001
+        receipt["elapsed_seconds"] = 165.001
     else:
-        receipt["candidate_review"]["model_profile"]["effective_timeout_seconds"] = 75.001
+        receipt["candidate_review"]["model_profile"]["effective_timeout_seconds"] = 165.001
     with pytest.raises(ValueError, match="quality manifest is not approved"):
         transactions.require_product_create_transaction_quality_approved(manifest)
 
 
 @pytest.mark.parametrize("command", ["propose", "apply", "compile-transaction"])
-def test_help_distinguishes_proposal_ceilings_from_advisory_target(capsys, command):
+def test_help_distinguishes_performance_targets_from_operational_timeout(capsys, command):
     with pytest.raises(SystemExit) as exc:
         cli._parse_args([command, "--help"])
     assert exc.value.code == 0
     text = " ".join(capsys.readouterr().out.split())
-    assert "under-90s" in text and "under-120s" in text and "under-150s" in text
+    assert "90s" in text and "120s" in text and "150s" in text
+    assert "Operational safety timeout: 180s" in text
     assert "60s" in text and "advisory" in text
     assert "under-60s profile" not in text
 
@@ -232,7 +238,7 @@ def test_real_quality_verdict_reports_invalid_observation_without_raising(monkey
     assert verdict.scores["latency"] == 0
 
 
-@pytest.mark.parametrize("phase,ceiling", [("proposal", 90.0), ("commit-only create", 60.0)])
+@pytest.mark.parametrize("phase,ceiling", [("proposal", 180.0), ("commit-only create", 60.0)])
 @pytest.mark.parametrize("overrun", [0.0, 0.001])
 def test_real_quality_verdict_rejects_exact_or_exceeded_ceiling(monkeypatch, phase, ceiling, overrun):
     times = {"proposal_seconds" if phase == "proposal" else "create_seconds": ceiling + overrun}

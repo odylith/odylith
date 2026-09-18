@@ -42,16 +42,18 @@ from odylith.runtime.domain_intelligence.proposal_tribunal import (
 )
 
 
-PRECONFIRM_STANDARD_BUDGET_SECONDS = get_greenfield_model_profile(
+PRECONFIRM_STANDARD_TARGET_SECONDS = get_greenfield_model_profile(
     STANDARD_PROFILE_ID
-).consumer_budget_seconds
-PRECONFIRM_RESCUE_BUDGET_SECONDS = get_greenfield_model_profile(
+).performance_target_seconds
+PRECONFIRM_RESCUE_TARGET_SECONDS = get_greenfield_model_profile(
     RESCUE_PROFILE_ID
-).consumer_budget_seconds
-PRECONFIRM_DEEP_BUDGET_SECONDS = get_greenfield_model_profile(
+).performance_target_seconds
+PRECONFIRM_DEEP_TARGET_SECONDS = get_greenfield_model_profile(
     DEEP_PROFILE_ID
-).consumer_budget_seconds
-PRECONFIRM_BUDGET_SECONDS = PRECONFIRM_STANDARD_BUDGET_SECONDS
+).performance_target_seconds
+PRECONFIRM_OPERATIONAL_TIMEOUT_SECONDS = get_greenfield_model_profile(
+    STANDARD_PROFILE_ID
+).operational_timeout_seconds
 PRECONFIRM_REPAIR_TIERS = ("auto", *supported_greenfield_model_repair_tiers())
 
 
@@ -117,7 +119,8 @@ def run_greenfield_preconfirm_engine(
     """Validate one exact authored package without reparsing, repair, or rerender.
 
     The bounded model-authoring calls, custody staging, package compilation, and
-    this gate share the selected profile's consumer budget.
+    this gate share the selected profile's finite operational timeout. Tier
+    performance targets are observations, never admission gates.
     """
 
     if not sealed_authored_projection(proposal):
@@ -132,22 +135,24 @@ def run_greenfield_preconfirm_engine(
     authored_tier = str(model_authoring_tier or active_tier).strip().casefold()
     if authored_tier != active_tier:
         raise ValueError("Greenfield model authoring receipt does not match the selected pre-call profile")
-    budget_seconds = selected_profile.consumer_budget_seconds
+    target_seconds = selected_profile.performance_target_seconds
+    operational_timeout_seconds = selected_profile.operational_timeout_seconds
 
     def elapsed() -> float:
         return prior_elapsed_seconds + max(0.0, clock() - started)
 
-    if elapsed() >= budget_seconds:
+    if elapsed() >= operational_timeout_seconds:
         report = _preconfirm_contract_report(
-            "Greenfield proposal exhausted its selected consumer budget before package validation"
+            "Greenfield proposal exhausted its operational timeout before package validation"
         )
         manifest = build_greenfield_preconfirm_manifest(
             report=report,
             status="failed",
-            stop_reason="time_budget_exhausted",
+            stop_reason="operational_timeout_exhausted",
             elapsed_seconds=elapsed(),
             pass_records=(),
-            budget_seconds=budget_seconds,
+            target_seconds=target_seconds,
+            operational_timeout_seconds=operational_timeout_seconds,
             requested_repair_tier=requested_tier,
             active_repair_tier=active_tier,
             model_authoring_receipt=model_authoring_receipt,
@@ -168,9 +173,9 @@ def run_greenfield_preconfirm_engine(
         issue_count=len(typed_issues),
         issue_codes=tuple(sorted({issue.code for issue in typed_issues})),
     )
-    if elapsed() >= budget_seconds:
+    if elapsed() >= operational_timeout_seconds:
         status = "failed"
-        stop_reason = "time_budget_exhausted"
+        stop_reason = "operational_timeout_exhausted"
     elif report.passed:
         status = "passed"
         stop_reason = "passed"
@@ -183,7 +188,8 @@ def run_greenfield_preconfirm_engine(
         stop_reason=stop_reason,
         elapsed_seconds=elapsed(),
         pass_records=(pass_record,),
-        budget_seconds=budget_seconds,
+        target_seconds=target_seconds,
+        operational_timeout_seconds=operational_timeout_seconds,
         requested_repair_tier=requested_tier,
         active_repair_tier=active_tier,
         model_authoring_receipt=model_authoring_receipt,
@@ -201,7 +207,7 @@ def run_greenfield_preconfirm_engine(
     except ValueError as exc:
         raise GreenfieldPreconfirmEngineError(str(exc), manifest=manifest) from exc
     raise GreenfieldPreconfirmEngineError(
-        "Greenfield proposal exceeded its selected consumer budget; no records were created.",
+        "Greenfield proposal exceeded its operational timeout; no records were created.",
         manifest=manifest,
     )
 
@@ -230,7 +236,8 @@ def build_greenfield_preconfirm_manifest(
     stop_reason: str,
     elapsed_seconds: float,
     pass_records: Sequence[GreenfieldPreconfirmPass],
-    budget_seconds: float,
+    target_seconds: float,
+    operational_timeout_seconds: float,
     requested_repair_tier: str = "standard",
     active_repair_tier: str = "standard",
     write_transaction_status: str = "not_started",
@@ -249,10 +256,11 @@ def build_greenfield_preconfirm_manifest(
         "status": status,
         "validation_status": report.status,
         "stop_reason": stop_reason,
-        "budget_seconds": float(budget_seconds),
-        "standard_budget_seconds": PRECONFIRM_STANDARD_BUDGET_SECONDS,
-        "rescue_budget_seconds": PRECONFIRM_RESCUE_BUDGET_SECONDS,
-        "deep_budget_seconds": PRECONFIRM_DEEP_BUDGET_SECONDS,
+        "target_seconds": float(target_seconds),
+        "operational_timeout_seconds": float(operational_timeout_seconds),
+        "standard_target_seconds": PRECONFIRM_STANDARD_TARGET_SECONDS,
+        "rescue_target_seconds": PRECONFIRM_RESCUE_TARGET_SECONDS,
+        "deep_target_seconds": PRECONFIRM_DEEP_TARGET_SECONDS,
         "requested_repair_tier": normalize_greenfield_model_repair_tier(requested_repair_tier),
         "repair_tier": get_greenfield_model_profile(
             model_profile_id_for_repair_tier(active_repair_tier)
@@ -260,12 +268,19 @@ def build_greenfield_preconfirm_manifest(
         "rescue_activated": active_repair_tier in {"rescue", "deep"},
         "repair_tier_policy": {
             "standard": (
-                f"pinned pre-call profile; the complete proposal must remain under {PRECONFIRM_STANDARD_BUDGET_SECONDS:g}s; "
-                f"normal-case target {GREENFIELD_NORMAL_CASE_TARGET_SECONDS:g}s is advisory"
+                f"pinned pre-call profile; target {PRECONFIRM_STANDARD_TARGET_SECONDS:g}s is advisory; "
+                f"operational timeout {PRECONFIRM_OPERATIONAL_TIMEOUT_SECONDS:g}s is fail-closed"
             ),
-            "rescue": f"pinned pre-call profile; the complete proposal must remain under {PRECONFIRM_RESCUE_BUDGET_SECONDS:g}s",
-            "deep": f"pinned pre-call profile; the complete proposal must remain under {PRECONFIRM_DEEP_BUDGET_SECONDS:g}s",
+            "rescue": (
+                f"pinned pre-call profile; target {PRECONFIRM_RESCUE_TARGET_SECONDS:g}s is advisory; "
+                f"operational timeout {PRECONFIRM_OPERATIONAL_TIMEOUT_SECONDS:g}s is fail-closed"
+            ),
+            "deep": (
+                f"pinned pre-call profile; target {PRECONFIRM_DEEP_TARGET_SECONDS:g}s is advisory; "
+                f"operational timeout {PRECONFIRM_OPERATIONAL_TIMEOUT_SECONDS:g}s is fail-closed"
+            ),
         },
+        "normal_case_target_seconds": GREENFIELD_NORMAL_CASE_TARGET_SECONDS,
         "elapsed_seconds": round(float(elapsed_seconds), 3),
         "passes": len(pass_records),
         "validation_passes": len(pass_records),
@@ -374,13 +389,13 @@ __all__ = [
     "GreenfieldPreconfirmEngineError",
     "GreenfieldPreconfirmEngineResult",
     "GreenfieldPreconfirmIssue",
-    "PRECONFIRM_BUDGET_SECONDS",
-    "PRECONFIRM_DEEP_BUDGET_SECONDS",
+    "PRECONFIRM_DEEP_TARGET_SECONDS",
     "PRECONFIRM_ENGINE_VERSION",
+    "PRECONFIRM_OPERATIONAL_TIMEOUT_SECONDS",
     "PRECONFIRM_QUALITY_MANIFEST_VERSION",
     "PRECONFIRM_REPAIR_TIERS",
-    "PRECONFIRM_RESCUE_BUDGET_SECONDS",
-    "PRECONFIRM_STANDARD_BUDGET_SECONDS",
+    "PRECONFIRM_RESCUE_TARGET_SECONDS",
+    "PRECONFIRM_STANDARD_TARGET_SECONDS",
     "build_greenfield_preconfirm_manifest",
     "classify_greenfield_preconfirm_issues",
     "run_greenfield_preconfirm_engine",
