@@ -228,7 +228,7 @@ def test_event_actor_atom_uses_only_its_selected_actor_fact() -> None:
         intent={"human_actors": ["Reviewer"], "first_path": "records one receipt"},
         selected_facts=(actor, path),
         first_path_relations=(relation,),
-        terminal_result_fact={},
+        terminal_result_fact=None,
     )
 
     event_actor = next(row for row in claims if row["relation_role"] == "actor_fact_quote")
@@ -243,6 +243,14 @@ def test_event_actor_atom_uses_only_its_selected_actor_fact() -> None:
             intent={"human_actors": ["Reviewer"], "first_path": "records one receipt"},
             selected_facts=(actor, path),
             first_path_relations=(damaged,),
+            terminal_result_fact=None,
+        )
+
+    with pytest.raises(GreenfieldAuthoredSemanticsError, match="terminal custody without one visible result"):
+        derive_model_atomic_claims(
+            intent={"human_actors": ["Reviewer"], "first_path": "records one receipt"},
+            selected_facts=(actor, path),
+            first_path_relations=(relation,),
             terminal_result_fact={},
         )
 

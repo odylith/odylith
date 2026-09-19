@@ -7,7 +7,11 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_SEMANTICS_KEY,
+    authored_visible_result,
     first_path_relations_from_intent,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
+    decision_copy,
 )
 
 
@@ -28,3 +32,20 @@ def authored_first_run_text(intent: Mapping[str, Any]) -> str:
     return "Proposed first run:\n" + "\n".join(
         row["event_quote"] for row in authored_first_run_relations(intent)
     )
+
+
+def authored_checkpoint_text(intent: Mapping[str, Any]) -> str:
+    """Display a source result or its explicitly provisional proof checkpoint.
+
+    This copy must never be written back into source facts or event relations.
+    Relation validation owns whether the targeted assumption is admissible.
+    """
+
+    relations = first_path_relations_from_intent(intent)
+    result = authored_visible_result(relations)
+    if result:
+        return result
+    checkpoint = decision_copy(intent, "proof_boundary")
+    if not relations or intent.get("proof_boundary") or not checkpoint:
+        raise ValueError("Greenfield checkpoint requires source custody or a proof assumption")
+    return checkpoint

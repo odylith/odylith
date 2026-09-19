@@ -236,7 +236,8 @@ def test_success_uses_three_roles_and_emits_recomputable_v3_proof(monkeypatch, t
     assert "human_actors" not in facts_schema["properties"]
     assert "human_actors" not in facts_schema["required"]
     assert "frozen_human_actors list is the only participant selection" in remaining.requests[0].system_prompt
-    assert "Select title, product_story, state_object, proof_boundary and first_path" in remaining.requests[0].system_prompt
+    assert "select proof_boundary only under the source-proof rule above" in remaining.requests[0].system_prompt
+    assert "set both facts.proof_boundary and terminal to null" in remaining.requests[0].system_prompt
     assert "proof_boundary, human_actors and first_path" not in remaining.requests[0].system_prompt
     assert remaining.requests[0].prompt_payload["frozen_human_actors"] == complete["result"]["facts"]["human_actors"]
     assert result.intent["human_actors"] == _INTENT["human_actors"]
@@ -259,13 +260,14 @@ def test_success_uses_three_roles_and_emits_recomputable_v3_proof(monkeypatch, t
     ) == retained["joined_candidate"]
 
 
-def test_clarification_stops_after_two_calls_without_review(monkeypatch, tmp_path):
+@pytest.mark.parametrize("material_dimension", ["human_actors", "proof_boundary"])
+def test_clarification_stops_after_two_calls_without_review(monkeypatch, tmp_path, material_dimension):
     complete = _complete_response()
     selector = ParticipantSelectionProvider(complete)
     remaining = StructuredAuthoringProvider(
         clarification_response(
             question="unused",
-            material_dimension="human_actors",
+            material_dimension=material_dimension,
             evidence_quotes=[],
         )
     )
@@ -285,6 +287,8 @@ def test_clarification_stops_after_two_calls_without_review(monkeypatch, tmp_pat
         retained = json.loads(proof.read())
 
     assert isinstance(result, GreenfieldAuthoringClarification)
+    assert result.required_fields == (material_dimension,)
+    assert result.consistency_status == "material_ambiguity"
     assert result.semantic_model_call_count == 2
     assert selector.calls == remaining.calls == 1
     assert reviewer.calls == 0
@@ -483,4 +487,4 @@ def test_old_two_call_orchestration_is_not_exported():
     assert not hasattr(greenfield_model_intent_authoring, "author_greenfield_intent")
     assert not hasattr(greenfield_model_intent_authoring, "GREENFIELD_MODEL_PROOF_FD_ENV")
     assert MAX_GREENFIELD_SEMANTIC_CALLS == 3
-    assert GREENFIELD_INTENT_AUTHORING_VERSION.endswith(".v64")
+    assert GREENFIELD_INTENT_AUTHORING_VERSION.endswith(".v66")

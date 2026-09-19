@@ -11,6 +11,8 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 
 DECISION_FIELDS = ("problem", "customer", "opportunity", "product_view")
+PROVISIONAL_PROOF_FIELD = "proof_boundary"
+_ASSUMPTION_TARGETS = ("general", *DECISION_FIELDS, PROVISIONAL_PROOF_FIELD)
 ASSUMPTION_SCHEMA = {
     "type": "array",
     "maxItems": MAX_AUTHORED_LIST_ITEMS,
@@ -23,7 +25,7 @@ ASSUMPTION_SCHEMA = {
         "additionalProperties": False,
         "required": ["applies_to", "statement"],
         "properties": {
-            "applies_to": {"type": "string", "enum": ["general", *DECISION_FIELDS]},
+            "applies_to": {"type": "string", "enum": list(_ASSUMPTION_TARGETS)},
             "statement": {
                 "type": "string",
                 "minLength": 1,
@@ -48,7 +50,7 @@ def assumption_rows(value: Any) -> list[dict[str, str]]:
             raise ValueError("Greenfield assumptions must be typed decision rows")
         target, statement = row["applies_to"], row["statement"]
         if (
-            target not in ("general", *DECISION_FIELDS)
+            target not in _ASSUMPTION_TARGETS
             or not isinstance(statement, str)
             or not statement.strip()
             or len(statement) > MAX_AUTHORED_FIELD_VALUE_CHARS
@@ -70,6 +72,16 @@ def require_decision_assumptions(intent: Mapping[str, Any]) -> None:
             raise ValueError(f"Greenfield {field} requires one fact or one assumption")
 
 
+def require_provisional_proof_decision(intent: Mapping[str, Any]) -> None:
+    """Require source proof or one provisional proof decision, never both."""
+
+    has_assumption = bool(provisional_proof_assumption(intent.get("assumptions", [])))
+    if bool(intent.get(PROVISIONAL_PROOF_FIELD)) == has_assumption:
+        raise ValueError(
+            "Greenfield proof_boundary requires one source fact or one assumption"
+        )
+
+
 def assumption_targets(value: Any) -> dict[str, str]:
     return {
         row["applies_to"]: f"/assumptions/{index}"
@@ -80,6 +92,19 @@ def assumption_targets(value: Any) -> dict[str, str]:
 
 def assumption_statements(value: Any) -> list[str]:
     return [row["statement"] for row in assumption_rows(value)]
+
+
+def provisional_proof_assumption(value: Any) -> str:
+    """Return the sole typed provisional proof decision, when present."""
+
+    return next(
+        (
+            row["statement"]
+            for row in assumption_rows(value)
+            if row["applies_to"] == PROVISIONAL_PROOF_FIELD
+        ),
+        "",
+    )
 
 
 def assumption_preview_values(value: Any) -> list[str]:

@@ -152,7 +152,10 @@ def provisional_design_from_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
         semantics.get("provisional_design") if isinstance(semantics, Mapping) else None,
         event_orders=tuple(row["order"] for row in relations),
         source_precedence=semantics["source_precedence"],
-        result_event_order=next(row["order"] for row in relations if row["visible_result_quote"]),
+        result_event_order=next(
+            (row["order"] for row in relations if row["visible_result_quote"]),
+            None,
+        ),
     )
 
 

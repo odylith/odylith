@@ -9,7 +9,10 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from odylith.install.fs import atomic_write_text
-from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import assumption_preview_values
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
+    assumption_preview_values,
+    decision_copy,
+)
 from odylith.runtime.domain_intelligence.greenfield_authored_first_run import authored_first_run_text
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_SEMANTICS_KEY,
@@ -171,8 +174,8 @@ def render_candidate_intent_markdown(intent: Mapping[str, Any]) -> str:
         "## Ambiguities",
         *_bullet_lines(intent.get("ambiguities"), empty_text="No material ambiguity blocks the first proof path."),
         "",
-        "## Proof boundary",
-        _text_fact(intent, "proof_boundary"),
+        "## Proof boundary" if intent.get("proof_boundary") else "## Proposed proof checkpoint",
+        decision_copy(intent, "proof_boundary"),
     ]
     return "\n".join(lines) + "\n"
 

@@ -21,14 +21,15 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_RELATION_SET_SHA256_KEY,
 )
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
+    MAX_AUTHORED_FIELD_VALUE_CHARS,
     require_supported_greenfield_operating_envelope,
 )
 
 
 PRODUCT_INTENT_AUTHORITY_KEY = "product_intent_authority"
-PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v10"
-PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION = "odylith.product-intent-envelope.v10"
-PRODUCT_INTENT_LEDGER_VERSION = "odylith.product-intent-custody-ledger.v7"
+PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v11"
+PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION = "odylith.product-intent-envelope.v11"
+PRODUCT_INTENT_LEDGER_VERSION = "odylith.product-intent-custody-ledger.v8"
 _AUTHORITY_VERSION_CONTRACTS = {
     PRODUCT_INTENT_AUTHORITY_VERSION: (
         PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION,
@@ -68,6 +69,18 @@ MATERIAL_FACT_KEYS = (
     "first_path",
     "proof_boundary",
 )
+_MATERIAL_CUSTODY_FIELDS = frozenset(
+    {
+        "custody_state",
+        "derivation",
+        "confidence",
+        "entailment_relationship",
+        "source_span_ids",
+        "product_claim_span_ids",
+        "source_span_refs",
+    }
+)
+_PROVISIONAL_PROOF_CUSTODY_FIELDS = _MATERIAL_CUSTODY_FIELDS | {"assumption"}
 TYPED_SOURCE_FORMATS = frozenset(
     {
         "compiled_proposal_intent",
@@ -184,12 +197,19 @@ def _require_operating_envelope(value: Any) -> None:
 
 
 def _require_material_custody(authority: Mapping[str, Any], material_fields: Mapping[str, Any]) -> None:
+    if set(material_fields) != set(MATERIAL_FACT_KEYS):
+        raise ValueError("ProductCreateTransaction sealed Product Intent authority has invalid material fields")
     for key in MATERIAL_FACT_KEYS:
         field = material_fields.get(key)
         if not isinstance(field, Mapping):
             raise ValueError("ProductCreateTransaction sealed Product Intent authority has unresolved material custody")
         state = field.get("custody_state")
         relationship = field.get("entailment_relationship")
+        if state == "assumption":
+            require_provisional_proof_custody(key, field)
+            continue
+        if set(field) != _MATERIAL_CUSTODY_FIELDS:
+            raise ValueError("ProductCreateTransaction sealed Product Intent authority has invalid material custody")
         if state not in {"accepted_fact", "bounded_interpretation"}:
             raise ValueError("ProductCreateTransaction sealed Product Intent authority has unresolved material custody")
         if not _is_nonempty_string_sequence(field.get("source_span_ids")):
@@ -205,6 +225,31 @@ def _require_material_custody(authority: Mapping[str, Any], material_fields: Map
                 )
         elif relationship != "bounded_interpretation_of":
             raise ValueError("ProductCreateTransaction sealed Product Intent authority has invalid interpretation custody")
+
+
+def require_provisional_proof_custody(key: str, field: Mapping[str, Any]) -> None:
+    """Accept one sealed proof choice without promoting it to source authority."""
+
+    assumption = field.get("assumption")
+    if (
+        key != "proof_boundary"
+        or set(field) != _PROVISIONAL_PROOF_CUSTODY_FIELDS
+        or field.get("derivation") != "sealed_provisional_assumption"
+        or field.get("confidence") != "visible"
+        or field.get("entailment_relationship") != "visible_assumption_from"
+        or field.get("source_span_ids") != []
+        or field.get("product_claim_span_ids") != []
+        or field.get("source_span_refs") != []
+        or not isinstance(assumption, Mapping)
+        or set(assumption) != {"applies_to", "statement"}
+        or assumption.get("applies_to") != "proof_boundary"
+        or not _is_nonempty_string(assumption.get("statement"))
+        or not str(assumption["statement"]).strip()
+        or len(str(assumption["statement"])) > MAX_AUTHORED_FIELD_VALUE_CHARS
+    ):
+        raise ValueError(
+            "ProductCreateTransaction sealed Product Intent authority has invalid provisional proof custody"
+        )
 
 
 def _authority_snapshot_payload(authority: Mapping[str, Any]) -> dict[str, Any]:

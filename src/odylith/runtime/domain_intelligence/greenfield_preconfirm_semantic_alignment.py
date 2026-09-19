@@ -6,7 +6,11 @@ from collections.abc import Mapping
 from typing import Any
 
 from odylith.runtime.common.value_coercion import normalize_string
-from odylith.runtime.domain_intelligence.greenfield_authored_first_run import authored_first_run_relations
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_checkpoint_text,
+    authored_first_run_relations,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import provisional_proof_assumption
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import AUTHORED_SEMANTICS_KEY
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_scalar_values import nested_text_values
@@ -15,7 +19,9 @@ from odylith.runtime.domain_intelligence.greenfield_provisional_design import pr
 from odylith.runtime.analysis_engine.types import slugify
 
 
-def semantic_model_shape_issues(semantic: Mapping[str, Any]) -> list[str]:
+def semantic_model_shape_issues(
+    semantic: Mapping[str, Any], *, intent: Mapping[str, Any] | None = None,
+) -> list[str]:
     required = (
         "first_path_contract",
         "domain_ontology",
@@ -36,7 +42,21 @@ def semantic_model_shape_issues(semantic: Mapping[str, Any]) -> list[str]:
     if not isinstance(events, list) or not events:
         issues.append("FirstPathContract must include structured first-path events")
     elif not any(isinstance(row, Mapping) and row.get("visible_result") for row in events):
-        issues.append("FirstPathContract must identify at least one visible result event")
+        try:
+            if not intent or not provisional_proof_assumption(intent.get("assumptions", [])):
+                raise ValueError("FirstPathContract must identify at least one visible result event")
+            checkpoint = authored_checkpoint_text(intent)
+            if (
+                first_path.get("authority_kind") != "provisional_design"
+                or first_path.get("visible_result") != checkpoint
+                or any(
+                    row.get("authority_kind") != "assumption" or row.get("required_evidence") != checkpoint
+                    for row in mapping_rows(semantic.get("proof_obligations"))
+                )
+            ):
+                raise ValueError("FirstPathContract must retain its canonical proposed proof checkpoint")
+        except ValueError as exc:
+            issues.append(str(exc))
     first_path_capability = normalize_string(
         first_path.get("capability") if isinstance(first_path, Mapping) else ""
     )

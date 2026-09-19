@@ -57,6 +57,7 @@ def build_authored_atlas_diagrams(
     diagram_roles: Sequence[str] | None = None,
     source_precedence: Sequence[Mapping[str, Any]] = (),
     operational_constraints: Sequence[str] = (),
+    proof_is_provisional: bool = False,
 ) -> list[dict[str, Any]]:
     """Project source facts and one separately authoritative provisional design."""
 
@@ -66,6 +67,8 @@ def build_authored_atlas_diagrams(
     state_object = _required_string(state_object, "state object")
     visible_result = _required_string(visible_result, "visible result")
     proof_boundary = _required_string(proof_boundary, "proof boundary")
+    if bool(any(row.get("visible_result_quote") for row in relations)) == proof_is_provisional:
+        raise ValueError("authored Atlas checkpoint authority disagrees with source relations")
 
     source_component_rows = [
         {
@@ -93,6 +96,7 @@ def build_authored_atlas_diagrams(
         state_object=state_object,
         visible_result=visible_result,
         proof_boundary=proof_boundary,
+        proof_is_provisional=proof_is_provisional,
         non_goals=non_goals,
         source_precedence=source_precedence,
     )

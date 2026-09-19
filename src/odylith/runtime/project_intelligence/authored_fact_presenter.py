@@ -13,6 +13,10 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
     validate_source_precedence,
 )
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
+    provisional_proof_assumption,
+    require_provisional_proof_decision,
+)
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
     validate_provisional_design,
 )
@@ -84,8 +88,27 @@ def authored_fact_view(project: Mapping[str, Any]) -> AuthoredFactView | None:
                 actor=actor.strip(),
             )
         )
-    if not events or len(result_orders) != 1:
-        raise GreenfieldAuthoredSemanticsError("Project authored events require one explicit result")
+    if not events or len(result_orders) > 1:
+        raise GreenfieldAuthoredSemanticsError(
+            "Project authored events require at most one explicit source result"
+        )
+    try:
+        proof_assumption = provisional_proof_assumption(raw_facts.get("assumptions", []))
+    except ValueError as exc:
+        raise GreenfieldAuthoredSemanticsError(str(exc)) from exc
+    if result_orders and proof_assumption:
+        raise GreenfieldAuthoredSemanticsError(
+            "Project authored proof cannot mix a source result with a proof assumption"
+        )
+    if not result_orders:
+        try:
+            require_provisional_proof_decision(raw_facts)
+        except ValueError as exc:
+            raise GreenfieldAuthoredSemanticsError(str(exc)) from exc
+        if raw_facts.get("proof_boundary") or not proof_assumption:
+            raise GreenfieldAuthoredSemanticsError(
+                "Project authored events without a source result require one proof assumption"
+            )
 
     try:
         source_precedence = validate_source_precedence(
@@ -95,7 +118,8 @@ def authored_fact_view(project: Mapping[str, Any]) -> AuthoredFactView | None:
         )
         design = validate_provisional_design(
             raw_facts.get("provisional_design"), event_orders=tuple(event.order for event in events),
-            source_precedence=source_precedence, result_event_order=result_orders[0],
+            source_precedence=source_precedence,
+            result_event_order=result_orders[0] if result_orders else None,
         )
     except ValueError as exc:
         raise GreenfieldAuthoredSemanticsError(str(exc)) from exc

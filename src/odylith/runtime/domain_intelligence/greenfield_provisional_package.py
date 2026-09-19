@@ -152,7 +152,8 @@ def build_provisional_backlog(
             "Assumptions": _bullets(assumption_preview_values(assumptions), empty="No decision assumptions."),
             "Operational Constraints": _bullets(intent.get("operational_constraints", []), empty="No source-stated operating constraints."),
             "Source Success Metrics": _bullets(intent.get("success_metrics", [])),
-            "Source Proof Boundary": str(intent["proof_boundary"]),
+            ("Source Proof Boundary" if intent.get("proof_boundary") else "Proposed Proof Checkpoint"):
+                decision_copy(intent, "proof_boundary"),
             "Source Event Support": _bullets([
                 f"Event {event['order']} — {event['event_quote']}"
                 for event in supporting_events

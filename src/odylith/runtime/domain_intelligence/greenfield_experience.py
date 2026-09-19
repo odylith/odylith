@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.domain_intelligence.greenfield_authored_first_run import authored_first_run_text
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import decision_copy
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     GreenfieldAuthoredSemanticsError,
     authored_projection_relations,
@@ -57,7 +58,7 @@ def build_next_steps(
     brief = proposal.get("project_brief")
     project_brief = brief if isinstance(brief, Mapping) else {}
     first_path = authored_first_run_text(intent)
-    proof_boundary = intent["proof_boundary"]
+    proof_boundary = decision_copy(intent, "proof_boundary")
     target = {
         "workstream_id": selected.idea_id,
         "workstream_title": selected.title,

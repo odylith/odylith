@@ -878,6 +878,9 @@ def test_commit_rejects_compiler_identity_drift_before_the_write_boundary(
         ("version", "odylith.product-intent-authority.v8"),
         ("envelope_schema_version", "odylith.product-intent-envelope.v8"),
         ("ledger_version", "odylith.product-intent-custody-ledger.v5"),
+        ("version", "odylith.product-intent-authority.v10"),
+        ("envelope_schema_version", "odylith.product-intent-envelope.v10"),
+        ("ledger_version", "odylith.product-intent-custody-ledger.v7"),
         ("atomic_ledger_version", "odylith.product-intent-atomic-facts.v1"),
     ),
 )

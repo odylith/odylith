@@ -7,6 +7,10 @@ import hashlib
 import json
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
+    provisional_proof_assumption,
+    require_provisional_proof_decision,
+)
 from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
     event_target_is_source_bound,
     intent_terminal_result_values,
@@ -112,6 +116,7 @@ def validate_first_path_relations(
     internal_systems: Sequence[str] = (),
     product_title: str = "",
     terminal_result_facts: Sequence[str] = (),
+    require_visible_result: bool = True,
 ) -> tuple[dict[str, Any], ...]:
     """Return stable source-event identities, not an inferred execution order."""
 
@@ -230,7 +235,7 @@ def validate_first_path_relations(
                 "visible_result_quote": visible_result_quote,
             }
         )
-    if not visible_seen:
+    if require_visible_result and not visible_seen:
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring did not type a path with a visible result"
         )
@@ -761,6 +766,13 @@ def _authored_relations_from_intent(
     actor_values = intent.get("human_actors", ())
     if not isinstance(actor_values, Sequence) or isinstance(actor_values, (str, bytes, bytearray)):
         raise GreenfieldAuthoredSemanticsError("Greenfield authored semantics are missing typed human actors")
+    try:
+        require_provisional_proof_decision(intent)
+    except ValueError as exc:
+        raise GreenfieldAuthoredSemanticsError(str(exc)) from exc
+    has_provisional_proof = bool(
+        provisional_proof_assumption(intent.get("assumptions", []))
+    )
     first_path_relations = validate_first_path_relations(
         relations,
         first_path=str(intent.get("first_path") or ""),
@@ -769,7 +781,14 @@ def _authored_relations_from_intent(
         internal_systems=intent_text_rows(intent.get("internal_systems")),
         product_title=str(intent.get("title") or ""),
         terminal_result_facts=intent_terminal_result_values(intent),
+        require_visible_result=not has_provisional_proof,
     )
+    if has_provisional_proof and any(
+        row["visible_result_quote"] for row in first_path_relations
+    ):
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield provisional proof cannot carry a source terminal result"
+        )
     context_relations = validate_first_path_context_relations(
         semantics.get("first_path_context_relations"),
         intent=intent,
@@ -790,7 +809,14 @@ def _authored_relations_from_intent(
             semantics["provisional_design"],
             event_orders=tuple(row["order"] for row in first_path_relations),
             source_precedence=source_precedence,
-            result_event_order=next(row["order"] for row in first_path_relations if row["visible_result_quote"]),
+            result_event_order=next(
+                (
+                    row["order"]
+                    for row in first_path_relations
+                    if row["visible_result_quote"]
+                ),
+                None,
+            ),
         )
     except ValueError as exc:
         raise GreenfieldAuthoredSemanticsError(str(exc)) from exc

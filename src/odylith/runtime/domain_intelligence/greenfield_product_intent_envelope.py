@@ -9,7 +9,11 @@ import json
 from pathlib import Path
 from typing import Any
 
-from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import assumption_rows
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
+    PROVISIONAL_PROOF_FIELD,
+    assumption_rows,
+    require_provisional_proof_decision,
+)
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import provisional_design_from_intent
 
 from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
@@ -37,6 +41,7 @@ from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_author
     product_intent_authority_snapshot_hash as _sealed_product_intent_authority_snapshot_hash,
     product_intent_material_custody_hash,
     require_product_intent_authority_structure,
+    require_provisional_proof_custody,
 )
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import greenfield_operating_envelope_receipt
 
@@ -542,6 +547,7 @@ def product_intent_authority_from_envelope(
     facts_payload = product_facts_payload(facts)
     if set(facts) != set(facts_payload):
         raise ValueError("confirmed Product Intent product facts are malformed")
+    require_provisional_proof_decision(facts)
     expected_facts_hash = _exact_text(decision_record.get(PRODUCT_FACTS_HASH_KEY))
     if expected_facts_hash != product_facts_hash(facts_payload):
         raise ValueError("confirmed Product Intent product facts hash mismatch")
@@ -553,6 +559,7 @@ def product_intent_authority_from_envelope(
         envelope.get("operating_envelope") if isinstance(envelope.get("operating_envelope"), Mapping) else {}
     )
     material_fields: dict[str, dict[str, Any]] = {}
+    proof_assumption = _provisional_proof_assumption_row(facts)
     for key in MATERIAL_FACT_KEYS:
         field = fields.get(key) if isinstance(fields.get(key), Mapping) else {}
         material_fields[key] = {
@@ -570,6 +577,15 @@ def product_intent_authority_from_envelope(
             ),
             "source_span_refs": _authority_span_refs(field.get("source_span_refs")),
         }
+        if key == PROVISIONAL_PROOF_FIELD and proof_assumption is not None:
+            if not _valid_provisional_proof_field(
+                field,
+                expected_assumption=proof_assumption,
+            ):
+                raise ValueError(
+                    "confirmed Product Intent authority has invalid provisional proof custody"
+                )
+            material_fields[key]["assumption"] = copy.deepcopy(proof_assumption)
     material_custody_sha256 = product_intent_material_custody_hash(material_fields)
     authority = {
         "version": PRODUCT_INTENT_AUTHORITY_VERSION,
@@ -653,6 +669,16 @@ def _field_custody(
 ) -> dict[str, dict[str, Any]]:
     fields: dict[str, dict[str, Any]] = {}
     span_refs = {str(span.get("span_id") or ""): span for span in spans}
+    proof_assumption = _provisional_proof_assumption_row(facts)
+    if proof_assumption is not None and (
+        source_span_ids_by_field.get(PROVISIONAL_PROOF_FIELD)
+        or product_claim_span_ids_by_field.get(PROVISIONAL_PROOF_FIELD)
+        or source_span_ids_by_field.get("assumptions")
+        or product_claim_span_ids_by_field.get("assumptions")
+    ):
+        raise ValueError(
+            "provisional proof assumption must not claim source-span custody"
+        )
     for key in PRODUCT_FACT_KEYS:
         if key not in facts or not _has_fact_value(facts.get(key)):
             continue
@@ -680,6 +706,20 @@ def _field_custody(
                 for span_id in source_span_ids
                 if span_id in span_refs
             ],
+        }
+    if (
+        proof_assumption is not None
+        and not _has_fact_value(facts.get(PROVISIONAL_PROOF_FIELD))
+    ):
+        fields[PROVISIONAL_PROOF_FIELD] = {
+            "custody_state": "assumption",
+            "derivation": "sealed_provisional_assumption",
+            "confidence": "visible",
+            "entailment_relationship": "visible_assumption_from",
+            "source_span_ids": [],
+            "product_claim_span_ids": [],
+            "source_span_refs": [],
+            "assumption": copy.deepcopy(proof_assumption),
         }
     return fields
 
@@ -721,20 +761,63 @@ def _materiality_gate(
     *,
     fields: Mapping[str, Mapping[str, Any]],
 ) -> dict[str, Any]:
-    missing = [key for key in MATERIAL_FACT_KEYS if not _has_fact_value(facts.get(key))]
-    unresolved = [
-        key
-        for key in MATERIAL_FACT_KEYS
-        if key not in missing
-        and str((fields.get(key) or {}).get("custody_state") or "")
-        not in {"accepted_fact", "bounded_interpretation"}
-    ]
+    proof_assumption = _provisional_proof_assumption_row(facts)
+    missing: list[str] = []
+    unresolved: list[str] = []
+    for key in MATERIAL_FACT_KEYS:
+        has_fact = _has_fact_value(facts.get(key))
+        field = fields.get(key) or {}
+        if key == PROVISIONAL_PROOF_FIELD:
+            has_assumption = proof_assumption is not None
+            if not has_fact and not has_assumption:
+                missing.append(key)
+            elif has_fact == has_assumption:
+                unresolved.append(key)
+            elif has_assumption and not _valid_provisional_proof_field(
+                field,
+                expected_assumption=proof_assumption,
+            ):
+                unresolved.append(key)
+            elif has_fact and str(field.get("custody_state") or "") not in {
+                "accepted_fact",
+                "bounded_interpretation",
+            }:
+                unresolved.append(key)
+            continue
+        if not has_fact:
+            missing.append(key)
+        elif str(field.get("custody_state") or "") not in {
+            "accepted_fact",
+            "bounded_interpretation",
+        }:
+            unresolved.append(key)
     blocked = [*missing, *unresolved]
     return {
         "status": "clarification_required" if blocked else "passed",
         "blocked_fields": blocked,
         "clarification_policy": "block_only_material_unknowns",
     }
+
+
+def _provisional_proof_assumption_row(
+    facts: Mapping[str, Any],
+) -> dict[str, str] | None:
+    for row in assumption_rows(facts.get("assumptions", [])):
+        if row["applies_to"] == PROVISIONAL_PROOF_FIELD:
+            return row
+    return None
+
+
+def _valid_provisional_proof_field(
+    field: Mapping[str, Any],
+    *,
+    expected_assumption: Mapping[str, str],
+) -> bool:
+    try:
+        require_provisional_proof_custody(PROVISIONAL_PROOF_FIELD, field)
+    except ValueError:
+        return False
+    return field["assumption"] == expected_assumption
 
 
 def _add_span_digests(spans: Sequence[dict[str, Any]]) -> None:

@@ -51,7 +51,7 @@ def derive_model_atomic_claims(
     intent: Mapping[str, Any],
     selected_facts: Sequence[Mapping[str, Any]],
     first_path_relations: Sequence[Mapping[str, Any]],
-    terminal_result_fact: Mapping[str, Any],
+    terminal_result_fact: Mapping[str, Any] | None,
 ) -> tuple[dict[str, Any], ...]:
     """Derive redundant atomic custody from model-owned facts and relations."""
 
@@ -61,6 +61,20 @@ def derive_model_atomic_claims(
         for fact in facts
         if str(fact.get("projection_path") or "") != "/first_path"
     }
+    visible_relations = tuple(
+        relation
+        for relation in first_path_relations
+        if str(relation.get("visible_result_quote") or "")
+    )
+    if terminal_result_fact is None:
+        if visible_relations:
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield authoring returned a visible result without source terminal custody"
+            )
+    elif not isinstance(terminal_result_fact, Mapping) or len(visible_relations) != 1:
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring returned terminal custody without one visible result"
+        )
     rows = [_whole_fact_claim(intent=intent, fact=fact) for fact in facts]
     for relation in first_path_relations:
         for role in AUTHORED_RELATION_ROLES:
@@ -79,6 +93,7 @@ def derive_model_atomic_claims(
                 )
                 continue
             if role == "visible_result_quote":
+                assert terminal_result_fact is not None
                 rows.append(
                     _terminal_result_claim(
                         intent=intent,

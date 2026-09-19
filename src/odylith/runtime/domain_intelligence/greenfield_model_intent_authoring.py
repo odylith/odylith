@@ -38,7 +38,9 @@ from odylith.runtime.domain_intelligence.greenfield_model_source_citations impor
 from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
     ASSUMPTION_SCHEMA,
     assumption_rows,
+    provisional_proof_assumption,
     require_decision_assumptions,
+    require_provisional_proof_decision,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_atomic_projection import (
     derive_model_atomic_claims,
@@ -67,7 +69,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     MAX_AUTHORED_LIST_ITEMS,
 )
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v64"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v66"
 
 _TEXT_FIELDS = (
     "title",
@@ -264,9 +266,17 @@ def validate_greenfield_authoring_response(
             assumptions=result.get("assumptions"),
             ambiguities=result.get("ambiguities"),
         )
+        terminal = result.get("terminal")
+        has_provisional_proof = bool(
+            provisional_proof_assumption(intent.get("assumptions", []))
+        )
+        if (terminal is None) != has_provisional_proof:
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield authoring mixed source terminal and provisional proof authority"
+            )
         derived_relations = derive_model_relations(
             events=result.get("events"),
-            terminal=result.get("terminal"),
+            terminal=terminal,
             components=result.get("components"),
             selected_facts=selected_facts,
             first_path=str(intent.get("first_path") or ""),
@@ -301,7 +311,14 @@ def validate_greenfield_authoring_response(
         provisional_design = validate_provisional_design(
             result.get("provisional_design"),
             event_orders=event_orders, source_precedence=source_precedence,
-            result_event_order=result["terminal"]["event_order"],
+            result_event_order=next(
+                (
+                    row["order"]
+                    for row in derived_relations.first_path_relations
+                    if row["visible_result_quote"]
+                ),
+                None,
+            ),
         )
     except ValueError as exc:
         raise GreenfieldModelAuthoringError(f"{exc}; no records were created.") from exc
@@ -553,6 +570,7 @@ def _intent_from_typed_source_spans(
         )
     try:
         require_decision_assumptions(intent)
+        require_provisional_proof_decision(intent)
     except ValueError as exc:
         raise GreenfieldModelAuthoringError(str(exc)) from exc
     return intent, tuple(spans), tuple(selected_facts)
@@ -649,14 +667,14 @@ _AUTHORED_FACTS_SCHEMA: dict[str, Any] = {
         **_TYPED_FACTS_SCHEMA["properties"],
         **{
             field: _CITATION_SCHEMA
-            for field in ("title", "product_story", "state_object", "proof_boundary")
+            for field in ("title", "product_story")
         },
         "state_object": {
             **_STATE_CITATION_SCHEMA,
             "description": STATE_OBJECT_ROLE_DEFINITION,
         },
         "proof_boundary": {
-            **_CITATION_SCHEMA,
+            "anyOf": [_CITATION_SCHEMA, {"type": "null"}],
             "description": PROOF_BOUNDARY_ROLE_DEFINITION,
         },
         "problem": {
@@ -770,7 +788,7 @@ _AUTHORED_RESULT_SCHEMA: dict[str, Any] = {
         "status": {"type": "string", "enum": ["authored"]},
         "facts": _AUTHORED_FACTS_SCHEMA,
         "events": MODEL_EVENT_SCHEMA,
-        "terminal": MODEL_TERMINAL_SCHEMA["anyOf"][0],
+        "terminal": MODEL_TERMINAL_SCHEMA,
         "components": MODEL_COMPONENT_SCHEMA,
         "assumptions": ASSUMPTION_SCHEMA,
         "ambiguities": _ADVISORY_SCHEMA,

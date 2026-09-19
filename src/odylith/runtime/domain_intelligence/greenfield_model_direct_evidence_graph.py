@@ -58,7 +58,7 @@ class DerivedModelRelations:
     first_path_relations: tuple[dict[str, Any], ...]
     first_path_context_relations: tuple[dict[str, Any], ...]
     component_responsibility_relations: tuple[dict[str, Any], ...]
-    terminal_result_fact: dict[str, Any]
+    terminal_result_fact: dict[str, Any] | None
 
 
 def derive_model_relations(
@@ -161,7 +161,7 @@ def _derive_events(
     selected_facts: Sequence[Mapping[str, Any]],
     first_path: str,
     evidence_text: str,
-) -> tuple[tuple[dict[str, Any], ...], dict[str, Any]]:
+) -> tuple[tuple[dict[str, Any], ...], dict[str, Any] | None]:
     if (
         not isinstance(value, Sequence)
         or isinstance(value, (str, bytes, bytearray))
@@ -260,6 +260,12 @@ def _derive_events(
             }
         )
         seen_source_events.add((source_start, source_end))
+    if terminal is None:
+        return tuple(rows), None
+    if not isinstance(terminal, Mapping):
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring returned an invalid terminal result"
+        )
     terminal_fact = _terminal_result_fact(
         terminal,
         selected_facts=selected_facts,

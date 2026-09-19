@@ -107,6 +107,12 @@ conservative assumption targeted to that field:
 - customer: the proposed direct user or primary beneficiary of this product.
 - opportunity: the improvement worth pursuing through this product.
 - product_view: a concrete experience showing what the user can do or understand.
+For proof_boundary, cite a source fact and supply terminal only when the source
+identifies a result that proves the path and supports the selected producer relation.
+Otherwise set both facts.proof_boundary and terminal to null and write exactly one
+assumption targeted to proof_boundary that names a conservative proposed checkpoint
+from the supplied observable or reviewable concerns. Never combine a proof_boundary
+assumption with a source terminal.
 Write these as short, complete proposed product decisions, using the supplied users,
 work and result. They are design proposals, not claims about existing failures or
 proven benefits. The Assumption label is added by the renderer. Give the decision
@@ -127,9 +133,10 @@ the component. Support every source event and assign every component to work.
 Give each workstream a concrete deliverable, useful acceptance, component references
 and only necessary prerequisite workstream keys. Prerequisites must be acyclic.
 first_run proposes one complete walkthrough: include each source event identity once
-and respect every cited source_precedence edge, including required actions after the
-observable result. terminal.event_order identifies the correct result producer,
-independent of its walkthrough position. Explain the chosen sequence in its rationale.
+and respect every cited source_precedence edge, including required actions after a
+source-stated terminal when present. A non-null terminal.event_order identifies the
+source-stated result producer, independent of its walkthrough position. Explain the
+chosen sequence in its rationale.
 This is a provisional first run, not source fact or a model of all concurrency,
 branches or loops. Never derive runtime order from workstream depends_on, which
 describes delivery work rather than product use. Exchanges name internal component
@@ -148,8 +155,9 @@ in the source. The selected quote is at the end of the anchor, even if its text 
 occurs earlier in prefix. Use a short prefix that identifies the intended location;
 it may be empty at source start. Prefix is only a locator, never state meaning or
 projected text. All other fact citations remain quote plus occurrence in the complete
-source. Select title, product_story, state_object, proof_boundary and first_path
-according to their schema. product_story is the shortest complete source span about
+source. Select title, product_story, state_object and first_path according to their
+schema; select proof_boundary only under the source-proof rule above. product_story is
+the shortest complete source span about
 product behavior or outcome, excluding the operator's request to create a proposal.
 customer is the direct user or primary beneficiary, not merely a downstream subject.
 
@@ -166,14 +174,16 @@ selects the performing frozen human_actors, internal_systems, external_systems o
 title fact for every event. Resolve aliases and omitted subjects to that same selected
 actor fact; change it only when the source changes performer. Keep the original actor
 wording in the exact event citation, not a second actor field. action_quote and
-nonempty target_quote must occur within that event. terminal cites the visible result
-and explicitly selects the event that produces it; that event may appear anywhere in
-the source action list. terminal.result_fact selects its existing facts field and
-one-based row (row 1 for a scalar fact). result_quote must occur within that selected
-fact's quote. result_occurrence counts only within that quote, not across the source
-document. The selected fact owns global source custody; the result inherits it. A
-result may come from a proof or story fact without occurring inside its producer
-event. source_precedence contains only source-stated ordering requirements, not a
+nonempty target_quote must occur within that event. When terminal is non-null, it cites
+the source-stated visible result and explicitly selects the event that produces it;
+that event may appear anywhere in the source action list. terminal.result_fact selects
+its existing facts field and one-based row (row 1 for a scalar fact). result_quote must
+occur within that selected fact's quote. result_occurrence counts only within that
+quote, not across the source document. The selected fact owns global source custody;
+the result inherits it. A source-stated result may come from a proof or story fact
+without occurring inside its producer event. A provisional proof assumption creates no
+terminal producer relation. source_precedence contains only source-stated ordering
+requirements, not a
 proposed workflow. Each edge names before_event, after_event and the one-based
 constraint_index of its exact existing facts.operational_constraints citation.
 Select the whole source constraint there, including the actions and their ordering

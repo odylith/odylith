@@ -30,6 +30,7 @@ def build_provisional_design_atlas_specs(
     proof_boundary: str,
     non_goals: Sequence[str],
     source_precedence: Sequence[Mapping[str, Any]],
+    proof_is_provisional: bool = False,
 ) -> dict[str, dict[str, Any]]:
     """Return three deterministic proposed-design lenses from canonical rows."""
 
@@ -38,7 +39,7 @@ def build_provisional_design_atlas_specs(
         provisional_design,
         event_orders=event_orders,
         source_precedence=source_precedence,
-        result_event_order=next(int(row["order"]) for row in relations if row["visible_result_quote"]),
+        result_event_order=next((int(row["order"]) for row in relations if row["visible_result_quote"]), None),
     )
     components = [
         {
@@ -57,6 +58,7 @@ def build_provisional_design_atlas_specs(
         state_object=state_object,
         visible_result=visible_result,
         proof_boundary=proof_boundary,
+        proof_is_provisional=proof_is_provisional,
         non_goals=non_goals,
     )
     shared = {
@@ -227,6 +229,7 @@ def _capability_support_view(
     visible_result: str,
     proof_boundary: str,
     non_goals: Sequence[str],
+    proof_is_provisional: bool,
 ) -> tuple[str, list[dict[str, str]]]:
     events = {row["order"]: row for row in relations}
     lines = ["flowchart LR"]
@@ -294,28 +297,27 @@ def _capability_support_view(
     lines.extend([
         '  subgraph source_facts["Source-stated facts"]',
         f'    state["State object<br/>{mermaid_label(state_object)}"]',
-        f'    result["Visible result<br/>{mermaid_label(visible_result)}"]',
-        f'    proof["Proof boundary<br/>{mermaid_label(proof_boundary)}"]',
     ])
     boxes.extend([
         atlas_box(
             "source_facts", "Source-stated facts", "Source-grounded context",
-            "Groups source-stated state, result, proof, and non-goals without "
+            "Groups source-stated context without "
             "inferring transitions.",
         ),
         atlas_box(
             "state", state_object, "State object",
             f"Source-stated state object: {state_object}",
         ),
-        atlas_box(
-            "result", visible_result, "Visible result",
-            f"Source-stated visible result: {visible_result}",
-        ),
-        atlas_box(
-            "proof", proof_boundary, "Proof boundary",
-            f"Source-stated proof boundary: {proof_boundary}",
-        ),
     ])
+    if not proof_is_provisional:
+        lines.extend([
+            f'    result["Visible result<br/>{mermaid_label(visible_result)}"]',
+            f'    proof["Proof boundary<br/>{mermaid_label(proof_boundary)}"]',
+        ])
+        boxes.extend([
+            atlas_box("result", visible_result, "Visible result", f"Source-stated visible result: {visible_result}"),
+            atlas_box("proof", proof_boundary, "Proof boundary", f"Source-stated proof boundary: {proof_boundary}"),
+        ])
     for index, non_goal in enumerate(non_goals, 1):
         lines.append(f'    non_goal{index}["Non-goal<br/>{mermaid_label(non_goal)}"]')
         boxes.append(atlas_box(
@@ -323,6 +325,16 @@ def _capability_support_view(
             f"Source-stated work outside scope: {non_goal}",
         ))
     lines.append("  end")
+    if proof_is_provisional:
+        lines.extend([
+            '  subgraph proposed_checkpoint["Proposed proof checkpoint — assumption"]',
+            f'    proof["{mermaid_label(proof_boundary)}"]',
+            '  end',
+        ])
+        boxes.extend([
+            atlas_box("proposed_checkpoint", "Proposed proof checkpoint — assumption", "Provisional decision", "This checkpoint is proposed for review, not established by the source."),
+            atlas_box("proof", proof_boundary, "Proposed proof checkpoint", "An explicit assumption; no source-stated producer or terminal result is asserted."),
+        ])
     return styled_mermaid(lines), boxes
 
 

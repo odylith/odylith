@@ -72,7 +72,7 @@ def test_product_create_transaction_carries_confirmed_intent_authority_block(tmp
     payload = product_create_transaction_to_dict(transaction)
 
     persisted = payload["intent_authority"]
-    assert persisted["version"] == "odylith.product-intent-authority.v10"
+    assert persisted["version"] == "odylith.product-intent-authority.v11"
     assert persisted["origin"] == "verified_typed_envelope"
     assert persisted["decision"] == "confirmed_intent_accepted"
     assert persisted["fact_authority"] == "product_facts"

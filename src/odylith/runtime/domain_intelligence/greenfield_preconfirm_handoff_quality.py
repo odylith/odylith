@@ -12,8 +12,12 @@ from typing import Any
 
 from odylith.runtime.common.value_coercion import normalize_string as clean_text
 from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_checkpoint_text,
     authored_first_run_relations,
     authored_first_run_text,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
+    decision_copy,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
@@ -95,12 +99,16 @@ def _authored_project_dashboard_contract_issues(
         "title": intent.get("title"),
         "product_story": intent.get("product_story"),
         "first_path": intent.get("first_path"),
-        "proof_boundary": intent.get("proof_boundary"),
+        "proof_boundary": str(intent.get("proof_boundary") or ""),
         "visible_result": authored_visible_result(relations),
     }
     for key, expected in expected_scalars.items():
         if facts.get(key) != expected:
             issues.append(f"model-authored Project dashboard drifted from intent.{key}")
+    if [dict(row) for row in mapping_rows(facts.get("assumptions"))] != [
+        dict(row) for row in mapping_rows(intent.get("assumptions"))
+    ]:
+        issues.append("model-authored Project dashboard drifted from intent.assumptions")
     for key in (
         "human_actors",
         "internal_systems",
@@ -140,6 +148,7 @@ def _authored_project_dashboard_contract_issues(
     }
     expected_cards = {
         "first_path": authored_first_run_text(intent),
+        "proof": decision_copy(intent, "proof_boundary"),
         "product_boundary": authored_product_boundary(
             components=components,
             internal_systems=_exact_rows(intent.get("internal_systems")),
@@ -209,10 +218,14 @@ def _authored_project_dashboard_contract_issues(
             issues.append(f"model-authored Project handoff step {index} lost its exact selected implementation scope copy")
         if bindings.get("accepted_first_path") != authored_first_run_text(intent):
             issues.append(f"model-authored Project handoff step {index} drifted from the proposed first run")
-        if bindings.get("proof_boundary") != intent.get("proof_boundary"):
-            issues.append(f"model-authored Project handoff step {index} drifted from intent.proof_boundary")
-        if bindings.get("visible_result") != authored_visible_result(relations):
-            issues.append(f"model-authored Project handoff step {index} drifted from the visible result")
+        if bindings.get("proof_boundary") != decision_copy(intent, "proof_boundary"):
+            issues.append(
+                f"model-authored Project handoff step {index} drifted from the source-or-assumption proof"
+            )
+        if bindings.get("visible_result") != authored_checkpoint_text(intent):
+            issues.append(
+                f"model-authored Project handoff step {index} drifted from the source-or-assumption checkpoint"
+            )
         if _exact_rows(bindings.get("excluded_scope")) != expected_excluded_scope:
             issues.append(f"model-authored Project handoff step {index} drifted from excluded scope")
         if _exact_rows(bindings.get("operational_constraints")) != expected_constraints:

@@ -1,14 +1,38 @@
 # Domain Intelligence
-Last updated: 2026-09-18
+Last updated: 2026-09-19
 
 
 ## Overview
+
+Candidate v66 permits a conservative proof checkpoint as one targeted, visible
+assumption when the source supports a usable path and reviewable concerns but does
+not establish a terminal producer relation. Accepted proof and terminal are absent
+in that branch; no source citation, accepted result relation or atomic output claim
+is fabricated. Source-stated proof retains its strict existing custody. The exact
+assumption is sealed under authority/envelope v11 and custody ledger v8, and all
+affected previews, governance views, Project and handoffs preserve its proposed
+status. Old sealed versions require a new pre-confirm build, never a post-confirm
+migration. The rejected v65 question strategy remains removed. CB-209 and B-142
+retain prior failed attempts and the current 412-test structural proof. Independent
+code reviews found no P0/P1, but the first live v66 control still returned an
+unnecessary first_path question in 17.908 seconds and two calls. It never reached
+immutable candidate review and created no package. Source/proposed separation is
+implemented, not semantically qualified. A subsequent external admission-owner
+comparison reaches a complete candidate in 67.264 seconds and three calls but
+remains rejected: independent adjudication disproves its beneficiary denial while
+identifying a separate capability-as-operating-constraint error. That experiment
+is not the production path. A disjoint full-source owner and proposed-design owner
+may be compared externally under the same three-call shared window; no added
+repair stage or automatic adoption is authorized. Fresh frozen proof passes 412
+focused and 34 Project/handoff/publication browser checks with unchanged inputs.
+These qualify the bounded source/proposed-proof correction, not reliable live
+semantics, clean-installed qualification, automatic host delivery or release.
 
 The current unreleased participant-first owner selects exact source-grounded human
 participants once, freezes their citations, and permits remaining-candidate
 authoring only for the other facts, relations and proposed design. Deterministic
 join and canonical validation precede unchanged full-candidate review. Authoring
-v64/profile v18/envelope v4/private proof v3 replace the old complete-author path;
+v66/profile v18/envelope v4/private proof v3 replace the old complete-author path;
 success requires three actual calls and clarification two, under one shared model
 deadline. Sealed observations identify both author roles separately. Review timing
 uses the actual request origin while total elapsed includes setup. Release checks

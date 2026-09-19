@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     first_path_relations_from_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_checkpoint_text,
     authored_first_run_relations,
     authored_first_run_text,
 )
@@ -60,7 +61,9 @@ def build_authored_greenfield_payload(
     product_story = _required_text(intent, "product_story")
     source_excerpt = f"Source excerpt: “{product_story}”"
     first_path = authored_first_run_text(intent)
-    proof_boundary = _required_text(intent, "proof_boundary")
+    source_proof_boundary = str(intent.get("proof_boundary") or "")
+    proof_boundary = decision_copy(intent, "proof_boundary")
+    proof_is_provisional = not bool(source_proof_boundary)
     human_actors = _text_values(intent.get("human_actors"))
     internal_systems = _text_values(intent.get("internal_systems"))
     external_systems = _text_values(intent.get("external_systems"))
@@ -68,7 +71,8 @@ def build_authored_greenfield_payload(
     operational_constraints = _text_values(intent.get("operational_constraints"))
     evidence_requirements = _text_values(intent.get("evidence_requirements"))
     success_metrics = _text_values(intent.get("success_metrics"))
-    visible_result = authored_visible_result(relations)
+    source_visible_result = authored_visible_result(relations)
+    visible_result = authored_checkpoint_text(intent)
     event_quotes = [_required_relation_text(row, "event_quote") for row in first_run_relations]
 
     release_plan = _mapping(proposal.get("release_plan"))
@@ -101,6 +105,7 @@ def build_authored_greenfield_payload(
         first_path=first_path,
         proof_boundary=proof_boundary,
         visible_result=visible_result,
+        proof_is_provisional=proof_is_provisional,
         components=components,
         operational_constraints=operational_constraints,
         excluded_scope=non_goals,
@@ -147,6 +152,7 @@ def build_authored_greenfield_payload(
             first_path=first_path,
             proof_boundary=proof_boundary,
             visible_result=visible_result,
+            proof_is_provisional=proof_is_provisional,
             human_actors=human_actors,
             components=components,
             external_systems=external_systems,
@@ -167,8 +173,14 @@ def build_authored_greenfield_payload(
         ],
         "scenario_details": [
             ("Proposed first run", first_path),
-            ("Visible result", visible_result),
-            ("Proof boundary", proof_boundary),
+            *(
+                [("Proposed proof checkpoint", proof_boundary)]
+                if proof_is_provisional
+                else [
+                    ("Visible result", visible_result),
+                    ("Proof boundary", proof_boundary),
+                ]
+            ),
         ],
         "actors": actors,
         "participants": actors,
@@ -233,6 +245,7 @@ def build_authored_greenfield_payload(
             first_path=first_path,
             visible_result=visible_result,
             proof_boundary=proof_boundary,
+            proof_is_provisional=proof_is_provisional,
             source=_first_text(observed, "source_posture") or "model-authored product intent",
         ),
         "artifact_coverage": list(governance_titles),
@@ -269,8 +282,11 @@ def build_authored_greenfield_payload(
             "title": title,
             "product_story": product_story,
             "first_path": _required_text(intent, "first_path"),
-            "proof_boundary": proof_boundary,
-            "visible_result": visible_result,
+            "proof_boundary": source_proof_boundary,
+            "visible_result": source_visible_result,
+            "assumptions": [
+                dict(row) for row in _mapping_rows(intent.get("assumptions"))
+            ],
             "human_actors": list(human_actors),
             "internal_systems": list(internal_systems),
             "external_systems": list(external_systems),
@@ -296,6 +312,7 @@ def _product_story(
     first_path: str,
     proof_boundary: str,
     visible_result: str,
+    proof_is_provisional: bool = False,
     human_actors: Sequence[str],
     components: Sequence[Mapping[str, Any]],
     internal_systems: Sequence[str],
@@ -324,7 +341,13 @@ def _product_story(
         "supporting_records": [],
         "release_contract": [
             {
-                "label": "Proposed capabilities" if slot == "owned_capabilities" else label,
+                "label": (
+                    "Proposed capabilities"
+                    if slot == "owned_capabilities"
+                    else "Proposed proof checkpoint"
+                    if slot == "proof" and proof_is_provisional
+                    else label
+                ),
                 "semantic_slot": slot,
                 "body": bodies[label],
             }
@@ -478,23 +501,35 @@ def _claim_evidence(
     first_path: str,
     visible_result: str,
     proof_boundary: str,
+    proof_is_provisional: bool,
     source: str,
 ) -> list[dict[str, str]]:
-    values = (
+    values = [
         ("Project identity", title),
         ("Source excerpt", product_story),
         ("Proposed first run", first_path),
-        ("Visible result", visible_result),
-        ("Proof boundary", proof_boundary),
+    ]
+    values.extend(
+        [("Proposed proof checkpoint", proof_boundary)]
+        if proof_is_provisional
+        else [("Visible result", visible_result), ("Proof boundary", proof_boundary)]
     )
     return [
         {
             "claim": claim,
             "value": value,
-            "evidence": "model-authored typed intent",
+            "evidence": (
+                "explicit typed assumption"
+                if proof_is_provisional and claim == "Proposed proof checkpoint"
+                else "model-authored typed intent"
+            ),
             "freshness": "proposal",
             "owner": "Product decision owner",
-            "source": source,
+            "source": (
+                "typed provisional assumption"
+                if proof_is_provisional and claim == "Proposed proof checkpoint"
+                else source
+            ),
         }
         for claim, value in values
     ]
@@ -506,6 +541,7 @@ def _source_launch(
     first_path: str,
     proof_boundary: str,
     visible_result: str,
+    proof_is_provisional: bool,
     components: Sequence[Mapping[str, Any]],
     operational_constraints: Sequence[str],
     excluded_scope: Sequence[str],
@@ -519,10 +555,17 @@ def _source_launch(
     target = _mapping(context.get("implementation_target"))
     workstream_refs = _text_values(context.get("first_release_workstream_ids"))
     verification_commands = _text_values(context.get("verification_commands"))
-    release_context = (
-        f"Release context — not the scope of this one workstream:\n{first_path}\n\n"
-        f"Release proof boundary:\n{proof_boundary}\n\nRelease visible result:\n{visible_result}"
-    )
+    if proof_is_provisional:
+        release_context = (
+            f"Release context — not the scope of this one workstream:\n{first_path}\n\n"
+            f"Proposed proof checkpoint:\n{proof_boundary}"
+        )
+    else:
+        release_context = (
+            f"Release context — not the scope of this one workstream:\n{first_path}\n\n"
+            f"Release proof boundary:\n{proof_boundary}\n\n"
+            f"Release visible result:\n{visible_result}"
+        )
     prompts = [
         {
             "step_id": "choose_language",
@@ -559,7 +602,7 @@ def _source_launch(
         },
         {
             "step_id": "prove_behavior",
-            "label": "Run authored proof",
+            "label": "Run proposed proof" if proof_is_provisional else "Run authored proof",
             "when": "Use this after the first runnable slice exists.",
             "prompt": (
                 "Validate the selected workstream against its selected verification.\n\n"
@@ -578,6 +621,7 @@ def _source_launch(
                 "Refresh governed records for the selected workstream and its bound components. "
                 f"Preserve the full release membership: {', '.join(workstream_refs)}. "
                 "Keep unimplemented workstreams open and withhold release readiness."
+                + (f"\n\n{release_context}" if proof_is_provisional else "")
             ),
             "result": "Governed records reflect the validated source implementation.",
             "stop": "Stop after refreshed records validate against the implemented source.",

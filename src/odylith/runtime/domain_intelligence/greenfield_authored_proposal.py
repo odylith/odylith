@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_atlas_view import (
     build_authored_atlas_diagrams,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_checkpoint_text,
     authored_first_run_relations,
     authored_first_run_text,
 )
@@ -25,7 +26,6 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
     AUTHORED_SEMANTICS_KEY,
     authored_component_relation_facts,
-    authored_visible_result,
     component_responsibility_relations_from_intent,
     first_path_context_relations_from_intent,
     first_path_relations_from_intent,
@@ -87,7 +87,8 @@ def build_authored_greenfield_proposal(
     first_path = authored_first_run_text(confirmed_intent)
     first_run_relations = authored_first_run_relations(confirmed_intent)
     state_object = _required_text(confirmed_intent, "state_object")
-    proof_boundary = _required_text(confirmed_intent, "proof_boundary")
+    proof_boundary = decision_copy(confirmed_intent, "proof_boundary")
+    proof_is_provisional = not bool(confirmed_intent.get("proof_boundary"))
     product_story = _required_text(confirmed_intent, "product_story")
     human_actors = _strings(confirmed_intent.get("human_actors"))
     internal_systems = _strings(confirmed_intent.get("internal_systems"))
@@ -99,7 +100,7 @@ def build_authored_greenfield_proposal(
     evidence_requirements = _strings(confirmed_intent.get("evidence_requirements"))
     success_metrics = _strings(confirmed_intent.get("success_metrics"))
     provisional_design = provisional_design_from_intent(confirmed_intent)
-    visible_result = authored_visible_result(relations)
+    visible_result = authored_checkpoint_text(confirmed_intent)
     source_components = _source_components(
         title=title,
         product_slug=product_slug,
@@ -126,6 +127,7 @@ def build_authored_greenfield_proposal(
         first_path=first_path,
         visible_result=visible_result,
         proof_boundary=proof_boundary,
+        proof_is_provisional=proof_is_provisional,
         human_actors=human_actors,
         internal_systems=internal_systems,
         external_systems=external_systems,
@@ -147,6 +149,7 @@ def build_authored_greenfield_proposal(
         state_object=state_object,
         visible_result=visible_result,
         proof_boundary=proof_boundary,
+        proof_is_provisional=proof_is_provisional,
         components=source_components,
         backlog=backlog,
         relations=relations,
@@ -420,6 +423,7 @@ def _semantic_model(
     first_path: str,
     visible_result: str,
     proof_boundary: str,
+    proof_is_provisional: bool,
     human_actors: Sequence[str],
     internal_systems: Sequence[str],
     external_systems: Sequence[str],
@@ -489,7 +493,7 @@ def _semantic_model(
         "domain_ontology": {
             "product_title": title,
             "state_object": state_object,
-            "proof_boundary": proof_boundary,
+            "proof_boundary": "" if proof_is_provisional else proof_boundary,
             "human_actors": list(human_actors),
             "internal_systems": list(internal_systems),
             "external_systems": list(external_systems),
@@ -507,8 +511,9 @@ def _semantic_model(
             "proof_checkpoint": proof_boundary,
         },
         "proof_obligations": [
-            {"key": "first_path_contract", "claim": first_path, "required_evidence": proof_boundary},
-            {"key": "release_boundary", "claim": proof_boundary, "required_evidence": proof_boundary},
+            {"key": key, "claim": claim, "required_evidence": proof_boundary,
+             "authority_kind": "assumption" if proof_is_provisional else "source_grounded"}
+            for key, claim in (("first_path_contract", first_path), ("release_boundary", proof_boundary))
         ],
         "evaluation_semantics": None,
     }
@@ -532,6 +537,7 @@ def _project_brief(
 ) -> dict[str, Any]:
     problem_statement = problem
     assumption_values = assumption_preview_values(assumptions)
+    proof_is_provisional = any(row["applies_to"] == "proof_boundary" for row in assumptions)
     sections = [
         _brief_section("Source excerpt", product_story, "Exact source wording, not an independently authored statement."),
         _brief_section(
@@ -540,8 +546,15 @@ def _project_brief(
             "The source-stated need or an explicitly provisional decision assumption.",
         ),
         _brief_section("First path", first_path, "One proposed walkthrough constrained by source evidence."),
-        _brief_section("Visible result", visible_result, "The source result bound to its producing action."),
-        _brief_section("Proof", proof_boundary, "The accepted release proof boundary."),
+        *([] if proof_is_provisional else [
+            _brief_section("Visible result", visible_result, "The source result bound to its producing action."),
+        ]),
+        _brief_section(
+            "Proposed proof checkpoint" if proof_is_provisional else "Proof",
+            proof_boundary,
+            "An explicit assumption for review, not an accepted source fact."
+            if proof_is_provisional else "The accepted release proof boundary.",
+        ),
     ]
     if evidence_requirements:
         sections.append(_brief_section(

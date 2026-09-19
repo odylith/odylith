@@ -191,7 +191,9 @@ def _extend_semantic_findings(
 ) -> None:
     checks = (
         (
-            _semantic_model_shape_issues(semantic),
+            _semantic_model_shape_issues(
+                semantic, intent=proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else None,
+            ),
             "semantic_model",
             "proposal.semantic_model",
             "SemanticModelIR",

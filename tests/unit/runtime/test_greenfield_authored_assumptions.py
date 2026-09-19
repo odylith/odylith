@@ -9,7 +9,9 @@ import pytest
 from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
     assumption_rows,
     decision_copy,
+    provisional_proof_assumption,
     require_decision_assumptions,
+    require_provisional_proof_decision,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_proposal import build_authored_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import authored_semantics_mapping
@@ -215,6 +217,40 @@ def test_customer_decision_requires_exactly_one_fact_or_targeted_assumption() ->
                 "assumptions": [customer_assumption],
             }
         )
+
+
+def test_proof_boundary_requires_exactly_one_source_or_provisional_owner() -> None:
+    assumption = {
+        "applies_to": "proof_boundary",
+        "statement": "Use the reviewable readiness record as the first proof checkpoint.",
+    }
+    provisional = {"proof_boundary": "", "assumptions": [assumption]}
+
+    require_provisional_proof_decision(provisional)
+    assert provisional_proof_assumption(provisional["assumptions"]) == assumption["statement"]
+    assert decision_copy(provisional, "proof_boundary") == f"Assumption — {assumption['statement']}"
+    require_provisional_proof_decision(
+        {"proof_boundary": "A source-stated receipt", "assumptions": []}
+    )
+
+    with pytest.raises(ValueError, match="one source fact or one assumption"):
+        require_provisional_proof_decision(
+            {"proof_boundary": "", "assumptions": []}
+        )
+    with pytest.raises(ValueError, match="one source fact or one assumption"):
+        require_provisional_proof_decision(
+            {"proof_boundary": "A source-stated receipt", "assumptions": [assumption]}
+        )
+
+
+def test_proof_boundary_assumption_is_closed_and_unique() -> None:
+    assumption = {
+        "applies_to": "proof_boundary",
+        "statement": "Use the reviewable readiness record as the first proof checkpoint.",
+    }
+    assert assumption_rows([assumption]) == [assumption]
+    with pytest.raises(ValueError, match="competing assumptions"):
+        assumption_rows([assumption, assumption])
 
 
 def test_confirmation_exposes_source_stated_decision_roles() -> None:

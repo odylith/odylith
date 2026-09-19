@@ -1,5 +1,169 @@
 Status: In progress
 
+## Latest live outcome: not qualified (2026-09-19)
+
+The subsequent external source-admission comparison also fails: three calls and
+67.264 seconds produce a complete candidate, but no admitted package. Independent
+adjudication finds the reviewer's beneficiary denial false and a separate real P1:
+the author labels a capability sentence as an operational constraint. Read-only
+diagnostic views preserve the beneficiary as non-performing context but visibly
+project the false operating limit. The candidate remains rejected, all inputs and
+publication are unchanged, and the remaining controls remain unrun. Evidence:
+/Users/freedom/.codex/odylith-source-admission.vo7FGM/RESULT.md.
+
+One bounded alternative is now explicit: the first existing source-reading role
+owns the entire accepted-source packet and materiality; the second emits only
+assumptions and provisional design; the third remains unchanged full review.
+Keep the shared 165-second model window, three-call ceiling, exact custody and
+source immutability. This differs from the prior source-call timeout at a fixed
+30.011-second allocation, but has not established semantic or timing success.
+Reject added correction/re-review stages. Require complete-candidate positives,
+an explicit-source-result control and a genuinely thin one-call clarification;
+stop on first failure. A failed complete comparison selects neither alternative,
+not another architecture expansion. No production adoption before independent
+acceptance. Decision:
+/Users/freedom/.codex/odylith-source-admission.vo7FGM/next-owner-decision.md.
+
+The v66 source/proposed-proof correction separately passes a frozen checkpoint:
+412 focused tests and 34 Project/handoff/publication browser checks, with all
+snapshotted inputs unchanged. This is structural/browser evidence, not a winning
+semantic mechanism or release completion. Preserve it in a stable commit without
+adopting either failed experiment. Evidence:
+/Users/freedom/.codex/odylith-proof-checkpoint.a6gpHf/terminal.json.
+
+### Retained preceding failure and comparison declaration
+
+The v66 correction's first unchanged pediatric control asks an unnecessary
+first_path question in 17.908 seconds and two calls. No authored candidate reaches
+final review; no package or publication occurs. Source, proof, managed and active
+generation snapshots remain unchanged. Stop the four-control comparison here;
+the other controls are unrun, not passing. Preserve the 412-test structural result
+without treating it as product qualification. Source-only adjudication still
+requires useful publication with a visible proposed checkpoint.
+
+The concrete next owner is the unreviewed clarification decision: remaining
+authoring may exit before the immutable semantic reviewer. The response records
+only the missing dimension. Investigate that boundary and any remaining schema
+contradiction before choosing a bounded alternative; no retry, prompt stack,
+model-profile sweep, gate relaxation or broad architecture follows from this
+failure. Full release requirements stay open. Evidence:
+/Users/freedom/.codex/odylith-provisional-proof.PMUIdt/RESULT.md.
+
+Independent diagnosis finds no remaining schema contradiction. Compare one
+external-only ownership move: the existing first source-reading call selects
+participants and decides authorable versus material clarification; the remaining
+author has only the authored schema branch, and final full-candidate review stays
+unchanged. This removes competing materiality ownership without a fourth call.
+Use the exact pediatric source, a genuinely thin missing-path negative, the
+predeclared explicit-result contrast and independent disclosure coordination.
+Require complete admitted candidates for positives and exactly one call for the
+thin clarification. No production role/profile change or adoption is authorized
+by a stage-one label alone. Stop on first mismatch. Predeclared protocol and driver:
+/Users/freedom/.codex/odylith-source-admission.vo7FGM/.
+
+## Current bounded correction and qualification (2026-09-19)
+
+Candidate v66 corrects the diagnosed source/proposed-proof ownership boundary.
+It reuses the targeted assumption record, makes accepted proof and terminal absent
+only in that branch, and seals the exact decision with authority/envelope v11 and
+ledger v8. Source-stated result/producer custody remains strict. All affected
+projections retain the distinction; no new model stage, retry, lexical rule,
+reviewer relaxation or budget change is introduced. The v65 question strategy
+and original unsupported accepted terminal remain rejected historical evidence.
+
+Fresh focused proof: 412 passed in 52.70 seconds, including complete no-network
+materialization, compilation, sealing, publication and same-hash retry. This does
+not prove live model quality, browser quality or release readiness. The bounded
+independent reviews found no product-code P0/P1; the first live comparison above
+failed. The original qualification plan was to compare coordination requests with
+source-result controls under the existing profiles and budget. Stop on a mismatch;
+do not retune a failed attempt. Only after semantic development evidence passes
+should the frozen broad regression, full build, installed matrix, recovery,
+actual-host and browser gates proceed. Protected final evaluation remains last
+and untouched. Evidence: /Users/freedom/.codex/odylith-provisional-proof.PMUIdt/.
+
+## Source/design boundary diagnosis before implementation (2026-09-19)
+
+Final goal-grounded adjudication rejects the attempted v65 clarification fix.
+The pediatric and security-disclosure capability lists support publication with
+complete source meaning preserved. A unique completion checkpoint or first-run
+ordering may be a visible proposed choice; it must not become accepted source fact.
+Missing a named human does not make a product-owned path unusable. The original
+authored candidate's unsupported terminal assertion and the later unnecessary
+question are distinct real failures; preserve both.
+
+The runtime prompt/version and maintained pediatric expectation are restored to
+the c0b4e0af3 baseline. Only generic two-call clarification characterization remains
+as a code-test delta from this rejected attempt. No later diagnostic control or
+broad regression was run. Trace the existing fact/terminal/provisional-first-run
+ownership seam next and correct that boundary without another prompt rule, regex,
+retry, reviewer relaxation or fixture-specific behavior. Scope and release gates
+remain unchanged. Full adjudication and original failures are retained under
+/Users/freedom/.codex/odylith-materiality-check.uy871g/.
+
+## Rejected clarification qualification (2026-09-19)
+
+Authoring v65 changes only the existing remaining-author materiality instruction;
+profile v18, schema shape, participant ownership, reviewer and transaction stay fixed.
+The first live diagnostic asks the existing first_path question in two calls and
+16.327 seconds, with no candidate, review, staging or publication change. It fails
+the predeclared exact proof_boundary expectation, so the comparison is stopped and
+all later controls remain unrun. Independent source-first review accepts the actual
+question: this source lacks a direct user, complete user task and terminal result.
+Correct maintained case metadata only; do not retry or retune the stopped comparison.
+
+The four-file focused suite passes 159 tests. Preserve the two initial test failures
+and the failed live comparison in /Users/freedom/.codex/odylith-materiality-check.uy871g/.
+The following next steps were superseded by final adjudication, not executed:
+frozen regression, a rebuilt distribution, and normal installed qualification
+with unchanged source-bearing controls plus the predeclared explicit-result contrast.
+That contrast intentionally adds a result relation, not a performer name: missing
+performer names alone must not force another question. Keep the original failed
+campaign and final protected evaluation untouched. No release acceptance is implied.
+
+## Current installed candidate result (2026-09-19)
+
+Checkpoint c0b4e0af35a3a56070f666741750cf6a2dbf5f65 is committed and pushed.
+The final refreshed-surface check passes 79 browser tests, and its full build
+emits 25 artifacts with all 1,455 selected inputs unchanged. A post-commit
+guard compared rename-folded and uncollapsed path lists; exact committed-tree
+identity passed. Explicit no-renames comparison completed index reconciliation
+without changing the commit, working publication carrier or private backup.
+The consumed temporary index was removed. Its receipt remains at
+/Users/freedom/.codex/odylith-boundary-checkpoint.qgYnef/checkpoint-terminal.json.
+
+Both installed manual intervention publication paths pass. Actual Codex fallback
+is visible in this conversation and confirmed by same-session readback; automatic
+activation remains unverified. Actual Claude visibility cannot yet be tested:
+its CLI returns Not logged in before model execution. The user has been asked
+to sign in; no credentials or trust settings were changed. CB-242 owns this gap.
+
+The existing 14-case installed discovery campaign now passes its first case,
+including 4 Radar workstreams, 4 components, 5 diagrams and browser/readback proof.
+It stops on the second case: the rescue-profile reviewer rejects the selected
+proof-boundary citation after three calls in 68.468 seconds, with no records
+created. Preserve this failed run and its unchanged input/artifact/driver evidence.
+Independent semantic and rendered UX reviews accept the first package with no
+P0/P1. Source-first adjudication confirms the second
+case requires material clarification: exact citation bytes do not establish the
+missing result/producer relation. The bounded owner is the existing early
+remaining-candidate clarification choice, not a reviewer relaxation or retry.
+Check the existing case expectation and predeclare controls before comparison.
+CB-209 owns this finding and prior proof-role learning. The
+other twelve cases, recovery, host completion and untouched final evaluation
+remain open; the original completion scope is unchanged.
+
+The predeclared comparison below is historical and stopped as recorded above.
+It changed only the remaining-author materiality wording
+under authoring v65. Keep schema shape, profile v18, participant ownership, reviewer,
+call limits and publication unchanged. Require the unchanged ambiguous input to
+ask the existing proof_boundary question in two calls without review or staging;
+require an explicitly result-bearing contrast and the existing flood-shelter
+control to remain authored and reviewed. Preserve proof-role positive/negative
+verdicts. The independently corrected maintained expectation proves clarification,
+not publication. Stop on the first semantic mismatch, preserve it, and do not retry
+or retune this comparison. Unit checks alone cannot qualify the prompt change.
+
 ## Current release-check correction (2026-09-19)
 
 The bounded correction passes a frozen full regression: 1,600 install tests,
