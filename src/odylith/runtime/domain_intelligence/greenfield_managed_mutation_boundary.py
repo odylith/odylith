@@ -39,6 +39,13 @@ _READ_ONLY_COMMANDS = frozenset(
     }
 )
 
+_COMPLETED_INTERVENTION_STATUS_COMMANDS = frozenset(
+    {
+        ("claude", "intervention-status"),
+        ("codex", "intervention-status"),
+    }
+)
+
 
 class GreenfieldManagedMutationBusyError(RuntimeError):
     """A supported later writer could not enter the managed mutation boundary."""
@@ -68,6 +75,13 @@ def command_may_mutate_greenfield_managed_paths(tokens: Sequence[str]) -> bool:
     if top == "release" and len(command) > 1 and command[1] in {"list", "show", "migration-gate"}:
         return False
     return True
+
+
+def _completed_nonready_intervention_status(tokens: Sequence[str], result: int) -> bool:
+    """Recognize the declared non-ready result of a completed status assessment."""
+
+    command = tuple(str(token).strip() for token in tokens if str(token).strip())
+    return result == 1 and command[:2] in _COMPLETED_INTERVENTION_STATUS_COMMANDS
 
 
 def run_with_greenfield_managed_mutation_boundary(
@@ -166,7 +180,7 @@ def run_with_greenfield_managed_mutation_boundary(
                 upgrade_dashboard_recovery.require_unchanged_anchors(
                     repo_root=root, admitted_receipt=admitted_upgrade,
                 )
-            if result != 0:
+            if result != 0 and not _completed_nonready_intervention_status(command_tokens, result):
                 if admitted_upgrade is not None:
                     upgrade_dashboard_recovery.record_failed_completion(
                         repo_root=root, repository_lock_fd=descriptor, admitted_receipt=admitted_upgrade,

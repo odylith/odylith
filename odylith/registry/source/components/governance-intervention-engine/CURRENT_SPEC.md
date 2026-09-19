@@ -15,7 +15,20 @@
   platform seamless" may rank voice or integration inspection affordances, but
   it must still stay silent when no hard law is violated and no immediate
   user-visible value is earned.
-Last updated: 2026-09-09
+Last updated: 2026-09-19
+
+## Manual delivery publication boundary
+
+For both hosts, `visible-intervention` and `intervention-status` use the normal
+CLI mutation boundary, not the launcher's direct-module hook shortcuts. Manual
+delivery and optional transcript confirmation can append governed Compass
+events; those writes must publish a verified successor together with their
+delivery state. Exit 1 from these completed status assessments means non-ready
+activation, not a failed confirmation write: seal changed fingerprints and
+preserve exit 1. Ordinary failed writers retain their existing behavior.
+The existing hook execution budgets and transport routes
+remain separate. CB-242 records the reproduced bypass and recovery evidence;
+installed repair and native automatic delivery require separate proof.
 
 ## Foreground hook lifetime
 

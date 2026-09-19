@@ -32,7 +32,7 @@ import greenfield_matrix_transaction_evidence as evidence_module
 from greenfield_matrix_transaction_evidence import commit_precompiled_transaction
 from greenfield_matrix_transaction_evidence import confirmation_preview_issues
 from greenfield_matrix_transaction_evidence import dry_run_commit_issues
-from greenfield_matrix_transaction_evidence import post_confirm_navigation_issues
+from greenfield_matrix_transaction_evidence import terminal_handoff_issues
 
 
 HASH = "a" * 64
@@ -806,9 +806,10 @@ def test_generation_proof_rejects_an_unapproved_transaction_with_the_same_write_
         after_fingerprints=write_set["after_fingerprints"],
         publication_sha256=str(receipt["publication_sha256"]),
     ) == ("immutable generation readback is missing or invalid",)
-    assert post_confirm_navigation_issues(
-        create_payload={}, repo_root=tmp_path, transaction_hash=unapproved_transaction,
-    ) == ("post-confirm navigation has no valid reviewed generation receipt",)
+    assert terminal_handoff_issues(
+        terminal_decision=SimpleNamespace(stdout="{}"), repo_root=tmp_path,
+        transaction_hash=unapproved_transaction, browser_open_suppressed=True,
+    ) == ("terminal handoff has no valid reviewed generation receipt",)
     assert (tmp_path / "odylith/index.html").read_bytes() == publication
     assert not (tmp_path / ".odylith/runtime/greenfield/create-journal" / unapproved_transaction).exists()
 
@@ -939,7 +940,7 @@ def test_confirmation_preview_rejects_malformed_or_nonterminal_offers(mutate, ex
     assert expected_issue in confirmation_preview_issues(proposal_payload=payload, repo_root=OFFER_ROOT)
 
 
-def test_post_confirm_navigation_requires_the_reviewed_generation_workspace(tmp_path: Path) -> None:
+def test_terminal_handoff_requires_the_reviewed_generation_workspace(tmp_path: Path) -> None:
     receipt, write_set = _compiled_receipt(tmp_path)
     transaction_hash = str(receipt["transaction_hash"])
     _publish_committed_generation(
@@ -952,26 +953,44 @@ def test_post_confirm_navigation_requires_the_reviewed_generation_workspace(tmp_
         / "repository/odylith/index.html"
     ).resolve()
     compatibility_dashboard = (tmp_path / "odylith/index.html").resolve()
-    payload = {
-        "post_confirm_navigation": {
-            "project": "odylith/index.html?tab=project",
-            "radar": "odylith/index.html?tab=radar",
-            "registry": "odylith/index.html?tab=registry",
-            "atlas": "odylith/index.html?tab=atlas",
-            "compass": "odylith/index.html?tab=compass&date=live",
-            "dashboard_path": str(dashboard),
-            "project_url": f"{dashboard.as_uri()}?tab=project",
-            "view_status": "reviewed_generation",
-            "compatibility_dashboard_path": str(compatibility_dashboard),
-            "generation_transaction_hash": transaction_hash,
-        }
-    }
+    visible = (
+        "The package is committed. Open the "
+        f"[Project dashboard]({dashboard.as_uri()}?tab=project) or use `{dashboard}`."
+    )
+    decision = SimpleNamespace(stdout=json.dumps({
+        "version": "odylith.greenfield.host-confirmation-callback.v1",
+        "status": "CLOSED",
+        "command": "CONFIRM",
+        "transaction_hash": transaction_hash,
+        "visible_markdown": visible,
+        "developer_context": "Return the supplied completion handoff.",
+    }))
 
-    assert post_confirm_navigation_issues(
-        create_payload=payload,
+    assert terminal_handoff_issues(
+        terminal_decision=decision,
         repo_root=tmp_path,
         transaction_hash=transaction_hash,
+        browser_open_suppressed=True,
     ) == ()
+
+    opened_decision = SimpleNamespace(stdout=json.dumps({
+        **json.loads(decision.stdout),
+        "visible_markdown": f"Opened the committed [Project dashboard]({dashboard.as_uri()}?tab=project).",
+    }))
+    assert terminal_handoff_issues(
+        terminal_decision=opened_decision,
+        repo_root=tmp_path,
+        transaction_hash=transaction_hash,
+        browser_open_suppressed=False,
+    ) == ()
+    assert terminal_handoff_issues(
+        terminal_decision=opened_decision,
+        repo_root=tmp_path,
+        transaction_hash=transaction_hash,
+        browser_open_suppressed=True,
+    ) == (
+        "terminal handoff does not expose the reviewed generation: suppressed-browser fallback handoff",
+    )
 
     def later_writer(_repository_lock_fd):
         compatibility_dashboard.with_name("tooling-shell.html").write_text("later complete shell\n", encoding="utf-8")
@@ -981,18 +1000,42 @@ def test_post_confirm_navigation_requires_the_reviewed_generation_workspace(tmp_
         repo_root=tmp_path, command_tokens=("dashboard", "refresh"), operation=later_writer,
     ) == 0
     assert greenfield_generation_state.active_generation_identity(tmp_path)["write_set_hash"] != write_set["write_set_hash"]
-    assert post_confirm_navigation_issues(
-        create_payload=payload, repo_root=tmp_path, transaction_hash=transaction_hash,
+    assert terminal_handoff_issues(
+        terminal_decision=decision, repo_root=tmp_path, transaction_hash=transaction_hash,
+        browser_open_suppressed=True,
     ) == ()
 
-    payload["post_confirm_navigation"]["project_url"] = "file:///wrong/index.html?tab=project"
+    decision.stdout = decision.stdout.replace(dashboard.as_uri(), "file:///wrong/index.html")
 
-    assert post_confirm_navigation_issues(
-        create_payload=payload,
+    assert terminal_handoff_issues(
+        terminal_decision=decision,
         repo_root=tmp_path,
         transaction_hash=transaction_hash,
+        browser_open_suppressed=True,
     ) == (
-        "post-confirm response does not expose the reviewed generation workspace routes: project_url",
+        "terminal handoff does not expose the reviewed generation: reviewed generation project URL",
+    )
+
+    decision.stdout = json.dumps({
+        **json.loads(decision.stdout),
+        "visible_markdown": f"Open [Project dashboard]({dashboard.as_uri()}?tab=project).",
+    })
+    assert terminal_handoff_issues(
+        terminal_decision=decision, repo_root=tmp_path, transaction_hash=transaction_hash,
+        browser_open_suppressed=True,
+    ) == (
+        "terminal handoff does not expose the reviewed generation: reviewed generation dashboard path",
+    )
+
+    decision.stdout = json.dumps({
+        **json.loads(decision.stdout),
+        "transaction_hash": "b" * 64,
+    })
+    assert terminal_handoff_issues(
+        terminal_decision=decision, repo_root=tmp_path, transaction_hash=transaction_hash,
+        browser_open_suppressed=True,
+    ) == (
+        "terminal handoff does not expose the reviewed generation: transaction receipt, reviewed generation dashboard path",
     )
 
 

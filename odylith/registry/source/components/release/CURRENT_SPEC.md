@@ -1,5 +1,5 @@
 # Release
-Last updated: 2026-09-18
+Last updated: 2026-09-19
 
 ## Greenfield timing qualification (2026-09-18)
 
@@ -23,6 +23,10 @@ the CLOSED journal's saved commit result, sealed readback and unchanged retry
 state. It must not substitute create or synthesize successful command stdout.
 Evaluation failure summaries and actual first/retry command diagnostics remain
 separate, including when no external evidence directory was selected.
+Navigation proof checks the actual terminal completion handoff against the
+transaction's pinned reviewed generation. The CLOSED journal is publication
+authority, not a substitute terminal response, and does not own a navigation
+field. Missing or wrong consumer links remain failures.
 
 Terminal success does not qualify native chat or hook visibility. Report native
 chat as unqualified/read-only until independently qualified, and prove the

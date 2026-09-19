@@ -822,7 +822,6 @@ _HOST_HOOK_MODULES: tuple[tuple[str, str, str], ...] = (
     ("claude", "statusline", "odylith.runtime.surfaces.claude_host_statusline"),
     ("claude", "pre-compact-snapshot", "odylith.runtime.surfaces.claude_host_precompact_snapshot"),
     ("claude", "compatibility", "odylith.runtime.surfaces.claude_host_compatibility"),
-    ("claude", "intervention-status", "odylith.runtime.surfaces.claude_host_intervention_status"),
     ("claude", "session-start", "odylith.runtime.surfaces.claude_host_session_brief"),
     ("claude", "subagent-start", "odylith.runtime.surfaces.claude_host_subagent_start"),
     ("claude", "prompt-bundle", "odylith.runtime.surfaces.claude_host_prompt_bundle"),
@@ -831,17 +830,14 @@ _HOST_HOOK_MODULES: tuple[tuple[str, str, str], ...] = (
     ("claude", "bash-guard", "odylith.runtime.surfaces.claude_host_bash_guard"),
     ("claude", "post-edit-checkpoint", "odylith.runtime.surfaces.claude_host_post_edit_checkpoint"),
     ("claude", "post-bash-checkpoint", "odylith.runtime.surfaces.claude_host_post_bash_checkpoint"),
-    ("claude", "visible-intervention", "odylith.runtime.surfaces.claude_host_visible_intervention"),
     ("claude", "subagent-stop", "odylith.runtime.surfaces.claude_host_subagent_stop"),
     ("claude", "stop-summary", "odylith.runtime.surfaces.claude_host_stop_summary"),
     ("codex", "session-start-ground", "odylith.runtime.surfaces.codex_host_session_brief"),
     ("codex", "prompt-context", "odylith.runtime.surfaces.codex_host_prompt_context"),
     ("codex", "bash-guard", "odylith.runtime.surfaces.codex_host_bash_guard"),
     ("codex", "post-bash-checkpoint", "odylith.runtime.surfaces.codex_host_post_bash_checkpoint"),
-    ("codex", "visible-intervention", "odylith.runtime.surfaces.codex_host_visible_intervention"),
     ("codex", "stop-summary", "odylith.runtime.surfaces.codex_host_stop_summary"),
     ("codex", "compatibility", "odylith.runtime.surfaces.codex_host_compatibility"),
-    ("codex", "intervention-status", "odylith.runtime.surfaces.codex_host_intervention_status"),
 )
 
 

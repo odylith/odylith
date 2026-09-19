@@ -26,13 +26,6 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 
 
 DRY_RUN_RECEIPT_VERSION = "odylith.greenfield.matrix.dry-run-receipt.v2"
-POST_CONFIRM_NAVIGATION = {
-    "project": "odylith/index.html?tab=project",
-    "radar": "odylith/index.html?tab=radar",
-    "registry": "odylith/index.html?tab=registry",
-    "atlas": "odylith/index.html?tab=atlas",
-    "compass": "odylith/index.html?tab=compass&date=live",
-}
 _HOST_REPAIR_OUTPUT_TOKENS = (
     '"reasoning_contract"', '"host_instruction"', "active-proposal.v1.json",
     "must be non-empty", "greenfield proposal validation failed",
@@ -393,40 +386,48 @@ def confirmation_preview_issues(
     return tuple(issues)
 
 
-def post_confirm_navigation_issues(
+def terminal_handoff_issues(
     *,
-    create_payload: Mapping[str, Any],
+    terminal_decision: Any,
     repo_root: Path,
     transaction_hash: str,
+    browser_open_suppressed: bool,
 ) -> tuple[str, ...]:
-    """Require the commit response to lead a first-time user into the created workspace."""
+    """Bind the terminal handoff form to its reviewed generation and browser policy."""
 
-    navigation = _mapping(create_payload.get("post_confirm_navigation"))
-    missing = [key for key, value in POST_CONFIRM_NAVIGATION.items() if navigation.get(key) != value]
     root = Path(repo_root).expanduser().resolve()
     try:
         reviewed = GreenfieldCommitJournal.pin_reviewed_generation(
             repo_root=root, transaction_hash=transaction_hash,
         )
     except (OSError, RuntimeError, ValueError):
-        return ("post-confirm navigation has no valid reviewed generation receipt",)
+        return ("terminal handoff has no valid reviewed generation receipt",)
     dashboard = (reviewed.repository_root / "odylith/index.html").resolve()
-    expected = {
-        "dashboard_path": str(dashboard),
-        "project_url": f"{dashboard.as_uri()}?tab=project",
-        "view_status": "reviewed_generation",
-        "compatibility_dashboard_path": str((root / "odylith/index.html").resolve()),
-        "generation_transaction_hash": transaction_hash,
-    }
-    missing.extend(key for key, value in expected.items() if navigation.get(key) != value)
+    response = _json_mapping(getattr(terminal_decision, "stdout", ""))
+    visible = str(response.get("visible_markdown") or "")
+    project_url = f"{dashboard.as_uri()}?tab=project"
+    opened_handoff = f"Opened the committed [Project dashboard]({project_url})."
+    fallback_handoff = (
+        "The package is committed. Open the "
+        f"[Project dashboard]({project_url}) or use `{dashboard}`."
+    )
+    missing = []
+    if response.get("transaction_hash") != transaction_hash:
+        missing.append("transaction receipt")
+    if project_url not in visible:
+        missing.append("reviewed generation project URL")
+    if opened_handoff not in visible and f"`{dashboard}`" not in visible:
+        missing.append("reviewed generation dashboard path")
+    if browser_open_suppressed and fallback_handoff not in visible and not missing:
+        missing.append("suppressed-browser fallback handoff")
+    elif not browser_open_suppressed and opened_handoff not in visible and fallback_handoff not in visible and not missing:
+        missing.append("reviewed generation handoff")
     if not dashboard.is_file():
-        missing.append("dashboard_target")
-    if missing:
-        return (
-            "post-confirm response does not expose the reviewed generation workspace routes: "
-            + ", ".join(dict.fromkeys(missing)),
-        )
-    return ()
+        missing.append("reviewed generation dashboard")
+    return (
+        ("terminal handoff does not expose the reviewed generation: " + ", ".join(missing),)
+        if missing else ()
+    )
 
 
 def dry_run_commit_issues(

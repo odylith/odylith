@@ -347,20 +347,32 @@ def test_case_preserves_stage_observation_and_actual_terminal_diagnostics(
             candidate, sort_keys=True, ensure_ascii=False, separators=(",", ":"), allow_nan=False,
         ).encode("utf-8")).hexdigest(),
     }
+    transaction_hash = "a" * 64
     create = SimpleNamespace(
-        stdout=json.dumps({"commit_manifest": {"model_authoring": {"candidate_review": receipt}}}),
+        stdout=json.dumps({
+            "version": "odylith.greenfield.host-confirmation-callback.v1",
+            "status": "CLOSED",
+            "command": "CONFIRM",
+            "transaction_hash": transaction_hash,
+            "visible_markdown": (
+                "The package is committed. Open the "
+                "[Project dashboard](file:///reviewed/odylith/index.html?tab=project) "
+                "or use `/reviewed/odylith/index.html`."
+            ),
+            "developer_context": "Return the supplied completion handoff.",
+        }),
         stderr="",
         returncode=0,
     )
     execution = SimpleNamespace(
         decision=create,
-        retry_decision=SimpleNamespace(stdout="actual retry response", stderr="retry diagnostic", returncode=0),
+        retry_decision=SimpleNamespace(stdout=create.stdout, stderr="", returncode=0),
         failure=None,
-        commit_payload=json.loads(create.stdout),
+        commit_payload={"commit_manifest": {"model_authoring": {"candidate_review": receipt}}},
         proposal_seconds=1.0,
         confirmation_seconds=0.1,
         retry_seconds=0.1,
-        dry_run_receipt={},
+        dry_run_receipt={"transaction_hash": transaction_hash},
         proposal_payload={},
         output_contract_issues=output_issues,
         terminal_journal={},
@@ -403,7 +415,12 @@ def test_case_preserves_stage_observation_and_actual_terminal_diagnostics(
     monkeypatch.setattr(module, "_generated_text", lambda **_kwargs: "")
     monkeypatch.setattr(module, "dry_run_commit_issues", lambda **_kwargs: ())
     monkeypatch.setattr(module, "confirmation_preview_issues", lambda **_kwargs: ())
-    monkeypatch.setattr(module, "post_confirm_navigation_issues", lambda **_kwargs: ())
+    handoff_calls: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        module,
+        "terminal_handoff_issues",
+        lambda **kwargs: handoff_calls.append(kwargs) or (),
+    )
     monkeypatch.setattr(module, "build_quality_verdict", lambda **kwargs: captured.update(
         quality_external_issues=kwargs["external_issues"],
     ) or replace(_passing_quality(module), passed=not terminal_failure))
@@ -435,6 +452,11 @@ def test_case_preserves_stage_observation_and_actual_terminal_diagnostics(
     confirmation = result.evidence["confirmation_contract"]
     assert confirmation["scope"] == "explicit_terminal_decision"
     assert confirmation["native_chat"] == "unqualified"
+    assert [call["terminal_decision"] for call in handoff_calls] == [
+        decision for decision in (execution.decision, execution.retry_decision) if decision is not None
+    ]
+    assert all(call["transaction_hash"] == transaction_hash for call in handoff_calls)
+    assert "post_confirm_navigation" not in execution.commit_payload
     if terminal_failure:
         command = next(row for row in confirmation["terminal_commands"] if row["attempt"] == terminal_failure)
         assert command == {

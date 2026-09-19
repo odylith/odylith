@@ -117,7 +117,7 @@ from greenfield_matrix_types import GreenfieldQualityVerdict  # noqa: E402
 from greenfield_matrix_journey import run_compiled_greenfield_journey  # noqa: E402
 from greenfield_matrix_transaction_evidence import confirmation_preview_issues  # noqa: E402
 from greenfield_matrix_transaction_evidence import dry_run_commit_issues  # noqa: E402
-from greenfield_matrix_transaction_evidence import post_confirm_navigation_issues  # noqa: E402
+from greenfield_matrix_transaction_evidence import terminal_handoff_issues  # noqa: E402
 from greenfield_matrix_governed_readback import collect_governed_readback  # noqa: E402
 from greenfield_matrix_governed_readback import compass_record_count  # noqa: E402
 from greenfield_matrix_governed_readback import program_record_count  # noqa: E402
@@ -1161,11 +1161,17 @@ def _run_case(
     decision_rail_issues = confirmation_preview_issues(
         proposal_payload=execution.proposal_payload, repo_root=repo_root, execution=execution,
     )
-    navigation_issues = post_confirm_navigation_issues(
-        create_payload=payload,
-        repo_root=repo_root,
-        transaction_hash=str(execution.dry_run_receipt.get("transaction_hash") or ""),
-    )
+    handoff_issues = tuple(dict.fromkeys(
+        issue
+        for terminal_decision in (execution.decision, execution.retry_decision)
+        if terminal_decision is not None
+        for issue in terminal_handoff_issues(
+            terminal_decision=terminal_decision,
+            repo_root=repo_root,
+            transaction_hash=str(execution.dry_run_receipt.get("transaction_hash") or ""),
+            browser_open_suppressed=env.get("ODYLITH_NO_BROWSER") == "1",
+        )
+    ))
     quality = build_quality_verdict(
         create_payload=payload,
         package=package,
@@ -1174,7 +1180,7 @@ def _run_case(
         browser_surface_issues=browser_surface_issues,
         browser_surface_proof_attempted=browser_surface_proof_attempted,
         browser_surface_proof_required=include_browser_proof,
-        confirmation_ux_issues=(*decision_rail_issues, *navigation_issues),
+        confirmation_ux_issues=(*decision_rail_issues, *handoff_issues),
         create_returncode=create.returncode,
         proposal_seconds=proposal_seconds,
         create_seconds=create_seconds,
@@ -1183,7 +1189,7 @@ def _run_case(
             *execution.output_contract_issues,
             *receipt_issues,
             *decision_rail_issues,
-            *navigation_issues,
+            *handoff_issues,
             *source_custody_issues,
             *model_result_issues,
             *(str(issue) for issue in profile_evidence.get("issues", ())),
@@ -1206,10 +1212,10 @@ def _run_case(
     )
     evidence["preconfirm_dry_run"] = dict(execution.dry_run_receipt)
     evidence["confirmation_contract"] = {
-        "status": "passed" if not decision_rail_issues and not navigation_issues else "failed",
+        "status": "passed" if not decision_rail_issues and not handoff_issues else "failed",
         "scope": "explicit_terminal_decision",
         "decision_rail_issues": list(decision_rail_issues),
-        "post_confirm_navigation_issues": list(navigation_issues),
+        "terminal_handoff_issues": list(handoff_issues),
         "native_chat": "unqualified",
         "commit_payload_source": "closed_journal",
         "terminal_journal": dict(execution.terminal_journal),

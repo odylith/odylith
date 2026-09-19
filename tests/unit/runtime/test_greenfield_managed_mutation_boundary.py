@@ -18,6 +18,9 @@ from odylith.runtime.domain_intelligence import greenfield_repository_lock
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
+from odylith.runtime.intervention_engine import stream_state
+from odylith.runtime.surfaces import claude_host_intervention_status
+from odylith.runtime.surfaces import codex_host_intervention_status
 from tests.unit.runtime.test_greenfield_commit_journal import _kill_commit_child
 from tests.unit.runtime.test_greenfield_generation_store import _publish
 from tests.unit.runtime.test_greenfield_baseline_activation import _activate, _complete
@@ -137,10 +140,15 @@ def _active_repository(tmp_path: Path) -> tuple[Path, greenfield_generation_stor
     return repo, generation
 
 
-def _run(repo: Path, operation) -> int:
+def _run(
+    repo: Path,
+    operation,
+    *,
+    command_tokens: tuple[str, ...] = ("radar", "refresh"),
+) -> int:
     return greenfield_managed_mutation_boundary.run_with_greenfield_managed_mutation_boundary(
         repo_root=repo,
-        command_tokens=("radar", "refresh"),
+        command_tokens=command_tokens,
         operation=lambda _descriptor: operation(),
     )
 
@@ -154,6 +162,10 @@ def _run(repo: Path, operation) -> int:
         (("atlas", "render", "--check-only"), False),
         (("codex", "prompt-context"), False),
         (("claude", "prompt-bundle"), False),
+        (("codex", "visible-intervention", "--confirm-chat"), True),
+        (("codex", "intervention-status", "--last-assistant-message", "visible"), True),
+        (("claude", "visible-intervention", "--confirm-chat"), True),
+        (("claude", "intervention-status", "--last-assistant-message", "visible"), True),
         (("greenfield", "create"), False),
     ),
 )
@@ -183,6 +195,127 @@ def test_successful_changed_writer_publishes_immutable_successor_only_after_retu
     assert greenfield_post_confirm_handoff.canonical_current_project_root(repo) == (
         current.repository_root,
         "active_generation",
+    )
+
+
+@pytest.mark.parametrize(
+    "command_tokens",
+    (
+        ("codex", "visible-intervention", "--confirm-chat"),
+        ("codex", "intervention-status", "--last-assistant-message", "visible"),
+        ("claude", "visible-intervention", "--confirm-chat"),
+        ("claude", "intervention-status", "--last-assistant-message", "visible"),
+    ),
+)
+def test_manual_intervention_writes_publish_an_immutable_successor(
+    tmp_path: Path,
+    command_tokens: tuple[str, ...],
+) -> None:
+    repo, generation = _active_repository(tmp_path)
+    stream = repo / "odylith/compass/runtime/agent-stream.v1.jsonl"
+    event = json.dumps({"host": command_tokens[0], "command": command_tokens[1]}) + "\n"
+
+    assert _run(
+        repo,
+        lambda: (_write(stream, event) or 0),
+        command_tokens=command_tokens,
+    ) == 0
+
+    current = greenfield_generation_store.pin_active_greenfield_generation(repo)
+    assert current.write_set_hash != generation.write_set_hash
+    assert (current.repository_root / stream.relative_to(repo)).read_text(encoding="utf-8") == event
+    assert not (generation.repository_root / stream.relative_to(repo)).exists()
+
+
+@pytest.mark.parametrize(
+    ("host", "status_main"),
+    (
+        ("codex", codex_host_intervention_status.main),
+        ("claude", claude_host_intervention_status.main),
+    ),
+)
+def test_nonready_intervention_status_publishes_completed_confirmation(
+    tmp_path: Path,
+    host: str,
+    status_main,
+) -> None:
+    repo, _generation = _active_repository(tmp_path)
+    session_id = f"{host}-managed-boundary"
+    visible_markdown = "---\n\n**Odylith Observation:** Boundary confirmation.\n\n---"
+
+    def seed_pending_intervention() -> int:
+        stream_state.append_intervention_event(
+            repo_root=repo,
+            kind="intervention_card",
+            summary="Boundary confirmation.",
+            session_id=session_id,
+            host_family=host,
+            intervention_key=f"iv-{host}-managed-boundary",
+            turn_phase="prompt_submit",
+            display_markdown=visible_markdown,
+            delivery_channel="assistant_visible_fallback",
+            delivery_status="assistant_render_required",
+            render_surface=f"{host}_visible_intervention",
+        )
+        return 0
+
+    assert _run(
+        repo,
+        seed_pending_intervention,
+        command_tokens=(host, "visible-intervention"),
+    ) == 0
+    pending = greenfield_generation_store.pin_active_greenfield_generation(repo)
+
+    result = _run(
+        repo,
+        lambda: status_main(
+            [
+                "--repo-root",
+                str(repo),
+                "--session-id",
+                session_id,
+                "--last-assistant-message",
+                visible_markdown,
+                "--json",
+            ]
+        ),
+        command_tokens=(host, "intervention-status", "--last-assistant-message", visible_markdown),
+    )
+
+    assert result == 1
+    current = greenfield_generation_store.pin_active_greenfield_generation(repo)
+    assert current.write_set_hash != pending.write_set_hash
+    stream = current.repository_root / "odylith/compass/runtime/agent-stream.v1.jsonl"
+    events = [json.loads(line) for line in stream.read_text(encoding="utf-8").splitlines()]
+    assert events[-1]["delivery_status"] == "assistant_chat_confirmed"
+    assert "assistant_chat_confirmed" not in (
+        pending.repository_root / "odylith/compass/runtime/agent-stream.v1.jsonl"
+    ).read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize(
+    ("host", "status_main"),
+    (
+        ("codex", codex_host_intervention_status.main),
+        ("claude", claude_host_intervention_status.main),
+    ),
+)
+def test_nonready_intervention_status_without_confirmation_keeps_generation(
+    tmp_path: Path,
+    host: str,
+    status_main,
+) -> None:
+    repo, generation = _active_repository(tmp_path)
+
+    result = _run(
+        repo,
+        lambda: status_main(["--repo-root", str(repo), "--session-id", f"{host}-no-write", "--json"]),
+        command_tokens=(host, "intervention-status"),
+    )
+
+    assert result == 1
+    assert greenfield_generation_store.pin_active_greenfield_generation(repo).write_set_hash == (
+        generation.write_set_hash
     )
 
 

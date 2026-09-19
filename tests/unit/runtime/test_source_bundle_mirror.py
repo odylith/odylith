@@ -262,8 +262,8 @@ def test_human_visible_clarity_floor_travels_to_bundle_mirrors() -> None:
     for live_rel, mirror_rel, expected_snippet in checks:
         live_text = (repo_root / live_rel).read_text(encoding="utf-8")
         mirror_text = (repo_root / mirror_rel).read_text(encoding="utf-8")
-        assert expected_snippet in live_text
-        assert expected_snippet in mirror_text
+        assert expected_snippet in " ".join(live_text.split())
+        assert expected_snippet in " ".join(mirror_text.split())
         assert live_text == mirror_text
 
 

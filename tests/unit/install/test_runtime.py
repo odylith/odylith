@@ -149,6 +149,11 @@ def test_ensure_launcher_points_at_repo_local_runtime(tmp_path: Path) -> None:
     assert "Odylith refused insecure localhost safe-upgrade installer." in text
     assert "Odylith refused non-HTTPS safe-upgrade installer" in text
     assert "Check VPN, proxy, firewall, TLS inspection, and certificate settings." in text
+    for generated in (text, bootstrap_text):
+        assert '"codex visible-intervention")' not in generated
+        assert '"codex intervention-status")' not in generated
+        assert '"claude visible-intervention")' not in generated
+        assert '"claude intervention-status")' not in generated
     assert "runtime/current/bin/python" in bootstrap_text
     assert "Odylith bootstrap could not find a trusted repo-local runtime." in bootstrap_text
     assert runtime._launcher_fallback_python(bootstrap) == (version_root / "bin" / "python").resolve()  # noqa: SLF001

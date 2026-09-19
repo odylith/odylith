@@ -50,7 +50,7 @@ Odylith is a product repo, not a host repo.
 - More specific `AGENTS.md` files override this root file for their subtree.
 
 ## Product Boundary
-- Odylith owns its product code, product docs, product skills, product guidance, product tests, and its own self-governance records in this repository.
+- Odylith owns its code, docs, skills, guidance, tests, and self-governance records here.
 - Host-repo truth is never copied into Odylith. Downstream repos keep their own plans, bugs, workstreams, specs, and diagrams locally.
 - Public Odylith content must stay generic. Do not add host-repo-branded labels, tokens, package names, or docs.
 

@@ -1,5 +1,48 @@
 Status: In progress
 
+## Current release-check correction (2026-09-19)
+
+The bounded correction passes a frozen full regression: 1,600 install tests,
+6,564 runtime tests and all 460 checks across 36 browser test files. There are no
+failures or skips; one Make-target test is deliberately deselected and protected
+holdout tests are excluded before collection. All selected inputs are unchanged.
+Passing evidence is retained in
+/Users/freedom/.codex/odylith-boundary-recheck.CLaSzL/. The original two runtime
+failures remain in /Users/freedom/.codex/odylith-boundary-checkpoint.qgYnef/.
+The root guidance size limit and exact source/bundle equality remain enforced.
+
+The evaluator now checks actual terminal handoff against the reviewed generation,
+including browser-open and absolute-path fallback forms plus same-hash retry.
+It does not restore retired journal fields or regenerate accepted packages.
+Four manual intervention launcher bypasses are removed; hook fast paths remain.
+Actual Codex/Claude status owners publish confirmation writes despite non-ready
+exit 1, while no-write assessments retain the generation and ordinary failed
+writers remain fail-closed. Focused proof is 129 evaluator and 76 boundary checks.
+Independent reviews accept these corrections and the retained package's semantic
+and desktop/mobile UX quality without P0/P1. The public runbook is aligned with
+the declared v18 advisory 90/120/150 targets, shared 165-second model window and
+180-second operational timeout. Generation mechanisms and quality floors stay fixed.
+
+CB-209 retains the original installed false navigation finding and 106.289-second
+proposal evidence; CB-242 retains the manual writer-boundary defect and restoration
+receipt `b40e17cd05a3c59c3e88b8f56c02beef99f3ae985cf5523bb056582d1ff34f75`.
+Restored stream events remain recoverable in that receipt, not in the live stream.
+A later maintainer-caused refresh race was settled by restoring admitted bytes,
+completing the existing Compass operation, then reapplying the preserved patch.
+Never edit source or governance while canonical publication is still running.
+Publish edited governance sources through sync before appending the Compass proof
+note; the log admission check correctly refuses unsynced managed-source edits
+without appending an event.
+
+Next commit and push this checkpoint, rebuild the immutable distribution, and
+prove both installed manual intervention command paths without another model
+generation. Simulated transcript evidence is product-behavior proof only. Complete
+the existing 14-case disclosed discovery matrix, recovery proof, host safety and
+actual visibility evidence, then independent adjudication and the untouched final
+evaluation. Discovery counts are not release statistics. Native activation and
+Claude transcript visibility remain unverified. Keep background engines enabled;
+clone only quiescent seeds and preserve nonterminal or worker-owned fixtures.
+
 ## Current installed shipping gate (2026-09-18)
 
 The existing terminal decision mechanism now passes a fresh clean-installed
