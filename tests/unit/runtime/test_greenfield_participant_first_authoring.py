@@ -487,4 +487,4 @@ def test_old_two_call_orchestration_is_not_exported():
     assert not hasattr(greenfield_model_intent_authoring, "author_greenfield_intent")
     assert not hasattr(greenfield_model_intent_authoring, "GREENFIELD_MODEL_PROOF_FD_ENV")
     assert MAX_GREENFIELD_SEMANTIC_CALLS == 3
-    assert GREENFIELD_INTENT_AUTHORING_VERSION.endswith(".v66")
+    assert GREENFIELD_INTENT_AUTHORING_VERSION.endswith(".v67")

@@ -69,7 +69,22 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     MAX_AUTHORED_LIST_ITEMS,
 )
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v66"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v67"
+MATERIALITY_DECISION_CONTRACT = (
+    "Ask only when a missing or conflicting choice materially changes the target "
+    "user, usable path, visible outcome, product/dependency boundary, source constraint, "
+    "safety or proof obligation and cannot safely remain an explicit proposed assumption. "
+    "A stated product task with observable or reviewable concerns is sufficient to "
+    "propose a first path. Missing implementation or performer names, or a "
+    "source-stated terminal producer, alone do not require clarification. "
+    "Keep absent source proof and terminal null and supply a proposed proof_boundary "
+    "assumption; never promote a proposed checkpoint into an accepted source result. "
+    "Use first_path when the evidence gives no usable task or competing task "
+    "interpretations cannot safely remain proposed. Use product_boundary for a "
+    "competing or unclear product responsibility or scope limit; otherwise select "
+    "the matching material dimension. Explicit source results, dependencies, "
+    "constraints and safety obligations cannot be overridden by assumptions."
+)
 
 _TEXT_FIELDS = (
     "title",
@@ -817,12 +832,7 @@ _CLARIFICATION_RESULT_SCHEMA: dict[str, Any] = {
                 "material_dimension": {
                     "type": "string",
                     "enum": sorted(_MATERIAL_DIMENSIONS),
-                    "description": (
-                        "Use first_path when a usable actor, task, or result is missing. "
-                        "Use product_boundary only for a competing or unclear product "
-                        "responsibility or scope limit; otherwise select the matching "
-                        "material dimension."
-                    ),
+                    "description": MATERIALITY_DECISION_CONTRACT,
                 },
             },
         },

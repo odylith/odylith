@@ -63,5 +63,9 @@ def test_only_state_object_uses_the_anchored_address_schema() -> None:
     assert state["additionalProperties"] is False
     assert _CITATION_SCHEMA["required"] == ["quote", "occurrence"]
     assert set(_CITATION_SCHEMA["properties"]) == {"quote", "occurrence"}
-    for field in ("title", "product_story", "proof_boundary"):
+    for field in ("title", "product_story"):
         assert set(_AUTHORED_FACTS_SCHEMA["properties"][field]["properties"]) == {"quote", "occurrence"}
+    proof_citation, absent_proof = _AUTHORED_FACTS_SCHEMA["properties"]["proof_boundary"]["anyOf"]
+    assert proof_citation == _CITATION_SCHEMA
+    assert proof_citation["additionalProperties"] is False
+    assert absent_proof == {"type": "null"}

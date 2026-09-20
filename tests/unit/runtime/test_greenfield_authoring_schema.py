@@ -40,7 +40,11 @@ def test_authoring_schema_structurally_separates_participants_authored_and_clari
     assert "minItems" not in participant_schema["properties"]["human_actors"]
 
     authored_properties = authored_branch["properties"]
-    terminal = authored_properties["terminal"]
+    terminal, absent_terminal = authored_properties["terminal"]["anyOf"]
+    assert absent_terminal == {"type": "null"}
+    assert "terminal" in authored_branch["required"]
+    assert terminal["type"] == "object"
+    assert terminal["additionalProperties"] is False
     assert set(terminal["properties"]) == {"event_order", "result_fact", "result_quote", "result_occurrence"}
     assert set(terminal["required"]) == set(terminal["properties"])
     result_fact = terminal["properties"]["result_fact"]

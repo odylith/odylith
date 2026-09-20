@@ -2,6 +2,90 @@ Status: In progress
 
 ## Latest live outcome: not qualified (2026-09-19)
 
+Checkpoint review's raw-result parity gap is corrected: raw accepted result must
+equal its sole source relation, or exactly empty under proposed proof. All 74
+focused checks and the unchanged retained-package browser matrix pass. The prior
+1,691-pass report remains retained; final checkpoint regression is still required.
+No generator, schema or model change was needed.
+
+The v67 sequence is stopped, not pending continuation. Coordination is independently
+accepted at 50.474 seconds/three calls; disclosure fails at 62.106 seconds/three calls
+on unsupported accepted proof and producer meaning missed by runtime review.
+Explicit-result and thin are unrun. Source-first diagnosis finds no additional
+owning-contract contradiction. Keep the real failure open; no prompt stack, new
+role, profile sweep, response repair or retry follows automatically. Reuse only the
+accepted candidate for model-free full-package and browser inspection. This cannot
+qualify the failed mechanism or replace fresh generalization evidence.
+
+The frozen recheck now passes 6,593 runtime tests with zero failures, followed by
+1,600 install and 63 governance browser passes. All input snapshots are unchanged;
+the protected evaluation remains excluded. The original 18-failure report is retained.
+No production recovery change was needed: the child import path, two strict nullable
+schema assertions and generated release sidecar were corrected.
+
+The accepted-candidate replay compiled five workstreams, five components and five
+diagrams, then stopped on its unit fixture's placeholder Casebook page before browser
+execution. Correct only that proof setup by cloning the existing rendered seed with
+exact custody; do not repair the candidate, inject page assets or claim a clean install.
+The approved seeded replay reached the browser matrix and retained 48 screenshots,
+but failed six assertions. Independent adjudication finds two stale checker rules:
+a hard-coded source-proof label and a mandatory source-result event. Correct only
+those existing checker owners with strict source/proposed authority controls, then
+rerun browser proof on the retained after-image without regeneration or model calls.
+The correction passes 66 focused checks and the retained after-image passes the
+full browser matrix in 16.105 seconds with zero findings and unchanged inputs.
+No package regeneration, model call or publication occurs. The final pre-correction
+install/governance browser pack passes 1,664 checks; disclosure remains open.
+
+The bounded reviewer-effort comparison is stopped after two calls. Astra medium
+and high both admit the rejected disclosure candidate in 12.331 and 9.259 seconds,
+respectively; all snapshots remain unchanged. The other three controls are unrun.
+Reject stronger effort as a demonstrated fix and adopt no production profile,
+prompt, schema, role or authoring change. Independent source-first re-adjudication
+confirms the P1: a coordinated concern does not entail the claimed proving result
+or causal producer. No contract contradiction is demonstrated, and neither model
+verdict overrides source evidence. No architecture expansion follows automatically.
+Declaration and immutable results: /Users/freedom/.codex/odylith-review-effort.bfDb51/.
+Evidence and independent decisions remain under
+/Users/freedom/.codex/odylith-materiality-contract.cwmmFL/.
+
+### Retained correction declaration before the stopped live sequence
+
+Candidate v67 keeps the production participant-first path and replaces the stale
+materiality threshold with one shared schema/prompt definition. Two existing
+shared role definitions now distinguish beneficiaries from performing operators
+and product capabilities from operating constraints. Independent adjudication
+accepts all three bounded corrections, and 117 focused controls pass after the two
+new contract checks failed before the change. Fields, profiles, custody, three-call
+ceiling and shared 165-second model window stay unchanged. Fresh one-shot
+production-path positives and a genuine missing-task negative are declared under
+/Users/freedom/.codex/odylith-materiality-contract.cwmmFL/; stop on first failure,
+require independent acceptance before each next case, and keep the failed role
+experiments rejected. Static checks are not semantic qualification.
+
+The source/design v2 alternative has now failed its first control in 7.492 seconds
+and one call: unnecessary first-path clarification, no authored source packet or
+complete package, unchanged inputs and publication. The remaining three controls
+are unrun. Select neither role alternative and retain the production participant-first
+path. The next bounded correction is the existing materiality contract: its schema
+still directs clarification for an absent actor or result despite v66 permitting
+proposed customer/proof decisions. Independent review must distinguish that observed
+instruction conflict from an unproven explanation of the model's hidden reasoning.
+No new role architecture, response repair, model-profile sweep or deadline extension
+is authorized by this failure. Actual production-path behavior, not static prompt
+checks, must prove any correction useful.
+
+The structural correction is committed and pushed at 688ca1562, with 412 focused,
+1,600 install and 97 targeted browser checks passing. The original single install
+fixture failure remains retained; its corrected null absence representation keeps
+the invented-actor negative and explicitly rejects the obsolete empty object.
+This checkpoint is not semantic qualification. The next external comparison lives
+at /Users/freedom/.codex/odylith-source-design-v66.e9EPWA/ and requires fresh,
+hash-bound preflight before dispatch. Its corrected harness reuses canonical
+dispatch/review and accepts source-backed alternate restriction classification
+without permitting invented limits. No additional compiler, model call or repair
+stage is introduced.
+
 The subsequent external source-admission comparison also fails: three calls and
 67.264 seconds produce a complete candidate, but no admitted package. Independent
 adjudication finds the reviewer's beneficiary denial false and a separate real P1:

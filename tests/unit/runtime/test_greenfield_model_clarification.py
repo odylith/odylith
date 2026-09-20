@@ -211,7 +211,11 @@ def test_material_dimension_schema_distinguishes_path_from_product_boundary() ->
     description = result_schema["properties"]["clarification"]["properties"][
         "material_dimension"
     ]["description"]
-    assert "first_path" in description and "actor, task, or result" in description
+    assert description in request.system_prompt
+    assert "first_path" in description and "no usable task" in description
+    assert "explicit proposed assumption" in description
+    assert "source-stated terminal" in description
+    assert "actor, task, or result is missing" not in description
     assert "product_boundary" in description and "responsibility or scope limit" in description
 
 

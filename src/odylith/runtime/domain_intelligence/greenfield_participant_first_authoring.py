@@ -20,6 +20,7 @@ from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
+    MATERIALITY_DECISION_CONTRACT,
     GreenfieldAuthoringClarification,
     GreenfieldModelAuthoredIntent,
     bounded_greenfield_model_timeout,
@@ -85,7 +86,7 @@ _PARTICIPANT_SELECTION_PROMPT = (
     "from a role name modifying an artifact. Return only the closed JSON object."
 )
 
-_REMAINING_AUTHORING_PROMPT = """
+_REMAINING_AUTHORING_PROMPT = f"""
 Create a useful, faithful first-release product proposal in the supplied JSON schema.
 You have two jobs: preserve source-supported meaning in cited facts and relations,
 and make useful provisional product decisions in explicitly labeled assumptions.
@@ -199,10 +200,7 @@ The proposed design supplies implementation boundaries without creating accepted
 source capabilities.
 
 MATERIALITY
-Return authored when there is a product, usable action/path and observable result or
-reviewable state. Missing implementation or performer names alone need no question.
-Return clarification_required only when a missing or conflicting choice changes the
-user, usable path, result, product/dependency boundary, safety or proof obligation.
+{MATERIALITY_DECISION_CONTRACT}
 For missing-information material_ambiguity, return evidence_quotes=[]; deterministic
 code binds the complete supplied evidence. For material_contradiction, cite at least
 two exact conflicting sides. Otherwise report consistent with no conflict quotes;

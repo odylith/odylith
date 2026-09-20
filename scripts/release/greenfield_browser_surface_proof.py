@@ -17,7 +17,11 @@ from greenfield_browser_authored_contract import (
     atlas_error_state_assertion_issues as _atlas_error_state_assertion_issues,
     atlas_state_assertion_issues as _atlas_state_assertion_issues,
 )
-from greenfield_browser_authored_contract import authored_structure_issues, story_rows_match_payload
+from greenfield_browser_authored_contract import (
+    authored_structure_issues,
+    expected_proof_card,
+    story_rows_match_payload,
+)
 from greenfield_browser_capture import capture_state_screenshot as _capture_state_screenshot
 from greenfield_browser_selection_proof import prove_clicked_selection, prove_missing_selection, wait_for_selection_route
 from local_release_smoke import _serve_directory
@@ -457,7 +461,7 @@ def _project_state_assertion_issues(
     if rendered_story_body_count != 5:
         issues.append("browser surface project did not render all five Product Story bodies")
     rows = [row for row in story_rows if isinstance(row, dict)] if isinstance(story_rows, (list, tuple)) else []
-    issues.extend(_project_story_binding_issues(rows))
+    issues.extend(_project_story_binding_issues(rows, authored_facts=payload_authored_facts))
     expected_rows = (
         [row for row in payload_story_rows if isinstance(row, dict)]
         if isinstance(payload_story_rows, (list, tuple))
@@ -488,15 +492,21 @@ def _project_state_assertion_issues(
     return tuple(issues)
 
 
-def _project_story_binding_issues(rows: list[dict[str, Any]]) -> tuple[str, ...]:
+def _project_story_binding_issues(rows: list[dict[str, Any]], *, authored_facts: Any = None) -> tuple[str, ...]:
     """Check exact rendered card bindings without interpreting prose."""
 
+    proof_label, proof_body = "Proof", None
+    if authored_facts is not None:
+        try:
+            proof_label, proof_body = expected_proof_card(authored_facts)
+        except ValueError as exc:
+            return (f"greenfield Project Product Story has invalid proof authority: {exc}",)
     expected = {
         "user problem": ("User Problem", "user_problem"),
         "first path": ("First Path", "first_path"),
         "product boundary": ("Product Boundary", "product_boundary"),
         "proposed capabilities": ("Proposed Capabilities", "owned_capabilities"),
-        "proof": ("Proof", "proof"),
+        proof_label.casefold(): (proof_label, "proof"),
     }
     issues: list[str] = []
     seen: set[str] = set()
@@ -520,6 +530,10 @@ def _project_story_binding_issues(rows: list[dict[str, Any]]) -> tuple[str, ...]
         body = str(row.get("body") or "").strip()
         if not body:
             issues.append(f"greenfield Project Product Story `{canonical_label}` card is empty")
+        elif expected_slot == "proof" and proof_body is not None and (
+            " ".join(body.split()) != " ".join(proof_body.split())
+        ):
+            issues.append("greenfield Project Product Story proof card drifted from typed authority")
     if rows:
         for key, (canonical_label, _slot) in expected.items():
             if key not in seen:

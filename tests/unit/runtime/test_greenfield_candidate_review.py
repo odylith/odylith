@@ -95,6 +95,11 @@ def test_partition_preserves_every_value_and_binds_complete_candidate():
     assert "condition or scope" in constraint_role
     assert "contiguous source context before or after" in constraint_role
     assert "Do not require an explicit subject" in constraint_role
+    assert "capability description alone is not an operational constraint" in constraint_role
+    participant_role = payload["role_definitions"]["human_actors"]
+    assert participant_role == author._AUTHORED_FACTS_SCHEMA["properties"]["human_actors"]["description"]
+    assert "source-stated beneficiaries" in participant_role
+    assert "does not establish a performing actor" in participant_role
     assert "Do not turn an activity or output purpose into a person." in payload["role_definitions"]["customer"]
     clock = Clock()
     provider = Reviewer({"admissible": True, "issues": []}, clock, 7.0)

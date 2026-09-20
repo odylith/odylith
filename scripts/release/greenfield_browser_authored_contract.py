@@ -6,6 +6,10 @@ from collections.abc import Iterable
 from typing import Any
 from urllib.parse import urlparse
 
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
+    provisional_proof_assumption,
+    require_provisional_proof_decision,
+)
 from odylith.runtime.domain_intelligence.greenfield_event_ordering import validate_source_precedence
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import validate_provisional_design
 
@@ -86,6 +90,44 @@ def _browser_visible_text(value: Any) -> str:
     return " ".join(str(value or "").split())
 
 
+def expected_proof_card(authored_facts: Any) -> tuple[str, str]:
+    """Select the sole proof label and body permitted by typed authority."""
+
+    if not isinstance(authored_facts, dict):
+        raise ValueError("Greenfield browser proof authority is unavailable")
+    raw_events = authored_facts.get("first_path_relations")
+    if not isinstance(raw_events, (list, tuple)) or not raw_events or any(
+        not isinstance(row, dict)
+        or not isinstance(row.get("visible_result_quote"), str)
+        for row in raw_events
+    ):
+        raise ValueError("Greenfield browser proof authority has invalid source events")
+    proof_boundary = authored_facts.get("proof_boundary")
+    if not isinstance(proof_boundary, str) or (
+        proof_boundary and not proof_boundary.strip()
+    ):
+        raise ValueError("Greenfield browser proof authority has an invalid proof boundary")
+    proof_assumption = provisional_proof_assumption(
+        authored_facts.get("assumptions", [])
+    )
+    require_provisional_proof_decision(authored_facts)
+    visible_result = authored_facts.get("visible_result")
+    if not isinstance(visible_result, str):
+        raise ValueError("Greenfield browser proof authority has an invalid visible result")
+    results = [row["visible_result_quote"] for row in raw_events if row["visible_result_quote"]]
+    if proof_assumption:
+        if results or visible_result:
+            raise ValueError(
+                "Greenfield provisional proof cannot carry a source result"
+            )
+        return "Proposed Proof Checkpoint", f"Assumption — {proof_assumption}"
+    if len(results) != 1 or visible_result != results[0]:
+        raise ValueError(
+            "Greenfield source proof requires exactly one matching source result"
+        )
+    return "Proof", proof_boundary
+
+
 def authored_structure_issues(rendered: Any, authored_facts: Any) -> tuple[str, ...]:
     """Require rendered authored nodes to preserve typed fact count, order, and text."""
 
@@ -104,8 +146,10 @@ def authored_structure_issues(rendered: Any, authored_facts: Any) -> tuple[str, 
         return ("browser surface project has invalid canonical source events",)
     event_orders = tuple(row.get("order") for row in raw_events)
     result_orders = [row.get("order") for row in raw_events if row["visible_result_quote"]]
-    if len(result_orders) != 1:
-        return ("browser surface project has invalid canonical result-event binding",)
+    try:
+        expected_proof_card(authored_facts)
+    except ValueError as exc:
+        return (f"browser surface project has invalid canonical proof authority: {exc}",)
     try:
         source_precedence = validate_source_precedence(
             authored_facts.get("source_precedence"), event_orders=event_orders,
@@ -113,7 +157,8 @@ def authored_structure_issues(rendered: Any, authored_facts: Any) -> tuple[str, 
         )
         design = validate_provisional_design(
             authored_facts.get("provisional_design"), event_orders=event_orders,
-            source_precedence=source_precedence, result_event_order=result_orders[0],
+            source_precedence=source_precedence,
+            result_event_order=result_orders[0] if result_orders else None,
         )
     except ValueError as exc:
         return (f"browser surface project has invalid canonical provisional design: {exc}",)
@@ -305,5 +350,6 @@ __all__ = [
     "atlas_error_state_assertion_issues",
     "atlas_state_assertion_issues",
     "authored_structure_issues",
+    "expected_proof_card",
     "story_rows_match_payload",
 ]

@@ -525,6 +525,9 @@ def _source_design_structure() -> tuple[dict, dict]:
             },
         ],
         "human_actors": ["Keeper"],
+        "proof_boundary": "A reviewed blue receipt proves the completed workflow.",
+        "visible_result": "blue receipt",
+        "assumptions": [],
         "source_precedence": [],
         "operational_constraints": [],
         "internal_systems": ["Relay", "Audit Console"],
@@ -629,6 +632,79 @@ def test_authored_browser_oracle_accepts_result_first_source_and_proposed_walk()
     module = _authored_contract_module()
     rendered, facts = _result_first_structure()
     assert module.authored_structure_issues(rendered, facts) == ()
+
+
+def _provisional_proof_structure() -> tuple[dict, dict]:
+    rendered, facts = _source_design_structure()
+    facts["proof_boundary"] = ""
+    facts["visible_result"] = ""
+    facts["assumptions"] = [{
+        "applies_to": "proof_boundary",
+        "statement": "Use a reviewable blue-receipt record as the proposed checkpoint.",
+    }]
+    for relation in facts["first_path_relations"]:
+        relation["visible_result_quote"] = ""
+    return rendered, facts
+
+
+def test_authored_browser_oracle_accepts_provisional_proof_without_a_source_result() -> None:
+    module = _authored_contract_module()
+    rendered, facts = _provisional_proof_structure()
+
+    assert module.expected_proof_card(facts) == (
+        "Proposed Proof Checkpoint",
+        "Assumption — Use a reviewable blue-receipt record as the proposed checkpoint.",
+    )
+    assert module.authored_structure_issues(rendered, facts) == ()
+
+
+@pytest.mark.parametrize("proposed", [False, True])
+@pytest.mark.parametrize("damage", ["missing", "wrong_type", "whitespace", "different_result"])
+def test_browser_proof_rejects_raw_result_drift(proposed: bool, damage: str) -> None:
+    module = _authored_contract_module()
+    rendered, facts = _provisional_proof_structure() if proposed else _source_design_structure()
+    assert module.authored_structure_issues(rendered, facts) == ()
+    if damage == "missing":
+        facts.pop("visible_result")
+    else:
+        facts["visible_result"] = {
+            "wrong_type": None, "whitespace": " ", "different_result": "an unsupported result",
+        }[damage]
+    assert any("invalid canonical proof authority" in issue
+               for issue in module.authored_structure_issues(rendered, facts))
+
+
+@pytest.mark.parametrize(
+    "damage",
+    [
+        "missing_assumption", "competing_assumption", "source_and_assumption",
+        "provisional_result", "missing_proof_key", "wrong_proof_type", "blank_proof",
+    ],
+)
+def test_authored_browser_oracle_rejects_invalid_proof_authority(damage: str) -> None:
+    module = _authored_contract_module()
+    rendered, facts = _provisional_proof_structure()
+    if damage == "missing_assumption":
+        facts["assumptions"] = []
+    elif damage == "competing_assumption":
+        facts["assumptions"].append({
+            "applies_to": "proof_boundary", "statement": "Use a second checkpoint.",
+        })
+    elif damage == "source_and_assumption":
+        facts["proof_boundary"] = "A source-backed proof boundary."
+    elif damage == "provisional_result":
+        facts["first_path_relations"][0]["visible_result_quote"] = "blue receipt"
+    elif damage == "missing_proof_key":
+        facts.pop("proof_boundary")
+    elif damage == "wrong_proof_type":
+        facts["proof_boundary"] = None
+    else:
+        facts["proof_boundary"] = " "
+
+    assert any(
+        "invalid canonical proof authority" in issue
+        for issue in module.authored_structure_issues(rendered, facts)
+    )
 
 
 def _post_result_structure() -> tuple[dict, dict]:
@@ -851,6 +927,95 @@ def test_required_proposed_capability_label_does_not_accept_retired_source_label
     ])
     assert any("unexpected semantic label: `Owned Capabilities`" in issue for issue in issues)
     assert any("missing its `Proposed Capabilities` card" in issue for issue in issues)
+
+
+def _story_rows(proof_label: str, proof_body: str) -> list[dict[str, str]]:
+    return [
+        {"label": "User Problem", "semantic_slot": "user_problem", "body": "A source fact."},
+        {"label": "First Path", "semantic_slot": "first_path", "body": "A proposed path."},
+        {"label": "Product Boundary", "semantic_slot": "product_boundary", "body": "A boundary."},
+        {"label": "Proposed Capabilities", "semantic_slot": "owned_capabilities", "body": "Capabilities."},
+        {"label": proof_label, "semantic_slot": "proof", "body": proof_body},
+    ]
+
+
+def test_project_story_proof_label_is_selected_by_payload_authority() -> None:
+    module = _module()
+    _rendered, source_facts = _source_design_structure()
+    _rendered, proposed_facts = _provisional_proof_structure()
+    source_rows = _story_rows("Proof", source_facts["proof_boundary"])
+    proposed_rows = _story_rows(
+        "Proposed Proof Checkpoint",
+        "Assumption — Use a reviewable blue-receipt record as the proposed checkpoint.",
+    )
+
+    assert module._project_story_binding_issues(
+        source_rows, authored_facts=source_facts,
+    ) == ()
+    assert module._project_story_binding_issues(
+        proposed_rows, authored_facts=proposed_facts,
+    ) == ()
+    source_with_proposed = module._project_story_binding_issues(
+        proposed_rows, authored_facts=source_facts,
+    )
+    proposed_with_source = module._project_story_binding_issues(
+        source_rows, authored_facts=proposed_facts,
+    )
+    assert any(
+        "unexpected semantic label: `Proposed Proof Checkpoint`" in issue
+        for issue in source_with_proposed
+    )
+    assert any("missing its `Proof` card" in issue for issue in source_with_proposed)
+    assert any(
+        "unexpected semantic label: `Proof`" in issue
+        for issue in proposed_with_source
+    )
+    assert any(
+        "missing its `Proposed Proof Checkpoint` card" in issue
+        for issue in proposed_with_source
+    )
+    source_body_drift = deepcopy(source_rows)
+    source_body_drift[-1]["body"] = "A different source proof."
+    assert "greenfield Project Product Story proof card drifted from typed authority" in (
+        module._project_story_binding_issues(
+            source_body_drift, authored_facts=source_facts,
+        )
+    )
+
+
+def test_project_state_assertion_preserves_exact_provisional_proof_body() -> None:
+    module = _module()
+    rendered, facts = _provisional_proof_structure()
+    rows = _story_rows(
+        "Proposed Proof Checkpoint",
+        "Assumption — Use a reviewable blue-receipt record as the proposed checkpoint.",
+    )
+    arguments = dict(
+        payload_origin=module.AUTHORED_PROJECTION_ORIGIN,
+        payload_prompt_count=5,
+        empty_payload_prompts=0,
+        rendered_prompt_count=5,
+        has_prompt_grid=True,
+        has_blank_state=False,
+        has_implementation_prompts=True,
+        max_prompt_overflow=0,
+        pane_overflow=0,
+        story_rows=rows,
+        payload_story_rows=rows,
+        authored_structure=rendered,
+        payload_authored_facts=facts,
+    )
+
+    assert module._project_state_assertion_issues(**arguments) == ()
+    drifted = deepcopy(rows)
+    drifted[-1]["body"] = "Assumption — A different proposed checkpoint."
+    assert "browser surface project Product Story cards drifted from the sealed payload" in (
+        module._project_state_assertion_issues(**{**arguments, "story_rows": drifted})
+    )
+    coordinated_drift = module._project_state_assertion_issues(**{
+        **arguments, "story_rows": drifted, "payload_story_rows": drifted,
+    })
+    assert "greenfield Project Product Story proof card drifted from typed authority" in coordinated_drift
 
 
 def test_browser_dom_extraction_has_one_owner_below_the_runner_size_limit() -> None:

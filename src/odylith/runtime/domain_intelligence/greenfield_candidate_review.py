@@ -42,6 +42,9 @@ INTERNAL_SYSTEM_ROLE_DEFINITION = (
 )
 OPERATIONAL_CONSTRAINT_ROLE_DEFINITION = (
     "A complete source-stated requirement, prohibition, permission or ordering constraint. "
+    "An ordinary product capability description alone is not an operational constraint; "
+    "retain actual operating obligations, exclusions and conditions, including those "
+    "stated alongside a capability. "
     "Each quote is projected independently: retain any source-stated governed subject, "
     "required, prohibited or permitted behavior and any condition or scope that changes "
     "its meaning. Include exact "
@@ -53,7 +56,9 @@ OPERATIONAL_CONSTRAINT_ROLE_DEFINITION = (
 )
 HUMAN_ACTOR_ROLE_DEFINITION = (
     "Source-stated people or human roles participating in the product, including "
-    "explicit output recipients outside the first path. Use an empty list when no "
+    "source-stated beneficiaries and explicit output recipients outside the first path. "
+    "Participation does not establish a performing actor or direct product operator; "
+    "do not assign those roles without source support. Use an empty list when no "
     "human participant is stated. An activity, artifact, or output-purpose modifier "
     "is not a human participant."
 )

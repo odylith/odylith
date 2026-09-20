@@ -4,6 +4,49 @@ Last updated: 2026-09-19
 
 ## Overview
 
+Current v67 live evidence is mixed, not qualified: coordination passes independent
+review in 50.474 seconds/three calls with proposed proof preserved; disclosure is
+false-admitted in 62.106 seconds/three calls with an unsupported accepted proof and
+producer relation. Explicit-result and thin controls remain unrun. Independent
+contract tracing finds the existing producer requirement coherent, so no further
+schema/prompt change is justified by that miss. The accepted candidate may support
+model-free projection/browser proof only; it does not close source-entailment,
+model reliability, complete installed workflow or release obligations.
+
+The unchanged v67 source snapshot passes 6,593 runtime, 1,600 install and 63
+governance browser tests. The first model-free package replay stops before browser
+testing on its minimal fixture's placeholder Casebook; corrected proof must use a
+fully rendered seed without changing accepted candidate bytes. These checks do not
+override the unsupported proof/producer admission defect.
+
+The corrected seeded replay preserves the proposed checkpoint in the actual
+desktop/mobile Project view. Its six browser failures are independently adjudicated
+as stale checker expectations, not a changed component contract. Browser proof must
+enforce the same closed source/proposed distinction, exact sealed copy and result
+binding as the component; accepting both labels unconditionally is not a valid fix.
+The original failed replay remains retained. The corrected retained-view browser
+matrix passes with no findings and unchanged package bytes; 66 focused checks
+preserve both authority branches and reject canonical-body drift. Independent review
+also closed raw accepted-result parity: 74 focused checks and the repeated unchanged
+retained-view browser matrix pass with zero findings. This is projection
+proof only. The external medium/high reviewer comparison stops on the first paired
+control: both admit the same rejected proof/producer claim, with unchanged inputs.
+Stronger effort is not adopted; supported profiles and authoring remain unchanged.
+Independent source-first re-adjudication confirms the semantic P1 remains; another
+model admission cannot qualify that unsupported relation.
+
+Candidate v67 replaces conflicting clarification instructions with one shared
+materiality definition in the existing authoring owner. Missing performer names or
+a source-stated terminal alone do not require a question when a usable product task
+and reviewable concerns support an explicit proposed checkpoint. Unresolved choices
+that cannot safely remain proposed still require clarification. Shared role
+definitions retain source-stated beneficiaries without assigning them actions and
+exclude ordinary capability descriptions from operational constraints. Field
+shapes, production participant-first roles, profile v18, three-call ceiling,
+shared deadline, custody and commit-only publication remain unchanged. The rejected
+source/design split is not adopted. Contract tests and actual model behavior must
+be reported separately; v67 is not yet live-qualified.
+
 Candidate v66 permits a conservative proof checkpoint as one targeted, visible
 assumption when the source supports a usable path and reviewable concerns but does
 not establish a terminal producer relation. Accepted proof and terminal are absent
@@ -21,9 +64,10 @@ implemented, not semantically qualified. A subsequent external admission-owner
 comparison reaches a complete candidate in 67.264 seconds and three calls but
 remains rejected: independent adjudication disproves its beneficiary denial while
 identifying a separate capability-as-operating-constraint error. That experiment
-is not the production path. A disjoint full-source owner and proposed-design owner
-may be compared externally under the same three-call shared window; no added
-repair stage or automatic adoption is authorized. Fresh frozen proof passes 412
+is not the production path. The subsequent disjoint full-source/proposed-design
+comparison fails on unnecessary clarification after one call and 7.492 seconds;
+neither alternative is adopted. No added repair stage or automatic adoption is
+authorized. Fresh frozen v66 proof passes 412
 focused and 34 Project/handoff/publication browser checks with unchanged inputs.
 These qualify the bounded source/proposed-proof correction, not reliable live
 semantics, clean-installed qualification, automatic host delivery or release.
@@ -32,7 +76,7 @@ The current unreleased participant-first owner selects exact source-grounded hum
 participants once, freezes their citations, and permits remaining-candidate
 authoring only for the other facts, relations and proposed design. Deterministic
 join and canonical validation precede unchanged full-candidate review. Authoring
-v66/profile v18/envelope v4/private proof v3 replace the old complete-author path;
+v67/profile v18/envelope v4/private proof v3 replace the old complete-author path;
 success requires three actual calls and clarification two, under one shared model
 deadline. Sealed observations identify both author roles separately. Review timing
 uses the actual request origin while total elapsed includes setup. Release checks
