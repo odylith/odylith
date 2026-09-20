@@ -78,12 +78,17 @@ def test_all_package_views_keep_checkpoint_out_of_source_truth(tmp_path: Path) -
     for row in proposal["backlog"]:
         assert row["radar_sections"]["Proposed Proof Checkpoint"].startswith("Assumption — ")
         assert "Source Proof Boundary" not in row["radar_sections"]
+        assert "Assumptions" not in row["radar_sections"]
     brief = proposal["project_brief"]
     assert "The accepted release proof boundary." not in str(brief)
     assert "Proposed proof checkpoint" in str(brief)
     assert proposal["semantic_model"]["domain_ontology"]["proof_boundary"] == ""
     assert all(row["authority_kind"] == "assumption" for row in proposal["semantic_model"]["proof_obligations"])
     support = next(row for row in proposal["diagrams"] if row["slug"].endswith("capability-support"))
+    assert support["summary"] == (
+        "Proposed component support for source-stated actions and state, with an "
+        "explicitly proposed proof checkpoint."
+    )
     assert "Proposed proof checkpoint — assumption" in support["mermaid_source"]
     assert "Source-stated proof boundary:" not in str(support["diagram_boxes"])
     assert "Source-stated visible result:" not in str(support["diagram_boxes"])

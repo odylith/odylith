@@ -764,6 +764,10 @@ def test_capability_support_keeps_source_events_and_proposed_ownership_distinct(
     assert "event1 --> component1" not in support["mermaid_source"]
     assert "owner" not in support["mermaid_source"]
     assert boxes["source_facts"]["label"] == "Source-stated facts"
+    assert support["summary"] == (
+        "Proposed component support for source-stated actions, with source-stated "
+        "state, result, and proof."
+    )
     assert "Accepted" not in json.dumps(support)
 
 

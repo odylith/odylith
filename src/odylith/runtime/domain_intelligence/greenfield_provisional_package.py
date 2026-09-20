@@ -105,6 +105,9 @@ def build_provisional_backlog(
     design = provisional_design_from_intent(intent)
     assumptions = intent.get("assumptions", [])
     assumption_refs = assumption_targets(assumptions)
+    general_assumptions = [
+        row for row in assumptions if row["applies_to"] == "general"
+    ]
     decisions = {
         field: (f"Source fact — {intent[field]}" if intent.get(field) else decision_copy(intent, field))
         for field in DECISION_FIELDS
@@ -131,6 +134,15 @@ def build_provisional_backlog(
         product_view = f"{decisions['product_view']}\n\nProposed workstream view — {workstream['deliverable']}"
         verification = [f"Proposed acceptance — {workstream['verification']}"]
         dependencies = [workstreams[key]["title"] for key in workstream["depends_on"]]
+        if dependencies:
+            rollout = f"Proposed delivery sequence — Start after {', '.join(dependencies)}."
+        else:
+            rollout = "Proposed delivery sequence — Begin without a proposed prerequisite."
+        component_checks = [
+            f"Proposed component check — {components[key]['name']}: "
+            f"{components[key]['verification']}"
+            for key in component_keys
+        ]
         interfaces = [provisional_exchange_text(row) for row in exchanges]
         design_ref = f"{PROVISIONAL_DESIGN_ROOT}/workstreams/{index}"
         sections = {
@@ -142,14 +154,16 @@ def build_provisional_backlog(
             "Risks": "No separate risk assessment has been accepted; provisional design is not a claim of risk-free implementation.",
             "Dependencies": _bullets(dependencies, empty="No proposed delivery dependencies."),
             "Validation": _bullets(verification),
-            "Rollout": deliverable,
+            "Rollout": rollout,
             "Why Now": decisions["opportunity"],
             "Impacted Components": _bullets([components[key]["name"] for key in component_keys]),
             "Interface Changes": _bullets(interfaces, empty="No proposed component exchanges."),
             "Migration/Compatibility": "Provisional greenfield design; no existing implementation or migration is asserted.",
-            "Test Strategy": _bullets(verification),
+            "Test Strategy": _bullets(component_checks),
             "Open Questions": _bullets(intent.get("ambiguities", []), empty="No unresolved material question."),
-            "Assumptions": _bullets(assumption_preview_values(assumptions), empty="No decision assumptions."),
+            **({
+                "Assumptions": _bullets(assumption_preview_values(general_assumptions)),
+            } if general_assumptions else {}),
             "Operational Constraints": _bullets(intent.get("operational_constraints", []), empty="No source-stated operating constraints."),
             "Source Success Metrics": _bullets(intent.get("success_metrics", [])),
             ("Source Proof Boundary" if intent.get("proof_boundary") else "Proposed Proof Checkpoint"):

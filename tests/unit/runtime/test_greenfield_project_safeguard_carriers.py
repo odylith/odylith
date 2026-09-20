@@ -102,7 +102,10 @@ def test_project_carriers_preserve_advisory_safeguards_without_source_promotion(
 
     first_workstream = proposal["backlog"][0]
     assert WORKSTREAM_VERIFICATION in first_workstream["radar_sections"]["Validation"]
-    assert WORKSTREAM_VERIFICATION in first_workstream["radar_sections"]["Test Strategy"]
+    assert COMPONENT_VERIFICATION in first_workstream["radar_sections"]["Test Strategy"]
+    assert first_workstream["radar_sections"]["Test Strategy"] != (
+        first_workstream["radar_sections"]["Validation"]
+    )
     assert SAFEGUARD_ASSUMPTION in first_workstream["radar_sections"]["Assumptions"]
     assert COMPONENT_VERIFICATION in rendered_specs["Structural test boundary 1"]
     assert WORKSTREAM_VERIFICATION in next_steps["implementation_prompt"]

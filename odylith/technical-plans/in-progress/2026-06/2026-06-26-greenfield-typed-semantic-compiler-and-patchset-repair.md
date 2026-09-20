@@ -2,6 +2,45 @@ Status: In progress
 
 ## Latest live outcome: not qualified (2026-09-19)
 
+The frozen integration run completes with 6,590 runtime passes/four stale test
+failures and 2,092 install/browser/Registry passes/four stale test failures. All
+460 maintained browser checks pass; both full input snapshots remain unchanged.
+Reconcile assertions with v19 identity and nonduplicated Radar projections without
+changing production behavior. Keep rescue's real source-bound no-write controls,
+reject forged lower-capability metadata on standard/deep, and ensure negative
+mutations actually change their typed value. All 447 tests in the six corrected
+files pass in 3.78 seconds. Original reports are retained beside
+the corrected proof in /Users/freedom/.codex/odylith-remaining-author.JmGrj2/.
+After corrected proof and a stable pushed checkpoint, build the full distribution
+and run the existing installed disclosed campaign; do not reopen architecture.
+Read-only host diagnosis confirms CB-242's already-recorded Codex status-label
+mismatch; fresh native delivery remains separate from browser and fallback proof.
+
+The remaining-author comparison now completes all four declared controls with
+independent acceptance: disclosure 87.190 seconds/three calls, coordination 85.095/
+three, explicit result 88.831/three, and a material first-path clarification 14.456/
+two. The three complete candidates preserve source/assumption authority and useful
+distinct design. Inputs remain unchanged. This differs from the rejected complete
+Astra author because participant selection stays separately frozen. It is positive
+feasibility evidence, not reliability or release qualification; thin-question copy
+and complete installed packages still need proof. Evidence and judgments:
+/Users/freedom/.codex/odylith-remaining-author.JmGrj2/RESULT.md.
+
+The default remaining author is integrated as Astra medium under standard profile
+v19, without adding roles, prompts, schema, retries or time. Profile/pipeline proof
+passes 285 checks; the two corrected projection owners pass 84 focused checks. Explicit
+rescue/deep profiles retain their own qualification obligations. Correct the two
+existing projection owners: capability summary must distinguish proposed proof;
+Radar rollout uses delivery prerequisites, test strategy uses component checks,
+and targeted assumptions appear only in their owned fields. Preserve general
+assumptions on standalone records. An overlapping Compass refresh was completed
+under its exact recorded runtime, and the final source fixes restored byte-for-byte;
+no recovery guard changed. Keep every writer quiescent for frozen regression.
+Frozen regression, integrated package/browser
+proof and the full original release gates remain required before qualification.
+
+### Retained preceding comparison
+
 The representation-only comparison is complete and rejected: all eight calls
 preserve their frozen inputs and both arms make identical decisions (three of
 four predeclared controls match). Explicit joined producer references demonstrate

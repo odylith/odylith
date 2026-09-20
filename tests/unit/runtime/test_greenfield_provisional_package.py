@@ -97,6 +97,8 @@ def test_every_delivery_keeps_canonical_decisions_and_distinct_proposed_acceptan
     rows = build_provisional_backlog(intent=intent, diagram_slugs={"context": "context"})
     assert intent == original_intent
     design = intent[AUTHORED_SEMANTICS_KEY]["provisional_design"]
+    components = {row["key"]: row for row in design["components"]}
+    workstreams = {row["key"]: row for row in design["workstreams"]}
     for row, authored in zip(rows, design["workstreams"], strict=True):
         for field in ("problem", "customer", "opportunity"):
             assert row[field] == f"Source fact — {intent[field]}"
@@ -110,6 +112,20 @@ def test_every_delivery_keeps_canonical_decisions_and_distinct_proposed_acceptan
         assert row["recommended_first_slice"] == f"Proposed deliverable — {authored['deliverable']}"
         assert row["validation"] == [f"Proposed acceptance — {authored['verification']}"]
         assert row["success_metrics"] == row["validation"]
+        dependencies = [workstreams[key]["title"] for key in authored["depends_on"]]
+        if dependencies:
+            expected_rollout = f"Proposed delivery sequence — Start after {', '.join(dependencies)}."
+        else:
+            expected_rollout = "Proposed delivery sequence — Begin without a proposed prerequisite."
+        expected_checks = "\n".join(
+            f"- Proposed component check — {components[key]['name']}: "
+            f"{components[key]['verification']}"
+            for key in authored["component_keys"]
+        )
+        assert row["radar_sections"]["Rollout"] == expected_rollout
+        assert row["radar_sections"]["Rollout"] != row["radar_sections"]["Proposed Solution"]
+        assert row["radar_sections"]["Test Strategy"] == expected_checks
+        assert row["radar_sections"]["Test Strategy"] != row["radar_sections"]["Validation"]
         assert row["provisional_workstream_contract"]["provisional_workstream"] == authored
         assert row["radar_sections"]["Design Authority"].endswith(
             "does not transfer the original actor's ownership."
@@ -147,7 +163,7 @@ def test_decision_assumptions_remain_visible_on_every_radar_row(tmp_path: Path, 
         if field == "product_view":
             expected += f"\n\nProposed workstream view — {authored['deliverable']}"
         assert row[field] == expected
-        assert statement in row["radar_sections"]["Assumptions"]
+        assert "Assumptions" not in row["radar_sections"]
         assert row["provisional_workstream_contract"]["decision_refs"][field] == "/assumptions/0"
     intent["assumptions"] = []
     with pytest.raises(ValueError, match="requires one fact or one assumption"):
@@ -224,6 +240,10 @@ def test_radar_compiler_keeps_source_decisions_and_proposed_sections_without_rep
         assert sections["Proposed Solution"] == row["recommended_first_slice"]
         assert sections["Design Authority"] == row["radar_sections"]["Design Authority"]
         assert row["validation"][0] in sections["Validation"]
+        assert sections["Rollout"] == row["radar_sections"]["Rollout"]
+        assert sections["Test Strategy"] == row["radar_sections"]["Test Strategy"]
+        assert sections["Rollout"] != sections["Proposed Solution"]
+        assert sections["Test Strategy"] != sections["Validation"]
         for section, boilerplate in default_section_boilerplate(row["title"]).items():
             assert sections[section] != boilerplate, section
 

@@ -173,7 +173,7 @@ def test_validation_boundary_rejects_invalid_semantic_call_claims(call_count):
     with pytest.raises(validation.GreenfieldModelAuthoringError, match="invalid semantic call count"):
         validation.validate_greenfield_authoring_response(
             _response(_source()), evidence_text=_source(), elapsed_seconds=1.0,
-            provider={"provider": "codex-cli", "model": "gpt-5.6-terra", "reasoning_effort": "low"},
+            provider={"provider": "codex-cli", "model": "gpt-6-astra", "reasoning_effort": "medium"},
             profile_id=STANDARD_PROFILE_ID, effective_timeout_seconds=55.0,
             semantic_model_call_count=call_count,
         )
@@ -291,7 +291,7 @@ def test_model_observation_is_checked_before_and_after_both_author_calls(monkeyp
         "remaining_candidate_authoring", "remaining_candidate_authoring",
     ]
     assert [row["model"] for row in observed] == [
-        "gpt-6-astra", "gpt-6-astra", "gpt-5.6-terra", "gpt-5.6-terra",
+        "gpt-6-astra", "gpt-6-astra", "gpt-6-astra", "gpt-6-astra",
     ]
     assert all(row["effective_timeout_seconds"] == 165.0 for row in observed)
 

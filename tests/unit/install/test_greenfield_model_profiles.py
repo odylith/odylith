@@ -127,11 +127,11 @@ def test_profile_registry_pins_preselected_standard_rescue_and_deep_requests() -
     with pytest.raises(ValueError, match="unsupported Greenfield repair tier"):
         normalize_greenfield_model_repair_tier("adaptive")
     standard = get_greenfield_model_profile(STANDARD_PROFILE_ID)
-    assert standard.model == "gpt-5.6-terra"
-    assert standard.reasoning_effort == "low"
+    assert standard.model == "gpt-6-astra"
+    assert standard.reasoning_effort == "medium"
     assert standard.participant_model == "gpt-6-astra"
     assert standard.participant_reasoning_effort == "medium"
-    assert standard.lower_capability is True
+    assert standard.lower_capability is False
     rescue = get_greenfield_model_profile(RESCUE_PROFILE_ID)
     assert rescue.model == "gpt-5.6-terra"
     assert rescue.reasoning_effort == "medium"
@@ -169,8 +169,8 @@ def test_profile_environments_pin_provider_model_effort_and_shared_tier_windows(
 
     assert "ODYLITH_REASONING_API_KEY" not in standard
     assert standard["ODYLITH_REASONING_PROVIDER"] == "codex-cli"
-    assert standard["ODYLITH_REASONING_MODEL"] == "gpt-5.6-terra"
-    assert standard["ODYLITH_REASONING_CODEX_REASONING_EFFORT"] == "low"
+    assert standard["ODYLITH_REASONING_MODEL"] == "gpt-6-astra"
+    assert standard["ODYLITH_REASONING_CODEX_REASONING_EFFORT"] == "medium"
     assert standard["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "165"
     assert rescue["ODYLITH_REASONING_MODEL"] == "gpt-5.6-terra"
     assert rescue["ODYLITH_REASONING_CODEX_REASONING_EFFORT"] == "medium"
@@ -207,7 +207,7 @@ def test_profile_evidence_requires_sealed_observation_parity() -> None:
     assert evidence["sealed_request_roles"] == [
         "participant_selection", "remaining_candidate_authoring",
     ]
-    assert evidence["lower_capability_scope"] == "remaining_candidate_authoring"
+    assert evidence["lower_capability_scope"] == "not_applicable"
     assert "expected_source_review" not in evidence
     assert evidence["stage_observation"] == stage_observation
     assert evidence["stage_observation_summary"]["response_kind"] == "authored"

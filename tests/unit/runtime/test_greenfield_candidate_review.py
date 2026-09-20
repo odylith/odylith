@@ -42,7 +42,7 @@ def run_review(provider, clock, *, deadline=55.0, observation=None, factory=None
     source = _source()
     authored = author.validate_greenfield_authoring_response(
         _response(source), evidence_text=source, elapsed_seconds=0.0,
-        provider={"provider": "codex-cli", "model": "gpt-5.6-terra", "reasoning_effort": "low"},
+        provider={"provider": "codex-cli", "model": "gpt-6-astra", "reasoning_effort": "medium"},
         profile_id=STANDARD_PROFILE_ID, effective_timeout_seconds=55.0,
         semantic_model_call_count=2,
     )

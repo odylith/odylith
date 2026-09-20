@@ -12,13 +12,13 @@ from dataclasses import dataclass
 from types import MappingProxyType
 
 
-GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v18"
+GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v19"
 GREENFIELD_NORMAL_CASE_TARGET_SECONDS = 60.0
 GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS = 180.0
 # The shared model window leaves finite headroom for compilation, sealing and staging.
 _COMPLETION_RESERVE_SECONDS = 15.0
 
-STANDARD_PROFILE_ID = "greenfield-standard-participant-first-terra-low-v18"
+STANDARD_PROFILE_ID = "greenfield-standard-participant-first-astra-medium-v19"
 RESCUE_PROFILE_ID = "greenfield-rescue-participant-first-terra-medium-v18"
 DEEP_PROFILE_ID = "greenfield-deep-participant-first-sol-high-v18"
 UNAVAILABLE_PROVIDER_PROFILE_ID = "greenfield-unavailable-provider-no-write-v1"
@@ -50,12 +50,11 @@ _PROFILES = MappingProxyType(
             profile_id=STANDARD_PROFILE_ID,
             repair_tier="standard",
             provider="codex-cli",
-            model="gpt-5.6-terra",
-            reasoning_effort="low",
+            model="gpt-6-astra",
+            reasoning_effort="medium",
             performance_target_seconds=90.0,
             operational_timeout_seconds=GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS,
             model_timeout_seconds=GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS - _COMPLETION_RESERVE_SECONDS,
-            lower_capability=True,
         ),
         RESCUE_PROFILE_ID: GreenfieldModelProfile(
             profile_id=RESCUE_PROFILE_ID,

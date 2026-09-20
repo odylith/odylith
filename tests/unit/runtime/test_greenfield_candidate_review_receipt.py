@@ -85,7 +85,7 @@ def test_review_dispatch_window_cannot_exceed_remaining_shared_window() -> None:
         (("model_authoring", "participant_selection", "model_profile", "model"), "gpt-5.6-terra"),
         (("model_authoring", "participant_selection", "model_profile", "profile_id"),
          "greenfield-rescue-participant-first-terra-medium-v18"),
-        (("model_authoring", "remaining_candidate_authoring", "model_profile", "model"), "gpt-6-astra"),
+        (("model_authoring", "remaining_candidate_authoring", "model_profile", "model"), "gpt-5.6-terra"),
         (("model_authoring", "remaining_candidate_authoring", "model_profile", "request_role"),
          "remaining_candidate_authoring"),
         (("model_authoring", "participant_selection", "elapsed_seconds"), 55.0),
@@ -117,6 +117,8 @@ def test_receipt_rejects_malformed_or_unqualified_observations(path: tuple[str, 
     target = manifest
     for key in path[:-1]:
         target = target[key]
+    original = target.get(path[-1])
+    assert type(original) is not type(value) or original != value
     target[path[-1]] = value
     with pytest.raises(ValueError, match="quality manifest is not approved"):
         transactions.require_product_create_transaction_quality_approved(

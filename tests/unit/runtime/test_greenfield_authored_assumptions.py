@@ -152,7 +152,7 @@ def test_radar_required_decisions_point_to_assumptions_not_missing_facts() -> No
             if field == "product_view":
                 expected += f"\n\nProposed workstream view — {workstream['deliverable']}"
             assert row[field] == expected
-            assert decision["statement"] in row["radar_sections"]["Assumptions"]
+            assert "Assumptions" not in row["radar_sections"]
     assert "Validate this gap" not in str(proposal)
     assert proposal["project_brief"]["purpose"] == decision_copy(intent, "problem")
     customer_index = next(

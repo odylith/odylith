@@ -97,8 +97,15 @@ def build_provisional_design_atlas_specs(
             **shared,
             "title": "Proposed Capability Support and Source Facts",
             "summary": (
-                "Proposed component support for source-stated actions, with source-stated "
-                "state, result, and proof."
+                (
+                    "Proposed component support for source-stated actions and state, with an "
+                    "explicitly proposed proof checkpoint."
+                )
+                if proof_is_provisional
+                else (
+                    "Proposed component support for source-stated actions, with source-stated "
+                    "state, result, and proof."
+                )
             ),
             "read_guide": (
                 "Each group pairs a proposed responsibility with its supported source actions "

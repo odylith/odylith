@@ -30,12 +30,12 @@ def _observation(profile_id, role):
     }
 
 
-def test_v18_profiles_separate_performance_targets_from_operational_timeouts():
-    assert profiles.GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION == "odylith.greenfield.model-profile-contract.v18"
+def test_v19_profiles_separate_performance_targets_from_operational_timeouts():
+    assert profiles.GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION == "odylith.greenfield.model-profile-contract.v19"
     assert profiles.GREENFIELD_NORMAL_CASE_TARGET_SECONDS == 60.0
     assert profiles.GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS == 180.0
     assert PROFILE_IDS == (
-        "greenfield-standard-participant-first-terra-low-v18",
+        "greenfield-standard-participant-first-astra-medium-v19",
         "greenfield-rescue-participant-first-terra-medium-v18",
         "greenfield-deep-participant-first-sol-high-v18",
     )
@@ -47,7 +47,7 @@ def test_v18_profiles_separate_performance_targets_from_operational_timeouts():
         )
         for p in map(profiles.get_greenfield_model_profile, PROFILE_IDS)
     ] == [
-        ("gpt-5.6-terra", "low", 165.0, 90.0, 180.0),
+        ("gpt-6-astra", "medium", 165.0, 90.0, 180.0),
         ("gpt-5.6-terra", "medium", 165.0, 120.0, 180.0),
         ("gpt-5.6-sol", "high", 165.0, 150.0, 180.0),
     ]
@@ -59,7 +59,7 @@ def test_v18_profiles_separate_performance_targets_from_operational_timeouts():
         assert (profile.review_model, profile.review_reasoning_effort) == ("gpt-6-astra", "medium")
         assert profile.supported_success
         assert profile.operational_timeout_seconds - profile.model_timeout_seconds == 15.0
-    assert profiles.get_greenfield_model_profile(profiles.STANDARD_PROFILE_ID).lower_capability
+    assert not profiles.get_greenfield_model_profile(profiles.STANDARD_PROFILE_ID).lower_capability
     assert profiles.get_greenfield_model_profile(profiles.RESCUE_PROFILE_ID).lower_capability
 
 
@@ -136,8 +136,21 @@ def test_observed_time_cannot_exceed_the_role_cap(profile_id, role):
 def test_review_uses_the_shared_window_with_its_pinned_identity(profile_id):
     observation = _observation(profile_id, "remaining_candidate_authoring")
     observation["request_role"] = "candidate_review"
-    with pytest.raises(ValueError):
+    profile = profiles.get_greenfield_model_profile(profile_id)
+    if (profile.model, profile.reasoning_effort) == (profile.review_model, profile.review_reasoning_effort):
+        assert profiles.require_greenfield_model_profile_observation(**observation) == profile
+    else:
+        with pytest.raises(ValueError):
+            profiles.require_greenfield_model_profile_observation(**observation)
+
+
+def test_standard_author_cannot_silently_reuse_retired_terra_metadata():
+    observation = _observation(profiles.STANDARD_PROFILE_ID, "remaining_candidate_authoring")
+    observation.update(model="gpt-5.6-terra", reasoning_effort="low")
+    with pytest.raises(ValueError, match="observed model does not match"):
         profiles.require_greenfield_model_profile_observation(**observation)
+    with pytest.raises(ValueError, match="unsupported Greenfield model profile"):
+        profiles.get_greenfield_model_profile("greenfield-standard-participant-first-terra-low-v18")
 
 
 @pytest.mark.parametrize("profile_id", PROFILE_IDS)

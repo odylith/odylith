@@ -56,7 +56,7 @@ and visible completion require their own proof.
 Release evaluation covers three pinned candidate success profiles; their identity
 does not itself establish qualification:
 
-- `greenfield-standard-participant-first-terra-low-v18`: the default and
+- `greenfield-standard-participant-first-astra-medium-v19`: the default and
   `auto` path, with a 90-second advisory performance target.
 - `greenfield-rescue-participant-first-terra-medium-v18`: the explicit rescue
   path, with a 120-second advisory performance target.
@@ -69,18 +69,19 @@ missing the selected 90/120/150-second target is recorded as performance evidenc
 not used as an admission gate. Proposal elapsed time must remain strictly below
 the operational timeout. Sixty seconds remains an advisory normal-case target.
 The separate commit-only step must still finish strictly below 60 seconds.
-Profile v18 retains the advisory targets and finite operational timeout while
-versioning the participant-first author boundary. This role change does not by
-itself qualify a model profile; semantic requirements, the final reviewer, and
-transaction laws are unchanged.
+Profile contract v19 changes only the default remaining author to Astra medium.
+Participant ownership, advisory targets, finite timeout, final reviewer, semantic
+requirements and transaction laws are unchanged. This selection requires fresh
+integrated qualification; the explicit rescue/deep identities are unchanged.
 Historical observations keep their original limits and verdicts; old sealed
-v12/v13/v14/v15/v16/v17 transactions are not relabeled or accepted as v18. Fresh
+v12/v13/v14/v15/v16/v17 transactions are not relabeled as current. Retired standard
+v18 authoring receipts are not relabeled as v19. Fresh
 per-profile evidence is required for qualification.
 
 The selected profile is fixed before the model request. Elapsed time or a failed
 attempt never relabels or extends a standard request into rescue or deep.
 Every profile first uses Astra/medium to select source-grounded participants and
-their exact source locations. Standard then uses Terra low, rescue uses Terra
+their exact source locations. Standard then uses Astra medium, rescue uses Terra
 medium, and deep uses Sol high to author the remaining candidate around that
 immutable participant set. An authored result requires one final read-only
 Astra/medium review of the complete joined candidate using only the shared model
@@ -104,8 +105,8 @@ These disclosed development cases select the mechanism for integration; they do
 not estimate reliability or qualify installed behavior, rescue/deep, unseen
 inputs, or release readiness. Earlier failed attempts retain their own verdicts.
 
-Standard and rescue use lower-capability remaining-candidate authors relative to Sol deep. Release
-proof requires each profile's observed committed positive case and a source-bound material
+Rescue retains a lower-capability remaining-candidate author. Release proof
+requires each profile's observed committed positive case and a source-bound material
 clarification with no writes, separately from unavailable-provider behavior.
 No other model earns a proof claim without its own observed request evidence.
 

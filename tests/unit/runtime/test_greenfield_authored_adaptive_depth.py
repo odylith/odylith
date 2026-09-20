@@ -439,7 +439,8 @@ def test_structured_source_projects_distinct_canonical_design_with_source_custod
     )
     assert all(event in rendered_support for event in source_events)
     assert all(
-        row["recommended_first_slice"] in row["radar_sections"]["Rollout"]
+        row["radar_sections"]["Rollout"].startswith("Proposed delivery sequence — ")
+        and row["recommended_first_slice"] not in row["radar_sections"]["Rollout"]
         for row in backlog
     )
     _assert_structural_design_projection_preserves_source(proposal)
@@ -554,10 +555,7 @@ def test_direct_evidence_graph_material_facts_survive_structural_design_projecti
             assert row["provisional_workstream_contract"]["decision_refs"][field] == (
                 f"/assumptions/{index}"
             )
-        assert all(
-            statement in row["radar_sections"]["Assumptions"]
-            for statement in decisions.values()
-        )
+        assert "Assumptions" not in row["radar_sections"]
         assert "Do not override a safety hold." in row["radar_sections"]["Non-Goals"]
         assert "Preserve the release decision." in row["radar_sections"]["Operational Constraints"]
         assert "Keep inspection evidence reviewable." in row["radar_sections"]["Operational Constraints"]

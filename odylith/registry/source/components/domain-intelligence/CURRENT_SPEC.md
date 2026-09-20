@@ -4,6 +4,25 @@ Last updated: 2026-09-19
 
 ## Overview
 
+The next integration candidate keeps participant-first ownership and changes only
+the default remaining author to Astra medium under a new profile identity. Four
+declared external controls independently pass: three complete drafts preserve
+source/proposed proof, useful design and explicit ordering in 85.095–88.831 seconds,
+while genuinely missing first-path information requests clarification in 14.456
+seconds. No role, prompt, schema, retry or deadline is added. These are feasibility
+observations, not package, model-reliability or release qualification. Explicit
+rescue/deep remain independently subject to the same floor. Diagnostic receipts
+remain diagnostic and cannot be relabeled as integrated proof.
+
+Projections must use the existing source/proposed authority flag even in diagram
+summaries. Radar keeps distinct deliverable, prerequisite-based rollout, component
+boundary test strategy and workstream acceptance views. Targeted assumptions stay
+in their own decision/proof fields; general assumptions remain visible on each
+standalone record. These corrections require frozen regression and rendered proof
+without changing or regenerating accepted source meaning.
+
+### Retained pre-integration evidence
+
 Current v67 live evidence is mixed, not qualified: coordination passes independent
 review in 50.474 seconds/three calls with proposed proof preserved; disclosure is
 false-admitted in 62.106 seconds/three calls with an unsupported accepted proof and

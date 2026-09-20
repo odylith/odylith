@@ -1140,7 +1140,7 @@ def test_model_profile_release_proof_requires_all_tiers_under_strict_budgets() -
     assert positives_only["lower_capability_scope"]["status"] == "unproven"
     assert any("clarification/no-write control" in issue for issue in positives_only["issues"])
 
-    lower_profile_id = module.model_profile_id_for_repair_tier("standard")
+    lower_profile_id = module.model_profile_id_for_repair_tier("rescue")
     clarifications = tuple(
         _passing_clarification_profile_result(module, module.model_profile_id_for_repair_tier(tier), 20.0)
         for tier in ("standard", "rescue")
@@ -1152,7 +1152,7 @@ def test_model_profile_release_proof_requires_all_tiers_under_strict_budgets() -
     assert proof["profiles"][lower_profile_id]["committed_positive_case_count"] == 1
     assert proof["profiles"][lower_profile_id]["clarification_no_write_control_count"] == 1
     assert proof["lower_capability_scope"]["status"] == "passed"
-    assert len(proof["lower_capability_scope"]["observed_profiles"]) == 2
+    assert len(proof["lower_capability_scope"]["observed_profiles"]) == 1
     assert proof["lower_capability_scope"]["observed_profiles"][0]["model"] == "gpt-5.6-terra"
     assert module.model_profile_release_proof(
         (*results[:-1], *clarifications),
@@ -1244,10 +1244,11 @@ def test_model_profile_aggregate_rechecks_private_roles_despite_passed_label(mut
     assert proof["profiles"][profile_id]["committed_positive_case_count"] == 0
 
 
-def test_model_profile_release_proof_ignores_forged_lower_metadata_and_missing_provider() -> None:
+@pytest.mark.parametrize("tier", ["standard", "deep"])
+def test_model_profile_release_proof_ignores_forged_lower_metadata_and_missing_provider(tier) -> None:
     module = _module()
-    deep_id = module.model_profile_id_for_repair_tier("deep")
-    forged = _passing_profile_result(module, deep_id, 20.0)
+    profile_id = module.model_profile_id_for_repair_tier(tier)
+    forged = _passing_profile_result(module, profile_id, 20.0)
     evidence = dict(forged.evidence or {})
     evidence["model_profile"] = {**evidence["model_profile"], "lower_capability": True}
 
@@ -1283,9 +1284,9 @@ def test_model_profile_release_proof_ignores_forged_lower_metadata_and_missing_p
 
 def test_model_profile_release_proof_rejects_unbound_or_writeful_lower_control() -> None:
     module = _module()
-    standard_id = module.model_profile_id_for_repair_tier("standard")
-    positive = _passing_profile_result(module, standard_id, 20.0)
-    control = _passing_clarification_profile_result(module, standard_id, 20.0)
+    rescue_id = module.model_profile_id_for_repair_tier("rescue")
+    positive = _passing_profile_result(module, rescue_id, 20.0)
+    control = _passing_clarification_profile_result(module, rescue_id, 20.0)
     evidence = dict(control.evidence or {})
     evidence["case"] = {**evidence["case"], "prompt_sha256": "not-source-bound"}
     evidence["no_write"] = {**evidence["no_write"], "write_attempts": ["open"]}
