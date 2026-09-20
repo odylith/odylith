@@ -134,6 +134,14 @@ def build_provisional_backlog(
         product_view = f"{decisions['product_view']}\n\nProposed workstream view — {workstream['deliverable']}"
         verification = [f"Proposed acceptance — {workstream['verification']}"]
         dependencies = [workstreams[key]["title"] for key in workstream["depends_on"]]
+        dependents = [
+            row["title"] for row in workstreams.values() if workstream["key"] in row["depends_on"]
+        ]
+        prerequisite_reason = f"Requires {', '.join(dependencies)} first." if dependencies else "No prerequisites."
+        dependent_reason = (
+            f"Enables {', '.join(dependents)}." if dependents
+            else "No other proposed workstream depends on this delivery."
+        )
         if dependencies:
             rollout = f"Proposed delivery sequence — Start after {', '.join(dependencies)}."
         else:
@@ -201,7 +209,7 @@ def build_provisional_backlog(
                 why_now=decisions["opportunity"],
                 expected_outcome=deliverable,
                 deferred_scope=intent.get("non_goals", []),
-                ranking_basis=deliverable,
+                ranking_basis=f"Proposed dependency order — {prerequisite_reason} {dependent_reason}",
             ),
             "provisional_workstream_contract": {
                 "authority_kind": "provisional_design",

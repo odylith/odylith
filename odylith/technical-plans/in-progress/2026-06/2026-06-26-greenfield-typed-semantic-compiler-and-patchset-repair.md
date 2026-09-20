@@ -2,19 +2,60 @@ Status: In progress
 
 ## Latest live outcome: not qualified (2026-09-19)
 
-The frozen integration run completes with 6,590 runtime passes/four stale test
-failures and 2,092 install/browser/Registry passes/four stale test failures. All
-460 maintained browser checks pass; both full input snapshots remain unchanged.
-Reconcile assertions with v19 identity and nonduplicated Radar projections without
-changing production behavior. Keep rescue's real source-bound no-write controls,
-reject forged lower-capability metadata on standard/deep, and ensure negative
-mutations actually change their typed value. All 447 tests in the six corrected
-files pass in 3.78 seconds. Original reports are retained beside
-the corrected proof in /Users/freedom/.codex/odylith-remaining-author.JmGrj2/.
-After corrected proof and a stable pushed checkpoint, build the full distribution
-and run the existing installed disclosed campaign; do not reopen architecture.
-Read-only host diagnosis confirms CB-242's already-recorded Codex status-label
-mismatch; fresh native delivery remains separate from browser and fallback proof.
+Checkpoint 1583ba45b is committed, pushed and remote-verified after 6,594 runtime
+and 1,700 install/refreshed-surface checks pass on unchanged inputs. The complete
+25-artifact distribution builds in 222.621 seconds with 1,455 inputs unchanged.
+The fresh installed campaign completes its first package: proposal 97.881 seconds,
+publication 2.709 seconds, exact retry/readback and browser checks passing.
+Independent source and transaction reviews find no P0/P1 in that package.
+
+The second rescue-profile proposal seals in 72.242 seconds and independently
+preserves source/proposed meaning, but the release checker rejects it before
+confirmation because it still requires source-stated proof. Correct the existing
+transaction-snapshot and Brief-evidence owners to consume the canonical exclusive
+source/proposed-proof contract. Exact retained Brief replay also exposes an empty
+list-presence mismatch; independent negative review requires rejecting a fabricated
+Visible result under proposed proof. Preserve malformed, missing, competing,
+hash/custody and exact readback negatives. No model, prompt, schema or candidate
+change is indicated. The original campaign remains failed: one pass, one stopped
+case, twelve unrun; every source, distribution and driver snapshot is unchanged.
+
+The bounded checker correction is now independently accepted with no remaining
+P0/P1 in that scope. Three negative controls fail before correction; 152 focused
+checks pass afterward. Exact retained pediatric Brief replay has no findings and
+retains transaction SHA b05633a02b211054f62dc07d6b18beb56e952eb5d1fa0f180a5e275eb92ae105.
+This proves the checker correction, not the failed campaign or release readiness.
+Fresh frozen proof under /Users/freedom/.codex/odylith-checker-rationale.QJg46D/
+passes all 2,126 install/browser/Registry checks across all 36 browser files.
+Runtime passes 6,594 checks and fails one old test that requires the removed
+deliverable-as-ranking duplication. Its two assertions now require the typed
+dependency rationale and exact rendered copy; all 66 focused rationale/projection
+checks pass. Preserve the original failed report. No production code changed
+after these full runs. Settle the resulting governance notes, prove refreshed
+surfaces, and commit the bounded correction before rebuilding; keep final
+corrected runtime confirmation and installed acceptance explicit.
+
+The next installed campaign retains the original fourteen assignments and adds
+the same disclosed thin-input control under rescue and deep. These are two
+cross-profile replications, not new independent generalization samples. Existing
+terminal-decision and injected-recovery proof paths remain separate obligations;
+no new runner, model role, schema, retry or timing allowance is needed.
+
+The first package's UX review finds one P1: Radar ordering rationale repeats the
+deliverable. The existing projection now derives the rationale from typed
+prerequisites and dependent workstreams. One new red control reproduces the defect;
+56 focused checks pass after correction. Independent source/projection review
+accepts the correction, but fresh desktop/mobile rendering is still required.
+Keep the P2 mobile repetition and Atlas fit-view advisories separate from blockers.
+
+Evidence and all original reports are retained under
+/Users/freedom/.codex/odylith-remaining-author.JmGrj2/. Finish the bounded corrections,
+reuse retained candidate bytes for checker proof, settle governance, then freeze
+for regression and rendered-package proof. Do not reopen architecture or relabel
+the failed run. The installed discovery matrix does not execute EDIT/REJECT,
+injected recovery, lower-capability clarification or the final evaluation; those
+remain separate full-goal obligations. CB-242's native-delivery proof boundary
+also remains open independently of browser and manual fallback evidence.
 
 The remaining-author comparison now completes all four declared controls with
 independent acceptance: disclosure 87.190 seconds/three calls, coordination 85.095/

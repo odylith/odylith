@@ -13,6 +13,7 @@ if str(SCRIPTS_ROOT) not in sys.path:
 
 from greenfield_matrix_package_evidence import _atlas_findings
 from greenfield_matrix_package_evidence import _registry_findings
+from greenfield_matrix_package_evidence import project_brief_readback_findings
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import RenderedArtifact
 
 
@@ -190,3 +191,180 @@ def test_atlas_evidence_rejects_self_nested_authored_boundary() -> None:
     assert messages == [
         "Atlas Mermaid `component-boundaries.mmd` repeats the product boundary as an identically named child component"
     ]
+
+
+def _proof_brief(*, proposed: bool) -> tuple[dict[str, object], dict[str, object]]:
+    statement = "Review one visible accepted decision."
+    proof = f"Assumption — {statement}" if proposed else "The accepted decision has exact readback."
+    rows: list[dict[str, str]] = [
+        {"section": "Source excerpt", "must_capture": "A reviewer can inspect an accepted decision."},
+        {"section": "User problem", "must_capture": "Accepted decisions need review."},
+        {"section": "First path", "must_capture": "A reviewer records and inspects one decision."},
+    ]
+    if not proposed:
+        rows.append({"section": "Visible result", "must_capture": "The accepted decision is visible."})
+    rows.append({
+        "section": "Proposed proof checkpoint" if proposed else "Proof",
+        "must_capture": proof,
+    })
+    brief: dict[str, object] = {
+        "schema_version": "odylith.greenfield.project_brief.v1",
+        "projection_origin": "model_authored_typed_intent",
+        "project_name": "Decision Review",
+        "purpose": "Accepted decisions need review.",
+        "operating_principle": "A reviewer can inspect an accepted decision.",
+        "project_outcome": proof if proposed else "The accepted decision is visible.",
+        "blueprint_sections": rows,
+        "coding_readiness_gates": [],
+        "host_independent_paths": [],
+    }
+    intent: dict[str, object] = {
+        "proof_boundary": "" if proposed else proof,
+        "assumptions": (
+            [{"applies_to": "proof_boundary", "statement": statement}] if proposed else []
+        ),
+        "evidence_requirements": [],
+    }
+    return brief, intent
+
+
+def _proof_brief_record(brief: dict[str, object]) -> str:
+    lines = [
+        "# Decision Review Project Brief",
+        "",
+        "- schema: odylith.greenfield.project_brief.v1",
+        "- origin: greenfield",
+        "",
+        "## Brief",
+        f"- outcome: {brief['project_outcome']}",
+        "- Source excerpt: “A reviewer can inspect an accepted decision.”",
+        "",
+        "## Project Design Board",
+    ]
+    for row in brief["blueprint_sections"]:
+        label, value = row["section"], row["must_capture"]
+        lines.append(f"- {label}: “{value}”" if label == "Source excerpt" else f"- {label}: {value}")
+    return "\n".join(lines)
+
+
+@pytest.mark.parametrize("proposed", (False, True), ids=("source-proof", "proposed-proof"))
+def test_project_brief_accepts_exact_exclusive_proof_copy(proposed: bool) -> None:
+    brief, intent = _proof_brief(proposed=proposed)
+
+    assert project_brief_readback_findings(
+        record_text=_proof_brief_record(brief), project_brief=brief, intent=intent
+    ) == ()
+
+
+@pytest.mark.parametrize("case", ("missing", "both", "duplicate", "invalid"))
+def test_project_brief_rejects_invalid_proof_decisions(case: str) -> None:
+    brief, intent = _proof_brief(proposed=True)
+    if case == "missing":
+        intent["assumptions"] = []
+    elif case == "both":
+        intent["proof_boundary"] = "Competing source proof."
+    elif case == "duplicate":
+        intent["assumptions"] = [*intent["assumptions"], dict(intent["assumptions"][0])]
+    else:
+        intent["assumptions"] = [{"applies_to": "proof_boundary", "statement": ""}]
+
+    findings = project_brief_readback_findings(
+        record_text=_proof_brief_record(brief), project_brief=brief, intent=intent
+    )
+
+    assert any("exclusive proof decision" in finding.message for finding in findings)
+
+
+@pytest.mark.parametrize("proposed", (False, True), ids=("source-proof", "proposed-proof"))
+@pytest.mark.parametrize("mutation", ("label", "value", "duplicate"))
+def test_project_brief_requires_exact_proof_label_and_value(
+    proposed: bool,
+    mutation: str,
+) -> None:
+    brief, intent = _proof_brief(proposed=proposed)
+    proof = brief["blueprint_sections"][-1]
+    if mutation == "label":
+        proof["section"] = "Proof" if proposed else "Proposed proof checkpoint"
+    elif mutation == "value":
+        proof["must_capture"] = "Mutated proof copy."
+    else:
+        brief["blueprint_sections"].append(dict(proof))
+
+    assert project_brief_readback_findings(
+        record_text=_proof_brief_record(brief), project_brief=brief, intent=intent
+    )
+
+
+@pytest.mark.parametrize("mutation", ("visible_result", "outcome"))
+def test_proposed_project_brief_rejects_coordinated_fabricated_results(mutation: str) -> None:
+    brief, intent = _proof_brief(proposed=True)
+    if mutation == "visible_result":
+        brief["blueprint_sections"].insert(-1, {
+            "section": "Visible result",
+            "must_capture": "A fabricated source result is visible.",
+        })
+    else:
+        brief["project_outcome"] = "A fabricated source result is visible."
+
+    findings = project_brief_readback_findings(
+        record_text=_proof_brief_record(brief), project_brief=brief, intent=intent
+    )
+
+    assert any(
+        "Visible result" in finding.message or "project outcome" in finding.message
+        for finding in findings
+    )
+
+
+@pytest.mark.parametrize("evidence", (pytest.param(None, id="absent"), pytest.param([], id="empty")))
+def test_project_brief_accepts_absent_or_empty_evidence_requirements(evidence: object) -> None:
+    brief, intent = _proof_brief(proposed=True)
+    if evidence is None:
+        intent.pop("evidence_requirements")
+
+    assert project_brief_readback_findings(
+        record_text=_proof_brief_record(brief), project_brief=brief, intent=intent
+    ) == ()
+
+
+def test_project_brief_accepts_exact_nonempty_evidence_requirements() -> None:
+    brief, intent = _proof_brief(proposed=True)
+    intent["evidence_requirements"] = ["A signed decision.", "An immutable readback."]
+    brief["blueprint_sections"].append({
+        "section": "Required evidence",
+        "must_capture": "A signed decision.\nAn immutable readback.",
+    })
+
+    assert project_brief_readback_findings(
+        record_text=_proof_brief_record(brief), project_brief=brief, intent=intent
+    ) == ()
+
+
+@pytest.mark.parametrize("evidence", (None, "evidence", {"kind": "evidence"}))
+def test_project_brief_rejects_malformed_present_evidence_requirements(evidence: object) -> None:
+    brief, intent = _proof_brief(proposed=True)
+    intent["evidence_requirements"] = evidence
+
+    findings = project_brief_readback_findings(
+        record_text=_proof_brief_record(brief), project_brief=brief, intent=intent
+    )
+
+    assert any("evidence_requirements" in finding.message for finding in findings)
+
+
+@pytest.mark.parametrize("mutation", ("label", "value", "duplicate"))
+def test_project_brief_requires_exact_nonempty_evidence_label_and_value(mutation: str) -> None:
+    brief, intent = _proof_brief(proposed=True)
+    intent["evidence_requirements"] = ["A signed decision."]
+    evidence_row = {"section": "Required evidence", "must_capture": "A signed decision."}
+    brief["blueprint_sections"].append(evidence_row)
+    if mutation == "label":
+        evidence_row["section"] = "Evidence"
+    elif mutation == "value":
+        evidence_row["must_capture"] = "A different record."
+    else:
+        brief["blueprint_sections"].append(dict(evidence_row))
+
+    assert project_brief_readback_findings(
+        record_text=_proof_brief_record(brief), project_brief=brief, intent=intent
+    )

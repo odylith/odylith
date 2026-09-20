@@ -133,6 +133,33 @@ def test_every_delivery_keeps_canonical_decisions_and_distinct_proposed_acceptan
     assert len({row["deliverable"] for row in rows}) == 4
 
 
+def test_ordering_rationale_explains_only_typed_delivery_dependencies(tmp_path: Path) -> None:
+    intent = deepcopy(_authored_proposal(tmp_path)["intent"])
+    workstreams = intent[AUTHORED_SEMANTICS_KEY]["provisional_design"]["workstreams"]
+    first, second, third, independent = workstreams
+    first["depends_on"] = []
+    second["depends_on"] = [first["key"]]
+    third["depends_on"] = [first["key"], second["key"]]
+    independent["depends_on"] = []
+    original = deepcopy(intent)
+
+    rows = build_provisional_backlog(intent=intent, diagram_slugs={"context": "context"})
+
+    assert intent == original
+    assert [row["ordering_decision"]["ranking_basis"] for row in rows] == [
+        f"Proposed dependency order — No prerequisites. Enables {second['title']}, {third['title']}.",
+        f"Proposed dependency order — Requires {first['title']} first. Enables {third['title']}.",
+        f"Proposed dependency order — Requires {first['title']}, {second['title']} first. "
+        "No other proposed workstream depends on this delivery.",
+        "Proposed dependency order — No prerequisites. "
+        "No other proposed workstream depends on this delivery.",
+    ]
+    for row in rows:
+        decision = row["ordering_decision"]
+        assert decision["ranking_basis"] != decision["expected_outcome"]
+        assert row["deliverable"] not in decision["ranking_basis"]
+
+
 def test_exchange_direction_does_not_invent_component_dependencies(tmp_path: Path) -> None:
     intent = deepcopy(_authored_proposal(tmp_path)["intent"])
     design = intent[AUTHORED_SEMANTICS_KEY]["provisional_design"]

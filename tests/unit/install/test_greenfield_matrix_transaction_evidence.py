@@ -444,6 +444,88 @@ def test_preconfirm_snapshot_preserves_absent_authored_semantics_as_absent(
     assert execution.dry_run_receipt["semantic_snapshot"]["authored_relation_set_sha256"] is None
 
 
+@pytest.mark.parametrize(
+    ("proof_boundary", "assumptions", "expected_key", "expected_value"),
+    (
+        (
+            "The accepted decision is visible with exact readback.",
+            [],
+            "proof_boundary",
+            "The accepted decision is visible with exact readback.",
+        ),
+        (
+            "",
+            [{"applies_to": "proof_boundary", "statement": "Review one visible accepted decision."}],
+            "assumptions",
+            [{"applies_to": "proof_boundary", "statement": "Review one visible accepted decision."}],
+        ),
+    ),
+    ids=("source-proof", "proposed-proof"),
+)
+def test_preconfirm_snapshot_preserves_the_exclusive_proof_decision(
+    proof_boundary: str,
+    assumptions: list[dict[str, str]],
+    expected_key: str,
+    expected_value: object,
+) -> None:
+    transaction = {
+        "proposal": {
+            "intent": {
+                "product_story": "A reviewer can inspect one accepted decision.",
+                "state_object": "Accepted decision",
+                "first_path": "A reviewer records and inspects one accepted decision.",
+                "proof_boundary": proof_boundary,
+                "assumptions": assumptions,
+            }
+        },
+        "intent_authority": {},
+    }
+
+    snapshot = evidence_module._semantic_snapshot(transaction)
+
+    assert snapshot["facts"][expected_key] == expected_value
+    assert ("proof_boundary" in snapshot["facts"]) != ("assumptions" in snapshot["facts"])
+
+
+@pytest.mark.parametrize(
+    ("proof_boundary", "assumptions"),
+    (
+        ("", []),
+        (
+            "Source proof.",
+            [{"applies_to": "proof_boundary", "statement": "Competing proposed proof."}],
+        ),
+        (
+            "",
+            [
+                {"applies_to": "proof_boundary", "statement": "First proposed proof."},
+                {"applies_to": "proof_boundary", "statement": "Second proposed proof."},
+            ],
+        ),
+        ("", [{"applies_to": "proof_boundary", "statement": ""}]),
+    ),
+    ids=("missing", "both", "duplicate", "invalid"),
+)
+def test_preconfirm_snapshot_rejects_invalid_proof_decisions(
+    proof_boundary: str,
+    assumptions: list[dict[str, str]],
+) -> None:
+    transaction = {
+        "proposal": {
+            "intent": {
+                "product_story": "A reviewer can inspect one accepted decision.",
+                "state_object": "Accepted decision",
+                "first_path": "A reviewer records and inspects one accepted decision.",
+                "proof_boundary": proof_boundary,
+                "assumptions": assumptions,
+            }
+        },
+        "intent_authority": {},
+    }
+
+    assert evidence_module._semantic_snapshot(transaction) == {}
+
+
 def test_commit_precompiled_transaction_rejects_mismatched_receipt_without_create(tmp_path: Path) -> None:
     _transaction_path, transaction_hash = _write_transaction(tmp_path, receipt_hash="b" * 64)
     calls: list[tuple[str, ...]] = []

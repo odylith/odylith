@@ -20,6 +20,7 @@ from odylith.runtime.domain_intelligence import greenfield_prewrite_commit_resul
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
 from odylith.runtime.domain_intelligence.greenfield_commit_transaction import _payload_hash
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import require_provisional_proof_decision
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     product_facts_payload,
 )
@@ -622,10 +623,11 @@ def _semantic_snapshot(transaction: Mapping[str, Any]) -> dict[str, Any]:
     intent = _mapping(proposal.get("intent"))
     authored_semantics = intent.get("authored_semantics")
     try:
+        require_provisional_proof_decision(intent)
         facts = product_facts_payload(intent)
     except ValueError:
         return {}
-    if not all(key in facts for key in ("product_story", "state_object", "first_path", "proof_boundary")):
+    if not all(key in facts for key in ("product_story", "state_object", "first_path")):
         return {}
     authority = _mapping(transaction.get("intent_authority"))
     operating_envelope = _mapping(authority.get("operating_envelope"))

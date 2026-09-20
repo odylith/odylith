@@ -223,12 +223,20 @@ def test_authored_backlog_rationale_reaches_rendering_without_placeholder_copy(
     assert decision["version"] == AUTHORED_ORDERING_DECISION_VERSION
     assert decision["tradeoff"] == ""
     assert decision["deferred_scope"] == [non_goal]
-    assert decision["ranking_basis"] == first["recommended_first_slice"]
+    expected_basis = (
+        "Proposed dependency order — No prerequisites. "
+        f"Enables {proposal['backlog'][1]['title']}."
+    )
+    assert decision["ranking_basis"] == expected_basis
+    assert decision["ranking_basis"] != first["recommended_first_slice"]
     assert row_args.ordering_rationale == decision["ranking_basis"]
     assert rationale_lines[0] == "- why now: Source fact — Provide one reviewable berth workflow."
     assert rationale_lines[1] == f"- expected outcome: {first['recommended_first_slice']}"
     assert rationale_lines[2] == f"- deferred for now: {non_goal}"
-    assert rationale_lines[3].endswith(first["recommended_first_slice"])
+    assert rationale_lines[3] == (
+        f"- ranking basis: {decision['priority']} first-release ordering for the accepted first path: "
+        f"{expected_basis}"
+    )
     assert "TBD" not in "\n".join(rationale_lines)
     sections = first["radar_sections"]
     assert [row["workstream_role"] for row in proposal["backlog"]] == ["provisional_design"] * 4

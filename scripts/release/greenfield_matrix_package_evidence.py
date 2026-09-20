@@ -16,6 +16,11 @@ from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import (
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import package_mapping
 from odylith.runtime.common.mermaid_text import visible_mermaid_label_quality_texts
 from odylith.runtime.common.value_coercion import normalize_string
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
+    decision_copy,
+    provisional_proof_assumption,
+    require_provisional_proof_decision,
+)
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
 )
@@ -99,7 +104,8 @@ def project_brief_readback_findings(
     if not text or not brief:
         return (_finding("product_manager", "independent package evidence missing persisted project brief readback"),)
 
-    findings = _authored_project_brief_findings(brief)
+    canonical_intent = package_mapping(intent)
+    findings = _authored_project_brief_findings(brief, canonical_intent)
     expected_title = f"# {_brief_text(brief.get('project_name'))} Project Brief"
     if not _brief_text(brief.get("project_name")) or text.splitlines()[0:1] != [expected_title]:
         findings.append(_finding("product_manager", "persisted project brief readback is missing its typed title"))
@@ -111,12 +117,13 @@ def project_brief_readback_findings(
     ):
         if marker not in text:
             findings.append(_finding("product_manager", f"persisted project brief readback is missing `{marker}`"))
-    findings.extend(_persisted_project_brief_structure_findings(text, brief, package_mapping(intent)))
+    findings.extend(_persisted_project_brief_structure_findings(text, brief, canonical_intent))
     return _unique_findings(findings)
 
 
 def _authored_project_brief_findings(
     brief: Mapping[str, Any],
+    intent: Mapping[str, Any],
 ) -> list[PackageEvidenceFinding]:
     """Validate the typed authored brief without reparsing its prose."""
 
@@ -136,18 +143,48 @@ def _authored_project_brief_findings(
             )
     sections = tuple(mapping_rows(brief.get("blueprint_sections")))
     labels = tuple(normalize_string(row.get("section")) for row in sections)
-    required_labels = (
+    required_labels = [
         "Source excerpt",
         "User problem",
         "First path",
-        "Visible result",
-        "Proof",
-    )
+    ]
+    proof_label = ""
+    try:
+        require_provisional_proof_decision(intent)
+    except ValueError:
+        findings.append(_finding("product_manager", "canonical intent has an invalid exclusive proof decision"))
+    else:
+        proposed = bool(provisional_proof_assumption(intent.get("assumptions", [])))
+        proof_label = "Proposed proof checkpoint" if proposed else "Proof"
+        if proposed:
+            if "Visible result" in labels:
+                findings.append(
+                    _finding(
+                        "product_manager",
+                        "proposed-proof project brief must not contain `Visible result`",
+                    )
+                )
+            if brief.get("project_outcome") != decision_copy(intent, "proof_boundary"):
+                findings.append(
+                    _finding(
+                        "product_manager",
+                        "proposed-proof project outcome does not exactly match its canonical proof decision copy",
+                    )
+                )
+        else:
+            required_labels.append("Visible result")
     for label in required_labels:
         if label not in labels:
             findings.append(
                 _finding("product_manager", f"independent project brief is missing `{label}`")
             )
+    if proof_label and (
+        labels.count(proof_label) != 1
+        or any(label in labels for label in ({"Proof", "Proposed proof checkpoint"} - {proof_label}))
+    ):
+        findings.append(
+            _finding("product_manager", f"independent project brief must contain exactly one `{proof_label}`")
+        )
     for row in sections:
         if not normalize_string(row.get("must_capture")):
             label = normalize_string(row.get("section")) or "<unlabeled>"
@@ -226,22 +263,26 @@ def _intent_brief_custody_findings(
     findings: list[PackageEvidenceFinding] = []
     if not intent:
         return [_finding("product_manager", "independent package evidence missing canonical intent custody")]
-    proof = _brief_text(intent.get("proof_boundary"))
-    if "proof_boundary" not in intent or not proof:
-        findings.append(_finding("product_manager", "canonical intent is missing nonempty `proof_boundary`"))
-    evidence_source = intent.get("evidence_requirements")
-    if (
-        "evidence_requirements" not in intent
-        or not isinstance(evidence_source, Sequence)
-        or isinstance(evidence_source, (str, bytes, bytearray))
+    try:
+        require_provisional_proof_decision(intent)
+        proposed = bool(provisional_proof_assumption(intent.get("assumptions", [])))
+        proof = _brief_text(decision_copy(intent, "proof_boundary"))
+    except ValueError:
+        return [_finding("product_manager", "canonical intent has an invalid exclusive proof decision")]
+    proof_label = "Proposed proof checkpoint" if proposed else "Proof"
+    if not proof:
+        findings.append(_finding("product_manager", "canonical intent has empty proof decision copy"))
+    evidence_source = intent.get("evidence_requirements", ())
+    if not isinstance(evidence_source, Sequence) or isinstance(
+        evidence_source, (str, bytes, bytearray)
     ):
-        findings.append(_finding("product_manager", "canonical intent is missing `evidence_requirements` sequence"))
+        findings.append(_finding("product_manager", "canonical intent has malformed `evidence_requirements`"))
         evidence = ""
     else:
         evidence = "\n".join(_brief_text(value) for value in evidence_source if _brief_text(value))
     rows = tuple(mapping_rows(brief.get("blueprint_sections")))
     for label, value, count in (
-        ("Proof", proof, 1),
+        (proof_label, proof, 1),
         ("Required evidence", evidence, 1 if evidence else 0),
     ):
         matches = tuple(row for row in rows if _brief_text(row.get("section")) == label)
