@@ -2,10 +2,44 @@ Status: In progress
 
 ## Latest live outcome: not qualified (2026-09-19)
 
+The representation-only comparison is complete and rejected: all eight calls
+preserve their frozen inputs and both arms make identical decisions (three of
+four predeclared controls match). Explicit joined producer references demonstrate
+no benefit. No production code, prompt, profile or schema changes follow.
+
+Source-first adjudication exposed disagreement over the disclosure finding. The
+actual deterministic projections settle its scope: no claim of achieved release
+or safety exists, but the package calls the proposed readiness checkpoint an
+accepted source-grounded proof bound to a producing action. Retain P1 for that
+authority promotion under the user's entailment/assumption contract, not for
+unsafe real-world attainment. Preserve both independent judgments and the
+unchanged, model-free projection evidence. The existing proposed-proof branch
+already expresses the required disposition; do not expand the schema or ask a
+new question. Next inspect whether the existing review should see the exact
+projected authority claims; no further mechanism is adopted or pre-approved.
+Decision: /Users/freedom/.codex/odylith-relation-review.DWmGsH/ADJUDICATION.md.
+
+Checkpoint d42889ceb is committed, pushed and remote-verified. Final frozen
+validation passes 1,699 install/governance-browser/Registry checks in 224.01 seconds
+with unchanged inputs, alongside the retained 6,593 runtime and actual-package
+browser proof. The temporary commit index is removed; the live carrier is preserved.
+This settles the checkpoint, not disclosure semantics or release readiness.
+
+The completed comparison tested reviewer input representation on four disclosed
+controls: preserve the complete source, candidate, custody, prompt, verdict schema
+and Astra-medium profile, but expose the selected producer/result references as
+one explicit claim under review. Eight paired calls maximum, 45 seconds each, no
+retries; collect all semantic outcomes, stopping only on integrity/environment
+failure. No production adoption or extra role follows automatically. This tests
+reference presentation, not another prompt simplification or effort increase.
+Independent boundary review supports the comparison; eight offline preservation
+and invalid-reference checks pass. Protocol and one-shot evidence:
+/Users/freedom/.codex/odylith-relation-review.DWmGsH/.
+
 Checkpoint review's raw-result parity gap is corrected: raw accepted result must
 equal its sole source relation, or exactly empty under proposed proof. All 74
 focused checks and the unchanged retained-package browser matrix pass. The prior
-1,691-pass report remains retained; final checkpoint regression is still required.
+1,691-pass report remains retained; the final checkpoint proof above supersedes it.
 No generator, schema or model change was needed.
 
 The v67 sequence is stopped, not pending continuation. Coordination is independently
