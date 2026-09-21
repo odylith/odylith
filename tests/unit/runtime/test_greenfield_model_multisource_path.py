@@ -96,11 +96,19 @@ def test_model_relation_ownership_is_real_and_regex_free() -> None:
     )
     assert greenfield_model_direct_evidence_graph.MODEL_EVENT_FIELDS == frozenset(
         {
-            "actor_fact_quote",
+            "actor_fact",
             "action_quote",
             "target_quote",
         }
     )
+    actor_fact = greenfield_model_direct_evidence_graph.MODEL_EVENT_SCHEMA["items"]["properties"]["actor_fact"]
+    assert actor_fact["required"] == ["field", "row"]
+    assert actor_fact["properties"]["field"]["enum"] == [
+        "external_systems",
+        "human_actors",
+        "internal_systems",
+        "title",
+    ]
     assert greenfield_model_direct_evidence_graph.MODEL_EVENT_SCHEMA["minItems"] == 1
     assert set(
         greenfield_model_direct_evidence_graph.MODEL_EVENT_SCHEMA["items"]["properties"]
@@ -122,6 +130,165 @@ def test_model_event_contract_rejects_restatement_of_derived_custody() -> None:
             clock=lambda: 0.0,
             review_provider_factory=AdmittingReviewProvider,
         )
+
+
+@pytest.mark.parametrize(
+    "invalid_actor_fact",
+    (
+        "Dock attendant Ivo",
+        {"field": "human_actors", "row": 0},
+        {"field": "human_actors", "row": True},
+        {"field": "human_actors", "row": 99},
+        {"field": "state_object", "row": 1},
+        {"field": ["human_actors"], "row": 1},
+        {"field": {"human_actors": 1}, "row": 1},
+        {"field": "human_actors"},
+        {"field": "human_actors", "row": 1, "quote": "Dock attendant Ivo"},
+        None,
+    ),
+)
+def test_model_event_requires_one_addressed_actor_fact(invalid_actor_fact: object) -> None:
+    prompt, edit_evidence, intent, segments, relations = _case()
+    response = _response(intent=intent, segments=segments, relations=relations)
+    row = model_event_rows(response)[0]
+    row["actor_fact"] = invalid_actor_fact
+    row.pop("actor_fact_quote", None)
+
+    with pytest.raises(GreenfieldModelAuthoringError, match="unbound first-path actor fact"):
+        author_greenfield_intent(
+            evidence_text=combined_prompt_evidence_source(
+                prompt=prompt,
+                edit_evidence=edit_evidence,
+            ),
+            **_participant_first_kwargs(response),
+            clock=lambda: 0.0,
+            review_provider_factory=AdmittingReviewProvider,
+        )
+
+
+@pytest.mark.parametrize(
+    ("actor_fact", "expected_kind", "expected_path"),
+    (
+        ({"field": "human_actors", "row": 1}, "human", "/human_actors/0"),
+        ({"field": "human_actors", "row": 2}, "human", "/human_actors/1"),
+        ({"field": "external_systems", "row": 1}, "external_system", "/external_systems/0"),
+        ({"field": "title", "row": 1}, "product", "/internal_systems/0"),
+    ),
+)
+def test_model_event_actor_address_preserves_equal_quote_identity(
+    actor_fact: dict[str, object], expected_kind: str, expected_path: str
+) -> None:
+    event = "Coordinator records intake"
+    selected_facts = (
+        {"field": "title", "source_field_rows": [1], "quote": "Coordinator", "projection_path": "/title", "source_start_byte": 0, "source_end_byte": 1},
+        {"field": "human_actors", "source_field_rows": [1], "quote": "Coordinator", "projection_path": "/human_actors/0", "source_start_byte": 0, "source_end_byte": 1},
+        {"field": "human_actors", "source_field_rows": [2], "quote": "Coordinator", "projection_path": "/human_actors/1", "source_start_byte": 0, "source_end_byte": 1},
+        {"field": "external_systems", "source_field_rows": [1], "quote": "Coordinator", "projection_path": "/external_systems/0", "source_start_byte": 0, "source_end_byte": 1},
+        {"field": "internal_systems", "source_field_rows": [1], "quote": "Coordinator", "projection_path": "/internal_systems/0", "source_start_byte": 0, "source_end_byte": 1},
+        {
+            "field": "first_path", "source_field_rows": [1], "quote": event,
+            "projection_path": "/first_path/0", "projection_start_byte": 0,
+            "projection_end_byte": len(event.encode("utf-8")), "source_start_byte": 0,
+            "source_end_byte": len(event.encode("utf-8")),
+        },
+    )
+    relations = greenfield_model_direct_evidence_graph.derive_model_relations(
+        events=[{"actor_fact": actor_fact, "action_quote": "records", "target_quote": "intake"}],
+        terminal=None,
+        components=[],
+        selected_facts=selected_facts,
+        first_path=event,
+        evidence_text=event,
+    ).first_path_relations
+
+    assert relations[0]["actor_kind"] == expected_kind
+    assert relations[0]["actor_fact_path"] == expected_path
+    assert relations[0]["actor_fact_quote"] == "Coordinator"
+
+
+def test_fixture_and_pipeline_preserve_distinct_same_kind_actor_occurrences_after_utf8_prefix() -> None:
+    prompt, edit_evidence, intent, segments, relations = _case()
+    prompt = "Préface é. " + prompt + " Dock attendant Ivo verifies the intake."
+    intent["human_actors"] = ["Dock attendant Ivo", "Dock attendant Ivo"]
+    relations[0]["actor_fact_path"] = "/human_actors/1"
+    response = _response(intent=intent, segments=segments, relations=relations)
+    response["result"]["facts"]["human_actors"][1]["occurrence"] = 2  # type: ignore[index]
+    assert model_event_rows(response)[0]["actor_fact"] == {
+        "field": "human_actors", "row": 2,
+    }
+
+    evidence = combined_prompt_evidence_source(
+        prompt=prompt,
+        edit_evidence=edit_evidence,
+    )
+    result = author_greenfield_intent(
+        evidence_text=evidence,
+        **_participant_first_kwargs(response),
+        clock=lambda: 0.0,
+        review_provider_factory=AdmittingReviewProvider,
+    )
+
+    relation = result.first_path_relations[0]
+    actor = next(
+        row
+        for row in result.atomic_claims
+        if row["relation_order"] == 1 and row["relation_role"] == "actor_fact_quote"
+    )
+    expected_start = evidence.encode("utf-8").find(b"Dock attendant Ivo")
+    expected_start = evidence.encode("utf-8").find(b"Dock attendant Ivo", expected_start + 1)
+    assert relation["actor_fact_path"] == "/human_actors/1"
+    assert relation["actor_fact_quote"] == "Dock attendant Ivo"
+    assert actor["source_start_byte"] == expected_start
+    assert actor["source_end_byte"] == expected_start + len(b"Dock attendant Ivo")
+
+
+def test_author_validator_remaps_a_collapsed_raw_actor_row_before_a_later_actor() -> None:
+    prompt, edit_evidence, intent, segments, relations = _case()
+    prompt = "Préface é. " + prompt + " Dock attendant Ivo verifies a berth request."
+    segments.insert(1, "Dock attendant Ivo verifies a berth request")
+    relations.insert(
+        1,
+        {
+            "actor_kind": "human",
+            "actor_fact_path": "/human_actors/2",
+            "actor_fact_quote": "Dock attendant Ivo",
+            "event_quote": segments[1],
+            "action_verb_quote": "verifies",
+            "target_quote": "a berth request",
+            "visible_result_quote": "",
+        },
+    )
+    intent["human_actors"] = ["Dock attendant Ivo"] * 3
+    relations[0]["actor_fact_path"] = "/human_actors/1"
+    response = _response(intent=intent, segments=segments, relations=relations)
+    response["result"]["facts"]["human_actors"][2]["occurrence"] = 2  # type: ignore[index]
+    evidence = combined_prompt_evidence_source(
+        prompt=prompt,
+        edit_evidence=edit_evidence,
+    )
+
+    result = greenfield_model_intent_authoring.validate_greenfield_authoring_response(
+        response,
+        evidence_text=evidence,
+        elapsed_seconds=0.0,
+        provider={"provider": "test", "model": "test"},
+        profile_id="greenfield-rescue-participant-first-terra-medium-v18",
+        effective_timeout_seconds=1.0,
+        semantic_model_call_count=1,
+    )
+
+    actor_spans = {
+        row["relation_order"]: row["source_start_byte"]
+        for row in result.atomic_claims
+        if row["relation_role"] == "actor_fact_quote"
+    }
+    first_start = evidence.encode("utf-8").find(b"Dock attendant Ivo")
+    second_start = evidence.encode("utf-8").find(b"Dock attendant Ivo", first_start + 1)
+    assert result.first_path_relations[0]["actor_fact_path"] == "/human_actors/0"
+    assert result.first_path_relations[1]["actor_fact_path"] == "/human_actors/1"
+    assert result.first_path_relations[2]["actor_fact_path"] == "/external_systems/0"
+    assert actor_spans[1] == first_start
+    assert actor_spans[2] == second_start
 
 
 def _case() -> tuple[str, str, dict[str, object], list[str], list[dict[str, object]]]:

@@ -60,7 +60,13 @@ def test_authoring_schema_structurally_separates_participants_authored_and_clari
     assert authored_properties["events"]["type"] == "array"
     assert authored_properties["events"]["minItems"] == 1
     assert set(authored_properties["events"]["items"]["properties"]) == {
-        "actor_fact_quote", "action_quote", "target_quote",
+        "actor_fact", "action_quote", "target_quote",
+    }
+    actor_fact = authored_properties["events"]["items"]["properties"]["actor_fact"]
+    assert actor_fact["additionalProperties"] is False
+    assert set(actor_fact["required"]) == {"field", "row"}
+    assert set(actor_fact["properties"]["field"]["enum"]) == {
+        "title", "human_actors", "internal_systems", "external_systems",
     }
     assert authored_properties["components"]["minItems"] == 0
     assert authored_properties["components"]["items"]["properties"]["responsibilities"]["minItems"] == 1

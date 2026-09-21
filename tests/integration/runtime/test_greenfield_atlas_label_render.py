@@ -77,8 +77,11 @@ def test_capability_support_groups_render_complete_local_relationships(tmp_path:
         if element.attrib.get("class") == "nodeLabel"
     ]
     for box in row["diagram_boxes"]:
-        if box["role"] == "Supported source actions":
-            assert " ".join(box["label"].split()) in labels
+        if box["role"] in {"Supported source actions", "Source action reference"}:
+            label = " ".join(box["label"].split())
+            assert label in labels
+            if box["role"] == "Source action reference":
+                assert labels.count(label) == 1
         elif box["role"] == "Proposed component":
             responsibility = box["description"].removeprefix("Proposed responsibility: ")
             assert f"Responsibility {responsibility}" in labels

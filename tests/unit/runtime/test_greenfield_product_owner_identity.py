@@ -66,6 +66,7 @@ def test_title_alias_keeps_source_owner_through_structural_design_support(tmp_pa
             {
                 "actor_kind": "product",
                 "actor_fact_quote": "Harbor Desk",
+                "actor_fact_path": "/title",
                 "owner_system_quote": "Harbor Desk",
                 "event_quote": "Harbor Desk shows the placement",
                 "action_verb_quote": "shows",
@@ -145,7 +146,7 @@ def test_two_indistinguishable_internal_system_paths_fail_closed() -> None:
         )
 
 
-def test_product_and_human_label_collision_fails_closed() -> None:
+def test_product_and_human_label_collision_requires_the_explicit_typed_actor() -> None:
     intent = {
         **_TEXT_FIELDS,
         **_LIST_FIELDS,
@@ -158,12 +159,14 @@ def test_product_and_human_label_collision_fails_closed() -> None:
         component_responsibility_owners=["Berth map"],
     )
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="unbound first-path actor fact"):
-        provider = RemainingCandidateProvider(response)
-        author_greenfield_intent(
-            evidence_text=source,
-            provider=provider,
-            clock=lambda: 0.0,
-            participant_provider_factory=provider.participant_provider,
-            review_provider_factory=AdmittingReviewProvider,
-        )
+    provider = RemainingCandidateProvider(response)
+    result = author_greenfield_intent(
+        evidence_text=source,
+        provider=provider,
+        clock=lambda: 0.0,
+        participant_provider_factory=provider.participant_provider,
+        review_provider_factory=AdmittingReviewProvider,
+    )
+
+    assert result.first_path_relations[0]["actor_kind"] == "human"
+    assert result.first_path_relations[0]["actor_fact_path"] == "/human_actors/0"

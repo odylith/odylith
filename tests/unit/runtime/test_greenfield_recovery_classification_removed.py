@@ -74,12 +74,12 @@ def test_failure_tracking_and_restoration_remain_exact_actions_without_recovery_
     derived = derive_model_relations(
         events=(
             {
-                "actor_fact_quote": title,
+                "actor_fact": {"field": "title", "row": 1},
                 "action_quote": "records",
                 "target_quote": "failed runs",
             },
             {
-                "actor_fact_quote": title,
+                "actor_fact": {"field": "title", "row": 1},
                 "action_quote": "restores",
                 "target_quote": "service",
             },

@@ -201,7 +201,11 @@ def _authored_input():
             "status": "authored", "consistency": {"status": "consistent", "evidence_quotes": []},
             "facts": facts,
             "events": [
-                {"actor_fact_quote": "bénévoles", "action_quote": action, "target_quote": target}
+                {
+                    "actor_fact": {"field": "human_actors", "row": 1},
+                    "action_quote": action,
+                    "target_quote": target,
+                }
                 for action, target in (("publient", "la liste prête"), ("vérifient", "les demandes"), ("enregistrent", "les demandes"))
             ],
             "terminal": {

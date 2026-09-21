@@ -226,6 +226,15 @@ an explicitly labeled assumption, never a human actor, dependency, or accepted f
 projections do not infer a customer from the first participant.
 Authored semantics v14 stores one actor identity per event: the selected actor fact,
 and separately binds the required provisional design.
+The v68 raw authoring contract selects that actor through `actor_fact: {field, row}`,
+using the same one-based fact-row convention as terminal results. Actor references
+may select only title, human actors, internal systems, or external systems; scalar
+title uses row 1. The compiler resolves the original selected row through source
+custody and derives the canonical kind, path and exact quotation. Identical names
+do not choose an actor implicitly, and quote-only event references are rejected.
+This structural address does not establish entailment: source review must still
+verify that the selected actor performs the action. Confirmation does not migrate
+old raw authoring responses or reinterpret their actor references.
 Aliases, pronouns, and omitted subjects remain in the original event text; they do
 not create a second actor field or a grammatical carry state. Event-actor atomic
 links in ledger v3 cite the selected fact directly, not a substring of the action.

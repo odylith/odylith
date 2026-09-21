@@ -175,14 +175,85 @@ def test_human_subject_state_object_keeps_source_and_performer_custody_separate(
         "anchor_occurrence": 1,
     }
     assert accepted["events"][0] == {
-        "actor_fact_quote": "city staff",
+        "actor_fact": {"field": "human_actors", "row": 1},
         "action_quote": "register",
         "target_quote": "displaced residents",
     }
-    assert accepted["events"][0]["actor_fact_quote"] != accepted["facts"]["state_object"]["quote"]
+    assert accepted["events"][0]["actor_fact"] != {"field": "human_actors", "row": 2}
     assert any(
         row["field"] == "state_object" and row["quote"] == "displaced residents"
         for row in payload["resolved_source_custody"]
+    )
+
+
+def test_title_actor_address_stays_hash_bound_before_canonical_product_translation():
+    source = "Case Desk records a report for case staff."
+    event = "Case Desk records a report"
+    intent = {
+        "title": "Case Desk",
+        "product_story": source[:-1],
+        "state_object": "a report",
+        "first_path": event,
+        "proof_boundary": "a report",
+        "customer": "case staff",
+        "assumptions": [
+            {"applies_to": "problem", "statement": "Staff need a reviewable report."},
+            {"applies_to": "opportunity", "statement": "One desk can reduce handoffs."},
+            {"applies_to": "product_view", "statement": "Staff review one report view."},
+        ],
+    }
+    response = authored_response(
+        intent,
+        evidence_text=source,
+        first_path_relations=[{
+            "actor_kind": "product",
+            "actor_fact_path": "/title",
+            "owner_system_quote": "Case Desk",
+            "event_quote": event,
+            "action_verb_quote": "records",
+            "target_quote": "a report",
+            "visible_result_quote": "a report",
+        }],
+    )
+    authored = author.validate_greenfield_authoring_response(
+        response,
+        evidence_text=source,
+        elapsed_seconds=0.0,
+        provider={},
+        profile_id=STANDARD_PROFILE_ID,
+        effective_timeout_seconds=55.0,
+        semantic_model_call_count=2,
+    )
+    payload = review.candidate_review_payload(
+        source,
+        response["result"],
+        source_spans=authored.source_spans,
+    )
+    clock = Clock()
+    receipt = review.review_greenfield_candidate(
+        evidence_text=source,
+        candidate=response["result"],
+        source_spans=authored.source_spans,
+        profile_id=STANDARD_PROFILE_ID,
+        provider_factory=lambda: Reviewer({"admissible": True, "issues": []}, clock),
+        deadline=55.0,
+        clock=clock,
+        observation={},
+    )
+
+    assert payload["candidate"]["accepted_source"]["events"] == [{
+        "actor_fact": {"field": "title", "row": 1},
+        "action_quote": "records",
+        "target_quote": "a report",
+    }]
+    assert receipt["candidate_sha256"] == hashlib.sha256(
+        json.dumps(
+            payload["candidate"], sort_keys=True, ensure_ascii=False, separators=(",", ":")
+        ).encode()
+    ).hexdigest()
+    relation = authored.first_path_relations[0]
+    assert (relation["actor_kind"], relation["actor_fact_path"], relation["owner_system_path"]) == (
+        "product", "/title", "/title",
     )
 
 

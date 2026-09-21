@@ -311,7 +311,7 @@ def _relation_rows(
             selected_segment_index = matches[0]
         if selected_segment_index < 0 or selected_segment_index >= len(first_path_fact_indexes):
             raise ValueError("authored fixture relation references an unknown first_path segment")
-        actor_fact_quote = _actor_fact_quote(
+        actor_fact = _actor_fact(
             relation,
             actor_kind=actor_kind,
             test_surface_actor_quote=test_surface_actor_quote,
@@ -320,7 +320,7 @@ def _relation_rows(
         )
         rows.append(
             {
-                "actor_fact_quote": actor_fact_quote,
+                "actor_fact": actor_fact,
                 "action_quote": str(
                     relation.get("action_verb_quote") or event_quote
                 ),
@@ -371,18 +371,27 @@ def _terminal_row(
     }
 
 
-def _actor_fact_quote(
+def _actor_fact(
     relation: Mapping[str, Any],
     *,
     actor_kind: str,
     test_surface_actor_quote: str,
     fact_indexes: Mapping[str, int],
     intent: Mapping[str, Any],
-) -> str:
-    if actor_kind == "product":
-        return _owner_system_fact_quote(
-            relation,
+) -> dict[str, object]:
+    explicit_path = relation.get("actor_fact_path")
+    if explicit_path is not None:
+        return _actor_fact_reference_for_path(
+            explicit_path,
             actor_kind=actor_kind,
+            relation=relation,
+            test_surface_actor_quote=test_surface_actor_quote,
+            fact_indexes=fact_indexes,
+            intent=intent,
+        )
+    if actor_kind == "product":
+        return _owner_system_fact_reference(
+            relation,
             fact_indexes=fact_indexes,
             intent=intent,
         )
@@ -395,34 +404,69 @@ def _actor_fact_quote(
     selected_quote = str(
         relation.get("actor_fact_quote") or test_surface_actor_quote
     )
-    rows = [str(row) for row in intent.get(field, []) if str(row)]
+    rows = [str(row) for row in intent.get(field, [])]
     matches = [index for index, row in enumerate(rows) if row == selected_quote]
     if len(matches) != 1:
         raise ValueError("authored fixture actor must identify one exact selected entity fact")
     if not fact_indexes.get(f"/{field}/{matches[0]}", 0):
         raise ValueError("authored fixture actor fact is not selected")
-    return selected_quote
+    return {"field": field, "row": matches[0] + 1}
 
 
-def _owner_system_fact_quote(
-    relation: Mapping[str, Any],
+def _actor_fact_reference_for_path(
+    path: object,
     *,
     actor_kind: str,
+    relation: Mapping[str, Any],
+    test_surface_actor_quote: str,
     fact_indexes: Mapping[str, int],
     intent: Mapping[str, Any],
-) -> str:
-    if actor_kind != "product":
-        return ""
+) -> dict[str, object]:
+    if not isinstance(path, str) or not fact_indexes.get(path, 0):
+        raise ValueError("authored fixture actor path is not selected")
+    field, separator, row_text = path.strip("/").partition("/")
+    if not separator or not row_text.isdigit():
+        if path == "/title" and actor_kind == "product":
+            field, row_text = "title", "0"
+        else:
+            raise ValueError("authored fixture actor path is invalid")
+    row_index = int(row_text)
+    expected_fields = {
+        "human": {"human_actors"},
+        "external_system": {"external_systems"},
+        "product": {"title", "internal_systems"},
+    }.get(actor_kind)
+    if expected_fields is None or field not in expected_fields:
+        raise ValueError("authored fixture actor path conflicts with actor_kind")
+    values = [str(value) for value in intent.get(field, [])] if field != "title" else [str(intent.get("title") or "")]
+    if row_index < 0 or row_index >= len(values) or not values[row_index]:
+        raise ValueError("authored fixture actor path is not selected")
+    expected_quote = str(
+        relation.get("owner_system_quote")
+        if actor_kind == "product"
+        else relation.get("actor_fact_quote") or test_surface_actor_quote
+    )
+    if expected_quote and expected_quote != values[row_index]:
+        raise ValueError("authored fixture actor path conflicts with actor quote")
+    return {"field": field, "row": row_index + 1}
+
+
+def _owner_system_fact_reference(
+    relation: Mapping[str, Any],
+    *,
+    fact_indexes: Mapping[str, int],
+    intent: Mapping[str, Any],
+) -> dict[str, object]:
     owner = str(relation.get("owner_system_quote") or "")
-    systems = [str(row) for row in intent.get("internal_systems", []) if str(row)]
+    systems = [str(row) for row in intent.get("internal_systems", [])]
     if not owner:
         raise ValueError("authored fixture must explicitly bind every product event to owner_system_quote")
     if owner == str(intent.get("title") or ""):
         if fact_indexes.get("/title", 0):
-            return owner
+            return {"field": "title", "row": 1}
     for index, system in enumerate(systems):
         if owner == system and fact_indexes.get(f"/internal_systems/{index}", 0):
-            return owner
+            return {"field": "internal_systems", "row": index + 1}
     raise ValueError(f"unknown authored fixture owner_system_quote: {owner}")
 
 

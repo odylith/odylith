@@ -495,7 +495,7 @@ def test_unselected_actor_fact_cannot_start_or_switch_an_actor_chain(
 ) -> None:
     source, response, _intent = _carried_human_actor_response()
     relation = model_event_rows(response)[relation_index]
-    relation["actor_fact_quote"] = "Absent Mara"
+    relation["actor_fact"] = {"field": "human_actors", "row": 99}
 
     with pytest.raises(GreenfieldModelAuthoringError, match="unbound first-path actor fact"):
         author_greenfield_intent(

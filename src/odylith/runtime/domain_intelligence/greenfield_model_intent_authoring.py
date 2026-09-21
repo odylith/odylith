@@ -69,7 +69,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     MAX_AUTHORED_LIST_ITEMS,
 )
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v67"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v68"
 MATERIALITY_DECISION_CONTRACT = (
     "Ask only when a missing or conflicting choice materially changes the target "
     "user, usable path, visible outcome, product/dependency boundary, source constraint, "

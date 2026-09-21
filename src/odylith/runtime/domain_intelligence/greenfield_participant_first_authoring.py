@@ -96,7 +96,8 @@ PARTICIPANT OWNERSHIP
 The supplied frozen_human_actors list is the only participant selection for this
 candidate. It was selected from the same untrusted source in a prior stage, not
 independently verified truth. Do not return, add, remove or replace human_actors.
-Bind performing human events to its exact quote values. Preserve every other source
+Bind each performing human event to its `actor_fact` field `human_actors` and one-based
+row in supplied frozen_human_actors. Preserve every other source
 requirement under the normal schema; later full-candidate review judges the joined
 result.
 
@@ -170,11 +171,12 @@ explicit actor with its action and object in the first citation and whenever the
 changes. A coordinated continuation can omit its subject only when the immediately
 previous event has that same actor. A stage, artifact or status label alone is not an
 event. Keep every required source-stated action under its original performer.
-Constraints and non-goals remain facts, not extra workflow events. actor_fact_quote
-selects the performing frozen human_actors, internal_systems, external_systems or
-title fact for every event. Resolve aliases and omitted subjects to that same selected
-actor fact; change it only when the source changes performer. Keep the original actor
-wording in the exact event citation, not a second actor field. action_quote and
+Constraints and non-goals remain facts, not extra workflow events. actor_fact selects
+the performing frozen human_actors, internal_systems, external_systems or title fact
+by its existing field and one-based raw row for every event. Resolve aliases and
+omitted subjects to that same selected actor fact; change it only when the source
+changes performer. Keep the original actor wording in the exact event citation, not a
+second actor field. action_quote and
 nonempty target_quote must occur within that event. When terminal is non-null, it cites
 the source-stated visible result and explicitly selects the event that produces it;
 that event may appear anywhere in the source action list. terminal.result_fact selects

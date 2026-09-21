@@ -4,15 +4,40 @@ Last updated: 2026-09-19
 
 ## Overview
 
-The next integration candidate keeps participant-first ownership and changes only
-the default remaining author to Astra medium under a new profile identity. Four
-declared external controls independently pass: three complete drafts preserve
-source/proposed proof, useful design and explicit ordering in 85.095–88.831 seconds,
-while genuinely missing first-path information requests clarification in 14.456
-seconds. No role, prompt, schema, retry or deadline is added. These are feasibility
-observations, not package, model-reliability or release qualification. Explicit
-rescue/deep remain independently subject to the same floor. Diagnostic receipts
-remain diagnostic and cannot be relabeled as integrated proof.
+The integrated standard profile keeps participant-first ownership and uses Astra
+medium for remaining authoring. The exact 162cf2507 installed campaign completes
+eleven packages and one material clarification, then stops on a rescue-profile
+actor-reference rejection; three cases remain unrun. The source, distribution
+and driver remain unchanged. Independent meaning and custody review accepts the
+eleven packages, but one capability-support diagram retains a P1 for repeated
+full action text. This is not release qualification. Rescue/deep retain the same
+semantic floor, and diagnostic/profile repetitions are not independent unseen
+project evidence.
+
+The next bounded authoring correction replaces raw quote-only event actor lookup
+with actor_fact {field,row}, the same one-based source-fact address convention
+already used by terminal results. Resolve through selected source_field_rows;
+derive canonical actor kind, path and exact quote without lexical prioritization.
+The source-cited sealed model and publication kernel stay unchanged. Equal names
+across human/product roles are legal, but missing or ambiguous addresses remain
+invalid and semantic review still must establish that the chosen actor acts.
+Raw authoring v68 implements this correction; 204 focused checks pass, including
+exact UTF-8 occurrence custody and raw-row remapping after duplicate collapse.
+One fresh original-source/rescue-profile control completes authoring and review
+in 53.537 seconds and three calls. Its external all-human assertion fails;
+independent source-first adjudication accepts the named council's preserved
+actions and authority without P0/P1. That failed receipt is not relabeled, and
+the fresh selection does not prove the prior collision. Full regression,
+rendered-package and installed qualification remain pending. A product-bound
+organizational project does not itself claim autonomous software authority;
+explicit source performers and decision rights must still remain intact.
+
+The first complete runtime gate then found 15 stale test contracts in four
+modules, all expecting the retired quote-only event shape. The v68 test migration
+preserves canonical ownership, ordering, recovery and negative-case semantics;
+72 focused tests pass in 0.25 seconds. This is release-proof maintenance, not a
+production semantic change. The complete runtime gate must be rerun before the
+checkpoint can be called green.
 
 Projections must use the existing source/proposed authority flag even in diagram
 summaries. Radar keeps distinct deliverable, prerequisite-based rollout, component
@@ -492,10 +517,17 @@ or the browser publication law. Full receipts and failures remain at
 The capability-support Atlas projector groups each proposed component's complete
 responsibility, verification and exact supported source-action references locally.
 Repeated source IDs preserve many-to-many support, not new events, performance
-ownership or execution chronology. Actor headers and action text are separated;
-state/result/proof/non-goals remain edge-free. The old shared support graph is
-removed. No authoring, schema, model, deadline or post-confirm contract changes.
-The bounded source-local fixture passes 144 focused/native checks, 32 surface
+ownership or execution chronology. Each complete actor/action now appears once
+in an edge-free source-action inventory; local groups retain exact short IDs.
+Every responsibility, boundary check and shared delivery acceptance is preserved.
+State/result/proof/non-goals remain edge-free. The old shared support graph and
+repeated full-action bodies are removed. This projection changes no authoring,
+schema, model, deadline or post-confirm contract. Two generic duplication tests
+fail before correction; 157 integrated focused/package checks and two native
+render checks pass afterward. Independent three-pair visual and integration
+reviews accept the bounded correction, not full browser or release readiness.
+Current evidence: /Users/freedom/.codex/odylith-support-density.4pK5Mv/.
+The earlier bounded source-local fixture passes 144 focused/native checks, 32 surface
 cells and two reading journeys; the settled tree passes 4313 runtime tests and
 1101 install tests. The earlier test-environment failure remains recorded.
 Mobile panning and maximum-density readability are not qualified. Evidence:

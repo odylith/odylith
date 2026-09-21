@@ -108,10 +108,11 @@ def build_provisional_design_atlas_specs(
                 )
             ),
             "read_guide": (
-                "Each group pairs a proposed responsibility with its supported source actions "
+                "Each group pairs a proposed responsibility with source-action references "
                 "and a proposed boundary check. Linked workstream acceptance stays shared across "
-                "its participating components; neither check is passed or exhaustive proof. Repeated action IDs refer to the "
-                "same source action, not additional events or execution order. Support does not "
+                "its participating components; neither check is passed or exhaustive proof. The source-action "
+                "reference inventory shows each full action once; repeated IDs do not create "
+                "additional events or execution order. Support does not "
                 "transfer the stated actor's action to a component. Source-stated facts are "
                 "an edge-free context inventory; no transition or causal topology is inferred."
             ),
@@ -246,16 +247,8 @@ def _capability_support_view(
         support_id = f"component{index}_support"
         actions_id = f"component{index}_actions"
         verification_id = f"component{index}_verification"
-        action_rows = [
-            f"Source action {order} · {events[order]['actor_kind']}: "
-            f"{events[order]['actor_fact_quote']}\n{events[order]['event_quote']}"
-            for order in component["supported_event_orders"]
-        ]
-        actions = "\n\n".join(action_rows)
-        actions_label = "<br/><br/>".join(
-            "<br/>".join(mermaid_label(line, width=44) for line in row.splitlines())
-            for row in action_rows
-        )
+        actions = ", ".join(f"Source action {order}" for order in component["supported_event_orders"])
+        actions_label = mermaid_label(actions, width=44)
         lines.extend([
             f'  subgraph {support_id}["Proposed support: {mermaid_label(component["name"])}"]',
             '    direction LR',
@@ -301,6 +294,23 @@ def _capability_support_view(
         ))
         for key in workstream["component_keys"]:
             lines.append(f'  {component_ids[key]} -. "participates in delivery" .-> {acceptance_id}')
+    lines.append('  subgraph source_actions["Source action reference"]')
+    boxes.append(atlas_box(
+        "source_actions", "Source action reference", "Source-grounded context",
+        "Full actions and stated performers for the local support references; no inferred sequence.",
+    ))
+    for order, event in sorted(events.items()):
+        action = (
+            f"Source action {order} · {event['actor_kind']}: "
+            f"{event['actor_fact_quote']}\n{event['event_quote']}"
+        )
+        label = "<br/>".join(mermaid_label(line, width=44) for line in action.splitlines())
+        lines.append(f'    source_action{order}["{label}"]')
+        boxes.append(atlas_box(
+            f"source_action{order}", action, "Source action reference",
+            "Complete source action and stated performer; local support references this identity.",
+        ))
+    lines.append("  end")
     lines.extend([
         '  subgraph source_facts["Source-stated facts"]',
         f'    state["State object<br/>{mermaid_label(state_object)}"]',

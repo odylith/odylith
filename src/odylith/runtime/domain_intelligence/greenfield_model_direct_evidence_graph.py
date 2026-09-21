@@ -31,10 +31,13 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 
 MODEL_EVENT_FIELDS = frozenset(
     {
-        "actor_fact_quote",
+        "actor_fact",
         "action_quote",
         "target_quote",
     }
+)
+MODEL_ACTOR_FACT_FIELDS = frozenset(
+    {"title", "human_actors", "internal_systems", "external_systems"}
 )
 MODEL_TERMINAL_FIELDS = frozenset({"result_fact", "result_quote", "result_occurrence", "event_order"})
 MODEL_COMPONENT_FIELDS = frozenset({"owner_fact_quote", "responsibilities"})
@@ -215,7 +218,7 @@ def _derive_events(
             )
 
         actor_kind, actor_fact_path, actor_fact_quote = _event_actor_fact(
-            actor_fact_quote=raw.get("actor_fact_quote"),
+            actor_fact=raw.get("actor_fact"),
             selected_facts=selected_facts,
             product_owner_facts=owner_facts,
         )
@@ -464,36 +467,46 @@ def _derive_component_relations(
 
 def _event_actor_fact(
     *,
-    actor_fact_quote: Any,
+    actor_fact: Any,
     selected_facts: Sequence[Mapping[str, Any]],
     product_owner_facts: Mapping[str, Mapping[str, Any]],
 ) -> tuple[str, str, str]:
-    non_product_kind_by_field = {
-        "human_actors": "human",
-        "external_systems": "external_system",
-    }
-    quote = str(actor_fact_quote or "")
-    non_product_matches = tuple(
-        fact
-        for fact in selected_facts
-        if str(fact.get("field") or "") in non_product_kind_by_field
-        and str(fact.get("quote") or "") == quote
-    )
-    product_fact = product_owner_facts.get(quote)
-    if (product_fact is None and len(non_product_matches) != 1) or (
-        product_fact is not None and non_product_matches
+    if (
+        not isinstance(actor_fact, Mapping)
+        or set(actor_fact) != {"field", "row"}
+        or not isinstance(actor_fact.get("field"), str)
+        or actor_fact["field"] not in MODEL_ACTOR_FACT_FIELDS
+        or not _positive_index(actor_fact.get("row"))
     ):
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring returned an unbound first-path actor fact"
         )
-    fact = product_fact or non_product_matches[0]
-    field = str(fact.get("field") or "")
+    field = str(actor_fact["field"])
+    row = int(actor_fact["row"])
+    matches = tuple(
+        fact
+        for fact in selected_facts
+        if fact.get("field") == field and row in fact.get("source_field_rows", ())
+    )
+    if len(matches) != 1:
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring returned an unbound first-path actor fact"
+        )
+    selected_fact = matches[0]
+    quote = _required_quote(selected_fact.get("quote"))
+    product_fact = product_owner_facts.get(quote) if field in {"title", "internal_systems"} else None
+    fact = product_fact or selected_fact
     path = str(fact.get("projection_path") or "")
-    if not _canonical_actor_path(field=field, path=path):
+    if not _canonical_actor_path(field=str(fact.get("field") or ""), path=path):
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring returned an invalid first-path actor fact"
         )
-    actor_kind = "product" if product_fact is not None else non_product_kind_by_field[field]
+    actor_kind = {
+        "title": "product",
+        "internal_systems": "product",
+        "human_actors": "human",
+        "external_systems": "external_system",
+    }[field]
     return actor_kind, path, quote
 
 
@@ -661,7 +674,19 @@ _EVENT_SCHEMA: dict[str, Any] = {
     "additionalProperties": False,
     "required": sorted(MODEL_EVENT_FIELDS),
     "properties": {
-        "actor_fact_quote": _quote_schema(required=True),
+        "actor_fact": {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["field", "row"],
+            "properties": {
+                "field": {"type": "string", "enum": sorted(MODEL_ACTOR_FACT_FIELDS)},
+                "row": {"type": "integer", "minimum": 1},
+            },
+            "description": (
+                "Existing selected actor-fact field and one-based raw row; scalar title uses row 1. "
+                "This address selects the performer without guessing from matching text."
+            ),
+        },
         "action_quote": _quote_schema(required=True),
         "target_quote": _quote_schema(),
     },

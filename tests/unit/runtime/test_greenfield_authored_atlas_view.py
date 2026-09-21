@@ -653,6 +653,8 @@ def test_authored_atlas_depth_is_five_distinct_semantic_views_not_a_count_floor(
         "component1_actions",
         "component1",
         "component1_verification",
+        "source_actions",
+        "source_action1",
         "source_facts",
         "state",
         "result",
@@ -747,6 +749,29 @@ def test_first_run_keeps_result_first_source_ids_and_proposed_links() -> None:
         )
 
 
+@pytest.mark.parametrize("event_count", [1, 3])
+def test_capability_support_displays_each_full_source_action_once(event_count: int) -> None:
+    relations = tuple(
+        _relation(order, "Dock attendant Ivo", f"Dock attendant Ivo reviews source record {order}")
+        for order in range(1, event_count + 1)
+    )
+    design = _provisional_design(event_orders=tuple(range(1, event_count + 1)))
+    support = _authored_diagrams(
+        relations=relations, provisional_design=design, result_event_order=event_count,
+    )[-1]
+    boxes = {box["node_id"]: box for box in support["diagram_boxes"]}
+    for relation in relations:
+        complete = (
+            f"Source action {relation['order']} · {relation['actor_kind']}: "
+            f"{relation['actor_fact_quote']}\n{relation['event_quote']}"
+        )
+        assert sum(complete in box["label"] for box in boxes.values()) == 1
+    for index, component in enumerate(design["components"], 1):
+        assert boxes[f"component{index}_actions"]["label"] == ", ".join(
+            f"Source action {order}" for order in component["supported_event_orders"]
+        )
+
+
 def test_capability_support_keeps_source_events_and_proposed_ownership_distinct() -> None:
     rows = _authored_diagrams()
     support = next(
@@ -754,7 +779,8 @@ def test_capability_support_keeps_source_events_and_proposed_ownership_distinct(
     )
     boxes = {row["node_id"]: row for row in support["diagram_boxes"]}
 
-    assert boxes["component1_actions"]["label"] == (
+    assert boxes["component1_actions"]["label"] == "Source action 1"
+    assert boxes["source_action1"]["label"] == (
         "Source action 1 · human: Dock attendant Ivo\n"
         "Dock attendant Ivo enters a vessel tag"
     )
@@ -763,6 +789,7 @@ def test_capability_support_keeps_source_events_and_proposed_ownership_distinct(
     assert 'component1 -->|"proposed support"| component1_actions' in support["mermaid_source"]
     assert "event1 --> component1" not in support["mermaid_source"]
     assert "owner" not in support["mermaid_source"]
+    assert "source_action1 -->" not in support["mermaid_source"]
     assert boxes["source_facts"]["label"] == "Source-stated facts"
     assert support["summary"] == (
         "Proposed component support for source-stated actions, with source-stated "
@@ -792,16 +819,12 @@ def test_capability_support_local_groups_preserve_exact_many_to_many_references(
     source = support["mermaid_source"]
     by_order = {row["order"]: row for row in relations}
     for index, component in enumerate(design["components"], 1):
-        actions = "\n\n".join(
-            f"Source action {order} · {by_order[order]['actor_kind']}: "
-            f"{by_order[order]['actor_fact_quote']}\n{by_order[order]['event_quote']}"
+        actions = ", ".join(
+            f"Source action {order}"
             for order in component["supported_event_orders"]
         )
         assert boxes[f"component{index}_actions"]["label"] == actions
-        assert "<br/><br/>".join(
-            "<br/>".join(mermaid_label(line, width=44) for line in action.splitlines())
-            for action in actions.split("\n\n")
-        ) in source
+        assert mermaid_label(actions, width=44) in source
         assert mermaid_label(component["responsibility"], width=44) in source
         assert mermaid_label(component["verification"], width=44) in source
         group = source.split(f"  subgraph component{index}_support[", 1)[1].split("  end", 1)[0]
@@ -809,12 +832,27 @@ def test_capability_support_local_groups_preserve_exact_many_to_many_references(
         assert f'component{index} -. "proposed boundary check" .-> component{index}_verification' in group
         assert group.count("-->") == 1
         assert group.count(".->") == 1
+    inventory = source.split('  subgraph source_actions[', 1)[1].split("  end", 1)[0]
+    assert "-->" not in inventory
+    assert ".->" not in inventory
+    for order, event in by_order.items():
+        action = (
+            f"Source action {order} · {event['actor_kind']}: "
+            f"{event['actor_fact_quote']}\n{event['event_quote']}"
+        )
+        assert boxes[f"source_action{order}"]["label"] == action
+        label = "<br/>".join(mermaid_label(line, width=44) for line in action.splitlines())
+        assert source.count(f'source_action{order}["{label}"]') == 1
+    assert [box["node_id"] for box in boxes.values() if box["role"] == "Source action reference"] == [
+        "source_action1", "source_action2", "source_action3",
+    ]
     assert source.count("-->") == len(design["components"])
     assert source.count(".->") == len(design["components"]) + sum(
         len(workstream["component_keys"]) for workstream in design["workstreams"]
     )
     assert "source_path" not in source
-    assert "Repeated action IDs refer to the same source action" in support["read_guide"]
+    assert "reference inventory shows each full action once" in support["read_guide"]
+    assert "repeated IDs do not create additional events or execution order" in support["read_guide"]
     assert (relations, design) == before
 
 

@@ -236,6 +236,8 @@ def test_success_uses_three_roles_and_emits_recomputable_v3_proof(monkeypatch, t
     assert "human_actors" not in facts_schema["properties"]
     assert "human_actors" not in facts_schema["required"]
     assert "frozen_human_actors list is the only participant selection" in remaining.requests[0].system_prompt
+    assert "actor_fact` field `human_actors` and one-based" in remaining.requests[0].system_prompt
+    assert "Bind performing human events to its exact quote values" not in remaining.requests[0].system_prompt
     assert "select proof_boundary only under the source-proof rule above" in remaining.requests[0].system_prompt
     assert "set both facts.proof_boundary and terminal to null" in remaining.requests[0].system_prompt
     assert "proof_boundary, human_actors and first_path" not in remaining.requests[0].system_prompt
@@ -487,4 +489,4 @@ def test_old_two_call_orchestration_is_not_exported():
     assert not hasattr(greenfield_model_intent_authoring, "author_greenfield_intent")
     assert not hasattr(greenfield_model_intent_authoring, "GREENFIELD_MODEL_PROOF_FD_ENV")
     assert MAX_GREENFIELD_SEMANTIC_CALLS == 3
-    assert GREENFIELD_INTENT_AUTHORING_VERSION.endswith(".v67")
+    assert GREENFIELD_INTENT_AUTHORING_VERSION.endswith(".v68")

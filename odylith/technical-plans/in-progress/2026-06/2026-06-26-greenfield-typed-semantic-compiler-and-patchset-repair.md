@@ -1,6 +1,69 @@
 Status: In progress
 
-## Latest live outcome: not qualified (2026-09-19)
+## Latest live outcome: campaign stopped, not qualified (2026-09-19)
+
+Checkpoint 162cf2507 is committed and pushed. Corrected frozen runtime proof
+passes 6,595 checks; install/refreshed-governance recheck passes 1,729, alongside
+the retained 460-case browser matrix. The exact distribution campaign ends with
+eleven created packages, one correct material clarification, one actor-reference
+failure before sealing, and three cases unrun. All input snapshots are unchanged.
+Independent reviews accept meaning and custody for the eleven created packages;
+one capability-support diagram still has a P1 from repeated full source actions.
+
+Next change stays in the existing projection owner and its contract tests:
+show each complete source action and performer once, keep exact action IDs in
+the local component groups, preserve all existing edges and shared delivery
+acceptance, and retain the other four diagram lenses unchanged. The independent
+three-pair render comparison accepts this bounded replacement. Two generic tests
+reproduce baseline duplication. Do not restore the previously rejected crossing
+arrows, add a model call, change semantic schema or repair sealed transactions.
+Reprove full package/browser behavior after integration. Diagnose the separate
+actor-reference stop against its retained response and prior governance before
+choosing a general correction; no fixture-specific exceptions or weaker custody.
+
+The actor stop is now reproduced as identical title/human quotation identity,
+not missing source evidence. Adopt one explicit raw actor_fact {field,row}
+address using the existing result_fact convention and source_field_rows mapping.
+Remove raw quote-only matching; derive the unchanged canonical actor kind/path/
+quote from that selected fact. Preserve product alias safety and semantic review.
+Compare against kind-plus-quote (cannot distinguish same-kind homonyms) and
+path-plus-quote (duplicates text and confuses raw indexes after deduplication).
+Prove generic collisions, exact occurrence custody, alias handling, rejected
+invalid/unsupported references, unchanged model-call bounds, then fresh installed
+behavior. This is a bounded input-address correction, not a new semantic role.
+
+The v68 implementation now passes 204 focused authoring/custody checks, including
+real distinct-occurrence and raw-row collapse controls. The Atlas projection
+passes 157 package checks and two native renders with independent integration
+acceptance. Settle governance serially, then run one no-retry fresh authoring
+control at the original failed prompt/profile before the expensive full proof.
+That control is early falsification only, not an installed or generalization gate.
+
+The control is now terminal: production authoring and immutable review complete
+in 53.537 seconds and three calls with unchanged inputs. The external all-human
+assertion fails, but independent source-first review accepts the candidate without
+P0/P1: it preserves the named council's five actions and decision authority, while
+the source does not require a separate software actor. Keep the failed receipt
+and semantic adjudication distinct. No retry, production change or expanded actor
+schema follows. The fresh selection does not exercise the original collision;
+204 focused checks prove that address contract separately. Freeze this candidate
+for full runtime and browser/install validation, then fresh installed proof.
+Evidence: /Users/freedom/.codex/odylith-actor-address.wCiBk5/LIVE-SEMANTIC-REVIEW.md.
+
+The first frozen runtime gate exposed 15 stale test contracts, not a production
+regression: four test modules still supplied or asserted the retired quote-only
+actor event. The bounded v68 migration preserves canonical ownership, ordering,
+recovery and negative-case laws; 72 focused tests pass in 0.25 seconds. Keep the
+complete runtime gate open until its rerun is green. Evidence:
+`/Users/freedom/.codex/odylith-actor-address.wCiBk5/RUNTIME-STALE-TESTS.md`.
+
+Evidence: /Users/freedom/.codex/odylith-checker-rationale.QJg46D/ and
+/Users/freedom/.codex/odylith-support-density.4pK5Mv/. EDIT/REJECT, injected
+recovery, remaining profile/private/metamorphic/final evaluation, native delivery,
+independent release adjudication and terminal cleanup remain required. The
+90/120/150 targets remain advisory; this stop is not a timing failure.
+
+### Preceding checker and rationale checkpoint
 
 Checkpoint 1583ba45b is committed, pushed and remote-verified after 6,594 runtime
 and 1,700 install/refreshed-surface checks pass on unchanged inputs. The complete

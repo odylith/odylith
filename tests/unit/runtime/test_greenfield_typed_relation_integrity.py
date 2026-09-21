@@ -147,7 +147,7 @@ def _author(
 def test_typed_product_owner_edge_is_authoritative_without_name_reparsing() -> None:
     evidence, _intent, response = _harbor_case()
     relations = model_event_rows(response)
-    relations[2]["actor_fact_quote"] = "berth map"
+    relations[2]["actor_fact"] = {"field": "internal_systems", "row": 2}
 
     result = _author(evidence, response)
 
@@ -167,7 +167,7 @@ def test_named_product_event_accepts_its_exact_selected_owner() -> None:
 def test_external_event_actor_must_reference_a_selected_external_fact() -> None:
     evidence, _intent, response = _harbor_case()
     relations = model_event_rows(response)
-    relations[1]["actor_fact_quote"] = "Absent Harbor Relay"
+    relations[1]["actor_fact"] = {"field": "external_systems", "row": 2}
 
     with pytest.raises(GreenfieldModelAuthoringError, match="actor fact"):
         _author(evidence, response)
