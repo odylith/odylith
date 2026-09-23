@@ -38,7 +38,8 @@ mechanism-level learning.
    and returns its outcome. It never interprets evidence, calls a model, generates
    artifacts, or rebuilds persistent projections after confirmation. Native host
    eligibility remains open. If JSON is explicitly requested, use `greenfield
-   propose --format json`; never rebuild transaction data by hand.
+   propose --format json`; this is the proposal JSON boundary; never rebuild
+   transaction data by hand.
    After an explicit terminal decision or create invocation, relay its returned
    outcome without reinterpretation. Relay the returned post-confirm navigation
    block exactly once; do not regenerate artifacts, rebuild projections, or
