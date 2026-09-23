@@ -24,6 +24,12 @@ The visible fallback is therefore proven, but native activation/chat delivery
 is not qualified; a reloaded trusted host session must reach `Activation: ready`
 before the intervention gate can close.
 
+The fresh selected non-holdout browser/intervention matrix passes `131` tests
+in `4m12s` across dashboard publication, publication carrier, intervention
+visibility, browser proof summaries/selection/surface health, and
+Codex/Claude parity. This is source-level UX proof, not native activation or
+final holdout qualification.
+
 Commit `d2bbbad82` integrates the Greenfield completion seam across the typed
 Execution Engine handoff, staged Delivery Intelligence v4 validation, and the
 host-neutral post-confirm `Odylith Assist` fallback. The current authored

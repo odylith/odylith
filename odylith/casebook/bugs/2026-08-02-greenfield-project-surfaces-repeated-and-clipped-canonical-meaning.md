@@ -2056,3 +2056,11 @@
   only. Native hook activation/chat delivery, complete browser coverage,
   independent strong/Astra adjudication, and the untouched final holdout remain
   open. Status stays Open.
+
+- Fresh browser/intervention matrix (2026-09-23): The selected non-holdout
+  browser and host-parity matrix passes `131` tests in `4m12s` across dashboard
+  publication, publication carrier, intervention visibility, browser proof
+  summary/selection/surface-health, and Codex/Claude parity owners. This
+  strengthens source-level normal, fallback, degraded/error, and visible
+  delivery evidence; native host activation and the untouched final holdout
+  remain separate gates.

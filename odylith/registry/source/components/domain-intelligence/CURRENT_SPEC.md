@@ -40,6 +40,12 @@ chat-confirmed events but reports `Activation: degraded`, and Claude reports
 fallback observations, not native activation proof. The claim gate remains
 `Activation: ready` plus chat visibility in a reloaded trusted host session.
 
+The fresh selected non-holdout browser/intervention matrix passes `131` tests
+in `4m12s` across dashboard publication, publication carrier, intervention
+visibility, browser proof summaries/selection/surface health, and
+Codex/Claude parity. This is source-level UX evidence and does not promote
+native activation or the untouched holdout.
+
 The integrated standard profile keeps participant-first ownership and uses Astra
 medium for remaining authoring. The exact 162cf2507 installed campaign completes
 eleven packages and one material clarification, then stops on a rescue-profile
