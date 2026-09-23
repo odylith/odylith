@@ -18,7 +18,7 @@ contract; native intervention activation, installed positive semantic
 qualification, independent strong review, and the protected final holdout
 remain open.
 
-Commit `c1f5d8d3a` is the latest pushed checkpoint. It corrects the local
+The previous release-proof checkpoint `c1f5d8d3a` corrected the local
 release-smoke contract to require the explicit bounded
 `MODEL_UNAVAILABLE_NO_WRITE` environment outcome already emitted by the
 installed CLI. The focused runtime/admission set passes `110` tests and the
@@ -27,6 +27,9 @@ source checkpoint builds the `0.1.15` wheel and sdist, generates hosted-style
 assets, and passes fresh install, upgrade, stale-residue, and unavailable-author
 no-write cycles; the disposable proof root is removed. This closes one
 release-proof mismatch, not release readiness.
+
+The latest pushed checkpoint is `6bf5efa7c`; it records the bounded mechanism
+cleanup above and leaves the release gates unchanged.
 
 The latest clean-source intervention status remains partial: Codex reports
 `Activation: degraded` with `12` chat-confirmed Odylith events in the current
