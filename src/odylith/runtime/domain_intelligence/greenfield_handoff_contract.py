@@ -260,9 +260,9 @@ def build_coding_readiness_contract(
         "source_facts": {
             "accepted_first_path": first_path,
             "proof_boundary": proof,
-            "evidence_requirements": _exact_strings(evidence_requirements),
-            "operational_constraints": _exact_strings(operational_constraints),
-            "non_goals": _exact_strings(non_goals),
+            "evidence_requirements": _source_fact_strings(evidence_requirements),
+            "operational_constraints": _source_fact_strings(operational_constraints),
+            "non_goals": _source_fact_strings(non_goals),
         },
         "gates": [
             {"gate_id": gate_id, "policy": policy}
@@ -336,9 +336,9 @@ def render_coding_readiness_gates(value: Mapping[str, Any]) -> list[str]:
     workstream_title = normalize_string(target.get("workstream_title"))
     first_path = normalize_string(facts.get("accepted_first_path"))
     proof = normalize_string(facts.get("proof_boundary"))
-    evidence = _exact_strings(facts.get("evidence_requirements"))
-    constraints = _exact_strings(facts.get("operational_constraints"))
-    non_goals = _exact_strings(facts.get("non_goals"))
+    evidence = _source_fact_strings(facts.get("evidence_requirements"))
+    constraints = _source_fact_strings(facts.get("operational_constraints"))
+    non_goals = _source_fact_strings(facts.get("non_goals"))
     target_label = " ".join(value for value in (workstream_id, workstream_title) if value)
     evidence_clause = "; ".join(evidence) if evidence else "No additional evidence requirement was authored."
     scope_clause = render_project_handoff_scope(operational_constraints=constraints, excluded_scope=non_goals)
@@ -376,6 +376,22 @@ def _exact_strings(value: Any) -> tuple[str, ...]:
         if text.strip() and text not in result:
             result.append(text)
     return tuple(result)
+
+
+def _source_fact_strings(value: Any) -> tuple[str, ...]:
+    """Copy source facts without collapsing repeated evidence or scope rows."""
+
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        rows = value
+    elif value is None:
+        rows = ()
+    else:
+        rows = (value,)
+    return tuple(
+        text
+        for text in (_exact_text(row) for row in rows)
+        if text.strip()
+    )
 
 
 def _normalized_strings(value: Any) -> tuple[str, ...]:

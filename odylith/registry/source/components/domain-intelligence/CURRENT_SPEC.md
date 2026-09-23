@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-09-19
+Last updated: 2026-09-23
 
 
 ## Overview
@@ -739,6 +739,9 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-23 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-09-23-greenfield-coding-readiness-projection-drops-repeated-source-facts-2.md`, `src/odylith/runtime/domain_intelligence/greenfield_handoff_contract.py`, `tests/unit/runtime/test_greenfield_handoff_contract.py`
 - **2026-09-19 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 1 verifiable artifact reference.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`
@@ -754,9 +757,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_atlas_view.py`
-- **2026-08-10 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_component_owned_state.py`, `tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

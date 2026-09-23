@@ -128,6 +128,31 @@ def test_coding_readiness_contract_preserves_exact_unicode_markdown_and_whitespa
     }
 
 
+def test_coding_readiness_contract_preserves_repeated_source_facts() -> None:
+    repeated = "\tPreserve the same source fact twice.\n"
+    contract = build_coding_readiness_contract(
+        workstream_id="B-042",
+        workstream_title="Dock Console Slice",
+        release_selector="0.0.1",
+        accepted_first_path="Dock attendant Ivo records the reviewed placement.",
+        proof_boundary="Reviewer sees the signed café receipt",
+        evidence_requirements=(repeated, repeated),
+        operational_constraints=(repeated, repeated),
+        non_goals=(repeated, repeated),
+    )
+
+    assert contract["source_facts"] == {
+        "accepted_first_path": "Dock attendant Ivo records the reviewed placement.",
+        "proof_boundary": "Reviewer sees the signed café receipt",
+        "evidence_requirements": (repeated, repeated),
+        "operational_constraints": (repeated, repeated),
+        "non_goals": (repeated, repeated),
+    }
+    rendered = render_coding_readiness_gates(contract)
+    assert rendered[-1].count(repeated) == 2
+    assert rendered[2].count(repeated) == 4
+
+
 def test_coding_readiness_contract_has_exact_gate_policies_and_deterministic_rendering() -> None:
     contract = _readiness_contract()
 

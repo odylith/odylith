@@ -6,6 +6,8 @@ Last updated (UTC): 2026-09-23
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-342 | 2026-09-23 | Greenfield coding readiness projection drops repeated source facts 2 | P2 | domain-intelligence | Open | [2026-09-23-greenfield-coding-readiness-projection-drops-repeated-source-facts-2.md](2026-09-23-greenfield-coding-readiness-projection-drops-repeated-source-facts-2.md) |
+| CB-341 | 2026-09-23 | Greenfield coding readiness projection drops repeated source facts | P2 | domain-intelligence | Open | [2026-09-23-greenfield-coding-readiness-projection-drops-repeated-source-facts.md](2026-09-23-greenfield-coding-readiness-projection-drops-repeated-source-facts.md) |
 | CB-337 | 2026-09-10 | Release migration gate forgets committed consumer surface changes | P1 | migration-runtime | FixedPendingRelease | [2026-09-10-release-migration-gate-forgets-committed-consumer-surface-changes.md](2026-09-10-release-migration-gate-forgets-committed-consumer-surface-changes.md) |
 | CB-339 | 2026-09-10 | Plan reconciliation skips a reopened active plan missing from its index | P2 | odylith | InProgress | [2026-09-10-plan-reconciliation-skips-a-reopened-active-plan-missing-from-its-index.md](2026-09-10-plan-reconciliation-skips-a-reopened-active-plan-missing-from-its-index.md) |
 | CB-340 | 2026-09-10 | Candidate release notes advertise the disabled greenfield apply flow | P1 | odylith | InProgress | [2026-09-10-candidate-release-notes-advertise-the-disabled-greenfield-apply-flow.md](2026-09-10-candidate-release-notes-advertise-the-disabled-greenfield-apply-flow.md) |

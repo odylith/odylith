@@ -6,12 +6,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 645,
-    "mapped_workstream_evidence_count": 553,
+    "explicit_event_count": 646,
+    "mapped_workstream_evidence_count": 554,
     "recent_path_match_count": 0,
     "spec_history_event_count": 307,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 645
+    "timeline_event_count": 646
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -19,6 +19,43 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-09-23-greenfield-coding-readiness-projection-drops-repeated-source-facts-2.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_handoff_contract.py",
+        "tests/unit/runtime/test_greenfield_handoff_contract.py"
+      ],
+      "confidence": "high",
+      "event_index": 1293,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-09-23T12:36:39-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 2,
       "artifacts": [
