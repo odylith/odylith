@@ -35,6 +35,10 @@ handshakes with zero findings. This confirms structural engine wiring only;
 native host activation, installed positive semantic qualification, independent
 strong review, and the final holdout remain separate gates.
 
+Existing release floors remain green at this checkpoint: Discipline validation
+passes, and guidance-behavior validation checks `6` cases across `11` guidance
+checks.
+
 Commit `d2bbbad82` integrates the Greenfield completion seam across the typed
 Execution Engine handoff, staged Delivery Intelligence v4 validation, and the
 host-neutral post-confirm `Odylith Assist` fallback. The current authored

@@ -51,6 +51,9 @@ handshakes with zero findings. This is structural wiring evidence, not native
 host activation, installed positive semantic qualification, independent strong
 review, or final holdout proof.
 
+The existing release floors also remain green: Discipline validation passes,
+and guidance-behavior validation checks `6` cases across `11` guidance checks.
+
 The integrated standard profile keeps participant-first ownership and uses Astra
 medium for remaining authoring. The exact 162cf2507 installed campaign completes
 eleven packages and one material clarification, then stops on a rescue-profile
