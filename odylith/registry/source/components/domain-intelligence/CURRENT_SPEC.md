@@ -59,6 +59,11 @@ maintainer worktree is deliberately `detached_source_local` with a
 `source_checkout` runtime, so local-runtime posture is not release eligible and
 must not be presented as shipped-release proof.
 
+Version truth passes with `0.1.15` in source, package, and pin. Topology
+integrity scores `100/100` with zero findings across `262` nodes and `1,711`
+structural edges. These floors do not replace the positive installed model
+matrix or independent strong semantic adjudication.
+
 The integrated standard profile keeps participant-first ownership and uses Astra
 medium for remaining authoring. The exact 162cf2507 installed campaign completes
 eleven packages and one material clarification, then stops on a rescue-profile

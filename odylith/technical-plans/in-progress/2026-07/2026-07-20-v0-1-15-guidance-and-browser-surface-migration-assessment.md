@@ -44,6 +44,11 @@ maintainer worktree remains deliberately `detached_source_local` with a
 `source_checkout` runtime, so local-runtime posture is not release eligible and
 must not be presented as shipped-release proof.
 
+Version truth also passes (`0.1.15` in source, package, and pin), and topology
+integrity scores `100/100` with zero findings across `262` nodes and `1,711`
+structural edges. These floors do not replace the positive installed model
+matrix or independent strong semantic adjudication.
+
 Commit `d2bbbad82` integrates the Greenfield completion seam across the typed
 Execution Engine handoff, staged Delivery Intelligence v4 validation, and the
 host-neutral post-confirm `Odylith Assist` fallback. The current authored
